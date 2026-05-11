@@ -18,7 +18,7 @@ Detaylı liste: ai-workflow.md § Quality Gates (canonical).
 ### Diff Sanity
 - [ ] Sadece task scope'u değişti — drive-by refactor yok
 - [ ] Generated dosyalar (`.g.dart`, `.freezed.dart`) commit edildi
-- [ ] `dart run build_runner build --delete-conflicting-outputs` çalıştırıldı
+- [ ] `dart run build_runner build` çalıştırıldı
 - [ ] Geçici debug kodu kaldırıldı (`AppLogger.debug` izleri, `print`, comment'li kod)
 - [ ] Dosya sonu newline + trailing whitespace temiz
 - [ ] Conflict marker yok (`<<<<<<<`)

@@ -93,7 +93,7 @@ workflows:
         script: flutter pub get
 
       - name: Generate code
-        script: dart run build_runner build --delete-conflicting-outputs
+        script: dart run build_runner build
 
       - name: Create dummy .env
         script: touch .env   # asset declared in pubspec.yaml; credentials come from --dart-define
@@ -224,7 +224,7 @@ workflows:
         script: flutter pub get
 
       - name: Generate code
-        script: dart run build_runner build --delete-conflicting-outputs
+        script: dart run build_runner build
 
       - name: Create dummy .env
         script: touch .env   # asset declared in pubspec.yaml; credentials come from --dart-define

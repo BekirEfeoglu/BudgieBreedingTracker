@@ -52,7 +52,7 @@ fi
 flutter --version
 run_with_retries 3 10 flutter precache --ios
 run_with_retries 3 10 flutter pub get
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 
 if ! command -v pod >/dev/null 2>&1; then
   export HOMEBREW_NO_AUTO_UPDATE=1

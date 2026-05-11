@@ -32,6 +32,7 @@
 <!-- Varsa ekleyin -->
 
 ## Kontrol Listesi
+- [ ] PR hedef branch'i `main`; geçici remote branch merge sonrası silinecek
 - [ ] `dart format .` uygulandı
 - [ ] `flutter analyze --no-fatal-infos` hatasız geçiyor
 - [ ] `python3 scripts/verify_code_quality.py` hatasız geçiyor

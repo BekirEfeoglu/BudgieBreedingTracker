@@ -139,7 +139,7 @@ flutter test
 Run code generation after touching Freezed models, Drift tables, JSON models, or Riverpod generators:
 
 ```bash
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 ```
 
 If codebase metrics in `CLAUDE.md` changed, run:

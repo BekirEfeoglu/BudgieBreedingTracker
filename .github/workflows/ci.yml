@@ -5,9 +5,9 @@ on:
   schedule:
     - cron: "0 2 * * 1"
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
 
 permissions:
   contents: read

@@ -6,12 +6,12 @@ scripts/run_local_quality_gate.sh         # Diff, rules, quality, conditional l1
 flutter analyze --no-fatal-infos          # Static analysis — 0 errors
 flutter test                               # All tests pass
 ```
-Run before every commit. CI enforces all five gates on PRs.
+Run before every commit when the changed surface is broad. CI enforces analysis, tests, golden tests, script tests, l10n sync, code quality, rules sync, and platform build gates on `main` PRs/pushes.
 
 ## Code Generation
 Run after modifying Freezed models, Drift tables, or Riverpod providers:
 ```bash
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 ```
 If generation gets stuck: `dart run build_runner clean` first.
 
@@ -51,7 +51,7 @@ If generation gets stuck: `dart run build_runner clean` first.
 - Never import across feature modules
 
 ## Anti-Pattern Enforcement
-- `verify_code_quality.py` scans with 23 checkers (18 from CLAUDE.md + 5 extra)
+- `verify_code_quality.py` scans with 24 checkers (18 from CLAUDE.md + 6 extra)
 - CI `code-quality` job blocks PRs with violations
 - Full list: CLAUDE.md § "Critical Anti-Patterns (24 rules)"
 

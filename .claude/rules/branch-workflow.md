@@ -1,39 +1,41 @@
 # Branch Workflow
 
 ## Default Development Flow
-- Tum aktif gelistirme `develop` branch'i uzerinde yapilir.
-- `main` branch'i stabil ve release'a yakin dal olarak korunur.
-- `main` uzerinde dogrudan commit veya deneysel degisiklik yapilmaz.
+- Kalici branch stratejisi main-only: GitHub remote'da yalnizca `main` kalici daldir.
+- Aktif gelistirme `main` tabanindan yapilir.
+- Kisa sureli feature/fix branch'leri yalnizca PR/review veya riskli deneme gerektiginde acilir.
+- Branch temizligi sonrasi Dependabot veya gecici ajan dallari kalici kabul edilmez.
 
 ## Branch Rules
-- Gelistirmeye baslamadan once taban branch: `develop`
-- Yeni feature/fix branch'leri gerekiyorsa `develop` uzerinden turetilir
-- `main` sadece testleri ve kalite kapilari gecmis degisiklikler icin guncellenir
+- Gelistirmeye baslamadan once taban branch: `main`
+- Yeni feature/fix branch'leri gerekiyorsa guncel `main` uzerinden turetilir
+- `main`e push sadece ilgili kalite kapilari gecince yapilir
+- Remote branch temizliginde korunacak tek kalici dal: `main`
 
 ## Merge / Push Policy
-- Guncel gelistirmeler once `develop`e push edilir.
 - `main`e merge/push oncesi kalite kapilari gecmeli (bkz. ai-workflow.md § Quality Gates)
 - Gerekli kod jenerasyonu varsa merge oncesi calistirilir:
   ```bash
-  dart run build_runner build --delete-conflicting-outputs
+  dart run build_runner build
   ```
 - `main`e push yapildiginda exact commit SHA icin tum status/check-run'lar tamamlanmadan branch temiz kabul edilmez
 - Branch protection bypass edilirse bu bir istisnadir; push sonrasi remote dogrulama zorunlulugu ortadan kalkmaz
 
 ## GitHub Workflow
-- Temel aktif branch yapisi: `main` + `develop`
-- PR varsayilan hedef branch: `develop`
-- `main`e gecis: incelenmis ve testleri gecmis degisikliklerin kontrollu aktarimi
-- Acikca hotfix gerekmiyorsa `main`e dogrudan PR acma
+- Temel aktif branch yapisi: `main`
+- PR varsayilan hedef branch: `main`
+- Gecici dallar merge sonrasi silinir
+- Dependabot dallari incelenmedikce kalici tutulmaz; stale branch cleanup `main` disindakileri temizleyebilir
 
 ## Hotfix Exception
-- Kritik production hatalarinda kisa sureli hotfix dogrudan `main` uzerinden alinabilir
+- Kritik production hatalarinda hotfix dogrudan `main` uzerinden alinabilir
 - Minimum degisiklik yap, testleri calistir
-- Sonrasinda degisikligi `develop`e geri tasi (dallari esitle)
+- Push sonrasi exact commit durumunu `python3 scripts/check_remote_status.py` ile dogrula
 
 ## Operational Notes
-- `develop` tek kalici gelistirme branch'i — branch temizliginde korunur
-- `main`-`develop` arasi drift olusursa: once farki anla, sonra kontrollu merge yap
-- GitHub Actions branch protection bu akisa gore dusunulmeli
+- GitHub Actions branch filtreleri main-only akisa gore tutulmali
+- Branch protection required check listesi CI job isimleri degisince guncellenmeli
+- Remote branch listesini temizlerken once `git ls-remote --heads origin` ile oku, sonra `git push origin --delete <branch>` kullan
+- Silme sonrasi `git fetch --prune origin` ve `git branch -r` ile yerel remote-tracking kalintilarini temizle
 
 > **Ilgili**: git-rules.md (commit format, branch naming), ai-workflow.md (kalite kapilari), release-ops.md (deploy akisi)

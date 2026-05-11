@@ -10,8 +10,10 @@ lib/
 ├── core/           # Constants, enums, errors, security, theme, utils, shared widgets
 ├── data/           # Models, local DB (Drift), remote API (Supabase), repositories
 ├── domain/         # Business logic services (genetics, sync, etc.)
-├── features/       # 23 feature modules (screens, widgets, providers)
-└── router/         # GoRouter config, route guards, route definitions
+├── features/       # 25 feature modules (screens, widgets, providers)
+├── router/         # GoRouter config, route guards, route definitions
+├── shared/         # Curated facade exports for cross-feature reuse
+└── test_support/   # Package-visible helpers imported by test/ only
 ```
 
 ## Data Flow
@@ -26,17 +28,30 @@ UI (Features) -> Providers (Riverpod) -> Repositories -> Local (Drift DAOs) + Re
 - UI always reads from local DB via providers — never directly from Supabase
 
 ## Import Rules
-- Features import from: `core/`, `data/`, `domain/`, `router/`
+- Features import from: `core/`, `data/`, `domain/`, `router/`, and curated `shared/` facades
 - Features NEVER import from other features (no cross-feature imports)
 - `data/remote/` never imported directly in UI — always through Repository
 - Exception: `admin/` feature can use `client.from()` directly
+- `router/` is the composition layer and may import feature screens/providers to assemble routes and guards
+- `core/` must not import from `data/`, `features/`, or `shared/`
+- `data/` must not import from `features/`
+- `lib/test_support/` must only be imported from `test/`; production `lib/` code must not depend on test helpers
 
 ### Resolving Cross-Feature Need
 When feature A needs something from feature B:
 1. If it's a shared widget → move to `lib/core/widgets/`
 2. If it's a shared provider (e.g., currentUser, theme) → move to `lib/core/providers/`
 3. If it's domain logic → extract to `lib/domain/services/`
-4. Never shortcut with a direct `features/b/...` import — audit flagged `statistics → home`, `auth → birds`, `profile → admin/settings` as drift
+4. If immediate migration is too broad, add a narrow `lib/shared/` facade export as a temporary compatibility surface
+5. Never shortcut with a direct `features/b/...` import — audit flagged `statistics → home`, `auth → birds`, `profile → admin/settings` as drift
+
+### Shared Facade Rules
+`lib/shared/` exists because older feature code already reuses selected widgets/providers across feature boundaries. Keep it as a thin facade layer:
+- Allowed: one-line export files that expose an intentionally shared provider, widget, or adapter
+- Allowed: compatibility exports that prevent direct `features/x` imports while a component is being migrated
+- Not allowed: new business logic, persistence, remote calls, stateful UI implementation, or hidden feature orchestration
+- New reusable implementation belongs in `core/widgets`, `core/providers`, `domain/services`, or `data/providers`
+- A shared facade export must not create cycles. If two features need each other, extract the dependency downward instead of adding more exports.
 
 ## Online-First Exemption
 
@@ -56,8 +71,8 @@ Online-only classes that are NOT cross-user/multi-party streams (e.g. a single-u
 
 Canonical example: `LocalAiService` (`lib/domain/services/local_ai/local_ai_service.dart`) — LLM inference via Ollama/OpenRouter. Network is mandatory (inference happens on the remote endpoint), so offline-first does not apply; correctly named as `*Service`. Applies short-lived in-memory caching for repeated prompts but does not persist to Drift.
 
-## 23 Feature Modules
-admin, auth, birds, breeding, calendar, chicks, community, eggs, feedback, gamification, genealogy, genetics, health_records, home, marketplace, messaging, more, notifications, premium, profile, settings, splash, statistics
+## 25 Feature Modules
+admin, app_update, auth, birds, breeding, calendar, chicks, community, eggs, feedback, gamification, genealogy, genetics, health_records, home, marketplace, messaging, more, notifications, premium, profile, settings, splash, statistics, update
 
 ## Security
 - RLS policies managed server-side (Supabase)

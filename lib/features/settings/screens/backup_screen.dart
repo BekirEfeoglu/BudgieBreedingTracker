@@ -130,9 +130,10 @@ class BackupScreen extends ConsumerWidget {
       return;
     }
 
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['xlsx', 'xls'],
+      withData: true,
     );
     if (result == null || result.files.isEmpty) return;
 

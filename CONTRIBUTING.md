@@ -16,7 +16,7 @@ Thank you for considering contributing! This document provides guidelines for co
 git clone https://github.com/BekirEfeoglu/BudgieBreedingTracker.git
 cd BudgieBreedingTracker
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 cp .env.example .env  # Fill in your Supabase credentials
 flutter run
 ```

@@ -43,7 +43,7 @@
 - Manuel `Release Ready` calistirmadan once main'in remote status'u `python3 scripts/check_remote_status.py` ile temiz olmali
 - Store release oncesi version bump tutarliligini kontrol et
 - iOS ve Android release config'leri birbirinden bagimsiz hata ayiklanabilir tut
-- Release branch'i kesmeden once `develop`in temiz oldugunu dogrula
+- Release branch'i gerekiyorsa guncel `main`den kisa sureli kes; release tamamlaninca remote branch'i sil
 - Xcode Cloud build hatalarinda once generated Dart dosyalari, `Generated.xcconfig` ve `Pods-Runner-*.xcfilelist` uretilmis mi kontrol et; bu dosyalari commit etme, post-clone script'i duzelt
 - Xcode Cloud archive/export hatalarinda `Development` veya `Ad Hoc` export gorulurse once Apple Developer hesabinda kayitli fiziksel cihaz ve provisioning profile gereksinimlerini dogrula
 - Xcode Cloud `pod install` hatalarinda ag/DNS kaynakli pod arsivi indirme sorunlarini ayir; transient indirme hatalari icin `ios/ci_scripts/ci_post_clone.sh` retry/backoff davranisini koru

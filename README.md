@@ -217,7 +217,7 @@ git clone https://github.com/BekirEfeoglu/BudgieBreedingTracker.git
 cd BudgieBreedingTracker
 
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 
 cp .env.example .env
 flutter run --dart-define-from-file=.env
@@ -256,8 +256,8 @@ The app can still boot without Supabase credentials, but authentication, sync, a
 | Command | Purpose |
 | --- | --- |
 | `flutter pub get` | Install dependencies |
-| `dart run build_runner build --delete-conflicting-outputs` | Generate code (Freezed, Drift, Riverpod) |
-| `dart run build_runner watch --delete-conflicting-outputs` | Watch and regenerate files |
+| `dart run build_runner build` | Generate code (Freezed, Drift, Riverpod) |
+| `dart run build_runner watch` | Watch and regenerate files |
 | `flutter analyze --no-fatal-infos` | Static analysis |
 | `flutter test --exclude-tags golden` | Run all tests (excl. golden) |
 | `flutter test test/golden --tags golden` | Golden snapshot tests |

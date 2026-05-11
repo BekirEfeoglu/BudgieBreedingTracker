@@ -12,7 +12,7 @@ Key deps: `supabase_flutter ^2.5.0` · `sentry_flutter ^9.0.0` · `fl_chart ^1.2
 flutter pub get
 
 # Code generation (Freezed, Drift, JSON Serializable, Riverpod)
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 
 # Clean generated files (if stuck)
 dart run build_runner clean
@@ -126,7 +126,7 @@ After pushing CI or release fixes, verify the exact commit SHA with both GitHub 
 - Xcode Cloud builds a clean clone and must run the post-clone script before the iOS build action.
 - The default Xcode Cloud workflow is build-only (`Build - iOS`, scheme `Runner`, `Any iOS Simulator`) so main-branch status checks do not require Development or Ad Hoc provisioning profiles.
 - Archive/TestFlight/App Store distribution in Xcode Cloud requires Apple signing prerequisites, including registered physical devices for Development/Ad Hoc exports; use Codemagic for production store releases until those account prerequisites are intentionally configured.
-- The script installs/activates Flutter, runs `flutter pub get`, runs `dart run build_runner build --delete-conflicting-outputs`, and runs `pod install` under `ios/`.
+- The script installs/activates Flutter, runs `flutter pub get`, runs `dart run build_runner build`, and runs `pod install` under `ios/`.
 - Network-heavy setup steps must stay retry-aware because Xcode Cloud can hit transient DNS/download failures while cloning Flutter, precaching artifacts, resolving Pub packages, installing CocoaPods, or downloading pod source archives such as `sqlite3`.
 - Do not commit generated Dart files, `ios/Flutter/Generated.xcconfig`, `ios/Pods/`, or `Pods-Runner-*.xcfilelist`; regenerate them in CI.
 
@@ -185,13 +185,13 @@ Comprehensive rules in `.claude/rules/` (auto-loaded):
 | `coding-standards.md` | Naming, Freezed/enum, icon API, file organization, extensions, async/await |
 | `providers.md` | Riverpod provider types, ref usage, AsyncNotifier, race conditions, error handling, keepAlive |
 | `ui-patterns.md` | Widget types, AsyncValue, forms, GoRouter, shared widgets, lists, dialogs |
-| `localization.md` | easy_localization, key structure, 39 categories, arg patterns, testing l10n |
+| `localization.md` | easy_localization, key structure, 42 categories, arg patterns, testing l10n |
 | `testing.md` | Test patterns, mocking, golden tests, coverage, naming conventions |
 | `test-stability.md` | Pump strategy, 18 anti-patterns, async patterns, resource cleanup |
 | `error-handling.md` | Error hierarchy, Sentry, retry/backoff, user-facing messages, logging |
 | `new-feature-checklist.md` | Full-stack entity addition, non-entity features, shared widgets |
-| `git-rules.md` | Conventional commits, branch naming, PR workflow (develop-first) |
-| `branch-workflow.md` | develop/main branch strategy, merge policy, hotfix exception |
+| `git-rules.md` | Conventional commits, branch naming, PR workflow (main-first) |
+| `branch-workflow.md` | Main-only branch strategy, merge policy, hotfix exception |
 | `ai-workflow.md` | Quality gates (canonical), task approach, prohibited actions, investigation |
 | `chat.md` | Response language (Turkish), debugging approach, code review feedback |
 | `ci-actions.md` | GitHub Actions design, Dependabot, billing failures, deployment safety |
@@ -272,7 +272,7 @@ See `new-feature-checklist.md` for detailed steps.
 ```bash
 flutter analyze --no-fatal-infos          # Static analysis
 flutter test test/path/to/file_test.dart  # Run specific test
-dart run build_runner build --delete-conflicting-outputs  # Regenerate if .g.dart stale
+dart run build_runner build  # Regenerate if .g.dart stale
 ```
 - Drift query timing: `Stopwatch()..start()` + `AppLogger.debug('perf', 'query: ${sw.elapsed}')`
 - Debug route: `--dart-define=DEBUG_START_ROUTE=/birds` to skip splash
@@ -310,10 +310,12 @@ Services:      lib/domain/services/
 Router:        lib/router/ (+ guards/)
 Theme:         lib/core/theme/
 Shared UI:     lib/core/widgets/ (buttons/, cards/, dialogs/, bottom_sheet/)
+Shared facade: lib/shared/ (curated re-export surface only)
 Icons:         lib/core/constants/app_icons.dart
 SVG Assets:    assets/icons/ (10 subdirs)
 Translations:  assets/translations/ (tr.json, en.json, de.json)
 Security:      lib/core/security/
+Test Support:  lib/test_support/ (import from test/ only)
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
