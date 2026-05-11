@@ -36,6 +36,7 @@ Chick _createTestChick({
   required String id,
   String name = 'Baby',
   String userId = 'test-user',
+  String? eggId,
 }) {
   return Chick(
     id: id,
@@ -43,6 +44,7 @@ Chick _createTestChick({
     gender: BirdGender.unknown,
     healthStatus: ChickHealthStatus.healthy,
     name: name,
+    eggId: eggId,
     createdAt: DateTime(2024, 1, 1),
     updatedAt: DateTime(2024, 1, 1),
   );
@@ -81,7 +83,10 @@ void main() {
       );
     });
 
-    Widget createSubject({required Stream<List<Chick>> chicksStream}) {
+    Widget createSubject({
+      required Stream<List<Chick>> chicksStream,
+      ChickParentsInfo? fallbackParents,
+    }) {
       return ProviderScope(
         overrides: [
           currentUserIdProvider.overrideWithValue('test-user'),
@@ -92,6 +97,7 @@ void main() {
           ).overrideWith((_) => Stream.value([])),
           chicksStreamProvider('test-user').overrideWith((_) => chicksStream),
           chickParentsByEggProvider('test-user').overrideWith((_) async => {}),
+          chickParentsProvider.overrideWith((_, _) async => fallbackParents),
           adServiceProvider.overrideWithValue(_FakeAdService()),
           isPremiumProvider.overrideWithValue(true),
         ],
@@ -134,6 +140,31 @@ void main() {
       expect(find.byType(ChickCard), findsNWidgets(2));
     });
 
+    testWidgets(
+      'falls back to per-card parent lookup when batch map is empty',
+      (tester) async {
+        final chick = _createTestChick(id: 'c1', name: 'Baby', eggId: 'egg-1');
+
+        await tester.pumpWidget(
+          createSubject(
+            chicksStream: Stream.value([chick]),
+            fallbackParents: (
+              maleName: 'Test Erkek 1',
+              femaleName: 'Test Dişi 1',
+              maleId: 'male-1',
+              femaleId: 'female-1',
+              cageNumber: '1',
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.textContaining('1'), findsWidgets);
+        expect(find.text('Test Erkek 1'), findsOneWidget);
+        expect(find.text('Test Dişi 1'), findsOneWidget);
+      },
+    );
+
     testWidgets('shows error state on stream error', (tester) async {
       await tester.pumpWidget(
         createSubject(chicksStream: Stream.error('Network error')),
@@ -165,10 +196,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(
-        find.byIcon(LucideIcons.arrowUpDown),
-        findsOneWidget,
-      );
+      expect(find.byIcon(LucideIcons.arrowUpDown), findsOneWidget);
     });
 
     testWidgets('shows back button and navigates to more', (tester) async {

@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
+import 'package:budgie_breeding_tracker/data/models/clutch_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
@@ -45,6 +46,7 @@ void main() {
   late MockEggRepository eggRepo;
   late MockIncubationRepository incubationRepo;
   late MockBreedingPairRepository breedingPairRepo;
+  late MockClutchRepository clutchRepo;
 
   ProviderContainer makeContainer() {
     return ProviderContainer(
@@ -54,6 +56,7 @@ void main() {
         eggRepositoryProvider.overrideWithValue(eggRepo),
         incubationRepositoryProvider.overrideWithValue(incubationRepo),
         breedingPairRepositoryProvider.overrideWithValue(breedingPairRepo),
+        clutchRepositoryProvider.overrideWithValue(clutchRepo),
       ],
     );
   }
@@ -75,6 +78,7 @@ void main() {
     eggRepo = MockEggRepository();
     incubationRepo = MockIncubationRepository();
     breedingPairRepo = MockBreedingPairRepository();
+    clutchRepo = MockClutchRepository();
     registerFallbackValue(
       const Bird(
         id: 'fallback',
@@ -170,6 +174,74 @@ void main() {
       final result = container.read(searchedAndFilteredChicksProvider(chicks));
       expect(result.single.id, 'c2');
     });
+  });
+
+  group('chick parent providers', () {
+    test(
+      'batched lookup resolves parents and cage through clutch fallback',
+      () async {
+        when(() => eggRepo.getAll('user-1')).thenAnswer(
+          (_) async => [
+            Egg(
+              id: 'egg-1',
+              userId: 'user-1',
+              clutchId: 'clutch-1',
+              layDate: DateTime(2024, 1),
+            ),
+          ],
+        );
+        when(() => incubationRepo.getAll('user-1')).thenAnswer((_) async => []);
+        when(() => clutchRepo.getAll('user-1')).thenAnswer(
+          (_) async => const [
+            Clutch(
+              id: 'clutch-1',
+              userId: 'user-1',
+              breedingId: 'pair-1',
+              maleBirdId: 'male-1',
+              femaleBirdId: 'female-1',
+            ),
+          ],
+        );
+        when(() => breedingPairRepo.getAll('user-1')).thenAnswer(
+          (_) async => const [
+            BreedingPair(
+              id: 'pair-1',
+              userId: 'user-1',
+              maleId: 'male-1',
+              femaleId: 'female-1',
+              cageNumber: 'A-17',
+            ),
+          ],
+        );
+        when(() => birdRepo.getAll('user-1')).thenAnswer(
+          (_) async => const [
+            Bird(
+              id: 'male-1',
+              name: 'Mavi',
+              gender: BirdGender.male,
+              userId: 'user-1',
+            ),
+            Bird(
+              id: 'female-1',
+              name: 'Sarı',
+              gender: BirdGender.female,
+              userId: 'user-1',
+            ),
+          ],
+        );
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+
+        final result = await container.read(
+          chickParentsByEggProvider('user-1').future,
+        );
+
+        expect(result['egg-1']?.maleName, 'Mavi');
+        expect(result['egg-1']?.femaleName, 'Sarı');
+        expect(result['egg-1']?.cageNumber, 'A-17');
+      },
+    );
   });
 
   group('chick form actions', () {

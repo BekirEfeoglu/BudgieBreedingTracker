@@ -1,12 +1,23 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
+import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
+import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_card.dart';
+
+import '../../../helpers/mocks.dart';
+import '../../../helpers/test_localization.dart';
 
 /// Pumps ChickCard inside a ProviderScope with the given provider overrides.
 /// Always overrides chickParentsProvider to return null unless a specific
@@ -15,6 +26,7 @@ Future<void> _pumpChickCard(
   WidgetTester tester,
   Widget child, {
   List<dynamic> overrides = const [],
+  double? width,
 }) async {
   // Include the base chickParentsProvider override only when no specific
   // override for it is provided.
@@ -22,13 +34,29 @@ Future<void> _pumpChickCard(
       ? [chickParentsProvider.overrideWith((ref, eggId) => Future.value(null))]
       : overrides;
 
-  await tester.pumpWidget(
+  await pumpTranslatedApp(
+    tester,
     ProviderScope(
       overrides: allOverrides.cast(),
-      child: MaterialApp(home: Scaffold(body: child)),
+      child: Builder(
+        builder: (context) => MaterialApp(
+          locale: context.locale,
+          supportedLocales: context.supportedLocales,
+          localizationsDelegates: context.localizationDelegates,
+          home: Scaffold(
+            body: width == null ? child : SizedBox(width: width, child: child),
+          ),
+        ),
+      ),
     ),
+    settle: false,
   );
-  await tester.pump();
+}
+
+bool _textExceededMaxLines(WidgetTester tester, String text) {
+  return tester
+      .renderObject<RenderParagraph>(find.text(text))
+      .didExceedMaxLines;
 }
 
 void main() {
@@ -114,6 +142,7 @@ void main() {
               femaleName: 'Sarı',
               maleId: 'male-1',
               femaleId: 'female-1',
+              cageNumber: null,
             )),
           ),
         ],
@@ -121,6 +150,107 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(Card), findsOneWidget);
+    });
+
+    testWidgets('shows cage number from the breeding pair source', (
+      tester,
+    ) async {
+      final eggRepo = MockEggRepository();
+      final incubationRepo = MockIncubationRepository();
+      final breedingPairRepo = MockBreedingPairRepository();
+      final birdRepo = MockBirdRepository();
+      final chickWithEgg = Chick(
+        id: 'chick-7',
+        userId: 'user-1',
+        name: 'Yavru',
+        hatchDate: DateTime(2024, 1, 10),
+        eggId: 'egg-1',
+      );
+
+      when(() => eggRepo.getById('egg-1')).thenAnswer(
+        (_) async => Egg(
+          id: 'egg-1',
+          userId: 'user-1',
+          incubationId: 'inc-1',
+          layDate: DateTime(2024, 1, 1),
+        ),
+      );
+      when(() => incubationRepo.getById('inc-1')).thenAnswer(
+        (_) async => const Incubation(
+          id: 'inc-1',
+          userId: 'user-1',
+          species: Species.budgie,
+          breedingPairId: 'pair-1',
+        ),
+      );
+      when(() => breedingPairRepo.getById('pair-1')).thenAnswer(
+        (_) async => const BreedingPair(
+          id: 'pair-1',
+          userId: 'user-1',
+          maleId: 'male-1',
+          femaleId: 'female-1',
+          cageNumber: 'A-17',
+        ),
+      );
+      when(() => birdRepo.getById('male-1')).thenAnswer(
+        (_) async => const Bird(
+          id: 'male-1',
+          name: 'Mavi',
+          gender: BirdGender.male,
+          userId: 'user-1',
+        ),
+      );
+      when(() => birdRepo.getById('female-1')).thenAnswer(
+        (_) async => const Bird(
+          id: 'female-1',
+          name: 'Sarı',
+          gender: BirdGender.female,
+          userId: 'user-1',
+        ),
+      );
+
+      await _pumpChickCard(
+        tester,
+        ChickCard(chick: chickWithEgg),
+        overrides: [
+          eggRepositoryProvider.overrideWithValue(eggRepo),
+          incubationRepositoryProvider.overrideWithValue(incubationRepo),
+          breedingPairRepositoryProvider.overrideWithValue(breedingPairRepo),
+          birdRepositoryProvider.overrideWithValue(birdRepo),
+        ],
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('A-17'), findsOneWidget);
+    });
+
+    testWidgets('keeps parent names readable on narrow cards', (tester) async {
+      final chickWithParents = Chick(
+        id: 'chick-8',
+        userId: 'user-1',
+        name: 'Yavru',
+        hatchDate: DateTime(2024, 1, 10),
+        eggId: 'egg-1',
+      );
+
+      await _pumpChickCard(
+        tester,
+        ChickCard(
+          chick: chickWithParents,
+          parents: (
+            maleName: 'Test Erkek 1',
+            femaleName: 'Test Dişi 1',
+            maleId: 'male-1',
+            femaleId: 'female-1',
+            cageNumber: '1',
+          ),
+        ),
+        width: 390,
+      );
+      await tester.pumpAndSettle();
+
+      expect(_textExceededMaxLines(tester, 'Test Erkek 1'), isFalse);
+      expect(_textExceededMaxLines(tester, 'Test Dişi 1'), isFalse);
     });
 
     testWidgets('chick without eggId shows card without parent info', (

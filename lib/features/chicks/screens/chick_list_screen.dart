@@ -382,7 +382,7 @@ class _SelectableChickCard extends StatelessWidget {
             Expanded(
               child: ChickCard(
                 chick: chick,
-                resolveParents: false,
+                resolveParents: parents == null && chick.eggId != null,
                 parents: parents,
                 onTap: onTap,
               ),

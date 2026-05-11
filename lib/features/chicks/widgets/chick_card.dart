@@ -122,40 +122,53 @@ class ChickCard extends ConsumerWidget {
                             parents.maleName ?? 'chicks.unknown_gender'.tr();
                         final femaleName =
                             parents.femaleName ?? 'chicks.unknown_gender'.tr();
+                        final cageNumber = parents.cageNumber;
                         return Padding(
                           padding: const EdgeInsets.only(top: 2),
-                          child: Row(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const AppIcon(
-                                AppIcons.male,
-                                size: 14,
-                                color: AppColors.genderMale,
-                              ),
-                              const SizedBox(width: 2),
-                              Flexible(
-                                child: Text(
-                                  maleName,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: AppColors.genderMale,
-                                  ),
+                              if (cageNumber != null &&
+                                  cageNumber.isNotEmpty) ...[
+                                Text(
+                                  '${'breeding.cage_label'.tr()}: $cageNumber',
+                                  maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              const SizedBox(width: AppSpacing.xs),
-                              const AppIcon(
-                                AppIcons.female,
-                                size: 14,
-                                color: AppColors.genderFemale,
-                              ),
-                              const SizedBox(width: 2),
-                              Flexible(
-                                child: Text(
-                                  femaleName,
                                   style: theme.textTheme.bodySmall?.copyWith(
-                                    color: AppColors.genderFemale,
+                                    color: theme.colorScheme.onSurfaceVariant,
                                   ),
-                                  overflow: TextOverflow.ellipsis,
                                 ),
+                                const SizedBox(height: 2),
+                              ],
+                              LayoutBuilder(
+                                builder: (context, constraints) {
+                                  return Wrap(
+                                    spacing: AppSpacing.sm,
+                                    runSpacing: 2,
+                                    children: [
+                                      _ParentNameLabel(
+                                        icon: const AppIcon(
+                                          AppIcons.male,
+                                          size: 14,
+                                          color: AppColors.genderMale,
+                                        ),
+                                        label: maleName,
+                                        color: AppColors.genderMale,
+                                        maxWidth: constraints.maxWidth,
+                                      ),
+                                      _ParentNameLabel(
+                                        icon: const AppIcon(
+                                          AppIcons.female,
+                                          size: 14,
+                                          color: AppColors.genderFemale,
+                                        ),
+                                        label: femaleName,
+                                        color: AppColors.genderFemale,
+                                        maxWidth: constraints.maxWidth,
+                                      ),
+                                    ],
+                                  );
+                                },
                               ),
                             ],
                           ),
@@ -163,14 +176,58 @@ class ChickCard extends ConsumerWidget {
                       },
                     ),
                     const SizedBox(height: AppSpacing.xs),
-                    ChickHealthBadge(status: chick.healthStatus),
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.xs,
+                      children: [
+                        ChickHealthBadge(status: chick.healthStatus),
+                        DevelopmentStageBadge(stage: stage),
+                      ],
+                    ),
                   ],
                 ),
               ),
-              DevelopmentStageBadge(stage: stage),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ParentNameLabel extends StatelessWidget {
+  final Widget icon;
+  final String label;
+  final Color color;
+  final double maxWidth;
+
+  const _ParentNameLabel({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.maxWidth,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: maxWidth),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          icon,
+          const SizedBox(width: 2),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: color),
+            ),
+          ),
+        ],
       ),
     );
   }

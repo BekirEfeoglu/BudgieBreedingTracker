@@ -174,6 +174,7 @@ void main() {
         femaleName: 'Sarı',
         maleId: 'male-1',
         femaleId: 'female-1',
+        cageNumber: null,
       );
 
       await _pumpChickDetailInfo(tester, chick, parentsInfo: parents);
@@ -191,6 +192,7 @@ void main() {
         femaleName: null,
         maleId: 'male-1',
         femaleId: 'female-1',
+        cageNumber: null,
       );
 
       await _pumpChickDetailInfo(tester, chick, parentsInfo: parents);
