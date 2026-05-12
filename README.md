@@ -316,6 +316,7 @@ Contributions should follow the repository conventions for architecture, localiz
 - Security policy: [`SECURITY.md`](SECURITY.md)
 - Privacy policy: [`docs/privacy-policy.html`](docs/privacy-policy.html)
 - Terms of use: [`docs/terms-of-use.html`](docs/terms-of-use.html)
+- Accessibility statement: [`docs/accessibility.html`](docs/accessibility.html)
 - Community guidelines: [`docs/community-guidelines.html`](docs/community-guidelines.html)
 
 ## License
