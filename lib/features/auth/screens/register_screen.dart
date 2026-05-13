@@ -15,6 +15,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
 import '../../../router/route_names.dart';
 import '../providers/auth_providers.dart';
+import '../providers/native_google_auth_errors.dart';
 import 'budgie_login_screen.dart' show LoginState;
 import '../widgets/budgie_branch_scene.dart';
 import '../widgets/budgie_login_background.dart';
@@ -182,9 +183,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
         return;
       }
       if (provider == OAuthProvider.google) {
-        await auth.signInWithGoogle();
-        if (!mounted) return;
-        return;
+        try {
+          await auth.signInWithGoogle();
+          if (!mounted) return;
+          return;
+        } on AuthException catch (e) {
+          if (e.message == 'Canceled') rethrow;
+          if (shouldFallbackToBrowserGoogleOAuth(e)) {
+            AppLogger.warning(
+              '[Register] Native Google sign-in unavailable, trying browser: ${e.message}',
+            );
+          } else {
+            rethrow;
+          }
+        }
       }
 
       final launched = await auth.signInWithOAuth(provider);

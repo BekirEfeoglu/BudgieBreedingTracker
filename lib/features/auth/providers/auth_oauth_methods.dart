@@ -17,7 +17,9 @@ mixin _AuthOAuthMixin {
       final launched = await _client.auth.signInWithOAuth(
         provider,
         redirectTo: AuthActions._oAuthRedirectTo,
-        authScreenLaunchMode: AuthActions.oAuthLaunchMode,
+        authScreenLaunchMode: resolveOAuthLaunchMode(
+          isAndroid: Platform.isAndroid,
+        ),
       );
       if (!launched && isIos) {
         await _resumeIosWindowReclaim();
@@ -37,9 +39,16 @@ mixin _AuthOAuthMixin {
       final webClientId = AppConstants.googleWebClientId;
       final iosClientId = AppConstants.googleIosClientId;
 
+      if (!shouldUseNativeGoogleSignIn(isAndroid: Platform.isAndroid)) {
+        throw const AuthException(
+          nativeGoogleSignInFailedMessage,
+          statusCode: '400',
+        );
+      }
+
       if (webClientId.isEmpty && iosClientId.isEmpty) {
         throw const AuthException(
-          'Google sign-in not configured',
+          nativeGoogleSignInNotConfiguredMessage,
           statusCode: '400',
         );
       }
@@ -72,19 +81,14 @@ mixin _AuthOAuthMixin {
       final idToken = googleAuth.idToken;
 
       if (idToken == null) {
-        throw const AuthException('No ID Token found for Google Sign In.');
+        throw const AuthException(nativeGoogleNoIdTokenMessage);
       }
 
-      // In google_sign_in 7.0+, you obtain access tokens via authorizationClient if needed.
-      // Supabase signInWithIdToken only strongly requires idToken for Google.
-      String? accessToken;
-      try {
-        final authz = await googleUser.authorizationClient
-            .authorizationForScopes([]);
-        accessToken = authz?.accessToken;
-      } catch (_) {
-        // ignore authorization fetch error
-      }
+      const scopes = ['email', 'profile'];
+      final authorization =
+          await googleUser.authorizationClient.authorizationForScopes(scopes) ??
+          await googleUser.authorizationClient.authorizeScopes(scopes);
+      final accessToken = authorization.accessToken;
 
       return _client.auth.signInWithIdToken(
         provider: OAuthProvider.google,
@@ -92,17 +96,48 @@ mixin _AuthOAuthMixin {
         accessToken: accessToken,
         nonce: rawNonce,
       );
-    } catch (e) {
+    } catch (e, st) {
       if (e is AuthException) rethrow;
       if (e is GoogleSignInException &&
           e.code == GoogleSignInExceptionCode.canceled) {
+        if (shouldTreatNativeGoogleCancelAsUnavailable(
+          isAndroid: Platform.isAndroid,
+          description: e.description,
+          details: e.details,
+        )) {
+          AppLogger.warning(
+            '[AuthActions] Android Google sign-in returned cancellation; '
+            'falling back to browser OAuth: ${e.description ?? e.code}',
+          );
+          throw const AuthException(
+            nativeGoogleSignInFailedMessage,
+            statusCode: '400',
+          );
+        }
         throw const AuthException('Canceled');
       }
       if (e is PlatformException && e.code == 'sign_in_canceled') {
+        if (shouldTreatNativeGoogleCancelAsUnavailable(
+          isAndroid: Platform.isAndroid,
+          description: e.message,
+          details: e.details,
+        )) {
+          AppLogger.warning(
+            '[AuthActions] Android Google sign-in platform cancellation; '
+            'falling back to browser OAuth: ${e.message ?? e.code}',
+          );
+          throw const AuthException(
+            nativeGoogleSignInFailedMessage,
+            statusCode: '400',
+          );
+        }
         throw const AuthException('Canceled');
       }
-      AppLogger.error('[AuthActions] Google sign-in failed: $e');
-      throw const AuthException('Google sign-in failed', statusCode: '400');
+      AppLogger.error('[AuthActions] Google sign-in failed: $e', e, st);
+      throw const AuthException(
+        nativeGoogleSignInFailedMessage,
+        statusCode: '400',
+      );
     }
   }
 

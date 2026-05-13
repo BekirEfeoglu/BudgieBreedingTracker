@@ -3,6 +3,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/features/auth/providers/native_google_auth_errors.dart';
 
 import '../../../helpers/mocks.dart';
 
@@ -228,8 +229,15 @@ void main() {
   });
 
   group('_AuthOAuthMixin.signInWithOAuth', () {
-    test('uses an in-app browser view for OAuth', () {
-      expect(AuthActions.oAuthLaunchMode, LaunchMode.inAppBrowserView);
+    test('uses Android external browser and non-Android in-app browser', () {
+      expect(
+        resolveOAuthLaunchMode(isAndroid: true),
+        LaunchMode.externalApplication,
+      );
+      expect(
+        resolveOAuthLaunchMode(isAndroid: false),
+        AuthActions.oAuthLaunchMode,
+      );
     });
   });
 }

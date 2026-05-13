@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/screens/register_screen.dart';
+import 'package:budgie_breeding_tracker/features/auth/widgets/social_login_buttons.dart';
 
 import '../../../helpers/e2e_test_harness.dart';
 
@@ -55,6 +56,7 @@ void main() {
       overrides: [
         authActionsProvider.overrideWithValue(mockAuth),
         twoFactorServiceProvider.overrideWithValue(mockTwoFactor),
+        supabaseInitializedProvider.overrideWithValue(true),
       ],
       child: MaterialApp.router(routerConfig: router),
     );
@@ -93,6 +95,30 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text(l10n('auth.sign_in_with_google')), findsOneWidget);
+    });
+
+    testWidgets('falls back to browser OAuth when native Google errors', (
+      tester,
+    ) async {
+      when(() => mockAuth.signInWithGoogle()).thenThrow(
+        const AuthException('Google sign-in failed', statusCode: '400'),
+      );
+
+      await tester.pumpWidget(createSubject());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final buttons = tester.widget<SocialLoginButtons>(
+        find.byType(SocialLoginButtons),
+      );
+      buttons.onGoogleTap();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      verify(() => mockAuth.signInWithGoogle()).called(1);
+      verify(() => mockAuth.signInWithOAuth(OAuthProvider.google)).called(1);
+
+      await tester.pump(const Duration(seconds: 31));
+      await tester.pump(const Duration(milliseconds: 500));
     });
 
     testWidgets('shows already_have_account text', (tester) async {

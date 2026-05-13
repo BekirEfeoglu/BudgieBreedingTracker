@@ -273,6 +273,30 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     });
 
+    testWidgets('falls back to browser OAuth when native Google errors', (
+      tester,
+    ) async {
+      when(() => mockAuth.signInWithGoogle()).thenThrow(
+        const AuthException('Google sign-in failed', statusCode: '400'),
+      );
+
+      await tester.pumpWidget(buildSubject());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final googleBtn = find.byType(OutlinedButton);
+      await tester.ensureVisible(googleBtn);
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.tap(googleBtn);
+      await tester.pump(const Duration(milliseconds: 500));
+
+      verify(() => mockAuth.signInWithGoogle()).called(1);
+      verify(() => mockAuth.signInWithOAuth(OAuthProvider.google)).called(1);
+
+      await tester.pump(const Duration(seconds: 31));
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pump(const Duration(milliseconds: 500));
+    });
+
     testWidgets('Google OAuth cancel resets to idle', (tester) async {
       when(
         () => mockAuth.signInWithGoogle(),
@@ -295,12 +319,14 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     });
 
-    testWidgets('MFA check failure resets login state and shows error',
-        (tester) async {
+    testWidgets('MFA check failure resets login state and shows error', (
+      tester,
+    ) async {
       // 2FA check throws → PostLoginMfaChecker signs out and returns
       // MfaCheckFailed. The screen should reset to idle and show error.
-      when(() => mockTwoFactor.needsVerification())
-          .thenThrow(Exception('MFA service unavailable'));
+      when(
+        () => mockTwoFactor.needsVerification(),
+      ).thenThrow(Exception('MFA service unavailable'));
       when(() => mockAuth.signOut()).thenAnswer((_) async {});
 
       await tester.pumpWidget(buildSubject());
@@ -332,16 +358,18 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
 
-    testWidgets('MFA failure with slow signOut does not crash after dispose',
-        (tester) async {
+    testWidgets('MFA failure with slow signOut does not crash after dispose', (
+      tester,
+    ) async {
       // signOut takes a long time — widget may dispose before it completes.
       // The mounted check added after signOut should prevent setState on a
       // disposed widget.
-      when(() => mockTwoFactor.needsVerification())
-          .thenThrow(Exception('MFA service unavailable'));
-      when(() => mockAuth.signOut()).thenAnswer(
-        (_) => Future.delayed(const Duration(seconds: 5)),
-      );
+      when(
+        () => mockTwoFactor.needsVerification(),
+      ).thenThrow(Exception('MFA service unavailable'));
+      when(
+        () => mockAuth.signOut(),
+      ).thenAnswer((_) => Future.delayed(const Duration(seconds: 5)));
 
       await tester.pumpWidget(buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
