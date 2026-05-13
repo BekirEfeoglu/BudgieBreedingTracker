@@ -25,7 +25,10 @@ If generation gets stuck: `dart run build_runner clean` first.
 
 ## Clean Development Loop
 - Begin with `git status --short --branch`; never overwrite unrelated local changes.
+- When the worktree is dirty, build a quick dirty-state ledger from `git diff --name-status` and `git status --short`: classify each path as task-owned, pre-existing/user, generated/dependency, or rule/doc before editing.
 - Keep the working set reviewable: separate feature code, rule/documentation updates, generated code, and release workflow changes unless they must ship together.
+- Do not stage, stash, revert, format, regenerate, or rewrite unrelated dirty buckets without explicit user request. "Toparla" means make the state reviewable and documented, not silently discard or hide changes.
+- If the current task intentionally crosses buckets, record the coupling in the handoff and run the smallest checks that prove each touched bucket.
 - Prefer one root-cause fix per commit. If a second issue appears, gather evidence and decide whether it needs a separate commit.
 - Do not call work complete from local success alone when the task touched CI, release, signing, or branch state.
 - For pushed fixes, verify the exact commit SHA, not the branch name alone.
@@ -65,6 +68,7 @@ If generation gets stuck: `dart run build_runner clean` first.
 ## Handoff Evidence
 Before reporting completion, capture:
 - `git status --short --branch`
+- dirty-state ledger by bucket when the worktree is not clean
 - relevant local verification command outputs
 - pushed commit SHA when a push was requested
 - GitHub status/check-run summary for the pushed commit when CI is part of the task

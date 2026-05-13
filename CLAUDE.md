@@ -74,8 +74,8 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 958 Dart files |
-| Test files (test/) | 885 test files, 10,869+ individual tests |
+| Source files (lib/) | 959 Dart files |
+| Test files (test/) | 886 test files, 10,880+ individual tests |
 | Feature modules | 25 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -171,7 +171,7 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 | `validate-free-tier-limit` | Free tier entity limit enforcement |
 
 ### Migrations
-155 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
+156 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
 
 ## Rules
 
@@ -282,6 +282,13 @@ dart run build_runner build  # Regenerate if .g.dart stale
 scripts/run_local_quality_gate.sh
 ```
 
+### Dirty worktree organization
+1. Start every task with `git status --short --branch`.
+2. If dirty, classify files into: task-owned, pre-existing/user, generated/dependency, and rule/doc.
+3. Keep buckets separate. Do not use `git add .`, stash, revert, format, regenerate, or rewrite unrelated buckets unless explicitly requested.
+4. If a task intentionally touches multiple buckets, document why they must ship together.
+5. Handoff must include branch/commit, dirty-state summary by bucket, commands run, and skipped checks.
+
 ### Post-push status check
 ```bash
 python3 scripts/check_remote_status.py
@@ -319,7 +326,7 @@ Test Support:  lib/test_support/ (import from test/ only)
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
-Migrations:    supabase/migrations/ (155 files)
+Migrations:    supabase/migrations/ (156 files)
 Scripts:       scripts/
 CI:            .github/workflows/ + codemagic.yaml + ios/ci_scripts/
 ```

@@ -16,6 +16,7 @@ Stack: Flutter/Dart, Riverpod 3, GoRouter 17, Drift, Supabase, Freezed, easy_loc
 ## Development Hygiene
 
 - Start work by checking `git status --short --branch`; identify user changes before editing.
+- If the worktree is dirty, classify changes before editing: task-owned, pre-existing/user, generated/dependency, and rule/doc. Keep buckets separate and do not stage, stash, revert, format, regenerate, or rewrite unrelated buckets without explicit request.
 - Keep each change focused on the requested behavior. Do not mix cleanup, rule updates, generated files, and feature logic unless the rulebook explicitly requires them together.
 - Before claiming a fix, run the smallest command that proves the changed behavior and read the output.
 - After pushing to `main`, verify the exact pushed commit with `python3 scripts/check_remote_status.py`; stale runs from previous commits do not count.

@@ -48,6 +48,13 @@ chore/short-description
 - Agent-created branches use `codex/<short-description>` unless the user asks for another prefix
 - Keep branch names short and descriptive
 
+## Working Tree Organization
+- Before staging or committing, inspect `git status --short --branch` and classify dirty files as task-owned, pre-existing/user, generated/dependency, or rule/doc.
+- Stage by explicit path or pathspec for one coherent bucket. Do not use `git add .` in a dirty mixed worktree.
+- Do not stash, revert, reset, or checkout unrelated changes unless the user explicitly asks for that operation.
+- Keep feature logic, tests, generated files, dependency lockfiles, CI/release changes, and rule/doc updates in separate commits unless a rulebook entry requires them to ship together.
+- Commit messages must describe the staged bucket. If multiple buckets are intentionally staged together, explain the coupling in the commit body or PR summary.
+
 ## PR Workflow
 1. Branch from current `main`
 2. Implement with conventional commits
