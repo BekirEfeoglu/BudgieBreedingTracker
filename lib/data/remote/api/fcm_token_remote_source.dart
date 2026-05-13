@@ -25,14 +25,15 @@ class FcmTokenRemoteSource {
         );
       }
 
-      await _client.from(SupabaseConstants.fcmTokensTable).upsert({
-        'user_id': userId,
-        'token': token,
-        'platform': platform,
-        'device_id': deviceId,
-        'is_active': true,
-        'last_used_at': DateTime.now().toIso8601String(),
-      }, onConflict: 'token');
+      await _client.rpc(
+        'claim_fcm_token',
+        params: {
+          'p_user_id': userId,
+          'p_token': token,
+          'p_platform': platform,
+          'p_device_id': deviceId,
+        },
+      );
     } catch (e, st) {
       AppLogger.error('[FcmTokenRemoteSource] upsertToken failed', e, st);
       if (e is NetworkException) rethrow;
