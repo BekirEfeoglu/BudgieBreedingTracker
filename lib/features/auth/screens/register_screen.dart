@@ -43,6 +43,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
   late final AnimationController _wingFlapCtrl;
   late final AnimationController _hopCtrl;
   Timer? _blinkTimer;
+  Timer? _blinkResetTimer;
   Timer? _oAuthTimeoutTimer;
   bool _isBlinking = false;
 
@@ -74,6 +75,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
     _wingFlapCtrl.dispose();
     _hopCtrl.dispose();
     _blinkTimer?.cancel();
+    _blinkResetTimer?.cancel();
     _oAuthTimeoutTimer?.cancel();
     super.dispose();
   }
@@ -84,7 +86,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
       _blinkTimer = Timer(Duration(milliseconds: delay), () {
         if (!mounted) return;
         setState(() => _isBlinking = true);
-        Future.delayed(const Duration(milliseconds: 200), () {
+        _blinkResetTimer?.cancel();
+        _blinkResetTimer = Timer(const Duration(milliseconds: 200), () {
           if (mounted) setState(() => _isBlinking = false);
           if (mounted) scheduleBlink();
         });
