@@ -285,9 +285,12 @@ scripts/run_local_quality_gate.sh
 ### Dirty worktree organization
 1. Start every task with `git status --short --branch`.
 2. If dirty, classify files into: task-owned, pre-existing/user, generated/dependency, and rule/doc.
-3. Keep buckets separate. Do not use `git add .`, stash, revert, format, regenerate, or rewrite unrelated buckets unless explicitly requested.
-4. If a task intentionally touches multiple buckets, document why they must ship together.
-5. Handoff must include branch/commit, dirty-state summary by bucket, commands run, and skipped checks.
+3. Re-run `git status --short --branch` after any mutating command: code generation, Flutter/Xcode/CocoaPods builds, formatting, quality gates, git hooks, or scripts that can rewrite project files.
+4. Keep buckets separate. Do not use `git add .`, stash, revert, format, regenerate, or rewrite unrelated buckets unless explicitly requested.
+5. Before commit or push, inspect both `git diff --name-status` and `git diff --cached --name-status`; stage explicit paths for one coherent bucket only.
+6. A requested push or completion handoff must not leave task-owned changes in the working tree. If unrelated pre-existing/user changes must be moved aside for a clean tree, preserve them with a descriptive stash or separate branch and report the exact ref.
+7. If a task intentionally touches multiple buckets, document why they must ship together.
+8. Handoff must include branch/commit, dirty-state summary by bucket, commands run, and skipped checks.
 
 ### Post-push status check
 ```bash

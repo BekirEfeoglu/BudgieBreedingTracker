@@ -14,11 +14,13 @@
 
 ## Merge / Push Policy
 - `main`e merge/push oncesi kalite kapilari gecmeli (bkz. ai-workflow.md § Quality Gates)
+- `main`e push oncesi `git diff --name-status` task-owned kirli dosya gostermemeli; final commit sonrasi `git diff --cached --name-status` bos olmali
 - Gerekli kod jenerasyonu varsa merge oncesi calistirilir:
   ```bash
   dart run build_runner build
   ```
 - `main`e push yapildiginda exact commit SHA icin tum status/check-run'lar tamamlanmadan branch temiz kabul edilmez
+- Push/handoff sonrasi local `git status --short --branch` tekrar okunmali; clean-tree isteniyorsa unrelated pre-existing/user degisiklikleri isimli stash veya ayri branch ile korunup ref'i raporlanmali
 - Branch protection bypass edilirse bu bir istisnadir; push sonrasi remote dogrulama zorunlulugu ortadan kalkmaz
 
 ## GitHub Workflow

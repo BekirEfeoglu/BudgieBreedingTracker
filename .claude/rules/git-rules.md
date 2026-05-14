@@ -50,8 +50,11 @@ chore/short-description
 
 ## Working Tree Organization
 - Before staging or committing, inspect `git status --short --branch` and classify dirty files as task-owned, pre-existing/user, generated/dependency, or rule/doc.
+- Re-check `git status --short --branch` after commands that may mutate files, including code generation, Flutter/Xcode/CocoaPods builds, formatters, quality gates, git hooks, and maintenance scripts.
 - Stage by explicit path or pathspec for one coherent bucket. Do not use `git add .` in a dirty mixed worktree.
 - Do not stash, revert, reset, or checkout unrelated changes unless the user explicitly asks for that operation.
+- Before push, verify `git diff --name-status` has no uncommitted task-owned files and `git diff --cached --name-status` is empty after the final commit.
+- If the user requests a clean tree, move unrelated pre-existing/user buckets to a descriptive stash or separate branch and report the exact ref; never drop them silently.
 - Keep feature logic, tests, generated files, dependency lockfiles, CI/release changes, and rule/doc updates in separate commits unless a rulebook entry requires them to ship together.
 - Commit messages must describe the staged bucket. If multiple buckets are intentionally staged together, explain the coupling in the commit body or PR summary.
 

@@ -17,6 +17,9 @@ Stack: Flutter/Dart, Riverpod 3, GoRouter 17, Drift, Supabase, Freezed, easy_loc
 
 - Start work by checking `git status --short --branch`; identify user changes before editing.
 - If the worktree is dirty, classify changes before editing: task-owned, pre-existing/user, generated/dependency, and rule/doc. Keep buckets separate and do not stage, stash, revert, format, regenerate, or rewrite unrelated buckets without explicit request.
+- Re-check `git status --short --branch` after any command that can mutate files, including code generation, Flutter/Xcode/CocoaPods builds, formatting, quality gates, and git hooks. Treat new files from those commands as a separate bucket before continuing.
+- Before every commit or push, inspect `git diff --name-status` and `git diff --cached --name-status`; stage only explicit task-owned paths. A requested push must not leave task-owned changes in the working tree.
+- If the user asks for a clean working tree and unrelated pre-existing/user changes remain, preserve them with a descriptive stash or separate branch and report the exact ref. Never drop or reset those changes silently.
 - Keep each change focused on the requested behavior. Do not mix cleanup, rule updates, generated files, and feature logic unless the rulebook explicitly requires them together.
 - Before claiming a fix, run the smallest command that proves the changed behavior and read the output.
 - After pushing to `main`, verify the exact pushed commit with `python3 scripts/check_remote_status.py`; stale runs from previous commits do not count.
