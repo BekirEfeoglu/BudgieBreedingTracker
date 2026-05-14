@@ -123,5 +123,30 @@ void main() {
 
       expect(container.read(chickFilterProvider), ChickFilter.deceased);
     });
+
+    testWidgets('renders a VerticalDivider between filter groups', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(4000, 600));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(_wrap(const ChickFilterBar()));
+      await tester.pump();
+
+      expect(find.byType(VerticalDivider), findsOneWidget);
+    });
+
+    testWidgets('does not use Wrap widget on any screen size', (
+      tester,
+    ) async {
+      // Small mobile size
+      await tester.binding.setSurfaceSize(const Size(375, 812));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(_wrap(const ChickFilterBar()));
+      await tester.pump();
+
+      expect(find.byType(Wrap), findsNothing);
+    });
   });
 }
