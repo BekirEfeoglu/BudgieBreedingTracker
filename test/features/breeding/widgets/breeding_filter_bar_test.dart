@@ -69,11 +69,24 @@ void main() {
       expect(currentFilter, BreedingFilter.all);
     });
 
-    testWidgets('lays out filters in a wrapping chip group', (tester) async {
+    testWidgets('does not use Wrap widget on any screen size', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(375, 812));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
       await _pump(tester);
 
-      expect(find.byType(BreedingFilterBar), findsOneWidget);
-      expect(find.byType(Wrap), findsOneWidget);
+      expect(find.byType(Wrap), findsNothing);
+    });
+
+    testWidgets('renders a VerticalDivider between filter groups', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(4000, 600));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await _pump(tester);
+
+      expect(find.byType(VerticalDivider), findsOneWidget);
     });
   });
 }
