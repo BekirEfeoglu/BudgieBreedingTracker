@@ -6,6 +6,42 @@
 - Session tokens stored in secure storage, never in SharedPreferences
 - Auth state managed via Riverpod provider, reactive across app
 
+### Secure Storage (`flutter_secure_storage`)
+```dart
+const _storage = FlutterSecureStorage(
+  aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock_this_device),
+);
+
+await _storage.write(key: 'refresh_token', value: token);
+final token = await _storage.read(key: 'refresh_token');
+await _storage.deleteAll();  // on logout
+```
+
+| Item | Storage |
+|------|---------|
+| Supabase session token | Secure storage (auto by SDK) |
+| Refresh token | Secure storage |
+| MFA recovery codes (kısa süre) | Secure storage |
+| User preferences (theme, language) | SharedPreferences (OK) |
+| FCM token | Supabase DB |
+
+### MFA UX Flow
+1. **Enroll**: Settings → Security → Enable 2FA
+2. Supabase TOTP secret üretir → QR code göster + manuel yedek kod
+3. Kullanıcı 6 haneli kod gir → `verify` → server activate
+4. **Recovery codes**: 8 kod üret, bir daha gösterilmez — kullanıcı kaydetmeli
+5. Login flow: email/password → MFA challenge → TOTP veya recovery code
+
+### Session Refresh
+- Supabase SDK otomatik refresh (expire'dan 5dk önce)
+- Refresh fail → `AuthException` → login redirect
+- Offline mod local session ile çalışır, online'da refresh
+- Concurrent refresh: SDK lock'lu
+
+### Certificate Pinning
+Şu an aktif **değil**. Eklenirse: pin rotation prosedürü ve emergency unpin path zorunlu. Aksi halde sertifika değişiminde tüm app kullanıcıları offline kalır.
+
 ## MFA Lockout Policy
 - Threshold: 5 failed TOTP attempts → lockout
 - Decay window: **7 days** of inactivity before `lockout_count` decrements

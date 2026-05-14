@@ -113,4 +113,55 @@ Exceptions: helper functions that return the container — disposal is caller's 
 
 Bu kural CLAUDE.md "Critical Anti-Patterns" numarali listesinde yer almaz (audit-flagged ek kural) ama artik CI'da `code-quality` job'inda warning olarak rapor edilir.
 
+## Golden Test Workflow
+Visual regression test'leri `test/golden/` altında, Linux baseline'a karşı karşılaştırılır.
+
+### CI vs Local
+- CI: golden test'ler `--exclude-tags golden` ile atlanır (Linux farkı dışında platform gürültüsü engeli)
+- Dedicated `golden-test` job Linux ortamda çalıştırır
+- Local: macOS development'ta golden snapshot **farklı** olur — sadece CI baseline kabul
+
+### Update Baselines
+```bash
+# Tek file
+flutter test --update-goldens test/golden/bird_card_test.dart
+
+# Tüm golden'lar (PR'da intentional değişiklik varsa)
+flutter test --tags golden --update-goldens
+```
+Update sonrası generated `.png` dosyalarını commit et. PR review'da reviewer pixel-diff'i kontrol edebilmeli.
+
+### Multi-Locale Golden
+3 dil için ayrı snapshot:
+```dart
+@Tags(['golden'])
+void main() {
+  for (final locale in ['tr', 'en', 'de']) {
+    testWidgets('BirdCard golden ($locale)', (tester) async {
+      await pumpWidgetWithLocale(tester, BirdCard(bird: _bird), locale);
+      await expectLater(
+        find.byType(BirdCard),
+        matchesGoldenFile('goldens/bird_card_$locale.png'),
+      );
+    });
+  }
+}
+```
+Almanca/Türkçe overflow bug'larını yakalayan tek pratik yol.
+
+### Dark Mode Golden
+Light + dark her ikisi de snapshot. Theme switch widget değişiyorsa golden ikiye katlanır.
+
+## Flaky Test Triage Checklist
+Test ara sıra başarısız oluyorsa:
+1. **Hard wait var mı?** `sleep`, `Future.delayed` — kaldır, `pump`/`pumpAndSettle` ile değiştir
+2. **Race condition?** Async operasyon sıralaması, request ID pattern eksik
+3. **Time-dependent?** `DateTime.now()` kullanan kod — fake clock veya fixed time inject
+4. **Shared state?** Static field, global provider — `setUp`/`tearDown` izolasyonu
+5. **Resource leak?** Controller/Stream dispose unutulmuş — `addTearDown`
+6. **Animation infinite?** `CircularProgressIndicator` ile `pumpAndSettle` → timeout
+7. **Platform-specific?** Test tag `@TestOn('linux')` ile pin'le veya path'i refactor
+
+Çözülemiyorsa: test'i `skip: 'flaky — see issue #X'` ile işaretle ve issue aç. **Asla silme** — sebep bulunmadan flaky test'i silmek production bug'ı saklar.
+
 > **Related**: testing.md (test patterns, mocking), providers.md (provider test setup), code-review.md (review checklist)

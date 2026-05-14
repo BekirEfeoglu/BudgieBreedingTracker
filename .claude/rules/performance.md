@@ -56,6 +56,38 @@ AppLogger.debug('perf', 'getAllBirds: ${sw.elapsed}');
 // Use Flutter DevTools Performance overlay
 ```
 
+## Performance Budgets (Concrete Targets)
+| Metric | Target | Tooling |
+|--------|--------|---------|
+| Frame time (UI thread) | < 16ms (60fps) | DevTools Performance overlay |
+| Frame time p99 | < 33ms (no dropped frames) | Sentry performance trace |
+| Drift query p50 | < 20ms | Stopwatch + AppLogger |
+| Drift query p99 | < 50ms | Stopwatch + AppLogger |
+| Cold start (splash→home) | < 2s | `main.dart` phase log |
+| Warm start (resume→ready) | < 500ms | App lifecycle log |
+| List scroll FPS (1000 items) | sustained 60fps | DevTools |
+| Image decode (list item) | < 50ms | DevTools timeline |
+| Sync (10 entities, online) | < 3s | Stopwatch around `syncAll()` |
+| Photo upload (1MB) | < 5s | Stopwatch + bytes/sec |
+
+Budget aşıldığında: profile et, optimize et, gerekirse feature scope kıs. Production'da bu metric'lerin regression alert'i Sentry performance veya manuel review ile takip.
+
+### Measurement Pattern
+```dart
+final sw = Stopwatch()..start();
+final result = await operation();
+final ms = sw.elapsedMilliseconds;
+AppLogger.debug('perf', 'operationName: ${ms}ms');
+if (ms > budgetMs) {
+  AppLogger.warning('perf', 'operationName exceeded budget: ${ms}ms > ${budgetMs}ms');
+}
+```
+
+### Regression Detection
+- Yeni PR'da heavy operation eklenirse: budget ile karşılaştır
+- Code review'da "performans regresyonu" gerekçeli blocker
+- Manual profile zorunlu: liste >100 item, image upload, sync flow değiştirildiyse
+
 ## Anti-Patterns
 1. Polling with `Timer.periodic` when streams are available
 2. Loading all data upfront instead of paginating/lazy-loading

@@ -66,7 +66,37 @@ Semantics(
 ## L10n & Yön
 - 3 dil destekli (tr/en/de) — uzun çeviriler için `Wrap` veya `FittedBox` kullan
 - Almanca compound kelimeler taşar — `overflow: TextOverflow.ellipsis` + `tooltip` zorunlu
-- RTL desteği şu an yok ama gelecek için `EdgeInsetsDirectional.only(start:)` tercih et
+- Türkçe karakter genişliği İngilizce'den ~%10 fazla — sabit genişlik widget'larda overflow test
+
+### RTL Hazırlığı (gelecek dil desteği için)
+Şu an RTL dili yok ama yeni kod RTL-uyumlu yazılmalı; sonradan refactor maliyetli:
+- `EdgeInsets.only(left: 16)` YERİNE `EdgeInsetsDirectional.only(start: 16)`
+- `Alignment.topLeft` YERİNE `AlignmentDirectional.topStart`
+- `Positioned(left: 0)` YERİNE `PositionedDirectional(start: 0)`
+- `Row` çocukları RTL'de doğal flip olur, `mainAxisAlignment` directional aware
+- Icon yönü: `Icons.arrow_back` RTL'de otomatik flip ETMEZ — `Directionality.of(context)` ile manuel kontrol
+
+### Locale Text Overflow Test
+```dart
+testWidgets('button label fits in German locale', (tester) async {
+  // Almanca compound kelime testi
+  await pumpWidgetWithLocale(tester, MyButton(label: 'birds.add_breeding_pair'.tr()), 'de');
+  final overflow = tester.takeException();
+  expect(overflow, isNull);
+});
+```
+
+## Screen Reader Test
+```dart
+testWidgets('bird card has descriptive semantic label', (tester) async {
+  await pumpWidget(tester, BirdCard(bird: _maleBird));
+  final semantics = tester.getSemantics(find.byType(BirdCard));
+  expect(semantics.label, contains('Maviş'));
+  expect(semantics.label, contains('erkek'));  // localized gender
+});
+```
+
+iOS / Android emülatöründe VoiceOver / TalkBack manuel test: kritik flow'lar (login, bird add, sync) screen reader ile end-to-end çalışmalı.
 
 ## Loading & Error State
 - `CircularProgressIndicator` yerine `LoadingState` widget'ı (semantic label içerir)
@@ -96,5 +126,8 @@ testWidgets('icon button has tooltip', (tester) async {
 5. `width: 200` gibi sabit boyut metin içeren widget'lara
 6. `excludeSemantics: true` istemeden (etiketsiz interaktif element)
 7. `Container` üzerinde `onTap` (semantic role yok — `InkWell`/`GestureDetector` + `Semantics`)
+8. `EdgeInsets.only(left:)` directional alternatif varken (RTL hazırlığı)
+9. RTL'de manuel flip gereken icon (`arrow_back`, `chevron_right`) için kontrol etmemek
+10. Almanca/Türkçe locale'de overflow test atlamak
 
 > **İlgili**: ui-patterns.md (shared widgets), localization.md (3 dil), coding-standards.md (Theme kullanımı)

@@ -1,5 +1,14 @@
 # CLAUDE.md
 
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Start Here
+- **Quality gates** (run before every commit): `.claude/rules/ai-workflow.md`
+- **New entity/feature steps**: `.claude/rules/new-feature-checklist.md`
+- **24 anti-patterns** (must avoid): see § Critical Anti-Patterns below
+- **Branch policy**: PRs target `develop`, not `main` (see `.claude/rules/branch-workflow.md`)
+
+## Project
 Comprehensive Flutter breeding tracker app for budgie breeders.
 Flutter 3.41+ / Dart >=3.8.0 <4.0.0 / Riverpod 3 / GoRouter 17+ / Supabase / Drift 2.31+ / Freezed 3
 
@@ -12,7 +21,7 @@ Key deps: `supabase_flutter ^2.5.0` · `sentry_flutter ^9.0.0` · `fl_chart ^1.2
 flutter pub get
 
 # Code generation (Freezed, Drift, JSON Serializable, Riverpod)
-dart run build_runner build
+dart run build_runner build --delete-conflicting-outputs
 
 # Clean generated files (if stuck)
 dart run build_runner clean
@@ -96,7 +105,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | Job | Purpose |
 | --- | --- |
 | `analyze` | `flutter analyze --no-fatal-infos` |
-| `test` | Unit + widget tests, optional Codecov upload when `CODECOV_TOKEN` is configured (excludes golden, e2e), timeout 25m |
+| `test` | Unit + widget tests, Codecov upload (excludes golden, e2e), timeout 25m |
 | `golden-test` | Visual regression on Linux baseline |
 | `scripts-test` | Python script tests (>=98% coverage) |
 | `l10n-sync` | Translation key parity (--strict-keys) |
@@ -105,30 +114,15 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | `auto-fix-stats` | Auto-PR for CLAUDE.md drift (main only) |
 | `deploy-edge-functions` | Supabase Edge Function deployment (main only, needs analyze+test) |
 | `android-build` | Debug APK build |
+| `android-release` | Signed AAB (main only, needs analyze+test) |
 | `ios-build` | iOS build (no code signing) |
 | `pages` | GitHub Pages deployment from `docs/` |
 
-### GitHub Actions (`release-ready.yml`) — manual release readiness
-| Job | Purpose |
-| --- | --- |
-| `plan` | No-op guard that records selected release checks |
-| `android-release` | Signed AAB artifact + Dart symbol upload, manually triggered |
-
 Workflow changes must be validated locally before push: parse the edited YAML, quote or block-scalar `run:` commands containing `:`, and ensure each triggering event has at least one non-skipped job.
-
-After pushing CI or release fixes, verify the exact commit SHA with both GitHub commit status and check-runs. Do not close a CI task while any check-run is `queued`, `in_progress`, `failure`, `error`, or `action_required`; only intentional skipped jobs are acceptable.
 
 ### Codemagic (`codemagic.yaml`) — production releases
 - `android-release`: AAB → Google Play (alpha track)
 - `ios-release`: IPA → App Store TestFlight (App ID: 6759828211)
-
-### Xcode Cloud (`ios/ci_scripts/ci_post_clone.sh`) - App Store Connect build
-- Xcode Cloud builds a clean clone and must run the post-clone script before the iOS build action.
-- The default Xcode Cloud workflow is build-only (`Build - iOS`, scheme `Runner`, `Any iOS Simulator`) so main-branch status checks do not require Development or Ad Hoc provisioning profiles.
-- Archive/TestFlight/App Store distribution in Xcode Cloud requires Apple signing prerequisites, including registered physical devices for Development/Ad Hoc exports; use Codemagic for production store releases until those account prerequisites are intentionally configured.
-- The script installs/activates Flutter, runs `flutter pub get`, runs `dart run build_runner build`, and runs `pod install` under `ios/`.
-- Network-heavy setup steps must stay retry-aware because Xcode Cloud can hit transient DNS/download failures while cloning Flutter, precaching artifacts, resolving Pub packages, installing CocoaPods, or downloading pod source archives such as `sqlite3`.
-- Do not commit generated Dart files, `ios/Flutter/Generated.xcconfig`, `ios/Pods/`, or `Pods-Runner-*.xcfilelist`; regenerate them in CI.
 
 ## Environment Variables (dart-define)
 
@@ -181,17 +175,16 @@ Comprehensive rules in `.claude/rules/` (auto-loaded):
 | --- | --- |
 | `architecture.md` | Tech stack, layers, folder structure, data flow, offline-first, performance, dependency mgmt |
 | `data-layer.md` | Drift + Supabase + Repository + Sync strategy + Storage + Cache + migration guidelines |
-| `breeding-eggs.md` | Breeding pair, incubation, egg, chick lifecycle rules, side effects, and tests |
 | `coding-standards.md` | Naming, Freezed/enum, icon API, file organization, extensions, async/await |
 | `providers.md` | Riverpod provider types, ref usage, AsyncNotifier, race conditions, error handling, keepAlive |
 | `ui-patterns.md` | Widget types, AsyncValue, forms, GoRouter, shared widgets, lists, dialogs |
-| `localization.md` | easy_localization, key structure, 42 categories, arg patterns, testing l10n |
+| `localization.md` | easy_localization, key structure, 39 categories, arg patterns, testing l10n |
 | `testing.md` | Test patterns, mocking, golden tests, coverage, naming conventions |
 | `test-stability.md` | Pump strategy, 18 anti-patterns, async patterns, resource cleanup |
 | `error-handling.md` | Error hierarchy, Sentry, retry/backoff, user-facing messages, logging |
 | `new-feature-checklist.md` | Full-stack entity addition, non-entity features, shared widgets |
-| `git-rules.md` | Conventional commits, branch naming, PR workflow (main-first) |
-| `branch-workflow.md` | Main-only branch strategy, merge policy, hotfix exception |
+| `git-rules.md` | Conventional commits, branch naming, PR workflow (develop-first) |
+| `branch-workflow.md` | develop/main branch strategy, merge policy, hotfix exception |
 | `ai-workflow.md` | Quality gates (canonical), task approach, prohibited actions, investigation |
 | `chat.md` | Response language (Turkish), debugging approach, code review feedback |
 | `ci-actions.md` | GitHub Actions design, Dependabot, billing failures, deployment safety |
@@ -200,8 +193,18 @@ Comprehensive rules in `.claude/rules/` (auto-loaded):
 | `security.md` | Auth, RLS, route guards, credentials, data protection, OAuth |
 | `performance.md` | Drift optimization, Riverpod rebuilds, widget perf, images, sync, startup |
 | `accessibility.md` | WCAG 2.1 AA, touch targets, semantic labels, contrast, font scaling |
-| `observability.md` | AppLogger + Sentry, breadcrumb, tag conventions, PII protection |
+| `observability.md` | AppLogger + Sentry, breadcrumb, tag conventions, PII protection, sample rate budget, structured schema |
 | `code-review.md` | Self-review + reviewer checklist, anti-pattern spot-check, approval rules |
+| `premium-revenuecat.md` | PremiumGuard, entitlement, grace period, sync-premium-status, free tier limits, env vars |
+| `notifications.md` | FCM, send-push, local notifications, scheduling, deeplink payload, permissions |
+| `forms-validation.md` | Form pattern, validator hierarchy, async validation, ValidationException flow |
+| `assets-images.md` | Photo upload, scan-image-safety, 10MB guard, CachedNetworkImage, storage buckets, SVG icons |
+| `background-sync.md` | SyncService, connectivity-aware retry, debounce/batch, conflict accounting, ValidatedSyncMixin |
+| `datetime-format.md` | UTC at boundary, local display, incubation day math, locale-aware DateFormat, tz.TZDateTime |
+| `local-ai.md` | LocalAiService, Ollama/OpenRouter routing, cache, cost guards, fallback, PII redaction |
+| `feature-flags.md` | dart-define debug flags, runtime toggles, kill switches, premium gating, lifecycle |
+| `empty-loading-error-states.md` | EmptyState/LoadingState/ErrorState/SkeletonLoader catalog, AsyncValue mapping |
+| `migrations.md` | Drift schemaVersion bump, onUpgrade, Supabase SQL migration, RLS, idempotent SQL, rollback |
 
 ## Critical Anti-Patterns (24 rules — must avoid)
 
@@ -272,34 +275,14 @@ See `new-feature-checklist.md` for detailed steps.
 ```bash
 flutter analyze --no-fatal-infos          # Static analysis
 flutter test test/path/to/file_test.dart  # Run specific test
-dart run build_runner build  # Regenerate if .g.dart stale
+dart run build_runner build --delete-conflicting-outputs  # Regenerate if .g.dart stale
 ```
 - Drift query timing: `Stopwatch()..start()` + `AppLogger.debug('perf', 'query: ${sw.elapsed}')`
 - Debug route: `--dart-define=DEBUG_START_ROUTE=/birds` to skip splash
 
 ### Pre-commit quality check
 ```bash
-scripts/run_local_quality_gate.sh
-```
-
-### Dirty worktree organization
-1. Start every task with `git status --short --branch`.
-2. If dirty, classify files into: task-owned, pre-existing/user, generated/dependency, and rule/doc.
-3. Re-run `git status --short --branch` after any mutating command: code generation, Flutter/Xcode/CocoaPods builds, formatting, quality gates, git hooks, or scripts that can rewrite project files.
-4. Keep buckets separate. Do not use `git add .`, stash, revert, format, regenerate, or rewrite unrelated buckets unless explicitly requested.
-5. Before commit or push, inspect both `git diff --name-status` and `git diff --cached --name-status`; stage explicit paths for one coherent bucket only.
-6. A requested push or completion handoff must not leave task-owned changes in the working tree. If unrelated pre-existing/user changes must be moved aside for a clean tree, preserve them with a descriptive stash or separate branch and report the exact ref.
-7. If a task intentionally touches multiple buckets, document why they must ship together.
-8. Handoff must include branch/commit, dirty-state summary by bucket, commands run, and skipped checks.
-
-### Post-push status check
-```bash
-python3 scripts/check_remote_status.py
-```
-
-### Targeted breeding/egg regression
-```bash
-scripts/run_breeding_egg_regression.sh
+flutter analyze --no-fatal-infos && python3 scripts/verify_code_quality.py && python3 scripts/check_l10n_sync.py
 ```
 
 ## Key File Locations
@@ -320,16 +303,14 @@ Services:      lib/domain/services/
 Router:        lib/router/ (+ guards/)
 Theme:         lib/core/theme/
 Shared UI:     lib/core/widgets/ (buttons/, cards/, dialogs/, bottom_sheet/)
-Shared facade: lib/shared/ (curated re-export surface only)
 Icons:         lib/core/constants/app_icons.dart
 SVG Assets:    assets/icons/ (10 subdirs)
 Translations:  assets/translations/ (tr.json, en.json, de.json)
 Security:      lib/core/security/
-Test Support:  lib/test_support/ (import from test/ only)
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
 Migrations:    supabase/migrations/ (156 files)
 Scripts:       scripts/
-CI:            .github/workflows/ + codemagic.yaml + ios/ci_scripts/
+CI:            .github/workflows/ + codemagic.yaml
 ```

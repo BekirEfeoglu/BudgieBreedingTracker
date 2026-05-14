@@ -90,7 +90,7 @@ test('handles loading and error states', () async {
 - Update baselines: `flutter test --update-goldens test/golden/`
 
 ## Coverage
-- CI uploads to Codecov only when `CODECOV_TOKEN` is configured (excludes golden & e2e)
+- CI uploads to Codecov (excludes golden & e2e)
 - Focus coverage on business logic (services, repositories, providers)
 - Widget tests: verify behavior, not pixel-perfect layout
 - Don't chase 100% — test meaningful behavior and edge cases
