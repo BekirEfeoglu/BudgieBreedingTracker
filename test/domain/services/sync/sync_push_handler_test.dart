@@ -77,6 +77,9 @@ void main() {
       () => mockNotificationRepository.pushAll(any()),
     ).thenAnswer((_) async => emptyPushStats);
     when(
+      () => mockNotificationRepository.pushSettings(any()),
+    ).thenAnswer((_) async {});
+    when(
       () => mockNotificationScheduleRepository.pushAll(any()),
     ).thenAnswer((_) async => emptyPushStats);
     when(
@@ -242,6 +245,24 @@ void main() {
     });
 
     test(
+      'dispatches notification_settings table to notificationRepository',
+      () async {
+        final container = createContainer();
+        addTearDown(container.dispose);
+        final handler = container.read(_syncPushHandlerProvider);
+
+        await handler.pushTable(
+          _userId,
+          SupabaseConstants.notificationSettingsTable,
+        );
+
+        verify(
+          () => mockNotificationRepository.pushSettings(_userId),
+        ).called(1);
+      },
+    );
+
+    test(
       'dispatches profiles table to profileRepository.pushPending',
       () async {
         final container = createContainer();
@@ -343,6 +364,25 @@ void main() {
 
       verify(() => mockBirdRepository.pushAll(_userId)).called(1);
     });
+
+    test(
+      'calls notification settings push when settings table is pending',
+      () async {
+        when(() => mockSyncMetadataDao.getPendingTableNames(any())).thenAnswer(
+          (_) async => {SupabaseConstants.notificationSettingsTable},
+        );
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+        final handler = container.read(_syncPushHandlerProvider);
+
+        await handler.pushChanges(_userId);
+
+        verify(
+          () => mockNotificationRepository.pushSettings(_userId),
+        ).called(1);
+      },
+    );
 
     test('returns false when a layer push fails', () async {
       when(

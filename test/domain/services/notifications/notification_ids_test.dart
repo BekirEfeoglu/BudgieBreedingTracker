@@ -110,6 +110,8 @@ void main() {
       expect(NotificationIds.healthCheckBaseId, 300000);
       expect(NotificationIds.chickCareBaseId, 400000);
       expect(NotificationIds.bandingBaseId, 500000);
+      expect(NotificationIds.scheduleBaseId, 600000);
+      expect(NotificationIds.eventReminderBaseId, 700000);
     });
 
     test('bandingBaseId is 500000', () {
@@ -130,6 +132,24 @@ void main() {
 
     test('idsPerEntitySlot is 100', () {
       expect(NotificationIds.idsPerEntitySlot, 100);
+    });
+
+    test('event reminder IDs do not overlap banding IDs', () {
+      final bandingId = NotificationIds.generate(
+        NotificationIds.bandingBaseId,
+        'shared-entity',
+        0,
+      );
+      final eventReminderId = NotificationIds.generate(
+        NotificationIds.eventReminderBaseId,
+        'shared-entity',
+        0,
+      );
+
+      expect(bandingId, lessThan(NotificationIds.bandingBaseId + 100000));
+      expect(eventReminderId, greaterThanOrEqualTo(700000));
+      expect(eventReminderId, lessThan(800000));
+      expect(eventReminderId, isNot(bandingId));
     });
   });
 

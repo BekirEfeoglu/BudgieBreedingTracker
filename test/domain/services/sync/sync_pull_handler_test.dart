@@ -122,6 +122,9 @@ void main() {
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
     ).thenAnswer((_) async {});
+    when(
+      () => mockNotificationRepository.pullSettings(any()),
+    ).thenAnswer((_) async {});
 
     when(
       () => mockNotificationScheduleRepository.pull(
@@ -377,6 +380,7 @@ void main() {
           lastSyncedAt: any(named: 'lastSyncedAt'),
         ),
       ).called(1);
+      verify(() => mockNotificationRepository.pullSettings(_userId)).called(1);
     });
 
     test('returns false when a layer repo throws', () async {

@@ -22,6 +22,8 @@ Future<void> _pushSingleTable(Ref ref, String userId, String table) async {
         await ref.read(eventRepositoryProvider).pushAll(userId);
       case SupabaseConstants.notificationsTable:
         await ref.read(notificationRepositoryProvider).pushAll(userId);
+      case SupabaseConstants.notificationSettingsTable:
+        await ref.read(notificationRepositoryProvider).pushSettings(userId);
       case SupabaseConstants.clutchesTable:
         await ref.read(clutchRepositoryProvider).pushAll(userId);
       case SupabaseConstants.nestsTable:
@@ -31,15 +33,11 @@ Future<void> _pushSingleTable(Ref ref, String userId, String table) async {
       case SupabaseConstants.eventRemindersTable:
         await ref.read(eventReminderRepositoryProvider).pushAll(userId);
       case SupabaseConstants.notificationSchedulesTable:
-        await ref
-            .read(notificationScheduleRepositoryProvider)
-            .pushAll(userId);
+        await ref.read(notificationScheduleRepositoryProvider).pushAll(userId);
       case SupabaseConstants.profilesTable:
         await ref.read(profileRepositoryProvider).pushPending(userId);
       default:
-        AppLogger.warning(
-          '[SyncOrchestrator] Unknown table for retry: $table',
-        );
+        AppLogger.warning('[SyncOrchestrator] Unknown table for retry: $table');
     }
   } catch (e, st) {
     AppLogger.error('[SyncOrchestrator] Retry push failed for $table', e, st);

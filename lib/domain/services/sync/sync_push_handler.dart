@@ -52,7 +52,9 @@ class SyncPushHandler {
   }
 
   Future<void> _pushLayer1RootEntities(
-    String userId, Set<String> pending, _PushContext ctx,
+    String userId,
+    Set<String> pending,
+    _PushContext ctx,
   ) async {
     if (!_anyPending(pending, [
       SupabaseConstants.birdsTable,
@@ -79,28 +81,42 @@ class SyncPushHandler {
   }
 
   Future<void> _pushLayer2BreedingPairs(
-    String userId, Set<String> pending, _PushContext ctx,
+    String userId,
+    Set<String> pending,
+    _PushContext ctx,
   ) async {
     if (ctx.l1Failed) {
-      AppLogger.warning('[SyncOrchestrator] Push L2 skipped: parent layer L1 failed');
+      AppLogger.warning(
+        '[SyncOrchestrator] Push L2 skipped: parent layer L1 failed',
+      );
       ctx.l2Failed = true;
       return;
     }
     if (!pending.contains(SupabaseConstants.breedingPairsTable)) return;
     try {
-      ctx.addResult(await _ref.read(breedingPairRepositoryProvider).pushAll(userId));
+      ctx.addResult(
+        await _ref.read(breedingPairRepositoryProvider).pushAll(userId),
+      );
     } catch (e, st) {
       ctx.layerErrors++;
       ctx.l2Failed = true;
-      AppLogger.error('[SyncOrchestrator] Push L2 (breeding_pairs) failed', e, st);
+      AppLogger.error(
+        '[SyncOrchestrator] Push L2 (breeding_pairs) failed',
+        e,
+        st,
+      );
     }
   }
 
   Future<void> _pushLayer3ClutchesIncubations(
-    String userId, Set<String> pending, _PushContext ctx,
+    String userId,
+    Set<String> pending,
+    _PushContext ctx,
   ) async {
     if (ctx.l2Failed) {
-      AppLogger.warning('[SyncOrchestrator] Push L3 skipped: parent layer L2 failed');
+      AppLogger.warning(
+        '[SyncOrchestrator] Push L3 skipped: parent layer L2 failed',
+      );
       ctx.l3Failed = true;
       return;
     }
@@ -129,10 +145,14 @@ class SyncPushHandler {
   }
 
   Future<void> _pushLayer4Eggs(
-    String userId, Set<String> pending, _PushContext ctx,
+    String userId,
+    Set<String> pending,
+    _PushContext ctx,
   ) async {
     if (ctx.l3Failed) {
-      AppLogger.warning('[SyncOrchestrator] Push L4 skipped: parent layer L3 failed');
+      AppLogger.warning(
+        '[SyncOrchestrator] Push L4 skipped: parent layer L3 failed',
+      );
       ctx.l4Failed = true;
       return;
     }
@@ -147,10 +167,14 @@ class SyncPushHandler {
   }
 
   Future<void> _pushLayer5Chicks(
-    String userId, Set<String> pending, _PushContext ctx,
+    String userId,
+    Set<String> pending,
+    _PushContext ctx,
   ) async {
     if (ctx.l4Failed) {
-      AppLogger.warning('[SyncOrchestrator] Push L5 skipped: parent layer L4 failed');
+      AppLogger.warning(
+        '[SyncOrchestrator] Push L5 skipped: parent layer L4 failed',
+      );
       return;
     }
     if (!pending.contains(SupabaseConstants.chicksTable)) return;
@@ -163,13 +187,16 @@ class SyncPushHandler {
   }
 
   Future<void> _pushLayer6LeafEntities(
-    String userId, Set<String> pending, _PushContext ctx,
+    String userId,
+    Set<String> pending,
+    _PushContext ctx,
   ) async {
     final leafTables = [
       SupabaseConstants.healthRecordsTable,
       SupabaseConstants.growthMeasurementsTable,
       SupabaseConstants.eventsTable,
       SupabaseConstants.notificationsTable,
+      SupabaseConstants.notificationSettingsTable,
       SupabaseConstants.notificationSchedulesTable,
       SupabaseConstants.photosTable,
     ];
@@ -184,6 +211,11 @@ class SyncPushHandler {
         () => _ref.read(eventRepositoryProvider).pushAll(userId),
       if (pending.contains(SupabaseConstants.notificationsTable))
         () => _ref.read(notificationRepositoryProvider).pushAll(userId),
+      if (pending.contains(SupabaseConstants.notificationSettingsTable))
+        () async {
+          await _ref.read(notificationRepositoryProvider).pushSettings(userId);
+          return emptyPushStats;
+        },
       if (pending.contains(SupabaseConstants.notificationSchedulesTable))
         () => _ref.read(notificationScheduleRepositoryProvider).pushAll(userId),
       if (pending.contains(SupabaseConstants.photosTable))
@@ -197,18 +229,28 @@ class SyncPushHandler {
   }
 
   Future<void> _pushLayer7EventReminders(
-    String userId, Set<String> pending, _PushContext ctx,
+    String userId,
+    Set<String> pending,
+    _PushContext ctx,
   ) async {
     if (ctx.l6Failed) {
-      AppLogger.warning('[SyncOrchestrator] Push L7 skipped: parent layer L6 failed');
+      AppLogger.warning(
+        '[SyncOrchestrator] Push L7 skipped: parent layer L6 failed',
+      );
       return;
     }
     if (!pending.contains(SupabaseConstants.eventRemindersTable)) return;
     try {
-      ctx.addResult(await _ref.read(eventReminderRepositoryProvider).pushAll(userId));
+      ctx.addResult(
+        await _ref.read(eventReminderRepositoryProvider).pushAll(userId),
+      );
     } catch (e, st) {
       ctx.layerErrors++;
-      AppLogger.error('[SyncOrchestrator] Push L7 (event_reminders) failed', e, st);
+      AppLogger.error(
+        '[SyncOrchestrator] Push L7 (event_reminders) failed',
+        e,
+        st,
+      );
     }
   }
 
@@ -217,17 +259,19 @@ class SyncPushHandler {
         ? ', ${ctx.totalOrphans} orphans cleaned'
         : '';
 
-    Sentry.addBreadcrumb(Breadcrumb(
-      message: 'SyncPush completed',
-      data: {
-        'pushed': ctx.totalPushed,
-        'orphansCleaned': ctx.totalOrphans,
-        'layerErrors': ctx.layerErrors,
-        'success': ctx.layerErrors == 0,
-      },
-      category: 'sync.push',
-      level: ctx.layerErrors > 0 ? SentryLevel.warning : SentryLevel.info,
-    ));
+    Sentry.addBreadcrumb(
+      Breadcrumb(
+        message: 'SyncPush completed',
+        data: {
+          'pushed': ctx.totalPushed,
+          'orphansCleaned': ctx.totalOrphans,
+          'layerErrors': ctx.layerErrors,
+          'success': ctx.layerErrors == 0,
+        },
+        category: 'sync.push',
+        level: ctx.layerErrors > 0 ? SentryLevel.warning : SentryLevel.info,
+      ),
+    );
 
     if (ctx.layerErrors > 0) {
       AppLogger.warning(

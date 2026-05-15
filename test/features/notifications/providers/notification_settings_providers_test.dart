@@ -7,6 +7,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/notification_settings_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/notification_model.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_scheduler.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
@@ -27,6 +28,7 @@ const _testUserId = 'test-user-123';
 void main() {
   late MockNotificationService service;
   late MockNotificationSettingsDao dao;
+  late MockNotificationRepository repo;
 
   setUpAll(() {
     registerFallbackValue(
@@ -37,21 +39,24 @@ void main() {
   setUp(() {
     service = MockNotificationService();
     dao = MockNotificationSettingsDao();
+    repo = MockNotificationRepository();
     when(
       () => service.cancelByIdRange(any(), any()),
     ).thenAnswer((_) async => 0);
     when(() => dao.upsert(any())).thenAnswer((_) async {});
+    when(() => repo.upsertSettings(any())).thenAnswer((_) async {});
   });
 
   ProviderContainer createContainer({NotificationSettings? initialSettings}) {
     when(
-      () => dao.getByUser(_testUserId),
+      () => repo.getSettings(_testUserId),
     ).thenAnswer((_) async => initialSettings);
 
     return ProviderContainer(
       overrides: [
         notificationServiceProvider.overrideWithValue(service),
         notificationSettingsDaoProvider.overrideWithValue(dao),
+        notificationRepositoryProvider.overrideWithValue(repo),
         currentUserIdProvider.overrideWithValue(_testUserId),
       ],
     );
@@ -99,7 +104,7 @@ void main() {
 
         final state = container.read(notificationToggleSettingsProvider);
         expect(state.eggTurning, isFalse);
-        verify(() => dao.upsert(any())).called(1);
+        verify(() => repo.upsertSettings(any())).called(1);
         verify(
           () => service.cancelByIdRange(
             NotificationScheduler.eggTurningBaseId,
@@ -119,7 +124,7 @@ void main() {
 
       final state = container.read(notificationToggleSettingsProvider);
       expect(state.incubation, isTrue);
-      verify(() => dao.upsert(any())).called(1);
+      verify(() => repo.upsertSettings(any())).called(1);
       verifyNever(() => service.cancelByIdRange(any(), any()));
     });
 
@@ -133,7 +138,7 @@ void main() {
 
       final state = container.read(notificationToggleSettingsProvider);
       expect(state.chickCare, isFalse);
-      verify(() => dao.upsert(any())).called(1);
+      verify(() => repo.upsertSettings(any())).called(1);
       verify(
         () => service.cancelByIdRange(
           NotificationScheduler.chickCareBaseId,
@@ -152,7 +157,7 @@ void main() {
 
       final state = container.read(notificationToggleSettingsProvider);
       expect(state.healthCheck, isFalse);
-      verify(() => dao.upsert(any())).called(1);
+      verify(() => repo.upsertSettings(any())).called(1);
       verify(
         () => service.cancelByIdRange(
           NotificationScheduler.healthCheckBaseId,
@@ -171,7 +176,7 @@ void main() {
 
       final state = container.read(notificationToggleSettingsProvider);
       expect(state.banding, isFalse);
-      verify(() => dao.upsert(any())).called(1);
+      verify(() => repo.upsertSettings(any())).called(1);
       verify(
         () => service.cancelByIdRange(
           NotificationScheduler.bandingBaseId,
@@ -190,27 +195,30 @@ void main() {
 
       final state = container.read(notificationToggleSettingsProvider);
       expect(state.banding, isTrue);
-      verify(() => dao.upsert(any())).called(1);
+      verify(() => repo.upsertSettings(any())).called(1);
       verifyNever(() => service.cancelByIdRange(any(), any()));
     });
 
-    test('setAll(false) disables banding along with other categories', () async {
-      when(() => service.cancelAll()).thenAnswer((_) async {});
-      final container = createContainer();
-      addTearDown(container.dispose);
+    test(
+      'setAll(false) disables banding along with other categories',
+      () async {
+        when(() => service.cancelAll()).thenAnswer((_) async {});
+        final container = createContainer();
+        addTearDown(container.dispose);
 
-      await container
-          .read(notificationToggleSettingsProvider.notifier)
-          .setAll(false);
+        await container
+            .read(notificationToggleSettingsProvider.notifier)
+            .setAll(false);
 
-      final state = container.read(notificationToggleSettingsProvider);
-      expect(state.eggTurning, isFalse);
-      expect(state.incubation, isFalse);
-      expect(state.chickCare, isFalse);
-      expect(state.healthCheck, isFalse);
-      expect(state.banding, isFalse);
-      verify(() => service.cancelAll()).called(1);
-    });
+        final state = container.read(notificationToggleSettingsProvider);
+        expect(state.eggTurning, isFalse);
+        expect(state.incubation, isFalse);
+        expect(state.chickCare, isFalse);
+        expect(state.healthCheck, isFalse);
+        expect(state.banding, isFalse);
+        verify(() => service.cancelAll()).called(1);
+      },
+    );
 
     test('setAll(true) enables banding along with other categories', () async {
       final container = createContainer();
@@ -243,7 +251,7 @@ void main() {
 
       final state = container.read(notificationToggleSettingsProvider);
       expect(state.chickCare, isFalse);
-      verify(() => dao.upsert(any())).called(1);
+      verify(() => repo.upsertSettings(any())).called(1);
       verify(() => service.cancelByIdRange(any(), any())).called(1);
     });
 
@@ -261,28 +269,34 @@ void main() {
       expect(state.banding, isTrue);
     });
 
-    test('disposing container before async load completes does not crash', () async {
-      final completer = Completer<NotificationSettings?>();
-      when(() => dao.getByUser(_testUserId)).thenAnswer((_) => completer.future);
+    test(
+      'disposing container before async load completes does not crash',
+      () async {
+        final completer = Completer<NotificationSettings?>();
+        when(
+          () => repo.getSettings(_testUserId),
+        ).thenAnswer((_) => completer.future);
 
-      final container = ProviderContainer(
-        overrides: [
-          notificationServiceProvider.overrideWithValue(service),
-          notificationSettingsDaoProvider.overrideWithValue(dao),
-          currentUserIdProvider.overrideWithValue(_testUserId),
-        ],
-      );
-      addTearDown(container.dispose);
+        final container = ProviderContainer(
+          overrides: [
+            notificationServiceProvider.overrideWithValue(service),
+            notificationSettingsDaoProvider.overrideWithValue(dao),
+            notificationRepositoryProvider.overrideWithValue(repo),
+            currentUserIdProvider.overrideWithValue(_testUserId),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      // Trigger provider build (starts async load), then dispose immediately.
-      container.read(notificationToggleSettingsProvider);
+        // Trigger provider build (starts async load), then dispose immediately.
+        container.read(notificationToggleSettingsProvider);
 
-      // Complete pending DAO call after dispose; test should finish without
-      // disposed-ref exceptions.
-      completer.complete(
-        const NotificationSettings(id: 'ns-2', userId: _testUserId),
-      );
-      await _flushAsync();
-    });
+        // Complete pending DAO call after dispose; test should finish without
+        // disposed-ref exceptions.
+        completer.complete(
+          const NotificationSettings(id: 'ns-2', userId: _testUserId),
+        );
+        await _flushAsync();
+      },
+    );
   });
 }

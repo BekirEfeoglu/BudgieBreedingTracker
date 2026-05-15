@@ -5,8 +5,8 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
-import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/notification_model.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_scheduler.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_service.dart';
@@ -18,9 +18,10 @@ export 'package:budgie_breeding_tracker/domain/services/notifications/notificati
 
 /// Manages notification settings persisted in Drift (local SQLite).
 ///
-/// Loads initial values from [NotificationSettingsDao] and persists
-/// changes immediately. When a category is disabled, cancels all
-/// pending scheduled notifications via [NotificationService.cancelByIdRange].
+/// Loads initial values through [NotificationRepository] and persists changes
+/// through the same repository so sync metadata is recorded. When a category
+/// is disabled, cancels pending scheduled notifications via
+/// [NotificationService.cancelByIdRange].
 class NotificationToggleSettingsNotifier
     extends Notifier<NotificationToggleSettings> {
   int _loadGeneration = 0;
@@ -33,15 +34,15 @@ class NotificationToggleSettingsNotifier
     }
 
     final generation = ++_loadGeneration;
-    unawaited(_loadFromDao(userId, generation));
+    unawaited(_loadSettings(userId, generation));
     return const NotificationToggleSettings();
   }
 
-  /// Loads stored settings from the Drift DAO.
-  Future<void> _loadFromDao(String userId, int generation) async {
+  /// Loads stored settings from the offline-first notification repository.
+  Future<void> _loadSettings(String userId, int generation) async {
     try {
-      final dao = ref.read(notificationSettingsDaoProvider);
-      final settings = await dao.getByUser(userId);
+      final repo = ref.read(notificationRepositoryProvider);
+      final settings = await repo.getSettings(userId);
       if (!ref.mounted) return;
       if (generation != _loadGeneration) return;
       if (ref.read(currentUserIdProvider) != userId) return;
@@ -59,18 +60,18 @@ class NotificationToggleSettingsNotifier
         _syncSoundAndVibrationToService();
       }
     } catch (e, st) {
-      AppLogger.warning('Failed to load notification settings from DAO: $e');
+      AppLogger.warning('Failed to load notification settings: $e');
       Sentry.captureException(e, stackTrace: st);
     }
   }
 
-  /// Persists the current toggle state to the Drift DAO.
-  Future<void> _persistToDao() async {
+  /// Persists the current toggle state through the repository sync flow.
+  Future<void> _persistSettings() async {
     try {
       final userId = ref.read(currentUserIdProvider);
       if (userId == 'anonymous') return;
-      final dao = ref.read(notificationSettingsDaoProvider);
-      final existing = await dao.getByUser(userId);
+      final repo = ref.read(notificationRepositoryProvider);
+      final existing = await repo.getSettings(userId);
       final model =
           (existing ??
                   NotificationSettings(id: const Uuid().v7(), userId: userId))
@@ -85,9 +86,9 @@ class NotificationToggleSettingsNotifier
                 cleanupDaysOld: state.cleanupDaysOld,
                 updatedAt: DateTime.now(),
               );
-      await dao.upsert(model);
+      await repo.upsertSettings(model);
     } catch (e, st) {
-      AppLogger.warning('Failed to persist notification settings to DAO: $e');
+      AppLogger.warning('Failed to persist notification settings: $e');
       Sentry.captureException(e, stackTrace: st);
     }
   }
@@ -142,7 +143,7 @@ class NotificationToggleSettingsNotifier
       healthCheck: value,
       banding: value,
     );
-    await _persistToDao();
+    await _persistSettings();
 
     if (!value) {
       try {
@@ -162,21 +163,21 @@ class NotificationToggleSettingsNotifier
   /// Toggles the notification sound setting.
   Future<void> setSound(bool value) async {
     state = state.copyWith(soundEnabled: value);
-    await _persistToDao();
+    await _persistSettings();
     _syncSoundAndVibrationToService();
   }
 
   /// Toggles the notification vibration setting.
   Future<void> setVibration(bool value) async {
     state = state.copyWith(vibrationEnabled: value);
-    await _persistToDao();
+    await _persistSettings();
     _syncSoundAndVibrationToService();
   }
 
   /// Toggles the egg turning notification setting.
   Future<void> setEggTurning(bool value) async {
     state = state.copyWith(eggTurning: value);
-    await _persistToDao();
+    await _persistSettings();
     await _cancelCategoryIfDisabled(
       value,
       NotificationScheduler.eggTurningBaseId,
@@ -188,7 +189,7 @@ class NotificationToggleSettingsNotifier
   /// Toggles the incubation notification setting.
   Future<void> setIncubation(bool value) async {
     state = state.copyWith(incubation: value);
-    await _persistToDao();
+    await _persistSettings();
     await _cancelCategoryIfDisabled(
       value,
       NotificationScheduler.incubationBaseId,
@@ -200,7 +201,7 @@ class NotificationToggleSettingsNotifier
   /// Toggles the chick care notification setting.
   Future<void> setChickCare(bool value) async {
     state = state.copyWith(chickCare: value);
-    await _persistToDao();
+    await _persistSettings();
     await _cancelCategoryIfDisabled(
       value,
       NotificationScheduler.chickCareBaseId,
@@ -212,7 +213,7 @@ class NotificationToggleSettingsNotifier
   /// Toggles the health check notification setting.
   Future<void> setHealthCheck(bool value) async {
     state = state.copyWith(healthCheck: value);
-    await _persistToDao();
+    await _persistSettings();
     await _cancelCategoryIfDisabled(
       value,
       NotificationScheduler.healthCheckBaseId,
@@ -224,7 +225,7 @@ class NotificationToggleSettingsNotifier
   /// Toggles the banding notification setting.
   Future<void> setBanding(bool value) async {
     state = state.copyWith(banding: value);
-    await _persistToDao();
+    await _persistSettings();
     await _cancelCategoryIfDisabled(
       value,
       NotificationScheduler.bandingBaseId,
@@ -236,7 +237,7 @@ class NotificationToggleSettingsNotifier
   /// Updates the number of days after which read notifications are cleaned up.
   Future<void> setCleanupDaysOld(int days) async {
     state = state.copyWith(cleanupDaysOld: days);
-    await _persistToDao();
+    await _persistSettings();
   }
 }
 

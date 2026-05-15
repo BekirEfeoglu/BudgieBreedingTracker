@@ -2,16 +2,24 @@ part of 'notification_processor.dart';
 
 /// Generates a stable notification ID for an [EventReminder].
 ///
-/// Uses a 500000+ range to avoid collision with scheduler ranges.
+/// Uses a dedicated range to avoid collision with scheduler ranges.
 int _eventReminderNotificationId(EventReminder reminder) {
-  return NotificationScheduler.notificationId(500000, reminder.id, 0);
+  return NotificationScheduler.notificationId(
+    NotificationIds.eventReminderBaseId,
+    reminder.id,
+    0,
+  );
 }
 
 /// Generates a stable notification ID for a [NotificationSchedule].
 ///
 /// Uses a 600000+ range.
 int _scheduleNotificationId(NotificationSchedule schedule) {
-  return NotificationScheduler.notificationId(600000, schedule.id, 0);
+  return NotificationScheduler.notificationId(
+    NotificationIds.scheduleBaseId,
+    schedule.id,
+    0,
+  );
 }
 
 /// Maps [NotificationType] to an Android notification channel ID.
@@ -29,7 +37,14 @@ String _channelForType(NotificationType type) {
 /// Builds a payload string for a notification schedule.
 String? _payloadForSchedule(NotificationSchedule schedule) {
   if (schedule.relatedEntityId == null) return null;
-  return '${schedule.type.name}:${schedule.relatedEntityId}';
+  final payloadType = switch (schedule.type) {
+    NotificationType.eggTurning => 'egg_turning',
+    NotificationType.incubationReminder => 'incubation',
+    NotificationType.feedingReminder => 'chick_care',
+    NotificationType.healthCheck => 'health_check',
+    _ => schedule.type.name,
+  };
+  return '$payloadType:${schedule.relatedEntityId}';
 }
 
 /// Formats reminder body text with localization.
@@ -67,7 +82,9 @@ Future<NotificationSettings?> _loadToggleSettings(
     final dao = ref.read(notificationSettingsDaoProvider);
     return await dao.getByUser(userId);
   } catch (e) {
-    AppLogger.warning('[NotificationProcessor] Failed to load toggle settings: $e');
+    AppLogger.warning(
+      '[NotificationProcessor] Failed to load toggle settings: $e',
+    );
     return null;
   }
 }

@@ -1,4 +1,5 @@
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/chicks_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/incubations_dao.dart';
@@ -17,10 +18,10 @@ class NotificationRescheduler {
     required EggsDao eggsDao,
     required ChicksDao chicksDao,
     required NotificationScheduler scheduler,
-  })  : _incubationsDao = incubationsDao,
-        _eggsDao = eggsDao,
-        _chicksDao = chicksDao,
-        _scheduler = scheduler;
+  }) : _incubationsDao = incubationsDao,
+       _eggsDao = eggsDao,
+       _chicksDao = chicksDao,
+       _scheduler = scheduler;
 
   final IncubationsDao _incubationsDao;
   final EggsDao _eggsDao;
@@ -87,10 +88,14 @@ class NotificationRescheduler {
 
       for (final egg in eggs) {
         final eggLabel = 'Egg ${egg.eggNumber ?? ''}';
+        final incubation = egg.incubationId == null
+            ? null
+            : await _incubationsDao.getById(egg.incubationId!);
         await _scheduler.scheduleEggTurningReminders(
           eggId: egg.id,
           startDate: egg.layDate,
           eggLabel: eggLabel,
+          species: incubation?.species ?? Species.unknown,
         );
       }
     } catch (e, st) {

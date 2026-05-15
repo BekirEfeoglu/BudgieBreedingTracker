@@ -33,6 +33,7 @@ const _allTables = {
   'growth_measurements',
   'events',
   'notifications',
+  'notification_settings',
   'notification_schedules',
   'photos',
   'event_reminders',
@@ -213,6 +214,12 @@ void main() {
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
     );
+    when(
+      () => mockNotificationRepository.pushSettings(any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockNotificationRepository.pullSettings(any()),
+    ).thenAnswer((_) async {});
     stubPushAndPull(
       pushAll: () => mockPhotoRepository.pushAll(any()),
       pull: () => mockPhotoRepository.pull(

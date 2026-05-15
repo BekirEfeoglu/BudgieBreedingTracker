@@ -39,38 +39,55 @@ void main() {
   late MockSyncMetadataDao mockSyncMetadataDao;
 
   void stubAllPushes() {
-    when(() => mockProfileRepo.pushPending(any()))
-        .thenAnswer((_) async {});
-    when(() => mockBirdRepo.pushAll(any()))
-        .thenAnswer((_) async => emptyPushStats);
-    when(() => mockNestRepo.pushAll(any()))
-        .thenAnswer((_) async => emptyPushStats);
-    when(() => mockBreedingPairRepo.pushAll(any()))
-        .thenAnswer((_) async => emptyPushStats);
-    when(() => mockClutchRepo.pushAll(any()))
-        .thenAnswer((_) async => emptyPushStats);
-    when(() => mockIncubationRepo.pushAll(any()))
-        .thenAnswer((_) async => emptyPushStats);
-    when(() => mockEggRepo.pushAll(any()))
-        .thenAnswer((_) async => emptyPushStats);
-    when(() => mockChickRepo.pushAll(any()))
-        .thenAnswer((_) async => emptyPushStats);
-    when(() => mockHealthRecordRepo.pushAll(any()))
-        .thenAnswer((_) async => emptyPushStats);
-    when(() => mockGrowthMeasurementRepo.pushAll(any()))
-        .thenAnswer((_) async => emptyPushStats);
-    when(() => mockEventRepo.pushAll(any()))
-        .thenAnswer((_) async => emptyPushStats);
-    when(() => mockNotificationRepo.pushAll(any()))
-        .thenAnswer((_) async => emptyPushStats);
-    when(() => mockNotificationScheduleRepo.pushAll(any()))
-        .thenAnswer((_) async => emptyPushStats);
-    when(() => mockPhotoRepo.pushAll(any()))
-        .thenAnswer((_) async => emptyPushStats);
-    when(() => mockEventReminderRepo.pushAll(any()))
-        .thenAnswer((_) async => emptyPushStats);
-    when(() => mockSyncMetadataDao.getPendingTableNames(any()))
-        .thenAnswer((_) async => <String>{});
+    when(() => mockProfileRepo.pushPending(any())).thenAnswer((_) async {});
+    when(
+      () => mockBirdRepo.pushAll(any()),
+    ).thenAnswer((_) async => emptyPushStats);
+    when(
+      () => mockNestRepo.pushAll(any()),
+    ).thenAnswer((_) async => emptyPushStats);
+    when(
+      () => mockBreedingPairRepo.pushAll(any()),
+    ).thenAnswer((_) async => emptyPushStats);
+    when(
+      () => mockClutchRepo.pushAll(any()),
+    ).thenAnswer((_) async => emptyPushStats);
+    when(
+      () => mockIncubationRepo.pushAll(any()),
+    ).thenAnswer((_) async => emptyPushStats);
+    when(
+      () => mockEggRepo.pushAll(any()),
+    ).thenAnswer((_) async => emptyPushStats);
+    when(
+      () => mockChickRepo.pushAll(any()),
+    ).thenAnswer((_) async => emptyPushStats);
+    when(
+      () => mockHealthRecordRepo.pushAll(any()),
+    ).thenAnswer((_) async => emptyPushStats);
+    when(
+      () => mockGrowthMeasurementRepo.pushAll(any()),
+    ).thenAnswer((_) async => emptyPushStats);
+    when(
+      () => mockEventRepo.pushAll(any()),
+    ).thenAnswer((_) async => emptyPushStats);
+    when(
+      () => mockNotificationRepo.pushAll(any()),
+    ).thenAnswer((_) async => emptyPushStats);
+    when(
+      () => mockNotificationRepo.pushSettings(any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockNotificationScheduleRepo.pushAll(any()),
+    ).thenAnswer((_) async => emptyPushStats);
+    when(
+      () => mockPhotoRepo.pushAll(any()),
+    ).thenAnswer((_) async => emptyPushStats);
+    when(
+      () => mockEventReminderRepo.pushAll(any()),
+    ).thenAnswer((_) async => emptyPushStats);
+    when(
+      () => mockSyncMetadataDao.getPendingTableNames(any()),
+    ).thenAnswer((_) async => <String>{});
   }
 
   ProviderContainer createContainer() {
@@ -84,15 +101,18 @@ void main() {
         eggRepositoryProvider.overrideWithValue(mockEggRepo),
         chickRepositoryProvider.overrideWithValue(mockChickRepo),
         healthRecordRepositoryProvider.overrideWithValue(mockHealthRecordRepo),
-        growthMeasurementRepositoryProvider
-            .overrideWithValue(mockGrowthMeasurementRepo),
+        growthMeasurementRepositoryProvider.overrideWithValue(
+          mockGrowthMeasurementRepo,
+        ),
         eventRepositoryProvider.overrideWithValue(mockEventRepo),
         notificationRepositoryProvider.overrideWithValue(mockNotificationRepo),
-        notificationScheduleRepositoryProvider
-            .overrideWithValue(mockNotificationScheduleRepo),
+        notificationScheduleRepositoryProvider.overrideWithValue(
+          mockNotificationScheduleRepo,
+        ),
         photoRepositoryProvider.overrideWithValue(mockPhotoRepo),
-        eventReminderRepositoryProvider
-            .overrideWithValue(mockEventReminderRepo),
+        eventReminderRepositoryProvider.overrideWithValue(
+          mockEventReminderRepo,
+        ),
         profileRepositoryProvider.overrideWithValue(mockProfileRepo),
         syncMetadataDaoProvider.overrideWithValue(mockSyncMetadataDao),
       ],
@@ -143,22 +163,19 @@ void main() {
       verify(() => mockEventRepo.pushAll(_userId)).called(1);
     });
 
-    test(
-      'dispatches growth_measurements table to '
-      'growthMeasurementRepository.pushAll',
-      () async {
-        final container = createContainer();
-        addTearDown(container.dispose);
-        final handler = container.read(_syncPushHandlerProvider);
+    test('dispatches growth_measurements table to '
+        'growthMeasurementRepository.pushAll', () async {
+      final container = createContainer();
+      addTearDown(container.dispose);
+      final handler = container.read(_syncPushHandlerProvider);
 
-        await handler.pushTable(
-          _userId,
-          SupabaseConstants.growthMeasurementsTable,
-        );
+      await handler.pushTable(
+        _userId,
+        SupabaseConstants.growthMeasurementsTable,
+      );
 
-        verify(() => mockGrowthMeasurementRepo.pushAll(_userId)).called(1);
-      },
-    );
+      verify(() => mockGrowthMeasurementRepo.pushAll(_userId)).called(1);
+    });
 
     test('dispatches notifications table to notificationRepository', () async {
       final container = createContainer();
@@ -171,8 +188,7 @@ void main() {
     });
 
     test(
-      'dispatches notification_schedules table to '
-      'notificationScheduleRepository',
+      'dispatches notification_settings table to notificationRepository',
       () async {
         final container = createContainer();
         addTearDown(container.dispose);
@@ -180,12 +196,26 @@ void main() {
 
         await handler.pushTable(
           _userId,
-          SupabaseConstants.notificationSchedulesTable,
+          SupabaseConstants.notificationSettingsTable,
         );
 
-        verify(() => mockNotificationScheduleRepo.pushAll(_userId)).called(1);
+        verify(() => mockNotificationRepo.pushSettings(_userId)).called(1);
       },
     );
+
+    test('dispatches notification_schedules table to '
+        'notificationScheduleRepository', () async {
+      final container = createContainer();
+      addTearDown(container.dispose);
+      final handler = container.read(_syncPushHandlerProvider);
+
+      await handler.pushTable(
+        _userId,
+        SupabaseConstants.notificationSchedulesTable,
+      );
+
+      verify(() => mockNotificationScheduleRepo.pushAll(_userId)).called(1);
+    });
 
     test(
       'dispatches event_reminders table to eventReminderRepository',
@@ -203,8 +233,9 @@ void main() {
 
   group('_pushSingleTable — error handling', () {
     test('exception in pushAll is caught and does not propagate', () async {
-      when(() => mockEggRepo.pushAll(any()))
-          .thenThrow(Exception('network error'));
+      when(
+        () => mockEggRepo.pushAll(any()),
+      ).thenThrow(Exception('network error'));
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -217,8 +248,9 @@ void main() {
     });
 
     test('exception in profile pushPending is caught', () async {
-      when(() => mockProfileRepo.pushPending(any()))
-          .thenThrow(Exception('auth error'));
+      when(
+        () => mockProfileRepo.pushPending(any()),
+      ).thenThrow(Exception('auth error'));
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -248,11 +280,12 @@ void main() {
 
   group('_safeParallelPush (via pushChanges)', () {
     test('multiple L1 tables pushed in parallel when both pending', () async {
-      when(() => mockSyncMetadataDao.getPendingTableNames(any()))
-          .thenAnswer((_) async => {
-                SupabaseConstants.birdsTable,
-                SupabaseConstants.nestsTable,
-              });
+      when(() => mockSyncMetadataDao.getPendingTableNames(any())).thenAnswer(
+        (_) async => {
+          SupabaseConstants.birdsTable,
+          SupabaseConstants.nestsTable,
+        },
+      );
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -264,32 +297,37 @@ void main() {
       verify(() => mockNestRepo.pushAll(_userId)).called(1);
     });
 
-    test('partial failure in parallel push still pushes other tables',
-        () async {
-      when(() => mockSyncMetadataDao.getPendingTableNames(any()))
-          .thenAnswer((_) async => {
-                SupabaseConstants.birdsTable,
-                SupabaseConstants.nestsTable,
-              });
-      when(() => mockBirdRepo.pushAll(any()))
-          .thenThrow(Exception('bird push failed'));
+    test(
+      'partial failure in parallel push still pushes other tables',
+      () async {
+        when(() => mockSyncMetadataDao.getPendingTableNames(any())).thenAnswer(
+          (_) async => {
+            SupabaseConstants.birdsTable,
+            SupabaseConstants.nestsTable,
+          },
+        );
+        when(
+          () => mockBirdRepo.pushAll(any()),
+        ).thenThrow(Exception('bird push failed'));
 
-      final container = createContainer();
-      addTearDown(container.dispose);
-      final handler = container.read(_syncPushHandlerProvider);
+        final container = createContainer();
+        addTearDown(container.dispose);
+        final handler = container.read(_syncPushHandlerProvider);
 
-      await handler.pushChanges(_userId);
+        await handler.pushChanges(_userId);
 
-      verify(() => mockNestRepo.pushAll(_userId)).called(1);
-    });
+        verify(() => mockNestRepo.pushAll(_userId)).called(1);
+      },
+    );
 
     test('L6 leaf entities pushed in parallel when all pending', () async {
-      when(() => mockSyncMetadataDao.getPendingTableNames(any()))
-          .thenAnswer((_) async => {
-                SupabaseConstants.healthRecordsTable,
-                SupabaseConstants.eventsTable,
-                SupabaseConstants.photosTable,
-              });
+      when(() => mockSyncMetadataDao.getPendingTableNames(any())).thenAnswer(
+        (_) async => {
+          SupabaseConstants.healthRecordsTable,
+          SupabaseConstants.eventsTable,
+          SupabaseConstants.photosTable,
+        },
+      );
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -306,8 +344,9 @@ void main() {
   group('_anyPending (via pushChanges)', () {
     test('skips layer when none of its tables are pending', () async {
       // Only eggs pending — L1 (birds/nests) should be skipped
-      when(() => mockSyncMetadataDao.getPendingTableNames(any()))
-          .thenAnswer((_) async => {SupabaseConstants.eggsTable});
+      when(
+        () => mockSyncMetadataDao.getPendingTableNames(any()),
+      ).thenAnswer((_) async => {SupabaseConstants.eggsTable});
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -320,8 +359,9 @@ void main() {
     });
 
     test('pushes layer when at least one table is pending', () async {
-      when(() => mockSyncMetadataDao.getPendingTableNames(any()))
-          .thenAnswer((_) async => {SupabaseConstants.nestsTable});
+      when(
+        () => mockSyncMetadataDao.getPendingTableNames(any()),
+      ).thenAnswer((_) async => {SupabaseConstants.nestsTable});
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -336,14 +376,14 @@ void main() {
 
   group('FK dependency ordering (via pushChanges)', () {
     test('L2 skipped when L1 fails completely', () async {
-      when(() => mockSyncMetadataDao.getPendingTableNames(any()))
-          .thenAnswer((_) async => {
-                SupabaseConstants.birdsTable,
-                SupabaseConstants.breedingPairsTable,
-              });
+      when(() => mockSyncMetadataDao.getPendingTableNames(any())).thenAnswer(
+        (_) async => {
+          SupabaseConstants.birdsTable,
+          SupabaseConstants.breedingPairsTable,
+        },
+      );
       // Both L1 tasks fail → l1Failed = true
-      when(() => mockBirdRepo.pushAll(any()))
-          .thenThrow(Exception('fail'));
+      when(() => mockBirdRepo.pushAll(any())).thenThrow(Exception('fail'));
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -356,13 +396,15 @@ void main() {
     });
 
     test('L3 skipped when L2 fails', () async {
-      when(() => mockSyncMetadataDao.getPendingTableNames(any()))
-          .thenAnswer((_) async => {
-                SupabaseConstants.breedingPairsTable,
-                SupabaseConstants.clutchesTable,
-              });
-      when(() => mockBreedingPairRepo.pushAll(any()))
-          .thenThrow(Exception('fail'));
+      when(() => mockSyncMetadataDao.getPendingTableNames(any())).thenAnswer(
+        (_) async => {
+          SupabaseConstants.breedingPairsTable,
+          SupabaseConstants.clutchesTable,
+        },
+      );
+      when(
+        () => mockBreedingPairRepo.pushAll(any()),
+      ).thenThrow(Exception('fail'));
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -375,15 +417,15 @@ void main() {
     });
 
     test('L4 skipped when L3 fails', () async {
-      when(() => mockSyncMetadataDao.getPendingTableNames(any()))
-          .thenAnswer((_) async => {
-                SupabaseConstants.breedingPairsTable,
-                SupabaseConstants.clutchesTable,
-                SupabaseConstants.eggsTable,
-              });
+      when(() => mockSyncMetadataDao.getPendingTableNames(any())).thenAnswer(
+        (_) async => {
+          SupabaseConstants.breedingPairsTable,
+          SupabaseConstants.clutchesTable,
+          SupabaseConstants.eggsTable,
+        },
+      );
       // L2 succeeds, but both L3 tasks fail
-      when(() => mockClutchRepo.pushAll(any()))
-          .thenThrow(Exception('fail'));
+      when(() => mockClutchRepo.pushAll(any())).thenThrow(Exception('fail'));
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -396,13 +438,13 @@ void main() {
     });
 
     test('L5 skipped when L4 fails', () async {
-      when(() => mockSyncMetadataDao.getPendingTableNames(any()))
-          .thenAnswer((_) async => {
-                SupabaseConstants.eggsTable,
-                SupabaseConstants.chicksTable,
-              });
-      when(() => mockEggRepo.pushAll(any()))
-          .thenThrow(Exception('fail'));
+      when(() => mockSyncMetadataDao.getPendingTableNames(any())).thenAnswer(
+        (_) async => {
+          SupabaseConstants.eggsTable,
+          SupabaseConstants.chicksTable,
+        },
+      );
+      when(() => mockEggRepo.pushAll(any())).thenThrow(Exception('fail'));
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -415,13 +457,13 @@ void main() {
     });
 
     test('L7 skipped when L6 fails', () async {
-      when(() => mockSyncMetadataDao.getPendingTableNames(any()))
-          .thenAnswer((_) async => {
-                SupabaseConstants.eventsTable,
-                SupabaseConstants.eventRemindersTable,
-              });
-      when(() => mockEventRepo.pushAll(any()))
-          .thenThrow(Exception('fail'));
+      when(() => mockSyncMetadataDao.getPendingTableNames(any())).thenAnswer(
+        (_) async => {
+          SupabaseConstants.eventsTable,
+          SupabaseConstants.eventRemindersTable,
+        },
+      );
+      when(() => mockEventRepo.pushAll(any())).thenThrow(Exception('fail'));
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -434,16 +476,17 @@ void main() {
     });
 
     test('full chain succeeds when all layers succeed', () async {
-      when(() => mockSyncMetadataDao.getPendingTableNames(any()))
-          .thenAnswer((_) async => {
-                SupabaseConstants.birdsTable,
-                SupabaseConstants.breedingPairsTable,
-                SupabaseConstants.clutchesTable,
-                SupabaseConstants.eggsTable,
-                SupabaseConstants.chicksTable,
-                SupabaseConstants.eventsTable,
-                SupabaseConstants.eventRemindersTable,
-              });
+      when(() => mockSyncMetadataDao.getPendingTableNames(any())).thenAnswer(
+        (_) async => {
+          SupabaseConstants.birdsTable,
+          SupabaseConstants.breedingPairsTable,
+          SupabaseConstants.clutchesTable,
+          SupabaseConstants.eggsTable,
+          SupabaseConstants.chicksTable,
+          SupabaseConstants.eventsTable,
+          SupabaseConstants.eventRemindersTable,
+        },
+      );
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -464,10 +507,12 @@ void main() {
 
   group('pushChanges — push stats accumulation', () {
     test('returns true with correct push count when all succeed', () async {
-      when(() => mockSyncMetadataDao.getPendingTableNames(any()))
-          .thenAnswer((_) async => {SupabaseConstants.birdsTable});
-      when(() => mockBirdRepo.pushAll(any()))
-          .thenAnswer((_) async => (pushed: 5, orphansCleaned: 1));
+      when(
+        () => mockSyncMetadataDao.getPendingTableNames(any()),
+      ).thenAnswer((_) async => {SupabaseConstants.birdsTable});
+      when(
+        () => mockBirdRepo.pushAll(any()),
+      ).thenAnswer((_) async => (pushed: 5, orphansCleaned: 1));
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -479,10 +524,12 @@ void main() {
     });
 
     test('profile L0 failure returns false', () async {
-      when(() => mockSyncMetadataDao.getPendingTableNames(any()))
-          .thenAnswer((_) async => <String>{});
-      when(() => mockProfileRepo.pushPending(any()))
-          .thenThrow(Exception('profile fail'));
+      when(
+        () => mockSyncMetadataDao.getPendingTableNames(any()),
+      ).thenAnswer((_) async => <String>{});
+      when(
+        () => mockProfileRepo.pushPending(any()),
+      ).thenThrow(Exception('profile fail'));
 
       final container = createContainer();
       addTearDown(container.dispose);

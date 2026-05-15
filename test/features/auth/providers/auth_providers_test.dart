@@ -339,7 +339,7 @@ void main() {
     });
 
     test(
-      'initializes notifications then recovers pending and reschedules active notifications',
+      'initializes notifications without prompting system permission dialogs then recovers pending and reschedules active notifications',
       () async {
         when(() => mockAuth.currentUser).thenReturn(null);
 
@@ -372,11 +372,15 @@ void main() {
 
         verifyInOrder([
           () => mockNotificationService.init(),
-          () => mockNotificationService.requestExactAlarmPermissionIfNeeded(),
-          () => mockNotificationService
-              .requestBatteryOptimizationExemptionIfNeeded(),
           () => mockPushNotificationService.init(userId: 'user-1'),
         ]);
+        verifyNever(
+          () => mockNotificationService.requestExactAlarmPermissionIfNeeded(),
+        );
+        verifyNever(
+          () => mockNotificationService
+              .requestBatteryOptimizationExemptionIfNeeded(),
+        );
         verify(() => mockNotificationProcessor.processAll()).called(1);
         verify(
           () => mockNotificationRescheduler.rescheduleAll('user-1'),

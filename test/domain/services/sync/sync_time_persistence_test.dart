@@ -28,6 +28,7 @@ const _allTables = {
   'growth_measurements',
   'events',
   'notifications',
+  'notification_settings',
   'notification_schedules',
   'photos',
   'event_reminders',
@@ -99,8 +100,7 @@ void main() {
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-      lastPullConflicts: () =>
-          mockBreedingPairRepository.lastPullConflicts,
+      lastPullConflicts: () => mockBreedingPairRepository.lastPullConflicts,
     );
     stubPushAndPull(
       pushAll: () => mockClutchRepository.pushAll(any()),
@@ -132,8 +132,7 @@ void main() {
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-      lastPullConflicts: () =>
-          mockHealthRecordRepository.lastPullConflicts,
+      lastPullConflicts: () => mockHealthRecordRepository.lastPullConflicts,
     );
     stubPushAndPull(
       pushAll: () => mockEventRepository.pushAll(any()),
@@ -158,8 +157,7 @@ void main() {
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-      lastPullConflicts: () =>
-          mockEventReminderRepository.lastPullConflicts,
+      lastPullConflicts: () => mockEventReminderRepository.lastPullConflicts,
     );
     stubPushAndPull(
       pushAll: () => mockIncubationRepository.pushAll(any()),
@@ -167,8 +165,7 @@ void main() {
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
-      lastPullConflicts: () =>
-          mockIncubationRepository.lastPullConflicts,
+      lastPullConflicts: () => mockIncubationRepository.lastPullConflicts,
     );
     stubPushAndPull(
       pushAll: () => mockGrowthMeasurementRepository.pushAll(any()),
@@ -184,6 +181,12 @@ void main() {
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
     );
+    when(
+      () => mockNotificationRepository.pushSettings(any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockNotificationRepository.pullSettings(any()),
+    ).thenAnswer((_) async {});
     stubPushAndPull(
       pushAll: () => mockPhotoRepository.pushAll(any()),
       pull: () => mockPhotoRepository.pull(
@@ -267,14 +270,12 @@ void main() {
     mockProfileRepository = MockProfileRepository();
     mockPhotoRepository = MockPhotoRepository();
     mockEventReminderRepository = MockEventReminderRepository();
-    mockNotificationScheduleRepository =
-        MockNotificationScheduleRepository();
+    mockNotificationScheduleRepository = MockNotificationScheduleRepository();
     mockSyncMetadataRepository = MockSyncMetadataRepository();
     mockSyncMetadataDao = MockSyncMetadataDao();
     mockNotificationProcessor = MockNotificationProcessor();
 
-    when(() => mockNotificationProcessor.processAll())
-        .thenAnswer((_) async {});
+    when(() => mockNotificationProcessor.processAll()).thenAnswer((_) async {});
 
     stubRepositoryCalls();
   });
@@ -294,10 +295,7 @@ void main() {
       expect(raw, isNotNull);
 
       final persisted = DateTime.parse(raw!);
-      expect(
-        persisted.difference(DateTime.now()).inSeconds.abs(),
-        lessThan(5),
-      );
+      expect(persisted.difference(DateTime.now()).inSeconds.abs(), lessThan(5));
     });
 
     test('fullSync updates lastSyncTimeProvider after success', () async {
@@ -316,12 +314,12 @@ void main() {
       'fullSync reads persisted lastSyncedAt for incremental pull',
       () async {
         final lastSync = DateTime.now().subtract(const Duration(hours: 2));
-        final recentReconcile =
-            DateTime.now().subtract(const Duration(hours: 1));
+        final recentReconcile = DateTime.now().subtract(
+          const Duration(hours: 1),
+        );
         SharedPreferences.setMockInitialValues({
           AppPreferences.keyLastSyncedAt: lastSync.toIso8601String(),
-          AppPreferences.keyLastReconciledAt:
-              recentReconcile.toIso8601String(),
+          AppPreferences.keyLastReconciledAt: recentReconcile.toIso8601String(),
         });
 
         final container = createContainer();
@@ -341,13 +339,12 @@ void main() {
     test(
       'reconciliation is due when lastReconciledAt is older than 6 hours',
       () async {
-        final oldReconcile =
-            DateTime.now().subtract(const Duration(hours: 7));
+        final oldReconcile = DateTime.now().subtract(const Duration(hours: 7));
         SharedPreferences.setMockInitialValues({
-          AppPreferences.keyLastSyncedAt:
-              DateTime.now().subtract(const Duration(hours: 1)).toIso8601String(),
-          AppPreferences.keyLastReconciledAt:
-              oldReconcile.toIso8601String(),
+          AppPreferences.keyLastSyncedAt: DateTime.now()
+              .subtract(const Duration(hours: 1))
+              .toIso8601String(),
+          AppPreferences.keyLastReconciledAt: oldReconcile.toIso8601String(),
         });
 
         final container = createContainer();
@@ -369,57 +366,50 @@ void main() {
       },
     );
 
-    test(
-      'reconciliation is NOT due when lastReconciledAt is recent',
-      () async {
-        final lastSync = DateTime.now().subtract(const Duration(hours: 2));
-        final recentReconcile =
-            DateTime.now().subtract(const Duration(hours: 3));
-        SharedPreferences.setMockInitialValues({
-          AppPreferences.keyLastSyncedAt: lastSync.toIso8601String(),
-          AppPreferences.keyLastReconciledAt:
-              recentReconcile.toIso8601String(),
-        });
+    test('reconciliation is NOT due when lastReconciledAt is recent', () async {
+      final lastSync = DateTime.now().subtract(const Duration(hours: 2));
+      final recentReconcile = DateTime.now().subtract(const Duration(hours: 3));
+      SharedPreferences.setMockInitialValues({
+        AppPreferences.keyLastSyncedAt: lastSync.toIso8601String(),
+        AppPreferences.keyLastReconciledAt: recentReconcile.toIso8601String(),
+      });
 
-        final container = createContainer();
-        addTearDown(container.dispose);
-        final orchestrator = container.read(syncOrchestratorProvider);
+      final container = createContainer();
+      addTearDown(container.dispose);
+      final orchestrator = container.read(syncOrchestratorProvider);
 
-        await orchestrator.fullSync();
+      await orchestrator.fullSync();
 
-        // Incremental pull passes the persisted lastSync value
-        verify(
-          () => mockBirdRepository.pull(_userId, lastSyncedAt: lastSync),
-        ).called(1);
+      // Incremental pull passes the persisted lastSync value
+      verify(
+        () => mockBirdRepository.pull(_userId, lastSyncedAt: lastSync),
+      ).called(1);
 
-        // Reconcile timestamp should NOT be updated
-        final prefs = await SharedPreferences.getInstance();
-        expect(
-          prefs.getString(AppPreferences.keyLastReconciledAt),
-          recentReconcile.toIso8601String(),
-        );
-      },
-    );
+      // Reconcile timestamp should NOT be updated
+      final prefs = await SharedPreferences.getInstance();
+      expect(
+        prefs.getString(AppPreferences.keyLastReconciledAt),
+        recentReconcile.toIso8601String(),
+      );
+    });
 
-    test(
-      'reconciliation is due when keyLastReconciledAt is absent',
-      () async {
-        SharedPreferences.setMockInitialValues({
-          AppPreferences.keyLastSyncedAt:
-              DateTime.now().subtract(const Duration(hours: 1)).toIso8601String(),
-        });
+    test('reconciliation is due when keyLastReconciledAt is absent', () async {
+      SharedPreferences.setMockInitialValues({
+        AppPreferences.keyLastSyncedAt: DateTime.now()
+            .subtract(const Duration(hours: 1))
+            .toIso8601String(),
+      });
 
-        final container = createContainer();
-        addTearDown(container.dispose);
-        final orchestrator = container.read(syncOrchestratorProvider);
+      final container = createContainer();
+      addTearDown(container.dispose);
+      final orchestrator = container.read(syncOrchestratorProvider);
 
-        await orchestrator.fullSync();
+      await orchestrator.fullSync();
 
-        // Missing reconcile key → full reconciliation (null since)
-        verify(
-          () => mockBirdRepository.pull(_userId, lastSyncedAt: null),
-        ).called(1);
-      },
-    );
+      // Missing reconcile key → full reconciliation (null since)
+      verify(
+        () => mockBirdRepository.pull(_userId, lastSyncedAt: null),
+      ).called(1);
+    });
   });
 }

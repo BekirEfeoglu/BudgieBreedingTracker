@@ -140,9 +140,7 @@ void main() {
     });
 
     test('healthCheck maps to health_check channel', () async {
-      final channel = await captureChannelForType(
-        NotificationType.healthCheck,
-      );
+      final channel = await captureChannelForType(NotificationType.healthCheck);
       expect(channel, NotificationService.healthCheckChannelId);
     });
 
@@ -185,50 +183,53 @@ void main() {
       return c;
     }
 
-    test('builds payload from type name and relatedEntityId', () async {
-      final futureDate = DateTime.now().add(const Duration(hours: 2));
-      final schedule = NotificationSchedule(
-        id: 'payload-1',
-        userId: 'user-1',
-        type: NotificationType.eggTurning,
-        title: 'Turn',
-        scheduledAt: futureDate,
-        relatedEntityId: 'egg-abc',
-      );
+    test(
+      'builds routable payload from notification type and relatedEntityId',
+      () async {
+        final futureDate = DateTime.now().add(const Duration(hours: 2));
+        final schedule = NotificationSchedule(
+          id: 'payload-1',
+          userId: 'user-1',
+          type: NotificationType.eggTurning,
+          title: 'Turn',
+          scheduledAt: futureDate,
+          relatedEntityId: 'egg-abc',
+        );
 
-      when(
-        () => schedulesDao.countPending('user-1'),
-      ).thenAnswer((_) async => 1);
-      when(
-        () => schedulesDao.getPending('user-1'),
-      ).thenAnswer((_) async => [schedule]);
-      when(
-        () => service.scheduleNotification(
-          id: any(named: 'id'),
-          title: any(named: 'title'),
-          body: any(named: 'body'),
-          scheduledDate: any(named: 'scheduledDate'),
-          channelId: any(named: 'channelId'),
-          payload: any(named: 'payload'),
-        ),
-      ).thenAnswer((_) async {});
+        when(
+          () => schedulesDao.countPending('user-1'),
+        ).thenAnswer((_) async => 1);
+        when(
+          () => schedulesDao.getPending('user-1'),
+        ).thenAnswer((_) async => [schedule]);
+        when(
+          () => service.scheduleNotification(
+            id: any(named: 'id'),
+            title: any(named: 'title'),
+            body: any(named: 'body'),
+            scheduledDate: any(named: 'scheduledDate'),
+            channelId: any(named: 'channelId'),
+            payload: any(named: 'payload'),
+          ),
+        ).thenAnswer((_) async {});
 
-      final container = buildContainer();
-      final processor = container.read(notificationProcessorProvider);
-      await processor.processNotificationSchedules('user-1');
+        final container = buildContainer();
+        final processor = container.read(notificationProcessorProvider);
+        await processor.processNotificationSchedules('user-1');
 
-      final captured = verify(
-        () => service.scheduleNotification(
-          id: any(named: 'id'),
-          title: any(named: 'title'),
-          body: any(named: 'body'),
-          scheduledDate: any(named: 'scheduledDate'),
-          channelId: any(named: 'channelId'),
-          payload: captureAny(named: 'payload'),
-        ),
-      ).captured;
-      expect(captured.first, 'eggTurning:egg-abc');
-    });
+        final captured = verify(
+          () => service.scheduleNotification(
+            id: any(named: 'id'),
+            title: any(named: 'title'),
+            body: any(named: 'body'),
+            scheduledDate: any(named: 'scheduledDate'),
+            channelId: any(named: 'channelId'),
+            payload: captureAny(named: 'payload'),
+          ),
+        ).captured;
+        expect(captured.first, 'egg_turning:egg-abc');
+      },
+    );
 
     test('returns null payload when relatedEntityId is null', () async {
       final futureDate = DateTime.now().add(const Duration(hours: 2));
@@ -443,60 +444,62 @@ void main() {
       verifyZeroInteractions(service);
     });
 
-    test('allows custom type even when all standard toggles are disabled',
-        () async {
-      final futureDate = DateTime.now().add(const Duration(hours: 1));
-      final schedule = NotificationSchedule(
-        id: 'toggle-custom',
-        userId: 'user-1',
-        type: NotificationType.custom,
-        title: 'Custom',
-        scheduledAt: futureDate,
-      );
-
-      when(
-        () => schedulesDao.countPending('user-1'),
-      ).thenAnswer((_) async => 1);
-      when(
-        () => schedulesDao.getPending('user-1'),
-      ).thenAnswer((_) async => [schedule]);
-      when(() => settingsDao.getByUser('user-1')).thenAnswer(
-        (_) async => const NotificationSettings(
-          id: 's5',
+    test(
+      'allows custom type even when all standard toggles are disabled',
+      () async {
+        final futureDate = DateTime.now().add(const Duration(hours: 1));
+        final schedule = NotificationSchedule(
+          id: 'toggle-custom',
           userId: 'user-1',
-          eggTurningEnabled: false,
-          healthCheckEnabled: false,
-          feedingReminderEnabled: false,
-          incubationReminderEnabled: false,
-        ),
-      );
-      when(
-        () => service.scheduleNotification(
-          id: any(named: 'id'),
-          title: any(named: 'title'),
-          body: any(named: 'body'),
-          scheduledDate: any(named: 'scheduledDate'),
-          channelId: any(named: 'channelId'),
-          payload: any(named: 'payload'),
-        ),
-      ).thenAnswer((_) async {});
-
-      final container = buildContainer();
-      final processor = container.read(notificationProcessorProvider);
-      await processor.processNotificationSchedules('user-1');
-
-      // Custom type should be scheduled despite all toggles being off
-      verify(
-        () => service.scheduleNotification(
-          id: any(named: 'id'),
+          type: NotificationType.custom,
           title: 'Custom',
-          body: '',
-          scheduledDate: any(named: 'scheduledDate'),
-          channelId: 'default',
-          payload: null,
-        ),
-      ).called(1);
-    });
+          scheduledAt: futureDate,
+        );
+
+        when(
+          () => schedulesDao.countPending('user-1'),
+        ).thenAnswer((_) async => 1);
+        when(
+          () => schedulesDao.getPending('user-1'),
+        ).thenAnswer((_) async => [schedule]);
+        when(() => settingsDao.getByUser('user-1')).thenAnswer(
+          (_) async => const NotificationSettings(
+            id: 's5',
+            userId: 'user-1',
+            eggTurningEnabled: false,
+            healthCheckEnabled: false,
+            feedingReminderEnabled: false,
+            incubationReminderEnabled: false,
+          ),
+        );
+        when(
+          () => service.scheduleNotification(
+            id: any(named: 'id'),
+            title: any(named: 'title'),
+            body: any(named: 'body'),
+            scheduledDate: any(named: 'scheduledDate'),
+            channelId: any(named: 'channelId'),
+            payload: any(named: 'payload'),
+          ),
+        ).thenAnswer((_) async {});
+
+        final container = buildContainer();
+        final processor = container.read(notificationProcessorProvider);
+        await processor.processNotificationSchedules('user-1');
+
+        // Custom type should be scheduled despite all toggles being off
+        verify(
+          () => service.scheduleNotification(
+            id: any(named: 'id'),
+            title: 'Custom',
+            body: '',
+            scheduledDate: any(named: 'scheduledDate'),
+            channelId: 'default',
+            payload: null,
+          ),
+        ).called(1);
+      },
+    );
 
     test('processes all types when settings DAO returns null', () async {
       final futureDate = DateTime.now().add(const Duration(hours: 1));
@@ -514,9 +517,7 @@ void main() {
       when(
         () => schedulesDao.getPending('user-1'),
       ).thenAnswer((_) async => [schedule]);
-      when(() => settingsDao.getByUser('user-1')).thenAnswer(
-        (_) async => null,
-      );
+      when(() => settingsDao.getByUser('user-1')).thenAnswer((_) async => null);
       when(
         () => service.scheduleNotification(
           id: any(named: 'id'),
@@ -574,134 +575,140 @@ void main() {
       return c;
     }
 
-    test('next occurrence is in the future for a recent past recurring schedule',
-        () async {
-      final recentPast = DateTime.now().subtract(const Duration(minutes: 10));
-      final schedule = NotificationSchedule(
-        id: 'next-occ-1',
-        userId: 'user-1',
-        type: NotificationType.feedingReminder,
-        title: 'Feed',
-        scheduledAt: recentPast,
-        isRecurring: true,
-        intervalMinutes: 60,
-      );
+    test(
+      'next occurrence is in the future for a recent past recurring schedule',
+      () async {
+        final recentPast = DateTime.now().subtract(const Duration(minutes: 10));
+        final schedule = NotificationSchedule(
+          id: 'next-occ-1',
+          userId: 'user-1',
+          type: NotificationType.feedingReminder,
+          title: 'Feed',
+          scheduledAt: recentPast,
+          isRecurring: true,
+          intervalMinutes: 60,
+        );
 
-      when(
-        () => schedulesDao.countPending('user-1'),
-      ).thenAnswer((_) async => 1);
-      when(
-        () => schedulesDao.getPending('user-1'),
-      ).thenAnswer((_) async => [schedule]);
-      when(
-        () => scheduler.showImmediateNotification(
-          id: any(named: 'id'),
-          title: any(named: 'title'),
-          body: any(named: 'body'),
-          type: any(named: 'type'),
-          userId: any(named: 'userId'),
-          channelId: any(named: 'channelId'),
-          payload: any(named: 'payload'),
-        ),
-      ).thenAnswer((_) async => true);
-      when(
-        () => schedulesDao.markProcessed('next-occ-1'),
-      ).thenAnswer((_) async {});
-      when(() => schedulesDao.insertItem(any())).thenAnswer((_) async {});
+        when(
+          () => schedulesDao.countPending('user-1'),
+        ).thenAnswer((_) async => 1);
+        when(
+          () => schedulesDao.getPending('user-1'),
+        ).thenAnswer((_) async => [schedule]);
+        when(
+          () => scheduler.showImmediateNotification(
+            id: any(named: 'id'),
+            title: any(named: 'title'),
+            body: any(named: 'body'),
+            type: any(named: 'type'),
+            userId: any(named: 'userId'),
+            channelId: any(named: 'channelId'),
+            payload: any(named: 'payload'),
+          ),
+        ).thenAnswer((_) async => true);
+        when(
+          () => schedulesDao.markProcessed('next-occ-1'),
+        ).thenAnswer((_) async {});
+        when(() => schedulesDao.insertItem(any())).thenAnswer((_) async {});
 
-      final container = buildContainer();
-      final processor = container.read(notificationProcessorProvider);
-      await processor.processNotificationSchedules('user-1');
+        final container = buildContainer();
+        final processor = container.read(notificationProcessorProvider);
+        await processor.processNotificationSchedules('user-1');
 
-      final captured = verify(
-        () => schedulesDao.insertItem(captureAny()),
-      ).captured;
-      expect(captured, hasLength(1));
-      final next = captured.first as NotificationSchedule;
-      expect(next.scheduledAt.isAfter(DateTime.now()), isTrue);
-      expect(next.processedAt, isNull);
-    });
+        final captured = verify(
+          () => schedulesDao.insertItem(captureAny()),
+        ).captured;
+        expect(captured, hasLength(1));
+        final next = captured.first as NotificationSchedule;
+        expect(next.scheduledAt.isAfter(DateTime.now()), isTrue);
+        expect(next.processedAt, isNull);
+      },
+    );
 
-    test('next occurrence advances multiple intervals to pass current time',
-        () async {
-      // 2 days ago, 30 min interval => needs many iterations to catch up
-      final oldPast = DateTime.now().subtract(const Duration(hours: 48));
-      final schedule = NotificationSchedule(
-        id: 'next-occ-catchup',
-        userId: 'user-1',
-        type: NotificationType.feedingReminder,
-        title: 'Feed',
-        scheduledAt: oldPast,
-        isRecurring: true,
-        intervalMinutes: 30,
-      );
+    test(
+      'next occurrence advances multiple intervals to pass current time',
+      () async {
+        // 2 days ago, 30 min interval => needs many iterations to catch up
+        final oldPast = DateTime.now().subtract(const Duration(hours: 48));
+        final schedule = NotificationSchedule(
+          id: 'next-occ-catchup',
+          userId: 'user-1',
+          type: NotificationType.feedingReminder,
+          title: 'Feed',
+          scheduledAt: oldPast,
+          isRecurring: true,
+          intervalMinutes: 30,
+        );
 
-      when(
-        () => schedulesDao.countPending('user-1'),
-      ).thenAnswer((_) async => 1);
-      when(
-        () => schedulesDao.getPending('user-1'),
-      ).thenAnswer((_) async => [schedule]);
-      when(
-        () => schedulesDao.markProcessed('next-occ-catchup'),
-      ).thenAnswer((_) async {});
-      when(() => schedulesDao.insertItem(any())).thenAnswer((_) async {});
+        when(
+          () => schedulesDao.countPending('user-1'),
+        ).thenAnswer((_) async => 1);
+        when(
+          () => schedulesDao.getPending('user-1'),
+        ).thenAnswer((_) async => [schedule]);
+        when(
+          () => schedulesDao.markProcessed('next-occ-catchup'),
+        ).thenAnswer((_) async {});
+        when(() => schedulesDao.insertItem(any())).thenAnswer((_) async {});
 
-      final container = buildContainer();
-      final processor = container.read(notificationProcessorProvider);
-      await processor.processNotificationSchedules('user-1');
+        final container = buildContainer();
+        final processor = container.read(notificationProcessorProvider);
+        await processor.processNotificationSchedules('user-1');
 
-      final captured = verify(
-        () => schedulesDao.insertItem(captureAny()),
-      ).captured;
-      expect(captured, hasLength(1));
-      final next = captured.first as NotificationSchedule;
-      // The calculated next occurrence must be strictly in the future
-      expect(next.scheduledAt.isAfter(DateTime.now()), isTrue);
-      // And within one interval of now
-      final diff = next.scheduledAt.difference(DateTime.now()).inMinutes;
-      expect(diff, lessThanOrEqualTo(30));
-    });
+        final captured = verify(
+          () => schedulesDao.insertItem(captureAny()),
+        ).captured;
+        expect(captured, hasLength(1));
+        final next = captured.first as NotificationSchedule;
+        // The calculated next occurrence must be strictly in the future
+        expect(next.scheduledAt.isAfter(DateTime.now()), isTrue);
+        // And within one interval of now
+        final diff = next.scheduledAt.difference(DateTime.now()).inMinutes;
+        expect(diff, lessThanOrEqualTo(30));
+      },
+    );
 
-    test('does not create next occurrence for non-recurring schedule',
-        () async {
-      final recentPast = DateTime.now().subtract(const Duration(minutes: 5));
-      final schedule = NotificationSchedule(
-        id: 'non-recurring',
-        userId: 'user-1',
-        type: NotificationType.custom,
-        title: 'One-time',
-        scheduledAt: recentPast,
-        isRecurring: false,
-      );
+    test(
+      'does not create next occurrence for non-recurring schedule',
+      () async {
+        final recentPast = DateTime.now().subtract(const Duration(minutes: 5));
+        final schedule = NotificationSchedule(
+          id: 'non-recurring',
+          userId: 'user-1',
+          type: NotificationType.custom,
+          title: 'One-time',
+          scheduledAt: recentPast,
+          isRecurring: false,
+        );
 
-      when(
-        () => schedulesDao.countPending('user-1'),
-      ).thenAnswer((_) async => 1);
-      when(
-        () => schedulesDao.getPending('user-1'),
-      ).thenAnswer((_) async => [schedule]);
-      when(
-        () => scheduler.showImmediateNotification(
-          id: any(named: 'id'),
-          title: any(named: 'title'),
-          body: any(named: 'body'),
-          type: any(named: 'type'),
-          userId: any(named: 'userId'),
-          channelId: any(named: 'channelId'),
-          payload: any(named: 'payload'),
-        ),
-      ).thenAnswer((_) async => true);
-      when(
-        () => schedulesDao.markProcessed('non-recurring'),
-      ).thenAnswer((_) async {});
+        when(
+          () => schedulesDao.countPending('user-1'),
+        ).thenAnswer((_) async => 1);
+        when(
+          () => schedulesDao.getPending('user-1'),
+        ).thenAnswer((_) async => [schedule]);
+        when(
+          () => scheduler.showImmediateNotification(
+            id: any(named: 'id'),
+            title: any(named: 'title'),
+            body: any(named: 'body'),
+            type: any(named: 'type'),
+            userId: any(named: 'userId'),
+            channelId: any(named: 'channelId'),
+            payload: any(named: 'payload'),
+          ),
+        ).thenAnswer((_) async => true);
+        when(
+          () => schedulesDao.markProcessed('non-recurring'),
+        ).thenAnswer((_) async {});
 
-      final container = buildContainer();
-      final processor = container.read(notificationProcessorProvider);
-      await processor.processNotificationSchedules('user-1');
+        final container = buildContainer();
+        final processor = container.read(notificationProcessorProvider);
+        await processor.processNotificationSchedules('user-1');
 
-      verifyNever(() => schedulesDao.insertItem(any()));
-    });
+        verifyNever(() => schedulesDao.insertItem(any()));
+      },
+    );
 
     test(
       'does not create next occurrence when intervalMinutes is null',
@@ -832,9 +839,7 @@ void main() {
         userId: 'user-1',
       );
 
-      when(
-        () => remindersDao.countUnsent('user-1'),
-      ).thenAnswer((_) async => 1);
+      when(() => remindersDao.countUnsent('user-1')).thenAnswer((_) async => 1);
       when(
         () => remindersDao.getUnsent('user-1'),
       ).thenAnswer((_) async => [reminder]);
@@ -851,9 +856,7 @@ void main() {
           payload: any(named: 'payload'),
         ),
       ).thenAnswer((_) async {});
-      when(
-        () => remindersDao.markSent('rem-fmt-min'),
-      ).thenAnswer((_) async {});
+      when(() => remindersDao.markSent('rem-fmt-min')).thenAnswer((_) async {});
 
       final container = buildContainer();
       final processor = container.read(notificationProcessorProvider);
@@ -888,9 +891,7 @@ void main() {
         userId: 'user-1',
       );
 
-      when(
-        () => remindersDao.countUnsent('user-1'),
-      ).thenAnswer((_) async => 1);
+      when(() => remindersDao.countUnsent('user-1')).thenAnswer((_) async => 1);
       when(
         () => remindersDao.getUnsent('user-1'),
       ).thenAnswer((_) async => [reminder]);
@@ -907,9 +908,7 @@ void main() {
           payload: any(named: 'payload'),
         ),
       ).thenAnswer((_) async {});
-      when(
-        () => remindersDao.markSent('rem-fmt-hr'),
-      ).thenAnswer((_) async {});
+      when(() => remindersDao.markSent('rem-fmt-hr')).thenAnswer((_) async {});
 
       final container = buildContainer();
       final processor = container.read(notificationProcessorProvider);
@@ -1004,12 +1003,12 @@ void main() {
   });
 
   group('_scheduleNotificationId and _eventReminderNotificationId', () {
-    test('processor uses 500000+ range for event reminder IDs', () {
-      // NotificationScheduler.notificationId(500000, id, 0) is deterministic.
+    test('processor uses 700000+ range for event reminder IDs', () {
+      // NotificationScheduler.notificationId(700000, id, 0) is deterministic.
       // We verify the ID range via the scheduler static method.
-      final id = NotificationScheduler.notificationId(500000, 'test-rem', 0);
-      expect(id, greaterThanOrEqualTo(500000));
-      expect(id, lessThan(600000));
+      final id = NotificationScheduler.notificationId(700000, 'test-rem', 0);
+      expect(id, greaterThanOrEqualTo(700000));
+      expect(id, lessThan(800000));
     });
 
     test('processor uses 600000+ range for schedule IDs', () {
@@ -1019,14 +1018,14 @@ void main() {
     });
 
     test('different entity IDs produce different notification IDs', () {
-      final id1 = NotificationScheduler.notificationId(500000, 'entity-a', 0);
-      final id2 = NotificationScheduler.notificationId(500000, 'entity-b', 0);
+      final id1 = NotificationScheduler.notificationId(700000, 'entity-a', 0);
+      final id2 = NotificationScheduler.notificationId(700000, 'entity-b', 0);
       expect(id1, isNot(equals(id2)));
     });
 
     test('same entity ID produces same notification ID (deterministic)', () {
-      final id1 = NotificationScheduler.notificationId(500000, 'entity-x', 0);
-      final id2 = NotificationScheduler.notificationId(500000, 'entity-x', 0);
+      final id1 = NotificationScheduler.notificationId(700000, 'entity-x', 0);
+      final id2 = NotificationScheduler.notificationId(700000, 'entity-x', 0);
       expect(id1, equals(id2));
     });
   });

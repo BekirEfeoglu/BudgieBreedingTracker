@@ -176,18 +176,6 @@ Future<void> _requestNotificationPermissionIfNeeded(
   }
 }
 
-/// Requests notification permission from the first visible auth screen.
-///
-/// Used to surface the OS prompt immediately after first install instead of
-/// waiting until the authenticated home screen is shown.
-final firstLaunchNotificationPermissionProvider = FutureProvider<void>((ref) {
-  return _requestNotificationPermissionIfNeeded(
-    ref,
-    delay: const Duration(seconds: 1),
-    initializeServiceIfNeeded: true,
-  );
-});
-
 /// Deferred notification permission request.
 ///
 /// Waits a few seconds after the home screen renders, then requests

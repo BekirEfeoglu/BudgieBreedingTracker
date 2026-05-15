@@ -142,6 +142,7 @@ class SyncPullHandler {
     {
       final hrRepo = _ref.read(healthRecordRepositoryProvider);
       final eventRepo = _ref.read(eventRepositoryProvider);
+      final notificationRepo = _ref.read(notificationRepositoryProvider);
       final nsRepo = _ref.read(notificationScheduleRepositoryProvider);
       final errors = await _safeParallelPull([
         () async {
@@ -161,9 +162,10 @@ class SyncPullHandler {
             SupabaseConstants.eventsTable,
           );
         },
-        () => _ref
-            .read(notificationRepositoryProvider)
-            .pull(userId, lastSyncedAt: since),
+        () async {
+          await notificationRepo.pull(userId, lastSyncedAt: since);
+          await notificationRepo.pullSettings(userId);
+        },
         () async {
           await nsRepo.pull(userId, lastSyncedAt: since);
           _reportPullConflicts(
@@ -200,12 +202,14 @@ class SyncPullHandler {
         '[SyncOrchestrator] Pull completed with $layerErrors layer error(s). '
         'Check logs above for "[SyncOrchestrator] Pull L*" entries.',
       );
-      Sentry.addBreadcrumb(Breadcrumb(
-        message: 'SyncPull completed with errors',
-        data: {'layerErrors': layerErrors, 'incremental': since != null},
-        category: 'sync.pull',
-        level: SentryLevel.warning,
-      ));
+      Sentry.addBreadcrumb(
+        Breadcrumb(
+          message: 'SyncPull completed with errors',
+          data: {'layerErrors': layerErrors, 'incremental': since != null},
+          category: 'sync.pull',
+          level: SentryLevel.warning,
+        ),
+      );
       return false;
     } else {
       AppLogger.info('[SyncOrchestrator] Pull complete');
@@ -238,15 +242,19 @@ class SyncPullHandler {
       );
 
       // Persist to DB
-      unawaited(dao.insert(ConflictHistory(
-        id: uuid.v7(),
-        userId: userId,
-        tableName: tableName,
-        recordId: c.recordId,
-        description: c.detail,
-        conflictType: ConflictType.serverWins,
-        createdAt: DateTime.now(),
-      )));
+      unawaited(
+        dao.insert(
+          ConflictHistory(
+            id: uuid.v7(),
+            userId: userId,
+            tableName: tableName,
+            recordId: c.recordId,
+            description: c.detail,
+            conflictType: ConflictType.serverWins,
+            createdAt: DateTime.now(),
+          ),
+        ),
+      );
     }
 
     AppLogger.info(

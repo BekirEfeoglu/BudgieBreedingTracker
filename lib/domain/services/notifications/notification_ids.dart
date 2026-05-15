@@ -20,6 +20,12 @@ abstract final class NotificationIds {
   /// Base ID offset for banding reminder notifications. Range: 500000–599999
   static const bandingBaseId = 500000;
 
+  /// Base ID offset for generic notification schedules. Range: 600000-699999
+  static const scheduleBaseId = 600000;
+
+  /// Base ID offset for event reminders. Range: 700000-799999
+  static const eventReminderBaseId = 700000;
+
   static const idsPerEntitySlot = 100;
 
   /// Generates a stable notification ID for an entity within a category.

@@ -13,7 +13,6 @@ import '../../../bootstrap.dart';
 import '../../../core/extensions/context_extensions.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../domain/services/notifications/notification_providers.dart';
 import '../../../router/route_names.dart';
 import '../providers/native_google_auth_errors.dart';
 import '../providers/auth_providers.dart';
@@ -147,9 +146,6 @@ class _BudgieLoginScreenState extends _BudgieLoginAuthBase {
 
   @override
   Widget build(BuildContext context) {
-    // Trigger notification permission request on first launch
-    ref.watch(firstLaunchNotificationPermissionProvider);
-
     final screenHeight = MediaQuery.sizeOf(context).height;
     final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 50;
     final isSmall = screenHeight < 700;
