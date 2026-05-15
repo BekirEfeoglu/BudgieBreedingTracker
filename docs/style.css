@@ -1616,6 +1616,17 @@
       /* Disable float/glow animations */
       .glow-pulse { animation: none !important; }
       .animate-float, .animate-float-delayed, .animate-float-slow { animation: none !important; }
+      .hero-word,
+      .hero-subtitle-gsap,
+      .hero-cta-gsap,
+      .animate-fade-up,
+      .animate-fade-up-delay-2,
+      .animate-fade-up-delay-3 {
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+        animation: none !important;
+      }
 
       /* Simplify reveal: no blur filter */
       .reveal, .reveal-scale, .reveal-left, .reveal-right {

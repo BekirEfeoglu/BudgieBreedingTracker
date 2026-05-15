@@ -13,7 +13,7 @@
   <meta property="og:title" content="BudgieBreedingTracker">
   <meta property="og:description" content="Muhabbet kuşu yetiştiricileri için kapsamlı üreme takip uygulaması.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://budgiebreedingtracker.online">
+  <meta property="og:url" content="https://budgiebreedingtracker.online/">
   <meta property="og:image" content="https://budgiebreedingtracker.online/og-image.png">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
@@ -26,7 +26,7 @@
   <meta name="twitter:image" content="https://budgiebreedingtracker.online/og-image.png">
 
   <!-- Canonical & Robots -->
-  <link rel="canonical" href="https://budgiebreedingtracker.online">
+  <link rel="canonical" href="https://budgiebreedingtracker.online/">
   <meta name="robots" content="index, follow">
 
   <!-- Schema.org Structured Data -->
@@ -63,9 +63,9 @@
       "worstRating": "1"
     },
     "description": "Muhabbet kuşu yetiştiricileri için kapsamlı üreme takip uygulaması. Kuş, yumurta, yavru, genetik hesaplama ve soy ağacı yönetimi. Offline-first mimari ile internet olmadan da çalışır.",
-    "url": "https://budgiebreedingtracker.online",
+    "url": "https://budgiebreedingtracker.online/",
     "downloadUrl": "https://apps.apple.com/app/id6759828211",
-    "installUrl": "https://play.google.com/store/apps/details?id=com.budgietracker.app",
+    "installUrl": "https://play.google.com/store/apps/details?id=com.budgiebreeding.budgie_breeding_tracker",
     "screenshot": [
       "https://budgiebreedingtracker.online/assets/screenshot-1.jpg",
       "https://budgiebreedingtracker.online/assets/screenshot-2.jpg"
@@ -169,7 +169,7 @@
   <link rel="preload" as="image" href="logo.png">
 
   <!-- Shared styles — render-critical, loaded synchronously -->
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20260515">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="logo.png">
@@ -239,12 +239,12 @@
         <!-- Language Switcher + Hamburger -->
         <div class="flex items-center gap-2">
           <div class="flex items-center gap-1 rounded-lg p-1" style="background: rgba(20,50,100,0.4); border: 1px solid var(--glass-border);">
-            <button onclick="setLanguage('tr')" class="lang-btn active" data-lang="tr">TR</button>
-            <button onclick="setLanguage('en')" class="lang-btn" data-lang="en">EN</button>
-            <button onclick="setLanguage('de')" class="lang-btn" data-lang="de">DE</button>
+            <button type="button" onclick="setLanguage('tr')" class="lang-btn active" data-lang="tr" aria-label="Türkçe dilini seç" aria-pressed="true">TR</button>
+            <button type="button" onclick="setLanguage('en')" class="lang-btn" data-lang="en" aria-label="Select English language" aria-pressed="false">EN</button>
+            <button type="button" onclick="setLanguage('de')" class="lang-btn" data-lang="de" aria-label="Deutsch auswählen" aria-pressed="false">DE</button>
           </div>
           <!-- Hamburger (mobile only) -->
-          <button id="hamburger-btn" class="md:hidden p-2 rounded-lg transition-colors" style="color: var(--sage);" onclick="toggleMobileMenu()" aria-label="Menü aç/kapat">
+          <button id="hamburger-btn" type="button" class="md:hidden p-2 rounded-lg transition-colors" style="color: var(--sage);" onclick="toggleMobileMenu()" aria-label="Menü aç" aria-controls="mobile-menu" aria-expanded="false">
             <svg id="hamburger-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
@@ -304,11 +304,11 @@
             <span class="hero-word" style="color: var(--sage-light); animation-delay: 0.9s;" data-i18n="hero_title_3">Artik Kolay</span>
           </h1>
 
-          <p class="text-lg sm:text-xl max-w-lg mx-auto lg:mx-0 mb-10 leading-relaxed opacity-0 animate-fade-up-delay-2" style="color: var(--sage);" data-i18n="hero_subtitle">
+          <p class="hero-subtitle-gsap text-lg sm:text-xl max-w-lg mx-auto lg:mx-0 mb-10 leading-relaxed opacity-0 animate-fade-up-delay-2" style="color: var(--sage);" data-i18n="hero_subtitle">
             Kuslarinizi, yumurtalarinizi, yavrularinizi ve genetik hesaplamarinizi tek bir uygulamada yonetin. Offline calisin, verileriniz guvende kalsin.
           </p>
 
-          <div class="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start opacity-0 animate-fade-up-delay-3">
+          <div class="hero-cta-gsap flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start opacity-0 animate-fade-up-delay-3">
             <a href="#cta" class="group inline-flex items-center gap-2.5 px-8 py-4 btn-shimmer rounded-2xl transition-all hover:scale-[1.02] magnetic-btn cta-primary-enhanced" style="box-shadow: 0 8px 32px rgba(245,200,66,0.2);">
               <svg class="w-5 h-5 transition-transform group-hover:-translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
               <span data-i18n="hero_cta_primary">Uygulamayi Indir</span>
@@ -671,7 +671,7 @@
           <div class="space-y-6">
             <!-- Anne -->
             <div>
-              <label class="block text-sm font-semibold mb-2" style="color: var(--gold-light);" data-i18n="genetics_demo_mother">🐦 Anne Mutasyonu</label>
+              <label for="gd-mother" class="block text-sm font-semibold mb-2" style="color: var(--gold-light);" data-i18n="genetics_demo_mother">🐦 Anne Mutasyonu</label>
               <select id="gd-mother" onchange="calcGenetics()" class="w-full px-4 py-3 rounded-xl text-sm" style="background: rgba(15,27,77,0.7); border: 1px solid var(--glass-border); color: var(--sage-light); outline: none;">
                 <option value="normal" data-i18n="genetics_mut_normal">Normal (Yeşil)</option>
                 <option value="lutino" data-i18n="genetics_mut_lutino">Lutino</option>
@@ -683,7 +683,7 @@
             </div>
             <!-- Baba -->
             <div>
-              <label class="block text-sm font-semibold mb-2" style="color: var(--gold-light);" data-i18n="genetics_demo_father">🐦 Baba Mutasyonu</label>
+              <label for="gd-father" class="block text-sm font-semibold mb-2" style="color: var(--gold-light);" data-i18n="genetics_demo_father">🐦 Baba Mutasyonu</label>
               <select id="gd-father" onchange="calcGenetics()" class="w-full px-4 py-3 rounded-xl text-sm" style="background: rgba(15,27,77,0.7); border: 1px solid var(--glass-border); color: var(--sage-light); outline: none;">
                 <option value="lutino" data-i18n="genetics_mut_lutino">Lutino</option>
                 <option value="normal" data-i18n="genetics_mut_normal">Normal (Yeşil)</option>
@@ -1091,7 +1091,7 @@
 
       <div class="reveal" style="transition-delay: 0.1s; border-top: 1px solid var(--glass-border);">
         <div class="faq-item faq-item-enhanced py-5">
-          <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q1">Uygulama ücretsiz mi?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
@@ -1101,7 +1101,7 @@
         </div>
 
         <div class="faq-item faq-item-enhanced py-5">
-          <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q2">Verilerim güvende mi?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
@@ -1111,7 +1111,7 @@
         </div>
 
         <div class="faq-item faq-item-enhanced py-5">
-          <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q3">Offline çalışıyor mu?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
@@ -1121,7 +1121,7 @@
         </div>
 
         <div class="faq-item faq-item-enhanced py-5">
-          <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q4">Kaç kuş kaydedebilirim?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
@@ -1131,7 +1131,7 @@
         </div>
 
         <div class="faq-item faq-item-enhanced py-5">
-          <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q5">Hangi platformlarda çalışıyor?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
@@ -1141,7 +1141,7 @@
         </div>
 
         <div class="faq-item faq-item-enhanced py-5">
-          <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q6">Genetik hesaplayıcı nasıl çalışıyor?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
@@ -1151,7 +1151,7 @@
         </div>
 
         <div class="faq-item py-5" style="border-bottom: none;">
-          <button class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q7">Verilerimi başka cihaza aktarabilir miyim?</span>
             <svg class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
@@ -1217,7 +1217,8 @@
       <div class="mt-10 reveal" style="transition-delay: 0.45s;">
         <p class="text-sm mb-4" style="color: var(--sage);" data-i18n="cta_email_intro">Yeni özelliklerden ve mağaza güncellemelerinden haberdar olmak için e-posta adresinizi bırakın:</p>
         <form id="email-form" class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onsubmit="handleEmailSignup(event)">
-          <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+          <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <label for="email-input" class="sr-only" data-i18n="cta_email_label">E-posta adresi</label>
           <input
             type="email"
             id="email-input"
@@ -1226,6 +1227,7 @@
             style="background: rgba(20,50,100,0.4); border: 1px solid var(--glass-border); color: var(--sage-light); outline: none;"
             data-i18n-placeholder="cta_email_placeholder"
             placeholder="e-posta@adresiniz.com"
+            aria-describedby="email-thanks"
             required
           >
           <button type="submit" class="px-6 py-3 font-semibold rounded-xl transition-all hover:shadow-lg whitespace-nowrap text-sm" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);" data-i18n="cta_email_btn">Haberdar Et</button>
@@ -1420,6 +1422,7 @@
         faq_q5: 'Hangi platformlarda çalışıyor?',
         faq_a5: 'BudgieBreedingTracker iOS (iPhone/iPad) cihazlarda App Store, Android cihazlarda Google Play üzerinden kullanılabilir.',
         cta_email_intro: 'Yeni özelliklerden ve mağaza güncellemelerinden haberdar olmak için e-posta adresinizi bırakın:',
+        cta_email_label: 'E-posta adresi',
         cta_email_placeholder: 'e-posta@adresiniz.com',
         cta_email_btn: 'Haberdar Et',
         cta_email_thanks: 'Teşekkürler! Size haber vereceğiz 🎉',
@@ -1616,6 +1619,7 @@
         faq_q5: 'Which platforms does it support?',
         faq_a5: 'BudgieBreedingTracker is available on the App Store for iOS (iPhone/iPad) and on Google Play for Android devices.',
         cta_email_intro: 'Leave your email to get app updates and release news:',
+        cta_email_label: 'Email address',
         cta_email_placeholder: 'your@email.com',
         cta_email_btn: 'Notify Me',
         cta_email_thanks: 'Thank you! We\'ll keep you posted 🎉',
@@ -1812,6 +1816,7 @@
         faq_q5: 'Welche Plattformen werden unterstützt?',
         faq_a5: 'BudgieBreedingTracker ist im App Store für iOS (iPhone/iPad) und bei Google Play für Android-Geräte verfügbar.',
         cta_email_intro: 'Hinterlassen Sie Ihre E-Mail, um App-Updates und Release-Neuigkeiten zu erhalten:',
+        cta_email_label: 'E-Mail-Adresse',
         cta_email_placeholder: 'ihre@email.de',
         cta_email_btn: 'Benachrichtigen',
         cta_email_thanks: 'Danke! Wir halten Sie auf dem Laufenden 🎉',
@@ -1925,17 +1930,32 @@
       document.title = titles[lang];
 
       document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+        const isActive = btn.getAttribute('data-lang') === lang;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-pressed', String(isActive));
       });
+
+      const hamburger = document.getElementById('hamburger-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      if (hamburger && mobileMenu) {
+        const isMenuOpen = mobileMenu.classList.contains('open');
+        hamburger.setAttribute('aria-label', isMenuOpen
+          ? (lang === 'en' ? 'Close menu' : lang === 'de' ? 'Menü schließen' : 'Menüyü kapat')
+          : (lang === 'en' ? 'Open menu' : lang === 'de' ? 'Menü öffnen' : 'Menü aç'));
+      }
     }
 
     // ─── Mobile Menu ───
     function toggleMobileMenu() {
       const menu = document.getElementById('mobile-menu');
       const panel = document.getElementById('mobile-panel');
+      const hamburger = document.getElementById('hamburger-btn');
       const isOpen = menu.classList.contains('open');
       if (isOpen) { closeMobileMenu(); return; }
       menu.classList.remove('hidden');
+      menu.setAttribute('aria-hidden', 'false');
+      hamburger.setAttribute('aria-expanded', 'true');
+      hamburger.setAttribute('aria-label', currentLang === 'en' ? 'Close menu' : currentLang === 'de' ? 'Menü schließen' : 'Menüyü kapat');
       requestAnimationFrame(() => {
         menu.classList.add('open');
         panel.style.transform = 'translateY(0)';
@@ -1947,7 +1967,11 @@
     function closeMobileMenu() {
       const menu = document.getElementById('mobile-menu');
       const panel = document.getElementById('mobile-panel');
+      const hamburger = document.getElementById('hamburger-btn');
       menu.classList.remove('open');
+      menu.setAttribute('aria-hidden', 'true');
+      hamburger.setAttribute('aria-expanded', 'false');
+      hamburger.setAttribute('aria-label', currentLang === 'en' ? 'Open menu' : currentLang === 'de' ? 'Menü öffnen' : 'Menü aç');
       panel.style.transform = 'translateY(-110%)';
       document.getElementById('hamburger-icon').classList.remove('hidden');
       document.getElementById('close-icon').classList.add('hidden');
@@ -1963,10 +1987,12 @@
         if (openItem !== item) {
           openItem.classList.remove('open');
           openItem.querySelector('.faq-answer').classList.remove('open');
+          openItem.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
         }
       });
       item.classList.toggle('open', !isOpen);
       answer.classList.toggle('open', !isOpen);
+      btn.setAttribute('aria-expanded', String(!isOpen));
     }
 
     // ─── Email Signup ───
@@ -2076,6 +2102,24 @@
       }
     }
 
+    window.bbtScrollToCurrentHash = function bbtScrollToCurrentHash() {
+      if (!window.location.hash || window.location.hash === '#') return;
+      const target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+      if (!target) return;
+      target.querySelectorAll('.reveal, .reveal-scale, .reveal-left, .reveal-right, .reveal-flip').forEach(el => {
+        el.classList.add('active');
+        el.style.opacity = '';
+        el.style.transform = '';
+        el.style.translate = '';
+        el.style.rotate = '';
+        el.style.scale = '';
+      });
+      const navbar = document.getElementById('navbar');
+      const offset = (navbar?.offsetHeight || 0) + 16;
+      const top = target.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'auto' });
+    };
+
     // ─── Scroll handler (throttled) ───
     let ticking = false;
     window.addEventListener('scroll', () => {
@@ -2109,11 +2153,17 @@
       }
 
       // Initial reveal check — longer delay covers anchor scroll on page load
+      setTimeout(window.bbtScrollToCurrentHash, 50);
       setTimeout(handleReveal, 100);
+      setTimeout(window.bbtScrollToCurrentHash, 350);
       setTimeout(handleReveal, 600);
+      setTimeout(window.bbtScrollToCurrentHash, 1200);
 
       // Re-run reveal after any anchor navigation (nav link clicks, hash changes)
-      window.addEventListener('hashchange', () => setTimeout(handleReveal, 400));
+      window.addEventListener('hashchange', () => {
+        setTimeout(window.bbtScrollToCurrentHash, 50);
+        setTimeout(handleReveal, 400);
+      });
       document.querySelectorAll('a[href^="#"]').forEach(link => {
         link.addEventListener('click', () => setTimeout(handleReveal, 700));
       });
@@ -2172,6 +2222,8 @@
           btn.style.transform = 'translate(0, 0)';
         });
       });
+
+      setTimeout(window.bbtScrollToCurrentHash, 0);
 
     });
 
