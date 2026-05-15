@@ -4,6 +4,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_form_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
+import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
@@ -58,6 +59,7 @@ void main() {
   late MockIncubationRepository mockIncubationRepo;
   late MockEggRepository mockEggRepo;
   late MockBirdRepository mockBirdRepo;
+  late MockChickRepository mockChickRepo;
   late MockNotificationScheduler mockScheduler;
 
   setUp(() {
@@ -66,6 +68,7 @@ void main() {
     mockIncubationRepo = MockIncubationRepository();
     mockEggRepo = MockEggRepository();
     mockBirdRepo = MockBirdRepository();
+    mockChickRepo = MockChickRepository();
     mockScheduler = MockNotificationScheduler();
 
     registerFallbackValue(_pair());
@@ -73,12 +76,19 @@ void main() {
       const Incubation(id: 'fallback', userId: 'fallback-user'),
     );
     registerFallbackValue(_egg());
+    registerFallbackValue(
+      const Chick(id: 'fallback', userId: 'fallback-user'),
+    );
     when(
       () => mockScheduler.cancelIncubationMilestones(any()),
     ).thenAnswer((_) async {});
     when(
       () => mockScheduler.cancelEggTurningReminders(any()),
     ).thenAnswer((_) async {});
+    // Default: no chicks linked to any egg
+    when(
+      () => mockChickRepo.getByEggIds(any()),
+    ).thenAnswer((_) async => []);
   });
 
   ProviderContainer createContainer() {
@@ -88,6 +98,7 @@ void main() {
         incubationRepositoryProvider.overrideWithValue(mockIncubationRepo),
         eggRepositoryProvider.overrideWithValue(mockEggRepo),
         birdRepositoryProvider.overrideWithValue(mockBirdRepo),
+        chickRepositoryProvider.overrideWithValue(mockChickRepo),
         notificationSchedulerProvider.overrideWithValue(mockScheduler),
         isPremiumProvider.overrideWithValue(false),
         effectivePremiumProvider.overrideWithValue(false),
@@ -481,6 +492,39 @@ void main() {
         ).called(1);
       },
     );
+
+    test('clears eggId and clutchId on chicks before removing eggs', () async {
+      final incubations = [_incubation()];
+      final eggs = [_egg()];
+      final chick = Chick(
+        id: 'chick-1',
+        userId: 'user-1',
+        eggId: 'egg-1',
+        clutchId: 'clutch-1',
+      );
+      stubHelperDeps(incubations: incubations, eggs: eggs);
+      when(() => mockChickRepo.getByEggIds(['egg-1'])).thenAnswer(
+        (_) async => [chick],
+      );
+      when(() => mockChickRepo.save(any())).thenAnswer((_) async {});
+      when(() => mockEggRepo.remove(any())).thenAnswer((_) async {});
+      when(() => mockIncubationRepo.remove(any())).thenAnswer((_) async {});
+      when(() => mockPairRepo.remove(any())).thenAnswer((_) async {});
+
+      final container = createContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(breedingFormStateProvider.notifier)
+          .deleteBreeding('pair-1');
+
+      final captured =
+          verify(() => mockChickRepo.save(captureAny())).captured.single
+              as Chick;
+      expect(captured.id, 'chick-1');
+      expect(captured.eggId, isNull);
+      expect(captured.clutchId, isNull);
+    });
 
     test('does not remove pair when related cleanup fails', () async {
       when(
