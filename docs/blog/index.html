@@ -94,6 +94,19 @@
       transition: all 0.2s;
     }
     .cat-pill:hover, .cat-pill.active { background: var(--gold-light); border-color: var(--gold-light); color: #000; }
+    /* "Coming soon" cards — non-clickable, dimmed */
+    .blog-card.soon { cursor: default; opacity: 0.55; pointer-events: none; }
+    .blog-card.soon:hover { transform: none; border-color: rgba(255,255,255,0.08); }
+    .soon-badge {
+      position: absolute; top: 12px; right: 12px;
+      background: rgba(212,175,55,0.18);
+      color: var(--gold-light);
+      font-size: 0.7rem; font-weight: 600;
+      padding: 4px 10px; border-radius: 100px;
+      border: 1px solid rgba(212,175,55,0.3);
+      letter-spacing: 0.04em;
+    }
+    .blog-card { position: relative; }
     footer { text-align: center; padding: 48px 24px; border-top: 1px solid rgba(255,255,255,0.06); color: var(--sage); font-size: 0.85rem; }
     footer a { color: var(--sage); text-decoration: none; }
     footer a:hover { color: var(--gold-light); }
@@ -143,75 +156,80 @@
       </div>
     </a>
 
-    <a href="/blog/mutasyon-rehberi.html" class="blog-card" data-cat="genetik">
+    <div class="blog-card soon" data-cat="genetik" aria-disabled="true">
+      <span class="soon-badge">Yakında</span>
       <div class="blog-card-img">🧬</div>
       <div class="blog-card-body">
         <span class="blog-card-tag">Genetik</span>
         <h2>Muhabbet Kuşu Mutasyonları: Cinsiyet Bağlantılı ve Resesif Genler</h2>
         <p>Lutino, albino, opaline, cinnamon mutasyonlarının genetiği. Punnett karesi ile hangi çiftlerin hangi rengi ürettiği.</p>
         <div class="blog-card-meta">
-          <span>10 Mayıs 2026</span>
-          <span>12 dk okuma</span>
+          <span>Hazırlanıyor</span>
+          <span>~12 dk</span>
           <span>Orta–İleri</span>
         </div>
       </div>
-    </a>
+    </div>
 
-    <a href="/blog/yavru-bakim.html" class="blog-card" data-cat="baslangic">
+    <div class="blog-card soon" data-cat="baslangic" aria-disabled="true">
+      <span class="soon-badge">Yakında</span>
       <div class="blog-card-img">🐦</div>
       <div class="blog-card-body">
         <span class="blog-card-tag">Başlangıç</span>
         <h2>Yeni Doğan Muhabbet Kuşu Yavrularına Nasıl Bakılır?</h2>
         <p>Yavrunun yuva kutusundan çıkışından bağımsızlaşmasına kadar günlük bakım rutini, beslenme ve sağlık kontrolleri.</p>
         <div class="blog-card-meta">
-          <span>5 Mayıs 2026</span>
-          <span>6 dk okuma</span>
+          <span>Hazırlanıyor</span>
+          <span>~6 dk</span>
           <span>Başlangıç</span>
         </div>
       </div>
-    </a>
+    </div>
 
-    <a href="/blog/saglik-kontrol.html" class="blog-card" data-cat="saglik">
+    <div class="blog-card soon" data-cat="saglik" aria-disabled="true">
+      <span class="soon-badge">Yakında</span>
       <div class="blog-card-img">❤️</div>
       <div class="blog-card-body">
         <span class="blog-card-tag">Sağlık</span>
         <h2>Muhabbet Kuşunda Hastalık Belirtileri ve Erken Müdahale</h2>
         <p>Tüy dökülmesi, iştahsızlık, solunum güçlüğü — hangi belirtiler hangi hastalığa işaret eder? Veteriner ziyaretinden önce ne yapabilirsiniz?</p>
         <div class="blog-card-meta">
-          <span>28 Nisan 2026</span>
-          <span>7 dk okuma</span>
+          <span>Hazırlanıyor</span>
+          <span>~7 dk</span>
           <span>Orta</span>
         </div>
       </div>
-    </a>
+    </div>
 
-    <a href="/blog/halka-numarasi.html" class="blog-card" data-cat="baslangic">
+    <div class="blog-card soon" data-cat="baslangic" aria-disabled="true">
+      <span class="soon-badge">Yakında</span>
       <div class="blog-card-img">💍</div>
       <div class="blog-card-body">
         <span class="blog-card-tag">Başlangıç</span>
         <h2>Muhabbet Kuşu Halka Numarası: Kayıt ve Takip Sistemi</h2>
         <p>Yasal halka zorunluluğu, halka numarası formatı ve BudgieBreedingTracker ile dijital kayıt nasıl tutulur?</p>
         <div class="blog-card-meta">
-          <span>20 Nisan 2026</span>
-          <span>5 dk okuma</span>
+          <span>Hazırlanıyor</span>
+          <span>~5 dk</span>
           <span>Başlangıç</span>
         </div>
       </div>
-    </a>
+    </div>
 
-    <a href="/blog/soy-agaci.html" class="blog-card" data-cat="genetik">
+    <div class="blog-card soon" data-cat="genetik" aria-disabled="true">
+      <span class="soon-badge">Yakında</span>
       <div class="blog-card-img">🌳</div>
       <div class="blog-card-body">
         <span class="blog-card-tag">Genetik</span>
         <h2>Soy Ağacı ile Yakın Akraba Çiftleşmesini Nasıl Önlersiniz?</h2>
         <p>İnbreeding katsayısı hesaplama, pedigree analizi ve sağlıklı gen çeşitliliğini korumak için pratik stratejiler.</p>
         <div class="blog-card-meta">
-          <span>15 Nisan 2026</span>
-          <span>9 dk okuma</span>
+          <span>Hazırlanıyor</span>
+          <span>~9 dk</span>
           <span>İleri</span>
         </div>
       </div>
-    </a>
+    </div>
 
   </div>
 
