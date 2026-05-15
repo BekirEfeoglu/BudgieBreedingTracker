@@ -72,10 +72,15 @@ void main() {
 
     testWidgets('hides related topics section when relatedTopicIndices '
         'is empty', (tester) async {
-      // guideTopics[9] = calendar_notifications, has empty related
-      expect(guideTopics[9].relatedTopicIndices, isEmpty);
+      final topicIndex = guideTopics.indexWhere(
+        (topic) =>
+            topic.titleKey == 'user_guide.topics.calendar_notifications.title',
+      );
 
-      await tester.pumpWidget(createSubject(topicIndex: 9));
+      expect(topicIndex, isNot(-1));
+      expect(guideTopics[topicIndex].relatedTopicIndices, isEmpty);
+
+      await tester.pumpWidget(createSubject(topicIndex: topicIndex));
       await tester.pumpAndSettle();
 
       expect(
