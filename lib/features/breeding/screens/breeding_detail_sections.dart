@@ -27,9 +27,12 @@ class _IncubationSection extends ConsumerWidget {
           const SizedBox(height: AppSpacing.md),
           Row(
             children: [
-              Text(
-                'breeding.incubation_process'.tr(),
-                style: theme.textTheme.titleMedium,
+              Expanded(
+                child: Text(
+                  'breeding.incubation_process'.tr(),
+                  style: theme.textTheme.titleMedium,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               const SizedBox(width: AppSpacing.sm),
               Container(
@@ -79,6 +82,145 @@ class _IncubationSection extends ConsumerWidget {
                   ),
                 ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SeasonSummarySection extends ConsumerWidget {
+  final String incubationId;
+
+  const _SeasonSummarySection({required this.incubationId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final summaryAsync = ref.watch(breedingSeasonSummaryProvider(incubationId));
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: AppSpacing.screenPadding,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'breeding.season_summary'.tr(),
+            style: theme.textTheme.titleMedium,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          summaryAsync.when(
+            loading: () => const LinearProgressIndicator(),
+            error: (_, __) => Text(
+              'common.data_load_error'.tr(),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.error,
+              ),
+            ),
+            data: (summary) => GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: AppSpacing.sm,
+              crossAxisSpacing: AppSpacing.sm,
+              childAspectRatio: 2.75,
+              children: [
+                _SeasonMetricTile(
+                  icon: const AppIcon(AppIcons.egg),
+                  label: 'breeding.total_eggs'.tr(),
+                  value: summary.totalEggs.toString(),
+                  color: AppColors.primary,
+                ),
+                _SeasonMetricTile(
+                  icon: const AppIcon(AppIcons.fertile),
+                  label: 'breeding.fertile_eggs'.tr(),
+                  value: summary.fertileEggs.toString(),
+                  color: AppColors.info,
+                ),
+                _SeasonMetricTile(
+                  icon: const AppIcon(AppIcons.hatched),
+                  label: 'breeding.hatched_eggs'.tr(),
+                  value: summary.hatchedEggs.toString(),
+                  color: AppColors.success,
+                ),
+                _SeasonMetricTile(
+                  icon: const AppIcon(AppIcons.chick),
+                  label: 'breeding.live_chicks'.tr(),
+                  value: summary.liveChicks.toString(),
+                  color: AppColors.stageFledgling,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SeasonMetricTile extends StatelessWidget {
+  final Widget icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  const _SeasonMetricTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+            ),
+            alignment: Alignment.center,
+            child: IconTheme(
+              data: IconThemeData(color: color, size: 20),
+              child: icon,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Text(
+                  label,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ],
       ),

@@ -35,6 +35,7 @@ abstract final class PedigreePdfHelpers {
     'alive' => 'export.status_alive'.tr(),
     'dead' => 'export.status_dead'.tr(),
     'sold' => 'export.status_sold'.tr(),
+    'gifted' => 'export.status_gifted'.tr(),
     _ => name,
   };
 

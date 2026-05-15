@@ -96,7 +96,7 @@ class PedigreeNode extends StatelessWidget {
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _genderIconWidget,
+                _portraitWidget(theme),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   bird!.name,
@@ -217,10 +217,42 @@ class PedigreeNode extends StatelessWidget {
   }
 
   Widget get _genderIconWidget => switch (bird?.gender) {
-    BirdGender.male => const AppIcon(AppIcons.male, size: 16, color: AppColors.genderMale),
-    BirdGender.female => const AppIcon(AppIcons.female, size: 16, color: AppColors.genderFemale),
-    _ => const Icon(LucideIcons.helpCircle, size: 16, color: AppColors.genderUnknown),
+    BirdGender.male => const AppIcon(
+      AppIcons.male,
+      size: 16,
+      color: AppColors.genderMale,
+    ),
+    BirdGender.female => const AppIcon(
+      AppIcons.female,
+      size: 16,
+      color: AppColors.genderFemale,
+    ),
+    _ => const Icon(
+      LucideIcons.helpCircle,
+      size: 16,
+      color: AppColors.genderUnknown,
+    ),
   };
+
+  Widget _portraitWidget(ThemeData theme) {
+    final url = bird?.photoUrl;
+    if (url == null || url.isEmpty) return _genderIconWidget;
+
+    return ClipOval(
+      child: SizedBox(
+        width: isRoot ? 34 : 28,
+        height: isRoot ? 34 : 28,
+        child: Image.network(
+          url,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => ColoredBox(
+            color: _genderBackgroundColor.withValues(alpha: 0.12),
+            child: Center(child: _genderIconWidget),
+          ),
+        ),
+      ),
+    );
+  }
 
   Color get _genderBackgroundColor => switch (bird?.gender) {
     BirdGender.male => AppColors.genderMale,
@@ -238,6 +270,7 @@ class PedigreeNode extends StatelessWidget {
     BirdStatus.alive => AppColors.success,
     BirdStatus.dead => AppColors.error,
     BirdStatus.sold => AppColors.warning,
+    BirdStatus.gifted => AppColors.info,
     _ => AppColors.neutral400,
   };
 

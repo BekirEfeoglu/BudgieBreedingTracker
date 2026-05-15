@@ -15,8 +15,10 @@ import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/shared/providers/chicks.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_providers.dart';
+import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_detail_header.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_detail_info.dart';
+import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_weight_history_section.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 /// Returns a display name for a chick (shared utility).
@@ -70,6 +72,9 @@ class _DetailContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formState = ref.watch(chickFormStateProvider);
+    final weightHistoryAsync = ref.watch(
+      growthMeasurementsByChickProvider(chick.id),
+    );
 
     ref.listen<ChickFormState>(chickFormStateProvider, (_, state) {
       if (!context.mounted) return;
@@ -148,6 +153,24 @@ class _DetailContent extends ConsumerWidget {
                         endIndent: AppSpacing.lg,
                       ),
                       ChickDetailInfo(chick: chick),
+                      const Divider(
+                        height: 1,
+                        indent: AppSpacing.lg,
+                        endIndent: AppSpacing.lg,
+                      ),
+                      weightHistoryAsync.when(
+                        loading: () => const Padding(
+                          padding: AppSpacing.screenPadding,
+                          child: LinearProgressIndicator(),
+                        ),
+                        error: (_, __) => Padding(
+                          padding: AppSpacing.screenPadding,
+                          child: Text('common.data_load_error'.tr()),
+                        ),
+                        data: (measurements) => ChickWeightHistorySection(
+                          measurements: measurements,
+                        ),
+                      ),
                       if (chick.notes != null && chick.notes!.isNotEmpty) ...[
                         const Divider(
                           height: 1,
@@ -183,6 +206,9 @@ class _DetailContent extends ConsumerWidget {
           await notifier.markAsWeaned(chick.id);
           if (context.mounted) {
             ActionFeedbackService.show('chicks.wean_success'.tr());
+            if (chick.birdId == null) {
+              await _promptSaveAsBirdAfterWean(context, notifier);
+            }
           }
         }
       case 'promote':
@@ -229,6 +255,33 @@ class _DetailContent extends ConsumerWidget {
           await notifier.deleteChick(chick.id);
           if (context.mounted) context.pop();
         }
+    }
+  }
+
+  Future<void> _promptSaveAsBirdAfterWean(
+    BuildContext context,
+    ChickFormNotifier notifier,
+  ) async {
+    final shouldPromote = await showConfirmDialog(
+      context,
+      title: 'chicks.save_as_bird_title'.tr(),
+      message: 'chicks.save_as_bird_after_wean'.tr(),
+      confirmLabel: 'chicks.move_to_birds'.tr(),
+    );
+    if (!context.mounted) return;
+    if (shouldPromote == true) {
+      await notifier.promoteToBird(chick.copyWith(weanDate: DateTime.now()));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('chicks.moved_to_birds'.tr()),
+            action: SnackBarAction(
+              label: 'chicks.go_to_birds'.tr(),
+              onPressed: () => context.push('/birds'),
+            ),
+          ),
+        );
+      }
     }
   }
 }

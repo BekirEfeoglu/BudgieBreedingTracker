@@ -7,12 +7,14 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_breeding_providers.dart';
+import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_highlights_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/breeding_success_chart.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/egg_production_chart.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/fertility_trend_chart.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/incubation_duration_chart.dart';
+import 'package:budgie_breeding_tracker/features/statistics/widgets/statistics_highlight_cards.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/stats_species_filter_selector.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 
@@ -53,6 +55,7 @@ class _BreedingTabState extends ConsumerState<BreedingTab> {
         ref.invalidate(monthlyEggProductionProvider(userId));
         ref.invalidate(monthlyFertilityRateProvider(userId));
         ref.invalidate(incubationDurationProvider(userId));
+        ref.invalidate(seasonComparisonProvider(userId));
       },
       child: SingleChildScrollView(
         controller: _scrollController,
@@ -61,6 +64,8 @@ class _BreedingTabState extends ConsumerState<BreedingTab> {
         child: Column(
           children: [
             const StatsSpeciesFilterSelector(),
+            const SizedBox(height: AppSpacing.lg),
+            _SeasonComparisonSection(userId: userId),
             const SizedBox(height: AppSpacing.lg),
             _BreedingSuccessSection(userId: userId),
             const SizedBox(height: AppSpacing.lg),
@@ -73,6 +78,22 @@ class _BreedingTabState extends ConsumerState<BreedingTab> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _SeasonComparisonSection extends ConsumerWidget {
+  const _SeasonComparisonSection({required this.userId});
+  final String userId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final comparisonAsync = ref.watch(seasonComparisonProvider(userId));
+
+    return comparisonAsync.when(
+      loading: () => const ChartLoading(),
+      error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
+      data: (comparison) => SeasonComparisonCard(comparison: comparison),
     );
   }
 }

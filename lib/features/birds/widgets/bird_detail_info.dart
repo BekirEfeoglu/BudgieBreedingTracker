@@ -11,7 +11,7 @@ import 'package:budgie_breeding_tracker/features/birds/utils/bird_color_utils.da
 import 'package:budgie_breeding_tracker/features/birds/utils/bird_display_utils.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_form_helpers.dart';
 
-/// Info section for bird detail screen showing gender, species, age, color, cage, dates.
+/// Info section for bird detail screen showing gender, species, age, ring, cage, dates.
 class BirdDetailInfo extends StatelessWidget {
   final Bird bird;
 
@@ -22,6 +22,10 @@ class BirdDetailInfo extends StatelessWidget {
     final theme = Theme.of(context);
     final dateFormat = DateFormat('dd.MM.yyyy');
     final age = bird.age;
+    final hasRingNumber =
+        bird.ringNumber != null && bird.ringNumber!.trim().isNotEmpty;
+    final hasCageNumber =
+        bird.cageNumber != null && bird.cageNumber!.trim().isNotEmpty;
 
     return Padding(
       padding: AppSpacing.screenPadding,
@@ -82,13 +86,20 @@ class BirdDetailInfo extends StatelessWidget {
               subtitle: 'birds.color'.tr(),
             ),
           ],
-          if (bird.cageNumber != null) ...[
+          if (hasRingNumber || hasCageNumber) ...[
             const SizedBox(height: AppSpacing.sm),
-            _DetailInfoTile(
-              icon: const AppIcon(AppIcons.nest),
-              title: bird.cageNumber!,
-              subtitle: 'birds.cage_number'.tr(),
-            ),
+            if (hasRingNumber && hasCageNumber)
+              Row(
+                children: [
+                  Expanded(child: _ringTile),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(child: _cageTile),
+                ],
+              )
+            else if (hasRingNumber)
+              _ringTile
+            else
+              _cageTile,
           ],
           if (bird.status == BirdStatus.dead && bird.deathDate != null) ...[
             const SizedBox(height: AppSpacing.sm),
@@ -104,6 +115,14 @@ class BirdDetailInfo extends StatelessWidget {
               icon: const AppIcon(AppIcons.statusSold),
               title: dateFormat.format(bird.soldDate!),
               subtitle: 'birds.sell_date'.tr(),
+            ),
+          ],
+          if (bird.status == BirdStatus.gifted && bird.soldDate != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            _DetailInfoTile(
+              icon: const Icon(LucideIcons.gift),
+              title: dateFormat.format(bird.soldDate!),
+              subtitle: 'birds.transfer_date'.tr(),
             ),
           ],
         ],
@@ -133,6 +152,18 @@ class BirdDetailInfo extends StatelessWidget {
     }
     return birdColorLabel(color!);
   }
+
+  Widget get _ringTile => _DetailInfoTile(
+    icon: const AppIcon(AppIcons.ring),
+    title: bird.ringNumber!,
+    subtitle: 'birds.ring_number'.tr(),
+  );
+
+  Widget get _cageTile => _DetailInfoTile(
+    icon: const AppIcon(AppIcons.nest),
+    title: bird.cageNumber!,
+    subtitle: 'birds.cage_number'.tr(),
+  );
 }
 
 class _DetailInfoTile extends StatelessWidget {

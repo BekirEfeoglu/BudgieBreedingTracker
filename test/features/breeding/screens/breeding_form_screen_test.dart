@@ -14,6 +14,7 @@ import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/screens/breeding_form_screen.dart';
+import '../../../helpers/test_fixtures.dart';
 
 void main() {
   late GoRouter router;
@@ -46,13 +47,17 @@ void main() {
     );
   });
 
-  Widget createSubject({required Stream<List<Bird>> birdsStream}) {
+  Widget createSubject({
+    required Stream<List<Bird>> birdsStream,
+    List<Bird> maleBirds = const <Bird>[],
+    List<Bird> femaleBirds = const <Bird>[],
+  }) {
     return ProviderScope(
       overrides: [
         currentUserIdProvider.overrideWithValue('test-user'),
         birdsStreamProvider('test-user').overrideWith((_) => birdsStream),
-        maleBirdsProvider('test-user').overrideWith((_) => const <Bird>[]),
-        femaleBirdsProvider('test-user').overrideWith((_) => const <Bird>[]),
+        maleBirdsProvider('test-user').overrideWith((_) => maleBirds),
+        femaleBirdsProvider('test-user').overrideWith((_) => femaleBirds),
         breedingFormStateProvider.overrideWith(() => BreedingFormNotifier()),
       ],
       child: MaterialApp.router(routerConfig: router),
@@ -174,6 +179,50 @@ void main() {
       // When error occurs a Center(child: Text) is shown in the body.
       // The text includes the key 'common.error' and the error message.
       expect(find.byType(Center), findsAtLeastNWidgets(1));
+    });
+
+    testWidgets('shows inbreeding warning for related selected birds', (
+      tester,
+    ) async {
+      final father = createTestBird(
+        id: 'father',
+        userId: 'test-user',
+        name: 'Baba',
+        gender: BirdGender.male,
+      );
+      final daughter = createTestBird(
+        id: 'daughter',
+        userId: 'test-user',
+        name: 'Yavru',
+        gender: BirdGender.female,
+        fatherId: father.id,
+      );
+      final birds = [father, daughter];
+
+      await tester.pumpWidget(
+        createSubject(
+          birdsStream: Stream.value(birds),
+          maleBirds: [father],
+          femaleBirds: [daughter],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(DropdownButtonFormField<String>).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Baba').last);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(DropdownButtonFormField<String>).last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Yavru').last);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(l10n('breeding.inbreeding_warning_title')),
+        findsOneWidget,
+      );
+      expect(find.textContaining('25.0'), findsOneWidget);
     });
   });
 }

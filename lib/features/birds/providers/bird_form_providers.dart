@@ -129,6 +129,33 @@ class BirdFormNotifier extends Notifier<BirdFormState>
     }
   }
 
+  /// Marks a bird as gifted.
+  Future<void> markAsGifted(String id, {DateTime? giftedDate}) async {
+    if (state.isLoading) return;
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final repo = ref.read(birdRepositoryProvider);
+      final bird = await repo.getById(id);
+      if (bird != null) {
+        await repo.save(
+          bird.copyWith(
+            status: BirdStatus.gifted,
+            soldDate: giftedDate ?? DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+        );
+      } else {
+        state = state.copyWith(isLoading: false, error: 'birds.not_found'.tr());
+        return;
+      }
+      state = state.copyWith(isLoading: false, isSuccess: true);
+    } catch (e, st) {
+      AppLogger.error('BirdFormNotifier', e, st);
+      reportIfUnexpected(e, st);
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
+    }
+  }
+
   /// Resets form state for a new operation.
   void reset() {
     state = const BirdFormState();

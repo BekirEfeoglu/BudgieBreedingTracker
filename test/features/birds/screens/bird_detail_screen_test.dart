@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
@@ -15,6 +16,7 @@ import 'package:budgie_breeding_tracker/data/providers/user_role_providers.dart'
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
+import 'package:budgie_breeding_tracker/features/birds/providers/bird_timeline_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/screens/bird_detail_screen.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
 import 'package:budgie_breeding_tracker/features/genealogy/providers/genealogy_providers.dart';
@@ -63,6 +65,7 @@ void main() {
     required Stream<Bird?> birdStream,
     Stream<List<Bird>> birdsStream = const Stream.empty(),
     Stream<List<String>> photosStream = const Stream.empty(),
+    List<BirdTimelineEvent> timelineEvents = const [],
     BirdFormState formState = const BirdFormState(),
     bool isFounder = false,
   }) {
@@ -78,6 +81,7 @@ void main() {
         birdByIdProvider('bird-1').overrideWith((_) => birdStream),
         birdsStreamProvider.overrideWith((_, __) => birdsStream),
         birdPhotosProvider.overrideWith((_, __) => photosStream),
+        birdTimelineProvider.overrideWith((_, __) => timelineEvents),
         healthRecordsByBirdProvider.overrideWith((_, __) => Stream.value([])),
         birdFormStateProvider.overrideWith(() {
           final notifier = BirdFormNotifier();
@@ -179,6 +183,7 @@ void main() {
 
       expect(find.text(l10n('birds.mark_dead')), findsOneWidget);
       expect(find.text(l10n('birds.sold')), findsOneWidget);
+      expect(find.text(l10n('birds.gifted')), findsOneWidget);
       expect(find.text(l10n('common.delete')), findsOneWidget);
     });
 
@@ -197,6 +202,7 @@ void main() {
 
       expect(find.text(l10n('birds.mark_dead')), findsNothing);
       expect(find.text(l10n('birds.sold')), findsNothing);
+      expect(find.text(l10n('birds.gifted')), findsNothing);
       expect(find.text(l10n('common.delete')), findsOneWidget);
     });
 
@@ -210,6 +216,45 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(SingleChildScrollView), findsOneWidget);
+    });
+
+    testWidgets(
+      'does not leave an empty timeline divider when timeline is empty',
+      (tester) async {
+        await tester.pumpWidget(
+          createSubject(birdStream: Stream.value(testBird)),
+        );
+
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n('birds.timeline_title')), findsNothing);
+        expect(find.byType(Divider), findsNWidgets(3));
+      },
+    );
+
+    testWidgets('shows basic info before the timeline section', (tester) async {
+      await tester.pumpWidget(
+        createSubject(
+          birdStream: Stream.value(testBird),
+          timelineEvents: [
+            BirdTimelineEvent(
+              type: BirdTimelineEventType.birth,
+              date: DateTime(2024, 1, 1),
+              titleKey: 'birds.timeline_birth',
+              iconAsset: AppIcons.chick,
+            ),
+          ],
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      final infoTop = tester.getTopLeft(find.text(l10n('common.info'))).dy;
+      final timelineTop = tester
+          .getTopLeft(find.text(l10n('birds.timeline_title')))
+          .dy;
+
+      expect(infoTop, lessThan(timelineTop));
     });
   });
 }

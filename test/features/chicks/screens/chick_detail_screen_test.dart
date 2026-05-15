@@ -5,15 +5,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/screens/chick_detail_screen.dart';
+
+import '../../../helpers/mocks.dart';
 
 void main() {
   final testChick = Chick(
@@ -27,8 +32,20 @@ void main() {
   );
 
   late GoRouter router;
+  late MockChickRepository chickRepo;
+  late MockNotificationScheduler scheduler;
 
   setUp(() {
+    chickRepo = MockChickRepository();
+    scheduler = MockNotificationScheduler();
+    registerFallbackValue(testChick);
+    when(
+      () => scheduler.cancelChickCareReminders(any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => scheduler.cancelBandingReminders(any()),
+    ).thenAnswer((_) async {});
+
     router = GoRouter(
       initialLocation: '/chicks/chick-1',
       routes: [
@@ -58,6 +75,11 @@ void main() {
     return ProviderScope(
       overrides: [
         chickByIdProvider('chick-1').overrideWith((_) => chickStream),
+        growthMeasurementsByChickProvider(
+          'chick-1',
+        ).overrideWith((_) async => []),
+        chickRepositoryProvider.overrideWithValue(chickRepo),
+        notificationSchedulerProvider.overrideWithValue(scheduler),
         chickFormStateProvider.overrideWith(() {
           final notifier = ChickFormNotifier();
           return notifier;
@@ -174,6 +196,34 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(SingleChildScrollView), findsOneWidget);
+    });
+
+    testWidgets('asks to save chick as bird after weaning confirmation', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      when(
+        () => chickRepo.getById('chick-1'),
+      ).thenAnswer((_) async => testChick);
+      when(() => chickRepo.save(any())).thenAnswer((_) async {});
+
+      await tester.pumpWidget(
+        createSubject(chickStream: Stream.value(testChick)),
+      );
+
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(PopupMenuButton<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n('chicks.wean')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(TextButton, l10n('chicks.wean')));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('chicks.save_as_bird_title')), findsOneWidget);
+      expect(find.text(l10n('chicks.save_as_bird_after_wean')), findsOneWidget);
     });
 
     testWidgets('shows edit icon button in AppBar', (tester) async {

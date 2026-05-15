@@ -250,6 +250,7 @@ class _OffspringCard extends StatelessWidget {
     BirdStatus.alive => AppColors.success,
     BirdStatus.dead => AppColors.error,
     BirdStatus.sold => AppColors.warning,
+    BirdStatus.gifted => AppColors.info,
     _ => AppColors.neutral400,
   };
 }

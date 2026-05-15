@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
+import 'package:budgie_breeding_tracker/core/constants/genetics_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
@@ -9,6 +10,7 @@ import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/genetics/inbreeding_calculator.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/species_incubation_config.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/free_tier_limit_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_notification_helpers.dart';
@@ -18,6 +20,73 @@ import 'package:budgie_breeding_tracker/domain/services/premium/premium_provider
 import 'package:uuid/uuid.dart';
 
 part 'breeding_form_actions.dart';
+
+const _breedingCandidateBirdId = '__breeding_candidate__';
+
+class BreedingCandidateInbreeding {
+  final double coefficient;
+  final InbreedingRisk risk;
+  final Set<String> commonAncestorIds;
+  final bool depthLimited;
+
+  const BreedingCandidateInbreeding({
+    required this.coefficient,
+    required this.risk,
+    required this.commonAncestorIds,
+    this.depthLimited = false,
+  });
+
+  static const none = BreedingCandidateInbreeding(
+    coefficient: 0,
+    risk: InbreedingRisk.none,
+    commonAncestorIds: {},
+  );
+
+  bool get shouldShow => risk != InbreedingRisk.none;
+
+  bool get shouldConfirm => coefficient >= GeneticsConstants.inbreedingModerate;
+}
+
+BreedingCandidateInbreeding calculateBreedingCandidateInbreeding({
+  required List<Bird> birds,
+  required Bird? maleBird,
+  required Bird? femaleBird,
+}) {
+  if (maleBird == null || femaleBird == null) {
+    return BreedingCandidateInbreeding.none;
+  }
+
+  final ancestors = <String, Bird>{
+    for (final bird in birds) bird.id: bird,
+    maleBird.id: maleBird,
+    femaleBird.id: femaleBird,
+  };
+  ancestors[_breedingCandidateBirdId] = Bird(
+    id: _breedingCandidateBirdId,
+    userId: maleBird.userId,
+    name: _breedingCandidateBirdId,
+    gender: BirdGender.unknown,
+    species: maleBird.species,
+    fatherId: maleBird.id,
+    motherId: femaleBird.id,
+  );
+
+  const calculator = InbreedingCalculator();
+  final detail = calculator.calculateDetailed(
+    birdId: _breedingCandidateBirdId,
+    ancestors: ancestors,
+  );
+
+  return BreedingCandidateInbreeding(
+    coefficient: detail.coefficient,
+    risk: calculator.assessRisk(detail.coefficient),
+    commonAncestorIds: calculator.findCommonAncestors(
+      birdId: _breedingCandidateBirdId,
+      ancestors: ancestors,
+    ),
+    depthLimited: detail.depthLimited,
+  );
+}
 
 /// Male birds available for pairing (derived from birdsStreamProvider).
 final maleBirdsProvider = Provider.family<List<Bird>, String>((ref, userId) {

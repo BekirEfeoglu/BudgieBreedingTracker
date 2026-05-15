@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_providers.dart';
+import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_highlights_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_summary_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_trend_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/age_distribution_chart.dart';
@@ -15,6 +16,7 @@ import 'package:budgie_breeding_tracker/features/statistics/widgets/color_mutati
 import 'package:budgie_breeding_tracker/features/statistics/widgets/gender_pie_chart.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/quick_insights_card.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/species_breakdown_card.dart';
+import 'package:budgie_breeding_tracker/features/statistics/widgets/statistics_highlight_cards.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/summary_stats_grid.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 
@@ -58,6 +60,7 @@ class _OverviewTabState extends ConsumerState<OverviewTab> {
         ref.invalidate(colorMutationDistributionProvider(userId));
         ref.invalidate(ageDistributionProvider(userId));
         ref.invalidate(quickInsightsProvider(userId));
+        ref.invalidate(personalRecordsProvider(userId));
       },
       child: SingleChildScrollView(
         controller: _scrollController,
@@ -66,6 +69,8 @@ class _OverviewTabState extends ConsumerState<OverviewTab> {
         child: Column(
           children: [
             const QuickInsightsCard(),
+            const SizedBox(height: AppSpacing.lg),
+            _PersonalRecordsSection(userId: userId),
             const SizedBox(height: AppSpacing.lg),
             _SummarySection(userId: userId),
             const SizedBox(height: AppSpacing.lg),
@@ -80,6 +85,22 @@ class _OverviewTabState extends ConsumerState<OverviewTab> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _PersonalRecordsSection extends ConsumerWidget {
+  const _PersonalRecordsSection({required this.userId});
+  final String userId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final recordsAsync = ref.watch(personalRecordsProvider(userId));
+
+    return recordsAsync.when(
+      loading: () => const ChartLoading(),
+      error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
+      data: (records) => PersonalRecordsCard(records: records),
     );
   }
 }

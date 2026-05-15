@@ -41,6 +41,22 @@ final birdSortProvider = NotifierProvider<BirdSortNotifier, BirdSort>(
   BirdSortNotifier.new,
 );
 
+/// Notifier for bird list visual mode.
+class BirdListViewModeNotifier extends Notifier<BirdListViewMode> {
+  @override
+  BirdListViewMode build() => BirdListViewMode.list;
+
+  void setMode(BirdListViewMode mode) {
+    state = mode;
+  }
+}
+
+/// Current visual mode for the bird list.
+final birdListViewModeProvider =
+    NotifierProvider<BirdListViewModeNotifier, BirdListViewMode>(
+      BirdListViewModeNotifier.new,
+    );
+
 /// Filtered birds based on the current filter selection.
 final filteredBirdsProvider = Provider.family<List<Bird>, List<Bird>>((
   ref,
@@ -56,6 +72,8 @@ final filteredBirdsProvider = Provider.family<List<Bird>, List<Bird>>((
       birds.where((b) => b.status == BirdStatus.alive).toList(),
     BirdFilter.dead => birds.where((b) => b.status == BirdStatus.dead).toList(),
     BirdFilter.sold => birds.where((b) => b.status == BirdStatus.sold).toList(),
+    BirdFilter.gifted =>
+      birds.where((b) => b.status == BirdStatus.gifted).toList(),
   };
 });
 
@@ -115,9 +133,67 @@ final sortedAndFilteredBirdsProvider = Provider.family<List<Bird>, List<Bird>>((
           b.createdAt ?? DateTime(1900),
         ),
       );
+    case BirdSort.ringAsc:
+      sorted.sort(
+        (a, b) => _compareOptionalNatural(
+          a.ringNumber,
+          b.ringNumber,
+          descending: false,
+        ),
+      );
+    case BirdSort.ringDesc:
+      sorted.sort(
+        (a, b) => _compareOptionalNatural(
+          a.ringNumber,
+          b.ringNumber,
+          descending: true,
+        ),
+      );
   }
   return sorted;
 });
+
+/// Read-only cage occupancy summary assembled from current bird records.
+class CageSummary {
+  final String? cageNumber;
+  final List<Bird> birds;
+
+  const CageSummary({required this.cageNumber, required this.birds});
+
+  bool get isUnassigned => cageNumber == null || cageNumber!.trim().isEmpty;
+  int get aliveCount => birds.where((bird) => bird.isAlive).length;
+}
+
+/// Groups alive birds by cage number for the cage ledger view.
+final cageSummariesProvider = Provider.family<List<CageSummary>, List<Bird>>(
+  (ref, birds) => buildCageSummaries(birds),
+);
+
+List<CageSummary> buildCageSummaries(List<Bird> birds) {
+  final grouped = <String?, List<Bird>>{};
+
+  for (final bird in birds) {
+    if (!bird.isAlive) continue;
+    final cage = bird.cageNumber?.trim();
+    final key = cage == null || cage.isEmpty ? null : cage;
+    grouped.putIfAbsent(key, () => <Bird>[]).add(bird);
+  }
+
+  final summaries = grouped.entries.map((entry) {
+    final cageBirds = List<Bird>.of(entry.value)
+      ..sort((a, b) => _naturalCompare(a.name, b.name));
+    return CageSummary(cageNumber: entry.key, birds: cageBirds);
+  }).toList();
+
+  summaries.sort((a, b) {
+    if (a.isUnassigned && b.isUnassigned) return 0;
+    if (a.isUnassigned) return 1;
+    if (b.isUnassigned) return -1;
+    return _naturalCompare(a.cageNumber!, b.cageNumber!);
+  });
+
+  return summaries;
+}
 
 /// Filter options for the bird list.
 enum BirdFilter {
@@ -126,7 +202,8 @@ enum BirdFilter {
   female,
   alive,
   dead,
-  sold;
+  sold,
+  gifted;
 
   String get label => switch (this) {
     BirdFilter.all => 'common.all'.tr(),
@@ -135,6 +212,7 @@ enum BirdFilter {
     BirdFilter.alive => 'birds.status_alive'.tr(),
     BirdFilter.dead => 'birds.status_dead'.tr(),
     BirdFilter.sold => 'birds.status_sold'.tr(),
+    BirdFilter.gifted => 'birds.status_gifted'.tr(),
   };
 }
 
@@ -145,7 +223,9 @@ enum BirdSort {
   ageNewest,
   ageOldest,
   dateNewest,
-  dateOldest;
+  dateOldest,
+  ringAsc,
+  ringDesc;
 
   String get label => switch (this) {
     BirdSort.nameAsc => 'birds.sort_name_asc'.tr(),
@@ -154,8 +234,13 @@ enum BirdSort {
     BirdSort.ageOldest => 'birds.sort_age_oldest'.tr(),
     BirdSort.dateNewest => 'birds.sort_date_newest'.tr(),
     BirdSort.dateOldest => 'birds.sort_date_oldest'.tr(),
+    BirdSort.ringAsc => 'birds.sort_ring_asc'.tr(),
+    BirdSort.ringDesc => 'birds.sort_ring_desc'.tr(),
   };
 }
+
+/// Visual mode options for the bird list.
+enum BirdListViewMode { list, grid }
 
 final _naturalChunkPattern = RegExp(r'(\d+)|(\D+)');
 
@@ -181,4 +266,18 @@ int _naturalCompare(String a, String b) {
     if (cmp != 0) return cmp;
   }
   return aChunks.length.compareTo(bChunks.length);
+}
+
+int _compareOptionalNatural(String? a, String? b, {required bool descending}) {
+  final normalizedA = a?.trim();
+  final normalizedB = b?.trim();
+  final aMissing = normalizedA == null || normalizedA.isEmpty;
+  final bMissing = normalizedB == null || normalizedB.isEmpty;
+
+  if (aMissing && bMissing) return 0;
+  if (aMissing) return 1;
+  if (bMissing) return -1;
+
+  final result = _naturalCompare(normalizedA, normalizedB);
+  return descending ? -result : result;
 }

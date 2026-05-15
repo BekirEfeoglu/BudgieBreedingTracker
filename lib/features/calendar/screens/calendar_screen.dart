@@ -54,6 +54,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final eventsMap = ref.watch(eventsForMonthProvider(displayedMonth));
     final selectedEvents = ref.watch(eventsForSelectedDateProvider);
     final viewMode = ref.watch(calendarViewProvider);
+    final eventFilter = ref.watch(calendarEventFilterProvider);
     final weekEvents = ref.watch(eventsForWeekProvider);
 
     return Scaffold(
@@ -75,51 +76,107 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           const ProfileMenuButton(),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(AppSpacing.xxxl + AppSpacing.lg),
+          preferredSize: const Size.fromHeight(
+            (AppSpacing.xxxl + AppSpacing.lg) * 2,
+          ),
           child: Padding(
             padding: const EdgeInsets.only(
               left: AppSpacing.lg,
               right: AppSpacing.lg,
               bottom: AppSpacing.sm,
             ),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                    child: SegmentedButton<CalendarViewMode>(
-                      segments: [
-                        ButtonSegment(
-                          value: CalendarViewMode.month,
-                          label: Text('calendar.month_view'.tr()),
-                          icon: const AppIcon(AppIcons.calendar, size: 18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minWidth: constraints.maxWidth,
                         ),
-                        ButtonSegment(
-                          value: CalendarViewMode.week,
-                          label: Text('calendar.week_view'.tr()),
-                          icon: const Icon(LucideIcons.columns, size: 18),
+                        child: SegmentedButton<CalendarViewMode>(
+                          segments: [
+                            ButtonSegment(
+                              value: CalendarViewMode.month,
+                              label: Text('calendar.month_view'.tr()),
+                              icon: const AppIcon(AppIcons.calendar, size: 18),
+                            ),
+                            ButtonSegment(
+                              value: CalendarViewMode.week,
+                              label: Text('calendar.week_view'.tr()),
+                              icon: const Icon(LucideIcons.columns, size: 18),
+                            ),
+                            ButtonSegment(
+                              value: CalendarViewMode.day,
+                              label: Text('calendar.day_view'.tr()),
+                              icon: const Icon(
+                                LucideIcons.layoutList,
+                                size: 18,
+                              ),
+                            ),
+                          ],
+                          selected: {viewMode},
+                          onSelectionChanged: (s) {
+                            AppHaptics.selectionClick();
+                            ref
+                                .read(calendarViewProvider.notifier)
+                                .setViewMode(s.first);
+                          },
+                          style: const ButtonStyle(
+                            visualDensity: VisualDensity.compact,
+                          ),
                         ),
-                        ButtonSegment(
-                          value: CalendarViewMode.day,
-                          label: Text('calendar.day_view'.tr()),
-                          icon: const Icon(LucideIcons.layoutList, size: 18),
-                        ),
-                      ],
-                      selected: {viewMode},
-                      onSelectionChanged: (s) {
-                        AppHaptics.selectionClick();
-                        ref
-                            .read(calendarViewProvider.notifier)
-                            .setViewMode(s.first);
-                      },
-                      style: const ButtonStyle(
-                        visualDensity: VisualDensity.compact,
                       ),
-                    ),
-                  ),
-                );
-              },
+                    );
+                  },
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minWidth: constraints.maxWidth,
+                        ),
+                        child: SegmentedButton<CalendarEventFilter>(
+                          segments: [
+                            ButtonSegment(
+                              value: CalendarEventFilter.all,
+                              label: Text('calendar.all_events'.tr()),
+                              icon: const Icon(
+                                LucideIcons.calendarDays,
+                                size: 18,
+                              ),
+                            ),
+                            ButtonSegment(
+                              value: CalendarEventFilter.incubation,
+                              label: Text('calendar.incubation_events'.tr()),
+                              icon: const AppIcon(
+                                AppIcons.incubating,
+                                size: 18,
+                              ),
+                            ),
+                          ],
+                          selected: {eventFilter},
+                          onSelectionChanged: (selection) {
+                            AppHaptics.selectionClick();
+                            ref
+                                    .read(calendarEventFilterProvider.notifier)
+                                    .state =
+                                selection.first;
+                          },
+                          style: const ButtonStyle(
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
           ),
         ),

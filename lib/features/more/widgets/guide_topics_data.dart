@@ -1,7 +1,7 @@
 part of 'guide_data.dart';
 
 // ---------------------------------------------------------------------------
-// 15 guide topics
+// 16 guide topics
 // ---------------------------------------------------------------------------
 
 const guideTopics = <GuideTopic>[
@@ -96,7 +96,28 @@ const guideTopics = <GuideTopic>[
     ],
   ),
 
-  // ── 6. Saglik Kayitlari ──
+  // ── 6. Kafes Takibi ──
+  GuideTopic(
+    titleKey: 'user_guide.topics.cage_tracking.title',
+    subtitleKey: 'user_guide.topics.cage_tracking.subtitle',
+    iconAsset: AppIcons.nest,
+    category: GuideCategory.birdManagement,
+    relatedTopicIndices: [3, 4, 6],
+    blocks: [
+      GuideBlock.text('user_guide.topics.cage_tracking.intro'),
+      GuideBlock.steps(
+        stepsTitle: 'user_guide.topics.cage_tracking.steps_title',
+        stepKeys: [
+          'user_guide.topics.cage_tracking.step1',
+          'user_guide.topics.cage_tracking.step2',
+          'user_guide.topics.cage_tracking.step3',
+        ],
+      ),
+      GuideBlock.tip('user_guide.topics.cage_tracking.tip_breeding'),
+    ],
+  ),
+
+  // ── 7. Saglik Kayitlari ──
   GuideTopic(
     titleKey: 'user_guide.topics.health_records.title',
     subtitleKey: 'user_guide.topics.health_records.subtitle',
@@ -117,13 +138,13 @@ const guideTopics = <GuideTopic>[
     ],
   ),
 
-  // ── 7. Cift Olusturma ──
+  // ── 8. Cift Olusturma ──
   GuideTopic(
     titleKey: 'user_guide.topics.breeding_pair.title',
     subtitleKey: 'user_guide.topics.breeding_pair.subtitle',
     iconAsset: AppIcons.pair,
     category: GuideCategory.breedingProcess,
-    relatedTopicIndices: [7, 8],
+    relatedTopicIndices: [8, 9],
     blocks: [
       GuideBlock.text('user_guide.topics.breeding_pair.intro'),
       GuideBlock.steps(
@@ -140,13 +161,13 @@ const guideTopics = <GuideTopic>[
     ],
   ),
 
-  // ── 8. Yumurta ve Kulucka ──
+  // ── 9. Yumurta ve Kulucka ──
   GuideTopic(
     titleKey: 'user_guide.topics.eggs_incubation.title',
     subtitleKey: 'user_guide.topics.eggs_incubation.subtitle',
     iconAsset: AppIcons.egg,
     category: GuideCategory.breedingProcess,
-    relatedTopicIndices: [6, 8],
+    relatedTopicIndices: [7, 9],
     blocks: [
       GuideBlock.text('user_guide.topics.eggs_incubation.intro'),
       GuideBlock.steps(
@@ -163,13 +184,13 @@ const guideTopics = <GuideTopic>[
     ],
   ),
 
-  // ── 9. Yavru Takibi ──
+  // ── 10. Yavru Takibi ──
   GuideTopic(
     titleKey: 'user_guide.topics.chick_tracking.title',
     subtitleKey: 'user_guide.topics.chick_tracking.subtitle',
     iconAsset: AppIcons.chick,
     category: GuideCategory.breedingProcess,
-    relatedTopicIndices: [6, 7],
+    relatedTopicIndices: [7, 8],
     blocks: [
       GuideBlock.text('user_guide.topics.chick_tracking.intro'),
       GuideBlock.steps(
@@ -185,7 +206,7 @@ const guideTopics = <GuideTopic>[
     ],
   ),
 
-  // ── 10. Takvim ve Bildirimler ──
+  // ── 11. Takvim ve Bildirimler ──
   GuideTopic(
     titleKey: 'user_guide.topics.calendar_notifications.title',
     subtitleKey: 'user_guide.topics.calendar_notifications.subtitle',
@@ -201,14 +222,14 @@ const guideTopics = <GuideTopic>[
     ],
   ),
 
-  // ── 11. Soy Agaci ve Genetik ──
+  // ── 12. Soy Agaci ve Genetik ──
   GuideTopic(
     titleKey: 'user_guide.topics.genealogy_genetics.title',
     subtitleKey: 'user_guide.topics.genealogy_genetics.subtitle',
     iconAsset: AppIcons.dna,
     category: GuideCategory.tools,
     isPremium: true,
-    relatedTopicIndices: [6],
+    relatedTopicIndices: [7],
     blocks: [
       GuideBlock.text('user_guide.topics.genealogy_genetics.intro'),
       GuideBlock.text('user_guide.topics.genealogy_genetics.family_tree'),
@@ -222,13 +243,13 @@ const guideTopics = <GuideTopic>[
     ],
   ),
 
-  // ── 12. Yedekleme ve Disari Aktarma ──
+  // ── 13. Yedekleme ve Disari Aktarma ──
   GuideTopic(
     titleKey: 'user_guide.topics.backup_export.title',
     subtitleKey: 'user_guide.topics.backup_export.subtitle',
     iconAsset: AppIcons.backup,
     category: GuideCategory.dataManagement,
-    relatedTopicIndices: [12],
+    relatedTopicIndices: [13],
     blocks: [
       GuideBlock.text('user_guide.topics.backup_export.intro'),
       GuideBlock.steps(
@@ -244,13 +265,13 @@ const guideTopics = <GuideTopic>[
     ],
   ),
 
-  // ── 13. Senkronizasyon ──
+  // ── 14. Senkronizasyon ──
   GuideTopic(
     titleKey: 'user_guide.topics.sync.title',
     subtitleKey: 'user_guide.topics.sync.subtitle',
     iconAsset: AppIcons.sync,
     category: GuideCategory.dataManagement,
-    relatedTopicIndices: [11],
+    relatedTopicIndices: [12],
     blocks: [
       GuideBlock.text('user_guide.topics.sync.intro'),
       GuideBlock.text('user_guide.topics.sync.offline_info'),
@@ -260,13 +281,13 @@ const guideTopics = <GuideTopic>[
     ],
   ),
 
-  // ── 14. Profil ve Ayarlar ──
+  // ── 15. Profil ve Ayarlar ──
   GuideTopic(
     titleKey: 'user_guide.topics.profile_settings.title',
     subtitleKey: 'user_guide.topics.profile_settings.subtitle',
     iconAsset: AppIcons.settings,
     category: GuideCategory.accountSettings,
-    relatedTopicIndices: [14],
+    relatedTopicIndices: [15],
     blocks: [
       GuideBlock.text('user_guide.topics.profile_settings.intro'),
       GuideBlock.text('user_guide.topics.profile_settings.profile_info'),
@@ -275,13 +296,13 @@ const guideTopics = <GuideTopic>[
     ],
   ),
 
-  // ── 15. Premium Uyelik ──
+  // ── 16. Premium Uyelik ──
   GuideTopic(
     titleKey: 'user_guide.topics.premium.title',
     subtitleKey: 'user_guide.topics.premium.subtitle',
     iconAsset: AppIcons.premium,
     category: GuideCategory.accountSettings,
-    relatedTopicIndices: [13],
+    relatedTopicIndices: [14],
     blocks: [
       GuideBlock.text('user_guide.topics.premium.intro'),
       GuideBlock.text('user_guide.topics.premium.features_list'),

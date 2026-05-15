@@ -24,6 +24,7 @@ import 'package:budgie_breeding_tracker/features/birds/widgets/bird_detail_heade
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_detail_info.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_detail_parents.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_detail_photos.dart';
+import 'package:budgie_breeding_tracker/features/birds/widgets/bird_detail_timeline.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_detail_health.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_detail_notes.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_family_info.dart';
@@ -118,6 +119,10 @@ class _DetailContent extends ConsumerWidget {
                   child: Text('birds.mark_dead'.tr()),
                 ),
                 PopupMenuItem(value: 'sold', child: Text('birds.sold'.tr())),
+                PopupMenuItem(
+                  value: 'gifted',
+                  child: Text('birds.gifted'.tr()),
+                ),
               ],
               PopupMenuItem(value: 'delete', child: Text('common.delete'.tr())),
             ],
@@ -144,6 +149,7 @@ class _DetailContent extends ConsumerWidget {
                         endIndent: AppSpacing.lg,
                       ),
                       BirdDetailInfo(bird: bird),
+                      BirdDetailTimelineSection(bird: bird),
                       const Divider(
                         height: 1,
                         indent: AppSpacing.lg,
@@ -210,6 +216,20 @@ class _DetailContent extends ConsumerWidget {
         if (confirmed == true) {
           AppHaptics.mediumImpact();
           await notifier.markAsSold(bird.id);
+          if (!context.mounted) return;
+        }
+      case 'gifted':
+        final confirmed = await showConfirmDialog(
+          context,
+          title: 'birds.gifted'.tr(),
+          message: 'birds.mark_gifted_confirm'.tr(
+            namedArgs: {'name': bird.name},
+          ),
+          confirmLabel: 'common.yes'.tr(),
+        );
+        if (confirmed == true) {
+          AppHaptics.mediumImpact();
+          await notifier.markAsGifted(bird.id);
           if (!context.mounted) return;
         }
       case 'delete':

@@ -19,11 +19,18 @@ Manual chick creation is also supported.
 
 - `chickListProvider` — StreamProvider
 - `chickDetailProvider(id)` — StreamProvider.family
+- `growthMeasurementsByChickProvider(chickId)` — chick weight/growth history
 
 ## Data
 
 - **Table**: `chicks_table.dart`
+- **Growth table**: `growth_measurements_table.dart` (`chickId`, `weight`, `measurementDate`)
 - **Repository**: `chick_repository.dart` — requires `ValidatedSyncMixin` (parent: egg)
+
+## Detail UX
+
+- Detail shows weight tracking from existing growth measurements.
+- Weaning prompts to save the chick as a Bird through the existing promotion flow.
 
 ## Rules
 

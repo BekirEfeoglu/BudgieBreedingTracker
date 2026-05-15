@@ -274,5 +274,47 @@ void main() {
       final result = container.read(eventsForSelectedDateProvider);
       expect(result, isEmpty);
     });
+
+    test('filters selected date to incubation events when enabled', () async {
+      final targetDate = DateTime(2025, 6, 15);
+      final breeding = _event(
+        id: 'breeding',
+        eventDate: targetDate,
+        type: EventType.breeding,
+      );
+      final egg = _event(id: 'egg', eventDate: targetDate, type: EventType.egg);
+      final health = _event(
+        id: 'health',
+        eventDate: targetDate,
+        type: EventType.health,
+      );
+      final custom = _event(
+        id: 'custom',
+        eventDate: targetDate,
+        type: EventType.custom,
+      );
+
+      when(
+        () => mockEventRepo.watchAll('user-1'),
+      ).thenAnswer((_) => Stream.value([breeding, egg, health, custom]));
+
+      final container = ProviderContainer(
+        overrides: [
+          currentUserIdProvider.overrideWithValue('user-1'),
+          eventRepositoryProvider.overrideWithValue(mockEventRepo),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.read(selectedDateProvider.notifier).state = targetDate;
+      container.read(calendarEventFilterProvider.notifier).state =
+          CalendarEventFilter.incubation;
+      container.listen(eventsStreamProvider('user-1'), (_, __) {});
+      await container.read(eventsStreamProvider('user-1').future);
+      await Future<void>.microtask(() {});
+
+      final result = container.read(eventsForSelectedDateProvider);
+      expect(result.map((event) => event.id), ['breeding', 'egg']);
+    });
   });
 }

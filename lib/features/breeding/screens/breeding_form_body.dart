@@ -9,6 +9,12 @@ extension _BreedingFormBody on _BreedingFormScreenState {
     required Bird? selectedFemale,
     required BreedingFormState formState,
   }) {
+    final inbreeding = calculateBreedingCandidateInbreeding(
+      birds: allBirds,
+      maleBird: selectedMale,
+      femaleBird: selectedFemale,
+    );
+
     return Form(
       key: _formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -43,6 +49,7 @@ extension _BreedingFormBody on _BreedingFormScreenState {
                     }
                   }),
                   gender: BirdGender.male,
+                  recommendedCageNumber: selectedFemale?.cageNumber,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 BirdSelectorField(
@@ -66,6 +73,7 @@ extension _BreedingFormBody on _BreedingFormScreenState {
                     }
                   }),
                   gender: BirdGender.female,
+                  recommendedCageNumber: selectedMale?.cageNumber,
                 ),
                 if (selectedMale != null &&
                     selectedFemale != null &&
@@ -74,9 +82,13 @@ extension _BreedingFormBody on _BreedingFormScreenState {
                   Text(
                     'breeding.same_species_required'.tr(),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                   ),
+                ],
+                if (inbreeding.shouldShow) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  BreedingInbreedingWarning(inbreeding: inbreeding),
                 ],
                 const SizedBox(height: AppSpacing.lg),
                 DatePickerField(
@@ -108,8 +120,7 @@ extension _BreedingFormBody on _BreedingFormScreenState {
                 ),
                 const SizedBox(height: AppSpacing.xxl),
                 PrimaryButton(
-                  label:
-                      _isEdit ? 'common.update'.tr() : 'common.save'.tr(),
+                  label: _isEdit ? 'common.update'.tr() : 'common.save'.tr(),
                   isLoading: formState.isLoading,
                   onPressed: _submit,
                 ),
@@ -121,13 +132,18 @@ extension _BreedingFormBody on _BreedingFormScreenState {
     );
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     FocusScope.of(context).unfocus();
     if (!(_formKey.currentState?.validate() ?? false)) return;
     AppHaptics.lightImpact();
 
     final userId = ref.read(currentUserIdProvider);
     final notifier = ref.read(breedingFormStateProvider.notifier);
+
+    if (!await _confirmInbreedingIfNeeded(userId)) {
+      return;
+    }
+    if (!mounted) return;
 
     if (_isEdit && widget.editPairId != null) {
       final existingPair = _existingPair;
@@ -148,10 +164,10 @@ extension _BreedingFormBody on _BreedingFormScreenState {
           maleId: _maleId,
           femaleId: _femaleId,
           pairingDate: _pairingDate,
-          cageNumber:
-              _cageController.text.isEmpty ? null : _cageController.text,
-          notes:
-              _notesController.text.isEmpty ? null : _notesController.text,
+          cageNumber: _cageController.text.isEmpty
+              ? null
+              : _cageController.text,
+          notes: _notesController.text.isEmpty ? null : _notesController.text,
         ),
       );
     } else {
@@ -166,10 +182,52 @@ extension _BreedingFormBody on _BreedingFormScreenState {
         maleId: _maleId!,
         femaleId: _femaleId!,
         pairingDate: _pairingDate,
-        cageNumber:
-            _cageController.text.isEmpty ? null : _cageController.text,
+        cageNumber: _cageController.text.isEmpty ? null : _cageController.text,
         notes: _notesController.text.isEmpty ? null : _notesController.text,
       );
     }
+  }
+
+  Future<bool> _confirmInbreedingIfNeeded(String userId) async {
+    if (_maleId == null || _femaleId == null) return true;
+
+    final birds = ref.read(birdsStreamProvider(userId)).value ?? const <Bird>[];
+    Bird? selectedMale;
+    Bird? selectedFemale;
+    for (final bird in birds) {
+      if (bird.id == _maleId) selectedMale = bird;
+      if (bird.id == _femaleId) selectedFemale = bird;
+    }
+
+    final inbreeding = calculateBreedingCandidateInbreeding(
+      birds: birds,
+      maleBird: selectedMale,
+      femaleBird: selectedFemale,
+    );
+    if (!inbreeding.shouldConfirm) return true;
+
+    final percentage = (inbreeding.coefficient * 100).toStringAsFixed(1);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('breeding.inbreeding_confirm_title'.tr()),
+        content: Text(
+          'breeding.inbreeding_confirm_body'.tr(args: [percentage]),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text('common.cancel'.tr()),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text('breeding.inbreeding_confirm_continue'.tr()),
+          ),
+        ],
+      ),
+    );
+
+    if (!mounted) return false;
+    return confirmed ?? false;
   }
 }

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
@@ -95,8 +96,51 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(BirdCard), findsNWidgets(2));
-      expect(find.text('Mavi'), findsOneWidget);
-      expect(find.text('Sari'), findsOneWidget);
+      expect(find.text('Mavi'), findsAtLeastNWidgets(1));
+      expect(find.text('Sari'), findsAtLeastNWidgets(1));
+    });
+
+    testWidgets('switches between list and photo grid view', (tester) async {
+      final birds = [
+        createTestBird(id: 'b1', name: 'Mavi', gender: BirdGender.male),
+        createTestBird(id: 'b2', name: 'Sari', gender: BirdGender.female),
+      ];
+
+      await tester.pumpWidget(createSubject(birdsStream: Stream.value(birds)));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ListView), findsWidgets);
+      expect(find.byType(GridView), findsNothing);
+
+      await tester.tap(find.byTooltip(l10n('birds.grid_view')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(GridView), findsOneWidget);
+      expect(find.text('Mavi'), findsAtLeastNWidgets(1));
+      expect(find.text('Sari'), findsAtLeastNWidgets(1));
+
+      await tester.tap(find.byTooltip(l10n('birds.list_view')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ListView), findsWidgets);
+    });
+
+    testWidgets('opens cage ledger from app bar action', (tester) async {
+      final birds = [
+        createTestBird(id: 'b1', name: 'Mavi', cageNumber: 'K1'),
+        createTestBird(id: 'b2', name: 'Sari', cageNumber: 'K1'),
+      ];
+
+      await tester.pumpWidget(createSubject(birdsStream: Stream.value(birds)));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip(l10n('birds.cage_ledger')));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('birds.cage_ledger')), findsOneWidget);
+      expect(find.text('K1'), findsOneWidget);
+      expect(find.text('Mavi'), findsAtLeastNWidgets(1));
+      expect(find.text('Sari'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows error state on stream error', (tester) async {

@@ -21,6 +21,7 @@ Breeding creates the pair + incubation as one atomic operation. Pair/incubation 
 
 - `breedingPairListProvider` — StreamProvider
 - `activeIncubationsProvider` — live incubation streams
+- `breedingSeasonSummaryProvider` — egg/chick outcome summary per incubation
 - Breeding notifier (handles create, cancel, complete, rollback)
 
 ## Lifecycle Rules (from breeding-eggs.md)
@@ -42,6 +43,16 @@ Breeding creates the pair + incubation as one atomic operation. Pair/incubation 
 - Notification scheduling (incubation milestone reminders)
 - Calendar event generation
 - Optional failures must not undo primary mutation — show warning `errors.background_tasks_partial`
+
+## Detail UX
+
+- Detail shows a Season Summary card from existing eggs + chicks: total, fertile/incubating/hatched, hatched, live chicks.
+
+## Pair Form UX
+
+- When both parents are selected, the form calculates a candidate offspring inbreeding coefficient from existing pedigree data.
+- Low/minimal risk is shown inline; moderate or higher risk (`>= 25%`) requires explicit confirmation before save.
+- Calculation reuses `InbreedingCalculator`; no breeding schema change is required.
 
 ## Rules
 

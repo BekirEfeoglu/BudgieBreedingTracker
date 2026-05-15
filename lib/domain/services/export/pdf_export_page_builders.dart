@@ -51,7 +51,9 @@ extension _PdfPageBuilders on PdfExportService {
               b.ringNumber ?? '-',
               _genderLabel(b.gender.name),
               _statusLabel(b.status.name),
-              b.birthDate != null ? PdfExportService._dateFormat.format(b.birthDate!) : '-',
+              b.birthDate != null
+                  ? PdfExportService._dateFormat.format(b.birthDate!)
+                  : '-',
             ];
           }).toList(),
         ),
@@ -81,7 +83,9 @@ extension _PdfPageBuilders on PdfExportService {
               p.id.substring(0, 8),
               p.cageNumber ?? '-',
               p.status.name,
-              p.pairingDate != null ? PdfExportService._dateFormat.format(p.pairingDate!) : '-',
+              p.pairingDate != null
+                  ? PdfExportService._dateFormat.format(p.pairingDate!)
+                  : '-',
               p.separationDate != null
                   ? PdfExportService._dateFormat.format(p.separationDate!)
                   : '-',
@@ -113,7 +117,9 @@ extension _PdfPageBuilders on PdfExportService {
               '${e.eggNumber ?? "-"}',
               PdfExportService._dateFormat.format(e.layDate),
               e.status.name,
-              e.hatchDate != null ? PdfExportService._dateFormat.format(e.hatchDate!) : '-',
+              e.hatchDate != null
+                  ? PdfExportService._dateFormat.format(e.hatchDate!)
+                  : '-',
             ];
           }).toList(),
         ),
@@ -146,7 +152,9 @@ extension _PdfPageBuilders on PdfExportService {
               incubation.species.name,
               incubation.status.name,
               incubation.computedExpectedHatchDate != null
-                  ? PdfExportService._dateFormat.format(incubation.computedExpectedHatchDate!)
+                  ? PdfExportService._dateFormat.format(
+                      incubation.computedExpectedHatchDate!,
+                    )
                   : '-',
             ];
           }).toList(),
@@ -178,7 +186,9 @@ extension _PdfPageBuilders on PdfExportService {
               c.ringNumber ?? '-',
               _genderLabel(c.gender.name),
               c.healthStatus.name,
-              c.hatchDate != null ? PdfExportService._dateFormat.format(c.hatchDate!) : '-',
+              c.hatchDate != null
+                  ? PdfExportService._dateFormat.format(c.hatchDate!)
+                  : '-',
             ];
           }).toList(),
         ),
@@ -206,6 +216,7 @@ extension _PdfPageBuilders on PdfExportService {
     'alive' => 'export.status_alive'.tr(),
     'dead' => 'export.status_dead'.tr(),
     'sold' => 'export.status_sold'.tr(),
+    'gifted' => 'export.status_gifted'.tr(),
     _ => name,
   };
 }

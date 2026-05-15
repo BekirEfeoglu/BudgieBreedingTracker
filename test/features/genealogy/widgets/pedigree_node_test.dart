@@ -79,6 +79,17 @@ void main() {
       expect(find.text('TR-123'), findsOneWidget);
     });
 
+    testWidgets('shows bird photo inside node when photo URL exists', (
+      tester,
+    ) async {
+      final bird = _testBird.copyWith(photoUrl: 'https://example.com/bird.jpg');
+
+      await tester.pumpWidget(_wrap(PedigreeNode(bird: bird)));
+      await tester.pump();
+
+      expect(find.byType(Image), findsOneWidget);
+    });
+
     testWidgets('shows siblings count when > 0', (tester) async {
       await tester.pumpWidget(
         _wrap(PedigreeNode(bird: _testBird, siblingCount: 3)),

@@ -6,6 +6,7 @@ import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
+import 'package:budgie_breeding_tracker/data/models/growth_measurement_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 
@@ -13,6 +14,12 @@ import 'package:budgie_breeding_tracker/domain/services/notifications/notificati
 export 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
 
 part 'chick_filter_sort.dart';
+
+final growthMeasurementsByChickProvider =
+    FutureProvider.family<List<GrowthMeasurement>, String>((ref, chickId) {
+      final repo = ref.watch(growthMeasurementRepositoryProvider);
+      return repo.watchByChick(chickId).first;
+    });
 
 /// Filtered chicks based on the current filter selection.
 final filteredChicksProvider = Provider.family<List<Chick>, List<Chick>>((

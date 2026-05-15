@@ -7,6 +7,12 @@
 - Family tree view (interactive graph)
 - Bird ancestry detail
 
+## Tree UX
+
+- Tree view supports pan/zoom through `InteractiveViewer`.
+- Tapping a bird node opens bird detail; root chicks route to chick detail.
+- Bird nodes show photo thumbnails when `photoUrl` is available, otherwise fall back to gender/domain icon.
+
 ## Key Providers
 
 - `genealogyTreeProvider(birdId)` — async tree structure

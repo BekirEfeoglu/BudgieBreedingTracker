@@ -38,8 +38,17 @@ void main() {
   });
 
   group('GuideTopic', () {
-    test('guideTopics has exactly 15 entries', () {
-      expect(guideTopics.length, 15);
+    test('guideTopics has exactly 16 entries', () {
+      expect(guideTopics.length, 16);
+    });
+
+    test('includes cage tracking topic in bird management category', () {
+      final cageTopic = guideTopics.singleWhere(
+        (topic) => topic.titleKey == 'user_guide.topics.cage_tracking.title',
+      );
+
+      expect(cageTopic.category, GuideCategory.birdManagement);
+      expect(cageTopic.blocks, isNotEmpty);
     });
 
     test('every topic has non-empty titleKey starting with '

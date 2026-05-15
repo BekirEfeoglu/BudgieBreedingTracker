@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
+import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
@@ -143,6 +144,12 @@ class _DetailContent extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _IncubationSection(incubation: incubation),
+                        const Divider(
+                          height: 1,
+                          indent: AppSpacing.lg,
+                          endIndent: AppSpacing.lg,
+                        ),
+                        _SeasonSummarySection(incubationId: incubation.id),
                         const Divider(
                           height: 1,
                           indent: AppSpacing.lg,

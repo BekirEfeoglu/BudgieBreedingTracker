@@ -23,6 +23,7 @@ import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_det
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_form_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/unsaved_changes_scope.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/bird_selector_field.dart';
+import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_inbreeding_warning.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 

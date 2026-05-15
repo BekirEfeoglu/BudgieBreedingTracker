@@ -7,7 +7,7 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/status_badge.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-/// Status badge for a bird (alive, dead, sold).
+/// Status badge for a bird (alive, dead, sold, gifted).
 class BirdStatusBadge extends StatelessWidget {
   final BirdStatus status;
 
@@ -22,6 +22,7 @@ class BirdStatusBadge extends StatelessWidget {
     BirdStatus.alive => 'birds.status_alive'.tr(),
     BirdStatus.dead => 'birds.status_dead'.tr(),
     BirdStatus.sold => 'birds.status_sold'.tr(),
+    BirdStatus.gifted => 'birds.status_gifted'.tr(),
     BirdStatus.unknown => 'birds.unknown'.tr(),
   };
 
@@ -29,6 +30,7 @@ class BirdStatusBadge extends StatelessWidget {
     BirdStatus.alive => AppColors.success,
     BirdStatus.dead => AppColors.error,
     BirdStatus.sold => AppColors.warning,
+    BirdStatus.gifted => AppColors.info,
     BirdStatus.unknown => AppColors.neutral400,
   };
 
@@ -36,6 +38,7 @@ class BirdStatusBadge extends StatelessWidget {
     BirdStatus.alive => const AppIcon(AppIcons.statusAlive),
     BirdStatus.dead => const AppIcon(AppIcons.statusDead),
     BirdStatus.sold => const AppIcon(AppIcons.statusSold),
+    BirdStatus.gifted => const Icon(LucideIcons.gift, size: 16),
     BirdStatus.unknown => const Icon(LucideIcons.helpCircle, size: 16),
   };
 }

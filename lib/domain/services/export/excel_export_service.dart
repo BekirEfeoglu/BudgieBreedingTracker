@@ -162,11 +162,19 @@ class ExcelExportService {
   String sanitize(String value) {
     if (value.isEmpty) return value;
     final first = value[0];
-    if (first == '-' && value.length > 1 && _isDigitOrDot(value.codeUnitAt(1))) {
+    if (first == '-' &&
+        value.length > 1 &&
+        _isDigitOrDot(value.codeUnitAt(1))) {
       return value;
     }
-    if (first == '=' || first == '+' || first == '-' || first == '@' ||
-        first == '|' || first == '\t' || first == '\r' || first == '\n') {
+    if (first == '=' ||
+        first == '+' ||
+        first == '-' ||
+        first == '@' ||
+        first == '|' ||
+        first == '\t' ||
+        first == '\r' ||
+        first == '\n') {
       return "'$value";
     }
     return value;
@@ -185,6 +193,7 @@ class ExcelExportService {
     'alive' => 'export.status_alive'.tr(),
     'dead' => 'export.status_dead'.tr(),
     'sold' => 'export.status_sold'.tr(),
+    'gifted' => 'export.status_gifted'.tr(),
     _ => name,
   };
 }

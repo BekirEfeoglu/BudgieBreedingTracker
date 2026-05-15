@@ -71,6 +71,26 @@ void main() {
       expect(find.text('Kus1'), findsOneWidget);
     });
 
+    testWidgets('marks birds from the recommended cage', (tester) async {
+      final birds = [
+        createTestBird(id: 'b-1', name: 'Kus1', cageNumber: 'K1'),
+        createTestBird(id: 'b-2', name: 'Kus2', cageNumber: 'K2'),
+      ];
+
+      await _pump(
+        tester,
+        BirdSelectorField(
+          label: 'Seç',
+          birds: birds,
+          selectedId: 'b-1',
+          recommendedCageNumber: 'K1',
+          onChanged: (_) {},
+        ),
+      );
+
+      expect(find.text('breeding.same_cage_recommended'), findsOneWidget);
+    });
+
     testWidgets('sets initial value correctly', (tester) async {
       final birds = [
         createTestBird(id: 'b-1', name: 'Kus1'),

@@ -134,6 +134,22 @@ void main() {
       expect(find.text(l10n('genetics.no_results')), findsOneWidget);
     });
 
+    testWidgets('shows share action when selected entries are available', (
+      tester,
+    ) async {
+      final entries = [makeEntry(id: 'gh-1'), makeEntry(id: 'gh-2')];
+
+      await tester.pumpWidget(
+        createSubject(
+          historyIds: ['gh-1', 'gh-2'],
+          historyStream: Stream.value(entries),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('genetics.share_compare')), findsOneWidget);
+    });
+
     testWidgets('shows loading state while data is loading', (tester) async {
       final controller = StreamController<List<GeneticsHistory>>();
 
@@ -176,9 +192,7 @@ void main() {
       expect(find.byType(Card), findsOneWidget);
     });
 
-    testWidgets('renders table with header row for each entry', (
-      tester,
-    ) async {
+    testWidgets('renders table with header row for each entry', (tester) async {
       final entries = [
         makeEntry(id: 'gh-1'),
         makeEntry(id: 'gh-2'),

@@ -27,6 +27,7 @@ class _BirdFilterBarState extends ConsumerState<BirdFilterBar> {
     BirdFilter.alive,
     BirdFilter.dead,
     BirdFilter.sold,
+    BirdFilter.gifted,
   ];
 
   final Map<BirdFilter, GlobalKey> _keys = {

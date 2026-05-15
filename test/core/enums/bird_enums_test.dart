@@ -27,8 +27,13 @@ void main() {
       expect(BirdStatus.fromJson(''), BirdStatus.unknown);
     });
 
+    test('supports gifted status for birds transferred without sale', () {
+      expect(BirdStatus.fromJson('gifted'), BirdStatus.gifted);
+      expect(BirdStatus.gifted.toJson(), 'gifted');
+    });
+
     test('has expected value count', () {
-      expect(BirdStatus.values.length, 4);
+      expect(BirdStatus.values.length, 5);
     });
   });
 

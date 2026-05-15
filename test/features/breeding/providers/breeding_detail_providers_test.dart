@@ -4,9 +4,11 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
+import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
@@ -18,12 +20,14 @@ void main() {
   late MockBreedingPairRepository breedingPairRepo;
   late MockBirdRepository birdRepo;
   late MockEggRepository eggRepo;
+  late MockChickRepository chickRepo;
   late MockIncubationRepository incubationRepo;
 
   setUp(() {
     breedingPairRepo = MockBreedingPairRepository();
     birdRepo = MockBirdRepository();
     eggRepo = MockEggRepository();
+    chickRepo = MockChickRepository();
     incubationRepo = MockIncubationRepository();
   });
 
@@ -33,6 +37,7 @@ void main() {
         breedingPairRepositoryProvider.overrideWithValue(breedingPairRepo),
         birdRepositoryProvider.overrideWithValue(birdRepo),
         eggRepositoryProvider.overrideWithValue(eggRepo),
+        chickRepositoryProvider.overrideWithValue(chickRepo),
         incubationRepositoryProvider.overrideWithValue(incubationRepo),
       ],
     );
@@ -134,6 +139,75 @@ void main() {
 
       expect(result, hasLength(1));
       expect(result.first.incubationId, 'i1');
+    });
+  });
+
+  group('breedingSeasonSummaryProvider', () {
+    test('summarizes egg fertility, hatch, and live chick outcomes', () async {
+      final eggs = [
+        Egg(
+          id: 'egg-laid',
+          incubationId: 'inc-1',
+          userId: 'u1',
+          status: EggStatus.laid,
+          layDate: DateTime(2024, 1, 1),
+        ),
+        Egg(
+          id: 'egg-fertile',
+          incubationId: 'inc-1',
+          userId: 'u1',
+          status: EggStatus.fertile,
+          layDate: DateTime(2024, 1, 2),
+        ),
+        Egg(
+          id: 'egg-hatched-live',
+          incubationId: 'inc-1',
+          userId: 'u1',
+          status: EggStatus.hatched,
+          layDate: DateTime(2024, 1, 3),
+          hatchDate: DateTime(2024, 1, 21),
+        ),
+        Egg(
+          id: 'egg-hatched-deceased',
+          incubationId: 'inc-1',
+          userId: 'u1',
+          status: EggStatus.hatched,
+          layDate: DateTime(2024, 1, 4),
+          hatchDate: DateTime(2024, 1, 22),
+        ),
+      ];
+      when(
+        () => eggRepo.watchByIncubation('inc-1'),
+      ).thenAnswer((_) => Stream.value(eggs));
+      when(() => chickRepo.getByEggIds(any<List<String>>())).thenAnswer(
+        (_) async => [
+          Chick(
+            id: 'chick-live',
+            userId: 'u1',
+            eggId: 'egg-hatched-live',
+            hatchDate: DateTime(2024, 1, 21),
+          ),
+          Chick(
+            id: 'chick-deceased',
+            userId: 'u1',
+            eggId: 'egg-hatched-deceased',
+            hatchDate: DateTime(2024, 1, 22),
+            healthStatus: ChickHealthStatus.deceased,
+          ),
+        ],
+      );
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      final summary = await container.read(
+        breedingSeasonSummaryProvider('inc-1').future,
+      );
+
+      expect(summary.totalEggs, 4);
+      expect(summary.fertileEggs, 3);
+      expect(summary.hatchedEggs, 2);
+      expect(summary.liveChicks, 1);
     });
   });
 

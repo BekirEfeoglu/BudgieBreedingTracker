@@ -83,6 +83,12 @@ void main() {
     required Stream<BreedingPair?> pairStream,
     List<Incubation> incubations = const [],
     Stream<List<Incubation>>? incubationsStream,
+    BreedingSeasonSummary seasonSummary = const BreedingSeasonSummary(
+      totalEggs: 0,
+      fertileEggs: 0,
+      hatchedEggs: 0,
+      liveChicks: 0,
+    ),
   }) {
     return ProviderScope(
       overrides: [
@@ -97,6 +103,9 @@ void main() {
           'pair-1',
         ).overrideWith((_) => incubationsStream ?? Stream.value(incubations)),
         eggsByIncubationProvider('inc-1').overrideWith((_) => Stream.value([])),
+        breedingSeasonSummaryProvider(
+          'inc-1',
+        ).overrideWith((_) async => seasonSummary),
         eggActionsProvider.overrideWith(() => EggActionsNotifier()),
         // Override bird providers for male/female (null birds)
         birdByIdProvider('').overrideWith((_) => Stream.value(null)),
@@ -174,6 +183,33 @@ void main() {
       expect(find.textContaining('/ 18'), findsOneWidget);
 
       FlutterError.onError = originalOnError;
+    });
+
+    testWidgets('shows season summary when incubation exists', (tester) async {
+      await tester.pumpWidget(
+        createSubject(
+          pairStream: Stream.value(testPair),
+          incubations: [testIncubation],
+          seasonSummary: const BreedingSeasonSummary(
+            totalEggs: 4,
+            fertileEggs: 3,
+            hatchedEggs: 2,
+            liveChicks: 1,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('breeding.season_summary')), findsOneWidget);
+      expect(find.text(l10n('breeding.total_eggs')), findsOneWidget);
+      expect(find.text(l10n('breeding.fertile_eggs')), findsOneWidget);
+      expect(find.text(l10n('breeding.hatched_eggs')), findsOneWidget);
+      expect(find.text(l10n('breeding.live_chicks')), findsOneWidget);
+      expect(find.text('4'), findsOneWidget);
+      expect(find.text('3'), findsOneWidget);
+      expect(find.text('2'), findsOneWidget);
+      expect(find.text('1'), findsOneWidget);
     });
 
     testWidgets('shows error state when incubation stream errors', (

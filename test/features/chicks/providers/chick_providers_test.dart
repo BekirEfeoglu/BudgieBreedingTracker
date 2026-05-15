@@ -13,6 +13,7 @@ import 'package:budgie_breeding_tracker/data/models/clutch_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
+import 'package:budgie_breeding_tracker/data/models/growth_measurement_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
@@ -54,6 +55,7 @@ void main() {
   late MockIncubationRepository incubationRepo;
   late MockBreedingPairRepository breedingPairRepo;
   late MockClutchRepository clutchRepo;
+  late MockGrowthMeasurementRepository growthRepo;
 
   ProviderContainer makeContainer() {
     return ProviderContainer(
@@ -64,6 +66,7 @@ void main() {
         incubationRepositoryProvider.overrideWithValue(incubationRepo),
         breedingPairRepositoryProvider.overrideWithValue(breedingPairRepo),
         clutchRepositoryProvider.overrideWithValue(clutchRepo),
+        growthMeasurementRepositoryProvider.overrideWithValue(growthRepo),
       ],
     );
   }
@@ -86,6 +89,7 @@ void main() {
     incubationRepo = MockIncubationRepository();
     breedingPairRepo = MockBreedingPairRepository();
     clutchRepo = MockClutchRepository();
+    growthRepo = MockGrowthMeasurementRepository();
     registerFallbackValue(
       const Bird(
         id: 'fallback',
@@ -113,6 +117,32 @@ void main() {
     );
     when(() => chickRepo.save(any())).thenAnswer((_) async {});
     when(() => birdRepo.save(any())).thenAnswer((_) async {});
+  });
+
+  group('growthMeasurementsByChickProvider', () {
+    test('watches growth measurements for a chick', () async {
+      final measurements = [
+        GrowthMeasurement(
+          id: 'gm-1',
+          chickId: 'chick-1',
+          weight: 3.2,
+          measurementDate: DateTime(2025, 3, 2),
+          userId: 'user-1',
+        ),
+      ];
+      when(
+        () => growthRepo.watchByChick('chick-1'),
+      ).thenAnswer((_) => Stream.value(measurements));
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      final result = await container.read(
+        growthMeasurementsByChickProvider('chick-1').future,
+      );
+
+      expect(result, measurements);
+    });
   });
 
   group('chicksStreamProvider', () {

@@ -9,6 +9,7 @@ import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_breeding_providers.dart';
+import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_highlights_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/screens/breeding_tab.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
 
@@ -16,8 +17,9 @@ class _MockEggsDao extends Mock implements EggsDao {}
 
 Widget _createSubject() {
   final mockEggsDao = _MockEggsDao();
-  when(() => mockEggsDao.watchMonthlyProduction(any()))
-      .thenAnswer((_) => Stream.value(<String, int>{}));
+  when(
+    () => mockEggsDao.watchMonthlyProduction(any()),
+  ).thenAnswer((_) => Stream.value(<String, int>{}));
 
   return ProviderScope(
     overrides: [
@@ -33,6 +35,9 @@ Widget _createSubject() {
       incubationsStreamProvider(
         'anonymous',
       ).overrideWith((_) => Stream.value([])),
+      seasonComparisonProvider(
+        'anonymous',
+      ).overrideWithValue(const AsyncData(null)),
     ],
     child: const MaterialApp(home: Scaffold(body: BreedingTab())),
   );

@@ -26,6 +26,12 @@
 
 Stored per result so future algorithm changes can be detected and results can be flagged as stale.
 
+## Compare / Sharing
+
+- `GeneticsCompareScreen` can compare selected history rows across phenotype probabilities.
+- Compare results include a share action that builds a short text summary from the selected calculations and opens the platform share sheet.
+- Share failures are logged through `AppLogger` and surfaced with localized UI feedback.
+
 ## Local AI Integration
 
 `LocalAiService` can analyze a bird photo to suggest gender/mutation with confidence score:

@@ -11,12 +11,14 @@
 - Uses `.select()` on providers to narrow rebuilds (audit 2026-04-19)
 - `connectivityProvider` — shows offline banner when disconnected
 - `conflictNotifierProvider` — shows sync conflict banner
+- `todaysEggTurningSummaryProvider` — active incubation eggs + next same-day turning slot
 
 ## Widgets
 
 - Recent breeding pairs
 - Bird count summary
 - Upcoming incubation milestones
+- Today's egg-turning routine card
 - OfflineBanner (global, app-wide)
 
 ## See Also

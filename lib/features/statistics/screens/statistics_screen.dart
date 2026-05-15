@@ -4,9 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/domain/services/export/pdf_export_service.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_health_providers.dart';
+import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_highlights_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_summary_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_trend_providers.dart';
@@ -14,6 +18,7 @@ import 'package:budgie_breeding_tracker/features/statistics/screens/breeding_tab
 import 'package:budgie_breeding_tracker/features/statistics/screens/health_tab.dart';
 import 'package:budgie_breeding_tracker/features/statistics/screens/overview_tab.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/stats_period_selector.dart';
+import 'package:share_plus/share_plus.dart';
 
 /// Main statistics screen with 3 tabs: Overview, Breeding & Eggs, Chicks & Health.
 class StatisticsScreen extends ConsumerStatefulWidget {
@@ -71,6 +76,9 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
     // Health
     ref.invalidate(chickSurvivalProvider(_userId));
     ref.invalidate(healthRecordTypeDistributionProvider(_userId));
+    ref.invalidate(personalRecordsProvider(_userId));
+    ref.invalidate(seasonComparisonProvider(_userId));
+    ref.invalidate(healthTrendSummaryProvider(_userId));
   }
 
   @override
@@ -81,6 +89,14 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
           title: 'statistics.title'.tr(),
           iconAsset: AppIcons.statistics,
         ),
+        actions: [
+          AppIconButton(
+            tooltip: 'statistics.share_report'.tr(),
+            semanticLabel: 'statistics.share_report'.tr(),
+            onPressed: _shareStatisticsReport,
+            icon: const AppIcon(AppIcons.pdf),
+          ),
+        ],
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         bottom: TabBar(
@@ -114,5 +130,43 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
         ],
       ),
     );
+  }
+
+  Future<void> _shareStatisticsReport() async {
+    try {
+      final personalRecords =
+          ref.read(personalRecordsProvider(_userId)).value ??
+          const PersonalRecords();
+      final seasonComparison = ref
+          .read(seasonComparisonProvider(_userId))
+          .value;
+      final healthTrend =
+          ref.read(healthTrendSummaryProvider(_userId)).value ??
+          const HealthTrendSummary();
+      final bytes = await PdfExportService().generateStatisticsReport(
+        personalRecords: personalRecords,
+        seasonComparison: seasonComparison,
+        healthTrend: healthTrend,
+      );
+      if (!mounted) return;
+      await SharePlus.instance.share(
+        ShareParams(
+          subject: 'statistics.title'.tr(),
+          files: [
+            XFile.fromData(
+              bytes,
+              mimeType: 'application/pdf',
+              name: 'statistics-report.pdf',
+            ),
+          ],
+        ),
+      );
+    } catch (e, st) {
+      AppLogger.error('StatisticsScreen.shareReport', e, st);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('statistics.share_report_failed'.tr())),
+      );
+    }
   }
 }

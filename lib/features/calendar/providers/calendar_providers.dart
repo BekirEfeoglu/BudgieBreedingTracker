@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart' show DateUtils;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
@@ -18,6 +19,18 @@ final selectedDateProvider = NotifierProvider<SelectedDateNotifier, DateTime>(
 
 /// Calendar view mode.
 enum CalendarViewMode { month, week, day }
+
+enum CalendarEventFilter { all, incubation }
+
+class CalendarEventFilterNotifier extends Notifier<CalendarEventFilter> {
+  @override
+  CalendarEventFilter build() => CalendarEventFilter.all;
+}
+
+final calendarEventFilterProvider =
+    NotifierProvider<CalendarEventFilterNotifier, CalendarEventFilter>(
+      CalendarEventFilterNotifier.new,
+    );
 
 /// Current calendar view mode, persisted in SharedPreferences.
 ///
@@ -73,11 +86,12 @@ final eventsForSelectedDateProvider = Provider<List<Event>>((ref) {
   final userId = ref.watch(currentUserIdProvider);
   final eventsAsync = ref.watch(eventsStreamProvider(userId));
   final selectedDate = ref.watch(selectedDateProvider);
+  final filter = ref.watch(calendarEventFilterProvider);
 
   // IMPROVED: use DateUtils.dateOnly for cleaner date comparison
   final selectedDay = DateUtils.dateOnly(selectedDate);
   return eventsAsync.whenData((events) {
-        return events.where((e) {
+        return filterCalendarEvents(events, filter).where((e) {
           return DateUtils.dateOnly(e.eventDate) == selectedDay;
         }).toList();
       }).value ??
@@ -89,8 +103,9 @@ final eventsForMonthProvider =
     Provider.family<Map<DateTime, List<Event>>, DateTime>((ref, month) {
       final userId = ref.watch(currentUserIdProvider);
       final eventsAsync = ref.watch(eventsStreamProvider(userId));
+      final filter = ref.watch(calendarEventFilterProvider);
 
-      final events = eventsAsync.value ?? [];
+      final events = filterCalendarEvents(eventsAsync.value ?? [], filter);
       final map = <DateTime, List<Event>>{};
       for (final event in events) {
         final d = event.eventDate;
@@ -121,8 +136,9 @@ final eventsForWeekProvider = Provider<Map<DateTime, List<Event>>>((ref) {
   final userId = ref.watch(currentUserIdProvider);
   final eventsAsync = ref.watch(eventsStreamProvider(userId));
   final selectedDate = ref.watch(selectedDateProvider);
+  final filter = ref.watch(calendarEventFilterProvider);
 
-  final events = eventsAsync.value ?? [];
+  final events = filterCalendarEvents(eventsAsync.value ?? [], filter);
   // Get Monday of the selected date's week (ISO 8601: Monday=1)
   // Note: locale-aware firstDayOfWeek requires BuildContext; Monday-first
   // is correct for TR/DE locales. Future: add firstDayOfWeek provider.
@@ -141,6 +157,40 @@ final eventsForWeekProvider = Provider<Map<DateTime, List<Event>>>((ref) {
   return map;
 });
 
+bool isIncubationCalendarEvent(Event event) {
+  return switch (event.type) {
+    EventType.breeding ||
+    EventType.mating ||
+    EventType.egg ||
+    EventType.eggLaying ||
+    EventType.hatching ||
+    EventType.chick => true,
+    EventType.unknown ||
+    EventType.custom ||
+    EventType.health ||
+    EventType.feeding ||
+    EventType.cleaning ||
+    EventType.healthCheck ||
+    EventType.medication ||
+    EventType.vaccination ||
+    EventType.weightCheck ||
+    EventType.cageChange ||
+    EventType.banding ||
+    EventType.other => false,
+  };
+}
+
+List<Event> filterCalendarEvents(
+  List<Event> events,
+  CalendarEventFilter filter,
+) {
+  return switch (filter) {
+    CalendarEventFilter.all => events,
+    CalendarEventFilter.incubation =>
+      events.where(isIncubationCalendarEvent).toList(growable: false),
+  };
+}
+
 // Realtime subscription for cross-device event updates.
 // Routes changes through the local Drift DB via the repository so the
 // offline-first contract is maintained — the DAO stream ([watchAll])
@@ -155,4 +205,3 @@ final eventRealtimeSyncProvider = Provider.family<void, String>((ref, userId) {
     repo.unsubscribeFromEvents(channel);
   });
 });
-

@@ -12,6 +12,7 @@ import 'package:budgie_breeding_tracker/data/providers/entity_count_providers.da
 import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/active_breedings_section.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/dashboard_stats_grid.dart';
+import 'package:budgie_breeding_tracker/features/home/widgets/egg_turning_summary_section.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/incubation_summary_section.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/grace_period_banner.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/limit_approaching_banner.dart';
@@ -27,6 +28,7 @@ import 'package:budgie_breeding_tracker/shared/widgets/app_shell.dart';
 import 'package:budgie_breeding_tracker/core/widgets/ad_banner_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
+import 'package:budgie_breeding_tracker/domain/services/home_widget/home_widget_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_permission_handler.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/features/update/widgets/update_listener.dart';
@@ -34,6 +36,8 @@ import 'package:budgie_breeding_tracker/features/update/widgets/update_listener.
 /// Main home dashboard screen.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
+
+  static const _homeWidgetService = HomeWidgetService();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -54,6 +58,14 @@ class HomeScreen extends ConsumerWidget {
       }
     });
 
+    ref.listen<AsyncValue<HomeWidgetDashboardSnapshot>>(
+      homeWidgetDashboardSnapshotProvider(userId),
+      (previous, next) {
+        if (!next.hasValue || next.value == previous?.value) return;
+        _homeWidgetService.syncDashboardSnapshot(next.requireValue);
+      },
+    );
+
     return UpdateListener(
       child: Scaffold(
         appBar: AppBar(
@@ -62,61 +74,63 @@ class HomeScreen extends ConsumerWidget {
           scrolledUnderElevation: 0,
           actions: const [NotificationBellButton(), ProfileMenuButton()],
         ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          // Capture ScaffoldMessenger before async gap
-          final messenger = ScaffoldMessenger.of(context);
-          // Full sync with server (reconciles hard-deleted records)
-          await ref.read(syncOrchestratorProvider).forceFullSync();
-          ref.invalidate(dashboardStatsProvider(userId));
-          ref.invalidate(recentChicksProvider(userId));
-          ref.invalidate(chickParentsByEggProvider(userId));
-          ref.invalidate(activeBreedingsForDashboardProvider(userId));
-          ref.invalidate(unweanedChicksCountProvider(userId));
-          ref.invalidate(incubatingEggsSummaryProvider(userId));
-          if (context.mounted) {
-            messenger.showSnackBar(
-              SnackBar(
-                content: Text('sync.synced'.tr()),
-                duration: const Duration(seconds: 2),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          }
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SyncStatusBar(),
-              const SizedBox(height: AppSpacing.lg),
-              const WelcomeHeader(),
-              const SizedBox(height: AppSpacing.md),
-              _UnweanedSection(userId: userId),
-              LimitApproachingBanner(userId: userId),
-              const GracePeriodBanner(),
-              const SizedBox(height: AppSpacing.sm),
-              _StatsSection(userId: userId),
-              const SizedBox(height: AppSpacing.lg),
-              const QuickActionsRow(),
-              const SizedBox(height: AppSpacing.lg),
-              _IncubationSummarySection(userId: userId),
-              const SizedBox(height: AppSpacing.lg),
-              _ActiveBreedingsSection(userId: userId),
-              const SizedBox(height: AppSpacing.lg),
-              _RecentChicksSection(userId: userId),
-              const SizedBox(height: AppSpacing.lg),
-              Center(
-                child: AdBannerWidget(
-                  isPremiumProvider: isPremiumProvider,
-                  adBannerLoader: () => defaultAdBannerLoader(ref),
+        body: RefreshIndicator(
+          onRefresh: () async {
+            // Capture ScaffoldMessenger before async gap
+            final messenger = ScaffoldMessenger.of(context);
+            // Full sync with server (reconciles hard-deleted records)
+            await ref.read(syncOrchestratorProvider).forceFullSync();
+            ref.invalidate(dashboardStatsProvider(userId));
+            ref.invalidate(recentChicksProvider(userId));
+            ref.invalidate(chickParentsByEggProvider(userId));
+            ref.invalidate(activeBreedingsForDashboardProvider(userId));
+            ref.invalidate(unweanedChicksCountProvider(userId));
+            ref.invalidate(incubatingEggsSummaryProvider(userId));
+            if (context.mounted) {
+              messenger.showSnackBar(
+                SnackBar(
+                  content: Text('sync.synced'.tr()),
+                  duration: const Duration(seconds: 2),
+                  behavior: SnackBarBehavior.floating,
                 ),
-              ),
-              const SizedBox(height: AppSpacing.xxxl * 2),
-            ],
+              );
+            }
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SyncStatusBar(),
+                const SizedBox(height: AppSpacing.lg),
+                const WelcomeHeader(),
+                const SizedBox(height: AppSpacing.md),
+                _UnweanedSection(userId: userId),
+                LimitApproachingBanner(userId: userId),
+                const GracePeriodBanner(),
+                const SizedBox(height: AppSpacing.sm),
+                _StatsSection(userId: userId),
+                const SizedBox(height: AppSpacing.lg),
+                const QuickActionsRow(),
+                const SizedBox(height: AppSpacing.lg),
+                _EggTurningSummarySection(userId: userId),
+                const SizedBox(height: AppSpacing.lg),
+                _IncubationSummarySection(userId: userId),
+                const SizedBox(height: AppSpacing.lg),
+                _ActiveBreedingsSection(userId: userId),
+                const SizedBox(height: AppSpacing.lg),
+                _RecentChicksSection(userId: userId),
+                const SizedBox(height: AppSpacing.lg),
+                Center(
+                  child: AdBannerWidget(
+                    isPremiumProvider: isPremiumProvider,
+                    adBannerLoader: () => defaultAdBannerLoader(ref),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xxxl * 2),
+              ],
+            ),
           ),
-        ),
         ),
       ),
     );
@@ -279,6 +293,33 @@ class _IncubationSummarySection extends ConsumerWidget {
         );
       },
       data: (eggs) => IncubationSummarySection(eggs: eggs),
+    );
+  }
+}
+
+class _EggTurningSummarySection extends ConsumerWidget {
+  final String userId;
+
+  const _EggTurningSummarySection({required this.userId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final summaryAsync = ref.watch(todaysEggTurningSummaryProvider(userId));
+
+    return summaryAsync.when(
+      loading: () => const _SectionSkeleton(),
+      error: (error, st) {
+        AppLogger.error('[HomeScreen] EggTurningSummary error', error, st);
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: ErrorState(
+            message: 'common.data_load_error'.tr(),
+            onRetry: () =>
+                ref.invalidate(todaysEggTurningSummaryProvider(userId)),
+          ),
+        );
+      },
+      data: (summary) => EggTurningSummarySection(summary: summary),
     );
   }
 }

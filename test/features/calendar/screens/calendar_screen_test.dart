@@ -115,6 +115,19 @@ void main() {
       controller.close();
     });
 
+    testWidgets('shows event filter segmented button in AppBar', (
+      tester,
+    ) async {
+      final controller = StreamController<List<Event>>();
+
+      await tester.pumpWidget(createSubject(eventsStream: controller.stream));
+      await tester.pump();
+
+      expect(find.byType(SegmentedButton<CalendarEventFilter>), findsOneWidget);
+
+      controller.close();
+    });
+
     testWidgets('shows FAB when events load', (tester) async {
       await tester.pumpWidget(createSubject(eventsStream: Stream.value([])));
 

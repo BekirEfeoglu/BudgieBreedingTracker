@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
+import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/storage/storage_providers.dart';
@@ -37,6 +39,81 @@ final eggsByIncubationProvider = StreamProvider.family<List<Egg>, String>((
             Future.wait(eggs.map((egg) => _resolveEggPhoto(egg, resolver))),
       );
 });
+
+/// Aggregated outcomes for one incubation season.
+class BreedingSeasonSummary {
+  final int totalEggs;
+  final int fertileEggs;
+  final int hatchedEggs;
+  final int liveChicks;
+
+  const BreedingSeasonSummary({
+    required this.totalEggs,
+    required this.fertileEggs,
+    required this.hatchedEggs,
+    required this.liveChicks,
+  });
+
+  double get hatchRate => totalEggs == 0 ? 0 : hatchedEggs / totalEggs;
+
+  double get survivalRate => hatchedEggs == 0 ? 0 : liveChicks / hatchedEggs;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BreedingSeasonSummary &&
+          runtimeType == other.runtimeType &&
+          totalEggs == other.totalEggs &&
+          fertileEggs == other.fertileEggs &&
+          hatchedEggs == other.hatchedEggs &&
+          liveChicks == other.liveChicks;
+
+  @override
+  int get hashCode =>
+      Object.hash(totalEggs, fertileEggs, hatchedEggs, liveChicks);
+}
+
+/// Loads egg/chick outcomes for a single incubation.
+final breedingSeasonSummaryProvider =
+    FutureProvider.family<BreedingSeasonSummary, String>((
+      ref,
+      incubationId,
+    ) async {
+      final eggRepo = ref.watch(eggRepositoryProvider);
+      final chickRepo = ref.watch(chickRepositoryProvider);
+
+      final eggs = await eggRepo.watchByIncubation(incubationId).first;
+      if (eggs.isEmpty) {
+        return const BreedingSeasonSummary(
+          totalEggs: 0,
+          fertileEggs: 0,
+          hatchedEggs: 0,
+          liveChicks: 0,
+        );
+      }
+
+      final eggIds = eggs.map((egg) => egg.id).toList(growable: false);
+      final chicks = await chickRepo.getByEggIds(eggIds);
+      final liveChicks = chicks
+          .where((chick) => chick.healthStatus != ChickHealthStatus.deceased)
+          .length;
+
+      return BreedingSeasonSummary(
+        totalEggs: eggs.length,
+        fertileEggs: eggs
+            .where(
+              (egg) =>
+                  egg.status == EggStatus.fertile ||
+                  egg.status == EggStatus.incubating ||
+                  egg.status == EggStatus.hatched,
+            )
+            .length,
+        hatchedEggs: eggs
+            .where((egg) => egg.status == EggStatus.hatched)
+            .length,
+        liveChicks: liveChicks,
+      );
+    });
 
 /// Watches a single bird by ID (live stream).
 final birdByIdProvider = StreamProvider.family<Bird?, String>((ref, id) {

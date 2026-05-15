@@ -77,6 +77,54 @@ void main() {
       expect(find.text('Kafes-5'), findsOneWidget);
     });
 
+    testWidgets('shows ring number card when set', (tester) async {
+      final bird = createTestBird(ringNumber: 'TR-2026-042');
+
+      await pumpWidgetSimple(
+        tester,
+        SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+      );
+
+      expect(find.text('TR-2026-042'), findsOneWidget);
+      expect(find.text(l10n('birds.ring_number')), findsOneWidget);
+    });
+
+    testWidgets('keeps ring and cage cards on the same row when both exist', (
+      tester,
+    ) async {
+      final bird = createTestBird(
+        ringNumber: 'TR-2026-042',
+        cageNumber: 'Kafes-5',
+      );
+
+      await pumpWidgetSimple(
+        tester,
+        SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+      );
+
+      final ringCard = find.ancestor(
+        of: find.text('TR-2026-042'),
+        matching: find.byType(InfoCard),
+      );
+      final cageCard = find.ancestor(
+        of: find.text('Kafes-5'),
+        matching: find.byType(InfoCard),
+      );
+
+      expect(tester.getTopLeft(ringCard).dy, tester.getTopLeft(cageCard).dy);
+    });
+
+    testWidgets('does not show ring number card when null', (tester) async {
+      final bird = createTestBird(ringNumber: null);
+
+      await pumpWidgetSimple(
+        tester,
+        SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+      );
+
+      expect(find.text(l10n('birds.ring_number')), findsNothing);
+    });
+
     testWidgets('does not show cage number card when null', (tester) async {
       final bird = createTestBird(cageNumber: null);
 

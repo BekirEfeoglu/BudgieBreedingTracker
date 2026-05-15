@@ -18,6 +18,7 @@ import 'package:budgie_breeding_tracker/features/chicks/providers/chick_provider
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/screens/statistics_screen.dart';
+import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_highlights_providers.dart';
 
 class _MockBirdsDao extends Mock implements BirdsDao {}
 
@@ -26,14 +27,17 @@ class _MockEggsDao extends Mock implements EggsDao {}
 /// Creates mock DAO instances for SQL aggregate statistics providers.
 ({_MockBirdsDao birdsDao, _MockEggsDao eggsDao}) _createMockDaos() {
   final mockBirdsDao = _MockBirdsDao();
-  when(() => mockBirdsDao.watchGenderDistribution(any()))
-      .thenAnswer((_) => Stream.value(<BirdGender, int>{}));
-  when(() => mockBirdsDao.watchStatusDistribution(any()))
-      .thenAnswer((_) => Stream.value(<BirdStatus, int>{}));
+  when(
+    () => mockBirdsDao.watchGenderDistribution(any()),
+  ).thenAnswer((_) => Stream.value(<BirdGender, int>{}));
+  when(
+    () => mockBirdsDao.watchStatusDistribution(any()),
+  ).thenAnswer((_) => Stream.value(<BirdStatus, int>{}));
 
   final mockEggsDao = _MockEggsDao();
-  when(() => mockEggsDao.watchMonthlyProduction(any()))
-      .thenAnswer((_) => Stream.value(<String, int>{}));
+  when(
+    () => mockEggsDao.watchMonthlyProduction(any()),
+  ).thenAnswer((_) => Stream.value(<String, int>{}));
 
   return (birdsDao: mockBirdsDao, eggsDao: mockEggsDao);
 }
@@ -55,6 +59,12 @@ void main() {
         ).overrideWith((_) => Stream.value([])),
         eggsStreamProvider('anonymous').overrideWith((_) => Stream.value([])),
         chicksStreamProvider('anonymous').overrideWith((_) => Stream.value([])),
+        clutchesStreamProvider(
+          'anonymous',
+        ).overrideWith((_) => Stream.value([])),
+        healthRecordsStreamProvider(
+          'anonymous',
+        ).overrideWith((_) => Stream.value([])),
         birdCountProvider('anonymous').overrideWith((_) => Stream.value(0)),
         activeBreedingCountProvider(
           'anonymous',
@@ -102,6 +112,13 @@ void main() {
       );
     });
 
+    testWidgets('shows statistics report share action', (tester) async {
+      await tester.pumpWidget(createSubject());
+      await tester.pumpAndSettle();
+
+      expect(find.byTooltip(l10n('statistics.share_report')), findsOneWidget);
+    });
+
     testWidgets(
       'invalidates providers on mount so stale keepAlive caches are cleared',
       (tester) async {
@@ -119,9 +136,21 @@ void main() {
               breedingPairsStreamProvider(
                 'anonymous',
               ).overrideWith((_) => Stream.value([])),
-              eggsStreamProvider('anonymous').overrideWith((_) => Stream.value([])),
-              chicksStreamProvider('anonymous').overrideWith((_) => Stream.value([])),
-              birdCountProvider('anonymous').overrideWith((_) => Stream.value(0)),
+              eggsStreamProvider(
+                'anonymous',
+              ).overrideWith((_) => Stream.value([])),
+              chicksStreamProvider(
+                'anonymous',
+              ).overrideWith((_) => Stream.value([])),
+              clutchesStreamProvider(
+                'anonymous',
+              ).overrideWith((_) => Stream.value([])),
+              healthRecordsStreamProvider(
+                'anonymous',
+              ).overrideWith((_) => Stream.value([])),
+              birdCountProvider(
+                'anonymous',
+              ).overrideWith((_) => Stream.value(0)),
               activeBreedingCountProvider(
                 'anonymous',
               ).overrideWith((_) => Stream.value(0)),

@@ -15,9 +15,11 @@ import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/species_incubation_config.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/genetics/inbreeding_calculator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../helpers/mocks.dart';
+import '../../../helpers/test_fixtures.dart';
 
 BreedingPair _pair({
   String id = 'pair-1',
@@ -157,6 +159,59 @@ void main() {
       final updated = state.copyWith(isSuccess: true);
       expect(updated.isBreedingLimitReached, isFalse);
       expect(updated.isIncubationLimitReached, isFalse);
+    });
+  });
+
+  group('calculateBreedingCandidateInbreeding', () {
+    test('returns none when either bird is missing', () {
+      final result = calculateBreedingCandidateInbreeding(
+        birds: const [],
+        maleBird: null,
+        femaleBird: null,
+      );
+
+      expect(result.coefficient, 0);
+      expect(result.risk, InbreedingRisk.none);
+      expect(result.shouldConfirm, isFalse);
+    });
+
+    test('calculates moderate risk for parent-offspring pairing', () {
+      final father = createTestBird(id: 'father', gender: BirdGender.male);
+      final daughter = createTestBird(
+        id: 'daughter',
+        gender: BirdGender.female,
+        fatherId: father.id,
+      );
+
+      final result = calculateBreedingCandidateInbreeding(
+        birds: [father, daughter],
+        maleBird: father,
+        femaleBird: daughter,
+      );
+
+      expect(result.coefficient, closeTo(0.25, 0.001));
+      expect(result.risk, InbreedingRisk.moderate);
+      expect(result.shouldConfirm, isTrue);
+      expect(result.commonAncestorIds, contains(father.id));
+    });
+
+    test('keeps distant relation visible without confirm threshold', () {
+      final pedigree = createInbredPedigree(
+        subjectId: 'candidate-child',
+        fatherId: 'male-1',
+        motherId: 'female-1',
+        commonAncestorId: 'grandparent',
+      );
+
+      final result = calculateBreedingCandidateInbreeding(
+        birds: pedigree.values.toList(),
+        maleBird: pedigree['male-1'],
+        femaleBird: pedigree['female-1'],
+      );
+
+      expect(result.coefficient, closeTo(0.125, 0.001));
+      expect(result.risk, InbreedingRisk.low);
+      expect(result.shouldConfirm, isFalse);
     });
   });
 

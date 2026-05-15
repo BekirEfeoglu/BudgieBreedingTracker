@@ -16,6 +16,7 @@ enum BirdStatus {
   alive,
   dead,
   sold,
+  gifted,
   unknown;
 
   String toJson() => name;

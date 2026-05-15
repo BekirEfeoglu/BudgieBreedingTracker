@@ -13,6 +13,8 @@ import 'package:budgie_breeding_tracker/features/genetics/utils/phenotype_locali
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/bird_color_simulation.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:share_plus/share_plus.dart';
 
 /// Screen for comparing multiple genetics history calculations.
 class GeneticsCompareScreen extends ConsumerWidget {
@@ -60,13 +62,87 @@ class GeneticsCompareScreen extends ConsumerWidget {
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [_CompareTable(entries: selectedEntries)],
+              children: [
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: FilledButton.icon(
+                    onPressed: () => _shareCompare(context, selectedEntries),
+                    icon: const AppIcon(AppIcons.share, size: 18),
+                    label: Text('genetics.share_compare'.tr()),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                _CompareTable(entries: selectedEntries),
+              ],
             ),
           );
         },
       ),
     );
   }
+
+  Future<void> _shareCompare(
+    BuildContext context,
+    List<GeneticsHistory> entries,
+  ) async {
+    try {
+      await SharePlus.instance.share(
+        ShareParams(
+          subject: 'genetics.compare'.tr(),
+          text: _buildCompareShareText(entries),
+        ),
+      );
+    } catch (e, st) {
+      AppLogger.error('GeneticsCompareScreen.share', e, st);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('genetics.share_compare_failed'.tr())),
+      );
+    }
+  }
+}
+
+String _buildCompareShareText(List<GeneticsHistory> entries) {
+  final buffer = StringBuffer()
+    ..writeln('genetics.compare'.tr())
+    ..writeln();
+
+  for (var index = 0; index < entries.length; index++) {
+    final entry = entries[index];
+    final fatherMutations = PhenotypeLocalizer.localizeGenotypeKeys(
+      entry.fatherGenotype,
+    );
+    final motherMutations = PhenotypeLocalizer.localizeGenotypeKeys(
+      entry.motherGenotype,
+    );
+    final results = parseHistoryResults(entry.resultsJson)
+      ..sort((a, b) => b.probability.compareTo(a.probability));
+    final topResults = results
+        .take(5)
+        .map((result) {
+          final phenotype = PhenotypeLocalizer.localizePhenotype(
+            result.compoundPhenotype ?? result.phenotype,
+          );
+          final probability = (result.probability * 100).toStringAsFixed(1);
+          return '$phenotype $probability%';
+        })
+        .join(', ');
+
+    buffer
+      ..writeln('${index + 1}. ${'genetics.compare_result'.tr()}')
+      ..writeln(
+        '${'genetics.male_parent'.tr()}: '
+        '${fatherMutations.isEmpty ? 'genetics.mutation_normal'.tr() : fatherMutations.join(', ')}',
+      )
+      ..writeln(
+        '${'genetics.female_parent'.tr()}: '
+        '${motherMutations.isEmpty ? 'genetics.mutation_normal'.tr() : motherMutations.join(', ')}',
+      )
+      ..writeln('${'genetics.results'.tr()}: $topResults')
+      ..writeln();
+  }
+
+  return buffer.toString().trim();
 }
 
 class _CompareTable extends StatefulWidget {
@@ -94,7 +170,8 @@ class _CompareTableState extends State<_CompareTable> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.entries != widget.entries) {
       _parsedResults = {
-        for (final e in widget.entries) e.id: parseHistoryResults(e.resultsJson),
+        for (final e in widget.entries)
+          e.id: parseHistoryResults(e.resultsJson),
       };
     }
   }
@@ -150,10 +227,8 @@ class _CompareTableState extends State<_CompareTable> {
                       ),
                     ),
                     ...widget.entries.map(
-                      (e) => SizedBox(
-                        width: 120,
-                        child: _EntryHeader(entry: e),
-                      ),
+                      (e) =>
+                          SizedBox(width: 120, child: _EntryHeader(entry: e)),
                     ),
                   ],
                 ),
@@ -162,8 +237,9 @@ class _CompareTableState extends State<_CompareTable> {
               // Phenotype rows
               ...List.generate(sortedPhenotypes.length, (index) {
                 final phenotype = sortedPhenotypes[index];
-                final localizedPhenotype =
-                    PhenotypeLocalizer.localizePhenotype(phenotype);
+                final localizedPhenotype = PhenotypeLocalizer.localizePhenotype(
+                  phenotype,
+                );
 
                 return Container(
                   decoration: BoxDecoration(
@@ -205,10 +281,10 @@ class _CompareTableState extends State<_CompareTable> {
                         final results = _parsedResults[e.id]!;
                         final match = results.firstWhere(
                           (r) {
-                            final p = r.compoundPhenotype ??
+                            final p =
+                                r.compoundPhenotype ??
                                 (r.isCarrier
-                                    ? r.phenotype
-                                        .replaceAll(' (carrier)', '')
+                                    ? r.phenotype.replaceAll(' (carrier)', '')
                                     : r.phenotype);
                             return p == phenotype;
                           },
@@ -226,14 +302,12 @@ class _CompareTableState extends State<_CompareTable> {
                               ? Text(
                                   '-',
                                   style: TextStyle(
-                                    color:
-                                        theme.colorScheme.onSurfaceVariant,
+                                    color: theme.colorScheme.onSurfaceVariant,
                                   ),
                                 )
                               : Text(
                                   '${(prob * 100).toStringAsFixed(1)}%',
-                                  style:
-                                      theme.textTheme.bodyMedium?.copyWith(
+                                  style: theme.textTheme.bodyMedium?.copyWith(
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),

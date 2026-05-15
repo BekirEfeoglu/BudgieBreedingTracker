@@ -86,6 +86,9 @@ BirdStatus parseBirdStatus(String? value) {
   if (lower == 'sold' || lower == 'satildi' || lower == 'satıldı') {
     return BirdStatus.sold;
   }
+  if (lower == 'gifted' || lower == 'hibe' || lower == 'hediye') {
+    return BirdStatus.gifted;
+  }
   return BirdStatus.unknown;
 }
 

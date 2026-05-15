@@ -5,6 +5,7 @@ import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
+import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_highlights_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/screens/health_tab.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
 
@@ -18,6 +19,9 @@ Widget _createSubject() {
       healthRecordsStreamProvider(
         'anonymous',
       ).overrideWith((_) => Stream.value([])),
+      healthTrendSummaryProvider(
+        'anonymous',
+      ).overrideWithValue(const AsyncData(HealthTrendSummary())),
     ],
     child: const MaterialApp(home: Scaffold(body: HealthTab())),
   );
@@ -66,7 +70,10 @@ void main() {
       await tester.pumpWidget(_createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text(l10n('statistics.health_type_distribution')), findsOneWidget);
+      expect(
+        find.text(l10n('statistics.health_type_distribution')),
+        findsOneWidget,
+      );
     });
   });
 }

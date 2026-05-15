@@ -14,6 +14,7 @@ class BirdSelectorField extends StatelessWidget {
   final String? selectedId;
   final ValueChanged<String?> onChanged;
   final BirdGender? gender;
+  final String? recommendedCageNumber;
 
   const BirdSelectorField({
     super.key,
@@ -22,6 +23,7 @@ class BirdSelectorField extends StatelessWidget {
     this.selectedId,
     required this.onChanged,
     this.gender,
+    this.recommendedCageNumber,
   });
 
   @override
@@ -45,6 +47,10 @@ class BirdSelectorField extends StatelessWidget {
         ),
       ),
       items: birds.map((bird) {
+        final isRecommendedCage =
+            recommendedCageNumber != null &&
+            recommendedCageNumber!.trim().isNotEmpty &&
+            bird.cageNumber?.trim() == recommendedCageNumber!.trim();
         return DropdownMenuItem<String>(
           value: bird.id,
           child: Row(
@@ -56,6 +62,19 @@ class BirdSelectorField extends StatelessWidget {
                   '(${bird.ringNumber})',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+              if (isRecommendedCage) ...[
+                const SizedBox(width: AppSpacing.sm),
+                Flexible(
+                  child: Text(
+                    'breeding.same_cage_recommended'.tr(),
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],

@@ -166,9 +166,9 @@ void main() {
 
     test('sets isBirdLimitReached when free tier limit exceeded', () async {
       // Stub getCount to return the limit, triggering FreeTierLimitException
-      when(() => repo.getCount(any())).thenAnswer(
-        (_) async => AppConstants.freeTierMaxBirds,
-      );
+      when(
+        () => repo.getCount(any()),
+      ).thenAnswer((_) async => AppConstants.freeTierMaxBirds);
 
       final container = makeContainer(isPremium: false);
       addTearDown(container.dispose);
@@ -399,8 +399,9 @@ void main() {
 
     test('maps bird_invalid_father_gender DB error', () async {
       stubUnderLimit();
-      when(() => repo.save(any()))
-          .thenThrow(const DatabaseException('bird_invalid_father_gender'));
+      when(
+        () => repo.save(any()),
+      ).thenThrow(const DatabaseException('bird_invalid_father_gender'));
 
       final container = makeContainer();
       addTearDown(container.dispose);
@@ -417,8 +418,9 @@ void main() {
 
     test('maps bird_invalid_mother_gender DB error', () async {
       stubUnderLimit();
-      when(() => repo.save(any()))
-          .thenThrow(const DatabaseException('bird_invalid_mother_gender'));
+      when(
+        () => repo.save(any()),
+      ).thenThrow(const DatabaseException('bird_invalid_mother_gender'));
 
       final container = makeContainer();
       addTearDown(container.dispose);
@@ -435,8 +437,9 @@ void main() {
 
     test('maps bird_parent_self_reference DB error', () async {
       stubUnderLimit();
-      when(() => repo.save(any()))
-          .thenThrow(const DatabaseException('bird_parent_self_reference'));
+      when(
+        () => repo.save(any()),
+      ).thenThrow(const DatabaseException('bird_parent_self_reference'));
 
       final container = makeContainer();
       addTearDown(container.dispose);
@@ -450,8 +453,9 @@ void main() {
 
     test('maps bird_father_not_found DB error', () async {
       stubUnderLimit();
-      when(() => repo.save(any()))
-          .thenThrow(const DatabaseException('bird_father_not_found'));
+      when(
+        () => repo.save(any()),
+      ).thenThrow(const DatabaseException('bird_father_not_found'));
 
       final container = makeContainer();
       addTearDown(container.dispose);
@@ -465,8 +469,9 @@ void main() {
 
     test('maps bird_mother_not_found DB error', () async {
       stubUnderLimit();
-      when(() => repo.save(any()))
-          .thenThrow(const DatabaseException('bird_mother_not_found'));
+      when(
+        () => repo.save(any()),
+      ).thenThrow(const DatabaseException('bird_mother_not_found'));
 
       final container = makeContainer();
       addTearDown(container.dispose);
@@ -584,7 +589,9 @@ void main() {
         states.add(state);
       });
 
-      await container.read(birdFormStateProvider.notifier).updateBird(
+      await container
+          .read(birdFormStateProvider.notifier)
+          .updateBird(
             const Bird(
               id: 'b1',
               name: 'Beta',
@@ -603,7 +610,9 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(birdFormStateProvider.notifier).updateBird(
+      await container
+          .read(birdFormStateProvider.notifier)
+          .updateBird(
             const Bird(
               id: 'b1',
               name: 'Beta',
@@ -621,7 +630,9 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(birdFormStateProvider.notifier).updateBird(
+      await container
+          .read(birdFormStateProvider.notifier)
+          .updateBird(
             const Bird(
               id: 'b1',
               name: 'Beta',
@@ -642,7 +653,9 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(birdFormStateProvider.notifier).updateBird(
+      await container
+          .read(birdFormStateProvider.notifier)
+          .updateBird(
             const Bird(
               id: 'b1',
               name: 'Beta',
@@ -663,7 +676,9 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(birdFormStateProvider.notifier).updateBird(
+      await container
+          .read(birdFormStateProvider.notifier)
+          .updateBird(
             const Bird(
               id: 'b1',
               name: 'Beta',
@@ -686,7 +701,9 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(birdFormStateProvider.notifier).updateBird(
+      await container
+          .read(birdFormStateProvider.notifier)
+          .updateBird(
             const Bird(
               id: 'b2',
               name: 'Bird Two',
@@ -706,7 +723,9 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(birdFormStateProvider.notifier).updateBird(
+      await container
+          .read(birdFormStateProvider.notifier)
+          .updateBird(
             const Bird(
               id: 'b1',
               name: 'Bird',
@@ -727,7 +746,9 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(birdFormStateProvider.notifier).updateBird(
+      await container
+          .read(birdFormStateProvider.notifier)
+          .updateBird(
             const Bird(
               id: 'b1',
               name: 'Bird',
@@ -758,7 +779,9 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(birdFormStateProvider.notifier).updateBird(
+      await container
+          .read(birdFormStateProvider.notifier)
+          .updateBird(
             const Bird(
               id: 'b1',
               name: 'Bird',
@@ -789,7 +812,9 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(birdFormStateProvider.notifier).updateBird(
+      await container
+          .read(birdFormStateProvider.notifier)
+          .updateBird(
             const Bird(
               id: 'b1',
               name: 'Bird',
@@ -807,13 +832,16 @@ void main() {
     });
 
     test('maps bird_parent_species_mismatch DB error', () async {
-      when(() => repo.save(any()))
-          .thenThrow(const DatabaseException('bird_parent_species_mismatch'));
+      when(
+        () => repo.save(any()),
+      ).thenThrow(const DatabaseException('bird_parent_species_mismatch'));
 
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(birdFormStateProvider.notifier).updateBird(
+      await container
+          .read(birdFormStateProvider.notifier)
+          .updateBird(
             const Bird(
               id: 'b1',
               name: 'Bird',
@@ -834,7 +862,9 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(birdFormStateProvider.notifier).updateBird(
+      await container
+          .read(birdFormStateProvider.notifier)
+          .updateBird(
             const Bird(
               id: 'b1',
               name: 'Bird',
@@ -854,7 +884,9 @@ void main() {
 
       final before = DateTime.now();
 
-      await container.read(birdFormStateProvider.notifier).updateBird(
+      await container
+          .read(birdFormStateProvider.notifier)
+          .updateBird(
             const Bird(
               id: 'b1',
               name: 'Bird',
@@ -869,7 +901,9 @@ void main() {
 
       expect(captured.updatedAt, isNotNull);
       expect(
-        captured.updatedAt!.isAfter(before.subtract(const Duration(seconds: 1))),
+        captured.updatedAt!.isAfter(
+          before.subtract(const Duration(seconds: 1)),
+        ),
         isTrue,
       );
       expect(
@@ -885,7 +919,9 @@ void main() {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      await container.read(birdFormStateProvider.notifier).updateBird(
+      await container
+          .read(birdFormStateProvider.notifier)
+          .updateBird(
             const Bird(
               id: 'b1',
               name: 'Bird',
@@ -898,7 +934,9 @@ void main() {
       // Second: succeed
       when(() => repo.save(any())).thenAnswer((_) async {});
 
-      await container.read(birdFormStateProvider.notifier).updateBird(
+      await container
+          .read(birdFormStateProvider.notifier)
+          .updateBird(
             const Bird(
               id: 'b1',
               name: 'Bird',
@@ -1127,6 +1165,57 @@ void main() {
     });
   });
 
+  // ── markAsGifted ──
+
+  group('markAsGifted', () {
+    test('updates bird status to gifted and records transfer date', () async {
+      const bird = Bird(
+        id: 'b1',
+        name: 'Test',
+        gender: BirdGender.male,
+        userId: 'user-1',
+        status: BirdStatus.alive,
+      );
+      when(() => repo.getById('b1')).thenAnswer((_) async => bird);
+      when(() => repo.save(any())).thenAnswer((_) async {});
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container.read(birdFormStateProvider.notifier).markAsGifted('b1');
+
+      final state = container.read(birdFormStateProvider);
+      expect(state.isSuccess, isTrue);
+      final captured =
+          verify(() => repo.save(captureAny())).captured.single as Bird;
+      expect(captured.status, BirdStatus.gifted);
+      expect(captured.soldDate, isNotNull);
+    });
+
+    test('uses provided gifted date', () async {
+      const bird = Bird(
+        id: 'b1',
+        name: 'Test',
+        gender: BirdGender.male,
+        userId: 'user-1',
+      );
+      when(() => repo.getById('b1')).thenAnswer((_) async => bird);
+      when(() => repo.save(any())).thenAnswer((_) async {});
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      final giftedDate = DateTime(2024, 6, 10);
+      await container
+          .read(birdFormStateProvider.notifier)
+          .markAsGifted('b1', giftedDate: giftedDate);
+
+      final captured =
+          verify(() => repo.save(captureAny())).captured.single as Bird;
+      expect(captured.soldDate, giftedDate);
+    });
+  });
+
   // ── reset ──
 
   group('reset', () {
@@ -1192,14 +1281,16 @@ void main() {
       expect(updated.isSuccess, isFalse);
     });
 
-    test('copyWith preserves isBirdLimitReached when not explicitly passed',
-        () {
-      final state = const BirdFormState().copyWith(isBirdLimitReached: true);
-      expect(state.isBirdLimitReached, isTrue);
+    test(
+      'copyWith preserves isBirdLimitReached when not explicitly passed',
+      () {
+        final state = const BirdFormState().copyWith(isBirdLimitReached: true);
+        expect(state.isBirdLimitReached, isTrue);
 
-      final preserved = state.copyWith(isLoading: true);
-      expect(preserved.isBirdLimitReached, isTrue);
-    });
+        final preserved = state.copyWith(isLoading: true);
+        expect(preserved.isBirdLimitReached, isTrue);
+      },
+    );
 
     test('copyWith preserves remainingBirds when not explicitly passed', () {
       final state = const BirdFormState().copyWith(remainingBirds: 5);

@@ -428,4 +428,97 @@ void main() {
       },
     );
   });
+
+  group('todaysEggTurningSummary', () {
+    test('uses the next same-day turning slot for active incubation eggs', () {
+      final egg = _egg(
+        id: 'egg-1',
+        layDate: DateTime(2024, 5, 1),
+        status: EggStatus.incubating,
+        incubationId: 'inc-1',
+      );
+      final summary = buildTodaysEggTurningSummary([
+        IncubatingEggSummary(
+          egg: egg,
+          species: Species.budgie,
+          daysRemaining: 10,
+          progressPercent: 0.4,
+        ),
+      ], now: DateTime(2024, 5, 15, 7, 30));
+
+      expect(summary.count, 1);
+      expect(summary.nextTurningAt, DateTime(2024, 5, 15, 8));
+    });
+
+    test('returns no next slot after the last same-day turning time', () {
+      final egg = _egg(
+        id: 'egg-1',
+        layDate: DateTime(2024, 5, 1),
+        status: EggStatus.incubating,
+        incubationId: 'inc-1',
+      );
+      final summary = buildTodaysEggTurningSummary([
+        IncubatingEggSummary(
+          egg: egg,
+          species: Species.budgie,
+          daysRemaining: 10,
+          progressPercent: 0.4,
+        ),
+      ], now: DateTime(2024, 5, 15, 21));
+
+      expect(summary.count, 1);
+      expect(summary.nextTurningAt, isNull);
+    });
+  });
+
+  group('home widget snapshot', () {
+    test('builds dashboard values for the native home screen widget', () {
+      final egg = _egg(
+        id: 'egg-1',
+        layDate: DateTime(2024, 5, 1),
+        status: EggStatus.incubating,
+        incubationId: 'inc-1',
+      );
+      final turningSummary = TodaysEggTurningSummary(
+        eggs: [
+          IncubatingEggSummary(
+            egg: egg,
+            species: Species.budgie,
+            daysRemaining: 5,
+            progressPercent: 0.7,
+          ),
+        ],
+        nextTurningAt: DateTime(2024, 5, 15, 14, 30),
+      );
+
+      final snapshot = buildHomeWidgetDashboardSnapshot(
+        turningSummary: turningSummary,
+        activeBreedingsCount: 2,
+        now: DateTime(2024, 5, 15, 9, 5),
+      );
+
+      expect(snapshot.eggTurningCount, 1);
+      expect(snapshot.activeBreedingsCount, 2);
+      expect(snapshot.nextTurningLabel, '14:30');
+      expect(snapshot.lastUpdatedLabel, '09:05');
+      expect(snapshot.hasWorkToday, isTrue);
+    });
+
+    test('uses empty labels when there is no work for today', () {
+      final snapshot = buildHomeWidgetDashboardSnapshot(
+        turningSummary: const TodaysEggTurningSummary(
+          eggs: [],
+          nextTurningAt: null,
+        ),
+        activeBreedingsCount: 0,
+        now: DateTime(2024, 5, 15, 21, 7),
+      );
+
+      expect(snapshot.eggTurningCount, 0);
+      expect(snapshot.activeBreedingsCount, 0);
+      expect(snapshot.nextTurningLabel, isEmpty);
+      expect(snapshot.lastUpdatedLabel, '21:07');
+      expect(snapshot.hasWorkToday, isFalse);
+    });
+  });
 }

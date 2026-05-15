@@ -14,6 +14,7 @@ import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_pro
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
+import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_highlights_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/screens/overview_tab.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/summary_stats_grid.dart';
@@ -24,14 +25,17 @@ class _MockEggsDao extends Mock implements EggsDao {}
 
 Widget _createSubject() {
   final mockBirdsDao = _MockBirdsDao();
-  when(() => mockBirdsDao.watchGenderDistribution(any()))
-      .thenAnswer((_) => Stream.value(<BirdGender, int>{}));
-  when(() => mockBirdsDao.watchStatusDistribution(any()))
-      .thenAnswer((_) => Stream.value(<BirdStatus, int>{}));
+  when(
+    () => mockBirdsDao.watchGenderDistribution(any()),
+  ).thenAnswer((_) => Stream.value(<BirdGender, int>{}));
+  when(
+    () => mockBirdsDao.watchStatusDistribution(any()),
+  ).thenAnswer((_) => Stream.value(<BirdStatus, int>{}));
 
   final mockEggsDao = _MockEggsDao();
-  when(() => mockEggsDao.watchMonthlyProduction(any()))
-      .thenAnswer((_) => Stream.value(<String, int>{}));
+  when(
+    () => mockEggsDao.watchMonthlyProduction(any()),
+  ).thenAnswer((_) => Stream.value(<String, int>{}));
 
   return ProviderScope(
     overrides: [
@@ -53,6 +57,9 @@ Widget _createSubject() {
       healthRecordCountProvider(
         'anonymous',
       ).overrideWith((_) => Stream.value(0)),
+      personalRecordsProvider(
+        'anonymous',
+      ).overrideWithValue(const AsyncData(PersonalRecords())),
     ],
     child: const MaterialApp(home: Scaffold(body: OverviewTab())),
   );
@@ -92,7 +99,10 @@ void main() {
       await tester.pumpWidget(_createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text(l10n('statistics.species_distribution')), findsOneWidget);
+      expect(
+        find.text(l10n('statistics.species_distribution')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows color mutation chart section', (tester) async {

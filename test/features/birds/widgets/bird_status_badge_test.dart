@@ -47,6 +47,15 @@ void main() {
       expect(find.text(l10n('birds.status_sold')), findsOneWidget);
     });
 
+    testWidgets('shows gifted label text', (tester) async {
+      await tester.pumpWidget(
+        _wrap(const BirdStatusBadge(status: BirdStatus.gifted)),
+      );
+      await tester.pump();
+
+      expect(find.text(l10n('birds.status_gifted')), findsOneWidget);
+    });
+
     testWidgets('shows unknown label text', (tester) async {
       await tester.pumpWidget(
         _wrap(const BirdStatusBadge(status: BirdStatus.unknown)),

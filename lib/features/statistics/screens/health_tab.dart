@@ -7,11 +7,13 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_health_providers.dart';
+import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_highlights_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chick_survival_chart.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/health_record_type_chart.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/monthly_trend_chart.dart';
+import 'package:budgie_breeding_tracker/features/statistics/widgets/statistics_highlight_cards.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 /// Chicks & Health tab: monthly trend, chick survival, health records.
@@ -50,6 +52,7 @@ class _HealthTabState extends ConsumerState<HealthTab> {
         ref.invalidate(monthlyHatchedChicksProvider(userId));
         ref.invalidate(chickSurvivalProvider(userId));
         ref.invalidate(healthRecordTypeDistributionProvider(userId));
+        ref.invalidate(healthTrendSummaryProvider(userId));
       },
       child: SingleChildScrollView(
         controller: _scrollController,
@@ -57,6 +60,8 @@ class _HealthTabState extends ConsumerState<HealthTab> {
         padding: AppSpacing.screenPadding,
         child: Column(
           children: [
+            _HealthTrendSection(userId: userId),
+            const SizedBox(height: AppSpacing.lg),
             _MonthlyTrendSection(userId: userId),
             const SizedBox(height: AppSpacing.lg),
             _ChickSurvivalSection(userId: userId),
@@ -66,6 +71,22 @@ class _HealthTabState extends ConsumerState<HealthTab> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _HealthTrendSection extends ConsumerWidget {
+  const _HealthTrendSection({required this.userId});
+  final String userId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final trendAsync = ref.watch(healthTrendSummaryProvider(userId));
+
+    return trendAsync.when(
+      loading: () => const ChartLoading(),
+      error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
+      data: (trend) => HealthTrendSummaryCard(trend: trend),
     );
   }
 }
@@ -105,8 +126,8 @@ class _ChickSurvivalSection extends ConsumerWidget {
 
     final total = survivalAsync.value != null
         ? survivalAsync.value!.healthy +
-            survivalAsync.value!.sick +
-            survivalAsync.value!.deceased
+              survivalAsync.value!.sick +
+              survivalAsync.value!.deceased
         : null;
     return ChartCard(
       title: 'statistics.chick_survival'.tr(),
@@ -132,9 +153,7 @@ class _HealthRecordSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final healthAsync = ref.watch(healthRecordTypeDistributionProvider(userId));
 
-    final dataCount = healthAsync.value?.values
-        .where((v) => v > 0)
-        .length;
+    final dataCount = healthAsync.value?.values.where((v) => v > 0).length;
     return ChartCard(
       title: 'statistics.health_type_distribution'.tr(),
       subtitle: 'statistics.health_type_subtitle'.tr(),

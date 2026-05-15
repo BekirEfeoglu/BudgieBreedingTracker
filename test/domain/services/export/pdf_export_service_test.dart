@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/export/pdf_export_service.dart';
+import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_highlights_providers.dart';
 
 import '../../../helpers/test_helpers.dart';
 
@@ -115,6 +116,49 @@ void main() {
             pairingDate: DateTime(2026, 2, 1),
           ),
         ]);
+
+        _expectPdf(bytes);
+        expect(bytes.length, greaterThan(500));
+      },
+    );
+
+    test(
+      'generateStatisticsReport creates a valid PDF for highlights',
+      () async {
+        final bytes = await service.generateStatisticsReport(
+          personalRecords: const PersonalRecords(
+            mostProductiveSeason: SeasonRecord(year: 2025, chickCount: 8),
+            topPair: TopPairRecord(pairId: 'pair-1', chickCount: 6),
+            longestLivedBird: LongevityRecord(
+              birdId: 'bird-1',
+              birdName: 'Mavi',
+              daysLived: 1200,
+            ),
+          ),
+          seasonComparison: const SeasonComparison(
+            previous: SeasonStats(
+              year: 2024,
+              totalEggs: 10,
+              fertileEggs: 6,
+              hatchedChicks: 4,
+              liveChicks: 3,
+            ),
+            current: SeasonStats(
+              year: 2025,
+              totalEggs: 12,
+              fertileEggs: 9,
+              hatchedChicks: 7,
+              liveChicks: 7,
+            ),
+          ),
+          healthTrend: const HealthTrendSummary(
+            busiestMonthKey: '2025-01',
+            busiestMonthRecordCount: 5,
+            mostVisitedBirdName: 'Mavi',
+            mostVisitedBirdRecordCount: 3,
+            averageTreatmentDays: 4.5,
+          ),
+        );
 
         _expectPdf(bytes);
         expect(bytes.length, greaterThan(500));
