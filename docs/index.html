@@ -1993,25 +1993,49 @@
       reveals.forEach(el => observer.observe(el));
     }
 
-    // ─── 3D Tilt on feature cards (enhanced) ───
+    // ─── 3D Tilt on feature cards (rAF-batched, rect-cached, touch-disabled) ───
+    // Optimization: previous version called getBoundingClientRect() and wrote
+    // styles synchronously on EVERY mousemove (60–120Hz) × 12 cards. That
+    // caused layout thrash and visible jank during hover. Now we:
+    //   1. Skip entirely on touch / coarse-pointer devices (no hover anyway)
+    //   2. Cache the rect on mouseenter, invalidate on resize/scroll
+    //   3. Coalesce writes via requestAnimationFrame (one update per frame)
     function initTilt() {
+      // Touch devices: no hover → tilt is wasted CPU. Bail.
+      if (window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
+      // Reduced-motion preference: skip
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
       document.querySelectorAll('.feature-card-enhanced').forEach(card => {
-        card.addEventListener('mousemove', e => {
-          const rect = card.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          const centerX = rect.width / 2;
-          const centerY = rect.height / 2;
-          const rotateX = ((y - centerY) / centerY) * -3;
-          const rotateY = ((x - centerX) / centerX) * 3;
-          // Mouse-follow spotlight
-          const pctX = (x / rect.width * 100).toFixed(0);
-          const pctY = (y / rect.height * 100).toFixed(0);
-          card.style.setProperty('--mouse-x', pctX + '%');
-          card.style.setProperty('--mouse-y', pctY + '%');
-          card.style.transform = 'translateY(-8px) perspective(800px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg)';
+        let rect = null;
+        let pendingX = 0, pendingY = 0;
+        let rafId = 0;
+
+        const apply = () => {
+          rafId = 0;
+          if (!rect) return;
+          const x = pendingX - rect.left;
+          const y = pendingY - rect.top;
+          const cx = rect.width / 2;
+          const cy = rect.height / 2;
+          const rX = ((y - cy) / cy) * -3;
+          const rY = ((x - cx) / cx) * 3;
+          card.style.setProperty('--mouse-x', ((x / rect.width) * 100) + '%');
+          card.style.setProperty('--mouse-y', ((y / rect.height) * 100) + '%');
+          card.style.transform = `translateY(-8px) perspective(800px) rotateX(${rX}deg) rotateY(${rY}deg)`;
+        };
+
+        card.addEventListener('mouseenter', () => {
+          rect = card.getBoundingClientRect();  // cache once per hover session
+        });
+        card.addEventListener('mousemove', (e) => {
+          pendingX = e.clientX;
+          pendingY = e.clientY;
+          if (!rafId) rafId = requestAnimationFrame(apply);
         });
         card.addEventListener('mouseleave', () => {
+          if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+          rect = null;
           card.style.transform = '';
         });
       });
@@ -2286,15 +2310,22 @@
         },
       });
 
-      // ── Parallax for orbs ──
-      gsap.to('.orb-1', {
-        scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 1.5 },
-        y: -120, ease: 'none',
-      });
-      gsap.to('.orb-2', {
-        scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 2 },
-        y: -80, ease: 'none',
-      });
+      // ── Parallax for orbs (desktop, mouse, motion-allowed only) ──
+      // Scrub parallax fires on every scroll event and forces compositing
+      // on large blurred elements. Skip on touch and reduced-motion.
+      const allowParallax =
+        window.matchMedia('(hover: hover) and (pointer: fine)').matches &&
+        !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (allowParallax) {
+        gsap.to('.orb-1', {
+          scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 1.5 },
+          y: -120, ease: 'none',
+        });
+        gsap.to('.orb-2', {
+          scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 2 },
+          y: -80, ease: 'none',
+        });
+      }
 
     });
   </script>
