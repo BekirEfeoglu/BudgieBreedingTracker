@@ -1696,3 +1696,90 @@
   opacity: 0.6;
   margin-left: 0.75rem;
 }
+
+/* ─── TESTIMONIALS ─── */
+.testimonial-card {
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.testimonial-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+  border-color: rgba(245,200,66,0.3) !important;
+}
+
+/* ─── GENETICS DEMO ─── */
+#gd-grid .gd-cell {
+  border-radius: 12px;
+  padding: 14px 12px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.5;
+  border: 1px solid var(--glass-border);
+  background: rgba(15,35,80,0.5);
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.4s ease;
+}
+#gd-grid .gd-cell.animate-in {
+  animation: cellPop 0.45s cubic-bezier(0.16,1,0.3,1) both;
+}
+@keyframes cellPop {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+#gd-grid .gd-cell .gd-color {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin-bottom: 4px;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+#gd-mother, #gd-father {
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+#gd-mother:focus, #gd-father:focus {
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 0 3px rgba(245,200,66,0.2);
+}
+
+/* ─── OFFLINE DIAGRAM ─── */
+.od-node {
+  transition: filter 0.3s ease;
+}
+.od-arrow {
+  stroke-dashoffset: 0;
+  animation: dashMove 2s linear infinite;
+}
+.od-arrow-sync {
+  stroke-dashoffset: 0;
+  animation: dashMove 1.5s linear infinite;
+}
+@keyframes dashMove {
+  to { stroke-dashoffset: -16; }
+}
+.od-pulse {
+  animation: pulseGreen 1.8s ease-in-out infinite;
+}
+@keyframes pulseGreen {
+  0%, 100% { opacity: 1; r: 4px; }
+  50%       { opacity: 0.5; r: 6px; }
+}
+
+/* ─── GSAP REVEAL BASE (prevents flash before JS loads) ─── */
+.gsap-hidden {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+/* ─── NAV SHRINK ─── */
+#navbar.scrolled {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+}
+
+/* ─── REDUCED MOTION OVERRIDES ─── */
+@media (prefers-reduced-motion: reduce) {
+  .od-arrow, .od-arrow-sync, .od-pulse { animation: none; }
+  .testimonial-card:hover { transform: none; }
+  .gd-cell { animation: none !important; }
+}
