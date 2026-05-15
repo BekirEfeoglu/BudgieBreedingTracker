@@ -67,6 +67,18 @@ testWidgets('button label fits in German locale', (tester) async {
 });
 ```
 
+## Marketing Site Semantics
+
+The GitHub Pages site in `docs/` also follows WCAG-oriented state rules:
+
+- Language buttons set `aria-pressed` and have language-specific labels.
+- Mobile navigation keeps `aria-hidden` on the panel and `aria-expanded` on the hamburger in sync with visual state.
+- FAQ toggles expose `aria-expanded` on each question button.
+- Form inputs have explicit labels even when the visible design relies on placeholder text.
+- Direct anchor links such as `#genetics-demo` must land on visible, active content and not leave reveal/GSAP inline opacity state hiding controls.
+
+See [[infrastructure/marketing-site]] for web-specific QA steps.
+
 ## Anti-Patterns
 
 1. `IconButton` without `constraints` (< 48dp)

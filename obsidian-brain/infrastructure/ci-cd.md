@@ -22,6 +22,13 @@ Runs on PRs and main pushes.
 | `ios-build` | iOS build (no code signing) | main |
 | `pages` | GitHub Pages deployment from `docs/` | main |
 
+## GitHub Pages Site
+
+The public marketing site lives in `docs/`. Pages deploys on `main` pushes, so
+web changes should be verified against the exact pushed commit like app changes.
+See [[infrastructure/marketing-site]] for anchor-navigation, accessibility, SEO,
+and visual QA checks.
+
 ## CI Rules
 
 - Action versions pinned to commit SHA (not tags)

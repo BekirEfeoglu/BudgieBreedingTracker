@@ -88,6 +88,7 @@ Full catalog of every page in the obsidian-brain wiki.
 | [[infrastructure/scripts]] | Quality scripts, anti-pattern checkers |
 | [[infrastructure/branch-workflow]] | main-only strategy, commit format, quality gates |
 | [[infrastructure/release-ops]] | Store releases, version bump, Supabase ops |
+| [[infrastructure/marketing-site]] | GitHub Pages product site, anchor navigation, SEO, web QA |
 
 ## Patterns
 

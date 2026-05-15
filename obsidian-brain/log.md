@@ -4,6 +4,14 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-05-15] docs | Marketing site anchor and accessibility QA
+
+Added `infrastructure/marketing-site.md` for the GitHub Pages product site,
+including direct `#genetics-demo` hash behavior, reveal/GSAP cleanup,
+language/mobile-menu/FAQ semantic state, SEO/store-link consistency, and
+web QA checklist. Updated CI/CD and accessibility pages to cross-link the
+new site-specific guidance.
+
 ## [2026-05-15] ingest | Birds timeline, grid view, ring sort, gifted status
 
 Updated `features/birds.md` for bird detail life timeline, bird list photo grid mode,
