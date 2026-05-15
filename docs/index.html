@@ -664,7 +664,7 @@
         <p class="text-lg max-w-2xl mx-auto" style="color: var(--sage);" data-i18n="genetics_demo_subtitle">Anne ve baba mutasyonunu seç, olası yavru kombinasyonlarını anında gör.</p>
       </div>
 
-      <div class="rounded-2xl p-6 sm:p-8 reveal" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
+      <div class="rounded-2xl p-6 sm:p-8" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
         <div class="grid md:grid-cols-2 gap-8 items-start">
 
           <!-- Left: Selectors -->
@@ -2248,13 +2248,6 @@
       gsap.from('.faq-item', {
         scrollTrigger: { trigger: '#faq', start: 'top 75%', toggleActions: 'play none none none' },
         x: -20, opacity: 0, duration: 0.4, stagger: 0.08, ease: 'power2.out',
-        immediateRender: false,
-      });
-
-      // ── Genetics demo ──
-      gsap.from('#genetics-demo .rounded-2xl', {
-        scrollTrigger: { trigger: '#genetics-demo', start: 'top 75%', toggleActions: 'play none none none' },
-        y: 40, opacity: 0, duration: 0.7, ease: 'power2.out',
         immediateRender: false,
       });
 
