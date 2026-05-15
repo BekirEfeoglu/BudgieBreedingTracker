@@ -30,6 +30,7 @@ Breeding creates the pair + incubation as one atomic operation. Pair/incubation 
 - Hatch dates from `species_incubation_config.dart`, not literal day counts
 - Species change on pair → linked incubations updated
 - Pair cancel/complete → close active incubations + cancel reminders
+- Pair delete cascade order: cancel notifications → detach chicks (null `eggId`/`clutchId`) → remove eggs → remove incubations → remove pair. Chicks survive as standalone records since they are live entities with their own lifecycle. (`breeding_form_actions.dart` `deleteBreeding`)
 
 ## Free Tier Guards
 

@@ -82,6 +82,7 @@ extension BreedingFormActions on BreedingFormNotifier {
       final pairRepo = ref.read(breedingPairRepositoryProvider);
       final incubationRepo = ref.read(incubationRepositoryProvider);
       final eggRepo = ref.read(eggRepositoryProvider);
+      final chickRepo = ref.read(chickRepositoryProvider);
 
       final incubations = await incubationRepo.getByBreedingPairIds([id]);
       final eggs = await _helper.getEggsForIncubations(incubations);
@@ -91,6 +92,27 @@ extension BreedingFormActions on BreedingFormNotifier {
         incubations: incubations,
         eggs: eggs,
       );
+
+      // Detach chicks from soon-to-be-deleted eggs/clutches so they survive
+      // as standalone records (chicks are live entities with their own lifecycle).
+      final eggIds = eggs.map((e) => e.id).toList();
+      if (eggIds.isNotEmpty) {
+        final chicks = await chickRepo.getByEggIds(eggIds);
+        if (chicks.isNotEmpty) {
+          final now = DateTime.now();
+          await Future.wait(
+            chicks.map(
+              (chick) => chickRepo.save(
+                chick.copyWith(
+                  eggId: null,
+                  clutchId: null,
+                  updatedAt: now,
+                ),
+              ),
+            ),
+          );
+        }
+      }
 
       await Future.wait(eggs.map((egg) => eggRepo.remove(egg.id)));
       await Future.wait(

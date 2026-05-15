@@ -4,6 +4,12 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-05-15] ingest | Breeding deleteBreeding now detaches chicks before cascade
+
+Fixed orphan chick FK sync block: `deleteBreeding` clears `eggId`/`clutchId` on chicks
+referencing soon-to-be-deleted eggs so chicks survive as standalone records.
+Updated `features/breeding.md` with new cascade order.
+
 ## [2026-05-14] ingest | Initial wiki bootstrap — recreated after worktree deletion
 
 All pages created from scratch by reading:
