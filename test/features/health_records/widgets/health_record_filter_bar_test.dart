@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
+import 'package:budgie_breeding_tracker/core/widgets/fade_scrollable_chip_bar.dart';
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
 import 'package:budgie_breeding_tracker/features/health_records/widgets/health_record_filter_bar.dart';
 
@@ -43,6 +44,22 @@ void main() {
       // FadeScrollableChipBar uses a horizontal ListView which lazily renders
       // only visible items. At minimum, the first chips should be in the tree.
       expect(find.byType(ChoiceChip), findsAtLeastNWidgets(1));
+    });
+
+    testWidgets('uses the same single-row horizontal chip bar as birds', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(_createSubject());
+      await tester.pump();
+
+      expect(find.byType(FadeScrollableChipBar), findsOneWidget);
+      expect(find.byType(Wrap), findsNothing);
+
+      final listView = tester.widget<ListView>(find.byType(ListView));
+      expect(listView.scrollDirection, Axis.horizontal);
     });
 
     testWidgets('shows l10n label for "all" filter', (tester) async {

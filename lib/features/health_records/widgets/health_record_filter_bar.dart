@@ -5,49 +5,70 @@ import 'package:budgie_breeding_tracker/core/widgets/fade_scrollable_chip_bar.da
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
 
 /// Horizontal scrollable filter bar with choice chips for health records.
-class HealthRecordFilterBar extends ConsumerWidget {
+class HealthRecordFilterBar extends ConsumerStatefulWidget {
   const HealthRecordFilterBar({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final selected = ref.watch(healthRecordFilterProvider);
-    final chips = HealthRecordFilter.values.map((filter) {
-      final isSelected = selected == filter;
-      return ChoiceChip(
+  ConsumerState<HealthRecordFilterBar> createState() =>
+      _HealthRecordFilterBarState();
+}
+
+class _HealthRecordFilterBarState extends ConsumerState<HealthRecordFilterBar> {
+  static const _primaryFilters = [HealthRecordFilter.all];
+
+  static const _typeFilters = [
+    HealthRecordFilter.checkup,
+    HealthRecordFilter.illness,
+    HealthRecordFilter.injury,
+    HealthRecordFilter.vaccination,
+    HealthRecordFilter.medication,
+    HealthRecordFilter.death,
+  ];
+
+  final Map<HealthRecordFilter, GlobalKey> _keys = {
+    for (final filter in HealthRecordFilter.values) filter: GlobalKey(),
+  };
+
+  void _scrollToSelected(HealthRecordFilter filter) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _keys[filter]?.currentContext;
+      if (ctx != null) {
+        Scrollable.ensureVisible(
+          ctx,
+          alignment: 0.1,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
+  Widget _buildChip(HealthRecordFilter filter, HealthRecordFilter selected) {
+    return Padding(
+      key: _keys[filter],
+      padding: const EdgeInsets.only(right: AppSpacing.sm),
+      child: ChoiceChip(
         label: Text(filter.label),
-        selected: isSelected,
+        selected: selected == filter,
         visualDensity: VisualDensity.compact,
         onSelected: (_) {
           ref.read(healthRecordFilterProvider.notifier).state = filter;
+          _scrollToSelected(filter);
         },
-      );
-    }).toList();
+      ),
+    );
+  }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth < AppSpacing.tabletBreakpoint) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.xs,
-              children: chips,
-            ),
-          );
-        }
+  @override
+  Widget build(BuildContext context) {
+    final selected = ref.watch(healthRecordFilterProvider);
 
-        return FadeScrollableChipBar(
-          height: AppSpacing.touchTargetMin,
-          children: chips
-              .map(
-                (chip) => Padding(
-                  padding: const EdgeInsets.only(right: AppSpacing.sm),
-                  child: chip,
-                ),
-              )
-              .toList(),
-        );
-      },
+    return FadeScrollableChipBar(
+      children: [
+        ..._primaryFilters.map((filter) => _buildChip(filter, selected)),
+        const VerticalDivider(width: 24, indent: 8, endIndent: 8),
+        ..._typeFilters.map((filter) => _buildChip(filter, selected)),
+      ],
     );
   }
 }

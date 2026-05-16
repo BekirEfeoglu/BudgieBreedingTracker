@@ -21,6 +21,7 @@ import 'settings_action_tile.dart';
 import 'settings_navigation_tile.dart';
 import 'settings_section_header.dart';
 import 'settings_toggle_tile.dart';
+import 'sync_detail_sheet.dart';
 
 class DataStorageSection extends ConsumerStatefulWidget {
   const DataStorageSection({super.key});
@@ -47,6 +48,8 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
     final conflicts = ref.watch(conflictHistoryProvider);
     final userId = ref.watch(currentUserIdProvider);
     final pendingCount = ref.watch(pendingSyncCountProvider).value ?? 0;
+    final staleWarningCount =
+        ref.watch(pendingDeletionSyncErrorsProvider).value?.length ?? 0;
     final errorCount =
         ref
             .watch(syncErrorDetailsProvider(userId))
@@ -128,6 +131,19 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
           isLoading: _isSyncing,
           onTap: _syncWithServer,
         ),
+        SettingsActionTile(
+          title: 'settings.sync_health_report'.tr(),
+          subtitle: _syncHealthSubtitle(
+            pendingCount: pendingCount,
+            errorCount: errorCount,
+            staleWarningCount: staleWarningCount,
+            conflictCount: conflicts.length,
+            backgroundSync: backgroundSync,
+            realtimeSync: realtimeSync,
+          ),
+          icon: const Icon(LucideIcons.activity),
+          onTap: () => showSyncDetailSheet(context),
+        ),
         if (conflicts.isNotEmpty)
           SettingsActionTile(
             title: 'sync.conflict_history'.tr(),
@@ -153,6 +169,31 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
         ),
       ],
     );
+  }
+
+  String _syncHealthSubtitle({
+    required int pendingCount,
+    required int errorCount,
+    required int staleWarningCount,
+    required int conflictCount,
+    required bool backgroundSync,
+    required bool realtimeSync,
+  }) {
+    final backgroundState = backgroundSync
+        ? 'settings.sync_state_on'.tr()
+        : 'settings.sync_state_off'.tr();
+    final realtimeState = realtimeSync
+        ? 'settings.sync_state_on'.tr()
+        : 'settings.sync_state_off'.tr();
+
+    return [
+      'settings.pending_sync_count'.tr(args: ['$pendingCount']),
+      'settings.sync_error_count'.tr(args: ['$errorCount']),
+      'settings.sync_stale_warning_count'.tr(args: ['$staleWarningCount']),
+      'settings.sync_conflict_count'.tr(args: ['$conflictCount']),
+      '${'settings.background_sync'.tr()}: $backgroundState',
+      '${'settings.realtime_sync'.tr()}: $realtimeState',
+    ].join(' · ');
   }
 
   Future<void> _syncWithServer() async {

@@ -18,27 +18,27 @@
 - **Persistence:** `SyncMetadata` Drift tablosu, app restart'a dayanıklı.
 - **Test:** ~27 sync test dosyası, ~5.7K satır (orchestrator, push/pull, retry, conflict, orphan cleanup).
 
-### Kapatılması Gereken Boşluklar
-| # | Boşluk | Etki | Öncelik |
-|---|--------|------|---------|
-| G1 | **Background sync yok** (WorkManager / BGTaskScheduler) — app kapalıysa hiçbir şey senkronize olmaz | Yüksek — uzun süre offline kullanıcılar gecikmiş veri yansıması yaşar | P0 |
-| G2 | **Realtime subscription yok** — multi-device kullanıcı 15 dk pencerede stale veri görür | Yüksek — collaboration UX'ini bozar | P1 |
-| G3 | **Global `OfflineBanner` yok** — sync hata/offline durumu sadece profil ekranında görünür | Orta — kullanıcı yazma kaybı endişesi yaşar | P0 |
-| G4 | **Stale error silmeden önce uyarı yok** — 24h sonra silinen unrecoverable kayıt için kullanıcıya bildirim yok | Orta — sessiz veri kaybı ihtimali | P1 |
-| G5 | **Conflict UI sadece history** — etkilenen entity ekranında görsel işaret yok | Orta — kullanıcı kaybedilen edit'inden haberdar olmayabilir | P1 |
-| G6 | **Max retry 5 sabit**, kısa network kesintilerinde tükenebilir | Düşük — manuel force sync zaten var | P2 |
-| G7 | **Sync observability dar** — Sentry breadcrumb var ama structured event metriği (retry success rate, conflict frequency, offline duration) yok | Düşük — ileri triage zor | P2 |
-| G8 | **Realtime saat farkı (clock skew)** durumunda sessiz tam reconcile — log seviyesi info, kullanıcıya görünmez | Düşük | P2 |
-| G9 | **Differential / partial sync yok** — değişen entity'nin tamamı pull edilir (büyük foto URL'leri dahil) | Düşük → orta (data volume büyürse) | P3 |
+### Boşluk Durumu (2026-05-17)
+| # | Boşluk | Güncel durum | Kalan iş |
+|---|--------|--------------|----------|
+| G1 | Background sync | **Kısmen uygulandı** (`BackgroundSyncService`, `workmanager`, kill switch) | TestFlight/Play internal QA, rollout ve run success metriği |
+| G2 | Realtime subscription | **Kısmen uygulandı** (`RealtimeSyncService`, ilk allowlist: `breeding_pairs`, `clutches`, `eggs`) | Maliyet izleme, canary rollout, entity coverage kararı |
+| G3 | Global `OfflineBanner` | **Uygulandı** | Polish, overflow/golden kapsamı ve copy tuning |
+| G4 | Stale error silmeden önce uyarı | **Uygulandı** (`pendingDeletionSyncErrorsProvider`) | Recovery metriği ve local notification kararı |
+| G5 | Record-level conflict UI | **Kısmen uygulandı** (`RecordSyncConflictBadge`) | Daha fazla entity coverage ve detail sheet highlight |
+| G6 | Retry/backoff tuning | **Uygulandı** (`maxRetries` ve backoff kuralı güncellendi) | Production retry success takibi |
+| G7 | Structured sync observability | **Başlatıldı** (`SyncTelemetry`) | Sentry dashboard/sampling ve event coverage |
+| G8 | Clock skew kullanıcı bildirimi | **Başlatıldı** | UX polish ve test coverage genişletme |
+| G9 | Differential / partial sync | **Başlatılmadı** | Faz 3 telemetry sonrası ROI kararı |
 
 ---
 
 ## 2. Yol Haritası
 
 ### Faz 0 — Ön hazırlık (1 gün)
-- [ ] `docs/OFFLINE_SYNC_IMPROVEMENT_PLAN.md` (bu doküman) review + paydaş onayı (solo dev → kendine onay)
+- [x] `docs/OFFLINE_SYNC_IMPROVEMENT_PLAN.md` (bu doküman) review + paydaş onayı (solo dev → kendine onay)
 - [ ] Mevcut sync metric'leri için baseline ölç (manuel telemetri): 7 gün boyunca p50/p99 sync süresi, retry oranı, conflict sayısı — gelecek karşılaştırma için
-- [ ] Feature flag tanımları (`feature-flags.md` lifecycle):
+- [x] Feature flag tanımları (`feature-flags.md` lifecycle):
   - `sync_background_enabled` (runtime kill switch)
   - `sync_realtime_enabled` (runtime, entity bazlı: `breeding_pairs`, `clutches`, `eggs`)
   - `sync_offline_banner_enabled` (runtime, kademeli rollout)
@@ -287,7 +287,7 @@ Her faz sonrası 1 hafta gözlem; Sentry error rate %0.5 üstüne çıkarsa kill
 
 ## 10. Sonraki Adım
 
-1. Bu planı oku, Faz 1 scope'unu onayla
-2. Faz 0 baseline metric'leri için manuel test çalıştır (7 gün)
-3. Faz 1 implementation'ı yeni branch'te aç: `feature/offline-banner` → ilk PR
-4. Her faz sonu bu dokümana ✅ işaretle, deviation varsa not düş
+1. Faz 2 background/realtime için internal cihaz QA matrisi çıkar.
+2. Faz 3 observability için Sentry saved query ve sampling kararını netleştir.
+3. `docs/FEATURE_ROADMAP_2026.md` içindeki Sync Health Report polish maddesini ilk sprint işi olarak ele al.
+4. Her faz sonu bu dokümana status notu ekle; deviation varsa gerekçeyi aynı PR'da yaz.

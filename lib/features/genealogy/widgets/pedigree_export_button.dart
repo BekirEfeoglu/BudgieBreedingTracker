@@ -15,6 +15,46 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/export/pdf_export_service.dart';
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
 
+class PedigreeExportMetadata {
+  const PedigreeExportMetadata({
+    required this.fileName,
+    required this.subject,
+    required this.text,
+  });
+
+  final String fileName;
+  final String subject;
+  final String text;
+
+  static String safeFileSegment(String value) {
+    final sanitized = value
+        .replaceAll(RegExp(r'[<>:"/\\|?*\x00-\x1F]'), '_')
+        .replaceAll(RegExp(r'\s+'), '_')
+        .replaceAll(RegExp(r'_+'), '_')
+        .trim();
+    return sanitized.isEmpty ? 'bird' : sanitized;
+  }
+
+  factory PedigreeExportMetadata.fromBird({
+    required Bird rootBird,
+    required int maxDepth,
+    required String extension,
+    DateTime? now,
+  }) {
+    final timestamp = DateFormat(
+      'yyyyMMdd_HHmmss',
+    ).format(now ?? DateTime.now());
+    final safeName = safeFileSegment(rootBird.name);
+    return PedigreeExportMetadata(
+      fileName: 'pedigree_${safeName}_$timestamp.$extension',
+      subject: 'genealogy.pedigree_share_subject'.tr(args: [rootBird.name]),
+      text: 'genealogy.pedigree_share_text'.tr(
+        args: [rootBird.name, '$maxDepth'],
+      ),
+    );
+  }
+}
+
 /// Export button with menu: PDF and image export options.
 class PedigreeExportButton extends StatefulWidget {
   final Bird rootBird;
@@ -36,15 +76,6 @@ class PedigreeExportButton extends StatefulWidget {
 
 class _PedigreeExportButtonState extends State<PedigreeExportButton> {
   bool _isExporting = false;
-
-  String _safeFileSegment(String value) {
-    final sanitized = value
-        .replaceAll(RegExp(r'[<>:"/\\|?*\x00-\x1F]'), '_')
-        .replaceAll(RegExp(r'\s+'), '_')
-        .replaceAll(RegExp(r'_+'), '_')
-        .trim();
-    return sanitized.isEmpty ? 'bird' : sanitized;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +102,11 @@ class _PedigreeExportButtonState extends State<PedigreeExportButton> {
           MenuItemButton(
             leadingIcon: const Icon(LucideIcons.fileDown, size: 18),
             onPressed: _isExporting ? null : _exportPdf,
-            child: Text('genealogy.export_pdf'.tr()),
+            child: Text(
+              'genealogy.export_pdf_with_depth'.tr(
+                args: ['${widget.maxDepth}'],
+              ),
+            ),
           ),
           if (widget.onCaptureImage != null)
             MenuItemButton(
@@ -97,12 +132,22 @@ class _PedigreeExportButtonState extends State<PedigreeExportButton> {
       );
 
       final dir = await getTemporaryDirectory();
-      final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-      final safeName = _safeFileSegment(widget.rootBird.name);
-      final fileName = 'pedigree_${safeName}_$timestamp.pdf';
-      final file = File(p.join(dir.path, fileName));
+      final metadata = PedigreeExportMetadata.fromBird(
+        rootBird: widget.rootBird,
+        maxDepth: widget.maxDepth,
+        extension: 'pdf',
+      );
+      final file = File(p.join(dir.path, metadata.fileName));
       await file.writeAsBytes(bytes);
-      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          fileNameOverrides: [metadata.fileName],
+          subject: metadata.subject,
+          text: metadata.text,
+          title: metadata.subject,
+        ),
+      );
 
       ActionFeedbackService.show('genealogy.export_success'.tr());
     } catch (e, st) {
@@ -127,12 +172,22 @@ class _PedigreeExportButtonState extends State<PedigreeExportButton> {
       if (byteData == null) throw Exception('Failed to encode image');
 
       final dir = await getTemporaryDirectory();
-      final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-      final safeName = _safeFileSegment(widget.rootBird.name);
-      final fileName = 'pedigree_${safeName}_$timestamp.png';
-      final file = File(p.join(dir.path, fileName));
+      final metadata = PedigreeExportMetadata.fromBird(
+        rootBird: widget.rootBird,
+        maxDepth: widget.maxDepth,
+        extension: 'png',
+      );
+      final file = File(p.join(dir.path, metadata.fileName));
       await file.writeAsBytes(byteData.buffer.asUint8List());
-      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          fileNameOverrides: [metadata.fileName],
+          subject: metadata.subject,
+          text: metadata.text,
+          title: metadata.subject,
+        ),
+      );
 
       ActionFeedbackService.show('genealogy.image_export_success'.tr());
     } catch (e, st) {

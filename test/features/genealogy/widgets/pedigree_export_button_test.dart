@@ -16,6 +16,29 @@ const _testBird = Bird(
 
 void main() {
   group('PedigreeExportButton', () {
+    test('builds localized pedigree export metadata', () {
+      final metadata = PedigreeExportMetadata.fromBird(
+        rootBird: _testBird,
+        maxDepth: 5,
+        extension: 'pdf',
+        now: DateTime(2026, 5, 17, 10, 30, 45),
+      );
+
+      expect(metadata.fileName, 'pedigree_Test_Kuş_20260517_103045.pdf');
+      expect(
+        metadata.subject,
+        l10n(
+          'genealogy.pedigree_share_subject',
+        ).replaceFirst('{}', _testBird.name),
+      );
+      expect(
+        metadata.text,
+        l10n(
+          'genealogy.pedigree_share_text',
+        ).replaceFirst('{}', _testBird.name).replaceFirst('{}', '5'),
+      );
+    });
+
     testWidgets('renders without crashing', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
@@ -144,7 +167,10 @@ void main() {
       await tester.tap(find.byType(FilledButton));
       await tester.pumpAndSettle();
 
-      expect(find.text(l10n('genealogy.export_pdf')), findsOneWidget);
+      expect(
+        find.text(l10n('genealogy.export_pdf_with_depth')),
+        findsOneWidget,
+      );
     });
   });
 }
