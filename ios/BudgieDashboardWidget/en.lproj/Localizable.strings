@@ -1,0 +1,28 @@
+"widget.display_name" = "BudgieTrack";
+"widget.description" = "Shows egg turning, active breedings and today's care summary on your Home Screen.";
+
+"metric.eggs.title" = "Eggs";
+"metric.eggs.subtitle" = "to turn today";
+"metric.eggs.caption" = "eggs to turn";
+"metric.breedings.title" = "Breedings";
+"metric.breedings.subtitle" = "active";
+
+"status.next_turning" = "Next turn at %@";
+"status.has_work" = "Care needed today";
+"status.no_work" = "No tasks today";
+"status.short.has_work" = "Care";
+"status.short.no_work" = "Clear";
+"status.needs_attention" = "Needs attention";
+"status.routine_clean" = "All clear";
+
+"section.daily_status" = "Today";
+"section.last_update" = "Last update";
+"section.stale" = "Data is stale";
+"section.stale.description" = "Open the app to refresh";
+
+"accessory.eggs.unit" = "eggs";
+"accessory.no_data" = "—";
+"accessory.routine_clean" = "Clear";
+"accessory.short_label" = "B";
+
+"placeholder.no_time" = "--:--";

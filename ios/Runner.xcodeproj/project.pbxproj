@@ -16,6 +16,7 @@
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		7884E8682EC3CC0700C636F2 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */; };
 		8E9D13002EB8000000101000 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8E9D13042EB8000000101000 /* InfoPlist.strings */; };
+		BD9999000000000000000014 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = BD9999000000000000000013 /* Localizable.strings */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
@@ -98,6 +99,10 @@
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A02E036A4CCAAF1FDF8977A8 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A05CF04B2222D96C09B80A85 /* BudgieDashboardWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BudgieDashboardWidget.swift; sourceTree = "<group>"; };
+		BD9999000000000000000001 /* Widget.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Widget.xcconfig; sourceTree = "<group>"; };
+		BD9999000000000000000010 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		BD9999000000000000000011 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
+		BD9999000000000000000012 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		B1A0D1012D0F000000PRIVACY /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		BB00STORE2EC300000000IAP /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Products.storekit; sourceTree = "<group>"; };
 		C54A56EC7F691C8019C27275 /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -160,6 +165,8 @@
 				4328111B88ACDCD25826D4B9 /* Info.plist */,
 				7586C4ADAF527D49EB9AD430 /* BudgieDashboardWidget.entitlements */,
 				A02E036A4CCAAF1FDF8977A8 /* Assets.xcassets */,
+				BD9999000000000000000001 /* Widget.xcconfig */,
+				BD9999000000000000000013 /* Localizable.strings */,
 			);
 			path = BudgieDashboardWidget;
 			sourceTree = "<group>";
@@ -395,6 +402,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B6EE05E33E72F03CDE33A027 /* Assets.xcassets in Resources */,
+				BD9999000000000000000014 /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -425,13 +433,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -446,13 +450,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -588,6 +588,16 @@
 				97C147001CF9000F007C117D /* Base */,
 			);
 			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		BD9999000000000000000013 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BD9999000000000000000010 /* en */,
+				BD9999000000000000000011 /* tr */,
+				BD9999000000000000000012 /* de */,
+			);
+			name = Localizable.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -729,6 +739,7 @@
 		};
 		3B8B1916B0D7ED55D70686C9 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BD9999000000000000000001 /* Widget.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
@@ -758,6 +769,7 @@
 		};
 		710BEBDF1F804CAEEC2C2FB5 /* Profile */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BD9999000000000000000001 /* Widget.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
@@ -964,6 +976,7 @@
 		};
 		B7D5395991B9D91B63EAE42E /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BD9999000000000000000001 /* Widget.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;

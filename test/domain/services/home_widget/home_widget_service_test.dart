@@ -44,12 +44,14 @@ void main() {
       final gateway = _FakeHomeWidgetGateway();
       final service = HomeWidgetService(gateway: gateway);
 
+      final lastUpdatedAt = DateTime.utc(2026, 5, 17, 9, 5);
       await service.syncDashboardSnapshot(
-        const HomeWidgetDashboardSnapshot(
+        HomeWidgetDashboardSnapshot(
           eggTurningCount: 3,
           activeBreedingsCount: 2,
           nextTurningLabel: '14:30',
           lastUpdatedLabel: '09:05',
+          lastUpdatedAt: lastUpdatedAt,
         ),
       );
 
@@ -63,6 +65,10 @@ void main() {
       expect(
         gateway.values[AppHomeWidgetConstants.lastUpdatedLabelKey],
         '09:05',
+      );
+      expect(
+        gateway.values[AppHomeWidgetConstants.lastUpdatedEpochSecondsKey],
+        lastUpdatedAt.millisecondsSinceEpoch ~/ 1000,
       );
       expect(
         gateway.calls,

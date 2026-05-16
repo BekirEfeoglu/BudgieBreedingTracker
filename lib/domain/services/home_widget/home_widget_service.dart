@@ -16,6 +16,7 @@ abstract final class AppHomeWidgetConstants {
   static const nextTurningLabelKey = 'next_turning_label';
   static const hasWorkTodayKey = 'has_work_today';
   static const lastUpdatedLabelKey = 'last_updated_label';
+  static const lastUpdatedEpochSecondsKey = 'last_updated_epoch_seconds';
 }
 
 abstract interface class HomeWidgetGateway {
@@ -95,6 +96,10 @@ class HomeWidgetService {
       await _gateway.saveString(
         AppHomeWidgetConstants.lastUpdatedLabelKey,
         snapshot.lastUpdatedLabel,
+      );
+      await _gateway.saveInt(
+        AppHomeWidgetConstants.lastUpdatedEpochSecondsKey,
+        snapshot.lastUpdatedEpochSeconds,
       );
       await _gateway.updateWidget(
         iOSName: AppHomeWidgetConstants.iOSWidgetName,

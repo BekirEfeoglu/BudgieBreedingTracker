@@ -502,6 +502,11 @@ void main() {
       expect(snapshot.nextTurningLabel, '14:30');
       expect(snapshot.lastUpdatedLabel, '09:05');
       expect(snapshot.hasWorkToday, isTrue);
+      expect(snapshot.lastUpdatedAt, DateTime(2024, 5, 15, 9, 5));
+      expect(
+        snapshot.lastUpdatedEpochSeconds,
+        DateTime(2024, 5, 15, 9, 5).toUtc().millisecondsSinceEpoch ~/ 1000,
+      );
     });
 
     test('uses empty labels when there is no work for today', () {

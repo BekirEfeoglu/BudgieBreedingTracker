@@ -1,0 +1,28 @@
+"widget.display_name" = "BudgieTrack";
+"widget.description" = "Yumurta çevirme, aktif üreme ve günlük bakım özetini ana ekranda gösterir.";
+
+"metric.eggs.title" = "Yumurta";
+"metric.eggs.subtitle" = "bugün çevrilecek";
+"metric.eggs.caption" = "çevrilecek yumurta";
+"metric.breedings.title" = "Üreme";
+"metric.breedings.subtitle" = "aktif süreç";
+
+"status.next_turning" = "Sonraki çevirme %@";
+"status.has_work" = "Bugün kontrol var";
+"status.no_work" = "Bugün rutin yok";
+"status.short.has_work" = "Kontrol";
+"status.short.no_work" = "Temiz";
+"status.needs_attention" = "Takip gerekiyor";
+"status.routine_clean" = "Rutin temiz";
+
+"section.daily_status" = "Günlük durum";
+"section.last_update" = "Son güncelleme";
+"section.stale" = "Veri eski";
+"section.stale.description" = "Uygulamayı açarak yenileyin";
+
+"accessory.eggs.unit" = "yumurta";
+"accessory.no_data" = "—";
+"accessory.routine_clean" = "Temiz";
+"accessory.short_label" = "B";
+
+"placeholder.no_time" = "--:--";

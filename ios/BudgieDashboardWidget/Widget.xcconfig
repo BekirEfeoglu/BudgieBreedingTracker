@@ -1,0 +1,7 @@
+// Pulls FLUTTER_BUILD_NAME and FLUTTER_BUILD_NUMBER into the widget extension so
+// MARKETING_VERSION / CURRENT_PROJECT_VERSION stay in sync with the Flutter app.
+#include "../Flutter/Generated.xcconfig"
+
+// Match Runner's Apple Silicon simulator override so the extension can be built
+// on arm64 simulators without inheriting Flutter's blanket arm64 exclusion.
+EXCLUDED_ARCHS[sdk=iphonesimulator*] = i386

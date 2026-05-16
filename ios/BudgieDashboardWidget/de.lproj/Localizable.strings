@@ -1,0 +1,28 @@
+"widget.display_name" = "BudgieTrack";
+"widget.description" = "Zeigt Eierwende, aktive Bruten und die heutige Pflegeübersicht auf dem Home‑Bildschirm.";
+
+"metric.eggs.title" = "Eier";
+"metric.eggs.subtitle" = "heute wenden";
+"metric.eggs.caption" = "Eier wenden";
+"metric.breedings.title" = "Bruten";
+"metric.breedings.subtitle" = "aktiv";
+
+"status.next_turning" = "Nächste Wende um %@";
+"status.has_work" = "Heute Pflege nötig";
+"status.no_work" = "Heute keine Aufgaben";
+"status.short.has_work" = "Pflege";
+"status.short.no_work" = "Frei";
+"status.needs_attention" = "Aufmerksamkeit nötig";
+"status.routine_clean" = "Alles erledigt";
+
+"section.daily_status" = "Heute";
+"section.last_update" = "Letzte Aktualisierung";
+"section.stale" = "Daten veraltet";
+"section.stale.description" = "App öffnen zum Aktualisieren";
+
+"accessory.eggs.unit" = "Eier";
+"accessory.no_data" = "—";
+"accessory.routine_clean" = "Frei";
+"accessory.short_label" = "B";
+
+"placeholder.no_time" = "--:--";
