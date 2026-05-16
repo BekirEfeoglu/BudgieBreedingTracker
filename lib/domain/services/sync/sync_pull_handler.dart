@@ -12,6 +12,7 @@ import 'package:budgie_breeding_tracker/data/models/conflict_history_model.dart'
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/sync/sync_telemetry.dart';
 
 /// Handles pulling remote changes from Supabase into local DB.
 ///
@@ -32,6 +33,12 @@ class SyncPullHandler {
       AppLogger.warning(
         '[SyncOrchestrator] Clock skew detected: since ($since) is in the future. '
         'Forcing full reconciliation.',
+      );
+      _ref.read(clockSkewWarningProvider.notifier).setWarning(since);
+      SyncTelemetry.event(
+        'clock_skew_detected',
+        data: {'secondsAhead': since.difference(DateTime.now()).inSeconds},
+        level: SentryLevel.warning,
       );
       since = null;
     }
@@ -213,6 +220,10 @@ class SyncPullHandler {
       return false;
     } else {
       AppLogger.info('[SyncOrchestrator] Pull complete');
+      SyncTelemetry.event(
+        'sync_completed',
+        data: {'direction': 'pull', 'incremental': since != null},
+      );
       return true;
     }
   }

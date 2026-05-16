@@ -8,10 +8,10 @@ abstract class RetryScheduler {
   static const _tag = '[RetryScheduler]';
 
   /// Maximum number of retry attempts before giving up.
-  static const int maxRetries = 5;
+  static const int maxRetries = 7;
 
   /// Base delay for exponential backoff (in seconds).
-  static const int _baseDelaySec = 30;
+  static const int _baseDelaySec = 45;
 
   /// Maximum delay cap (10 minutes).
   static const Duration _maxDelay = Duration(minutes: 10);

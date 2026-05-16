@@ -23,7 +23,9 @@ void main() {
 
   group('RetryScheduler', () {
     test('shouldRetry is true below max and false at max', () {
+      expect(RetryScheduler.maxRetries, 7);
       expect(RetryScheduler.shouldRetry(0), isTrue);
+      expect(RetryScheduler.shouldRetry(6), isTrue);
       expect(RetryScheduler.shouldRetry(RetryScheduler.maxRetries - 1), isTrue);
       expect(RetryScheduler.shouldRetry(RetryScheduler.maxRetries), isFalse);
     });
@@ -46,9 +48,9 @@ void main() {
       final retry1 = RetryScheduler.getNextRetryDelay(1).inSeconds;
       final retry2 = RetryScheduler.getNextRetryDelay(2).inSeconds;
 
-      expect(retry0, inInclusiveRange(30, 59));
-      expect(retry1, inInclusiveRange(60, 89));
-      expect(retry2, inInclusiveRange(120, 149));
+      expect(retry0, inInclusiveRange(45, 53));
+      expect(retry1, inInclusiveRange(90, 107));
+      expect(retry2, inInclusiveRange(180, 215));
     });
 
     test('getNextRetryTime is in the future', () {

@@ -10,9 +10,11 @@ import '../../../core/widgets/app_icon.dart';
 import '../../../data/local/database/dao_providers.dart';
 import '../../../data/local/database/daos/sync_metadata_dao.dart'
     show SyncErrorDetail;
+import '../../../data/models/sync_metadata_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../domain/services/sync/sync_orchestrator.dart';
 import '../../../domain/services/sync/sync_providers.dart';
+import '../../../domain/services/sync/sync_telemetry.dart';
 import 'data_storage_dialogs.dart' show formatTimeSince;
 
 part 'sync_detail_sheet_sections.dart';
@@ -57,9 +59,7 @@ class SyncDetailSheet extends ConsumerWidget {
             Expanded(
               child: SingleChildScrollView(
                 controller: scrollController,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -133,10 +133,7 @@ class _SheetHeader extends StatelessWidget {
 }
 
 class _ActionButtons extends ConsumerWidget {
-  const _ActionButtons({
-    required this.hasConflicts,
-    required this.userId,
-  });
+  const _ActionButtons({required this.hasConflicts, required this.userId});
 
   final bool hasConflicts;
   final String userId;
@@ -165,6 +162,50 @@ class _ActionButtons extends ConsumerWidget {
         if (hasConflicts) ...[
           const SizedBox(height: AppSpacing.sm),
           OutlinedButton.icon(
+            onPressed: () async {
+              await ref.read(conflictHistoryDaoProvider).deleteAll(userId);
+              ref.read(conflictHistoryProvider.notifier).clear();
+              SyncTelemetry.event(
+                'conflict_resolved',
+                data: {'strategy': 'remote'},
+              );
+              if (context.mounted) Navigator.of(context).pop();
+            },
+            icon: const Icon(LucideIcons.cloud, size: 18),
+            label: Text('sync.keep_remote_action'.tr()),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(AppSpacing.touchTargetMin),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          OutlinedButton.icon(
+            onPressed: () async {
+              final conflicts = ref.read(conflictHistoryProvider);
+              final syncDao = ref.read(syncMetadataDaoProvider);
+              for (final conflict in conflicts) {
+                final metadata = await syncDao.getByRecord(
+                  conflict.table,
+                  conflict.recordId,
+                );
+                if (metadata != null) {
+                  await syncDao.updateStatus(metadata.id, SyncStatus.pending);
+                }
+              }
+              await ref.read(syncOrchestratorProvider).forceFullSync();
+              SyncTelemetry.event(
+                'conflict_resolved',
+                data: {'strategy': 'local_retry'},
+              );
+              if (context.mounted) Navigator.of(context).pop();
+            },
+            icon: const Icon(LucideIcons.uploadCloud, size: 18),
+            label: Text('sync.retry_local_action'.tr()),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(AppSpacing.touchTargetMin),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          OutlinedButton.icon(
             onPressed: () {
               ref.read(conflictHistoryDaoProvider).deleteAll(userId);
               ref.read(conflictHistoryProvider.notifier).clear();
@@ -184,13 +225,13 @@ class _ActionButtons extends ConsumerWidget {
 
 /// Localizes a Supabase table name to a user-friendly translated string.
 String _localizeTable(String table) => switch (table) {
-      'birds' => 'sync.table_birds'.tr(),
-      'eggs' => 'sync.table_eggs'.tr(),
-      'chicks' => 'sync.table_chicks'.tr(),
-      'breeding_pairs' => 'sync.table_breeding_pairs'.tr(),
-      'clutches' => 'sync.table_clutches'.tr(),
-      'nests' => 'sync.table_nests'.tr(),
-      'health_records' => 'sync.table_health_records'.tr(),
-      'events' => 'sync.table_events'.tr(),
-      _ => 'sync.table_other'.tr(),
-    };
+  'birds' => 'sync.table_birds'.tr(),
+  'eggs' => 'sync.table_eggs'.tr(),
+  'chicks' => 'sync.table_chicks'.tr(),
+  'breeding_pairs' => 'sync.table_breeding_pairs'.tr(),
+  'clutches' => 'sync.table_clutches'.tr(),
+  'nests' => 'sync.table_nests'.tr(),
+  'health_records' => 'sync.table_health_records'.tr(),
+  'events' => 'sync.table_events'.tr(),
+  _ => 'sync.table_other'.tr(),
+};

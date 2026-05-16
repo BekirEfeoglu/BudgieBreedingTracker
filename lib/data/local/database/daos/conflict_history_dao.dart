@@ -25,27 +25,65 @@ class ConflictHistoryDao extends DatabaseAccessor<AppDatabase>
     final count = conflictHistoryTable.id.count();
     return (selectOnly(conflictHistoryTable)
           ..addColumns([count])
-          ..where(conflictHistoryTable.userId.equals(userId) &
-              conflictHistoryTable.createdAt.isBiggerOrEqualValue(cutoff)))
+          ..where(
+            conflictHistoryTable.userId.equals(userId) &
+                conflictHistoryTable.createdAt.isBiggerOrEqualValue(cutoff),
+          ))
         .watchSingle()
         .map((row) => row.read(count) ?? 0);
   }
 
+  Stream<bool> watchExistsForRecord(
+    String userId,
+    String tableName,
+    String recordId,
+  ) {
+    final count = conflictHistoryTable.id.count();
+    return (selectOnly(conflictHistoryTable)
+          ..addColumns([count])
+          ..where(
+            conflictHistoryTable.userId.equals(userId) &
+                conflictHistoryTable.tableName_.equals(tableName) &
+                conflictHistoryTable.recordId.equals(recordId),
+          ))
+        .watchSingle()
+        .map((row) => (row.read(count) ?? 0) > 0);
+  }
+
+  Future<bool> existsForRecord(
+    String userId,
+    String tableName,
+    String recordId,
+  ) async {
+    final count = conflictHistoryTable.id.count();
+    final row =
+        await (selectOnly(conflictHistoryTable)
+              ..addColumns([count])
+              ..where(
+                conflictHistoryTable.userId.equals(userId) &
+                    conflictHistoryTable.tableName_.equals(tableName) &
+                    conflictHistoryTable.recordId.equals(recordId),
+              ))
+            .getSingle();
+    return (row.read(count) ?? 0) > 0;
+  }
+
   Future<void> insert(ConflictHistory conflict) {
-    return into(conflictHistoryTable)
-        .insertOnConflictUpdate(conflict.toCompanion());
+    return into(
+      conflictHistoryTable,
+    ).insertOnConflictUpdate(conflict.toCompanion());
   }
 
   Future<int> deleteOlderThan(int days) {
     final cutoff = DateTime.now().subtract(Duration(days: days));
-    return (delete(conflictHistoryTable)
-          ..where((t) => t.createdAt.isSmallerOrEqualValue(cutoff)))
-        .go();
+    return (delete(
+      conflictHistoryTable,
+    )..where((t) => t.createdAt.isSmallerOrEqualValue(cutoff))).go();
   }
 
   Future<int> deleteAll(String userId) {
-    return (delete(conflictHistoryTable)
-          ..where((t) => t.userId.equals(userId)))
-        .go();
+    return (delete(
+      conflictHistoryTable,
+    )..where((t) => t.userId.equals(userId))).go();
   }
 }

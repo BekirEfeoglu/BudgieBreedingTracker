@@ -40,6 +40,20 @@ class AppPreferences {
 
 Production'da kullanıcı bu flag'leri Settings ekranından kontrol eder.
 
+### Sync Runtime Flags
+Sync rollout/kill switch flag'leri security boundary değildir; sadece
+operasyonel risk azaltmak için kullanılır. Client-side flag kapalı olsa bile
+RLS ve server-side authorization değişmez.
+
+| Flag | Default | Amaç |
+|------|---------|------|
+| `syncOfflineBannerEnabledProvider` | `true` | Global offline/error banner'ı testte veya rollout sırasında kapatmak |
+| `syncBackgroundEnabledProvider` | `false` | Background push task'ını kontrollü açmak |
+| `syncRealtimeEnabledProvider` | `false` | Foreground realtime subscription rollout'u |
+
+Background ve realtime flag'leri production'da default kapalı başlar; ilgili
+servisler eklendiğinde Settings/debug veya remote config üzerinden açılır.
+
 ## Server-Side Kill Switch
 Bozuk bir feature production'da hemen kapatılmalı:
 - Supabase `app_config` tablosu kill-switch flag'leri tutar
@@ -96,6 +110,7 @@ Flag'ler kalıcı olmamalı — `experimental_*` flag'leri 90 günden uzun yaşa
 ```dart
 final container = ProviderContainer(overrides: [
   remoteConfigProvider.overrideWithValue(RemoteConfig(isCommunityDisabled: true)),
+  syncOfflineBannerEnabledProvider.overrideWithValue(false),
 ]);
 addTearDown(container.dispose);
 ```

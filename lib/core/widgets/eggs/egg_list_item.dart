@@ -18,6 +18,7 @@ class EggListItem extends StatelessWidget {
   final DateTime layDate;
   final int incubationDays;
   final DateFormat? dateFormatter;
+  final Widget? trailingBadge;
   final VoidCallback? onTap;
   final VoidCallback? onStatusUpdate;
   final VoidCallback? onDelete;
@@ -29,6 +30,7 @@ class EggListItem extends StatelessWidget {
     required this.incubationDays,
     this.eggNumber,
     this.dateFormatter,
+    this.trailingBadge,
     this.onTap,
     this.onStatusUpdate,
     this.onDelete,
@@ -111,6 +113,10 @@ class EggListItem extends StatelessWidget {
                 ),
 
                 // Actions
+                if (trailingBadge != null) ...[
+                  trailingBadge!,
+                  const SizedBox(width: AppSpacing.xs),
+                ],
                 if (onStatusUpdate != null)
                   AppIconButton(
                     icon: const Icon(LucideIcons.arrowLeftRight, size: 20),

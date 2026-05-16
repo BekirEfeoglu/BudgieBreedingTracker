@@ -48,20 +48,6 @@ class MainShell extends ConsumerWidget {
     ref.watch(periodicSyncProvider);
     ref.watch(networkAwareSyncProvider);
 
-    // Show a temporary SnackBar when the device reconnects after being offline.
-    ref.listen<SyncDisplayStatus>(syncStatusProvider, (previous, next) {
-      if (previous == SyncDisplayStatus.offline &&
-          next != SyncDisplayStatus.offline) {
-        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-          SnackBar(
-            content: Text('sync.reconnected'.tr()),
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    });
-
     final selectedIndex = _calculateIndex(
       GoRouterState.of(context).matchedLocation,
     );
@@ -142,4 +128,3 @@ class _NavItem {
     required this.path,
   });
 }
-

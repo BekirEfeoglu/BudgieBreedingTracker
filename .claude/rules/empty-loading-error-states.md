@@ -111,9 +111,14 @@ SkeletonLoader(
 ```
 
 ## Offline Banner
-- App-wide banner top'ta (`Scaffold` üzerinde global)
-- "Çevrimdışı — değişiklikleriniz kaydedildi"
-- Online geldiğinde kısa "Senkronize edildi" toast (2s)
+- App-wide banner `MaterialApp.router.builder` içinde `AppUpdatePrompt`
+  ile aynı global seviyede sarılır
+- "Çevrimdışı — değişiklikleriniz kaydedildi" ve pending change count gösterir
+- Sync error durumunda retry CTA `forceFullSync()` çağırır
+- 20 saat üstü ve max retry dolmuş sync error kayıtları için cleanup öncesi
+  pre-warning gösterir; 24 saat cleanup davranışı değişmez
+- Online geldiğinde kısa reconnect toast tek kaynaktan gösterilir; ekran bazlı
+  duplicate SnackBar eklenmez
 - Eski veriyi gösterme engel YOK — offline çalışma temel
 
 ## Accessibility

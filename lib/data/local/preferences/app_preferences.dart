@@ -37,6 +37,8 @@ class AppPreferences {
   static const keyEggTurningReminder = 'pref_egg_turning_reminder';
   static const keyTemperatureAlert = 'pref_temperature_alert';
   static const keyLastReconciledAt = 'pref_last_reconciled_at';
+  static const keySyncBackgroundEnabled = 'pref_sync_background_enabled';
+  static const keySyncRealtimeEnabled = 'pref_sync_realtime_enabled';
   static const keyPedigreeDepth = 'pref_pedigree_depth';
   static const keyWifiOnlySync = 'pref_wifi_only_sync';
   static const keyRewardStatisticsUnlockedAt =
@@ -104,7 +106,9 @@ class AppPreferences {
     if (value == null) return null;
     final parsed = DateTime.tryParse(value);
     if (parsed == null) {
-      AppLogger.warning('[AppPreferences] Failed to parse lastSyncedAt: $value');
+      AppLogger.warning(
+        '[AppPreferences] Failed to parse lastSyncedAt: $value',
+      );
     }
     return parsed;
   }
@@ -297,8 +301,7 @@ class AppPreferences {
 
   List<String> get blockedUserIds => _extras.blockedUserIds;
 
-  Future<bool> addBlockedUser(String userId) =>
-      _extras.addBlockedUser(userId);
+  Future<bool> addBlockedUser(String userId) => _extras.addBlockedUser(userId);
 
   Future<bool> removeBlockedUser(String userId) =>
       _extras.removeBlockedUser(userId);

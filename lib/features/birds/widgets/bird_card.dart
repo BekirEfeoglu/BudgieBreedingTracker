@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
+import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
@@ -9,6 +10,7 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/features/birds/utils/bird_display_utils.dart';
 import 'package:budgie_breeding_tracker/shared/widgets/birds.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_status_badge.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/sync_conflict_badge.dart';
 
 /// Card displaying a bird's summary in the list.
 class BirdCard extends StatelessWidget {
@@ -127,7 +129,17 @@ class BirdCard extends StatelessWidget {
                   ],
                 ),
               ),
-              BirdStatusBadge(status: bird.status),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  RecordSyncConflictBadge(
+                    tableName: SupabaseConstants.birdsTable,
+                    recordId: bird.id,
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  BirdStatusBadge(status: bird.status),
+                ],
+              ),
             ],
           ),
         ),

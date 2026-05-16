@@ -56,3 +56,63 @@ class WifiOnlySyncNotifier extends Notifier<bool> {
     await prefs.setBool(AppPreferences.keyWifiOnlySync, state);
   }
 }
+
+// ---------------------------------------------------------------------------
+// Background Sync
+// ---------------------------------------------------------------------------
+
+final syncBackgroundEnabledProvider =
+    NotifierProvider<SyncBackgroundEnabledNotifier, bool>(
+      SyncBackgroundEnabledNotifier.new,
+    );
+
+class SyncBackgroundEnabledNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    _loadFromPrefs();
+    return false;
+  }
+
+  Future<void> _loadFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    state = prefs.getBool(AppPreferences.keySyncBackgroundEnabled) ?? false;
+  }
+
+  Future<void> setEnabled(bool enabled) async {
+    state = enabled;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(AppPreferences.keySyncBackgroundEnabled, enabled);
+  }
+
+  Future<void> toggle() => setEnabled(!state);
+}
+
+// ---------------------------------------------------------------------------
+// Realtime Sync
+// ---------------------------------------------------------------------------
+
+final syncRealtimeEnabledProvider =
+    NotifierProvider<SyncRealtimeEnabledNotifier, bool>(
+      SyncRealtimeEnabledNotifier.new,
+    );
+
+class SyncRealtimeEnabledNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    _loadFromPrefs();
+    return false;
+  }
+
+  Future<void> _loadFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    state = prefs.getBool(AppPreferences.keySyncRealtimeEnabled) ?? false;
+  }
+
+  Future<void> setEnabled(bool enabled) async {
+    state = enabled;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(AppPreferences.keySyncRealtimeEnabled, enabled);
+  }
+
+  Future<void> toggle() => setEnabled(!state);
+}

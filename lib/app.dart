@@ -18,6 +18,8 @@ import 'domain/services/genetics/parent_genotype.dart';
 import 'domain/services/notifications/notification_processor.dart';
 import 'domain/services/notifications/notification_providers.dart';
 import 'domain/services/presence/user_presence_providers.dart';
+import 'domain/services/sync/background_sync_service.dart';
+import 'domain/services/sync/realtime_sync_service.dart';
 import 'domain/services/sync/sync_providers.dart';
 import 'features/auth/providers/auth_providers.dart';
 import 'features/app_update/widgets/app_update_prompt.dart';
@@ -26,6 +28,7 @@ import 'domain/services/premium/premium_providers.dart';
 import 'features/settings/providers/settings_providers.dart';
 import 'router/app_router.dart';
 import 'router/route_names.dart';
+import 'shared/widgets/offline_banner.dart';
 
 class BudgieBreedingApp extends ConsumerStatefulWidget {
   const BudgieBreedingApp({super.key});
@@ -37,6 +40,8 @@ class BudgieBreedingApp extends ConsumerStatefulWidget {
 class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
   late final AppLifecycleListener _lifecycleListener;
   late final InactivityGuard _inactivityGuard;
+  ProviderSubscription<bool>? _backgroundSyncSubscription;
+  ProviderSubscription<bool>? _realtimeSyncSubscription;
   bool _didApplyDebugStartupRoute = false;
   bool _didApplyDebugGeneticsFixture = false;
 
@@ -48,10 +53,25 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ref.read(appLocaleProvider.notifier).syncFromContext(context);
+        unawaited(ref.read(backgroundSyncServiceProvider).register());
+        unawaited(ref.read(realtimeSyncServiceProvider).subscribeIfAllowed());
         _applyDebugGeneticsFixtureIfNeeded();
         _openDebugStartupRouteIfNeeded();
       }
     });
+
+    _backgroundSyncSubscription = ref.listenManual<bool>(
+      syncBackgroundEnabledProvider,
+      (_, __) {
+        unawaited(ref.read(backgroundSyncServiceProvider).register());
+      },
+    );
+    _realtimeSyncSubscription = ref.listenManual<bool>(
+      syncRealtimeEnabledProvider,
+      (_, __) {
+        unawaited(ref.read(realtimeSyncServiceProvider).subscribeIfAllowed());
+      },
+    );
 
     // Refresh RevenueCat premium status when app comes to foreground.
     // Catches subscription renewals, expirations, and cancellations that
@@ -69,6 +89,8 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
 
   @override
   void dispose() {
+    _backgroundSyncSubscription?.close();
+    _realtimeSyncSubscription?.close();
     _lifecycleListener.dispose();
     _inactivityGuard.dispose();
     super.dispose();
@@ -78,6 +100,7 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
   /// backgrounded to reduce the exposure window if the device is compromised.
   void _onAppHidden() {
     _inactivityGuard.stop();
+    unawaited(ref.read(realtimeSyncServiceProvider).unsubscribe());
     unawaited(ref.read(userPresenceControllerProvider.notifier).markInactive());
     ref.read(encryptionServiceProvider).dispose();
   }
@@ -104,6 +127,7 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
     // Restart inactivity guard when app comes back to foreground
     _inactivityGuard.start();
     ref.read(localPremiumProvider.notifier).refresh();
+    unawaited(ref.read(realtimeSyncServiceProvider).subscribeIfAllowed());
     unawaited(_recoverPendingNotifications());
     // Re-check exact alarm permission — user may have granted it via Settings
     // while the app was backgrounded.
@@ -301,7 +325,9 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
               textScaler: TextScaler.linear(scale),
               disableAnimations: reduceAnimations,
             ),
-            child: AppUpdatePrompt(child: child ?? const SizedBox.shrink()),
+            child: AppUpdatePrompt(
+              child: OfflineBanner(child: child ?? const SizedBox.shrink()),
+            ),
           );
         },
       ),

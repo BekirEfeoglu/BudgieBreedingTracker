@@ -36,28 +36,20 @@ class SyncMetadata {
 ```
 
 ## Retry & Backoff
-- Transient hata (network): exponential backoff (2s, 4s, 8s, max 60s)
+- Transient hata (network): `RetryScheduler` exponential backoff kullanır
+  (`45s * 2^retryCount` + %20 jitter, max 10dk)
 - Permanent hata (auth, validation): retry yok, error log + Sentry
-- Max attempt 5 — sonrasında `SyncFailedException`, kullanıcıya banner
+- Max attempt 7 — sonrasında error state kalır, kullanıcıya global
+  `OfflineBanner` içinde retry CTA gösterilir
 
 ```dart
-Future<void> syncWithRetry(String entityType) async {
-  for (var attempt = 1; attempt <= 5; attempt++) {
-    try {
-      await _syncEntity(entityType);
-      return;
-    } on NetworkException {
-      if (attempt == 5) {
-        await Sentry.captureException(/* ... */);
-        throw SyncFailedException(entityType);
-      }
-      await Future.delayed(Duration(seconds: pow(2, attempt).clamp(2, 60).toInt()));
-    } on AuthException {
-      rethrow;  // Auth issue — no retry, propagate to UI
-    }
-  }
-}
+final canRetry = RetryScheduler.shouldRetry(metadata.retryCount ?? 0);
+final nextDelay = RetryScheduler.getNextRetryDelay(metadata.retryCount ?? 0);
 ```
+
+Stale cleanup 24 saatlik davranışını korur. UI pre-warning 20 saat üstü
+ve `retryCount >= RetryScheduler.maxRetries` kayıtlar için
+`pendingDeletionSyncErrorsProvider` üzerinden gösterilir.
 
 ## Idempotency
 - Tüm remote write `.upsert()` (NEVER `.insert()`)
@@ -106,14 +98,16 @@ if (remote.updatedAt.isAfter(local.lastPullAt) && local.dirty) {
 ## Connectivity-Aware
 - `ConnectivityService` `connectivity_plus` üzerine wrap
 - Online geldiğinde otomatik sync kick
-- Offline modda UI "Çevrimdışı" rozeti gösterir
+- Offline modda global `OfflineBanner` gösterilir; banner
+  `syncStatusProvider`, `pendingSyncCountProvider`,
+  `pendingDeletionSyncErrorsProvider` ve retry için
+  `syncOrchestratorProvider.forceFullSync()` kullanır
 - Sync sadece foreground + online — background sync iOS'ta sınırlı
 
 ```dart
-final connectivity = ref.watch(connectivityProvider);
-if (connectivity == ConnectivityResult.none) {
-  return const OfflineBanner();
-}
+child: AppUpdatePrompt(
+  child: OfflineBanner(child: routedChild),
+)
 ```
 
 ## Batch & Debounce
@@ -129,6 +123,7 @@ if (connectivity == ConnectivityResult.none) {
 | Conflict | Banner + "Çakışmaları gör" CTA |
 | Failed (after retries) | Error banner + retry button |
 | Offline | "Çevrimdışı — değişiklikleriniz kaydedildi" |
+| Stale pre-warning | 20h+ failed records için cleanup öncesi retry banner |
 
 ## Background Sync (iOS / Android)
 - iOS: `BGTaskScheduler` short tasks (30 saniye) — sınırlı, opportunistic

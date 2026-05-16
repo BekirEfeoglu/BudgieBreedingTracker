@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
+import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
@@ -9,6 +10,7 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/status_badge.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/sync_conflict_badge.dart';
 
 /// Card header showing male/female bird names, status badge, and cage number.
 class BreedingCardHeader extends ConsumerWidget {
@@ -86,12 +88,22 @@ class BreedingCardHeader extends ConsumerWidget {
             ],
           ),
         ),
-        StatusBadge(
-          label: _getStatusLabel(pair.status),
-          color: _getStatusColor(pair.status),
-          icon: pair.status == BreedingStatus.completed
-              ? const AppIcon(AppIcons.breedingComplete)
-              : null,
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RecordSyncConflictBadge(
+              tableName: SupabaseConstants.breedingPairsTable,
+              recordId: pair.id,
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            StatusBadge(
+              label: _getStatusLabel(pair.status),
+              color: _getStatusColor(pair.status),
+              icon: pair.status == BreedingStatus.completed
+                  ? const AppIcon(AppIcons.breedingComplete)
+                  : null,
+            ),
+          ],
         ),
       ],
     );

@@ -5,6 +5,7 @@ import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_processor.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/sync/sync_telemetry.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_push_handler.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_pull_handler.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_error_handler.dart';
@@ -71,6 +72,7 @@ class SyncOrchestrator {
     _ref.read(syncErrorProvider.notifier).state = false;
 
     try {
+      SyncTelemetry.event('sync_started', data: {'mode': 'full'});
       final userId = _ref.read(currentUserIdProvider);
       if (userId == 'anonymous') {
         return SyncResult.error;
@@ -133,9 +135,22 @@ class SyncOrchestrator {
         }
       }
 
-      return pullSuccess ? SyncResult.success : SyncResult.error;
+      final result = pullSuccess ? SyncResult.success : SyncResult.error;
+      SyncTelemetry.event(
+        result == SyncResult.success ? 'sync_completed' : 'sync_failed',
+        data: {'mode': 'full', 'pushSuccess': pushSuccess},
+        level: result == SyncResult.success
+            ? SentryLevel.info
+            : SentryLevel.warning,
+      );
+      return result;
     } catch (e, st) {
       AppLogger.error('[SyncOrchestrator] Full sync failed', e, st);
+      SyncTelemetry.event(
+        'sync_failed',
+        data: {'mode': 'full'},
+        level: SentryLevel.error,
+      );
       Sentry.captureException(e, stackTrace: st);
       _ref.read(syncErrorProvider.notifier).state = true;
       return SyncResult.error;
@@ -170,6 +185,7 @@ class SyncOrchestrator {
     _ref.read(syncErrorProvider.notifier).state = false;
 
     try {
+      SyncTelemetry.event('sync_started', data: {'mode': 'force'});
       final userId = _ref.read(currentUserIdProvider);
       if (userId == 'anonymous') {
         return SyncResult.error;
@@ -209,9 +225,22 @@ class SyncOrchestrator {
         _ref.read(lastSyncTimeProvider.notifier).state = now;
       }
 
-      return pullSuccess ? SyncResult.success : SyncResult.error;
+      final result = pullSuccess ? SyncResult.success : SyncResult.error;
+      SyncTelemetry.event(
+        result == SyncResult.success ? 'sync_completed' : 'sync_failed',
+        data: {'mode': 'force', 'pushSuccess': pushSuccess},
+        level: result == SyncResult.success
+            ? SentryLevel.info
+            : SentryLevel.warning,
+      );
+      return result;
     } catch (e, st) {
       AppLogger.error('[SyncOrchestrator] Force full sync failed', e, st);
+      SyncTelemetry.event(
+        'sync_failed',
+        data: {'mode': 'force'},
+        level: SentryLevel.error,
+      );
       Sentry.captureException(e, stackTrace: st);
       _ref.read(syncErrorProvider.notifier).state = true;
       return SyncResult.error;

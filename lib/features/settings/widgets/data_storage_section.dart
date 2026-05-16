@@ -10,6 +10,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/constants/app_icons.dart';
 import '../../../core/widgets/app_icon.dart';
+import '../../../data/providers/auth_state_providers.dart';
 import '../../../domain/services/sync/sync_orchestrator.dart';
 import '../../../domain/services/sync/sync_providers.dart';
 import '../../../router/route_names.dart';
@@ -39,9 +40,19 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
   Widget build(BuildContext context) {
     final autoSync = ref.watch(autoSyncProvider);
     final wifiOnlySync = ref.watch(wifiOnlySyncProvider);
+    final backgroundSync = ref.watch(syncBackgroundEnabledProvider);
+    final realtimeSync = ref.watch(syncRealtimeEnabledProvider);
     final cacheSizeAsync = ref.watch(cacheSizeProvider);
     final lastSyncTime = ref.watch(lastSyncTimeProvider);
     final conflicts = ref.watch(conflictHistoryProvider);
+    final userId = ref.watch(currentUserIdProvider);
+    final pendingCount = ref.watch(pendingSyncCountProvider).value ?? 0;
+    final errorCount =
+        ref
+            .watch(syncErrorDetailsProvider(userId))
+            .value
+            ?.fold<int>(0, (sum, d) => sum + d.errorCount) ??
+        0;
 
     final cacheSizeText = cacheSizeAsync.when(
       data: (bytes) => formatBytes(bytes),
@@ -52,6 +63,11 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
     final syncSubtitle = lastSyncTime != null
         ? 'settings.last_synced_at'.tr(args: [formatTimeSince(lastSyncTime)])
         : 'settings.sync_with_server_desc'.tr();
+    final syncStatusSubtitle = [
+      syncSubtitle,
+      'settings.pending_sync_count'.tr(args: ['$pendingCount']),
+      'settings.sync_error_count'.tr(args: ['$errorCount']),
+    ].join(' · ');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,10 +100,30 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
             ref.read(wifiOnlySyncProvider.notifier).toggle();
           },
         ),
+        SettingsToggleTile(
+          title: 'settings.background_sync'.tr(),
+          subtitle: 'settings.background_sync_desc'.tr(),
+          icon: const Icon(LucideIcons.refreshCw),
+          value: backgroundSync,
+          onChanged: (enabled) {
+            ref
+                .read(syncBackgroundEnabledProvider.notifier)
+                .setEnabled(enabled);
+          },
+        ),
+        SettingsToggleTile(
+          title: 'settings.realtime_sync'.tr(),
+          subtitle: 'settings.realtime_sync_desc'.tr(),
+          icon: const Icon(LucideIcons.radio),
+          value: realtimeSync,
+          onChanged: (enabled) {
+            ref.read(syncRealtimeEnabledProvider.notifier).setEnabled(enabled);
+          },
+        ),
         SettingsActionTile(
           key: DataStorageSection.syncActionKey,
           title: 'settings.sync_with_server'.tr(),
-          subtitle: syncSubtitle,
+          subtitle: syncStatusSubtitle,
           icon: const AppIcon(AppIcons.sync),
           isLoading: _isSyncing,
           onTap: _syncWithServer,

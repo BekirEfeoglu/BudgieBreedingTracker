@@ -77,6 +77,63 @@ void main() {
     });
   });
 
+  group('conflictExistsForRecordProvider', () {
+    test('returns false for anonymous user', () async {
+      final container = ProviderContainer(
+        overrides: [conflictHistoryDaoProvider.overrideWithValue(mockDao)],
+      );
+      addTearDown(container.dispose);
+
+      const key = (userId: 'anonymous', table: 'birds', recordId: 'b1');
+      container.listen(conflictExistsForRecordProvider(key), (_, __) {});
+      final value = await container.read(
+        conflictExistsForRecordProvider(key).future,
+      );
+
+      expect(value, isFalse);
+      verifyNever(() => mockDao.existsForRecord(any(), any(), any()));
+      verifyNever(() => mockDao.watchAll(any()));
+    });
+
+    test('matches conflict by user, table, and record id', () async {
+      when(
+        () => mockDao.existsForRecord('user-1', 'birds', 'b1'),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockDao.existsForRecord('user-1', 'birds', 'missing'),
+      ).thenAnswer((_) async => false);
+
+      final container = ProviderContainer(
+        overrides: [conflictHistoryDaoProvider.overrideWithValue(mockDao)],
+      );
+      addTearDown(container.dispose);
+
+      const existsKey = (userId: 'user-1', table: 'birds', recordId: 'b1');
+      const missingKey = (
+        userId: 'user-1',
+        table: 'birds',
+        recordId: 'missing',
+      );
+      container.listen(conflictExistsForRecordProvider(existsKey), (_, __) {});
+      container.listen(conflictExistsForRecordProvider(missingKey), (_, __) {});
+      final exists = await container.read(
+        conflictExistsForRecordProvider(existsKey).future,
+      );
+      final missing = await container.read(
+        conflictExistsForRecordProvider(missingKey).future,
+      );
+
+      expect(exists, isTrue);
+      expect(missing, isFalse);
+      verify(() => mockDao.existsForRecord('user-1', 'birds', 'b1')).called(1);
+      verify(
+        () => mockDao.existsForRecord('user-1', 'birds', 'missing'),
+      ).called(1);
+      verifyNever(() => mockDao.watchAll(any()));
+      verifyNever(() => mockDao.watchExistsForRecord(any(), any(), any()));
+    });
+  });
+
   group('ConflictHistoryNotifier', () {
     test('builds with empty list', () {
       final container = ProviderContainer(

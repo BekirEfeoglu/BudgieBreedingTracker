@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
+import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/features/birds/utils/bird_display_utils.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_gender_icon.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_status_badge.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/sync_conflict_badge.dart';
 
 /// Photo-forward card used by the bird list grid view.
 class BirdGridCard extends StatelessWidget {
@@ -41,6 +43,14 @@ class BirdGridCard extends StatelessWidget {
                     top: AppSpacing.xs,
                     right: AppSpacing.xs,
                     child: BirdStatusBadge(status: bird.status),
+                  ),
+                  Positioned(
+                    top: AppSpacing.xs,
+                    left: AppSpacing.xs,
+                    child: RecordSyncConflictBadge(
+                      tableName: SupabaseConstants.birdsTable,
+                      recordId: bird.id,
+                    ),
                   ),
                 ],
               ),
