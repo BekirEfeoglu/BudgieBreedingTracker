@@ -76,9 +76,7 @@ void main() {
       const Incubation(id: 'fallback', userId: 'fallback-user'),
     );
     registerFallbackValue(_egg());
-    registerFallbackValue(
-      const Chick(id: 'fallback', userId: 'fallback-user'),
-    );
+    registerFallbackValue(const Chick(id: 'fallback', userId: 'fallback-user'));
     when(
       () => mockScheduler.cancelIncubationMilestones(any()),
     ).thenAnswer((_) async {});
@@ -86,9 +84,7 @@ void main() {
       () => mockScheduler.cancelEggTurningReminders(any()),
     ).thenAnswer((_) async {});
     // Default: no chicks linked to any egg
-    when(
-      () => mockChickRepo.getByEggIds(any()),
-    ).thenAnswer((_) async => []);
+    when(() => mockChickRepo.getByEggIds(any())).thenAnswer((_) async => []);
   });
 
   ProviderContainer createContainer() {
@@ -496,16 +492,16 @@ void main() {
     test('clears eggId and clutchId on chicks before removing eggs', () async {
       final incubations = [_incubation()];
       final eggs = [_egg()];
-      final chick = Chick(
+      const chick = Chick(
         id: 'chick-1',
         userId: 'user-1',
         eggId: 'egg-1',
         clutchId: 'clutch-1',
       );
       stubHelperDeps(incubations: incubations, eggs: eggs);
-      when(() => mockChickRepo.getByEggIds(['egg-1'])).thenAnswer(
-        (_) async => [chick],
-      );
+      when(
+        () => mockChickRepo.getByEggIds(['egg-1']),
+      ).thenAnswer((_) async => [chick]);
       when(() => mockChickRepo.save(any())).thenAnswer((_) async {});
       when(() => mockEggRepo.remove(any())).thenAnswer((_) async {});
       when(() => mockIncubationRepo.remove(any())).thenAnswer((_) async {});

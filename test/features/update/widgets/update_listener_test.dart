@@ -2,7 +2,7 @@ import 'package:budgie_breeding_tracker/core/enums/update_status.dart';
 import 'package:budgie_breeding_tracker/data/models/app_version_model.dart';
 import 'package:budgie_breeding_tracker/features/update/providers/update_status_provider.dart';
 import 'package:budgie_breeding_tracker/features/update/screens/forced_update_screen.dart';
-import 'package:budgie_breeding_tracker/features/update/widgets/update_listener.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/update_listener.dart';
 import 'package:budgie_breeding_tracker/features/update/widgets/update_optional_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

@@ -31,7 +31,7 @@ import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/home_widget/home_widget_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_permission_handler.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
-import 'package:budgie_breeding_tracker/features/update/widgets/update_listener.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/update_listener.dart';
 
 /// Main home dashboard screen.
 class HomeScreen extends ConsumerWidget {
