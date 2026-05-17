@@ -77,6 +77,10 @@ Future<void> _pumpSidebar(
   WidgetTester tester, {
   String initialLocation = '/admin/dashboard',
 }) async {
+  tester.view.physicalSize = const Size(600, 1000);
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.reset);
+
   final router = _buildRouter(initialLocation: initialLocation);
   await pumpLocalizedApp(
     tester,
@@ -91,6 +95,16 @@ Future<void> _pumpSidebar(
     ),
   );
 }
+
+const _adminMenuNavigationCases = [
+  ('admin.users', 'Users Screen'),
+  ('admin.monitoring', 'Monitoring Screen'),
+  ('admin.database', 'Database Screen'),
+  ('admin.audit', 'Audit Screen'),
+  ('admin.security', 'Security Screen'),
+  ('admin.settings', 'Settings Screen'),
+  ('admin.feedback_admin', 'Feedback Screen'),
+];
 
 void main() {
   group('AdminSidebar', () {
@@ -158,13 +172,17 @@ void main() {
       );
     });
 
-    testWidgets('tapping users menu item navigates to users route', (
+    testWidgets('tapping each menu item navigates to the matching route', (
       tester,
     ) async {
-      await _pumpSidebar(tester);
-      await tester.tap(find.text(l10n('admin.users')));
-      await tester.pumpAndSettle();
-      expect(find.text('Users Screen'), findsOneWidget);
+      for (final (labelKey, targetText) in _adminMenuNavigationCases) {
+        await _pumpSidebar(tester);
+        final item = find.text(l10n(labelKey));
+        await tester.ensureVisible(item);
+        await tester.tap(item);
+        await tester.pumpAndSettle();
+        expect(find.text(targetText), findsOneWidget);
+      }
     });
 
     testWidgets('tapping back to app navigates to home', (tester) async {

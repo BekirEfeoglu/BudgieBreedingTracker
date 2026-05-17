@@ -19,7 +19,14 @@ Widget _wrapWithRouter({
     routes: [
       GoRoute(
         path: '/admin/dashboard',
-        builder: (_, __) => AdminShell(child: shellChild),
+        builder: (_, __) => AdminShell(
+          child: Column(
+            children: [
+              shellChild,
+              const Text('Dashboard'),
+            ],
+          ),
+        ),
       ),
       GoRoute(
         path: '/admin/users',
@@ -72,6 +79,17 @@ Widget _wrapWithRouter({
 }
 
 const _childWidget = Text('Page Content');
+
+const _adminChildRoutes = [
+  '/admin/users',
+  '/admin/users/user-123',
+  '/admin/monitoring',
+  '/admin/database',
+  '/admin/audit',
+  '/admin/security',
+  '/admin/settings',
+  '/admin/feedback',
+];
 
 Future<void> _pumpShell(
   WidgetTester tester, {
@@ -158,6 +176,24 @@ void main() {
       await tester.tap(find.byTooltip('admin.back_to_app'));
       await tester.pumpAndSettle();
       expect(find.text('Home'), findsOneWidget);
+    });
+
+    testWidgets('back action from every admin child route navigates dashboard', (
+      tester,
+    ) async {
+      for (final route in _adminChildRoutes) {
+        await _pumpShell(
+          tester,
+          size: const Size(600, 900),
+          initialLocation: route,
+        );
+
+        await tester.tap(find.byTooltip('admin.dashboard'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Dashboard'), findsOneWidget);
+        expect(find.text('Home'), findsNothing);
+      }
     });
   });
 

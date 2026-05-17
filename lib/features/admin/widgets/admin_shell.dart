@@ -60,6 +60,9 @@ class _NarrowLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
     final title = _titleForRoute(location);
+    final isDashboard = location == AppRoutes.adminDashboard;
+    final backTarget = isDashboard ? AppRoutes.home : AppRoutes.adminDashboard;
+    final backLabel = isDashboard ? 'admin.back_to_app' : 'admin.dashboard';
 
     return Scaffold(
       appBar: AppBar(
@@ -75,9 +78,9 @@ class _NarrowLayout extends StatelessWidget {
         actions: [
           AppIconButton(
             icon: const Icon(LucideIcons.arrowLeft),
-            onPressed: () => context.go(AppRoutes.home),
-            tooltip: 'admin.back_to_app'.tr(),
-            semanticLabel: 'admin.back_to_app'.tr(),
+            onPressed: () => context.go(backTarget),
+            tooltip: backLabel.tr(),
+            semanticLabel: backLabel.tr(),
           ),
         ],
       ),
