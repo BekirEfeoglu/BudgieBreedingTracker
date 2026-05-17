@@ -783,9 +783,12 @@
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = BudgieDashboardWidget/BudgieDashboardWidget.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
-				DEVELOPMENT_TEAM = GKFR8WRJR7;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = GKFR8WRJR7;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = BudgieDashboardWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -797,6 +800,8 @@
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.budgiebreeding.tracker.BudgieDashboardWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "BudgieDashboardWidget App Store";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -990,9 +995,12 @@
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = BudgieDashboardWidget/BudgieDashboardWidget.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
-				DEVELOPMENT_TEAM = GKFR8WRJR7;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = GKFR8WRJR7;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = BudgieDashboardWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -1004,6 +1012,8 @@
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.budgiebreeding.tracker.BudgieDashboardWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "BudgieDashboardWidget App Store";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
