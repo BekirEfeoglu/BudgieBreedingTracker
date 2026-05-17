@@ -13,6 +13,7 @@ import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
+import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/screens/breeding_list_screen.dart';
@@ -83,6 +84,7 @@ void main() {
           'test-user',
         ).overrideWith((_) => Stream.value([])),
         eggsStreamProvider('test-user').overrideWith((_) => Stream.value([])),
+        chicksStreamProvider('test-user').overrideWith((_) => Stream.value([])),
         adServiceProvider.overrideWithValue(_MockAdService()),
       ],
       child: MaterialApp.router(routerConfig: router),

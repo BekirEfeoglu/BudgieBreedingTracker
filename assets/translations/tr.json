@@ -382,7 +382,21 @@
     "sort_newest": "En Yeni",
     "sort_oldest": "En Eski",
     "sort_cage_asc": "Kafes No (Artan)",
-    "sort_cage_desc": "Kafes No (Azalan)"
+    "sort_cage_desc": "Kafes No (Azalan)",
+    "risk_assistant_title": "Kuluçka Risk Asistanı",
+    "risk_assistant_empty": "Aktif bir kuluçka riski görünmüyor.",
+    "risk_assistant_clear": "Temiz",
+    "risk_assistant_count": "{} risk",
+    "risk_overdue_egg_title": "Yumurta {} beklenen aralığı geçti",
+    "risk_overdue_egg_desc": "Beklenen çıkım tarihinden {} gün geçti. Yumurtayı ve ebeveyn davranışını kontrol edin.",
+    "risk_stale_tracking_title": "Kuluçka takibi güncel değil",
+    "risk_stale_tracking_desc": "{} gündür yumurta veya kuluçka güncellemesi girilmedi.",
+    "risk_hatch_decline_title": "Çıkım oranı düştü",
+    "risk_hatch_decline_desc": "Önceki sezon %{}, son sezon %{} çıkım verdi. Çift performansını izleyin.",
+    "risk_unsuccessful_eggs_title": "Boş/verimsiz yumurta oranı yüksek",
+    "risk_unsuccessful_eggs_desc": "Bu kuluçkadaki yumurtaların yaklaşık %{} kadarı çıkım vermedi.",
+    "risk_chick_loss_title": "Yavru sağlık riski var",
+    "risk_chick_loss_desc": "{} / {} yavruda hastalık veya kayıp işaretlendi."
   },
   "eggs": {
     "add_egg": "Yumurta Ekle",

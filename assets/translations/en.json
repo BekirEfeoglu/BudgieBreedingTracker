@@ -382,7 +382,21 @@
     "sort_newest": "Newest First",
     "sort_oldest": "Oldest First",
     "sort_cage_asc": "Cage No (Ascending)",
-    "sort_cage_desc": "Cage No (Descending)"
+    "sort_cage_desc": "Cage No (Descending)",
+    "risk_assistant_title": "Incubation Risk Assistant",
+    "risk_assistant_empty": "No active incubation risk is visible.",
+    "risk_assistant_clear": "Clear",
+    "risk_assistant_count": "{} risk",
+    "risk_overdue_egg_title": "Egg {} passed the expected hatch range",
+    "risk_overdue_egg_desc": "{} days have passed since the expected hatch date. Check the egg and parent behavior.",
+    "risk_stale_tracking_title": "Incubation tracking is not up to date",
+    "risk_stale_tracking_desc": "No egg or incubation update has been entered for {} days.",
+    "risk_hatch_decline_title": "Hatch rate declined",
+    "risk_hatch_decline_desc": "Previous season hatched at {}%, latest season at {}%. Monitor this pair's performance.",
+    "risk_unsuccessful_eggs_title": "Empty/unsuccessful egg rate is high",
+    "risk_unsuccessful_eggs_desc": "About {}% of this incubation's eggs did not hatch.",
+    "risk_chick_loss_title": "Chick health risk detected",
+    "risk_chick_loss_desc": "{} / {} chicks were marked sick or deceased."
   },
   "eggs": {
     "add_egg": "Add Egg",

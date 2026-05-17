@@ -16,10 +16,12 @@ import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
+import 'package:budgie_breeding_tracker/features/breeding/providers/incubation_risk_providers.dart';
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_pair_info_section.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_eggs_section.dart';
+import 'package:budgie_breeding_tracker/features/breeding/widgets/incubation_risk_card.dart';
 import 'package:budgie_breeding_tracker/data/providers/date_format_providers.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 
@@ -122,6 +124,14 @@ class _DetailContent extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 BreedingPairInfoSection(pair: pair),
+                ref
+                    .watch(pairIncubationRisksProvider(pair.id))
+                    .when(
+                      data: (risks) =>
+                          IncubationRiskCard(risks: risks, maxItems: 5),
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const SizedBox.shrink(),
+                    ),
                 const Divider(
                   height: 1,
                   indent: AppSpacing.lg,

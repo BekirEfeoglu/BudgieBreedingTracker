@@ -11,6 +11,8 @@ import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
+import 'package:budgie_breeding_tracker/data/providers/breeding_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_form_providers.dart';
@@ -99,6 +101,14 @@ void main() {
           'test-user',
         ).overrideWith((_) => Stream.value([])),
         breedingPairByIdProvider('pair-1').overrideWith((_) => pairStream),
+        breedingPairsStreamProvider(
+          'test-user',
+        ).overrideWith((_) => Stream.value([testPair])),
+        allIncubationsStreamProvider(
+          'test-user',
+        ).overrideWith((_) => Stream.value(incubations)),
+        eggsStreamProvider('test-user').overrideWith((_) => Stream.value([])),
+        chicksStreamProvider('test-user').overrideWith((_) => Stream.value([])),
         incubationsByPairProvider(
           'pair-1',
         ).overrideWith((_) => incubationsStream ?? Stream.value(incubations)),
@@ -275,6 +285,18 @@ void main() {
             breedingPairByIdProvider(
               'pair-1',
             ).overrideWith((_) => Stream.value(testPair)),
+            breedingPairsStreamProvider(
+              'test-user',
+            ).overrideWith((_) => Stream.value([testPair])),
+            allIncubationsStreamProvider(
+              'test-user',
+            ).overrideWith((_) => Stream.value([])),
+            eggsStreamProvider(
+              'test-user',
+            ).overrideWith((_) => Stream.value([])),
+            chicksStreamProvider(
+              'test-user',
+            ).overrideWith((_) => Stream.value([])),
             incubationsByPairProvider(
               'pair-1',
             ).overrideWith((_) => Stream.value(<Incubation>[])),

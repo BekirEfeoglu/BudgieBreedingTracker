@@ -14,13 +14,17 @@ import 'package:budgie_breeding_tracker/core/widgets/sort_bottom_sheet.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/fab_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/ad_banner_widget.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
+import 'package:budgie_breeding_tracker/domain/services/breeding/incubation_risk_assistant.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
+import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
+import 'package:budgie_breeding_tracker/features/breeding/providers/incubation_risk_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/egg_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_card.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_filter_bar.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_search_bar.dart';
+import 'package:budgie_breeding_tracker/features/breeding/widgets/incubation_risk_card.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 import 'package:budgie_breeding_tracker/shared/widgets/app_shell.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
@@ -137,6 +141,16 @@ class BreedingListScreen extends ConsumerWidget {
                   incubationByPairMapProvider(userId),
                 );
                 final eggMap = ref.watch(eggsByIncubationMapProvider(userId));
+                final riskSummaryAsync = ref.watch(
+                  incubationRiskSummaryProvider(userId),
+                );
+                IncubationRiskSummary? riskSummary;
+                riskSummaryAsync.when(
+                  data: (summary) => riskSummary = summary,
+                  loading: () {},
+                  error: (_, __) {},
+                );
+                final hasRiskCard = riskSummary != null;
 
                 return Center(
                   child: ConstrainedBox(
@@ -146,6 +160,7 @@ class BreedingListScreen extends ConsumerWidget {
                         ref.invalidate(breedingPairsStreamProvider(userId));
                         ref.invalidate(allIncubationsStreamProvider(userId));
                         ref.invalidate(eggsStreamProvider(userId));
+                        ref.invalidate(chicksStreamProvider(userId));
                       },
                       child: ListView.builder(
                         physics: const AlwaysScrollableScrollPhysics(),
@@ -153,9 +168,14 @@ class BreedingListScreen extends ConsumerWidget {
                           top: AppSpacing.sm,
                           bottom: AppSpacing.lg,
                         ),
-                        itemCount: pairs.length,
+                        itemCount: pairs.length + (hasRiskCard ? 1 : 0),
                         itemBuilder: (context, index) {
-                          final pair = pairs[index];
+                          if (hasRiskCard && index == 0) {
+                            return IncubationRiskCard(
+                              risks: riskSummary!.topRisks(limit: 3),
+                            );
+                          }
+                          final pair = pairs[index - (hasRiskCard ? 1 : 0)];
                           final incubation = incubationMap[pair.id];
                           final eggs = incubation != null
                               ? eggMap[incubation.id] ?? const <Egg>[]

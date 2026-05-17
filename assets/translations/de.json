@@ -382,7 +382,21 @@
     "sort_newest": "Neueste zuerst",
     "sort_oldest": "Älteste zuerst",
     "sort_cage_asc": "Käfig-Nr. (Aufsteigend)",
-    "sort_cage_desc": "Käfig-Nr. (Absteigend)"
+    "sort_cage_desc": "Käfig-Nr. (Absteigend)",
+    "risk_assistant_title": "Brut-Risikoassistent",
+    "risk_assistant_empty": "Es ist kein aktives Brutrisiko sichtbar.",
+    "risk_assistant_clear": "Sauber",
+    "risk_assistant_count": "{} Risiko",
+    "risk_overdue_egg_title": "Ei {} hat den erwarteten Schlupfbereich überschritten",
+    "risk_overdue_egg_desc": "Seit dem erwarteten Schlupfdatum sind {} Tage vergangen. Prüfen Sie Ei und Elternverhalten.",
+    "risk_stale_tracking_title": "Brutverfolgung ist nicht aktuell",
+    "risk_stale_tracking_desc": "Seit {} Tagen wurde keine Ei- oder Brutaktualisierung eingetragen.",
+    "risk_hatch_decline_title": "Schlupfrate ist gesunken",
+    "risk_hatch_decline_desc": "Die vorherige Saison hatte {}% Schlupf, die letzte {}%. Beobachten Sie die Paarleistung.",
+    "risk_unsuccessful_eggs_title": "Rate leerer/erfolgloser Eier ist hoch",
+    "risk_unsuccessful_eggs_desc": "Etwa {}% der Eier dieser Brut sind nicht geschlüpft.",
+    "risk_chick_loss_title": "Gesundheitsrisiko bei Küken erkannt",
+    "risk_chick_loss_desc": "{} / {} Küken wurden als krank oder verstorben markiert."
   },
   "eggs": {
     "add_egg": "Ei hinzufügen",
