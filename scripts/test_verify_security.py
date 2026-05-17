@@ -413,6 +413,84 @@ class TestPremiumSyncAuthorization(unittest.TestCase):
         self.assertFalse(results[0][1])
 
 
+class TestSupabaseAuthHardening(unittest.TestCase):
+    def test_accepts_hardened_supabase_auth_config(self):
+        import verify_security as vs
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write(
+                root / "supabase" / "config.toml",
+                """
+[auth]
+jwt_expiry = 900
+enable_anonymous_sign_ins = false
+enable_confirmations = true
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+""",
+            )
+
+            with patch.object(vs, "ROOT", root):
+                results = vs.check_supabase_auth_hardening()
+
+        self.assertEqual(
+            [
+                ("auth jwt expiry", True, "900s"),
+                ("auth anonymous sign-ins", True, "disabled"),
+                ("auth email confirmations", True, "enabled"),
+                ("auth totp mfa", True, "enroll+verify enabled"),
+            ],
+            results,
+        )
+
+    def test_rejects_weak_supabase_auth_config(self):
+        import verify_security as vs
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write(
+                root / "supabase" / "config.toml",
+                """
+[auth]
+jwt_expiry = 3600
+enable_anonymous_sign_ins = true
+enable_confirmations = false
+
+[auth.mfa.totp]
+enroll_enabled = false
+verify_enabled = false
+""",
+            )
+
+            with patch.object(vs, "ROOT", root):
+                results = vs.check_supabase_auth_hardening()
+
+        self.assertIn(
+            ("auth jwt expiry", False, "expected <=900s, found 3600"),
+            results,
+        )
+        self.assertIn(
+            ("auth anonymous sign-ins", False, "expected false, found true"),
+            results,
+        )
+        self.assertIn(
+            ("auth email confirmations", False, "expected true, found false"),
+            results,
+        )
+        self.assertIn(
+            (
+                "auth totp mfa",
+                False,
+                "expected enroll_enabled=true and verify_enabled=true, "
+                "found enroll=false verify=false",
+            ),
+            results,
+        )
+
+
 class TestMain(unittest.TestCase):
     def test_main_returns_failure_when_any_control_fails(self):
         import verify_security as vs

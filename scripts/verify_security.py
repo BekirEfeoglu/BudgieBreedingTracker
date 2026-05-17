@@ -19,6 +19,8 @@ Checks:
   6. flutter_secure_storage is the only place sensitive credentials
      (api keys, tokens) are persisted on device.
   7. RLS migrations exist for sensitive tables.
+  8. Supabase Auth defaults remain production-safe: short-lived JWTs, no
+     anonymous sign-ins, email confirmation, and TOTP MFA enabled.
 
 Exit codes:
   0 — all controls verified
@@ -331,6 +333,74 @@ def check_premium_sync_server_verified() -> List[Tuple[str, bool, str]]:
     return results
 
 
+def _read_toml_value(body: str, key: str) -> str | None:
+    match = re.search(rf"^\s*{re.escape(key)}\s*=\s*([^\n#]+)", body, re.MULTILINE)
+    if not match:
+        return None
+    return match.group(1).strip().strip('"')
+
+
+def check_supabase_auth_hardening() -> List[Tuple[str, bool, str]]:
+    """Supabase auth config must preserve the documented security baseline."""
+    config = read(ROOT / "supabase" / "config.toml")
+    if not config:
+        return [fail("supabase auth config", "supabase/config.toml missing")]
+
+    results: List[Tuple[str, bool, str]] = []
+
+    jwt_expiry = _read_toml_value(config, "jwt_expiry")
+    try:
+        jwt_seconds = int(jwt_expiry or "")
+    except ValueError:
+        jwt_seconds = 0
+    if 0 < jwt_seconds <= 900:
+        results.append(ok("auth jwt expiry", f"{jwt_seconds}s"))
+    else:
+        results.append(
+            fail("auth jwt expiry", f"expected <=900s, found {jwt_expiry or 'missing'}")
+        )
+
+    anonymous = _read_toml_value(config, "enable_anonymous_sign_ins")
+    if anonymous == "false":
+        results.append(ok("auth anonymous sign-ins", "disabled"))
+    else:
+        results.append(
+            fail(
+                "auth anonymous sign-ins",
+                f"expected false, found {anonymous or 'missing'}",
+            )
+        )
+
+    email_confirmations = _read_toml_value(config, "enable_confirmations")
+    if email_confirmations == "true":
+        results.append(ok("auth email confirmations", "enabled"))
+    else:
+        results.append(
+            fail(
+                "auth email confirmations",
+                f"expected true, found {email_confirmations or 'missing'}",
+            )
+        )
+
+    totp_match = re.search(r"\[auth\.mfa\.totp\]([\s\S]*?)(?=\n\[|\Z)", config)
+    totp_block = totp_match.group(1) if totp_match else ""
+    totp_enroll = _read_toml_value(totp_block, "enroll_enabled")
+    totp_verify = _read_toml_value(totp_block, "verify_enabled")
+    if totp_enroll == "true" and totp_verify == "true":
+        results.append(ok("auth totp mfa", "enroll+verify enabled"))
+    else:
+        results.append(
+            fail(
+                "auth totp mfa",
+                "expected enroll_enabled=true and verify_enabled=true, "
+                f"found enroll={totp_enroll or 'missing'} "
+                f"verify={totp_verify or 'missing'}",
+            )
+        )
+
+    return results
+
+
 CHECKS = [
     ("Release build obfuscation", check_release_obfuscation),
     ("Edge Function security headers", check_edge_function_security_headers),
@@ -340,6 +410,7 @@ CHECKS = [
     ("No secrets committed to git", check_no_secrets_committed),
     ("Audit logging (pgaudit / audit_logs)", check_pgaudit_migration),
     ("Premium sync authorization", check_premium_sync_server_verified),
+    ("Supabase Auth hardening", check_supabase_auth_hardening),
 ]
 
 
