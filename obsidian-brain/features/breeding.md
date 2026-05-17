@@ -47,6 +47,14 @@ Breeding creates the pair + incubation as one atomic operation. Pair/incubation 
 ## Detail UX
 
 - Detail shows a Season Summary card from existing eggs + chicks: total, fertile/incubating/hatched, hatched, live chicks.
+- `IncubationRiskCard` surfaces top risks from `IncubationRiskAssistant` (overdue eggs, stale tracking, hatch-rate decline, high unsuccessful-egg rate, chick health loss). List screen shows global summary; detail screen filters to the current pair.
+
+## Incubation Risk Assistant
+
+- Service: `lib/domain/services/breeding/incubation_risk_assistant.dart`
+- Provider: `incubationRiskSummaryProvider.family(userId)` joins pair + incubation + egg + chick streams
+- Severity: `info` / `warning` / `critical`; widget caps to top 3 by severity rank
+- Purely derived (no DB writes); recomputes when any source stream emits
 
 ## Pair Form UX
 

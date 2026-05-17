@@ -4,6 +4,12 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-05-17] ingest | Incubation risk assistant, sync retry policy, services index
+
+- `features/breeding.md`: documented `IncubationRiskCard` + `IncubationRiskAssistant` (5 risk types, severity ranking, derived from pair/incubation/egg/chick streams).
+- `domain/services-index.md`: corrected count 21→23, refreshed list to match actual `lib/domain/services/` directories.
+- `data-layer/sync-strategy.md` + `domain/sync-service.md`: updated retry policy to `RetryScheduler` (45s base, max 7, 10min cap, 20% jitter) — was stale 5-attempt/2s spec.
+
 ## [2026-05-15] docs | Marketing site anchor and accessibility QA
 
 Added `infrastructure/marketing-site.md` for the GitHub Pages product site,

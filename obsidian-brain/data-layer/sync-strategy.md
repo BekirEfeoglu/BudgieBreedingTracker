@@ -37,17 +37,17 @@ Source: `.claude/rules/background-sync.md`, `.claude/rules/data-layer.md`
 
 ## Retry & Backoff
 
+`RetryScheduler` (`lib/domain/services/sync/retry_scheduler.dart`):
+
 ```
-Attempt 1: immediate
-Attempt 2: 2s delay
-Attempt 3: 4s delay
-Attempt 4: 8s delay
-Attempt 5: 16s delay (capped at 60s)
-Max 5 attempts → SyncFailedException → user banner
+delay = min(45s * 2^retryCount + jitter(±20%), 10 min)
+maxRetries = 7
 ```
 
 - Retry on: `NetworkException` (transient)
 - No retry on: `AuthException`, `ValidationException` (permanent)
+- After max retries: error persists in `SyncMetadata`, surfaced via global `OfflineBanner` retry CTA
+- `pendingDeletionSyncErrorsProvider` pre-warns at 20h+ before the 24h stale cleanup runs
 
 ## Conflict Resolution
 

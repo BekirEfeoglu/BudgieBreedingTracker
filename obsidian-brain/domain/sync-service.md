@@ -18,14 +18,7 @@ SyncService.syncAll()
 
 ## Per-Entity Sync
 
-`syncEntity(entityType)` runs with retry/backoff:
-
-```
-Attempt 1 → NetworkException → 2s wait
-Attempt 2 → NetworkException → 4s wait
-...
-Attempt 5 → fail → SyncFailedException → user banner
-```
+`syncEntity(entityType)` runs through `RetryScheduler` (`45s * 2^retryCount` + 20% jitter, capped at 10 min, max 7 retries). After exhaustion the error persists in `SyncMetadata` and the global `OfflineBanner` exposes a retry CTA.
 
 Auth/validation errors abort immediately (no retry).
 

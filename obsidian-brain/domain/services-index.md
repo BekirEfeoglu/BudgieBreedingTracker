@@ -1,6 +1,6 @@
 # Domain Services Index
 
-21 service directories in `lib/domain/services/`.
+23 service directories in `lib/domain/services/` (ads, app_update, auth, backup, breeding, calendar, eggs, encryption, export, gamification, genetics, home_widget, import, incubation, local_ai, moderation, notifications, payment, premium, presence, profile, sync, update_check).
 
 | Service | Purpose | Network Required |
 |---------|---------|-----------------|
@@ -11,20 +11,21 @@
 | [[domain/notification-service]] | FCM + local notifications | Partial |
 | [[domain/calendar-service]] | Event scheduling | No |
 | [[domain/auth-service]] | Login, session refresh | Yes |
-| Incubation service | Hatch day calculation | No |
-| Storage service | Photo upload pipeline | Yes |
-| Export service | PDF/Excel generation | No |
-| Genealogy service | Family tree computation | No |
+| Breeding / IncubationRiskAssistant | Derived risk summary (overdue eggs, hatch-rate decline, chick health loss) | No |
+| Incubation service | Hatch day calculation, species config | No |
+| Eggs service | Egg status transitions, hatched→chick auto-create | No |
+| Encryption service | Local secure storage primitives | No |
+| Home widget service | iOS lock-screen + home widget snapshot sync | No |
+| Backup / Import / Export | PDF/Excel/JSON I/O | Partial |
 | Gamification service | Badge unlock logic | No |
-| Analytics service | Event tracking | Yes |
-| App config service | Remote kill switches | Yes |
-| Free tier limit service | Entity count checks | Yes (edge fn) |
-| Connectivity service | Network state | No |
-| FCM token service | Token registration/cleanup | Yes |
-| Content moderation | Report triggers | Yes |
-| User guide service | Onboarding flow | No |
-| Image compress service | Resize before upload | No |
-| Error reporting service | Sentry wrapper | Yes |
+| Moderation service | Report triggers, threshold flagging | Yes |
+| Payment / Premium service | RevenueCat purchase + entitlement | Yes |
+| Presence service | Online status broadcast | Yes |
+| Profile service | User profile orchestration | Yes |
+| Ads service | Premium upsell ad gating | Partial |
+| Update check service | Forced update prompt | Yes |
+| App update service | In-app update flow | Yes |
+| Notifications service | Channel/category + scheduling | Partial |
 
 ## Naming Rules
 
