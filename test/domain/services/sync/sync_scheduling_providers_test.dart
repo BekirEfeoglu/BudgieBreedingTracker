@@ -88,6 +88,30 @@ void main() {
       });
     });
 
+    test('skips initial sync when a startup sync just completed', () {
+      fakeAsync((async) {
+        final mock = MockSyncOrchestrator();
+        when(() => mock.fullSync()).thenAnswer((_) async => SyncResult.success);
+
+        final container = ProviderContainer(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('user-1'),
+            autoSyncProvider.overrideWith(() => _AutoSyncTrue()),
+            wifiOnlySyncProvider.overrideWith(() => _WifiOnlyFalse()),
+            syncOrchestratorProvider.overrideWithValue(mock),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        container.read(lastSyncTimeProvider.notifier).state = DateTime.now();
+        container.read(periodicSyncProvider);
+
+        async.elapse(const Duration(seconds: 61));
+
+        verifyNever(() => mock.fullSync());
+      });
+    });
+
     test(
       'cancels timers when userId transitions from signed-in to anonymous',
       () {

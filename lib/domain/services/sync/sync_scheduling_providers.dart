@@ -13,6 +13,10 @@ import 'package:budgie_breeding_tracker/domain/services/sync/network_status_prov
 /// Sync interval for periodic sync (15 minutes).
 const _syncInterval = Duration(minutes: 15);
 
+/// Grace period after app-start sync completes before the periodic provider's
+/// initial jitter is allowed to start another full sync.
+const _startupSyncGracePeriod = Duration(minutes: 2);
+
 /// Periodic sync provider that triggers fullSync every 15 minutes.
 ///
 /// Automatically starts when watched and disposes the Timer on cleanup.
@@ -38,6 +42,7 @@ final periodicSyncProvider = Provider<void>((ref) {
   final jitterTimer = Timer(initialJitter, () {
     final currentUserId = ref.read(currentUserIdProvider);
     if (currentUserId == 'anonymous') return;
+    if (_recentSyncCompleted(ref)) return;
     final orchestrator = ref.read(syncOrchestratorProvider);
     orchestrator.fullSync();
   });
@@ -103,6 +108,12 @@ final periodicSyncProvider = Provider<void>((ref) {
     AppLogger.info('[PeriodicSync] Timer disposed');
   });
 });
+
+bool _recentSyncCompleted(Ref ref) {
+  final lastSync = ref.read(lastSyncTimeProvider);
+  if (lastSync == null) return false;
+  return DateTime.now().difference(lastSync) < _startupSyncGracePeriod;
+}
 
 /// Network-aware sync provider that triggers forceFullSync when device reconnects.
 ///
