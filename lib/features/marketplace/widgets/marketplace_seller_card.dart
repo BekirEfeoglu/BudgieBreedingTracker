@@ -73,8 +73,7 @@ class MarketplaceSellerCard extends StatelessWidget {
                     if (memberSince != null) ...[
                       const SizedBox(height: AppSpacing.xs),
                       Text(
-                        'marketplace.seller_member_since'
-                            .tr(args: ['$months']),
+                        'marketplace.seller_member_since'.tr(args: ['$months']),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.outline,
                         ),
@@ -88,8 +87,9 @@ class MarketplaceSellerCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    'marketplace.seller_active_listings'
-                        .tr(args: ['$activeListingCount']),
+                    'marketplace.seller_active_listings'.tr(
+                      args: ['$activeListingCount'],
+                    ),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.outline,
                     ),
@@ -129,6 +129,8 @@ class _SellerAvatar extends StatelessWidget {
             width: 56,
             height: 56,
             fit: BoxFit.cover,
+            memCacheWidth: 160,
+            memCacheHeight: 160,
             placeholder: (context, url) => const Icon(LucideIcons.user),
             errorWidget: (context, url, error) => const Icon(LucideIcons.user),
           ),
@@ -138,10 +140,7 @@ class _SellerAvatar extends StatelessWidget {
     return CircleAvatar(
       radius: 28,
       backgroundColor: theme.colorScheme.surfaceContainerHighest,
-      child: Icon(
-        LucideIcons.user,
-        color: theme.colorScheme.onSurfaceVariant,
-      ),
+      child: Icon(LucideIcons.user, color: theme.colorScheme.onSurfaceVariant),
     );
   }
 }

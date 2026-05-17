@@ -135,6 +135,100 @@ class TestVerifyCodeQualityMain(unittest.TestCase):
                 result = vcq.main()
         self.assertEqual(result, 0)  # warnings only → exit 0
 
+    def test_returns_1_when_icon_button_lacks_48dp_constraint(self):
+        import verify_code_quality as vcq
+
+        with tempfile.TemporaryDirectory() as d:
+            lib = self._make_lib(Path(d))
+            (lib / "actions.dart").write_text(
+                "Widget build() => IconButton("
+                "onPressed: () {}, icon: const Icon(Icons.add));\n",
+                encoding="utf-8",
+            )
+            with patch.object(vcq, "LIB_DIR", lib), patch.object(
+                vcq, "CLAUDE_MD", Path("/nonexistent_claude.md")
+            ):
+                result = vcq.main()
+        self.assertEqual(result, 1)
+
+    def test_returns_1_when_provider_container_is_not_disposed(self):
+        import verify_code_quality as vcq
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            lib = self._make_lib(root)
+            test_dir = root / "test"
+            test_dir.mkdir()
+            (test_dir / "leak_test.dart").write_text(
+                "void main() {\n"
+                "  final container = ProviderContainer();\n"
+                "}\n",
+                encoding="utf-8",
+            )
+            with patch.object(vcq, "ROOT_DIR", root), patch.object(
+                vcq, "LIB_DIR", lib
+            ), patch.object(vcq, "CLAUDE_MD", Path("/nonexistent_claude.md")):
+                result = vcq.main()
+        self.assertEqual(result, 1)
+
+    def test_returns_1_when_remote_source_uses_supabase_insert(self):
+        import verify_code_quality as vcq
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            lib = self._make_lib(root)
+            remote_dir = lib / "data" / "remote" / "api"
+            remote_dir.mkdir(parents=True)
+            (remote_dir / "bad_remote_source.dart").write_text(
+                "Future<void> save(client, data) async {\n"
+                "  await client.from('birds').insert(data);\n"
+                "}\n",
+                encoding="utf-8",
+            )
+            with patch.object(vcq, "ROOT_DIR", root), patch.object(
+                vcq, "LIB_DIR", lib
+            ), patch.object(vcq, "CLAUDE_MD", Path("/nonexistent_claude.md")):
+                result = vcq.main()
+        self.assertEqual(result, 1)
+
+    def test_returns_1_when_feature_code_accesses_supabase_table_directly(self):
+        import verify_code_quality as vcq
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            lib = self._make_lib(root)
+            feature_dir = lib / "features" / "birds" / "providers"
+            feature_dir.mkdir(parents=True)
+            (feature_dir / "bad_feature_provider.dart").write_text(
+                "Future<void> load(client) async {\n"
+                "  await client.from('birds').select();\n"
+                "}\n",
+                encoding="utf-8",
+            )
+            with patch.object(vcq, "ROOT_DIR", root), patch.object(
+                vcq, "LIB_DIR", lib
+            ), patch.object(vcq, "CLAUDE_MD", Path("/nonexistent_claude.md")):
+                result = vcq.main()
+        self.assertEqual(result, 1)
+
+    def test_returns_1_when_cached_network_image_lacks_mem_cache_width(self):
+        import verify_code_quality as vcq
+
+        with tempfile.TemporaryDirectory() as d:
+            lib = self._make_lib(Path(d))
+            (lib / "photo.dart").write_text(
+                "Widget build() => CachedNetworkImage(\n"
+                "  imageUrl: url,\n"
+                "  fit: BoxFit.cover,\n"
+                ");\n",
+                encoding="utf-8",
+            )
+            with patch.object(vcq, "LIB_DIR", lib), patch.object(
+                vcq, "CLAUDE_MD", Path("/nonexistent_claude.md")
+            ):
+                result = vcq.main()
+        self.assertEqual(result, 1)
+
 
 # ── main() kalan branch'ler ───────────────────────────────────────────────────
 

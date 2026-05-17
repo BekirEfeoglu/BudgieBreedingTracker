@@ -50,9 +50,15 @@ RLS ve server-side authorization değişmez.
 | `syncOfflineBannerEnabledProvider` | `true` | Global offline/error banner'ı testte veya rollout sırasında kapatmak |
 | `syncBackgroundEnabledProvider` | `false` | Background push task'ını kontrollü açmak |
 | `syncRealtimeEnabledProvider` | `false` | Foreground realtime subscription rollout'u |
+| `syncRealtimeServerKillSwitchProvider` | `false` | Remote config üzerinden realtime subscription'ı global kapatmak |
+| `syncRealtimeRolloutPercentProvider` | `100` | Authenticated user bucket'ı için % rollout eşiği |
 
 Background ve realtime flag'leri production'da default kapalı başlar; ilgili
 servisler eklendiğinde Settings/debug veya remote config üzerinden açılır.
+Realtime subscription ancak local flag açık, server kill switch kapalı ve
+deterministik user bucket'ı rollout yüzdesinin altındaysa başlar. Ramp planı:
+%5 internal cohort, %25 geniş beta, %100 stable. Crash, subscription timeout
+veya conflict oranı artarsa kill switch önce kapatılır, sonra fix deploy edilir.
 
 ## Server-Side Kill Switch
 Bozuk bir feature production'da hemen kapatılmalı:

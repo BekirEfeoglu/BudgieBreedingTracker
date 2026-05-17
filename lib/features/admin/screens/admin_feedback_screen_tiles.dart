@@ -80,7 +80,9 @@ class _StatusFilterBar extends StatelessWidget {
                 children: options.map((opt) {
                   final isSelected = selected == opt.$1;
                   return Padding(
-                    padding: const EdgeInsets.only(right: AppSpacing.xs),
+                    padding: const EdgeInsetsDirectional.only(
+                      end: AppSpacing.xs,
+                    ),
                     child: FilterChip(
                       label: Text(opt.$2),
                       selected: isSelected,

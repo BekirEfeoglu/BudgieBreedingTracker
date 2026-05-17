@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_icons.dart';
@@ -174,8 +175,9 @@ class BackupScreen extends ConsumerWidget {
           );
         }
       }
-    } catch (e) {
-      AppLogger.error('BackupScreen', e, StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('BackupScreen import failed', e, st);
+      await Sentry.captureException(e, stackTrace: st);
       if (context.mounted) {
         context.showSnackBar('backup.import_error'.tr(), isError: true);
       }
@@ -214,8 +216,9 @@ class BackupScreen extends ConsumerWidget {
       if (context.mounted) {
         context.showSnackBar('backup.export_success'.tr());
       }
-    } catch (e) {
-      AppLogger.error('BackupScreen', e, StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('BackupScreen export failed', e, st);
+      await Sentry.captureException(e, stackTrace: st);
       if (context.mounted) {
         context.showSnackBar('backup.export_error'.tr(), isError: true);
       }

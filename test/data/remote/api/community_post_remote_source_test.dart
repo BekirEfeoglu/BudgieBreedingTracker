@@ -157,12 +157,12 @@ void main() {
   });
 
   group('insert', () {
-    test('sends data to community_posts table', () async {
+    test('upserts data to community_posts table', () async {
       final data = {'id': 'p1', 'user_id': 'u1', 'content': 'New post'};
 
       await source.insert(data);
 
-      expect(postsQuery.insertPayload, data);
+      expect(postsQuery.upsertPayload, data);
       expect(client.requestedTables, contains('community_posts'));
     });
   });

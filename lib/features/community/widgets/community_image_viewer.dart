@@ -16,8 +16,11 @@ class CommunityImageViewer extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.black, // Intentional: image viewer overlay
       appBar: AppBar(
-        backgroundColor: Colors.transparent, // Intentional: image viewer overlay
-        iconTheme: const IconThemeData(color: Colors.white), // Intentional: image viewer overlay
+        backgroundColor:
+            Colors.transparent, // Intentional: image viewer overlay
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+        ), // Intentional: image viewer overlay
         actions: [
           AppIconButton(
             icon: const Icon(LucideIcons.x),
@@ -36,6 +39,14 @@ class CommunityImageViewer extends StatelessWidget {
             fit: BoxFit.contain,
             width: double.infinity,
             height: double.infinity,
+            memCacheWidth:
+                (MediaQuery.sizeOf(context).width *
+                        MediaQuery.devicePixelRatioOf(context))
+                    .round(),
+            memCacheHeight:
+                (MediaQuery.sizeOf(context).height *
+                        MediaQuery.devicePixelRatioOf(context))
+                    .round(),
             errorWidget: (_, __, ___) => Icon(
               LucideIcons.imageOff,
               size: 48,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -104,12 +105,13 @@ class PrivacySecuritySection extends ConsumerWidget {
                     ActionFeedbackService.show(
                       'settings.password_changed'.tr(),
                     );
-                  } catch (e) {
+                  } catch (e, st) {
                     AppLogger.error(
                       '[PrivacySecurity] Password change failed',
                       e,
-                      StackTrace.current,
+                      st,
                     );
+                    await Sentry.captureException(e, stackTrace: st);
                     messenger.showSnackBar(
                       SnackBar(
                         content: Text('settings.password_change_error'.tr()),
@@ -168,12 +170,9 @@ class PrivacySecuritySection extends ConsumerWidget {
                 await ref.read(authActionsProvider).signOutAllSessions();
                 navigator.pop();
                 ActionFeedbackService.show('settings.sessions_signed_out'.tr());
-              } catch (e) {
-                AppLogger.error(
-                  '[PrivacySecurity] Sign out all failed',
-                  e,
-                  StackTrace.current,
-                );
+              } catch (e, st) {
+                AppLogger.error('[PrivacySecurity] Sign out all failed', e, st);
+                await Sentry.captureException(e, stackTrace: st);
                 navigator.pop();
                 messenger.showSnackBar(
                   SnackBar(content: Text('errors.unknown'.tr())),

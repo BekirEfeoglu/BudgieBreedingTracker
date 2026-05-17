@@ -106,7 +106,7 @@ class _ResultsHeader extends StatelessWidget {
                     'genetics.filter_visual_only'.tr(),
                 };
                 return Padding(
-                  padding: const EdgeInsets.only(right: AppSpacing.sm),
+                  padding: const EdgeInsetsDirectional.only(end: AppSpacing.sm),
                   child: FilterChip(
                     label: Text(label),
                     selected: isSelected,

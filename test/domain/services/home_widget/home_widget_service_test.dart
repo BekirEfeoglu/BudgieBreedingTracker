@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/home_widget/home_widget_service.dart';
-import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
+import 'package:budgie_breeding_tracker/data/models/home_widget_dashboard_snapshot.dart';
 
 class _FakeHomeWidgetGateway implements HomeWidgetGateway {
   final List<String> calls = [];

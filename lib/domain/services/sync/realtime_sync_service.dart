@@ -20,6 +20,13 @@ final syncRealtimeAllowlistProvider = Provider<Set<String>>((ref) {
   };
 });
 
+/// Remote-configurable kill switch. Defaults to safe/off in local code; server
+/// config can override this provider through the app config layer during rollout.
+final syncRealtimeServerKillSwitchProvider = Provider<bool>((ref) => false);
+
+/// Remote-configurable rollout percentage for authenticated users.
+final syncRealtimeRolloutPercentProvider = Provider<int>((ref) => 100);
+
 final realtimeSyncServiceProvider = Provider<RealtimeSyncService>((ref) {
   final service = RealtimeSyncService(ref, ref.watch(supabaseClientProvider));
   ref.onDispose(service.unsubscribe);
@@ -45,8 +52,22 @@ class RealtimeSyncService {
     final enabled = _ref.read(syncRealtimeEnabledProvider);
     final userId = _ref.read(currentUserIdProvider);
     final online = _ref.read(networkStatusProvider).asData?.value ?? true;
+    final killSwitchEnabled = _ref.read(syncRealtimeServerKillSwitchProvider);
+    final rolloutAllowed =
+        !killSwitchEnabled &&
+        isUserInRollout(
+          userId: userId,
+          percent: normalizeRolloutPercent(
+            _ref.read(syncRealtimeRolloutPercentProvider),
+          ),
+        );
 
-    if (!shouldSubscribe(enabled: enabled, userId: userId, online: online)) {
+    if (!shouldSubscribe(
+      enabled: enabled,
+      userId: userId,
+      online: online,
+      rolloutAllowed: rolloutAllowed,
+    )) {
       await unsubscribe();
       return;
     }
@@ -125,8 +146,34 @@ class RealtimeSyncService {
     required bool enabled,
     required String userId,
     required bool online,
+    bool rolloutAllowed = true,
   }) {
-    return enabled && online && userId != 'anonymous' && userId.isNotEmpty;
+    return enabled &&
+        online &&
+        rolloutAllowed &&
+        userId != 'anonymous' &&
+        userId.isNotEmpty;
+  }
+
+  static int normalizeRolloutPercent(int percent) {
+    return percent.clamp(0, 100).toInt();
+  }
+
+  static bool isUserInRollout({required String userId, required int percent}) {
+    final normalizedPercent = normalizeRolloutPercent(percent);
+    if (normalizedPercent <= 0) return false;
+    if (userId == 'anonymous' || userId.isEmpty) return false;
+    if (normalizedPercent >= 100) return true;
+    return rolloutBucket(userId) < normalizedPercent;
+  }
+
+  static int rolloutBucket(String userId) {
+    var hash = 2166136261;
+    for (final codeUnit in userId.codeUnits) {
+      hash ^= codeUnit;
+      hash = (hash * 16777619) & 0x7fffffff;
+    }
+    return hash % 100;
   }
 
   static String? extractRecordId(PostgresChangePayload payload) {

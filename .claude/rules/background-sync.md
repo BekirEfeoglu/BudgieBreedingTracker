@@ -130,6 +130,11 @@ child: AppUpdatePrompt(
 - Android: WorkManager periodic (15dk min interval)
 - Foreground sync güvenilir, background sadece "best effort"
 - Kritik veri için kullanıcı app'i açtığında sync güvence
+- Background task telemetry zorunlu: `background_sync_skipped` ve
+  `background_sync_run` olayları `durationMs`, `taskBudgetSeconds=30`,
+  `success`/skip reason alanlarını içerir. iOS güvenilirliği bu metriklerden
+  foreground sync ile karşılaştırılır; background sync hiçbir zaman tek
+  güvence mekanizması sayılmaz.
 
 ## Testing
 ```dart

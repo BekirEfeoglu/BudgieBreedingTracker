@@ -71,15 +71,34 @@ class BackgroundSyncService {
     required bool enabled,
     required String userId,
     required Future<bool> Function(String userId) pushChanges,
+    void Function(String name, Map<String, Object?> data)? telemetrySink,
   }) async {
+    final stopwatch = Stopwatch()..start();
+    void emit(String name, Map<String, Object?> data) {
+      final payload = {
+        ...data,
+        'durationMs': stopwatch.elapsedMilliseconds,
+        'taskBudgetSeconds': 30,
+      };
+      if (telemetrySink != null) {
+        telemetrySink(name, payload);
+      } else {
+        SyncTelemetry.event(name, data: payload);
+      }
+    }
+
     if (!enabled || userId == 'anonymous') {
       AppLogger.debug('[BackgroundSync] Skipped: disabled or signed out');
+      emit('background_sync_skipped', {
+        'enabled': enabled,
+        'signedIn': userId != 'anonymous',
+      });
       return true;
     }
 
     try {
       final pushed = await pushChanges(userId);
-      SyncTelemetry.event('background_sync_run', data: {'success': pushed});
+      emit('background_sync_run', {'success': pushed});
       if (!pushed) {
         AppLogger.warning(
           '[BackgroundSync] Pending push completed with errors',
@@ -88,6 +107,10 @@ class BackgroundSyncService {
       return pushed;
     } catch (e, st) {
       AppLogger.error('[BackgroundSync] Pending push failed', e, st);
+      emit('background_sync_run', {
+        'success': false,
+        'errorType': e.runtimeType.toString(),
+      });
       return false;
     }
   }

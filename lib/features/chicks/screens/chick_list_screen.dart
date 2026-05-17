@@ -372,7 +372,7 @@ class _SelectableChickCard extends StatelessWidget {
           children: [
             if (isSelectionMode)
               Padding(
-                padding: const EdgeInsets.only(left: AppSpacing.sm),
+                padding: const EdgeInsetsDirectional.only(start: AppSpacing.sm),
                 child: Checkbox(
                   value: isSelected,
                   onChanged: (_) => onTap(),

@@ -40,7 +40,23 @@ await _storage.deleteAll();  // on logout
 - Concurrent refresh: SDK lock'lu
 
 ### Certificate Pinning
-Şu an aktif **değil**. Eklenirse: pin rotation prosedürü ve emergency unpin path zorunlu. Aksi halde sertifika değişiminde tüm app kullanıcıları offline kalır.
+Aktif: `CertificatePinning.install()` bootstrap'ta `Supabase.initialize()`
+öncesi çalışır ve `*.supabase.co` için SHA-256 fingerprint allowlist'i
+uygular.
+
+Rotation prosedürü:
+1. Supabase leaf certificate expiry tarihinden en az 14 gün önce yeni
+   fingerprint'i üret.
+2. Eski ve yeni fingerprint'i aynı release'te allowlist'te tut.
+3. Release adoption yeterli olduktan sonra eski fingerprint'i kaldır.
+4. `scripts/verify_security.py` ile pinning modülünün bootstrap'a bağlı
+   kaldığını doğrula.
+
+Emergency unpin:
+- Proxy/debug ihtiyacı yalnızca explicit `--dart-define=ALLOW_PROXY=true` ile
+  yapılır; production build'lerde kullanılmaz.
+- Sertifika rotasyonu beklenmedik şekilde kullanıcıları offline bırakırsa önce
+  pin allowlist fix release'i çıkarılır, sonra eski pin kaldırılır.
 
 ## MFA Lockout Policy
 - Threshold: 5 failed TOTP attempts → lockout

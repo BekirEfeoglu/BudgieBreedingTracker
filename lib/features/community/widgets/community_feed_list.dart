@@ -31,6 +31,7 @@ import 'community_swipeable_post_card.dart';
 
 part 'community_feed_items.dart';
 part 'community_feed_guides.dart';
+part 'community_feed_guide_cards.dart';
 
 /// Scrollable feed list with infinite scroll and pull-to-refresh.
 class CommunityFeedList extends ConsumerStatefulWidget {

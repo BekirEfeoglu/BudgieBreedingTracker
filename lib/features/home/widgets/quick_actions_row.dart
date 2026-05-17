@@ -64,7 +64,7 @@ class QuickActionsRow extends StatelessWidget {
             children: [
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.only(right: AppSpacing.lg),
+                padding: const EdgeInsetsDirectional.only(end: AppSpacing.lg),
                 child: Row(
                   children: [
                     for (var i = 0; i < actions.length; i++) ...[

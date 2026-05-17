@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/sync_status_bar.dart';
@@ -22,11 +23,18 @@ void main() {
     ).thenAnswer((_) async => SyncResult.success);
   });
 
-  Widget createSubject({SyncDisplayStatus status = SyncDisplayStatus.synced}) {
+  Widget createSubject({
+    SyncDisplayStatus status = SyncDisplayStatus.synced,
+    int conflictCount = 0,
+  }) {
     return ProviderScope(
       overrides: [
+        currentUserIdProvider.overrideWithValue('anonymous'),
         syncStatusProvider.overrideWithValue(status),
         syncOrchestratorProvider.overrideWithValue(mockOrchestrator),
+        persistedConflictCountProvider(
+          'anonymous',
+        ).overrideWith((_) => Stream.value(conflictCount)),
       ],
       child: const MaterialApp(home: Scaffold(body: SyncStatusBar())),
     );
@@ -61,7 +69,9 @@ void main() {
       expect(find.text(l10n('sync.syncing')), findsOneWidget);
     });
 
-    testWidgets('shows sync AppIcon with rotation when syncing', (tester) async {
+    testWidgets('shows sync AppIcon with rotation when syncing', (
+      tester,
+    ) async {
       await tester.pumpWidget(createSubject(status: SyncDisplayStatus.syncing));
       await tester.pump();
 
@@ -132,6 +142,15 @@ void main() {
       await tester.pump();
 
       expect(find.byType(Semantics), findsAtLeastNWidgets(1));
+    });
+
+    testWidgets('shows conflict badge when persisted conflicts exist', (
+      tester,
+    ) async {
+      await tester.pumpWidget(createSubject(conflictCount: 3));
+      await tester.pump();
+
+      expect(find.text(l10n('sync.conflict_detected')), findsOneWidget);
     });
 
     testWidgets('renders Row layout with icon and text', (tester) async {

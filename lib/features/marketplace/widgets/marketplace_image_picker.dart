@@ -69,7 +69,7 @@ class MarketplaceImagePicker extends StatelessWidget {
             children: [
               ...List.generate(imagePaths.length, (index) {
                 return Padding(
-                  padding: const EdgeInsets.only(right: AppSpacing.sm),
+                  padding: const EdgeInsetsDirectional.only(end: AppSpacing.sm),
                   child: _ImageTile(
                     path: imagePaths[index],
                     isCover: index == 0,
@@ -225,11 +225,7 @@ class _AddButton extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              LucideIcons.plus,
-              color: theme.colorScheme.primary,
-              size: 24,
-            ),
+            Icon(LucideIcons.plus, color: theme.colorScheme.primary, size: 24),
           ],
         ),
       ),

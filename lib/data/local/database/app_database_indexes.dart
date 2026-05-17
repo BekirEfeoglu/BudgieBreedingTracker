@@ -1,7 +1,7 @@
 part of 'app_database.dart';
 
 // ---------------------------------------------------------------------------
-// Performance indexes — called from both onCreate and onUpgrade (v8→v9).
+// Performance indexes — called from both onCreate and schema upgrades.
 // Uses IF NOT EXISTS so it's safe to call idempotently.
 // ---------------------------------------------------------------------------
 
@@ -115,8 +115,16 @@ Future<void> _createPerformanceIndexes(AppDatabase db) async {
     'ON eggs (incubation_id)',
   );
   await db.customStatement(
+    'CREATE INDEX IF NOT EXISTS idx_eggs_incubation_status_deleted '
+    'ON eggs (incubation_id, status, is_deleted)',
+  );
+  await db.customStatement(
     'CREATE INDEX IF NOT EXISTS idx_chicks_egg '
     'ON chicks (egg_id)',
+  );
+  await db.customStatement(
+    'CREATE INDEX IF NOT EXISTS idx_chicks_egg_deleted '
+    'ON chicks (egg_id, is_deleted)',
   );
   await db.customStatement(
     'CREATE INDEX IF NOT EXISTS idx_breeding_pairs_male '
@@ -131,8 +139,16 @@ Future<void> _createPerformanceIndexes(AppDatabase db) async {
     'ON health_records (bird_id)',
   );
   await db.customStatement(
+    'CREATE INDEX IF NOT EXISTS idx_health_records_bird_deleted '
+    'ON health_records (bird_id, is_deleted)',
+  );
+  await db.customStatement(
     'CREATE INDEX IF NOT EXISTS idx_growth_measurements_chick '
     'ON growth_measurements (chick_id)',
+  );
+  await db.customStatement(
+    'CREATE INDEX IF NOT EXISTS idx_growth_measurements_chick_date '
+    'ON growth_measurements (chick_id, measurement_date)',
   );
   await db.customStatement(
     'CREATE INDEX IF NOT EXISTS idx_event_reminders_event '
@@ -143,16 +159,38 @@ Future<void> _createPerformanceIndexes(AppDatabase db) async {
     'ON photos (entity_id, entity_type)',
   );
   await db.customStatement(
+    'CREATE INDEX IF NOT EXISTS idx_photos_entity_user '
+    'ON photos (entity_id, entity_type, user_id)',
+  );
+  await db.customStatement(
     'CREATE INDEX IF NOT EXISTS idx_incubations_breeding_pair '
     'ON incubations (breeding_pair_id)',
+  );
+  await db.customStatement(
+    'CREATE INDEX IF NOT EXISTS idx_incubations_breeding_pair_status '
+    'ON incubations (breeding_pair_id, status)',
   );
   await db.customStatement(
     'CREATE INDEX IF NOT EXISTS idx_clutches_breeding '
     'ON clutches (breeding_id)',
   );
   await db.customStatement(
+    'CREATE INDEX IF NOT EXISTS idx_clutches_breeding_deleted '
+    'ON clutches (breeding_id, is_deleted)',
+  );
+  await db.customStatement(
     'CREATE INDEX IF NOT EXISTS idx_events_bird '
     'ON events (bird_id)',
+  );
+  await db.customStatement(
+    'CREATE INDEX IF NOT EXISTS idx_events_bird_deleted '
+    'ON events (bird_id, is_deleted)',
+  );
+
+  // --- Notification badge/count queries ---
+  await db.customStatement(
+    'CREATE INDEX IF NOT EXISTS idx_notifications_user_read '
+    'ON notifications (user_id, read)',
   );
 
   // --- Sync metadata indexes (critical for sync performance) ---

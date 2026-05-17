@@ -81,7 +81,9 @@ final filteredBirdsProvider = Provider.family<List<Bird>, List<Bird>>((
 final searchedAndFilteredBirdsProvider =
     Provider.family<List<Bird>, List<Bird>>((ref, birds) {
       final filtered = ref.watch(filteredBirdsProvider(birds));
-      final query = ref.watch(birdSearchQueryProvider).toLowerCase().trim();
+      final query = ref.watch(
+        birdSearchQueryProvider.select((value) => value.toLowerCase().trim()),
+      );
 
       if (query.isEmpty) return filtered;
 

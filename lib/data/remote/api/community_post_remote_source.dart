@@ -107,7 +107,9 @@ class CommunityPostRemoteSource {
 
   Future<void> insert(Map<String, dynamic> data) async {
     try {
-      await _client.from(SupabaseConstants.communityPostsTable).insert(data);
+      await _client
+          .from(SupabaseConstants.communityPostsTable)
+          .upsert(data, onConflict: SupabaseConstants.colId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
         'CommunityPostRemoteSource.insert',

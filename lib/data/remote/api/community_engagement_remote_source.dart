@@ -40,15 +40,13 @@ class CommunityEngagementRemoteSource {
 
   Future<void> bookmarkPost(String userId, String postId) async {
     try {
-      await _client.from(SupabaseConstants.communityBookmarksTable).upsert(
-        {
-          'id': const Uuid().v7(),
-          'user_id': userId,
-          'post_id': postId,
-        },
-        onConflict: 'post_id,user_id',
-        ignoreDuplicates: true,
-      );
+      await _client
+          .from(SupabaseConstants.communityBookmarksTable)
+          .upsert(
+            {'id': const Uuid().v7(), 'user_id': userId, 'post_id': postId},
+            onConflict: 'post_id,user_id',
+            ignoreDuplicates: true,
+          );
     } catch (e, st) {
       AppLogger.error('CommunityEngagementRemoteSource.bookmarkPost', e, st);
       rethrow;
@@ -140,15 +138,17 @@ class CommunityEngagementRemoteSource {
 
   Future<void> followUser(String userId, String targetUserId) async {
     try {
-      await _client.from(SupabaseConstants.communityFollowsTable).upsert(
-        {
-          'id': const Uuid().v7(),
-          'follower_id': userId,
-          'following_id': targetUserId,
-        },
-        onConflict: 'follower_id,following_id',
-        ignoreDuplicates: true,
-      );
+      await _client
+          .from(SupabaseConstants.communityFollowsTable)
+          .upsert(
+            {
+              'id': const Uuid().v7(),
+              'follower_id': userId,
+              'following_id': targetUserId,
+            },
+            onConflict: 'follower_id,following_id',
+            ignoreDuplicates: true,
+          );
     } catch (e, st) {
       AppLogger.error('CommunityEngagementRemoteSource.followUser', e, st);
       rethrow;
@@ -194,11 +194,11 @@ class CommunityEngagementRemoteSource {
   /// Blocks a user on the server.
   Future<void> blockUser(String userId, String blockedUserId) async {
     try {
-      await _client.from(SupabaseConstants.communityBlocksTable).insert({
+      await _client.from(SupabaseConstants.communityBlocksTable).upsert({
         'id': const Uuid().v7(),
         'user_id': userId,
         'blocked_user_id': blockedUserId,
-      });
+      }, onConflict: SupabaseConstants.colId);
     } catch (e, st) {
       AppLogger.error('CommunityEngagementRemoteSource.blockUser', e, st);
       rethrow;
@@ -231,14 +231,14 @@ class CommunityEngagementRemoteSource {
     String? description,
   }) async {
     try {
-      await _client.from(SupabaseConstants.communityReportsTable).insert({
+      await _client.from(SupabaseConstants.communityReportsTable).upsert({
         'id': const Uuid().v7(),
         'user_id': userId,
         'target_id': targetId,
         'target_type': targetType,
         'reason': reason.toJson(),
         if (description != null) 'description': description,
-      });
+      }, onConflict: 'user_id,target_id,target_type');
     } catch (e, st) {
       AppLogger.error('CommunityEngagementRemoteSource.reportContent', e, st);
       rethrow;

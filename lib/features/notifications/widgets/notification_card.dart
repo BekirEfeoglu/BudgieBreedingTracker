@@ -42,7 +42,7 @@ class NotificationCard extends StatelessWidget {
       onDismissed: (_) => onDismiss?.call(),
       background: Container(
         alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: AppSpacing.lg),
+        padding: const EdgeInsetsDirectional.only(end: AppSpacing.lg),
         color: theme.colorScheme.error,
         child: AppIcon(
           AppIcons.delete,
@@ -136,7 +136,9 @@ class NotificationCard extends StatelessWidget {
                 if (notification.priority == NotificationPriority.high ||
                     notification.priority == NotificationPriority.critical)
                   Padding(
-                    padding: const EdgeInsets.only(left: AppSpacing.sm),
+                    padding: const EdgeInsetsDirectional.only(
+                      start: AppSpacing.sm,
+                    ),
                     child: AppIcon(
                       AppIcons.warning,
                       size: 16,

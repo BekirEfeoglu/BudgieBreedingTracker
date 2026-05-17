@@ -43,11 +43,19 @@ bool get shouldDeferAdsOnDebugIosSimulator =>
 /// Admin and founder roles always get premium access regardless of subscription.
 final isPremiumProvider = Provider<bool>((ref) {
   // Primary source: profile from database (real-time)
-  final profileAsync = ref.watch(userProfileProvider);
+  final premiumProfile = ref.watch(
+    userProfileProvider.select((profileAsync) {
+      final profile = profileAsync.value;
+      return (
+        hasValue: profileAsync.hasValue,
+        isPrivileged: profile != null && (profile.isAdmin || profile.isFounder),
+        hasPremium: profile?.hasPremium ?? false,
+      );
+    }),
+  );
 
   // Admin/founder bypass: always grant premium access
-  final profile = profileAsync.value;
-  if (profile != null && (profile.isAdmin || profile.isFounder)) return true;
+  if (premiumProfile.isPrivileged) return true;
 
   // Fallback source: local cache (RevenueCat / SharedPreferences)
   final localPremium = ref.watch(localPremiumProvider);
@@ -55,8 +63,8 @@ final isPremiumProvider = Provider<bool>((ref) {
   // Fallback logic: use local cache only while profile is loading.
   // Once profile has loaded, trust the server-side value exclusively.
   // This prevents premium bypass via SharedPreferences tampering.
-  if (!profileAsync.hasValue) return localPremium;
-  return profileAsync.value?.hasPremium ?? false;
+  if (!premiumProfile.hasValue) return localPremium;
+  return premiumProfile.hasPremium;
 });
 
 /// Syncs profile premium status to local cache whenever profile changes.

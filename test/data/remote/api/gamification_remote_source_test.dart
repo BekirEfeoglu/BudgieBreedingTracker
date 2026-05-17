@@ -100,11 +100,11 @@ void main() {
       expect(userLevelsQuery.upsertPayload, data);
     });
 
-    test('insertXpTransaction inserts data', () async {
+    test('insertXpTransaction upserts data', () async {
       final data = {'user_id': 'user-1', 'action': 'addBird', 'amount': 10};
       await source.insertXpTransaction(data);
 
-      expect(xpQuery.insertPayload, data);
+      expect(xpQuery.upsertPayload, data);
     });
 
     test('fetchXpTransactions applies user filter, order and limit', () async {
@@ -115,7 +115,9 @@ void main() {
       final result = await source.fetchXpTransactions('user-1', limit: 25);
 
       expect(result, hasLength(1));
-      final eqKeys = xpSelect.eqCalls.map((e) => '${e.key}:${e.value}').toList();
+      final eqKeys = xpSelect.eqCalls
+          .map((e) => '${e.key}:${e.value}')
+          .toList();
       expect(eqKeys, contains('user_id:user-1'));
       expect(xpSelect.orderCalls, contains('created_at'));
       expect(xpSelect.limitValue, 25);
@@ -143,7 +145,9 @@ void main() {
       final count = await source.fetchDailyActionCount('user-1', 'addBird');
 
       expect(count, 2);
-      final eqKeys = xpSelect.eqCalls.map((e) => '${e.key}:${e.value}').toList();
+      final eqKeys = xpSelect.eqCalls
+          .map((e) => '${e.key}:${e.value}')
+          .toList();
       expect(eqKeys, contains('user_id:user-1'));
       expect(eqKeys, contains('action:addBird'));
     });
@@ -172,16 +176,9 @@ void main() {
     });
 
     test('updateProfileLevelInfo updates only level and title', () async {
-      await source.updateProfileLevelInfo(
-        'user-1',
-        level: 5,
-        title: 'Breeder',
-      );
+      await source.updateProfileLevelInfo('user-1', level: 5, title: 'Breeder');
 
-      expect(profilesQuery.updatePayload, {
-        'level': 5,
-        'xp_title': 'Breeder',
-      });
+      expect(profilesQuery.updatePayload, {'level': 5, 'xp_title': 'Breeder'});
     });
   });
 }

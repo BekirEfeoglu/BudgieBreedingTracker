@@ -8,6 +8,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 
 part 'community_guidelines_view.dart';
+part 'community_guidelines_cards.dart';
 
 enum LegalDocumentType { privacyPolicy, termsOfService, communityGuidelines }
 

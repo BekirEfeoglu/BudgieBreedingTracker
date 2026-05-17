@@ -54,7 +54,7 @@ class _ChickFilterBarState extends ConsumerState<ChickFilterBar> {
   Widget _buildChip(ChickFilter filter, ChickFilter selected) {
     return Padding(
       key: _keys[filter],
-      padding: const EdgeInsets.only(right: AppSpacing.sm),
+      padding: const EdgeInsetsDirectional.only(end: AppSpacing.sm),
       child: ChoiceChip(
         label: Text(filter.label),
         selected: selected == filter,

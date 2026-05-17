@@ -29,9 +29,7 @@ class ConversationTile extends StatelessWidget {
             : null,
         child: conversation.imageUrl == null
             ? Icon(
-                conversation.isGroup
-                    ? LucideIcons.users
-                    : LucideIcons.user,
+                conversation.isGroup ? LucideIcons.users : LucideIcons.user,
                 size: 20,
               )
             : null,
@@ -80,7 +78,7 @@ class ConversationTile extends StatelessWidget {
           ),
           if (conversation.hasUnread)
             Container(
-              margin: const EdgeInsets.only(left: AppSpacing.sm),
+              margin: const EdgeInsetsDirectional.only(start: AppSpacing.sm),
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.sm,
                 vertical: 2,

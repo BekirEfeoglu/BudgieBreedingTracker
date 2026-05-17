@@ -239,7 +239,9 @@ class AdminSidebar extends ConsumerWidget {
                       final count = _getBadgeCount(ref, item.badgeProviderKey!);
                       if (count <= 0) return const SizedBox.shrink();
                       return Container(
-                        margin: const EdgeInsets.only(left: AppSpacing.xs),
+                        margin: const EdgeInsetsDirectional.only(
+                          start: AppSpacing.xs,
+                        ),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 6,
                           vertical: 2,

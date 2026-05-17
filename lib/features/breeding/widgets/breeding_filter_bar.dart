@@ -49,7 +49,7 @@ class _BreedingFilterBarState extends ConsumerState<BreedingFilterBar> {
   Widget _buildChip(BreedingFilter filter, BreedingFilter selected) {
     return Padding(
       key: _keys[filter],
-      padding: const EdgeInsets.only(right: AppSpacing.sm),
+      padding: const EdgeInsetsDirectional.only(end: AppSpacing.sm),
       child: ChoiceChip(
         label: Text(filter.label),
         selected: selected == filter,

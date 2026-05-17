@@ -38,6 +38,7 @@ void main() {
 
     test('pushes pending changes when enabled and signed in', () async {
       final pushedUsers = <String>[];
+      final telemetry = <({String name, Map<String, Object?> data})>[];
 
       final result = await BackgroundSyncService.runPushOnly(
         enabled: true,
@@ -46,20 +47,54 @@ void main() {
           pushedUsers.add(userId);
           return true;
         },
+        telemetrySink: (name, data) {
+          telemetry.add((name: name, data: data));
+        },
       );
 
       expect(result, isTrue);
       expect(pushedUsers, ['user-1']);
+      expect(telemetry.single.name, 'background_sync_run');
+      expect(telemetry.single.data['success'], isTrue);
+      expect(telemetry.single.data['durationMs'], isA<int>());
+      expect(telemetry.single.data['taskBudgetSeconds'], 30);
     });
 
     test('returns false when push fails', () async {
+      final telemetry = <({String name, Map<String, Object?> data})>[];
+
       final result = await BackgroundSyncService.runPushOnly(
         enabled: true,
         userId: 'user-1',
         pushChanges: (_) async => false,
+        telemetrySink: (name, data) {
+          telemetry.add((name: name, data: data));
+        },
       );
 
       expect(result, isFalse);
+      expect(telemetry.single.name, 'background_sync_run');
+      expect(telemetry.single.data['success'], isFalse);
+      expect(telemetry.single.data['taskBudgetSeconds'], 30);
+    });
+
+    test('emits skip telemetry when disabled', () async {
+      final telemetry = <({String name, Map<String, Object?> data})>[];
+
+      final result = await BackgroundSyncService.runPushOnly(
+        enabled: false,
+        userId: 'user-1',
+        pushChanges: (_) async => true,
+        telemetrySink: (name, data) {
+          telemetry.add((name: name, data: data));
+        },
+      );
+
+      expect(result, isTrue);
+      expect(telemetry.single.name, 'background_sync_skipped');
+      expect(telemetry.single.data['enabled'], isFalse);
+      expect(telemetry.single.data['signedIn'], isTrue);
+      expect(telemetry.single.data['taskBudgetSeconds'], 30);
     });
   });
 }

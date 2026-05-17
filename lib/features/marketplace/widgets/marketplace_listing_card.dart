@@ -74,8 +74,9 @@ class MarketplaceListingCard extends StatelessWidget {
                       ),
                       if (listing.isVerifiedBreeder)
                         Padding(
-                          padding:
-                              const EdgeInsets.only(left: AppSpacing.xs),
+                          padding: const EdgeInsetsDirectional.only(
+                            start: AppSpacing.xs,
+                          ),
                           child: Icon(
                             LucideIcons.badgeCheck,
                             size: 18,
@@ -262,26 +263,26 @@ class MarketplaceListingCard extends StatelessWidget {
   }
 
   String _listingTypeLabel(MarketplaceListingType type) => switch (type) {
-        MarketplaceListingType.sale => 'marketplace.type_sale'.tr(),
-        MarketplaceListingType.adoption => 'marketplace.type_adoption'.tr(),
-        MarketplaceListingType.trade => 'marketplace.type_trade'.tr(),
-        MarketplaceListingType.wanted => 'marketplace.type_wanted'.tr(),
-        MarketplaceListingType.unknown => '',
-      };
+    MarketplaceListingType.sale => 'marketplace.type_sale'.tr(),
+    MarketplaceListingType.adoption => 'marketplace.type_adoption'.tr(),
+    MarketplaceListingType.trade => 'marketplace.type_trade'.tr(),
+    MarketplaceListingType.wanted => 'marketplace.type_wanted'.tr(),
+    MarketplaceListingType.unknown => '',
+  };
 
   IconData _listingTypeIcon(MarketplaceListingType type) => switch (type) {
-        MarketplaceListingType.sale => LucideIcons.tag,
-        MarketplaceListingType.adoption => LucideIcons.heart,
-        MarketplaceListingType.trade => LucideIcons.arrowLeftRight,
-        MarketplaceListingType.wanted => LucideIcons.search,
-        MarketplaceListingType.unknown => LucideIcons.helpCircle,
-      };
+    MarketplaceListingType.sale => LucideIcons.tag,
+    MarketplaceListingType.adoption => LucideIcons.heart,
+    MarketplaceListingType.trade => LucideIcons.arrowLeftRight,
+    MarketplaceListingType.wanted => LucideIcons.search,
+    MarketplaceListingType.unknown => LucideIcons.helpCircle,
+  };
 
   Color _listingTypeColor(MarketplaceListingType type) => switch (type) {
-        MarketplaceListingType.sale => AppColors.listingSale,
-        MarketplaceListingType.adoption => AppColors.listingAdoption,
-        MarketplaceListingType.trade => AppColors.listingTrade,
-        MarketplaceListingType.wanted => AppColors.listingWanted,
-        MarketplaceListingType.unknown => AppColors.neutral400,
-      };
+    MarketplaceListingType.sale => AppColors.listingSale,
+    MarketplaceListingType.adoption => AppColors.listingAdoption,
+    MarketplaceListingType.trade => AppColors.listingTrade,
+    MarketplaceListingType.wanted => AppColors.listingWanted,
+    MarketplaceListingType.unknown => AppColors.neutral400,
+  };
 }

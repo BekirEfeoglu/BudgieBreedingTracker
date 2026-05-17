@@ -10,12 +10,12 @@ import 'marketplace_filter_sheet.dart';
 import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 
 IconData _filterIcon(MarketplaceFilter filter) => switch (filter) {
-      MarketplaceFilter.all => LucideIcons.list,
-      MarketplaceFilter.sale => LucideIcons.tag,
-      MarketplaceFilter.adoption => LucideIcons.heart,
-      MarketplaceFilter.trade => LucideIcons.arrowLeftRight,
-      MarketplaceFilter.wanted => LucideIcons.search,
-    };
+  MarketplaceFilter.all => LucideIcons.list,
+  MarketplaceFilter.sale => LucideIcons.tag,
+  MarketplaceFilter.adoption => LucideIcons.heart,
+  MarketplaceFilter.trade => LucideIcons.arrowLeftRight,
+  MarketplaceFilter.wanted => LucideIcons.search,
+};
 
 class MarketplaceFilterBar extends ConsumerWidget {
   const MarketplaceFilterBar({super.key});
@@ -37,7 +37,7 @@ class MarketplaceFilterBar extends ConsumerWidget {
           ...MarketplaceFilter.values.map((filter) {
             final isSelected = currentFilter == filter;
             return Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.sm),
+              padding: const EdgeInsetsDirectional.only(end: AppSpacing.sm),
               child: FilterChip(
                 avatar: isSelected ? Icon(_filterIcon(filter), size: 16) : null,
                 label: Text(filter.label),
@@ -51,7 +51,7 @@ class MarketplaceFilterBar extends ConsumerWidget {
             );
           }),
           Padding(
-            padding: const EdgeInsets.only(right: AppSpacing.sm),
+            padding: const EdgeInsetsDirectional.only(end: AppSpacing.sm),
             child: Badge(
               isLabelVisible: activeCount > 0,
               label: Text('$activeCount'),

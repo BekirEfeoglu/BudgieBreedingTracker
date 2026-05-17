@@ -24,7 +24,10 @@ class CommunityCommentRemoteSource {
           .eq(SupabaseConstants.colIsDeleted, false);
 
       if (cursor != null) {
-        query = query.gt(SupabaseConstants.colCreatedAt, cursor.toIso8601String());
+        query = query.gt(
+          SupabaseConstants.colCreatedAt,
+          cursor.toIso8601String(),
+        );
       }
 
       final result = await query
@@ -40,7 +43,9 @@ class CommunityCommentRemoteSource {
 
   Future<void> insert(Map<String, dynamic> data) async {
     try {
-      await _client.from(SupabaseConstants.communityCommentsTable).insert(data);
+      await _client
+          .from(SupabaseConstants.communityCommentsTable)
+          .upsert(data, onConflict: SupabaseConstants.colId);
     } catch (e, st) {
       AppLogger.error('CommunityCommentRemoteSource.insert', e, st);
       rethrow;

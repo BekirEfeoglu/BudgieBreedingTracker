@@ -38,6 +38,42 @@ void main() {
         ),
         isFalse,
       );
+      expect(
+        RealtimeSyncService.shouldSubscribe(
+          enabled: true,
+          userId: 'user-1',
+          online: true,
+          rolloutAllowed: false,
+        ),
+        isFalse,
+      );
+    });
+  });
+
+  group('RealtimeSyncService rollout helpers', () {
+    test('clamps rollout percentage to 0-100', () {
+      expect(RealtimeSyncService.normalizeRolloutPercent(-10), 0);
+      expect(RealtimeSyncService.normalizeRolloutPercent(5), 5);
+      expect(RealtimeSyncService.normalizeRolloutPercent(120), 100);
+    });
+
+    test('rollout decisions are deterministic and authenticated only', () {
+      expect(
+        RealtimeSyncService.isUserInRollout(userId: 'user-1', percent: 100),
+        isTrue,
+      );
+      expect(
+        RealtimeSyncService.isUserInRollout(userId: 'user-1', percent: 0),
+        isFalse,
+      );
+      expect(
+        RealtimeSyncService.isUserInRollout(userId: 'anonymous', percent: 100),
+        isFalse,
+      );
+      expect(
+        RealtimeSyncService.rolloutBucket('user-1'),
+        RealtimeSyncService.rolloutBucket('user-1'),
+      );
     });
   });
 

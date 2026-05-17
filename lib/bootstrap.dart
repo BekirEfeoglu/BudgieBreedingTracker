@@ -125,10 +125,16 @@ Future<void> bootstrapPreInit() async {
     _resolveRevenueCatKeys();
 
     if (_profileStartup) {
-      AppLogger.info('[bootstrap] phase setPreferredOrientations: ${orientationMs}ms');
-      AppLogger.info('[bootstrap] phase resolveNativeBuildConfig: ${nativeCfgMs}ms');
+      AppLogger.info(
+        '[bootstrap] phase setPreferredOrientations: ${orientationMs}ms',
+      );
+      AppLogger.info(
+        '[bootstrap] phase resolveNativeBuildConfig: ${nativeCfgMs}ms',
+      );
       AppLogger.info('[bootstrap] phase Supabase.initialize: ${supabaseMs}ms');
-      AppLogger.info('[bootstrap] phase bootstrapPreInit total: ${preInitSw.elapsedMilliseconds}ms');
+      AppLogger.info(
+        '[bootstrap] phase bootstrapPreInit total: ${preInitSw.elapsedMilliseconds}ms',
+      );
     }
   } catch (e, st) {
     AppLogger.error('Bootstrap pre-init failed, continuing to runApp', e, st);
@@ -240,7 +246,9 @@ void _resolveRevenueCatKeys() {
 
   // Warn at startup if RevenueCat keys are missing — purchases will be
   // disabled at runtime but the app will still function in free-tier mode.
-  final platformKey = Platform.isIOS ? revenueCatApiKeyIos : revenueCatApiKeyAndroid;
+  final platformKey = Platform.isIOS
+      ? revenueCatApiKeyIos
+      : revenueCatApiKeyAndroid;
   if (platformKey.isEmpty) {
     AppLogger.warning(
       '[Bootstrap] RevenueCat API key not configured for ${Platform.isIOS ? 'iOS' : 'Android'}. '
@@ -303,7 +311,8 @@ Future<void> _resolveNativeBuildConfigFallbacks() async {
     );
     _resolvedIosSimulator =
         config['IS_IOS_SIMULATOR'] == true || _resolvedIosSimulator;
-  } catch (e) {
-    AppLogger.warning('[Bootstrap] Native config fallback unavailable: $e');
+  } catch (e, st) {
+    AppLogger.error('[Bootstrap] Native config fallback unavailable', e, st);
+    unawaited(Sentry.captureException(e, stackTrace: st));
   }
 }

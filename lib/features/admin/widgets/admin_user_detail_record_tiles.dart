@@ -164,6 +164,8 @@ class _PhotoRecordsGrid extends StatelessWidget {
                           child: CachedNetworkImage(
                             imageUrl: record.filePath!,
                             fit: BoxFit.cover,
+                            memCacheWidth: 360,
+                            memCacheHeight: 360,
                             errorWidget: (_, _, _) => const _ImageFallback(),
                           ),
                         )
@@ -235,6 +237,8 @@ class _RecordTile extends StatelessWidget {
                 width: 44,
                 height: 44,
                 fit: BoxFit.cover,
+                memCacheWidth: 120,
+                memCacheHeight: 120,
                 errorWidget: (_, _, _) => const _ImageFallback(),
               ),
             )
@@ -360,6 +364,14 @@ Future<void> _showPhotoPreview(BuildContext context, AdminPhotoRecord record) {
                         child: CachedNetworkImage(
                           imageUrl: record.filePath!,
                           fit: BoxFit.contain,
+                          memCacheWidth:
+                              (MediaQuery.sizeOf(context).width *
+                                      MediaQuery.devicePixelRatioOf(context))
+                                  .round(),
+                          memCacheHeight:
+                              (MediaQuery.sizeOf(context).height *
+                                      MediaQuery.devicePixelRatioOf(context))
+                                  .round(),
                           errorWidget: (_, _, _) => const _ImageFallback(),
                         ),
                       )
@@ -429,6 +441,8 @@ Future<void> _showRecordSheet(
                       width: 120,
                       height: 120,
                       fit: BoxFit.cover,
+                      memCacheWidth: 320,
+                      memCacheHeight: 320,
                       errorWidget: (_, _, _) => const _ImageFallback(size: 120),
                     ),
                   ),

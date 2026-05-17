@@ -74,7 +74,7 @@ class GamificationRemoteSource {
     try {
       await _client
           .from(SupabaseConstants.xpTransactionsTable)
-          .insert(data);
+          .upsert(data, onConflict: SupabaseConstants.colId);
     } catch (e, st) {
       AppLogger.error('gamification', e, st);
       rethrow;
@@ -161,8 +161,10 @@ class GamificationRemoteSource {
   /// (e.g. on a project that hasn't applied the 2026-04-17 migration yet).
   Future<Map<String, int>> fetchEntityCounts(String userId) async {
     try {
-      final response = await _client
-          .rpc('get_entity_counts', params: {'p_user_id': userId});
+      final response = await _client.rpc(
+        'get_entity_counts',
+        params: {'p_user_id': userId},
+      );
       if (response is Map) {
         return {
           'birds': (response['birds'] as num?)?.toInt() ?? 0,
@@ -223,10 +225,7 @@ class GamificationRemoteSource {
     try {
       await _client
           .from(SupabaseConstants.profilesTable)
-          .update({
-            'level': level,
-            'xp_title': title,
-          })
+          .update({'level': level, 'xp_title': title})
           .eq('user_id', userId);
     } catch (e, st) {
       AppLogger.error('gamification', e, st);

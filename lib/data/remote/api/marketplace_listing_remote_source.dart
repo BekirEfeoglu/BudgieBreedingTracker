@@ -153,7 +153,7 @@ class MarketplaceListingRemoteSource {
     try {
       final response = await _client
           .from(SupabaseConstants.marketplaceListingsTable)
-          .insert(data)
+          .upsert(data, onConflict: SupabaseConstants.colId)
           .select(_selectColumns)
           .single();
       return response;

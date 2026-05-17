@@ -144,7 +144,7 @@ class _CategoryFilterBar extends ConsumerWidget {
         children: BadgeCategoryFilter.values.map((filter) {
           final isSelected = currentFilter == filter;
           return Padding(
-            padding: const EdgeInsets.only(right: AppSpacing.sm),
+            padding: const EdgeInsetsDirectional.only(end: AppSpacing.sm),
             child: FilterChip(
               label: Text(filter.label),
               selected: isSelected,

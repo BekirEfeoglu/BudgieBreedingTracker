@@ -39,7 +39,7 @@ class EggSummaryRow extends StatelessWidget {
         // Egg/chick icons colored by status
         ...statuses.map(
           (status) => Padding(
-            padding: const EdgeInsets.only(right: 2),
+            padding: const EdgeInsetsDirectional.only(end: 2),
             child: AppIcon(
               status == EggStatus.hatched ? AppIcons.hatched : AppIcons.egg,
               size: 16,

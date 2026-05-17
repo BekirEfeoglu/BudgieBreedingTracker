@@ -51,7 +51,7 @@ class _BirdFilterBarState extends ConsumerState<BirdFilterBar> {
   Widget _buildChip(BirdFilter filter, BirdFilter selected) {
     return Padding(
       key: _keys[filter],
-      padding: const EdgeInsets.only(right: AppSpacing.sm),
+      padding: const EdgeInsetsDirectional.only(end: AppSpacing.sm),
       child: ChoiceChip(
         label: Text(filter.label),
         selected: selected == filter,

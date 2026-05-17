@@ -10,14 +10,16 @@ void main() {
   late FeedbackRemoteSource source;
 
   late FakeFilterBuilder<PostgrestList> feedbackSelectBuilder;
-  late FakeFilterBuilder<dynamic> feedbackInsertBuilder;
+  late FakeFilterBuilder<dynamic> feedbackUpsertBuilder;
+  late FakeQueryBuilder feedbackQuery;
 
   setUp(() {
     client = RoutingFakeClient();
 
     final feedback = client.addTable(SupabaseConstants.feedbackTable);
     feedbackSelectBuilder = feedback.selectBuilder;
-    feedbackInsertBuilder = feedback.insertBuilder;
+    feedbackUpsertBuilder = feedback.upsertBuilder;
+    feedbackQuery = feedback.queryBuilder;
 
     source = FeedbackRemoteSource(client);
   });
@@ -54,20 +56,23 @@ void main() {
   });
 
   group('insert', () {
-    test('inserts data into feedback table', () async {
-      feedbackInsertBuilder.result = null;
+    test('upserts data into feedback table', () async {
+      feedbackUpsertBuilder.result = null;
 
-      await source.insert({
+      final data = {
         'user_id': 'user-1',
         'category': 'bug',
         'message': 'Found a bug',
-      });
+      };
+
+      await source.insert(data);
 
       expect(client.requestedTables, contains(SupabaseConstants.feedbackTable));
+      expect(feedbackQuery.upsertPayload, data);
     });
 
     test('rethrows error on failure', () async {
-      feedbackInsertBuilder.error = Exception('Insert failed');
+      feedbackUpsertBuilder.error = Exception('Upsert failed');
 
       expect(
         () => source.insert({'user_id': 'user-1', 'message': 'test'}),

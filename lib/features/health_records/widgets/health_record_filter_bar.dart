@@ -46,7 +46,7 @@ class _HealthRecordFilterBarState extends ConsumerState<HealthRecordFilterBar> {
   Widget _buildChip(HealthRecordFilter filter, HealthRecordFilter selected) {
     return Padding(
       key: _keys[filter],
-      padding: const EdgeInsets.only(right: AppSpacing.sm),
+      padding: const EdgeInsetsDirectional.only(end: AppSpacing.sm),
       child: ChoiceChip(
         label: Text(filter.label),
         selected: selected == filter,

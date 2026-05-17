@@ -36,11 +36,13 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
     super.dispose();
   }
 
-  String _errorLabel() {
-    final userId = ref.watch(currentUserIdProvider);
-    final details = ref.watch(syncErrorDetailsProvider(userId));
-    final total =
-        details.value?.fold<int>(0, (sum, d) => sum + d.errorCount) ?? 0;
+  String _errorLabel(String userId) {
+    final total = ref.watch(
+      syncErrorDetailsProvider(userId).select(
+        (details) =>
+            details.value?.fold<int>(0, (sum, d) => sum + d.errorCount) ?? 0,
+      ),
+    );
     if (total > 0) return 'sync.error_count_summary'.tr(args: ['$total']);
     return 'sync.sync_error'.tr();
   }
@@ -52,8 +54,11 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
     // Count of conflicts detected within the last 24h. Non-zero means at
     // least one local change was overridden by the server-wins resolution
     // — surface it so the user can open the detail sheet.
-    final recentConflictCount =
-        ref.watch(persistedConflictCountProvider(userId)).asData?.value ?? 0;
+    final recentConflictCount = ref.watch(
+      persistedConflictCountProvider(
+        userId,
+      ).select((count) => count.asData?.value ?? 0),
+    );
 
     if (status == SyncDisplayStatus.syncing) {
       _rotationController.repeat();
@@ -82,7 +87,7 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
       SyncDisplayStatus.error => (
         AppIcon(AppIcons.offline, size: 14, color: colorScheme.error),
         colorScheme.error,
-        _errorLabel(),
+        _errorLabel(userId),
       ),
     };
 

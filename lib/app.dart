@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'bootstrap.dart';
 import 'core/enums/bird_enums.dart';
@@ -110,8 +111,12 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
     if (userId == 'anonymous') return;
     ref.read(sessionLockedProvider.notifier).state = true;
     // Sign out and navigate — catch errors so navigation always proceeds
-    ref.read(authActionsProvider).signOut().catchError((Object e) {
+    ref.read(authActionsProvider).signOut().catchError((
+      Object e,
+      StackTrace st,
+    ) {
       AppLogger.warning('[InactivityGuard] Sign-out failed: $e');
+      unawaited(Sentry.captureException(e, stackTrace: st));
     });
     final router = ref.read(routerProvider);
     router.go(AppRoutes.login);
@@ -139,7 +144,8 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
     if (!isSyncing) {
       final orchestrator = ref.read(syncOrchestratorProvider);
       orchestrator.pushChanges(userId).catchError((Object e, StackTrace st) {
-        AppLogger.warning('[AppResume] Push failed: $e');
+        AppLogger.error('[AppResume] Push failed', e, st);
+        unawaited(Sentry.captureException(e, stackTrace: st));
         return false;
       });
     }
@@ -153,16 +159,22 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
       await notifService.resolveExactAlarmPermission(forceRefresh: true);
       // Re-check battery optimization — user may have disabled it via Settings
       await notifService.requestBatteryOptimizationExemptionIfNeeded();
-    } catch (e) {
-      AppLogger.warning('[AppResume] Permission refresh failed: $e');
+    } catch (e, st) {
+      AppLogger.error('[AppResume] Permission refresh failed', e, st);
+      unawaited(Sentry.captureException(e, stackTrace: st));
     }
   }
 
   Future<void> _recoverPendingNotifications() async {
     try {
       await ref.read(notificationProcessorProvider).processAll();
-    } catch (e) {
-      AppLogger.warning('[AppResume] Pending notification recovery failed: $e');
+    } catch (e, st) {
+      AppLogger.error(
+        '[AppResume] Pending notification recovery failed',
+        e,
+        st,
+      );
+      unawaited(Sentry.captureException(e, stackTrace: st));
     }
   }
 

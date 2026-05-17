@@ -1,7 +1,7 @@
 import 'package:home_widget/home_widget.dart';
 
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
-import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
+import 'package:budgie_breeding_tracker/data/models/home_widget_dashboard_snapshot.dart';
 
 abstract final class AppHomeWidgetConstants {
   static const appGroupId = 'group.com.budgiebreeding.tracker';

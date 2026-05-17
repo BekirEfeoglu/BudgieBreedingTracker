@@ -77,7 +77,7 @@ ANTI_PATTERN_COVERAGE = {
     4: "check_ref_watch_in_callback",       # ref.watch() in callbacks -> ref.read()
     5: "check_drift_equals",                # .equals() on enum Drift column -> .equalsValue()
     6: "check_dao_import_app_database",     # DAO must import table file directly
-    # 7: client.from() in feature/UI layer — no static checker (architectural review)
+    7: "check_feature_supabase_access",      # client.from() in feature/UI layer -> repository/provider boundary
     # 8: Hardcoded Supabase table/column names — no static checker (constants module)
     # 9: Sending created_at/updated_at to Supabase — no static checker (toSupabase() convention)
     10: "check_print_statements",            # print() -> AppLogger
@@ -107,6 +107,9 @@ EXTRA_CHECKERS = {
     "check_bare_circular_progress": "Ad-hoc CircularProgressIndicator -> LoadingState (ui-patterns.md)",
     "check_iconbutton_constraints": "IconButton 48dp tap target (a11y, WCAG 2.1 AA)",
     "check_provider_container_dispose": "ProviderContainer dispose missing in test/ (test-stability.md)",
+    "check_remote_supabase_insert": "Supabase remote writes must use upsert for retry-safe idempotency",
+    "check_feature_supabase_access": "Feature/UI Supabase table access boundary (architecture.md)",
+    "check_cached_network_image_cache_size": "CachedNetworkImage memCacheWidth guard (performance.md)",
 }
 
 # --- Whitelist (checker bazinda dosya/dizin istisna listesi) ---
@@ -1008,6 +1011,74 @@ def check_provider_container_dispose(lines: List[str], filepath: Path, cat: Cate
         ))
 
 
+def check_remote_supabase_insert(lines: List[str], filepath: Path, cat: Category):
+    """Remote Supabase writes must be retry-safe upserts, not raw inserts."""
+    rel = relative_path(filepath).replace("\\", "/")
+    if not rel.startswith("lib/data/remote/"):
+        return
+
+    for i, line in enumerate(lines, 1):
+        if is_comment_line(line):
+            continue
+        match = re.search(r'\.insert\s*\(', line)
+        if not match or is_in_string_literal(line, match.start()):
+            continue
+
+        window = "".join(lines[max(0, i - 6):min(len(lines), i + 2)])
+        if ".from(" not in window:
+            continue
+
+        cat.findings.append(Finding(
+            file=relative_path(filepath),
+            line_num=i,
+            line_text=line.rstrip(),
+            suggestion="Supabase yazmalari icin .upsert(..., onConflict: 'id') kullan",
+        ))
+
+
+def check_feature_supabase_access(lines: List[str], filepath: Path, cat: Category):
+    """Feature/UI layer must not query Supabase tables directly.
+
+    Admin is the documented exception; normal features should go through
+    repositories/providers so offline-first Drift remains the UI source of truth.
+    """
+    rel = relative_path(filepath).replace("\\", "/")
+    if not rel.startswith("lib/features/") or rel.startswith("lib/features/admin/"):
+        return
+
+    for i, line in enumerate(lines, 1):
+        if is_comment_line(line):
+            continue
+        match = re.search(r'\b(?:client|_client|supabase)\.from\s*\(', line)
+        if not match or is_in_string_literal(line, match.start()):
+            continue
+        cat.findings.append(Finding(
+            file=relative_path(filepath),
+            line_num=i,
+            line_text=line.rstrip(),
+            suggestion="Feature/UI Supabase table access yerine repository/provider kullan",
+        ))
+
+
+def check_cached_network_image_cache_size(lines: List[str], filepath: Path, cat: Category):
+    """CachedNetworkImage should set memCacheWidth to avoid full-res decodes."""
+    for i, line in enumerate(lines, 1):
+        if is_comment_line(line):
+            continue
+        match = re.search(r'\bCachedNetworkImage\s*\(', line)
+        if not match or is_in_string_literal(line, match.start()):
+            continue
+        window = "".join(lines[i - 1:min(len(lines), i + 35)])
+        if "memCacheWidth:" in window:
+            continue
+        cat.findings.append(Finding(
+            file=relative_path(filepath),
+            line_num=i,
+            line_text=line.rstrip(),
+            suggestion="CachedNetworkImage icin memCacheWidth/memCacheHeight ekle",
+        ))
+
+
 def main():
     print(f"\n{BOLD}{CYAN}=== BudgieBreedingTracker - Code Quality Scanner ==={RESET}\n")
 
@@ -1050,8 +1121,11 @@ def main():
         Category("Layer Import Ihlali", "[Layer]", "Katman hiyerarsisi import ihlali"),
         Category("Freezed Private Constructor", "[FreezedCtor]", "const Model._() private constructor eksik"),
         Category("Ad-hoc CircularProgressIndicator", "[Loading]", "Center+CircularProgressIndicator -> LoadingState kullan", severity="warning"),
-        Category("IconButton 48dp Constraint Eksik", "[TapTarget]", "IconButton -> AppIconButton kullan (a11y)", severity="warning"),
-        Category("ProviderContainer Dispose Eksik", "[Container]", "ProviderContainer -> addTearDown(container.dispose) ekle (test/)", severity="warning"),
+        Category("IconButton 48dp Constraint Eksik", "[TapTarget]", "IconButton -> AppIconButton kullan (a11y)"),
+        Category("ProviderContainer Dispose Eksik", "[Container]", "ProviderContainer -> addTearDown(container.dispose) ekle (test/)"),
+        Category("Remote Supabase insert() Kullanimi", "[Upsert]", "Remote source .insert() -> .upsert(..., onConflict)"),
+        Category("Feature Supabase Table Access", "[Boundary]", "Feature/UI direct Supabase table access -> repository/provider kullan"),
+        Category("CachedNetworkImage Cache Size Eksik", "[ImageCache]", "CachedNetworkImage -> memCacheWidth ekle"),
     ]
 
     checkers = [
@@ -1079,12 +1153,22 @@ def main():
         check_bare_circular_progress,
         check_iconbutton_constraints,
         check_provider_container_dispose,  # test/ only
+        check_remote_supabase_insert,
+        check_feature_supabase_access,
+        check_cached_network_image_cache_size,
     ]
 
-    # check_provider_container_dispose is the LAST checker — only it scans test/
-    lib_checkers = checkers[:-1]
-    test_only_checker = checkers[-1]
-    test_only_category = categories[-1]
+    # check_provider_container_dispose is test-only; all other checkers scan lib/.
+    test_only_checker = check_provider_container_dispose
+    test_only_category = next(
+        cat for checker, cat in zip(checkers, categories)
+        if checker is test_only_checker
+    )
+    lib_checker_pairs = [
+        (checker, cat)
+        for checker, cat in zip(checkers, categories)
+        if checker is not test_only_checker
+    ]
 
     # Run lib/ checkers
     for filepath in dart_files:
@@ -1095,7 +1179,7 @@ def main():
             print(f"{YELLOW}UYARI: {filepath} okunamadi: {e}{RESET}")
             continue
 
-        for checker, cat in zip(lib_checkers, categories[:-1]):
+        for checker, cat in lib_checker_pairs:
             checker(lines, filepath, cat)
 
     # Run test-only checkers on test/

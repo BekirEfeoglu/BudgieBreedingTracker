@@ -73,7 +73,7 @@ class _OffspringSectionState extends State<OffspringSection> {
               children: OffspringFilter.values.map((filter) {
                 final isSelected = _filter == filter;
                 return Padding(
-                  padding: const EdgeInsets.only(right: AppSpacing.xs),
+                  padding: const EdgeInsetsDirectional.only(end: AppSpacing.xs),
                   child: FilterChip(
                     label: Text(filter.label),
                     selected: isSelected,

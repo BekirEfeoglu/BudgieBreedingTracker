@@ -120,7 +120,7 @@ void main() {
   });
 
   group('insert', () {
-    test('sends data to community_comments table', () async {
+    test('upserts data to community_comments table', () async {
       final data = {
         'id': 'c1',
         'post_id': 'p1',
@@ -130,7 +130,7 @@ void main() {
 
       await source.insert(data);
 
-      expect(commentsQuery.insertPayload, data);
+      expect(commentsQuery.upsertPayload, data);
       expect(client.requestedTables, contains('community_comments'));
     });
   });

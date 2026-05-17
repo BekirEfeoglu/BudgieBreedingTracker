@@ -208,7 +208,11 @@ class _DayCell extends StatelessWidget {
                   (i) => Container(
                     width: 4,
                     height: 4,
-                    margin: const EdgeInsets.only(top: 2, left: 1, right: 1),
+                    margin: const EdgeInsetsDirectional.only(
+                      top: 2,
+                      start: 1,
+                      end: 1,
+                    ),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: isSelected

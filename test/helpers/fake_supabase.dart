@@ -212,6 +212,7 @@ class RoutingFakeClient extends Fake implements SupabaseClient {
   /// Registers a table and returns its builders for result configuration.
   ({
     FakeFilterBuilder<PostgrestList> selectBuilder,
+    FakeFilterBuilder<dynamic> upsertBuilder,
     FakeFilterBuilder<dynamic> insertBuilder,
     FakeFilterBuilder<dynamic> updateBuilder,
     FakeFilterBuilder<dynamic> deleteBuilder,
@@ -233,6 +234,7 @@ class RoutingFakeClient extends Fake implements SupabaseClient {
     _builders[table] = queryBuilder;
     return (
       selectBuilder: selectBuilder,
+      upsertBuilder: upsertBuilder,
       insertBuilder: insertBuilder,
       updateBuilder: updateBuilder,
       deleteBuilder: deleteBuilder,

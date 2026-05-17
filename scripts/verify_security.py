@@ -21,6 +21,8 @@ Checks:
   7. RLS migrations exist for sensitive tables.
   8. Supabase Auth defaults remain production-safe: short-lived JWTs, no
      anonymous sign-ins, email confirmation, and TOTP MFA enabled.
+  9. Edge Functions explicitly keep verify_jwt enabled and deploy scripts do
+     not bypass JWT verification.
 
 Exit codes:
   0 — all controls verified
@@ -154,6 +156,72 @@ def check_edge_function_security_headers() -> List[Tuple[str, bool, str]]:
             results.append(ok(f"edge {header}", why))
         else:
             results.append(fail(f"edge {header}", f"missing ({why})"))
+    return results
+
+
+def check_edge_function_jwt_verification() -> List[Tuple[str, bool, str]]:
+    """Every Supabase Edge Function must explicitly keep verify_jwt enabled."""
+    config = read(ROOT / "supabase" / "config.toml")
+    functions_root = ROOT / "supabase" / "functions"
+    if not config:
+        return [fail("edge function jwt config", "supabase/config.toml missing")]
+    if not functions_root.exists():
+        return [fail("edge function jwt config", "supabase/functions missing")]
+
+    function_names = sorted(
+        path.parent.name
+        for path in functions_root.glob("*/index.ts")
+        if not path.parent.name.startswith("_")
+    )
+    if not function_names:
+        return [fail("edge function jwt config", "no edge functions found")]
+
+    results: List[Tuple[str, bool, str]] = []
+    for name in function_names:
+        block_match = re.search(
+            rf"^\[functions\.{re.escape(name)}\]([\s\S]*?)(?=^\[|\Z)",
+            config,
+            re.MULTILINE,
+        )
+        label = f"edge function {name} verify_jwt"
+        if not block_match:
+            results.append(
+                fail(label, f"missing [functions.{name}] verify_jwt = true")
+            )
+            continue
+        verify_jwt = _read_toml_value(block_match.group(1), "verify_jwt")
+        if verify_jwt == "true":
+            results.append(ok(label, "explicit true"))
+        else:
+            results.append(
+                fail(label, f"expected true, found {verify_jwt or 'missing'}")
+            )
+
+    scan_roots = [ROOT / ".github", ROOT / "scripts", ROOT / "supabase"]
+    bypass_hits: List[str] = []
+    for scan_root in scan_roots:
+        if not scan_root.exists():
+            continue
+        for path in scan_root.rglob("*"):
+            if not path.is_file():
+                continue
+            if path.suffix not in {".yml", ".yaml", ".sh", ".toml", ".md"}:
+                continue
+            text = path.read_text(encoding="utf-8", errors="ignore")
+            for lineno, line in enumerate(text.splitlines(), start=1):
+                if "--no-verify-jwt" in line and not line.strip().startswith("#"):
+                    bypass_hits.append(f"{path.relative_to(ROOT)}:{lineno}")
+
+    if bypass_hits:
+        results.append(
+            fail(
+                "edge deploy no-verify-jwt",
+                f"bypass flag found: {', '.join(bypass_hits[:5])}",
+            )
+        )
+    else:
+        results.append(ok("edge deploy no-verify-jwt", "not used"))
+
     return results
 
 
@@ -404,6 +472,7 @@ def check_supabase_auth_hardening() -> List[Tuple[str, bool, str]]:
 CHECKS = [
     ("Release build obfuscation", check_release_obfuscation),
     ("Edge Function security headers", check_edge_function_security_headers),
+    ("Edge Function JWT verification", check_edge_function_jwt_verification),
     ("TLS certificate pinning", check_certificate_pinning),
     ("Service role key isolation", check_no_service_role_in_client),
     (".gitignore secret patterns", check_gitignore_secrets),

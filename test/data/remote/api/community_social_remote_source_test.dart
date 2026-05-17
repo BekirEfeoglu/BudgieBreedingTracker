@@ -72,8 +72,11 @@ void main() {
         {'post_id': 'p3'},
       ];
 
-      final result =
-          await source.fetchLikedPostIds('user-1', ['p1', 'p2', 'p3']);
+      final result = await source.fetchLikedPostIds('user-1', [
+        'p1',
+        'p2',
+        'p3',
+      ]);
 
       expect(result, {'p1', 'p3'});
       expect(client.requestedTables, contains('community_likes'));
@@ -116,10 +119,7 @@ void main() {
     test('rethrows on error', () async {
       likesQuery.upsertBuilder.error = Exception('Insert failed');
 
-      expect(
-        () => source.likePost('user-1', 'post-1'),
-        throwsException,
-      );
+      expect(() => source.likePost('user-1', 'post-1'), throwsException);
     });
   });
 
@@ -140,10 +140,7 @@ void main() {
     test('rethrows on error', () async {
       likesQuery.deleteBuilder.error = Exception('Delete failed');
 
-      expect(
-        () => source.unlikePost('user-1', 'post-1'),
-        throwsException,
-      );
+      expect(() => source.unlikePost('user-1', 'post-1'), throwsException);
     });
   });
 
@@ -179,8 +176,10 @@ void main() {
     });
 
     test('returns empty set for anonymous user', () async {
-      final result =
-          await source.fetchLikedCommentIds('anonymous', ['c1', 'c2']);
+      final result = await source.fetchLikedCommentIds('anonymous', [
+        'c1',
+        'c2',
+      ]);
       expect(result, isEmpty);
     });
 
@@ -190,8 +189,11 @@ void main() {
         {'comment_id': 'c2'},
       ];
 
-      final result =
-          await source.fetchLikedCommentIds('user-1', ['c1', 'c2', 'c3']);
+      final result = await source.fetchLikedCommentIds('user-1', [
+        'c1',
+        'c2',
+        'c3',
+      ]);
 
       expect(result, {'c1', 'c2'});
       expect(client.requestedTables, contains('community_comment_likes'));
@@ -219,10 +221,7 @@ void main() {
     test('rethrows on error', () async {
       commentLikesQuery.upsertBuilder.error = Exception('Insert failed');
 
-      expect(
-        () => source.likeComment('user-1', 'comment-1'),
-        throwsException,
-      );
+      expect(() => source.likeComment('user-1', 'comment-1'), throwsException);
     });
   });
 
@@ -273,8 +272,10 @@ void main() {
     });
 
     test('returns empty set for anonymous user', () async {
-      final result =
-          await source.fetchBookmarkedPostIds('anonymous', ['p1', 'p2']);
+      final result = await source.fetchBookmarkedPostIds('anonymous', [
+        'p1',
+        'p2',
+      ]);
       expect(result, isEmpty);
     });
 
@@ -283,8 +284,10 @@ void main() {
         {'post_id': 'p2'},
       ];
 
-      final result =
-          await source.fetchBookmarkedPostIds('user-1', ['p1', 'p2']);
+      final result = await source.fetchBookmarkedPostIds('user-1', [
+        'p1',
+        'p2',
+      ]);
 
       expect(result, {'p2'});
       expect(client.requestedTables, contains('community_bookmarks'));
@@ -312,10 +315,7 @@ void main() {
     test('rethrows on error', () async {
       bookmarksQuery.upsertBuilder.error = Exception('Insert failed');
 
-      expect(
-        () => source.bookmarkPost('user-1', 'post-1'),
-        throwsException,
-      );
+      expect(() => source.bookmarkPost('user-1', 'post-1'), throwsException);
     });
   });
 
@@ -459,10 +459,7 @@ void main() {
     test('rethrows on error', () async {
       followsQuery.upsertBuilder.error = Exception('Insert failed');
 
-      expect(
-        () => source.followUser('user-1', 'user-2'),
-        throwsException,
-      );
+      expect(() => source.followUser('user-1', 'user-2'), throwsException);
     });
   });
 
@@ -510,23 +507,20 @@ void main() {
   });
 
   group('blockUser', () {
-    test('inserts block into community_blocks table', () async {
+    test('upserts block into community_blocks table', () async {
       await source.blockUser('user-1', 'user-5');
 
       expect(client.requestedTables, contains('community_blocks'));
-      final payload = blocksQuery.insertPayload as Map<String, dynamic>;
+      final payload = blocksQuery.upsertPayload as Map<String, dynamic>;
       expect(payload['user_id'], 'user-1');
       expect(payload['blocked_user_id'], 'user-5');
       expect(payload['id'], isNotNull);
     });
 
     test('rethrows on error', () async {
-      blocksQuery.insertBuilder.error = Exception('Insert failed');
+      blocksQuery.upsertBuilder.error = Exception('Upsert failed');
 
-      expect(
-        () => source.blockUser('user-1', 'user-5'),
-        throwsException,
-      );
+      expect(() => source.blockUser('user-1', 'user-5'), throwsException);
     });
   });
 
@@ -548,7 +542,7 @@ void main() {
   // ── Reports ──
 
   group('reportContent', () {
-    test('inserts report into community_reports table', () async {
+    test('upserts report into community_reports table', () async {
       await source.reportContent(
         userId: 'user-1',
         targetId: 'post-1',
@@ -557,7 +551,7 @@ void main() {
       );
 
       expect(client.requestedTables, contains('community_reports'));
-      final payload = reportsQuery.insertPayload as Map<String, dynamic>;
+      final payload = reportsQuery.upsertPayload as Map<String, dynamic>;
       expect(payload['user_id'], 'user-1');
       expect(payload['target_id'], 'post-1');
       expect(payload['target_type'], 'post');
@@ -574,7 +568,7 @@ void main() {
         description: 'This content is problematic',
       );
 
-      final payload = reportsQuery.insertPayload as Map<String, dynamic>;
+      final payload = reportsQuery.upsertPayload as Map<String, dynamic>;
       expect(payload['description'], 'This content is problematic');
     });
 
@@ -586,12 +580,12 @@ void main() {
         reason: CommunityReportReason.harassment,
       );
 
-      final payload = reportsQuery.insertPayload as Map<String, dynamic>;
+      final payload = reportsQuery.upsertPayload as Map<String, dynamic>;
       expect(payload.containsKey('description'), isFalse);
     });
 
     test('rethrows on error', () async {
-      reportsQuery.insertBuilder.error = Exception('Insert failed');
+      reportsQuery.upsertBuilder.error = Exception('Upsert failed');
 
       expect(
         () => source.reportContent(
@@ -615,7 +609,7 @@ void main() {
           reason: reason,
         );
 
-        final payload = reportsQuery.insertPayload as Map<String, dynamic>;
+        final payload = reportsQuery.upsertPayload as Map<String, dynamic>;
         expect(payload['reason'], reason.toJson());
       }
     });

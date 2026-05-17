@@ -26,8 +26,9 @@ void main() {
   setUp(() {
     client = RoutingFakeClient();
 
-    final bookmarks =
-        client.addTable(SupabaseConstants.communityBookmarksTable);
+    final bookmarks = client.addTable(
+      SupabaseConstants.communityBookmarksTable,
+    );
     bookmarkSelect = bookmarks.selectBuilder;
     bookmarkDelete = bookmarks.deleteBuilder;
     bookmarkQuery = bookmarks.queryBuilder;
@@ -55,8 +56,11 @@ void main() {
         {'post_id': 'p2'},
       ];
 
-      final result =
-          await source.fetchBookmarkedPostIds('user-1', ['p1', 'p2', 'p3']);
+      final result = await source.fetchBookmarkedPostIds('user-1', [
+        'p1',
+        'p2',
+        'p3',
+      ]);
 
       expect(result, {'p1', 'p2'});
       expect(bookmarkSelect.eqCalls.first.key, 'user_id');
@@ -64,8 +68,7 @@ void main() {
     });
 
     test('fetchBookmarkedPostIds returns empty for anonymous', () async {
-      final result =
-          await source.fetchBookmarkedPostIds('anonymous', ['p1']);
+      final result = await source.fetchBookmarkedPostIds('anonymous', ['p1']);
 
       expect(result, isEmpty);
     });
@@ -169,8 +172,9 @@ void main() {
     test('unfollowUser deletes with correct filters', () async {
       await source.unfollowUser('user-1', 'user-2');
 
-      final eqKeys =
-          followDelete.eqCalls.map((e) => '${e.key}:${e.value}').toList();
+      final eqKeys = followDelete.eqCalls
+          .map((e) => '${e.key}:${e.value}')
+          .toList();
       expect(
         eqKeys,
         containsAll(['follower_id:user-1', 'following_id:user-2']),
@@ -195,10 +199,10 @@ void main() {
       expect(result, isEmpty);
     });
 
-    test('blockUser inserts with correct data', () async {
+    test('blockUser upserts with correct data', () async {
       await source.blockUser('user-1', 'bad-user');
 
-      final payload = blockQuery.insertPayload as Map<String, dynamic>;
+      final payload = blockQuery.upsertPayload as Map<String, dynamic>;
       expect(payload['user_id'], 'user-1');
       expect(payload['blocked_user_id'], 'bad-user');
     });
@@ -206,8 +210,9 @@ void main() {
     test('unblockUser deletes with correct filters', () async {
       await source.unblockUser('user-1', 'bad-user');
 
-      final eqKeys =
-          blockDelete.eqCalls.map((e) => '${e.key}:${e.value}').toList();
+      final eqKeys = blockDelete.eqCalls
+          .map((e) => '${e.key}:${e.value}')
+          .toList();
       expect(
         eqKeys,
         containsAll(['user_id:user-1', 'blocked_user_id:bad-user']),
@@ -216,7 +221,7 @@ void main() {
   });
 
   group('Reports', () {
-    test('reportContent inserts with correct data', () async {
+    test('reportContent upserts with correct data', () async {
       await source.reportContent(
         userId: 'user-1',
         targetId: 'post-1',
@@ -225,7 +230,7 @@ void main() {
         description: 'Spam content',
       );
 
-      final payload = reportQuery.insertPayload as Map<String, dynamic>;
+      final payload = reportQuery.upsertPayload as Map<String, dynamic>;
       expect(payload['user_id'], 'user-1');
       expect(payload['target_id'], 'post-1');
       expect(payload['target_type'], 'post');
@@ -240,7 +245,7 @@ void main() {
         reason: CommunityReportReason.spam,
       );
 
-      final payload = reportQuery.insertPayload as Map<String, dynamic>;
+      final payload = reportQuery.upsertPayload as Map<String, dynamic>;
       expect(payload.containsKey('description'), isFalse);
     });
   });

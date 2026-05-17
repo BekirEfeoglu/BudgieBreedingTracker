@@ -178,6 +178,87 @@ export const securityHeaders = {
         )
 
 
+class TestEdgeFunctionJwtVerification(unittest.TestCase):
+    def test_accepts_functions_with_explicit_verify_jwt_true(self):
+        import verify_security as vs
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write(root / "supabase" / "functions" / "send-push" / "index.ts", "")
+            _write(
+                root
+                / "supabase"
+                / "functions"
+                / "sync-premium-status"
+                / "index.ts",
+                "",
+            )
+            _write(
+                root / "supabase" / "config.toml",
+                """
+[functions.send-push]
+verify_jwt = true
+
+[functions.sync-premium-status]
+verify_jwt = true
+""",
+            )
+
+            with patch.object(vs, "ROOT", root):
+                results = vs.check_edge_function_jwt_verification()
+
+        self.assertTrue(all(passed for _, passed, _ in results), results)
+        self.assertIn(
+            ("edge function send-push verify_jwt", True, "explicit true"),
+            results,
+        )
+        self.assertIn(
+            ("edge deploy no-verify-jwt", True, "not used"),
+            results,
+        )
+
+    def test_rejects_missing_or_disabled_verify_jwt_and_deploy_bypass(self):
+        import verify_security as vs
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write(root / "supabase" / "functions" / "public-fn" / "index.ts", "")
+            _write(root / "supabase" / "functions" / "unsafe-fn" / "index.ts", "")
+            _write(
+                root / "supabase" / "config.toml",
+                """
+[functions.unsafe-fn]
+verify_jwt = false
+""",
+            )
+            _write(
+                root / ".github" / "workflows" / "deploy.yml",
+                "supabase functions deploy unsafe-fn --no-verify-jwt",
+            )
+
+            with patch.object(vs, "ROOT", root):
+                results = vs.check_edge_function_jwt_verification()
+
+        self.assertIn(
+            (
+                "edge function public-fn verify_jwt",
+                False,
+                "missing [functions.public-fn] verify_jwt = true",
+            ),
+            results,
+        )
+        self.assertIn(
+            (
+                "edge function unsafe-fn verify_jwt",
+                False,
+                "expected true, found false",
+            ),
+            results,
+        )
+        self.assertEqual("edge deploy no-verify-jwt", results[-1][0])
+        self.assertFalse(results[-1][1])
+
+
 class TestCertificatePinning(unittest.TestCase):
     def test_accepts_pinning_module_wired_into_bootstrap(self):
         import verify_security as vs

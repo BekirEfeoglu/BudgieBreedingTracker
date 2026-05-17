@@ -58,7 +58,11 @@ final breedingSearchQueryProvider =
 final searchedAndFilteredBreedingPairsProvider =
     Provider.family<List<BreedingPair>, List<BreedingPair>>((ref, pairs) {
       final filtered = ref.watch(filteredBreedingPairsProvider(pairs));
-      final query = ref.watch(breedingSearchQueryProvider).toLowerCase().trim();
+      final query = ref.watch(
+        breedingSearchQueryProvider.select(
+          (value) => value.toLowerCase().trim(),
+        ),
+      );
       if (query.isEmpty) return filtered;
       if (filtered.isEmpty) return const <BreedingPair>[];
 

@@ -202,7 +202,9 @@ class RegisterFormBody extends StatelessWidget {
           ),
           if (state.hasError)
             Padding(
-              padding: const EdgeInsets.only(left: AppSpacing.xl * 2),
+              padding: const EdgeInsetsDirectional.only(
+                start: AppSpacing.xl * 2,
+              ),
               child: Text(
                 state.errorText!,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(

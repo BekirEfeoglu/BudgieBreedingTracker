@@ -27,7 +27,9 @@ class FeedbackRemoteSource {
   /// Inserts a new feedback entry.
   Future<void> insert(Map<String, dynamic> data) async {
     try {
-      await _client.from(SupabaseConstants.feedbackTable).insert(data);
+      await _client
+          .from(SupabaseConstants.feedbackTable)
+          .upsert(data, onConflict: SupabaseConstants.colId);
     } catch (e, st) {
       AppLogger.error('FeedbackRemoteSource', e, st);
       rethrow;

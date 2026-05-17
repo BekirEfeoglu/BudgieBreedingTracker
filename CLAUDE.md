@@ -49,7 +49,7 @@ dart fix --apply
 ### Quality Scripts
 ```bash
 python3 scripts/check_l10n_sync.py       # Verify tr/en/de translation keys are in sync
-python3 scripts/verify_code_quality.py    # Anti-pattern scan (24 checkers, 18/24 CLAUDE.md patterns + 6 extra)
+python3 scripts/verify_code_quality.py    # Anti-pattern scan (28 checkers, 19/24 CLAUDE.md patterns + 9 extra)
 python3 scripts/verify_rules.py          # Validate CLAUDE.md stats against codebase (single source of truth)
 python3 scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats + rule inline references
 ```
@@ -83,8 +83,8 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 975 Dart files |
-| Test files (test/) | 896 test files, 10,960+ individual tests |
+| Source files (lib/) | 983 Dart files |
+| Test files (test/) | 898 test files, 10,967+ individual tests |
 | Feature modules | 25 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -97,7 +97,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | Enum files | 15 |
 | Supabase constants | 146 (tables + buckets + columns) |
 | L10n keys | ~2,948 per language, 42 categories |
-| DB schema version | 22 |
+| DB schema version | 23 |
 
 ## CI/CD Pipeline
 

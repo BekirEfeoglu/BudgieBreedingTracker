@@ -43,10 +43,10 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final userId = ref.watch(currentUserIdProvider);
-    final conversationAsync =
-        ref.watch(conversationByIdProvider(widget.conversationId));
-    final messagesAsync =
-        ref.watch(messagesProvider(widget.conversationId));
+    final conversationAsync = ref.watch(
+      conversationByIdProvider(widget.conversationId),
+    );
+    final messagesAsync = ref.watch(messagesProvider(widget.conversationId));
     final realtimeMessages = ref.watch(messagingRealtimeProvider);
     final typingUsers = ref.watch(typingIndicatorProvider);
     final theme = Theme.of(context);
@@ -68,8 +68,9 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
                 ),
                 if (conversation.isGroup)
                   Text(
-                    'messaging.member_count'
-                        .tr(args: ['${conversation.participantCount}']),
+                    'messaging.member_count'.tr(
+                      args: ['${conversation.participantCount}'],
+                    ),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.outline,
                     ),
@@ -81,7 +82,7 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
         actions: [
           if (typingUsers.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.md),
+              padding: const EdgeInsetsDirectional.only(end: AppSpacing.md),
               child: Center(
                 child: Text(
                   'messaging.typing'.tr(),
@@ -98,12 +99,11 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
         children: [
           Expanded(
             child: messagesAsync.when(
-              loading: () =>
-                  const LoadingState(),
+              loading: () => const LoadingState(),
               error: (error, _) => app.ErrorState(
                 message: '${'messaging.load_error'.tr()}: $error',
-                onRetry: () => ref.invalidate(
-                    messagesProvider(widget.conversationId)),
+                onRetry: () =>
+                    ref.invalidate(messagesProvider(widget.conversationId)),
               ),
               data: (fetchedMessages) {
                 final allMessages = <String, Message>{};
@@ -114,9 +114,11 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
                   allMessages.putIfAbsent(msg.id, () => msg);
                 }
                 final messages = allMessages.values.toList()
-                  ..sort((a, b) =>
-                      (b.createdAt ?? DateTime(0))
-                          .compareTo(a.createdAt ?? DateTime(0)));
+                  ..sort(
+                    (a, b) => (b.createdAt ?? DateTime(0)).compareTo(
+                      a.createdAt ?? DateTime(0),
+                    ),
+                  );
 
                 if (messages.isEmpty) {
                   return Center(
@@ -148,9 +150,7 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
               },
             ),
           ),
-          MessageInputBar(
-            conversationId: widget.conversationId,
-          ),
+          MessageInputBar(conversationId: widget.conversationId),
         ],
       ),
     );
