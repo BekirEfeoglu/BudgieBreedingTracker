@@ -7,7 +7,8 @@
       "namespace": "android_app",
       "package_name": "com.budgiebreeding.budgie_breeding_tracker",
       "sha256_cert_fingerprints": [
-        "CB:F3:A0:8D:07:86:C2:86:F8:CA:0D:ED:31:51:DF:DD:9C:AE:69:DE:C7:C5:24:CC:7F:F3:66:90:B6:4A:93:83"
+        "CB:F3:A0:8D:07:86:C2:86:F8:CA:0D:ED:31:51:DF:DD:9C:AE:69:DE:C7:C5:24:CC:7F:F3:66:90:B6:4A:93:83",
+        "3C:F7:5D:58:05:04:D2:98:51:06:01:61:23:F7:51:23:DD:AF:77:96:7F:5E:C6:F2:09:35:80:E2:03:69:C9:CE"
       ]
     }
   }
