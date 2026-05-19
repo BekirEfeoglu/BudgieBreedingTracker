@@ -5,12 +5,17 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
+import '../../../domain/services/moderation/image_safety_service.dart';
 import '../storage/storage_utils.dart';
 
 class MarketplaceListingRemoteSource {
   final SupabaseClient _client;
+  final ImageSafetyService? _imageSafetyService;
 
-  MarketplaceListingRemoteSource(this._client);
+  MarketplaceListingRemoteSource(
+    this._client, {
+    ImageSafetyService? imageSafetyService,
+  }) : _imageSafetyService = imageSafetyService;
 
   static const _selectColumns =
       'id, user_id, listing_type, title, description, price, currency, '
@@ -298,6 +303,26 @@ class MarketplaceListingRemoteSource {
         }
         if (!StorageUtils.validateMagicBytes(bytes, ext)) {
           throw StorageException('File content does not match .$ext format');
+        }
+
+        // Image safety scan (App Store UGC guideline 1.2). Fail-closed: if
+        // scanner unavailable or image flagged, reject the upload.
+        final scanner = _imageSafetyService;
+        if (scanner == null) {
+          throw const StorageException('Image safety scanner unavailable');
+        }
+        final scan = await scanner.scanImage(
+          bytes: bytes,
+          mimeType: StorageUtils.getMimeType(file.path),
+        );
+        if (!scan.isSafe) {
+          AppLogger.warning(
+            'Marketplace image rejected by safety scan: '
+            '${scan.rejectionReason}',
+          );
+          throw StorageException(
+            'Image rejected: ${scan.rejectionReason ?? 'safety_scan_failed'}',
+          );
         }
 
         final storagePath = 'marketplace-images/$userId/$listingId/$i.$ext';

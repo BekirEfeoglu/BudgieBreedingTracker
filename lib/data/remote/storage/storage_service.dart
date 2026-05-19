@@ -4,6 +4,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/remote/storage/storage_utils.dart';
+import 'package:budgie_breeding_tracker/domain/services/moderation/image_safety_service.dart';
 
 /// Service for uploading and managing files in Supabase Storage.
 ///
@@ -14,6 +15,7 @@ import 'package:budgie_breeding_tracker/data/remote/storage/storage_utils.dart';
 /// Bird/egg/chick/community photo buckets use signed URLs.
 class StorageService {
   final SupabaseClient _client;
+  final ImageSafetyService? _imageSafetyService;
 
   static const String _birdPhotosBucket = SupabaseConstants.birdPhotosBucket;
   static const String _avatarsBucket = SupabaseConstants.avatarsBucket;
@@ -33,7 +35,20 @@ class StorageService {
   /// Signed URL expiry for private buckets: 7 days in seconds.
   static const int _signedUrlExpiry = 60 * 60 * 24 * 7;
 
-  const StorageService(this._client);
+  /// Buckets that hold user-supplied imagery and therefore require safety
+  /// scanning before upload (App Store UGC guideline 1.2). Buckets not listed
+  /// here (e.g. backups) skip the scan.
+  static const _imageBuckets = {
+    SupabaseConstants.birdPhotosBucket,
+    SupabaseConstants.avatarsBucket,
+    SupabaseConstants.communityPhotosBucket,
+    SupabaseConstants.eggPhotosBucket,
+    SupabaseConstants.chickPhotosBucket,
+    SupabaseConstants.marketplacePhotosBucket,
+  };
+
+  const StorageService(this._client, {ImageSafetyService? imageSafetyService})
+    : _imageSafetyService = imageSafetyService;
 
   /// Validates that a path component contains only safe characters (UUID format).
   /// Prevents path traversal attacks via crafted IDs.
@@ -250,6 +265,24 @@ class StorageService {
     }
 
     final mimeType = StorageUtils.getMimeType(file.name);
+
+    // Image safety scan for user-supplied imagery (App Store UGC guideline 1.2).
+    // Fail-closed: if scan unavailable or image flagged, reject upload.
+    if (_imageBuckets.contains(bucket)) {
+      final scanner = _imageSafetyService;
+      if (scanner == null) {
+        throw const StorageException('Image safety scanner unavailable');
+      }
+      final scan = await scanner.scanImage(bytes: bytes, mimeType: mimeType);
+      if (!scan.isSafe) {
+        AppLogger.warning(
+          'Image upload rejected by safety scan: ${scan.rejectionReason}',
+        );
+        throw StorageException(
+          'Image rejected: ${scan.rejectionReason ?? 'safety_scan_failed'}',
+        );
+      }
+    }
 
     await _client.storage
         .from(bucket)

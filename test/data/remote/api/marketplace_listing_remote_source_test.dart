@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/marketplace_listing_remote_source.dart';
+import 'package:budgie_breeding_tracker/domain/services/moderation/image_safety_service.dart';
 
 import '../../../helpers/fake_supabase.dart';
 import '../../../helpers/mocks.dart';
@@ -14,6 +15,19 @@ import '../../../helpers/mocks.dart';
 class MockSupabaseStorageClient extends Mock implements SupabaseStorageClient {}
 
 class MockStorageFileApi extends Mock implements StorageFileApi {}
+
+class MockImageSafetyService extends Mock implements ImageSafetyService {}
+
+ImageSafetyService _safeImageSafety() {
+  final mock = MockImageSafetyService();
+  when(
+    () => mock.scanImage(
+      bytes: any(named: 'bytes'),
+      mimeType: any(named: 'mimeType'),
+    ),
+  ).thenAnswer((_) async => const ImageSafetyResult.safe());
+  return mock;
+}
 
 Uint8List _magicBytesFor(String ext, [int totalSize = 32]) {
   final data = Uint8List(totalSize);
@@ -79,7 +93,10 @@ void main() {
     selectBuilder = stack.selectBuilder;
     queryBuilder = stack.queryBuilder;
     client = stack.client;
-    source = MarketplaceListingRemoteSource(client);
+    source = MarketplaceListingRemoteSource(
+      client,
+      imageSafetyService: _safeImageSafety(),
+    );
   });
 
   group('MarketplaceListingRemoteSource', () {
@@ -256,7 +273,10 @@ void main() {
           () => mockFileApi.getPublicUrl(any()),
         ).thenReturn('https://cdn/img.png');
 
-        final uploadSource = MarketplaceListingRemoteSource(mockClient);
+        final uploadSource = MarketplaceListingRemoteSource(
+          mockClient,
+          imageSafetyService: _safeImageSafety(),
+        );
         final file = await _writeTempImage('photo.png', _magicBytesFor('png'));
 
         final urls = await uploadSource.uploadImages(
@@ -292,6 +312,7 @@ void main() {
       () async {
         final uploadSource = MarketplaceListingRemoteSource(
           MockSupabaseClient(),
+          imageSafetyService: _safeImageSafety(),
         );
         final file = await _writeTempImage('photo.jpg', _magicBytesFor('png'));
 

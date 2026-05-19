@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_channel_config.dart';
 
+const _validId = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+
 void main() {
   group('NotificationChannelConfig channel ID constants', () {
     test('eggTurningChannelId has expected value', () {
@@ -49,99 +51,135 @@ void main() {
     });
 
     test('returns null for unknown type', () {
-      expect(NotificationChannelConfig.payloadToRoute('unknown:id-1'), isNull);
+      expect(
+        NotificationChannelConfig.payloadToRoute('unknown:$_validId'),
+        isNull,
+      );
     });
 
     test('maps breeding payload to breeding detail route', () {
       expect(
-        NotificationChannelConfig.payloadToRoute('breeding:pair-123'),
-        '/breeding/pair-123',
+        NotificationChannelConfig.payloadToRoute('breeding:$_validId'),
+        '/breeding/$_validId',
       );
     });
 
     test('maps incubation payload to breeding detail route', () {
       expect(
-        NotificationChannelConfig.payloadToRoute('incubation:inc-456'),
-        '/breeding/inc-456',
+        NotificationChannelConfig.payloadToRoute('incubation:$_validId'),
+        '/breeding/$_validId',
       );
     });
 
     test('maps bird payload to bird detail route', () {
       expect(
-        NotificationChannelConfig.payloadToRoute('bird:bird-789'),
-        '/birds/bird-789',
+        NotificationChannelConfig.payloadToRoute('bird:$_validId'),
+        '/birds/$_validId',
       );
     });
 
     test('maps chick payload to chick detail route', () {
       expect(
-        NotificationChannelConfig.payloadToRoute('chick:chick-001'),
-        '/chicks/chick-001',
+        NotificationChannelConfig.payloadToRoute('chick:$_validId'),
+        '/chicks/$_validId',
       );
     });
 
     test('maps chick_care payload to chick detail route', () {
       expect(
-        NotificationChannelConfig.payloadToRoute('chick_care:cc-002'),
-        '/chicks/cc-002',
+        NotificationChannelConfig.payloadToRoute('chick_care:$_validId'),
+        '/chicks/$_validId',
       );
     });
 
-    test('maps egg payload to breeding list route', () {
+    test('maps egg payload to breeding list route (id ignored)', () {
+      // Egg payloads carry egg IDs, which are not valid pair IDs; route to
+      // the list view rather than a pair-detail path. ID is not validated.
       expect(
-        NotificationChannelConfig.payloadToRoute('egg:egg-123'),
+        NotificationChannelConfig.payloadToRoute('egg:any-malformed-id'),
         '/breeding',
       );
     });
 
-    test('maps egg_turning payload to breeding list route', () {
+    test('maps egg_turning payload to breeding list route (id ignored)', () {
       expect(
-        NotificationChannelConfig.payloadToRoute('egg_turning:et-456'),
+        NotificationChannelConfig.payloadToRoute('egg_turning:any-id'),
         '/breeding',
       );
     });
 
     test('maps health_check payload to health record detail route', () {
       expect(
-        NotificationChannelConfig.payloadToRoute('health_check:hc-789'),
-        '/health-records/hc-789',
+        NotificationChannelConfig.payloadToRoute('health_check:$_validId'),
+        '/health-records/$_validId',
       );
     });
 
-    test('maps event payload to calendar route', () {
+    test('maps event payload to calendar route (id ignored)', () {
       expect(
-        NotificationChannelConfig.payloadToRoute('event:ev-123'),
+        NotificationChannelConfig.payloadToRoute('event:any-id'),
         '/calendar',
       );
     });
 
-    test('maps event_reminder payload to calendar route', () {
+    test('maps event_reminder payload to calendar route (id ignored)', () {
       expect(
-        NotificationChannelConfig.payloadToRoute('event_reminder:er-456'),
+        NotificationChannelConfig.payloadToRoute('event_reminder:any-id'),
         '/calendar',
       );
     });
 
-    test('maps calendar payload to calendar route', () {
+    test('maps notification payload to notifications route (id ignored)', () {
       expect(
-        NotificationChannelConfig.payloadToRoute('calendar:cal-789'),
-        '/calendar',
-      );
-    });
-
-    test('maps notification payload to notifications route', () {
-      expect(
-        NotificationChannelConfig.payloadToRoute('notification:n-123'),
+        NotificationChannelConfig.payloadToRoute('notification:any-id'),
         '/notifications',
       );
     });
 
     test('preserves entity ID in routed path', () {
-      const uuid = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
       expect(
-        NotificationChannelConfig.payloadToRoute('bird:$uuid'),
-        '/birds/$uuid',
+        NotificationChannelConfig.payloadToRoute('bird:$_validId'),
+        '/birds/$_validId',
       );
+    });
+
+    group('id validation (security)', () {
+      test('rejects bird payload with malformed (non-UUID) id', () {
+        expect(NotificationChannelConfig.payloadToRoute('bird:not-a-uuid'),
+            isNull);
+      });
+
+      test('rejects breeding payload with malformed id', () {
+        expect(
+          NotificationChannelConfig.payloadToRoute('breeding:pair-123'),
+          isNull,
+        );
+      });
+
+      test('rejects chick payload with malformed id', () {
+        expect(
+          NotificationChannelConfig.payloadToRoute('chick:foo'),
+          isNull,
+        );
+      });
+
+      test('rejects health_check payload with path-traversal in id', () {
+        expect(
+          NotificationChannelConfig.payloadToRoute('health_check:../etc/passwd'),
+          isNull,
+        );
+      });
+
+      test('rejects bird payload with empty id', () {
+        expect(NotificationChannelConfig.payloadToRoute('bird:'), isNull);
+      });
+
+      test('rejects bird payload with script-injection attempt', () {
+        expect(
+          NotificationChannelConfig.payloadToRoute('bird:<script>x</script>'),
+          isNull,
+        );
+      });
     });
   });
 }

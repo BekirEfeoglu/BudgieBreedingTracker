@@ -1,3 +1,5 @@
+import 'package:go_router/go_router.dart';
+
 /// Validates that a route parameter looks like a valid UUID v4.
 ///
 /// Prevents injection attacks via deep links with malformed IDs.
@@ -9,6 +11,21 @@ bool isValidRouteId(String? id) {
     r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
     caseSensitive: false,
   ).hasMatch(id);
+}
+
+/// Extracts the `editId` query parameter and returns it only when it parses
+/// as a valid route id. Returns null otherwise (form screens then open in
+/// create mode), which is preferred over a NotFoundScreen flicker — the user
+/// likely landed via a crafted/stale deep link, not a real attack.
+String? validEditIdOrNull(GoRouterState state) =>
+    validEditIdFromQuery(state.uri.queryParameters);
+
+/// Same as [validEditIdOrNull] but takes the query map directly so it can be
+/// unit-tested without constructing a [GoRouterState].
+String? validEditIdFromQuery(Map<String, String> queryParameters) {
+  final id = queryParameters['editId'];
+  if (id == null) return null;
+  return isValidRouteId(id) ? id : null;
 }
 
 /// Validates that an email query parameter has a safe, well-formed format.

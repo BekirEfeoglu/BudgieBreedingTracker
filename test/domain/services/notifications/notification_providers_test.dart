@@ -11,6 +11,11 @@ import 'package:budgie_breeding_tracker/router/app_router.dart';
 
 class _MockGoRouter extends Mock implements GoRouter {}
 
+// Real UUIDs so they pass the route-id validation gate in payloadToRoute.
+const _uuidA = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+const _uuidB = 'b2c3d4e5-f6a7-8901-bcde-f12345678901';
+const _uuidC = 'c3d4e5f6-a7b8-9012-cdef-123456789012';
+
 final _drainPendingProvider = Provider<void>((ref) {
   processPendingPayloads(ref);
 });
@@ -39,9 +44,9 @@ void main() {
         addTearDown(container.dispose);
 
         final service = container.read(notificationServiceProvider);
-        service.onNotificationTap?.call('bird:bird-42');
+        service.onNotificationTap?.call('bird:$_uuidA');
 
-        verify(() => router.push('/birds/bird-42')).called(1);
+        verify(() => router.push('/birds/$_uuidA')).called(1);
       },
     );
 
@@ -89,7 +94,7 @@ void main() {
       addTearDown(queueContainer.dispose);
 
       final service = queueContainer.read(notificationServiceProvider);
-      service.onNotificationTap?.call('bird:queued-1');
+      service.onNotificationTap?.call('bird:$_uuidA');
 
       final readyRouter = _MockGoRouter();
       when(() => readyRouter.push(any())).thenAnswer((_) async => null);
@@ -102,7 +107,7 @@ void main() {
       drainContainer.read(_drainPendingProvider);
       drainContainer.read(_drainPendingProvider);
 
-      verify(() => readyRouter.push('/birds/queued-1')).called(1);
+      verify(() => readyRouter.push('/birds/$_uuidA')).called(1);
     });
 
     test('drains multiple queued payloads in order', () {
@@ -115,9 +120,9 @@ void main() {
       addTearDown(queueContainer.dispose);
 
       final service = queueContainer.read(notificationServiceProvider);
-      service.onNotificationTap?.call('bird:b1');
-      service.onNotificationTap?.call('chick:c1');
-      service.onNotificationTap?.call('breeding:p1');
+      service.onNotificationTap?.call('bird:$_uuidA');
+      service.onNotificationTap?.call('chick:$_uuidB');
+      service.onNotificationTap?.call('breeding:$_uuidC');
 
       final readyRouter = _MockGoRouter();
       when(() => readyRouter.push(any())).thenAnswer((_) async => null);
@@ -129,9 +134,9 @@ void main() {
 
       drainContainer.read(_drainPendingProvider);
 
-      verify(() => readyRouter.push('/birds/b1')).called(1);
-      verify(() => readyRouter.push('/chicks/c1')).called(1);
-      verify(() => readyRouter.push('/breeding/p1')).called(1);
+      verify(() => readyRouter.push('/birds/$_uuidA')).called(1);
+      verify(() => readyRouter.push('/chicks/$_uuidB')).called(1);
+      verify(() => readyRouter.push('/breeding/$_uuidC')).called(1);
     });
 
     test('processPendingPayloads is no-op when queue is empty', () {

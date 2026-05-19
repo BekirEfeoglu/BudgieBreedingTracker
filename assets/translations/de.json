@@ -2367,7 +2367,9 @@
     "update_failed": "Aktualisierung fehlgeschlagen.",
     "background_tasks_partial": "Gespeichert, aber einige Erinnerungs-/Kalenderaufgaben konnten nicht geplant werden.",
     "not_found": "Nicht gefunden",
-    "unknown_error": "Ein unbekannter Fehler ist aufgetreten"
+    "unknown_error": "Ein unbekannter Fehler ist aufgetreten",
+    "image_too_large": "Bildgröße überschreitet das {} MB-Limit. Bitte wählen Sie ein kleineres Foto.",
+    "chick_auto_create_failed": "Ei ist geschlüpft, aber der Kükeneintrag konnte nicht erstellt werden. Bitte fügen Sie das Küken manuell hinzu."
   },
   "validation": {
     "field_required": "{} ist erforderlich",

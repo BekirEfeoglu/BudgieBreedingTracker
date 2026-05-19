@@ -271,5 +271,89 @@ void main() {
       // Should not throw — network errors are non-blocking
       await serviceWithServer.guardBirdLimit('u1');
     });
+
+    test('fail-open when edge function is not deployed (404)', () async {
+      final edgeClient = _FakeEdgeFunctionClient(
+        fixedResult: const EdgeFunctionResult(
+          success: false,
+          error: '404 NOT_FOUND: validate-free-tier-limit not deployed',
+        ),
+      );
+      serviceWithServer = FreeTierLimitService(
+        birdRepo: mockBirdRepo,
+        breedingPairRepo: mockBreedingRepo,
+        incubationRepo: mockIncubationRepo,
+        edgeFunctionClient: edgeClient,
+      );
+      when(() => mockBirdRepo.getCount('u1')).thenAnswer((_) async => 0);
+
+      // 404 = function not deployed, geriye uyumluluk için fail-open
+      await serviceWithServer.guardBirdLimit('u1');
+    });
+
+    test(
+      'fail-closed on 5xx server error (rooted device bypass attempt)',
+      () async {
+        final edgeClient = _FakeEdgeFunctionClient(
+          fixedResult: const EdgeFunctionResult(
+            success: false,
+            error: 'Status 500: internal server error',
+          ),
+        );
+        serviceWithServer = FreeTierLimitService(
+          birdRepo: mockBirdRepo,
+          breedingPairRepo: mockBreedingRepo,
+          incubationRepo: mockIncubationRepo,
+          edgeFunctionClient: edgeClient,
+        );
+        when(() => mockBirdRepo.getCount('u1')).thenAnswer((_) async => 0);
+
+        // Server explicitly failed → reject the request to avoid silent bypass
+        await expectLater(
+          serviceWithServer.guardBirdLimit('u1'),
+          throwsA(isA<FreeTierLimitException>()),
+        );
+      },
+    );
+
+    test('fail-closed on 4xx server error (non-404)', () async {
+      final edgeClient = _FakeEdgeFunctionClient(
+        fixedResult: const EdgeFunctionResult(
+          success: false,
+          error: 'Status 403: forbidden',
+        ),
+      );
+      serviceWithServer = FreeTierLimitService(
+        birdRepo: mockBirdRepo,
+        breedingPairRepo: mockBreedingRepo,
+        incubationRepo: mockIncubationRepo,
+        edgeFunctionClient: edgeClient,
+      );
+      when(() => mockBirdRepo.getCount('u1')).thenAnswer((_) async => 0);
+
+      await expectLater(
+        serviceWithServer.guardBirdLimit('u1'),
+        throwsA(isA<FreeTierLimitException>()),
+      );
+    });
+
+    test('fail-open when no authenticated session', () async {
+      final edgeClient = _FakeEdgeFunctionClient(
+        fixedResult: const EdgeFunctionResult(
+          success: false,
+          error: 'No authenticated session',
+        ),
+      );
+      serviceWithServer = FreeTierLimitService(
+        birdRepo: mockBirdRepo,
+        breedingPairRepo: mockBreedingRepo,
+        incubationRepo: mockIncubationRepo,
+        edgeFunctionClient: edgeClient,
+      );
+      when(() => mockBirdRepo.getCount('u1')).thenAnswer((_) async => 0);
+
+      // RLS layer will catch the actual unauthenticated insert
+      await serviceWithServer.guardBirdLimit('u1');
+    });
   });
 }

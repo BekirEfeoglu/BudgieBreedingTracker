@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/enums/community_enums.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/app_haptics.dart';
+import '../../../core/utils/image_picker_guard.dart';
 import '../../../core/providers/action_feedback_providers.dart';
 import '../providers/community_create_providers.dart';
 
@@ -145,9 +146,11 @@ class _CommunityCreatePostScreenState
       maxHeight: 1200,
       imageQuality: 85,
     );
-    if (images.isNotEmpty && mounted) {
-      setState(() => _selectedImages.addAll(images));
-    }
+    if (images.isEmpty || !mounted) return;
+    final filtered =
+        await ImagePickerGuard.filterWithinSizeLimit(context, images);
+    if (filtered.isEmpty || !mounted) return;
+    setState(() => _selectedImages.addAll(filtered));
   }
 
   void _removeImage(int index) {

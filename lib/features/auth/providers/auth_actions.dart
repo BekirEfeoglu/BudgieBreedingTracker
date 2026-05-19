@@ -9,6 +9,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/app_constants.dart';
@@ -31,10 +32,14 @@ final authActionsProvider = Provider<AuthActions>((ref) {
 
 /// Encapsulates all Supabase auth operations.
 class AuthActions with _AuthOAuthMixin, _AuthAccountMixin {
-  AuthActions(this._client);
+  AuthActions(
+    this._client, {
+    Future<SharedPreferences> Function()? prefsFactory,
+  }) : _prefsFactory = prefsFactory ?? SharedPreferences.getInstance;
 
   @override
   final SupabaseClient _client;
+  final Future<SharedPreferences> Function() _prefsFactory;
 
   static const _oAuthRedirectTo =
       'io.supabase.budgiebreeding://login-callback/';
@@ -49,9 +54,22 @@ class AuthActions with _AuthOAuthMixin, _AuthAccountMixin {
       'https://budgiebreedingtracker.online/auth/callback/';
 
   /// Cooldown between sensitive auth operations (password reset, resend).
+  ///
+  /// Persisted in [SharedPreferences] keyed by a hash of the lowercased email
+  /// so killing the app cannot bypass the limit. Supabase enforces its own
+  /// server-side rate limit too; the client-side persistent check is UX +
+  /// defense-in-depth.
   static const _authCooldown = Duration(minutes: 2);
-  DateTime? _lastResetPasswordAt;
-  DateTime? _lastResendVerificationAt;
+  static const _resetPasswordKeyPrefix = 'auth.last_reset_password.';
+  static const _resendVerificationKeyPrefix = 'auth.last_resend_verification.';
+
+  String _emailKeyHash(String email) {
+    final normalized = email.trim().toLowerCase();
+    final digest = sha256.convert(utf8.encode(normalized)).toString();
+    // 16 hex chars = 64 bits of collision resistance, enough for unique
+    // per-email keys without storing the raw email in SharedPreferences.
+    return digest.substring(0, 16);
+  }
 
   /// Sign in with email and password.
   Future<AuthResponse> signInWithEmail({
@@ -83,32 +101,32 @@ class AuthActions with _AuthOAuthMixin, _AuthAccountMixin {
   /// Send password reset email with rate limiting.
   ///
   /// Enforces a 2-minute cooldown between requests to prevent email bombing.
+  /// Cooldown timestamp is persisted in [SharedPreferences] keyed by email
+  /// hash so app restart does not reset the limit.
   Future<void> resetPassword(String email) async {
-    _enforceRateLimit(
-      _lastResetPasswordAt,
-      'auth.rate_limit_password_reset'.tr(),
-    );
+    final key = '$_resetPasswordKeyPrefix${_emailKeyHash(email)}';
+    await _enforceRateLimit(key, 'auth.rate_limit_password_reset'.tr());
     await _client.auth.resetPasswordForEmail(
       email,
       redirectTo: _emailRedirectTo,
     );
-    _lastResetPasswordAt = DateTime.now();
+    await _recordRateLimitedCall(key);
   }
 
   /// Resend email verification with rate limiting.
   ///
   /// Enforces a 2-minute cooldown between requests to prevent abuse.
+  /// Cooldown timestamp is persisted in [SharedPreferences] keyed by email
+  /// hash so app restart does not reset the limit.
   Future<ResendResponse> resendVerification(String email) async {
-    _enforceRateLimit(
-      _lastResendVerificationAt,
-      'auth.rate_limit_verification'.tr(),
-    );
+    final key = '$_resendVerificationKeyPrefix${_emailKeyHash(email)}';
+    await _enforceRateLimit(key, 'auth.rate_limit_verification'.tr());
     final response = _client.auth.resend(
       type: OtpType.signup,
       email: email,
       emailRedirectTo: _emailRedirectTo,
     );
-    _lastResendVerificationAt = DateTime.now();
+    await _recordRateLimitedCall(key);
     return response;
   }
 
@@ -129,10 +147,30 @@ class AuthActions with _AuthOAuthMixin, _AuthAccountMixin {
     await _client.auth.signOut();
   }
 
-  void _enforceRateLimit(DateTime? lastCall, String message) {
-    if (lastCall != null &&
-        DateTime.now().difference(lastCall) < _authCooldown) {
+  Future<void> _enforceRateLimit(String prefsKey, String message) async {
+    final SharedPreferences prefs;
+    try {
+      prefs = await _prefsFactory();
+    } catch (e) {
+      // If SharedPreferences is unavailable we cannot enforce the cooldown
+      // client-side, but the server still rate-limits. Don't block the user.
+      AppLogger.warning('Could not load prefs for auth rate limit: $e');
+      return;
+    }
+    final lastMs = prefs.getInt(prefsKey);
+    if (lastMs == null) return;
+    final last = DateTime.fromMillisecondsSinceEpoch(lastMs);
+    if (DateTime.now().difference(last) < _authCooldown) {
       throw AuthException(message);
+    }
+  }
+
+  Future<void> _recordRateLimitedCall(String prefsKey) async {
+    try {
+      final prefs = await _prefsFactory();
+      await prefs.setInt(prefsKey, DateTime.now().millisecondsSinceEpoch);
+    } catch (e) {
+      AppLogger.warning('Failed to persist auth rate limit timestamp: $e');
     }
   }
 }

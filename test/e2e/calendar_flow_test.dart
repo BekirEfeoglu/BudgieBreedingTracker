@@ -120,13 +120,15 @@ void main() {
     test(
       'GIVEN existing event entry WHEN deep link payload is resolved THEN related route is available for navigation',
       () {
+        const chickUuid = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
         final eggRoute = NotificationService.payloadToRoute(
           'egg_turning:inc-1',
         );
-        final chickRoute = NotificationService.payloadToRoute('chick:chick-1');
+        final chickRoute =
+            NotificationService.payloadToRoute('chick:$chickUuid');
 
         expect(eggRoute, '/breeding');
-        expect(chickRoute, '/chicks/chick-1');
+        expect(chickRoute, '/chicks/$chickUuid');
       },
       timeout: e2eTimeout,
     );

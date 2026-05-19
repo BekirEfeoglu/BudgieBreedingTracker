@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/data/remote/storage/storage_service.dart';
+import 'package:budgie_breeding_tracker/domain/services/moderation/image_safety_service.dart';
 
 import '../../../helpers/mocks.dart';
 
@@ -17,10 +18,13 @@ class MockStorageFileApi extends Mock implements StorageFileApi {}
 
 class MockXFile extends Mock implements XFile {}
 
+class MockImageSafetyService extends Mock implements ImageSafetyService {}
+
 void main() {
   late MockSupabaseClient mockClient;
   late MockSupabaseStorageClient mockStorage;
   late MockStorageFileApi mockFileApi;
+  late MockImageSafetyService mockImageSafety;
   late StorageService service;
 
   setUpAll(() {
@@ -33,6 +37,7 @@ void main() {
     mockClient = MockSupabaseClient();
     mockStorage = MockSupabaseStorageClient();
     mockFileApi = MockStorageFileApi();
+    mockImageSafety = MockImageSafetyService();
     when(() => mockClient.storage).thenReturn(mockStorage);
     when(() => mockStorage.from(any())).thenReturn(mockFileApi);
 
@@ -48,7 +53,16 @@ void main() {
       () => mockFileApi.createSignedUrl(any(), any()),
     ).thenAnswer((_) async => 'https://cdn.example.com/signed-object');
 
-    service = StorageService(mockClient);
+    // Default: safety scan passes for all image upload tests. Specific tests
+    // can override this when verifying rejection behavior.
+    when(
+      () => mockImageSafety.scanImage(
+        bytes: any(named: 'bytes'),
+        mimeType: any(named: 'mimeType'),
+      ),
+    ).thenAnswer((_) async => const ImageSafetyResult.safe());
+
+    service = StorageService(mockClient, imageSafetyService: mockImageSafety);
   });
 
   /// Returns magic-byte header matching [ext] so _validateMagicBytes passes.
@@ -609,6 +623,71 @@ void main() {
         await service.deleteAllUserFiles('u1');
 
         verify(() => mockFileApi.remove(any())).called(1);
+      });
+    });
+
+    // -----------------------------------------------------------------------
+    group('image safety scan', () {
+      test('rejects bird photo upload when scan flags content', () async {
+        when(
+          () => mockImageSafety.scanImage(
+            bytes: any(named: 'bytes'),
+            mimeType: any(named: 'mimeType'),
+          ),
+        ).thenAnswer(
+          (_) async => const ImageSafetyResult.unsafe('image_flagged'),
+        );
+
+        final file = makeXFile();
+
+        await expectLater(
+          () => service.uploadBirdPhoto(userId: 'u1', birdId: 'b1', file: file),
+          throwsA(isA<StorageException>()),
+        );
+        verifyNever(
+          () => mockFileApi.uploadBinary(
+            any(),
+            any(),
+            fileOptions: any(named: 'fileOptions'),
+          ),
+        );
+      });
+
+      test('rejects avatar upload when scanner unavailable', () async {
+        final serviceNoScanner = StorageService(mockClient);
+        final file = makeXFile();
+
+        await expectLater(
+          () => serviceNoScanner.uploadAvatar(userId: 'u1', file: file),
+          throwsA(isA<StorageException>()),
+        );
+        verifyNever(
+          () => mockFileApi.uploadBinary(
+            any(),
+            any(),
+            fileOptions: any(named: 'fileOptions'),
+          ),
+        );
+      });
+
+      test('uploads bird photo when scan returns safe', () async {
+        when(
+          () => mockFileApi.uploadBinary(
+            any(),
+            any(),
+            fileOptions: any(named: 'fileOptions'),
+          ),
+        ).thenAnswer((_) async => 'storage-key');
+
+        final file = makeXFile();
+        await service.uploadBirdPhoto(userId: 'u1', birdId: 'b1', file: file);
+
+        verify(
+          () => mockImageSafety.scanImage(
+            bytes: any(named: 'bytes'),
+            mimeType: any(named: 'mimeType'),
+          ),
+        ).called(1);
       });
     });
   });

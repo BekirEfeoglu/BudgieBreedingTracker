@@ -96,9 +96,10 @@ void main() {
         await actions.markAsRead('notif-1');
 
         verify(() => mockRepository.markAsRead('notif-1')).called(1);
+        const chickUuid = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
         expect(
-          NotificationService.payloadToRoute('chick:chick-1'),
-          '/chicks/chick-1',
+          NotificationService.payloadToRoute('chick:$chickUuid'),
+          '/chicks/$chickUuid',
         );
       },
       timeout: e2eTimeout,

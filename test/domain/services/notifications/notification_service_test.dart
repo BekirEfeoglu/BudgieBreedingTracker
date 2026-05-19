@@ -29,29 +29,33 @@ void main() {
   });
 
   group('NotificationService.payloadToRoute', () {
+    // Valid UUID used for routes that inject the id into the path.
+    const id = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+
     test('maps known payload types to expected routes', () {
       expect(
-        NotificationService.payloadToRoute('breeding:abc'),
-        '/breeding/abc',
+        NotificationService.payloadToRoute('breeding:$id'),
+        '/breeding/$id',
       );
       expect(
-        NotificationService.payloadToRoute('incubation:abc'),
-        '/breeding/abc',
+        NotificationService.payloadToRoute('incubation:$id'),
+        '/breeding/$id',
       );
-      expect(NotificationService.payloadToRoute('bird:abc'), '/birds/abc');
-      expect(NotificationService.payloadToRoute('chick:abc'), '/chicks/abc');
+      expect(NotificationService.payloadToRoute('bird:$id'), '/birds/$id');
+      expect(NotificationService.payloadToRoute('chick:$id'), '/chicks/$id');
       expect(
-        NotificationService.payloadToRoute('chick_care:abc'),
-        '/chicks/abc',
+        NotificationService.payloadToRoute('chick_care:$id'),
+        '/chicks/$id',
       );
-      expect(NotificationService.payloadToRoute('egg:abc'), '/breeding');
+      // egg routes deliberately ignore the id (egg ids are not pair ids).
+      expect(NotificationService.payloadToRoute('egg:any'), '/breeding');
       expect(
-        NotificationService.payloadToRoute('egg_turning:abc'),
+        NotificationService.payloadToRoute('egg_turning:any'),
         '/breeding',
       );
       expect(
-        NotificationService.payloadToRoute('health_check:abc'),
-        '/health-records/abc',
+        NotificationService.payloadToRoute('health_check:$id'),
+        '/health-records/$id',
       );
       expect(NotificationService.payloadToRoute('event:any'), '/calendar');
       expect(
@@ -70,6 +74,9 @@ void main() {
       expect(NotificationService.payloadToRoute('invalid'), isNull);
       expect(NotificationService.payloadToRoute('a:b:c'), isNull);
       expect(NotificationService.payloadToRoute('unknown:id'), isNull);
+      // id-validated routes reject non-UUID ids.
+      expect(NotificationService.payloadToRoute('bird:not-a-uuid'), isNull);
+      expect(NotificationService.payloadToRoute('breeding:foo'), isNull);
     });
   });
 

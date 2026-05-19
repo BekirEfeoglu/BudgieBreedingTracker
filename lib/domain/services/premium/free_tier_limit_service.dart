@@ -82,9 +82,13 @@ class FreeTierLimitService {
 
   /// Server-side validation via `validate-free-tier-limit` Edge Function.
   ///
-  /// Non-blocking for offline scenarios: if the Edge Function is unavailable,
-  /// the client-side guard is the only enforcement. When available, the server
-  /// response is authoritative and overrides the client-side check.
+  /// Fail policy:
+  /// - Function not deployed (404) → fail-open (development / staged rollout).
+  /// - Network/transient/no-session errors (no HTTP status) → fail-open
+  ///   (kullanıcı offline durumda kalmasın).
+  /// - Server explicitly rejected (4xx other than 404, or 5xx) → fail-closed.
+  ///   Bu, rooted device + simulated network failure gibi senaryolarda
+  ///   client-side guard'ın atlanmasını engeller.
   static const _validTables = {'birds', 'breeding_pairs', 'incubations'};
 
   Future<void> _validateServerSide(String table) async {
@@ -92,21 +96,22 @@ class FreeTierLimitService {
     assert(_validTables.contains(table), 'Invalid table: $table');
     if (!_validTables.contains(table)) return;
 
+    EdgeFunctionResult result;
     try {
-      final result = await _edgeFunctionClient.invoke(
+      result = await _edgeFunctionClient.invoke(
         'validate-free-tier-limit',
         body: {'table': table},
       );
+    } catch (e) {
+      // Network/timeout exception thrown by the client — treat as offline.
+      AppLogger.info(
+        '[FreeTier] Server-side validation threw for $table: $e — '
+        'falling back to client-side guard',
+      );
+      return;
+    }
 
-      if (!result.success) {
-        // Edge function unavailable — client-side guard already passed
-        AppLogger.info(
-          '[FreeTier] Server-side validation unavailable for $table, '
-          'relying on client-side guard',
-        );
-        return;
-      }
-
+    if (result.success) {
       final allowed = result.data?['allowed'] as bool? ?? true;
       if (!allowed) {
         final limit = result.data?['limit'] as int? ?? 0;
@@ -115,12 +120,49 @@ class FreeTierLimitService {
         );
         throw FreeTierLimitException(table, limit);
       }
-    } catch (e) {
-      if (e is FreeTierLimitException) rethrow;
-      // Network/timeout errors — client-side guard already passed
-      AppLogger.info(
-        '[FreeTier] Server-side validation failed for $table: $e',
-      );
+      return;
     }
+
+    // Non-success: decide based on the error category.
+    final errorMsg = result.error ?? '';
+
+    // 404 → function not deployed yet (development / staged rollout). Honor
+    // client-side guard.
+    if (errorMsg.startsWith('404 NOT_FOUND')) {
+      AppLogger.info(
+        '[FreeTier] validate-free-tier-limit not deployed; '
+        'client-side guard is the only enforcement.',
+      );
+      return;
+    }
+
+    // No authenticated session (guest mode etc.) → fail-open. Insert path
+    // will fail at RLS layer if user is actually unauthenticated.
+    if (errorMsg.contains('No authenticated session')) {
+      AppLogger.info('[FreeTier] No session for $table validation — skip.');
+      return;
+    }
+
+    // Explicit server response (Status 4xx/5xx other than 404) → fail-closed.
+    // Treat the request as if the limit was reached so callers do not silently
+    // bypass enforcement on rooted/jailbroken devices.
+    final isServerError =
+        errorMsg.startsWith('Status 4') || errorMsg.startsWith('Status 5');
+    if (isServerError) {
+      AppLogger.warning(
+        '[FreeTier] Server validation failed for $table ($errorMsg) — '
+        'fail-closed.',
+      );
+      // limit=0 communicates "limit reached" without exposing the real number,
+      // which the server refused to compute. UI surfaces a generic upsell.
+      throw FreeTierLimitException(table, 0);
+    }
+
+    // Anything else (FunctionException with no status code, retry exhausted,
+    // unknown shape) → treat as transient/offline.
+    AppLogger.info(
+      '[FreeTier] Server validation indeterminate for $table ($errorMsg) — '
+      'relying on client-side guard.',
+    );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/supabase_client.dart';
+import 'package:budgie_breeding_tracker/domain/services/moderation/moderation_providers.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/bird_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/egg_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/chick_remote_source.dart';
@@ -144,6 +145,7 @@ final marketplaceListingRemoteSourceProvider =
     Provider<MarketplaceListingRemoteSource>((ref) {
   return MarketplaceListingRemoteSource(
     ref.watch(supabaseClientProvider),
+    imageSafetyService: ref.watch(imageSafetyServiceProvider),
   );
 });
 

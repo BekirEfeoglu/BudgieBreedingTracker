@@ -2367,7 +2367,9 @@
     "update_failed": "Güncelleme işlemi başarısız oldu.",
     "background_tasks_partial": "Kayıt tamamlandı ancak bazı hatırlatma/takvim görevleri planlanamadı.",
     "not_found": "Bulunamadı",
-    "unknown_error": "Bilinmeyen bir hata oluştu"
+    "unknown_error": "Bilinmeyen bir hata oluştu",
+    "image_too_large": "Görsel boyutu {} MB sınırını aşıyor. Daha küçük bir fotoğraf seçin.",
+    "chick_auto_create_failed": "Yumurta açıldı ama yavru kaydı oluşturulamadı. Yavruyu manuel olarak ekleyin."
   },
   "validation": {
     "field_required": "{} zorunludur",

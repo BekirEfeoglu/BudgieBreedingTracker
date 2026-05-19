@@ -451,6 +451,62 @@ void main() {
       },
     );
 
+    test(
+      'surfaces critical warning when chick repository save fails',
+      () async {
+        when(() => eggRepo.save(any())).thenAnswer((_) async {});
+        when(() => chickRepo.getByEggId('egg-1')).thenAnswer((_) async => null);
+        when(() => chickRepo.save(any()))
+            .thenThrow(Exception('local DB write failed'));
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(eggActionsProvider.notifier)
+            .updateEggStatus(testEgg(), EggStatus.hatched);
+
+        final state = container.read(eggActionsProvider);
+        // Egg-hatched mutation still succeeded; the warning communicates that
+        // the user must add the chick manually.
+        expect(state.isSuccess, isTrue);
+        expect(state.chickCreated, isFalse);
+        expect(state.error, isNull);
+        expect(state.warning, isNotNull);
+        verifyNever(
+          () => mockScheduler.scheduleBandingReminders(
+            chickId: any(named: 'chickId'),
+            chickLabel: any(named: 'chickLabel'),
+            hatchDate: any(named: 'hatchDate'),
+            bandingDay: any(named: 'bandingDay'),
+            settings: any(named: 'settings'),
+          ),
+        );
+      },
+    );
+
+    test(
+      'continues with save when duplicate-check read fails',
+      () async {
+        when(() => eggRepo.save(any())).thenAnswer((_) async {});
+        when(() => chickRepo.getByEggId('egg-1'))
+            .thenThrow(Exception('read failed'));
+        when(() => chickRepo.save(any())).thenAnswer((_) async {});
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(eggActionsProvider.notifier)
+            .updateEggStatus(testEgg(), EggStatus.hatched);
+
+        final state = container.read(eggActionsProvider);
+        expect(state.isSuccess, isTrue);
+        expect(state.chickCreated, isTrue);
+        verify(() => chickRepo.save(any())).called(1);
+      },
+    );
+
     test('no chickCreated flag for non-hatched status', () async {
       when(() => eggRepo.save(any())).thenAnswer((_) async {});
 

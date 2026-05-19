@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/photo_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/image_picker_guard.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/utils/storage_url_normalizer.dart';
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
@@ -191,7 +192,10 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
     }
 
     if (picked == null) return;
-    if (!mounted) return;
+    if (!context.mounted) return;
+    final withinSize =
+        await ImagePickerGuard.ensureWithinSizeLimit(context, picked);
+    if (!withinSize || !mounted) return;
 
     setState(() => _isUploading = true);
 

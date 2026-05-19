@@ -2367,7 +2367,9 @@
     "update_failed": "Update operation failed.",
     "background_tasks_partial": "Saved, but some reminders/calendar tasks could not be scheduled.",
     "not_found": "Not found",
-    "unknown_error": "An unknown error occurred"
+    "unknown_error": "An unknown error occurred",
+    "image_too_large": "Image size exceeds the {} MB limit. Please select a smaller photo.",
+    "chick_auto_create_failed": "Egg hatched but the chick record could not be created. Please add the chick manually."
   },
   "validation": {
     "field_required": "{} is required",

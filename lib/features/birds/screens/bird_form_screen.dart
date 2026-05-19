@@ -11,6 +11,7 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/species/species_profile.dart';
 import 'package:budgie_breeding_tracker/core/species/species_registry.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/image_picker_guard.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
@@ -295,6 +296,8 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
         imageQuality: 85,
       );
       if (!mounted || picked == null) return;
+      final ok = await ImagePickerGuard.ensureWithinSizeLimit(context, picked);
+      if (!ok || !mounted) return;
       setState(() => _photoFile = picked);
     } catch (e) {
       AppLogger.warning('Failed to pick bird form photo: $e');

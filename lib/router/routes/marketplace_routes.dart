@@ -24,7 +24,7 @@ List<RouteBase> buildMarketplaceRoutes() => [
           GoRoute(
             path: 'form',
             builder: (context, state) => MarketplaceFormScreen(
-              editListingId: state.uri.queryParameters['editId'],
+              editListingId: validEditIdOrNull(state),
             ),
           ),
           GoRoute(

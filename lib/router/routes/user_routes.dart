@@ -173,10 +173,14 @@ List<RouteBase> buildUserRoutes() => [
     routes: [
       GoRoute(
         path: 'form',
-        builder: (context, state) => HealthRecordFormScreen(
-          editRecordId: state.uri.queryParameters['editId'],
-          preselectedBirdId: state.uri.queryParameters['birdId'],
-        ),
+        builder: (context, state) {
+          final preselected = state.uri.queryParameters['birdId'];
+          return HealthRecordFormScreen(
+            editRecordId: validEditIdOrNull(state),
+            preselectedBirdId:
+                isValidRouteId(preselected) ? preselected : null,
+          );
+        },
       ),
       GoRoute(
         path: ':id',

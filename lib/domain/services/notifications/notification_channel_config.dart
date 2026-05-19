@@ -1,5 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/router/route_utils.dart';
+
 /// Channel ID constants and localized channel metadata for Android notifications.
 ///
 /// Extracted from [NotificationService] to keep the main service class
@@ -39,6 +42,12 @@ abstract final class NotificationChannelConfig {
   ///
   /// Expected format: `type:id` (e.g. `breeding:abc-123`).
   /// Returns the corresponding GoRouter path or null if unrecognized.
+  ///
+  /// The `id` segment is validated with [isValidRouteId] for routes that
+  /// inject it into the path. Invalid ids cause the payload to be rejected
+  /// (returning null) so the navigator does not flash a NotFoundScreen for
+  /// crafted payloads. Routes that ignore the id (`calendar`, `/breeding`)
+  /// skip validation.
   static String? payloadToRoute(String? payload) {
     if (payload == null || !payload.contains(':')) return null;
 
@@ -48,14 +57,24 @@ abstract final class NotificationChannelConfig {
     final type = parts[0];
     final id = parts[1];
 
+    String? requireId(String prefix) {
+      if (!isValidRouteId(id)) {
+        AppLogger.warning(
+          'Rejected deeplink payload with invalid id: type=$type',
+        );
+        return null;
+      }
+      return '$prefix/$id';
+    }
+
     return switch (type) {
-      'breeding' || 'incubation' => '/breeding/$id',
-      'bird' => '/birds/$id',
-      'chick' || 'chick_care' || 'banding' => '/chicks/$id',
+      'breeding' || 'incubation' => requireId('/breeding'),
+      'bird' => requireId('/birds'),
+      'chick' || 'chick_care' || 'banding' => requireId('/chicks'),
       // Egg-related payloads currently carry egg IDs, not pair IDs. Route to
       // breeding list instead of an invalid pair-detail path.
       'egg' || 'egg_turning' => '/breeding',
-      'health_check' => '/health-records/$id',
+      'health_check' => requireId('/health-records'),
       'event' || 'event_reminder' || 'calendar' => '/calendar',
       'notification' => '/notifications',
       _ => null,

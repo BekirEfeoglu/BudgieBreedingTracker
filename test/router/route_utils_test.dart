@@ -392,4 +392,36 @@ void main() {
       });
     });
   });
+
+  group('validEditIdFromQuery', () {
+    const validId = '550e8400-e29b-41d4-a716-446655440000';
+
+    test('returns the id when query has a valid UUID', () {
+      expect(validEditIdFromQuery({'editId': validId}), validId);
+    });
+
+    test('returns null when editId is absent', () {
+      expect(validEditIdFromQuery({}), isNull);
+      expect(validEditIdFromQuery({'birdId': 'something'}), isNull);
+    });
+
+    test('returns null when editId is not a UUID', () {
+      expect(validEditIdFromQuery({'editId': 'not-a-uuid'}), isNull);
+    });
+
+    test('returns null for path traversal attempt', () {
+      expect(
+        validEditIdFromQuery({'editId': '../../../etc/passwd'}),
+        isNull,
+      );
+    });
+
+    test('returns null for SQL injection attempt', () {
+      expect(validEditIdFromQuery({'editId': "1' OR '1'='1"}), isNull);
+    });
+
+    test('returns null for empty value', () {
+      expect(validEditIdFromQuery({'editId': ''}), isNull);
+    });
+  });
 }

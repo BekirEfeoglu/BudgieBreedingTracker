@@ -227,17 +227,23 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       // Automatically create chick when egg hatches
       var didCreateChick = false;
       var sideEffectError = false;
+      var chickSaveFailed = false;
       if (newStatus == EggStatus.hatched) {
         final result = await _createChickFromHatchedEgg(updated);
         didCreateChick = result.created;
         sideEffectError = result.sideEffectError;
+        chickSaveFailed = result.chickSaveFailed;
       }
+
+      // chickSaveFailed wins over the milder side-effect warning because the
+      // user has to act (egg is hatched in DB but no chick row exists).
+      final warning = chickSaveFailed
+          ? 'errors.chick_auto_create_failed'.tr()
+          : (sideEffectError ? 'errors.background_tasks_partial'.tr() : null);
 
       state = state.copyWith(
         isLoading: false,
-        warning: sideEffectError
-            ? 'errors.background_tasks_partial'.tr()
-            : null,
+        warning: warning,
         isSuccess: true,
         chickCreated: didCreateChick,
       );
@@ -249,35 +255,64 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
   }
 
   /// Creates a chick record automatically when an egg is marked as hatched.
-  Future<({bool created, bool sideEffectError})> _createChickFromHatchedEgg(
-    Egg egg,
-  ) async {
-    try {
-      final chickRepo = ref.read(chickRepositoryProvider);
+  ///
+  /// Returns:
+  /// - [created]: true if a new chick row was inserted in this call.
+  /// - [sideEffectError]: true if any non-critical side effect (notification
+  ///   scheduling, calendar event generation) failed — surfaced as a warning.
+  /// - [chickSaveFailed]: true if the chick row itself could not be saved.
+  ///   The egg is already hatched in DB, so the egg-hatched state is NOT
+  ///   rolled back; instead the caller surfaces a user-visible warning so the
+  ///   user can add the chick manually.
+  Future<({bool created, bool sideEffectError, bool chickSaveFailed})>
+  _createChickFromHatchedEgg(Egg egg) async {
+    final chickRepo = ref.read(chickRepositoryProvider);
 
-      // Duplicate check: skip if chick already exists for this egg
+    // Duplicate check is best-effort: a read failure must not be treated as a
+    // save failure. If the read fails, we proceed and let `save` decide.
+    try {
       final existing = await chickRepo.getByEggId(egg.id);
       if (existing != null) {
         AppLogger.info('Chick already exists for egg: ${egg.id}, skipping');
-        return (created: false, sideEffectError: false);
+        return (
+          created: false,
+          sideEffectError: false,
+          chickSaveFailed: false,
+        );
       }
-
-      final hatchDate = egg.hatchDate ?? DateTime.now();
-
-      final chick = Chick(
-        id: const Uuid().v7(),
-        userId: egg.userId,
-        eggId: egg.id,
-        clutchId: egg.clutchId,
-        hatchDate: hatchDate,
-        gender: BirdGender.unknown,
-        healthStatus: ChickHealthStatus.healthy,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+    } catch (e) {
+      AppLogger.warning(
+        'Duplicate-check read failed for egg ${egg.id}: $e — continuing',
       );
+    }
 
+    final hatchDate = egg.hatchDate ?? DateTime.now();
+
+    final chick = Chick(
+      id: const Uuid().v7(),
+      userId: egg.userId,
+      eggId: egg.id,
+      clutchId: egg.clutchId,
+      hatchDate: hatchDate,
+      gender: BirdGender.unknown,
+      healthStatus: ChickHealthStatus.healthy,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    try {
       await chickRepo.save(chick);
+    } catch (e, st) {
+      AppLogger.error(
+        'Failed to auto-create chick for hatched egg ${egg.id}',
+        e,
+        st,
+      );
+      Sentry.captureException(e, stackTrace: st);
+      return (created: false, sideEffectError: false, chickSaveFailed: true);
+    }
 
+    try {
       final chickLabel = 'chicks.unnamed_chick'.tr(
         args: ['${egg.eggNumber ?? chick.id.substring(0, 6)}'],
       );
@@ -338,10 +373,20 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       }
 
       AppLogger.info('Chick auto-created from hatched egg: ${egg.id}');
-      return (created: true, sideEffectError: sideEffectError);
-    } catch (e) {
-      AppLogger.error('Failed to auto-create chick from egg', e);
-      return (created: false, sideEffectError: true);
+      return (
+        created: true,
+        sideEffectError: sideEffectError,
+        chickSaveFailed: false,
+      );
+    } catch (e, st) {
+      // Chick row was already persisted at this point; only side effects
+      // (notifications, calendar) can have thrown unexpectedly here.
+      AppLogger.error('Failed to schedule chick side effects', e, st);
+      return (
+        created: true,
+        sideEffectError: true,
+        chickSaveFailed: false,
+      );
     }
   }
 

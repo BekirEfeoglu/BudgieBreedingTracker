@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/constants/app_icons.dart';
 import '../../../core/utils/app_haptics.dart';
+import '../../../core/utils/image_picker_guard.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../providers/profile_providers.dart';
@@ -105,7 +106,9 @@ class _AvatarPickerContent extends StatelessWidget {
   }
 
   Future<void> _pickImage(BuildContext context, ImageSource source) async {
-    Navigator.of(context).pop();
+    final navigator = Navigator.of(context);
+    final messengerContext = context;
+    navigator.pop();
 
     final picker = ImagePicker();
     final file = await picker.pickImage(
@@ -115,10 +118,16 @@ class _AvatarPickerContent extends StatelessWidget {
       imageQuality: 80,
     );
 
-    if (file != null) {
-      AppHaptics.lightImpact();
-      ref.read(avatarUploadStateProvider.notifier).uploadAvatar(file);
-    }
+    if (file == null) return;
+    if (!messengerContext.mounted) return;
+    final ok = await ImagePickerGuard.ensureWithinSizeLimit(
+      messengerContext,
+      file,
+    );
+    if (!ok) return;
+
+    AppHaptics.lightImpact();
+    ref.read(avatarUploadStateProvider.notifier).uploadAvatar(file);
   }
 
   Future<void> _confirmRemove(BuildContext context) async {
