@@ -211,6 +211,15 @@ flutter {
     source = "../.."
 }
 
+configurations.all {
+    resolutionStrategy {
+        // Pin glance to the last stable release (1.1.1). home_widget declares
+        // `1.+`, which Gradle now resolves to the alpha 1.3.x line that
+        // demands compileSdk 37 + AGP 9.1, breaking our debug build on CI.
+        force("androidx.glance:glance-appwidget:1.1.1")
+    }
+}
+
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
     implementation("androidx.glance:glance-appwidget:1.1.1")
