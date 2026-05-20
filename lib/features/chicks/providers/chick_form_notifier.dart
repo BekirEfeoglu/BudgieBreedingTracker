@@ -188,11 +188,28 @@ class ChickFormNotifier extends Notifier<ChickFormState>
         eventCleanupFailed = true;
         AppLogger.warning('Failed to delete calendar events for chick $id: $e');
       }
+      // Cascade-remove growth measurements. growth_measurements has no
+      // isDeleted column, so soft-delete isn't an option — leaving the
+      // rows behind would resurface them as permanent sync errors once
+      // the parent chick is tombstoned (ValidatedSyncMixin would mark
+      // the measurement orphan on every push).
+      bool growthCleanupFailed = false;
+      try {
+        await ref
+            .read(growthMeasurementRepositoryProvider)
+            .removeByChickIds([id]);
+      } catch (e) {
+        growthCleanupFailed = true;
+        AppLogger.warning(
+          'Failed to delete growth measurements for chick $id: $e',
+        );
+      }
       state = state.copyWith(
         isLoading: false,
-        warning: (sideEffectError || eventCleanupFailed)
-            ? 'errors.background_tasks_partial'.tr()
-            : null,
+        warning:
+            (sideEffectError || eventCleanupFailed || growthCleanupFailed)
+                ? 'errors.background_tasks_partial'.tr()
+                : null,
         isSuccess: true,
       );
     } catch (e, st) {

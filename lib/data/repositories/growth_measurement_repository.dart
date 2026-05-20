@@ -276,4 +276,18 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
   /// Latest measurement for a chick.
   Future<GrowthMeasurement?> getLatest(String chickId) =>
       _localDao.getLatest(chickId);
+
+  /// Cascade-removes every measurement linked to any of [chickIds].
+  /// Used by the chick-deletion flow: growth_measurements has no
+  /// isDeleted column so soft-delete isn't an option, and leaving the
+  /// rows behind would surface them as permanent sync errors via
+  /// ValidatedSyncMixin once the parent chick is tombstoned.
+  Future<int> removeByChickIds(List<String> chickIds) async {
+    if (chickIds.isEmpty) return 0;
+    final measurements = await _localDao.getByChickIds(chickIds);
+    for (final measurement in measurements) {
+      await remove(measurement.id);
+    }
+    return measurements.length;
+  }
 }

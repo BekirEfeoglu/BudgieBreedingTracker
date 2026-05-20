@@ -68,8 +68,14 @@ extension IncubationX on Incubation {
 
   DateTime? computedExpectedHatchDateFor({Species? species}) {
     if (expectedHatchDate != null) return expectedHatchDate;
-    if (startDate == null) return null;
-    return startDate!.add(
+    final start = startDate;
+    if (start == null) return null;
+    // Normalize to UTC midnight so dayDiff comparisons (which also
+    // normalize) don't off-by-one when startDate happens to be late
+    // in the evening local time. See egg_model.expectedHatchDateFor
+    // for the same rationale.
+    final normalized = DateTime.utc(start.year, start.month, start.day);
+    return normalized.add(
       Duration(days: totalIncubationDays(species: species)),
     );
   }

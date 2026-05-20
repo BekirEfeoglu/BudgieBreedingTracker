@@ -264,6 +264,20 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
         chickSaveFailed = result.chickSaveFailed;
       }
 
+      // Auto-complete the parent incubation once every egg has reached
+      // a terminal status. Without this, completed clutches kept counting
+      // against free-tier limits and showed as "in progress" forever.
+      try {
+        if (_isTerminalEggStatus(newStatus)) {
+          await _completeIncubationIfAllEggsTerminal(updated);
+        }
+      } catch (e) {
+        // Non-blocking: the egg status change has already persisted.
+        AppLogger.warning(
+          'Failed to auto-complete incubation for egg ${egg.id}: $e',
+        );
+      }
+
       // chickSaveFailed wins over the milder side-effect warning because the
       // user has to act (egg is hatched in DB but no chick row exists).
       final warning = chickSaveFailed
@@ -417,6 +431,39 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
         chickSaveFailed: false,
       );
     }
+  }
+
+  /// Transitions the parent incubation to [IncubationStatus.completed]
+  /// when every sibling egg has reached a terminal status. The result
+  /// (hatched / unsuccessful) is implicit in the egg statuses; we just
+  /// flip the parent so it stops counting against free-tier limits and
+  /// the UI stops showing it as in-progress.
+  Future<void> _completeIncubationIfAllEggsTerminal(Egg trigger) async {
+    final incubationId = trigger.incubationId;
+    if (incubationId == null) return;
+
+    final eggRepo = ref.read(eggRepositoryProvider);
+    final siblings = await eggRepo.getByIncubation(incubationId);
+    if (siblings.isEmpty) return;
+    final allTerminal = siblings.every((e) => _isTerminalEggStatus(e.status));
+    if (!allTerminal) return;
+
+    final incubationRepo = ref.read(incubationRepositoryProvider);
+    final incubation = await incubationRepo.getById(incubationId);
+    if (incubation == null) return;
+    if (incubation.status == IncubationStatus.completed) return;
+
+    final anyHatched =
+        siblings.any((e) => e.status == EggStatus.hatched);
+    await incubationRepo.save(
+      incubation.copyWith(
+        status: anyHatched
+            ? IncubationStatus.completed
+            : IncubationStatus.cancelled,
+        endDate: incubation.endDate ?? DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+    );
   }
 
   /// Soft-deletes an egg.

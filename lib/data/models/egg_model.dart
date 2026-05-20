@@ -43,8 +43,17 @@ extension EggX on Egg {
     return date_utils.DateUtils.dayDiff(layDate, end);
   }
 
-  DateTime expectedHatchDateFor({Species species = Species.unknown}) =>
-      layDate.add(Duration(days: totalIncubationDays(species: species)));
+  /// Returns the expected hatch date for this egg in the requested
+  /// species. The lay date is normalized to UTC midnight first so the
+  /// downstream `DateUtils.dayDiff` (which itself normalizes to UTC
+  /// midnight) is comparing apples to apples — a `layDate` recorded at
+  /// 23:30 local plus 18 days would otherwise sit at 23:30 local on
+  /// day 18 and trip the overdue check ~1 hour after midnight on
+  /// day 19, producing a 1-day false-overdue.
+  DateTime expectedHatchDateFor({Species species = Species.unknown}) {
+    final start = DateTime.utc(layDate.year, layDate.month, layDate.day);
+    return start.add(Duration(days: totalIncubationDays(species: species)));
+  }
 
   DateTime get expectedHatchDate => expectedHatchDateFor();
 
