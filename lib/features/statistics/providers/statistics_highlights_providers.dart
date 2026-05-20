@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
@@ -144,7 +145,7 @@ PersonalRecords buildPersonalRecords({
     final birthDate = bird.birthDate;
     if (birthDate == null) continue;
     final endDate = bird.deathDate ?? reference;
-    final days = endDate.difference(birthDate).inDays;
+    final days = date_utils.DateUtils.dayDiff(birthDate, endDate);
     if (days < 0) continue;
     if (longestLivedBird == null || days > longestLivedBird.daysLived) {
       longestLivedBird = LongevityRecord(
@@ -210,7 +211,7 @@ HealthTrendSummary buildHealthTrend({
 
     final followUpDate = record.followUpDate;
     if (followUpDate != null && !followUpDate.isBefore(record.date)) {
-      treatmentDurations.add(followUpDate.difference(record.date).inDays);
+      treatmentDurations.add(date_utils.DateUtils.dayDiff(record.date, followUpDate));
     }
   }
 
