@@ -13,11 +13,17 @@ mixin NotificationSchedulerHealthBanding {
   /// Schedules daily health check reminder at a given [hour].
   ///
   /// Respects [NotificationToggleSettings.healthCheck] toggle.
+  ///
+  /// [recordId] makes the notification id unique per health record.
+  /// Without it, two records for the same bird would hash to the same
+  /// notification id and the second one would silently overwrite the
+  /// first record's reminders.
   Future<void> scheduleHealthCheckReminder({
     required String birdId,
     required String birdName,
     required int hour,
     required int durationDays,
+    String? recordId,
     NotificationToggleSettings? settings,
     @visibleForTesting DateTime? now,
   }) async {
@@ -41,6 +47,11 @@ mixin NotificationSchedulerHealthBanding {
       );
     }
 
+    // Falls back to birdId when no recordId is provided so existing
+    // callers keep working; new flows should pass record.id to avoid
+    // cross-record collisions.
+    final entityKey = recordId ?? birdId;
+
     for (var day = 0; day < safeDurationDays; day++) {
       final scheduledDate = DateTime(
         now0.year,
@@ -53,7 +64,7 @@ mixin NotificationSchedulerHealthBanding {
 
       final id = NotificationIds.generate(
         NotificationIds.healthCheckBaseId,
-        birdId,
+        entityKey,
         day,
       );
 

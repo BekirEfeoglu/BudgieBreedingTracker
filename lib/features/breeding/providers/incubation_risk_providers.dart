@@ -12,8 +12,6 @@ final incubationRiskAssistantProvider = Provider<IncubationRiskAssistant>((
   return const IncubationRiskAssistant();
 });
 
-final incubationRiskNowProvider = Provider<DateTime>((ref) => DateTime.now());
-
 final incubationRiskSummaryProvider =
     Provider.family<AsyncValue<IncubationRiskSummary>, String>((ref, userId) {
       final pairsAsync = ref.watch(breedingPairsStreamProvider(userId));
@@ -29,7 +27,7 @@ final incubationRiskSummaryProvider =
                 ref
                     .watch(incubationRiskAssistantProvider)
                     .assess(
-                      now: ref.watch(incubationRiskNowProvider),
+                      now: DateTime.now(),
                       pairs: pairs,
                       incubations: incubations,
                       eggs: eggs,

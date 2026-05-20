@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/local_ai/local_ai_models.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/local_ai_providers.dart';
@@ -86,7 +87,7 @@ class _AiSexEstimationTabState extends ConsumerState<AiSexEstimationTab>
         info.add(bird.mutations!.join(', '));
       }
       if (bird.birthDate != null) {
-        final age = DateTime.now().difference(bird.birthDate!).inDays;
+        final age = date_utils.DateUtils.dayDiff(bird.birthDate!, DateTime.now());
         info.add('${'birds.age'.tr()}: $age ${'common.days'.tr()}');
       }
       if (info.isNotEmpty) {

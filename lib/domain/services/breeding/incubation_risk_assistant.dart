@@ -1,6 +1,7 @@
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
@@ -135,7 +136,7 @@ class IncubationRiskAssistant {
     for (final egg in eggs) {
       if (!_isActiveEgg(egg)) continue;
       final expected = egg.expectedHatchDateFor(species: incubation.species);
-      final daysLate = now.difference(expected).inDays;
+      final daysLate = date_utils.DateUtils.dayDiff(expected, now);
       if (daysLate <= 0) continue;
       risks.add(
         IncubationRisk(
@@ -175,7 +176,7 @@ class IncubationRiskAssistant {
     ];
     if (dates.isEmpty) return null;
     dates.sort();
-    final daysSinceUpdate = now.difference(dates.last).inDays;
+    final daysSinceUpdate = date_utils.DateUtils.dayDiff(dates.last, now);
     if (daysSinceUpdate < 3) return null;
     return IncubationRisk(
       type: IncubationRiskType.staleTracking,
@@ -203,7 +204,8 @@ class IncubationRiskAssistant {
         continue;
       }
       final expected = egg.expectedHatchDateFor(species: incubation.species);
-      if (_isActiveEgg(egg) && now.difference(expected).inDays >= 3) {
+      if (_isActiveEgg(egg) &&
+          date_utils.DateUtils.dayDiff(expected, now) >= 3) {
         unsuccessful++;
       }
     }
@@ -275,8 +277,13 @@ class IncubationRiskAssistant {
     if (completed.length < 2) return null;
     final latest = completed[0];
     final previous = completed[1];
-    final latestRate = _hatchRate(eggsByIncubation[latest.id] ?? const []);
-    final previousRate = _hatchRate(eggsByIncubation[previous.id] ?? const []);
+    final latestEggs = eggsByIncubation[latest.id] ?? const <Egg>[];
+    final previousEggs = eggsByIncubation[previous.id] ?? const <Egg>[];
+    // Without eggs on either side, "hatch rate decline" is not a meaningful
+    // signal — a barren incubation isn't a regression of the previous season.
+    if (latestEggs.isEmpty || previousEggs.isEmpty) return null;
+    final latestRate = _hatchRate(latestEggs);
+    final previousRate = _hatchRate(previousEggs);
     if (previousRate < 0.5 || previousRate - latestRate < 0.25) return null;
     return IncubationRisk(
       type: IncubationRiskType.hatchRateDecline,

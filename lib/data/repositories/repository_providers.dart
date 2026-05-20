@@ -95,6 +95,7 @@ final growthMeasurementRepositoryProvider =
         localDao: ref.watch(growthMeasurementsDaoProvider),
         remoteSource: ref.watch(growthMeasurementRemoteSourceProvider),
         syncDao: ref.watch(syncMetadataDaoProvider),
+        chicksDao: ref.watch(chicksDaoProvider),
       );
     });
 

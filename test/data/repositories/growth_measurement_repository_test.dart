@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/chicks_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/growth_measurements_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/growth_measurement_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
@@ -17,6 +18,8 @@ class MockGrowthMeasurementsDao extends Mock implements GrowthMeasurementsDao {}
 
 class MockGrowthMeasurementRemoteSource extends Mock
     implements GrowthMeasurementRemoteSource {}
+
+class MockChicksDao extends Mock implements ChicksDao {}
 
 GrowthMeasurement _makeMeasurement({
   String id = 'gm-1',
@@ -37,6 +40,7 @@ void main() {
   late MockGrowthMeasurementsDao localDao;
   late MockGrowthMeasurementRemoteSource remoteSource;
   late MockSyncMetadataDao syncDao;
+  late MockChicksDao chicksDao;
   late GrowthMeasurementRepository repository;
 
   const userId = 'user-1';
@@ -51,12 +55,22 @@ void main() {
     localDao = MockGrowthMeasurementsDao();
     remoteSource = MockGrowthMeasurementRemoteSource();
     syncDao = MockSyncMetadataDao();
+    chicksDao = MockChicksDao();
 
     repository = GrowthMeasurementRepository(
       localDao: localDao,
       remoteSource: remoteSource,
       syncDao: syncDao,
+      chicksDao: chicksDao,
     );
+
+    // Default: chick exists and is not deleted; no pending sync metadata for it.
+    when(
+      () => chicksDao.getById(any()),
+    ).thenAnswer((_) async => TestFixtures.sampleChick());
+    when(
+      () => syncDao.getByRecord(SupabaseConstants.chicksTable, any()),
+    ).thenAnswer((_) async => null);
 
     when(() => localDao.insertItem(any())).thenAnswer((_) async {});
     when(() => localDao.insertAll(any())).thenAnswer((_) async {});
@@ -88,6 +102,10 @@ void main() {
     when(() => syncDao.deleteByRecord(any(), any())).thenAnswer((_) async {});
     when(() => syncDao.updateItem(any())).thenAnswer((_) async {});
     when(() => syncDao.getByRecord(any(), any())).thenAnswer((_) async => null);
+    when(
+      () => syncDao.getErrorsByTable(any(), any()),
+    ).thenAnswer((_) async => []);
+    when(() => syncDao.hardDelete(any())).thenAnswer((_) async {});
     when(
       () => syncDao.getPendingByTable(any(), any()),
     ).thenAnswer((_) async => []);

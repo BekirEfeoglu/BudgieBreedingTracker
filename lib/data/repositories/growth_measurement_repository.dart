@@ -1,6 +1,7 @@
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/chicks_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/growth_measurements_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/growth_measurement_model.dart';
@@ -12,12 +13,17 @@ import 'package:uuid/uuid.dart';
 /// Repository for [GrowthMeasurement] entities with offline-first sync.
 ///
 /// GrowthMeasurement has no `isDeleted` field, so [remove] performs a
-/// hard delete.
+/// hard delete. Uses [ValidatedSyncMixin] to validate the FK to its
+/// parent chick before pushing — without this, an offline chick delete
+/// followed by a sync would push the orphan growth row indefinitely.
 class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
-    with SyncableRepository<GrowthMeasurement> {
+    with
+        SyncableRepository<GrowthMeasurement>,
+        ValidatedSyncMixin<GrowthMeasurement> {
   final GrowthMeasurementsDao _localDao;
   final GrowthMeasurementRemoteSource _remoteSource;
   final SyncMetadataDao _syncDao;
+  final ChicksDao _chicksDao;
 
   static const _uuid = Uuid();
 
@@ -25,9 +31,11 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
     required GrowthMeasurementsDao localDao,
     required GrowthMeasurementRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
+    required ChicksDao chicksDao,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
-       _syncDao = syncDao;
+       _syncDao = syncDao,
+       _chicksDao = chicksDao;
 
   static const _table = SupabaseConstants.growthMeasurementsTable;
 
@@ -37,6 +45,39 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
 
   @override
   String get syncTableName => _table;
+
+  // ── ValidatedSyncMixin overrides ─────────────────────────────────────
+
+  @override
+  String get syncLogTag => 'GrowthMeasurementRepository';
+
+  @override
+  Future<GrowthMeasurement?> getLocalById(String id) => _localDao.getById(id);
+
+  @override
+  String getEntityId(GrowthMeasurement item) => item.id;
+
+  @override
+  String getEntityUserId(GrowthMeasurement item) => item.userId;
+
+  @override
+  Future<String?> validateForeignKeys(GrowthMeasurement measurement) async {
+    final chick = await _chicksDao.getById(measurement.chickId);
+    if (chick == null) {
+      return 'Referenced chick ${measurement.chickId} not found locally';
+    }
+    if (chick.isDeleted) {
+      return 'Referenced chick ${measurement.chickId} is deleted';
+    }
+    final syncMeta = await _syncDao.getByRecord(
+      SupabaseConstants.chicksTable,
+      measurement.chickId,
+    );
+    if (syncMeta != null) {
+      return 'Chick ${measurement.chickId} not yet synced to server';
+    }
+    return null;
+  }
 
   @override
   Stream<List<GrowthMeasurement>> watchAll(String userId) =>
@@ -145,10 +186,13 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
     }
   }
 
+  /// Hard-delete pushAll: handles [SyncStatus.pendingDelete] explicitly and
+  /// runs FK validation on regular pending items via the mixin.
   @override
   Future<PushStats> pushAll(String userId) async {
     int pushed = 0;
     int orphansCleaned = 0;
+    await clearStaleErrors(userId);
     final tablePending = await _syncDao.getPendingByTable(userId, _table);
     for (final meta in tablePending) {
       if (meta.status == SyncStatus.pendingDelete) {
@@ -159,19 +203,33 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
         } on AppException catch (e) {
           await markError(meta.recordId ?? '', userId, e.message);
         }
-      } else {
-        final item = await _localDao.getById(meta.recordId ?? '');
-        if (item == null) {
-          AppLogger.warning(
-            '[GrowthMeasurementRepo] Orphan sync_metadata cleaned: ${meta.recordId}',
-          );
-          await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
-          orphansCleaned++;
-          continue;
-        }
-        await push(item);
-        pushed++;
+        continue;
       }
+
+      final item = await _localDao.getById(meta.recordId ?? '');
+      if (item == null) {
+        AppLogger.warning(
+          '[$syncLogTag] Orphan sync_metadata cleaned: ${meta.recordId}',
+        );
+        await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
+        orphansCleaned++;
+        continue;
+      }
+
+      final orphanReason = await validateForeignKeys(item);
+      if (orphanReason != null) {
+        if (orphanReason.contains('not found locally')) {
+          AppLogger.warning(
+            '[$syncLogTag] True orphan ${getEntityId(item)}: $orphanReason',
+          );
+          await markError(getEntityId(item), getEntityUserId(item), orphanReason);
+          orphansCleaned++;
+        }
+        continue;
+      }
+
+      await push(item);
+      pushed++;
     }
     return (pushed: pushed, orphansCleaned: orphansCleaned);
   }

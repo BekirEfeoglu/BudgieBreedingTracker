@@ -16,7 +16,6 @@ import 'package:budgie_breeding_tracker/features/breeding/providers/incubation_r
 
 void main() {
   const userId = 'test-user';
-  final now = DateTime(2026, 5, 17);
 
   ProviderContainer createContainer({
     required AsyncValue<List<Egg>> eggs,
@@ -27,7 +26,6 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         currentUserIdProvider.overrideWithValue(userId),
-        incubationRiskNowProvider.overrideWithValue(now),
         breedingPairsStreamProvider(
           userId,
         ).overrideWithValue(pairs ?? AsyncValue.data([_pair('pair-1')])),

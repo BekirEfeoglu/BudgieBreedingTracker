@@ -144,4 +144,26 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
   }
+
+  /// Returns non-deleted events linked to any of the given breeding pair ids.
+  Future<List<Event>> getByBreedingPairIds(List<String> pairIds) async {
+    if (pairIds.isEmpty) return const <Event>[];
+    final rows =
+        await (select(eventsTable)..where(
+              (t) => t.breedingPairId.isIn(pairIds) & t.isDeleted.equals(false),
+            ))
+            .get();
+    return rows.map((r) => r.toModel()).toList();
+  }
+
+  /// Returns non-deleted events linked to any of the given chick ids.
+  Future<List<Event>> getByChickIds(List<String> chickIds) async {
+    if (chickIds.isEmpty) return const <Event>[];
+    final rows =
+        await (select(eventsTable)..where(
+              (t) => t.chickId.isIn(chickIds) & t.isDeleted.equals(false),
+            ))
+            .get();
+    return rows.map((r) => r.toModel()).toList();
+  }
 }

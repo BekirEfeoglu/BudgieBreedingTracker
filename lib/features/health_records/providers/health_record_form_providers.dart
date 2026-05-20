@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/utils/sentry_error_filter.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
@@ -76,6 +77,7 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
       // Schedule health check reminders if a bird is associated
       if (birdId != null) {
         await _scheduleHealthCheckReminders(
+          recordId: record.id,
           birdId: birdId,
           birdName: title,
           followUpDate: followUpDate,
@@ -95,6 +97,7 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
   /// If [followUpDate] is set, schedules daily reminders until that date.
   /// Otherwise schedules 7 days of daily reminders at 09:00.
   Future<void> _scheduleHealthCheckReminders({
+    required String recordId,
     required String birdId,
     required String birdName,
     DateTime? followUpDate,
@@ -104,10 +107,12 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
       final settings = ref.read(notificationToggleSettingsProvider);
 
       final durationDays = followUpDate != null
-          ? followUpDate.difference(DateTime.now()).inDays.clamp(1, 30)
+          ? date_utils.DateUtils.dayDiff(DateTime.now(), followUpDate)
+                .clamp(1, 30)
           : 7;
 
       await scheduler.scheduleHealthCheckReminder(
+        recordId: recordId,
         birdId: birdId,
         birdName: birdName,
         hour: 9,

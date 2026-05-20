@@ -44,6 +44,7 @@ void main() {
   void stubScheduler() {
     when(
       () => scheduler.scheduleHealthCheckReminder(
+        recordId: any(named: 'recordId'),
         birdId: any(named: 'birdId'),
         birdName: any(named: 'birdName'),
         hour: any(named: 'hour'),
@@ -189,6 +190,7 @@ void main() {
             );
         verify(
           () => scheduler.scheduleHealthCheckReminder(
+            recordId: any(named: 'recordId'),
             birdId: 'b1',
             birdName: 'Checkup',
             hour: 9,
@@ -212,6 +214,7 @@ void main() {
             );
         verifyNever(
           () => scheduler.scheduleHealthCheckReminder(
+            recordId: any(named: 'recordId'),
             birdId: any(named: 'birdId'),
             birdName: any(named: 'birdName'),
             hour: any(named: 'hour'),

@@ -18,6 +18,11 @@ class MessagingRealtimeNotifier extends Notifier<List<Message>> {
 
   Future<void> subscribe(String conversationId) async {
     _unsubscribe();
+    // Clear any messages still in state from a previous conversation.
+    // Without this, opening Chat B after Chat A would render Chat A's
+    // messages in B's view (the screen merges this state with the per-
+    // conversation message stream).
+    state = [];
     final repo = ref.read(messagingRepositoryProvider);
     final userId = ref.read(currentUserIdProvider);
     _channel = await repo.subscribeToMessages(conversationId, userId, (

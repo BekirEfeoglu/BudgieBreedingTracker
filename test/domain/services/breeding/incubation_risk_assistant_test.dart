@@ -63,6 +63,41 @@ void main() {
       expect(overdueRisk.titleArgs, ['e']);
     });
 
+    test(
+      'flags overdue egg even when time-of-day diff is under 24h (DST/clock safe)',
+      () {
+        // Lay date at 23:30, now at 00:30 18 days later: real diff is 17h,
+        // but the egg has crossed its hatch day on the calendar so daysLate=1.
+        // Naive .inDays would have returned 0 here and the risk would be missed.
+        final summary = const IncubationRiskAssistant().assess(
+          now: DateTime(2026, 5, 9, 0, 30),
+          pairs: [_pair('pair-1')],
+          incubations: [
+            _incubation(
+              'inc-1',
+              pairId: 'pair-1',
+              species: Species.budgie,
+              startDate: DateTime(2026, 4, 20, 23, 30),
+            ),
+          ],
+          eggs: [
+            _egg(
+              'egg-1',
+              incubationId: 'inc-1',
+              layDate: DateTime(2026, 4, 20, 23, 30),
+              eggNumber: 1,
+            ),
+          ],
+          chicks: const [],
+        );
+
+        expect(
+          summary.risks.any((r) => r.type == IncubationRiskType.overdueEgg),
+          isTrue,
+        );
+      },
+    );
+
     test('ignores eggs that do not belong to a known pair incubation', () {
       final summary = const IncubationRiskAssistant().assess(
         now: now,
@@ -183,6 +218,44 @@ void main() {
         isNot(contains(IncubationRiskType.chickHealthLoss)),
       );
     });
+
+    test(
+      'does not flag hatch-rate decline when latest incubation has zero eggs',
+      () {
+        // Previous season had high hatch rate; latest completed with no eggs
+        // recorded (or all soft-deleted). Naive rate diff would falsely
+        // report a decline; the assistant must ignore empty-egg sides.
+        final summary = const IncubationRiskAssistant().assess(
+          now: now,
+          pairs: [_pair('pair-1')],
+          incubations: [
+            _incubation(
+              'inc-latest',
+              pairId: 'pair-1',
+              status: IncubationStatus.completed,
+              startDate: DateTime(2026, 4, 1),
+            ),
+            _incubation(
+              'inc-previous',
+              pairId: 'pair-1',
+              status: IncubationStatus.completed,
+              startDate: DateTime(2026, 2, 1),
+            ),
+          ],
+          eggs: [
+            _egg('p1', incubationId: 'inc-previous', status: EggStatus.hatched),
+            _egg('p2', incubationId: 'inc-previous', status: EggStatus.hatched),
+            _egg('p3', incubationId: 'inc-previous', status: EggStatus.hatched),
+            // latest has no eggs
+          ],
+          chicks: const [],
+        );
+        expect(
+          summary.risks.map((r) => r.type),
+          isNot(contains(IncubationRiskType.hatchRateDecline)),
+        );
+      },
+    );
 
     test('flags hatch-rate decline across the last two completed seasons', () {
       final summary = const IncubationRiskAssistant().assess(

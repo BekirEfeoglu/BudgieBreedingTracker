@@ -30,6 +30,7 @@ void main() {
         when(() => mockHealthRepository.save(any())).thenAnswer((_) async {});
         when(
           () => mockNotificationScheduler.scheduleHealthCheckReminder(
+            recordId: any(named: 'recordId'),
             birdId: any(named: 'birdId'),
             birdName: any(named: 'birdName'),
             hour: any(named: 'hour'),

@@ -180,9 +180,17 @@ class ChickFormNotifier extends Notifier<ChickFormState>
         cancelCare: true,
         cancelBanding: true,
       );
+      // Drop calendar entries (banding, care reminders, …) for this chick.
+      bool eventCleanupFailed = false;
+      try {
+        await ref.read(eventRepositoryProvider).removeByChickIds([id]);
+      } catch (e) {
+        eventCleanupFailed = true;
+        AppLogger.warning('Failed to delete calendar events for chick $id: $e');
+      }
       state = state.copyWith(
         isLoading: false,
-        warning: sideEffectError
+        warning: (sideEffectError || eventCleanupFailed)
             ? 'errors.background_tasks_partial'.tr()
             : null,
         isSuccess: true,

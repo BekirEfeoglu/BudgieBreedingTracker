@@ -18,6 +18,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/utils/safe_cast.dart';
 import '../../../data/remote/supabase/supabase_client.dart';
+import '../../../domain/services/notifications/notification_providers.dart';
 import 'native_google_auth_errors.dart';
 
 part 'auth_error_mapper.dart';
@@ -27,7 +28,11 @@ part 'auth_account_methods.dart';
 /// Auth action methods (sign-in, sign-up, sign-out, reset password).
 final authActionsProvider = Provider<AuthActions>((ref) {
   final client = ref.watch(supabaseClientProvider);
-  return AuthActions(client);
+  return AuthActions(
+    client,
+    deactivateFcmToken: () =>
+        ref.read(pushNotificationServiceProvider).deactivateCurrentToken(),
+  );
 });
 
 /// Encapsulates all Supabase auth operations.
@@ -35,11 +40,20 @@ class AuthActions with _AuthOAuthMixin, _AuthAccountMixin {
   AuthActions(
     this._client, {
     Future<SharedPreferences> Function()? prefsFactory,
-  }) : _prefsFactory = prefsFactory ?? SharedPreferences.getInstance;
+    Future<void> Function()? deactivateFcmToken,
+  }) : _prefsFactory = prefsFactory ?? SharedPreferences.getInstance,
+       _deactivateFcmToken = deactivateFcmToken;
 
   @override
   final SupabaseClient _client;
   final Future<SharedPreferences> Function() _prefsFactory;
+
+  /// Called before [_client.auth.signOut] so the FCM token UPDATE on the
+  /// server runs while `auth.uid()` is still valid and the RLS policy on
+  /// `fcm_tokens` permits the deactivation. Without this ordering, the
+  /// token UPDATE silently fails and the device keeps receiving pushes
+  /// addressed to the previous user.
+  final Future<void> Function()? _deactivateFcmToken;
 
   static const _oAuthRedirectTo =
       'io.supabase.budgiebreeding://login-callback/';
@@ -132,10 +146,24 @@ class AuthActions with _AuthOAuthMixin, _AuthAccountMixin {
 
   /// Sign out with best-effort OAuth token revocation.
   ///
-  /// Attempts to revoke the provider token (Google/Apple) before
-  /// signing out so it doesn't remain valid after session ends.
+  /// Order matters:
+  ///   1. Deactivate FCM token while session is still valid (RLS check).
+  ///   2. Revoke OAuth provider token (Google/Apple).
+  ///   3. Sign out of Supabase auth (destroys session).
   @override
   Future<void> signOut() async {
+    // Deactivate FCM token FIRST. The auth listener also fires this on
+    // signedOut, but by then auth.uid() is null and RLS blocks the UPDATE
+    // — the token would silently stay active on the server.
+    final deactivate = _deactivateFcmToken;
+    if (deactivate != null) {
+      try {
+        await deactivate();
+      } catch (e, st) {
+        AppLogger.warning('FCM token deactivation failed during sign-out: $e');
+        Sentry.captureException(e, stackTrace: st);
+      }
+    }
     // Best-effort: revoke OAuth provider token before session is destroyed
     try {
       await revokeOAuthToken();

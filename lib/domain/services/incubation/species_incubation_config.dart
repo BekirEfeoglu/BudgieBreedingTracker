@@ -1,6 +1,7 @@
 import 'package:budgie_breeding_tracker/core/constants/incubation_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/species/species_registry.dart';
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
 
 int incubationDaysForSpecies(Species species) =>
     SpeciesRegistry.of(species).incubationPeriodDays;
@@ -11,7 +12,7 @@ int incubationDaysFromDates({
   Species species = Species.unknown,
 }) {
   if (startDate != null && expectedHatchDate != null) {
-    final diff = expectedHatchDate.difference(startDate).inDays;
+    final diff = date_utils.DateUtils.dayDiff(startDate, expectedHatchDate);
     if (diff > 0) return diff;
   }
   return incubationDaysForSpecies(species);

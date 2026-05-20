@@ -90,6 +90,25 @@ class EventRepository extends BaseRepository<Event>
     }
   }
 
+  /// Soft-deletes every event linked to any of [breedingPairIds] and
+  /// queues each for sync. Used by the breeding-deletion flow to keep
+  /// calendar entries in step with their parent pair.
+  Future<int> removeByBreedingPairIds(List<String> breedingPairIds) async {
+    if (breedingPairIds.isEmpty) return 0;
+    final events = await _localDao.getByBreedingPairIds(breedingPairIds);
+    await Future.wait(events.map((e) => remove(e.id)));
+    return events.length;
+  }
+
+  /// Soft-deletes every event linked to any of [chickIds] and queues each
+  /// for sync. Used by the chick-deletion flow.
+  Future<int> removeByChickIds(List<String> chickIds) async {
+    if (chickIds.isEmpty) return 0;
+    final events = await _localDao.getByChickIds(chickIds);
+    await Future.wait(events.map((e) => remove(e.id)));
+    return events.length;
+  }
+
   @override
   Future<void> hardRemove(String id) => _localDao.hardDelete(id);
 

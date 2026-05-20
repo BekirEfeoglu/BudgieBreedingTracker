@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show immutable;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
@@ -75,7 +76,7 @@ final incubatingEggsSummaryProvider =
       final summaries = eggs.map((egg) {
         final species = speciesMap[egg.id] ?? Species.unknown;
         final expectedHatch = egg.expectedHatchDateFor(species: species);
-        final remaining = expectedHatch.difference(now).inDays;
+        final remaining = date_utils.DateUtils.dayDiff(now, expectedHatch);
         return IncubatingEggSummary(
           egg: egg,
           species: species,

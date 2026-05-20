@@ -23,20 +23,26 @@ class MessageDetailScreen extends ConsumerStatefulWidget {
 
 class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
   final _scrollController = ScrollController();
+  MessagingRealtimeNotifier? _realtimeNotifier;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref
-          .read(messagingRealtimeProvider.notifier)
-          .subscribe(widget.conversationId);
+      if (!mounted) return;
+      final notifier = ref.read(messagingRealtimeProvider.notifier);
+      _realtimeNotifier = notifier;
+      notifier.subscribe(widget.conversationId);
     });
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    // Drop the realtime channel and any buffered messages so they don't
+    // leak into the next conversation the user opens. Use the cached
+    // notifier reference because `ref` is unsafe during dispose.
+    _realtimeNotifier?.clear();
     super.dispose();
   }
 

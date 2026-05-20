@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
@@ -124,7 +125,7 @@ final incubationDurationProvider =
         final recent = completed.take(10).toList();
 
         return recent.map((i) {
-          final days = i.endDate!.difference(i.startDate!).inDays;
+          final days = date_utils.DateUtils.dayDiff(i.startDate!, i.endDate!);
           return IncubationDurationData(
             id: i.id,
             actualDays: days,
