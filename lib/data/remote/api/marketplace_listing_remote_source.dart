@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/supabase_constants.dart';
+import '../../../core/errors/app_exception.dart' as app_exc;
 import '../../../core/utils/logger.dart';
 import '../../../domain/services/moderation/image_safety_service.dart';
 import '../storage/storage_utils.dart';
@@ -213,19 +214,14 @@ class MarketplaceListingRemoteSource {
 
   Future<void> incrementViewCount(String id) async {
     try {
-      // Use a simple select+update pattern (no RPC function required)
-      final current = await _client
-          .from(SupabaseConstants.marketplaceListingsTable)
-          .select('view_count')
-          .eq(SupabaseConstants.colId, id)
-          .maybeSingle();
-      if (current != null) {
-        final newCount = (current['view_count'] as int? ?? 0) + 1;
-        await _client
-            .from(SupabaseConstants.marketplaceListingsTable)
-            .update({'view_count': newCount})
-            .eq(SupabaseConstants.colId, id);
-      }
+      // Atomic increment via RPC. Previously this used a select-then-update
+      // pattern which lost concurrent views (N viewers within the same
+      // SELECT window only bumped the counter by 1). The RPC runs the
+      // UPDATE in a single statement so concurrent viewers each count.
+      await _client.rpc(
+        'increment_marketplace_listing_view',
+        params: {'p_id': id},
+      );
     } catch (e) {
       AppLogger.warning('View count increment failed: $e');
     }
@@ -332,8 +328,20 @@ class MarketplaceListingRemoteSource {
         final url = fileApi.getPublicUrl(storagePath);
         urls.add(url);
       } catch (e, st) {
-      throw BaseRemoteSource.handleErrorForTag('marketplace_listings', e, st);
-    }
+        // Preserve domain-typed exceptions so callers can react to
+        // specific rejection reasons (size, mime, safety-scan, …).
+        // The error-mapping wrapper would otherwise coerce these into
+        // NetworkException and lose the reason the UI surfaces. The
+        // file's bare `StorageException` is supabase's storage_client
+        // one — that's what the per-image guards throw — so we accept
+        // both that and our own AppException subclasses.
+        if (e is app_exc.AppException || e is StorageException) rethrow;
+        throw BaseRemoteSource.handleErrorForTag(
+          'marketplace_listings',
+          e,
+          st,
+        );
+      }
     }
     return urls;
   }

@@ -8,7 +8,16 @@ class ConversationRemoteSource {
 
   ConversationRemoteSource(this._client);
 
-  Future<List<Map<String, dynamic>>> fetchConversations(String userId) async {
+  /// Page size when fetching the conversation list. Caps the result so a
+  /// power user with hundreds of conversations doesn't pull them all in
+  /// one round trip. Older conversations can be loaded via `before`.
+  static const int _conversationsPageLimit = 100;
+
+  Future<List<Map<String, dynamic>>> fetchConversations(
+    String userId, {
+    int limit = _conversationsPageLimit,
+    DateTime? before,
+  }) async {
     try {
       // Get conversation IDs where user is a participant
       final participantRows = await _client
@@ -23,12 +32,18 @@ class ConversationRemoteSource {
 
       if (conversationIds.isEmpty) return [];
 
-      final response = await _client
+      var query = _client
           .from(SupabaseConstants.conversationsTable)
           .select()
           .inFilter('id', conversationIds)
-          .eq('is_deleted', false)
-          .order('last_message_at', ascending: false, nullsFirst: false);
+          .eq('is_deleted', false);
+      if (before != null) {
+        query = query.lt('last_message_at', before.toIso8601String());
+      }
+
+      final response = await query
+          .order('last_message_at', ascending: false, nullsFirst: false)
+          .limit(limit);
 
       return List<Map<String, dynamic>>.from(response);
     } catch (e, st) {

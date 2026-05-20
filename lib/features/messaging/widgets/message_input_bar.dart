@@ -103,20 +103,27 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
     );
   }
 
-  void _sendMessage() {
+  Future<void> _sendMessage() async {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
 
     final userId = ref.read(currentUserIdProvider);
-    ref.read(messagingFormStateProvider.notifier).sendMessage(
-          conversationId: widget.conversationId,
-          senderId: userId,
-          senderName: '',
-          content: text,
-          messageType: MessageType.text,
-        );
-
-    _controller.clear();
+    final notifier = ref.read(messagingFormStateProvider.notifier);
+    // Don't clear the input until we know the send succeeded. If the
+    // call is rejected (cooldown, length cap, content moderation), the
+    // user keeps their text instead of losing it and having to retype.
+    await notifier.sendMessage(
+      conversationId: widget.conversationId,
+      senderId: userId,
+      senderName: '',
+      content: text,
+      messageType: MessageType.text,
+    );
+    if (!mounted) return;
+    final state = ref.read(messagingFormStateProvider);
+    if (state.error == null && state.isSuccess) {
+      _controller.clear();
+    }
   }
 
   void _showAttachmentOptions() {

@@ -2687,6 +2687,7 @@
     "top_creators": "Top Creators",
     "my_post": "My Post",
     "not_authenticated": "Please sign in to use community features",
+    "comment_cooldown": "You're commenting too quickly. Please wait a moment.",
     "moderation_violation": "Your content does not meet our community guidelines. Please edit and try again.",
     "moderation_caps": "Please avoid typing in all caps.",
     "moderation_spam": "Your content was detected as spam. Please edit and try again.",

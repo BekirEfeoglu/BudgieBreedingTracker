@@ -86,8 +86,13 @@ class MessageRemoteSource {
     }
   }
 
-  /// Verifies the current user is a participant in the given conversation.
-  /// Returns false if verification fails (not a member or network error).
+  /// Verifies the current user is an ACTIVE participant in the given
+  /// conversation. A user who left the conversation has the same row
+  /// but with `is_left = true`; without that filter the realtime
+  /// subscription would still attach for left users and they would
+  /// keep receiving messages they're no longer entitled to.
+  /// Returns false if verification fails (not a member, left, or
+  /// network error).
   Future<bool> isConversationParticipant(
     String conversationId,
     String userId,
@@ -98,6 +103,7 @@ class MessageRemoteSource {
           .select('id')
           .eq('conversation_id', conversationId)
           .eq('user_id', userId)
+          .eq('is_left', false)
           .maybeSingle();
       return result != null;
     } catch (e) {

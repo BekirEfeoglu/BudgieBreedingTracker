@@ -2687,6 +2687,7 @@
     "top_creators": "Top-Ersteller",
     "my_post": "Mein Beitrag",
     "not_authenticated": "Bitte melden Sie sich an um Community-Funktionen zu nutzen",
+    "comment_cooldown": "Sie kommentieren zu schnell. Bitte warten Sie einen Moment.",
     "moderation_violation": "Ihr Inhalt entspricht nicht unseren Community-Richtlinien. Bitte bearbeiten und erneut versuchen.",
     "moderation_caps": "Bitte vermeiden Sie das Schreiben in Großbuchstaben.",
     "moderation_spam": "Ihr Inhalt wurde als Spam erkannt. Bitte bearbeiten und erneut versuchen.",

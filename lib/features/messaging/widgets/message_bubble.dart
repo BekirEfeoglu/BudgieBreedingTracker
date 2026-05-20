@@ -79,7 +79,7 @@ class MessageBubble extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _formatTime(message.createdAt),
+                  _formatTime(context, message.createdAt),
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: theme.colorScheme.outline,
                   ),
@@ -191,8 +191,20 @@ class MessageBubble extends StatelessWidget {
     );
   }
 
-  String _formatTime(DateTime? dateTime) {
+  String _formatTime(BuildContext context, DateTime? dateTime) {
     if (dateTime == null) return '';
-    return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+    // Locale-aware so DE renders 14:30 and EN/TR keep their conventions.
+    // Hardcoded HH:mm worked by accident for the current locale set
+    // but violates datetime-format.md. The try/catch falls back to a
+    // raw HH:mm when intl locale data hasn't been initialized (e.g.
+    // unit tests that don't bootstrap easy_localization).
+    final locale = context.locale.toString();
+    try {
+      return DateFormat.Hm(locale).format(dateTime);
+    } catch (_) {
+      final h = dateTime.hour.toString().padLeft(2, '0');
+      final m = dateTime.minute.toString().padLeft(2, '0');
+      return '$h:$m';
+    }
   }
 }

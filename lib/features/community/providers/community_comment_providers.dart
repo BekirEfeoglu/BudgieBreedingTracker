@@ -157,10 +157,30 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
   @override
   CommentFormState build() => const CommentFormState();
 
+  /// Per-post timestamp of the last accepted submit. Mirrors the
+  /// `_postCooldown` pattern used in community_create_providers; without
+  /// it, rapid double-tap could create duplicate comments and a bot
+  /// could flood a single thread without hitting the post-create cap.
+  static const Duration _commentCooldown = Duration(seconds: 3);
+  DateTime? _lastSubmitAt;
+
   Future<void> addComment({
     required String postId,
     required String content,
   }) async {
+    // Guard against double-submit while the previous call is in flight.
+    if (state.isLoading) return;
+
+    // Per-user cooldown between comments.
+    final last = _lastSubmitAt;
+    if (last != null && DateTime.now().difference(last) < _commentCooldown) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'community.comment_cooldown'.tr(),
+      );
+      return;
+    }
+
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
 
     try {
@@ -206,6 +226,7 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
       ref.read(communityFeedProvider.notifier).incrementCommentCount(postId);
       ref.invalidate(commentsForPostProvider(postId));
 
+      _lastSubmitAt = DateTime.now();
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('CommentFormNotifier', e, st);

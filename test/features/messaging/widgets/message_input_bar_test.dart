@@ -165,7 +165,11 @@ class _FakeMessagingFormNotifier extends MessagingFormNotifier {
     String? imageUrl,
     String? referenceId,
     Map<String, dynamic>? referenceData,
-  }) async {}
+  }) async {
+    // The input bar now clears the controller only when state.isSuccess
+    // flips to true; the fake notifier must mirror that contract.
+    state = state.copyWith(isLoading: false, isSuccess: true, error: null);
+  }
 
   @override
   void reset() {}

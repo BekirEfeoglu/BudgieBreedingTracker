@@ -2687,6 +2687,7 @@
     "top_creators": "En İyi İçerik Oluşturucular",
     "my_post": "Benim Gönderim",
     "not_authenticated": "Topluluk özelliklerini kullanmak için giriş yapın",
+    "comment_cooldown": "Çok hızlı yorum yapıyorsunuz. Lütfen biraz bekleyin.",
     "moderation_violation": "İçeriğiniz topluluk kurallarına uygun değil. Lütfen düzenleyip tekrar deneyin.",
     "moderation_caps": "Lütfen tamamen büyük harf yazmaktan kaçının.",
     "moderation_spam": "İçeriğiniz spam olarak algılandı. Lütfen düzenleyip tekrar deneyin.",
