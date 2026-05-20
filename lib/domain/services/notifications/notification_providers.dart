@@ -209,21 +209,25 @@ final notificationServiceProvider = Provider<NotificationService>((ref) {
   // Wire deep-link: when a notification is tapped, navigate via GoRouter.
   // If the router is not available yet, queue the payload for later.
   service.onNotificationTap = (payload) {
-    final route =
-        NotificationService.payloadToRoute(payload) ?? AppRoutes.home;
-    if (route == AppRoutes.home && payload != null) {
-      // Unknown / deprecated payload — log a warning instead of doing
-      // nothing so we can audit why a notification didn't deep-link.
+    // No payload means the OS surfaced the notification without any
+    // routing data (e.g. user tapped a generic toast). Nothing to do.
+    if (payload == null) return;
+
+    final route = NotificationService.payloadToRoute(payload);
+    if (route == null) {
+      // Unknown / deprecated payload — log a warning and fall back to
+      // home so the tap isn't silently swallowed.
       AppLogger.warning(
         '[NotificationProviders] Unknown payload, falling back to home: $payload',
       );
     }
+    final actualRoute = route ?? AppRoutes.home;
     try {
       final router = ref.read(routerProvider);
-      router.push(route);
+      router.push(actualRoute);
     } catch (_) {
       // Router not ready — queue for later processing
-      if (payload != null) _pendingPayloads.add(payload);
+      _pendingPayloads.add(payload);
       AppLogger.info(
         '[NotificationProviders] Router unavailable, queued payload: $payload',
       );

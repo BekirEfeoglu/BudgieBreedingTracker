@@ -66,9 +66,9 @@ void main() {
       verifyNever(() => router.push(any()));
     });
 
-    test('does not queue non-routable payload', () {
+    test('falls back to home for non-routable payload', () {
       final router = _MockGoRouter();
-      when(() => router.push(any())).thenThrow(StateError('not ready'));
+      when(() => router.push(any())).thenAnswer((_) async => null);
 
       final container = ProviderContainer(
         overrides: [routerProvider.overrideWithValue(router)],
@@ -76,10 +76,12 @@ void main() {
       addTearDown(container.dispose);
 
       final service = container.read(notificationServiceProvider);
-      // 'unknown:id' → payloadToRoute returns null → no route → no queue
+      // 'unknown:id' → payloadToRoute returns null → fall back to home
+      // so the tap isn't silently swallowed. notifications.md requires
+      // a warning + home fallback for unknown/deprecated payloads.
       service.onNotificationTap?.call('unknown:id');
 
-      verifyNever(() => router.push(any()));
+      verify(() => router.push('/')).called(1);
     });
 
     test('queues payload when router push fails and drains it later', () {
