@@ -5,11 +5,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
 
 void main() {
-  test('schema v23 creates hot-path composite indexes', () async {
+  test('schema creates hot-path composite indexes', () async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     addTearDown(db.close);
 
-    expect(db.schemaVersion, 23);
+    // schemaVersion bumps with most migration commits; assert the
+    // floor instead of a literal so this test doesn't break on every
+    // schema change unrelated to the indexes themselves.
+    expect(db.schemaVersion, greaterThanOrEqualTo(23));
 
     final rows = await db
         .customSelect("SELECT name FROM sqlite_master WHERE type = 'index'")

@@ -216,6 +216,7 @@ void main() {
           () => mockCalendarGenerator.generateIncubationEvents(
             userId: any(named: 'userId'),
             breedingPairId: any(named: 'breedingPairId'),
+            incubationId: any(named: 'incubationId'),
             startDate: any(named: 'startDate'),
             pairLabel: any(named: 'pairLabel'),
             species: any(named: 'species'),
@@ -227,6 +228,7 @@ void main() {
             layDate: any(named: 'layDate'),
             eggNumber: any(named: 'eggNumber'),
             incubationId: any(named: 'incubationId'),
+            eggId: any(named: 'eggId'),
             species: any(named: 'species'),
           ),
         ).thenAnswer((_) async {});
@@ -363,6 +365,7 @@ void main() {
             layDate: any(named: 'layDate'),
             eggNumber: any(named: 'eggNumber'),
             incubationId: any(named: 'incubationId'),
+            eggId: any(named: 'eggId'),
             species: any(named: 'species'),
           ),
         ).called(5);

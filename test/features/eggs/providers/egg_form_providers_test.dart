@@ -88,6 +88,7 @@ void main() {
         layDate: any(named: 'layDate'),
         eggNumber: any(named: 'eggNumber'),
         incubationId: any(named: 'incubationId'),
+        eggId: any(named: 'eggId'),
         species: any(named: 'species'),
       ),
     ).thenAnswer((_) async {});
@@ -325,6 +326,7 @@ void main() {
           layDate: any(named: 'layDate'),
           eggNumber: any(named: 'eggNumber'),
           incubationId: any(named: 'incubationId'),
+          eggId: any(named: 'eggId'),
           species: Species.unknown,
         ),
       ).called(1);
