@@ -159,11 +159,21 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
   Future<({Bird maleBird, Bird femaleBird})?> _validatePairBirds({
     required String maleId,
     required String femaleId,
+    String? userId,
   }) async {
     final birdRepo = ref.read(birdRepositoryProvider);
     final maleBird = await birdRepo.getById(maleId);
     final femaleBird = await birdRepo.getById(femaleId);
     if (maleBird == null || femaleBird == null) {
+      state = state.copyWith(isLoading: false, error: 'birds.not_found'.tr());
+      return null;
+    }
+    // Ownership check: both birds must belong to the user creating
+    // the pair. RLS would reject the remote push, but the local pair
+    // would persist as a permanent sync-error row until manually
+    // removed. Validating here avoids that orphaned state entirely.
+    if (userId != null &&
+        (maleBird.userId != userId || femaleBird.userId != userId)) {
       state = state.copyWith(isLoading: false, error: 'birds.not_found'.tr());
       return null;
     }
@@ -354,6 +364,7 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
       final validated = await _validatePairBirds(
         maleId: maleId,
         femaleId: femaleId,
+        userId: userId,
       );
       if (validated == null) {
         return;
@@ -425,6 +436,7 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
         final validated = await _validatePairBirds(
           maleId: pair.maleId!,
           femaleId: pair.femaleId!,
+          userId: pair.userId,
         );
         if (validated == null) return;
         validatedSpecies = validated.maleBird.species;
