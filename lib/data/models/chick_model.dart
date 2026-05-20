@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
 
 part 'chick_model.freezed.dart';
 part 'chick_model.g.dart';
@@ -42,7 +43,7 @@ abstract class Chick with _$Chick {
 extension ChickX on Chick {
   ({int weeks, int days, int totalDays})? get age {
     if (hatchDate == null) return null;
-    final totalDays = DateTime.now().difference(hatchDate!).inDays;
+    final totalDays = date_utils.DateUtils.dayDiff(hatchDate!, DateTime.now());
     return (weeks: totalDays ~/ 7, days: totalDays % 7, totalDays: totalDays);
   }
 

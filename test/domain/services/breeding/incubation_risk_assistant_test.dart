@@ -221,6 +221,33 @@ void main() {
       );
     });
 
+    test('daysLate uses DateUtils.dayDiff so near-midnight hatch is overdue', () {
+      // expected hatch at 23:59 on May 16; now is 00:01 on May 17.
+      // Naive .difference().inDays returns 0 (only 2 min elapsed).
+      // DateUtils.dayDiff returns 1 — egg is 1 calendar day overdue.
+      final nearMidnightNow = DateTime(2026, 5, 17, 0, 1);
+      final layDate = DateTime(2026, 4, 28, 23, 59); // +18d = May 16 23:59
+      final summary = const IncubationRiskAssistant().assess(
+        now: nearMidnightNow,
+        pairs: [_pair('pair-1')],
+        incubations: [
+          _incubation(
+            'inc-1',
+            pairId: 'pair-1',
+            species: Species.budgie,
+            startDate: layDate,
+          ),
+        ],
+        eggs: [_egg('egg-1', incubationId: 'inc-1', layDate: layDate)],
+        chicks: const [],
+      );
+
+      expect(
+        summary.risks.map((r) => r.type),
+        contains(IncubationRiskType.overdueEgg),
+      );
+    });
+
     test('flags chick health loss for the incubation', () {
       final summary = const IncubationRiskAssistant().assess(
         now: now,
