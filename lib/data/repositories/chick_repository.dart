@@ -1,6 +1,7 @@
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/chicks_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/clutches_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
@@ -13,8 +14,11 @@ import 'package:uuid/uuid.dart';
 
 /// Repository for [Chick] entities with offline-first sync support.
 ///
-/// Uses [ValidatedSyncMixin] to validate FK references (egg, clutch)
-/// before pushing to Supabase, preventing FK constraint violations.
+/// Uses [ValidatedSyncMixin] to validate FK references (egg, clutch, bird)
+/// before pushing to Supabase, preventing FK constraint violations. Without
+/// the bird check, chicks linked to an as-yet-unsynced bird would push,
+/// the server would reject with a 23503, and the chick would be stuck in
+/// error state until manually edited.
 class ChickRepository extends BaseRepository<Chick>
     with SyncableRepository<Chick>, ValidatedSyncMixin<Chick> {
   final ChicksDao _localDao;
@@ -22,6 +26,7 @@ class ChickRepository extends BaseRepository<Chick>
   final SyncMetadataDao _syncDao;
   final EggsDao _eggsDao;
   final ClutchesDao _clutchesDao;
+  final BirdsDao _birdsDao;
 
   static const _uuid = Uuid();
 
@@ -31,11 +36,13 @@ class ChickRepository extends BaseRepository<Chick>
     required SyncMetadataDao syncDao,
     required EggsDao eggsDao,
     required ClutchesDao clutchesDao,
+    required BirdsDao birdsDao,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
        _syncDao = syncDao,
        _eggsDao = eggsDao,
-       _clutchesDao = clutchesDao;
+       _clutchesDao = clutchesDao,
+       _birdsDao = birdsDao;
 
   static const _table = SupabaseConstants.chicksTable;
 
@@ -102,6 +109,22 @@ class ChickRepository extends BaseRepository<Chick>
       );
       if (syncMeta != null) {
         return 'Clutch ${chick.clutchId} not yet synced to server';
+      }
+    }
+    if (chick.birdId != null) {
+      final bird = await _birdsDao.getById(chick.birdId!);
+      if (bird == null) {
+        return 'Referenced bird ${chick.birdId} not found locally';
+      }
+      if (bird.isDeleted) {
+        return 'Referenced bird ${chick.birdId} is deleted';
+      }
+      final syncMeta = await _syncDao.getByRecord(
+        SupabaseConstants.birdsTable,
+        chick.birdId!,
+      );
+      if (syncMeta != null) {
+        return 'Bird ${chick.birdId} not yet synced to server';
       }
     }
     return null;

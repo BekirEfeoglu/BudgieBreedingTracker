@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/models/message_model.dart';
@@ -59,11 +61,21 @@ final messagingRealtimeProvider =
 class TypingIndicatorNotifier extends Notifier<Set<String>> {
   bool _disposed = false;
 
+  /// Per-user auto-stop timer. Without per-user cancellation, rapid
+  /// successive typing events would stack timers — an earlier 5-second
+  /// timer would fire and remove the user from `state` while they were
+  /// still actively typing.
+  final Map<String, Timer> _autoStopTimers = {};
+
   @override
   Set<String> build() {
     _disposed = false;
     ref.onDispose(() {
       _disposed = true;
+      for (final timer in _autoStopTimers.values) {
+        timer.cancel();
+      }
+      _autoStopTimers.clear();
     });
     return {};
   }
@@ -71,8 +83,12 @@ class TypingIndicatorNotifier extends Notifier<Set<String>> {
   void userStartedTyping(String userId) {
     state = {...state, userId};
 
-    // Auto-stop after 5 seconds
-    Future.delayed(const Duration(seconds: 5), () {
+    // Cancel any pending auto-stop so the freshly-typing user doesn't
+    // get cleared by a stale timer.
+    _autoStopTimers.remove(userId)?.cancel();
+
+    _autoStopTimers[userId] = Timer(const Duration(seconds: 5), () {
+      _autoStopTimers.remove(userId);
       if (!_disposed && state.contains(userId)) {
         userStoppedTyping(userId);
       }
@@ -80,10 +96,15 @@ class TypingIndicatorNotifier extends Notifier<Set<String>> {
   }
 
   void userStoppedTyping(String userId) {
+    _autoStopTimers.remove(userId)?.cancel();
     state = {...state}..remove(userId);
   }
 
   void clear() {
+    for (final timer in _autoStopTimers.values) {
+      timer.cancel();
+    }
+    _autoStopTimers.clear();
     state = {};
   }
 }

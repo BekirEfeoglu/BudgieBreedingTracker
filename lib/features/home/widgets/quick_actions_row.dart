@@ -32,7 +32,7 @@ class QuickActionsRow extends StatelessWidget {
       _QuickAction(
         icon: const AppIcon(AppIcons.egg, size: 18),
         label: 'home.manage_eggs'.tr(),
-        onPressed: () => context.go(AppRoutes.breeding),
+        onPressed: () => context.push(AppRoutes.breeding),
       ),
     ];
 

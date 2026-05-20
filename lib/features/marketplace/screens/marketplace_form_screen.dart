@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -199,6 +200,47 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
                     return null;
                   },
                 ),
+
+                // Price field — only meaningful for sale listings, but
+                // without this the form silently created free sale ads.
+                if (_listingType == MarketplaceListingType.sale) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  TextFormField(
+                    controller: _priceController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                    ],
+                    textInputAction: TextInputAction.next,
+                    decoration: InputDecoration(
+                      labelText: 'marketplace.price_label'.tr(),
+                      prefixIcon: const Icon(
+                        LucideIcons.dollarSign,
+                        size: 18,
+                      ),
+                    ),
+                    validator: (value) {
+                      if (_listingType != MarketplaceListingType.sale) {
+                        return null;
+                      }
+                      final raw = value?.trim() ?? '';
+                      if (raw.isEmpty) {
+                        return 'marketplace.price_required'.tr();
+                      }
+                      // Accept both ',' and '.' as decimal separators
+                      // so TR/DE locales aren't rejected.
+                      final parsed = double.tryParse(
+                        raw.replaceAll(',', '.'),
+                      );
+                      if (parsed == null || parsed <= 0) {
+                        return 'marketplace.price_required'.tr();
+                      }
+                      return null;
+                    },
+                  ),
+                ],
                 const SizedBox(height: AppSpacing.xxl),
 
                 // --- Bird Info ---
@@ -361,7 +403,9 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
         price: _listingType == MarketplaceListingType.sale
-            ? double.tryParse(_priceController.text.trim())
+            ? double.tryParse(
+                _priceController.text.trim().replaceAll(',', '.'),
+              )
             : null,
         birdId: _linkedBirdId,
         species: _speciesController.text.trim(),
@@ -382,7 +426,9 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
         price: _listingType == MarketplaceListingType.sale
-            ? double.tryParse(_priceController.text.trim())
+            ? double.tryParse(
+                _priceController.text.trim().replaceAll(',', '.'),
+              )
             : null,
         birdId: _linkedBirdId,
         species: _speciesController.text.trim(),

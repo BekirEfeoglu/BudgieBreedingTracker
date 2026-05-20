@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/logger.dart';
 import '../../../core/widgets/error_state.dart' as app;
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import '../providers/messaging_providers.dart';
 import '../providers/messaging_realtime_providers.dart';
 import '../widgets/message_bubble.dart';
@@ -24,6 +26,7 @@ class MessageDetailScreen extends ConsumerStatefulWidget {
 class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
   final _scrollController = ScrollController();
   MessagingRealtimeNotifier? _realtimeNotifier;
+  final Set<String> _markedRead = <String>{};
 
   @override
   void initState() {
@@ -34,6 +37,27 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
       _realtimeNotifier = notifier;
       notifier.subscribe(widget.conversationId);
     });
+  }
+
+  /// Marks incoming messages as read once the conversation is on screen.
+  /// Deduplicates via [_markedRead] so the build loop doesn't fan out a
+  /// new RPC for the same message every frame.
+  void _markVisibleAsRead(List<Message> messages, String userId) {
+    final repo = ref.read(messagingRepositoryProvider);
+    for (final msg in messages) {
+      if (msg.senderId == userId) continue;
+      if (msg.isReadBy(userId)) continue;
+      if (!_markedRead.add(msg.id)) continue;
+      repo.markAsRead(msg.id, userId).catchError((Object e) {
+        // Best-effort: server-side append is idempotent and a missed read
+        // receipt is recoverable on the next conversation open.
+        AppLogger.warning(
+          '[MessageDetailScreen] markAsRead failed for ${msg.id}: $e',
+        );
+        // Allow a retry on the next visible-rebuild.
+        _markedRead.remove(msg.id);
+      });
+    }
   }
 
   @override
@@ -125,6 +149,13 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
                       a.createdAt ?? DateTime(0),
                     ),
                   );
+
+                // Mark visible incoming messages as read after this frame
+                // so unread counts and read indicators converge.
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!mounted) return;
+                  _markVisibleAsRead(messages, userId);
+                });
 
                 if (messages.isEmpty) {
                   return Center(

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/image_picker_guard.dart';
 
 class MarketplaceImagePicker extends StatelessWidget {
   const MarketplaceImagePicker({
@@ -30,7 +31,16 @@ class MarketplaceImagePicker extends StatelessWidget {
     );
     if (picked.isEmpty) return;
 
-    final newPaths = picked.take(remaining).map((f) => f.path).toList();
+    // Apply the 10MB client-side guard before upload so users don't wait
+    // for a network round-trip just to get rejected by the storage limit.
+    if (!context.mounted) return;
+    final filtered = await ImagePickerGuard.filterWithinSizeLimit(
+      context,
+      picked.take(remaining).toList(),
+    );
+    if (filtered.isEmpty) return;
+
+    final newPaths = filtered.map((f) => f.path).toList();
     onChanged([...imagePaths, ...newPaths]);
   }
 

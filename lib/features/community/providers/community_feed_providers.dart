@@ -111,7 +111,15 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
 
       var allPosts = [...state.posts, ...newPosts];
 
-      // Cap the in-memory list to prevent unbounded growth
+      // The cursor must follow the actually-fetched page, not the
+      // display-trimmed list. If we cap below and then take the trimmed
+      // list's last item, we'd reuse the cursor that produced the page
+      // we just dropped — pagination would loop on the same window
+      // forever once the cap is hit.
+      final nextCursor = newPosts.isNotEmpty
+          ? newPosts.last.createdAt
+          : state.cursor;
+
       if (allPosts.length > _maxPosts) {
         allPosts = allPosts.sublist(0, _maxPosts);
       }
@@ -120,7 +128,7 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
         posts: allPosts,
         isLoading: false,
         hasMore: newPosts.length >= _pageSize,
-        cursor: allPosts.isNotEmpty ? allPosts.last.createdAt : state.cursor,
+        cursor: nextCursor,
       );
     } catch (e, st) {
       if (_isSupabaseUnavailableError(e)) {

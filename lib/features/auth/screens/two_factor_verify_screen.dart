@@ -184,12 +184,24 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
   }
 
   Future<void> _handleFailure() async {
-    // Record failure server-side
+    // Record failure server-side. We MUST be able to reach the server
+    // here; otherwise an attacker who can drop egress to the lockout
+    // function gets unlimited brute force on a 6-digit TOTP (~1M space),
+    // because the server-side `failed_attempts` counter never increments
+    // and the local lockout resets across reinstalls.
     EdgeFunctionResult? serverResult;
+    bool serverContactFailed = false;
     try {
       final client = ref.read(edgeFunctionClientProvider);
       serverResult = await client.recordMfaFailure();
+      if (!serverResult.success) {
+        serverContactFailed = true;
+        AppLogger.warning(
+          '$_tag Server failure recording returned non-success — failing closed',
+        );
+      }
     } catch (e, st) {
+      serverContactFailed = true;
       AppLogger.error('$_tag Server failure recording failed: $e', e, st);
     }
 
@@ -205,8 +217,13 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
 
     if (serverLocked && serverRemaining > 0) {
       _lockoutUntil = DateTime.now().add(Duration(seconds: serverRemaining));
+    } else if (serverContactFailed) {
+      // Fail-closed: when we can't tell the server about the failure,
+      // require a 60-second cooldown so an attacker can't loop with no
+      // accumulated counter. This mirrors _checkServerLockout's policy.
+      _lockoutUntil = DateTime.now().add(const Duration(seconds: 60));
     } else if (_shouldLockout(_failedAttempts)) {
-      // Local fallback: exponential backoff based on cumulative failures
+      // Local fallback: exponential backoff based on cumulative failures.
       _lockoutUntil = DateTime.now().add(
         _lockoutDurationForAttempts(_failedAttempts),
       );
@@ -216,11 +233,15 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
     if (!mounted) return;
 
     setState(() {
-      _error = _isLockedOut
-          ? 'auth.2fa_too_many_attempts'.tr(
-              args: ['${_lockoutUntil!.difference(DateTime.now()).inSeconds}'],
-            )
-          : 'auth.2fa_invalid_code'.tr();
+      if (_isLockedOut) {
+        final seconds =
+            _lockoutUntil!.difference(DateTime.now()).inSeconds;
+        _error = serverContactFailed
+            ? 'auth.2fa_server_unavailable'.tr()
+            : 'auth.2fa_too_many_attempts'.tr(args: ['$seconds']);
+      } else {
+        _error = 'auth.2fa_invalid_code'.tr();
+      }
       _isVerifying = false;
     });
   }

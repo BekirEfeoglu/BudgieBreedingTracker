@@ -27,6 +27,9 @@ void main() {
 
   setUp(() {
     mockRepo = MockMessagingRepository();
+    // The screen now marks visible incoming messages as read after each
+    // frame; provide a default stub so widget tests don't trip the mock.
+    when(() => mockRepo.markAsRead(any(), any())).thenAnswer((_) async {});
   });
 
   Widget buildSubject({

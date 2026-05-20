@@ -43,16 +43,28 @@ class PushNotificationService {
   bool _firebaseReady;
   bool _listenersBound = false;
 
+  /// The user currently owning the FCM token on this device. Updated on
+  /// every [init] so that the long-lived token-refresh listener pushes
+  /// refreshes to the right user record after sign-out/sign-in cycles
+  /// instead of attributing them to whoever first called init.
+  String? _currentUserId;
+
   Future<void> init({required String userId}) async {
     if (!_supportsPushNotifications) return;
     final ready = await _ensureFirebaseReady();
     if (!ready) return;
 
+    _currentUserId = userId;
+
     if (!_listenersBound) {
       final messaging = _messagingInstance;
       FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
       _tokenRefreshSub = messaging.onTokenRefresh.listen(
-        (token) => unawaited(_upsertToken(userId, token)),
+        (token) {
+          final activeUserId = _currentUserId;
+          if (activeUserId == null) return;
+          unawaited(_upsertToken(activeUserId, token));
+        },
         onError: (Object error, StackTrace stackTrace) {
           AppLogger.warning(
             '[PushNotificationService] Token refresh stream failed: $error',
@@ -116,6 +128,10 @@ class PushNotificationService {
         e,
         st,
       );
+    } finally {
+      // Clear the in-listener user reference so any post-sign-out refresh
+      // doesn't push a fresh token back under the previous user.
+      _currentUserId = null;
     }
   }
 
@@ -124,6 +140,7 @@ class PushNotificationService {
     await _messageOpenSub?.cancel();
     await _foregroundMessageSub?.cancel();
     _listenersBound = false;
+    _currentUserId = null;
   }
 
   bool get _supportsPushNotifications =>

@@ -14,6 +14,7 @@ import 'package:budgie_breeding_tracker/domain/services/notifications/notificati
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_scheduler.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_service.dart';
 import 'package:budgie_breeding_tracker/router/app_router.dart';
+import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 /// Queued payloads waiting for the router to become available.
 ///
@@ -208,18 +209,24 @@ final notificationServiceProvider = Provider<NotificationService>((ref) {
   // Wire deep-link: when a notification is tapped, navigate via GoRouter.
   // If the router is not available yet, queue the payload for later.
   service.onNotificationTap = (payload) {
-    final route = NotificationService.payloadToRoute(payload);
-    if (route != null) {
-      try {
-        final router = ref.read(routerProvider);
-        router.push(route);
-      } catch (_) {
-        // Router not ready — queue for later processing
-        if (payload != null) _pendingPayloads.add(payload);
-        AppLogger.info(
-          '[NotificationProviders] Router unavailable, queued payload: $payload',
-        );
-      }
+    final route =
+        NotificationService.payloadToRoute(payload) ?? AppRoutes.home;
+    if (route == AppRoutes.home && payload != null) {
+      // Unknown / deprecated payload — log a warning instead of doing
+      // nothing so we can audit why a notification didn't deep-link.
+      AppLogger.warning(
+        '[NotificationProviders] Unknown payload, falling back to home: $payload',
+      );
+    }
+    try {
+      final router = ref.read(routerProvider);
+      router.push(route);
+    } catch (_) {
+      // Router not ready — queue for later processing
+      if (payload != null) _pendingPayloads.add(payload);
+      AppLogger.info(
+        '[NotificationProviders] Router unavailable, queued payload: $payload',
+      );
     }
   };
 

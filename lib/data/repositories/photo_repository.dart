@@ -101,7 +101,12 @@ class PhotoRepository {
     final item = await _localDao.getById(id);
     await _localDao.hardDelete(id);
     if (item != null) {
-      await _markPending(id, item.userId);
+      // Use pendingDelete (not pending) so an offline remove still cleans
+      // up the remote object on the next push. With plain `pending`, the
+      // next pushAll loads the local row, finds null (hard-deleted), and
+      // treats the metadata as a benign orphan — the remote storage and
+      // row would leak forever.
+      await _markPendingDelete(id, item.userId);
       // Immediate remote delete — falls back to next sync on failure
       try {
         await _remoteSource.deleteById(id, userId: item.userId);
@@ -159,10 +164,31 @@ class PhotoRepository {
     final tablePending = await _syncDao.getPendingByTable(userId, _table);
 
     for (final meta in tablePending) {
-      final item = await _localDao.getById(meta.recordId ?? '');
+      final recordId = meta.recordId ?? '';
+      if (recordId.isEmpty) {
+        await _syncDao.deleteByRecord(_table, recordId);
+        orphansCleaned++;
+        continue;
+      }
+
+      // Deletes are tombstoned via SyncStatus.pendingDelete because the
+      // local row is hard-deleted on remove(); we have to issue the remote
+      // delete without a local item.
+      if (meta.status == SyncStatus.pendingDelete) {
+        try {
+          await _remoteSource.deleteById(recordId, userId: userId);
+          await _syncDao.deleteByRecord(_table, recordId);
+          pushed++;
+        } on AppException catch (e) {
+          await _markError(recordId, userId, e.message);
+        }
+        continue;
+      }
+
+      final item = await _localDao.getById(recordId);
       if (item == null) {
-        // Orphan sync_metadata — clean up
-        await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
+        // True orphan sync_metadata — no local row, not a tombstone. Clean.
+        await _syncDao.deleteByRecord(_table, recordId);
         orphansCleaned++;
         continue;
       }
@@ -207,6 +233,28 @@ class PhotoRepository {
           table: _table,
           userId: userId,
           status: SyncStatus.pending,
+          recordId: recordId,
+        ),
+      );
+    }
+  }
+
+  Future<void> _markPendingDelete(String recordId, String userId) async {
+    final existing = await _syncDao.getByRecord(_table, recordId);
+    if (existing != null) {
+      await _syncDao.updateItem(
+        existing.copyWith(
+          status: SyncStatus.pendingDelete,
+          updatedAt: DateTime.now(),
+        ),
+      );
+    } else {
+      await _syncDao.insertItem(
+        SyncMetadata(
+          id: _uuid.v7(),
+          table: _table,
+          userId: userId,
+          status: SyncStatus.pendingDelete,
           recordId: recordId,
         ),
       );

@@ -58,6 +58,7 @@ final chickRepositoryProvider = Provider<ChickRepository>((ref) {
     syncDao: ref.watch(syncMetadataDaoProvider),
     eggsDao: ref.watch(eggsDaoProvider),
     clutchesDao: ref.watch(clutchesDaoProvider),
+    birdsDao: ref.watch(birdsDaoProvider),
   );
 });
 

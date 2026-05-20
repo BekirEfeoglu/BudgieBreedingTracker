@@ -29,6 +29,7 @@ void main() {
   late MockSyncMetadataDao syncDao;
   late MockEggsDao eggsDao;
   late MockClutchesDao clutchesDao;
+  late MockBirdsDao birdsDao;
   late ChickRepository repository;
 
   const userId = 'user-1';
@@ -45,6 +46,7 @@ void main() {
     syncDao = MockSyncMetadataDao();
     eggsDao = MockEggsDao();
     clutchesDao = MockClutchesDao();
+    birdsDao = MockBirdsDao();
 
     repository = ChickRepository(
       localDao: localDao,
@@ -52,6 +54,7 @@ void main() {
       syncDao: syncDao,
       eggsDao: eggsDao,
       clutchesDao: clutchesDao,
+      birdsDao: birdsDao,
     );
 
     when(() => localDao.insertItem(any())).thenAnswer((_) async {});
@@ -99,6 +102,7 @@ void main() {
 
     when(() => eggsDao.getById(any())).thenAnswer((_) async => null);
     when(() => clutchesDao.getById(any())).thenAnswer((_) async => null);
+    when(() => birdsDao.getById(any())).thenAnswer((_) async => null);
   });
 
   group('ChickRepository basic sync', () {

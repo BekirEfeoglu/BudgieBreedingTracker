@@ -212,17 +212,44 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
     try {
       final repo = ref.read(eggRepositoryProvider);
 
+      // Only stamp event dates when the status actually changes. Without
+      // this guard, re-saving an already-hatched egg would reset its
+      // hatchDate to today and the chick age math would silently drift.
       var updated = egg.copyWith(status: newStatus, updatedAt: DateTime.now());
 
-      if (newStatus == EggStatus.hatched) {
-        updated = updated.copyWith(hatchDate: DateTime.now());
-      } else if (newStatus == EggStatus.fertile) {
-        updated = updated.copyWith(fertileCheckDate: DateTime.now());
-      } else if (newStatus == EggStatus.discarded) {
-        updated = updated.copyWith(discardDate: DateTime.now());
+      if (newStatus != egg.status) {
+        if (newStatus == EggStatus.hatched) {
+          updated = updated.copyWith(hatchDate: DateTime.now());
+        } else if (newStatus == EggStatus.fertile) {
+          updated = updated.copyWith(fertileCheckDate: DateTime.now());
+        } else if (newStatus == EggStatus.discarded) {
+          updated = updated.copyWith(discardDate: DateTime.now());
+        }
       }
 
       await repo.save(updated);
+
+      // Drop egg-turning reminders the moment the egg leaves an active
+      // state — otherwise "turn egg #N" keeps firing every 4h for the
+      // full 18-day window on hatched/damaged/discarded/infertile eggs.
+      if (_isTerminalEggStatus(newStatus) &&
+          !_isTerminalEggStatus(egg.status)) {
+        try {
+          var species = Species.unknown;
+          try {
+            species = await resolveEggSpecies(ref, updated);
+          } catch (_) {
+            // Resolution failure shouldn't block the save flow; cancel
+            // with unknown which covers the broadest id space.
+          }
+          final scheduler = ref.read(notificationSchedulerProvider);
+          await scheduler.cancelEggTurningReminders(egg.id, species: species);
+        } catch (e) {
+          AppLogger.warning(
+            'Failed to cancel egg turning reminders for ${egg.id}: $e',
+          );
+        }
+      }
 
       // Automatically create chick when egg hatches
       var didCreateChick = false;
@@ -402,7 +429,39 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
     );
     try {
       final repo = ref.read(eggRepositoryProvider);
+
+      // Resolve species BEFORE soft-delete so we cancel the correct
+      // notification id space (turning hours and incubation length differ
+      // per species). After remove(), the egg row is filtered out by
+      // isDeleted=false and resolveEggSpecies falls back to unknown.
+      // Species lookup failure must NOT block deletion — the worst case
+      // is a generic cancellation pass.
+      var species = Species.unknown;
+      try {
+        final egg = await repo.getById(id);
+        if (egg != null) {
+          species = await resolveEggSpecies(ref, egg);
+        }
+      } catch (e) {
+        AppLogger.warning(
+          'Species lookup before deleteEgg($id) failed: $e — '
+          'continuing with unknown',
+        );
+      }
+
       await repo.remove(id);
+
+      // Cancel scheduled turning reminders so they don't keep firing on
+      // a deleted egg for the remainder of the 18-day window.
+      try {
+        final scheduler = ref.read(notificationSchedulerProvider);
+        await scheduler.cancelEggTurningReminders(id, species: species);
+      } catch (e) {
+        AppLogger.warning(
+          'Failed to cancel egg turning reminders for $id: $e',
+        );
+      }
+
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e) {
       AppLogger.error('EggActionsNotifier', e, StackTrace.current);
@@ -415,4 +474,12 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
   void reset() {
     state = const EggActionsState();
   }
+}
+
+bool _isTerminalEggStatus(EggStatus status) {
+  return status == EggStatus.hatched ||
+      status == EggStatus.damaged ||
+      status == EggStatus.discarded ||
+      status == EggStatus.infertile ||
+      status == EggStatus.empty;
 }

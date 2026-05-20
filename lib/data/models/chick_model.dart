@@ -44,12 +44,19 @@ extension ChickX on Chick {
   ({int weeks, int days, int totalDays})? get age {
     if (hatchDate == null) return null;
     final totalDays = date_utils.DateUtils.dayDiff(hatchDate!, DateTime.now());
+    // Guard against future-dated hatchDate (data-entry typo, AI prefilling
+    // an expected date). Dart's truncating division on a negative number
+    // would otherwise return `(-1, 4, -3)` for "-3 days" and the UI would
+    // render "-1 week 4 days" while developmentStage silently locked to
+    // newborn.
+    if (totalDays < 0) return null;
     return (weeks: totalDays ~/ 7, days: totalDays % 7, totalDays: totalDays);
   }
 
   DevelopmentStage get developmentStage {
     final a = age;
     if (a == null) return DevelopmentStage.newborn;
+    if (a.totalDays < 0) return DevelopmentStage.newborn;
     if (a.totalDays <= 7) return DevelopmentStage.newborn;
     if (a.totalDays <= 21) return DevelopmentStage.nestling;
     if (a.totalDays <= 35) return DevelopmentStage.fledgling;

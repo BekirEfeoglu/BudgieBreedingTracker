@@ -33,9 +33,15 @@ class LikeToggleNotifier extends Notifier<void> {
   @override
   void build() {}
 
+  /// Posts currently waiting on a server toggle. A rapid double-tap would
+  /// otherwise fire two concurrent toggles, leaving the server state out
+  /// of sync with the optimistic UI when responses interleave.
+  final Set<String> _inFlight = <String>{};
+
   Future<void> toggleLike(String postId) async {
     final userId = ref.read(currentUserIdProvider);
     if (userId == 'anonymous') return;
+    if (!_inFlight.add(postId)) return;
 
     ref.read(communityFeedProvider.notifier).optimisticLikeToggle(postId);
 
@@ -46,6 +52,8 @@ class LikeToggleNotifier extends Notifier<void> {
       ref.read(communityFeedProvider.notifier).optimisticLikeToggle(postId);
       AppLogger.error('LikeToggleNotifier', e, st);
       Sentry.captureException(e, stackTrace: st);
+    } finally {
+      _inFlight.remove(postId);
     }
   }
 }
@@ -62,9 +70,12 @@ class BookmarkToggleNotifier extends Notifier<void> {
   @override
   void build() {}
 
+  final Set<String> _inFlight = <String>{};
+
   Future<void> toggleBookmark(String postId) async {
     final userId = ref.read(currentUserIdProvider);
     if (userId == 'anonymous') return;
+    if (!_inFlight.add(postId)) return;
 
     ref.read(communityFeedProvider.notifier).optimisticBookmarkToggle(postId);
 
@@ -75,6 +86,8 @@ class BookmarkToggleNotifier extends Notifier<void> {
       ref.read(communityFeedProvider.notifier).optimisticBookmarkToggle(postId);
       AppLogger.error('BookmarkToggleNotifier', e, st);
       Sentry.captureException(e, stackTrace: st);
+    } finally {
+      _inFlight.remove(postId);
     }
   }
 }
@@ -120,9 +133,12 @@ class FollowToggleNotifier extends Notifier<void> {
   @override
   void build() {}
 
+  final Set<String> _inFlight = <String>{};
+
   Future<void> toggleFollow(String targetUserId) async {
     final userId = ref.read(currentUserIdProvider);
     if (userId == 'anonymous') return;
+    if (!_inFlight.add(targetUserId)) return;
 
     ref
         .read(communityFeedProvider.notifier)
@@ -137,6 +153,8 @@ class FollowToggleNotifier extends Notifier<void> {
           .optimisticFollowToggle(targetUserId);
       AppLogger.error('FollowToggleNotifier', e, st);
       Sentry.captureException(e, stackTrace: st);
+    } finally {
+      _inFlight.remove(targetUserId);
     }
   }
 }
