@@ -147,9 +147,9 @@ void main() {
     });
 
     test('age returns weeks, days and totalDays', () {
-      final hatchDate = DateTime.now().subtract(
-        const Duration(days: 17, minutes: 1),
-      );
+      // DateUtils.dayDiff normalises to calendar days; same time-of-day
+      // offsets give exact day counts independent of DST or clock minute.
+      final hatchDate = DateTime.now().subtract(const Duration(days: 17));
       final chick = _buildChick(hatchDate: hatchDate);
 
       final age = chick.age!;
@@ -163,7 +163,7 @@ void main() {
         hatchDate: DateTime.now().subtract(const Duration(minutes: 1)),
       ).developmentStage;
       final stageAt7Days = _buildChick(
-        hatchDate: DateTime.now().subtract(const Duration(days: 7, minutes: 1)),
+        hatchDate: DateTime.now().subtract(const Duration(days: 7)),
       ).developmentStage;
 
       expect(stageAt0Days, DevelopmentStage.newborn);
@@ -172,12 +172,10 @@ void main() {
 
     test('developmentStage is nestling for 8-21 days', () {
       final stageAt8Days = _buildChick(
-        hatchDate: DateTime.now().subtract(const Duration(days: 8, minutes: 1)),
+        hatchDate: DateTime.now().subtract(const Duration(days: 8)),
       ).developmentStage;
       final stageAt21Days = _buildChick(
-        hatchDate: DateTime.now().subtract(
-          const Duration(days: 21, minutes: 1),
-        ),
+        hatchDate: DateTime.now().subtract(const Duration(days: 21)),
       ).developmentStage;
 
       expect(stageAt8Days, DevelopmentStage.nestling);
@@ -186,14 +184,10 @@ void main() {
 
     test('developmentStage is fledgling for 22-35 days', () {
       final stageAt22Days = _buildChick(
-        hatchDate: DateTime.now().subtract(
-          const Duration(days: 22, minutes: 1),
-        ),
+        hatchDate: DateTime.now().subtract(const Duration(days: 22)),
       ).developmentStage;
       final stageAt35Days = _buildChick(
-        hatchDate: DateTime.now().subtract(
-          const Duration(days: 35, minutes: 1),
-        ),
+        hatchDate: DateTime.now().subtract(const Duration(days: 35)),
       ).developmentStage;
 
       expect(stageAt22Days, DevelopmentStage.fledgling);
@@ -202,9 +196,7 @@ void main() {
 
     test('developmentStage is juvenile for 36+ days', () {
       final stage = _buildChick(
-        hatchDate: DateTime.now().subtract(
-          const Duration(days: 36, minutes: 1),
-        ),
+        hatchDate: DateTime.now().subtract(const Duration(days: 36)),
       ).developmentStage;
       expect(stage, DevelopmentStage.juvenile);
     });
