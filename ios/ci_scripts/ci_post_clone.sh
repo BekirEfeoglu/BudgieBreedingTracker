@@ -44,7 +44,11 @@ cd "$REPO_ROOT"
 if ! command -v flutter >/dev/null 2>&1; then
   FLUTTER_HOME="$HOME/flutter"
   if [ ! -x "$FLUTTER_HOME/bin/flutter" ]; then
-    run_with_retries 3 10 git clone https://github.com/flutter/flutter.git --depth 1 -b stable "$FLUTTER_HOME"
+    # Pin to 3.41.4 to keep parity with GitHub Actions and local dev.
+    # Cloning plain 'stable' picks the newest Flutter, which ships Dart
+    # 3.12 and makes IconData a final class -- that breaks lucide_icons
+    # 0.257.0 (LucideIconData extends IconData).
+    run_with_retries 3 10 git clone https://github.com/flutter/flutter.git --depth 1 -b 3.41.4 "$FLUTTER_HOME"
   fi
   export PATH="$FLUTTER_HOME/bin:$PATH"
 fi
