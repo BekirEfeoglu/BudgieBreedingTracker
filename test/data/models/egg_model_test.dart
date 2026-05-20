@@ -156,9 +156,11 @@ void main() {
       final layDate = DateTime(2024, 1, 1);
       final egg = _buildEgg(layDate: layDate);
 
+      // Anchored on UTC midnight (B5 fix) so the dayDiff math against
+      // this value remains DST-safe regardless of layDate's time-of-day.
       expect(
         egg.expectedHatchDate,
-        layDate.add(
+        DateTime.utc(2024, 1, 1).add(
           const Duration(days: IncubationConstants.incubationPeriodDays),
         ),
       );

@@ -157,9 +157,12 @@ void main() {
       final startDate = DateTime(2024, 1, 1);
       final incubation = _buildIncubation(startDate: startDate);
 
+      // The expected date is anchored on UTC midnight (B5 fix) so the
+      // dayDiff math against it stays DST-safe regardless of when the
+      // startDate was captured local time.
       expect(
         incubation.computedExpectedHatchDate,
-        startDate.add(
+        DateTime.utc(2024, 1, 1).add(
           const Duration(days: IncubationConstants.incubationPeriodDays),
         ),
       );
@@ -175,7 +178,7 @@ void main() {
       // Canary incubation period is 13 days per SpeciesRegistry
       expect(
         incubation.computedExpectedHatchDate,
-        startDate.add(const Duration(days: 13)),
+        DateTime.utc(2024, 1, 1).add(const Duration(days: 13)),
       );
     });
 
