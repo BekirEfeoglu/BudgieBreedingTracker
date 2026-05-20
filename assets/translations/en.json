@@ -547,6 +547,7 @@
     "no_egg_turning_today": "No active eggs to turn today",
     "days_active": "{} days",
     "hatching_in": "{} days left",
+    "hatching_overdue_days": "{} days overdue",
     "born_today": "Born today",
     "no_incubating": "No incubating eggs",
     "manage_eggs": "Manage Eggs"
@@ -2782,6 +2783,7 @@
     "sort_newest": "Newest",
     "sort_price_asc": "Price (Low to High)",
     "sort_price_desc": "Price (High to Low)",
+    "sort_action_tooltip": "Change sort order",
     "title_label": "Listing Title",
     "title_required": "Listing title is required",
     "description_label": "Description",

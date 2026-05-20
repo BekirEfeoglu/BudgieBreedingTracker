@@ -261,9 +261,19 @@ class _AiSexEstimationTabState extends ConsumerState<AiSexEstimationTab>
                     ),
             ),
             if (_selectedBird != null)
-              GestureDetector(
-                onTap: _clearBird,
-                child: Icon(
+              IconButton(
+                onPressed: _clearBird,
+                tooltip: 'common.clear'.tr(),
+                // 48dp hit area — the previous 14px GestureDetector was
+                // below WCAG 2.5.5 and effectively unreachable with a
+                // thumb on the AI sex tab's dense info row.
+                constraints: const BoxConstraints(
+                  minWidth: 48,
+                  minHeight: 48,
+                ),
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+                icon: Icon(
                   LucideIcons.x,
                   size: 14,
                   color: theme.colorScheme.onSurfaceVariant,

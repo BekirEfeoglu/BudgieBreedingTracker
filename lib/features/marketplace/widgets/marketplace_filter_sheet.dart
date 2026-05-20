@@ -50,9 +50,13 @@ class _MarketplaceFilterSheetState
     final maxText = _maxPriceController.text.trim();
     final city = _cityController.text.trim();
 
+    // Accept both comma and dot as decimal separators so TR/DE input
+    // parses correctly. double.tryParse only understands dot.
+    double? parsePrice(String text) =>
+        text.isEmpty ? null : double.tryParse(text.replaceAll(',', '.'));
     ref.read(marketplacePriceRangeProvider.notifier).state = (
-      min: minText.isNotEmpty ? double.tryParse(minText) : null,
-      max: maxText.isNotEmpty ? double.tryParse(maxText) : null,
+      min: parsePrice(minText),
+      max: parsePrice(maxText),
     );
     ref.read(marketplaceCityFilterProvider.notifier).state =
         city.isNotEmpty ? city : null;
@@ -119,9 +123,15 @@ class _MarketplaceFilterSheetState
                   Expanded(
                     child: TextFormField(
                       controller: _minPriceController,
-                      keyboardType: TextInputType.number,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
+                        // Allow comma/dot decimal separators so TR/DE
+                        // locales can enter fractional prices. The
+                        // previous digitsOnly stripped both separators
+                        // and made "1,5" → "15" silently.
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
                       ],
                       decoration: InputDecoration(
                         labelText: 'marketplace.min_price'.tr(),
@@ -134,9 +144,11 @@ class _MarketplaceFilterSheetState
                   Expanded(
                     child: TextFormField(
                       controller: _maxPriceController,
-                      keyboardType: TextInputType.number,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
                       ],
                       decoration: InputDecoration(
                         labelText: 'marketplace.max_price'.tr(),

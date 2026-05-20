@@ -547,6 +547,7 @@
     "no_egg_turning_today": "Bugün çevrilecek aktif yumurta yok",
     "days_active": "{} gün",
     "hatching_in": "{} gün kaldı",
+    "hatching_overdue_days": "{} gün gecikmiş",
     "born_today": "Bugün doğdu",
     "no_incubating": "Kuluçkada yumurta yok",
     "manage_eggs": "Yumurta Yönet"
@@ -2782,6 +2783,7 @@
     "sort_newest": "En Yeni",
     "sort_price_asc": "Fiyat (Artan)",
     "sort_price_desc": "Fiyat (Azalan)",
+    "sort_action_tooltip": "Sıralama değiştir",
     "title_label": "İlan Başlığı",
     "title_required": "İlan başlığı zorunludur",
     "description_label": "Açıklama",

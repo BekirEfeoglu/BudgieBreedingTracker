@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/constants/feature_flags.dart';
+import '../../../core/enums/bird_enums.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
@@ -186,7 +187,7 @@ class _MarketplaceDetailScreenState
                         ),
                       _InfoRow(
                         label: 'marketplace.gender_label'.tr(),
-                        value: listing.gender.name,
+                        value: _genderLabel(listing.gender),
                       ),
                       if (listing.age != null)
                         _InfoRow(
@@ -313,6 +314,14 @@ class _MarketplaceDetailScreenState
       ),
     );
   }
+
+  /// Maps a [BirdGender] to a localized label. Used so the info row
+  /// renders "Male"/"Erkek"/"Männlich" instead of the raw enum name.
+  String _genderLabel(BirdGender gender) => switch (gender) {
+    BirdGender.male => 'birds.male'.tr(),
+    BirdGender.female => 'birds.female'.tr(),
+    _ => 'marketplace.gender_unknown'.tr(),
+  };
 }
 
 class _InfoRow extends StatelessWidget {

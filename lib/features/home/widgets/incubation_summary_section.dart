@@ -60,8 +60,13 @@ class _IncubatingEggTile extends StatelessWidget {
     final statusColor = isOverdue
         ? AppColors.stageOverdue
         : AppColors.stageOngoing;
+    // Overdue gets its own label rather than rendering "in 0 days".
+    // Color-only differentiation between "today" and "overdue" failed
+    // color-blind / high-contrast users; an explicit text key now
+    // carries the meaning.
     final daysText = isOverdue
-        ? 'home.hatching_in'.tr(args: ['0'])
+        ? 'home.hatching_overdue_days'
+            .tr(args: [summary.daysRemaining.abs().toString()])
         : 'home.hatching_in'.tr(args: [summary.daysRemaining.toString()]);
 
     return Card(

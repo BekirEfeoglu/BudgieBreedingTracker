@@ -73,7 +73,11 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
           ),
           PopupMenuButton<MarketplaceSort>(
             icon: const Icon(LucideIcons.arrowUpDown),
-            tooltip: 'marketplace.sort_newest'.tr(),
+            // Tooltip describes the action ("change sort") instead of
+            // hard-coding the default sort label. Previously, screen
+            // readers and long-press hovers always announced "Newest"
+            // even when the user had selected another sort.
+            tooltip: 'marketplace.sort_action_tooltip'.tr(),
             onSelected: (sort) {
               ref.read(marketplaceSortProvider.notifier).state = sort;
             },

@@ -547,6 +547,7 @@
     "no_egg_turning_today": "Heute keine aktiven Eier zu wenden",
     "days_active": "{} Tage",
     "hatching_in": "{} Tage übrig",
+    "hatching_overdue_days": "{} Tage überfällig",
     "born_today": "Heute geboren",
     "no_incubating": "Keine Bruteier",
     "manage_eggs": "Eier verwalten"
@@ -2782,6 +2783,7 @@
     "sort_newest": "Neueste",
     "sort_price_asc": "Preis (aufsteigend)",
     "sort_price_desc": "Preis (absteigend)",
+    "sort_action_tooltip": "Sortierreihenfolge ändern",
     "title_label": "Anzeigentitel",
     "title_required": "Anzeigentitel ist erforderlich",
     "description_label": "Beschreibung",

@@ -209,13 +209,21 @@ final filteredMarketplaceListingsProvider =
       }).toList();
     }
 
-    // Price range filter
+    // Price range filter. Listings without a price (adoption / trade /
+    // wanted, or sale ads pre-dating the price field) are excluded from
+    // a price filter rather than treated as 0 — previously a `max=100`
+    // filter would surface every free-price listing alongside sale ads
+    // priced under 100, and `min=0` (the default) included them
+    // unconditionally.
     final priceRange = ref.watch(marketplacePriceRangeProvider);
-    if (priceRange.min != null) {
-      result = result.where((l) => (l.price ?? 0) >= priceRange.min!).toList();
-    }
-    if (priceRange.max != null) {
-      result = result.where((l) => (l.price ?? 0) <= priceRange.max!).toList();
+    if (priceRange.min != null || priceRange.max != null) {
+      result = result.where((l) {
+        final price = l.price;
+        if (price == null) return false;
+        if (priceRange.min != null && price < priceRange.min!) return false;
+        if (priceRange.max != null && price > priceRange.max!) return false;
+        return true;
+      }).toList();
     }
 
     // Gender filter
