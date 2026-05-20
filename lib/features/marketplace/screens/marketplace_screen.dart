@@ -13,6 +13,7 @@ import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart' as app;
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import '../../../router/route_names.dart';
+import '../providers/marketplace_form_providers.dart';
 import '../providers/marketplace_providers.dart';
 import '../widgets/marketplace_filter_bar.dart';
 import '../widgets/marketplace_listing_card.dart';
@@ -182,11 +183,24 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
                       bottom: AppSpacing.xxxl * 2,
                     ),
                     itemCount: listings.length,
-                    itemBuilder: (context, index) =>
-                        MarketplaceListingCard(
-                          key: ValueKey(listings[index].id),
-                          listing: listings[index],
-                        ),
+                    itemBuilder: (context, index) {
+                      final listing = listings[index];
+                      return MarketplaceListingCard(
+                        key: ValueKey(listing.id),
+                        listing: listing,
+                        // Wire the heart so users can favorite from the
+                        // feed. Without this the icon was a dead UI
+                        // affordance — the underlying repo method
+                        // existed but no caller invoked it.
+                        onFavoriteToggle: () => ref
+                            .read(marketplaceFormStateProvider.notifier)
+                            .toggleFavorite(
+                              userId: userId,
+                              listingId: listing.id,
+                              isFavorited: !listing.isFavoritedByMe,
+                            ),
+                      );
+                    },
                   );
                 },
               ),

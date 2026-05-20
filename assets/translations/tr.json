@@ -2872,6 +2872,7 @@
     "type_message": "Mesaj yazın...",
     "send": "Gönder",
     "send_cooldown": "Çok hızlı mesaj gönderiyorsunuz. Lütfen biraz bekleyin.",
+    "user_blocked": "Engelli bir kullanıcıyla mesajlaşamazsınız",
     "typing": "yazıyor...",
     "online": "Çevrimiçi",
     "offline": "Çevrimdışı",

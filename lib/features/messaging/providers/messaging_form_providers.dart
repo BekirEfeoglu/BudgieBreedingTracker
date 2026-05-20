@@ -7,6 +7,7 @@ import '../../../core/utils/logger.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/services/moderation/moderation_providers.dart';
 import '../../../domain/services/moderation/content_moderation_service.dart';
+import '../../../shared/providers/community.dart';
 
 class MessagingFormState {
   final bool isLoading;
@@ -117,6 +118,18 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
     required String userId2,
   }) async {
     if (state.isLoading) return null;
+    // Reject conversation creation if either party has blocked the other
+    // locally. The server-side `block_user` table also rejects new DMs
+    // both ways; this client-side guard avoids the round-trip and gives
+    // the user a localized error instead of a generic 500.
+    final blocked = ref.read(blockedUsersProvider);
+    if (blocked.contains(userId2)) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'messaging.user_blocked'.tr(),
+      );
+      return null;
+    }
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(messagingRepositoryProvider);

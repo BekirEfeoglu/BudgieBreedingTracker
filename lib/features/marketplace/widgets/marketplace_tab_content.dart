@@ -10,6 +10,7 @@ import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart' as app;
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import '../../../router/route_names.dart';
+import '../providers/marketplace_form_providers.dart';
 import '../providers/marketplace_providers.dart';
 import 'marketplace_filter_bar.dart';
 import 'marketplace_listing_card.dart';
@@ -88,8 +89,19 @@ class MarketplaceTabContent extends ConsumerWidget {
                     bottom: AppSpacing.xxxl * 2,
                   ),
                   itemCount: listings.length,
-                  itemBuilder: (context, index) =>
-                      MarketplaceListingCard(listing: listings[index]),
+                  itemBuilder: (context, index) {
+                    final listing = listings[index];
+                    return MarketplaceListingCard(
+                      listing: listing,
+                      onFavoriteToggle: () => ref
+                          .read(marketplaceFormStateProvider.notifier)
+                          .toggleFavorite(
+                            userId: userId,
+                            listingId: listing.id,
+                            isFavorited: !listing.isFavoritedByMe,
+                          ),
+                    );
+                  },
                 );
               },
             ),

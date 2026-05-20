@@ -2872,6 +2872,7 @@
     "type_message": "Type a message...",
     "send": "Send",
     "send_cooldown": "You are sending messages too quickly. Please wait a moment.",
+    "user_blocked": "You cannot message a blocked user",
     "typing": "typing...",
     "online": "Online",
     "offline": "Offline",

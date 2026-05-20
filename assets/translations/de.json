@@ -2872,6 +2872,7 @@
     "type_message": "Nachricht eingeben...",
     "send": "Senden",
     "send_cooldown": "Sie senden Nachrichten zu schnell. Bitte warten Sie einen Moment.",
+    "user_blocked": "Sie können einem blockierten Benutzer keine Nachricht senden",
     "typing": "tippt...",
     "online": "Online",
     "offline": "Offline",

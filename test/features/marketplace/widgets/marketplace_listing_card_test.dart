@@ -221,10 +221,26 @@ void main() {
       expect(find.byIcon(LucideIcons.camera), findsNothing);
     });
 
-    testWidgets('always shows heart icon overlay', (tester) async {
+    testWidgets('hides heart icon overlay when onFavoriteToggle is null',
+        (tester) async {
+      // Without a callback the heart is dead UI, so it's now hidden
+      // entirely. Callers that want the heart pass onFavoriteToggle.
       await pumpLocalizedWidget(
         tester,
         const MarketplaceListingCard(listing: _saleListing),
+      );
+
+      expect(find.byIcon(LucideIcons.heart), findsNothing);
+    });
+
+    testWidgets('shows heart icon overlay when onFavoriteToggle is wired',
+        (tester) async {
+      await pumpLocalizedWidget(
+        tester,
+        MarketplaceListingCard(
+          listing: _saleListing,
+          onFavoriteToggle: () {},
+        ),
       );
 
       expect(find.byIcon(LucideIcons.heart), findsWidgets);
@@ -279,7 +295,10 @@ void main() {
         (tester) async {
       await pumpLocalizedWidget(
         tester,
-        const MarketplaceListingCard(listing: _favoritedListing),
+        MarketplaceListingCard(
+          listing: _favoritedListing,
+          onFavoriteToggle: () {},
+        ),
       );
 
       // For favorited listing, heart should be a non-white color (active state)

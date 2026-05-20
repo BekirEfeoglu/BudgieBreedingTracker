@@ -212,28 +212,47 @@ class MarketplaceListingCard extends StatelessWidget {
                 ),
               ),
             ),
-          // Favorite heart icon (top-right)
-          Positioned(
-            top: AppSpacing.xs,
-            right: AppSpacing.xs,
-            child: GestureDetector(
-              onTap: onFavoriteToggle,
-              child: Container(
-                padding: const EdgeInsets.all(AppSpacing.xs),
-                decoration: const BoxDecoration(
-                  color: _ImageOverlayColors.overlayBackground,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  LucideIcons.heart,
-                  size: 20,
-                  color: listing.isFavoritedByMe
-                      ? _ImageOverlayColors.favoriteActive
-                      : _ImageOverlayColors.overlayIcon,
+          // Favorite heart icon (top-right). Hidden when no callback is
+          // wired — previously the heart was always rendered but no
+          // caller wired the callback, leaving it as a dead UI
+          // affordance. Screens that don't want the heart (e.g. the
+          // user's own listings) now simply omit onFavoriteToggle.
+          if (onFavoriteToggle != null)
+            Positioned(
+              top: AppSpacing.xs,
+              right: AppSpacing.xs,
+              child: Semantics(
+                button: true,
+                label: listing.isFavoritedByMe
+                    ? 'marketplace.unfavorite'.tr()
+                    : 'marketplace.favorite'.tr(),
+                child: GestureDetector(
+                  onTap: onFavoriteToggle,
+                  // 48dp tap target — the previous 28dp footprint was
+                  // below the WCAG minimum so the gesture was hard to
+                  // hit reliably.
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    alignment: Alignment.center,
+                    child: Container(
+                      padding: const EdgeInsets.all(AppSpacing.xs),
+                      decoration: const BoxDecoration(
+                        color: _ImageOverlayColors.overlayBackground,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        LucideIcons.heart,
+                        size: 20,
+                        color: listing.isFavoritedByMe
+                            ? _ImageOverlayColors.favoriteActive
+                            : _ImageOverlayColors.overlayIcon,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
