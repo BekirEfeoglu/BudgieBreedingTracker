@@ -351,10 +351,13 @@ void main() {
               );
         }
         expect(eggs, hasLength(5));
+        final expectedHatchAnchor = DateTime.utc(
+          pairingDate.year,
+          pairingDate.month,
+          pairingDate.day,
+        ).add(const Duration(days: 18));
         expect(
-          eggs.every(
-            (egg) => egg.expectedHatchDate.difference(pairingDate).inDays == 18,
-          ),
+          eggs.every((egg) => egg.expectedHatchDate == expectedHatchAnchor),
           isTrue,
         );
 
