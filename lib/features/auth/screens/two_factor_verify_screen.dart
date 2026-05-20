@@ -9,6 +9,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/edge_function_provider.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_providers.dart';
@@ -28,8 +29,26 @@ class TwoFactorVerifyScreen extends ConsumerStatefulWidget {
 
 class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
   static const _tag = '[TwoFactorVerify]';
-  static const _prefsKeyAttempts = 'mfa_failed_attempts';
-  static const _prefsKeyLockout = 'mfa_lockout_until';
+  static const _prefsKeyAttemptsBase = 'mfa_failed_attempts';
+  static const _prefsKeyLockoutBase = 'mfa_lockout_until';
+
+  /// Per-user namespaced prefs keys. The previous global keys leaked
+  /// lockout state across users on shared devices (a family tablet
+  /// where user A locked out would also block user B's MFA prompt).
+  /// The factorId scope is stable per user since the factor is tied to
+  /// the account; we also fall back to the current auth.uid() when
+  /// available.
+  String get _prefsKeyAttempts => '${_prefsKeyAttemptsBase}_${_userScope()}';
+  String get _prefsKeyLockout => '${_prefsKeyLockoutBase}_${_userScope()}';
+
+  String _userScope() {
+    final uid = ref.read(currentUserIdProvider);
+    // currentUserId reports 'anonymous' before sign-in completes; fall
+    // back to the factor id which is the next-best stable per-account
+    // discriminator on this device.
+    if (uid == 'anonymous' || uid.isEmpty) return widget.factorId;
+    return uid;
+  }
 
   /// Returns lockout duration based on cumulative failed attempts.
   /// Exponential backoff: 5→2min, 10→5min, 15→15min, 20+→60min.

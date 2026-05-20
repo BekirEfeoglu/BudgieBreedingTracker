@@ -117,31 +117,37 @@ class AuthActions with _AuthOAuthMixin, _AuthAccountMixin {
   /// Enforces a 2-minute cooldown between requests to prevent email bombing.
   /// Cooldown timestamp is persisted in [SharedPreferences] keyed by email
   /// hash so app restart does not reset the limit.
+  ///
+  /// The timestamp is recorded BEFORE the Supabase call so an app crash or
+  /// force-kill between request issued and timestamp write cannot reset the
+  /// cooldown window (the request already hit the server). If the Supabase
+  /// call itself errors after recording, the user only loses a single
+  /// retry window — strictly safer than allowing unbounded rapid retries.
   Future<void> resetPassword(String email) async {
     final key = '$_resetPasswordKeyPrefix${_emailKeyHash(email)}';
     await _enforceRateLimit(key, 'auth.rate_limit_password_reset'.tr());
+    await _recordRateLimitedCall(key);
     await _client.auth.resetPasswordForEmail(
       email,
       redirectTo: _emailRedirectTo,
     );
-    await _recordRateLimitedCall(key);
   }
 
   /// Resend email verification with rate limiting.
   ///
   /// Enforces a 2-minute cooldown between requests to prevent abuse.
   /// Cooldown timestamp is persisted in [SharedPreferences] keyed by email
-  /// hash so app restart does not reset the limit.
+  /// hash so app restart does not reset the limit. Recorded BEFORE the
+  /// Supabase call for the same crash-safety reason as [resetPassword].
   Future<ResendResponse> resendVerification(String email) async {
     final key = '$_resendVerificationKeyPrefix${_emailKeyHash(email)}';
     await _enforceRateLimit(key, 'auth.rate_limit_verification'.tr());
-    final response = _client.auth.resend(
+    await _recordRateLimitedCall(key);
+    return _client.auth.resend(
       type: OtpType.signup,
       email: email,
       emailRedirectTo: _emailRedirectTo,
     );
-    await _recordRateLimitedCall(key);
-    return response;
   }
 
   /// Sign out with best-effort OAuth token revocation.

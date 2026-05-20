@@ -87,9 +87,22 @@ export function resolvePremiumStatus(
   let gracePeriodUntil: string | null = null;
   if (!isPremium) {
     if (graceDate !== null && graceDate > now) {
+      // RevenueCat reported a grace period — trust it as-is.
       gracePeriodUntil = graceDate.toISOString();
     } else if (expiryDate !== null) {
-      gracePeriodUntil = addDays(expiryDate, 30);
+      // Server-side fabricated grace: only meaningful when the
+      // subscription expired very recently. Previously this unconditionally
+      // stamped expiry + 30 days for ANY past expiry, which (a) handed
+      // long-cancelled users a fresh extension every sync and (b) could
+      // stretch grace beyond what RevenueCat intended.
+      //
+      // We now only fabricate when:
+      //   - expiry is within the last 7 days (recent cancel / renewal lag), AND
+      //   - RevenueCat did not already set a grace_period_expires_date.
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      if (expiryDate >= sevenDaysAgo) {
+        gracePeriodUntil = addDays(expiryDate, 30);
+      }
     }
   }
 

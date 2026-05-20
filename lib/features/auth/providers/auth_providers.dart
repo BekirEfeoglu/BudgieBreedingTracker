@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../bootstrap.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/utils/safe_cast.dart';
+import 'auth_actions.dart';
 import '../../../data/models/profile_model.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/services/notifications/notification_processor.dart';
@@ -202,10 +203,13 @@ Future<bool> _checkPendingMfa(Ref ref) async {
       }
     } catch (_) {
       // If we can't even get factors, sign the user out for safety.
-      // They can re-authenticate when network is available.
+      // They can re-authenticate when network is available. Route
+      // through AuthActions.signOut so FCM-token deactivation and
+      // OAuth-token revocation still happen — calling the raw client
+      // here would leave the device receiving pushes for an account
+      // it can no longer access.
       try {
-        final client = ref.read(supabaseClientProvider);
-        await client.auth.signOut();
+        await ref.read(authActionsProvider).signOut();
         return false;
       } catch (_) {
         // Sign-out also failed (e.g., no network). Set a sentinel MFA
