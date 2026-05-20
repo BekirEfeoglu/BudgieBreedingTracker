@@ -1,30 +1,29 @@
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
-import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/feedback_remote_source.dart';
 import 'package:uuid/uuid.dart';
 
-/// Online-first: single-user send-only feedback stream. No local Drift mirror by design.
+/// Online-only single-user feedback dispatcher.
 ///
-/// Repository for user feedback (online-only, no local DB).
+/// Named `*RemoteService` per `architecture.md` § Online-First Exemption:
+/// the exemption to the `*Repository` offline-first contract only covers
+/// cross-user public feeds or realtime multi-party streams. Feedback is
+/// neither — it's a single-user send-and-fetch resource — so it belongs
+/// in the `*RemoteService` / `*OnlineSource` naming bucket.
 ///
-/// Custom implementation (not extending [BaseRepository]) because feedback
-/// is a "send and forget" entity with no Drift mirror and no sync metadata.
-/// Wraps [FeedbackRemoteSource] to enforce the repository layer boundary.
-class FeedbackRepository {
+/// [FeedbackRepository] is kept as a deprecated typedef so external
+/// callers keep compiling while the rename rolls out.
+class FeedbackRemoteService {
   final FeedbackRemoteSource _remoteSource;
 
-  const FeedbackRepository({required FeedbackRemoteSource remoteSource})
+  const FeedbackRemoteService({required FeedbackRemoteSource remoteSource})
     : _remoteSource = remoteSource;
 
   /// Fetches all feedback entries for a user, ordered by newest first.
-  Future<List<Map<String, dynamic>>> fetchByUser(String userId) async {
-    try {
-      return await _remoteSource.fetchByUser(userId);
-    } catch (e, st) {
-      AppLogger.error('FeedbackRepository', e, st);
-      rethrow;
-    }
-  }
+  /// Errors are mapped by the underlying remote source to typed
+  /// AppException subtypes (NetworkException, AuthException, etc.), so
+  /// we don't add a redundant catch here.
+  Future<List<Map<String, dynamic>>> fetchByUser(String userId) =>
+      _remoteSource.fetchByUser(userId);
 
   /// Submits a new feedback entry to Supabase.
   ///
@@ -58,3 +57,10 @@ class FeedbackRepository {
     return feedbackId;
   }
 }
+
+/// Deprecated alias kept so older imports of `FeedbackRepository` keep
+/// compiling. New code should depend on [FeedbackRemoteService] directly.
+@Deprecated('Use FeedbackRemoteService — this class is single-user online '
+    '(architecture.md § Online-First Exemption) so the *Repository name '
+    'is incorrect.')
+typedef FeedbackRepository = FeedbackRemoteService;

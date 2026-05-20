@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
-import '../../../core/utils/logger.dart';
+import 'base_remote_source.dart';
 
 class ConversationRemoteSource {
   final SupabaseClient _client;
@@ -32,8 +32,7 @@ class ConversationRemoteSource {
 
       return List<Map<String, dynamic>>.from(response);
     } catch (e, st) {
-      AppLogger.error('messaging', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('conversations', e, st);
     }
   }
 
@@ -46,8 +45,7 @@ class ConversationRemoteSource {
           .maybeSingle();
       return response;
     } catch (e, st) {
-      AppLogger.error('messaging', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('conversations', e, st);
     }
   }
 
@@ -60,8 +58,7 @@ class ConversationRemoteSource {
           .single();
       return response;
     } catch (e, st) {
-      AppLogger.error('messaging', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('conversations', e, st);
     }
   }
 
@@ -72,8 +69,7 @@ class ConversationRemoteSource {
           .update(data)
           .eq('id', id);
     } catch (e, st) {
-      AppLogger.error('messaging', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('conversations', e, st);
     }
   }
 
@@ -88,8 +84,7 @@ class ConversationRemoteSource {
           .eq('is_left', false);
       return List<Map<String, dynamic>>.from(response);
     } catch (e, st) {
-      AppLogger.error('messaging', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('conversations', e, st);
     }
   }
 
@@ -103,8 +98,7 @@ class ConversationRemoteSource {
             ignoreDuplicates: true,
           );
     } catch (e, st) {
-      AppLogger.error('messaging', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('conversations', e, st);
     }
   }
 
@@ -120,8 +114,7 @@ class ConversationRemoteSource {
           .eq('conversation_id', conversationId)
           .eq('user_id', userId);
     } catch (e, st) {
-      AppLogger.error('messaging', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('conversations', e, st);
     }
   }
 
@@ -170,8 +163,7 @@ class ConversationRemoteSource {
 
       return null;
     } catch (e, st) {
-      AppLogger.error('messaging', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('conversations', e, st);
     }
   }
 }

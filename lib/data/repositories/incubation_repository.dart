@@ -114,15 +114,30 @@ class IncubationRepository extends BaseRepository<Incubation>
     final item = await _localDao.getById(id);
     await _localDao.hardDelete(id);
     if (item != null) {
-      await _syncDao.insertItem(
-        SyncMetadata(
-          id: _uuid.v7(),
-          table: _table,
-          userId: item.userId,
-          status: SyncStatus.pendingDelete,
-          recordId: id,
-        ),
-      );
+      // Preserve any existing sync_metadata row (including retryCount) by
+      // doing a lookup-then-update instead of insertItem. A bare insert
+      // would write a fresh PK and reset retry history; that history is
+      // load-bearing for stale-error cleanup (maxSyncRetries) and Sentry
+      // reporting of unrecoverable records.
+      final existing = await _syncDao.getByRecord(_table, id);
+      if (existing != null) {
+        await _syncDao.updateItem(
+          existing.copyWith(
+            status: SyncStatus.pendingDelete,
+            updatedAt: DateTime.now(),
+          ),
+        );
+      } else {
+        await _syncDao.insertItem(
+          SyncMetadata(
+            id: _uuid.v7(),
+            table: _table,
+            userId: item.userId,
+            status: SyncStatus.pendingDelete,
+            recordId: id,
+          ),
+        );
+      }
       // Immediate remote delete — falls back to next sync on failure
       try {
         await _remoteSource.deleteById(id, userId: item.userId);

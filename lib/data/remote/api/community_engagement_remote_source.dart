@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/enums/community_enums.dart';
 import '../../../core/utils/logger.dart';
+import 'base_remote_source.dart';
 
 /// Remote data source for community engagement interactions
 /// (bookmarks, follows, blocks, reports).
@@ -48,8 +49,7 @@ class CommunityEngagementRemoteSource {
             ignoreDuplicates: true,
           );
     } catch (e, st) {
-      AppLogger.error('CommunityEngagementRemoteSource.bookmarkPost', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('community_engagement.bookmarkPost', e, st);
     }
   }
 
@@ -61,8 +61,7 @@ class CommunityEngagementRemoteSource {
           .eq('user_id', userId)
           .eq('post_id', postId);
     } catch (e, st) {
-      AppLogger.error('CommunityEngagementRemoteSource.unbookmarkPost', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('community_engagement.unbookmarkPost', e, st);
     }
   }
 
@@ -150,8 +149,7 @@ class CommunityEngagementRemoteSource {
             ignoreDuplicates: true,
           );
     } catch (e, st) {
-      AppLogger.error('CommunityEngagementRemoteSource.followUser', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('community_engagement.followUser', e, st);
     }
   }
 
@@ -163,8 +161,7 @@ class CommunityEngagementRemoteSource {
           .eq('follower_id', userId)
           .eq('following_id', targetUserId);
     } catch (e, st) {
-      AppLogger.error('CommunityEngagementRemoteSource.unfollowUser', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('community_engagement.unfollowUser', e, st);
     }
   }
 
@@ -200,8 +197,7 @@ class CommunityEngagementRemoteSource {
         'blocked_user_id': blockedUserId,
       }, onConflict: SupabaseConstants.colId);
     } catch (e, st) {
-      AppLogger.error('CommunityEngagementRemoteSource.blockUser', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('community_engagement.blockUser', e, st);
     }
   }
 
@@ -214,8 +210,7 @@ class CommunityEngagementRemoteSource {
           .eq('user_id', userId)
           .eq('blocked_user_id', blockedUserId);
     } catch (e, st) {
-      AppLogger.error('CommunityEngagementRemoteSource.unblockUser', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('community_engagement.unblockUser', e, st);
     }
   }
 
@@ -240,8 +235,7 @@ class CommunityEngagementRemoteSource {
         if (description != null) 'description': description,
       }, onConflict: 'user_id,target_id,target_type');
     } catch (e, st) {
-      AppLogger.error('CommunityEngagementRemoteSource.reportContent', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('community_engagement.reportContent', e, st);
     }
   }
 }

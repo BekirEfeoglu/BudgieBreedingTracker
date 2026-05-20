@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
-import '../../../core/utils/logger.dart';
+import 'base_remote_source.dart';
 import 'community_profile_cache.dart';
 
 /// Remote data source for community comments.
@@ -36,8 +36,11 @@ class CommunityCommentRemoteSource {
       final rows = List<Map<String, dynamic>>.from(result);
       return _profileCache.mergeIntoRows(rows);
     } catch (e, st) {
-      AppLogger.error('CommunityCommentRemoteSource.fetchByPost', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag(
+        'community_comments.fetchByPost',
+        e,
+        st,
+      );
     }
   }
 
@@ -47,8 +50,11 @@ class CommunityCommentRemoteSource {
           .from(SupabaseConstants.communityCommentsTable)
           .upsert(data, onConflict: SupabaseConstants.colId);
     } catch (e, st) {
-      AppLogger.error('CommunityCommentRemoteSource.insert', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag(
+        'community_comments.insert',
+        e,
+        st,
+      );
     }
   }
 
@@ -60,8 +66,11 @@ class CommunityCommentRemoteSource {
           .eq(SupabaseConstants.colId, commentId)
           .eq(SupabaseConstants.colUserId, userId);
     } catch (e, st) {
-      AppLogger.error('CommunityCommentRemoteSource.softDelete', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag(
+        'community_comments.softDelete',
+        e,
+        st,
+      );
     }
   }
 }

@@ -5,6 +5,7 @@ import '../../../core/constants/supabase_constants.dart';
 import '../../../core/enums/community_enums.dart';
 import '../../../core/utils/logger.dart';
 import 'community_engagement_remote_source.dart';
+import 'base_remote_source.dart';
 
 /// Remote data source for community social interactions
 /// (likes, bookmarks, comment likes, reports).
@@ -89,8 +90,7 @@ class CommunitySocialRemoteSource {
         ignoreDuplicates: true,
       );
     } catch (e, st) {
-      AppLogger.error('CommunitySocialRemoteSource.likePost', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('community_social.likePost', e, st);
     }
   }
 
@@ -102,8 +102,7 @@ class CommunitySocialRemoteSource {
           .eq('user_id', userId)
           .eq('post_id', postId);
     } catch (e, st) {
-      AppLogger.error('CommunitySocialRemoteSource.unlikePost', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('community_social.unlikePost', e, st);
     }
   }
 
@@ -160,8 +159,7 @@ class CommunitySocialRemoteSource {
         ignoreDuplicates: true,
       );
     } catch (e, st) {
-      AppLogger.error('CommunitySocialRemoteSource.likeComment', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('community_social.likeComment', e, st);
     }
   }
 
@@ -173,8 +171,7 @@ class CommunitySocialRemoteSource {
           .eq('user_id', userId)
           .eq('comment_id', commentId);
     } catch (e, st) {
-      AppLogger.error('CommunitySocialRemoteSource.unlikeComment', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('community_social.unlikeComment', e, st);
     }
   }
 

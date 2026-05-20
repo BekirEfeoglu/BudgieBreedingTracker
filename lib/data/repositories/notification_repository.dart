@@ -108,13 +108,35 @@ class NotificationRepository extends BaseRepository<AppNotification>
   @override
   Future<void> hardRemove(String id) => _localDao.hardDelete(id);
 
+  /// Conflicts detected during the last [pull] operation.
+  final List<({String recordId, String detail})> lastPullConflicts = [];
+
   @override
   Future<void> pull(String userId, {DateTime? lastSyncedAt}) async {
+    lastPullConflicts.clear();
     try {
       final remote = lastSyncedAt != null
           ? await _remoteSource.fetchUpdatedSince(userId, lastSyncedAt)
           : await _remoteSource.fetchAll(userId);
       if (remote.isNotEmpty) {
+        final localItems = await _localDao.getAll(userId);
+        final localMap = {for (final item in localItems) item.id: item};
+        final pendingIds = await _syncDao.getPendingRecordIds(userId);
+        for (final remoteItem in remote) {
+          if (!pendingIds.contains(remoteItem.id)) continue;
+          final localItem = localMap[remoteItem.id];
+          if (localItem == null) continue;
+          if (localItem.updatedAt != null &&
+              remoteItem.updatedAt != null &&
+              remoteItem.updatedAt!.isAfter(localItem.updatedAt!)) {
+            lastPullConflicts.add((
+              recordId: remoteItem.id,
+              detail: remoteItem.title.isNotEmpty
+                  ? remoteItem.title
+                  : remoteItem.id,
+            ));
+          }
+        }
         await _localDao.insertAll(remote);
       }
       // Full sync reconciliation: remove local orphans not on server

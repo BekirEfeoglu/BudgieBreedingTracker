@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
-import '../../../core/utils/logger.dart';
+import 'base_remote_source.dart';
 
 class MarketplaceFavoriteRemoteSource {
   final SupabaseClient _client;
@@ -18,8 +18,7 @@ class MarketplaceFavoriteRemoteSource {
         (response as List).map((r) => r['listing_id'] as String),
       );
     } catch (e, st) {
-      AppLogger.error('marketplace', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('marketplace_favorites', e, st);
     }
   }
 
@@ -33,8 +32,7 @@ class MarketplaceFavoriteRemoteSource {
             ignoreDuplicates: true,
           );
     } catch (e, st) {
-      AppLogger.error('marketplace', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('marketplace_favorites', e, st);
     }
   }
 
@@ -46,8 +44,7 @@ class MarketplaceFavoriteRemoteSource {
           .eq('user_id', userId)
           .eq('listing_id', listingId);
     } catch (e, st) {
-      AppLogger.error('marketplace', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('marketplace_favorites', e, st);
     }
   }
 }

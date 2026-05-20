@@ -214,11 +214,18 @@ final communitySocialRepositoryProvider = Provider<CommunitySocialRepository>((
   );
 });
 
-final feedbackRepositoryProvider = Provider<FeedbackRepository>((ref) {
-  return FeedbackRepository(
+/// Provides the online-only feedback service. New code should consume
+/// [feedbackServiceProvider]; [feedbackRepositoryProvider] remains as
+/// an alias for the typedef so we don't break in-flight imports.
+final feedbackServiceProvider = Provider<FeedbackRemoteService>((ref) {
+  return FeedbackRemoteService(
     remoteSource: ref.watch(feedbackRemoteSourceProvider),
   );
 });
+
+@Deprecated('Use feedbackServiceProvider — FeedbackRepository was renamed '
+    'to FeedbackRemoteService.')
+final feedbackRepositoryProvider = feedbackServiceProvider;
 
 final marketplaceRepositoryProvider = Provider<MarketplaceRepository>((ref) {
   return MarketplaceRepository(

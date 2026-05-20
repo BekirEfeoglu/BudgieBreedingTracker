@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
-import '../../../core/utils/logger.dart';
+import 'base_remote_source.dart';
 
 /// Remote data source for user feedback (online-only, no local DB).
 class FeedbackRemoteSource {
@@ -19,8 +19,7 @@ class FeedbackRemoteSource {
           .order(SupabaseConstants.colCreatedAt, ascending: false);
       return response;
     } catch (e, st) {
-      AppLogger.error('FeedbackRemoteSource', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('feedback', e, st);
     }
   }
 
@@ -31,8 +30,7 @@ class FeedbackRemoteSource {
           .from(SupabaseConstants.feedbackTable)
           .upsert(data, onConflict: SupabaseConstants.colId);
     } catch (e, st) {
-      AppLogger.error('FeedbackRemoteSource', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('feedback', e, st);
     }
   }
 }

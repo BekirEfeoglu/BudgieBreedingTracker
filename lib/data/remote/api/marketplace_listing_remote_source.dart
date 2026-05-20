@@ -7,6 +7,7 @@ import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
 import '../../../domain/services/moderation/image_safety_service.dart';
 import '../storage/storage_utils.dart';
+import 'base_remote_source.dart';
 
 class MarketplaceListingRemoteSource {
   final SupabaseClient _client;
@@ -83,8 +84,7 @@ class MarketplaceListingRemoteSource {
           .limit(limit);
       return List<Map<String, dynamic>>.from(response);
     } catch (e, st) {
-      AppLogger.error('marketplace', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('marketplace_listings', e, st);
     }
   }
 
@@ -109,8 +109,7 @@ class MarketplaceListingRemoteSource {
 
       return response;
     } catch (e, st) {
-      AppLogger.error('marketplace', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('marketplace_listings', e, st);
     }
   }
 
@@ -134,8 +133,7 @@ class MarketplaceListingRemoteSource {
           if (byId[id] != null) byId[id]!,
       ];
     } catch (e, st) {
-      AppLogger.error('marketplace', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('marketplace_listings', e, st);
     }
   }
 
@@ -149,8 +147,7 @@ class MarketplaceListingRemoteSource {
           .order(SupabaseConstants.colCreatedAt, ascending: false);
       return List<Map<String, dynamic>>.from(response);
     } catch (e, st) {
-      AppLogger.error('marketplace', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('marketplace_listings', e, st);
     }
   }
 
@@ -163,8 +160,7 @@ class MarketplaceListingRemoteSource {
           .single();
       return response;
     } catch (e, st) {
-      AppLogger.error('marketplace', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('marketplace_listings', e, st);
     }
   }
 
@@ -183,8 +179,7 @@ class MarketplaceListingRemoteSource {
           .single();
       return response;
     } catch (e, st) {
-      AppLogger.error('marketplace', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('marketplace_listings', e, st);
     }
   }
 
@@ -196,8 +191,7 @@ class MarketplaceListingRemoteSource {
           .eq(SupabaseConstants.colId, id)
           .eq(SupabaseConstants.colUserId, userId);
     } catch (e, st) {
-      AppLogger.error('marketplace', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('marketplace_listings', e, st);
     }
   }
 
@@ -213,8 +207,7 @@ class MarketplaceListingRemoteSource {
           .eq(SupabaseConstants.colId, id)
           .eq(SupabaseConstants.colUserId, userId);
     } catch (e, st) {
-      AppLogger.error('marketplace', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('marketplace_listings', e, st);
     }
   }
 
@@ -269,8 +262,7 @@ class MarketplaceListingRemoteSource {
           .limit(limit);
       return List<Map<String, dynamic>>.from(response);
     } catch (e, st) {
-      AppLogger.error('marketplace', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('marketplace_listings', e, st);
     }
   }
 
@@ -340,9 +332,8 @@ class MarketplaceListingRemoteSource {
         final url = fileApi.getPublicUrl(storagePath);
         urls.add(url);
       } catch (e, st) {
-        AppLogger.error('marketplace', e, st);
-        rethrow;
-      }
+      throw BaseRemoteSource.handleErrorForTag('marketplace_listings', e, st);
+    }
     }
     return urls;
   }

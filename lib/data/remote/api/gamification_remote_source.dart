@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
+import 'base_remote_source.dart';
 
 class GamificationRemoteSource {
   final SupabaseClient _client;
@@ -16,8 +17,7 @@ class GamificationRemoteSource {
           .order('sort_order');
       return List<Map<String, dynamic>>.from(response);
     } catch (e, st) {
-      AppLogger.error('gamification', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('gamification', e, st);
     }
   }
 
@@ -29,8 +29,7 @@ class GamificationRemoteSource {
           .eq('user_id', userId);
       return List<Map<String, dynamic>>.from(response);
     } catch (e, st) {
-      AppLogger.error('gamification', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('gamification', e, st);
     }
   }
 
@@ -40,8 +39,7 @@ class GamificationRemoteSource {
           .from(SupabaseConstants.userBadgesTable)
           .upsert(data, onConflict: 'user_id,badge_id');
     } catch (e, st) {
-      AppLogger.error('gamification', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('gamification', e, st);
     }
   }
 
@@ -54,8 +52,7 @@ class GamificationRemoteSource {
           .maybeSingle();
       return response;
     } catch (e, st) {
-      AppLogger.error('gamification', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('gamification', e, st);
     }
   }
 
@@ -65,8 +62,7 @@ class GamificationRemoteSource {
           .from(SupabaseConstants.userLevelsTable)
           .upsert(data, onConflict: 'user_id');
     } catch (e, st) {
-      AppLogger.error('gamification', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('gamification', e, st);
     }
   }
 
@@ -76,8 +72,7 @@ class GamificationRemoteSource {
           .from(SupabaseConstants.xpTransactionsTable)
           .upsert(data, onConflict: SupabaseConstants.colId);
     } catch (e, st) {
-      AppLogger.error('gamification', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('gamification', e, st);
     }
   }
 
@@ -94,8 +89,7 @@ class GamificationRemoteSource {
           .limit(limit);
       return List<Map<String, dynamic>>.from(response);
     } catch (e, st) {
-      AppLogger.error('gamification', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('gamification', e, st);
     }
   }
 
@@ -108,8 +102,7 @@ class GamificationRemoteSource {
           .limit(limit);
       return List<Map<String, dynamic>>.from(response);
     } catch (e, st) {
-      AppLogger.error('gamification', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('gamification', e, st);
     }
   }
 
@@ -149,8 +142,7 @@ class GamificationRemoteSource {
           })
           .eq('user_id', userId);
     } catch (e, st) {
-      AppLogger.error('gamification', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('gamification', e, st);
     }
   }
 
@@ -228,8 +220,7 @@ class GamificationRemoteSource {
           .update({'level': level, 'xp_title': title})
           .eq('user_id', userId);
     } catch (e, st) {
-      AppLogger.error('gamification', e, st);
-      rethrow;
+      throw BaseRemoteSource.handleErrorForTag('gamification', e, st);
     }
   }
 }

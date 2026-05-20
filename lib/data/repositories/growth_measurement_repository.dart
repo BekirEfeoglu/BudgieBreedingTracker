@@ -155,13 +155,42 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
   @override
   Future<void> hardRemove(String id) => _localDao.hardDelete(id);
 
+  /// Conflicts detected during the last [pull] operation. The sync
+  /// orchestrator consumes this so the user can be told about local
+  /// pending edits that were silently overwritten by a fresher remote
+  /// row.
+  final List<({String recordId, String detail})> lastPullConflicts = [];
+
   @override
   Future<void> pull(String userId, {DateTime? lastSyncedAt}) async {
+    lastPullConflicts.clear();
     try {
       final remote = lastSyncedAt != null
           ? await _remoteSource.fetchUpdatedSince(userId, lastSyncedAt)
           : await _remoteSource.fetchAll(userId);
+
       if (remote.isNotEmpty) {
+        // Detect conflicts: a local row with PENDING sync metadata
+        // whose remote counterpart has a NEWER updatedAt is about to
+        // be overwritten. Surface that as a conflict instead of
+        // silently dropping the user's local edits.
+        final localItems = await _localDao.getAll(userId);
+        final localMap = {for (final item in localItems) item.id: item};
+        final pendingIds = await _syncDao.getPendingRecordIds(userId);
+        for (final remoteItem in remote) {
+          if (!pendingIds.contains(remoteItem.id)) continue;
+          final localItem = localMap[remoteItem.id];
+          if (localItem == null) continue;
+          if (localItem.updatedAt != null &&
+              remoteItem.updatedAt != null &&
+              remoteItem.updatedAt!.isAfter(localItem.updatedAt!)) {
+            lastPullConflicts.add((
+              recordId: remoteItem.id,
+              detail: remoteItem.id,
+            ));
+          }
+        }
+
         await _localDao.insertAll(remote);
       }
       // Full sync reconciliation: remove local orphans not on server
