@@ -28,6 +28,7 @@ class CalendarEventGenerator {
     required String breedingPairId,
     required DateTime startDate,
     required String pairLabel,
+    String? incubationId,
     Species species = Species.unknown,
   }) async {
     try {
@@ -56,6 +57,11 @@ class CalendarEventGenerator {
             type: EventType.breeding,
             userId: userId,
             breedingPairId: breedingPairId,
+            // Populate incubationId so EventRepository.removeByIncubationIds
+            // can drop these milestones when the parent incubation closes.
+            // Older callers may still pass null; the cleanup path tolerates
+            // missing back-pointers by treating them as already-orphaned.
+            incubationId: incubationId,
             description: 'calendar.day_milestone'.tr(
               args: ['${entry.key}', entry.value],
             ),
@@ -78,11 +84,16 @@ class CalendarEventGenerator {
   }
 
   /// Generates egg laying date and expected hatch date events for an egg.
+  ///
+  /// Pass [eggId] so the resulting events carry an FK back to the egg
+  /// and can be removed via EventRepository.removeByEggIds when the
+  /// egg is deleted. Without it the events become permanent orphans.
   Future<void> generateEggEvents({
     required String userId,
     required DateTime layDate,
     required int eggNumber,
     required String incubationId,
+    String? eggId,
     Species species = Species.unknown,
   }) async {
     try {
@@ -93,6 +104,8 @@ class CalendarEventGenerator {
         eventDate: layDate,
         type: EventType.eggLaying,
         userId: userId,
+        eggId: eggId,
+        incubationId: incubationId,
         description: 'calendar.egg_laid_desc'.tr(args: ['$eggNumber']),
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
@@ -110,6 +123,8 @@ class CalendarEventGenerator {
           eventDate: hatchDate,
           type: EventType.hatching,
           userId: userId,
+          eggId: eggId,
+          incubationId: incubationId,
           description: 'calendar.egg_expected_hatch_desc'.tr(
             args: ['$eggNumber'],
           ),

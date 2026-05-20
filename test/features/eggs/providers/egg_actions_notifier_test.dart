@@ -560,6 +560,7 @@ void main() {
           () => mockCalendarGen.generateIncubationEvents(
             userId: 'test-user',
             breedingPairId: 'pair-1',
+            incubationId: 'inc-1',
             startDate: layDate,
             pairLabel: any(named: 'pairLabel'),
             species: Species.budgie,

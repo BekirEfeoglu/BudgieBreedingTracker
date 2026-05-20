@@ -375,6 +375,41 @@ Future<void> _migrateV21ToV22(AppDatabase db, Migrator m) async {
   await db.customStatement('PRAGMA foreign_keys = ON');
 }
 
+/// V23 -> V24: Adds `egg_id` and `incubation_id` FK columns to the events
+/// table so calendar entries generated for egg + incubation milestones
+/// can be cleaned up when their parent is deleted. Previously these
+/// events carried no back-pointer and accumulated as permanent orphans.
+///
+/// Both columns are nullable; existing rows keep NULL and are unaffected.
+/// References use NO ACTION (matching the other FK columns on this
+/// table) — cascade is unnecessary because the repository handles
+/// soft-delete cleanup via removeByEggIds / removeByIncubationIds.
+Future<void> _migrateV23ToV24(AppDatabase db, Migrator m) async {
+  final hasEggId = await _tableHasColumn(db, 'events', 'egg_id');
+  if (!hasEggId) {
+    await db.customStatement('ALTER TABLE events ADD COLUMN egg_id TEXT');
+  }
+  final hasIncubationId =
+      await _tableHasColumn(db, 'events', 'incubation_id');
+  if (!hasIncubationId) {
+    await db.customStatement(
+      'ALTER TABLE events ADD COLUMN incubation_id TEXT',
+    );
+  }
+
+  // Indexes for the new FK columns. They're filter targets for
+  // removeByEggIds / removeByIncubationIds, so an index keeps cleanup
+  // O(log n) even on accounts with thousands of events.
+  await db.customStatement(
+    'CREATE INDEX IF NOT EXISTS idx_events_egg_id '
+    'ON events (egg_id) WHERE egg_id IS NOT NULL',
+  );
+  await db.customStatement(
+    'CREATE INDEX IF NOT EXISTS idx_events_incubation_id '
+    'ON events (incubation_id) WHERE incubation_id IS NOT NULL',
+  );
+}
+
 /// Checks whether [tableName] has a column named [columnName] via PRAGMA.
 ///
 /// Internal migration helper only — [tableName] and [columnName] must be

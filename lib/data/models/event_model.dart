@@ -20,6 +20,8 @@ abstract class Event with _$Event {
     String? birdId,
     String? breedingPairId,
     String? chickId,
+    String? eggId,
+    String? incubationId,
     String? notes,
     DateTime? endDate,
     DateTime? reminderDate,

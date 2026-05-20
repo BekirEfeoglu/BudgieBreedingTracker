@@ -104,6 +104,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
             await calendarGen.generateIncubationEvents(
               userId: userId,
               breedingPairId: pairId,
+              incubationId: incubationId,
               startDate: layDate,
               pairLabel: 'breeding.pair_label'.tr(args: [_shortId(pairId)]),
               species: species,
@@ -147,6 +148,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
           layDate: layDate,
           eggNumber: eggNumber,
           incubationId: incubationId,
+          eggId: egg.id,
           species: species,
         );
       } catch (e) {
@@ -459,6 +461,19 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       } catch (e) {
         AppLogger.warning(
           'Failed to cancel egg turning reminders for $id: $e',
+        );
+      }
+
+      // Soft-delete any calendar events that reference this egg so the
+      // calendar doesn't keep displaying entries for a deleted entity.
+      // Older rows (created before the eggId column existed) carry NULL
+      // for eggId and won't match — they're already orphans on the
+      // calendar side and stay until the next full sync reconciliation.
+      try {
+        await ref.read(eventRepositoryProvider).removeByEggIds([id]);
+      } catch (e) {
+        AppLogger.warning(
+          'Failed to delete calendar events for egg $id: $e',
         );
       }
 
