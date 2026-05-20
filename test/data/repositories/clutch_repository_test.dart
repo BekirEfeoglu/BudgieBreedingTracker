@@ -18,6 +18,9 @@ void main() {
   late MockClutchesDao localDao;
   late MockClutchRemoteSource remoteSource;
   late MockSyncMetadataDao syncDao;
+  late MockIncubationsDao incubationsDao;
+  late MockBirdsDao birdsDao;
+  late MockNestsDao nestsDao;
   late ClutchRepository repository;
 
   const userId = 'user-1';
@@ -32,11 +35,17 @@ void main() {
     localDao = MockClutchesDao();
     remoteSource = MockClutchRemoteSource();
     syncDao = MockSyncMetadataDao();
+    incubationsDao = MockIncubationsDao();
+    birdsDao = MockBirdsDao();
+    nestsDao = MockNestsDao();
 
     repository = ClutchRepository(
       localDao: localDao,
       remoteSource: remoteSource,
       syncDao: syncDao,
+      incubationsDao: incubationsDao,
+      birdsDao: birdsDao,
+      nestsDao: nestsDao,
     );
 
     when(() => localDao.insertItem(any())).thenAnswer((_) async {});
@@ -72,6 +81,20 @@ void main() {
       () => syncDao.getPendingByTable(any(), any()),
     ).thenAnswer((_) async => []);
     when(() => syncDao.getPendingRecordIds(any())).thenAnswer((_) async => {});
+    when(
+      () => syncDao.getErrorsByTable(any(), any()),
+    ).thenAnswer((_) async => []);
+    when(() => syncDao.hardDelete(any())).thenAnswer((_) async {});
+
+    when(
+      () => incubationsDao.getById(any()),
+    ).thenAnswer((_) async => null);
+    when(
+      () => birdsDao.getByIdIncludingDeleted(any()),
+    ).thenAnswer((_) async => null);
+    when(
+      () => nestsDao.getByIdIncludingDeleted(any()),
+    ).thenAnswer((_) async => null);
   });
 
   group('ClutchRepository', () {

@@ -1,6 +1,9 @@
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/breeding_pairs_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/chicks_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/events_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
@@ -12,11 +15,19 @@ import 'package:supabase_flutter/supabase_flutter.dart' show RealtimeChannel;
 import 'package:uuid/uuid.dart';
 
 /// Repository for [Event] entities with offline-first sync support.
+///
+/// Uses [ValidatedSyncMixin] to validate FK references (bird, breeding
+/// pair, chick) before pushing to Supabase. Without this, orphan child
+/// pushes would 23503 on the server and accumulate as sync errors with
+/// no monitoring visibility.
 class EventRepository extends BaseRepository<Event>
-    with SyncableRepository<Event> {
+    with SyncableRepository<Event>, ValidatedSyncMixin<Event> {
   final EventsDao _localDao;
   final EventRemoteSource _remoteSource;
   final SyncMetadataDao _syncDao;
+  final BirdsDao _birdsDao;
+  final BreedingPairsDao _breedingPairsDao;
+  final ChicksDao _chicksDao;
 
   static const _uuid = Uuid();
 
@@ -24,21 +35,105 @@ class EventRepository extends BaseRepository<Event>
     required EventsDao localDao,
     required EventRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
+    required BirdsDao birdsDao,
+    required BreedingPairsDao breedingPairsDao,
+    required ChicksDao chicksDao,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
-       _syncDao = syncDao;
+       _syncDao = syncDao,
+       _birdsDao = birdsDao,
+       _breedingPairsDao = breedingPairsDao,
+       _chicksDao = chicksDao;
 
   static const _table = SupabaseConstants.eventsTable;
 
   /// Conflicts detected during the last [pull] operation.
   final List<({String recordId, String detail})> lastPullConflicts = [];
 
-  // ── SyncableRepository overrides ─────────────────────────────────────
+  // ── SyncableRepository / ValidatedSyncMixin overrides ────────────────
   @override
   SyncMetadataDao get syncDao => _syncDao;
 
   @override
   String get syncTableName => _table;
+
+  @override
+  String get syncLogTag => 'EventRepository';
+
+  @override
+  Future<Event?> getLocalById(String id) => _localDao.getById(id);
+
+  @override
+  Future<Event?> getLocalByIdForSync(String id) =>
+      _localDao.getByIdIncludingDeleted(id);
+
+  @override
+  bool shouldValidateForeignKeys(Event item) => !item.isDeleted;
+
+  @override
+  String getEntityId(Event item) => item.id;
+
+  @override
+  String getEntityUserId(Event item) => item.userId;
+
+  @override
+  Future<String?> validateForeignKeys(Event event) async {
+    if (event.birdId != null) {
+      final reason = await _validateParent(
+        recordId: event.birdId!,
+        parentLookup: () => _birdsDao.getByIdIncludingDeleted(event.birdId!),
+        isDeleted: (bird) => bird.isDeleted,
+        label: 'bird',
+        syncTable: SupabaseConstants.birdsTable,
+      );
+      if (reason != null) return reason;
+    }
+    if (event.breedingPairId != null) {
+      final reason = await _validateParent(
+        recordId: event.breedingPairId!,
+        parentLookup: () =>
+            _breedingPairsDao.getByIdIncludingDeleted(event.breedingPairId!),
+        isDeleted: (pair) => pair.isDeleted,
+        label: 'breeding pair',
+        syncTable: SupabaseConstants.breedingPairsTable,
+      );
+      if (reason != null) return reason;
+    }
+    if (event.chickId != null) {
+      final reason = await _validateParent(
+        recordId: event.chickId!,
+        parentLookup: () => _chicksDao.getByIdIncludingDeleted(event.chickId!),
+        isDeleted: (chick) => chick.isDeleted,
+        label: 'chick',
+        syncTable: SupabaseConstants.chicksTable,
+      );
+      if (reason != null) return reason;
+    }
+    return null;
+  }
+
+  Future<String?> _validateParent<P>({
+    required String recordId,
+    required Future<P?> Function() parentLookup,
+    required bool Function(P) isDeleted,
+    required String label,
+    required String syncTable,
+  }) async {
+    final parent = await parentLookup();
+    if (parent == null) {
+      return 'Referenced $label $recordId not found locally';
+    }
+    if (isDeleted(parent)) {
+      return 'Referenced $label $recordId pending tombstone sync';
+    }
+    final syncMeta = await _syncDao.getByRecord(syncTable, recordId);
+    if (syncMeta != null &&
+        (syncMeta.status == SyncStatus.pending ||
+            syncMeta.status == SyncStatus.pendingDelete)) {
+      return '$label $recordId not yet synced to server';
+    }
+    return null;
+  }
 
   @override
   Stream<List<Event>> watchAll(String userId) => _localDao.watchAll(userId);
@@ -179,27 +274,6 @@ class EventRepository extends BaseRepository<Event>
     } on AppException catch (e) {
       await markError(item.id, item.userId, e.message);
     }
-  }
-
-  @override
-  Future<PushStats> pushAll(String userId) async {
-    int pushed = 0;
-    int orphansCleaned = 0;
-    final tablePending = await _syncDao.getPendingByTable(userId, _table);
-    for (final meta in tablePending) {
-      final item = await _localDao.getByIdIncludingDeleted(meta.recordId ?? '');
-      if (item == null) {
-        AppLogger.warning(
-          '[EventRepo] Orphan sync_metadata cleaned: ${meta.recordId}',
-        );
-        await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
-        orphansCleaned++;
-        continue;
-      }
-      await push(item);
-      pushed++;
-    }
-    return (pushed: pushed, orphansCleaned: orphansCleaned);
   }
 
   // ── Realtime helpers ─────────────────────────────────────────────────

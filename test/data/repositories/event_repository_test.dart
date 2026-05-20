@@ -2,15 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/events_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/event_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/repositories/event_repository.dart';
 
 import '../../helpers/mocks.dart';
 import '../../helpers/test_fixtures.dart';
-
-class MockEventsDao extends Mock implements EventsDao {}
 
 class MockEventRemoteSource extends Mock implements EventRemoteSource {}
 
@@ -28,6 +25,9 @@ void main() {
   late MockEventsDao localDao;
   late MockEventRemoteSource remoteSource;
   late MockSyncMetadataDao syncDao;
+  late MockBirdsDao birdsDao;
+  late MockBreedingPairsDao breedingPairsDao;
+  late MockChicksDao chicksDao;
   late EventRepository repository;
 
   const userId = 'user-1';
@@ -42,11 +42,17 @@ void main() {
     localDao = MockEventsDao();
     remoteSource = MockEventRemoteSource();
     syncDao = MockSyncMetadataDao();
+    birdsDao = MockBirdsDao();
+    breedingPairsDao = MockBreedingPairsDao();
+    chicksDao = MockChicksDao();
 
     repository = EventRepository(
       localDao: localDao,
       remoteSource: remoteSource,
       syncDao: syncDao,
+      birdsDao: birdsDao,
+      breedingPairsDao: breedingPairsDao,
+      chicksDao: chicksDao,
     );
 
     when(() => localDao.insertItem(any())).thenAnswer((_) async {});
@@ -75,6 +81,21 @@ void main() {
     when(() => syncDao.getPendingRecordIds(any())).thenAnswer((_) async => {});
     when(() => syncDao.getByRecord(any(), any())).thenAnswer((_) async => null);
     when(() => syncDao.updateItem(any())).thenAnswer((_) async {});
+    when(
+      () => syncDao.getErrorsByTable(any(), any()),
+    ).thenAnswer((_) async => []);
+    when(() => syncDao.hardDelete(any())).thenAnswer((_) async {});
+
+    // FK validator DAOs: default null/empty so non-FK tests pass.
+    when(
+      () => birdsDao.getByIdIncludingDeleted(any()),
+    ).thenAnswer((_) async => null);
+    when(
+      () => breedingPairsDao.getByIdIncludingDeleted(any()),
+    ).thenAnswer((_) async => null);
+    when(
+      () => chicksDao.getByIdIncludingDeleted(any()),
+    ).thenAnswer((_) async => null);
   });
 
   group('EventRepository', () {

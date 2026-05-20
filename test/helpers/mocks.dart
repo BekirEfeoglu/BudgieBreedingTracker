@@ -5,11 +5,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/breeding_pairs_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/chicks_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/clutches_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/conflict_history_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/events_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/genetics_history_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/incubations_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/nests_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/community_profile_cache.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/community_social_remote_source.dart';
@@ -112,6 +115,12 @@ class MockIncubationsDao extends Mock implements IncubationsDao {}
 class MockBirdsDao extends Mock implements BirdsDao {}
 
 class MockBreedingPairsDao extends Mock implements BreedingPairsDao {}
+
+class MockChicksDao extends Mock implements ChicksDao {}
+
+class MockEventsDao extends Mock implements EventsDao {}
+
+class MockNestsDao extends Mock implements NestsDao {}
 
 class MockConflictHistoryDao extends Mock implements ConflictHistoryDao {}
 

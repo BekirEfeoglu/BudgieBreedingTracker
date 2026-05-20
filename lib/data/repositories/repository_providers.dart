@@ -105,6 +105,9 @@ final eventRepositoryProvider = Provider<EventRepository>((ref) {
     localDao: ref.watch(eventsDaoProvider),
     remoteSource: ref.watch(eventRemoteSourceProvider),
     syncDao: ref.watch(syncMetadataDaoProvider),
+    birdsDao: ref.watch(birdsDaoProvider),
+    breedingPairsDao: ref.watch(breedingPairsDaoProvider),
+    chicksDao: ref.watch(chicksDaoProvider),
   );
 });
 
@@ -135,6 +138,9 @@ final clutchRepositoryProvider = Provider<ClutchRepository>((ref) {
     localDao: ref.watch(clutchesDaoProvider),
     remoteSource: ref.watch(clutchRemoteSourceProvider),
     syncDao: ref.watch(syncMetadataDaoProvider),
+    incubationsDao: ref.watch(incubationsDaoProvider),
+    birdsDao: ref.watch(birdsDaoProvider),
+    nestsDao: ref.watch(nestsDaoProvider),
   );
 });
 

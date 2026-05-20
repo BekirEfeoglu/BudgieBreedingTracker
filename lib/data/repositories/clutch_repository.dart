@@ -1,7 +1,10 @@
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/clutches_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/incubations_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/nests_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/clutch_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
@@ -9,11 +12,20 @@ import 'package:budgie_breeding_tracker/data/remote/api/clutch_remote_source.dar
 import 'package:budgie_breeding_tracker/data/repositories/base_repository.dart';
 import 'package:uuid/uuid.dart';
 
+/// Repository for [Clutch] entities with offline-first sync support.
+///
+/// Uses [ValidatedSyncMixin] to validate FK references (incubation, male
+/// bird, female bird, nest) before pushing to Supabase. Without this,
+/// orphan child pushes would 23503 on the server, get marked as sync
+/// errors, and accumulate forever without monitoring visibility.
 class ClutchRepository extends BaseRepository<Clutch>
-    with SyncableRepository<Clutch> {
+    with SyncableRepository<Clutch>, ValidatedSyncMixin<Clutch> {
   final ClutchesDao _localDao;
   final ClutchRemoteSource _remoteSource;
   final SyncMetadataDao _syncDao;
+  final IncubationsDao _incubationsDao;
+  final BirdsDao _birdsDao;
+  final NestsDao _nestsDao;
 
   static const _uuid = Uuid();
 
@@ -21,21 +33,114 @@ class ClutchRepository extends BaseRepository<Clutch>
     required ClutchesDao localDao,
     required ClutchRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
+    required IncubationsDao incubationsDao,
+    required BirdsDao birdsDao,
+    required NestsDao nestsDao,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
-       _syncDao = syncDao;
+       _syncDao = syncDao,
+       _incubationsDao = incubationsDao,
+       _birdsDao = birdsDao,
+       _nestsDao = nestsDao;
 
   static const _table = SupabaseConstants.clutchesTable;
 
   /// Conflicts detected during the last [pull] operation.
   final List<({String recordId, String detail})> lastPullConflicts = [];
 
-  // ── SyncableRepository overrides ─────────────────────────────────────
+  // ── SyncableRepository / ValidatedSyncMixin overrides ────────────────
   @override
   SyncMetadataDao get syncDao => _syncDao;
 
   @override
   String get syncTableName => _table;
+
+  @override
+  String get syncLogTag => 'ClutchRepository';
+
+  @override
+  Future<Clutch?> getLocalById(String id) => _localDao.getById(id);
+
+  @override
+  Future<Clutch?> getLocalByIdForSync(String id) =>
+      _localDao.getByIdIncludingDeleted(id);
+
+  @override
+  bool shouldValidateForeignKeys(Clutch item) => !item.isDeleted;
+
+  @override
+  String getEntityId(Clutch item) => item.id;
+
+  @override
+  String getEntityUserId(Clutch item) => item.userId;
+
+  @override
+  Future<String?> validateForeignKeys(Clutch clutch) async {
+    if (clutch.incubationId != null) {
+      // Incubation hard-deletes — no isDeleted check needed.
+      final incubation =
+          await _incubationsDao.getById(clutch.incubationId!);
+      if (incubation == null) {
+        return 'Referenced incubation ${clutch.incubationId} not found locally';
+      }
+      final syncMeta = await _syncDao.getByRecord(
+        SupabaseConstants.incubationsTable,
+        clutch.incubationId!,
+      );
+      if (syncMeta != null &&
+          (syncMeta.status == SyncStatus.pending ||
+              syncMeta.status == SyncStatus.pendingDelete)) {
+        return 'Incubation ${clutch.incubationId} not yet synced to server';
+      }
+    }
+    if (clutch.maleBirdId != null) {
+      final reason = await _validateBird(clutch.maleBirdId!, role: 'Male');
+      if (reason != null) return reason;
+    }
+    if (clutch.femaleBirdId != null) {
+      final reason = await _validateBird(clutch.femaleBirdId!, role: 'Female');
+      if (reason != null) return reason;
+    }
+    if (clutch.nestId != null) {
+      final nest = await _nestsDao.getByIdIncludingDeleted(clutch.nestId!);
+      if (nest == null) {
+        return 'Referenced nest ${clutch.nestId} not found locally';
+      }
+      if (nest.isDeleted) {
+        return 'Referenced nest ${clutch.nestId} pending tombstone sync';
+      }
+      final syncMeta = await _syncDao.getByRecord(
+        SupabaseConstants.nestsTable,
+        clutch.nestId!,
+      );
+      if (syncMeta != null &&
+          (syncMeta.status == SyncStatus.pending ||
+              syncMeta.status == SyncStatus.pendingDelete)) {
+        return 'Nest ${clutch.nestId} not yet synced to server';
+      }
+    }
+    return null;
+  }
+
+  Future<String?> _validateBird(String birdId, {required String role}) async {
+    final bird = await _birdsDao.getByIdIncludingDeleted(birdId);
+    if (bird == null) {
+      return 'Referenced $role bird $birdId not found locally';
+    }
+    if (bird.isDeleted) {
+      return '$role bird $birdId pending tombstone sync';
+    }
+    final syncMeta = await _syncDao.getByRecord(
+      SupabaseConstants.birdsTable,
+      birdId,
+    );
+    if (syncMeta != null &&
+        (syncMeta.status == SyncStatus.pending ||
+            syncMeta.status == SyncStatus.pendingDelete)) {
+      return '$role bird $birdId not yet synced to server';
+    }
+    return null;
+  }
 
   @override
   Stream<List<Clutch>> watchAll(String userId) => _localDao.watchAll(userId);
@@ -157,27 +262,6 @@ class ClutchRepository extends BaseRepository<Clutch>
     } on AppException catch (e) {
       await markError(item.id, item.userId, e.message);
     }
-  }
-
-  @override
-  Future<PushStats> pushAll(String userId) async {
-    int pushed = 0;
-    int orphansCleaned = 0;
-    final tablePending = await _syncDao.getPendingByTable(userId, _table);
-    for (final meta in tablePending) {
-      final item = await _localDao.getByIdIncludingDeleted(meta.recordId ?? '');
-      if (item == null) {
-        AppLogger.warning(
-          '[ClutchRepo] Orphan sync_metadata cleaned: ${meta.recordId}',
-        );
-        await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
-        orphansCleaned++;
-        continue;
-      }
-      await push(item);
-      pushed++;
-    }
-    return (pushed: pushed, orphansCleaned: orphansCleaned);
   }
 
   Future<List<Clutch>> getByBreeding(String breedingId) =>

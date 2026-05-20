@@ -14,8 +14,12 @@ import 'package:uuid/uuid.dart';
 /// Repository for [Incubation] entities with offline-first sync support.
 ///
 /// Incubation has no `isDeleted` field, so [remove] performs a hard delete.
+/// Uses [ValidatedSyncMixin] for stale-error cleanup + FK validation. The
+/// mixin's default `pushAll` would treat hard-deleted tombstones as
+/// orphans because [getLocalByIdForSync] returns null, so [pushAll] is
+/// overridden to handle [SyncStatus.pendingDelete] explicitly first.
 class IncubationRepository extends BaseRepository<Incubation>
-    with SyncableRepository<Incubation> {
+    with SyncableRepository<Incubation>, ValidatedSyncMixin<Incubation> {
   final IncubationsDao _localDao;
   final IncubationRemoteSource _remoteSource;
   final SyncMetadataDao _syncDao;
@@ -43,12 +47,24 @@ class IncubationRepository extends BaseRepository<Incubation>
   List<({String recordId, String detail})> get lastPullConflicts =>
       List.unmodifiable(_lastPullConflicts);
 
-  // ── SyncableRepository overrides ─────────────────────────────────────
+  // ── SyncableRepository / ValidatedSyncMixin overrides ────────────────
   @override
   SyncMetadataDao get syncDao => _syncDao;
 
   @override
   String get syncTableName => _table;
+
+  @override
+  String get syncLogTag => 'IncubationRepository';
+
+  @override
+  Future<Incubation?> getLocalById(String id) => _localDao.getById(id);
+
+  @override
+  String getEntityId(Incubation item) => item.id;
+
+  @override
+  String getEntityUserId(Incubation item) => item.userId;
 
   @override
   Stream<List<Incubation>> watchAll(String userId) =>
@@ -180,74 +196,108 @@ class IncubationRepository extends BaseRepository<Incubation>
     }
   }
 
+  @override
   Future<String?> validateForeignKeys(Incubation incubation) async {
     if (incubation.breedingPairId != null) {
-      final pair = await _breedingPairsDao.getById(incubation.breedingPairId!);
+      // Soft-delete-aware lookup: a pair waiting for tombstone push
+      // should report as "pending tombstone sync" so the mixin's
+      // continue-loop retries on the next push rather than treating
+      // the child as a true orphan and stranding it forever.
+      final pair = await _breedingPairsDao
+          .getByIdIncludingDeleted(incubation.breedingPairId!);
       if (pair == null) {
         return 'Referenced breeding pair ${incubation.breedingPairId} not found locally';
+      }
+      if (pair.isDeleted) {
+        return 'Referenced breeding pair ${incubation.breedingPairId} pending tombstone sync';
       }
       final syncMeta = await _syncDao.getByRecord(
         SupabaseConstants.breedingPairsTable,
         incubation.breedingPairId!,
       );
-      if (syncMeta != null) {
+      if (syncMeta != null &&
+          (syncMeta.status == SyncStatus.pending ||
+              syncMeta.status == SyncStatus.pendingDelete)) {
         return 'Breeding pair ${incubation.breedingPairId} not yet synced to server';
       }
     }
     if (incubation.clutchId != null) {
-      final clutch = await _clutchesDao.getById(incubation.clutchId!);
+      final clutch =
+          await _clutchesDao.getByIdIncludingDeleted(incubation.clutchId!);
       if (clutch == null) {
         return 'Referenced clutch ${incubation.clutchId} not found locally';
+      }
+      if (clutch.isDeleted) {
+        return 'Referenced clutch ${incubation.clutchId} pending tombstone sync';
       }
       final syncMeta = await _syncDao.getByRecord(
         SupabaseConstants.clutchesTable,
         incubation.clutchId!,
       );
-      if (syncMeta != null) {
+      if (syncMeta != null &&
+          (syncMeta.status == SyncStatus.pending ||
+              syncMeta.status == SyncStatus.pendingDelete)) {
         return 'Clutch ${incubation.clutchId} not yet synced to server';
       }
     }
     return null;
   }
 
+  /// Hard-delete pushAll: handles [SyncStatus.pendingDelete] explicitly,
+  /// then delegates the normal path to the mixin's FK-validated loop.
+  /// Without the explicit branch, the mixin would treat hard-deleted
+  /// tombstones as orphans (because `getLocalById` returns null) and
+  /// silently clean them up — the remote row would never be deleted.
   @override
   Future<PushStats> pushAll(String userId) async {
     int pushed = 0;
     int orphansCleaned = 0;
+    await clearStaleErrors(userId);
+
     final tablePending = await _syncDao.getPendingByTable(userId, _table);
     for (final meta in tablePending) {
+      final recordId = meta.recordId ?? '';
+      if (recordId.isEmpty) {
+        await _syncDao.deleteByRecord(_table, recordId);
+        orphansCleaned++;
+        continue;
+      }
+
       if (meta.status == SyncStatus.pendingDelete) {
         try {
-          await _remoteSource.deleteById(meta.recordId ?? '', userId: userId);
-          await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
+          await _remoteSource.deleteById(recordId, userId: userId);
+          await _syncDao.deleteByRecord(_table, recordId);
           pushed++;
         } on AppException catch (e) {
-          await markError(meta.recordId ?? '', userId, e.message);
+          await markError(recordId, userId, e.message);
         }
-      } else {
-        final item = await _localDao.getById(meta.recordId ?? '');
-        if (item == null) {
-          AppLogger.warning(
-            '[IncubationRepo] Orphan sync_metadata cleaned: ${meta.recordId}',
-          );
-          await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
-          orphansCleaned++;
-          continue;
-        }
-        final orphanReason = await validateForeignKeys(item);
-        if (orphanReason != null) {
-          if (orphanReason.contains('not found locally')) {
-            AppLogger.warning(
-              '[IncubationRepo] True orphan ${item.id}: $orphanReason',
-            );
-            await markError(item.id, item.userId, orphanReason);
-            orphansCleaned++;
-          }
-          continue;
-        }
-        await push(item);
-        pushed++;
+        continue;
       }
+
+      final item = await _localDao.getById(recordId);
+      if (item == null) {
+        AppLogger.warning(
+          '[$syncLogTag] Orphan sync_metadata cleaned: $recordId',
+        );
+        await _syncDao.deleteByRecord(_table, recordId);
+        orphansCleaned++;
+        continue;
+      }
+
+      final orphanReason = await validateForeignKeys(item);
+      if (orphanReason != null) {
+        if (orphanReason.contains('not found locally')) {
+          AppLogger.warning(
+            '[$syncLogTag] True orphan ${item.id}: $orphanReason',
+          );
+          await markSyncError(item.id, item.userId, orphanReason);
+          orphansCleaned++;
+        }
+        continue;
+      }
+
+      await push(item);
+      pushed++;
     }
     return (pushed: pushed, orphansCleaned: orphansCleaned);
   }

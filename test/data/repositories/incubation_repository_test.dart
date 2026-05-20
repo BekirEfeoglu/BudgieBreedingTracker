@@ -102,9 +102,25 @@ void main() {
       () => syncDao.getPendingByTable(any(), any()),
     ).thenAnswer((_) async => []);
     when(() => syncDao.getPendingRecordIds(any())).thenAnswer((_) async => {});
+    // ValidatedSyncMixin.clearStaleErrors needs these.
+    when(
+      () => syncDao.getErrorsByTable(any(), any()),
+    ).thenAnswer((_) async => []);
+    when(() => syncDao.hardDelete(any())).thenAnswer((_) async {});
 
     when(() => breedingPairsDao.getById(any())).thenAnswer((_) async => null);
     when(() => clutchesDao.getById(any())).thenAnswer((_) async => null);
+    // Soft-delete-aware FK validator: route to the same default.
+    when(() => breedingPairsDao.getByIdIncludingDeleted(any())).thenAnswer(
+      (invocation) => breedingPairsDao.getById(
+        invocation.positionalArguments.first as String,
+      ),
+    );
+    when(() => clutchesDao.getByIdIncludingDeleted(any())).thenAnswer(
+      (invocation) => clutchesDao.getById(
+        invocation.positionalArguments.first as String,
+      ),
+    );
   });
 
   group('IncubationRepository', () {
