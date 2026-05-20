@@ -88,6 +88,14 @@ void main() {
       () => syncDao.getErrorsByTable(any(), any()),
     ).thenAnswer((_) async => []);
     when(() => syncDao.hardDelete(any())).thenAnswer((_) async => 1);
+
+    // Soft-delete-aware FK validator uses IncludingDeleted; route to
+    // the same stub the per-test cases set up on getById.
+    when(() => birdsDao.getByIdIncludingDeleted(any())).thenAnswer(
+      (invocation) =>
+          birdsDao.getById(invocation.positionalArguments.first as String),
+    );
+    when(() => birdsDao.getById(any())).thenAnswer((_) async => null);
   });
 
   group('HealthRecordRepository', () {

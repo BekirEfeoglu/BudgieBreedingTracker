@@ -62,18 +62,24 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
 
   @override
   Future<String?> validateForeignKeys(GrowthMeasurement measurement) async {
-    final chick = await _chicksDao.getById(measurement.chickId);
+    // Use IncludingDeleted so a chick awaiting tombstone push is reported
+    // as "pending tombstone sync" instead of triggering the orphan-cleanup
+    // path that would permanently strand the measurement.
+    final chick =
+        await _chicksDao.getByIdIncludingDeleted(measurement.chickId);
     if (chick == null) {
       return 'Referenced chick ${measurement.chickId} not found locally';
     }
     if (chick.isDeleted) {
-      return 'Referenced chick ${measurement.chickId} is deleted';
+      return 'Referenced chick ${measurement.chickId} pending tombstone sync';
     }
     final syncMeta = await _syncDao.getByRecord(
       SupabaseConstants.chicksTable,
       measurement.chickId,
     );
-    if (syncMeta != null) {
+    if (syncMeta != null &&
+        (syncMeta.status == SyncStatus.pending ||
+            syncMeta.status == SyncStatus.pendingDelete)) {
       return 'Chick ${measurement.chickId} not yet synced to server';
     }
     return null;

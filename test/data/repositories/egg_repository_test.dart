@@ -101,6 +101,13 @@ void main() {
 
     when(() => incubationsDao.getById(any())).thenAnswer((_) async => null);
     when(() => clutchesDao.getById(any())).thenAnswer((_) async => null);
+    // Route IncludingDeleted to whatever the per-test stubs return on
+    // the regular getById, so existing stubs continue to drive the new
+    // soft-delete-aware FK validator.
+    when(() => clutchesDao.getByIdIncludingDeleted(any())).thenAnswer(
+      (invocation) =>
+          clutchesDao.getById(invocation.positionalArguments.first as String),
+    );
   });
 
   group('EggRepository', () {

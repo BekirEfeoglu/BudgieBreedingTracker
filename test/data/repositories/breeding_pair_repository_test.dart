@@ -73,6 +73,10 @@ void main() {
     when(() => syncDao.updateItem(any())).thenAnswer((_) async {});
 
     when(() => birdsDao.getById(any())).thenAnswer((_) async => null);
+    when(() => birdsDao.getByIdIncludingDeleted(any())).thenAnswer(
+      (invocation) =>
+          birdsDao.getById(invocation.positionalArguments.first as String),
+    );
   });
 
   group('BreedingPairRepository', () {

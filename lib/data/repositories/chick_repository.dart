@@ -79,53 +79,70 @@ class ChickRepository extends BaseRepository<Chick>
   @override
   Future<String?> validateForeignKeys(Chick chick) async {
     if (chick.eggId != null) {
-      final egg = await _eggsDao.getById(chick.eggId!);
-      if (egg == null) {
-        return 'Referenced egg ${chick.eggId} not found locally';
-      }
-      if (egg.isDeleted) {
-        return 'Referenced egg ${chick.eggId} is deleted';
-      }
-      // Check if egg has pending/error sync metadata (not yet on server)
-      final syncMeta = await _syncDao.getByRecord(
-        SupabaseConstants.eggsTable,
-        chick.eggId!,
+      final reason = await _validateParent(
+        recordId: chick.eggId!,
+        parentLookup: () => _eggsDao.getByIdIncludingDeleted(chick.eggId!),
+        isDeleted: (egg) => egg.isDeleted,
+        label: 'egg',
+        syncTable: SupabaseConstants.eggsTable,
       );
-      if (syncMeta != null) {
-        return 'Egg ${chick.eggId} not yet synced to server';
-      }
+      if (reason != null) return reason;
     }
     if (chick.clutchId != null) {
-      final clutch = await _clutchesDao.getById(chick.clutchId!);
-      if (clutch == null) {
-        return 'Referenced clutch ${chick.clutchId} not found locally';
-      }
-      if (clutch.isDeleted) {
-        return 'Referenced clutch ${chick.clutchId} is deleted';
-      }
-      final syncMeta = await _syncDao.getByRecord(
-        SupabaseConstants.clutchesTable,
-        chick.clutchId!,
+      final reason = await _validateParent(
+        recordId: chick.clutchId!,
+        parentLookup: () =>
+            _clutchesDao.getByIdIncludingDeleted(chick.clutchId!),
+        isDeleted: (clutch) => clutch.isDeleted,
+        label: 'clutch',
+        syncTable: SupabaseConstants.clutchesTable,
       );
-      if (syncMeta != null) {
-        return 'Clutch ${chick.clutchId} not yet synced to server';
-      }
+      if (reason != null) return reason;
     }
     if (chick.birdId != null) {
-      final bird = await _birdsDao.getById(chick.birdId!);
-      if (bird == null) {
-        return 'Referenced bird ${chick.birdId} not found locally';
-      }
-      if (bird.isDeleted) {
-        return 'Referenced bird ${chick.birdId} is deleted';
-      }
-      final syncMeta = await _syncDao.getByRecord(
-        SupabaseConstants.birdsTable,
-        chick.birdId!,
+      final reason = await _validateParent(
+        recordId: chick.birdId!,
+        parentLookup: () => _birdsDao.getByIdIncludingDeleted(chick.birdId!),
+        isDeleted: (bird) => bird.isDeleted,
+        label: 'bird',
+        syncTable: SupabaseConstants.birdsTable,
       );
-      if (syncMeta != null) {
-        return 'Bird ${chick.birdId} not yet synced to server';
-      }
+      if (reason != null) return reason;
+    }
+    return null;
+  }
+
+  /// Generic FK validator that distinguishes:
+  /// - parent missing entirely → "not found locally" (orphan cleanup path)
+  /// - parent soft-deleted locally → "pending tombstone sync" (NOT cleanup;
+  ///   child should wait for the parent tombstone to push and only then
+  ///   try again, which is what the mixin's continue-loop already does)
+  /// - parent has pending/pendingDelete sync metadata → "not yet synced"
+  ///   (waiting on parent push)
+  ///
+  /// Crucially, parent sync metadata in `error`/`success` state is NOT
+  /// considered blocking — `error` will be stale-cleared by maxSyncRetries
+  /// and at that point child sync should be allowed to attempt again
+  /// rather than deadlocking on the parent's retry budget.
+  Future<String?> _validateParent<P>({
+    required String recordId,
+    required Future<P?> Function() parentLookup,
+    required bool Function(P) isDeleted,
+    required String label,
+    required String syncTable,
+  }) async {
+    final parent = await parentLookup();
+    if (parent == null) {
+      return 'Referenced $label $recordId not found locally';
+    }
+    if (isDeleted(parent)) {
+      return 'Referenced $label $recordId pending tombstone sync';
+    }
+    final syncMeta = await _syncDao.getByRecord(syncTable, recordId);
+    if (syncMeta != null &&
+        (syncMeta.status == SyncStatus.pending ||
+            syncMeta.status == SyncStatus.pendingDelete)) {
+      return '$label $recordId not yet synced to server';
     }
     return null;
   }

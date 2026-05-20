@@ -73,18 +73,24 @@ class HealthRecordRepository extends BaseRepository<HealthRecord>
     // it's set we verify the parent bird exists, is not soft-deleted, and
     // is already synced to the server — otherwise the insert would FK-fail.
     if (record.birdId != null) {
-      final bird = await _birdsDao.getById(record.birdId!);
+      // Lookup INCLUDING soft-deletes so a parent waiting on tombstone
+      // push reports as "pending tombstone sync" (continue + retry on
+      // next push) rather than triggering the orphan-cleanup path that
+      // would mark the record as a permanent sync error.
+      final bird = await _birdsDao.getByIdIncludingDeleted(record.birdId!);
       if (bird == null) {
         return 'Referenced bird ${record.birdId} not found locally';
       }
       if (bird.isDeleted) {
-        return 'Referenced bird ${record.birdId} is deleted';
+        return 'Referenced bird ${record.birdId} pending tombstone sync';
       }
       final syncMeta = await _syncDao.getByRecord(
         SupabaseConstants.birdsTable,
         record.birdId!,
       );
-      if (syncMeta != null) {
+      if (syncMeta != null &&
+          (syncMeta.status == SyncStatus.pending ||
+              syncMeta.status == SyncStatus.pendingDelete)) {
         return 'Bird ${record.birdId} not yet synced to server';
       }
     }

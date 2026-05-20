@@ -76,28 +76,39 @@ class EggRepository extends BaseRepository<Egg>
       if (incubation == null) {
         return 'Referenced incubation ${egg.incubationId} not found locally';
       }
-      // Check if incubation has pending/error sync metadata (not yet on server)
+      // Only block on parent pushes that are actually waiting; an
+      // `error` status will be stale-cleared by maxSyncRetries and the
+      // child should retry on the next push instead of deadlocking on
+      // the parent's retry budget.
       final syncMeta = await _syncDao.getByRecord(
         SupabaseConstants.incubationsTable,
         egg.incubationId!,
       );
-      if (syncMeta != null) {
+      if (syncMeta != null &&
+          (syncMeta.status == SyncStatus.pending ||
+              syncMeta.status == SyncStatus.pendingDelete)) {
         return 'Incubation ${egg.incubationId} not yet synced to server';
       }
     }
     if (egg.clutchId != null) {
-      final clutch = await _clutchesDao.getById(egg.clutchId!);
+      // Lookup the clutch INCLUDING soft-deletes so a parent waiting
+      // on tombstone push doesn't get mistaken for a true orphan
+      // (true orphan → marked sync error; pending-tombstone → just
+      // continue and retry once the parent tombstone reaches the server).
+      final clutch = await _clutchesDao.getByIdIncludingDeleted(egg.clutchId!);
       if (clutch == null) {
         return 'Referenced clutch ${egg.clutchId} not found locally';
       }
       if (clutch.isDeleted) {
-        return 'Referenced clutch ${egg.clutchId} is deleted';
+        return 'Referenced clutch ${egg.clutchId} pending tombstone sync';
       }
       final syncMeta = await _syncDao.getByRecord(
         SupabaseConstants.clutchesTable,
         egg.clutchId!,
       );
-      if (syncMeta != null) {
+      if (syncMeta != null &&
+          (syncMeta.status == SyncStatus.pending ||
+              syncMeta.status == SyncStatus.pendingDelete)) {
         return 'Clutch ${egg.clutchId} not yet synced to server';
       }
     }

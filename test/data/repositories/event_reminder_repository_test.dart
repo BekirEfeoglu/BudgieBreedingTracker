@@ -110,6 +110,12 @@ void main() {
         userId: userId,
       ),
     );
+    // The FK validator now uses IncludingDeleted to distinguish missing
+    // parent from soft-deleted parent. Route to the same stub.
+    when(() => eventsDao.getByIdIncludingDeleted(any())).thenAnswer(
+      (invocation) =>
+          eventsDao.getById(invocation.positionalArguments.first as String),
+    );
   });
 
   group('EventReminderRepository', () {

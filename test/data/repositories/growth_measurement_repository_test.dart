@@ -68,6 +68,12 @@ void main() {
     when(
       () => chicksDao.getById(any()),
     ).thenAnswer((_) async => TestFixtures.sampleChick());
+    // FK validator now uses IncludingDeleted to distinguish missing
+    // from soft-deleted; route to the same default.
+    when(() => chicksDao.getByIdIncludingDeleted(any())).thenAnswer(
+      (invocation) =>
+          chicksDao.getById(invocation.positionalArguments.first as String),
+    );
     when(
       () => syncDao.getByRecord(SupabaseConstants.chicksTable, any()),
     ).thenAnswer((_) async => null);

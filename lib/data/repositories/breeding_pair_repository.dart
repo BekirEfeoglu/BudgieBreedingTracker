@@ -69,31 +69,37 @@ class BreedingPairRepository extends BaseRepository<BreedingPair>
   Future<String?> validateForeignKeys(BreedingPair pair) async {
     final maleId = pair.maleId;
     if (maleId != null) {
-      final male = await _birdsDao.getById(maleId);
-      if (male == null) {
-        return 'Referenced male bird $maleId not found locally';
-      }
-      final syncMeta = await _syncDao.getByRecord(
-        SupabaseConstants.birdsTable,
-        maleId,
-      );
-      if (syncMeta != null) {
-        return 'Male bird $maleId not yet synced to server';
-      }
+      final reason = await _validateBird(maleId, role: 'Male');
+      if (reason != null) return reason;
     }
     final femaleId = pair.femaleId;
     if (femaleId != null) {
-      final female = await _birdsDao.getById(femaleId);
-      if (female == null) {
-        return 'Referenced female bird $femaleId not found locally';
-      }
-      final syncMeta = await _syncDao.getByRecord(
-        SupabaseConstants.birdsTable,
-        femaleId,
-      );
-      if (syncMeta != null) {
-        return 'Female bird $femaleId not yet synced to server';
-      }
+      final reason = await _validateBird(femaleId, role: 'Female');
+      if (reason != null) return reason;
+    }
+    return null;
+  }
+
+  /// Uses [BirdsDao.getByIdIncludingDeleted] so a soft-deleted parent
+  /// reports as "pending tombstone sync" (continue + retry next push)
+  /// rather than as a true orphan that gets marked sync error and
+  /// strands the pair forever.
+  Future<String?> _validateBird(String birdId, {required String role}) async {
+    final bird = await _birdsDao.getByIdIncludingDeleted(birdId);
+    if (bird == null) {
+      return 'Referenced $role bird $birdId not found locally';
+    }
+    if (bird.isDeleted) {
+      return '$role bird $birdId pending tombstone sync';
+    }
+    final syncMeta = await _syncDao.getByRecord(
+      SupabaseConstants.birdsTable,
+      birdId,
+    );
+    if (syncMeta != null &&
+        (syncMeta.status == SyncStatus.pending ||
+            syncMeta.status == SyncStatus.pendingDelete)) {
+      return '$role bird $birdId not yet synced to server';
     }
     return null;
   }

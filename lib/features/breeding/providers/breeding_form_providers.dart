@@ -13,6 +13,8 @@ import 'package:budgie_breeding_tracker/data/repositories/repository_providers.d
 import 'package:budgie_breeding_tracker/domain/services/genetics/inbreeding_calculator.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/species_incubation_config.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/free_tier_limit_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_settings_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_notification_helpers.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/sentry_error_filter.dart';
@@ -224,13 +226,37 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
     required Species species,
   }) async {
     final incubationRepo = ref.read(incubationRepositoryProvider);
+    final eggRepo = ref.read(eggRepositoryProvider);
+    final scheduler = ref.read(notificationSchedulerProvider);
+    final settings = ref.read(notificationToggleSettingsProvider);
     final incubations = await incubationRepo.getByBreedingPair(pairId);
     for (final incubation in incubations) {
       if (incubation.species == species) continue;
+      final previousSpecies = incubation.species;
       final startDate = incubation.startDate;
       final expectedHatchDate = startDate == null
           ? incubation.expectedHatchDate
           : startDate.add(Duration(days: incubationDaysForSpecies(species)));
+
+      // Drop reminders scheduled against the OLD species first — their
+      // id range (day count × turning hours) is species-specific, so
+      // doing this AFTER the save would only cancel the new range and
+      // leak the previous one.
+      try {
+        await scheduler.cancelIncubationMilestones(incubation.id);
+        final eggs = await eggRepo.getByIncubation(incubation.id);
+        for (final egg in eggs) {
+          await scheduler.cancelEggTurningReminders(
+            egg.id,
+            species: previousSpecies,
+          );
+        }
+      } catch (e) {
+        AppLogger.warning(
+          'Failed to cancel stale incubation reminders for ${incubation.id}: $e',
+        );
+      }
+
       await incubationRepo.save(
         incubation.copyWith(
           species: species,
@@ -238,6 +264,41 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
           updatedAt: DateTime.now(),
         ),
       );
+
+      // Reschedule under the new species. Failures shouldn't undo the
+      // save — surface as a warning in the calling flow if needed.
+      try {
+        if (startDate != null) {
+          await scheduler.scheduleIncubationMilestones(
+            incubationId: incubation.id,
+            startDate: startDate,
+            label: 'breeding.pair_label'.tr(
+              args: [
+                pairId.length <= 6 ? pairId : pairId.substring(0, 6),
+              ],
+            ),
+            species: species,
+            settings: settings,
+          );
+          final eggs = await eggRepo.getByIncubation(incubation.id);
+          for (final egg in eggs) {
+            await scheduler.scheduleEggTurningReminders(
+              eggId: egg.id,
+              startDate: egg.layDate,
+              eggLabel: 'eggs.egg_label'.tr(
+                args: ['${egg.eggNumber ?? 1}'],
+              ),
+              species: species,
+              settings: settings,
+            );
+          }
+        }
+      } catch (e) {
+        AppLogger.warning(
+          'Failed to reschedule incubation reminders for ${incubation.id} '
+          'after species change: $e',
+        );
+      }
     }
   }
 

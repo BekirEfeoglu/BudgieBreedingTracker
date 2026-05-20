@@ -103,6 +103,22 @@ void main() {
     when(() => eggsDao.getById(any())).thenAnswer((_) async => null);
     when(() => clutchesDao.getById(any())).thenAnswer((_) async => null);
     when(() => birdsDao.getById(any())).thenAnswer((_) async => null);
+    // Route getByIdIncludingDeleted to whatever the tests stubbed on
+    // getById for the same key. The repository's FK validator now uses
+    // the IncludingDeleted variant so it can tell "missing entirely"
+    // from "soft-deleted, waiting on tombstone push".
+    when(() => eggsDao.getByIdIncludingDeleted(any())).thenAnswer(
+      (invocation) =>
+          eggsDao.getById(invocation.positionalArguments.first as String),
+    );
+    when(() => clutchesDao.getByIdIncludingDeleted(any())).thenAnswer(
+      (invocation) =>
+          clutchesDao.getById(invocation.positionalArguments.first as String),
+    );
+    when(() => birdsDao.getByIdIncludingDeleted(any())).thenAnswer(
+      (invocation) =>
+          birdsDao.getById(invocation.positionalArguments.first as String),
+    );
   });
 
   group('ChickRepository basic sync', () {

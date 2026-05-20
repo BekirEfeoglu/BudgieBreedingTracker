@@ -67,15 +67,22 @@ class EventReminderRepository extends BaseRepository<EventReminder>
 
   @override
   Future<String?> validateForeignKeys(EventReminder reminder) async {
-    final event = await _eventsDao.getById(reminder.eventId);
+    // Use IncludingDeleted so a parent event awaiting tombstone push
+    // does not trip the "true orphan" path that strands the reminder.
+    final event = await _eventsDao.getByIdIncludingDeleted(reminder.eventId);
     if (event == null) {
       return 'Referenced event ${reminder.eventId} not found locally';
+    }
+    if (event.isDeleted) {
+      return 'Referenced event ${reminder.eventId} pending tombstone sync';
     }
     final syncMeta = await _syncDao.getByRecord(
       SupabaseConstants.eventsTable,
       reminder.eventId,
     );
-    if (syncMeta != null) {
+    if (syncMeta != null &&
+        (syncMeta.status == SyncStatus.pending ||
+            syncMeta.status == SyncStatus.pendingDelete)) {
       return 'Event ${reminder.eventId} not yet synced to server';
     }
     return null;
