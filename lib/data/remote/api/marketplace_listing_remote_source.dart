@@ -328,14 +328,12 @@ class MarketplaceListingRemoteSource {
         final url = fileApi.getPublicUrl(storagePath);
         urls.add(url);
       } catch (e, st) {
-        // Preserve domain-typed exceptions so callers can react to
-        // specific rejection reasons (size, mime, safety-scan, …).
-        // The error-mapping wrapper would otherwise coerce these into
-        // NetworkException and lose the reason the UI surfaces. The
-        // file's bare `StorageException` is supabase's storage_client
-        // one — that's what the per-image guards throw — so we accept
-        // both that and our own AppException subclasses.
         if (e is app_exc.AppException || e is StorageException) rethrow;
+        AppLogger.error('marketplace_listings.uploadImages', e, st);
+        // Preserve domain-typed exceptions above so callers can react
+        // to specific rejection reasons (size, mime, safety-scan, …).
+        // Everything else gets the error-mapping wrapper which
+        // converts PostgrestException to typed AppException subtypes.
         throw BaseRemoteSource.handleErrorForTag(
           'marketplace_listings',
           e,
