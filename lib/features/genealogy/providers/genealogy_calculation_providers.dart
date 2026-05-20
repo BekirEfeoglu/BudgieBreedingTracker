@@ -66,9 +66,15 @@ AncestorStats calculateAncestorStats(
 
   int found = 0;
   int deepest = 0;
+  // Cycle guard: a corrupted pedigree (sync conflict, manual import)
+  // can list a bird as its own ancestor. Without `visited` the recursion
+  // would overflow the stack — `maxDepth = 5` alone is not enough
+  // because the cycle can fit within five levels.
+  final visited = <String>{};
 
   void countAncestors(String? id, int depth) {
     if (id == null || depth > maxDepth) return;
+    if (!visited.add(id)) return;
     final bird = ancestors[id];
     if (bird == null) return;
     if (depth > 0) found++; // Don't count root

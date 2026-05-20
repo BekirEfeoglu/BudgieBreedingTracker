@@ -116,6 +116,10 @@ final ageDistributionProvider =
         for (final bird in birds) {
           final birth = bird.birthDate;
           if (birth == null) continue;
+          // Skip future-dated births (data-entry typo or expected hatch
+          // date entered prematurely). Without this, negative months
+          // would satisfy `months < 6` and inflate the 0-6m bracket.
+          if (birth.isAfter(now)) continue;
 
           final months =
               (now.year - birth.year) * 12 + (now.month - birth.month);

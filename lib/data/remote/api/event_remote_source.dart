@@ -24,25 +24,33 @@ class EventRemoteSource extends BaseRemoteSource<Event> {
     DateTime start,
     DateTime end,
   ) async {
-    final response = await table
-        .select()
-        .eq('user_id', userId)
-        .gte('event_date', start.toIso8601String())
-        .lte('event_date', end.toIso8601String())
-        .eq('is_deleted', false)
-        .order('event_date');
-    return response.map((json) => fromJson(json)).toList();
+    try {
+      final response = await table
+          .select()
+          .eq(SupabaseConstants.colUserId, userId)
+          .gte('event_date', start.toIso8601String())
+          .lte('event_date', end.toIso8601String())
+          .eq(SupabaseConstants.colIsDeleted, false)
+          .order('event_date');
+      return response.map((json) => fromJson(json)).toList();
+    } catch (e, st) {
+      throw BaseRemoteSource.handleErrorForTag('events', e, st);
+    }
   }
 
   /// Fetches events for a specific bird.
   Future<List<Event>> fetchByBird(String userId, String birdId) async {
-    final response = await table
-        .select()
-        .eq('user_id', userId)
-        .eq('bird_id', birdId)
-        .eq('is_deleted', false)
-        .order('event_date', ascending: false);
-    return response.map((json) => fromJson(json)).toList();
+    try {
+      final response = await table
+          .select()
+          .eq(SupabaseConstants.colUserId, userId)
+          .eq(SupabaseConstants.colBirdId, birdId)
+          .eq(SupabaseConstants.colIsDeleted, false)
+          .order('event_date', ascending: false);
+      return response.map((json) => fromJson(json)).toList();
+    } catch (e, st) {
+      throw BaseRemoteSource.handleErrorForTag('events', e, st);
+    }
   }
 
   // IMPROVED: realtime subscription for cross-device event sync

@@ -172,14 +172,21 @@ const marketplaceFreeTierMaxListings = 3;
 
 /// Whether the user can create a new listing.
 /// Premium users: always true. Free users: limited to 3 active listings.
+///
+/// Returns `false` while [myMarketplaceListingsProvider] is still loading
+/// so we don't briefly claim the user can create when we haven't yet
+/// counted their current active listings. The edge function is the
+/// authoritative gate, but a fail-open UX here lets the user tap
+/// "create" before the count loads and only then get rejected.
 final canCreateListingProvider = Provider.family<bool, String>((ref, userId) {
   final isPremium = ref.watch(effectivePremiumProvider);
   if (isPremium) return true;
   final myListings = ref.watch(myMarketplaceListingsProvider(userId));
-  final activeCount = myListings.asData?.value
-          .where((l) => l.status == MarketplaceListingStatus.active)
-          .length ??
-      0;
+  final listings = myListings.asData?.value;
+  if (listings == null) return false;
+  final activeCount = listings
+      .where((l) => l.status == MarketplaceListingStatus.active)
+      .length;
   return activeCount < marketplaceFreeTierMaxListings;
 });
 

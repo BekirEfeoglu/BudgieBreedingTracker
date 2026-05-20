@@ -63,8 +63,14 @@ class MessageRemoteSource {
         'p_message_id': messageId,
         'p_user_id': userId,
       });
-    } catch (e) {
+    } catch (e, st) {
+      // Stack trace was being dropped on the floor — log it so this is
+      // greppable in Sentry. We keep the warning-level rethrow-via-log
+      // pattern because a missed read receipt converges on the next
+      // conversation open (the screen retries via _markedRead.remove),
+      // so propagating to the UI as an error would be UX-hostile.
       AppLogger.warning('Mark as read failed: $e');
+      AppLogger.debug('markAsRead stack trace: $st');
     }
   }
 
