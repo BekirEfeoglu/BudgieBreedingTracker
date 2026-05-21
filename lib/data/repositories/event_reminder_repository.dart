@@ -220,4 +220,8 @@ class EventReminderRepository extends BaseRepository<EventReminder>
   /// Watch reminders for a specific event.
   Stream<List<EventReminder>> watchByEvent(String eventId) =>
       _localDao.watchByEvent(eventId);
+
+  /// Fetches non-deleted reminders for a specific event.
+  Future<List<EventReminder>> getByEvent(String eventId) =>
+      _localDao.getByEvent(eventId);
 }

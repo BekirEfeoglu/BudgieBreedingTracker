@@ -361,8 +361,11 @@ void main() {
       final savedIncubation =
           verify(() => mockIncubationRepo.save(captureAny())).captured.single
               as Incubation;
-      expect(savedIncubation.startDate, layDate);
-      expect(savedIncubation.expectedHatchDate, DateTime(2025, 2, 19));
+      // _startIncubationFromFirstEgg normalizes layDate to UTC midnight so
+      // downstream dayDiff math (DST-safe) anchors on the same instant as
+      // createBreeding's normalizedStart.
+      expect(savedIncubation.startDate, DateTime.utc(2025, 2, 1));
+      expect(savedIncubation.expectedHatchDate, DateTime.utc(2025, 2, 19));
     });
 
     test('does not restart incubation when eggs already exist', () async {

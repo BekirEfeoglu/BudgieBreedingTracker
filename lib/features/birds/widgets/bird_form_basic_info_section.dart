@@ -327,15 +327,40 @@ class _BirdFormPhotoPicker extends StatelessWidget {
   }
 }
 
-class _SelectedPhotoPreview extends StatelessWidget {
+class _SelectedPhotoPreview extends StatefulWidget {
   final XFile photo;
 
   const _SelectedPhotoPreview({required this.photo});
 
   @override
+  State<_SelectedPhotoPreview> createState() => _SelectedPhotoPreviewState();
+}
+
+class _SelectedPhotoPreviewState extends State<_SelectedPhotoPreview> {
+  // Cache the bytes future so rebuilds don't re-read the file every frame.
+  // Without this, FutureBuilder re-creates `photo.readAsBytes()` on each
+  // parent rebuild (e.g. while typing in a form field), keeping the UI
+  // stuck on the loading spinner and pegging the I/O thread.
+  late Future<Uint8List> _bytesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _bytesFuture = widget.photo.readAsBytes();
+  }
+
+  @override
+  void didUpdateWidget(_SelectedPhotoPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.photo.path != oldWidget.photo.path) {
+      _bytesFuture = widget.photo.readAsBytes();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder<Uint8List>(
-      future: photo.readAsBytes(),
+      future: _bytesFuture,
       builder: (context, snapshot) {
         final bytes = snapshot.data;
         if (bytes == null) {

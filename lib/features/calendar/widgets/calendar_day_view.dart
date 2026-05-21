@@ -24,6 +24,7 @@ class CalendarDayView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Event model stores UTC; convert to local for wall-clock display.
     final sortedEvents = List<Event>.from(events)
       ..sort((a, b) => a.eventDate.compareTo(b.eventDate));
 
@@ -33,10 +34,14 @@ class CalendarDayView extends StatelessWidget {
 
     if (sortedEvents.isNotEmpty) {
       final minHour = sortedEvents
-          .map((e) => e.eventDate.hour)
+          .map((e) => e.eventDate.toLocal().hour)
           .reduce(math.min);
       final maxHour = sortedEvents
-          .map((e) => e.endDate != null ? e.endDate!.hour : e.eventDate.hour)
+          .map(
+            (e) => e.endDate != null
+                ? e.endDate!.toLocal().hour
+                : e.eventDate.toLocal().hour,
+          )
           .reduce(math.max);
       startHour = math.min(startHour, minHour);
       endHour = math.max(endHour, maxHour + 1);
@@ -54,11 +59,13 @@ class CalendarDayView extends StatelessWidget {
 
         // Events that fall in this hour (including endDate range)
         final hourEvents = sortedEvents.where((e) {
-          final startHr = e.eventDate.hour;
+          final localStart = e.eventDate.toLocal();
+          final startHr = localStart.hour;
           if (e.endDate != null) {
-            if (e.endDate!.day == e.eventDate.day) {
+            final localEnd = e.endDate!.toLocal();
+            if (localEnd.day == localStart.day) {
               // Same-day event
-              return startHr <= hour && e.endDate!.hour >= hour;
+              return startHr <= hour && localEnd.hour >= hour;
             }
             // Cross-midnight: show from start hour to end of day
             return startHr <= hour;

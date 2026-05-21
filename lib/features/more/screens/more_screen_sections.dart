@@ -15,6 +15,12 @@ void _showMoreAboutDialog(BuildContext context, WidgetRef ref) {
   final year = DateTime.now().year.toString();
   final theme = Theme.of(context);
   final colorScheme = theme.colorScheme;
+  // Capture the outer (route-level) context so showLicensePage has a
+  // mounted ancestor *after* the dialog is popped. The Consumer.builder
+  // below shadows `context` with the dialog's overlay context, which is
+  // deactivated immediately after `Navigator.pop(ctx)` and would crash
+  // showLicensePage with "Looking up a deactivated widget's ancestor".
+  final rootContext = context;
 
   showDialog(
     context: context,
@@ -202,8 +208,10 @@ void _showMoreAboutDialog(BuildContext context, WidgetRef ref) {
                       child: OutlinedButton(
                         onPressed: () {
                           Navigator.of(ctx).pop();
+                          // Push the license page from the route-level
+                          // context so it survives the dialog's pop.
                           showLicensePage(
-                            context: context,
+                            context: rootContext,
                             applicationName: 'more.about_app_name'.tr(),
                             applicationVersion: version,
                             applicationIcon: Padding(

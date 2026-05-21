@@ -188,9 +188,12 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
     final incubation = await incubationRepo.getById(incubationId);
     if (incubation == null) return null;
 
+    // Normalize lay date to UTC midnight so the incubation start aligns
+    // with createBreeding's normalizedStart and dayDiff math stays DST-safe.
+    final normalizedStart = date_utils.DateUtils.utcMidnight(layDate);
     final updated = incubation.copyWith(
-      startDate: layDate,
-      expectedHatchDate: layDate.add(
+      startDate: normalizedStart,
+      expectedHatchDate: normalizedStart.add(
         Duration(days: incubation.totalIncubationDays(species: species)),
       ),
       updatedAt: DateTime.now(),

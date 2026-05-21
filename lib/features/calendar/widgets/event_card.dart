@@ -81,7 +81,7 @@ class EventCard extends StatelessWidget {
                         ),
                         const SizedBox(width: AppSpacing.xs),
                         Text(
-                          timeFormat.format(event.eventDate),
+                          timeFormat.format(event.eventDate.toLocal()),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant
                                 .withValues(alpha: dimAlpha),

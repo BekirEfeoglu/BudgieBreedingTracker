@@ -70,7 +70,17 @@ extension GrowthMeasurementSupabase on GrowthMeasurement {
 }
 
 extension EventSupabase on Event {
-  Map<String, dynamic> toSupabase() => _stripServerFields(toJson());
+  Map<String, dynamic> toSupabase() {
+    final json = _stripServerFields(toJson());
+    json['event_date'] = eventDate.toUtc().toIso8601String();
+    if (endDate != null) {
+      json['end_date'] = endDate!.toUtc().toIso8601String();
+    }
+    if (reminderDate != null) {
+      json['reminder_date'] = reminderDate!.toUtc().toIso8601String();
+    }
+    return json;
+  }
 }
 
 extension AppNotificationSupabase on AppNotification {

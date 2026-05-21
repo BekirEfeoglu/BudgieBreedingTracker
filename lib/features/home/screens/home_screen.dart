@@ -79,22 +79,38 @@ class HomeScreen extends ConsumerWidget {
           onRefresh: () async {
             // Capture ScaffoldMessenger before async gap
             final messenger = ScaffoldMessenger.of(context);
-            // Full sync with server (reconciles hard-deleted records)
-            await ref.read(syncOrchestratorProvider).forceFullSync();
-            ref.invalidate(dashboardStatsProvider(userId));
-            ref.invalidate(recentChicksProvider(userId));
-            ref.invalidate(chickParentsByEggProvider(userId));
-            ref.invalidate(activeBreedingsForDashboardProvider(userId));
-            ref.invalidate(unweanedChicksCountProvider(userId));
-            ref.invalidate(incubatingEggsSummaryProvider(userId));
-            if (context.mounted) {
-              messenger.showSnackBar(
-                SnackBar(
-                  content: Text('sync.synced'.tr()),
-                  duration: const Duration(seconds: 2),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
+            try {
+              // Full sync with server (reconciles hard-deleted records)
+              await ref.read(syncOrchestratorProvider).forceFullSync();
+              ref.invalidate(dashboardStatsProvider(userId));
+              ref.invalidate(recentChicksProvider(userId));
+              ref.invalidate(chickParentsByEggProvider(userId));
+              ref.invalidate(activeBreedingsForDashboardProvider(userId));
+              ref.invalidate(unweanedChicksCountProvider(userId));
+              ref.invalidate(incubatingEggsSummaryProvider(userId));
+              if (context.mounted) {
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text('sync.synced'.tr()),
+                    duration: const Duration(seconds: 2),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            } catch (e, st) {
+              // forceFullSync's exception was previously silently swallowed
+              // by the RefreshIndicator, leaving the user without feedback
+              // on transient sync failures.
+              AppLogger.error('[HomeScreen] forceFullSync failed', e, st);
+              if (context.mounted) {
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text('common.data_load_error'.tr()),
+                    duration: const Duration(seconds: 3),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
             }
           },
           child: SingleChildScrollView(
@@ -198,6 +214,7 @@ class _StatsSection extends ConsumerWidget {
     final statsAsync = ref.watch(dashboardStatsProvider(userId));
 
     return statsAsync.when(
+      skipLoadingOnRefresh: true,
       loading: () => const _DashboardStatsSkeleton(),
       error: (error, st) {
         AppLogger.error('[HomeScreen] Stats error', error, st);
@@ -225,6 +242,7 @@ class _ActiveBreedingsSection extends ConsumerWidget {
 
     // IMPROVED: show error state with retry instead of silent empty list
     return pairsAsync.when(
+      skipLoadingOnRefresh: true,
       loading: () => const _SectionSkeleton(),
       error: (error, st) {
         AppLogger.error('[HomeScreen] ActiveBreedings error', error, st);
@@ -253,6 +271,7 @@ class _RecentChicksSection extends ConsumerWidget {
 
     // IMPROVED: show error state with retry instead of silent empty list
     return chicksAsync.when(
+      skipLoadingOnRefresh: true,
       loading: () => const _SectionSkeleton(),
       error: (error, st) {
         AppLogger.error('[HomeScreen] RecentChicks error', error, st);
@@ -281,6 +300,7 @@ class _IncubationSummarySection extends ConsumerWidget {
     // IMPROVED: show skeleton on loading and error state on failure
     // instead of silent SizedBox.shrink / misleading empty list
     return summaryAsync.when(
+      skipLoadingOnRefresh: true,
       loading: () => const _SectionSkeleton(),
       error: (error, st) {
         AppLogger.error('[HomeScreen] IncubationSummary error', error, st);
@@ -308,6 +328,7 @@ class _EggTurningSummarySection extends ConsumerWidget {
     final summaryAsync = ref.watch(todaysEggTurningSummaryProvider(userId));
 
     return summaryAsync.when(
+      skipLoadingOnRefresh: true,
       loading: () => const _SectionSkeleton(),
       error: (error, st) {
         AppLogger.error('[HomeScreen] EggTurningSummary error', error, st);

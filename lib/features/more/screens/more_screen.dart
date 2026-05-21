@@ -141,11 +141,14 @@ class MoreScreen extends ConsumerWidget {
     WidgetRef ref,
     ThemeData theme,
   ) {
-    final isPremium = ref.watch(isPremiumProvider);
+    // Use effectivePremiumProvider so grace-period subscribers (renewal
+    // failure within the grace window) keep route access — isPremiumProvider
+    // alone would bounce paying customers to the paywall here.
+    final hasPremiumAccess = ref.watch(effectivePremiumProvider);
     final isFounder = ref.watch(isFounderProvider).value == true;
 
     void navigateOrHint(String route) {
-      if (isPremium) {
+      if (hasPremiumAccess) {
         context.push(route);
       } else {
         context.push(AppRoutes.premium);

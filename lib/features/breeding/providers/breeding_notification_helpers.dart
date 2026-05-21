@@ -100,12 +100,16 @@ class BreedingNotificationHelper {
   }
 
   /// Schedules incubation milestone and egg turning notifications.
-  void scheduleBreedingNotifications(
+  ///
+  /// Returns a [Future] so callers can await side-effect completion. Failure
+  /// is logged but never rethrown — schedulers are best-effort and must not
+  /// undo a successful primary mutation.
+  Future<void> scheduleBreedingNotifications(
     String pairId,
     String incubationId,
     DateTime pairingDate,
     Species species,
-  ) {
+  ) async {
     try {
       final scheduler = _ref.read(notificationSchedulerProvider);
       final settings = _ref.read(notificationToggleSettingsProvider);
@@ -113,7 +117,7 @@ class BreedingNotificationHelper {
         args: [pairId.substring(0, 6)],
       );
 
-      scheduler.scheduleIncubationMilestones(
+      await scheduler.scheduleIncubationMilestones(
         incubationId: incubationId,
         startDate: pairingDate,
         label: pairLabel,
@@ -121,29 +125,33 @@ class BreedingNotificationHelper {
         settings: settings,
       );
 
-      scheduler.scheduleEggTurningReminders(
+      await scheduler.scheduleEggTurningReminders(
         eggId: incubationId,
         startDate: pairingDate,
         eggLabel: pairLabel,
         species: species,
         settings: settings,
       );
-    } catch (e) {
+    } catch (e, st) {
       AppLogger.warning('Failed to schedule notifications: $e');
+      AppLogger.error('BreedingNotificationHelper.schedule', e, st);
     }
   }
 
   /// Auto-generates calendar events for incubation milestones.
-  void generateCalendarEvents(
+  ///
+  /// Returns a [Future] so callers can await side-effect completion. Failure
+  /// is logged but never rethrown — calendar generation is best-effort.
+  Future<void> generateCalendarEvents(
     String userId,
     String pairId,
     DateTime pairingDate,
     Species species, {
     String? incubationId,
-  }) {
+  }) async {
     try {
       final calendarGen = _ref.read(calendarEventGeneratorProvider);
-      calendarGen.generateIncubationEvents(
+      await calendarGen.generateIncubationEvents(
         userId: userId,
         breedingPairId: pairId,
         startDate: pairingDate,
@@ -151,13 +159,14 @@ class BreedingNotificationHelper {
         species: species,
         incubationId: incubationId,
       );
-    } catch (e) {
+    } catch (e, st) {
       if (isSupabaseUnavailableError(e)) {
         AppLogger.info(
           'Skipping calendar event generation: Supabase is not initialized',
         );
       } else {
         AppLogger.warning('Failed to generate calendar events: $e');
+        AppLogger.error('BreedingNotificationHelper.calendar', e, st);
       }
     }
   }

@@ -4,6 +4,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/constants/genetics_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
@@ -117,6 +118,7 @@ final breedingFormStateProvider =
 class BreedingFormState {
   final bool isLoading;
   final String? error;
+  final String? warning;
   final bool isSuccess;
   final bool isBreedingLimitReached;
   final bool isIncubationLimitReached;
@@ -124,6 +126,7 @@ class BreedingFormState {
   const BreedingFormState({
     this.isLoading = false,
     this.error,
+    this.warning,
     this.isSuccess = false,
     this.isBreedingLimitReached = false,
     this.isIncubationLimitReached = false,
@@ -132,6 +135,7 @@ class BreedingFormState {
   BreedingFormState copyWith({
     bool? isLoading,
     String? error,
+    String? warning,
     bool? isSuccess,
     bool? isBreedingLimitReached,
     bool? isIncubationLimitReached,
@@ -139,6 +143,7 @@ class BreedingFormState {
     return BreedingFormState(
       isLoading: isLoading ?? this.isLoading,
       error: error,
+      warning: warning,
       isSuccess: isSuccess ?? this.isSuccess,
       isBreedingLimitReached: isBreedingLimitReached ?? false,
       isIncubationLimitReached: isIncubationLimitReached ?? false,
@@ -393,11 +398,7 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
 
       // Normalize incubation start to UTC midnight so dayDiff/percentage
       // math is DST-safe and matches IncubationX.computedExpectedHatchDate.
-      final normalizedStart = DateTime.utc(
-        pairingDate.year,
-        pairingDate.month,
-        pairingDate.day,
-      );
+      final normalizedStart = date_utils.DateUtils.utcMidnight(pairingDate);
       final expectedHatch = normalizedStart.add(
         Duration(days: incubationDaysForSpecies(maleBird.species)),
       );
@@ -432,21 +433,24 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
       }
 
       // Side effects: schedule notifications + generate calendar milestones.
-      // Failures must not undo the successful primary mutation — they
-      // surface as warnings on the next sync cycle instead.
-      _helper.scheduleBreedingNotifications(
-        pairId,
-        incubationId,
-        normalizedStart,
-        maleBird.species,
-      );
-      _helper.generateCalendarEvents(
-        userId,
-        pairId,
-        normalizedStart,
-        maleBird.species,
-        incubationId: incubationId,
-      );
+      // Failures must not undo the successful primary mutation — the
+      // helpers swallow exceptions and log warnings internally, so we
+      // safely await both in parallel.
+      await Future.wait([
+        _helper.scheduleBreedingNotifications(
+          pairId,
+          incubationId,
+          normalizedStart,
+          maleBird.species,
+        ),
+        _helper.generateCalendarEvents(
+          userId,
+          pairId,
+          normalizedStart,
+          maleBird.species,
+          incubationId: incubationId,
+        ),
+      ]);
 
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
@@ -475,7 +479,15 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
         if (validated == null) return;
         validatedSpecies = validated.maleBird.species;
       }
-      await repo.save(pair.copyWith(updatedAt: DateTime.now()));
+      // Normalize pairingDate to UTC midnight (matches createBreeding) so
+      // edit/save can't introduce a local-time drift that breaks day-diff
+      // math downstream.
+      final normalized = pair.pairingDate == null
+          ? pair
+          : pair.copyWith(
+              pairingDate: date_utils.DateUtils.utcMidnight(pair.pairingDate!),
+            );
+      await repo.save(normalized.copyWith(updatedAt: DateTime.now()));
       if (validatedSpecies != null) {
         await _updateIncubationSpeciesForPair(
           pairId: pair.id,

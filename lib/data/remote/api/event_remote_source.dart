@@ -28,8 +28,8 @@ class EventRemoteSource extends BaseRemoteSource<Event> {
       final response = await table
           .select()
           .eq(SupabaseConstants.colUserId, userId)
-          .gte('event_date', start.toIso8601String())
-          .lte('event_date', end.toIso8601String())
+          .gte('event_date', start.toUtc().toIso8601String())
+          .lte('event_date', end.toUtc().toIso8601String())
           .eq(SupabaseConstants.colIsDeleted, false)
           .order('event_date');
       return response.map((json) => fromJson(json)).toList();

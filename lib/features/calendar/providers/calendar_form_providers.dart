@@ -2,11 +2,18 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart' show immutable;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/reminder_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/utils/sentry_error_filter.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
+import 'package:budgie_breeding_tracker/data/models/event_reminder_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_ids.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:uuid/uuid.dart';
+
+/// Default reminder window for calendar events (minutes before).
+const int _kDefaultReminderMinutesBefore = 30;
 
 /// State for the event form.
 @immutable
@@ -76,6 +83,9 @@ class EventFormNotifier extends Notifier<EventFormState> with SentryErrorFilter 
         updatedAt: DateTime.now(),
       );
       await repo.save(event);
+      // Schedule a default reminder. notification_processor picks up unsent
+      // reminders on its next tick and schedules an OS notification.
+      await _createDefaultReminder(event);
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('EventFormNotifier', e, st);
@@ -90,7 +100,16 @@ class EventFormNotifier extends Notifier<EventFormState> with SentryErrorFilter 
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(eventRepositoryProvider);
+      final previous = await repo.getById(event.id);
       await repo.save(event.copyWith(updatedAt: DateTime.now()));
+      // If the event time shifted, cancel any already-scheduled OS
+      // notification(s) and re-arm pending reminders so the processor
+      // re-schedules with the new triggerTime on its next tick.
+      final dateShifted = previous == null ||
+          !previous.eventDate.isAtSameMomentAs(event.eventDate);
+      if (dateShifted) {
+        await _resetRemindersForReschedule(event.id);
+      }
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('EventFormNotifier', e, st);
@@ -105,12 +124,96 @@ class EventFormNotifier extends Notifier<EventFormState> with SentryErrorFilter 
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(eventRepositoryProvider);
+      // Cancel OS notifications and soft-delete reminders BEFORE the event
+      // is removed; otherwise a sync push of the orphan reminder may fail
+      // FK validation.
+      await _cleanupRemindersForEvent(id);
       await repo.remove(id);
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('EventFormNotifier', e, st);
       reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.delete_failed'.tr());
+    }
+  }
+
+  /// Persists a default 30-minute reminder for newly created events. Failure
+  /// is logged but does not block event creation (degraded notification UX
+  /// beats lost data).
+  Future<void> _createDefaultReminder(Event event) async {
+    try {
+      final reminderRepo = ref.read(eventReminderRepositoryProvider);
+      final now = DateTime.now();
+      await reminderRepo.save(
+        EventReminder(
+          id: const Uuid().v7(),
+          userId: event.userId,
+          eventId: event.id,
+          minutesBefore: _kDefaultReminderMinutesBefore,
+          type: ReminderType.notification,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+    } catch (e, st) {
+      AppLogger.warning(
+        '[EventFormNotifier] Default reminder create failed for ${event.id}: $e',
+      );
+      reportIfUnexpected(e, st);
+    }
+  }
+
+  /// Cancels any scheduled OS notification for [eventId]'s reminders and
+  /// soft-deletes them in Drift. Best-effort: failures are logged so the
+  /// primary event delete still completes.
+  Future<void> _cleanupRemindersForEvent(String eventId) async {
+    try {
+      final reminderRepo = ref.read(eventReminderRepositoryProvider);
+      final notifService = ref.read(notificationServiceProvider);
+      final reminders = await reminderRepo.getByEvent(eventId);
+      for (final reminder in reminders) {
+        final notificationId = NotificationIds.generate(
+          NotificationIds.eventReminderBaseId,
+          reminder.id,
+          0,
+        );
+        await notifService.cancel(notificationId);
+        await reminderRepo.remove(reminder.id);
+      }
+    } catch (e, st) {
+      AppLogger.warning(
+        '[EventFormNotifier] Reminder cleanup failed for $eventId: $e',
+      );
+      reportIfUnexpected(e, st);
+    }
+  }
+
+  /// Resets reminders so the processor reschedules them. Cancels the
+  /// previously scheduled OS notification (if any), marks the reminder
+  /// unsent, and lets `notification_processor` re-arm on its next tick.
+  Future<void> _resetRemindersForReschedule(String eventId) async {
+    try {
+      final reminderRepo = ref.read(eventReminderRepositoryProvider);
+      final notifService = ref.read(notificationServiceProvider);
+      final reminders = await reminderRepo.getByEvent(eventId);
+      final now = DateTime.now();
+      for (final reminder in reminders) {
+        if (!reminder.isSent) continue;
+        final notificationId = NotificationIds.generate(
+          NotificationIds.eventReminderBaseId,
+          reminder.id,
+          0,
+        );
+        await notifService.cancel(notificationId);
+        await reminderRepo.save(
+          reminder.copyWith(isSent: false, updatedAt: now),
+        );
+      }
+    } catch (e, st) {
+      AppLogger.warning(
+        '[EventFormNotifier] Reminder reschedule reset failed for $eventId: $e',
+      );
+      reportIfUnexpected(e, st);
     }
   }
 

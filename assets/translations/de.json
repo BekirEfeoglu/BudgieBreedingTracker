@@ -309,6 +309,8 @@
     "bulk_mark_dead_confirm": "{} Vögel werden als verstorben markiert. Fortfahren?",
     "bulk_mark_sold_confirm": "{} Vögel werden als verkauft markiert. Fortfahren?",
     "bulk_mark_gifted_confirm": "{} Vögel werden als abgegeben markiert. Fortfahren?",
+    "bulk_action_success": "Aktion für {} Vögel abgeschlossen",
+    "bulk_action_partial": "{} von {} Vögeln konnten nicht verarbeitet werden",
     "mark_sold": "Als verkauft markieren",
     "mark_gifted": "Als abgegeben markieren"
   },

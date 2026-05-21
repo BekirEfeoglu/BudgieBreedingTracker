@@ -28,9 +28,13 @@ class CalendarWeekView extends StatelessWidget {
       selectedDate.day,
     );
 
-    // Get Monday of the selected date's week
-    final monday = selectedDate.subtract(
-      Duration(days: (selectedDate.weekday - 1)),
+    // Get Monday of the selected date's week. DST-safe: use
+    // DateTime(y, m, d-n) instead of `subtract(Duration(days:))`; otherwise
+    // a 23h DST day skews the wall-clock and pushes Monday by one day.
+    final monday = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day - (selectedDate.weekday - 1),
     );
 
     final weekdays = [
@@ -47,7 +51,8 @@ class CalendarWeekView extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
       child: Row(
         children: List.generate(7, (index) {
-          final day = monday.add(Duration(days: index));
+          // DST-safe day iteration starting from Monday (see comment above).
+          final day = DateTime(monday.year, monday.month, monday.day + index);
           final dateKey = DateTime(day.year, day.month, day.day);
           final isToday = dateKey == today;
           final isSelected = dateKey == selected;

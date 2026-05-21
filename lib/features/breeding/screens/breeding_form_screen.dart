@@ -43,7 +43,10 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
   final _formKey = GlobalKey<FormState>();
   String? _maleId;
   String? _femaleId;
-  DateTime _pairingDate = DateTime.now();
+  // Lazily initialized in initState so the "today" default reflects when
+  // the screen first opens, not when the State class is constructed (which
+  // may have happened during route preloading).
+  late DateTime _pairingDate;
   final _cageController = TextEditingController();
   final _notesController = TextEditingController();
   bool _isEdit = false;
@@ -71,6 +74,7 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
   @override
   void initState() {
     super.initState();
+    _pairingDate = DateTime.now();
     if (widget.editPairId != null) {
       _isEdit = true;
       _loadExistingPair();

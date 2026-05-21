@@ -64,13 +64,12 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
     super.initState();
     final existing = widget.existingEvent;
     if (existing != null) {
+      // Event model stores UTC; convert to local for display/edit pickers.
+      final localDate = existing.eventDate.toLocal();
       _titleController.text = existing.title;
       _notesController.text = existing.notes ?? '';
-      _eventDate = existing.eventDate;
-      _eventTime = TimeOfDay(
-        hour: existing.eventDate.hour,
-        minute: existing.eventDate.minute,
-      );
+      _eventDate = localDate;
+      _eventTime = TimeOfDay(hour: localDate.hour, minute: localDate.minute);
       _eventType = existing.type;
     } else {
       _eventDate = widget.initialDate ?? DateTime.now();

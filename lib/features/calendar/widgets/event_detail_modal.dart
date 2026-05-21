@@ -172,7 +172,7 @@ class _EventDetailContent extends ConsumerWidget {
           children: [
             Icon(LucideIcons.clock, size: 18, color: theme.colorScheme.onSurfaceVariant),
             const SizedBox(width: AppSpacing.sm),
-            Text(dateFormat.format(event.eventDate), style: theme.textTheme.bodyMedium),
+            Text(dateFormat.format(event.eventDate.toLocal()), style: theme.textTheme.bodyMedium),
           ],
         ),
         const SizedBox(height: AppSpacing.sm),

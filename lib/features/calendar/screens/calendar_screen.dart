@@ -292,15 +292,22 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   void _changeWeek(int delta) {
     final current = ref.read(selectedDateProvider);
-    ref.read(selectedDateProvider.notifier).state = current.add(
-      Duration(days: 7 * delta),
+    // DST-safe: use DateTime(y, m, d+n) instead of Duration(days:) so a 23h
+    // or 25h day at a DST boundary still advances by one calendar day.
+    ref.read(selectedDateProvider.notifier).state = DateTime(
+      current.year,
+      current.month,
+      current.day + 7 * delta,
     );
   }
 
   void _changeDay(int delta) {
     final current = ref.read(selectedDateProvider);
-    ref.read(selectedDateProvider.notifier).state = current.add(
-      Duration(days: delta),
+    // DST-safe day step (see _changeWeek note above).
+    ref.read(selectedDateProvider.notifier).state = DateTime(
+      current.year,
+      current.month,
+      current.day + delta,
     );
   }
 

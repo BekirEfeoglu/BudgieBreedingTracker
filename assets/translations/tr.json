@@ -309,6 +309,8 @@
     "bulk_mark_dead_confirm": "{} kuş vefat etti olarak işaretlenecek. Devam?",
     "bulk_mark_sold_confirm": "{} kuş satıldı olarak işaretlenecek. Devam?",
     "bulk_mark_gifted_confirm": "{} kuş hediye edildi olarak işaretlenecek. Devam?",
+    "bulk_action_success": "{} kuş için işlem tamamlandı",
+    "bulk_action_partial": "{} kuştan {} tanesi için işlem başarısız",
     "mark_sold": "Satıldı Olarak İşaretle",
     "mark_gifted": "Hediye Edildi Olarak İşaretle"
   },

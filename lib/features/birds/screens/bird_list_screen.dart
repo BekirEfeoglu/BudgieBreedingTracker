@@ -94,144 +94,118 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
   }
 
   Future<void> _bulkDelete() async {
-    final count = _selectedIds.length;
     final confirmed = await showConfirmDialog(
       context,
       title: 'common.confirm_delete'.tr(),
-      message: 'birds.bulk_delete_confirm'.tr(args: ['$count']),
+      message: 'birds.bulk_delete_confirm'.tr(args: ['${_selectedIds.length}']),
       isDestructive: true,
     );
     if (confirmed != true || !mounted) return;
-
-    final notifier = ref.read(birdFormStateProvider.notifier);
-    final failures = <String>[];
-    for (final id in _selectedIds.toList()) {
-      if (!mounted) return;
-      try {
-        await notifier.deleteBird(id);
-      } catch (e, st) {
-        AppLogger.error('[BirdListScreen] bulkDelete failed for $id', e, st);
-        failures.add(id);
-      }
-    }
-    if (!mounted) return;
-    if (failures.isEmpty) {
-      _clearSelection();
-    } else {
-      setState(() {
-        _selectedIds
-          ..clear()
-          ..addAll(failures);
-      });
-    }
+    await _runBulkAction(
+      action: (notifier, id) => notifier.deleteBird(id),
+      logTag: 'bulkDelete',
+    );
   }
 
   Future<void> _bulkMarkAsDead() async {
-    final count = _selectedIds.length;
     final confirmed = await showConfirmDialog(
       context,
       title: 'birds.mark_dead'.tr(),
-      message: 'birds.bulk_mark_dead_confirm'.tr(args: ['$count']),
+      message: 'birds.bulk_mark_dead_confirm'.tr(
+        args: ['${_selectedIds.length}'],
+      ),
       isDestructive: true,
     );
     if (confirmed != true || !mounted) return;
-
-    final notifier = ref.read(birdFormStateProvider.notifier);
-    final failures = <String>[];
-    for (final id in _selectedIds.toList()) {
-      if (!mounted) return;
-      try {
-        await notifier.markAsDead(id);
-      } catch (e, st) {
-        AppLogger.error(
-          '[BirdListScreen] bulkMarkAsDead failed for $id',
-          e,
-          st,
-        );
-        failures.add(id);
-      }
-    }
-    if (!mounted) return;
-    if (failures.isEmpty) {
-      _clearSelection();
-    } else {
-      setState(() {
-        _selectedIds
-          ..clear()
-          ..addAll(failures);
-      });
-    }
+    await _runBulkAction(
+      action: (notifier, id) => notifier.markAsDead(id),
+      logTag: 'bulkMarkAsDead',
+    );
   }
 
   Future<void> _bulkMarkAsSold() async {
-    final count = _selectedIds.length;
     final confirmed = await showConfirmDialog(
       context,
       title: 'birds.mark_sold'.tr(),
-      message: 'birds.bulk_mark_sold_confirm'.tr(args: ['$count']),
+      message: 'birds.bulk_mark_sold_confirm'.tr(
+        args: ['${_selectedIds.length}'],
+      ),
     );
     if (confirmed != true || !mounted) return;
-
-    final notifier = ref.read(birdFormStateProvider.notifier);
-    final failures = <String>[];
-    for (final id in _selectedIds.toList()) {
-      if (!mounted) return;
-      try {
-        await notifier.markAsSold(id);
-      } catch (e, st) {
-        AppLogger.error(
-          '[BirdListScreen] bulkMarkAsSold failed for $id',
-          e,
-          st,
-        );
-        failures.add(id);
-      }
-    }
-    if (!mounted) return;
-    if (failures.isEmpty) {
-      _clearSelection();
-    } else {
-      setState(() {
-        _selectedIds
-          ..clear()
-          ..addAll(failures);
-      });
-    }
+    await _runBulkAction(
+      action: (notifier, id) => notifier.markAsSold(id),
+      logTag: 'bulkMarkAsSold',
+    );
   }
 
   Future<void> _bulkMarkAsGifted() async {
-    final count = _selectedIds.length;
     final confirmed = await showConfirmDialog(
       context,
       title: 'birds.mark_gifted'.tr(),
-      message: 'birds.bulk_mark_gifted_confirm'.tr(args: ['$count']),
+      message: 'birds.bulk_mark_gifted_confirm'.tr(
+        args: ['${_selectedIds.length}'],
+      ),
     );
     if (confirmed != true || !mounted) return;
+    await _runBulkAction(
+      action: (notifier, id) => notifier.markAsGifted(id),
+      logTag: 'bulkMarkAsGifted',
+    );
+  }
 
+  /// Runs [action] for every selected bird, collects per-item failures,
+  /// and surfaces success/partial-failure feedback via SnackBar so the
+  /// user knows the operation outcome instead of seeing the selection
+  /// silently clear (or partially clear) with no explanation.
+  Future<void> _runBulkAction({
+    required Future<void> Function(dynamic notifier, String id) action,
+    required String logTag,
+  }) async {
+    final total = _selectedIds.length;
+    if (total == 0) return;
+    final messenger = ScaffoldMessenger.of(context);
     final notifier = ref.read(birdFormStateProvider.notifier);
     final failures = <String>[];
+
     for (final id in _selectedIds.toList()) {
       if (!mounted) return;
       try {
-        await notifier.markAsGifted(id);
+        await action(notifier, id);
       } catch (e, st) {
-        AppLogger.error(
-          '[BirdListScreen] bulkMarkAsGifted failed for $id',
-          e,
-          st,
-        );
+        AppLogger.error('[BirdListScreen] $logTag failed for $id', e, st);
         failures.add(id);
       }
     }
     if (!mounted) return;
+
+    final succeeded = total - failures.length;
     if (failures.isEmpty) {
       _clearSelection();
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            'birds.bulk_action_success'.tr(args: ['$succeeded']),
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     } else {
+      if (!mounted) return;
       setState(() {
         _selectedIds
           ..clear()
           ..addAll(failures);
       });
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            'birds.bulk_action_partial'.tr(
+              args: ['${failures.length}', '$total'],
+            ),
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 

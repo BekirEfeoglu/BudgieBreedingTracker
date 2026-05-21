@@ -16,4 +16,12 @@ abstract final class DateUtils {
     final e = DateTime.utc(end.year, end.month, end.day);
     return e.difference(s).inDays;
   }
+
+  /// Normalizes a date to UTC midnight (00:00:00 UTC of its calendar day).
+  ///
+  /// Use this whenever a "day" is the meaningful unit (pair start date,
+  /// incubation start, layDate). Adding `Duration(days: n)` to the result
+  /// is DST-safe because 24h × n equals n calendar days in UTC.
+  static DateTime utcMidnight(DateTime date) =>
+      DateTime.utc(date.year, date.month, date.day);
 }

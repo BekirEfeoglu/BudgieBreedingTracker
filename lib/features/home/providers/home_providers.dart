@@ -66,12 +66,25 @@ final incubatingEggsSummaryProvider =
       // and hatch-date computation don't re-run when the user returns to Home.
       ref.keepAlive();
 
+      // Cancellation guard: if the egg stream emits again (causing the
+      // provider to rebuild) while resolveEggSpeciesBatch is still running,
+      // discard the stale result on completion. Riverpod already orphans
+      // the pending Future, but this makes it explicit so a future
+      // refactor doesn't accidentally write to outer state mid-flight.
+      var disposed = false;
+      ref.onDispose(() => disposed = true);
+
       final eggs = await ref.watch(
         incubatingEggsLimitedProvider(userId).future,
       );
       final now = DateTime.now();
 
       final speciesMap = await resolveEggSpeciesBatch(ref, eggs);
+      if (disposed) {
+        // Older invocation finished after the provider was rebuilt; bail
+        // out so the newer rebuild's result wins.
+        return const <IncubatingEggSummary>[];
+      }
 
       final summaries = eggs.map((egg) {
         final species = speciesMap[egg.id] ?? Species.unknown;
@@ -149,12 +162,28 @@ TodaysEggTurningSummary buildTodaysEggTurningSummary(
   for (final summary in eggs) {
     for (final hourText in eggTurningHoursForSpecies(summary.species)) {
       final parts = hourText.split(':');
+      // Local wall-clock DateTime construction is intentional: the
+      // notification scheduler uses the exact same naive pattern
+      // (see notification_scheduler.dart#scheduleEggTurningReminders), so
+      // the home dashboard's "next turning" timestamp matches the OS
+      // notification firing. DST drift is consistent across both — if you
+      // ever switch this to tz.TZDateTime.local, update the scheduler too
+      // to keep them aligned.
+      final hour = int.tryParse(parts[0]);
+      final minute = int.tryParse(parts[1]);
+      if (hour == null || minute == null) {
+        AppLogger.warning(
+          '[home_providers] Bad turning hour entry "$hourText" '
+          'for species ${summary.species.name}',
+        );
+        continue;
+      }
       final candidate = DateTime(
         current.year,
         current.month,
         current.day,
-        int.parse(parts[0]),
-        int.parse(parts[1]),
+        hour,
+        minute,
       );
       if (!candidate.isAfter(current)) continue;
       if (nextTurningAt == null || candidate.isBefore(nextTurningAt)) {

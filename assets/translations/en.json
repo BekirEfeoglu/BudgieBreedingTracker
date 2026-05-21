@@ -309,6 +309,8 @@
     "bulk_mark_dead_confirm": "{} birds will be marked as deceased. Continue?",
     "bulk_mark_sold_confirm": "{} birds will be marked as sold. Continue?",
     "bulk_mark_gifted_confirm": "{} birds will be marked as gifted. Continue?",
+    "bulk_action_success": "Action completed for {} birds",
+    "bulk_action_partial": "{} of {} birds could not be processed",
     "mark_sold": "Mark as Sold",
     "mark_gifted": "Mark as Gifted"
   },
