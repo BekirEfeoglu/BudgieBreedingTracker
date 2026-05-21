@@ -1,9 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
-
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
@@ -29,17 +28,28 @@ class TwoFactorVerifyScreen extends ConsumerStatefulWidget {
 
 class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
   static const _tag = '[TwoFactorVerify]';
-  static const _prefsKeyAttemptsBase = 'mfa_failed_attempts';
-  static const _prefsKeyLockoutBase = 'mfa_lockout_until';
+  static const _storageKeyAttemptsBase = 'mfa_failed_attempts';
+  static const _storageKeyLockoutBase = 'mfa_lockout_until';
 
-  /// Per-user namespaced prefs keys. The previous global keys leaked
+  /// Secure storage for MFA lockout state. Per security.md, security-relevant
+  /// state belongs in encrypted storage — SharedPreferences (previously used
+  /// here) is wiped by app-data reset on rooted devices, weakening
+  /// defense-in-depth.
+  static const FlutterSecureStorage _secureStorage = FlutterSecureStorage(
+    iOptions: IOSOptions(
+      accessibility: KeychainAccessibility.first_unlock_this_device,
+    ),
+  );
+
+  /// Per-user namespaced keys. The previous global keys leaked
   /// lockout state across users on shared devices (a family tablet
   /// where user A locked out would also block user B's MFA prompt).
   /// The factorId scope is stable per user since the factor is tied to
   /// the account; we also fall back to the current auth.uid() when
   /// available.
-  String get _prefsKeyAttempts => '${_prefsKeyAttemptsBase}_${_userScope()}';
-  String get _prefsKeyLockout => '${_prefsKeyLockoutBase}_${_userScope()}';
+  String get _storageKeyAttempts =>
+      '${_storageKeyAttemptsBase}_${_userScope()}';
+  String get _storageKeyLockout => '${_storageKeyLockoutBase}_${_userScope()}';
 
   String _userScope() {
     final uid = ref.read(currentUserIdProvider);
@@ -127,11 +137,11 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
     }
   }
 
-  /// Restores lockout state from persistent storage as offline fallback.
+  /// Restores lockout state from secure storage as offline fallback.
   Future<void> _restoreLocalLockoutState() async {
-    final prefs = await SharedPreferences.getInstance();
-    final attempts = prefs.getInt(_prefsKeyAttempts) ?? 0;
-    final lockoutRaw = prefs.getString(_prefsKeyLockout);
+    final attemptsRaw = await _secureStorage.read(key: _storageKeyAttempts);
+    final lockoutRaw = await _secureStorage.read(key: _storageKeyLockout);
+    final attempts = int.tryParse(attemptsRaw ?? '') ?? 0;
     final lockout = lockoutRaw != null ? DateTime.tryParse(lockoutRaw) : null;
     if (!mounted) return;
     setState(() {
@@ -141,12 +151,17 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
   }
 
   Future<void> _persistLocalLockoutState() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_prefsKeyAttempts, _failedAttempts);
+    await _secureStorage.write(
+      key: _storageKeyAttempts,
+      value: '$_failedAttempts',
+    );
     if (_lockoutUntil != null) {
-      await prefs.setString(_prefsKeyLockout, _lockoutUntil!.toIso8601String());
+      await _secureStorage.write(
+        key: _storageKeyLockout,
+        value: _lockoutUntil!.toIso8601String(),
+      );
     } else {
-      await prefs.remove(_prefsKeyLockout);
+      await _secureStorage.delete(key: _storageKeyLockout);
     }
   }
 

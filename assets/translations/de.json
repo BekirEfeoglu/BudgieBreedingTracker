@@ -401,6 +401,7 @@
     "risk_chick_loss_desc": "{} / {} Küken wurden als krank oder verstorben markiert."
   },
   "eggs": {
+    "invalid_incubation": "Diese Brut gehört nicht zu Ihnen oder existiert nicht mehr",
     "add_egg": "Ei hinzufügen",
     "add_new_egg": "Neues Ei hinzufügen",
     "management": "Eierverwaltung",

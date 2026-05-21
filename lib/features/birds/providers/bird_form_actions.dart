@@ -170,8 +170,8 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
         notes: notes,
         mutations: mutations,
         genotypeInfo: genotypeInfo,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: DateTime.now().toUtc(),
+        updatedAt: DateTime.now().toUtc(),
       );
       await repo.save(bird);
       if (photoUrl != null && photoFile != null) {
@@ -186,8 +186,8 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
                 fileName: photoFile.name,
                 filePath: photoUrl,
                 isPrimary: true,
-                createdAt: DateTime.now(),
-                updatedAt: DateTime.now(),
+                createdAt: DateTime.now().toUtc(),
+                updatedAt: DateTime.now().toUtc(),
               ),
             );
       }
@@ -203,6 +203,7 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
         isLoading: false,
         isSuccess: true,
         remainingBirds: remaining,
+        lastAction: BirdFormAction.save,
       );
     } catch (e, st) {
       AppLogger.error('BirdFormNotifier', e, st);
@@ -248,10 +249,14 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
         bird.copyWith(
           ringNumber: normalizedRingNumber,
           cageNumber: normalizedCageNumber,
-          updatedAt: DateTime.now(),
+          updatedAt: DateTime.now().toUtc(),
         ),
       );
-      state = state.copyWith(isLoading: false, isSuccess: true);
+      state = state.copyWith(
+        isLoading: false,
+        isSuccess: true,
+        lastAction: BirdFormAction.save,
+      );
     } catch (e, st) {
       AppLogger.error('BirdFormNotifier', e, st);
       reportIfUnexpected(e, st);

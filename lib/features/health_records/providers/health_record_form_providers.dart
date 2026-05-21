@@ -61,7 +61,7 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
         userId: userId,
         title: title,
         type: type,
-        date: date,
+        date: date.toUtc(),
         birdId: birdId,
         description: description,
         treatment: treatment,
@@ -69,8 +69,8 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
         notes: notes,
         weight: weight,
         cost: cost,
-        followUpDate: followUpDate,
-        createdAt: DateTime.now(),
+        followUpDate: followUpDate?.toUtc(),
+        createdAt: DateTime.now().toUtc(),
       );
       await repo.save(record);
 
@@ -129,7 +129,7 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(healthRecordRepositoryProvider);
-      await repo.save(record.copyWith(updatedAt: DateTime.now()));
+      await repo.save(record.copyWith(updatedAt: DateTime.now().toUtc()));
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('HealthRecordFormNotifier', e, st);

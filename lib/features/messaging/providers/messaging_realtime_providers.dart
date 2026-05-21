@@ -2,8 +2,11 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/logger.dart';
 import '../../../data/models/message_model.dart';
 import '../../../data/repositories/repository_providers.dart';
+import '../../../domain/services/sync/realtime_sync_service.dart';
+import '../../../domain/services/sync/sync_settings_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 
 /// Manages realtime message subscription for active chat
@@ -25,8 +28,33 @@ class MessagingRealtimeNotifier extends Notifier<List<Message>> {
     // messages in B's view (the screen merges this state with the per-
     // conversation message stream).
     state = [];
-    final repo = ref.read(messagingRepositoryProvider);
+
+    // Gate realtime subscribe behind feature flags (feature-flags.md § Sync Runtime Flags):
+    // local toggle, server kill switch, and per-user rollout bucket. If any rejects,
+    // skip subscribe — UI still works via pull-on-open.
     final userId = ref.read(currentUserIdProvider);
+    final enabled = ref.read(syncRealtimeEnabledProvider);
+    final killSwitchEnabled = ref.read(syncRealtimeServerKillSwitchProvider);
+    final rolloutAllowed =
+        !killSwitchEnabled &&
+        RealtimeSyncService.isUserInRollout(
+          userId: userId,
+          percent: ref.read(syncRealtimeRolloutPercentProvider),
+        );
+    if (!RealtimeSyncService.shouldSubscribe(
+      enabled: enabled,
+      userId: userId,
+      online: true,
+      rolloutAllowed: rolloutAllowed,
+    )) {
+      AppLogger.info(
+        '[messaging] realtime subscribe skipped '
+        '(flag/kill-switch/rollout gate)',
+      );
+      return;
+    }
+
+    final repo = ref.read(messagingRepositoryProvider);
     _channel = await repo.subscribeToMessages(conversationId, userId, (
       message,
     ) {

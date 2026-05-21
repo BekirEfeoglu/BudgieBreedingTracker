@@ -66,6 +66,11 @@ class MainShell extends ConsumerWidget {
                   : NavigationRailLabelType.selected,
               onDestinationSelected: (index) {
                 AppHaptics.lightImpact();
+                // Intentional context.go: bottom-nav / rail destinations are
+                // root-level tabs in a non-Stateful ShellRoute, so each tab
+                // switch must replace the route stack rather than push onto
+                // it. Rule #17's context.push prohibition is for forward
+                // navigation within a tab, not for tab switching itself.
                 context.go(_navItems[index].path);
               },
               destinations: _navItems.map((item) {

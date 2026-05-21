@@ -401,6 +401,7 @@
     "risk_chick_loss_desc": "{} / {} yavruda hastalık veya kayıp işaretlendi."
   },
   "eggs": {
+    "invalid_incubation": "Bu kuluçka size ait değil veya artık mevcut değil",
     "add_egg": "Yumurta Ekle",
     "add_new_egg": "Yeni Yumurta Ekle",
     "management": "Yumurta Yönetimi",

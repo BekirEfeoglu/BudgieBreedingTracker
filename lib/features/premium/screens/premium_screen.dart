@@ -26,7 +26,8 @@ class PremiumScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isPremium = ref.watch(isPremiumProvider);
+    // effectivePremiumProvider honors grace-period subscribers (premium-revenuecat.md)
+    final isPremium = ref.watch(effectivePremiumProvider);
 
     // Listen for purchase action side effects
     ref.listen<PurchaseActionState>(purchaseActionProvider, (_, state) {

@@ -159,10 +159,12 @@ List<RouteBase> buildUserRoutes() => [
     path: AppRoutes.twoFactorVerify,
     builder: (context, state) {
       final factorId = state.uri.queryParameters['factorId'];
-      if (factorId == null || factorId.isEmpty) {
+      // Validate UUID format to prevent crafted factorId from poisoning
+      // per-user MFA lockout prefs namespace (audit K6).
+      if (!isValidRouteId(factorId)) {
         return const NotFoundScreen();
       }
-      return TwoFactorVerifyScreen(factorId: factorId);
+      return TwoFactorVerifyScreen(factorId: factorId!);
     },
   ),
 

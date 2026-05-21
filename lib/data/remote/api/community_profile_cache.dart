@@ -93,7 +93,6 @@ class CommunityProfileCache {
           'username':
               _nonEmpty(profile['full_name']) ??
               _nonEmpty(profile['display_name']) ??
-              _emailPrefix(profile['email']) ??
               '',
           'avatar_url': StorageUrlNormalizer.normalizePublicObjectUrl(
             _nonEmpty(profile['avatar_url']),
@@ -119,7 +118,7 @@ class CommunityProfileCache {
       chunks.map(
         (chunk) => _client
             .from(SupabaseConstants.profilesTable)
-            .select('id, display_name, full_name, email, avatar_url')
+            .select('id, display_name, full_name, avatar_url')
             .inFilter('id', chunk),
       ),
     );
@@ -145,14 +144,6 @@ class CommunityProfileCache {
     if (value == null) return null;
     final str = value.toString().trim();
     return str.isEmpty ? null : str;
-  }
-
-  static String? _emailPrefix(dynamic email) {
-    if (email == null) return null;
-    final str = email.toString().trim();
-    if (str.isEmpty) return null;
-    final atIndex = str.indexOf('@');
-    return atIndex > 0 ? str.substring(0, atIndex) : null;
   }
 }
 

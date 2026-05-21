@@ -163,12 +163,19 @@ TodaysEggTurningSummary buildTodaysEggTurningSummary(
     for (final hourText in eggTurningHoursForSpecies(summary.species)) {
       final parts = hourText.split(':');
       // Local wall-clock DateTime construction is intentional: the
-      // notification scheduler uses the exact same naive pattern
-      // (see notification_scheduler.dart#scheduleEggTurningReminders), so
-      // the home dashboard's "next turning" timestamp matches the OS
-      // notification firing. DST drift is consistent across both — if you
-      // ever switch this to tz.TZDateTime.local, update the scheduler too
-      // to keep them aligned.
+      // notification scheduler uses the same naive pattern and converts
+      // to `tz.TZDateTime.from(scheduledDate, tz.local)` at the OS
+      // boundary inside notification_service.scheduleNotification (line
+      // 193). The home dashboard's "next turning" timestamp therefore
+      // matches the OS notification firing for the common case.
+      //
+      // Known limitation: on DST-gap days (spring-forward 02:00–03:00) a
+      // naive DateTime in the gap is interpreted by tz package as the
+      // post-shift time. No production turning schedule includes hours
+      // in the gap, but if `eggTurningHoursForSpecies` ever returns one,
+      // both this site and `notification_scheduler.dart#scheduleEggTurningReminders`
+      // MUST be migrated to construct `tz.TZDateTime` end-to-end. See
+      // audit K10 / datetime-format.md.
       final hour = int.tryParse(parts[0]);
       final minute = int.tryParse(parts[1]);
       if (hour == null || minute == null) {

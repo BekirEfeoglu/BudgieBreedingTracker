@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -8,19 +9,21 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../data/models/profile_model.dart';
+import '../../../domain/services/premium/premium_providers.dart';
 import '../../../router/route_names.dart';
 
 /// Standalone subscription card — upsell for free users, status for premium.
-class SubscriptionCard extends StatelessWidget {
+class SubscriptionCard extends ConsumerWidget {
   const SubscriptionCard({super.key, required this.profile});
 
   final Profile? profile;
 
   @override
-  Widget build(BuildContext context) {
-    final isPremium = profile?.hasPremium == true;
-    return isPremium
-        ? _PremiumStatusCard(profile: profile!)
+  Widget build(BuildContext context, WidgetRef ref) {
+    // effectivePremiumProvider honors grace-period subscribers (premium-revenuecat.md)
+    final hasAccess = ref.watch(effectivePremiumProvider);
+    return hasAccess
+        ? _PremiumStatusCard(profile: profile)
         : const _UpsellCard();
   }
 }
@@ -30,12 +33,12 @@ class SubscriptionCard extends StatelessWidget {
 class _PremiumStatusCard extends StatelessWidget {
   const _PremiumStatusCard({required this.profile});
 
-  final Profile profile;
+  final Profile? profile;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final expires = profile.premiumExpiresAt;
+    final expires = profile?.premiumExpiresAt;
     final daysRemaining = expires?.difference(DateTime.now()).inDays;
 
     return Semantics(
@@ -128,7 +131,7 @@ class _PremiumStatusCard extends StatelessWidget {
   }
 
   String? get _memberTenure {
-    final created = profile.createdAt;
+    final created = profile?.createdAt;
     if (created == null) return null;
     final diff = DateTime.now().difference(created);
     final months = (diff.inDays / 30).floor();

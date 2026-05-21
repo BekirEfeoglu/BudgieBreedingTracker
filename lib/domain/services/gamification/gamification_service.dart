@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:uuid/uuid.dart';
 
 import '../../../core/enums/gamification_enums.dart';
@@ -9,6 +11,18 @@ import 'xp_constants.dart';
 class GamificationService {
   final GamificationRemoteSource _remoteSource;
 
+  /// Per-(user, action) lock to serialize concurrent recordAction calls
+  /// within the same isolate. Without it, two simultaneous awards (e.g.
+  /// rapid double-tap or background task firing alongside foreground)
+  /// both pass the dailyLimit check, then both insert, bypassing the cap.
+  ///
+  /// This guard is best-effort — multi-device or multi-isolate races are
+  /// not covered. The authoritative fix is a Postgres unique constraint
+  /// on (user_id, action, date_trunc('day', created_at)) or an RPC that
+  /// performs the count + insert atomically. Tracked as audit K12 for
+  /// backend follow-up.
+  final Map<String, Completer<void>> _inFlight = {};
+
   GamificationService(this._remoteSource);
 
   Future<void> recordAction(
@@ -16,7 +30,16 @@ class GamificationService {
     XpAction action, {
     String? referenceId,
   }) async {
+    final lockKey = '$userId:${action.toJson()}';
+    final previous = _inFlight[lockKey];
+    final completer = Completer<void>();
+    _inFlight[lockKey] = completer;
     try {
+      if (previous != null) {
+        // Wait for any in-flight award for the same (user, action) to
+        // finish so its insert lands before we re-check the daily count.
+        await previous.future;
+      }
       final xpAmount = XpConstants.getXpAmount(action);
       if (xpAmount <= 0) return;
 
@@ -44,6 +67,13 @@ class GamificationService {
       await _updateBadgeProgress(userId, action);
     } catch (e, st) {
       AppLogger.error('gamification recordAction error', e, st);
+    } finally {
+      completer.complete();
+      // Only clear the slot if no later caller took our place — otherwise
+      // we'd evict their pending completer.
+      if (_inFlight[lockKey] == completer) {
+        _inFlight.remove(lockKey);
+      }
     }
   }
 

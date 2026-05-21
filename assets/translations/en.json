@@ -401,6 +401,7 @@
     "risk_chick_loss_desc": "{} / {} chicks were marked sick or deceased."
   },
   "eggs": {
+    "invalid_incubation": "This incubation does not belong to you or no longer exists",
     "add_egg": "Add Egg",
     "add_new_egg": "Add New Egg",
     "management": "Egg Management",

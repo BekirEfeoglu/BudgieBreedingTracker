@@ -16,6 +16,8 @@ import '../../../core/widgets/app_screen_title.dart';
 import '../../../domain/services/import/import_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import '../../../domain/services/ads/ad_reward_providers.dart';
+import '../../../core/errors/app_exception.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/free_tier_limit_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import '../../../router/route_names.dart';
 import '../providers/settings_providers.dart';
@@ -124,7 +126,7 @@ class BackupScreen extends ConsumerWidget {
   }
 
   Future<void> _handleImport(BuildContext context, WidgetRef ref) async {
-    final isPremium = ref.read(isPremiumProvider);
+    final isPremium = ref.read(effectivePremiumProvider);
     final hasExportReward = ref.read(isExportRewardActiveProvider);
     if (!isPremium && !hasExportReward) {
       _showPremiumDialog(context, 'premium.backup_required'.tr());
@@ -155,6 +157,30 @@ class BackupScreen extends ConsumerWidget {
     try {
       final importService = ref.read(dataImportServiceProvider);
       final userId = ref.read(currentUserIdProvider);
+
+      // Server-side enforcement: validate-free-tier-limit edge fn confirms
+      // the user is allowed at least one more bird. The per-row check inside
+      // importService.importBirdsFromExcel handles the remaining bulk cap.
+      // Without this, a rooted device with mocked client could bypass the
+      // import-side AppConstants.freeTierMaxBirds limit entirely (audit K8).
+      if (!isPremium) {
+        try {
+          await ref
+              .read(freeTierLimitServiceProvider)
+              .guardBirdLimit(userId);
+        } on FreeTierLimitException {
+          if (context.mounted) {
+            _showPremiumDialog(
+              context,
+              'premium.bird_limit_reached'.tr(
+                args: ['${AppConstants.freeTierMaxBirds}'],
+              ),
+            );
+          }
+          return;
+        }
+      }
+
       final importResult = await importService.importBirdsFromExcel(
         bytes: bytes,
         userId: userId,
@@ -191,7 +217,7 @@ class BackupScreen extends ConsumerWidget {
     WidgetRef ref,
     String type,
   ) async {
-    final isPremium = ref.read(isPremiumProvider);
+    final isPremium = ref.read(effectivePremiumProvider);
     final hasExportReward = ref.read(isExportRewardActiveProvider);
     if (!isPremium && !hasExportReward) {
       _showPremiumDialog(context, 'premium.export_required'.tr());

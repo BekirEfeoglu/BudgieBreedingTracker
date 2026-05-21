@@ -21,6 +21,12 @@ final birdFormStateProvider = NotifierProvider<BirdFormNotifier, BirdFormState>(
   BirdFormNotifier.new,
 );
 
+/// Source of the most recent state change. Allows BirdDetailScreen and
+/// BirdFormScreen to filter their listeners when both are simultaneously
+/// subscribed to the shared global notifier — without this, an edit pop'd
+/// from form back to detail would double-fire success toasts.
+enum BirdFormAction { none, save, statusChange, delete }
+
 /// State for the bird form.
 class BirdFormState {
   final bool isLoading;
@@ -28,6 +34,7 @@ class BirdFormState {
   final bool isSuccess;
   final bool isBirdLimitReached;
   final int? remainingBirds;
+  final BirdFormAction lastAction;
 
   const BirdFormState({
     this.isLoading = false,
@@ -35,6 +42,7 @@ class BirdFormState {
     this.isSuccess = false,
     this.isBirdLimitReached = false,
     this.remainingBirds,
+    this.lastAction = BirdFormAction.none,
   });
 
   BirdFormState copyWith({
@@ -43,6 +51,7 @@ class BirdFormState {
     bool? isSuccess,
     bool? isBirdLimitReached,
     int? remainingBirds,
+    BirdFormAction? lastAction,
   }) {
     return BirdFormState(
       isLoading: isLoading ?? this.isLoading,
@@ -50,6 +59,7 @@ class BirdFormState {
       isSuccess: isSuccess ?? this.isSuccess,
       isBirdLimitReached: isBirdLimitReached ?? this.isBirdLimitReached,
       remainingBirds: remainingBirds ?? this.remainingBirds,
+      lastAction: lastAction ?? this.lastAction,
     );
   }
 }
@@ -76,7 +86,11 @@ class BirdFormNotifier extends Notifier<BirdFormState>
     try {
       final repo = ref.read(birdRepositoryProvider);
       await repo.remove(id);
-      state = state.copyWith(isLoading: false, isSuccess: true);
+      state = state.copyWith(
+        isLoading: false,
+        isSuccess: true,
+        lastAction: BirdFormAction.delete,
+      );
     } catch (e, st) {
       AppLogger.error('BirdFormNotifier', e, st);
       reportIfUnexpected(e, st);
@@ -104,15 +118,19 @@ class BirdFormNotifier extends Notifier<BirdFormState>
         await repo.save(
           bird.copyWith(
             status: BirdStatus.dead,
-            deathDate: deathDate ?? DateTime.now(),
-            updatedAt: DateTime.now(),
+            deathDate: (deathDate ?? DateTime.now()).toUtc(),
+            updatedAt: DateTime.now().toUtc(),
           ),
         );
       } else {
         state = state.copyWith(isLoading: false, error: 'birds.not_found'.tr());
         return;
       }
-      state = state.copyWith(isLoading: false, isSuccess: true);
+      state = state.copyWith(
+        isLoading: false,
+        isSuccess: true,
+        lastAction: BirdFormAction.statusChange,
+      );
     } catch (e, st) {
       AppLogger.error('BirdFormNotifier', e, st);
       reportIfUnexpected(e, st);
@@ -140,15 +158,19 @@ class BirdFormNotifier extends Notifier<BirdFormState>
         await repo.save(
           bird.copyWith(
             status: BirdStatus.sold,
-            soldDate: soldDate ?? DateTime.now(),
-            updatedAt: DateTime.now(),
+            soldDate: (soldDate ?? DateTime.now()).toUtc(),
+            updatedAt: DateTime.now().toUtc(),
           ),
         );
       } else {
         state = state.copyWith(isLoading: false, error: 'birds.not_found'.tr());
         return;
       }
-      state = state.copyWith(isLoading: false, isSuccess: true);
+      state = state.copyWith(
+        isLoading: false,
+        isSuccess: true,
+        lastAction: BirdFormAction.statusChange,
+      );
     } catch (e, st) {
       AppLogger.error('BirdFormNotifier', e, st);
       reportIfUnexpected(e, st);
@@ -176,15 +198,19 @@ class BirdFormNotifier extends Notifier<BirdFormState>
         await repo.save(
           bird.copyWith(
             status: BirdStatus.gifted,
-            soldDate: giftedDate ?? DateTime.now(),
-            updatedAt: DateTime.now(),
+            soldDate: (giftedDate ?? DateTime.now()).toUtc(),
+            updatedAt: DateTime.now().toUtc(),
           ),
         );
       } else {
         state = state.copyWith(isLoading: false, error: 'birds.not_found'.tr());
         return;
       }
-      state = state.copyWith(isLoading: false, isSuccess: true);
+      state = state.copyWith(
+        isLoading: false,
+        isSuccess: true,
+        lastAction: BirdFormAction.statusChange,
+      );
     } catch (e, st) {
       AppLogger.error('BirdFormNotifier', e, st);
       reportIfUnexpected(e, st);

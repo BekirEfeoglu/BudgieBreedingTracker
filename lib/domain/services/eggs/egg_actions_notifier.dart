@@ -56,6 +56,21 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
     try {
       final repo = ref.read(eggRepositoryProvider);
       final userId = ref.read(currentUserIdProvider);
+
+      // Verify incubation belongs to the current user before writing.
+      // Without this, a stale deep-link or crafted incubationId could
+      // create a local egg owned by another user, producing a permanent
+      // sync-error row when the push is rejected by RLS (audit K11).
+      final incubationRepo = ref.read(incubationRepositoryProvider);
+      final incubation = await incubationRepo.getById(incubationId);
+      if (incubation == null || incubation.userId != userId) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'eggs.invalid_incubation'.tr(),
+        );
+        return;
+      }
+
       final sideEffectErrors = <String>[];
       final existingEggs = await repo.getByIncubation(incubationId);
 

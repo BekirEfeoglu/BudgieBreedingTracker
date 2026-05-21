@@ -74,13 +74,20 @@ class _DetailContent extends ConsumerWidget {
     final formState = ref.watch(birdFormStateProvider);
     final isFounder = ref.watch(isFounderProvider).value == true;
 
+    // Detail screen only reacts to status-change / delete actions it
+    // initiated (markAsDead/Sold/Gifted, deleteBird). Save success that
+    // originates from BirdFormScreen is filtered out here to prevent
+    // duplicate toasts when the user pops back from edit to detail.
     ref.listen<BirdFormState>(birdFormStateProvider, (_, state) {
       if (!context.mounted) return;
-      if (state.isSuccess) {
+      final isOwnedAction =
+          state.lastAction == BirdFormAction.statusChange ||
+          state.lastAction == BirdFormAction.delete;
+      if (state.isSuccess && isOwnedAction) {
         ref.read(birdFormStateProvider.notifier).reset();
         ActionFeedbackService.show('common.saved_successfully'.tr());
       }
-      if (state.error != null) {
+      if (state.error != null && isOwnedAction) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(state.error!)));

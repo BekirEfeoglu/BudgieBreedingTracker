@@ -121,8 +121,7 @@ class CommunityPostRepository {
             'display_name':
                 _asString(profile['display_name']) ??
                 _asString(profile['full_name']) ??
-                _emailPrefix(profile['email']) ??
-                '',
+                'community.anonymous_user'.tr(),
             'avatar_url': StorageUrlNormalizer.normalizePublicObjectUrl(
               _asString(profile['avatar_url']),
             ),
@@ -302,13 +301,6 @@ String? _asString(dynamic value) {
   if (value == null) return null;
   final str = value.toString().trim();
   return str.isEmpty ? null : str;
-}
-
-String? _emailPrefix(dynamic email) {
-  final str = _asString(email);
-  if (str == null) return null;
-  final atIndex = str.indexOf('@');
-  return atIndex > 0 ? str.substring(0, atIndex) : null;
 }
 
 int? _asInt(dynamic value) {

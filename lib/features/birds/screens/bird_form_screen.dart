@@ -157,17 +157,21 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
   Widget build(BuildContext context) {
     final formState = ref.watch(birdFormStateProvider);
 
+    // Form screen only reacts to save actions it initiated. Status-change /
+    // delete success from BirdDetailScreen is filtered out so a stale state
+    // doesn't fire the form's success handler (which pops the route).
     ref.listen<BirdFormState>(birdFormStateProvider, (_, state) {
       if (!mounted) return;
       final notifier = ref.read(birdFormStateProvider.notifier);
-      if (state.isSuccess) {
+      final isOwnedAction = state.lastAction == BirdFormAction.save;
+      if (state.isSuccess && isOwnedAction) {
         _savedSuccessfully = true;
         notifier.reset();
         handleBirdFormSuccess(context, remainingBirds: state.remainingBirds);
       } else if (state.isBirdLimitReached) {
         notifier.reset();
         showBirdLimitDialog(context, errorMessage: state.error);
-      } else if (state.error != null) {
+      } else if (state.error != null && isOwnedAction) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(state.error!)));
