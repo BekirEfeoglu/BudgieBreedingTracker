@@ -9,6 +9,7 @@ Full catalog of every page in the obsidian-brain wiki.
 | [[README]] | Entry point, quick navigation |
 | [[CLAUDE.md]] | Wiki schema and maintenance contract |
 | [[index]] | This page |
+| [[cheat-sheet]] | Task-oriented "how do I…" / "where is…" / "when does…" |
 | [[log]] | Chronological change log |
 | [[overview]] | High-level synthesis — what the app does, architecture diagram, key decisions |
 
@@ -70,13 +71,21 @@ Full catalog of every page in the obsidian-brain wiki.
 | Page | Description |
 |------|-------------|
 | [[domain/services-index]] | Map of all 23 domain services |
-| [[domain/genetics-engine]] | Punnett, MUTAVI, inbreeding, calculationVersion |
-| [[domain/sync-service]] | Background sync orchestration |
-| [[domain/local-ai]] | LLM image+text (Ollama/OpenRouter) |
-| [[domain/premium-service]] | RevenueCat + entitlement |
-| [[domain/notification-service]] | FCM + local notifications |
-| [[domain/calendar-service]] | Event scheduling |
 | [[domain/auth-service]] | Login, session refresh, MFA |
+| [[domain/calendar-service]] | Event scheduling |
+| [[domain/data-io]] | Backup (JSON, AES), Excel import/export, PDF export |
+| [[domain/eggs-service]] | EggActionsNotifier — lifecycle, chick auto-create, parent closure |
+| [[domain/encryption-service]] | AES-256-CBC + HMAC, key rotation, payload codec |
+| [[domain/gamification-service]] | XP, level curve, badge progress, verified breeder |
+| [[domain/genetics-engine]] | Punnett, MUTAVI, inbreeding, calculationVersion |
+| [[domain/home-widget-service]] | iOS / Android home + lock-screen widget bridge |
+| [[domain/incubation-service]] | Day math, milestones, species config, environment monitor |
+| [[domain/local-ai]] | LLM image+text (Ollama/OpenRouter) |
+| [[domain/moderation-service]] | Text + image safety, fail-closed pipeline |
+| [[domain/notification-service]] | FCM + local notifications |
+| [[domain/premium-service]] | RevenueCat + entitlement |
+| [[domain/presence-service]] | Online/last-seen sessions, heartbeat, TTL |
+| [[domain/sync-service]] | Background sync orchestration |
 
 ## Infrastructure
 

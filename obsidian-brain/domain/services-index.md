@@ -2,30 +2,27 @@
 
 23 service directories in `lib/domain/services/` (ads, app_update, auth, backup, breeding, calendar, eggs, encryption, export, gamification, genetics, home_widget, import, incubation, local_ai, moderation, notifications, payment, premium, presence, profile, sync, update_check).
 
-| Service | Purpose | Network Required |
-|---------|---------|-----------------|
-| [[domain/genetics-engine]] | Punnett, MUTAVI, inbreeding | No |
-| [[domain/sync-service]] | Background sync orchestration | Yes (online trigger) |
-| [[domain/local-ai]] | LLM image + text analysis | Yes (always) |
-| [[domain/premium-service]] | RevenueCat + entitlement | Yes |
-| [[domain/notification-service]] | FCM + local notifications | Partial |
-| [[domain/calendar-service]] | Event scheduling | No |
-| [[domain/auth-service]] | Login, session refresh | Yes |
-| Breeding / IncubationRiskAssistant | Derived risk summary (overdue eggs, hatch-rate decline, chick health loss) | No |
-| Incubation service | Hatch day calculation, species config | No |
-| Eggs service | Egg status transitions, hatched→chick auto-create | No |
-| Encryption service | Local secure storage primitives | No |
-| Home widget service | iOS lock-screen + home widget snapshot sync | No |
-| Backup / Import / Export | PDF/Excel/JSON I/O | Partial |
-| Gamification service | Badge unlock logic | No |
-| Moderation service | Report triggers, threshold flagging | Yes |
-| Payment / Premium service | RevenueCat purchase + entitlement | Yes |
-| Presence service | Online status broadcast | Yes |
-| Profile service | User profile orchestration | Yes |
-| Ads service | Premium upsell ad gating | Partial |
-| Update check service | Forced update prompt | Yes |
-| App update service | In-app update flow | Yes |
-| Notifications service | Channel/category + scheduling | Partial |
+| Service | Page | Purpose | Network Required |
+|---------|------|---------|------------------|
+| Auth | [[domain/auth-service]] | Login, session refresh, MFA | Yes |
+| Calendar | [[domain/calendar-service]] | Event scheduling, auto-milestones | No |
+| Data I/O | [[domain/data-io]] | JSON backup (+AES), Excel I/O, PDF export | Partial |
+| Eggs | [[domain/eggs-service]] | Egg actions notifier, chick auto-create | No |
+| Encryption | [[domain/encryption-service]] | AES-256-CBC + HMAC, key rotation | No |
+| Gamification | [[domain/gamification-service]] | XP, levels, badges, verified breeder | Yes |
+| Genetics | [[domain/genetics-engine]] | Punnett, MUTAVI, inbreeding | No |
+| Home Widget | [[domain/home-widget-service]] | iOS/Android home + lock-screen widget | No |
+| Incubation | [[domain/incubation-service]] | Day math, milestones, environment monitor | No |
+| Local AI | [[domain/local-ai]] | LLM image + text analysis | Yes (always) |
+| Moderation | [[domain/moderation-service]] | Text + image safety (fail-closed) | Yes |
+| Notifications | [[domain/notification-service]] | FCM + local + channels | Partial |
+| Premium / Payment | [[domain/premium-service]] | RevenueCat + entitlement + grace | Yes |
+| Presence | [[domain/presence-service]] | Online status, heartbeat sessions | Yes |
+| Sync | [[domain/sync-service]] | Background sync orchestration | Yes (online trigger) |
+| Breeding / IncubationRiskAssistant | (see [[features/breeding]]) | Derived risk summary | No |
+| Profile | (see [[features/profile]]) | Account orchestration, storage cleanup | Yes |
+| Ads | (see [[domain/premium-service]] / ad gating) | Reward-based feature unlock | Partial |
+| Update check / App update | (see [[features/update]], [[features/app_update]]) | Forced + soft update prompts | Yes |
 
 ## Naming Rules
 

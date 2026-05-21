@@ -10,14 +10,14 @@ Maps every `.claude/rules/*.md` file to the wiki page(s) that synthesize it.
 | `assets-images.md` | [[patterns/assets-images]] | [[patterns/anti-patterns]] (#12, #13) |
 | `background-sync.md` | [[data-layer/sync-strategy]] | [[domain/sync-service]], [[architecture/offline-first]] |
 | `branch-workflow.md` | [[infrastructure/branch-workflow]] | [[infrastructure/ci-cd]] |
-| `breeding-eggs.md` | [[features/breeding]] | [[features/eggs]], [[features/chicks]] |
+| `breeding-eggs.md` | [[features/breeding]] | [[features/eggs]], [[features/chicks]], [[domain/eggs-service]], [[domain/incubation-service]] |
 | `chat.md` | (response style — no wiki page needed) | |
 | `ci-actions.md` | [[infrastructure/ci-cd]] | [[infrastructure/scripts]] |
 | `code-review.md` | (checklist — referenced by [[patterns/anti-patterns]]) | |
 | `coding-standards.md` | [[patterns/anti-patterns]] | [[architecture/layers]] |
 | `data-layer.md` | [[data-layer/drift]] | [[data-layer/supabase]], [[data-layer/repositories]] |
 | `datetime-format.md` | [[patterns/datetime-format]] | [[domain/notification-service]] |
-| `edge-functions.md` | [[infrastructure/edge-functions]] | [[domain/premium-service]], [[domain/notification-service]] |
+| `edge-functions.md` | [[infrastructure/edge-functions]] | [[domain/premium-service]], [[domain/notification-service]], [[domain/moderation-service]] |
 | `empty-loading-error-states.md` | [[patterns/empty-loading-error-states]] | [[patterns/ui-patterns]] |
 | `error-handling.md` | [[patterns/error-handling]] | [[patterns/observability]] |
 | `feature-flags.md` | [[patterns/feature-flags]] | [[infrastructure/environment]] |
@@ -33,7 +33,7 @@ Maps every `.claude/rules/*.md` file to the wiki page(s) that synthesize it.
 | `premium-revenuecat.md` | [[domain/premium-service]] | [[features/premium]], [[infrastructure/edge-functions]] |
 | `providers.md` | [[patterns/providers]] | [[patterns/ui-patterns]] |
 | `release-ops.md` | [[infrastructure/release-ops]] | [[infrastructure/ci-cd]] |
-| `security.md` | [[patterns/security]] | [[patterns/observability]], [[domain/auth-service]] |
+| `security.md` | [[patterns/security]] | [[patterns/observability]], [[domain/auth-service]], [[domain/encryption-service]] |
 | `test-stability.md` | [[patterns/testing]] (stability section) | [[patterns/anti-patterns]] (A1) |
 | `testing.md` | [[patterns/testing]] | |
 | `ui-patterns.md` | [[patterns/ui-patterns]] | [[patterns/forms-validation]], [[patterns/empty-loading-error-states]] |

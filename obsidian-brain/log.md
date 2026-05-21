@@ -4,6 +4,28 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-05-21] enhance | Domain coverage expansion + skeletal feature buildup + cheat sheet
+
+- New domain service pages (closes long-standing index-only entries):
+  - `domain/incubation-service.md` — day math, milestones, environment monitor, species config
+  - `domain/eggs-service.md` — `EggActionsNotifier` orchestration (RLS preflight, chick auto-create, parent closure, side-effect warnings)
+  - `domain/data-io.md` — backup (JSON, AES), Excel import/export, PDF export (consolidates backup/import/export dirs)
+  - `domain/encryption-service.md` — AES-256-CBC + HMAC, key rotation, payload codec
+  - `domain/moderation-service.md` — text + image safety, fail-closed contract, Edge Function pipeline
+  - `domain/gamification-service.md` — XP, level curve, daily caps, verified breeder, audit K12 race note
+  - `domain/home-widget-service.md` — iOS / Android dashboard widget snapshot bridge
+  - `domain/presence-service.md` — online status sessions, heartbeat TTL, UTC boundary
+- Expanded skeletal feature pages with real codebase references:
+  - `features/feedback.md`, `features/update.md`, `features/app_update.md`, `features/more.md`,
+    `features/home.md`, `features/settings.md`, `features/profile.md`, `features/admin.md`,
+    `features/calendar.md`, `features/notifications.md`, `features/eggs.md`,
+    `features/marketplace.md`, `features/messaging.md`
+- Added `cheat-sheet.md` — task-oriented "how do I / where is / when does / which Edge Function" lookup (no rule alignment needed, pure synthesis layer addition)
+- `index.md`: added cheat-sheet at root level + 8 new domain pages (alphabetized)
+- `README.md`: linked cheat-sheet from quick navigation
+- `domain/services-index.md`: rebuilt table — each documented service now points to its page; remaining undocumented services point to their primary feature/service host
+- `sources/rules-index.md`: extended `breeding-eggs.md` secondaries with the two new domain pages; added `domain/moderation-service` and `domain/encryption-service` to relevant rules
+
 ## [2026-05-21] rule | DateUtils import convention (prevent auto-audit regression)
 
 - `.claude/rules/datetime-format.md`: added `DateUtils.dayDiff` helper section with mandatory `as date_utils` import prefix (Flutter material exports its own `DateUtils`; unprefixed import → `ambiguous_import` analyze fail). Surfaced PR #80 root cause.
