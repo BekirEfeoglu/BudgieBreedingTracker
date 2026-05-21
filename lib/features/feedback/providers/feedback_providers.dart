@@ -221,7 +221,19 @@ class FeedbackFormNotifier extends Notifier<FeedbackFormState> {
     } catch (e, st) {
       AppLogger.error('FeedbackFormNotifier', e, st);
       Sentry.captureException(e, stackTrace: st);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      // Map raw exception to a localizable error key so the UI never
+      // surfaces vendor / Postgres text. Network failures route to a
+      // specific message; everything else falls through to generic.
+      final isNetworkErr =
+          e.toString().toLowerCase().contains('socket') ||
+          e.toString().toLowerCase().contains('network') ||
+          e.toString().toLowerCase().contains('timeout');
+      state = state.copyWith(
+        isLoading: false,
+        error: isNetworkErr
+            ? 'errors.network_unavailable'
+            : 'feedback.error',
+      );
     }
   }
 

@@ -76,7 +76,10 @@ class AdminMaintenanceManager {
         client,
         _ref.read(currentUserIdProvider),
         'audit_logs_cleared',
-        details: {'message': 'Logs before ${cutoff.toIso8601String()} cleared'},
+        details: {
+          'message':
+              'Logs before ${cutoff.toUtc().toIso8601String()} cleared',
+        },
       );
 
       _updateState(isLoading: false, isSuccess: true);

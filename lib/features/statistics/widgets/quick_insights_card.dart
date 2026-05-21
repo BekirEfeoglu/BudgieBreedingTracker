@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/skeleton_loader.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
@@ -21,8 +22,15 @@ class QuickInsightsCard extends ConsumerWidget {
     final insightsAsync = ref.watch(quickInsightsProvider(userId));
 
     return insightsAsync.when(
+      skipLoadingOnRefresh: true,
       loading: () => const _InsightsCardSkeleton(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (e, st) {
+        // Don't render a visible error here — insights is supplementary
+        // content and a missing card is acceptable UX. But log so we
+        // know about failures rather than silently swallowing them.
+        AppLogger.error('QuickInsightsCard', e, st);
+        return const SizedBox.shrink();
+      },
       data: (insights) {
         if (insights.isEmpty) return const SizedBox.shrink();
         return _InsightsCardContent(insights: insights);

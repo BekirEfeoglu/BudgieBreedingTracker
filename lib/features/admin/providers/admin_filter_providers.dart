@@ -210,7 +210,10 @@ final securityEventTrendProvider = FutureProvider<List<DailyDataPoint>>((
 ) async {
   await requireAdmin(ref);
   final client = ref.watch(supabaseClientProvider);
-  final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
+  // UTC normalize: Supabase `created_at` is stored UTC, so the filter
+  // bound must also be UTC; otherwise device-local TZ offset shifts the
+  // window boundary by hours (audit Wave 1).
+  final sevenDaysAgo = DateTime.now().toUtc().subtract(const Duration(days: 7));
 
   final result = await client
       .from(SupabaseConstants.securityEventsTable)

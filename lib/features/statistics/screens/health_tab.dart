@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_health_providers.dart';
@@ -84,8 +85,15 @@ class _HealthTrendSection extends ConsumerWidget {
     final trendAsync = ref.watch(healthTrendSummaryProvider(userId));
 
     return trendAsync.when(
+      skipLoadingOnRefresh: true,
       loading: () => const ChartLoading(),
-      error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
+      error: (e, st) {
+        AppLogger.error('HealthTab.healthTrendSummary', e, st);
+        return ChartError(
+          message: 'common.data_load_error'.tr(),
+          onRetry: () => ref.invalidate(healthTrendSummaryProvider(userId)),
+        );
+      },
       data: (trend) => HealthTrendSummaryCard(trend: trend),
     );
   }
@@ -108,8 +116,15 @@ class _MonthlyTrendSection extends ConsumerWidget {
       onLowDataAction: () => context.push(AppRoutes.chickForm),
       lowDataActionLabel: 'chicks.add_chick'.tr(),
       child: trendAsync.when(
+        skipLoadingOnRefresh: true,
         loading: () => const ChartLoading(isLineChart: true),
-        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
+        error: (e, st) {
+          AppLogger.error('HealthTab.monthlyHatchedChicks', e, st);
+          return ChartError(
+            message: 'common.data_load_error'.tr(),
+            onRetry: () => ref.invalidate(monthlyHatchedChicksProvider(userId)),
+          );
+        },
         data: (data) => MonthlyTrendChart(monthlyData: data),
       ),
     );
@@ -137,8 +152,15 @@ class _ChickSurvivalSection extends ConsumerWidget {
       onLowDataAction: () => context.push(AppRoutes.chickForm),
       lowDataActionLabel: 'chicks.add_chick'.tr(),
       child: survivalAsync.when(
+        skipLoadingOnRefresh: true,
         loading: () => const ChartLoading(isPieChart: true),
-        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
+        error: (e, st) {
+          AppLogger.error('HealthTab.chickSurvival', e, st);
+          return ChartError(
+            message: 'common.data_load_error'.tr(),
+            onRetry: () => ref.invalidate(chickSurvivalProvider(userId)),
+          );
+        },
         data: (data) => ChickSurvivalChart(data: data),
       ),
     );
@@ -162,8 +184,16 @@ class _HealthRecordSection extends ConsumerWidget {
       onLowDataAction: () => context.push(AppRoutes.healthRecordForm),
       lowDataActionLabel: 'health_records.add_record'.tr(),
       child: healthAsync.when(
+        skipLoadingOnRefresh: true,
         loading: () => const ChartLoading(),
-        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
+        error: (e, st) {
+          AppLogger.error('HealthTab.healthRecordTypeDistribution', e, st);
+          return ChartError(
+            message: 'common.data_load_error'.tr(),
+            onRetry: () =>
+                ref.invalidate(healthRecordTypeDistributionProvider(userId)),
+          );
+        },
         data: (data) => HealthRecordTypeChart(data: data),
       ),
     );

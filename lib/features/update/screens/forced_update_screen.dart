@@ -69,9 +69,21 @@ class ForcedUpdateScreen extends ConsumerWidget {
 
   Future<void> _openStore(BuildContext context, String? url) async {
     if (url == null) return;
+    // Uri.tryParse fails-soft on malformed remote `app_versions.store_url`
+    // payloads. Uri.parse would throw FormatException and only the surrounding
+    // try/catch would absorb it; tryParse keeps the happy path linear.
+    final uri = Uri.tryParse(url);
+    if (uri == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('update.store_open_failed'.tr())),
+        );
+      }
+      return;
+    }
     try {
       final ok = await launchUrl(
-        Uri.parse(url),
+        uri,
         mode: LaunchMode.externalApplication,
       );
       if (!ok && context.mounted) {

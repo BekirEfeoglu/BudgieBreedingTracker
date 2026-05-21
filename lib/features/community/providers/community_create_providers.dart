@@ -195,7 +195,7 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
       }
       AppLogger.error('CreatePostNotifier', e, st);
       Sentry.captureException(e, stackTrace: st);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 

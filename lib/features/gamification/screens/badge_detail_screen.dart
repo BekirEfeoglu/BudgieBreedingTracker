@@ -34,7 +34,7 @@ class BadgeDetailScreen extends ConsumerWidget {
         data: (badges) {
           final badge = badges.where((b) => b.id == badgeId).firstOrNull;
           if (badge == null) {
-            return app.ErrorState(message: 'error.not_found'.tr());
+            return app.ErrorState(message: 'common.not_found'.tr());
           }
 
           return userBadgesAsync.when(
@@ -139,7 +139,9 @@ class BadgeDetailScreen extends ConsumerWidget {
                 Text(
                   'badges.unlocked_at'.tr(
                     args: [
-                      '${userBadge!.unlockedAt!.day}/${userBadge.unlockedAt!.month}/${userBadge.unlockedAt!.year}',
+                      DateFormat.yMd(
+                        Localizations.localeOf(context).languageCode,
+                      ).format(userBadge!.unlockedAt!.toLocal()),
                     ],
                   ),
                   style: theme.textTheme.bodyMedium,

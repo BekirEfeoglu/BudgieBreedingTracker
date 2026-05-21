@@ -231,7 +231,7 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
     } catch (e, st) {
       AppLogger.error('CommentFormNotifier', e, st);
       Sentry.captureException(e, stackTrace: st);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 

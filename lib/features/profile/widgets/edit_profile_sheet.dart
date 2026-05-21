@@ -126,13 +126,9 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
         Navigator.of(context).pop();
         ActionFeedbackService.show('common.saved_successfully'.tr());
       }
-    } catch (e) {
-      AppLogger.error(
-        '[EditProfileSheet] Failed to save profile',
-        e,
-        StackTrace.current,
-      );
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('[EditProfileSheet] Failed to save profile', e, st);
+      Sentry.captureException(e, stackTrace: st);
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(

@@ -32,9 +32,14 @@ class DashboardStatsGrid extends ConsumerWidget {
         ? '${stats.activeBreedings}'
         : '${stats.activeBreedings}/${AppConstants.freeTierMaxBreedingPairs}';
 
-    final birdRatio = stats.totalBirds / AppConstants.freeTierMaxBirds;
-    final breedingRatio =
-        stats.activeBreedings / AppConstants.freeTierMaxBreedingPairs;
+    // Defensive division: if a constants typo set the max to 0 we'd get
+    // NaN/Infinity, propagating into _ratioColor and the progress bar.
+    final birdRatio = AppConstants.freeTierMaxBirds > 0
+        ? stats.totalBirds / AppConstants.freeTierMaxBirds
+        : 0.0;
+    final breedingRatio = AppConstants.freeTierMaxBreedingPairs > 0
+        ? stats.activeBreedings / AppConstants.freeTierMaxBreedingPairs
+        : 0.0;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),

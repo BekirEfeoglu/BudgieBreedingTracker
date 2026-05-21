@@ -124,6 +124,10 @@ class MessageBubble extends StatelessWidget {
                   fit: BoxFit.cover,
                   width: double.infinity,
                   memCacheWidth: 640,
+                  placeholder: (_, __) => Container(
+                    height: 150,
+                    color: theme.colorScheme.surfaceContainerHighest,
+                  ),
                   errorWidget: (_, _, _) => Container(
                     height: 150,
                     color: theme.colorScheme.surfaceContainerHighest,

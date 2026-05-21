@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_breeding_providers.dart';
@@ -91,8 +92,15 @@ class _SeasonComparisonSection extends ConsumerWidget {
     final comparisonAsync = ref.watch(seasonComparisonProvider(userId));
 
     return comparisonAsync.when(
+      skipLoadingOnRefresh: true,
       loading: () => const ChartLoading(),
-      error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
+      error: (e, st) {
+        AppLogger.error('BreedingTab.seasonComparison', e, st);
+        return ChartError(
+          message: 'common.data_load_error'.tr(),
+          onRetry: () => ref.invalidate(seasonComparisonProvider(userId)),
+        );
+      },
       data: (comparison) => SeasonComparisonCard(comparison: comparison),
     );
   }
@@ -117,8 +125,16 @@ class _BreedingSuccessSection extends ConsumerWidget {
       onLowDataAction: () => context.push(AppRoutes.breedingForm),
       lowDataActionLabel: 'breeding.add_breeding_label'.tr(),
       child: outcomesAsync.when(
+        skipLoadingOnRefresh: true,
         loading: () => const ChartLoading(),
-        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
+        error: (e, st) {
+          AppLogger.error('BreedingTab.monthlyOutcomes', e, st);
+          return ChartError(
+            message: 'common.data_load_error'.tr(),
+            onRetry: () =>
+                ref.invalidate(monthlyBreedingOutcomesProvider(userId)),
+          );
+        },
         data: (data) => BreedingSuccessChart(
           completed: data.completed,
           cancelled: data.cancelled,
@@ -145,8 +161,15 @@ class _EggProductionSection extends ConsumerWidget {
       onLowDataAction: () => context.push(AppRoutes.breeding),
       lowDataActionLabel: 'eggs.add_egg'.tr(),
       child: eggDataAsync.when(
+        skipLoadingOnRefresh: true,
         loading: () => const ChartLoading(isLineChart: true),
-        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
+        error: (e, st) {
+          AppLogger.error('BreedingTab.eggProduction', e, st);
+          return ChartError(
+            message: 'common.data_load_error'.tr(),
+            onRetry: () => ref.invalidate(monthlyEggProductionProvider(userId)),
+          );
+        },
         data: (data) => EggProductionChart(monthlyData: data),
       ),
     );
@@ -170,8 +193,15 @@ class _FertilityTrendSection extends ConsumerWidget {
       onLowDataAction: () => context.push(AppRoutes.breeding),
       lowDataActionLabel: 'eggs.add_egg'.tr(),
       child: fertilityAsync.when(
+        skipLoadingOnRefresh: true,
         loading: () => const ChartLoading(isLineChart: true),
-        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
+        error: (e, st) {
+          AppLogger.error('BreedingTab.fertilityTrend', e, st);
+          return ChartError(
+            message: 'common.data_load_error'.tr(),
+            onRetry: () => ref.invalidate(monthlyFertilityRateProvider(userId)),
+          );
+        },
         data: (data) => FertilityTrendChart(monthlyData: data),
       ),
     );
@@ -195,8 +225,15 @@ class _IncubationDurationSection extends ConsumerWidget {
       onLowDataAction: () => context.push(AppRoutes.breeding),
       lowDataActionLabel: 'breeding.add_breeding_label'.tr(),
       child: durationAsync.when(
+        skipLoadingOnRefresh: true,
         loading: () => const ChartLoading(),
-        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
+        error: (e, st) {
+          AppLogger.error('BreedingTab.incubationDuration', e, st);
+          return ChartError(
+            message: 'common.data_load_error'.tr(),
+            onRetry: () => ref.invalidate(incubationDurationProvider(userId)),
+          );
+        },
         data: (data) => IncubationDurationChart(data: data),
       ),
     );

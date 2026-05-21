@@ -109,7 +109,7 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
       _lastSentAt = DateTime.now();
     } catch (e, st) {
       AppLogger.error('messaging', e, st);
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: 'errors.unknown'.tr());
     }
   }
 
@@ -145,7 +145,7 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
       return conversationId;
     } catch (e, st) {
       AppLogger.error('messaging', e, st);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
       return null;
     }
   }
@@ -174,7 +174,7 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
       return conversationId;
     } catch (e, st) {
       AppLogger.error('messaging', e, st);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
       return null;
     }
   }
@@ -188,7 +188,7 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('messaging', e, st);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 

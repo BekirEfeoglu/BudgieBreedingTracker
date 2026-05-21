@@ -8,6 +8,7 @@
     "more": "More"
   },
   "common": {
+    "unknown": "Unknown",
     "save": "Save",
     "saved_successfully": "Saved successfully",
     "cancel": "Cancel",

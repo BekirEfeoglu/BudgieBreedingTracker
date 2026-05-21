@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/app_icons.dart';
@@ -45,6 +46,19 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       AppLogger.warning('[ForgotPassword] Reset failed: ${e.message}');
       // Always show success to prevent user enumeration.
       // Attacker should not learn whether an email is registered.
+      if (mounted) setState(() { _sent = true; _loading = false; });
+      return;
+    } catch (e, st) {
+      // Non-Auth exceptions (Socket, Handshake, Timeout). Still show the
+      // success state to keep enumeration defense consistent, but ship
+      // the unexpected failure to Sentry so we learn about provider
+      // outages or DNS issues.
+      AppLogger.error('[ForgotPassword] Unexpected error', e, st);
+      await Sentry.captureException(
+        e,
+        stackTrace: st,
+        withScope: (scope) => scope.setTag('feature', 'auth.forgot_password'),
+      );
       if (mounted) setState(() { _sent = true; _loading = false; });
       return;
     } finally {

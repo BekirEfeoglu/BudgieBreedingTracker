@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
@@ -90,6 +91,14 @@ class HomeScreen extends ConsumerWidget {
                   .forceFullSync();
             } catch (e, st) {
               AppLogger.error('[HomeScreen] forceFullSync failed', e, st);
+              // Unexpected exception above the orchestrator boundary —
+              // ship to Sentry so we learn about it. observability.md
+              // categorizes sync failure as a critical observability hit.
+              await Sentry.captureException(
+                e,
+                stackTrace: st,
+                withScope: (scope) => scope.setTag('feature', 'sync'),
+              );
               result = SyncResult.error;
             }
             // Refresh display providers regardless of result — on error

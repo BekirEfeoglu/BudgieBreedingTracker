@@ -82,9 +82,12 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen>
         _tabController.animateTo(1);
       }
       if (state.error != null) {
+        // state.error is now an l10n key (errors.network_unavailable or
+        // feedback.error); translate at display time so user never sees
+        // raw exception strings.
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('feedback.error'.tr())));
+        ).showSnackBar(SnackBar(content: Text(state.error!.tr())));
       }
     });
 

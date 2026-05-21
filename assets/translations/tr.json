@@ -8,6 +8,7 @@
     "more": "Daha Fazla"
   },
   "common": {
+    "unknown": "Bilinmiyor",
     "save": "Kaydet",
     "saved_successfully": "Başarıyla kaydedildi",
     "cancel": "İptal",

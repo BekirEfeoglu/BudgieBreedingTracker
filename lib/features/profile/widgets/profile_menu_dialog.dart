@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
@@ -218,11 +219,15 @@ Future<void> _confirmLogout(
   if (confirmed == true) {
     try {
       await authActions.signOut();
-    } catch (e) {
-      AppLogger.error(
-        '[ProfileMenuDialog] Sign out failed',
+    } catch (e, st) {
+      // Real stack from the throw — not StackTrace.current — gives Sentry
+      // a meaningful trace. Logout failures are security-relevant so we
+      // also surface them to telemetry.
+      AppLogger.error('[ProfileMenuDialog] Sign out failed', e, st);
+      await Sentry.captureException(
         e,
-        StackTrace.current,
+        stackTrace: st,
+        withScope: (scope) => scope.setTag('feature', 'auth.logout'),
       );
     }
     if (context.mounted) context.go(AppRoutes.login);

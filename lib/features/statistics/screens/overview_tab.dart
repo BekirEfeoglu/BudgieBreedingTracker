@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_providers.dart';
@@ -98,8 +99,15 @@ class _PersonalRecordsSection extends ConsumerWidget {
     final recordsAsync = ref.watch(personalRecordsProvider(userId));
 
     return recordsAsync.when(
+      skipLoadingOnRefresh: true,
       loading: () => const ChartLoading(),
-      error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
+      error: (e, st) {
+        AppLogger.error('OverviewTab.personalRecords', e, st);
+        return ChartError(
+          message: 'common.data_load_error'.tr(),
+          onRetry: () => ref.invalidate(personalRecordsProvider(userId)),
+        );
+      },
       data: (records) => PersonalRecordsCard(records: records),
     );
   }
@@ -121,8 +129,15 @@ class _SpeciesDistributionSection extends ConsumerWidget {
       onLowDataAction: () => context.push(AppRoutes.birdForm),
       lowDataActionLabel: 'birds.add_bird'.tr(),
       child: speciesAsync.when(
+        skipLoadingOnRefresh: true,
         loading: () => const ChartLoading(),
-        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
+        error: (e, st) {
+          AppLogger.error('OverviewTab.speciesDistribution', e, st);
+          return ChartError(
+            message: 'common.data_load_error'.tr(),
+            onRetry: () => ref.invalidate(speciesDistributionProvider(userId)),
+          );
+        },
         data: (data) => SpeciesBreakdownCard(data: data),
       ),
     );
@@ -139,8 +154,15 @@ class _SummarySection extends ConsumerWidget {
     final trendAsync = ref.watch(trendStatsProvider(userId));
 
     return statsAsync.when(
+      skipLoadingOnRefresh: true,
       loading: () => const ChartLoading(),
-      error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
+      error: (e, st) {
+        AppLogger.error('OverviewTab.summaryStats', e, st);
+        return ChartError(
+          message: 'common.data_load_error'.tr(),
+          onRetry: () => ref.invalidate(summaryStatsProvider(userId)),
+        );
+      },
       data: (stats) {
         final trends = trendAsync.value;
         return SummaryStatsGrid(stats: stats, trends: trends);
@@ -169,8 +191,15 @@ class _GenderDistributionSection extends ConsumerWidget {
       onLowDataAction: () => context.push(AppRoutes.birdForm),
       lowDataActionLabel: 'birds.add_bird'.tr(),
       child: genderAsync.when(
+        skipLoadingOnRefresh: true,
         loading: () => const ChartLoading(isPieChart: true),
-        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
+        error: (e, st) {
+          AppLogger.error('OverviewTab.genderDistribution', e, st);
+          return ChartError(
+            message: 'common.data_load_error'.tr(),
+            onRetry: () => ref.invalidate(genderDistributionProvider(userId)),
+          );
+        },
         data: (stats) => GenderPieChart(
           maleCount: stats.male,
           femaleCount: stats.female,
@@ -197,8 +226,16 @@ class _ColorMutationSection extends ConsumerWidget {
       onLowDataAction: () => context.push(AppRoutes.birdForm),
       lowDataActionLabel: 'birds.add_bird'.tr(),
       child: colorAsync.when(
+        skipLoadingOnRefresh: true,
         loading: () => const ChartLoading(),
-        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
+        error: (e, st) {
+          AppLogger.error('OverviewTab.colorMutationDistribution', e, st);
+          return ChartError(
+            message: 'common.data_load_error'.tr(),
+            onRetry: () =>
+                ref.invalidate(colorMutationDistributionProvider(userId)),
+          );
+        },
         data: (data) => ColorMutationChart(data: data),
       ),
     );
@@ -221,8 +258,15 @@ class _AgeDistributionSection extends ConsumerWidget {
       onLowDataAction: () => context.push(AppRoutes.birdForm),
       lowDataActionLabel: 'birds.add_bird'.tr(),
       child: ageAsync.when(
+        skipLoadingOnRefresh: true,
         loading: () => const ChartLoading(),
-        error: (e, _) => ChartError(message: 'common.data_load_error'.tr()),
+        error: (e, st) {
+          AppLogger.error('OverviewTab.ageDistribution', e, st);
+          return ChartError(
+            message: 'common.data_load_error'.tr(),
+            onRetry: () => ref.invalidate(ageDistributionProvider(userId)),
+          );
+        },
         data: (data) => AgeDistributionChart(data: data),
       ),
     );

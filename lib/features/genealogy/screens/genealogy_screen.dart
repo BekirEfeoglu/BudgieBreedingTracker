@@ -59,6 +59,7 @@ class _GenealogyScreenState extends ConsumerState<GenealogyScreen> {
           ),
           PopupMenuButton<String>(
             icon: const Icon(LucideIcons.moreVertical),
+            tooltip: 'common.more'.tr(),
             onSelected: (value) {
               if (value == 'repair') _runRepair(context);
             },

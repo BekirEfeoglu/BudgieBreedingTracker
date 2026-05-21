@@ -123,7 +123,7 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('marketplace', e, st);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -205,7 +205,7 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('marketplace', e, st);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -219,7 +219,7 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('marketplace', e, st);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 
@@ -236,7 +236,7 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('marketplace', e, st);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
 

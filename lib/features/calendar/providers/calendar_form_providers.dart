@@ -72,15 +72,15 @@ class EventFormNotifier extends Notifier<EventFormState> with SentryErrorFilter 
       final event = Event(
         id: const Uuid().v7(),
         title: title,
-        eventDate: eventDate,
+        eventDate: eventDate.toUtc(),
         type: type,
         userId: userId,
         status: status,
         notes: notes,
         birdId: birdId,
         breedingPairId: breedingPairId,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: DateTime.now().toUtc(),
+        updatedAt: DateTime.now().toUtc(),
       );
       await repo.save(event);
       // Schedule a default reminder. notification_processor picks up unsent
@@ -101,7 +101,7 @@ class EventFormNotifier extends Notifier<EventFormState> with SentryErrorFilter 
     try {
       final repo = ref.read(eventRepositoryProvider);
       final previous = await repo.getById(event.id);
-      await repo.save(event.copyWith(updatedAt: DateTime.now()));
+      await repo.save(event.copyWith(updatedAt: DateTime.now().toUtc()));
       // If the event time shifted, cancel any already-scheduled OS
       // notification(s) and re-arm pending reminders so the processor
       // re-schedules with the new triggerTime on its next tick.
@@ -226,7 +226,7 @@ class EventFormNotifier extends Notifier<EventFormState> with SentryErrorFilter 
       final event = await repo.getById(id);
       if (event != null) {
         await repo.save(
-          event.copyWith(status: newStatus, updatedAt: DateTime.now()),
+          event.copyWith(status: newStatus, updatedAt: DateTime.now().toUtc()),
         );
       }
       state = state.copyWith(isLoading: false, isSuccess: true);

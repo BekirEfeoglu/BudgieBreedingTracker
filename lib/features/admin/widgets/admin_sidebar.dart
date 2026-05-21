@@ -207,6 +207,11 @@ class AdminSidebar extends ConsumerWidget {
               scaffold.closeDrawer();
             }
             if (isSelected) return;
+            // Intentional context.go: admin sidebar items are top-level
+            // sections of the admin ShellRoute (Users / Monitoring /
+            // Database). Switching sections must replace the stack so
+            // back-button on a section root exits admin rather than
+            // cycling through previously-visited sections.
             context.go(item.route);
           },
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),

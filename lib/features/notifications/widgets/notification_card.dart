@@ -121,7 +121,7 @@ class NotificationCard extends StatelessWidget {
                       ],
                       const SizedBox(height: AppSpacing.xs),
                       Text(
-                        _formatTimeAgo(notification.createdAt),
+                        _formatTimeAgo(context, notification.createdAt),
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant.withValues(
                             alpha: 0.7,
@@ -157,10 +157,12 @@ class NotificationCard extends StatelessWidget {
     );
   }
 
-  String _formatTimeAgo(DateTime? dateTime) {
-    if (dateTime == null) return '';
-    final now = DateTime.now();
-    final diff = now.difference(dateTime);
+  String _formatTimeAgo(BuildContext context, DateTime? dateTime) {
+    if (dateTime == null) return 'common.unknown'.tr();
+    // notification.createdAt is UTC; convert to local for display while
+    // computing the diff against UTC `now` to stay TZ-agnostic.
+    final localDate = dateTime.toLocal();
+    final diff = DateTime.now().difference(localDate);
 
     if (diff.inMinutes < 1) return 'common.just_now'.tr();
     if (diff.inMinutes < 60) {
@@ -172,7 +174,9 @@ class NotificationCard extends StatelessWidget {
     if (diff.inDays < 7) {
       return 'common.days_ago'.tr(args: ['${diff.inDays}']);
     }
-    return DateFormat.yMMMd(Intl.getCurrentLocale()).format(dateTime);
+    return DateFormat.yMMMd(
+      Localizations.localeOf(context).languageCode,
+    ).format(localDate);
   }
 }
 

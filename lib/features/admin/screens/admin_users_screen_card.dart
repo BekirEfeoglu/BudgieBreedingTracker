@@ -231,8 +231,10 @@ class _UserCard extends StatelessWidget {
   }
 
   String _formatDate(BuildContext context, DateTime date) {
+    // createdAt is UTC from server; convert to local for display
+    // consistency with the user's device timezone.
     final locale = Localizations.localeOf(context).languageCode;
-    return DateFormat('dd MMM yyyy', locale).format(date);
+    return DateFormat.yMMMd(locale).format(date.toLocal());
   }
 
   String _formatRelativeTime(DateTime date) {

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/auth/providers/auth_providers.dart';
 import '../features/auth/providers/two_factor_providers.dart';
 import 'route_names.dart';
+import 'route_utils.dart';
 
 /// Session lock guard — forces login when session is locked.
 String? sessionLockRedirect(Ref ref, String location) {
@@ -38,7 +39,17 @@ String? twoFactorRedirect(Ref ref, String location) {
   if (isLoggedIn &&
       pendingFactorId != null &&
       location != AppRoutes.twoFactorVerify) {
-    return '${AppRoutes.twoFactorVerify}?factorId=$pendingFactorId';
+    // Validate the factor id is a real UUID before threading it into the
+    // verify-route URL. The sentinel value `'mfa-required'` is set by the
+    // MFA check failure path (auth_providers.dart) when factor lookup
+    // throws; passing it through would poison the per-user MFA lockout
+    // prefs key on the verify screen and let MFA verification land under
+    // a shared key namespace. Force the user back to login instead.
+    if (!isValidRouteId(pendingFactorId)) {
+      return AppRoutes.login;
+    }
+    return '${AppRoutes.twoFactorVerify}?factorId='
+        '${Uri.encodeQueryComponent(pendingFactorId)}';
   }
   return null;
 }

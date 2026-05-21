@@ -65,9 +65,19 @@ class UpdateOptionalSheet extends ConsumerWidget {
 
   Future<void> _openStore(BuildContext context, String? url) async {
     if (url == null) return;
+    // Fail-soft on malformed remote URL — see forced_update_screen.dart.
+    final uri = Uri.tryParse(url);
+    if (uri == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('update.store_open_failed'.tr())),
+        );
+      }
+      return;
+    }
     try {
       final ok = await launchUrl(
-        Uri.parse(url),
+        uri,
         mode: LaunchMode.externalApplication,
       );
       if (!ok && context.mounted) {

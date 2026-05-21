@@ -155,7 +155,13 @@ class _HealthRecordFormScreenState
           }
 
           if (!_didPopulateFromExisting) {
-            _populateFromExisting(existing);
+            // Defer controller mutation to post-frame so we don't trigger
+            // setState/text changes while the build is in progress
+            // (anti-pattern: side effects in build).
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted || _didPopulateFromExisting) return;
+              _populateFromExisting(existing);
+            });
           }
           return _buildFormScaffold(formState, birdsAsync, chicksAsync);
         },

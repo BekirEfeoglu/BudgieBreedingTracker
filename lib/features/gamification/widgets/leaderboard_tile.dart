@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -46,11 +47,20 @@ class LeaderboardTile extends StatelessWidget {
         ),
       ),
       title: Text(
-        userLevel.userId.substring(0, 8),
+        // TODO(audit): leaderboard query should join `profiles.display_name`
+        // and surface resolved names. Until then, never display the raw
+        // user UUID prefix — show anonymous placeholder instead so user
+        // identifiers aren't leaked in the UI.
+        'community.anonymous_user'.tr(),
         style: theme.textTheme.titleSmall,
       ),
       subtitle: Text(
-        userLevel.title.isNotEmpty ? userLevel.title : 'Lv.${userLevel.level}',
+        // userLevel.title is an l10n key (e.g. gamification.title_beginner)
+        // produced by LevelCalculator.titleForLevel — translate it before
+        // rendering. Fallback to a localized level label.
+        userLevel.title.isNotEmpty
+            ? userLevel.title.tr()
+            : 'gamification.level'.tr(args: ['${userLevel.level}']),
         style: theme.textTheme.bodySmall?.copyWith(
           color: theme.colorScheme.outline,
         ),

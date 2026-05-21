@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
@@ -31,15 +32,16 @@ class StatisticsScreen extends ConsumerStatefulWidget {
 class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
-  late final String _userId;
+  // Read userId fresh inside build / callbacks via ref.read so a logout /
+  // re-login while this screen is alive doesn't leave us invalidating the
+  // wrong provider family key. Previous initState-cached value would go
+  // stale across auth changes (audit Wave 3).
+  String get _userId => ref.read(currentUserIdProvider);
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    // Intentional ref.read: userId is a stable synchronous value needed for
-    // the post-frame invalidation below; ref.watch is not available in initState.
-    _userId = ref.read(currentUserIdProvider);
     // Invalidate on mount so stale keepAlive caches are cleared when
     // returning to this screen. Schedule after the first frame so Riverpod's
     // inherited scope is fully available.
@@ -163,6 +165,11 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
       );
     } catch (e, st) {
       AppLogger.error('StatisticsScreen.shareReport', e, st);
+      await Sentry.captureException(
+        e,
+        stackTrace: st,
+        withScope: (scope) => scope.setTag('feature', 'statistics'),
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('statistics.share_report_failed'.tr())),

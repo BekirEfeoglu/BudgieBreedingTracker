@@ -86,7 +86,7 @@ class _TimelineRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final dateText = DateFormat.yMd(
-      Localizations.localeOf(context).toString(),
+      Localizations.localeOf(context).languageCode,
     ).format(event.date);
     final title = event.title ?? event.titleKey.tr(namedArgs: event.namedArgs);
 

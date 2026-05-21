@@ -131,7 +131,7 @@ class FeedbackHistoryCard extends StatelessWidget {
                   const Spacer(),
                   if (entry.createdAt != null)
                     Text(
-                      _formatDate(entry.createdAt!),
+                      _formatDate(context, entry.createdAt!),
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant.withValues(
                           alpha: 0.6,
@@ -172,9 +172,10 @@ class FeedbackHistoryCard extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final diff = now.difference(date);
+  String _formatDate(BuildContext context, DateTime date) {
+    // entry.createdAt is UTC from server; normalize before diff/display.
+    final localDate = date.toLocal();
+    final diff = DateTime.now().difference(localDate);
     if (diff.inMinutes < 1) return 'common.just_now'.tr();
     if (diff.inHours < 1) {
       return 'common.minutes_ago'.tr(args: ['${diff.inMinutes}']);
@@ -185,8 +186,8 @@ class FeedbackHistoryCard extends StatelessWidget {
     if (diff.inDays < 7) {
       return 'common.days_ago'.tr(args: ['${diff.inDays}']);
     }
-    return '${date.day.toString().padLeft(2, '0')}.'
-        '${date.month.toString().padLeft(2, '0')}.'
-        '${date.year}';
+    return DateFormat.yMd(
+      Localizations.localeOf(context).languageCode,
+    ).format(localDate);
   }
 }

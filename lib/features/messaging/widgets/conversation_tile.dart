@@ -24,8 +24,15 @@ class ConversationTile extends StatelessWidget {
       ),
       leading: CircleAvatar(
         radius: 24,
+        // Bound decode size — a long conversations list with unbounded
+        // CachedNetworkImageProvider would decode each avatar at full
+        // network resolution (performance.md image budget).
         backgroundImage: conversation.imageUrl != null
-            ? CachedNetworkImageProvider(conversation.imageUrl!)
+            ? CachedNetworkImageProvider(
+                conversation.imageUrl!,
+                maxWidth: 96,
+                maxHeight: 96,
+              )
             : null,
         child: conversation.imageUrl == null
             ? Icon(
@@ -50,7 +57,7 @@ class ConversationTile extends StatelessWidget {
           ),
           if (conversation.lastMessageAt != null)
             Text(
-              _formatTime(conversation.lastMessageAt!),
+              _formatTime(context, conversation.lastMessageAt!),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: conversation.hasUnread
                     ? theme.colorScheme.primary
@@ -100,9 +107,10 @@ class ConversationTile extends StatelessWidget {
     );
   }
 
-  String _formatTime(DateTime dateTime) {
-    final now = DateTime.now();
-    final diff = now.difference(dateTime);
+  String _formatTime(BuildContext context, DateTime dateTime) {
+    // lastMessageAt is UTC; convert to local before formatting and diff.
+    final localDate = dateTime.toLocal();
+    final diff = DateTime.now().difference(localDate);
 
     if (diff.inMinutes < 1) return 'messaging.just_now'.tr();
     if (diff.inMinutes < 60) {
@@ -112,6 +120,8 @@ class ConversationTile extends StatelessWidget {
       return 'messaging.hours_ago'.tr(args: ['${diff.inHours}']);
     }
     if (diff.inDays == 1) return 'messaging.yesterday'.tr();
-    return '${dateTime.day}/${dateTime.month}';
+    return DateFormat.Md(
+      Localizations.localeOf(context).languageCode,
+    ).format(localDate);
   }
 }

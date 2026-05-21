@@ -130,15 +130,19 @@ class FeedbackDetailSheet extends StatelessWidget {
                 ),
               ),
               if (entry.createdAt != null)
-                Text(
-                  '${entry.createdAt!.day.toString().padLeft(2, '0')}.'
-                  '${entry.createdAt!.month.toString().padLeft(2, '0')}.'
-                  '${entry.createdAt!.year} '
-                  '${entry.createdAt!.hour.toString().padLeft(2, '0')}:'
-                  '${entry.createdAt!.minute.toString().padLeft(2, '0')}',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
+                Builder(
+                  builder: (context) {
+                    final local = entry.createdAt!.toLocal();
+                    final locale =
+                        Localizations.localeOf(context).languageCode;
+                    return Text(
+                      '${DateFormat.yMd(locale).format(local)} '
+                      '${DateFormat.Hm(locale).format(local)}',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    );
+                  },
                 ),
             ],
           ),

@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/constants/app_icons.dart';
+import '../../../core/utils/logger.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../domain/services/sync/sync_orchestrator.dart';
@@ -210,8 +211,9 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
           ).showSnackBar(SnackBar(content: Text('settings.sync_error'.tr())));
         }
       }
-    } catch (e) {
-      Sentry.captureException(e, stackTrace: StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('[DataStorageSection] sync failed', e, st);
+      Sentry.captureException(e, stackTrace: st);
       if (mounted) {
         ScaffoldMessenger.of(
           context,

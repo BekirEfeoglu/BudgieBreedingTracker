@@ -83,6 +83,7 @@ class RegisterFormBody extends StatelessWidget {
       prefixIcon: const Icon(LucideIcons.mail),
       keyboardType: TextInputType.emailAddress,
       textInputAction: TextInputAction.next,
+      autofillHints: const [AutofillHints.email, AutofillHints.username],
       enabled: !isLoading,
       validator: (v) {
         if (v == null || v.trim().isEmpty) {
@@ -107,6 +108,7 @@ class RegisterFormBody extends StatelessWidget {
           prefixIcon: const AppIcon(AppIcons.password),
           isPassword: true,
           textInputAction: TextInputAction.next,
+          autofillHints: const [AutofillHints.newPassword],
           enabled: !isLoading,
           validator: (v) {
             if (v == null || v.isEmpty) return 'common.required_field'.tr();
@@ -138,6 +140,7 @@ class RegisterFormBody extends StatelessWidget {
           isPassword: true,
           textInputAction: TextInputAction.done,
           onFieldSubmitted: (_) => onSubmit(),
+          autofillHints: const [AutofillHints.newPassword],
           enabled: !isLoading,
           validator: (v) {
             if (v == null || v.isEmpty) return 'common.required_field'.tr();

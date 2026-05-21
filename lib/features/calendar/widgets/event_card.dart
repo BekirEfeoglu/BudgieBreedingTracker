@@ -29,7 +29,9 @@ class EventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final timeFormat = DateFormat.Hm();
+    final timeFormat = DateFormat.Hm(
+      Localizations.localeOf(context).languageCode,
+    );
     final isDimmed =
         event.status == EventStatus.completed ||
         event.status == EventStatus.cancelled;

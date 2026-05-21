@@ -106,15 +106,18 @@ final userGrowthDataProvider = FutureProvider<List<DailyDataPoint>>((
 
   final Map<String, int> grouped = {};
   for (final row in (result as List)) {
-    final date = DateTime.parse(row['created_at'] as String);
+    // Supabase `created_at` is UTC. Bucket by UTC day so the key matches
+    // the bucket key built from `DateTime.now().toUtc()` below.
+    final date = DateTime.parse(row['created_at'] as String).toUtc();
     final key =
         '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
     grouped[key] = (grouped[key] ?? 0) + 1;
   }
 
   final points = <DailyDataPoint>[];
+  final nowUtc = DateTime.now().toUtc();
   for (var i = AdminConstants.chartPeriodDays - 1; i >= 0; i--) {
-    final date = DateTime.now().subtract(Duration(days: i));
+    final date = nowUtc.subtract(Duration(days: i));
     final key =
         '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
     points.add(DailyDataPoint(date: date, count: grouped[key] ?? 0));

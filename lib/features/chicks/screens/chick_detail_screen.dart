@@ -101,6 +101,7 @@ class _DetailContent extends ConsumerWidget {
                 context.push('${AppRoutes.chickForm}?editId=${chick.id}'),
           ),
           PopupMenuButton<String>(
+            tooltip: 'common.more'.tr(),
             onSelected: (value) => _handleMenuAction(context, ref, value),
             itemBuilder: (context) => [
               if (!chick.isWeaned &&

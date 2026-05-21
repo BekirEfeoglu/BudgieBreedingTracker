@@ -114,7 +114,7 @@ class GeneticsHistoryCard extends ConsumerWidget {
             children: [
               Flexible(
                 child: Text(
-                  _formatDate(entry.createdAt),
+                  _formatDate(context, entry.createdAt),
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -292,13 +292,14 @@ class GeneticsHistoryCard extends ConsumerWidget {
     }
   }
 
-  String _formatDate(DateTime? date) {
+  String _formatDate(BuildContext context, DateTime? date) {
     if (date == null) return '-';
-    return '${date.day.toString().padLeft(2, '0')}.'
-        '${date.month.toString().padLeft(2, '0')}.'
-        '${date.year} '
-        '${date.hour.toString().padLeft(2, '0')}:'
-        '${date.minute.toString().padLeft(2, '0')}';
+    // Convert UTC server timestamp to local before display, and use a
+    // locale-aware DateFormat so DE/EN users see their format.
+    final local = date.toLocal();
+    final locale = Localizations.localeOf(context).languageCode;
+    return '${DateFormat.yMd(locale).format(local)} '
+        '${DateFormat.Hm(locale).format(local)}';
   }
 }
 

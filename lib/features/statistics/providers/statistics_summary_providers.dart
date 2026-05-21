@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart'
+    as date_utils;
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
@@ -121,8 +123,11 @@ final ageDistributionProvider =
           // would satisfy `months < 6` and inflate the 0-6m bracket.
           if (birth.isAfter(now)) continue;
 
-          final months =
-              (now.year - birth.year) * 12 + (now.month - birth.month);
+          // Use day-precise difference rather than year/month subtraction
+          // alone — a bird born 2026-01-31 viewed on 2026-02-01 should
+          // count as 0 months old, not 1.
+          final days = date_utils.DateUtils.dayDiff(birth, now);
+          final months = days ~/ 30;
 
           if (months < 6) {
             groups[ageBracketKeys[0]] = (groups[ageBracketKeys[0]] ?? 0) + 1;

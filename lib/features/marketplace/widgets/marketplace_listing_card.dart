@@ -31,7 +31,10 @@ class MarketplaceListingCard extends StatelessWidget {
 
   String _relativeTime(DateTime? dateTime) {
     if (dateTime == null) return '';
-    final diff = DateTime.now().difference(dateTime);
+    // listing.createdAt is UTC; normalize before diff so DST/TZ
+    // boundary doesn't yield negative inDays/inHours.
+    final localDate = dateTime.toLocal();
+    final diff = DateTime.now().difference(localDate);
     if (diff.inMinutes < 60) {
       return 'marketplace.time_ago_minutes'.tr(args: ['${diff.inMinutes}']);
     }
@@ -159,6 +162,9 @@ class MarketplaceListingCard extends StatelessWidget {
               imageUrl: listing.primaryImageUrl!,
               fit: BoxFit.cover,
               memCacheWidth: 640,
+              placeholder: (_, __) => ColoredBox(
+                color: theme.colorScheme.surfaceContainerHighest,
+              ),
               errorWidget: (_, _, _) => Container(
                 color: theme.colorScheme.surfaceContainerHighest,
                 child: Icon(

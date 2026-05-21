@@ -86,7 +86,13 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
         switch (result) {
           case MfaVerificationNeeded(:final factorId):
             ref.read(pendingMfaFactorIdProvider.notifier).state = factorId;
-            context.go('${AppRoutes.twoFactorVerify}?factorId=$factorId');
+            // Defensive query-component encoding even though factorId is
+            // a UUID — keeps the contract consistent if future factor IDs
+            // ever change format.
+            context.go(
+              '${AppRoutes.twoFactorVerify}'
+              '?factorId=${Uri.encodeQueryComponent(factorId)}',
+            );
             return;
           case MfaCheckFailed(:final didSignOut):
             setState(() {
@@ -98,8 +104,17 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
               // leaving the user in a half-authenticated state.
               try {
                 await ref.read(authActionsProvider).signOut();
-              } catch (e) {
-                AppLogger.debug('[Login] Retry sign-out also failed: $e');
+              } catch (e, st) {
+                // Half-authenticated state with sign-out failure twice
+                // is a security-relevant condition — surface to Sentry
+                // so we learn about provider outages or auth bugs.
+                AppLogger.error('[Login] Retry sign-out also failed', e, st);
+                await Sentry.captureException(
+                  e,
+                  stackTrace: st,
+                  withScope: (scope) =>
+                      scope.setTag('feature', 'auth.mfa_signout'),
+                );
               }
             }
             if (!mounted) return;

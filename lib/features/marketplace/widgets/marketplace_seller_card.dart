@@ -27,8 +27,12 @@ class MarketplaceSellerCard extends StatelessWidget {
 
   int _monthsSince(DateTime? date) {
     if (date == null) return 0;
+    // memberSince is UTC from server; convert to local before comparing
+    // so users in negative-UTC offsets don't see month off-by-one at
+    // month boundaries.
+    final local = date.toLocal();
     final now = DateTime.now();
-    return (now.year - date.year) * 12 + (now.month - date.month);
+    return (now.year - local.year) * 12 + (now.month - local.month);
   }
 
   @override

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -237,15 +238,25 @@ class PedigreeNode extends StatelessWidget {
   Widget _portraitWidget(ThemeData theme) {
     final url = bird?.photoUrl;
     if (url == null || url.isEmpty) return _genderIconWidget;
+    final size = isRoot ? 34 : 28;
 
     return ClipOval(
       child: SizedBox(
-        width: isRoot ? 34 : 28,
-        height: isRoot ? 34 : 28,
-        child: Image.network(
-          url,
+        width: size.toDouble(),
+        height: size.toDouble(),
+        // CachedNetworkImage adds memory + disk cache and bounds the
+        // decoded bitmap. Large pedigrees can render dozens of nodes;
+        // raw Image.network would re-fetch and decode at full resolution
+        // each rebuild (performance.md image budget).
+        child: CachedNetworkImage(
+          imageUrl: url,
+          memCacheWidth: size * 2,
+          memCacheHeight: size * 2,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => ColoredBox(
+          placeholder: (_, __) => ColoredBox(
+            color: _genderBackgroundColor.withValues(alpha: 0.08),
+          ),
+          errorWidget: (_, __, ___) => ColoredBox(
             color: _genderBackgroundColor.withValues(alpha: 0.12),
             child: Center(child: _genderIconWidget),
           ),

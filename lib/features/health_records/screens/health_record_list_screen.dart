@@ -42,9 +42,13 @@ class _HealthRecordListScreenState
     final recordsAsync = ref.watch(healthRecordsStreamProvider(userId));
     final query = ref.watch(healthRecordSearchQueryProvider);
 
-    // Sync controller when query is cleared externally
+    // Sync controller when query is cleared externally. Defer mutation
+    // to post-frame to avoid touching controller state during build.
     if (query.isEmpty && _searchController.text.isNotEmpty) {
-      _searchController.clear();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _searchController.clear();
+      });
     }
 
     return Scaffold(

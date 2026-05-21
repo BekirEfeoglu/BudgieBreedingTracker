@@ -17,11 +17,14 @@ class MilestoneTimeline extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final appDateFormat = ref.watch(dateFormatProvider);
+    final locale = Localizations.localeOf(context).languageCode;
+    // Pass the active locale into the constructor so non-Latin locales
+    // and German short-month formatting render correctly (datetime-format.md).
     final dateFormat = DateFormat(switch (appDateFormat) {
       AppDateFormat.dmy => 'dd.MM',
       AppDateFormat.mdy => 'MM/dd',
       AppDateFormat.ymd => 'MM-dd',
-    });
+    }, locale);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

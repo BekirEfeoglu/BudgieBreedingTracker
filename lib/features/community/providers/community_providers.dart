@@ -53,7 +53,11 @@ final communityActiveTabProvider =
 /// Shared relative date formatter for community widgets.
 String formatCommunityDate(DateTime? date) {
   if (date == null) return '';
-  final diff = DateTime.now().difference(date);
+  // Server timestamps come in as UTC; normalize to local before diff so
+  // DST/timezone offsets do not produce negative inDays at boundaries
+  // (datetime-format.md anti-pattern #4).
+  final localDate = date.toLocal();
+  final diff = DateTime.now().difference(localDate);
   if (diff.inMinutes < 1) return 'community.just_now'.tr();
   if (diff.inMinutes < 60) {
     return 'community.minutes_ago'.tr(args: [diff.inMinutes.toString()]);
