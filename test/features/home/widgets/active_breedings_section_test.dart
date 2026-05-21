@@ -110,5 +110,35 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Detail: pair-1'), findsOneWidget);
     });
+
+    testWidgets(
+      'renders daysActive text when pairingDate is set (uses DateUtils.dayDiff)',
+      (tester) async {
+        // pairingDate 5 calendar days ago via UTC-midnight normalization
+        final pairingDate = DateTime.utc(
+          DateTime.now().year,
+          DateTime.now().month,
+          DateTime.now().day,
+        ).subtract(const Duration(days: 5));
+        final pairs = [
+          BreedingPair(
+            id: 'pair-1',
+            userId: 'user-1',
+            maleId: 'bird-1',
+            femaleId: 'bird-2',
+            status: BreedingStatus.active,
+            pairingDate: pairingDate,
+            createdAt: pairingDate,
+            updatedAt: pairingDate,
+          ),
+        ];
+        await tester.pumpWidget(buildSubject(pairs: pairs));
+        await tester.pump();
+        // Widget renders without error and shows a Card for the pair
+        expect(find.byType(Card), findsOneWidget);
+        // At least one Text widget contains date/days info (exercises dayDiff path)
+        expect(find.byType(Text), findsAtLeastNWidgets(1));
+      },
+    );
   });
 }

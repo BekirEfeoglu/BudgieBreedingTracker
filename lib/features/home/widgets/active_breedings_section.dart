@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/status_badge.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
@@ -75,7 +76,7 @@ class _BreedingPairTile extends ConsumerWidget {
         ? ref.watch(dateFormatProvider).formatter().format(pair.pairingDate!)
         : '';
     final daysActive = pair.pairingDate != null
-        ? DateTime.now().difference(pair.pairingDate!).inDays
+        ? DateUtils.dayDiff(pair.pairingDate!, DateTime.now())
         : null;
     final dateDisplay = daysActive != null && dateText.isNotEmpty
         ? '$dateText · ${'home.days_active'.tr(args: [daysActive.toString()])}'
