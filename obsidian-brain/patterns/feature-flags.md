@@ -27,6 +27,18 @@ if (debugRoute.isNotEmpty) return GoRouter(initialLocation: debugRoute);
 - `notification_quiet_hours` — quiet hours setting
 - `experimental_*` — developer menu toggles
 
+### Sync Rollout Flags (operational, not security)
+
+| Flag | Default | Purpose |
+|------|---------|---------|
+| `syncOfflineBannerEnabledProvider` | `true` | Global offline/error banner kill switch |
+| `syncBackgroundEnabledProvider` | `false` | Controlled background push task enable |
+| `syncRealtimeEnabledProvider` | `false` | Foreground realtime subscription rollout |
+| `syncRealtimeServerKillSwitchProvider` | `false` | Remote-config realtime global off |
+| `syncRealtimeRolloutPercentProvider` | `100` | Deterministic user-bucket ramp threshold |
+
+Realtime starts only when local flag is on, server kill switch is off, and user bucket falls under ramp percent. Ramp plan: 5% internal → 25% beta → 100% stable. On crash/timeout/conflict spikes, flip kill switch first, ship fix second.
+
 ### Server-Side Kill Switch
 
 `app_config` Supabase table:

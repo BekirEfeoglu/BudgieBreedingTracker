@@ -4,6 +4,14 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-05-21] sync | Stat drift sweep + pattern gap fixes
+
+- `overview.md`, `index.md`, `architecture/folder-structure.md`, `data-layer/drift.md`, `data-layer/migrations.md`, `data-layer/supabase.md`, `patterns/l10n.md`, `patterns/testing.md`: refreshed stats to match `verify_rules.py` baseline (schemaVersion 22→24, l10n 2,840→2,968, source 959→989, tests 886/10,884→901/11,016, migrations 156→158, domain services 21→23).
+- `patterns/security.md`: added active certificate pinning section (SHA-256 allowlist, rotation, emergency proxy flag).
+- `patterns/feature-flags.md`: documented sync rollout/kill-switch flags (`syncOfflineBannerEnabledProvider`, `syncBackgroundEnabledProvider`, `syncRealtimeEnabledProvider`, server kill switch, rollout percent) with ramp plan.
+- `patterns/providers.md`: corrected anti-pattern cross-reference (#3,#4 → #4).
+- Verified all 74 wiki files, no broken `[[wikilinks]]`, all pages under 200 lines.
+
 ## [2026-05-17] ingest | Incubation risk assistant, sync retry policy, services index
 
 - `features/breeding.md`: documented `IncubationRiskCard` + `IncubationRiskAssistant` (5 risk types, severity ranking, derived from pair/incubation/egg/chick streams).

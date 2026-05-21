@@ -73,6 +73,14 @@ All guards in `lib/router/guards/`. Never skip for "quick testing".
 - Google/Apple token revocation: `revoke-oauth-token` Edge Function on logout
 - FCM tokens: deleted from DB on logout
 
+## Certificate Pinning
+
+- Active: `CertificatePinning.install()` runs before `Supabase.initialize()` in bootstrap
+- SHA-256 fingerprint allowlist for `*.supabase.co`
+- Rotation procedure: produce new fingerprint ≥14 days before leaf cert expiry, keep both old + new in one release, drop old after adoption
+- Emergency proxy/debug: `--dart-define=ALLOW_PROXY=true` only — never in release builds
+- Verification: `scripts/verify_security.py` confirms pinning module is wired in bootstrap
+
 ## Anti-Patterns
 
 1. Hardcoding Supabase credentials

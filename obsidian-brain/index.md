@@ -58,7 +58,7 @@ Full catalog of every page in the obsidian-brain wiki.
 
 | Page | Description |
 |------|-------------|
-| [[data-layer/drift]] | Local SQLite, 20 tables, DAOs, schema v22 |
+| [[data-layer/drift]] | Local SQLite, 20 tables, DAOs, schema v24 |
 | [[data-layer/supabase]] | Remote Postgres, SupabaseConstants, storage, .toSupabase() |
 | [[data-layer/repositories]] | BaseRepository, SyncableRepository, ValidatedSyncMixin |
 | [[data-layer/sync-strategy]] | Push/pull, idempotency, conflict resolution, retry |
@@ -69,7 +69,7 @@ Full catalog of every page in the obsidian-brain wiki.
 
 | Page | Description |
 |------|-------------|
-| [[domain/services-index]] | Map of all 21 domain services |
+| [[domain/services-index]] | Map of all 23 domain services |
 | [[domain/genetics-engine]] | Punnett, MUTAVI, inbreeding, calculationVersion |
 | [[domain/sync-service]] | Background sync orchestration |
 | [[domain/local-ai]] | LLM image+text (Ollama/OpenRouter) |

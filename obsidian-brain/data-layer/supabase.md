@@ -6,7 +6,7 @@ Source: `.claude/rules/data-layer.md`, `.claude/rules/security.md`
 
 - **Package**: supabase_flutter ^2.5.0
 - **Remote sources**: 27 (entity + base + 2 caches + providers)
-- **Migrations**: 156 SQL files in `supabase/migrations/`
+- **Migrations**: 158 SQL files in `supabase/migrations/`
 - **Edge Functions**: 8 (see [[infrastructure/edge-functions]])
 - **Supabase constants**: 146 (tables + buckets + columns)
 

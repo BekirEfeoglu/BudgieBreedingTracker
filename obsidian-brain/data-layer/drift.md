@@ -5,7 +5,7 @@ Source: `.claude/rules/data-layer.md`, `.claude/rules/migrations.md`
 ## Overview
 
 - **Package**: drift ^2.31.0 (type-safe SQLite ORM)
-- **Schema version**: 22 (in `app_database.dart`)
+- **Schema version**: 24 (in `app_database.dart`)
 - **Tables**: 20
 - **DAOs**: 20
 - **Mappers**: 20
@@ -58,7 +58,7 @@ await db.batch((batch) {
 MigrationStrategy get migration => MigrationStrategy(
   onCreate: (m) => m.createAll(),
   onUpgrade: (m, from, to) async {
-    if (from < 22) {
+    if (from < 24) {
       await m.addColumn(birds, birds.ringNumber);
     }
     // Sequential, no skipping

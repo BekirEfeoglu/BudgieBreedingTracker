@@ -29,7 +29,7 @@ lib/
 │   │   │   ├── daos/              20 DAO classes
 │   │   │   ├── mappers/           20 Mapper classes
 │   │   │   ├── converters/        enum_converters.dart
-│   │   │   └── app_database.dart  schemaVersion=22, DriftDatabase class
+│   │   │   └── app_database.dart  schemaVersion=24, DriftDatabase class
 │   │   └── preferences/           AppPreferences (SharedPreferences wrapper)
 │   ├── remote/
 │   │   ├── api/                   27 remote source classes
@@ -39,7 +39,7 @@ lib/
 │       └── repository_providers.dart
 │
 ├── domain/
-│   └── services/                  21 directories of business logic
+│   └── services/                  23 directories of business logic
 │       ├── genetics/
 │       ├── sync/
 │       ├── incubation/
@@ -73,7 +73,7 @@ lib/
 ```
 assets/
 ├── translations/
-│   ├── tr.json    Master (~2,840 keys, 42 categories)
+│   ├── tr.json    Master (~2,968 keys, 42 categories)
 │   ├── en.json
 │   └── de.json
 ├── images/

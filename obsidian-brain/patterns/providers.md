@@ -98,5 +98,5 @@ final name = ref.watch(birdProvider.select((b) => b.value?.name));
 
 ## See Also
 
-- [[patterns/anti-patterns]] — #3, #4 (ref.watch/read)
+- [[patterns/anti-patterns]] — #4 (ref.watch in callbacks)
 - [[patterns/ui-patterns]] — AsyncValue handling in widgets
