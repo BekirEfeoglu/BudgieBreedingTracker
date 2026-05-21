@@ -20,7 +20,8 @@ class BirdDetailInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final dateFormat = DateFormat('dd.MM.yyyy');
+    final locale = Localizations.localeOf(context).toString();
+    final dateFormat = DateFormat.yMd(locale);
     final age = bird.age;
     final hasRingNumber =
         bird.ringNumber != null && bird.ringNumber!.trim().isNotEmpty;

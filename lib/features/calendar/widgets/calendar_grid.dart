@@ -169,11 +169,26 @@ class _DayCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: SizedBox(
-        height: AppSpacing.touchTargetMin,
-        child: Column(
+    // Localized accessible label: "Pazartesi, 14, 3 etkinlik". Screen
+    // readers announce the day number alone otherwise.
+    final eventCount = events.length;
+    final semanticLabel = isSelected
+        ? 'calendar.day_selected'.tr(args: ['$day', '$eventCount'])
+        : 'calendar.day_with_events'.tr(args: ['$day', '$eventCount']);
+
+    return Semantics(
+      label: semanticLabel,
+      button: true,
+      selected: isSelected,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: SizedBox(
+          // WCAG 2.5.5 minimum 48dp. Grid layout means rows decide the
+          // outer cell height, but at least the per-cell hit target is
+          // not smaller than the accessibility floor.
+          height: 48,
+          child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
@@ -223,6 +238,7 @@ class _DayCell extends StatelessWidget {
                 ),
               ),
           ],
+        ),
         ),
       ),
     );

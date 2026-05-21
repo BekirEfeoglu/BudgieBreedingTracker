@@ -138,8 +138,9 @@ class BreedingNotificationHelper {
     String userId,
     String pairId,
     DateTime pairingDate,
-    Species species,
-  ) {
+    Species species, {
+    String? incubationId,
+  }) {
     try {
       final calendarGen = _ref.read(calendarEventGeneratorProvider);
       calendarGen.generateIncubationEvents(
@@ -148,6 +149,7 @@ class BreedingNotificationHelper {
         startDate: pairingDate,
         pairLabel: 'breeding.pair_label'.tr(args: [pairId.substring(0, 6)]),
         species: species,
+        incubationId: incubationId,
       );
     } catch (e) {
       if (isSupabaseUnavailableError(e)) {

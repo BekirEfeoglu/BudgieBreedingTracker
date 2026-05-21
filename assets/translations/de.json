@@ -572,6 +572,8 @@
     "event_date": "Ereignisdatum",
     "event_notes": "Notizen",
     "events_for_day": "Tagesereignisse",
+    "day_with_events": "{} - {} Ereignisse",
+    "day_selected": "{} ausgewählt - {} Ereignisse",
     "previous_month": "Vorheriger Monat",
     "next_month": "Nächster Monat",
     "breeding_start": "Zuchtbeginn",
@@ -2363,6 +2365,7 @@
   },
   "errors": {
     "unknown": "Ein unerwarteter Fehler ist aufgetreten.",
+    "cannot_open_url": "Der Link konnte nicht geöffnet werden. Keine geeignete App auf Ihrem Gerät gefunden.",
     "save_failed": "Speichervorgang fehlgeschlagen.",
     "delete_failed": "Löschvorgang fehlgeschlagen.",
     "update_failed": "Aktualisierung fehlgeschlagen.",

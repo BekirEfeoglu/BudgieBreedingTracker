@@ -79,10 +79,13 @@ class _DetailContent extends ConsumerWidget {
         ActionFeedbackService.show('common.saved_successfully'.tr());
         if (context.mounted) context.pop();
       }
-      if (state.error != null) {
+      if (state.error != null && (prev?.error != state.error)) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(state.error!)));
+        // Clear after displaying so the same error doesn't replay when
+        // a subsequent state emission (e.g. isLoading toggling) re-fires.
+        ref.read(breedingFormStateProvider.notifier).clearError();
       }
     });
 

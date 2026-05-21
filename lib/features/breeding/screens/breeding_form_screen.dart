@@ -198,7 +198,10 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
               return const LoadingState();
             }
             if (_isEdit && _existingPair == null) {
-              return Center(child: Text('breeding.not_found'.tr()));
+              return ErrorState(
+                message: 'breeding.not_found'.tr(),
+                onRetry: () => context.pop(),
+              );
             }
 
             if (allBirds.isEmpty && !_isEdit) {

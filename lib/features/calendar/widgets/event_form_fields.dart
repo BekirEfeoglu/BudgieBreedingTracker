@@ -37,7 +37,7 @@ List<DropdownMenuItem<EventType>> buildEventTypeItems() {
       value: type,
       child: Row(
         children: [
-          Icon(eventTypeIcon(type), size: 18),
+          eventTypeIconWidget(type, size: 18),
           const SizedBox(width: AppSpacing.sm),
           Text(eventTypeLabel(type)),
         ],

@@ -572,6 +572,8 @@
     "event_date": "Event Date",
     "event_notes": "Notes",
     "events_for_day": "Events for the Day",
+    "day_with_events": "{} - {} events",
+    "day_selected": "{} selected - {} events",
     "previous_month": "Previous Month",
     "next_month": "Next Month",
     "breeding_start": "Breeding Start",
@@ -2363,6 +2365,7 @@
   },
   "errors": {
     "unknown": "An unexpected error occurred.",
+    "cannot_open_url": "Could not open the link. No suitable app found on your device.",
     "save_failed": "Save operation failed.",
     "delete_failed": "Delete operation failed.",
     "update_failed": "Update operation failed.",

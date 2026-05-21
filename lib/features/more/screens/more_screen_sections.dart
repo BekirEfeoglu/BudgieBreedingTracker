@@ -93,20 +93,27 @@ void _showMoreAboutDialog(BuildContext context, WidgetRef ref) {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 InkWell(
-                  // IMPROVED: wrap launchUrl in try-catch to handle missing mail client
                   onTap: () async {
                     try {
                       await launchUrl(
                         Uri.parse('mailto:${AppConstants.supportEmail}'),
                       );
-                    } on Exception catch (e) {
-                      AppLogger.warning('launchUrl mailto failed: $e');
+                    } on Exception catch (e, st) {
+                      AppLogger.error('launchUrl mailto failed', e, st);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('errors.cannot_open_url'.tr()),
+                          ),
+                        );
+                      }
                     }
                   },
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   child: Padding(
+                    // WCAG 2.5.5 minimum 48dp tap target.
                     padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.sm,
+                      vertical: AppSpacing.md,
                     ),
                     child: Row(
                       children: [
@@ -129,18 +136,25 @@ void _showMoreAboutDialog(BuildContext context, WidgetRef ref) {
                   ),
                 ),
                 InkWell(
-                  // IMPROVED: wrap launchUrl in try-catch to handle URL launch failure
                   onTap: () async {
                     try {
                       await launchUrl(Uri.parse(AppConstants.websiteUrl));
-                    } on Exception catch (e) {
-                      AppLogger.warning('launchUrl website failed: $e');
+                    } on Exception catch (e, st) {
+                      AppLogger.error('launchUrl website failed', e, st);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('errors.cannot_open_url'.tr()),
+                          ),
+                        );
+                      }
                     }
                   },
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   child: Padding(
+                    // WCAG 2.5.5 minimum 48dp tap target.
                     padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.sm,
+                      vertical: AppSpacing.md,
                     ),
                     child: Row(
                       children: [

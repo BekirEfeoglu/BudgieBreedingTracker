@@ -1,22 +1,44 @@
 part of 'event_card.dart';
 
-/// Returns the appropriate icon for an [EventType].
-IconData eventTypeIcon(EventType type) {
-  return switch (type) {
-    EventType.breeding || EventType.mating => LucideIcons.heart,
-    EventType.egg || EventType.eggLaying => LucideIcons.egg,
-    EventType.hatching || EventType.chick => LucideIcons.baby,
-    EventType.banding => LucideIcons.tag,
-    EventType.vaccination => LucideIcons.syringe,
-    EventType.healthCheck || EventType.health => LucideIcons.stethoscope,
-    EventType.medication => LucideIcons.pill,
-    EventType.feeding => LucideIcons.wheat,
-    EventType.cleaning || EventType.cageChange => LucideIcons.sparkles,
-    EventType.weightCheck => LucideIcons.scale,
-    EventType.custom ||
-    EventType.other ||
-    EventType.unknown => LucideIcons.calendar,
-  };
+/// Returns a widget icon for an [EventType].
+///
+/// Domain events (breeding, egg, hatching, chick) use SVG AppIcons so they
+/// stay visually consistent with the rest of the app. Generic activity events
+/// (feeding, cleaning, medication, weightCheck) remain on LucideIcons as
+/// allowed by anti-pattern #24.
+Widget eventTypeIconWidget(EventType type, {double size = 20, Color? color}) {
+  switch (type) {
+    case EventType.breeding:
+    case EventType.mating:
+      return AppIcon(AppIcons.pair, size: size, color: color);
+    case EventType.egg:
+    case EventType.eggLaying:
+      return AppIcon(AppIcons.egg, size: size, color: color);
+    case EventType.hatching:
+      return AppIcon(AppIcons.hatched, size: size, color: color);
+    case EventType.chick:
+      return AppIcon(AppIcons.chick, size: size, color: color);
+    case EventType.banding:
+      return AppIcon(AppIcons.ring, size: size, color: color);
+    case EventType.healthCheck:
+    case EventType.health:
+      return AppIcon(AppIcons.health, size: size, color: color);
+    case EventType.weightCheck:
+      return AppIcon(AppIcons.weight, size: size, color: color);
+    case EventType.vaccination:
+      return Icon(LucideIcons.syringe, size: size, color: color);
+    case EventType.medication:
+      return Icon(LucideIcons.pill, size: size, color: color);
+    case EventType.feeding:
+      return Icon(LucideIcons.wheat, size: size, color: color);
+    case EventType.cleaning:
+    case EventType.cageChange:
+      return Icon(LucideIcons.sparkles, size: size, color: color);
+    case EventType.custom:
+    case EventType.other:
+    case EventType.unknown:
+      return AppIcon(AppIcons.calendar, size: size, color: color);
+  }
 }
 
 /// Returns a display label for an [EventType].

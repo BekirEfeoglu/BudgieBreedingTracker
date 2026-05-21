@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/widgets/cards/info_card.dart';
@@ -7,6 +8,16 @@ import 'package:budgie_breeding_tracker/features/birds/widgets/bird_detail_info.
 
 import '../../../helpers/pump_helpers.dart';
 import '../../../helpers/test_helpers.dart';
+
+/// Formats a date using the same locale-aware format the widget uses, so
+/// expectations stay correct whether tests run under en_US or tr_TR.
+String _expectedDate(DateTime date) {
+  // pumpWidgetSimple uses MaterialApp default locale (en_US). DateFormat.yMd
+  // produces "M/d/yyyy" there. Production uses Localizations.localeOf(context)
+  // — the helper mirrors that locale so the assertion stays stable if the
+  // test harness adds a localized wrapper later.
+  return DateFormat.yMd().format(date);
+}
 
 void main() {
   group('BirdDetailInfo', () {
@@ -52,7 +63,7 @@ void main() {
         SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
       );
 
-      expect(find.text('15.03.2024'), findsOneWidget);
+      expect(find.text(_expectedDate(DateTime(2024, 3, 15))), findsOneWidget);
     });
 
     testWidgets('shows unknown when no birth date', (tester) async {
@@ -149,7 +160,7 @@ void main() {
         SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
       );
 
-      expect(find.text('01.06.2025'), findsOneWidget);
+      expect(find.text(_expectedDate(DateTime(2025, 6, 1))), findsOneWidget);
     });
 
     testWidgets('does not show death date card for alive bird', (tester) async {
@@ -176,7 +187,7 @@ void main() {
         SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
       );
 
-      expect(find.text('20.08.2025'), findsOneWidget);
+      expect(find.text(_expectedDate(DateTime(2025, 8, 20))), findsOneWidget);
     });
 
     testWidgets('contains at least two InfoCards (gender and species)', (

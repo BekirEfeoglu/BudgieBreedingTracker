@@ -304,9 +304,13 @@ void main() {
         expect(savedEggs, hasLength(4));
         expect(savedEggs.every((egg) => egg.status == EggStatus.laid), isTrue);
         expect(savedEggs.every((egg) => egg.isActiveIncubationEgg), isTrue);
+        // expectedHatchDate is now derived from a UTC-normalized lay date
+        // (DST-safe). Compare against the same UTC anchor so a positive-
+        // offset timezone doesn't round down to 17 days mid-afternoon.
+        final layAnchor = DateTime.utc(today.year, today.month, today.day);
         expect(
           savedEggs.every(
-            (egg) => egg.expectedHatchDate.difference(today).inDays == 18,
+            (egg) => egg.expectedHatchDate.difference(layAnchor).inDays == 18,
           ),
           isTrue,
         );

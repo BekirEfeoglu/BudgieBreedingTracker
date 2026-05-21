@@ -110,6 +110,9 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
         },
         child: Container(
           width: double.infinity,
+          // 48dp minimum tap target (WCAG 2.5.5). The visual band stays
+          // compact via Row alignment; only the hit area grows.
+          constraints: const BoxConstraints(minHeight: 48),
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
           color: color.withValues(alpha: 0.12),
           child: Row(

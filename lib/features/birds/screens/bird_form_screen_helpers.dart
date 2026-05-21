@@ -16,8 +16,10 @@ extension _BirdFormScreenHelpers on _BirdFormScreenState {
       _applyGeneratedDefaultName(
         nextDefaultBirdName(prefix, birds.map((b) => b.name).toList()),
       );
-    } catch (e) {
-      AppLogger.error('[BirdFormScreen]', e, StackTrace.current);
+    } catch (e, st) {
+      // Preserve the real stack trace from the caught exception so Sentry
+      // breadcrumbs point at the actual origin, not this catch line.
+      AppLogger.error('[BirdFormScreen]', e, st);
       if (mounted && _nameController.text.trim().isEmpty) {
         _applyGeneratedDefaultName('${prefix}1');
       }

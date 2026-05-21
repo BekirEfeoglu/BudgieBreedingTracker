@@ -138,6 +138,13 @@ class EventFormNotifier extends Notifier<EventFormState> with SentryErrorFilter 
   void reset() {
     state = const EventFormState();
   }
+
+  /// Clears just the error field so the UI doesn't replay the same SnackBar
+  /// when the listener re-fires for an unrelated state change.
+  void clearError() {
+    if (state.error == null) return;
+    state = state.copyWith(error: null);
+  }
 }
 
 /// Form state and actions for creating/editing events.

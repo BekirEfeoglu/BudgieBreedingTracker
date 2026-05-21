@@ -48,7 +48,7 @@ class DashboardStatsGrid extends ConsumerWidget {
                 color: isPremium
                     ? Theme.of(context).colorScheme.primary
                     : _ratioColor(birdRatio),
-                onTap: () => context.go(AppRoutes.birds),
+                onTap: () => context.push(AppRoutes.birds),
               ),
               StatCard(
                 label: 'home.active_breedings'.tr(),
@@ -57,7 +57,7 @@ class DashboardStatsGrid extends ConsumerWidget {
                 color: isPremium
                     ? AppColors.stageOngoing
                     : _ratioColor(breedingRatio),
-                onTap: () => context.go(AppRoutes.breeding),
+                onTap: () => context.push(AppRoutes.breeding),
               ),
             ],
           ),
@@ -77,7 +77,7 @@ class DashboardStatsGrid extends ConsumerWidget {
                 value: '${stats.totalEggs}',
                 icon: const AppIcon(AppIcons.egg),
                 color: AppColors.stageNearHatch,
-                onTap: () => context.go(AppRoutes.breeding),
+                onTap: () => context.push(AppRoutes.breeding),
               ),
             ],
           ),
@@ -90,7 +90,7 @@ class DashboardStatsGrid extends ConsumerWidget {
               value: '${stats.incubatingEggs}',
               icon: const AppIcon(AppIcons.incubating),
               color: AppColors.stageOngoing,
-              onTap: () => context.go(AppRoutes.breeding),
+              onTap: () => context.push(AppRoutes.breeding),
               isHorizontal: true,
             ),
           ),

@@ -27,7 +27,7 @@ class EggTurningSummarySection extends StatelessWidget {
           SectionHeader(
             title: 'home.egg_turning_today'.tr(),
             icon: const AppIcon(AppIcons.egg),
-            onViewAll: () => context.go(AppRoutes.breeding),
+            onViewAll: () => context.push(AppRoutes.breeding),
           ),
           const SizedBox(height: AppSpacing.sm),
           Card(

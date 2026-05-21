@@ -48,10 +48,15 @@ abstract class Bird with _$Bird {
 extension BirdX on Bird {
   ({int years, int months, int days})? get age {
     if (birthDate == null) return null;
+    // Birth date is stored as UTC at the data boundary. Comparing UTC year/
+    // month/day against local now() can drift by a calendar day for users
+    // in positive-offset timezones when birth was recorded near midnight
+    // UTC. Convert to local for a stable per-user calendar comparison.
     final now = DateTime.now();
-    final years = now.year - birthDate!.year;
-    final months = now.month - birthDate!.month;
-    final days = now.day - birthDate!.day;
+    final birth = birthDate!.toLocal();
+    final years = now.year - birth.year;
+    final months = now.month - birth.month;
+    final days = now.day - birth.day;
 
     int adjustedYears = years;
     int adjustedMonths = months;

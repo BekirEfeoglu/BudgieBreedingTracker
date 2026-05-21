@@ -32,7 +32,7 @@ class ActiveBreedingsSection extends ConsumerWidget {
           SectionHeader(
             title: 'home.active_breedings_section'.tr(),
             icon: const AppIcon(AppIcons.breedingActive),
-            onViewAll: () => context.go(AppRoutes.breeding),
+            onViewAll: () => context.push(AppRoutes.breeding),
           ),
           const SizedBox(height: AppSpacing.sm),
           if (pairs.isEmpty)

@@ -260,8 +260,16 @@ void main() {
       final savedIncubation =
           verify(() => mockIncubationRepo.save(captureAny())).captured.single
               as Incubation;
-      expect(savedIncubation.startDate, isNull);
-      expect(savedIncubation.expectedHatchDate, isNull);
+      // Incubation now ships with a UTC-normalized startDate matching the
+      // pairing date (DST-safe) and a derived expectedHatchDate so progress
+      // bars and milestone notifications work immediately.
+      expect(savedIncubation.startDate, DateTime.utc(2025, 1, 1));
+      expect(savedIncubation.expectedHatchDate, isNotNull);
+      expect(savedIncubation.expectedHatchDate!.isUtc, isTrue);
+      expect(
+        savedIncubation.expectedHatchDate!.isAfter(savedIncubation.startDate!),
+        isTrue,
+      );
     });
 
     test('sets incubation species from validated male bird species', () async {
@@ -595,9 +603,18 @@ void main() {
             verify(() => mockIncubationRepo.save(captureAny())).captured.single
                 as Incubation;
         expect(updatedIncubation.species, Species.canary);
+        // Expected hatch is now derived from UTC-normalized startDate to
+        // sidestep DST. The local startDate `DateTime(2025, 1, 1)` becomes
+        // `DateTime.utc(2025, 1, 1)` after normalization, so the expected
+        // hatch is also a UTC instant.
+        final normalizedStart = DateTime.utc(
+          startDate.year,
+          startDate.month,
+          startDate.day,
+        );
         expect(
           updatedIncubation.expectedHatchDate,
-          startDate.add(
+          normalizedStart.add(
             Duration(days: incubationDaysForSpecies(Species.canary)),
           ),
         );

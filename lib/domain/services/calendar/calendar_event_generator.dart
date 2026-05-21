@@ -44,9 +44,18 @@ class CalendarEventGenerator {
         milestonesForSpecies.lateHatchDay: 'calendar.milestone_late_hatch'.tr(),
       };
 
+      // Normalize start to UTC midnight so adding day offsets is DST-safe.
+      // Raw `add(Duration(days: N))` adds N×24h wall-clock and lands on the
+      // wrong calendar day across DST boundaries; UTC midnight + days math
+      // sidesteps that.
+      final base = DateTime.utc(
+        startDate.year,
+        startDate.month,
+        startDate.day,
+      );
       final events = <Event>[];
       for (final entry in milestones.entries) {
-        final eventDate = startDate.add(Duration(days: entry.key));
+        final eventDate = base.add(Duration(days: entry.key));
         if (eventDate.isBefore(DateTime.now())) continue;
 
         events.add(
@@ -112,8 +121,9 @@ class CalendarEventGenerator {
       );
       await _eventRepo.save(layEvent);
 
-      // 2. Expected hatch date event
-      final hatchDate = layDate.add(
+      // 2. Expected hatch date event (UTC-normalized for DST safety).
+      final layBase = DateTime.utc(layDate.year, layDate.month, layDate.day);
+      final hatchDate = layBase.add(
         Duration(days: incubationDaysForSpecies(species)),
       );
       if (!hatchDate.isBefore(DateTime.now())) {
@@ -165,9 +175,15 @@ class CalendarEventGenerator {
         35: ('calendar.milestone_weaning'.tr(), EventType.chick, null),
       };
 
+      // UTC-normalized base so day-offset math is DST-safe.
+      final base = DateTime.utc(
+        hatchDate.year,
+        hatchDate.month,
+        hatchDate.day,
+      );
       final events = <Event>[];
       for (final entry in milestones.entries) {
-        final eventDate = hatchDate.add(Duration(days: entry.key));
+        final eventDate = base.add(Duration(days: entry.key));
         if (eventDate.isBefore(DateTime.now())) continue;
 
         final (label, type, eventChickId) = entry.value;

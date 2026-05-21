@@ -149,8 +149,8 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
 
     try {
       await photoRepo.deleteStorageForPhoto(photo);
-    } catch (e) {
-      AppLogger.warning('Failed to delete storage file: $e');
+    } catch (e, st) {
+      AppLogger.error('Failed to delete storage file', e, st);
     }
 
     try {
@@ -158,8 +158,8 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
       if (context.mounted) {
         ActionFeedbackService.show('birds.photo_deleted'.tr());
       }
-    } catch (e) {
-      AppLogger.error('[BirdDetailPhotos]', e, StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('[BirdDetailPhotos]', e, st);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('birds.photo_delete_error'.tr())),
@@ -181,8 +181,8 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
         maxHeight: 1920,
         imageQuality: 85,
       );
-    } catch (e) {
-      AppLogger.warning('Failed to pick bird photo: $e');
+    } catch (e, st) {
+      AppLogger.error('Failed to pick bird photo', e, st);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('birds.photo_upload_error'.tr())),
@@ -219,8 +219,8 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
           filePath: url,
         ),
       );
-    } catch (e) {
-      AppLogger.error('[BirdDetailPhotos]', e, StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('[BirdDetailPhotos]', e, st);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('birds.photo_upload_error'.tr())),

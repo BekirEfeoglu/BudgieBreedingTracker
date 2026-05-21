@@ -246,7 +246,11 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
       final startDate = incubation.startDate;
       final expectedHatchDate = startDate == null
           ? incubation.expectedHatchDate
-          : startDate.add(Duration(days: incubationDaysForSpecies(species)));
+          : DateTime.utc(
+              startDate.year,
+              startDate.month,
+              startDate.day,
+            ).add(Duration(days: incubationDaysForSpecies(species)));
 
       // Drop reminders scheduled against the OLD species first — their
       // id range (day count × turning hours) is species-specific, so
@@ -387,12 +391,25 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
         updatedAt: DateTime.now(),
       );
 
+      // Normalize incubation start to UTC midnight so dayDiff/percentage
+      // math is DST-safe and matches IncubationX.computedExpectedHatchDate.
+      final normalizedStart = DateTime.utc(
+        pairingDate.year,
+        pairingDate.month,
+        pairingDate.day,
+      );
+      final expectedHatch = normalizedStart.add(
+        Duration(days: incubationDaysForSpecies(maleBird.species)),
+      );
+
       final incubation = Incubation(
         id: incubationId,
         userId: userId,
         species: maleBird.species,
         status: IncubationStatus.active,
         breedingPairId: pairId,
+        startDate: normalizedStart,
+        expectedHatchDate: expectedHatch,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
@@ -413,6 +430,23 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
         }
         rethrow;
       }
+
+      // Side effects: schedule notifications + generate calendar milestones.
+      // Failures must not undo the successful primary mutation — they
+      // surface as warnings on the next sync cycle instead.
+      _helper.scheduleBreedingNotifications(
+        pairId,
+        incubationId,
+        normalizedStart,
+        maleBird.species,
+      );
+      _helper.generateCalendarEvents(
+        userId,
+        pairId,
+        normalizedStart,
+        maleBird.species,
+        incubationId: incubationId,
+      );
 
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
@@ -462,5 +496,12 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
   /// Resets form state for a new operation.
   void reset() {
     state = const BreedingFormState();
+  }
+
+  /// Clears just the error field so a re-emit of the same state won't
+  /// replay the SnackBar in the detail screen listener.
+  void clearError() {
+    if (state.error == null) return;
+    state = state.copyWith(error: null);
   }
 }

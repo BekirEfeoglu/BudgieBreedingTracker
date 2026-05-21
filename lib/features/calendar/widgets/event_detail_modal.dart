@@ -118,8 +118,8 @@ class _EventDetailContent extends ConsumerWidget {
         CircleAvatar(
           radius: 22,
           backgroundColor: eventTypeColor(event.type).withValues(alpha: 0.15),
-          child: Icon(
-            eventTypeIcon(event.type),
+          child: eventTypeIconWidget(
+            event.type,
             size: 22,
             color: eventTypeColor(event.type),
           ),
@@ -160,10 +160,11 @@ class _EventDetailContent extends ConsumerWidget {
   }
 
   Widget _buildDetails(BuildContext context, ThemeData theme) {
-    final dateFormat = DateFormat(
-      'dd MMMM yyyy, HH:mm',
-      context.locale.toStringWithSeparator(),
-    );
+    // Build locale-aware long-date + time pattern. Hardcoded
+    // 'dd MMMM yyyy, HH:mm' would force the Turkish ordering on
+    // German/English users (which expect different orderings).
+    final locale = context.locale.toStringWithSeparator();
+    final dateFormat = DateFormat.yMMMMd(locale).add_Hm();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

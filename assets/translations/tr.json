@@ -572,6 +572,8 @@
     "event_date": "Etkinlik Tarihi",
     "event_notes": "Notlar",
     "events_for_day": "Günün Etkinlikleri",
+    "day_with_events": "{} - {} etkinlik",
+    "day_selected": "{} seçili - {} etkinlik",
     "previous_month": "Önceki Ay",
     "next_month": "Sonraki Ay",
     "breeding_start": "Üreme Başlangıcı",
@@ -2363,6 +2365,7 @@
   },
   "errors": {
     "unknown": "Beklenmeyen bir hata oluştu.",
+    "cannot_open_url": "Bağlantı açılamadı. Sisteminizde uygun bir uygulama bulunamadı.",
     "save_failed": "Kaydetme işlemi başarısız oldu.",
     "delete_failed": "Silme işlemi başarısız oldu.",
     "update_failed": "Güncelleme işlemi başarısız oldu.",

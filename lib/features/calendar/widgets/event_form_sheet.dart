@@ -103,9 +103,13 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
         );
       }
       if (state.error != null && mounted) {
+        // Surface the typed error captured by the form provider (already
+        // localized by the catch block) instead of a generic fallback.
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('errors.unknown'.tr())));
+        ).showSnackBar(SnackBar(content: Text(state.error!)));
+        // Clear the error so re-emitting the same state won't replay it.
+        ref.read(eventFormStateProvider.notifier).clearError();
       }
     });
 
@@ -176,7 +180,10 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
                 decoration: InputDecoration(
                   labelText: 'calendar.event_type'.tr(),
                   border: const OutlineInputBorder(),
-                  prefixIcon: Icon(eventTypeIcon(_eventType)),
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.sm),
+                    child: eventTypeIconWidget(_eventType, size: 20),
+                  ),
                 ),
                 items: buildEventTypeItems(),
                 onChanged: (value) {

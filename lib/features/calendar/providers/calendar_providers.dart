@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart' show DateUtils;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
@@ -81,6 +80,17 @@ final eventsStreamProvider = StreamProvider.family<List<Event>, String>((
   return repo.watchAll(userId);
 });
 
+/// Normalizes a (possibly UTC) [DateTime] to the local-calendar day.
+///
+/// `DateUtils.dateOnly` keeps the original timezone, so a UTC event at
+/// 23:30Z would land on the wrong local day for positive-offset timezones.
+/// Converting to local first ensures the user-facing calendar grouping
+/// matches what they actually see on the clock.
+DateTime _localDateOnly(DateTime value) {
+  final local = value.toLocal();
+  return DateTime(local.year, local.month, local.day);
+}
+
 /// Events for the selected date.
 final eventsForSelectedDateProvider = Provider<List<Event>>((ref) {
   final userId = ref.watch(currentUserIdProvider);
@@ -88,11 +98,10 @@ final eventsForSelectedDateProvider = Provider<List<Event>>((ref) {
   final selectedDate = ref.watch(selectedDateProvider);
   final filter = ref.watch(calendarEventFilterProvider);
 
-  // IMPROVED: use DateUtils.dateOnly for cleaner date comparison
-  final selectedDay = DateUtils.dateOnly(selectedDate);
+  final selectedDay = _localDateOnly(selectedDate);
   return eventsAsync.whenData((events) {
         return filterCalendarEvents(events, filter).where((e) {
-          return DateUtils.dateOnly(e.eventDate) == selectedDay;
+          return _localDateOnly(e.eventDate) == selectedDay;
         }).toList();
       }).value ??
       [];
@@ -108,9 +117,9 @@ final eventsForMonthProvider =
       final events = filterCalendarEvents(eventsAsync.value ?? [], filter);
       final map = <DateTime, List<Event>>{};
       for (final event in events) {
-        final d = event.eventDate;
-        if (d.month == month.month && d.year == month.year) {
-          final key = DateTime(d.year, d.month, d.day);
+        final local = event.eventDate.toLocal();
+        if (local.month == month.month && local.year == month.year) {
+          final key = DateTime(local.year, local.month, local.day);
           map.putIfAbsent(key, () => []).add(event);
         }
       }
@@ -139,19 +148,21 @@ final eventsForWeekProvider = Provider<Map<DateTime, List<Event>>>((ref) {
   final filter = ref.watch(calendarEventFilterProvider);
 
   final events = filterCalendarEvents(eventsAsync.value ?? [], filter);
-  // Get Monday of the selected date's week (ISO 8601: Monday=1)
-  // Note: locale-aware firstDayOfWeek requires BuildContext; Monday-first
-  // is correct for TR/DE locales. Future: add firstDayOfWeek provider.
-  final monday = selectedDate.subtract(
-    Duration(days: (selectedDate.weekday - 1)),
-  );
+  // Get Monday of the selected date's week (ISO 8601: Monday=1).
+  // Locale-aware firstDayOfWeek requires BuildContext; Monday-first is
+  // correct for TR/DE locales. Future: add firstDayOfWeek provider.
+  // We build week keys via DateTime year/month/day arithmetic to avoid
+  // DST 23h/25h skew that `subtract`/`add(Duration(days:))` introduces.
+  final selectedLocal = selectedDate.toLocal();
+  final mondayY = selectedLocal.year;
+  final mondayM = selectedLocal.month;
+  final mondayD = selectedLocal.day - (selectedLocal.weekday - 1);
 
-  // IMPROVED: use DateUtils.dateOnly for consistent date comparison
   final map = <DateTime, List<Event>>{};
   for (var i = 0; i < 7; i++) {
-    final key = DateUtils.dateOnly(monday.add(Duration(days: i)));
+    final key = DateTime(mondayY, mondayM, mondayD + i);
     map[key] = events.where((e) {
-      return DateUtils.dateOnly(e.eventDate) == key;
+      return _localDateOnly(e.eventDate) == key;
     }).toList();
   }
   return map;

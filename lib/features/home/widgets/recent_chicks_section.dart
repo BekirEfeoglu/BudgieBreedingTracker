@@ -39,7 +39,7 @@ class RecentChicksSection extends ConsumerWidget {
           SectionHeader(
             title: 'home.recent_chicks'.tr(),
             icon: const AppIcon(AppIcons.chick),
-            onViewAll: () => context.go(AppRoutes.chicks),
+            onViewAll: () => context.push(AppRoutes.chicks),
           ),
           const SizedBox(height: AppSpacing.sm),
           if (chicks.isEmpty)

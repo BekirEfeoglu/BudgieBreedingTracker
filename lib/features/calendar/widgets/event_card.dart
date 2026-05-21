@@ -139,7 +139,7 @@ class _EventTypeIcon extends StatelessWidget {
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       ),
-      child: Icon(eventTypeIcon(type), size: 20, color: color),
+      child: Center(child: eventTypeIconWidget(type, size: 20, color: color)),
     );
   }
 }

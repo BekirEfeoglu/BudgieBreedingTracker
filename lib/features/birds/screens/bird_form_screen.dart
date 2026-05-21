@@ -299,8 +299,8 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
       final ok = await ImagePickerGuard.ensureWithinSizeLimit(context, picked);
       if (!ok || !mounted) return;
       setState(() => _photoFile = picked);
-    } catch (e) {
-      AppLogger.warning('Failed to pick bird form photo: $e');
+    } catch (e, st) {
+      AppLogger.error('Failed to pick bird form photo', e, st);
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
