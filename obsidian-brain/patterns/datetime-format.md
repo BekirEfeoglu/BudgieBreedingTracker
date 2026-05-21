@@ -51,6 +51,24 @@ int incubationDay(DateTime layDate, DateTime today) {
 today.difference(layDate).inDays + 1
 ```
 
+## DateUtils.dayDiff Helper (Canonical)
+
+All day-count math goes through `lib/core/utils/date_utils.dart` → `DateUtils.dayDiff(start, end)`. UTC-midnight normalization built in.
+
+```dart
+// Import MUST be prefixed — Flutter material exports its own DateUtils
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
+
+// CORRECT
+final age = date_utils.DateUtils.dayDiff(bird.birthDate!, DateTime.now());
+
+// WRONG — ambiguous_import, `flutter analyze` fails
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart';
+DateUtils.dayDiff(...)
+```
+
+Mixing both `DateUtils` classes in one file: prefix the local one, leave Flutter's unprefixed (see `calendar_providers.dart`).
+
 ## Notification Scheduling
 
 ```dart
@@ -69,9 +87,10 @@ Naive `DateTime` for scheduling → timezone bug. **Always `tz.TZDateTime`.**
 1. Naive `DateTime` for notification schedule (timezone bug)
 2. Local timezone written to Supabase (multi-device sync breaks)
 3. Hardcoded locale `DateFormat('dd.MM.yyyy')` (German format differs)
-4. `inDays` without UTC midnight normalize (23:59 → 0 days)
-5. UTC `DateTime` displayed directly (user expects local timezone)
-6. `.toIso8601String()` without `.toUtc()` first
+4. `inDays` without UTC midnight normalize (23:59 → 0 days) — use `date_utils.DateUtils.dayDiff(...)`
+5. `DateUtils` imported without prefix (collides with Flutter material — `as date_utils` required)
+6. UTC `DateTime` displayed directly (user expects local timezone)
+7. `.toIso8601String()` without `.toUtc()` first
 
 ## See Also
 

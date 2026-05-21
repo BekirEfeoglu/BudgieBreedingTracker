@@ -4,6 +4,11 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-05-21] rule | DateUtils import convention (prevent auto-audit regression)
+
+- `.claude/rules/datetime-format.md`: added `DateUtils.dayDiff` helper section with mandatory `as date_utils` import prefix (Flutter material exports its own `DateUtils`; unprefixed import → `ambiguous_import` analyze fail). Surfaced PR #80 root cause.
+- `obsidian-brain/patterns/datetime-format.md`: mirrored the same guidance + extended anti-pattern list (adds prefixed-import rule).
+
 ## [2026-05-21] sync | Stat drift sweep + pattern gap fixes
 
 - `overview.md`, `index.md`, `architecture/folder-structure.md`, `data-layer/drift.md`, `data-layer/migrations.md`, `data-layer/supabase.md`, `patterns/l10n.md`, `patterns/testing.md`: refreshed stats to match `verify_rules.py` baseline (schemaVersion 22→24, l10n 2,840→2,968, source 959→989, tests 886/10,884→901/11,016, migrations 156→158, domain services 21→23).

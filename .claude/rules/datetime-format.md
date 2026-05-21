@@ -86,6 +86,39 @@ await notifications.zonedSchedule(id, title, body, scheduled, details, ...);
 - Profil ayarında manuel timezone seçimi YOK (over-engineering)
 - Toplulukta cross-timezone post: server timestamp UTC, her kullanıcı kendi local'inde görür
 
+## DateUtils.dayDiff Helper
+
+Gün farkı hesabı her yerde `lib/core/utils/date_utils.dart` içindeki **`DateUtils.dayDiff(start, end)`** üzerinden geçer. UTC midnight'a normalize eder, DST sınırını saniyesinde geçer.
+
+```dart
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
+
+// CORRECT
+final age = date_utils.DateUtils.dayDiff(bird.birthDate!, DateTime.now());
+final remaining = date_utils.DateUtils.dayDiff(now, expectedHatch);
+
+// WRONG - DST sınırında 0 döner, breeding milestone bozar
+final age = DateTime.now().difference(bird.birthDate!).inDays;
+```
+
+### Import ZORUNLU prefix'li
+
+Flutter material kendi `DateUtils` sınıfını export ediyor (`flutter/src/material/date.dart`). Prefix'siz import `ambiguous_import` error verir ve `flutter analyze` kırılır:
+
+```dart
+// WRONG - ambiguous_import, CI Flutter Analyze fail
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart';
+DateUtils.dayDiff(...)  // Hangi DateUtils? Flutter mı, bizimki mi?
+
+// CORRECT - codebase convention
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
+date_utils.DateUtils.dayDiff(...)
+```
+
+Kanonik kullanım örnekleri: `egg_model.dart`, `chick_model.dart`, `incubation_model.dart`, `statistics_breeding_providers.dart`, `home_providers.dart`, `health_record_form_providers.dart`, `ai_sex_estimation_tab.dart`.
+
+Flutter material'in kendi `DateUtils.dateOnly` / `DateUtils.isSameDay` / `DateUtils.getDaysInMonth` çağrıları aynı dosyada lazımsa: bizim helper'ı prefix'le import et, material'inkini prefix'siz bırak (`calendar_providers.dart` örneği).
+
 ## Comparison Pitfalls
 ```dart
 // WRONG - mixed timezone comparison
@@ -141,10 +174,11 @@ test('storage uses UTC ISO string', () {
 1. Naive `DateTime` schedule (timezone bug — `tz.TZDateTime` zorunlu)
 2. Local timezone Supabase'e yazmak (multi-device sync bozulur)
 3. Hardcode locale `DateFormat('dd.MM.yyyy')` (Almanca farklı format ister)
-4. Saat dilimi atlamadan gün farkı hesabı (`inDays` 23:59'da 0 döner)
-5. UTC `DateTime`'ı UI'da olduğu gibi göstermek (kullanıcı kendi timezone'unu bekler)
-6. Profil'de manuel timezone alanı (over-engineering)
-7. `.toIso8601String()` kullanıp `.toUtc()` atlamak
-8. Incubation math'i floating-point veya saat-bazlı yapmak (sadece tarih kısmı)
+4. Saat dilimi atlamadan gün farkı hesabı (`inDays` 23:59'da 0 döner) — `date_utils.DateUtils.dayDiff(...)` kullan
+5. `DateUtils` prefix'siz import (Flutter material ile `ambiguous_import` — `as date_utils` zorunlu)
+6. UTC `DateTime`'ı UI'da olduğu gibi göstermek (kullanıcı kendi timezone'unu bekler)
+7. Profil'de manuel timezone alanı (over-engineering)
+8. `.toIso8601String()` kullanıp `.toUtc()` atlamak
+9. Incubation math'i floating-point veya saat-bazlı yapmak (sadece tarih kısmı)
 
 > **İlgili**: data-layer.md (.toSupabase), notifications.md (tz.TZDateTime schedule), localization.md (DateFormat locale), edge-functions.md (UTC wire)
