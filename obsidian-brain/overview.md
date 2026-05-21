@@ -77,7 +77,7 @@ Enforced by `scripts/verify_code_quality.py` (18 static checks + 6 extras). Key 
 | Metric | Value |
 |--------|-------|
 | Source files (lib/) | 989 Dart files |
-| Test files | 901 files, 11,016+ tests |
+| Test files | 901 files, 11,017+ tests |
 | Feature modules | 25 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
