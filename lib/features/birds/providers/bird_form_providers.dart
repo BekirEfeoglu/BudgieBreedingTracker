@@ -63,7 +63,16 @@ class BirdFormNotifier extends Notifier<BirdFormState>
   /// Soft-deletes a bird.
   Future<void> deleteBird(String id) async {
     if (state.isLoading) return;
-    state = state.copyWith(isLoading: true, error: null);
+    // Reset isSuccess / isBirdLimitReached on every action start so the
+    // form/detail screen listeners don't re-fire stale "saved successfully"
+    // toasts or limit dialogs from the previous action — see bulk-amplifier
+    // bug in the post-fix audit.
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      isSuccess: false,
+      isBirdLimitReached: false,
+    );
     try {
       final repo = ref.read(birdRepositoryProvider);
       await repo.remove(id);
@@ -78,7 +87,16 @@ class BirdFormNotifier extends Notifier<BirdFormState>
   /// Marks a bird as dead.
   Future<void> markAsDead(String id, {DateTime? deathDate}) async {
     if (state.isLoading) return;
-    state = state.copyWith(isLoading: true, error: null);
+    // Reset isSuccess / isBirdLimitReached on every action start so the
+    // form/detail screen listeners don't re-fire stale "saved successfully"
+    // toasts or limit dialogs from the previous action — see bulk-amplifier
+    // bug in the post-fix audit.
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      isSuccess: false,
+      isBirdLimitReached: false,
+    );
     try {
       final repo = ref.read(birdRepositoryProvider);
       final bird = await repo.getById(id);
@@ -105,7 +123,16 @@ class BirdFormNotifier extends Notifier<BirdFormState>
   /// Marks a bird as sold.
   Future<void> markAsSold(String id, {DateTime? soldDate}) async {
     if (state.isLoading) return;
-    state = state.copyWith(isLoading: true, error: null);
+    // Reset isSuccess / isBirdLimitReached on every action start so the
+    // form/detail screen listeners don't re-fire stale "saved successfully"
+    // toasts or limit dialogs from the previous action — see bulk-amplifier
+    // bug in the post-fix audit.
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      isSuccess: false,
+      isBirdLimitReached: false,
+    );
     try {
       final repo = ref.read(birdRepositoryProvider);
       final bird = await repo.getById(id);
@@ -132,7 +159,16 @@ class BirdFormNotifier extends Notifier<BirdFormState>
   /// Marks a bird as gifted.
   Future<void> markAsGifted(String id, {DateTime? giftedDate}) async {
     if (state.isLoading) return;
-    state = state.copyWith(isLoading: true, error: null);
+    // Reset isSuccess / isBirdLimitReached on every action start so the
+    // form/detail screen listeners don't re-fire stale "saved successfully"
+    // toasts or limit dialogs from the previous action — see bulk-amplifier
+    // bug in the post-fix audit.
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      isSuccess: false,
+      isBirdLimitReached: false,
+    );
     try {
       final repo = ref.read(birdRepositoryProvider);
       final bird = await repo.getById(id);

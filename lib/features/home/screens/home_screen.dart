@@ -23,6 +23,7 @@ import 'package:budgie_breeding_tracker/features/home/widgets/sync_status_bar.da
 import 'package:budgie_breeding_tracker/features/home/widgets/unweaned_alert_banner.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/welcome_header.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart' show SyncResult;
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_brand_title.dart';
 import 'package:budgie_breeding_tracker/shared/widgets/app_shell.dart';
@@ -77,18 +78,31 @@ class HomeScreen extends ConsumerWidget {
         ),
         body: RefreshIndicator(
           onRefresh: () async {
-            // Capture ScaffoldMessenger before async gap
+            // Capture ScaffoldMessenger before any async gap.
             final messenger = ScaffoldMessenger.of(context);
+            SyncResult result;
             try {
-              // Full sync with server (reconciles hard-deleted records)
-              await ref.read(syncOrchestratorProvider).forceFullSync();
-              ref.invalidate(dashboardStatsProvider(userId));
-              ref.invalidate(recentChicksProvider(userId));
-              ref.invalidate(chickParentsByEggProvider(userId));
-              ref.invalidate(activeBreedingsForDashboardProvider(userId));
-              ref.invalidate(unweanedChicksCountProvider(userId));
-              ref.invalidate(incubatingEggsSummaryProvider(userId));
-              if (context.mounted) {
+              // SyncOrchestrator catches its own errors and returns the
+              // typed SyncResult; the catch here only fires on a bug
+              // above the orchestrator boundary.
+              result = await ref
+                  .read(syncOrchestratorProvider)
+                  .forceFullSync();
+            } catch (e, st) {
+              AppLogger.error('[HomeScreen] forceFullSync failed', e, st);
+              result = SyncResult.error;
+            }
+            // Refresh display providers regardless of result — on error
+            // the orchestrator may still have applied a partial pull.
+            ref.invalidate(dashboardStatsProvider(userId));
+            ref.invalidate(recentChicksProvider(userId));
+            ref.invalidate(chickParentsByEggProvider(userId));
+            ref.invalidate(activeBreedingsForDashboardProvider(userId));
+            ref.invalidate(unweanedChicksCountProvider(userId));
+            ref.invalidate(incubatingEggsSummaryProvider(userId));
+            if (!context.mounted) return;
+            switch (result) {
+              case SyncResult.success:
                 messenger.showSnackBar(
                   SnackBar(
                     content: Text('sync.synced'.tr()),
@@ -96,13 +110,7 @@ class HomeScreen extends ConsumerWidget {
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
-              }
-            } catch (e, st) {
-              // forceFullSync's exception was previously silently swallowed
-              // by the RefreshIndicator, leaving the user without feedback
-              // on transient sync failures.
-              AppLogger.error('[HomeScreen] forceFullSync failed', e, st);
-              if (context.mounted) {
+              case SyncResult.error:
                 messenger.showSnackBar(
                   SnackBar(
                     content: Text('common.data_load_error'.tr()),
@@ -110,7 +118,11 @@ class HomeScreen extends ConsumerWidget {
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
-              }
+              case SyncResult.throttled:
+              case SyncResult.alreadySyncing:
+                // No toast: the user just triggered a cool-down/duplicate;
+                // surface nothing rather than confusingly saying "synced".
+                break;
             }
           },
           child: SingleChildScrollView(

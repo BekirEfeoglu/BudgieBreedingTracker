@@ -31,7 +31,11 @@ void main() {
 
     return ProviderScope(
       overrides: [
+        // Banner now reads effectivePremiumProvider so grace-period
+        // subscribers don't see the "approaching limit" CTA. Override
+        // both for compatibility with tests that only check the boolean.
         isPremiumProvider.overrideWithValue(isPremium),
+        effectivePremiumProvider.overrideWithValue(isPremium),
         birdCountProvider(
           testUserId,
         ).overrideWith((_) => Stream.value(birdCount)),

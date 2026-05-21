@@ -441,6 +441,12 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
   /// (hatched / unsuccessful) is implicit in the egg statuses; we just
   /// flip the parent so it stops counting against free-tier limits and
   /// the UI stops showing it as in-progress.
+  ///
+  /// When this is the parent pair's last active incubation, the pair
+  /// itself transitions to `completed`/`cancelled` too so the dashboard
+  /// stops showing the pair as active and `guardBreedingPairLimit` no
+  /// longer counts it (was stranding free-tier users with no remaining
+  /// pair slots even after all their eggs hatched out).
   Future<void> _completeIncubationIfAllEggsTerminal(Egg trigger) async {
     final incubationId = trigger.incubationId;
     if (incubationId == null) return;
@@ -458,15 +464,71 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
 
     final anyHatched =
         siblings.any((e) => e.status == EggStatus.hatched);
+    final now = DateTime.now();
+    final newIncubationStatus = anyHatched
+        ? IncubationStatus.completed
+        : IncubationStatus.cancelled;
     await incubationRepo.save(
       incubation.copyWith(
-        status: anyHatched
-            ? IncubationStatus.completed
-            : IncubationStatus.cancelled,
-        endDate: incubation.endDate ?? DateTime.now(),
-        updatedAt: DateTime.now(),
+        status: newIncubationStatus,
+        endDate: incubation.endDate ?? now,
+        updatedAt: now,
       ),
     );
+
+    await _flipPairIfNoActiveIncubations(
+      breedingPairId: incubation.breedingPairId,
+      anyHatched: anyHatched,
+      now: now,
+    );
+  }
+
+  /// Flips the parent pair to `completed`/`cancelled` once all of its
+  /// incubations have closed out. Stays `active` while any incubation is
+  /// still in flight (multi-clutch pairs continue normally).
+  Future<void> _flipPairIfNoActiveIncubations({
+    required String? breedingPairId,
+    required bool anyHatched,
+    required DateTime now,
+  }) async {
+    if (breedingPairId == null) return;
+    try {
+      final incubationRepo = ref.read(incubationRepositoryProvider);
+      final pairRepo = ref.read(breedingPairRepositoryProvider);
+
+      final siblingIncubations =
+          await incubationRepo.getByBreedingPairIds([breedingPairId]);
+      final anyActive = siblingIncubations.any(
+        (inc) => inc.status == IncubationStatus.active,
+      );
+      if (anyActive) return;
+
+      final pair = await pairRepo.getById(breedingPairId);
+      if (pair == null) return;
+      if (pair.status != BreedingStatus.active &&
+          pair.status != BreedingStatus.ongoing) {
+        return;
+      }
+      final anyIncubationHatched = anyHatched ||
+          siblingIncubations.any(
+            (inc) => inc.status == IncubationStatus.completed,
+          );
+      await pairRepo.save(
+        pair.copyWith(
+          status: anyIncubationHatched
+              ? BreedingStatus.completed
+              : BreedingStatus.cancelled,
+          separationDate: pair.separationDate ?? now,
+          updatedAt: now,
+        ),
+      );
+    } catch (e, st) {
+      AppLogger.warning(
+        'Failed to flip parent pair $breedingPairId after incubation '
+        'completion: $e',
+      );
+      AppLogger.error('EggActionsNotifier._flipPair', e, st);
+    }
   }
 
   /// Soft-deletes an egg.

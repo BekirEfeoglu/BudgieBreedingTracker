@@ -71,9 +71,20 @@ class _DetailContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final incubationsAsync = ref.watch(incubationsByPairProvider(pair.id));
 
-    // Side effects: success after complete/cancel/delete → pop + snackbar
+    // Side effects: success after complete/cancel/delete → pop + snackbar.
+    // Partial-cascade warning shown ahead of the success pop so the user
+    // sees it before the screen closes.
     ref.listen<BreedingFormState>(breedingFormStateProvider, (prev, state) {
       if (!context.mounted) return;
+      if (state.warning != null && prev?.warning != state.warning) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(state.warning!),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
       if (state.isSuccess && !(prev?.isSuccess ?? false)) {
         ref.read(breedingFormStateProvider.notifier).reset();
         ActionFeedbackService.show('common.saved_successfully'.tr());

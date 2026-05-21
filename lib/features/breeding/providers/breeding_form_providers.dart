@@ -116,6 +116,13 @@ final breedingFormStateProvider =
     );
 
 class BreedingFormState {
+  // Sentinel marker that lets [copyWith] distinguish "field not provided"
+  // (preserve current value) from "explicit null" (clear the field).
+  // Without this, every `copyWith(isLoading: true)` was silently nulling
+  // any pending `error` / `warning` because the parameters defaulted to
+  // null and the body assigned them directly.
+  static const Object _unset = Object();
+
   final bool isLoading;
   final String? error;
   final String? warning;
@@ -134,17 +141,20 @@ class BreedingFormState {
 
   BreedingFormState copyWith({
     bool? isLoading,
-    String? error,
-    String? warning,
+    Object? error = _unset,
+    Object? warning = _unset,
     bool? isSuccess,
     bool? isBreedingLimitReached,
     bool? isIncubationLimitReached,
   }) {
     return BreedingFormState(
       isLoading: isLoading ?? this.isLoading,
-      error: error,
-      warning: warning,
+      error: identical(error, _unset) ? this.error : error as String?,
+      warning: identical(warning, _unset) ? this.warning : warning as String?,
       isSuccess: isSuccess ?? this.isSuccess,
+      // Limit reach flags remain transient by design: setters pass true
+      // explicitly, omission resets to false. The form screen listener
+      // calls `reset()` once the dialog is shown.
       isBreedingLimitReached: isBreedingLimitReached ?? false,
       isIncubationLimitReached: isIncubationLimitReached ?? false,
     );

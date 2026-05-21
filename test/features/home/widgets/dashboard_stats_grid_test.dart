@@ -41,7 +41,13 @@ Widget _createSubject({DashboardStats? stats, bool isPremium = false}) {
   );
 
   return ProviderScope(
-    overrides: [isPremiumProvider.overrideWithValue(isPremium)],
+    overrides: [
+      // DashboardStatsGrid now reads effectivePremiumProvider so grace-period
+      // subscribers see unlimited counts. Override both for tests that only
+      // care about the boolean.
+      isPremiumProvider.overrideWithValue(isPremium),
+      effectivePremiumProvider.overrideWithValue(isPremium),
+    ],
     child: MaterialApp.router(routerConfig: router),
   );
 }

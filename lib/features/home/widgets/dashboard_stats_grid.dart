@@ -21,7 +21,9 @@ class DashboardStatsGrid extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isPremium = ref.watch(isPremiumProvider);
+    // effectivePremiumProvider includes grace-period subscribers so they
+    // see unlimited counts (consistent with /more's premium tile gating).
+    final isPremium = ref.watch(effectivePremiumProvider);
 
     final birdValue = isPremium
         ? '${stats.totalBirds}'

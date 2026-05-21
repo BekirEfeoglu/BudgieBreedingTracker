@@ -105,7 +105,11 @@ extension BreedingFormActions on BreedingFormNotifier {
       // Detach chicks from soon-to-be-deleted eggs/clutches so they survive
       // as standalone records. Chicks are live entities with their own
       // lifecycle — losing them on parent-pair delete would be data loss.
+      // If detach fails for a chick we MUST NOT delete its parent egg —
+      // otherwise the chick row is left referencing a soft-deleted egg
+      // (dangling FK that re-asserts on next sync pull).
       final eggIds = eggs.map((e) => e.id).toList();
+      final blockedEggIds = <String>{};
       if (eggIds.isNotEmpty) {
         try {
           final chicks = await chickRepo.getByEggIds(eggIds);
@@ -113,22 +117,35 @@ extension BreedingFormActions on BreedingFormNotifier {
             final now = DateTime.now();
             final results = await Future.wait(
               chicks.map(
-                (chick) => chickRepo
-                    .save(
+                (chick) async {
+                  try {
+                    await chickRepo.save(
                       chick.copyWith(
                         eggId: null,
                         clutchId: null,
                         updatedAt: now,
                       ),
-                    )
-                    .then<Object?>((_) => null)
-                    .catchError((Object e, StackTrace st) {
-                      AppLogger.warning(
-                        'Failed to detach chick ${chick.id} during cascade '
-                        'delete of pair $id: $e',
-                      );
-                      return e;
-                    }),
+                    );
+                    return null;
+                  } catch (e, st) {
+                    AppLogger.warning(
+                      'Failed to detach chick ${chick.id} during cascade '
+                      'delete of pair $id: $e',
+                    );
+                    AppLogger.error(
+                      'BreedingFormNotifier.deleteBreeding.detach',
+                      e,
+                      st,
+                    );
+                    // Remember which egg still has a live chick reference;
+                    // we skip its removal below to avoid dangling FK.
+                    final blockedEggId = chick.eggId;
+                    if (blockedEggId != null) {
+                      blockedEggIds.add(blockedEggId);
+                    }
+                    return e;
+                  }
+                },
               ),
               eagerError: false,
             );
@@ -138,21 +155,57 @@ extension BreedingFormActions on BreedingFormNotifier {
           AppLogger.warning('Chick detach phase failed for pair $id: $e');
           AppLogger.error('BreedingFormNotifier.deleteBreeding', e, st);
           partial = true;
+          // Defensive: any partial-listing failure also blocks egg deletion
+          // so we don't strand chicks we never inspected.
+          blockedEggIds.addAll(eggIds);
         }
       }
 
+      final eggsToRemove = blockedEggIds.isEmpty
+          ? eggs
+          : eggs.where((egg) => !blockedEggIds.contains(egg.id)).toList();
+      if (eggsToRemove.length != eggs.length) partial = true;
+
+      // Incubations whose eggs we skipped must also be skipped, otherwise
+      // the surviving egg.incubationId points to a soft-deleted parent —
+      // same dangling-FK pattern as the chick case above.
+      final blockedIncubationIds = <String>{
+        for (final egg in eggs)
+          if (blockedEggIds.contains(egg.id) && egg.incubationId != null)
+            egg.incubationId!,
+      };
+      final incubationsToRemove = blockedIncubationIds.isEmpty
+          ? incubations
+          : incubations
+              .where((inc) => !blockedIncubationIds.contains(inc.id))
+              .toList();
+      if (incubationsToRemove.length != incubations.length) partial = true;
+
       partial = await _removeAllResilient(
-            entities: eggs,
+            entities: eggsToRemove,
             label: 'egg',
             remove: (egg) => eggRepo.remove(egg.id),
           ) ||
           partial;
       partial = await _removeAllResilient(
-            entities: incubations,
+            entities: incubationsToRemove,
             label: 'incubation',
             remove: (inc) => incubationRepo.remove(inc.id),
           ) ||
           partial;
+
+      // If any child is still live, block the pair remove too — otherwise
+      // the surviving incubation.breedingPairId dangles. Surface a clear
+      // warning so the user knows to retry once children clear.
+      if (blockedIncubationIds.isNotEmpty || blockedEggIds.isNotEmpty) {
+        state = state.copyWith(
+          isLoading: false,
+          isSuccess: false,
+          warning: 'errors.background_tasks_partial'.tr(),
+          error: 'errors.delete_failed'.tr(),
+        );
+        return;
+      }
 
       try {
         await pairRepo.remove(id);

@@ -20,6 +20,12 @@ class BreedingNotificationHelper {
 
   /// Cancels incubation milestone and egg turning notifications
   /// associated with a breeding pair.
+  ///
+  /// Egg-turning IDs are derived from `NotificationIds.generate(...)` with
+  /// per-species `days × turningHours` ranges; cancelling under the default
+  /// `Species.unknown` would target a different ID range than the one
+  /// originally scheduled (non-budgie species leak reminders). Resolve the
+  /// real species per incubation/egg before cancelling.
   Future<void> cancelBreedingNotifications(
     String breedingPairId, {
     List<Incubation>? incubations,
@@ -42,13 +48,26 @@ class BreedingNotificationHelper {
         ),
       );
 
-      // Keep legacy cancellation by incubationId and cancel proper eggId-based schedules.
-      final turningReminderIds = <String>{
-        for (final incubation in loadedIncubations) incubation.id,
-        for (final egg in loadedEggs) egg.id,
-      };
+      // Build (id, species) pairs so each cancel call uses the same
+      // species/day-count that was used at schedule time. Eggs inherit
+      // their parent incubation's species — falls back to unknown only
+      // when the incubation itself records unknown.
+      final speciesById = <String, Species>{};
+      for (final incubation in loadedIncubations) {
+        speciesById[incubation.id] = incubation.species;
+      }
+      for (final egg in loadedEggs) {
+        final parentSpecies =
+            egg.incubationId != null ? speciesById[egg.incubationId!] : null;
+        speciesById[egg.id] = parentSpecies ?? Species.unknown;
+      }
       await Future.wait(
-        turningReminderIds.map((id) => scheduler.cancelEggTurningReminders(id)),
+        speciesById.entries.map(
+          (entry) => scheduler.cancelEggTurningReminders(
+            entry.key,
+            species: entry.value,
+          ),
+        ),
       );
     } catch (e) {
       AppLogger.warning('Failed to cancel breeding notifications: $e');
@@ -99,7 +118,13 @@ class BreedingNotificationHelper {
         message.contains('provider that is in error state');
   }
 
-  /// Schedules incubation milestone and egg turning notifications.
+  /// Schedules incubation milestone notifications for a new breeding pair.
+  ///
+  /// **Egg-turning reminders are NOT scheduled here.** They belong to a
+  /// specific egg and are scheduled by `EggActionsNotifier.addEgg` once a
+  /// real egg exists. Scheduling turning reminders under the incubation ID
+  /// before any egg is laid would surface "turn egg" notifications every
+  /// 4 hours for the full incubation window with no egg to actually turn.
   ///
   /// Returns a [Future] so callers can await side-effect completion. Failure
   /// is logged but never rethrown — schedulers are best-effort and must not
@@ -121,14 +146,6 @@ class BreedingNotificationHelper {
         incubationId: incubationId,
         startDate: pairingDate,
         label: pairLabel,
-        species: species,
-        settings: settings,
-      );
-
-      await scheduler.scheduleEggTurningReminders(
-        eggId: incubationId,
-        startDate: pairingDate,
-        eggLabel: pairLabel,
         species: species,
         settings: settings,
       );

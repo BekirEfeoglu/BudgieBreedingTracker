@@ -128,8 +128,17 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
     final femaleBirds = ref.watch(femaleBirdsProvider(userId));
     final formState = ref.watch(breedingFormStateProvider);
 
-    ref.listen<BreedingFormState>(breedingFormStateProvider, (_, state) {
+    ref.listen<BreedingFormState>(breedingFormStateProvider, (prev, state) {
       if (!mounted) return;
+      if (state.warning != null && prev?.warning != state.warning) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(state.warning!),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
       if (state.isSuccess) {
         _savedSuccessfully = true;
         ref.read(breedingFormStateProvider.notifier).reset();

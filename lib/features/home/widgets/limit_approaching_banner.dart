@@ -18,7 +18,10 @@ class LimitApproachingBanner extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isPremium = ref.watch(isPremiumProvider);
+    // effectivePremiumProvider includes grace-period subscribers so the
+    // "approaching free-tier limit" banner doesn't reappear during their
+    // renewal grace window.
+    final isPremium = ref.watch(effectivePremiumProvider);
     if (isPremium) return const SizedBox.shrink();
 
     // IMPROVED: use .select() to only rebuild when the resolved count changes
