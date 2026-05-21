@@ -1040,7 +1040,9 @@ void main() {
 
       final captured =
           verify(() => repo.save(captureAny())).captured.single as Bird;
-      expect(captured.deathDate, deathDate);
+      // Wave 1 audit normalizes timestamps to UTC at the boundary, so
+      // the saved row stores `deathDate.toUtc()`.
+      expect(captured.deathDate, deathDate.toUtc());
     });
 
     test('sets error when bird not found', () async {
@@ -1127,7 +1129,7 @@ void main() {
 
       final captured =
           verify(() => repo.save(captureAny())).captured.single as Bird;
-      expect(captured.soldDate, soldDate);
+      expect(captured.soldDate, soldDate.toUtc());
     });
 
     test('sets error when bird not found', () async {
@@ -1212,7 +1214,7 @@ void main() {
 
       final captured =
           verify(() => repo.save(captureAny())).captured.single as Bird;
-      expect(captured.soldDate, giftedDate);
+      expect(captured.soldDate, giftedDate.toUtc());
     });
   });
 

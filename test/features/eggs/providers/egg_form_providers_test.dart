@@ -100,10 +100,14 @@ void main() {
       ),
     ).thenAnswer((_) async {});
 
+    // Wave 1 audit (K11) added ownership validation in addEgg: the
+    // notifier verifies incubation.userId == currentUserId before save.
+    // Match the userId override below ('test-user') so the validation
+    // passes for the happy-path tests.
     when(() => incubationRepo.getById(any())).thenAnswer(
       (_) async => const Incubation(
         id: 'inc-1',
-        userId: 'user-1',
+        userId: 'test-user',
         breedingPairId: 'pair-1',
       ),
     );
@@ -298,7 +302,12 @@ void main() {
 
     test('uses unknown species when incubation cannot be resolved', () async {
       when(() => eggRepo.save(any())).thenAnswer((_) async {});
-      when(() => incubationRepo.getById(any())).thenAnswer((_) async => null);
+      // K11 ownership validation rejects when incubation.userId !=
+      // currentUserId, so we keep the incubation present but break the
+      // breeding-pair lookup so species resolution falls back to unknown.
+      when(() => breedingPairRepo.getById(any())).thenAnswer(
+        (_) async => null,
+      );
 
       final container = makeContainer();
       addTearDown(container.dispose);
@@ -306,7 +315,7 @@ void main() {
       await container
           .read(eggActionsProvider.notifier)
           .addEgg(
-            incubationId: 'missing-incubation',
+            incubationId: 'inc-1',
             layDate: DateTime(2024, 1, 10),
             eggNumber: 1,
           );

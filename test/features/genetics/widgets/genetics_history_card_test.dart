@@ -86,7 +86,11 @@ void main() {
           ),
         ),
       );
-      expect(find.text('10.03.2025 09:05'), findsOneWidget);
+      // Wave 1 audit replaced the hardcoded `dd.MM.yyyy HH:mm` pattern
+      // with locale-aware DateFormat. Exact rendering varies per locale;
+      // assert year + hour:minute substrings instead.
+      expect(find.textContaining('2025'), findsAtLeastNWidgets(1));
+      expect(find.textContaining('09:05'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows clock icon in header', (tester) async {

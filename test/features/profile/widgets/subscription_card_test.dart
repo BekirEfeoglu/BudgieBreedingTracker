@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/subscription_card.dart';
 
 import '../../../helpers/test_localization.dart';
 
-Widget _wrap(Widget child) {
+/// Wraps in MaterialApp.router + ProviderScope with a stub
+/// `effectivePremiumProvider` override. After Wave 1 audit
+/// SubscriptionCard is a ConsumerWidget that reads this provider so
+/// grace-period subscribers retain premium UI.
+Widget _wrap(Widget child, {bool isPremium = false}) {
   final router = GoRouter(
     initialLocation: '/',
     routes: [
@@ -23,7 +29,12 @@ Widget _wrap(Widget child) {
       ),
     ],
   );
-  return MaterialApp.router(routerConfig: router);
+  return ProviderScope(
+    overrides: [
+      effectivePremiumProvider.overrideWithValue(isPremium),
+    ],
+    child: MaterialApp.router(routerConfig: router),
+  );
 }
 
 void main() {
@@ -86,9 +97,15 @@ void main() {
         createdAt: DateTime(2024, 1, 1),
       );
 
-      await pumpLocalizedApp(tester, _wrap(SubscriptionCard(profile: profile)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(SubscriptionCard(profile: profile), isPremium: true),
+      );
 
-      expect(find.text(l10n('profile.subscription_active')), findsAtLeastNWidgets(1));
+      expect(
+        find.text(l10n('profile.subscription_active')),
+        findsAtLeastNWidgets(1),
+      );
     });
 
     testWidgets('shows manage button for premium user', (tester) async {
@@ -100,7 +117,10 @@ void main() {
         createdAt: DateTime(2024, 1, 1),
       );
 
-      await pumpLocalizedApp(tester, _wrap(SubscriptionCard(profile: profile)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(SubscriptionCard(profile: profile), isPremium: true),
+      );
 
       expect(find.text(l10n('profile.subscription_manage')), findsOneWidget);
     });
@@ -116,7 +136,10 @@ void main() {
         createdAt: DateTime(2024, 1, 1),
       );
 
-      await pumpLocalizedApp(tester, _wrap(SubscriptionCard(profile: profile)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(SubscriptionCard(profile: profile), isPremium: true),
+      );
 
       // 'profile.subscription_days_remaining' should be present
       expect(

@@ -137,9 +137,13 @@ void main() {
 
     testWidgets('shows formatted date when createdAt is set', (tester) async {
       final entry = _makeEntry(createdAt: DateTime(2024, 6, 15, 10, 30));
-      await pumpLocalizedApp(tester,buildSubject(entry));
-      // Expect date formatted as "15.06.2024 10:30"
-      expect(find.text('15.06.2024 10:30'), findsAtLeastNWidgets(1));
+      await pumpLocalizedApp(tester, buildSubject(entry));
+      // Wave 1 audit replaced the hardcoded `dd.MM.yyyy HH:mm` pattern
+      // with locale-aware DateFormat.yMd + Hm. The exact rendering varies
+      // per locale; assert year + hour show up rather than a strict
+      // format to stay locale-resilient.
+      expect(find.textContaining('2024'), findsAtLeastNWidgets(1));
+      expect(find.textContaining('10:30'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('does not crash when createdAt is null', (tester) async {

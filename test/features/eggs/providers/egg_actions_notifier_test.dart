@@ -134,10 +134,12 @@ void main() {
       ),
     ).thenAnswer((_) async {});
 
+    // Wave 1 audit (K11) added ownership validation: incubation.userId
+    // must match currentUserId. The override below sets 'test-user'.
     when(() => incubationRepo.getById(any())).thenAnswer(
       (_) async => const Incubation(
         id: 'inc-1',
-        userId: 'user-1',
+        userId: 'test-user',
         breedingPairId: 'pair-1',
       ),
     );

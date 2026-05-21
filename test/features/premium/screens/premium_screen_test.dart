@@ -12,7 +12,11 @@ void main() {
     return ProviderScope(
       overrides: [
         currentUserIdProvider.overrideWithValue(userId),
+        // Wave 1 audit: PremiumScreen now reads `effectivePremiumProvider`
+        // so grace-period subscribers see their active premium UI rather
+        // than the paywall. Override both for safety.
         isPremiumProvider.overrideWithValue(isPremium),
+        effectivePremiumProvider.overrideWithValue(isPremium),
         purchaseActionProvider.overrideWith(() => PurchaseActionNotifier()),
         premiumPurchaseIssueProvider.overrideWithValue(null),
         // Offerings: empty list (no RevenueCat in tests)

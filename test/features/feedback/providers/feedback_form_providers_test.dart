@@ -249,10 +249,12 @@ void main() {
       // First: loading
       expect(states.first.isLoading, isTrue);
 
-      // Last: error
+      // Last: error. Wave 2 audit replaced raw e.toString() with a
+      // localizable error key so the UI never surfaces vendor text.
+      // 'Network failure' triggers the network branch.
       expect(states.last.isLoading, isFalse);
       expect(states.last.isSuccess, isFalse);
-      expect(states.last.error, 'Exception: Network failure');
+      expect(states.last.error, 'errors.network_unavailable');
     });
 
     test('reset clears state', () async {

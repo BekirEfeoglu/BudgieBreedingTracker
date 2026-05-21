@@ -98,9 +98,13 @@ void main() {
 
     testWidgets('shows formatted date for old entry', (tester) async {
       final entry = _makeEntry(createdAt: DateTime(2023, 1, 5));
-      await pumpLocalizedApp(tester,buildSubject(entry));
-      // Older than 7 days → formatted as "05.01.2023"
-      expect(find.text('05.01.2023'), findsAtLeastNWidgets(1));
+      await pumpLocalizedApp(tester, buildSubject(entry));
+      // Older than 7 days → formatted via locale-aware DateFormat.yMd.
+      // Wave 1 audit replaced the hardcoded `dd.MM.yyyy` pattern. The TR
+      // locale renders as `5.01.2023` (single-digit day, no zero pad),
+      // EN as `1/5/2023`. We assert the year is present rather than a
+      // specific format to stay locale-resilient.
+      expect(find.textContaining('2023'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('tapping card opens FeedbackDetailSheet bottom sheet', (

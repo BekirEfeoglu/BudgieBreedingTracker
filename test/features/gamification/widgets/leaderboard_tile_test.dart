@@ -64,7 +64,13 @@ void main() {
       expect(find.text('Expert Breeder'), findsOneWidget);
     });
 
-    testWidgets('shows level fallback when title is empty', (tester) async {
+    testWidgets('shows level fallback key when title is empty', (
+      tester,
+    ) async {
+      // After Wave 1 audit (UUID-PII fix): empty title falls back to the
+      // localized `gamification.level` key. In tests easy_localization
+      // isn't initialized so .tr() returns the bare key; the `{}` placeholder
+      // is only substituted when the localized value contains it.
       const noTitleLevel = UserLevel(
         id: 'ul2',
         userId: 'abcdefgh-5678',
@@ -81,10 +87,13 @@ void main() {
         ),
       );
 
-      expect(find.text('Lv.3'), findsOneWidget);
+      expect(find.text('gamification.level'), findsOneWidget);
     });
 
-    testWidgets('displays userId prefix', (tester) async {
+    testWidgets('does not display raw user UUID (PII)', (tester) async {
+      // Wave 1 audit: surfacing the UUID prefix as a "name" leaked user
+      // identifiers; widget now renders 'community.anonymous_user' until
+      // the leaderboard query joins profiles.display_name.
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -93,7 +102,7 @@ void main() {
         ),
       );
 
-      expect(find.text('abcdefgh'), findsOneWidget);
+      expect(find.text('abcdefgh'), findsNothing);
     });
   });
 }
