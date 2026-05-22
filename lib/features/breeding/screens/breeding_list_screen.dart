@@ -14,7 +14,6 @@ import 'package:budgie_breeding_tracker/core/widgets/sort_bottom_sheet.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/fab_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/ad_banner_widget.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
-import 'package:budgie_breeding_tracker/domain/services/breeding/incubation_risk_assistant.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
@@ -141,15 +140,13 @@ class BreedingListScreen extends ConsumerWidget {
                   incubationByPairMapProvider(userId),
                 );
                 final eggMap = ref.watch(eggsByIncubationMapProvider(userId));
-                final riskSummaryAsync = ref.watch(
-                  incubationRiskSummaryProvider(userId),
-                );
-                IncubationRiskSummary? riskSummary;
-                riskSummaryAsync.when(
-                  data: (summary) => riskSummary = summary,
-                  loading: () {},
-                  error: (_, __) {},
-                );
+                // Use AsyncValue.value (T?) instead of .when with a
+                // side-effect-assigning data callback — loading/error keep
+                // the card hidden, data populates it. Equivalent semantics,
+                // less moving parts to misread.
+                final riskSummary = ref
+                    .watch(incubationRiskSummaryProvider(userId))
+                    .value;
                 final hasRiskCard = riskSummary != null;
 
                 return Center(
@@ -172,7 +169,7 @@ class BreedingListScreen extends ConsumerWidget {
                         itemBuilder: (context, index) {
                           if (hasRiskCard && index == 0) {
                             return IncubationRiskCard(
-                              risks: riskSummary!.topRisks(limit: 3),
+                              risks: riskSummary.topRisks(limit: 3),
                             );
                           }
                           final pair = pairs[index - (hasRiskCard ? 1 : 0)];

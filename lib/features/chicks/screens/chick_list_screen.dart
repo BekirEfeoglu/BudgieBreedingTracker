@@ -20,6 +20,7 @@ import 'package:budgie_breeding_tracker/domain/services/premium/premium_provider
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_card.dart';
 import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_filter_bar.dart';
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_search_bar.dart';
@@ -86,27 +87,10 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
       isDestructive: true,
     );
     if (confirmed != true || !mounted) return;
-
-    final notifier = ref.read(chickFormStateProvider.notifier);
-    final failures = <String>[];
-    for (final id in _selectedIds.toList()) {
-      if (!mounted) return;
-      try {
-        await notifier.deleteChick(id);
-      } catch (_) {
-        failures.add(id);
-      }
-    }
-    if (!mounted) return;
-    if (failures.isEmpty) {
-      _clearSelection();
-    } else {
-      setState(() {
-        _selectedIds
-          ..clear()
-          ..addAll(failures);
-      });
-    }
+    await _runBulkAction(
+      action: (notifier, id) => notifier.deleteChick(id),
+      logTag: 'bulkDelete',
+    );
   }
 
   Future<void> _bulkMarkAsDeceased() async {
@@ -118,26 +102,66 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
       isDestructive: true,
     );
     if (confirmed != true || !mounted) return;
+    await _runBulkAction(
+      action: (notifier, id) => notifier.markAsDeceased(id),
+      logTag: 'bulkMarkAsDeceased',
+    );
+  }
 
+  /// Runs [action] for every selected chick, collects per-item failures, and
+  /// surfaces success/partial-failure feedback via SnackBar so the user
+  /// knows the operation outcome instead of seeing the selection silently
+  /// clear (or partially clear) with no explanation. Mirrors the
+  /// BirdListScreen pattern for cross-screen UX consistency.
+  Future<void> _runBulkAction({
+    required Future<void> Function(dynamic notifier, String id) action,
+    required String logTag,
+  }) async {
+    final total = _selectedIds.length;
+    if (total == 0) return;
+    final messenger = ScaffoldMessenger.of(context);
     final notifier = ref.read(chickFormStateProvider.notifier);
     final failures = <String>[];
+
     for (final id in _selectedIds.toList()) {
       if (!mounted) return;
       try {
-        await notifier.markAsDeceased(id);
-      } catch (_) {
+        await action(notifier, id);
+      } catch (e, st) {
+        AppLogger.error('[ChickListScreen] $logTag failed for $id', e, st);
         failures.add(id);
       }
     }
     if (!mounted) return;
+
+    final succeeded = total - failures.length;
     if (failures.isEmpty) {
       _clearSelection();
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            'chicks.bulk_action_success'.tr(args: ['$succeeded']),
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     } else {
+      if (!mounted) return;
       setState(() {
         _selectedIds
           ..clear()
           ..addAll(failures);
       });
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            'chicks.bulk_action_partial'.tr(
+              args: ['${failures.length}', '$total'],
+            ),
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 

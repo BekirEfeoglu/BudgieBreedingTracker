@@ -18,7 +18,7 @@ import 'package:budgie_breeding_tracker/shared/widgets/app_shell.dart';
 import '../../../data/providers/user_role_providers.dart';
 import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
 import 'package:budgie_breeding_tracker/shared/providers/settings.dart';
-import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart'; // Cross-feature import: premium check for feature gating
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 
 part 'more_screen_sections.dart';
 
@@ -31,6 +31,13 @@ class MoreScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final userId = ref.watch(currentUserIdProvider);
     final isGuest = userId == 'anonymous';
+    // Hoisted: founder flag is read for both the community tile and the AI
+    // predictions tile inside _buildPremiumTiles. A previous version wrapped
+    // the community tile in a Builder, which is a no-op for Riverpod rebuild
+    // scoping (ref is captured from the outer Consumer scope, so the entire
+    // MoreScreen rebuilds either way) — reading once here is clearer and
+    // keeps the two tiles consistent with the same value.
+    final isFounder = ref.watch(isFounderProvider).value == true;
 
     return Scaffold(
       appBar: AppBar(
@@ -60,28 +67,23 @@ class MoreScreen extends ConsumerWidget {
             onTap: () => context.push(AppRoutes.healthRecords),
           ),
           if (FeatureFlags.communityEnabled)
-            Builder(
-              builder: (context) {
-                final isFounder = ref.watch(isFounderProvider).value == true;
-                return _MoreTile(
-                  icon: const AppIcon(AppIcons.community),
-                  title: 'more.community'.tr(),
-                  trailing: isFounder ? null : _ComingSoonBadge(theme: theme),
-                  onTap: () {
-                    if (isFounder) {
-                      context.push(AppRoutes.community);
-                    } else {
-                      _showComingSoon(context);
-                    }
-                  },
-                );
+            _MoreTile(
+              icon: const AppIcon(AppIcons.community),
+              title: 'more.community'.tr(),
+              trailing: isFounder ? null : _ComingSoonBadge(theme: theme),
+              onTap: () {
+                if (isFounder) {
+                  context.push(AppRoutes.community);
+                } else {
+                  _showComingSoon(context);
+                }
               },
             ),
           // Marketplace, Messaging, Badges, Leaderboard → accessed via Community tab
           // Premium features section
           // IMPROVED: premium features show hint when not premium instead of silent redirect
           _SectionHeader(title: 'more.section_premium'.tr()),
-          ..._buildPremiumTiles(context, ref, theme),
+          ..._buildPremiumTiles(context, ref, theme, isFounder: isFounder),
           // Subscription section
           _SectionHeader(title: 'more.section_subscription'.tr()),
           _MoreTile(
@@ -139,13 +141,13 @@ class MoreScreen extends ConsumerWidget {
   List<Widget> _buildPremiumTiles(
     BuildContext context,
     WidgetRef ref,
-    ThemeData theme,
-  ) {
+    ThemeData theme, {
+    required bool isFounder,
+  }) {
     // Use effectivePremiumProvider so grace-period subscribers (renewal
     // failure within the grace window) keep route access — isPremiumProvider
     // alone would bounce paying customers to the paywall here.
     final hasPremiumAccess = ref.watch(effectivePremiumProvider);
-    final isFounder = ref.watch(isFounderProvider).value == true;
 
     void navigateOrHint(String route) {
       if (hasPremiumAccess) {

@@ -524,7 +524,9 @@
     "banding_confirm_message": "Bestätigen Sie, dass dieser Küken beringt wurde?",
     "banding_success": "Beringung gespeichert",
     "bulk_delete_confirm": "{} Küken werden gelöscht. Möchten Sie fortfahren?",
-    "bulk_mark_deceased_confirm": "{} Küken werden als verstorben markiert. Fortfahren?"
+    "bulk_mark_deceased_confirm": "{} Küken werden als verstorben markiert. Fortfahren?",
+    "bulk_action_success": "Aktion für {} Küken abgeschlossen",
+    "bulk_action_partial": "{} von {} Küken konnten nicht verarbeitet werden"
   },
   "home": {
     "welcome": "Hallo!",

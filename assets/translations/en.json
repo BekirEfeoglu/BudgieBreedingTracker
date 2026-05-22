@@ -524,7 +524,9 @@
     "banding_confirm_message": "Confirm this chick has been banded?",
     "banding_success": "Banding recorded",
     "bulk_delete_confirm": "{} chicks will be deleted. Do you want to continue?",
-    "bulk_mark_deceased_confirm": "{} chicks will be marked as deceased. Continue?"
+    "bulk_mark_deceased_confirm": "{} chicks will be marked as deceased. Continue?",
+    "bulk_action_success": "Action completed for {} chicks",
+    "bulk_action_partial": "{} of {} chicks could not be processed"
   },
   "home": {
     "welcome": "Hello!",

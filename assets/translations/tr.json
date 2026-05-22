@@ -524,7 +524,9 @@
     "banding_confirm_message": "Bu yavruya halka takıldığını onaylıyor musunuz?",
     "banding_success": "Halka takma kaydedildi",
     "bulk_delete_confirm": "{} yavru silinecek. Devam etmek istiyor musunuz?",
-    "bulk_mark_deceased_confirm": "{} yavru vefat etti olarak işaretlenecek. Devam?"
+    "bulk_mark_deceased_confirm": "{} yavru vefat etti olarak işaretlenecek. Devam?",
+    "bulk_action_success": "{} yavru için işlem tamamlandı",
+    "bulk_action_partial": "{} yavrudan {} tanesi için işlem başarısız"
   },
   "home": {
     "welcome": "Merhaba!",
