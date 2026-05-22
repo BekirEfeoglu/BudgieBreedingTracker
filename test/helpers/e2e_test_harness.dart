@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:drift/native.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -53,7 +54,56 @@ bool _fallbacksRegistered = false;
 void ensureE2EBinding() {
   TestWidgetsFlutterBinding.ensureInitialized();
   SharedPreferences.setMockInitialValues(const <String, Object>{});
+  _installFlutterSecureStorageMock();
   registerCommonFallbackValues();
+}
+
+/// In-memory mock for flutter_secure_storage. K5 audit (commit 22eb4fb)
+/// migrated MFA lockout state from SharedPreferences (which has a built-in
+/// test mock) to FlutterSecureStorage (which does not). Without this mock,
+/// any test that exercises code calling `_secureStorage.read/write/delete`
+/// hangs or throws, blocking subsequent `context.go` calls.
+const MethodChannel _secureStorageChannel = MethodChannel(
+  'plugins.it_nomads.com/flutter_secure_storage',
+);
+final Map<String, String> _secureStorageStore = <String, String>{};
+
+void _installFlutterSecureStorageMock() {
+  _secureStorageStore.clear();
+  TestDefaultBinaryMessengerBinding
+      .instance
+      .defaultBinaryMessenger
+      .setMockMethodCallHandler(_secureStorageChannel, (call) async {
+    final args = (call.arguments as Map?)?.cast<String, Object?>() ??
+        const <String, Object?>{};
+    final key = args['key'] as String?;
+    switch (call.method) {
+      case 'read':
+        return key == null ? null : _secureStorageStore[key];
+      case 'write':
+        if (key != null) {
+          final value = args['value'] as String?;
+          if (value == null) {
+            _secureStorageStore.remove(key);
+          } else {
+            _secureStorageStore[key] = value;
+          }
+        }
+        return null;
+      case 'delete':
+        if (key != null) _secureStorageStore.remove(key);
+        return null;
+      case 'deleteAll':
+        _secureStorageStore.clear();
+        return null;
+      case 'containsKey':
+        return key != null && _secureStorageStore.containsKey(key);
+      case 'readAll':
+        return Map<String, String>.from(_secureStorageStore);
+      default:
+        return null;
+    }
+  });
 }
 
 void registerCommonFallbackValues() {

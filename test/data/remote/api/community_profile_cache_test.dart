@@ -270,13 +270,17 @@ void main() {
       expect(result[0]['username'], 'Alice Smith');
     });
 
-    test('falls back to email prefix when both names are null', () async {
+    test('uses empty username when both names are null (K3 PII safety)', () async {
+      // K3 audit (commit 22eb4fb) dropped email from the SELECT and removed
+      // the email-prefix fallback to prevent leaking user emails into the
+      // community feed. When both names are null, username falls through to
+      // empty string; CommunityPostRepository._parsePost then substitutes the
+      // anonymous-user placeholder via _asString's empty-string null coercion.
       selectBuilder.result = [
         {
           'id': 'u1',
           'display_name': null,
           'full_name': null,
-          'email': 'bekir@example.com',
           'avatar_url': null,
         },
       ];
@@ -288,7 +292,7 @@ void main() {
       final result = await cache.mergeIntoRows(rows);
 
       expect(result, hasLength(1));
-      expect(result[0]['username'], 'bekir');
+      expect(result[0]['username'], '');
     });
 
     test('handles rows with null user_id', () async {

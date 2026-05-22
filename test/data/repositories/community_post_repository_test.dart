@@ -294,7 +294,12 @@ void main() {
       expect(result[1]['avatar_url'], isNull);
     });
 
-    test('falls back to email prefix when names are missing', () async {
+    test('uses anonymous placeholder when names are missing (K3 PII safety)', () async {
+      // K3 audit (commit 22eb4fb) removed the email-prefix fallback so emails
+      // never surface in the community follow list. When both names are null,
+      // display_name falls through to the localized 'community.anonymous_user'
+      // placeholder (which resolves to the key itself under the test asset
+      // loader).
       final profiles = MockCommunityProfileCache();
       final repository = CommunityPostRepository(
         postSource: postSource,
@@ -310,7 +315,6 @@ void main() {
             'id': 'u4',
             'display_name': null,
             'full_name': null,
-            'email': 'charlie@example.com',
             'avatar_url': null,
           },
         },
@@ -320,7 +324,7 @@ void main() {
         currentUserId: 'u1',
       );
 
-      expect(result.single['display_name'], 'charlie');
+      expect(result.single['display_name'], 'community.anonymous_user');
     });
   });
 
