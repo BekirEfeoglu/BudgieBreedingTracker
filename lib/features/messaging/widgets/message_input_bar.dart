@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/enums/messaging_enums.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import '../providers/messaging_form_providers.dart';
@@ -141,7 +143,7 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
               },
             ),
             ListTile(
-              leading: const Icon(LucideIcons.bird),
+              leading: const AppIcon(AppIcons.bird),
               title: Text('messaging.attach_bird'.tr()),
               onTap: () {
                 Navigator.pop(context);

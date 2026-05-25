@@ -37,8 +37,8 @@ class MarketplaceBirdPickerSheet extends ConsumerWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  LucideIcons.bird,
+                AppIcon(
+                  AppIcons.bird,
                   size: 20,
                   color: theme.colorScheme.primary,
                 ),
@@ -72,7 +72,7 @@ class MarketplaceBirdPickerSheet extends ConsumerWidget {
                       vertical: AppSpacing.xl,
                     ),
                     child: EmptyState(
-                      icon: const Icon(LucideIcons.bird),
+                      icon: const AppIcon(AppIcons.bird),
                       title: 'marketplace.no_birds_to_link'.tr(),
                     ),
                   );
@@ -120,7 +120,7 @@ class _BirdPickerTile extends StatelessWidget {
             ? NetworkImage(bird.photoUrl!)
             : null,
         child: bird.photoUrl == null || bird.photoUrl!.isEmpty
-            ? Icon(LucideIcons.bird, size: 20, color: theme.colorScheme.primary)
+            ? AppIcon(AppIcons.bird, size: 20, color: theme.colorScheme.primary)
             : null,
       ),
       title: Text(bird.name, style: theme.textTheme.bodyMedium),

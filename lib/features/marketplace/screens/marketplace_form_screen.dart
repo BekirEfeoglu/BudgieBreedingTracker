@@ -135,7 +135,11 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
 
                 // --- Listing Type Chips ---
                 _SectionHeader(
-                  icon: LucideIcons.tag,
+                  icon: Icon(
+                    LucideIcons.tag,
+                    size: 16,
+                    color: theme.colorScheme.primary,
+                  ),
                   label: 'marketplace.listing_type_label'.tr(),
                 ),
                 const SizedBox(height: AppSpacing.sm),
@@ -161,7 +165,11 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
 
                 // --- Basic Info ---
                 _SectionHeader(
-                  icon: LucideIcons.fileText,
+                  icon: Icon(
+                    LucideIcons.fileText,
+                    size: 16,
+                    color: theme.colorScheme.primary,
+                  ),
                   label: 'marketplace.section_basic'.tr(),
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -245,7 +253,11 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
 
                 // --- Bird Info ---
                 _SectionHeader(
-                  icon: LucideIcons.bird,
+                  icon: AppIcon(
+                    AppIcons.bird,
+                    size: 16,
+                    color: theme.colorScheme.primary,
+                  ),
                   label: 'marketplace.section_bird'.tr(),
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -330,7 +342,11 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
 
                 // --- Location ---
                 _SectionHeader(
-                  icon: LucideIcons.mapPin,
+                  icon: Icon(
+                    LucideIcons.mapPin,
+                    size: 16,
+                    color: theme.colorScheme.primary,
+                  ),
                   label: 'marketplace.city_label'.tr(),
                 ),
                 const SizedBox(height: AppSpacing.md),

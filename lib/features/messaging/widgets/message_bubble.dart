@@ -3,8 +3,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/enums/messaging_enums.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_icon.dart';
 import '../../../data/models/message_model.dart';
 
 class MessageBubble extends StatelessWidget {
@@ -140,14 +142,22 @@ class MessageBubble extends StatelessWidget {
         return _buildReferenceCard(
           context,
           theme,
-          icon: LucideIcons.bird,
+          icon: AppIcon(
+            AppIcons.bird,
+            size: 20,
+            color: theme.colorScheme.primary,
+          ),
           label: 'messaging.bird_card_message'.tr(),
         );
       case MessageType.listingCard:
         return _buildReferenceCard(
           context,
           theme,
-          icon: LucideIcons.store,
+          icon: Icon(
+            LucideIcons.store,
+            size: 20,
+            color: theme.colorScheme.primary,
+          ),
           label: 'messaging.listing_card_message'.tr(),
         );
       case MessageType.unknown:
@@ -161,7 +171,7 @@ class MessageBubble extends StatelessWidget {
   Widget _buildReferenceCard(
     BuildContext context,
     ThemeData theme, {
-    required IconData icon,
+    required Widget icon,
     required String label,
   }) {
     final title = message.referenceData['name'] as String? ??
@@ -178,7 +188,7 @@ class MessageBubble extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 20, color: theme.colorScheme.primary),
+          icon,
           const SizedBox(width: AppSpacing.sm),
           Flexible(
             child: Text(
