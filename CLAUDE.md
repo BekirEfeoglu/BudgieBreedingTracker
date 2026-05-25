@@ -92,7 +92,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | Freezed models | 30 model files + statistics_models + supabase_extensions |
 | Domain services | 23 directories |
 | Routes | 73 |
-| Custom SVG icons | 84 constants, 84 files on disk |
+| Custom SVG icons | 89 constants, 89 files on disk |
 | Shared widgets | 28 (15 root + 4 buttons + 2 cards + 1 dialog + 1 bottom_sheet) |
 | Enum files | 15 |
 | Supabase constants | 146 (tables + buckets + columns) |

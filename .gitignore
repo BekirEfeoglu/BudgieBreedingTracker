@@ -158,6 +158,12 @@ config/local_config.dart
 ios/Flutter/DartDefines.xcconfig
 ios/Flutter/Env.xcconfig
 lib/config/supabase_config.dart
+# Firebase config — existing files stay tracked (CI dep); pattern blocks future copies.
+# Proper migration requires CI secrets workflow (base64 decode in CI). Out of audit scope.
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+**/GoogleService-Info.plist
+**/google-services.json
 
 # --------------------------------------------------
 # Testing

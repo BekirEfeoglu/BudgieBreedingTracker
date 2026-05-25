@@ -157,14 +157,14 @@ class EngagementSummary extends StatelessWidget {
       children: [
         if (post.likeCount > 0)
           _MetricBadge(
-            icon: LucideIcons.heart,
+            icon: const AppIcon(AppIcons.heart),
             value: '${post.likeCount}',
             label: 'community.like'.tr(),
             iconColor: theme.colorScheme.primary,
           ),
         if (post.commentCount > 0)
           _MetricBadge(
-            icon: LucideIcons.messageCircle,
+            icon: const Icon(LucideIcons.messageCircle),
             value: '${post.commentCount}',
             label: 'community.comment'.tr(),
             iconColor: theme.colorScheme.secondary,
@@ -175,7 +175,7 @@ class EngagementSummary extends StatelessWidget {
 }
 
 class _MetricBadge extends StatelessWidget {
-  final IconData icon;
+  final Widget icon;
   final String value;
   final String label;
   final Color iconColor;
@@ -205,7 +205,10 @@ class _MetricBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: iconColor),
+          IconTheme.merge(
+            data: IconThemeData(size: 14, color: iconColor),
+            child: icon,
+          ),
           const SizedBox(width: AppSpacing.xs),
           Text(
             value,

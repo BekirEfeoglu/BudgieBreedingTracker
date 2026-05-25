@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_icon.dart';
 import '../../../data/models/community_post_model.dart';
 import '../providers/community_post_providers.dart';
 import 'community_post_card.dart';
@@ -97,13 +99,17 @@ class _SwipeablePostCardState extends ConsumerState<SwipeablePostCard>
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          isRight ? LucideIcons.heart : LucideIcons.bookmark,
-                          color: isRight
-                              ? theme.colorScheme.primary
-                              : theme.colorScheme.tertiary,
-                          size: 28,
-                        ),
+                        isRight
+                            ? AppIcon(
+                                AppIcons.heart,
+                                color: theme.colorScheme.primary,
+                                size: 28,
+                              )
+                            : Icon(
+                                LucideIcons.bookmark,
+                                color: theme.colorScheme.tertiary,
+                                size: 28,
+                              ),
                         const SizedBox(height: AppSpacing.xs),
                         Text(
                           isRight

@@ -90,15 +90,15 @@ class _CommunityHeroCard extends StatelessWidget {
             runSpacing: AppSpacing.sm,
             children: [
               _HeroChip(
-                icon: LucideIcons.heartHandshake,
+                icon: const AppIcon(AppIcons.heartHandshake),
                 text: 'legal.cg_chip_respect'.tr(),
               ),
               _HeroChip(
-                icon: LucideIcons.shieldCheck,
+                icon: const Icon(LucideIcons.shieldCheck),
                 text: 'legal.cg_chip_safety'.tr(),
               ),
               _HeroChip(
-                icon: LucideIcons.messagesSquare,
+                icon: const Icon(LucideIcons.messagesSquare),
                 text: 'legal.cg_chip_participation'.tr(),
               ),
             ],
@@ -112,7 +112,7 @@ class _CommunityHeroCard extends StatelessWidget {
 class _HeroChip extends StatelessWidget {
   const _HeroChip({required this.icon, required this.text});
 
-  final IconData icon;
+  final Widget icon;
   final String text;
 
   @override
@@ -129,7 +129,10 @@ class _HeroChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: Colors.white),
+          IconTheme.merge(
+            data: const IconThemeData(size: 16, color: Colors.white),
+            child: icon,
+          ),
           const SizedBox(width: AppSpacing.sm),
           Text(
             text,

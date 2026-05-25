@@ -149,7 +149,7 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
                           label: Text(_typeLabel(type)),
                           avatar: selected
                               ? null
-                              : Icon(_typeIcon(type), size: 16),
+                              : _typeIcon(type, size: 16),
                           selected: selected,
                           onSelected: (_) =>
                               setState(() => _listingType = type),
@@ -465,11 +465,11 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
     MarketplaceListingType.unknown => '',
   };
 
-  IconData _typeIcon(MarketplaceListingType type) => switch (type) {
-    MarketplaceListingType.sale => LucideIcons.shoppingBag,
-    MarketplaceListingType.adoption => LucideIcons.heart,
-    MarketplaceListingType.trade => LucideIcons.repeat,
-    MarketplaceListingType.wanted => LucideIcons.search,
-    MarketplaceListingType.unknown => LucideIcons.tag,
+  Widget _typeIcon(MarketplaceListingType type, {double? size, Color? color}) => switch (type) {
+    MarketplaceListingType.sale => Icon(LucideIcons.shoppingBag, size: size, color: color),
+    MarketplaceListingType.adoption => AppIcon(AppIcons.heart, size: size, color: color),
+    MarketplaceListingType.trade => Icon(LucideIcons.repeat, size: size, color: color),
+    MarketplaceListingType.wanted => Icon(LucideIcons.search, size: size, color: color),
+    MarketplaceListingType.unknown => Icon(LucideIcons.tag, size: size, color: color),
   };
 }

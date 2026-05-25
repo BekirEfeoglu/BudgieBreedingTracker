@@ -135,7 +135,7 @@ class _DetailContent extends ConsumerWidget {
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   InfoCard(
-                    icon: Icon(healthRecordTypeIcon(record.type)),
+                    icon: healthRecordTypeIcon(record.type),
                     title: 'common.type'.tr(),
                     subtitle: healthRecordTypeLabel(record.type),
                   ),

@@ -96,10 +96,7 @@ class MarketplaceListingCard extends StatelessWidget {
                       StatusBadge(
                         label: _listingTypeLabel(listing.listingType),
                         color: _listingTypeColor(listing.listingType),
-                        icon: Icon(
-                          _listingTypeIcon(listing.listingType),
-                          size: 14,
-                        ),
+                        icon: _listingTypeIcon(listing.listingType, size: 14),
                       ),
                       const Spacer(),
                       _buildPriceArea(theme),
@@ -249,8 +246,8 @@ class MarketplaceListingCard extends StatelessWidget {
                         color: _ImageOverlayColors.overlayBackground,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(
-                        LucideIcons.heart,
+                      child: AppIcon(
+                        AppIcons.heart,
                         size: 20,
                         color: listing.isFavoritedByMe
                             ? _ImageOverlayColors.favoriteActive
@@ -297,12 +294,12 @@ class MarketplaceListingCard extends StatelessWidget {
     MarketplaceListingType.unknown => '',
   };
 
-  IconData _listingTypeIcon(MarketplaceListingType type) => switch (type) {
-    MarketplaceListingType.sale => LucideIcons.tag,
-    MarketplaceListingType.adoption => LucideIcons.heart,
-    MarketplaceListingType.trade => LucideIcons.arrowLeftRight,
-    MarketplaceListingType.wanted => LucideIcons.search,
-    MarketplaceListingType.unknown => LucideIcons.helpCircle,
+  Widget _listingTypeIcon(MarketplaceListingType type, {double? size, Color? color}) => switch (type) {
+    MarketplaceListingType.sale => Icon(LucideIcons.tag, size: size, color: color),
+    MarketplaceListingType.adoption => AppIcon(AppIcons.heart, size: size, color: color),
+    MarketplaceListingType.trade => Icon(LucideIcons.arrowLeftRight, size: size, color: color),
+    MarketplaceListingType.wanted => Icon(LucideIcons.search, size: size, color: color),
+    MarketplaceListingType.unknown => Icon(LucideIcons.helpCircle, size: size, color: color),
   };
 
   Color _listingTypeColor(MarketplaceListingType type) => switch (type) {

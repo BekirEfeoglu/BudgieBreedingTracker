@@ -7,10 +7,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/community_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/community_post_model.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_post_card_parts.dart';
+
+Finder _findHeartAppIcon() => find.byWidgetPredicate(
+      (w) => w is AppIcon && w.asset == AppIcons.heart,
+    );
 
 void main() {
   Widget wrap(Widget child) {
@@ -92,7 +98,7 @@ void main() {
       await tester.pumpWidget(wrap(EngagementSummary(post: createPost())));
       await tester.pump();
 
-      expect(find.byIcon(LucideIcons.heart), findsNothing);
+      expect(_findHeartAppIcon(), findsNothing);
       expect(find.byIcon(LucideIcons.messageCircle), findsNothing);
     });
 
@@ -102,7 +108,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byIcon(LucideIcons.heart), findsOneWidget);
+      expect(_findHeartAppIcon(), findsOneWidget);
       expect(find.text('5'), findsOneWidget);
     });
 
@@ -122,7 +128,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byIcon(LucideIcons.heart), findsOneWidget);
+      expect(_findHeartAppIcon(), findsOneWidget);
       expect(find.byIcon(LucideIcons.messageCircle), findsOneWidget);
       expect(find.text('3'), findsOneWidget);
       expect(find.text('7'), findsOneWidget);
@@ -134,7 +140,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byIcon(LucideIcons.heart), findsNothing);
+      expect(_findHeartAppIcon(), findsNothing);
       expect(find.byIcon(LucideIcons.messageCircle), findsOneWidget);
     });
 
@@ -144,7 +150,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byIcon(LucideIcons.heart), findsOneWidget);
+      expect(_findHeartAppIcon(), findsOneWidget);
       expect(find.byIcon(LucideIcons.messageCircle), findsNothing);
     });
   });

@@ -21,8 +21,8 @@ class _HeaderSection extends StatelessWidget {
             backgroundColor: healthRecordTypeColor(
               record.type,
             ).withValues(alpha: 0.2),
-            child: Icon(
-              healthRecordTypeIcon(record.type),
+            child: healthRecordTypeIcon(
+              record.type,
               size: 32,
               color: healthRecordTypeColor(record.type),
             ),

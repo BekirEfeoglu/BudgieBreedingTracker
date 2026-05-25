@@ -13,9 +13,8 @@ class StatsSpeciesFilterSelector extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final filterState = ref.watch(statsSpeciesFilterProvider);
-    final selected = filterState.species;
-    final isLoaded = filterState.loaded;
+    final selected = ref.watch(statsSpeciesFilterProvider.select((s) => s.species));
+    final isLoaded = ref.watch(statsSpeciesFilterProvider.select((s) => s.loaded));
     final notifier = ref.read(statsSpeciesFilterProvider.notifier);
 
     return Column(

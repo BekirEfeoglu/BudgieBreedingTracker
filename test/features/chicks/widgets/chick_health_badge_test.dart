@@ -122,6 +122,7 @@ void main() {
       final expectedIconAssets = {
         ChickHealthStatus.healthy: AppIcons.health,
         ChickHealthStatus.sick: AppIcons.care,
+        ChickHealthStatus.deceased: AppIcons.heartCrack,
       };
 
       for (final status in ChickHealthStatus.values) {

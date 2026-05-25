@@ -35,7 +35,7 @@ class ChickHealthBadge extends StatelessWidget {
   Widget get _icon => switch (status) {
     ChickHealthStatus.healthy => const AppIcon(AppIcons.health),
     ChickHealthStatus.sick => const AppIcon(AppIcons.care),
-    ChickHealthStatus.deceased => const Icon(LucideIcons.heartCrack),
+    ChickHealthStatus.deceased => const AppIcon(AppIcons.heartCrack),
     ChickHealthStatus.unknown => const Icon(LucideIcons.helpCircle),
   };
 }

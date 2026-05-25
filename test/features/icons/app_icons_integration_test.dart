@@ -16,7 +16,6 @@ import 'package:budgie_breeding_tracker/features/breeding/widgets/breeding_card_
 import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_health_badge.dart';
 import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_list_item.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/punnett_square.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 /// Pumps a widget wrapped in minimal app shell for testing.
 Future<void> _pump(
@@ -96,7 +95,7 @@ void main() {
       );
     });
 
-    testWidgets('deceased status renders LucideIcons.heartCrack', (
+    testWidgets('deceased status renders AppIcons.heartCrack', (
       tester,
     ) async {
       await _pump(
@@ -106,7 +105,7 @@ void main() {
 
       expect(
         find.byWidgetPredicate(
-          (w) => w is Icon && w.icon == LucideIcons.heartCrack,
+          (w) => w is AppIcon && w.asset == AppIcons.heartCrack,
         ),
         findsOneWidget,
       );

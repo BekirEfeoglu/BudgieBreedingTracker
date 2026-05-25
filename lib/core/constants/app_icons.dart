@@ -104,4 +104,9 @@ abstract final class AppIcons {
   static const twoFactor = 'assets/icons/general/two_factor.svg';
   static const conflict = 'assets/icons/general/conflict.svg';
   static const googleLogo = 'assets/icons/general/google_logo.svg';
+  static const heart = 'assets/icons/general/heart.svg';
+  static const heartCrack = 'assets/icons/general/heart_crack.svg';
+  static const heartOff = 'assets/icons/general/heart_off.svg';
+  static const heartPulse = 'assets/icons/general/heart_pulse.svg';
+  static const heartHandshake = 'assets/icons/general/heart_handshake.svg';
 }

@@ -4,13 +4,19 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/marketplace_enums.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/status_badge.dart';
 import 'package:budgie_breeding_tracker/data/models/marketplace_listing_model.dart';
 import 'package:budgie_breeding_tracker/features/marketplace/widgets/marketplace_listing_card.dart';
 
 import '../../../helpers/test_localization.dart';
+
+Finder _findHeartAppIcon() => find.byWidgetPredicate(
+      (w) => w is AppIcon && w.asset == AppIcons.heart,
+    );
 
 const _saleListing = MarketplaceListing(
   id: 'listing-1',
@@ -230,7 +236,7 @@ void main() {
         const MarketplaceListingCard(listing: _saleListing),
       );
 
-      expect(find.byIcon(LucideIcons.heart), findsNothing);
+      expect(_findHeartAppIcon(), findsNothing);
     });
 
     testWidgets('shows heart icon overlay when onFavoriteToggle is wired',
@@ -243,7 +249,7 @@ void main() {
         ),
       );
 
-      expect(find.byIcon(LucideIcons.heart), findsWidgets);
+      expect(_findHeartAppIcon(), findsWidgets);
     });
 
     testWidgets('calls onFavoriteToggle when heart is tapped', (tester) async {
@@ -256,7 +262,7 @@ void main() {
         ),
       );
 
-      await tester.tap(find.byIcon(LucideIcons.heart).first);
+      await tester.tap(_findHeartAppIcon().first);
       await tester.pump();
 
       expect(tapped, isTrue);
@@ -304,8 +310,8 @@ void main() {
       // For favorited listing, heart should be a non-white color (active state)
       final activeHeartFinder = find.byWidgetPredicate(
         (w) =>
-            w is Icon &&
-            w.icon == LucideIcons.heart &&
+            w is AppIcon &&
+            w.asset == AppIcons.heart &&
             w.color != null &&
             w.color != const Color(0xFFFFFFFF),
       );

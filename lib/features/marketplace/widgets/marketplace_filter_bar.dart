@@ -3,18 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../providers/marketplace_providers.dart';
 import 'marketplace_filter_sheet.dart';
 import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 
-IconData _filterIcon(MarketplaceFilter filter) => switch (filter) {
-  MarketplaceFilter.all => LucideIcons.list,
-  MarketplaceFilter.sale => LucideIcons.tag,
-  MarketplaceFilter.adoption => LucideIcons.heart,
-  MarketplaceFilter.trade => LucideIcons.arrowLeftRight,
-  MarketplaceFilter.wanted => LucideIcons.search,
+Widget _filterIcon(MarketplaceFilter filter, {double? size, Color? color}) => switch (filter) {
+  MarketplaceFilter.all => Icon(LucideIcons.list, size: size, color: color),
+  MarketplaceFilter.sale => Icon(LucideIcons.tag, size: size, color: color),
+  MarketplaceFilter.adoption => AppIcon(AppIcons.heart, size: size, color: color),
+  MarketplaceFilter.trade => Icon(LucideIcons.arrowLeftRight, size: size, color: color),
+  MarketplaceFilter.wanted => Icon(LucideIcons.search, size: size, color: color),
 };
 
 class MarketplaceFilterBar extends ConsumerWidget {
@@ -39,7 +41,7 @@ class MarketplaceFilterBar extends ConsumerWidget {
             return Padding(
               padding: const EdgeInsetsDirectional.only(end: AppSpacing.sm),
               child: FilterChip(
-                avatar: isSelected ? Icon(_filterIcon(filter), size: 16) : null,
+                avatar: isSelected ? _filterIcon(filter, size: 16) : null,
                 label: Text(filter.label),
                 selected: isSelected,
                 onSelected: (_) {

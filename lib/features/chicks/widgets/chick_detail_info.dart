@@ -146,7 +146,7 @@ class ChickDetailInfo extends ConsumerWidget {
               chick.deathDate != null) ...[
             const SizedBox(height: AppSpacing.sm),
             InfoCard(
-              icon: const Icon(LucideIcons.heartCrack),
+              icon: const AppIcon(AppIcons.heartCrack),
               title: dateFormat.format(chick.deathDate!),
               subtitle: 'chicks.death_date'.tr(),
             ),

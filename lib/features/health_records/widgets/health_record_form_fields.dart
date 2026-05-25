@@ -201,8 +201,8 @@ class _TypeSelector extends StatelessWidget {
               .map((t) {
                 final isSelected = type == t;
                 return ChoiceChip(
-                  avatar: Icon(
-                    healthRecordTypeIcon(t),
+                  avatar: healthRecordTypeIcon(
+                    t,
                     size: 18,
                     color: isSelected
                         ? Theme.of(context).colorScheme.onPrimary

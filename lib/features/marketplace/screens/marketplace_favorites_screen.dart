@@ -1,9 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
-
+import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart' as app;
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
@@ -38,7 +38,7 @@ class MarketplaceFavoritesScreen extends ConsumerWidget {
           data: (listings) {
             if (listings.isEmpty) {
               return EmptyState(
-                icon: const Icon(LucideIcons.heart),
+                icon: const AppIcon(AppIcons.heart),
                 title: 'marketplace.no_favorites'.tr(),
                 subtitle: 'marketplace.no_favorites_hint'.tr(),
               );
