@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 
@@ -46,11 +47,18 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner> {
         .watch(pendingDeletionSyncErrorsProvider)
         .maybeWhen(data: (records) => records.length, orElse: () => 0);
     final hasClockSkewWarning = ref.watch(clockSkewWarningProvider) != null;
+    final userId = ref.watch(currentUserIdProvider);
+    final conflictCount = userId == 'anonymous' || userId.isEmpty
+        ? 0
+        : ref
+              .watch(persistedConflictCountProvider(userId))
+              .maybeWhen(data: (count) => count, orElse: () => 0);
     final banner = _bannerModel(
       status,
       pendingCount,
       pendingDeletionCount,
       hasClockSkewWarning,
+      conflictCount,
     );
 
     return Stack(
@@ -80,6 +88,7 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner> {
     int pendingCount,
     int pendingDeletionCount,
     bool hasClockSkewWarning,
+    int conflictCount,
   ) {
     if (status == SyncDisplayStatus.offline) {
       return _OfflineBannerModel(
@@ -109,6 +118,17 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner> {
         subtitleArgs: ['$pendingDeletionCount'],
         color: Theme.of(context).colorScheme.error,
         canRetry: true,
+      );
+    }
+
+    if (conflictCount > 0) {
+      return _OfflineBannerModel(
+        icon: LucideIcons.alertCircle,
+        titleKey: 'sync.conflict_banner_title',
+        subtitleKey: 'sync.conflict_banner_subtitle',
+        subtitleArgs: ['$conflictCount'],
+        color: Theme.of(context).colorScheme.error,
+        canRetry: false,
       );
     }
 

@@ -113,6 +113,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
     if (!ok) {
       AppLogger.error(
         '[Register] Supabase not initialized after runtime retry',
+        null,
+        StackTrace.current,
       );
       _showSnack('auth.error_service_unavailable'.tr(), isError: true);
       if (mounted) setState(() => _loading = false);
@@ -211,13 +213,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
           if (mounted && _loading) setState(() => _loading = false);
         });
       }
-    } on AuthException catch (e) {
+    } on AuthException catch (e, st) {
       if (e.message == 'Canceled') {
         if (mounted) setState(() => _loading = false);
         return;
       }
-      AppLogger.error('[Register] OAuth AuthException: ${e.message}', e);
-      Sentry.captureException(e);
+      AppLogger.error('[Register] OAuth AuthException: ${e.message}', e, st);
+      Sentry.captureException(e, stackTrace: st);
       if (mounted) setState(() => _loading = false);
       _showSnack(mapAuthError(e), isError: true);
     } catch (e, st) {

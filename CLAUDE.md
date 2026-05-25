@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Comprehensive Flutter breeding tracker app for budgie breeders.
 Flutter 3.41+ / Dart >=3.8.0 <4.0.0 / Riverpod 3 / GoRouter 17+ / Supabase / Drift 2.31+ / Freezed 3
 
-Key deps: `supabase_flutter ^2.5.0` · `sentry_flutter ^9.0.0` · `fl_chart ^1.2.0` · `purchases_flutter ^9.14.0`
+Key deps: `supabase_flutter ^2.5.0` · `sentry_flutter ^9.0.0` · `fl_chart ^1.2.0` · `purchases_flutter ^10.0.2`
 
 ## Build & Development Commands
 
@@ -84,7 +84,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | Metric | Value |
 | --- | --- |
 | Source files (lib/) | 989 Dart files |
-| Test files (test/) | 906 test files, 11,054+ individual tests |
+| Test files (test/) | 906 test files, 11,056+ individual tests |
 | Feature modules | 25 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -96,7 +96,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | Shared widgets | 28 (15 root + 4 buttons + 2 cards + 1 dialog + 1 bottom_sheet) |
 | Enum files | 15 |
 | Supabase constants | 146 (tables + buckets + columns) |
-| L10n keys | ~2,976 per language, 42 categories |
+| L10n keys | ~2,978 per language, 42 categories |
 | DB schema version | 24 |
 
 ## CI/CD Pipeline
@@ -105,18 +105,20 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | Job | Purpose |
 | --- | --- |
 | `analyze` | `flutter analyze --no-fatal-infos` |
-| `test` | Unit + widget tests, Codecov upload (excludes golden, e2e), timeout 25m |
+| `test` | Unit + widget tests, Codecov upload (excludes golden, e2e, community), timeout 25m |
 | `golden-test` | Visual regression on Linux baseline |
+| `e2e-community-test` | E2E + community tagged tests |
 | `scripts-test` | Python script tests (>=98% coverage) |
 | `l10n-sync` | Translation key parity (--strict-keys) |
 | `code-quality` | Anti-pattern scan (depends on scripts-test) |
 | `rules-sync` | CLAUDE.md stats verification (--strict) |
+| `security-audit` | Security posture verification (cert pinning, secrets) |
 | `auto-fix-stats` | Auto-PR for CLAUDE.md drift (main only) |
 | `deploy-edge-functions` | Supabase Edge Function deployment (main only, needs analyze+test) |
 | `android-build` | Debug APK build |
-| `android-release` | Signed AAB (main only, needs analyze+test) |
 | `ios-build` | iOS build (no code signing) |
-| `pages` | GitHub Pages deployment from `docs/` |
+
+Other workflow files: `release-ready.yml` (manual signed Android AAB), `release.yml`, `pages.yml` (GitHub Pages from `docs/`), `dependabot-auto-merge.yml`, `stale*.yml`, `auto-label.yml`.
 
 Workflow changes must be validated locally before push: parse the edited YAML, quote or block-scalar `run:` commands containing `:`, and ensure each triggering event has at least one non-skipped job.
 

@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/enums/marketplace_enums.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../../data/models/marketplace_listing_model.dart';
 import '../../../router/route_names.dart';
@@ -177,8 +179,8 @@ class MarketplaceListingCard extends StatelessWidget {
           else
             Container(
               color: theme.colorScheme.surfaceContainerHighest,
-              child: Icon(
-                LucideIcons.bird,
+              child: AppIcon(
+                AppIcons.bird,
                 size: 48,
                 color: theme.colorScheme.outline,
               ),

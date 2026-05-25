@@ -4,8 +4,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/image_picker_guard.dart';
 
 class AiImagePickerZone extends StatelessWidget {
   const AiImagePickerZone({
@@ -23,26 +23,22 @@ class AiImagePickerZone extends StatelessWidget {
   final List<String> tips;
   final double previewHeight;
 
-  static const _maxBytes = AppConstants.maxLocalAiImageBytes;
-  static final _maxMb = (_maxBytes / (1024 * 1024)).round();
-
   Future<void> _pickImage(ImageSource source, BuildContext context) async {
     final picker = ImagePicker();
-    final result = await picker.pickImage(source: source, imageQuality: 85);
+    // 1024px max — LLM/AI inference does not need higher resolution.
+    final result = await picker.pickImage(
+      source: source,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
     if (result == null) return;
-    final file = File(result.path);
-    final fileSize = await file.length();
-    if (fileSize > _maxBytes) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'genetics.ai_image_too_large_warning'.tr(args: ['$_maxMb']),
-          ),
-        ),
-      );
-      return;
-    }
+    if (!context.mounted) return;
+    final allowed = await ImagePickerGuard.ensureWithinSizeLimit(
+      context,
+      result,
+    );
+    if (!allowed) return;
     onImageSelected(result.path);
   }
 

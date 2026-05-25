@@ -233,8 +233,8 @@ class StorageService {
       return _client.storage
           .from(bucket)
           .createSignedUrl(path, _signedUrlExpiry);
-    } on StorageException catch (e) {
-      AppLogger.error('Storage upload failed: ${e.message}');
+    } on StorageException catch (e, st) {
+      AppLogger.error('Storage upload failed: ${e.message}', e, st);
       rethrow;
     }
   }

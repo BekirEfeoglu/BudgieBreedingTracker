@@ -2347,6 +2347,8 @@
     "pending_changes_count": "{} changes waiting to sync",
     "pending_deletion_warning": "Some sync errors may be cleared soon.",
     "clock_skew_warning": "Your device clock appears to differ from the server. Sync switched to a full refresh.",
+    "conflict_banner_title": "Sync conflicts detected",
+    "conflict_banner_subtitle": "{} record(s) waiting for review",
     "error_details_title": "Sync Details",
     "pending_section": "Pending Records",
     "failed_section": "Failed Records",

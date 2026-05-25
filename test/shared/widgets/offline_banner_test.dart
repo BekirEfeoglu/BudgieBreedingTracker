@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/shared/widgets/offline_banner.dart';
@@ -37,6 +38,7 @@ void main() {
     required SyncDisplayStatus status,
     int pendingCount = 0,
     List<SyncMetadata> pendingDeletionWarnings = const [],
+    int conflictCount = 0,
   }) {
     return ProviderScope(
       overrides: [
@@ -47,6 +49,10 @@ void main() {
         ),
         pendingDeletionSyncErrorsProvider.overrideWith(
           (ref) async => pendingDeletionWarnings,
+        ),
+        currentUserIdProvider.overrideWith((ref) => 'user-1'),
+        persistedConflictCountProvider.overrideWith(
+          (ref, userId) => Stream.value(conflictCount),
         ),
       ],
       child: const MaterialApp(
@@ -108,6 +114,28 @@ void main() {
 
       expect(find.text(l10n('sync.pending_deletion_warning')), findsOneWidget);
       expect(find.text(l10n('sync.retry_action')), findsOneWidget);
+    });
+
+    testWidgets('shows aggregate conflict banner when conflicts exist', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        subject(status: SyncDisplayStatus.synced, conflictCount: 3),
+      );
+      await tester.pump();
+
+      expect(find.text(l10n('sync.conflict_banner_title')), findsOneWidget);
+    });
+
+    testWidgets('hides conflict banner when conflictCount is zero', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        subject(status: SyncDisplayStatus.synced, conflictCount: 0),
+      );
+      await tester.pump();
+
+      expect(find.text(l10n('sync.conflict_banner_title')), findsNothing);
     });
   });
 }

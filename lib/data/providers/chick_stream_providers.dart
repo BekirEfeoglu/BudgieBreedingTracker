@@ -70,8 +70,8 @@ final chickParentsProvider = FutureProvider.family<ChickParentsInfo?, String?>((
     if (egg == null) return null;
 
     return _resolveParentsForEgg(ref, egg);
-  } catch (e) {
-    AppLogger.error('Failed to load chick parents', e);
+  } catch (e, st) {
+    AppLogger.error('Failed to load chick parents', e, st);
     return null;
   }
 });

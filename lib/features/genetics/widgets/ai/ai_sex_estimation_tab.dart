@@ -2,8 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/local_ai/local_ai_models.dart';
@@ -238,8 +240,8 @@ class _AiSexEstimationTabState extends ConsumerState<AiSexEstimationTab>
         ),
         child: Row(
           children: [
-            Icon(
-              LucideIcons.bird,
+            AppIcon(
+              AppIcons.bird,
               size: 18,
               color: theme.colorScheme.onSurfaceVariant,
             ),

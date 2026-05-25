@@ -165,13 +165,13 @@ mixin _AuthOAuthMixin {
         idToken: idToken,
         nonce: rawNonce,
       );
-    } catch (e) {
+    } catch (e, st) {
       if (e is AuthException) rethrow;
       if (e is SignInWithAppleAuthorizationException &&
           e.code == AuthorizationErrorCode.canceled) {
         throw const AuthException('Canceled');
       }
-      AppLogger.error('[AuthActions] Apple sign-in failed: $e');
+      AppLogger.error('[AuthActions] Apple sign-in failed: $e', e, st);
       throw const AuthException('Apple sign-in failed', statusCode: '400');
     }
   }

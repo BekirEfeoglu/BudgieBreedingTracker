@@ -37,7 +37,11 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
       );
       if (!mounted) return;
       if (!initialized) {
-        AppLogger.error('[Login] Supabase not initialized after runtime retry');
+        AppLogger.error(
+          '[Login] Supabase not initialized after runtime retry',
+          null,
+          StackTrace.current,
+        );
         _showError('auth.error_service_unavailable'.tr());
         return;
       }
@@ -164,6 +168,8 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
         if (!initialized) {
           AppLogger.error(
             '[Login] Supabase not initialized before Guest Login',
+            null,
+            StackTrace.current,
           );
           _showError('auth.error_service_unavailable'.tr());
           return;
@@ -226,7 +232,11 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
         );
         if (!mounted) return;
         if (!initialized) {
-          AppLogger.error('[Login] Supabase not initialized before OAuth');
+          AppLogger.error(
+            '[Login] Supabase not initialized before OAuth',
+            null,
+            StackTrace.current,
+          );
           _showError('auth.error_service_unavailable'.tr());
           return;
         }
@@ -255,7 +265,7 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
           if (!mounted) return;
           _handleAuthSuccess();
           return;
-        } on AuthException catch (e) {
+        } on AuthException catch (e, st) {
           if (e.message == 'Canceled') rethrow;
           if (shouldFallbackToBrowserGoogleOAuth(e)) {
             AppLogger.warning(
@@ -264,6 +274,8 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
           } else {
             AppLogger.error(
               '[Login] Native Google sign-in failed after account selection: ${e.message}',
+              e,
+              st,
             );
             rethrow;
           }

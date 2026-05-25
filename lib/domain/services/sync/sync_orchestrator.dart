@@ -70,6 +70,7 @@ class SyncOrchestrator {
   Future<SyncResult> _doFullSync() async {
     _ref.read(isSyncingProvider.notifier).state = true;
     _ref.read(syncErrorProvider.notifier).state = false;
+    final sw = Stopwatch()..start();
 
     try {
       SyncTelemetry.event('sync_started', data: {'mode': 'full'});
@@ -138,7 +139,11 @@ class SyncOrchestrator {
       final result = pullSuccess ? SyncResult.success : SyncResult.error;
       SyncTelemetry.event(
         result == SyncResult.success ? 'sync_completed' : 'sync_failed',
-        data: {'mode': 'full', 'pushSuccess': pushSuccess},
+        data: {
+          'mode': 'full',
+          'pushSuccess': pushSuccess,
+          'durationMs': sw.elapsedMilliseconds,
+        },
         level: result == SyncResult.success
             ? SentryLevel.info
             : SentryLevel.warning,
@@ -148,7 +153,7 @@ class SyncOrchestrator {
       AppLogger.error('[SyncOrchestrator] Full sync failed', e, st);
       SyncTelemetry.event(
         'sync_failed',
-        data: {'mode': 'full'},
+        data: {'mode': 'full', 'durationMs': sw.elapsedMilliseconds},
         level: SentryLevel.error,
       );
       Sentry.captureException(e, stackTrace: st);
@@ -183,6 +188,7 @@ class SyncOrchestrator {
   Future<SyncResult> _doForceFullSync() async {
     _ref.read(isSyncingProvider.notifier).state = true;
     _ref.read(syncErrorProvider.notifier).state = false;
+    final sw = Stopwatch()..start();
 
     try {
       SyncTelemetry.event('sync_started', data: {'mode': 'force'});
@@ -228,7 +234,11 @@ class SyncOrchestrator {
       final result = pullSuccess ? SyncResult.success : SyncResult.error;
       SyncTelemetry.event(
         result == SyncResult.success ? 'sync_completed' : 'sync_failed',
-        data: {'mode': 'force', 'pushSuccess': pushSuccess},
+        data: {
+          'mode': 'force',
+          'pushSuccess': pushSuccess,
+          'durationMs': sw.elapsedMilliseconds,
+        },
         level: result == SyncResult.success
             ? SentryLevel.info
             : SentryLevel.warning,
@@ -238,7 +248,7 @@ class SyncOrchestrator {
       AppLogger.error('[SyncOrchestrator] Force full sync failed', e, st);
       SyncTelemetry.event(
         'sync_failed',
-        data: {'mode': 'force'},
+        data: {'mode': 'force', 'durationMs': sw.elapsedMilliseconds},
         level: SentryLevel.error,
       );
       Sentry.captureException(e, stackTrace: st);

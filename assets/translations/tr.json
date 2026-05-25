@@ -2347,6 +2347,8 @@
     "pending_changes_count": "{} değişiklik senkronizasyon bekliyor",
     "pending_deletion_warning": "Bazı senkronizasyon hataları yakında temizlenebilir.",
     "clock_skew_warning": "Cihaz saatiniz sunucu saatinden farklı görünüyor. Senkronizasyon tam yenilemeye alındı.",
+    "conflict_banner_title": "Senkronizasyon çakışmaları algılandı",
+    "conflict_banner_subtitle": "{} kayıt incelenmeyi bekliyor",
     "error_details_title": "Senkronizasyon Detayları",
     "pending_section": "Bekleyen Kayıtlar",
     "failed_section": "Başarısız Kayıtlar",

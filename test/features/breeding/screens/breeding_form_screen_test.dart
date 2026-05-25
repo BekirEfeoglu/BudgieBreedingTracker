@@ -222,7 +222,9 @@ void main() {
         find.text(l10n('breeding.inbreeding_warning_title')),
         findsOneWidget,
       );
-      expect(find.textContaining('25.0'), findsOneWidget);
+      // Match the percentage badge specifically so this assertion isn't tripped
+      // by date strings like "25.05.YYYY" that would also contain "25.0".
+      expect(find.textContaining('25.0%'), findsOneWidget);
     });
   });
 }

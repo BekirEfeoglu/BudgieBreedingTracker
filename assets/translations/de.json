@@ -2347,6 +2347,8 @@
     "pending_changes_count": "{} Änderungen warten auf Synchronisierung",
     "pending_deletion_warning": "Einige Synchronisierungsfehler werden möglicherweise bald bereinigt.",
     "clock_skew_warning": "Ihre Geräteuhr scheint von der Serverzeit abzuweichen. Die Synchronisierung wurde vollständig aktualisiert.",
+    "conflict_banner_title": "Sync-Konflikte erkannt",
+    "conflict_banner_subtitle": "{} Eintrag/Einträge zur Überprüfung",
     "error_details_title": "Synchronisierungsdetails",
     "pending_section": "Ausstehende Einträge",
     "failed_section": "Fehlgeschlagene Einträge",

@@ -89,7 +89,7 @@ mixin PurchaseInitializer on PurchaseErrorMapper {
       return true;
     } catch (e, st) {
       clearIdentity();
-      AppLogger.error('RevenueCat user switch failed: $e');
+      AppLogger.error('RevenueCat user switch failed: $e', e, st);
       Sentry.captureException(e, stackTrace: st);
       return false;
     } finally {

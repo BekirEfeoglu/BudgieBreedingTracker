@@ -194,7 +194,11 @@ class AppDatabase extends _$AppDatabase {
       if (result.isNotEmpty) {
         final status = result.first.data.values.first as String?;
         if (status != null && status != 'ok') {
-          AppLogger.error('[DB] Integrity check failed: $status');
+          AppLogger.error(
+            '[DB] Integrity check failed: $status',
+            null,
+            StackTrace.current,
+          );
           try {
             Sentry.captureMessage(
               'Database integrity check failed: $status',
