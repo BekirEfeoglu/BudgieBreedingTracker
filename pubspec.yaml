@@ -64,7 +64,7 @@ dependencies:
   url_launcher: ^6.2.0
   connectivity_plus: ">=7.0.0 <7.1.0"  # 7.1.x requires iOS 26 SDK (NWPath.isUltraConstrained); pinned until CI Xcode supports it
   package_info_plus: ^9.0.0
-  flutter_secure_storage: ^10.0.0
+  flutter_secure_storage: ^10.3.0
   encrypt: ^5.0.3
   shared_preferences: ^2.2.0
   logger: ^2.0.0
