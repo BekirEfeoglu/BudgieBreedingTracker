@@ -13,7 +13,7 @@ Runs on PRs and main pushes.
 | `golden-test` | Visual regression (Linux baseline) | PR merge |
 | `scripts-test` | Python script tests (≥98% coverage) | PR merge |
 | `l10n-sync` | Translation key parity (--strict-keys) | PR merge |
-| `code-quality` | Anti-pattern scan (24 checkers) | PR merge |
+| `code-quality` | Anti-pattern scan (27 checkers) | PR merge |
 | `rules-sync` | CLAUDE.md stats verification | PR merge |
 | `auto-fix-stats` | Auto-PR for CLAUDE.md drift | main only |
 | `deploy-edge-functions` | Supabase Edge Function deploy | main only, needs analyze+test |

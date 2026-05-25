@@ -73,7 +73,7 @@ lib/
 ```
 assets/
 ├── translations/
-│   ├── tr.json    Master (~2,968 keys, 42 categories)
+│   ├── tr.json    Master (~2,978 keys, 42 categories)
 │   ├── en.json
 │   └── de.json
 ├── images/

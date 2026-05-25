@@ -4,6 +4,14 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-05-25] sync | Stat drift sweep + checker count refresh
+
+- `overview.md`, `architecture/folder-structure.md`, `patterns/l10n.md`: l10n key count 2,968→2,978 (commit 1d2fff3 added chicks bulk feedback keys).
+- `overview.md`, `patterns/testing.md`: test counts 901/11,017 → 906/11,056 (commits efc2ee1 + 1fd6bde added coverage for previously untested critical units + K3/K5 audit alignment).
+- `overview.md`, `patterns/anti-patterns.md`, `infrastructure/ci-cd.md`, `infrastructure/scripts.md`: `verify_code_quality.py` checker count 24→27 — covers 19/24 CLAUDE.md anti-patterns + 8 audit-flagged extras (`Freezed3`, `Layer`, `Loading`, `TapTarget`, `Container`, `Upsert`, `Boundary`, `ImageCache`).
+- `overview.md`: stats snapshot date 2026-05-21 → 2026-05-25.
+- Disk vs `index.md` catalog cross-checked: 81 .md files match catalog. No new pages, no broken wikilinks, all pages under 200 lines (max is `index.md` at 126).
+
 ## [2026-05-21] enhance | Domain coverage expansion + skeletal feature buildup + cheat sheet
 
 - New domain service pages (closes long-standing index-only entries):

@@ -58,7 +58,7 @@
 - See [[patterns/security]]
 
 ### 4. 24 Anti-Patterns
-Enforced by `scripts/verify_code_quality.py` (18 static checks + 6 extras). Key ones:
+Enforced by `scripts/verify_code_quality.py` (27 checkers — 19/24 CLAUDE.md anti-patterns + 8 audit-flagged extras). Key ones:
 - `withOpacity()` → `withValues(alpha: x)`
 - `context.go()` forward nav → `context.push()`
 - `ref.watch()` in callbacks → `ref.read()`
@@ -69,15 +69,15 @@ Enforced by `scripts/verify_code_quality.py` (18 static checks + 6 extras). Key 
 ### 5. 3-Language Parity
 - Turkish is master language — all keys added to `tr.json` first
 - CI blocks PRs with missing keys in `en.json` or `de.json`
-- ~2,968 keys per language, 42 categories
+- ~2,978 keys per language, 42 categories
 - See [[patterns/l10n]]
 
-## Codebase Stats (as of 2026-05-21)
+## Codebase Stats (as of 2026-05-25)
 
 | Metric | Value |
 |--------|-------|
 | Source files (lib/) | 989 Dart files |
-| Test files | 901 files, 11,017+ tests |
+| Test files | 906 files, 11,056+ tests |
 | Feature modules | 25 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -89,7 +89,7 @@ Enforced by `scripts/verify_code_quality.py` (18 static checks + 6 extras). Key 
 | Shared widgets | 28 |
 | Enum files | 15 |
 | Supabase constants | 146 |
-| L10n keys | ~2,968 per language |
+| L10n keys | ~2,978 per language |
 | DB schema version | 24 |
 | Supabase migrations | 158 SQL files |
 | Edge Functions | 8 |
