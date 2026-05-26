@@ -4,6 +4,12 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-05-26] update | Add revenuecat-webhook + dual-project OAuth docs
+
+- `infrastructure/edge-functions.md`: inventory 8 → 9, added `revenuecat-webhook` (Bearer token auth via `REVENUECAT_WEBHOOK_AUTH_TOKEN`), new "Webhook Receiver Exception" section, policies row, and step 7-12 for webhook receivers in the New Function Checklist.
+- `patterns/security.md`: new "Dual-Project Google OAuth" section after OAuth Token Management — documents that the Google Sign-In OAuth client lives in GCP project `118599620356`, separate from Firebase project `720334450619`. Clarifies the Firebase SHA-1 duplicate-registration warning is informational, not a deletion target. Includes future consolidation runbook.
+- Source commits: c63fe82 (webhook function + verify_security allowlist + CI deploy), c764e6f (security.md OAuth section), 0de440d (Android manifest hardening + .env + key.properties template).
+
 ## [2026-05-25] sync | Stat drift sweep + checker count refresh
 
 - `overview.md`, `architecture/folder-structure.md`, `patterns/l10n.md`: l10n key count 2,968→2,978 (commit 1d2fff3 added chicks bulk feedback keys).
