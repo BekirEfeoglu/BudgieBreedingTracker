@@ -178,6 +178,18 @@
   <!-- GSAP + ScrollTrigger — non-critical, deferred -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+
+  <!-- JS-off fallback: reveal animations need JS to flip to .active. Without
+       JS the content would stay opacity:0 forever, so disable the entrance
+       animation entirely for noscript users. -->
+  <noscript>
+    <style>
+      .reveal, .reveal-scale, .reveal-left, .reveal-right, .reveal-flip {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    </style>
+  </noscript>
 </head>
 <body>
 
@@ -573,65 +585,65 @@
           <div class="screenshot-track">
             <!-- First set (10 screenshots) -->
             <div class="screenshot-item-3d">
-              <img src="screenshots/1.png" alt="Ana Sayfa" loading="lazy" decoding="async">
+              <img src="screenshots/1.png" alt="Ana Sayfa" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/2.png" alt="Kuş Listesi" loading="lazy" decoding="async">
+              <img src="screenshots/2.png" alt="Kuş Listesi" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/6.png" alt="Sağlık Kayıtları" loading="lazy" decoding="async">
+              <img src="screenshots/6.png" alt="Sağlık Kayıtları" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/3.png" alt="Üreme Takibi" loading="lazy" decoding="async">
+              <img src="screenshots/3.png" alt="Üreme Takibi" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/10.png" alt="Ayarlar" loading="lazy" decoding="async">
+              <img src="screenshots/10.png" alt="Ayarlar" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/9.png" alt="Genetik Hesaplayıcı" loading="lazy" decoding="async">
+              <img src="screenshots/9.png" alt="Genetik Hesaplayıcı" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/4.png" alt="Yavrular" loading="lazy" decoding="async">
+              <img src="screenshots/4.png" alt="Yavrular" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/5.png" alt="Takvim" loading="lazy" decoding="async">
+              <img src="screenshots/5.png" alt="Takvim" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/7.png" alt="İstatistikler" loading="lazy" decoding="async">
+              <img src="screenshots/7.png" alt="İstatistikler" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/8.png" alt="Soy Ağacı" loading="lazy" decoding="async">
+              <img src="screenshots/8.png" alt="Soy Ağacı" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <!-- Duplicate for infinite scroll -->
             <div class="screenshot-item-3d">
-              <img src="screenshots/1.png" alt="Ana Sayfa" loading="lazy" decoding="async">
+              <img src="screenshots/1.png" alt="Ana Sayfa" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/2.png" alt="Kuş Listesi" loading="lazy" decoding="async">
+              <img src="screenshots/2.png" alt="Kuş Listesi" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/6.png" alt="Sağlık Kayıtları" loading="lazy" decoding="async">
+              <img src="screenshots/6.png" alt="Sağlık Kayıtları" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/3.png" alt="Üreme Takibi" loading="lazy" decoding="async">
+              <img src="screenshots/3.png" alt="Üreme Takibi" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/10.png" alt="Ayarlar" loading="lazy" decoding="async">
+              <img src="screenshots/10.png" alt="Ayarlar" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/9.png" alt="Genetik Hesaplayıcı" loading="lazy" decoding="async">
+              <img src="screenshots/9.png" alt="Genetik Hesaplayıcı" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/4.png" alt="Yavrular" loading="lazy" decoding="async">
+              <img src="screenshots/4.png" alt="Yavrular" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/5.png" alt="Takvim" loading="lazy" decoding="async">
+              <img src="screenshots/5.png" alt="Takvim" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/7.png" alt="İstatistikler" loading="lazy" decoding="async">
+              <img src="screenshots/7.png" alt="İstatistikler" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/8.png" alt="Soy Ağacı" loading="lazy" decoding="async">
+              <img src="screenshots/8.png" alt="Soy Ağacı" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
           </div>
         </div>
@@ -2113,6 +2125,15 @@
 
       // Reveal mechanism: IntersectionObserver handles everything (one call)
       setupRevealObserver();
+      // Failsafe: if the observer never fires (rare init-order issue we saw
+      // on 2026-05-26 where 19/19 reveal elements stayed at opacity:0,
+      // hiding screenshots / "3 Adımda" / FAQ), force-activate after 800ms so
+      // content is never permanently hidden. No-op if the observer already
+      // activated everything.
+      setTimeout(() => {
+        document.querySelectorAll('.reveal, .reveal-scale, .reveal-left, .reveal-right')
+          .forEach(el => { if (!el.classList.contains('active')) el.classList.add('active'); });
+      }, 800);
 
       // Anchor scroll alignment (kept — needed for nav link / hashchange)
       setTimeout(window.bbtScrollToCurrentHash, 50);
