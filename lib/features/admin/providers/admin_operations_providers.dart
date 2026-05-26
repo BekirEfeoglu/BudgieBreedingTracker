@@ -43,14 +43,18 @@ final adminSystemHealthOverviewProvider =
     FutureProvider<AdminSystemHealthOverview>((ref) async {
       await requireAdmin(ref);
 
-      final health = await ref.watch(systemHealthProvider.future);
-      final sync = await ref.watch(syncStatusSummaryProvider.future);
-      final feedbackCount = await ref.watch(
-        adminOpenFeedbackCountProvider.future,
-      );
-      final security = await ref.watch(recentErrorsSummaryProvider.future);
-      final alerts = await ref.watch(adminSystemAlertsProvider.future);
-      final storage = await ref.watch(storageUsageProvider.future);
+      // 6 underlying providers are independent — fetch in parallel so the
+      // dashboard's worst-case latency is one RTT rather than six. Each
+      // `ref.watch(...)` still registers a dependency normally.
+      final (health, sync, feedbackCount, security, alerts, storage) =
+          await (
+            ref.watch(systemHealthProvider.future),
+            ref.watch(syncStatusSummaryProvider.future),
+            ref.watch(adminOpenFeedbackCountProvider.future),
+            ref.watch(recentErrorsSummaryProvider.future),
+            ref.watch(adminSystemAlertsProvider.future),
+            ref.watch(storageUsageProvider.future),
+          ).wait;
 
       final checks = health['checks'] as Map<String, dynamic>?;
       final degradedServices = <String>[];
@@ -96,12 +100,14 @@ final adminNotificationCenterProvider =
     FutureProvider<List<AdminNotificationItem>>((ref) async {
       await requireAdmin(ref);
 
-      final alerts = await ref.watch(adminSystemAlertsProvider.future);
-      final feedbackCount = await ref.watch(
-        adminOpenFeedbackCountProvider.future,
-      );
-      final sync = await ref.watch(syncStatusSummaryProvider.future);
-      final security = await ref.watch(recentErrorsSummaryProvider.future);
+      // 4 sources fanned out in parallel — see comment on
+      // adminSystemHealthOverviewProvider above.
+      final (alerts, feedbackCount, sync, security) = await (
+        ref.watch(adminSystemAlertsProvider.future),
+        ref.watch(adminOpenFeedbackCountProvider.future),
+        ref.watch(syncStatusSummaryProvider.future),
+        ref.watch(recentErrorsSummaryProvider.future),
+      ).wait;
 
       final items = <AdminNotificationItem>[
         for (final alert in alerts)
@@ -286,11 +292,21 @@ class BulkDeletePreview {
       photosCount;
 }
 
-final bulkDeletePreviewProvider =
-    FutureProvider.family<BulkDeletePreview, Set<String>>((ref, userIds) async {
+/// Canonical key helper for [bulkDeletePreviewProvider].
+///
+/// `Set<String>` and `List<String>` use reference equality, so each
+/// widget rebuild that constructs a new collection would miss the
+/// provider cache. Joining the sorted IDs into a single string gives
+/// value-stable hashing and equality. UUID IDs cannot contain commas,
+/// so the delimiter is safe.
+String bulkDeletePreviewKey(Iterable<String> userIds) =>
+    (userIds.toList()..sort()).join(',');
+
+final bulkDeletePreviewProvider = FutureProvider.autoDispose
+    .family<BulkDeletePreview, String>((ref, canonicalIds) async {
       await requireAdmin(ref);
       final client = ref.watch(supabaseClientProvider);
-      final ids = userIds.toList();
+      final ids = canonicalIds.isEmpty ? <String>[] : canonicalIds.split(',');
 
       Future<int> countByUser(String table) async {
         if (ids.isEmpty) return 0;

@@ -194,7 +194,16 @@ final cronJobStatusProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   final client = ref.watch(supabaseClientProvider);
   try {
     final result = await client.rpc('verify_monitoring_cron_jobs');
-    return result as Map<String, dynamic>;
+    // Guard the cast: a server-side schema regression or `null` RPC
+    // return value would otherwise throw inside the try and surface as
+    // a generic network error, masking the real problem.
+    if (result is! Map<String, dynamic>) {
+      AppLogger.warning(
+        '[cronJobStatusProvider] unexpected shape: ${result.runtimeType}',
+      );
+      return {'status': 'error'};
+    }
+    return result;
   } catch (e, st) {
     AppLogger.error('cronJobStatusProvider', e, st);
     // Avoid leaking raw exception text into UI consumers; status='error'

@@ -43,6 +43,13 @@ class _AdminUserDetailScreenState extends ConsumerState<AdminUserDetailScreen> {
         }
         ref.read(adminActionsProvider.notifier).reset();
         ref.invalidate(adminUserDetailProvider(widget.userId));
+        // Detail-screen mutations (toggle active, grant/revoke premium)
+        // change badges and risk signals visible elsewhere. Invalidate
+        // the family roots so the users list and risk profile do not
+        // show stale state when the admin navigates back.
+        ref.invalidate(adminUsersProvider);
+        ref.invalidate(adminUserContentProvider(widget.userId));
+        ref.invalidate(adminUserRiskProfileProvider(widget.userId));
       }
       if (state.error != null) {
         ScaffoldMessenger.of(

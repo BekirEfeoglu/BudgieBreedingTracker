@@ -159,30 +159,36 @@ final adminStatsProvider = FutureProvider<AdminStats>((ref) async {
       }
     }
 
-    final usersCount = await safeCount(SupabaseConstants.profilesTable);
-    final birdsCount = await safeCount(
-      SupabaseConstants.birdsTable,
-      excludeDeleted: true,
-    );
-    final breedingCount = await safeCount(
-      SupabaseConstants.breedingPairsTable,
-      excludeDeleted: true,
-    );
-    final premiumCount = await safeSelectLength(
-      SupabaseConstants.profilesTable,
-      column: 'is_premium',
-      value: true,
-    );
-    final pendingSyncCount = await safeSelectLength(
-      SupabaseConstants.syncMetadataTable,
-      column: 'status',
-      value: 'pending',
-    );
-    final errorSyncCount = await safeSelectLength(
-      SupabaseConstants.syncMetadataTable,
-      column: 'status',
-      value: 'error',
-    );
+    // Fallback path runs only when the RPC is unavailable; in that case
+    // the admin is already waiting on a slower codepath, so fan the 6
+    // independent count queries out in parallel rather than serially.
+    final (
+      usersCount,
+      birdsCount,
+      breedingCount,
+      premiumCount,
+      pendingSyncCount,
+      errorSyncCount,
+    ) = await (
+      safeCount(SupabaseConstants.profilesTable),
+      safeCount(SupabaseConstants.birdsTable, excludeDeleted: true),
+      safeCount(SupabaseConstants.breedingPairsTable, excludeDeleted: true),
+      safeSelectLength(
+        SupabaseConstants.profilesTable,
+        column: 'is_premium',
+        value: true,
+      ),
+      safeSelectLength(
+        SupabaseConstants.syncMetadataTable,
+        column: 'status',
+        value: 'pending',
+      ),
+      safeSelectLength(
+        SupabaseConstants.syncMetadataTable,
+        column: 'status',
+        value: 'error',
+      ),
+    ).wait;
 
     return AdminStats(
       totalUsers: usersCount,

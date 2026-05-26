@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -20,11 +22,32 @@ class AdminAuditScreen extends ConsumerStatefulWidget {
 
 class _AdminAuditScreenState extends ConsumerState<AdminAuditScreen> {
   final _searchController = TextEditingController();
+  Timer? _searchDebounce;
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+
+  /// Resets pagination so a filter change starts from the first page —
+  /// otherwise an earlier `+50, +50, +50` accumulation would refetch a
+  /// 200-row window for the new filter on the very first request.
+  void _applyFilter(AuditLogFilter next) {
+    ref.read(auditLogFilterProvider.notifier).state = next;
+    ref.read(adminAuditLimitProvider.notifier).state =
+        AdminConstants.auditLogsPageSize;
+  }
+
+  /// Debounces search input so each keystroke does not fire a Postgres
+  /// `.or(ilike)` round-trip. Mirrors the pattern in admin_users_screen.
+  void _onSearchChanged(String raw, AuditLogFilter current) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(AdminConstants.searchDebounceDuration, () {
+      if (!mounted) return;
+      _applyFilter(current.copyWith(searchQuery: raw));
+    });
   }
 
   @override
@@ -52,19 +75,15 @@ class _AdminAuditScreenState extends ConsumerState<AdminAuditScreen> {
           AuditFilterBar(
             controller: _searchController,
             filter: filter,
-            onSearchChanged: (q) =>
-                ref.read(auditLogFilterProvider.notifier).state = filter
-                    .copyWith(searchQuery: q),
+            onSearchChanged: (q) => _onSearchChanged(q, filter),
             onStartDatePicked: (date) =>
-                ref.read(auditLogFilterProvider.notifier).state = filter
-                    .copyWith(startDate: date),
+                _applyFilter(filter.copyWith(startDate: date)),
             onEndDatePicked: (date) =>
-                ref.read(auditLogFilterProvider.notifier).state = filter
-                    .copyWith(endDate: date),
+                _applyFilter(filter.copyWith(endDate: date)),
             onClear: () {
+              _searchDebounce?.cancel();
               _searchController.clear();
-              ref.read(auditLogFilterProvider.notifier).state =
-                  const AuditLogFilter();
+              _applyFilter(const AuditLogFilter());
             },
           ),
           Expanded(

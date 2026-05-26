@@ -33,7 +33,7 @@ class DatabaseStorageSection extends ConsumerWidget {
             asyncUsage.when(
               loading: () => const LoadingState(),
               error: (e, _) => Text(
-                '${'common.data_load_error'.tr()}: $e',
+                'common.data_load_error'.tr(),
                 style: theme.textTheme.bodySmall,
               ),
               data: (usages) => Column(

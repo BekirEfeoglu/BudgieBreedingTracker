@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/supabase_constants.dart';
@@ -147,7 +148,12 @@ class AdminFeedbackActionNotifier extends Notifier<AdminFeedbackActionState> {
       return true;
     } catch (e, st) {
       AppLogger.error('AdminFeedbackAction.updateFeedback', e, st);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      // Localized key — raw exception text must not reach the admin UI
+      // (Postgrest errors include table/column names).
+      state = state.copyWith(
+        isLoading: false,
+        error: 'admin.action_error'.tr(),
+      );
       return false;
     }
   }

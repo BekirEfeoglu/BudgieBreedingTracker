@@ -35,7 +35,7 @@ class DatabaseSyncStatusSection extends ConsumerWidget {
             asyncSummary.when(
               loading: () => const LoadingState(),
               error: (e, _) => Text(
-                '${'common.data_load_error'.tr()}: $e',
+                'common.data_load_error'.tr(),
                 style: theme.textTheme.bodySmall,
               ),
               data: (summary) => _SyncStatusBody(summary: summary),

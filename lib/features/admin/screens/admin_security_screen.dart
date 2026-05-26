@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -22,11 +24,32 @@ class AdminSecurityScreen extends ConsumerStatefulWidget {
 
 class _AdminSecurityScreenState extends ConsumerState<AdminSecurityScreen> {
   final _searchController = TextEditingController();
+  Timer? _searchDebounce;
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+
+  /// Resets pagination so a filter change starts from the first page —
+  /// otherwise an earlier `+50, +50, +50` accumulation would refetch a
+  /// 200-row window for the new filter on the very first request.
+  void _applyFilter(SecurityEventFilter next) {
+    ref.read(securityEventFilterProvider.notifier).state = next;
+    ref.read(adminSecurityLimitProvider.notifier).state =
+        AdminConstants.securityEventsPageSize;
+  }
+
+  /// Debounces search input so each keystroke does not fire a Postgres
+  /// `.or(ilike)` round-trip. Mirrors the pattern in admin_users_screen.
+  void _onSearchChanged(String raw, SecurityEventFilter current) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(AdminConstants.searchDebounceDuration, () {
+      if (!mounted) return;
+      _applyFilter(current.copyWith(searchQuery: raw));
+    });
   }
 
   @override
@@ -63,13 +86,12 @@ class _AdminSecurityScreenState extends ConsumerState<AdminSecurityScreen> {
           SecurityFilterBar(
             controller: _searchController,
             filter: filter,
-            onSearchChanged: (q) =>
-                ref.read(securityEventFilterProvider.notifier).state = filter
-                    .copyWith(searchQuery: q),
-            onSeverityChanged: (s) =>
-                ref.read(securityEventFilterProvider.notifier).state = s == null
-                ? filter.copyWith(clearSeverity: true)
-                : filter.copyWith(severity: s),
+            onSearchChanged: (q) => _onSearchChanged(q, filter),
+            onSeverityChanged: (s) => _applyFilter(
+              s == null
+                  ? filter.copyWith(clearSeverity: true)
+                  : filter.copyWith(severity: s),
+            ),
           ),
           Expanded(
             child: RefreshIndicator(

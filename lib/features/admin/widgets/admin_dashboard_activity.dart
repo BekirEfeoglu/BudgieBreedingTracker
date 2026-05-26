@@ -293,7 +293,9 @@ class _ActivityRow extends StatelessWidget {
                 Text(
                   activity.fullName.isNotEmpty
                       ? activity.fullName
-                      : activity.userId.substring(0, 8),
+                      : (activity.userId.length >= 8
+                            ? activity.userId.substring(0, 8)
+                            : activity.userId),
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),

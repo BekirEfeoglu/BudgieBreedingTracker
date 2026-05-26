@@ -18,6 +18,22 @@ class _BulkActionBar extends ConsumerStatefulWidget {
 class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
   bool _isLoading = false;
 
+  /// Re-entry guard for chip handlers. `_isLoading` only flips after a
+  /// confirm dialog closes (inside `_run`), so without this flag a user
+  /// could tap a second chip while the first action's dialog is still
+  /// open and fire two parallel bulk operations.
+  bool _actionInFlight = false;
+
+  Future<void> _guard(Future<void> Function() body) async {
+    if (_actionInFlight) return;
+    _actionInFlight = true;
+    try {
+      await body();
+    } finally {
+      _actionInFlight = false;
+    }
+  }
+
   Future<void> _run(
     Future<({int succeeded, int skipped})> Function() action,
     String actionLabel,
@@ -44,7 +60,7 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
     }
   }
 
-  Future<void> _onActivate() async {
+  Future<void> _onActivate() => _guard(() async {
     final confirmed = await showConfirmDialog(
       context,
       title: 'admin.confirm_activate'.tr(),
@@ -57,9 +73,9 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
           .bulkToggleActive(widget.selectedIds, activate: true),
       'admin.bulk_activate'.tr(),
     );
-  }
+  });
 
-  Future<void> _onDeactivate() async {
+  Future<void> _onDeactivate() => _guard(() async {
     final confirmed = await showConfirmDialog(
       context,
       title: 'admin.confirm_deactivate'.tr(),
@@ -73,9 +89,9 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
           .bulkToggleActive(widget.selectedIds, activate: false),
       'admin.bulk_deactivate'.tr(),
     );
-  }
+  });
 
-  Future<void> _onGrantPremium() async {
+  Future<void> _onGrantPremium() => _guard(() async {
     final confirmed = await showConfirmDialog(
       context,
       title: 'admin.confirm_grant_premium'.tr(),
@@ -88,9 +104,9 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
           .bulkGrantPremium(widget.selectedIds),
       'admin.bulk_grant_premium'.tr(),
     );
-  }
+  });
 
-  Future<void> _onRevokePremium() async {
+  Future<void> _onRevokePremium() => _guard(() async {
     final confirmed = await showConfirmDialog(
       context,
       title: 'admin.confirm_revoke_premium'.tr(),
@@ -104,9 +120,9 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
           .bulkRevokePremium(widget.selectedIds),
       'admin.bulk_revoke_premium'.tr(),
     );
-  }
+  });
 
-  Future<void> _onSendNotification() async {
+  Future<void> _onSendNotification() => _guard(() async {
     final result = await showAdminNotificationSheet(
       context,
       ref: ref,
@@ -121,9 +137,9 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
       ).showSnackBar(SnackBar(content: Text(message)));
       widget.onClearSelection();
     }
-  }
+  });
 
-  Future<void> _onExport() async {
+  Future<void> _onExport() => _guard(() async {
     final confirmed = await showConfirmDialog(
       context,
       title: 'admin.bulk_export'.tr(),
@@ -153,9 +169,9 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
-  }
+  });
 
-  Future<void> _onDelete() async {
+  Future<void> _onDelete() => _guard(() async {
     final confirmed = await _showDeletePreview();
     if (confirmed != true || !mounted) return;
     await _run(
@@ -164,7 +180,7 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
           .bulkDeleteUserData(widget.selectedIds),
       'admin.bulk_delete'.tr(),
     );
-  }
+  });
 
   Future<bool?> _showDeletePreview() {
     return showDialog<bool>(
@@ -173,7 +189,9 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
         return Consumer(
           builder: (context, ref, _) {
             final previewAsync = ref.watch(
-              bulkDeletePreviewProvider(widget.selectedIds),
+              bulkDeletePreviewProvider(
+                bulkDeletePreviewKey(widget.selectedIds),
+              ),
             );
             return AlertDialog(
               title: Text('admin.bulk_delete_preview'.tr()),

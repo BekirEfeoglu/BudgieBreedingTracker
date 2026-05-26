@@ -60,7 +60,9 @@ class AdminBulkManager {
           case AdminUserOperationResult.protected:
             skipped++;
           case AdminUserOperationResult.failed:
-            throw StateError('bulk toggle failed for user $userId');
+            throw StateError(
+              'bulk toggle failed for user ${AppLogger.obfuscate(userId)}',
+            );
         }
       }
       _updateState(isLoading: false, isSuccess: true);
@@ -90,7 +92,9 @@ class AdminBulkManager {
           case AdminUserOperationResult.protected:
             skipped++;
           case AdminUserOperationResult.failed:
-            throw StateError('bulk premium grant failed for user $userId');
+            throw StateError(
+              'bulk premium grant failed for user ${AppLogger.obfuscate(userId)}',
+            );
         }
       }
       _updateState(isLoading: false, isSuccess: true);
@@ -120,7 +124,9 @@ class AdminBulkManager {
           case AdminUserOperationResult.protected:
             skipped++;
           case AdminUserOperationResult.failed:
-            throw StateError('bulk premium revoke failed for user $userId');
+            throw StateError(
+              'bulk premium revoke failed for user ${AppLogger.obfuscate(userId)}',
+            );
         }
       }
       _updateState(isLoading: false, isSuccess: true);

@@ -104,7 +104,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('network error'), findsOneWidget);
+      // Raw exception text must NOT reach the admin UI; the widget
+      // shows only the localized key.
+      expect(find.textContaining('network error'), findsNothing);
+      expect(find.textContaining('common.data_load_error'), findsOneWidget);
     });
 
     testWidgets('renders sync_status section title', (tester) async {
@@ -464,7 +467,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('storage error'), findsOneWidget);
+      // Raw exception text must NOT reach the admin UI; the widget
+      // shows only the localized key.
+      expect(find.textContaining('storage error'), findsNothing);
+      expect(find.textContaining('common.data_load_error'), findsOneWidget);
     });
 
     testWidgets('renders Card widget', (tester) async {

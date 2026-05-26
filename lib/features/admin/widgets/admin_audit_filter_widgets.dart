@@ -73,11 +73,15 @@ class AuditFilterBar extends StatelessWidget {
                       : 'admin.start_date'.tr(),
                   isActive: filter.startDate != null,
                   onTap: () async {
+                    // Start can never be later than the chosen end date,
+                    // otherwise the resulting `gte/lt` filter would always
+                    // return an empty list with no warning to the admin.
+                    final upperBound = filter.endDate ?? DateTime.now();
                     final date = await showDatePicker(
                       context: context,
-                      initialDate: filter.startDate ?? DateTime.now(),
+                      initialDate: filter.startDate ?? upperBound,
                       firstDate: DateTime(2020),
-                      lastDate: DateTime.now(),
+                      lastDate: upperBound,
                     );
                     if (date != null) onStartDatePicked(date);
                   },
@@ -93,10 +97,13 @@ class AuditFilterBar extends StatelessWidget {
                       : 'admin.end_date'.tr(),
                   isActive: filter.endDate != null,
                   onTap: () async {
+                    // End must be on/after the chosen start date — see
+                    // matching guard on the start picker above.
+                    final lowerBound = filter.startDate ?? DateTime(2020);
                     final date = await showDatePicker(
                       context: context,
                       initialDate: filter.endDate ?? DateTime.now(),
-                      firstDate: DateTime(2020),
+                      firstDate: lowerBound,
                       lastDate: DateTime.now(),
                     );
                     if (date != null) onEndDatePicked(date);
