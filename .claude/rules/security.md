@@ -6,6 +6,32 @@
 - Session tokens stored in secure storage, never in SharedPreferences
 - Auth state managed via Riverpod provider, reactive across app
 
+### Google Sign-In OAuth Topology (dual-project)
+
+**Current state** (verified 2026-05-26): the Google Sign-In OAuth client lives in a SEPARATE Google Cloud project from the Firebase project. This is an intentional but unusual setup that must be understood before touching auth.
+
+| Layer | Identifier |
+|-------|------------|
+| Firebase project | `budgiebreedingtracker-12072` (project number `720334450619`) — owns FCM, Crashlytics, google-services.json/GoogleService-Info.plist |
+| Google OAuth project | (separate GCP project, project number `118599620356`) — owns the iOS OAuth Client ID `118599620356-2cfkj8ca8v8ihpcpnas04hs8qd7s51ej.apps.googleusercontent.com`, OAuth consent screen, Web Client ID for `GOOGLE_WEB_CLIENT_ID`. The Firebase project's GCP "OAuth Overview" reads "Google Auth Platform not configured yet" precisely because OAuth is hosted elsewhere. |
+
+The Android SHA-1 fingerprint `4b:50:9f:a3:...` shows a duplicate-registration warning in Firebase because that fingerprint is also registered against the OAuth client in the OTHER project. **Do not delete it from Firebase** — it is the production signature; the warning is informational, not a deletion recommendation.
+
+**Implications**:
+- Two GCP projects must stay healthy. If billing lapses or the OAuth-owning project is deleted, Google Sign-In silently breaks for every user.
+- OAuth consent screen verification status, branding (app logo, support email, privacy policy URL) and scope changes happen in the OAuth-owning project, not in Firebase.
+- New OAuth credentials (e.g. adding a debug SHA for a teammate) must be created in the OAuth-owning project; adding them under Firebase's "auto created by Firebase" API keys does not register a Sign-In client.
+- The app reads `GOOGLE_WEB_CLIENT_ID` / `GOOGLE_IOS_CLIENT_ID` from `--dart-define`; those values come from the OAuth-owning project. Info.plist `CFBundleURLSchemes` and `GIDClientID` reference the same client.
+
+**Future consolidation runbook** (when ready to migrate OAuth into the Firebase project):
+1. In Firebase project's GCP console (`budgiebreedingtracker-12072`), configure the OAuth consent screen (External, app name, support email, privacy policy URL `https://budgiebreedingtracker.online/privacy-policy.html`, scopes: `openid email profile`).
+2. Create new OAuth 2.0 Client IDs in the Firebase project: one iOS (bundle ID `com.budgiebreeding.tracker`, add the prod SHA-1 + SHA-256), one Web (used as `GOOGLE_WEB_CLIENT_ID`).
+3. Update Info.plist `CFBundleURLSchemes` (replace `com.googleusercontent.apps.118599620356-…` with the new reversed iOS client ID).
+4. Update `.env` / dart-defines / CI secrets: `GOOGLE_WEB_CLIENT_ID`, `GOOGLE_IOS_CLIENT_ID`.
+5. Add Sign-In flow telemetry, ship to a small beta first — old binaries still hit the OAuth-owning project for ~30 days post-release.
+6. Once Sign-In traffic on the old client ID drops to ~0 for 14 days, optionally delete the OAuth client in the legacy project; never delete the legacy GCP project itself if there's any chance it still owns the consent screen.
+7. Do NOT do this work outside a scheduled maintenance window. A misconfigured iOS reversed client ID breaks Sign-In for every iOS user until a binary rebuild + store re-review (~24h minimum).
+
 ### Secure Storage (`flutter_secure_storage`)
 ```dart
 const _storage = FlutterSecureStorage(
