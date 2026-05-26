@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name" translatable="false">BudgieTrack</string>
     <string name="budgie_dashboard_widget_description">BudgieTrack gunluk ureme ozeti</string>
     <string name="budgie_dashboard_widget_loading">BudgieTrack</string>
 </resources>

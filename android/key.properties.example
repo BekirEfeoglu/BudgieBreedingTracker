@@ -1,0 +1,13 @@
+# Android release signing config — copy to android/key.properties (gitignored).
+# Used by android/app/build.gradle.kts when assembling a signed release build.
+#
+# Generate a keystore once:
+#   keytool -genkey -v -keystore ~/budgie-release.keystore -keyalg RSA \
+#     -keysize 2048 -validity 10000 -alias budgie-release
+#
+# Then point storeFile at that file (absolute path, or relative to android/).
+
+storeFile=/absolute/path/to/budgie-release.keystore
+storePassword=
+keyAlias=budgie-release
+keyPassword=
