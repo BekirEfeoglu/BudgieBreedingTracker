@@ -73,16 +73,21 @@ All guards in `lib/router/guards/`. Never skip for "quick testing".
 - Google/Apple token revocation: `revoke-oauth-token` Edge Function on logout
 - FCM tokens: deleted from DB on logout
 
-## Dual-Project Google OAuth
+## Google OAuth (mid-migration)
 
-Google Sign-In OAuth client lives in a SEPARATE Google Cloud project from the Firebase project. Verified 2026-05-26; intentional but unusual setup.
+State as of 2026-05-26: OAuth clients exist in BOTH legacy GCP project (number `118599620356`) AND Firebase project (`budgiebreedingtracker-12072`, number `720334450619`). Supabase Auth Google provider holds both Web Client IDs in its comma-separated list — old AND new binaries' ID tokens are accepted in parallel.
 
 | Layer | Identifier |
 |-------|------------|
-| Firebase project | `budgiebreedingtracker-12072` (project number `720334450619`) — FCM, Crashlytics, google-services.json/GoogleService-Info.plist |
-| Google OAuth project | Separate GCP project, number `118599620356` — owns iOS Client ID `118599620356-…apps.googleusercontent.com`, OAuth consent screen, Web Client ID. Firebase project's GCP "OAuth Overview" shows "Google Auth Platform not configured yet" because OAuth is hosted elsewhere. |
+| Firebase project | `budgiebreedingtracker-12072` (`720334450619`). NEW OAuth clients (consent "In production", basic scopes, no verification needed). |
+| Legacy OAuth project | `118599620356` — still hosts the client older binaries reference. Keep until binary traffic drops. |
 
-The Android SHA-1 `4b:50:9f:a3:…` shows a duplicate-registration warning in Firebase because the same fingerprint is registered against the OAuth client in the other project. **The warning is informational, NOT a deletion recommendation.** Removing it from Firebase breaks Sign-In trust.
+New iOS Client: `720334450619-oacalc9gn0sg986d16it34jr4th6bkf4.apps.googleusercontent.com`.
+New Web Client: `720334450619-kvo5m738euj98t4qmmqeabmmd48ma0tl.apps.googleusercontent.com`, redirect `https://lmqkwgitzvpacycujzgc.supabase.co/auth/v1/callback`.
+
+`ios/Runner/Info.plist` `CFBundleURLSchemes` and `.env.example` updated. `GOOGLE_*_CLIENT_ID` env vars must be set to the new values in local `.env`, Codemagic env groups, and CI secrets before the next signed release. Old installed binaries still authenticate via legacy IDs — Supabase accepts both audiences.
+
+The Android SHA-1 `4b:50:9f:a3:…` is registered against BOTH OAuth clients during the rollout. **Do not delete from Firebase.**
 
 **Implications**:
 

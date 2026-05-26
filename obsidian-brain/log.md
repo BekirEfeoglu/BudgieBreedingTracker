@@ -4,6 +4,13 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-05-26] migrate | OAuth Phase 1+2 — new Client IDs in Firebase project, Supabase multi-audience, app code updated
+
+- GCP Firebase project: OAuth consent screen configured "In production", External (no verification needed — basic scopes only). New Web Client ID `720334450619-kvo5m738euj98t4qmmqeabmmd48ma0tl.apps.googleusercontent.com` + new iOS Client ID `720334450619-oacalc9gn0sg986d16it34jr4th6bkf4.apps.googleusercontent.com`.
+- Supabase Auth Google provider Client IDs field set to comma-separated list with BOTH legacy + new Web Client IDs — old AND new binaries' ID tokens accepted in parallel, no breaking change.
+- `ios/Runner/Info.plist` CFBundleURLSchemes replaced with new reversed iOS Client ID. `.env.example` updated with new Client ID values in comments.
+- `patterns/security.md` rewritten from "dual-project" to "mid-migration" with future-state cleanup checklist.
+
 ## [2026-05-26] update | Add revenuecat-webhook + dual-project OAuth docs
 
 - `infrastructure/edge-functions.md`: inventory 8 → 9, added `revenuecat-webhook` (Bearer token auth via `REVENUECAT_WEBHOOK_AUTH_TOKEN`), new "Webhook Receiver Exception" section, policies row, and step 7-12 for webhook receivers in the New Function Checklist.

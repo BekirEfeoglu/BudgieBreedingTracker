@@ -6,16 +6,32 @@
 - Session tokens stored in secure storage, never in SharedPreferences
 - Auth state managed via Riverpod provider, reactive across app
 
-### Google Sign-In OAuth Topology (dual-project)
+### Google Sign-In OAuth Topology (migrating to single-project)
 
-**Current state** (verified 2026-05-26): the Google Sign-In OAuth client lives in a SEPARATE Google Cloud project from the Firebase project. This is an intentional but unusual setup that must be understood before touching auth.
+**State as of 2026-05-26**: mid-migration. OAuth clients now exist in BOTH the legacy GCP project (number `118599620356`) AND the Firebase project (`budgiebreedingtracker-12072`, number `720334450619`). Supabase Auth Google provider is configured with both Web Client IDs in its comma-separated list, so ID tokens from old AND new binaries are both accepted — no breaking transition.
 
 | Layer | Identifier |
 |-------|------------|
-| Firebase project | `budgiebreedingtracker-12072` (project number `720334450619`) — owns FCM, Crashlytics, google-services.json/GoogleService-Info.plist |
-| Google OAuth project | (separate GCP project, project number `118599620356`) — owns the iOS OAuth Client ID `118599620356-2cfkj8ca8v8ihpcpnas04hs8qd7s51ej.apps.googleusercontent.com`, OAuth consent screen, Web Client ID for `GOOGLE_WEB_CLIENT_ID`. The Firebase project's GCP "OAuth Overview" reads "Google Auth Platform not configured yet" precisely because OAuth is hosted elsewhere. |
+| Firebase project | `budgiebreedingtracker-12072` (project number `720334450619`) — owns FCM, Crashlytics, google-services.json/GoogleService-Info.plist, NEW OAuth clients (consent screen "In production", basic scopes only, no verification needed). |
+| Legacy OAuth project | Separate GCP project, project number `118599620356`. Still hosts the OAuth client that older binaries reference. Do NOT delete until binary traffic drops to ~0 (see future-state below). |
 
-The Android SHA-1 fingerprint `4b:50:9f:a3:...` shows a duplicate-registration warning in Firebase because that fingerprint is also registered against the OAuth client in the OTHER project. **Do not delete it from Firebase** — it is the production signature; the warning is informational, not a deletion recommendation.
+**New iOS Client ID**: `720334450619-oacalc9gn0sg986d16it34jr4th6bkf4.apps.googleusercontent.com` (reversed: `com.googleusercontent.apps.720334450619-oacalc9gn0sg986d16it34jr4th6bkf4`). Bundle `com.budgiebreeding.tracker`, App Store ID `6759828211`, Team `GKFR8WRJR7`.
+
+**New Web Client ID**: `720334450619-kvo5m738euj98t4qmmqeabmmd48ma0tl.apps.googleusercontent.com` (redirect URI: `https://lmqkwgitzvpacycujzgc.supabase.co/auth/v1/callback`). Web Client Secret is stored only in Supabase Edge Function secrets / RC dashboard, never in this repo.
+
+**App code state**: `ios/Runner/Info.plist` `CFBundleURLSchemes` and `.env.example` updated to the NEW iOS reversed client ID. `GOOGLE_*_CLIENT_ID` env vars need to be set to the new values in local `.env`, Codemagic env groups, and any GitHub Actions secrets BEFORE the next signed release build. Old binaries still installed on user devices continue to use the legacy project's IDs (compiled in at build time) and Supabase accepts both audiences during the rollout window.
+
+The Android SHA-1 fingerprint `4b:50:9f:a3:...` shows a duplicate-registration warning in Firebase because that fingerprint is registered against BOTH OAuth clients (legacy + new). **Do not delete it from Firebase** — it is the production app signature for both clients during the migration.
+
+**Future-state cleanup** (only when ALL of these are true):
+1. New signed binary shipped to App Store + Play
+2. >90% of active users have updated to the new binary (check via Sentry tag or Supabase auth audit logs filtered by issuer)
+3. Old binary traffic against the legacy Web Client ID is ~0 for 14 consecutive days
+
+Then:
+- Remove the legacy Web Client ID from Supabase Auth's "Client IDs" comma-separated list
+- Optionally delete the OAuth client in the legacy GCP project
+- **Never delete the legacy GCP project** itself if any unrelated services still reference it — only remove the OAuth client
 
 **Implications**:
 - Two GCP projects must stay healthy. If billing lapses or the OAuth-owning project is deleted, Google Sign-In silently breaks for every user.
