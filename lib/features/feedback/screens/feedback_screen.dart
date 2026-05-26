@@ -105,7 +105,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen>
               text: 'feedback.new_feedback'.tr(),
             ),
             Tab(
-              icon: const Icon(LucideIcons.history, size: 18),
+              icon: const AppIcon(AppIcons.audit, size: 18),
               text: 'feedback.my_submissions'.tr(),
             ),
           ],
