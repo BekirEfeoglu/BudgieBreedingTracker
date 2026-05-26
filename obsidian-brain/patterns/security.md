@@ -89,22 +89,12 @@ New Web Client: `720334450619-kvo5m738euj98t4qmmqeabmmd48ma0tl.apps.googleuserco
 
 The Android SHA-1 `4b:50:9f:a3:…` is registered against BOTH OAuth clients during the rollout. **Do not delete from Firebase.**
 
-**Implications**:
+**Rollout state**:
 
-- Two GCP projects must stay healthy — if billing lapses or the OAuth-owning project is deleted, Google Sign-In silently breaks for every user
-- OAuth consent screen verification, branding, and scope changes happen in the OAuth-owning project, not in Firebase
-- New SHAs (debug, teammate) must be created in the OAuth-owning project; Firebase's auto-created API keys don't register a Sign-In client
-- App reads `GOOGLE_WEB_CLIENT_ID` / `GOOGLE_IOS_CLIENT_ID` from `--dart-define`; values come from the OAuth-owning project
-
-**Future consolidation runbook** (when ready to migrate OAuth into the Firebase project):
-
-1. In Firebase project's GCP console, configure OAuth consent screen (External, app name, support email, privacy policy URL, scopes `openid email profile`)
-2. Create new OAuth 2.0 Client IDs in the Firebase project: one iOS (bundle `com.budgiebreeding.tracker`, prod SHA-1 + SHA-256), one Web
-3. Update Info.plist `CFBundleURLSchemes` (replace `com.googleusercontent.apps.118599620356-…`)
-4. Update `.env` / dart-defines / CI secrets
-5. Add Sign-In telemetry, ship to small beta first — old binaries still hit the OAuth-owning project for ~30 days
-6. Once Sign-In traffic on old client drops to ~0 for 14 days, optionally delete the OAuth client in the legacy project; never delete the legacy GCP project itself if it might still own the consent screen
-7. Do NOT do this work outside a scheduled maintenance window — a misconfigured iOS reversed client ID breaks Sign-In for every iOS user until a binary rebuild + store re-review (~24h minimum)
+- New Client IDs committed in `.env.example`; local `.env`, Codemagic env groups, and CI secrets must use the new values before the next signed release build
+- Old installed binaries authenticate via legacy IDs (compiled in at build time) — Supabase accepts both audiences, no breakage
+- A misconfigured iOS reversed client ID breaks Sign-In for every iOS user until binary rebuild + store re-review (~24h)
+- Test new IDs in a debug build before shipping a signed release
 
 ## Certificate Pinning
 

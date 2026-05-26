@@ -33,20 +33,10 @@ Then:
 - Optionally delete the OAuth client in the legacy GCP project
 - **Never delete the legacy GCP project** itself if any unrelated services still reference it — only remove the OAuth client
 
-**Implications**:
-- Two GCP projects must stay healthy. If billing lapses or the OAuth-owning project is deleted, Google Sign-In silently breaks for every user.
-- OAuth consent screen verification status, branding (app logo, support email, privacy policy URL) and scope changes happen in the OAuth-owning project, not in Firebase.
-- New OAuth credentials (e.g. adding a debug SHA for a teammate) must be created in the OAuth-owning project; adding them under Firebase's "auto created by Firebase" API keys does not register a Sign-In client.
-- The app reads `GOOGLE_WEB_CLIENT_ID` / `GOOGLE_IOS_CLIENT_ID` from `--dart-define`; those values come from the OAuth-owning project. Info.plist `CFBundleURLSchemes` and `GIDClientID` reference the same client.
-
-**Future consolidation runbook** (when ready to migrate OAuth into the Firebase project):
-1. In Firebase project's GCP console (`budgiebreedingtracker-12072`), configure the OAuth consent screen (External, app name, support email, privacy policy URL `https://budgiebreedingtracker.online/privacy-policy.html`, scopes: `openid email profile`).
-2. Create new OAuth 2.0 Client IDs in the Firebase project: one iOS (bundle ID `com.budgiebreeding.tracker`, add the prod SHA-1 + SHA-256), one Web (used as `GOOGLE_WEB_CLIENT_ID`).
-3. Update Info.plist `CFBundleURLSchemes` (replace `com.googleusercontent.apps.118599620356-…` with the new reversed iOS client ID).
-4. Update `.env` / dart-defines / CI secrets: `GOOGLE_WEB_CLIENT_ID`, `GOOGLE_IOS_CLIENT_ID`.
-5. Add Sign-In flow telemetry, ship to a small beta first — old binaries still hit the OAuth-owning project for ~30 days post-release.
-6. Once Sign-In traffic on the old client ID drops to ~0 for 14 days, optionally delete the OAuth client in the legacy project; never delete the legacy GCP project itself if there's any chance it still owns the consent screen.
-7. Do NOT do this work outside a scheduled maintenance window. A misconfigured iOS reversed client ID breaks Sign-In for every iOS user until a binary rebuild + store re-review (~24h minimum).
+**Rollout state**:
+- New Web Client ID is committed in `.env.example`. Local `.env`, Codemagic env groups, and CI secrets must use the new `GOOGLE_WEB_CLIENT_ID` + `GOOGLE_IOS_CLIENT_ID` values before the next signed release build.
+- Old installed binaries still authenticate via the legacy project's IDs (compiled in at build time). Supabase accepts both audiences during this rollout, so old binaries do NOT break.
+- A misconfigured iOS reversed client ID breaks Sign-In for every iOS user until a binary rebuild + store re-review (~24h minimum). Test new IDs in a debug build before shipping a signed release.
 
 ### Secure Storage (`flutter_secure_storage`)
 ```dart
