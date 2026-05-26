@@ -8,6 +8,7 @@ import {
   createSupabaseRateLimitStore,
   rateLimitedResponse,
 } from "../_shared/rate-limit.ts";
+import { fetchRevenueCatSubscriber } from "../_shared/revenuecat.ts";
 import {
   DEFAULT_ENTITLEMENT_ID,
   profileMatchesPremiumStatus,
@@ -19,34 +20,6 @@ const rateLimiter = createRateLimiter({
   maxCalls: 10,
   store: createSupabaseRateLimitStore("sync-premium-status"),
 });
-
-async function fetchRevenueCatSubscriber(userId: string): Promise<unknown> {
-  const apiKey = Deno.env.get("REVENUECAT_SECRET_API_KEY") ?? "";
-  if (!apiKey.startsWith("sk_")) {
-    throw new Error("Missing REVENUECAT_SECRET_API_KEY secret");
-  }
-
-  const response = await fetch(
-    `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(userId)}`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-    },
-  );
-
-  if (response.status === 404) {
-    return { subscriber: { entitlements: {} } };
-  }
-
-  if (!response.ok) {
-    throw new Error(`RevenueCat lookup failed with status ${response.status}`);
-  }
-
-  return await response.json();
-}
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return corsPreflightResponse(req);

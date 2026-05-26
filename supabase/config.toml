@@ -410,5 +410,11 @@ verify_jwt = true
 [functions.sync-premium-status]
 verify_jwt = true
 
+# Webhook receiver — RevenueCat does not send a Supabase JWT.
+# The function performs its own auth via REVENUECAT_WEBHOOK_AUTH_TOKEN
+# shared secret on the Authorization header. See edge-functions.md.
+[functions.revenuecat-webhook]
+verify_jwt = false
+
 [functions.validate-free-tier-limit]
 verify_jwt = true

@@ -1,18 +1,31 @@
 # Supabase Edge Functions
 
-## Inventory (8)
+## Inventory (9)
 | Function | Trigger | Auth |
 |----------|---------|------|
 | `mfa-lockout` | MFA login attempts | JWT |
 | `moderate-content` | Community reports / threshold auto-flag | JWT |
+| `revenuecat-webhook` | RevenueCat subscription events (push) | Shared secret (`REVENUECAT_WEBHOOK_AUTH_TOKEN`) |
 | `revoke-oauth-token` | Logout (Google/Apple) | JWT |
 | `send-push` | Notification scheduler | JWT |
 | `system-health` | Admin dashboard | JWT + admin role |
 | `validate-free-tier-limit` | Entity insert path | JWT |
 | `scan-image-safety` | Photo upload pipeline | JWT |
-| `sync-premium-status` | RevenueCat premium sync | JWT |
+| `sync-premium-status` | RevenueCat premium sync (client pull) | JWT |
 
-All functions MUST enforce JWT verification. Never deploy with `--no-verify-jwt` — audit flagged this as release-blocker.
+All client-called functions MUST enforce JWT verification. Never deploy with `--no-verify-jwt` for those — audit flagged this as release-blocker.
+
+### Webhook Receiver Exception
+Third-party webhook senders (RevenueCat, Stripe, Apple ASN, etc.) cannot send a Supabase JWT — they post server-to-server with their own auth model (static header, HMAC signature, mTLS). For those receivers ONLY:
+- Set `verify_jwt = false` in `supabase/config.toml` (explicit, not omitted)
+- Deploy with `--no-verify-jwt` flag in the CI deploy step
+- Add the function name to `WEBHOOK_FUNCTIONS_EXEMPT_FROM_JWT` in `scripts/verify_security.py`
+- The function source MUST perform its own auth (shared secret, signature verification) — never trust the raw request
+- Use constant-time comparison for shared-secret checks (no timing leak)
+- The shared secret MUST be 16+ characters; reject shorter configurations
+- On auth failure return 401; on internal errors return 200 with a non-success body so the sender does NOT enter a retry storm — the next client pull will repair state
+
+Current webhook receivers: `revenuecat-webhook` (shared secret via `REVENUECAT_WEBHOOK_AUTH_TOKEN`).
 
 ## Input Validation
 - Parse all request bodies with a schema validator (Zod preferred, or hand-rolled type guards)

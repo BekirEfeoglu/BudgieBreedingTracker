@@ -333,6 +333,7 @@ jobs:
           supabase functions deploy send-push --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
           supabase functions deploy system-health --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
           supabase functions deploy sync-premium-status --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          supabase functions deploy revenuecat-webhook --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --no-verify-jwt
           supabase functions deploy validate-free-tier-limit --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
 
   android-build:

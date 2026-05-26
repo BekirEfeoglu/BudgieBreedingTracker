@@ -42,6 +42,15 @@ from typing import List, Tuple
 ROOT = Path(__file__).resolve().parent.parent
 VERBOSE = "--verbose" in sys.argv
 
+# Edge Functions that legitimately cannot verify a Supabase JWT because they
+# are called by external systems that do not authenticate via Supabase Auth
+# (e.g. third-party webhook receivers). Each entry MUST perform its own auth
+# in the function source (shared-secret header, HMAC signature, etc.) and the
+# exemption must be documented in .claude/rules/edge-functions.md.
+WEBHOOK_FUNCTIONS_EXEMPT_FROM_JWT = {
+    "revenuecat-webhook",
+}
+
 # Reuse shared color helpers if available; fall back to plain text.
 try:
     sys.path.insert(0, str(ROOT / "scripts"))
@@ -184,13 +193,36 @@ def check_edge_function_jwt_verification() -> List[Tuple[str, bool, str]]:
             re.MULTILINE,
         )
         label = f"edge function {name} verify_jwt"
+        is_webhook_exempt = name in WEBHOOK_FUNCTIONS_EXEMPT_FROM_JWT
         if not block_match:
-            results.append(
-                fail(label, f"missing [functions.{name}] verify_jwt = true")
-            )
+            if is_webhook_exempt:
+                results.append(
+                    fail(
+                        label,
+                        f"missing [functions.{name}] block; "
+                        "webhook receivers must declare verify_jwt = false explicitly",
+                    )
+                )
+            else:
+                results.append(
+                    fail(label, f"missing [functions.{name}] verify_jwt = true")
+                )
             continue
         verify_jwt = _read_toml_value(block_match.group(1), "verify_jwt")
-        if verify_jwt == "true":
+        if is_webhook_exempt:
+            # Webhook receivers must opt OUT of JWT verification explicitly so
+            # the exemption is visible in the config rather than silent.
+            if verify_jwt == "false":
+                results.append(ok(label, "explicit false (webhook receiver)"))
+            else:
+                results.append(
+                    fail(
+                        label,
+                        f"webhook receiver must set verify_jwt = false; "
+                        f"found {verify_jwt or 'missing'}",
+                    )
+                )
+        elif verify_jwt == "true":
             results.append(ok(label, "explicit true"))
         else:
             results.append(
@@ -209,8 +241,20 @@ def check_edge_function_jwt_verification() -> List[Tuple[str, bool, str]]:
                 continue
             text = path.read_text(encoding="utf-8", errors="ignore")
             for lineno, line in enumerate(text.splitlines(), start=1):
-                if "--no-verify-jwt" in line and not line.strip().startswith("#"):
-                    bypass_hits.append(f"{path.relative_to(ROOT)}:{lineno}")
+                if "--no-verify-jwt" not in line:
+                    continue
+                if line.strip().startswith("#"):
+                    continue
+                # Allow the deploy line for webhook receivers whose JWT exemption
+                # is declared in WEBHOOK_FUNCTIONS_EXEMPT_FROM_JWT.
+                if any(
+                    f"deploy {name} " in line or line.rstrip().endswith(
+                        f"deploy {name}"
+                    )
+                    for name in WEBHOOK_FUNCTIONS_EXEMPT_FROM_JWT
+                ):
+                    continue
+                bypass_hits.append(f"{path.relative_to(ROOT)}:{lineno}")
 
     if bypass_hits:
         results.append(

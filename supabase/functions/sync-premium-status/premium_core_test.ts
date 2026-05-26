@@ -43,7 +43,29 @@ Deno.test("resolvePremiumStatus: lifetime entitlement", () => {
   assertEquals(result.productIdentifier, "lifetime");
 });
 
-Deno.test("resolvePremiumStatus: expired entitlement keeps app grace window", () => {
+Deno.test("resolvePremiumStatus: recently expired entitlement fabricates 30d grace", () => {
+  // Expiry 3 days before `now` falls inside the 7-day fabrication window
+  // (see premium_core.ts grace-period guard).
+  const result = resolvePremiumStatus({
+    subscriber: {
+      entitlements: {
+        premium: {
+          expires_date: "2026-04-28T12:00:00Z",
+          product_identifier: "premium_monthly",
+        },
+      },
+    },
+  }, now);
+
+  assertEquals(result.isPremium, false);
+  assertEquals(result.subscriptionStatus, "free");
+  assertEquals(result.subscriptionRecordStatus, "expired");
+  assertEquals(result.gracePeriodUntil, "2026-05-28T12:00:00.000Z");
+});
+
+Deno.test("resolvePremiumStatus: long-expired entitlement does NOT refabricate grace", () => {
+  // Expiry 11 days before `now` is OUTSIDE the 7-day window — guard against
+  // resurrecting cancelled users on every sync.
   const result = resolvePremiumStatus({
     subscriber: {
       entitlements: {
@@ -56,9 +78,7 @@ Deno.test("resolvePremiumStatus: expired entitlement keeps app grace window", ()
   }, now);
 
   assertEquals(result.isPremium, false);
-  assertEquals(result.subscriptionStatus, "free");
-  assertEquals(result.subscriptionRecordStatus, "expired");
-  assertEquals(result.gracePeriodUntil, "2026-05-20T12:00:00.000Z");
+  assertEquals(result.gracePeriodUntil, null);
 });
 
 Deno.test("resolvePremiumStatus: RevenueCat grace date wins", () => {

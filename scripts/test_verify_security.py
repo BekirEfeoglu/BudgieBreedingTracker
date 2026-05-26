@@ -258,6 +258,111 @@ verify_jwt = false
         self.assertEqual("edge deploy no-verify-jwt", results[-1][0])
         self.assertFalse(results[-1][1])
 
+    def test_accepts_documented_webhook_exemption(self):
+        """Webhook receivers can opt out of JWT with verify_jwt = false."""
+        import verify_security as vs
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write(
+                root / "supabase" / "functions" / "send-push" / "index.ts", ""
+            )
+            _write(
+                root
+                / "supabase"
+                / "functions"
+                / "revenuecat-webhook"
+                / "index.ts",
+                "",
+            )
+            _write(
+                root / "supabase" / "config.toml",
+                """
+[functions.send-push]
+verify_jwt = true
+
+[functions.revenuecat-webhook]
+verify_jwt = false
+""",
+            )
+            _write(
+                root / ".github" / "workflows" / "deploy.yml",
+                "supabase functions deploy revenuecat-webhook --project-ref X --no-verify-jwt",
+            )
+
+            with patch.object(vs, "ROOT", root):
+                results = vs.check_edge_function_jwt_verification()
+
+        self.assertTrue(all(passed for _, passed, _ in results), results)
+        self.assertIn(
+            (
+                "edge function revenuecat-webhook verify_jwt",
+                True,
+                "explicit false (webhook receiver)",
+            ),
+            results,
+        )
+        self.assertIn(
+            ("edge deploy no-verify-jwt", True, "not used"),
+            results,
+        )
+
+    def test_rejects_webhook_without_explicit_false(self):
+        """An exempt webhook missing verify_jwt = false must still fail."""
+        import verify_security as vs
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write(
+                root
+                / "supabase"
+                / "functions"
+                / "revenuecat-webhook"
+                / "index.ts",
+                "",
+            )
+            # config has the block but verify_jwt is missing
+            _write(
+                root / "supabase" / "config.toml",
+                """
+[functions.revenuecat-webhook]
+""",
+            )
+
+            with patch.object(vs, "ROOT", root):
+                results = vs.check_edge_function_jwt_verification()
+
+        self.assertIn(
+            (
+                "edge function revenuecat-webhook verify_jwt",
+                False,
+                "webhook receiver must set verify_jwt = false; found missing",
+            ),
+            results,
+        )
+
+    def test_rejects_no_verify_jwt_for_non_exempt_function(self):
+        """--no-verify-jwt on a non-exempt function name is still a fail."""
+        import verify_security as vs
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write(root / "supabase" / "functions" / "send-push" / "index.ts", "")
+            _write(
+                root / "supabase" / "config.toml",
+                "[functions.send-push]\nverify_jwt = true\n",
+            )
+            _write(
+                root / ".github" / "workflows" / "deploy.yml",
+                "supabase functions deploy send-push --no-verify-jwt",
+            )
+
+            with patch.object(vs, "ROOT", root):
+                results = vs.check_edge_function_jwt_verification()
+
+        self.assertEqual("edge deploy no-verify-jwt", results[-1][0])
+        self.assertFalse(results[-1][1])
+
 
 class TestCertificatePinning(unittest.TestCase):
     def test_accepts_pinning_module_wired_into_bootstrap(self):
