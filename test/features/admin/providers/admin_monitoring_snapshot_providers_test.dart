@@ -580,7 +580,10 @@ void main() {
       final result = await container.read(cronJobStatusProvider.future);
 
       expect(result['status'], 'error');
-      expect(result['message'], contains('rpc failed'));
+      // `message` was removed to avoid leaking raw exception text into the
+      // UI; status='error' is the contract observed by the consumer
+      // (see admin_settings_status_sections.dart).
+      expect(result.containsKey('message'), isFalse);
       expect(client.rpcCalls, ['verify_monitoring_cron_jobs']);
     });
   });

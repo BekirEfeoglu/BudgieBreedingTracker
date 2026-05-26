@@ -333,7 +333,9 @@ void main() {
       expect(client.rpcCalls, hasLength(1));
       expect(client.rpcCalls.single.fn, 'admin_reset_table');
       expect(updates.last.isLoading, isFalse);
-      expect(updates.last.error, contains('rpc unavailable'));
+      // Error must be the localized l10n key (not raw exception text)
+      // to avoid leaking internal details to admin UI.
+      expect(updates.last.error, 'admin.action_error');
     });
   });
 

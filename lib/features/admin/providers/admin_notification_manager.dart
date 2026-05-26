@@ -41,7 +41,7 @@ class AdminNotificationManager {
           ? body.trim().substring(0, 1000)
           : body.trim();
 
-      await client.from(SupabaseConstants.notificationsTable).insert({
+      await client.from(SupabaseConstants.notificationsTable).upsert({
         'id': const Uuid().v4(),
         'user_id': targetUserId,
         'title': sanitizedTitle,
@@ -49,7 +49,7 @@ class AdminNotificationManager {
         'type': 'custom',
         'priority': 'normal',
         'read': false,
-      });
+      }, onConflict: 'id');
 
       final edgeClient = _ref.read(edgeFunctionClientProvider);
       final pushResult = await edgeClient.sendPush(
@@ -131,7 +131,9 @@ class AdminNotificationManager {
           )
           .toList();
 
-      await client.from(SupabaseConstants.notificationsTable).insert(rows);
+      await client
+          .from(SupabaseConstants.notificationsTable)
+          .upsert(rows, onConflict: 'id');
 
       final edgeClient = _ref.read(edgeFunctionClientProvider);
       final pushResult = await edgeClient.sendPush(

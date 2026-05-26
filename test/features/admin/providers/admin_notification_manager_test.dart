@@ -95,6 +95,22 @@ class _FakeMutationQueryBuilder extends Fake implements SupabaseQueryBuilder {
     return _FakeMutationBuilder(error: insertError);
   }
 
+  /// `upsert` is wired through the same counters as `insert` so existing
+  /// assertions on `insertCallCount` / `insertPayload` keep working after
+  /// the notification path migrated to `.upsert(..., onConflict: 'id')`
+  /// for idempotency on retry.
+  @override
+  PostgrestFilterBuilder<dynamic> upsert(
+    Object values, {
+    String? onConflict,
+    bool ignoreDuplicates = false,
+    bool defaultToNull = true,
+  }) {
+    insertPayload = values;
+    insertCallCount++;
+    return _FakeMutationBuilder(error: insertError);
+  }
+
   @override
   PostgrestFilterBuilder<dynamic> update(
     Object values, {

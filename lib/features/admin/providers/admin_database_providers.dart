@@ -78,8 +78,8 @@ final softDeleteStatsProvider =
               olderThanDaysCount: (olderDeleted as List).length,
             ),
           );
-        } catch (e) {
-          AppLogger.warning('softDeleteStats: Failed for $table: $e');
+        } catch (e, st) {
+          AppLogger.warning('softDeleteStats: Failed for $table: $e\n$st');
         }
       }
       return stats;
@@ -143,8 +143,8 @@ final storageUsageProvider = FutureProvider<List<BucketUsage>>((ref) async {
           totalSizeBytes: totalSize,
         ),
       );
-    } catch (e) {
-      AppLogger.warning('storageUsage: Failed for $bucket: $e');
+    } catch (e, st) {
+      AppLogger.warning('storageUsage: Failed for $bucket: $e\n$st');
       usages.add(BucketUsage(bucketName: bucket));
     }
   }

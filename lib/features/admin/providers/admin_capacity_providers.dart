@@ -19,8 +19,10 @@ final dbSizeLimitProvider = FutureProvider<int>((ref) async {
     final planEntry = settings['supabase_plan'];
     final plan = (planEntry?['value'] as String?) ?? 'pro';
     return AdminConstants.dbSizeLimitForPlan(plan);
-  } catch (e) {
-    AppLogger.warning('admin: DB size limit fetch failed, using default: $e');
+  } catch (e, st) {
+    AppLogger.warning(
+      'admin: DB size limit fetch failed, using default: $e\n$st',
+    );
     return AdminConstants.dbSizeLimitDefault;
   }
 });
@@ -148,8 +150,10 @@ final serverCapacityProvider = FutureProvider<ServerCapacity>((ref) async {
             deadTupleRatio: 0,
           ),
         );
-      } catch (e2) {
-        AppLogger.warning('serverCapacityProvider fallback: $table: $e2');
+      } catch (e2, st2) {
+        AppLogger.warning(
+          'serverCapacityProvider fallback: $table: $e2\n$st2',
+        );
         tableCapacities.add(
           TableCapacity(
             name: table,

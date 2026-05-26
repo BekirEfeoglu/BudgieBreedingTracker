@@ -1960,6 +1960,8 @@
     "days_ago": "{} days ago",
     "monitoring_trends": "Monitoring Trends",
     "connection_trend": "Connection Trend",
+    "connection_usage_title": "Connection Usage",
+    "connection_usage_label": "{} / {} connections ({}%)",
     "cache_hit_trend": "Cache Hit Ratio",
     "no_trend_data": "No trend data available",
     "monitoring_no_data": "No monitoring data yet. Data will appear after the first pg_cron job execution.",

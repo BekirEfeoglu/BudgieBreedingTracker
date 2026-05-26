@@ -1960,6 +1960,8 @@
     "days_ago": "Vor {} Tagen",
     "monitoring_trends": "Monitoring-Trends",
     "connection_trend": "Verbindungstrend",
+    "connection_usage_title": "Verbindungsauslastung",
+    "connection_usage_label": "{} / {} Verbindungen ({}%)",
     "cache_hit_trend": "Cache-Trefferquote",
     "no_trend_data": "Keine Trenddaten verfügbar",
     "monitoring_no_data": "Noch keine Monitoring-Daten. Daten erscheinen nach der ersten pg_cron-Ausführung.",

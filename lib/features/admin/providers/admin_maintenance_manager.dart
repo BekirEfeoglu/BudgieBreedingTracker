@@ -107,8 +107,8 @@ class AdminMaintenanceManager {
               .lt('updated_at', cutoff.toUtc().toIso8601String())
               .select('id');
           totalCleaned += (result as List).length;
-        } catch (e) {
-          AppLogger.warning('cleanSoftDeleted: Failed for $table: $e');
+        } catch (e, st) {
+          AppLogger.warning('cleanSoftDeleted: Failed for $table: $e\n$st');
         }
       }
 

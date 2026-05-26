@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
@@ -68,7 +69,7 @@ class AdminBulkManager {
     } catch (e, st) {
       AppLogger.error('AdminBulkManager.bulkToggleActive', e, st);
       Sentry.captureException(e, stackTrace: st);
-      _updateState(isLoading: false, error: e.toString());
+      _updateState(isLoading: false, error: 'admin.action_error'.tr());
       return (succeeded: succeeded, skipped: skipped);
     }
   }
@@ -98,7 +99,7 @@ class AdminBulkManager {
     } catch (e, st) {
       AppLogger.error('AdminBulkManager.bulkGrantPremium', e, st);
       Sentry.captureException(e, stackTrace: st);
-      _updateState(isLoading: false, error: e.toString());
+      _updateState(isLoading: false, error: 'admin.action_error'.tr());
       return (succeeded: succeeded, skipped: skipped);
     }
   }
@@ -128,7 +129,7 @@ class AdminBulkManager {
     } catch (e, st) {
       AppLogger.error('AdminBulkManager.bulkRevokePremium', e, st);
       Sentry.captureException(e, stackTrace: st);
-      _updateState(isLoading: false, error: e.toString());
+      _updateState(isLoading: false, error: 'admin.action_error'.tr());
       return (succeeded: succeeded, skipped: skipped);
     }
   }
@@ -151,7 +152,7 @@ class AdminBulkManager {
     } catch (e, st) {
       AppLogger.error('AdminBulkManager.bulkExport', e, st);
       Sentry.captureException(e, stackTrace: st);
-      _updateState(isLoading: false, error: e.toString());
+      _updateState(isLoading: false, error: 'admin.action_error'.tr());
       return '';
     }
   }
@@ -179,10 +180,19 @@ class AdminBulkManager {
           for (final table in deletionOrder) {
             try {
               await client.from(table).delete().eq('user_id', userId);
-            } catch (e) {
+            } catch (e, st) {
               userHadDeleteError = true;
               AppLogger.warning(
-                'bulkDeleteUserData: table $table for $userId: $e',
+                'bulkDeleteUserData: table $table for ${AppLogger.obfuscate(userId)}: $e\n$st',
+              );
+              Sentry.addBreadcrumb(
+                Breadcrumb(
+                  message:
+                      'bulkDeleteUserData table delete failed for ${AppLogger.obfuscate(userId)}',
+                  category: 'admin.bulk_delete',
+                  level: SentryLevel.warning,
+                  data: {'table': table, 'error': e.toString()},
+                ),
               );
             }
           }
@@ -191,8 +201,10 @@ class AdminBulkManager {
           } else {
             succeeded++;
           }
-        } catch (e) {
-          AppLogger.warning('admin: bulkDeleteUserData failed for $userId: $e');
+        } catch (e, st) {
+          AppLogger.warning(
+            'admin: bulkDeleteUserData failed for ${AppLogger.obfuscate(userId)}: $e\n$st',
+          );
           skipped++;
         }
       }
@@ -203,7 +215,7 @@ class AdminBulkManager {
     } catch (e, st) {
       AppLogger.error('AdminBulkManager.bulkDeleteUserData', e, st);
       Sentry.captureException(e, stackTrace: st);
-      _updateState(isLoading: false, error: e.toString());
+      _updateState(isLoading: false, error: 'admin.action_error'.tr());
       return (succeeded: succeeded, skipped: skipped);
     }
   }

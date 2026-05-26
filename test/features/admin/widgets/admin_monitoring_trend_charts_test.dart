@@ -23,7 +23,10 @@ const _trendWithConnections = MonitoringTrend(
   ],
 );
 
-const _trendNoConnections = MonitoringTrend(
+// Pool sized but currently zero active connections — the usage gauge
+// should render "0 / 100 (0%)" instead of an empty state, because the
+// fact that the pool exists is meaningful information.
+const _trendIdlePool = MonitoringTrend(
   totalConnections: 0,
   maxConnections: 100,
 );
@@ -46,20 +49,34 @@ void main() {
       expect(find.text(l10n('admin.monitoring_trends')), findsOneWidget);
     });
 
-    testWidgets('shows connection_trend card', (tester) async {
+    testWidgets('shows connection_usage_title card', (tester) async {
       await pumpLocalizedApp(
         tester,
         _wrap(const MonitoringTrendCharts(trends: _trendWithConnections)),
       );
-      expect(find.text(l10n('admin.connection_trend')), findsOneWidget);
+      expect(
+        find.text(l10n('admin.connection_usage_title')),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('shows ChartEmpty when no connections', (tester) async {
+    testWidgets('shows ChartEmpty when no pool data at all', (tester) async {
       await pumpLocalizedApp(
         tester,
-        _wrap(const MonitoringTrendCharts(trends: _trendNoConnections)),
+        _wrap(const MonitoringTrendCharts(trends: _emptyTrend)),
       );
       expect(find.byType(ChartEmpty), findsOneWidget);
+    });
+
+    testWidgets('renders usage gauge for idle pool (0 / max)', (tester) async {
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const MonitoringTrendCharts(trends: _trendIdlePool)),
+      );
+      // Empty state must NOT show when the pool size is known — the gauge
+      // takes over and shows "0 / 100" so admins see pool config exists.
+      expect(find.byType(ChartEmpty), findsNothing);
+      expect(find.byType(LinearProgressIndicator), findsWidgets);
     });
 
     testWidgets('shows connection_pool card when states exist', (tester) async {

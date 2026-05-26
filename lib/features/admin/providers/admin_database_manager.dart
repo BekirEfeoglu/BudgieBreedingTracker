@@ -92,7 +92,7 @@ class AdminDatabaseManager {
       return jsonStr;
     } catch (e, st) {
       AppLogger.error('AdminDatabaseManager.exportTable', e, st);
-      _updateState(isLoading: false, error: '${'admin.action_error'.tr()}: $e');
+      _updateState(isLoading: false, error: 'admin.action_error'.tr());
       return null;
     }
   }
@@ -143,7 +143,7 @@ class AdminDatabaseManager {
       return jsonStr;
     } catch (e, st) {
       AppLogger.error('AdminDatabaseManager.exportAllTables', e, st);
-      _updateState(isLoading: false, error: '${'admin.action_error'.tr()}: $e');
+      _updateState(isLoading: false, error: 'admin.action_error'.tr());
       return null;
     }
   }
@@ -185,7 +185,7 @@ class AdminDatabaseManager {
         'Admin resetTable aborted because RPC failed: $tableName',
         level: SentryLevel.warning,
       );
-      _updateState(isLoading: false, error: '${'admin.action_error'.tr()}: $e');
+      _updateState(isLoading: false, error: 'admin.action_error'.tr());
       return false;
     }
   }
@@ -217,7 +217,7 @@ class AdminDatabaseManager {
         'Admin resetAllUserData aborted because RPC failed',
         level: SentryLevel.warning,
       );
-      _updateState(isLoading: false, error: '${'admin.action_error'.tr()}: $e');
+      _updateState(isLoading: false, error: 'admin.action_error'.tr());
       return false;
     }
   }

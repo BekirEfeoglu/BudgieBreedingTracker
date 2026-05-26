@@ -1960,6 +1960,8 @@
     "days_ago": "{} gün önce",
     "monitoring_trends": "Monitoring Trendleri",
     "connection_trend": "Bağlantı Trendi",
+    "connection_usage_title": "Bağlantı Kullanımı",
+    "connection_usage_label": "{} / {} bağlantı (%{})",
     "cache_hit_trend": "Önbellek İsabet Oranı",
     "no_trend_data": "Trend verisi bulunamadı",
     "monitoring_no_data": "Henüz monitoring verisi yok. pg_cron job'ları ilk çalıştırmadan sonra burada görünecek.",

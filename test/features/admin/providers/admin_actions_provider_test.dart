@@ -402,7 +402,9 @@ void main() {
         final state = container.read(adminActionsProvider);
         expect(state.isLoading, isFalse);
         expect(state.isSuccess, isFalse);
-        expect(state.error, contains('profiles failed'));
+        // Error must be the localized l10n key (not raw exception text)
+        // to avoid leaking internal details to admin UI.
+        expect(state.error, 'admin.action_error');
       },
     );
 

@@ -139,15 +139,18 @@ final adminAuditLogsProvider = FutureProvider.autoDispose<List<AdminLog>>((
     );
   }
   if (filter.endDate != null) {
-    final endOfDay = DateTime(
-      filter.endDate!.year,
-      filter.endDate!.month,
-      filter.endDate!.day,
-      23,
-      59,
-      59,
-    );
-    query = query.lte('created_at', endOfDay.toUtc().toIso8601String());
+    // Use UTC midnight of the day AFTER endDate with strict `<` so the full
+    // selected day is included regardless of device timezone. The previous
+    // local `DateTime(y,m,d,23,59,59).toUtc()` shifted the boundary by the
+    // device TZ offset and lost the last hours of the range for UTC+N users.
+    // See datetime-format.md § "UTC at Boundary".
+    final endDate = filter.endDate!;
+    final endExclusive = DateTime.utc(
+      endDate.year,
+      endDate.month,
+      endDate.day,
+    ).add(const Duration(days: 1));
+    query = query.lt('created_at', endExclusive.toIso8601String());
   }
 
   // Text search — server-side via PostgREST .or()
@@ -222,10 +225,13 @@ final securityEventTrendProvider = FutureProvider<List<DailyDataPoint>>((
       .order('created_at');
 
   final rows = result as List;
-  // Use YYYY-MM-DD key to handle year boundary correctly
+  // Normalize bucket key to UTC to match the UTC window. Without `.toUtc()`
+  // the parsed timestamp gets converted to device-local time and shifts the
+  // bucket boundary by the TZ offset, putting late-evening events into the
+  // next day's bucket. See datetime-format.md § "UTC at Boundary".
   final grouped = <String, int>{};
   for (final row in rows) {
-    final date = DateTime.parse(row['created_at'] as String);
+    final date = DateTime.parse(row['created_at'] as String).toUtc();
     final key =
         '${date.year}-'
         '${date.month.toString().padLeft(2, '0')}-'
@@ -239,7 +245,7 @@ final securityEventTrendProvider = FutureProvider<List<DailyDataPoint>>((
   return sortedEntries.map((e) {
     final parts = e.key.split('-');
     return DailyDataPoint(
-      date: DateTime(
+      date: DateTime.utc(
         int.parse(parts[0]),
         int.parse(parts[1]),
         int.parse(parts[2]),

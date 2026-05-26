@@ -381,11 +381,13 @@ void main() {
         final result = await manager.bulkExport({'u1'});
 
         expect(result, isEmpty);
-        // Verify error state — isSuccess is not passed in catch, so null
+        // Verify error state — isSuccess is not passed in catch, so null.
+        // Error must be the localized l10n key (not raw exception text)
+        // to avoid leaking internal details to admin UI.
         final lastCall = tracker.calls.last;
         expect(lastCall['isLoading'], isFalse);
         expect(lastCall['isSuccess'], isNull);
-        expect(lastCall['error'], contains('profiles query failed'));
+        expect(lastCall['error'], 'admin.action_error');
       });
 
       test('fails when not admin (requireAdmin throws)', () async {

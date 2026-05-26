@@ -197,6 +197,9 @@ final cronJobStatusProvider = FutureProvider<Map<String, dynamic>>((ref) async {
     return result as Map<String, dynamic>;
   } catch (e, st) {
     AppLogger.error('cronJobStatusProvider', e, st);
-    return {'status': 'error', 'message': e.toString()};
+    // Avoid leaking raw exception text into UI consumers; status='error'
+    // is the contract observed by `_CronStatusSection`. Localized error
+    // copy is owned by the consumer, not the provider.
+    return {'status': 'error'};
   }
 });

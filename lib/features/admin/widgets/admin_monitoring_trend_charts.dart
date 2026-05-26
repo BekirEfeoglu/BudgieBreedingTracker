@@ -1,11 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../features/statistics/widgets/chart_states.dart';
-import '../../../features/statistics/widgets/chart_utils.dart';
 import '../providers/admin_monitoring_snapshot_providers.dart';
 
 /// Renders trend charts for the admin monitoring screen.
@@ -45,6 +43,7 @@ class _ConnectionTrendCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final hasData = trend.totalConnections > 0 || trend.maxConnections > 0;
     return Card(
       child: Padding(
         padding: AppSpacing.cardPadding,
@@ -52,15 +51,19 @@ class _ConnectionTrendCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'admin.connection_trend'.tr(),
+              'admin.connection_usage_title'.tr(),
               style: theme.textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: AppSpacing.md),
-            trend.totalConnections == 0
-                ? ChartEmpty(message: 'admin.no_trend_data'.tr())
-                : _ConnectionLineChart(trend: trend),
+            if (!hasData)
+              ChartEmpty(message: 'admin.no_trend_data'.tr())
+            else
+              _ConnectionUsageGauge(
+                total: trend.totalConnections,
+                max: trend.maxConnections,
+              ),
           ],
         ),
       ),
@@ -68,101 +71,50 @@ class _ConnectionTrendCard extends StatelessWidget {
   }
 }
 
-class _ConnectionLineChart extends StatelessWidget {
-  const _ConnectionLineChart({required this.trend});
+/// Shows current connection pool usage as a colored progress bar with
+/// numeric label. Replaces an earlier single-point line chart which
+/// misrepresented one snapshot as a "trend".
+class _ConnectionUsageGauge extends StatelessWidget {
+  const _ConnectionUsageGauge({required this.total, required this.max});
 
-  final MonitoringTrend trend;
+  final int total;
+  final int max;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final total = trend.totalConnections.toDouble();
-    final maxVal = trend.maxConnections > 0
-        ? trend.maxConnections.toDouble()
-        : total * 1.5;
-    final yInterval = calcChartInterval(maxVal);
-    final maxY = calcChartMaxY(maxVal, yInterval);
+    final safeMax = max > 0 ? max : (total > 0 ? total : 1);
+    final ratio = (total / safeMax).clamp(0.0, 1.0);
+    final percent = (ratio * 100).round().toString();
+    final color = ratio >= 0.9
+        ? AppColors.error
+        : ratio >= 0.7
+        ? AppColors.warning
+        : AppColors.success;
 
-    final spots = [FlSpot(0, total)];
-
-    return SizedBox(
-      height: 160,
-      child: RepaintBoundary(
-        child: LineChart(
-          LineChartData(
-            minY: 0,
-            maxY: maxY,
-            lineTouchData: LineTouchData(
-              touchTooltipData: LineTouchTooltipData(
-                getTooltipItems: (touchedSpots) {
-                  return touchedSpots.map((spot) {
-                    return LineTooltipItem(
-                      spot.y.toInt().toString(),
-                      theme.textTheme.labelSmall!.copyWith(
-                        color: AppColors.chartText(context),
-                      ),
-                    );
-                  }).toList();
-                },
-              ),
-            ),
-            titlesData: FlTitlesData(
-              show: true,
-              topTitles: const AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-              ),
-              rightTitles: const AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-              ),
-              leftTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  reservedSize: 32,
-                  interval: yInterval,
-                  getTitlesWidget: (value, meta) {
-                    if (value % yInterval != 0 && value != 0) {
-                      return const SizedBox.shrink();
-                    }
-                    return Text(
-                      value.toInt().toString(),
-                      style: theme.textTheme.labelSmall,
-                    );
-                  },
-                ),
-              ),
-              bottomTitles: const AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-              ),
-            ),
-            gridData: chartGridData(context, interval: yInterval),
-            borderData: FlBorderData(show: false),
-            lineBarsData: [
-              LineChartBarData(
-                spots: spots,
-                isCurved: false,
-                color: AppColors.primaryLight,
-                barWidth: 3,
-                isStrokeCapRound: true,
-                dotData: FlDotData(
-                  show: true,
-                  getDotPainter: (spot, percent, barData, index) {
-                    return FlDotCirclePainter(
-                      radius: AppSpacing.xs.toDouble(),
-                      color: AppColors.primary,
-                      strokeWidth: 2,
-                      strokeColor: theme.colorScheme.surface,
-                    );
-                  },
-                ),
-                belowBarData: BarAreaData(
-                  show: true,
-                  color: AppColors.primaryLight.withValues(alpha: 0.15),
-                ),
-              ),
-            ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'admin.connection_usage_label'.tr(
+            args: ['$total', '${max > 0 ? max : safeMax}', percent],
+          ),
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: color,
           ),
         ),
-      ),
+        const SizedBox(height: AppSpacing.sm),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm.toDouble()),
+          child: LinearProgressIndicator(
+            value: ratio,
+            backgroundColor: color.withValues(alpha: 0.15),
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+            minHeight: 8,
+          ),
+        ),
+      ],
     );
   }
 }
