@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
+import '../../../core/widgets/dialogs/typed_confirm_dialog.dart';
 import '../../../domain/services/sync/sync_orchestrator.dart';
 import '../../../domain/services/sync/sync_providers.dart';
 import '../providers/admin_actions_provider.dart';
@@ -207,6 +208,7 @@ class DatabaseGlobalActionsBar extends ConsumerWidget {
   }
 
   Future<void> _resetAll(BuildContext context, WidgetRef ref) async {
+    // First gate: regular yes/no dialog as an "are you sure" warning.
     final confirmed = await showConfirmDialog(
       context,
       title: 'admin.reset_all_title'.tr(),
@@ -216,13 +218,19 @@ class DatabaseGlobalActionsBar extends ConsumerWidget {
     if (confirmed != true) return;
     if (!context.mounted) return;
 
-    final doubleConfirmed = await showConfirmDialog(
+    // Second gate: typed-phrase confirmation. The previous flow used
+    // two yes/no dialogs, which two fast taps could clear — wiping
+    // every user table across the entire app. The user must now
+    // reproduce the localized phrase verbatim.
+    final phrase = 'admin.reset_all_typed_phrase'.tr();
+    final typedConfirmed = await showTypedConfirmDialog(
       context,
       title: 'admin.reset_all_double_title'.tr(),
-      message: 'admin.reset_all_double_confirm'.tr(),
-      isDestructive: true,
+      message: 'admin.reset_all_typed_confirm'.tr(args: [phrase]),
+      requiredPhrase: phrase,
+      confirmLabel: 'admin.reset_all_title'.tr(),
     );
-    if (doubleConfirmed != true) return;
+    if (!typedConfirmed) return;
     if (!context.mounted) return;
 
     final notifier = ref.read(adminActionsProvider.notifier);

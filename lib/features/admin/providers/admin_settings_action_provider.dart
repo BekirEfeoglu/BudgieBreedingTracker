@@ -85,7 +85,13 @@ class AdminSettingsActionNotifier extends Notifier<AdminSettingsActionState> {
         'updated_by': client.auth.currentUser?.id,
         'updated_at': DateTime.now().toUtc().toIso8601String(),
       }, onConflict: 'key');
+      // Invalidate AND await the next fetch before returning success.
+      // Without the await, the caller clears its `_updatingKey`
+      // spinner immediately and the Switch re-reads from the *stale*
+      // settings prop for one frame, snapping back to the old value
+      // before flipping to the new one — visible flicker.
       ref.invalidate(adminSystemSettingsProvider);
+      await ref.read(adminSystemSettingsProvider.future);
       state = state.copyWith(isLoading: false, isSuccess: true);
       return true;
     } catch (e, st) {

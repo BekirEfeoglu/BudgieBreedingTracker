@@ -46,8 +46,12 @@ class _AdminSettingsContentState extends ConsumerState<AdminSettingsContent> {
     if (raw == null) return null;
     final dt = DateTime.tryParse(raw);
     if (dt == null) return null;
-    final d =
-        '${dt.day.toString().padLeft(2, '0')}.${dt.month.toString().padLeft(2, '0')}.${dt.year}';
+    // Locale-aware date — tr/de expect `27.05.2026`, en expects
+    // `5/27/2026`. Previously hardcoded `dd.MM.yyyy` shipped to
+    // every locale (datetime-format.md violation). Convert to
+    // device-local for display since `updated_at` is UTC.
+    final locale = context.locale.toLanguageTag();
+    final d = DateFormat.yMd(locale).format(dt.toLocal());
     return 'admin.setting_last_change'.tr(args: [d]);
   }
 

@@ -128,7 +128,11 @@ class _AdminUserDetailScreenState extends ConsumerState<AdminUserDetailScreen> {
         isDestructive: currentlyActive,
       );
       if (confirmed != true || !mounted) return;
-      ref
+      // Await so the AdminActionState listener has a chance to fire
+      // before the user can navigate back (which tears down the
+      // `ref.listen` registered in `build`). Without the await the
+      // SnackBar + list invalidation can be skipped on fast back-tap.
+      await ref
           .read(adminActionsProvider.notifier)
           .toggleUserActive(widget.userId, !currentlyActive);
     }
@@ -159,7 +163,10 @@ class _AdminUserDetailScreenState extends ConsumerState<AdminUserDetailScreen> {
       message: 'admin.confirm_grant_premium_desc'.tr(),
     );
     if (confirmed != true || !mounted) return;
-    ref.read(adminActionsProvider.notifier).grantPremium(widget.userId);
+    // Await so the SnackBar/list-invalidation listener has time to
+    // observe the state transition before this widget can be torn
+    // down by a quick back navigation.
+    await ref.read(adminActionsProvider.notifier).grantPremium(widget.userId);
   }
 
   Future<void> _handleRevokePremium() async {
@@ -170,7 +177,8 @@ class _AdminUserDetailScreenState extends ConsumerState<AdminUserDetailScreen> {
       isDestructive: true,
     );
     if (confirmed != true || !mounted) return;
-    ref.read(adminActionsProvider.notifier).revokePremium(widget.userId);
+    // See `_handleGrantPremium`.
+    await ref.read(adminActionsProvider.notifier).revokePremium(widget.userId);
   }
 
   Future<void> _handleExportUserData() async {

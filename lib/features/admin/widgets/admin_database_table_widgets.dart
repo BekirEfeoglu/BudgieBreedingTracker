@@ -7,7 +7,7 @@ import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
-import '../../../core/widgets/dialogs/confirm_dialog.dart';
+import '../../../core/widgets/dialogs/typed_confirm_dialog.dart';
 import '../../../domain/services/sync/sync_orchestrator.dart';
 import '../../../domain/services/sync/sync_providers.dart';
 import '../providers/admin_actions_provider.dart';
@@ -263,13 +263,19 @@ class DatabaseTableRow extends ConsumerWidget {
   }
 
   Future<void> _resetTable(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showConfirmDialog(
+    // Typed confirmation: a single yes/no dialog was too easy to
+    // mis-tap for a destructive truncate. Require the user to type
+    // the table name verbatim before the destructive button enables.
+    final confirmed = await showTypedConfirmDialog(
       context,
       title: 'admin.reset_table_title'.tr(args: [table.name]),
-      message: 'admin.reset_table_confirm'.tr(args: ['${table.rowCount}']),
-      isDestructive: true,
+      message: 'admin.reset_table_typed_confirm'.tr(
+        args: [table.name, '${table.rowCount}'],
+      ),
+      requiredPhrase: table.name,
+      confirmLabel: 'admin.reset_table'.tr(),
     );
-    if (confirmed != true) return;
+    if (!confirmed) return;
     if (!context.mounted) return;
 
     final notifier = ref.read(adminActionsProvider.notifier);

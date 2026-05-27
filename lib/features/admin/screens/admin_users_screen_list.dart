@@ -137,11 +137,16 @@ class _UsersList extends StatelessWidget {
               ),
             );
           }
+          final user = users[index];
           return _UserCard(
-            user: users[index],
-            isSelected: selectedIds.contains(users[index].id),
+            // Stable key by user.id so Flutter can diff list deltas on
+            // sort/filter changes instead of rebuilding the whole
+            // subtree for every visible card.
+            key: ValueKey(user.id),
+            user: user,
+            isSelected: selectedIds.contains(user.id),
             isSelectionMode: isSelectionMode,
-            onSelectionToggle: () => onToggleSelection(users[index].id),
+            onSelectionToggle: () => onToggleSelection(user.id),
             onQuickAction: onQuickAction,
           );
         },

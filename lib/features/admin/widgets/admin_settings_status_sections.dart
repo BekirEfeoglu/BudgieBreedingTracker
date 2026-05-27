@@ -90,7 +90,11 @@ class _CronStatusSectionState extends ConsumerState<_CronStatusSection> {
       AppLogger.error('_CronStatusSection._checkStatus', e, st);
       if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        // Use the localized key instead of `e.toString()` — raw
+        // Postgrest/RPC errors include schema details that should not
+        // surface in admin UI. error-handling.md § "raw exception
+        // messages should not reach users".
+        _error = 'admin.action_error'.tr();
         _isLoading = false;
       });
     }

@@ -211,7 +211,7 @@ class _FeedbackTile extends StatelessWidget {
     final subject = item['subject'] as String? ?? '';
     final email = item['email'] as String?;
     final createdAt = item['created_at'] as String?;
-    final date = _formatFeedbackDate(createdAt);
+    final date = _formatFeedbackDate(context, createdAt);
 
     final typeColor = switch (type) {
       'bug' => AppColors.error,
@@ -303,10 +303,15 @@ class _FeedbackTile extends StatelessWidget {
     return item['type'] as String? ?? 'general';
   }
 
-  String _formatFeedbackDate(String? raw) {
+  String _formatFeedbackDate(BuildContext context, String? raw) {
     if (raw == null || raw.isEmpty) return '';
     final parsed = DateTime.tryParse(raw);
     if (parsed == null) return '';
-    return DateFormat('dd.MM.yyyy HH:mm').format(parsed.toLocal());
+    // Was hardcoded `'dd.MM.yyyy HH:mm'` for every locale. en users
+    // expect `5/27/2026, 9:30 PM` and de uses 24h with dots — let
+    // intl pick the right shape via `yMd().add_Hm()` for the active
+    // locale.
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    return DateFormat.yMd(locale).add_Hm().format(parsed.toLocal());
   }
 }

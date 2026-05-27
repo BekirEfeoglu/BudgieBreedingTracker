@@ -18,7 +18,18 @@ class AdminDatabaseScreen extends ConsumerWidget {
 
     return Scaffold(
       body: RefreshIndicator(
-        onRefresh: () async => ref.invalidate(adminDatabaseInfoProvider),
+        // Pull-to-refresh used to invalidate only the table-info
+        // provider, leaving the storage / orphan / sync / soft-delete
+        // maintenance widgets stale on the same screen. Invalidate
+        // every maintenance-tab provider together so a single pull
+        // refreshes everything the user sees.
+        onRefresh: () async {
+          ref.invalidate(adminDatabaseInfoProvider);
+          ref.invalidate(storageUsageProvider);
+          ref.invalidate(orphanDataProvider);
+          ref.invalidate(syncStatusSummaryProvider);
+          ref.invalidate(softDeleteStatsProvider);
+        },
         child: dbAsync.when(
           loading: () => const LoadingState(),
           error: (error, _) => ErrorState(

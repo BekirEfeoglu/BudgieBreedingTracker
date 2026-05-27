@@ -144,6 +144,10 @@ class AdminFeedbackActionNotifier extends Notifier<AdminFeedbackActionState> {
           .update(updates)
           .eq(SupabaseConstants.feedbackColId, feedbackId);
       ref.invalidate(adminFeedbackProvider);
+      // A status transition (open → resolved) decrements the open
+      // badge on the admin dashboard. Without this invalidation the
+      // count stayed stale until a full screen refresh.
+      ref.invalidate(adminOpenFeedbackCountProvider);
       state = state.copyWith(isLoading: false, isSuccess: true);
       return true;
     } catch (e, st) {

@@ -160,7 +160,13 @@ class AdminDatabaseManager {
     }
     _updateState(isLoading: true, error: null, isSuccess: false);
     try {
-      await requireAdmin(_ref);
+      // Founder-only: destructive truncate must NOT be reachable by
+      // regular admins. Permission matrix lists `database_reset` as a
+      // founder capability — this used to call `requireAdmin`, which
+      // allowed any admin to drop a table. Server-side RLS provides
+      // defense-in-depth but the client-side guard must match the
+      // policy the dashboard advertises.
+      await requireFounder(_ref);
       final client = _ref.read(supabaseClientProvider);
 
       final result = await client.rpc(
@@ -195,7 +201,10 @@ class AdminDatabaseManager {
   Future<bool> resetAllUserData() async {
     _updateState(isLoading: true, error: null, isSuccess: false);
     try {
-      await requireAdmin(_ref);
+      // Founder-only — see `resetTable` for rationale. Wiping every
+      // user table is strictly more destructive than truncating one,
+      // so the same guard applies a fortiori.
+      await requireFounder(_ref);
       final client = _ref.read(supabaseClientProvider);
 
       final result = await client.rpc('admin_reset_all_user_data');

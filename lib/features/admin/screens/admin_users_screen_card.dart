@@ -8,6 +8,7 @@ class _UserCard extends StatelessWidget {
   final void Function(String action, String userId)? onQuickAction;
 
   const _UserCard({
+    super.key,
     required this.user,
     this.isSelected = false,
     this.isSelectionMode = false,

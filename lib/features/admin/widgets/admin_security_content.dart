@@ -286,7 +286,10 @@ class SecurityMetadataRow extends StatelessWidget {
 
   String _formatTimestamp(DateTime dt, BuildContext context) {
     final locale = Localizations.localeOf(context).languageCode;
-    return DateFormat('dd MMM yyyy HH:mm', locale).format(dt);
+    // See `admin_audit_content_item._formatTimestamp` — `created_at`
+    // is UTC; render in device-local timezone so the timestamps line
+    // up with admin's wall clock.
+    return DateFormat('dd MMM yyyy HH:mm', locale).format(dt.toLocal());
   }
 
   String _maskIp(String ip) {

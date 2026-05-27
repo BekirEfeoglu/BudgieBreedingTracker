@@ -80,11 +80,17 @@ class _FakeRpcBuilder<T> extends Fake implements PostgrestFilterBuilder<T> {
 class _FakeAdminDatabaseClient extends Fake implements SupabaseClient {
   _FakeAdminDatabaseClient({
     required this.adminBuilder,
+    this.adminUsersBuilder,
     this.rpcResults = const {},
     this.rpcErrors = const {},
   });
 
   final _FakeQueryBuilder adminBuilder;
+  // Optional builder for `admin_users` so tests that exercise the
+  // `requireFounder` path (resetTable / resetAllUserData) can return
+  // a non-null row to indicate founder membership. Tests that only
+  // touch `requireAdmin` can leave this null.
+  final _FakeQueryBuilder? adminUsersBuilder;
   final Map<String, dynamic> rpcResults;
   final Map<String, Object> rpcErrors;
   final requestedTables = <String>[];
@@ -95,6 +101,14 @@ class _FakeAdminDatabaseClient extends Fake implements SupabaseClient {
     requestedTables.add(table);
     if (table == SupabaseConstants.profilesTable) {
       return adminBuilder;
+    }
+    if (table == SupabaseConstants.adminUsersTable) {
+      if (adminUsersBuilder == null) {
+        throw StateError(
+          'Test reached admin_users table but did not provide adminUsersBuilder',
+        );
+      }
+      return adminUsersBuilder!;
     }
     throw StateError('Unexpected table: $table');
   }
@@ -271,12 +285,19 @@ void main() {
       },
     );
 
-    test('resetTable delegates to RPC after admin check', () async {
+    test('resetTable delegates to RPC after founder check', () async {
+      // resetTable now goes through requireFounder, which reads BOTH
+      // profiles (for the admin gate) AND admin_users (for the
+      // founder gate). Provide both fixtures.
       final adminFilter = _FakeAdminFilterBuilder(
-        _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
+        _FakeMaybeSingleBuilder(result: {'role': 'founder'}),
+      );
+      final founderFilter = _FakeAdminFilterBuilder(
+        _FakeMaybeSingleBuilder(result: {'id': 'admin-row-1'}),
       );
       final client = _FakeAdminDatabaseClient(
         adminBuilder: _FakeQueryBuilder(adminFilter),
+        adminUsersBuilder: _FakeQueryBuilder(founderFilter),
         rpcResults: {
           'admin_reset_table': {'rows_deleted': 4},
         },
@@ -291,7 +312,11 @@ void main() {
       ).resetTable(SupabaseConstants.feedbackTable);
 
       expect(result, isTrue);
-      expect(client.requestedTables, [SupabaseConstants.profilesTable]);
+      // Both profiles + admin_users must be hit, in that order.
+      expect(client.requestedTables, [
+        SupabaseConstants.profilesTable,
+        SupabaseConstants.adminUsersTable,
+      ]);
       expect(client.adminBuilder.selectedColumns, ['role']);
       expect(adminFilter.eqCalls, hasLength(1));
       expect(adminFilter.eqCalls[0].key, 'id');
@@ -313,10 +338,14 @@ void main() {
 
     test('resetTable fails closed when RPC errors', () async {
       final adminFilter = _FakeAdminFilterBuilder(
-        _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
+        _FakeMaybeSingleBuilder(result: {'role': 'founder'}),
+      );
+      final founderFilter = _FakeAdminFilterBuilder(
+        _FakeMaybeSingleBuilder(result: {'id': 'admin-row-1'}),
       );
       final client = _FakeAdminDatabaseClient(
         adminBuilder: _FakeQueryBuilder(adminFilter),
+        adminUsersBuilder: _FakeQueryBuilder(founderFilter),
         rpcErrors: {'admin_reset_table': StateError('rpc unavailable')},
       );
       final updates = <_StateUpdate>[];
@@ -329,7 +358,11 @@ void main() {
       ).resetTable(SupabaseConstants.feedbackTable);
 
       expect(result, isFalse);
-      expect(client.requestedTables, [SupabaseConstants.profilesTable]);
+      // Founder check runs before the RPC attempt.
+      expect(client.requestedTables, [
+        SupabaseConstants.profilesTable,
+        SupabaseConstants.adminUsersTable,
+      ]);
       expect(client.rpcCalls, hasLength(1));
       expect(client.rpcCalls.single.fn, 'admin_reset_table');
       expect(updates.last.isLoading, isFalse);

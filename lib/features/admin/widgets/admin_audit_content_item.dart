@@ -210,7 +210,11 @@ class _AuditLogItemState extends ConsumerState<AuditLogItem> {
 
   String _formatTimestamp(BuildContext context, DateTime dt) {
     final locale = Localizations.localeOf(context).languageCode;
-    return DateFormat('dd MMM yyyy HH:mm', locale).format(dt);
+    // Supabase `created_at` arrives as UTC. Convert to device-local
+    // before formatting so admins read incident timestamps in their
+    // own timezone (everyone else in the app does — see
+    // datetime-format.md § "UTC at boundary, local display").
+    return DateFormat('dd MMM yyyy HH:mm', locale).format(dt.toLocal());
   }
 
   String _truncateId(String id) {

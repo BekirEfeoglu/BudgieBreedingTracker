@@ -224,11 +224,18 @@ class UserDetailProfileHeader extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Long display names and emails wrap unbounded inside
+                  // the Card and overflow the header — bound them
+                  // explicitly. `maxLines: 1` is enough for the title
+                  // line; email gets two lines before ellipsis so that
+                  // typical addresses on narrow phones still read.
                   Text(
                     detail.fullName ?? 'admin.no_name'.tr(),
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
@@ -236,11 +243,15 @@ class UserDetailProfileHeader extends StatelessWidget {
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
                     '${'admin.joined'.tr()} ${_formatDate(context, detail.createdAt)}',
                     style: theme.textTheme.bodySmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
