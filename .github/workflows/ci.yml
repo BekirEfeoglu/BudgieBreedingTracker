@@ -42,7 +42,7 @@ jobs:
   test:
     name: Flutter Test
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 40
     env:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     steps:
@@ -61,7 +61,11 @@ jobs:
         run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Run tests
-        # --concurrency=4: Run tests in parallel for faster execution
+        # --concurrency=4: Run tests in parallel for faster execution.
+        # Timeout bumped 25 -> 30 (2026-05-27): the suite reached 23:08
+        # on a healthy runner and 25:00 (timeout) on a slower one with
+        # the same commit, leaving < 2 min margin. 5 min headroom keeps
+        # main flake-free without masking a real regression.
         run: |
           flutter test \
             --exclude-tags "golden || e2e || community" \
@@ -69,7 +73,7 @@ jobs:
             --concurrency=4 \
             --dart-define=SUPABASE_URL=https://placeholder.supabase.co \
             --dart-define=SUPABASE_ANON_KEY=placeholder_key
-        timeout-minutes: 25
+        timeout-minutes: 30
 
       - name: Upload coverage to Codecov
         if: ${{ always() && env.CODECOV_TOKEN != '' }}
