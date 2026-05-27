@@ -53,7 +53,7 @@ class GamificationService {
 
       // Insert XP transaction
       await _remoteSource.insertXpTransaction({
-        'id': const Uuid().v4(),
+        'id': const Uuid().v7(),
         'user_id': userId,
         'action': action.toJson(),
         'amount': xpAmount,
@@ -97,7 +97,7 @@ class GamificationService {
       if (existing != null) {
         levelData['id'] = existing['id'] as String;
       } else {
-        levelData['id'] = const Uuid().v4();
+        levelData['id'] = const Uuid().v7();
       }
 
       await _remoteSource.upsertUserLevel(levelData);
@@ -151,7 +151,7 @@ class GamificationService {
         if (existing != null) {
           badgeData['id'] = existing['id'] as String;
         } else {
-          badgeData['id'] = const Uuid().v4();
+          badgeData['id'] = const Uuid().v7();
         }
 
         if (isNowUnlocked && !wasAlreadyUnlocked) {
@@ -161,7 +161,7 @@ class GamificationService {
           final xpReward = badge['xp_reward'] as int? ?? 0;
           if (xpReward > 0) {
             await _remoteSource.insertXpTransaction({
-              'id': const Uuid().v4(),
+              'id': const Uuid().v7(),
               'user_id': userId,
               'action': XpAction.unlockBadge.toJson(),
               'amount': xpReward,
@@ -185,7 +185,7 @@ class GamificationService {
             if (existingLevel != null) {
               bonusLevelData['id'] = existingLevel['id'] as String;
             } else {
-              bonusLevelData['id'] = const Uuid().v4();
+              bonusLevelData['id'] = const Uuid().v7();
             }
 
             await _remoteSource.upsertUserLevel(bonusLevelData);
@@ -261,7 +261,7 @@ class GamificationService {
       if (badge == null) return;
 
       final badgeData = <String, dynamic>{
-        'id': verifiedBadge?['id'] as String? ?? const Uuid().v4(),
+        'id': verifiedBadge?['id'] as String? ?? const Uuid().v7(),
         'user_id': userId,
         'badge_id': badge['id'] as String,
         'badge_key': 'verified_breeder',

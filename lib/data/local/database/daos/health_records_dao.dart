@@ -120,4 +120,37 @@ class HealthRecordsDao extends DatabaseAccessor<AppDatabase>
             .get();
     return rows.map((r) => r.toModel()).toList();
   }
+
+  /// Watches a per-type record count in the date range `[from, to]`.
+  ///
+  /// Statistics.md mandates SQL-side aggregation. Health records grow
+  /// unbounded over time; pulling them all into Dart on every dashboard
+  /// rebuild is wasteful when only counts are needed. Range bounds are
+  /// passed as ISO-8601 strings (matches `DateTimeColumn` storage).
+  Stream<Map<String, int>> watchCountsByTypeInRange({
+    required String userId,
+    required DateTime from,
+    required DateTime to,
+  }) {
+    final query = customSelect(
+      'SELECT type, COUNT(*) AS cnt '
+      'FROM health_records '
+      'WHERE user_id = ? AND is_deleted = 0 '
+      'AND date >= ? AND date <= ? '
+      'GROUP BY type',
+      variables: [
+        Variable.withString(userId),
+        Variable.withDateTime(from),
+        Variable.withDateTime(to),
+      ],
+      readsFrom: {healthRecordsTable},
+    );
+    return query.watch().map((rows) {
+      final result = <String, int>{};
+      for (final row in rows) {
+        result[row.read<String>('type')] = row.read<int>('cnt');
+      }
+      return result;
+    });
+  }
 }

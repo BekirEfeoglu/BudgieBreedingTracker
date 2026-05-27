@@ -5,6 +5,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/breeding_pairs_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/chicks_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
@@ -15,19 +17,39 @@ import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.d
 
 class _MockEggsDao extends Mock implements EggsDao {}
 
+class _MockChicksDao extends Mock implements ChicksDao {}
+
+class _MockBreedingPairsDao extends Mock implements BreedingPairsDao {}
+
 Widget _createSubject() {
   final mockEggsDao = _MockEggsDao();
   when(
     () => mockEggsDao.watchMonthlyProduction(any()),
   ).thenAnswer((_) => Stream.value(<String, int>{}));
+  when(
+    () => mockEggsDao.watchMonthlyFertility(any(), species: any(named: 'species')),
+  ).thenAnswer((_) => Stream.value(const {}));
+
+  // BreedingTab now reaches breedingPairsDaoProvider and chicksDaoProvider
+  // for monthly outcomes / hatched-chicks aggregates respectively. Without
+  // these mocks the StreamProviders stay in loading forever and
+  // pumpAndSettle times out trying to settle the spinner.
+  final mockChicksDao = _MockChicksDao();
+  when(() => mockChicksDao.watchMonthlyHatched(any()))
+      .thenAnswer((_) => Stream.value(<String, int>{}));
+  final mockBreedingPairsDao = _MockBreedingPairsDao();
+  when(
+    () => mockBreedingPairsDao.watchMonthlyOutcomes(
+      any(),
+      species: any(named: 'species'),
+    ),
+  ).thenAnswer((_) => Stream.value(const {}));
 
   return ProviderScope(
     overrides: [
-      // Override DAO for SQL aggregate fast-path in monthlyEggProductionProvider.
       eggsDaoProvider.overrideWithValue(mockEggsDao),
-      // BreedingTab uses: monthlyBreedingOutcomesProvider (breedingPairs + eggs),
-      // monthlyEggProductionProvider (eggs), monthlyFertilityRateProvider (eggs),
-      // incubationDurationProvider (incubations stream).
+      chicksDaoProvider.overrideWithValue(mockChicksDao),
+      breedingPairsDaoProvider.overrideWithValue(mockBreedingPairsDao),
       breedingPairsStreamProvider(
         'anonymous',
       ).overrideWith((_) => Stream.value([])),

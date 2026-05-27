@@ -115,6 +115,22 @@ HealthRecord _record({
   );
 }
 
+/// Mirrors `HealthRecordsDao.watchCountsByTypeInRange` semantics: filters
+/// records by date range and groups by type name. Keyed on enum
+/// `.name` (matches the DB column representation).
+Map<String, int> _healthCountsInRange(
+  List<HealthRecord> records,
+  DateTime from,
+  DateTime to,
+) {
+  final result = <String, int>{};
+  for (final r in records) {
+    if (r.date.isBefore(from) || r.date.isAfter(to)) continue;
+    result[r.type.name] = (result[r.type.name] ?? 0) + 1;
+  }
+  return result;
+}
+
 /// Mirrors `EggsDao.watchMonthlyFertility` semantics for unit tests:
 /// fertile/hatched → fertile, fertile+infertile+hatched → total, laid
 /// is undetermined and excluded.
@@ -164,6 +180,23 @@ ProviderContainer _container({
     ),
   ).thenAnswer((_) => Stream.value(fertilityCounts));
 
+  // `healthRecordTypeDistributionProvider` now reads
+  // `healthRecordsDaoProvider.watchCountsByTypeInRange`. Mock it so the
+  // existing test fixtures continue to drive the same observable behavior.
+  final healthDao = MockHealthRecordsDao();
+  when(
+    () => healthDao.watchCountsByTypeInRange(
+      userId: any(named: 'userId'),
+      from: any(named: 'from'),
+      to: any(named: 'to'),
+    ),
+  ).thenAnswer((invocation) {
+    final from =
+        invocation.namedArguments[const Symbol('from')] as DateTime;
+    final to = invocation.namedArguments[const Symbol('to')] as DateTime;
+    return Stream.value(_healthCountsInRange(healthRecords, from, to));
+  });
+
   return ProviderContainer(
     overrides: [
       birdsStreamProvider('user-1').overrideWith((_) => Stream.value(birds)),
@@ -179,6 +212,7 @@ ProviderContainer _container({
         'user-1',
       ).overrideWith((_) => Stream.value(healthRecords)),
       eggsDaoProvider.overrideWithValue(eggsDao),
+      healthRecordsDaoProvider.overrideWithValue(healthDao),
       // COUNT providers used by summaryStatsProvider (bypass SQL DAO calls)
       birdCountProvider(
         'user-1',
@@ -194,6 +228,12 @@ ProviderContainer _container({
 }
 
 void main() {
+  setUpAll(() {
+    // mocktail fallback for the named `from`/`to` DateTime args on
+    // `healthRecordsDaoProvider.watchCountsByTypeInRange`.
+    registerFallbackValue(DateTime(2024));
+  });
+
   const userId = 'user-1';
 
   group('core statistics providers', () {
@@ -375,8 +415,15 @@ void main() {
         );
         addTearDown(container.dispose);
         container.read(statsPeriodProvider.notifier).state = period;
-        container.listen(healthRecordsStreamProvider(userId), (_, __) {});
-        await container.read(healthRecordsStreamProvider(userId).future);
+        // Provider now reads `healthRecordsDaoProvider.watchCountsByTypeInRange`
+        // — subscribe to make the inner StreamProvider attach to the mock
+        // and yield so Stream.value emits.
+        container.listen(
+          healthRecordTypeDistributionProvider(userId),
+          (_, __) {},
+        );
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
 
         final value = container.read(
           healthRecordTypeDistributionProvider(userId),

@@ -11,6 +11,7 @@ import 'package:budgie_breeding_tracker/data/local/database/daos/conflict_histor
 import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/events_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/genetics_history_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/health_records_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/incubations_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/nests_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
@@ -117,6 +118,8 @@ class MockBirdsDao extends Mock implements BirdsDao {}
 class MockBreedingPairsDao extends Mock implements BreedingPairsDao {}
 
 class MockChicksDao extends Mock implements ChicksDao {}
+
+class MockHealthRecordsDao extends Mock implements HealthRecordsDao {}
 
 class MockEventsDao extends Mock implements EventsDao {}
 

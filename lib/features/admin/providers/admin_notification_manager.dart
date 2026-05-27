@@ -42,7 +42,7 @@ class AdminNotificationManager {
           : body.trim();
 
       await client.from(SupabaseConstants.notificationsTable).upsert({
-        'id': const Uuid().v4(),
+        'id': const Uuid().v7(),
         'user_id': targetUserId,
         'title': sanitizedTitle,
         'body': sanitizedBody,
@@ -120,7 +120,7 @@ class AdminNotificationManager {
       final rows = userIds
           .map(
             (uid) => {
-              'id': const Uuid().v4(),
+              'id': const Uuid().v7(),
               'user_id': uid,
               'title': sanitizedTitle,
               'body': sanitizedBody,

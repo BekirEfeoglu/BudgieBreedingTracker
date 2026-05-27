@@ -94,7 +94,7 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
 
       final repo = ref.read(messagingRepositoryProvider);
       await repo.sendMessage({
-        'id': const Uuid().v4(),
+        'id': const Uuid().v7(),
         'conversation_id': conversationId,
         'sender_id': senderId,
         'sender_name': senderName,

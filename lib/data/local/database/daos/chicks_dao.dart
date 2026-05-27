@@ -137,6 +137,29 @@ class ChicksDao extends DatabaseAccessor<AppDatabase> with _$ChicksDaoMixin {
         .map((rows) => rows.map((r) => r.toModel()).toList());
   }
 
+  /// Watches monthly hatched-chick counts: `'YYYY-MM' → count`.
+  ///
+  /// Counts non-deleted chicks bucketed by `hatch_date` month. statistics.md
+  /// mandates SQL-side aggregation; previously the chart provider walked
+  /// the full chick list in Dart on every emission.
+  Stream<Map<String, int>> watchMonthlyHatched(String userId) {
+    final query = customSelect(
+      "SELECT strftime('%Y-%m', hatch_date, 'localtime') AS month, COUNT(*) AS cnt "
+      'FROM chicks '
+      'WHERE user_id = ? AND is_deleted = 0 AND hatch_date IS NOT NULL '
+      'GROUP BY month ORDER BY month',
+      variables: [Variable.withString(userId)],
+      readsFrom: {chicksTable},
+    );
+    return query.watch().map((rows) {
+      final result = <String, int>{};
+      for (final row in rows) {
+        result[row.read<String>('month')] = row.read<int>('cnt');
+      }
+      return result;
+    });
+  }
+
   /// Count of chicks that are 60+ days old, not yet moved to birds, and alive.
   Stream<int> watchUnweanedCount(String userId) {
     final count = chicksTable.id.count();

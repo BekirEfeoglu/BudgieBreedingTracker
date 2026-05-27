@@ -72,7 +72,7 @@ Audit-flagged offender needing rename or offline-first implementation: none curr
 
 ### Write Safety
 - ALWAYS `.upsert()` for idempotent writes — `.insert()` causes duplicates on retry/sync replay
-- Use stable client-generated UUIDs (`const Uuid().v4()`) as primary keys, not server-assigned IDs
+- Use stable client-generated UUIDs as primary keys, not server-assigned IDs. **Prefer `const Uuid().v7()`** — time-orderable, better B-tree index locality, easier debugging. `Uuid().v4()` remains acceptable for non-entity identifiers (transient request tokens, etc.) but new entity creation paths should use v7 for consistency with the rest of the codebase.
 - Batch writes in Drift transactions; batch remote writes where API supports
 
 ```dart

@@ -2,12 +2,13 @@ import 'package:drift/drift.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
 import 'package:budgie_breeding_tracker/data/local/database/tables/breeding_pairs_table.dart';
+import 'package:budgie_breeding_tracker/data/local/database/tables/incubations_table.dart';
 import 'package:budgie_breeding_tracker/data/local/database/mappers/breeding_pair_mapper.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 
 part 'breeding_pairs_dao.g.dart';
 
-@DriftAccessor(tables: [BreedingPairsTable])
+@DriftAccessor(tables: [BreedingPairsTable, IncubationsTable])
 class BreedingPairsDao extends DatabaseAccessor<AppDatabase>
     with _$BreedingPairsDaoMixin {
   BreedingPairsDao(super.db);
@@ -167,5 +168,59 @@ class BreedingPairsDao extends DatabaseAccessor<AppDatabase>
           ..limit(limit))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
+  }
+
+  /// Watches monthly breeding outcomes: `'YYYY-MM' → {completed, cancelled}`.
+  ///
+  /// Buckets non-deleted pairs by `COALESCE(separation_date, updated_at)`
+  /// month and partitions by status. Mirrors the legacy provider's Dart
+  /// loop with SQL `GROUP BY` so memory stays O(monthCount). Optional
+  /// [species] filter joins through `incubations` to limit to pairs that
+  /// have at least one incubation of that species.
+  Stream<Map<String, ({int completed, int cancelled})>> watchMonthlyOutcomes(
+    String userId, {
+    String? species,
+  }) {
+    // EXISTS subquery beats DISTINCT join when filtering by species — the
+    // pair-row count is small (~hundreds), the incubations table can grow
+    // independently.
+    final speciesClause = species == null
+        ? ''
+        : 'AND EXISTS (SELECT 1 FROM incubations i '
+              'WHERE i.breeding_pair_id = p.id AND i.species = ?) ';
+    final tables = <ResultSetImplementation>{breedingPairsTable};
+    if (species != null) tables.add(incubationsTable);
+    final query = customSelect(
+      "SELECT strftime('%Y-%m', "
+      "COALESCE(p.separation_date, p.updated_at), 'localtime') AS month, "
+      'p.status AS status, '
+      'COUNT(*) AS cnt '
+      'FROM breeding_pairs p '
+      'WHERE p.user_id = ? AND p.is_deleted = 0 '
+      "AND p.status IN ('completed', 'cancelled') "
+      'AND COALESCE(p.separation_date, p.updated_at) IS NOT NULL '
+      '$speciesClause'
+      'GROUP BY month, p.status '
+      'ORDER BY month',
+      variables: [
+        Variable.withString(userId),
+        if (species != null) Variable.withString(species),
+      ],
+      readsFrom: tables,
+    );
+    return query.watch().map((rows) {
+      final result = <String, ({int completed, int cancelled})>{};
+      for (final row in rows) {
+        final month = row.read<String>('month');
+        final status = row.read<String>('status');
+        final count = row.read<int>('cnt');
+        final current = result[month] ?? (completed: 0, cancelled: 0);
+        result[month] = (
+          completed: current.completed + (status == 'completed' ? count : 0),
+          cancelled: current.cancelled + (status == 'cancelled' ? count : 0),
+        );
+      }
+      return result;
+    });
   }
 }

@@ -5,6 +5,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
@@ -14,6 +15,8 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
+import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/health_records_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
@@ -26,6 +29,8 @@ import 'package:budgie_breeding_tracker/features/statistics/providers/statistics
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_providers.dart';
 
 import '../helpers/e2e_test_harness.dart';
+
+class _MockHealthRecordsDao extends Mock implements HealthRecordsDao {}
 
 Future<T> _awaitData<T>(ProviderContainer container, dynamic provider) async {
   final completer = Completer<T>();
@@ -51,6 +56,12 @@ Future<T> _awaitData<T>(ProviderContainer container, dynamic provider) async {
 
 void main() {
   ensureE2EBinding();
+
+  setUpAll(() {
+    // mocktail fallback for the DateTime named args in
+    // `watchCountsByTypeInRange(... from: ..., to: ...)`.
+    registerFallbackValue(DateTime(2024));
+  });
 
   final now = DateTime.now();
   final birds = <Bird>[
@@ -183,12 +194,36 @@ void main() {
     test(
       'GIVEN health statistics tab WHEN records are loaded THEN illness/checkup distributions and survival metrics are produced',
       () async {
+        // `healthRecordTypeDistributionProvider` now consumes
+        // `healthRecordsDaoProvider.watchCountsByTypeInRange`. Mock the
+        // DAO to apply the same filtering Drift would (filter by date
+        // window, group by type name) so the e2e test stays self-contained.
+        final healthDao = _MockHealthRecordsDao();
+        when(
+          () => healthDao.watchCountsByTypeInRange(
+            userId: any(named: 'userId'),
+            from: any(named: 'from'),
+            to: any(named: 'to'),
+          ),
+        ).thenAnswer((invocation) {
+          final from =
+              invocation.namedArguments[const Symbol('from')] as DateTime;
+          final to = invocation.namedArguments[const Symbol('to')] as DateTime;
+          final counts = <String, int>{};
+          for (final r in health) {
+            if (r.date.isBefore(from) || r.date.isAfter(to)) continue;
+            counts[r.type.name] = (counts[r.type.name] ?? 0) + 1;
+          }
+          return Stream.value(counts);
+        });
+
         final container = createTestContainer(
           overrides: [
             healthRecordsStreamProvider.overrideWith(
               (_, __) => Stream.value(health),
             ),
             chicksStreamProvider.overrideWith((_, __) => Stream.value(chicks)),
+            healthRecordsDaoProvider.overrideWithValue(healthDao),
           ],
         );
         addTearDown(container.dispose);

@@ -45,61 +45,66 @@ final monthlyEggProductionProvider =
       });
     });
 
+/// Raw SQL-aggregated monthly hatched chicks (no period window applied).
+/// Period-window logic stays in the public provider so it can be reused.
+final _monthlyHatchedAggregateProvider =
+    StreamProvider.family<Map<String, int>, String>((ref, userId) {
+      return ref.watch(chicksDaoProvider).watchMonthlyHatched(userId);
+    });
+
 final monthlyHatchedChicksProvider =
     Provider.family<AsyncValue<Map<String, int>>, String>((ref, userId) {
-      final chicksAsync = ref.watch(chicksStreamProvider(userId));
       final period = ref.watch(statsPeriodProvider);
+      final aggregate = ref.watch(_monthlyHatchedAggregateProvider(userId));
 
-      return chicksAsync.whenData((chicks) {
+      return aggregate.whenData((counts) {
         final range = buildStatsDateRange(period);
         final months = buildEmptyMonthMap(
           period.monthCount,
           reference: range.currentEnd,
         );
-
-        for (final chick in chicks) {
-          final hatch = chick.hatchDate;
-          if (hatch == null) continue;
-          final key = '${hatch.year}-${hatch.month.toString().padLeft(2, '0')}';
-          if (months.containsKey(key)) {
-            months[key] = (months[key] ?? 0) + 1;
+        for (final entry in counts.entries) {
+          if (months.containsKey(entry.key)) {
+            months[entry.key] = entry.value;
           }
         }
-
         return months;
       });
     });
 
+/// Raw SQL-aggregated outcomes (no species filter).
+final _monthlyOutcomesAggregateProvider = StreamProvider.family<
+  Map<String, ({int completed, int cancelled})>,
+  String
+>((ref, userId) {
+  return ref.watch(breedingPairsDaoProvider).watchMonthlyOutcomes(userId);
+});
+
+/// Species-filtered SQL-aggregated outcomes. Composite key keeps
+/// independent filter streams cached separately.
+final _monthlyOutcomesAggregateBySpeciesProvider = StreamProvider.family<
+  Map<String, ({int completed, int cancelled})>,
+  ({String userId, Species species})
+>((ref, args) {
+  return ref
+      .watch(breedingPairsDaoProvider)
+      .watchMonthlyOutcomes(args.userId, species: args.species.toJson());
+});
+
 final monthlyBreedingOutcomesProvider =
     Provider.family<AsyncValue<MonthlyBreedingData>, String>((ref, userId) {
-      final pairsAsync = ref.watch(breedingPairsStreamProvider(userId));
-      final incubationsAsync = ref.watch(incubationsStreamProvider(userId));
       final period = ref.watch(statsPeriodProvider);
       final speciesFilter = ref.watch(statsSpeciesFilterProvider).species;
 
-      for (final async in [pairsAsync, incubationsAsync]) {
-        if (async.hasError) {
-          return AsyncError(async.error!, async.stackTrace ?? StackTrace.empty);
-        }
-      }
-      if (pairsAsync.isLoading || incubationsAsync.isLoading) {
-        return const AsyncLoading();
-      }
+      final aggregate = speciesFilter == null
+          ? ref.watch(_monthlyOutcomesAggregateProvider(userId))
+          : ref.watch(
+              _monthlyOutcomesAggregateBySpeciesProvider(
+                (userId: userId, species: speciesFilter),
+              ),
+            );
 
-      final pairs = pairsAsync.requireValue;
-      final incubations = incubationsAsync.requireValue;
-      final allowedPairIds = speciesFilter == null
-          ? null
-          : incubations
-                .where((incubation) => incubation.species == speciesFilter)
-                .map((incubation) => incubation.breedingPairId)
-                .whereType<String>()
-                .toSet();
-      final filteredPairs = allowedPairIds == null
-          ? pairs
-          : pairs.where((pair) => allowedPairIds.contains(pair.id)).toList();
-
-      return AsyncData(() {
+      return aggregate.whenData((rawCounts) {
         final range = buildStatsDateRange(period);
         final completedMap = buildEmptyMonthMap(
           period.monthCount,
@@ -109,26 +114,17 @@ final monthlyBreedingOutcomesProvider =
           period.monthCount,
           reference: range.currentEnd,
         );
-
-        for (final pair in filteredPairs) {
-          final date = pair.separationDate ?? pair.updatedAt;
-          if (date == null) continue;
-          final key = '${date.year}-${date.month.toString().padLeft(2, '0')}';
-
-          if (pair.status == BreedingStatus.completed &&
-              completedMap.containsKey(key)) {
-            completedMap[key] = (completedMap[key] ?? 0) + 1;
-          } else if (pair.status == BreedingStatus.cancelled &&
-              cancelledMap.containsKey(key)) {
-            cancelledMap[key] = (cancelledMap[key] ?? 0) + 1;
+        for (final entry in rawCounts.entries) {
+          if (completedMap.containsKey(entry.key)) {
+            completedMap[entry.key] = entry.value.completed;
+            cancelledMap[entry.key] = entry.value.cancelled;
           }
         }
-
         return MonthlyBreedingData(
           completed: completedMap,
           cancelled: cancelledMap,
         );
-      }());
+      });
     });
 
 class MonthlyBreedingData {

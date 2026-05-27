@@ -93,7 +93,7 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
       }
 
       final repo = ref.read(marketplaceRepositoryProvider);
-      final listingId = const Uuid().v4();
+      final listingId = const Uuid().v7();
 
       List<String> imageUrls = const [];
       if (localImagePaths.isNotEmpty) {

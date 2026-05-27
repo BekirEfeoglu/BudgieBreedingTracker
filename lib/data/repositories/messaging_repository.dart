@@ -80,7 +80,7 @@ class MessagingRepository {
 
     // Create new — if race condition, retry find
     try {
-      final conversationId = const Uuid().v4();
+      final conversationId = const Uuid().v7();
       await _conversationSource.create({
         'id': conversationId,
         'type': 'direct',
@@ -122,7 +122,7 @@ class MessagingRepository {
     required List<String> participantIds,
     String? imageUrl,
   }) async {
-    final conversationId = const Uuid().v4();
+    final conversationId = const Uuid().v7();
     await _conversationSource.create({
       'id': conversationId,
       'type': 'group',
