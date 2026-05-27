@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/status_badge.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/breeding_detail_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/section_header.dart';
@@ -69,8 +70,13 @@ class _BreedingPairTile extends ConsumerWidget {
         ? ref.watch(birdByIdProvider(pair.femaleId!))
         : null;
 
-    final maleName = maleAsync?.value?.name ?? 'common.unknown'.tr();
-    final femaleName = femaleAsync?.value?.name ?? 'common.unknown'.tr();
+    // Distinguish "stream is still loading" from "bird truly missing".
+    // Previous code mapped both cases to "Bilinmeyen", which flashes the
+    // misleading label during the initial stream-emit window even when the
+    // bird record exists. Use an em-dash placeholder for the loading window;
+    // fall back to "Bilinmeyen" only after the stream resolves to null.
+    final maleName = _resolveBirdName(maleAsync, pair.maleId);
+    final femaleName = _resolveBirdName(femaleAsync, pair.femaleId);
 
     final dateText = pair.pairingDate != null
         ? ref.watch(dateFormatProvider).formatter().format(pair.pairingDate!)
@@ -138,6 +144,24 @@ class _BreedingPairTile extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  /// Renders the bird name without misclassifying loading as "missing".
+  /// - `birdId == null` → no slot assigned, show em-dash.
+  /// - AsyncValue still loading → show em-dash (avoids the brief "Bilinmeyen"
+  ///   flash before the stream's first emission).
+  /// - AsyncData(null) → bird truly absent → show localized "Bilinmeyen".
+  /// - AsyncData(bird) → show bird.name.
+  /// - AsyncError → show localized "Bilinmeyen" (a previous fetch failed;
+  ///   keeping the row interactive matters more than perfect signalling).
+  String _resolveBirdName(AsyncValue<Bird?>? async, String? birdId) {
+    if (birdId == null) return '—';
+    if (async == null) return '—';
+    return async.when(
+      data: (bird) => bird?.name ?? 'common.unknown'.tr(),
+      loading: () => '—',
+      error: (_, __) => 'common.unknown'.tr(),
     );
   }
 

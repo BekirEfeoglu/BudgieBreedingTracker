@@ -73,22 +73,31 @@ class NotificationActions {
   NotificationActions(this._ref);
 
   /// Marks a single notification as read.
+  ///
+  /// Rethrows on failure so the caller can surface a snackbar — otherwise
+  /// the UI shows the notification as read while the persisted state still
+  /// has it unread, and the next bell-button rebuild will flip it back.
   Future<void> markAsRead(String notificationId) async {
     try {
       final repo = _ref.read(notificationRepositoryProvider);
       await repo.markAsRead(notificationId);
-    } catch (e) {
-      AppLogger.error('[NotificationActions]', e, StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('[NotificationActions.markAsRead]', e, st);
+      rethrow;
     }
   }
 
   /// Marks all notifications as read for a user.
+  ///
+  /// Rethrows on failure — see [markAsRead] for the same UI-consistency
+  /// reasoning. Caller is expected to wrap with a try/catch and toast.
   Future<void> markAllAsRead(String userId) async {
     try {
       final repo = _ref.read(notificationRepositoryProvider);
       await repo.markAllAsRead(userId);
-    } catch (e) {
-      AppLogger.error('[NotificationActions]', e, StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('[NotificationActions.markAllAsRead]', e, st);
+      rethrow;
     }
   }
 
@@ -97,8 +106,8 @@ class NotificationActions {
     try {
       final repo = _ref.read(notificationRepositoryProvider);
       await repo.remove(notificationId);
-    } catch (e) {
-      AppLogger.error('[NotificationActions]', e, StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('[NotificationActions.delete]', e, st);
       rethrow;
     }
   }

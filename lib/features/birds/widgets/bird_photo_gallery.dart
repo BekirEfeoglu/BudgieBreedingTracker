@@ -153,7 +153,7 @@ class _PhotoThumbnail extends StatelessWidget {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.15),
+                              color: theme.shadowColor.withValues(alpha: 0.15),
                               blurRadius: 4,
                             ),
                           ],

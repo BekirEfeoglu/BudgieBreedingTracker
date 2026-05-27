@@ -58,7 +58,13 @@ final birdListViewModeProvider =
     );
 
 /// Filtered birds based on the current filter selection.
-final filteredBirdsProvider = Provider.family<List<Bird>, List<Bird>>((
+///
+/// autoDispose: family is keyed on a `List<Bird>` (identity-equality), so
+/// every emission from `birdsStreamProvider` produces a new family entry.
+/// Without autoDispose the old entries linger indefinitely, leaking memory
+/// proportional to mutation frequency. autoDispose evicts the stale entries
+/// as soon as the screen rebuilds with the new list.
+final filteredBirdsProvider = Provider.autoDispose.family<List<Bird>, List<Bird>>((
   ref,
   birds,
 ) {
@@ -78,8 +84,9 @@ final filteredBirdsProvider = Provider.family<List<Bird>, List<Bird>>((
 });
 
 /// Searched and filtered birds (applies search on top of filter).
+/// autoDispose: see [filteredBirdsProvider] — same identity-keyed leak.
 final searchedAndFilteredBirdsProvider =
-    Provider.family<List<Bird>, List<Bird>>((ref, birds) {
+    Provider.autoDispose.family<List<Bird>, List<Bird>>((ref, birds) {
       final filtered = ref.watch(filteredBirdsProvider(birds));
       final query = ref.watch(
         birdSearchQueryProvider.select((value) => value.toLowerCase().trim()),
@@ -98,7 +105,8 @@ final searchedAndFilteredBirdsProvider =
     });
 
 /// Sorted, searched and filtered birds (final display list).
-final sortedAndFilteredBirdsProvider = Provider.family<List<Bird>, List<Bird>>((
+/// autoDispose: see [filteredBirdsProvider] — same identity-keyed leak.
+final sortedAndFilteredBirdsProvider = Provider.autoDispose.family<List<Bird>, List<Bird>>((
   ref,
   birds,
 ) {

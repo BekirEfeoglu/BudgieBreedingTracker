@@ -22,7 +22,10 @@ final growthMeasurementsByChickProvider =
     });
 
 /// Filtered chicks based on the current filter selection.
-final filteredChicksProvider = Provider.family<List<Chick>, List<Chick>>((
+/// autoDispose: family keyed on `List<Chick>` (identity equality), so every
+/// stream emission installs a fresh family entry. autoDispose evicts the
+/// stale ones once the screen rebuilds with the new list.
+final filteredChicksProvider = Provider.autoDispose.family<List<Chick>, List<Chick>>((
   ref,
   chicks,
 ) {
@@ -59,8 +62,9 @@ final filteredChicksProvider = Provider.family<List<Chick>, List<Chick>>((
 });
 
 /// Searched, filtered and sorted chicks.
+/// autoDispose: see [filteredChicksProvider] — same identity-keyed leak.
 final searchedAndFilteredChicksProvider =
-    Provider.family<List<Chick>, List<Chick>>((ref, chicks) {
+    Provider.autoDispose.family<List<Chick>, List<Chick>>((ref, chicks) {
       final filtered = ref.watch(filteredChicksProvider(chicks));
       final query = ref.watch(chickSearchQueryProvider).toLowerCase().trim();
       final sort = ref.watch(chickSortProvider);

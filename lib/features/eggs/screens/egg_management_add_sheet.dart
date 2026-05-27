@@ -82,21 +82,49 @@ void _showAddEggSheet(
                     maxLines: 2,
                   ),
                   const SizedBox(height: AppSpacing.xxl),
-                  FilledButton(
-                    onPressed: () {
-                      ref
-                          .read(eggActionsProvider.notifier)
-                          .addEgg(
-                            incubationId: incubationId,
-                            layDate: layDate,
-                            eggNumber: nextEggNumber,
-                            notes: notesController.text.isEmpty
-                                ? null
-                                : notesController.text,
-                          );
-                      Navigator.of(context).pop();
+                  Consumer(
+                    builder: (context, sheetRef, _) {
+                      final isLoading = sheetRef.watch(
+                        eggActionsProvider.select((s) => s.isLoading),
+                      );
+                      return FilledButton(
+                        onPressed: isLoading
+                            ? null
+                            : () async {
+                                final navigator = Navigator.of(context);
+                                await sheetRef
+                                    .read(eggActionsProvider.notifier)
+                                    .addEgg(
+                                      incubationId: incubationId,
+                                      layDate: layDate,
+                                      eggNumber: nextEggNumber,
+                                      notes: notesController.text.isEmpty
+                                          ? null
+                                          : notesController.text,
+                                    );
+                                // Only close the sheet on success. If addEgg
+                                // populated state.error (e.g. invalid_incubation,
+                                // unknown error), the parent screen's listener
+                                // surfaces the error toast — keeping the sheet
+                                // open lets the user correct their input.
+                                final error = sheetRef
+                                    .read(eggActionsProvider)
+                                    .error;
+                                if (error == null && navigator.mounted) {
+                                  navigator.pop();
+                                }
+                              },
+                        child: isLoading
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text('common.add'.tr()),
+                      );
                     },
-                    child: Text('common.add'.tr()),
                   ),
                   const SizedBox(height: AppSpacing.sm),
                 ],

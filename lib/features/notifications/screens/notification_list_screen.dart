@@ -41,7 +41,7 @@ class NotificationListScreen extends ConsumerWidget {
             icon: const Icon(LucideIcons.checkCheck),
             tooltip: 'notifications.mark_all_read'.tr(),
             semanticLabel: 'notifications.mark_all_read'.tr(),
-            onPressed: () => _markAllAsRead(ref, userId),
+            onPressed: () => _markAllAsRead(context, ref, userId),
           ),
         ],
       ),
@@ -174,17 +174,29 @@ class NotificationListScreen extends ConsumerWidget {
     );
   }
 
-  void _onNotificationTap(
+  Future<void> _onNotificationTap(
     BuildContext context,
     WidgetRef ref,
     AppNotification notification,
-  ) {
-    // Mark as read
+  ) async {
+    // Mark as read — fire-and-forget but surface failure so the user isn't
+    // left with the UI saying "read" while the DB still has it unread.
     if (!notification.read) {
-      ref.read(notificationActionsProvider).markAsRead(notification.id);
+      try {
+        await ref.read(notificationActionsProvider).markAsRead(notification.id);
+      } catch (_) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('notifications.mark_read_error'.tr())),
+          );
+        }
+        // Fall through — still attempt deep-link navigation; the unread
+        // flag staying true is recoverable on next tap.
+      }
     }
 
     // Deep link to referenced entity
+    if (!context.mounted) return;
     if (notification.referenceType != null &&
         notification.referenceId != null) {
       final route = NotificationService.payloadToRoute(
@@ -197,8 +209,20 @@ class NotificationListScreen extends ConsumerWidget {
     }
   }
 
-  void _markAllAsRead(WidgetRef ref, String userId) {
-    ref.read(notificationActionsProvider).markAllAsRead(userId);
+  Future<void> _markAllAsRead(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+  ) async {
+    try {
+      await ref.read(notificationActionsProvider).markAllAsRead(userId);
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('notifications.mark_all_read_error'.tr())),
+        );
+      }
+    }
   }
 
   Future<void> _onDelete(
@@ -208,8 +232,8 @@ class NotificationListScreen extends ConsumerWidget {
   ) async {
     try {
       await ref.read(notificationActionsProvider).delete(notificationId);
-    } catch (e) {
-      AppLogger.error('[NotificationListScreen]', e, StackTrace.current);
+    } catch (e, st) {
+      AppLogger.error('[NotificationListScreen.delete]', e, st);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('notifications.delete_error'.tr())),

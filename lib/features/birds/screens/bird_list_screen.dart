@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/sort_bottom_sheet.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/fab_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/ad_banner_widget.dart';
@@ -46,6 +47,12 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
   static const double _listBottomInset = AppSpacing.xxxl * 4;
 
   final Set<String> _selectedIds = {};
+
+  /// Guards [_runBulkAction] re-entry. Without this, a second confirm-tap
+  /// while the first bulk pass is still iterating launches a parallel pass
+  /// that races on the same selection set, double-deletes, and corrupts
+  /// the partial-failure summary.
+  bool _isBulkRunning = false;
 
   bool get _isSelectionMode => _selectedIds.isNotEmpty;
 
@@ -163,18 +170,38 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
   }) async {
     final total = _selectedIds.length;
     if (total == 0) return;
+    // Re-entry guard: bulk delete spam-tap could otherwise launch a second
+    // pass while the first is still iterating, double-deleting some IDs
+    // and producing a confusing partial-failure summary.
+    if (_isBulkRunning) return;
+    _isBulkRunning = true;
     final messenger = ScaffoldMessenger.of(context);
     final notifier = ref.read(birdFormStateProvider.notifier);
     final failures = <String>[];
 
-    for (final id in _selectedIds.toList()) {
-      if (!mounted) return;
-      try {
-        await action(notifier, id);
-      } catch (e, st) {
-        AppLogger.error('[BirdListScreen] $logTag failed for $id', e, st);
-        failures.add(id);
+    try {
+      for (final id in _selectedIds.toList()) {
+        if (!mounted) return;
+        try {
+          await action(notifier, id);
+        } catch (e, st) {
+          AppLogger.error('[BirdListScreen] $logTag failed for $id', e, st);
+          // Surface bulk-op failures to Sentry — the user sees a partial
+          // failure snackbar but we get no telemetry for the underlying
+          // root cause (FK constraint, sync conflict, etc.).
+          await Sentry.captureException(
+            e,
+            stackTrace: st,
+            withScope: (scope) {
+              scope.setTag('feature', 'birds.bulk');
+              scope.setTag('bulk_action', logTag);
+            },
+          );
+          failures.add(id);
+        }
       }
+    } finally {
+      _isBulkRunning = false;
     }
     if (!mounted) return;
 

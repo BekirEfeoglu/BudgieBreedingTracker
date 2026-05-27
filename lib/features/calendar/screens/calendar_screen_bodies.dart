@@ -63,27 +63,36 @@ class _CalendarBody extends StatelessWidget {
                 ),
                 Tooltip(
                   message: 'calendar.view_all_events'.tr(),
-                  child: InkWell(
-                    onTap: () => onDateLongPress(selectedDate),
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSpacing.xs),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            LucideIcons.maximize2,
-                            size: 18,
-                            color: theme.colorScheme.primary,
-                          ),
-                          const SizedBox(width: AppSpacing.xs),
-                          Text(
-                            '${selectedEvents.length}',
-                            style: theme.textTheme.bodySmall?.copyWith(
+                  // WCAG 2.5.5: interactive elements need a 48x48dp touch
+                  // target. The previous padding (xs ≈ 4) plus 18px icon
+                  // gave ~26-32dp, below the floor.
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minWidth: 48,
+                      minHeight: 48,
+                    ),
+                    child: InkWell(
+                      onTap: () => onDateLongPress(selectedDate),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.sm),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              LucideIcons.maximize2,
+                              size: 18,
                               color: theme.colorScheme.primary,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: AppSpacing.xs),
+                            Text(
+                              '${selectedEvents.length}',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

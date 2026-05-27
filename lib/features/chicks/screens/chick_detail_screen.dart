@@ -206,9 +206,14 @@ class _DetailContent extends ConsumerWidget {
         if (confirmed == true) {
           await notifier.markAsWeaned(chick.id);
           if (context.mounted) {
-            ActionFeedbackService.show('chicks.wean_success'.tr());
-            if (chick.birdId == null) {
-              await _promptSaveAsBirdAfterWean(context, notifier);
+            // markAsWeaned sets state.error on failure; suppress success
+            // feedback so it can't contradict the error toast from the
+            // chickFormStateProvider listener above.
+            if (ref.read(chickFormStateProvider).error == null) {
+              ActionFeedbackService.show('chicks.wean_success'.tr());
+              if (chick.birdId == null) {
+                await _promptSaveAsBirdAfterWean(context, ref, notifier);
+              }
             }
           }
         }
@@ -222,6 +227,11 @@ class _DetailContent extends ConsumerWidget {
         if (confirmed == true) {
           await notifier.promoteToBird(chick);
           if (context.mounted) {
+            // promoteToBird sets state.error on failure (e.g. rollback after
+            // chick.save throws). Only show success when no error is pending,
+            // otherwise the listener at line 79-90 surfaces the error and a
+            // simultaneous success snackbar would contradict it.
+            if (ref.read(chickFormStateProvider).error != null) return;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('chicks.moved_to_birds'.tr()),
@@ -261,6 +271,7 @@ class _DetailContent extends ConsumerWidget {
 
   Future<void> _promptSaveAsBirdAfterWean(
     BuildContext context,
+    WidgetRef ref,
     ChickFormNotifier notifier,
   ) async {
     final shouldPromote = await showConfirmDialog(
@@ -272,17 +283,22 @@ class _DetailContent extends ConsumerWidget {
     if (!context.mounted) return;
     if (shouldPromote == true) {
       await notifier.promoteToBird(chick.copyWith(weanDate: DateTime.now()));
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('chicks.moved_to_birds'.tr()),
-            action: SnackBarAction(
-              label: 'chicks.go_to_birds'.tr(),
-              onPressed: () => context.push('/birds'),
-            ),
+      if (!context.mounted) return;
+      // Only show the success snackbar when promoteToBird actually succeeded.
+      // The notifier's error/warning listener (line 79-90) is the single
+      // source of truth for failure messages — showing the success toast
+      // unconditionally would contradict the error toast.
+      final state = ref.read(chickFormStateProvider);
+      if (state.error != null) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('chicks.moved_to_birds'.tr()),
+          action: SnackBarAction(
+            label: 'chicks.go_to_birds'.tr(),
+            onPressed: () => context.push('/birds'),
           ),
-        );
-      }
+        ),
+      );
     }
   }
 }

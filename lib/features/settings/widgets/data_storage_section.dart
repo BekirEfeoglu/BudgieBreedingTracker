@@ -249,6 +249,22 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
       if (mounted) {
         ActionFeedbackService.show('settings.cache_cleared'.tr());
       }
+    } catch (e, st) {
+      // Top-level failure (e.g. getTemporaryDirectory throws on some
+      // sandboxed installs, or the recursive list fails mid-stream).
+      // Previously these escaped to the framework handler silently —
+      // user got a stuck spinner and we got no telemetry.
+      AppLogger.error('[DataStorageSection.clearCache]', e, st);
+      await Sentry.captureException(
+        e,
+        stackTrace: st,
+        withScope: (scope) => scope.setTag('feature', 'settings.cache'),
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('settings.cache_clear_error'.tr())),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isClearingCache = false);
     }

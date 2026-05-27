@@ -47,7 +47,21 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
 
   bool get _isDirty {
     if (_savedSuccessfully) return false;
-    if (_isEdit) return true;
+    if (_isEdit) {
+      final existing = _existingChick;
+      if (existing == null) return true;
+      final existingHatchWeight = existing.hatchWeight != null
+          ? existing.hatchWeight!.toStringAsFixed(1)
+          : '';
+      return _nameController.text != (existing.name ?? '') ||
+          _ringController.text != (existing.ringNumber ?? '') ||
+          _gender != existing.gender ||
+          _healthStatus != existing.healthStatus ||
+          _hatchDate != existing.hatchDate ||
+          _hatchWeightController.text != existingHatchWeight ||
+          _notesController.text != (existing.notes ?? '') ||
+          _bandingDayController.text != existing.bandingDay.toString();
+    }
     return _nameController.text.isNotEmpty ||
         _ringController.text.isNotEmpty ||
         _hatchDate != null ||

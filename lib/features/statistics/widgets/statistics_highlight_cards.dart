@@ -5,6 +5,18 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_highlights_providers.dart';
 
+/// Locale-aware "1 decimal" formatter. German users expect `12,5`, Turkish
+/// `12,5`, English `12.5` — `toStringAsFixed` always emits a dot, breaking
+/// the German thousands/decimal contract. Resolves the locale from the
+/// nearest [Localizations] ancestor so the format follows the app theme.
+String _format1dp(BuildContext context, num value) {
+  final locale = Localizations.localeOf(context).toString();
+  return NumberFormat.decimalPatternDigits(
+    locale: locale,
+    decimalDigits: 1,
+  ).format(value);
+}
+
 class PersonalRecordsCard extends StatelessWidget {
   final PersonalRecords records;
 
@@ -35,7 +47,7 @@ class PersonalRecordsCard extends StatelessWidget {
           value: records.longestLivedBird == null
               ? 'common.not_available'.tr()
               : '${records.longestLivedBird!.birdName} · '
-                    '${_formatYears(records.longestLivedBird!.daysLived)}',
+                    '${_formatYears(context, records.longestLivedBird!.daysLived)}',
         ),
       ],
     );
@@ -78,7 +90,7 @@ class SeasonComparisonCard extends StatelessWidget {
         _MetricRow(
           label: 'statistics.fertility_change'.tr(),
           value:
-              '${(comparison.fertilityDelta * 100).toStringAsFixed(1)} ${'statistics.percentage_point'.tr()}',
+              '${_format1dp(context, comparison.fertilityDelta * 100)} ${'statistics.percentage_point'.tr()}',
         ),
       ],
     );
@@ -113,7 +125,7 @@ class HealthTrendSummaryCard extends StatelessWidget {
           label: 'statistics.health_avg_treatment'.tr(),
           value: trend.averageTreatmentDays == null
               ? 'common.not_available'.tr()
-              : '${trend.averageTreatmentDays!.toStringAsFixed(1)} '
+              : '${_format1dp(context, trend.averageTreatmentDays!)} '
                     '${'statistics.days_short'.tr()}',
         ),
       ],
@@ -229,7 +241,7 @@ class _SeasonColumn extends StatelessWidget {
             Text('${'statistics.total_eggs'.tr()}: ${stats.totalEggs}'),
             Text(
               '${'statistics.fertility_rate'.tr()}: '
-              '${(stats.fertilityRate * 100).toStringAsFixed(1)}%',
+              '${_format1dp(context, stats.fertilityRate * 100)}%',
             ),
             Text('${'statistics.hatched_chicks'.tr()}: ${stats.hatchedChicks}'),
             Text('${'statistics.live_chicks'.tr()}: ${stats.liveChicks}'),
@@ -240,7 +252,7 @@ class _SeasonColumn extends StatelessWidget {
   }
 }
 
-String _formatYears(int days) {
+String _formatYears(BuildContext context, int days) {
   final years = days / 365.25;
-  return '${years.toStringAsFixed(1)} ${'statistics.years_short'.tr()}';
+  return '${_format1dp(context, years)} ${'statistics.years_short'.tr()}';
 }

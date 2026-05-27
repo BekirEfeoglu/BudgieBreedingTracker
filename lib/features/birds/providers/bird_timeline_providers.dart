@@ -44,7 +44,13 @@ class BirdTimelineEvent {
 }
 
 /// Timeline events for a bird, built from existing offline-first streams.
-final birdTimelineProvider = Provider.family<List<BirdTimelineEvent>, Bird>((
+///
+/// autoDispose: family keyed on a Freezed `Bird` value object. Even though
+/// Freezed implements value-equality, every edit produces a non-equal
+/// instance — so each edit installs a new family entry while the old one
+/// keeps 5 stream subscriptions alive. autoDispose drops the stale entry
+/// once the previous Bird value is no longer watched.
+final birdTimelineProvider = Provider.autoDispose.family<List<BirdTimelineEvent>, Bird>((
   ref,
   bird,
 ) {

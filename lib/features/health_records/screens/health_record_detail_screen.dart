@@ -63,7 +63,10 @@ class _DetailContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final dateFormat = DateFormat('dd MMMM yyyy', context.locale.languageCode);
+    // Locale-aware long date format (e.g. "14 May 2026" / "14. Mai 2026" /
+    // "14 Mayıs 2026"). Previously hardcoded the `dd MMMM yyyy` pattern which
+    // forced day-first regardless of locale convention.
+    final dateFormat = DateFormat.yMMMd(context.locale.languageCode);
 
     ref.listen<HealthRecordFormState>(healthRecordFormStateProvider, (
       _,

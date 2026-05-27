@@ -19,6 +19,13 @@ part 'chick_form_status_actions.dart';
 
 /// State for the chick form.
 class ChickFormState {
+  // Sentinel: distinguishes "field not provided" (preserve) from
+  // "explicit null" (clear). Without this, every copyWith(isLoading: true)
+  // silently nulled any pending error/warning because the parameters
+  // defaulted to null and the body assigned them directly. Mirrors
+  // BreedingFormState — keeps parity across breeding/eggs/chicks lifecycle.
+  static const Object _unset = Object();
+
   final bool isLoading;
   final String? error;
   final String? warning;
@@ -33,14 +40,14 @@ class ChickFormState {
 
   ChickFormState copyWith({
     bool? isLoading,
-    String? error,
-    String? warning,
+    Object? error = _unset,
+    Object? warning = _unset,
     bool? isSuccess,
   }) {
     return ChickFormState(
       isLoading: isLoading ?? this.isLoading,
-      error: error,
-      warning: warning,
+      error: identical(error, _unset) ? this.error : error as String?,
+      warning: identical(warning, _unset) ? this.warning : warning as String?,
       isSuccess: isSuccess ?? this.isSuccess,
     );
   }
