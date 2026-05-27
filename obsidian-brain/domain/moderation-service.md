@@ -1,7 +1,6 @@
 # Moderation Service
 
-Source: `.claude/rules/edge-functions.md` (moderate-content, scan-image-safety),
-`.claude/rules/security.md`
+Source: `.claude/rules/moderation.md` (primary — two-layer pipeline, fail-closed contract, context-aware thresholds), `.claude/rules/edge-functions.md` (moderate-content, scan-image-safety), `.claude/rules/security.md`
 
 **Location**: `lib/domain/services/moderation/`
 

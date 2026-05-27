@@ -1,5 +1,7 @@
 # Home Widget Service
 
+Source: `.claude/rules/home-widget.md` (primary — shared storage schema, refresh triggers, iOS WidgetKit timeline budget, deeplink, lock-screen families)
+
 **Location**: `lib/domain/services/home_widget/`
 
 ## Responsibility

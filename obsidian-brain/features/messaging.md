@@ -77,6 +77,8 @@ admin review queue.
 
 ## Rules
 
+- `.claude/rules/messaging.md` — online-first DM, conversation model, delivery status, read receipts, typing, attachments, block sync
+- `.claude/rules/presence.md` — typing indicator + online badge integration
 - `.claude/rules/notifications.md` — foreground/background handling
 - `.claude/rules/assets-images.md` — attachment upload
 - `.claude/rules/security.md` — RLS, JWT, member-scoped access

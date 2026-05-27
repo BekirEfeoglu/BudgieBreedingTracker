@@ -1,6 +1,6 @@
 # Encryption Service
 
-Source: `.claude/rules/security.md`
+Source: `.claude/rules/encryption.md` (primary — AES-256-CBC + HMAC, key rotation, payload codec, sub-key derivation, what-to-encrypt), `.claude/rules/security.md`
 
 **Location**: `lib/domain/services/encryption/`
 

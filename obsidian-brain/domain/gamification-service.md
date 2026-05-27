@@ -1,5 +1,7 @@
 # Gamification Service
 
+Source: `.claude/rules/gamification.md` (primary — XP table, level curve, badge tiers, anti-gambling, streak math, leaderboard privacy, verified breeder manual approval)
+
 **Location**: `lib/domain/services/gamification/`
 
 ## Responsibility

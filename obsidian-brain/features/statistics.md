@@ -40,6 +40,7 @@ Aggregates from multiple Drift DAOs (birds, eggs, chicks, breeding pairs). Heavy
 
 ## Rules
 
+- `.claude/rules/statistics.md` — fl_chart patterns, Drift-side aggregation, premium gating (export, custom filter, AI insight), accessibility (color-blind palette + tabular alt view)
 - `.claude/rules/performance.md` — Drift query budgets (p50 < 20ms, p99 < 50ms)
 - `.claude/rules/providers.md` — `ref.watch().select(...)` to minimize rebuilds
 

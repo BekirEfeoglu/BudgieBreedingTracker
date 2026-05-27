@@ -36,6 +36,7 @@ See [[architecture/online-first-exemption]]
 
 ## Rules
 
+- `.claude/rules/community.md` — online-first feed exemption, post lifecycle, comment, like, report, block/mute, RLS policy, premium gating
 - `.claude/rules/edge-functions.md` — moderate-content, scan-image-safety
 - `.claude/rules/security.md` — RLS on community tables
 

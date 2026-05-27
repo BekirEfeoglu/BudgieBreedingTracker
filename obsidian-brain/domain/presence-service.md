@@ -1,5 +1,7 @@
 # Presence Service
 
+Source: `.claude/rules/presence.md` (primary — TTL, heartbeat schedule, privacy visibility modes, multi-device session limit, battery/realtime budget)
+
 **Location**: `lib/domain/services/presence/`
 
 ## Responsibility

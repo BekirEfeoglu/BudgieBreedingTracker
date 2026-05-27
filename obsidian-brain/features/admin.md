@@ -61,6 +61,7 @@ All admin-invoked Edge Functions require `JWT + admin role` server-side
 
 ## Rules
 
+- `.claude/rules/admin.md` — AdminGuard, audit logs, destructive guards (two-step + type-to-confirm), moderation queue, monitoring polling rules, race mitigation
 - `.claude/rules/security.md` — AdminGuard + role-based redirects
 - `.claude/rules/edge-functions.md` — admin-scoped functions
 - `.claude/rules/architecture.md` — feature exception

@@ -62,6 +62,7 @@ duration. Free users limited by `validate-free-tier-limit` Edge Function.
 
 ## Rules
 
+- `.claude/rules/marketplace.md` — listing lifecycle, strict moderation threshold, premium gates, ad placement (entitlement aware), contact flow, RLS, location privacy
 - `.claude/rules/assets-images.md` — photo upload pipeline
 - `.claude/rules/security.md` — RLS policies, public vs private buckets
 - `.claude/rules/edge-functions.md` — `scan-image-safety`,

@@ -1,5 +1,7 @@
 # Data I/O: Backup, Import, Export
 
+Source: `.claude/rules/data-io.md` (primary — backup format, PBKDF2 backup key, Excel i18n headers, PDF pedigree builders, free vs premium gating)
+
 **Locations**:
 - `lib/domain/services/backup/`
 - `lib/domain/services/import/`

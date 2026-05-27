@@ -1,5 +1,7 @@
 # Feature: calendar
 
+Source: `.claude/rules/calendar.md` (event generation, deterministic notification IDs, deeplink, sync via ValidatedSyncMixin)
+
 **Purpose**: Visualize breeding milestones, vet appointments, and manual
 reminders on a month/week/day calendar. Auto-generated entries (incubation
 milestones) coexist with manual reminders the user adds.

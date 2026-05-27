@@ -1,6 +1,6 @@
 # Genetics Engine
 
-Source: `.claude/rules/local-ai.md`, project memory
+Source: `.claude/rules/genetics.md` (primary), `.claude/rules/local-ai.md` (AI integration), project memory
 
 **Location**: `lib/domain/services/genetics/`
 
@@ -32,6 +32,7 @@ Genetic phenotype colors are **exempt** from the hardcoded color anti-pattern �
 ## Reference
 
 - `docs/muhabbet-kusu-genetik-rehberi.md` — MUTAVI-sourced guide, authoritative for mutation data
+- `.claude/rules/genetics.md` — Punnett, sex-linked linkage (Z chromosome gene order O—C—I—Slate), lethal combos, inbreeding, reverse calculator, epistasis, anti-patterns
 - `.claude/rules/local-ai.md` — AI confidence integration
 
 ## See Also

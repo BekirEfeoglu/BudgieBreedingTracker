@@ -209,6 +209,20 @@ Comprehensive rules in `.claude/rules/` (auto-loaded):
 | `feature-flags.md` | dart-define debug flags, runtime toggles, kill switches, premium gating, lifecycle |
 | `empty-loading-error-states.md` | EmptyState/LoadingState/ErrorState/SkeletonLoader catalog, AsyncValue mapping |
 | `migrations.md` | Drift schemaVersion bump, onUpgrade, Supabase SQL migration, RLS, idempotent SQL, rollback |
+| `breeding-eggs.md` | Bird→BreedingPair→Incubation→Egg→Chick lifecycle, write atomicity, side effects, free tier guards |
+| `genetics.md` | Punnett, MUTAVI rates, calculationVersion, allelic series, sex-linked linkage, lethal combos, inbreeding |
+| `encryption.md` | AES-256-CBC + HMAC, secure storage key mgmt, key rotation, payload codec, what-to-encrypt |
+| `moderation.md` | Two-layer text pipeline, image safety, fail-closed, context-aware threshold, report flow |
+| `community.md` | Online-first feed exemption, post lifecycle, comment, like, report, block/mute, RLS policy |
+| `messaging.md` | Online-first DM, conversation model, delivery status, read receipts, typing, attachments |
+| `admin.md` | AdminGuard, audit logs, destructive guards, moderation queue, monitoring, race mitigation |
+| `marketplace.md` | Listing lifecycle, strict moderation, premium gates, ad placement, contact flow, RLS |
+| `gamification.md` | XP rules, level curve, badges, leaderboard, verified breeder, anti-gambling, streak |
+| `statistics.md` | fl_chart patterns, aggregation in Drift, performance budget, premium gating, accessibility |
+| `calendar.md` | Event generation, reminder schedule, notification ID stability, deeplink, sync integration |
+| `data-io.md` | Backup (PBKDF2 + AES), Excel import/export, PDF pedigree, free vs premium, restore safety |
+| `home-widget.md` | iOS/Android widget bridge, shared storage schema, refresh triggers, deeplink, limitations |
+| `presence.md` | Online/away/offline TTL, heartbeat, privacy visibility, typing, last-seen, battery rules |
 
 ## Critical Anti-Patterns (24 rules — must avoid)
 

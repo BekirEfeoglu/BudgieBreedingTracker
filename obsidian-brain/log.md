@@ -4,6 +4,29 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-05-27] sync | Map 13 new rule files to existing wiki pages
+
+13 new rule files added to `.claude/rules/` covering previously rule-gapped domains
+(features and services that had wiki pages but no rule source): `genetics.md`,
+`encryption.md`, `moderation.md`, `community.md`, `messaging.md`, `presence.md`,
+`admin.md`, `marketplace.md`, `gamification.md`, `statistics.md`, `calendar.md`,
+`data-io.md`, `home-widget.md`. Total rules: 33 → 46.
+
+- `sources/rules-index.md`: added all 13 mappings to primary + secondary wiki pages
+- `domain/genetics-engine.md`: source ref updated from `local-ai.md` → `genetics.md` (primary) + linkage/lethal/reverse-calculator reference
+- `domain/encryption-service.md`: source ref upgraded with `encryption.md` (primary)
+- `domain/moderation-service.md`: source ref upgraded with `moderation.md` (primary)
+- `domain/data-io.md`: added source ref (PBKDF2 backup key, Excel i18n headers)
+- `domain/presence-service.md`: added source ref (TTL, heartbeat, privacy visibility)
+- `domain/home-widget-service.md`: added source ref (shared storage schema, WidgetKit timeline budget)
+- `domain/gamification-service.md`: added source ref (anti-gambling, streak, manual verified breeder)
+- `features/community.md`, `features/messaging.md`, `features/admin.md`, `features/marketplace.md`, `features/statistics.md`, `features/calendar.md`: rule references added/extended
+- `CLAUDE.md` (project root): Rules table extended with 14 entries (13 new + `breeding-eggs.md` that was missing from the table)
+- `verify_rules.py`: 24/24 PASS, no stat drift
+
+No new wiki pages created (all rule subjects already had pages). No broken
+wikilinks. All pages under 200 lines.
+
 ## [2026-05-26] migrate | OAuth Phase 1+2 — new Client IDs in Firebase project, Supabase multi-audience, app code updated
 
 - GCP Firebase project: OAuth consent screen configured "In production", External (no verification needed — basic scopes only). New Web Client ID `720334450619-kvo5m738euj98t4qmmqeabmmd48ma0tl.apps.googleusercontent.com` + new iOS Client ID `720334450619-oacalc9gn0sg986d16it34jr4th6bkf4.apps.googleusercontent.com`.
