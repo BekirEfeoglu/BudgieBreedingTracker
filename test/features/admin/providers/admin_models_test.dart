@@ -44,6 +44,40 @@ void main() {
       expect(json['total_users'], 42);
       expect(json['active_breedings'], 7);
     });
+
+    test(
+      'fromJson parses the full 9-key contract returned by admin_get_stats',
+      () {
+        // Regression fence for migration
+        // 20260527093000_fix_admin_get_stats_missing_fields: the deployed
+        // RPC must populate every snake_case key consumed by the
+        // dashboard. If any of these defaults silently to 0, a card on
+        // the admin panel will show a stale "0" (the bug that motivated
+        // the migration — premium_count showing 0 while real value was
+        // 5).
+        final json = {
+          'total_users': 47,
+          'active_today': 3,
+          'new_users_today': 1,
+          'total_birds': 34,
+          'active_breedings': 11,
+          'premium_count': 5,
+          'free_count': 42,
+          'pending_sync_count': 0,
+          'error_sync_count': 0,
+        };
+        final stats = AdminStats.fromJson(json);
+        expect(stats.totalUsers, 47);
+        expect(stats.activeToday, 3);
+        expect(stats.newUsersToday, 1);
+        expect(stats.totalBirds, 34);
+        expect(stats.activeBreedings, 11);
+        expect(stats.premiumCount, 5);
+        expect(stats.freeCount, 42);
+        expect(stats.pendingSyncCount, 0);
+        expect(stats.errorSyncCount, 0);
+      },
+    );
   });
 
   group('SystemAlert construction', () {
