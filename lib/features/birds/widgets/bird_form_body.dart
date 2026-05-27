@@ -126,6 +126,7 @@ class BirdFormBody extends ConsumerWidget {
                         cageController: cageController,
                         birthDate: birthDate,
                         onBirthDateChanged: onBirthDateChanged,
+                        editBirdId: editBirdId,
                         dateFormatter: ref
                             .watch(dateFormatProvider)
                             .formatter(),

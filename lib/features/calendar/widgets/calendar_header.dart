@@ -79,6 +79,6 @@ class CalendarHeader extends ConsumerWidget {
       now.year,
       now.month,
     );
-    ref.read(selectedDateProvider.notifier).state = now;
+    ref.read(selectedDateProvider.notifier).set(now);
   }
 }

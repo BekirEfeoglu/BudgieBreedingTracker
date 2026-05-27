@@ -10,6 +10,7 @@ String _exceptionKind(AppException exception) {
     ValidationException() => 'validation',
     PermissionException() => 'permission',
     FreeTierLimitException() => 'freeTierLimit',
+    NotFoundException() => 'notFound',
   };
 }
 
@@ -98,6 +99,20 @@ void main() {
       expect(exception.originalError, same(original));
       expect(exception, isA<AppException>());
     });
+
+    test('NotFoundException stores message, code and originalError', () {
+      final original = Exception('not-found-source');
+      final exception = NotFoundException(
+        'errors.not_found',
+        code: 'NOT-1',
+        originalError: original,
+      );
+
+      expect(exception.message, 'errors.not_found');
+      expect(exception.code, 'NOT-1');
+      expect(exception.originalError, same(original));
+      expect(exception, isA<AppException>());
+    });
   });
 
   group('sealed class pattern matching', () {
@@ -111,6 +126,10 @@ void main() {
       expect(
         _exceptionKind(FreeTierLimitException('bird', 15)),
         'freeTierLimit',
+      );
+      expect(
+        _exceptionKind(const NotFoundException('errors.not_found')),
+        'notFound',
       );
     });
   });

@@ -7,9 +7,24 @@ import 'package:budgie_breeding_tracker/data/repositories/repository_providers.d
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 
 /// Selected date on the calendar.
+///
+/// Stored as a date-only (local midnight) `DateTime`. Storing a time-of-day
+/// here makes equality comparisons in the grid/widgets ambiguous — sibling
+/// providers (eventsForSelectedDateProvider) already normalize via
+/// `_localDateOnly`, so make this provider the single source of truth and
+/// drop time information at the write boundary as well.
 class SelectedDateNotifier extends Notifier<DateTime> {
   @override
-  DateTime build() => DateTime.now();
+  DateTime build() {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
+  /// Sets the selected date, dropping any time-of-day so equality checks
+  /// against grid-computed `DateTime(y,m,d)` instances stay stable.
+  void set(DateTime date) {
+    state = DateTime(date.year, date.month, date.day);
+  }
 }
 
 final selectedDateProvider = NotifierProvider<SelectedDateNotifier, DateTime>(

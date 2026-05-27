@@ -37,3 +37,12 @@ class FreeTierLimitException extends AppException {
   FreeTierLimitException(this.entityType, this.limit)
       : super('Free tier limit reached for $entityType');
 }
+
+/// Thrown when a requested entity does not exist (DB miss, stale ID).
+///
+/// Carries an l10n key (e.g. `'errors.not_found'`) in [message] so the UI
+/// can `.tr()` it. Distinct type lets callers pattern-match for "show
+/// not-found state" vs other failure paths.
+class NotFoundException extends AppException {
+  const NotFoundException(super.message, {super.code, super.originalError});
+}

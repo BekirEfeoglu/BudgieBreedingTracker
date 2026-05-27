@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
+import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/cards/info_card.dart';
@@ -191,9 +192,16 @@ class ChickDetailInfo extends ConsumerWidget {
       final state = ref.read(bandingActionProvider);
       state.when(
         data: (_) => ActionFeedbackService.show('chicks.banding_success'.tr()),
-        error: (e, _) => ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${'common.error'.tr()}: $e')),
-        ),
+        // Typed AppException → use its l10n key. Raw exceptions are wrapped
+        // in DatabaseException('errors.unknown') by the notifier so the
+        // string we .tr() here is always a valid key, never raw runtime
+        // text leaked to the user.
+        error: (e, _) {
+          final messageKey = e is AppException ? e.message : 'errors.unknown';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(messageKey.tr())),
+          );
+        },
         loading: () {},
       );
     }

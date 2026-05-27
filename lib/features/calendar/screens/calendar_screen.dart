@@ -253,7 +253,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   }
 
   void _selectDate(DateTime date) {
-    ref.read(selectedDateProvider.notifier).state = date;
+    // Use the normalized setter so the provider state never carries the
+    // time-of-day component — keeps equality with grid-computed dates.
+    ref.read(selectedDateProvider.notifier).set(date);
   }
 
   void _goToToday() {
@@ -262,7 +264,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       now.year,
       now.month,
     );
-    ref.read(selectedDateProvider.notifier).state = now;
+    ref.read(selectedDateProvider.notifier).set(now);
   }
 
   /// Swipe to navigate months (month view) or weeks (week view).
@@ -294,20 +296,16 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final current = ref.read(selectedDateProvider);
     // DST-safe: use DateTime(y, m, d+n) instead of Duration(days:) so a 23h
     // or 25h day at a DST boundary still advances by one calendar day.
-    ref.read(selectedDateProvider.notifier).state = DateTime(
-      current.year,
-      current.month,
-      current.day + 7 * delta,
+    ref.read(selectedDateProvider.notifier).set(
+      DateTime(current.year, current.month, current.day + 7 * delta),
     );
   }
 
   void _changeDay(int delta) {
     final current = ref.read(selectedDateProvider);
     // DST-safe day step (see _changeWeek note above).
-    ref.read(selectedDateProvider.notifier).state = DateTime(
-      current.year,
-      current.month,
-      current.day + delta,
+    ref.read(selectedDateProvider.notifier).set(
+      DateTime(current.year, current.month, current.day + delta),
     );
   }
 

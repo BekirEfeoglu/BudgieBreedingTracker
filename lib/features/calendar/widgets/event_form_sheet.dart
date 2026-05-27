@@ -194,12 +194,26 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
               const SizedBox(height: AppSpacing.lg),
 
               // Date picker
+              //
+              // Sliding window instead of hardcoded `DateTime(2020)`: the
+              // hardcoded lower bound becomes more and more stale over time
+              // (in 2030 a user could pick a 10-year-old date with no
+              // breeding context). 5-year backward + 2-year forward window
+              // matches realistic data-entry need.
               DatePickerField(
                 label: 'calendar.event_date'.tr(),
                 value: _eventDate,
                 onChanged: (date) => setState(() => _eventDate = date),
-                firstDate: DateTime(2020),
-                lastDate: DateTime.now().add(const Duration(days: 730)),
+                firstDate: DateTime(
+                  DateTime.now().year - 5,
+                  DateTime.now().month,
+                  DateTime.now().day,
+                ),
+                lastDate: DateTime(
+                  DateTime.now().year + 2,
+                  DateTime.now().month,
+                  DateTime.now().day,
+                ),
                 dateFormatter: ref.watch(dateFormatProvider).formatter(),
               ),
               const SizedBox(height: AppSpacing.lg),

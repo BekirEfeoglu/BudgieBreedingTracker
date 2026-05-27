@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
@@ -49,17 +50,20 @@ class _WelcomeHeaderState extends ConsumerState<WelcomeHeader>
     return 'home.greeting_evening';
   }
 
+  /// Time-of-day greeting glyph. Decorative generic UI, not domain icons —
+  /// uses LucideIcons (rule #24's intended scope) for consistency with the
+  /// rest of the home dashboard (egg_turning_summary_section etc.).
   IconData _greetingIcon(String greetingKey) {
     switch (greetingKey) {
       case 'home.greeting_morning':
-        return Icons.wb_sunny_outlined;
+        return LucideIcons.sunrise;
       case 'home.greeting_afternoon':
-        return Icons.wb_cloudy_outlined;
+        return LucideIcons.sun;
       case 'home.greeting_night':
-        return Icons.nights_stay_outlined;
+        return LucideIcons.moon;
       case 'home.greeting_evening':
       default:
-        return Icons.wb_sunny;
+        return LucideIcons.sunset;
     }
   }
 

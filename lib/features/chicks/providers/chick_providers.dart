@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
+import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
@@ -113,6 +114,13 @@ class BandingActionNotifier extends Notifier<AsyncValue<void>> {
   AsyncValue<void> build() => const AsyncData(null);
 
   /// Marks a chick as banded: updates chick, completes event, cancels notifications.
+  ///
+  /// Failure surface uses typed [AppException] subclasses (per
+  /// error-handling.md) so consumers can match on type and the error
+  /// message is always a stable l10n key. Prior code stored
+  /// `'errors.not_found'.tr()` directly in `AsyncError`, which both
+  /// hardcoded the translated string at error-emit time and meant the
+  /// generic catch leaked raw exception text via `'$e'` in the UI.
   Future<void> markBandingComplete(String chickId) async {
     state = const AsyncLoading();
     try {
@@ -123,7 +131,10 @@ class BandingActionNotifier extends Notifier<AsyncValue<void>> {
       // 1. Update chick with bandingDate
       final chick = await chickRepo.getById(chickId);
       if (chick == null) {
-        state = AsyncError('errors.not_found'.tr(), StackTrace.current);
+        state = AsyncError(
+          const NotFoundException('errors.not_found'),
+          StackTrace.current,
+        );
         return;
       }
       await chickRepo.save(
@@ -148,9 +159,18 @@ class BandingActionNotifier extends Notifier<AsyncValue<void>> {
       await scheduler.cancelBandingReminders(chickId);
 
       state = const AsyncData(null);
-    } catch (e, st) {
+    } on AppException catch (e, st) {
       AppLogger.error('BandingActionNotifier', e, st);
       state = AsyncError(e, st);
+    } catch (e, st) {
+      AppLogger.error('BandingActionNotifier', e, st);
+      // Wrap unknown failures in a typed exception with an l10n key —
+      // the UI .tr()s the message; the raw exception is in originalError
+      // for Sentry breadcrumbs.
+      state = AsyncError(
+        DatabaseException('errors.unknown', originalError: e),
+        st,
+      );
     }
   }
 }

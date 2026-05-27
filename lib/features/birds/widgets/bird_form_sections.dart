@@ -1,12 +1,18 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/species/species_profile.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/cards/info_card.dart';
 import 'package:budgie_breeding_tracker/core/widgets/date_picker_field.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 import 'package:budgie_breeding_tracker/features/birds/utils/bird_display_utils.dart';
 import 'package:budgie_breeding_tracker/shared/widgets/genetics.dart';
@@ -67,12 +73,22 @@ class BirdFormGeneticsSection extends StatelessWidget {
 }
 
 /// Identity section: ring number, birth date, cage number.
-class BirdFormIdentitySection extends StatelessWidget {
+///
+/// Promoted from StatelessWidget → ConsumerStatefulWidget so the ring-number
+/// field can run a debounced async uniqueness check while the user types,
+/// instead of waiting for submit to surface the conflict (was: server-side
+/// only via `_hasRingNumberConflict`, user types whole value + presses Save
+/// before learning the value is taken).
+class BirdFormIdentitySection extends ConsumerStatefulWidget {
   final TextEditingController ringController;
   final TextEditingController cageController;
   final DateTime? birthDate;
   final ValueChanged<DateTime?> onBirthDateChanged;
   final DateFormat? dateFormatter;
+
+  /// Bird ID currently being edited — passed to `hasRingNumber` so the
+  /// own row doesn't count as a conflict against itself.
+  final String? editBirdId;
 
   const BirdFormIdentitySection({
     super.key,
@@ -81,7 +97,79 @@ class BirdFormIdentitySection extends StatelessWidget {
     required this.birthDate,
     required this.onBirthDateChanged,
     this.dateFormatter,
+    this.editBirdId,
   });
+
+  @override
+  ConsumerState<BirdFormIdentitySection> createState() =>
+      _BirdFormIdentitySectionState();
+}
+
+class _BirdFormIdentitySectionState
+    extends ConsumerState<BirdFormIdentitySection> {
+  /// Monotonic request counter to discard stale results. Without this, a
+  /// slow query for an earlier value could overwrite the result for a
+  /// later value typed in between (providers.md race-condition pattern).
+  int _requestId = 0;
+  Timer? _debounce;
+  String? _ringError;
+  String? _lastCheckedValue;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.ringController.addListener(_onRingChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.ringController.removeListener(_onRingChanged);
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  void _onRingChanged() {
+    final value = widget.ringController.text.trim();
+    if (value == _lastCheckedValue) return;
+    // Empty ring numbers are allowed — clear any error and skip the check.
+    if (value.isEmpty) {
+      _debounce?.cancel();
+      if (_ringError != null) {
+        setState(() => _ringError = null);
+      }
+      return;
+    }
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 400), () {
+      _checkUnique(value);
+    });
+  }
+
+  Future<void> _checkUnique(String value) async {
+    final id = ++_requestId;
+    final userId = ref.read(currentUserIdProvider);
+    if (userId.isEmpty) return;
+    try {
+      final exists = await ref
+          .read(birdRepositoryProvider)
+          .hasRingNumber(userId, value, excludeId: widget.editBirdId);
+      // Discard the result if a newer keystroke superseded it OR the widget
+      // was disposed while the await was in flight.
+      if (id != _requestId || !mounted) return;
+      setState(() {
+        _lastCheckedValue = value;
+        // Reuses the existing l10n key already shown on submit-time
+        // server check (`_hasRingNumberConflict`). Same string, earlier
+        // surface — the user sees the conflict as they type instead of
+        // after pressing Save.
+        _ringError = exists ? 'birds.ring_number_not_unique'.tr() : null;
+      });
+    } catch (e) {
+      // Don't block the user if the lookup itself fails — submit-time
+      // server check is still the source of truth. Log so we notice.
+      AppLogger.warning('Ring uniqueness check failed: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,10 +178,11 @@ class BirdFormIdentitySection extends StatelessWidget {
       children: [
         BirdFormSectionHeader('birds.section_identity'.tr()),
         TextFormField(
-          controller: ringController,
+          controller: widget.ringController,
           decoration: InputDecoration(
             labelText: 'birds.ring_number'.tr(),
             border: const OutlineInputBorder(),
+            errorText: _ringError,
             prefixIcon: const Padding(
               padding: EdgeInsets.all(AppSpacing.md),
               child: AppIcon(AppIcons.ring, size: 20),
@@ -104,16 +193,16 @@ class BirdFormIdentitySection extends StatelessWidget {
         const SizedBox(height: AppSpacing.md),
         DatePickerField(
           label: 'birds.birth_date'.tr(),
-          value: birthDate,
-          onChanged: onBirthDateChanged,
+          value: widget.birthDate,
+          onChanged: widget.onBirthDateChanged,
           firstDate: DateTime(2015),
           lastDate: DateTime.now(),
           isRequired: false,
-          dateFormatter: dateFormatter,
+          dateFormatter: widget.dateFormatter,
         ),
         const SizedBox(height: AppSpacing.md),
         TextFormField(
-          controller: cageController,
+          controller: widget.cageController,
           decoration: InputDecoration(
             labelText: 'birds.cage_number'.tr(),
             border: const OutlineInputBorder(),
