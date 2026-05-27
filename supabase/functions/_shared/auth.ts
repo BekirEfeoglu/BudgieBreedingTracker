@@ -5,7 +5,14 @@
  * - requireAdminRole: checks profiles table for admin/founder role
  * - createSupabaseAdmin: service-role client for privileged operations
  */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// Deno-native `npm:` specifier. The previous `https://esm.sh/...`
+// import was the single biggest source of intermittent edge-function
+// deploy failures: esm.sh returned HTTP 522 multiple times during
+// `bundling Function: revoke-oauth-token`, requiring a manual rerun
+// for every other push. `npm:` is resolved by the Edge Runtime
+// directly (>= v1.45, currently v1.73 in production) and bypasses
+// third-party CDNs entirely.
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 /**
  * Validate the caller's JWT and return their user ID.
