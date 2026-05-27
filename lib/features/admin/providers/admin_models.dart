@@ -190,6 +190,16 @@ abstract class ServerCapacity with _$ServerCapacity {
     @Default(0) int totalRows,
     @Default(0) double indexHitRatio,
     @Default([]) List<TableCapacity> tables,
+
+    /// True when the values above came from the fallback codepath (RPC
+    /// `get_server_capacity` was unavailable). The dashboard reads this
+    /// to switch the status banner into a "limited data" state instead
+    /// of showing a green "healthy" banner backed by zero-filled
+    /// metrics. JSON-excluded because no server response should ever
+    /// carry this flag — it is computed purely client-side.
+    @JsonKey(includeFromJson: false, includeToJson: false)
+    @Default(false)
+    bool isDegraded,
   }) = _ServerCapacity;
 
   factory ServerCapacity.fromJson(Map<String, dynamic> json) =>

@@ -104,10 +104,13 @@ class _SlowQueryRow extends StatelessWidget {
                 start: AppSpacing.xl,
                 top: 2,
               ),
+              // Drop the 80-char `substring`: it could split a UTF-16
+              // surrogate pair (emoji, multilingual identifier) and
+              // produce an invalid string at runtime. The `maxLines: 2`
+              // + `TextOverflow.ellipsis` already enforces the visual
+              // bound the substring was approximating.
               child: Text(
-                query.query.length > 80
-                    ? '${query.query.substring(0, 80)}...'
-                    : query.query,
+                query.query,
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontFamily: 'monospace',
                   fontSize: 11,

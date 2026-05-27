@@ -9,11 +9,9 @@ import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
-import '../providers/admin_monitoring_snapshot_providers.dart';
 import '../providers/admin_providers.dart';
 import 'admin_monitoring_snapshot_section.dart';
 import 'admin_monitoring_table_widgets.dart';
-import 'admin_monitoring_trend_charts.dart';
 
 part 'admin_monitoring_content_cards.dart';
 
@@ -28,7 +26,11 @@ class MonitoringContent extends ConsumerWidget {
     final dbSizeLimit =
         ref.watch(dbSizeLimitProvider).value ??
         AdminConstants.dbSizeLimitDefault;
-    final snapshotsAsync = ref.watch(monitoringSnapshotsProvider);
+    // `MonitoringSnapshotSection` (Connection Pool + Slow Queries) and
+    // `MonitoringTrendCharts` (Connection Usage gauge + per-state list)
+    // used to coexist here, rendering the same `monitoringSnapshotsProvider`
+    // payload twice. The snapshot section already covers both data points
+    // — the trend chart block was removed to drop the duplicate UI.
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: AppSpacing.screenPadding,
@@ -44,16 +46,6 @@ class MonitoringContent extends ConsumerWidget {
           const MonitoringSnapshotSection(),
           const SizedBox(height: AppSpacing.xxl),
           MonitoringTableDetailsSection(tables: capacity.tables),
-          const SizedBox(height: AppSpacing.lg),
-          snapshotsAsync.when(
-            loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
-            data: (trends) =>
-                trends.totalConnections > 0 ||
-                    trends.connectionStates.isNotEmpty
-                ? MonitoringTrendCharts(trends: trends)
-                : const SizedBox.shrink(),
-          ),
           const SizedBox(height: AppSpacing.xxxl),
         ],
       ),
@@ -81,7 +73,14 @@ class MonitoringStatusBanner extends StatelessWidget {
 
     final String statusKey;
     final Color color;
-    if (worstRatio < AdminConstants.healthyThreshold) {
+    // `isDegraded` short-circuits the threshold ladder: when the RPC
+    // fell back to client-side counts every metric is zero, which
+    // would otherwise be colored as "healthy" green. Surface the
+    // partial-data state instead so an admin notices and investigates.
+    if (capacity.isDegraded) {
+      statusKey = 'admin.db_status_degraded';
+      color = AppColors.warning;
+    } else if (worstRatio < AdminConstants.healthyThreshold) {
       statusKey = 'admin.db_status_healthy';
       color = AppColors.success;
     } else if (worstRatio < AdminConstants.warningThreshold) {
@@ -103,9 +102,13 @@ class MonitoringStatusBanner extends StatelessWidget {
       child: Row(
         children: [
           Semantics(
-            label: statusKey,
+            // Use the localized status string so screen readers don't
+            // announce the raw key "admin.db_status_healthy".
+            label: statusKey.tr(),
             child: Icon(
-              worstRatio < AdminConstants.healthyThreshold
+              capacity.isDegraded
+                  ? LucideIcons.cloudOff
+                  : worstRatio < AdminConstants.healthyThreshold
                   ? LucideIcons.checkCircle
                   : worstRatio < AdminConstants.warningThreshold
                   ? LucideIcons.alertTriangle
@@ -196,8 +199,16 @@ class MonitoringCapacityGrid extends StatelessWidget {
                 child: const Icon(LucideIcons.zap),
               ),
               label: 'admin.cache_hit_ratio'.tr(),
-              value: '${capacity.cacheHitRatio.toStringAsFixed(1)}%',
-              ratio: capacity.cacheHitRatio / 100,
+              // Clamp + isFinite guard prevents Postgres edge cases
+              // (NaN / Infinity from `blks_hit/blks_read` when read=0,
+              // or rounding values like 100.04%) from bleeding into
+              // the UI as either "NaN%" or a misleading >100% label.
+              value: capacity.cacheHitRatio.isFinite
+                  ? '${capacity.cacheHitRatio.clamp(0, 100).toStringAsFixed(1)}%'
+                  : '-',
+              ratio: capacity.cacheHitRatio.isFinite
+                  ? (capacity.cacheHitRatio / 100).clamp(0.0, 1.0)
+                  : 0.0,
               invertColor: true,
             ),
             MonitoringCapacityCard(
@@ -206,7 +217,7 @@ class MonitoringCapacityGrid extends StatelessWidget {
                 child: const Icon(LucideIcons.list),
               ),
               label: 'admin.total_rows'.tr(),
-              value: formatNumber(capacity.totalRows),
+              value: formatNumber(capacity.totalRows, context),
               ratio: null,
             ),
           ],

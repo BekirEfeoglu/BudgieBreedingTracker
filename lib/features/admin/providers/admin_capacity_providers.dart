@@ -166,6 +166,9 @@ final serverCapacityProvider = FutureProvider<ServerCapacity>((ref) async {
       }
     }
 
+    // Mark the result as degraded so the dashboard can show a "limited
+    // data" banner instead of a misleading "healthy" indicator built on
+    // zero-filled metrics — the RPC failed, the consumer must know.
     return ServerCapacity(
       databaseSizeBytes: 0,
       activeConnections: 0,
@@ -175,6 +178,7 @@ final serverCapacityProvider = FutureProvider<ServerCapacity>((ref) async {
       totalRows: totalRows,
       indexHitRatio: 0,
       tables: tableCapacities,
+      isDegraded: true,
     );
   }
 });

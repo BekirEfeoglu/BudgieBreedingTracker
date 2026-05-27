@@ -1898,6 +1898,7 @@
     "db_status_healthy": "Sağlıklı",
     "db_status_warning": "Dikkat - Kapasite Yüksek",
     "db_status_critical": "Kritik - Kapasite Aşılıyor",
+    "db_status_degraded": "Kısıtlı veri - Ölçüm RPC'si yanıt vermiyor",
     "settings_active_count": "{} / {} ayar aktif",
     "settings_last_updated": "Son güncelleme: {}",
     "setting_last_change": "Son değişiklik: {}",

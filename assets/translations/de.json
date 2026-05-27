@@ -1898,6 +1898,7 @@
     "db_status_healthy": "Gesund",
     "db_status_warning": "Warnung - Hohe Auslastung",
     "db_status_critical": "Kritisch - Kapazität überschritten",
+    "db_status_degraded": "Eingeschränkte Daten - Kapazitäts-RPC nicht verfügbar",
     "settings_active_count": "{} / {} Einstellungen aktiv",
     "settings_last_updated": "Zuletzt aktualisiert: {}",
     "setting_last_change": "Letzte Änderung: {}",

@@ -80,6 +80,36 @@ void main() {
     );
   });
 
+  group('ServerCapacity isDegraded flag', () {
+    test('defaults to false', () {
+      const capacity = ServerCapacity();
+      expect(capacity.isDegraded, isFalse);
+    });
+
+    test(
+      'is NOT carried in JSON — server payload must not be able to set it',
+      () {
+        // `isDegraded` is the client-side signal that the
+        // serverCapacityProvider fell back to manual counts. A future
+        // server endpoint must not be able to suppress the degraded
+        // banner by emitting `"is_degraded": false` in its response,
+        // so JSON serialization is intentionally excluded.
+        final json = {
+          'database_size_bytes': 0,
+          'is_degraded': true, // ignored by design
+        };
+        final capacity = ServerCapacity.fromJson(json);
+        expect(capacity.isDegraded, isFalse);
+      },
+    );
+
+    test('copyWith can flip it', () {
+      const capacity = ServerCapacity();
+      final degraded = capacity.copyWith(isDegraded: true);
+      expect(degraded.isDegraded, isTrue);
+    });
+  });
+
   group('SystemAlert construction', () {
     test('construction with defaults', () {
       final alert = SystemAlert(id: 'a1', createdAt: DateTime(2024, 6, 1));

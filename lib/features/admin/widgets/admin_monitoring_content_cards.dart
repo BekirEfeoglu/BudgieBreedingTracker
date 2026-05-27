@@ -102,7 +102,13 @@ class MonitoringIndexUsageCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final ratio = indexHitRatio / 100;
+    // Same defensive treatment as cacheHitRatio (admin_monitoring_content):
+    // `pg_statio` math can produce NaN/Infinity on cold tables, and rounding
+    // may slip just over 100%. Guarding here keeps the card honest.
+    final safeRatio = indexHitRatio.isFinite
+        ? indexHitRatio.clamp(0, 100).toDouble()
+        : 0.0;
+    final ratio = (safeRatio / 100).clamp(0.0, 1.0);
     final color = capacityColor(ratio, true);
 
     return Card(
@@ -128,7 +134,9 @@ class MonitoringIndexUsageCard extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  '${indexHitRatio.toStringAsFixed(1)}%',
+                  indexHitRatio.isFinite
+                      ? '${safeRatio.toStringAsFixed(1)}%'
+                      : '-',
                   style: theme.textTheme.titleMedium?.copyWith(
                     color: color,
                     fontWeight: FontWeight.bold,

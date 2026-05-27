@@ -118,7 +118,12 @@ class MonitoringSnapshotSection extends ConsumerWidget {
   }
 
   String _formatTimestamp(DateTime dt) {
-    final diff = DateTime.now().difference(dt);
+    // Postgres `timestamptz` round-trips via PostgREST as ISO-8601 with
+    // a `Z` suffix, but a fallback path (e.g. RPC returning a naive
+    // string) can yield a local-zoned `DateTime`. Force both sides to
+    // UTC before subtracting so a UTC+N user does not see "3 hours ago"
+    // for a snapshot that was captured 30 minutes ago.
+    final diff = DateTime.now().toUtc().difference(dt.toUtc());
     if (diff.inMinutes < 60) {
       return 'admin.time_minutes_ago'.tr(args: [diff.inMinutes.toString()]);
     }

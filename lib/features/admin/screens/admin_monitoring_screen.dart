@@ -27,6 +27,11 @@ class _AdminMonitoringScreenState extends ConsumerState<AdminMonitoringScreen> {
     _refreshTimer = Timer.periodic(AdminConstants.monitoringRefreshInterval, (
       _,
     ) {
+      // Without the `mounted` check the timer can race against `dispose`:
+      // the periodic tick may fire between `dispose()` cancelling the
+      // timer and the runtime fully unmounting the state, calling
+      // `ref.invalidate` on a disposed scope.
+      if (!mounted) return;
       ref.invalidate(serverCapacityProvider);
     });
   }
@@ -44,7 +49,11 @@ class _AdminMonitoringScreenState extends ConsumerState<AdminMonitoringScreen> {
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(serverCapacityProvider),
+        // skipLoadingOnRefresh keeps the previous frame visible during the
+        // 30-second auto-refresh and pull-to-refresh; without it the page
+        // collapses to a full skeleton on every tick.
         child: capacityAsync.when(
+          skipLoadingOnRefresh: true,
           loading: () => const LoadingState(),
           error: (error, _) => ErrorState(
             message: 'common.data_load_error'.tr(),

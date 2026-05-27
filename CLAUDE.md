@@ -83,8 +83,8 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 989 Dart files |
-| Test files (test/) | 906 test files, 11,058+ individual tests |
+| Source files (lib/) | 988 Dart files |
+| Test files (test/) | 905 test files, 11,052+ individual tests |
 | Feature modules | 25 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -96,7 +96,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | Shared widgets | 28 (15 root + 4 buttons + 2 cards + 1 dialog + 1 bottom_sheet) |
 | Enum files | 15 |
 | Supabase constants | 146 (tables + buckets + columns) |
-| L10n keys | ~2,980 per language, 42 categories |
+| L10n keys | ~2,981 per language, 42 categories |
 | DB schema version | 24 |
 
 ## CI/CD Pipeline

@@ -167,7 +167,7 @@ class _MonitoringTableRow extends StatelessWidget {
           Expanded(
             flex: 2,
             child: Text(
-              formatNumber(table.rowCount),
+              formatNumber(table.rowCount, context),
               style: bodyStyle,
               textAlign: TextAlign.end,
             ),
@@ -199,15 +199,17 @@ String formatBytes(int bytes) {
   return '${value.toStringAsFixed(value >= 100 ? 0 : 1)} ${units[i]}';
 }
 
-String formatNumber(int n) {
-  if (n < 1000) return n.toString();
-  final str = n.toString();
-  final buffer = StringBuffer();
-  for (var i = 0; i < str.length; i++) {
-    if (i > 0 && (str.length - i) % 3 == 0) buffer.write(',');
-    buffer.write(str[i]);
-  }
-  return buffer.toString();
+/// Locale-aware integer formatter — `1.000` in tr/de, `1,000` in en.
+///
+/// Previously this helper hardcoded a comma separator, producing
+/// `1,000,000` for every locale; tr and de users expect `1.000.000`.
+/// `intl.NumberFormat.decimalPattern` picks the right grouping for
+/// the active locale.
+String formatNumber(int n, [BuildContext? context]) {
+  final localeName = context != null
+      ? Localizations.localeOf(context).toLanguageTag()
+      : Intl.getCurrentLocale();
+  return NumberFormat.decimalPattern(localeName).format(n);
 }
 
 Color capacityColor(double ratio, [bool invert = false]) {
