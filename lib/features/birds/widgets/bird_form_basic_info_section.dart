@@ -70,9 +70,16 @@ class BirdFormBasicInfoSection extends StatelessWidget {
         ],
         TextFormField(
           controller: nameController,
+          // Matches notes maxLength elsewhere in the form; prevents
+          // oversized names from reaching the DB / sync layer where they'd
+          // bloat encrypted payloads and stretch list cells in the UI.
+          maxLength: 64,
           decoration: InputDecoration(
             labelText: 'birds.name_label'.tr(),
             border: const OutlineInputBorder(),
+            // Hide the default counter UI (only relevant if user is
+            // approaching the limit, which is rare for names).
+            counterText: '',
             prefixIcon: const Padding(
               padding: EdgeInsets.all(AppSpacing.md),
               child: AppIcon(AppIcons.bird, size: 20),
@@ -81,6 +88,9 @@ class BirdFormBasicInfoSection extends StatelessWidget {
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
               return 'birds.name_required'.tr();
+            }
+            if (value.length > 64) {
+              return 'validation.max_length'.tr(namedArgs: {'n': '64'});
             }
             return null;
           },

@@ -3,11 +3,67 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/breeding_detail_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_parent_selector.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 
 import '../../../helpers/test_helpers.dart';
+
+/// Drift-side filter mirror — the selector now reads
+/// `birdParentCandidatesProvider`, which Drift fills with the SQL-filtered
+/// list. Tests pass a "raw" list and this helper computes what the DAO
+/// would return so the widget receives the same shape it sees in
+/// production.
+List<Bird> _applyParentFilter(
+  List<Bird> birds, {
+  required BirdGender gender,
+  Species? species,
+  String? excludeId,
+}) {
+  return birds
+      .where((b) => b.status == BirdStatus.alive)
+      .where((b) => b.gender == gender)
+      .where((b) => species == null || b.species == species)
+      .where((b) => excludeId == null || b.id != excludeId)
+      .toList()
+    ..sort((a, b) => a.name.compareTo(b.name));
+}
+
+/// Builds the override pair for both providers the widget reads.
+/// - `birdParentCandidatesProvider` → the Drift-filtered shape.
+/// - `birdsStreamProvider` → the full list for the fallback selected-id
+///   lookup when the chosen bird no longer matches the filter.
+List<dynamic> _parentSelectorOverrides({
+  required List<Bird> birds,
+  required BirdGender gender,
+  Species? species,
+  String? excludeId,
+}) {
+  final filtered = _applyParentFilter(
+    birds,
+    gender: gender,
+    species: species,
+    excludeId: excludeId,
+  );
+  // Per-bird lookup for the selected-but-not-in-candidates fallback path.
+  // The widget reads `birdByIdProvider(selectedId)` when the chosen bird
+  // is filtered out (e.g. dead, outside 50-row window). Map all input
+  // birds so any selectedId resolves correctly in tests.
+  final byId = <String, Bird>{for (final b in birds) b.id: b};
+  return [
+    currentUserIdProvider.overrideWithValue('user-1'),
+    birdsStreamProvider.overrideWith((ref, userId) => Stream.value(birds)),
+    birdParentCandidatesProvider.overrideWith(
+      (ref, args) => Stream.value(filtered),
+    ),
+    birdByIdProvider.overrideWith(
+      (ref, id) => Stream.value(byId[id]),
+    ),
+  ];
+}
 
 Future<void> _pump(
   WidgetTester tester,
@@ -44,6 +100,9 @@ void main() {
           birdsStreamProvider.overrideWith(
             (ref, userId) => const Stream.empty(),
           ),
+          birdParentCandidatesProvider.overrideWith(
+            (ref, args) => const Stream.empty(),
+          ),
         ],
       );
 
@@ -66,10 +125,11 @@ void main() {
           genderFilter: BirdGender.male,
           onChanged: (_) {},
         ),
-        overrides: [
-          currentUserIdProvider.overrideWithValue('user-1'),
-          birdsStreamProvider.overrideWith((ref, userId) => Stream.value([])),
-        ],
+        overrides: _parentSelectorOverrides(
+          birds: const [],
+          gender: BirdGender.male,
+          species: Species.budgie,
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -99,12 +159,11 @@ void main() {
           genderFilter: BirdGender.male,
           onChanged: (_) {},
         ),
-        overrides: [
-          currentUserIdProvider.overrideWithValue('user-1'),
-          birdsStreamProvider.overrideWith(
-            (ref, userId) => Stream.value([male, female]),
-          ),
-        ],
+        overrides: _parentSelectorOverrides(
+          birds: [male, female],
+          gender: BirdGender.male,
+          species: Species.budgie,
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -144,12 +203,12 @@ void main() {
           genderFilter: BirdGender.male,
           onChanged: (_) {},
         ),
-        overrides: [
-          currentUserIdProvider.overrideWithValue('user-1'),
-          birdsStreamProvider.overrideWith(
-            (ref, userId) => Stream.value([male1, male2]),
-          ),
-        ],
+        overrides: _parentSelectorOverrides(
+          birds: [male1, male2],
+          gender: BirdGender.male,
+          species: Species.budgie,
+          excludeId: 'm-1',
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -176,12 +235,11 @@ void main() {
           genderFilter: BirdGender.male,
           onChanged: (_) {},
         ),
-        overrides: [
-          currentUserIdProvider.overrideWithValue('user-1'),
-          birdsStreamProvider.overrideWith(
-            (ref, userId) => Stream.value([male]),
-          ),
-        ],
+        overrides: _parentSelectorOverrides(
+          birds: [male],
+          gender: BirdGender.male,
+          species: Species.budgie,
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -222,12 +280,11 @@ void main() {
             genderFilter: BirdGender.male,
             onChanged: (_) {},
           ),
-          overrides: [
-            currentUserIdProvider.overrideWithValue('user-1'),
-            birdsStreamProvider.overrideWith(
-              (ref, userId) => Stream.value([...aliveMales, selectedDeadMale]),
-            ),
-          ],
+          overrides: _parentSelectorOverrides(
+            birds: [...aliveMales, selectedDeadMale],
+            gender: BirdGender.male,
+            species: Species.budgie,
+          ),
         );
         await tester.pumpAndSettle();
 
@@ -261,12 +318,11 @@ void main() {
           genderFilter: BirdGender.male,
           onChanged: (_) {},
         ),
-        overrides: [
-          currentUserIdProvider.overrideWithValue('user-1'),
-          birdsStreamProvider.overrideWith(
-            (ref, userId) => Stream.value([budgieMale, canaryMale]),
-          ),
-        ],
+        overrides: _parentSelectorOverrides(
+          birds: [budgieMale, canaryMale],
+          gender: BirdGender.male,
+          species: Species.budgie,
+        ),
       );
       await tester.tap(find.byType(DropdownButtonFormField<String>));
       await tester.pumpAndSettle();
@@ -296,12 +352,11 @@ void main() {
             genderFilter: BirdGender.male,
             onChanged: (_) {},
           ),
-          overrides: [
-            currentUserIdProvider.overrideWithValue('user-1'),
-            birdsStreamProvider.overrideWith(
-              (ref, userId) => Stream.value([canaryMale]),
-            ),
-          ],
+          overrides: _parentSelectorOverrides(
+            birds: [canaryMale],
+            gender: BirdGender.male,
+            species: Species.budgie,
+          ),
         );
         await tester.pumpAndSettle();
 

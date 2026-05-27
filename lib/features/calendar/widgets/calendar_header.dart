@@ -16,8 +16,13 @@ class CalendarHeader extends ConsumerWidget {
     final displayedMonth = ref.watch(displayedMonthProvider);
     final theme = Theme.of(context);
 
+    // Use `languageCode` for the intl `DateFormat` locale (matches the
+    // codebase's `event_card.dart` convention). `toStringWithSeparator()`
+    // emits `tr_TR` / `en_US`, which intl tolerates today but doesn't
+    // share format data with the `tr`/`en`/`de` keys used elsewhere — the
+    // inconsistency is a future-formatting drift waiting to happen.
     final monthLabel = DateFormat.yMMMM(
-      context.locale.toStringWithSeparator(),
+      Localizations.localeOf(context).languageCode,
     ).format(displayedMonth);
 
     return Padding(

@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/species/species_profile.dart';
+import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/breeding_detail_stream_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_form_sections.dart';
@@ -471,6 +473,15 @@ void main() {
         overrides: [
           currentUserIdProvider.overrideWithValue('user-1'),
           birdsStreamProvider.overrideWith((ref, userId) => Stream.value([])),
+          // BirdParentSelector now reads `birdParentCandidatesProvider`
+          // (Drift-side filtered stream). Empty list mirrors the empty
+          // input → empty filter result. Without this override the
+          // family entry is never satisfied and its autoDispose timer
+          // leaks past the test's widget teardown.
+          birdParentCandidatesProvider.overrideWith(
+            (ref, args) => Stream.value([]),
+          ),
+          birdByIdProvider.overrideWith((ref, id) => Stream.value(null)),
         ],
       );
       await tester.pumpAndSettle();
@@ -491,6 +502,15 @@ void main() {
         overrides: [
           currentUserIdProvider.overrideWithValue('user-1'),
           birdsStreamProvider.overrideWith((ref, userId) => Stream.value([])),
+          // BirdParentSelector now reads `birdParentCandidatesProvider`
+          // (Drift-side filtered stream). Empty list mirrors the empty
+          // input → empty filter result. Without this override the
+          // family entry is never satisfied and its autoDispose timer
+          // leaks past the test's widget teardown.
+          birdParentCandidatesProvider.overrideWith(
+            (ref, args) => Stream.value([]),
+          ),
+          birdByIdProvider.overrideWith((ref, id) => Stream.value(null)),
         ],
       );
       await tester.pumpAndSettle();
@@ -511,6 +531,15 @@ void main() {
         overrides: [
           currentUserIdProvider.overrideWithValue('user-1'),
           birdsStreamProvider.overrideWith((ref, userId) => Stream.value([])),
+          // BirdParentSelector now reads `birdParentCandidatesProvider`
+          // (Drift-side filtered stream). Empty list mirrors the empty
+          // input → empty filter result. Without this override the
+          // family entry is never satisfied and its autoDispose timer
+          // leaks past the test's widget teardown.
+          birdParentCandidatesProvider.overrideWith(
+            (ref, args) => Stream.value([]),
+          ),
+          birdByIdProvider.overrideWith((ref, id) => Stream.value(null)),
         ],
       );
       await tester.pumpAndSettle();

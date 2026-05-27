@@ -258,6 +258,7 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
           ],
           Expanded(
             child: chicksAsync.when(
+              skipLoadingOnRefresh: true,
               loading: () => const LoadingState(),
               error: (error, _) => SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),

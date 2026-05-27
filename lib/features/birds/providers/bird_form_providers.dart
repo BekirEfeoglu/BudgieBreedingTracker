@@ -92,7 +92,7 @@ class BirdFormNotifier extends Notifier<BirdFormState>
         lastAction: BirdFormAction.delete,
       );
     } catch (e, st) {
-      AppLogger.error('BirdFormNotifier', e, st);
+      AppLogger.error('BirdFormNotifier.deleteBird', e, st);
       reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
@@ -132,7 +132,7 @@ class BirdFormNotifier extends Notifier<BirdFormState>
         lastAction: BirdFormAction.statusChange,
       );
     } catch (e, st) {
-      AppLogger.error('BirdFormNotifier', e, st);
+      AppLogger.error('BirdFormNotifier.markAsDead', e, st);
       reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
@@ -172,7 +172,7 @@ class BirdFormNotifier extends Notifier<BirdFormState>
         lastAction: BirdFormAction.statusChange,
       );
     } catch (e, st) {
-      AppLogger.error('BirdFormNotifier', e, st);
+      AppLogger.error('BirdFormNotifier.markAsSold', e, st);
       reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
@@ -212,7 +212,7 @@ class BirdFormNotifier extends Notifier<BirdFormState>
         lastAction: BirdFormAction.statusChange,
       );
     } catch (e, st) {
-      AppLogger.error('BirdFormNotifier', e, st);
+      AppLogger.error('BirdFormNotifier.markAsGifted', e, st);
       reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }

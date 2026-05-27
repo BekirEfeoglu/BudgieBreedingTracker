@@ -51,20 +51,36 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
-            OutlinedButton.icon(
-              onPressed: _isUploading ? null : () => _addPhoto(context, ref),
-              icon: _isUploading
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const AppIcon(AppIcons.photo, size: 18),
-              label: Text(
-                _isUploading
-                    ? 'birds.uploading_photo'.tr()
-                    : 'birds.add_photo'.tr(),
-              ),
+            Row(
+              children: [
+                // Retry parity with `bird_detail_health.dart` — error
+                // states should always offer a way to recover without
+                // forcing the user off the screen.
+                OutlinedButton.icon(
+                  onPressed: () =>
+                      ref.invalidate(birdPhotosProvider(widget.bird.id)),
+                  icon: const Icon(LucideIcons.refreshCw, size: 18),
+                  label: Text('common.retry'.tr()),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                OutlinedButton.icon(
+                  onPressed: _isUploading
+                      ? null
+                      : () => _addPhoto(context, ref),
+                  icon: _isUploading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const AppIcon(AppIcons.photo, size: 18),
+                  label: Text(
+                    _isUploading
+                        ? 'birds.uploading_photo'.tr()
+                        : 'birds.add_photo'.tr(),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

@@ -356,7 +356,12 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
             ),
           ],
           Expanded(
+            // skipLoadingOnRefresh: keep the previous list visible during
+            // pull-to-refresh / provider invalidation instead of flickering
+            // to LoadingState (ui-patterns.md). Only show the spinner on
+            // the very first emission for a userId.
             child: birdsAsync.when(
+              skipLoadingOnRefresh: true,
               loading: () => const LoadingState(),
               error: (error, _) => SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),

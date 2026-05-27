@@ -48,6 +48,23 @@ class BirdRepository extends BaseRepository<Bird>
   @override
   Stream<List<Bird>> watchAll(String userId) => _localDao.watchAll(userId);
 
+  /// SQL-filtered stream of alive birds matching the given gender and
+  /// optional species. Power-user friendly path for parent-selector
+  /// dropdowns — avoids loading every bird into memory just to discard
+  /// most rows in Dart.
+  Stream<List<Bird>> watchAliveByGenderAndSpecies({
+    required String userId,
+    required BirdGender gender,
+    Species? species,
+    String? excludeId,
+  }) =>
+      _localDao.watchAliveByGenderAndSpecies(
+        userId: userId,
+        gender: gender,
+        species: species,
+        excludeId: excludeId,
+      );
+
   @override
   Stream<Bird?> watchById(String id) => _localDao.watchById(id);
 

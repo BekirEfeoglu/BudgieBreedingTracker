@@ -1,4 +1,5 @@
 import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -59,9 +60,19 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
     if (_isEdit) {
       final existing = _existingPair;
       if (existing == null) return true;
+      // Normalize both sides to UTC midnight: `createBreeding` normalizes
+      // when persisting, but the form's loaded `_pairingDate` comes back
+      // from the picker as local-midnight. Without this, `DateTime ==`
+      // compares epoch ms incl. tz offset → form looks dirty as soon as
+      // it loads in any non-UTC timezone, breaking UnsavedChangesScope.
+      final existingPairing = existing.pairingDate;
+      final pairingChanged = existingPairing == null
+          ? true
+          : date_utils.DateUtils.utcMidnight(_pairingDate) !=
+              date_utils.DateUtils.utcMidnight(existingPairing);
       return _maleId != existing.maleId ||
           _femaleId != existing.femaleId ||
-          _pairingDate != existing.pairingDate ||
+          pairingChanged ||
           _cageController.text != (existing.cageNumber ?? '') ||
           _notesController.text != (existing.notes ?? '');
     }

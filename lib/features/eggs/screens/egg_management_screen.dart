@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
@@ -114,6 +115,7 @@ class _EggManagementContent extends ConsumerWidget {
         ),
       ),
       body: eggsAsync.when(
+        skipLoadingOnRefresh: true,
         loading: () => const LoadingState(),
         error: (e, _) => ErrorState(
           message: 'common.data_load_error'.tr(),

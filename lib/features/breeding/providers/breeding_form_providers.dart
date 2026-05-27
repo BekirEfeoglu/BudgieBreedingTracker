@@ -280,9 +280,14 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
             species: previousSpecies,
           );
         }
-      } catch (e) {
-        AppLogger.warning(
-          'Failed to cancel stale incubation reminders for ${incubation.id}: $e',
+      } catch (e, st) {
+        // Stale reminder cancellation is a best-effort cleanup before the
+        // species change writes. Capturing stack for forensic Sentry
+        // breadcrumb without rolling back the species update.
+        AppLogger.error(
+          '[BreedingForm] cancel stale reminders for ${incubation.id}',
+          e,
+          st,
         );
       }
 
@@ -322,10 +327,11 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
             );
           }
         }
-      } catch (e) {
-        AppLogger.warning(
-          'Failed to reschedule incubation reminders for ${incubation.id} '
-          'after species change: $e',
+      } catch (e, st) {
+        AppLogger.error(
+          '[BreedingForm] reschedule reminders for ${incubation.id} after species change',
+          e,
+          st,
         );
       }
     }

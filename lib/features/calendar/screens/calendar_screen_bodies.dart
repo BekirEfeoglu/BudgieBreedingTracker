@@ -28,7 +28,7 @@ class _CalendarBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final selectedLabel = DateFormat.yMMMMd(
-      context.locale.toStringWithSeparator(),
+      Localizations.localeOf(context).languageCode,
     ).format(selectedDate);
 
     return CustomScrollView(

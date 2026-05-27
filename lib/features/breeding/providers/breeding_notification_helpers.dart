@@ -69,8 +69,15 @@ class BreedingNotificationHelper {
           ),
         ),
       );
-    } catch (e) {
-      AppLogger.warning('Failed to cancel breeding notifications: $e');
+    } catch (e, st) {
+      // Best-effort cleanup — the breeding op itself already succeeded by
+      // the time we reach this point. Capture stack trace so Sentry can
+      // attach the breadcrumb when this turns into a chronic failure.
+      AppLogger.error(
+        '[BreedingNotificationHelpers] cancel reminders failed',
+        e,
+        st,
+      );
     }
   }
 

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
@@ -24,7 +25,18 @@ class BirdFamilyInfo extends ConsumerWidget {
 
     return birdsAsync.when(
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (error, stack) {
+        // Family info is a non-essential section — failing to render
+        // shouldn't crash the bird detail screen. But silently hiding the
+        // whole subtree was masking real stream failures (the audit-flagged
+        // pattern). Log so a recurring failure surfaces in observability;
+        // still render `SizedBox.shrink` because we don't have anything
+        // useful to put in its place.
+        AppLogger.warning(
+          '[BirdFamilyInfo] birds stream failed: $error',
+        );
+        return const SizedBox.shrink();
+      },
       data: (allBirds) {
         final offspring = allBirds
             .where((b) => b.fatherId == bird.id || b.motherId == bird.id)

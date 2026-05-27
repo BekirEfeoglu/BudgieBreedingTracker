@@ -22,6 +22,34 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
         .asyncMap(_rowsToModels);
   }
 
+  /// Watches alive birds matching [gender] (and optionally [species]),
+  /// excluding [excludeId]. Filters run in SQL so the parent-selector
+  /// dropdown doesn't pull the whole flock into memory just to discard
+  /// most of it — material gain for power users with thousands of birds.
+  Stream<List<Bird>> watchAliveByGenderAndSpecies({
+    required String userId,
+    required BirdGender gender,
+    Species? species,
+    String? excludeId,
+  }) {
+    final query = select(birdsTable)
+      ..where(
+        (t) =>
+            t.userId.equals(userId) &
+            t.isDeleted.equals(false) &
+            t.status.equalsValue(BirdStatus.alive) &
+            t.gender.equalsValue(gender),
+      )
+      ..orderBy([(t) => OrderingTerm(expression: t.name)]);
+    if (species != null) {
+      query.where((t) => t.species.equalsValue(species));
+    }
+    if (excludeId != null) {
+      query.where((t) => t.id.equals(excludeId).not());
+    }
+    return query.watch().asyncMap(_rowsToModels);
+  }
+
   Stream<Bird?> watchById(String id) {
     return (select(birdsTable)
           ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))

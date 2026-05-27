@@ -229,8 +229,12 @@ extension BreedingFormActions on BreedingFormNotifier {
       // pointing at a deleted entity. Best-effort only.
       try {
         await ref.read(eventRepositoryProvider).removeByBreedingPairIds([id]);
-      } catch (e) {
-        AppLogger.warning('Failed to delete calendar events for pair $id: $e');
+      } catch (e, st) {
+        AppLogger.error(
+          '[BreedingFormActions] delete calendar events for pair $id',
+          e,
+          st,
+        );
         partial = true;
       }
 

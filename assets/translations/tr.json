@@ -835,6 +835,8 @@
     "avatar_upload_error": "Fotoğraf yüklenirken hata oluştu",
     "avatar_remove": "Fotoğrafı Kaldır",
     "avatar_remove_confirm": "Profil fotoğrafını kaldırmak istediğinizden emin misiniz?",
+    "avatar_permission_denied": "Fotoğraf erişim izni reddedildi",
+    "avatar_pick_failed": "Fotoğraf seçilemedi",
     "avatar_source_gallery": "Galeriden Seç",
     "avatar_source_camera": "Kameradan Çek",
     "password_changed": "Şifre başarıyla değiştirildi",
@@ -2396,7 +2398,8 @@
     "field_required": "{} zorunludur",
     "weight_positive": "Ağırlık sıfırdan büyük olmalıdır",
     "required": "Bu alan zorunludur",
-    "invalid_price": "Geçersiz fiyat değeri"
+    "invalid_price": "Geçersiz fiyat değeri",
+    "max_length": "En fazla {n} karakter olabilir"
   },
   "incubation": {
     "stage_overdue": "Gecikmiş",

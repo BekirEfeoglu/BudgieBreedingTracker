@@ -835,6 +835,8 @@
     "avatar_upload_error": "Failed to upload photo",
     "avatar_remove": "Remove Photo",
     "avatar_remove_confirm": "Are you sure you want to remove your profile photo?",
+    "avatar_permission_denied": "Photo access permission denied",
+    "avatar_pick_failed": "Failed to pick photo",
     "avatar_source_gallery": "Choose from Gallery",
     "avatar_source_camera": "Take a Photo",
     "password_changed": "Password changed successfully",
@@ -2396,7 +2398,8 @@
     "field_required": "{} is required",
     "weight_positive": "Weight must be greater than zero",
     "required": "This field is required",
-    "invalid_price": "Invalid price value"
+    "invalid_price": "Invalid price value",
+    "max_length": "Maximum {n} characters"
   },
   "incubation": {
     "stage_overdue": "Overdue",

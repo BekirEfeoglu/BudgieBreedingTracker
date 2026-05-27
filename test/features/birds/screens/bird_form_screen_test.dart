@@ -22,6 +22,9 @@ void main() {
   setUp(() {
     mockBirdRepo = MockBirdRepository();
     registerFallbackValue(createTestBird(id: 'fallback', name: 'Fallback'));
+    // BirdGender fallback needed for mocking the new SQL-filtered query
+    // `watchAliveByGenderAndSpecies(... gender: any(named: 'gender') ...)`
+    registerFallbackValue(BirdGender.male);
   });
 
   GoRouter buildRouter({String? editBirdId}) {
@@ -65,6 +68,29 @@ void main() {
         return Stream.value(editBird);
       }
       return Stream.value(null);
+    });
+    // BirdParentSelector now reads via this SQL-filtered repo method.
+    // Mirror the Drift filter in Dart so the dropdown sees the same
+    // shape it would in production.
+    when(
+      () => mockBirdRepo.watchAliveByGenderAndSpecies(
+        userId: any(named: 'userId'),
+        gender: any(named: 'gender'),
+        species: any(named: 'species'),
+        excludeId: any(named: 'excludeId'),
+      ),
+    ).thenAnswer((invocation) {
+      final gender = invocation.namedArguments[const Symbol('gender')];
+      final species = invocation.namedArguments[const Symbol('species')];
+      final excludeId = invocation.namedArguments[const Symbol('excludeId')];
+      return Stream.value(
+        birds
+            .where((b) => b.status == BirdStatus.alive)
+            .where((b) => b.gender == gender)
+            .where((b) => species == null || b.species == species)
+            .where((b) => excludeId == null || b.id != excludeId)
+            .toList(),
+      );
     });
 
     return ProviderScope(

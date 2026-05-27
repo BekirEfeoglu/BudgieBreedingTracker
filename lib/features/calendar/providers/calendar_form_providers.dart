@@ -218,8 +218,19 @@ class EventFormNotifier extends Notifier<EventFormState> with SentryErrorFilter 
   }
 
   /// Updates the status of an event.
+  ///
+  /// Shares [state.isLoading] with `createEvent`/`updateEvent`. If a save is
+  /// already in flight, this status update is silently ignored — the user's
+  /// next tap or screen re-entry will succeed once that save completes.
+  /// Acceptable trade-off because status changes are sub-100ms in practice
+  /// and a parallel transaction would compete on the same row anyway.
   Future<void> updateEventStatus(String id, EventStatus newStatus) async {
-    if (state.isLoading) return;
+    if (state.isLoading) {
+      AppLogger.debug(
+        '[EventFormNotifier] status update for $id ignored — save in flight',
+      );
+      return;
+    }
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(eventRepositoryProvider);

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/storage/storage_providers.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
@@ -20,6 +21,27 @@ final birdsStreamProvider = StreamProvider.family<List<Bird>, String>((
       }),
     );
   });
+});
+
+/// SQL-filtered stream of alive parent candidates for the parent-selector
+/// dropdown.
+///
+/// Composite family key keeps each `(userId, gender, species, excludeId)`
+/// combination cached independently — the dropdown opens with a stable
+/// set of rows, and changes to the bird table only re-trigger the matching
+/// streams. Material gain over `birdsStreamProvider` for power users
+/// because filtering runs in Drift instead of Dart.
+final birdParentCandidatesProvider = StreamProvider.autoDispose.family<
+  List<Bird>,
+  ({String userId, BirdGender gender, Species? species, String? excludeId})
+>((ref, args) {
+  final repo = ref.watch(birdRepositoryProvider);
+  return repo.watchAliveByGenderAndSpecies(
+    userId: args.userId,
+    gender: args.gender,
+    species: args.species,
+    excludeId: args.excludeId,
+  );
 });
 
 /// Photo URLs for a bird (from local Photo DB, offline-first).

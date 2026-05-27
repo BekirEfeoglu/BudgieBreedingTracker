@@ -25,7 +25,7 @@ class DayEventsSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final dateLabel = DateFormat.yMMMMd(
-      context.locale.toStringWithSeparator(),
+      Localizations.localeOf(context).languageCode,
     ).format(date);
 
     return DraggableScrollableSheet(

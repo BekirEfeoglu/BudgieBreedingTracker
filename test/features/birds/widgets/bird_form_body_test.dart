@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart';
+import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/breeding_detail_stream_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_form_body.dart';
@@ -87,6 +89,10 @@ void main() {
         overrides: [
           currentUserIdProvider.overrideWithValue('test-user'),
           birdsStreamProvider.overrideWith((ref, userId) => Stream.value([])),
+          birdParentCandidatesProvider.overrideWith(
+            (ref, args) => Stream.value([]),
+          ),
+          birdByIdProvider.overrideWith((ref, id) => Stream.value(null)),
           dateFormatProvider.overrideWith(TestDateFormatNotifier.new),
         ],
         child: MaterialApp(
@@ -153,6 +159,10 @@ void main() {
           overrides: [
             currentUserIdProvider.overrideWithValue('test-user'),
             birdsStreamProvider.overrideWith((ref, userId) => Stream.value([])),
+            birdParentCandidatesProvider.overrideWith(
+              (ref, args) => Stream.value([]),
+            ),
+            birdByIdProvider.overrideWith((ref, id) => Stream.value(null)),
             dateFormatProvider.overrideWith(TestDateFormatNotifier.new),
           ],
           child: MaterialApp(

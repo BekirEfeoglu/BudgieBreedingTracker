@@ -835,6 +835,8 @@
     "avatar_upload_error": "Fehler beim Hochladen des Fotos",
     "avatar_remove": "Foto entfernen",
     "avatar_remove_confirm": "Möchten Sie Ihr Profilfoto wirklich entfernen?",
+    "avatar_permission_denied": "Fotozugriff verweigert",
+    "avatar_pick_failed": "Foto konnte nicht ausgewählt werden",
     "avatar_source_gallery": "Aus Galerie wählen",
     "avatar_source_camera": "Foto aufnehmen",
     "password_changed": "Passwort erfolgreich geändert",
@@ -2396,7 +2398,8 @@
     "field_required": "{} ist erforderlich",
     "weight_positive": "Gewicht muss größer als Null sein",
     "required": "Dieses Feld ist erforderlich",
-    "invalid_price": "Ungültiger Preiswert"
+    "invalid_price": "Ungültiger Preiswert",
+    "max_length": "Maximal {n} Zeichen"
   },
   "incubation": {
     "stage_overdue": "Überfällig",

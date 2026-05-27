@@ -5,7 +5,8 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
-import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/breeding_detail_stream_providers.dart';
 
 /// Dropdown selector for choosing a parent bird (father or mother).
 class BirdParentSelector extends ConsumerWidget {
@@ -33,9 +34,20 @@ class BirdParentSelector extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userId = ref.watch(currentUserIdProvider);
-    final birdsAsync = ref.watch(birdsStreamProvider(userId));
+    // Drift-side filtered stream: pre-filtered to (alive, gender, species,
+    // !=excludeId). Cuts memory pressure for users with thousands of birds
+    // and removes the in-Dart filter pipeline that previously ran on every
+    // dropdown rebuild.
+    final candidatesAsync = ref.watch(
+      birdParentCandidatesProvider((
+        userId: userId,
+        gender: genderFilter,
+        species: speciesFilter,
+        excludeId: excludeId,
+      )),
+    );
 
-    return birdsAsync.when(
+    return candidatesAsync.when(
       loading: () => DropdownButtonFormField<String>(
         decoration: InputDecoration(
           labelText: label,
@@ -60,31 +72,28 @@ class BirdParentSelector extends ConsumerWidget {
         items: const [],
         onChanged: null,
       ),
-      data: (birds) {
-        final candidates =
-            birds
-                .where((b) => b.gender == genderFilter)
-                .where((b) => b.id != excludeId)
-                .where(
-                  (b) => speciesFilter == null || b.species == speciesFilter,
-                )
-                .where((b) => b.status == BirdStatus.alive)
-                .toList()
-              ..sort((a, b) => a.name.compareTo(b.name));
+      data: (candidates) {
         final displayCandidates = candidates
             .take(_maxDisplayCandidates)
             .toList();
 
+        // If the currently-selected bird isn't in the filtered window
+        // (e.g. status changed to dead after selection, species was
+        // changed, or it falls past the 50-candidate cap), look it up
+        // through the per-bird stream provider so the dropdown can still
+        // display its current value rather than silently flipping to
+        // null. Using `birdByIdProvider(selectedId)` keeps the perf win:
+        // only ONE extra row is subscribed instead of the full flock.
         Bird? selectedBird;
-        if (selectedId != null) {
-          for (final bird in birds) {
-            if (bird.id == selectedId &&
-                bird.id != excludeId &&
-                bird.gender == genderFilter &&
-                (speciesFilter == null || bird.species == speciesFilter)) {
-              selectedBird = bird;
-              break;
-            }
+        if (selectedId != null &&
+            !displayCandidates.any((b) => b.id == selectedId)) {
+          final id = selectedId!;
+          final fallback = ref.watch(birdByIdProvider(id)).value;
+          if (fallback != null &&
+              fallback.id != excludeId &&
+              fallback.gender == genderFilter &&
+              (speciesFilter == null || fallback.species == speciesFilter)) {
+            selectedBird = fallback;
           }
         }
 

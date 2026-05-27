@@ -163,7 +163,11 @@ class _EventDetailContent extends ConsumerWidget {
     // Build locale-aware long-date + time pattern. Hardcoded
     // 'dd MMMM yyyy, HH:mm' would force the Turkish ordering on
     // German/English users (which expect different orderings).
-    final locale = context.locale.toStringWithSeparator();
+    // Uses `languageCode` to match the codebase convention (see
+    // event_card.dart) — `toStringWithSeparator()` emits `tr_TR` which
+    // intl tolerates but the format-data lookup shares no key with the
+    // rest of the calendar files.
+    final locale = Localizations.localeOf(context).languageCode;
     final dateFormat = DateFormat.yMMMMd(locale).add_Hm();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

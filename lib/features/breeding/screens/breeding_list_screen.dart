@@ -99,7 +99,11 @@ class BreedingListScreen extends ConsumerWidget {
             ),
           ),
           Expanded(
+            // skipLoadingOnRefresh keeps the populated list on screen
+            // during pull-to-refresh / provider invalidation instead of
+            // collapsing back to the spinner (ui-patterns.md).
             child: pairsAsync.when(
+              skipLoadingOnRefresh: true,
               loading: () => const LoadingState(),
               error: (error, _) => SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),

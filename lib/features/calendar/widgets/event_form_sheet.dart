@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/date_picker_field.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
@@ -293,6 +294,18 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
       _eventTime.hour,
       _eventTime.minute,
     );
+    // DST guard: when the chosen date crosses a forward DST boundary,
+    // `DateTime(y,m,d,hour,minute)` may snap the hour into the next slot
+    // (e.g. 02:30 → 03:30 on the spring-forward day). Detect and log so a
+    // user-reported "reminder fired an hour off" can be traced back to the
+    // picker rather than the scheduler. The full fix requires offering the
+    // user the DST-shifted slot — out of scope here, but the breadcrumb
+    // makes the issue investigable.
+    if (dateWithTime.hour != _eventTime.hour) {
+      AppLogger.warning(
+        '[EventForm] DST snap: picker $_eventTime.hour → stored ${dateWithTime.hour} on ${_eventDate.toIso8601String()}',
+      );
+    }
 
     if (_isEditing) {
       notifier.updateEvent(
