@@ -162,6 +162,64 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
     });
   }
 
+  /// Watches monthly fertility breakdown: `'YYYY-MM' → {fertile, total}`.
+  ///
+  /// `fertile` counts eggs with status fertile or hatched (these became
+  /// chicks); `total` is fertile + infertile (status: laid eggs are still
+  /// undetermined and excluded from the denominator). Optional [species]
+  /// filter joins through incubations table.
+  ///
+  /// Statistics.md mandates SQL-side aggregation; previously this lived in
+  /// `monthlyFertilityRateProvider` as a Dart `for (final egg in ...)` loop
+  /// over the full stream, scaling O(eggCount) instead of O(monthCount).
+  Stream<Map<String, ({int fertile, int total})>> watchMonthlyFertility(
+    String userId, {
+    String? species,
+  }) {
+    final speciesJoin = species == null
+        ? ''
+        : 'INNER JOIN incubations i ON e.incubation_id = i.id ';
+    final speciesFilter = species == null ? '' : 'AND i.species = ? ';
+    final tables = <ResultSetImplementation>{eggsTable};
+    if (species != null) tables.add(incubationsTable);
+
+    final query = customSelect(
+      "SELECT strftime('%Y-%m', e.lay_date, 'localtime') AS month, "
+      'e.status AS status, '
+      'COUNT(*) AS cnt '
+      'FROM eggs e '
+      '$speciesJoin'
+      'WHERE e.user_id = ? AND e.is_deleted = 0 '
+      "AND e.status IN ('fertile', 'hatched', 'infertile') "
+      '$speciesFilter'
+      'GROUP BY month, e.status '
+      'ORDER BY month',
+      variables: [
+        Variable.withString(userId),
+        if (species != null) Variable.withString(species),
+      ],
+      readsFrom: tables,
+    );
+
+    return query.watch().map((rows) {
+      final result = <String, ({int fertile, int total})>{};
+      for (final row in rows) {
+        final month = row.read<String>('month');
+        final status = row.read<String>('status');
+        final count = row.read<int>('cnt');
+        final current =
+            result[month] ?? (fertile: 0, total: 0);
+        // fertile + hatched both count as fertile; all three add to total.
+        final isFertile = status == 'fertile' || status == 'hatched';
+        result[month] = (
+          fertile: current.fertile + (isFertile ? count : 0),
+          total: current.total + count,
+        );
+      }
+      return result;
+    });
+  }
+
   Stream<List<Egg>> watchByClutch(String clutchId) {
     return (select(eggsTable)..where(
           (t) => t.clutchId.equals(clutchId) & t.isDeleted.equals(false),

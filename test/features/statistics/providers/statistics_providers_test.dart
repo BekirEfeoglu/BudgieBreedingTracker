@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
@@ -11,6 +12,7 @@ import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
+import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/data/providers/entity_count_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
@@ -22,6 +24,8 @@ import 'package:budgie_breeding_tracker/features/statistics/providers/statistics
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_health_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_summary_providers.dart';
+
+import '../../../helpers/mocks.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_trend_providers.dart';
 
 Bird _bird({
@@ -111,6 +115,27 @@ HealthRecord _record({
   );
 }
 
+/// Mirrors `EggsDao.watchMonthlyFertility` semantics for unit tests:
+/// fertile/hatched → fertile, fertile+infertile+hatched → total, laid
+/// is undetermined and excluded.
+Map<String, ({int fertile, int total})> _eggsToFertility(List<Egg> eggs) {
+  final result = <String, ({int fertile, int total})>{};
+  for (final egg in eggs) {
+    final isFertile = egg.status == EggStatus.fertile ||
+        egg.status == EggStatus.hatched;
+    final isInfertile = egg.status == EggStatus.infertile;
+    if (!isFertile && !isInfertile) continue;
+    final key =
+        '${egg.layDate.year}-${egg.layDate.month.toString().padLeft(2, '0')}';
+    final current = result[key] ?? (fertile: 0, total: 0);
+    result[key] = (
+      fertile: current.fertile + (isFertile ? 1 : 0),
+      total: current.total + 1,
+    );
+  }
+  return result;
+}
+
 ProviderContainer _container({
   required List<Bird> birds,
   required List<BreedingPair> pairs,
@@ -127,6 +152,18 @@ ProviderContainer _container({
       )
       .length;
 
+  // Stub the DAO's monthly-fertility aggregate so the SQL-backed provider
+  // can be exercised without a real Drift database. Returns the same
+  // shape `watchMonthlyFertility` produces.
+  final eggsDao = MockEggsDao();
+  final fertilityCounts = _eggsToFertility(eggs);
+  when(
+    () => eggsDao.watchMonthlyFertility(
+      any(),
+      species: any(named: 'species'),
+    ),
+  ).thenAnswer((_) => Stream.value(fertilityCounts));
+
   return ProviderContainer(
     overrides: [
       birdsStreamProvider('user-1').overrideWith((_) => Stream.value(birds)),
@@ -141,6 +178,7 @@ ProviderContainer _container({
       healthRecordsStreamProvider(
         'user-1',
       ).overrideWith((_) => Stream.value(healthRecords)),
+      eggsDaoProvider.overrideWithValue(eggsDao),
       // COUNT providers used by summaryStatsProvider (bypass SQL DAO calls)
       birdCountProvider(
         'user-1',
@@ -264,6 +302,11 @@ void main() {
       await container.read(incubationsStreamProvider(userId).future);
       container.listen(eggsStreamProvider(userId), (_, __) {});
       await container.read(eggsStreamProvider(userId).future);
+      // Subscribe to the fertility provider so its inner DAO-aggregate
+      // stream is created; then yield so the mock's Stream.value emits.
+      container.listen(monthlyFertilityRateProvider(userId), (_, __) {});
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
 
       final value = container.read(monthlyFertilityRateProvider(userId));
       expect(value.hasValue, isTrue);

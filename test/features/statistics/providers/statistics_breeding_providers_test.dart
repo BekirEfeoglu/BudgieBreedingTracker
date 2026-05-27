@@ -5,14 +5,67 @@ import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
+import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
-import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_providers.dart';
 
 import '../../../helpers/mocks.dart';
+
+/// Builds a `month → (fertile, total)` map matching what
+/// `EggsDao.watchMonthlyFertility` returns for [eggs], applying an optional
+/// species filter via [incubations]. Keeps the unit test independent from
+/// the SQL aggregation while mirroring its semantics (fertile/hatched →
+/// fertile, fertile+infertile+hatched → total, laid excluded).
+Map<String, ({int fertile, int total})> _eggsToFertility(
+  List<Egg> eggs, {
+  List<Incubation> incubations = const [],
+  Species? species,
+}) {
+  final result = <String, ({int fertile, int total})>{};
+  final allowedIncubations = species == null
+      ? null
+      : incubations
+          .where((i) => i.species == species)
+          .map((i) => i.id)
+          .toSet();
+  for (final egg in eggs) {
+    if (allowedIncubations != null) {
+      if (egg.incubationId == null ||
+          !allowedIncubations.contains(egg.incubationId)) {
+        continue;
+      }
+    }
+    final isFertile = egg.status == EggStatus.fertile ||
+        egg.status == EggStatus.hatched;
+    final isInfertile = egg.status == EggStatus.infertile;
+    if (!isFertile && !isInfertile) continue;
+    final key =
+        '${egg.layDate.year}-${egg.layDate.month.toString().padLeft(2, '0')}';
+    final current = result[key] ?? (fertile: 0, total: 0);
+    result[key] = (
+      fertile: current.fertile + (isFertile ? 1 : 0),
+      total: current.total + 1,
+    );
+  }
+  return result;
+}
+
+MockEggsDao _fertilityDao({
+  Map<String, ({int fertile, int total})> unfiltered = const {},
+  Map<String, ({int fertile, int total})> filtered = const {},
+}) {
+  final dao = MockEggsDao();
+  when(
+    () => dao.watchMonthlyFertility(any(), species: any(named: 'species')),
+  ).thenAnswer((invocation) {
+    final hasSpecies = invocation.namedArguments[const Symbol('species')] != null;
+    return Stream.value(hasSpecies ? filtered : unfiltered);
+  });
+  return dao;
+}
 
 class _FixedSpeciesNotifier extends StatsSpeciesFilterNotifier {
   final Species? _species;
@@ -143,10 +196,23 @@ void main() {
         () => repo.watchAll('u1'),
       ).thenAnswer((_) => Stream.value(incubations));
 
+      // The provider now delegates aggregation to
+      // EggsDao.watchMonthlyFertility instead of looping eggs in Dart, so
+      // tests mock the DAO directly. The species-filter path is verified
+      // by passing the post-filter map under `filtered`.
       final container = ProviderContainer(
         overrides: [
           incubationRepositoryProvider.overrideWithValue(repo),
-          eggsStreamProvider('u1').overrideWith((_) => Stream.value(eggs)),
+          eggsDaoProvider.overrideWithValue(
+            _fertilityDao(
+              unfiltered: _eggsToFertility(eggs),
+              filtered: _eggsToFertility(
+                eggs,
+                incubations: incubations,
+                species: Species.canary,
+              ),
+            ),
+          ),
           statsSpeciesFilterProvider.overrideWith(
             () => _FixedSpeciesNotifier(Species.canary),
           ),
@@ -158,8 +224,11 @@ void main() {
           StatsPeriod.threeMonths;
       container.listen(incubationsStreamProvider('u1'), (_, __) {});
       await container.read(incubationsStreamProvider('u1').future);
-      container.listen(eggsStreamProvider('u1'), (_, __) {});
-      await container.read(eggsStreamProvider('u1').future);
+      // Trigger the species-filter aware aggregate to subscribe to the mock
+      // DAO stream, then yield so Stream.value emissions can propagate.
+      container.listen(monthlyFertilityRateProvider('u1'), (_, __) {});
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
 
       final asyncValue = container.read(monthlyFertilityRateProvider('u1'));
       expect(asyncValue.hasValue, isTrue);

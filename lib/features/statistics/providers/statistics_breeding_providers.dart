@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart' show Species;
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
-import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
+import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
-import 'package:budgie_breeding_tracker/data/providers/egg_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_providers.dart';
 
 /// All incubations for a user (live stream).
@@ -15,80 +15,67 @@ final incubationsStreamProvider =
       return repo.watchAll(userId);
     });
 
+/// Raw SQL-aggregated monthly fertility (fertile/total per month) — no
+/// species filter. Statistics.md mandates SQL-side aggregation; this
+/// replaces the Dart `for (final egg in ...)` walk in
+/// `monthlyFertilityRateProvider` so memory stays O(monthCount).
+final _monthlyFertilityAggregateProvider =
+    StreamProvider.family<
+      Map<String, ({int fertile, int total})>,
+      String
+    >((ref, userId) {
+      return ref.watch(eggsDaoProvider).watchMonthlyFertility(userId);
+    });
+
+/// Species-filtered SQL-aggregated monthly fertility. Composite family key
+/// `(userId, species)` so different species filters don't clobber each
+/// other's stream subscription.
+final _monthlyFertilityAggregateBySpeciesProvider = StreamProvider.family<
+  Map<String, ({int fertile, int total})>,
+  ({String userId, Species species})
+>((ref, args) {
+  return ref
+      .watch(eggsDaoProvider)
+      .watchMonthlyFertility(args.userId, species: args.species.toJson());
+});
+
 /// Monthly fertility rate — period-aware.
 /// Calculates fertile / (fertile + infertile) per month.
+///
+/// Backed by SQL aggregation (`eggsDaoProvider.watchMonthlyFertility`)
+/// instead of the previous Dart-side loop over the full eggs list.
+/// statistics.md anti-pattern #1: aggregation must run in Drift.
 final monthlyFertilityRateProvider =
     Provider.family<AsyncValue<Map<String, double>>, String>((ref, userId) {
-      final eggsAsync = ref.watch(eggsStreamProvider(userId));
-      final incubationsAsync = ref.watch(incubationsStreamProvider(userId));
       final period = ref.watch(statsPeriodProvider);
       final speciesFilter = ref.watch(statsSpeciesFilterProvider).species;
 
-      for (final async in [eggsAsync, incubationsAsync]) {
-        if (async.hasError) {
-          return AsyncError(async.error!, async.stackTrace ?? StackTrace.empty);
-        }
-      }
-      if (eggsAsync.isLoading || incubationsAsync.isLoading) {
-        return const AsyncLoading();
-      }
+      final aggregateAsync = speciesFilter == null
+          ? ref.watch(_monthlyFertilityAggregateProvider(userId))
+          : ref.watch(
+              _monthlyFertilityAggregateBySpeciesProvider(
+                (userId: userId, species: speciesFilter),
+              ),
+            );
 
-      final eggs = eggsAsync.requireValue;
-      final incubations = incubationsAsync.requireValue;
-      final allowedIncubationIds = speciesFilter == null
-          ? null
-          : incubations
-                .where((incubation) => incubation.species == speciesFilter)
-                .map((incubation) => incubation.id)
-                .toSet();
-      final filteredEggs = allowedIncubationIds == null
-          ? eggs
-          : eggs
-                .where(
-                  (egg) =>
-                      egg.incubationId != null &&
-                      allowedIncubationIds.contains(egg.incubationId),
-                )
-                .toList();
-
-      return AsyncData(() {
+      return aggregateAsync.whenData((rawCounts) {
         final range = buildStatsDateRange(period);
         final monthKeys = buildEmptyMonthMap(
           period.monthCount,
           reference: range.currentEnd,
         );
-        final fertileMap = <String, int>{};
-        final totalMap = <String, int>{};
         final result = <String, double>{};
-
         for (final key in monthKeys.keys) {
-          fertileMap[key] = 0;
-          totalMap[key] = 0;
           result[key] = 0.0;
         }
-
-        for (final egg in filteredEggs) {
-          final key =
-              '${egg.layDate.year}-${egg.layDate.month.toString().padLeft(2, '0')}';
-          if (!totalMap.containsKey(key)) continue;
-
-          if (egg.status == EggStatus.fertile ||
-              egg.status == EggStatus.hatched) {
-            fertileMap[key] = (fertileMap[key] ?? 0) + 1;
-            totalMap[key] = (totalMap[key] ?? 0) + 1;
-          } else if (egg.status == EggStatus.infertile) {
-            totalMap[key] = (totalMap[key] ?? 0) + 1;
-          }
+        for (final entry in rawCounts.entries) {
+          if (!result.containsKey(entry.key)) continue;
+          final total = entry.value.total;
+          final fertile = entry.value.fertile;
+          result[entry.key] = total > 0 ? (fertile / total) * 100 : 0.0;
         }
-
-        for (final key in result.keys) {
-          final total = totalMap[key] ?? 0;
-          final fertile = fertileMap[key] ?? 0;
-          result[key] = total > 0 ? (fertile / total) * 100 : 0.0;
-        }
-
         return result;
-      }());
+      });
     });
 
 /// Incubation duration data for completed incubations.
