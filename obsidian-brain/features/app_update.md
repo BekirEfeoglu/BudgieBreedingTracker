@@ -2,16 +2,17 @@
 
 **Purpose**: Automatic update prompting on both platforms, each using its
 platform-native mechanism:
-- **iOS** — `AppUpdatePrompt` shows an app-wide dialog. Optional updates are
-  dismissible ("Later"); required updates (`local < min_supported_build`)
-  render a non-dismissible blocking dialog. The live App Store version is
-  auto-detected via iTunes Lookup (merged with `system_settings.app_version`).
+- **iOS** — `AppUpdatePrompt` renders an **in-tree prompt** (NOT a route — see
+  below). Optional updates show a dismissible banner ("Later"); required
+  updates (`local < min_supported_build`) show a full-screen blocking layer.
+  The live App Store version is auto-detected via iTunes Lookup (merged with
+  `system_settings.app_version`).
 - **Android** — Google Play **native in-app updates** via the `in_app_update`
   package (`InAppUpdateService` + `AndroidInAppUpdater`). Flexible by default
   (background download → "restart" SnackBar); immediate (full-screen, blocking)
   when the Play release sets `updatePriority >= 4`. No remote config needed.
 
-To avoid a double prompt, the custom dialog is **iOS-only**:
+To avoid a double prompt, the custom prompt is **iOS-only**:
 `appUpdateStatusProvider` returns null on Android, and the widget also gates on
 `Theme.of(context).platform == TargetPlatform.iOS`.
 
@@ -19,10 +20,11 @@ To avoid a double prompt, the custom dialog is **iOS-only**:
 
 | Widget | Role |
 |--------|------|
-| `AppUpdatePrompt` | iOS dialog wrapper, mounted at the builder level alongside `OfflineBanner` |
+| `AppUpdatePrompt` | iOS prompt wrapper; renders an in-tree banner/overlay (not a route), mounted at the builder level alongside `OfflineBanner` |
 | `AndroidInAppUpdater` | App-wide wrapper (outermost in the builder); on Android triggers the Play check at startup + resume and shows the flexible "restart" SnackBar. Passthrough on other platforms. |
 
-There's no dedicated screen — iOS renders a dialog over the current shell;
+There's no dedicated screen — iOS draws an in-tree banner/overlay in the widget
+tree (a `Stack` over the child) so GoRouter page rebuilds can't dismiss it;
 Android uses Google Play's own native update UI.
 
 ## iOS Provider Chain
@@ -37,9 +39,11 @@ AppUpdatePrompt (iOS only)
         └── AppUpdateInfo.evaluate() → AppUpdateStatus (isUpdateAvailable + isRequired)
 ```
 
-An available update with `isRequired == false` opens the dismissible dialog;
+An available update with `isRequired == false` renders the dismissible banner;
 `isRequired == true` (local build < `min_supported_build`) renders the
-non-dismissible blocking dialog.
+full-screen blocking layer. Both are drawn **in-tree** (a `Stack` over the
+child), NOT via `showDialog` — an imperative dialog pushed from the builder is
+dismissed whenever GoRouter rebuilds its pages (e.g. on an auth-token refresh).
 
 ## Android Native Flow
 
@@ -56,22 +60,26 @@ The native flow only runs on a Play-installed build (not debug/emulator/
 simulator). Fail-open: a failed check never blocks the app. A `completeFlexible`
 failure (user tapped restart but install failed) is reported to Sentry.
 
-## Dismissal & Frequency (iOS dialog)
+## Dismissal & Frequency (iOS prompt)
 
-- "Later" closes the dialog for this launch
-- "Update now" opens the platform store via `url_launcher`
-- Cool-down between prompts is handled by `AppUpdatePrompt` (tracks the shown
-  version key) — repeated same-version prompts are suppressed
-- Hard updates ignore dismissal entirely
+- "Later" hides the banner; the dismissed version is remembered
+  (`_dismissedVersionKey`), so the same version won't re-prompt this launch
+- "Update now" opens the App Store via `url_launcher`
+- Required updates have no "Later" — the full-screen layer can't be dismissed
+- The optional banner animates in (slide-up + fade) and matches the app's card
+  language (tinted icon square, soft shadow)
 
 ## Placement
 
-Mounted in `app_router.dart` builder so it sits above all routes and
-survives navigation:
+Mounted in the `MaterialApp.router` builder (`app.dart`) so it sits above all
+routes. Drawing the prompt in-tree (not as a route) is what lets it survive
+GoRouter rebuilds:
 
 ```
-AppUpdatePrompt(
-  child: OfflineBanner(child: routedChild),
+AndroidInAppUpdater(
+  child: AppUpdatePrompt(
+    child: OfflineBanner(child: routedChild),
+  ),
 )
 ```
 

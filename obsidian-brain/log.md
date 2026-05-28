@@ -4,6 +4,10 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-05-28] iOS update prompt fix | iOS update dialog crashed (showDialog with no Navigator in the builder context); a rootNavigatorKey fix stopped the crash but GoRouter page rebuilds still dismissed the imperative dialog. Switched to an in-tree banner (optional) / full-screen layer (required) drawn in a Stack over the child, so it survives rebuilds. Polished with a tinted icon square + slide-up entrance. Verified live on the iOS simulator.
+
+---
+
 ## [2026-05-28] android in-app updates | Added Google Play native in-app updates (in_app_update pkg; InAppUpdateService + AndroidInAppUpdater): flexible by default, immediate when updatePriority>=4. Custom dialog scoped to iOS (appUpdateStatusProvider returns null on Android + Theme.platform gate) to avoid a double prompt. Added app_update.download_complete/restart l10n. Both platforms now auto-detect store versions.
 
 ---
