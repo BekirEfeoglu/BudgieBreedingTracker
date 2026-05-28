@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/utils/logger.dart';
 import '../../../domain/services/app_update/app_update_info.dart';
 import '../../../domain/services/app_update/app_update_providers.dart';
+import '../../../router/router_notifier.dart';
 
 class AppUpdatePrompt extends ConsumerStatefulWidget {
   const AppUpdatePrompt({super.key, required this.child});
@@ -48,11 +49,16 @@ class _AppUpdatePromptState extends ConsumerState<AppUpdatePrompt> {
   }
 
   Future<void> _showUpdateDialog(AppUpdateStatus status) async {
+    // AppUpdatePrompt is mounted in the MaterialApp builder, above the router's
+    // Navigator, so its own context has no Navigator ancestor. Show the dialog
+    // through the root navigator's context instead.
+    final navigatorContext = rootNavigatorKey.currentContext;
+    if (navigatorContext == null) return;
     _isDialogOpen = true;
     final notes = _localizedReleaseNotes(status.info);
     try {
       await showDialog<void>(
-        context: context,
+        context: navigatorContext,
         barrierDismissible: !status.isRequired,
         builder: (dialogContext) => PopScope(
           canPop: !status.isRequired,

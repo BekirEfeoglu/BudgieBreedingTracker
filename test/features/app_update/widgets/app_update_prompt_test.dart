@@ -1,6 +1,7 @@
 import 'package:budgie_breeding_tracker/domain/services/app_update/app_update_info.dart';
 import 'package:budgie_breeding_tracker/domain/services/app_update/app_update_providers.dart';
 import 'package:budgie_breeding_tracker/features/app_update/widgets/app_update_prompt.dart';
+import 'package:budgie_breeding_tracker/router/router_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -26,10 +27,16 @@ void main() {
     return ProviderScope(
       overrides: [appUpdateStatusProvider.overrideWith((ref) async => status)],
       child: MaterialApp(
+        // Mount AppUpdatePrompt in the builder (above the Navigator) via
+        // rootNavigatorKey, exactly like app.dart — so showDialog must resolve
+        // through the root navigator, not the (Navigator-less) builder context.
+        navigatorKey: rootNavigatorKey,
         // Simulate the given platform so Theme.of(context).platform is set;
         // AppUpdatePrompt only shows the dialog on iOS.
         theme: ThemeData(platform: platform),
-        home: const AppUpdatePrompt(child: Text('app child')),
+        builder: (context, child) =>
+            AppUpdatePrompt(child: child ?? const SizedBox.shrink()),
+        home: const Scaffold(body: Text('app child')),
       ),
     );
   }
