@@ -14,6 +14,7 @@ import 'core/security/inactivity_guard.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/logger.dart';
 import 'domain/services/app_update/app_update_providers.dart';
+import 'domain/services/app_update/in_app_update_service.dart';
 import 'domain/services/encryption/encryption_providers.dart';
 import 'domain/services/genetics/parent_genotype.dart';
 import 'domain/services/notifications/notification_processor.dart';
@@ -23,6 +24,7 @@ import 'domain/services/sync/background_sync_service.dart';
 import 'domain/services/sync/realtime_sync_service.dart';
 import 'domain/services/sync/sync_providers.dart';
 import 'features/auth/providers/auth_providers.dart';
+import 'features/app_update/widgets/android_in_app_updater.dart';
 import 'features/app_update/widgets/app_update_prompt.dart';
 import 'features/genetics/providers/genetics_providers.dart';
 import 'domain/services/premium/premium_providers.dart';
@@ -124,6 +126,9 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
 
   void _onAppResumed() {
     ref.invalidate(appUpdateStatusProvider);
+    if (Platform.isAndroid) {
+      unawaited(ref.read(inAppUpdateServiceProvider).checkAndStart());
+    }
     final userId = ref.read(currentUserIdProvider);
     if (userId == 'anonymous') return;
     unawaited(
@@ -337,8 +342,10 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
               textScaler: TextScaler.linear(scale),
               disableAnimations: reduceAnimations,
             ),
-            child: AppUpdatePrompt(
-              child: OfflineBanner(child: child ?? const SizedBox.shrink()),
+            child: AndroidInAppUpdater(
+              child: AppUpdatePrompt(
+                child: OfflineBanner(child: child ?? const SizedBox.shrink()),
+              ),
             ),
           );
         },
