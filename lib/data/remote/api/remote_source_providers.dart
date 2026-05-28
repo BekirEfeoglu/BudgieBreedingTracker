@@ -22,7 +22,6 @@ import 'package:budgie_breeding_tracker/data/remote/api/community_post_remote_so
 import 'package:budgie_breeding_tracker/data/remote/api/community_comment_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/community_social_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/feedback_remote_source.dart';
-import 'package:budgie_breeding_tracker/data/remote/api/app_version_remote_source.dart';
 import 'marketplace_listing_remote_source.dart';
 import 'marketplace_favorite_remote_source.dart';
 import 'conversation_remote_source.dart';
@@ -137,27 +136,22 @@ final feedbackRemoteSourceProvider = Provider<FeedbackRemoteSource>((ref) {
   return FeedbackRemoteSource(ref.watch(supabaseClientProvider));
 });
 
-final appVersionRemoteSourceProvider = Provider<AppVersionRemoteSource>((ref) {
-  return AppVersionRemoteSource(ref.watch(supabaseClientProvider));
-});
-
 final marketplaceListingRemoteSourceProvider =
     Provider<MarketplaceListingRemoteSource>((ref) {
-  return MarketplaceListingRemoteSource(
-    ref.watch(supabaseClientProvider),
-    imageSafetyService: ref.watch(imageSafetyServiceProvider),
-  );
-});
+      return MarketplaceListingRemoteSource(
+        ref.watch(supabaseClientProvider),
+        imageSafetyService: ref.watch(imageSafetyServiceProvider),
+      );
+    });
 
 final marketplaceFavoriteRemoteSourceProvider =
     Provider<MarketplaceFavoriteRemoteSource>((ref) {
-  return MarketplaceFavoriteRemoteSource(
-    ref.watch(supabaseClientProvider),
-  );
-});
+      return MarketplaceFavoriteRemoteSource(ref.watch(supabaseClientProvider));
+    });
 
-final conversationRemoteSourceProvider =
-    Provider<ConversationRemoteSource>((ref) {
+final conversationRemoteSourceProvider = Provider<ConversationRemoteSource>((
+  ref,
+) {
   return ConversationRemoteSource(ref.watch(supabaseClientProvider));
 });
 
@@ -165,7 +159,8 @@ final messageRemoteSourceProvider = Provider<MessageRemoteSource>((ref) {
   return MessageRemoteSource(ref.watch(supabaseClientProvider));
 });
 
-final gamificationRemoteSourceProvider =
-    Provider<GamificationRemoteSource>((ref) {
+final gamificationRemoteSourceProvider = Provider<GamificationRemoteSource>((
+  ref,
+) {
   return GamificationRemoteSource(ref.watch(supabaseClientProvider));
 });

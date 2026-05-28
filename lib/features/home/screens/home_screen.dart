@@ -24,7 +24,8 @@ import 'package:budgie_breeding_tracker/features/home/widgets/sync_status_bar.da
 import 'package:budgie_breeding_tracker/features/home/widgets/unweaned_alert_banner.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/welcome_header.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
-import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart' show SyncResult;
+import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart'
+    show SyncResult;
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_brand_title.dart';
 import 'package:budgie_breeding_tracker/shared/widgets/app_shell.dart';
@@ -34,7 +35,6 @@ import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/home_widget/home_widget_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_permission_handler.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
-import 'package:budgie_breeding_tracker/shared/widgets/update_listener.dart';
 
 /// Main home dashboard screen.
 class HomeScreen extends ConsumerWidget {
@@ -69,105 +69,101 @@ class HomeScreen extends ConsumerWidget {
       },
     );
 
-    return UpdateListener(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const AppBrandTitle(size: AppBrandSize.small),
-          centerTitle: true,
-          scrolledUnderElevation: 0,
-          actions: const [NotificationBellButton(), ProfileMenuButton()],
-        ),
-        body: RefreshIndicator(
-          onRefresh: () async {
-            // Capture ScaffoldMessenger before any async gap.
-            final messenger = ScaffoldMessenger.of(context);
-            SyncResult result;
-            try {
-              // SyncOrchestrator catches its own errors and returns the
-              // typed SyncResult; the catch here only fires on a bug
-              // above the orchestrator boundary.
-              result = await ref
-                  .read(syncOrchestratorProvider)
-                  .forceFullSync();
-            } catch (e, st) {
-              AppLogger.error('[HomeScreen] forceFullSync failed', e, st);
-              // Unexpected exception above the orchestrator boundary —
-              // ship to Sentry so we learn about it. observability.md
-              // categorizes sync failure as a critical observability hit.
-              await Sentry.captureException(
-                e,
-                stackTrace: st,
-                withScope: (scope) => scope.setTag('feature', 'sync'),
-              );
-              result = SyncResult.error;
-            }
-            // Refresh display providers regardless of result — on error
-            // the orchestrator may still have applied a partial pull.
-            ref.invalidate(dashboardStatsProvider(userId));
-            ref.invalidate(recentChicksProvider(userId));
-            ref.invalidate(chickParentsByEggProvider(userId));
-            ref.invalidate(activeBreedingsForDashboardProvider(userId));
-            ref.invalidate(unweanedChicksCountProvider(userId));
-            ref.invalidate(incubatingEggsSummaryProvider(userId));
-            if (!context.mounted) return;
-            switch (result) {
-              case SyncResult.success:
-                messenger.showSnackBar(
-                  SnackBar(
-                    content: Text('sync.synced'.tr()),
-                    duration: const Duration(seconds: 2),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              case SyncResult.error:
-                messenger.showSnackBar(
-                  SnackBar(
-                    content: Text('common.data_load_error'.tr()),
-                    duration: const Duration(seconds: 3),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              case SyncResult.throttled:
-              case SyncResult.alreadySyncing:
-                // No toast: the user just triggered a cool-down/duplicate;
-                // surface nothing rather than confusingly saying "synced".
-                break;
-            }
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SyncStatusBar(),
-                const SizedBox(height: AppSpacing.lg),
-                const WelcomeHeader(),
-                const SizedBox(height: AppSpacing.md),
-                _UnweanedSection(userId: userId),
-                LimitApproachingBanner(userId: userId),
-                const GracePeriodBanner(),
-                const SizedBox(height: AppSpacing.sm),
-                _StatsSection(userId: userId),
-                const SizedBox(height: AppSpacing.lg),
-                const QuickActionsRow(),
-                const SizedBox(height: AppSpacing.lg),
-                _EggTurningSummarySection(userId: userId),
-                const SizedBox(height: AppSpacing.lg),
-                _IncubationSummarySection(userId: userId),
-                const SizedBox(height: AppSpacing.lg),
-                _ActiveBreedingsSection(userId: userId),
-                const SizedBox(height: AppSpacing.lg),
-                _RecentChicksSection(userId: userId),
-                const SizedBox(height: AppSpacing.lg),
-                Center(
-                  child: AdBannerWidget(
-                    isPremiumProvider: isPremiumProvider,
-                    adBannerLoader: () => defaultAdBannerLoader(ref),
-                  ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const AppBrandTitle(size: AppBrandSize.small),
+        centerTitle: true,
+        scrolledUnderElevation: 0,
+        actions: const [NotificationBellButton(), ProfileMenuButton()],
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          // Capture ScaffoldMessenger before any async gap.
+          final messenger = ScaffoldMessenger.of(context);
+          SyncResult result;
+          try {
+            // SyncOrchestrator catches its own errors and returns the
+            // typed SyncResult; the catch here only fires on a bug
+            // above the orchestrator boundary.
+            result = await ref.read(syncOrchestratorProvider).forceFullSync();
+          } catch (e, st) {
+            AppLogger.error('[HomeScreen] forceFullSync failed', e, st);
+            // Unexpected exception above the orchestrator boundary —
+            // ship to Sentry so we learn about it. observability.md
+            // categorizes sync failure as a critical observability hit.
+            await Sentry.captureException(
+              e,
+              stackTrace: st,
+              withScope: (scope) => scope.setTag('feature', 'sync'),
+            );
+            result = SyncResult.error;
+          }
+          // Refresh display providers regardless of result — on error
+          // the orchestrator may still have applied a partial pull.
+          ref.invalidate(dashboardStatsProvider(userId));
+          ref.invalidate(recentChicksProvider(userId));
+          ref.invalidate(chickParentsByEggProvider(userId));
+          ref.invalidate(activeBreedingsForDashboardProvider(userId));
+          ref.invalidate(unweanedChicksCountProvider(userId));
+          ref.invalidate(incubatingEggsSummaryProvider(userId));
+          if (!context.mounted) return;
+          switch (result) {
+            case SyncResult.success:
+              messenger.showSnackBar(
+                SnackBar(
+                  content: Text('sync.synced'.tr()),
+                  duration: const Duration(seconds: 2),
+                  behavior: SnackBarBehavior.floating,
                 ),
-                const SizedBox(height: AppSpacing.xxxl * 2),
-              ],
-            ),
+              );
+            case SyncResult.error:
+              messenger.showSnackBar(
+                SnackBar(
+                  content: Text('common.data_load_error'.tr()),
+                  duration: const Duration(seconds: 3),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            case SyncResult.throttled:
+            case SyncResult.alreadySyncing:
+              // No toast: the user just triggered a cool-down/duplicate;
+              // surface nothing rather than confusingly saying "synced".
+              break;
+          }
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SyncStatusBar(),
+              const SizedBox(height: AppSpacing.lg),
+              const WelcomeHeader(),
+              const SizedBox(height: AppSpacing.md),
+              _UnweanedSection(userId: userId),
+              LimitApproachingBanner(userId: userId),
+              const GracePeriodBanner(),
+              const SizedBox(height: AppSpacing.sm),
+              _StatsSection(userId: userId),
+              const SizedBox(height: AppSpacing.lg),
+              const QuickActionsRow(),
+              const SizedBox(height: AppSpacing.lg),
+              _EggTurningSummarySection(userId: userId),
+              const SizedBox(height: AppSpacing.lg),
+              _IncubationSummarySection(userId: userId),
+              const SizedBox(height: AppSpacing.lg),
+              _ActiveBreedingsSection(userId: userId),
+              const SizedBox(height: AppSpacing.lg),
+              _RecentChicksSection(userId: userId),
+              const SizedBox(height: AppSpacing.lg),
+              Center(
+                child: AdBannerWidget(
+                  isPremiumProvider: isPremiumProvider,
+                  adBannerLoader: () => defaultAdBannerLoader(ref),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xxxl * 2),
+            ],
           ),
         ),
       ),
