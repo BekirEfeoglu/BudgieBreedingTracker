@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/utils/logger.dart';
 import '../../../domain/services/app_update/in_app_update_service.dart';
@@ -41,6 +42,7 @@ class _AndroidInAppUpdaterState extends ConsumerState<AndroidInAppUpdater> {
   void _promptRestart() {
     final messenger = ScaffoldMessenger.maybeOf(context);
     if (messenger == null) return;
+    messenger.clearSnackBars();
     messenger.showSnackBar(
       SnackBar(
         content: Text('app_update.download_complete'.tr()),
@@ -57,6 +59,9 @@ class _AndroidInAppUpdaterState extends ConsumerState<AndroidInAppUpdater> {
                       '[InAppUpdate] completeFlexible failed',
                       e,
                       st,
+                    );
+                    unawaited(
+                      Sentry.captureException(e, stackTrace: st),
                     );
                   }),
             );
