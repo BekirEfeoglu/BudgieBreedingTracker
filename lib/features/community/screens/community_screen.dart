@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_spacing.dart';
@@ -38,11 +37,9 @@ class CommunityScreen extends ConsumerWidget {
                   ref.watch(isFounderProvider).value == true)
           ? FloatingActionButton.extended(
               onPressed: () => context.push(_buildCreatePostRoute(activeTab)),
-              icon: Icon(
-                activeTab == CommunityFeedTab.guides
-                    ? LucideIcons.bookOpen
-                    : LucideIcons.edit,
-              ),
+              icon: activeTab == CommunityFeedTab.guides
+                  ? const AppIcon(AppIcons.guide)
+                  : const AppIcon(AppIcons.edit),
               label: Text('community.create_post'.tr()),
             )
           : null,

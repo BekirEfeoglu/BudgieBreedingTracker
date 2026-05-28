@@ -6,7 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/app_icon.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../data/models/profile_model.dart';
@@ -99,13 +101,13 @@ class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
       ),
       actions: [
         _ActionIcon(
-          icon: LucideIcons.messageCircle,
+          icon: const Icon(LucideIcons.messageCircle, size: 18),
           tooltip: 'messaging.title'.tr(),
           onPressed: () => context.push(AppRoutes.messages),
         ),
         const NotificationBellButton(),
         _ActionIcon(
-          icon: LucideIcons.search,
+          icon: const AppIcon(AppIcons.search, size: 18),
           tooltip: 'community.search'.tr(),
           onPressed: () => context.push(AppRoutes.communitySearch),
         ),
@@ -116,7 +118,7 @@ class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
 }
 
 class _ActionIcon extends StatelessWidget {
-  final IconData icon;
+  final Widget icon;
   final String tooltip;
   final VoidCallback onPressed;
 
@@ -141,7 +143,7 @@ class _ActionIcon extends StatelessWidget {
           ),
         ),
         child: IconButton(
-          icon: Icon(icon, size: 18),
+          icon: icon,
           tooltip: tooltip,
           onPressed: onPressed,
           constraints: const BoxConstraints(
