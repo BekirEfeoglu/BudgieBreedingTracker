@@ -9,7 +9,7 @@ lib/
 ├── core/        Constants, enums, errors, security, theme, utils, shared widgets
 ├── data/        Models, local DB (Drift), remote API (Supabase), repositories
 ├── domain/      Business logic services (genetics, sync, incubation, etc.)
-├── features/    25 feature modules (screens, widgets, providers)
+├── features/    24 feature modules (screens, widgets, providers)
 └── router/      GoRouter config, route guards, route definitions
 ```
 
@@ -53,15 +53,15 @@ When feature A needs something from feature B:
 - `security/` — secure storage wrappers
 - `theme/` — `AppTheme`, `AppColors`
 - `utils/` — `AppLogger`, `RelativeTimeFormatter`, helpers
-- `widgets/` — 28 shared widgets (15 root + buttons/4 + cards/2 + dialogs/1 + bottom_sheet/1)
+- `widgets/` — 29 shared widgets (15 root + buttons/4 + cards/2 + dialogs/2 + bottom_sheet/1 + eggs/5)
 - `providers/` — cross-feature providers (auth state, connectivity, etc.)
 
 ## data/ Contents
 
-- `models/` — 30 Freezed model files
+- `models/` — 29 Freezed model files (+ statistics_models, supabase_extensions)
 - `local/database/` — Drift tables (20), DAOs (20), mappers (20), converters, `app_database.dart`
 - `local/preferences/` — `AppPreferences` (SharedPreferences wrapper)
-- `remote/api/` — 27 remote source classes
+- `remote/api/` — 26 remote source classes
 - `remote/storage/` — `StorageService`
 - `remote/supabase/` — Edge function invokers
 - `repositories/` — 23 entity repos + base + sync_metadata + `repository_providers.dart`

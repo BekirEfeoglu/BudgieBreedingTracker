@@ -4,6 +4,28 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-05-29] sync | Leaderboard display-name privacy + stat drift sweep
+
+Documented the leaderboard display-name + privacy opt-out feature (commits
+`29b8d62`, `8894f7b`) and swept accumulated stat drift to the `CLAUDE.md` /
+`verify_rules.py` baseline.
+
+- `features/gamification.md` + `domain/gamification-service.md` +
+  `data-layer/supabase.md`: `profiles.show_in_leaderboard` opt-out and the
+  `get_leaderboard` `SECURITY DEFINER` RPC (excludes opt-out,
+  `COALESCE(display_name, full_name)`, `authenticated`-only; client reads via
+  `GamificationRemoteSource.fetchLeaderboard`).
+- `data-layer/migrations.md`: schema v25 (`_migrateV24ToV25`).
+- Stat sweep across `overview.md`, `index.md`, `architecture/folder-structure.md`,
+  `data-layer/{supabase,migrations}.md`, `patterns/{l10n,testing}.md`: schema
+  24→25, l10n 2,978/42→2,987/41, tests 906/11,056→901/11,048, migrations
+  158→160, Edge fns 8→9, source 989→983, modules 25→24, domain 23→22, SVG
+  84→89, shared widgets 28→29, Supabase constants 146→137, remote sources 27→26.
+- `data-layer/tables-catalog.md`: index test asserts schema `>= 23` (floor).
+- Code context: test fix `0755905` (date-flaky statistics test) shipped to main, CI green.
+
+---
+
 ## [2026-05-28] iOS update prompt fix | iOS update dialog crashed (showDialog with no Navigator in the builder context); a rootNavigatorKey fix stopped the crash but GoRouter page rebuilds still dismissed the imperative dialog. Switched to an in-tree banner (optional) / full-screen layer (required) drawn in a Stack over the child, so it survives rebuilds. Polished with a tinted icon square + slide-up entrance. Verified live on the iOS simulator.
 
 ---

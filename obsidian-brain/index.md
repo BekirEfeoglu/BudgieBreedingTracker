@@ -58,7 +58,7 @@ Full catalog of every page in the obsidian-brain wiki.
 
 | Page | Description |
 |------|-------------|
-| [[data-layer/drift]] | Local SQLite, 20 tables, DAOs, schema v24 |
+| [[data-layer/drift]] | Local SQLite, 20 tables, DAOs, schema v25 |
 | [[data-layer/supabase]] | Remote Postgres, SupabaseConstants, storage, .toSupabase() |
 | [[data-layer/repositories]] | BaseRepository, SyncableRepository, ValidatedSyncMixin |
 | [[data-layer/sync-strategy]] | Push/pull, idempotency, conflict resolution, retry |
@@ -69,7 +69,7 @@ Full catalog of every page in the obsidian-brain wiki.
 
 | Page | Description |
 |------|-------------|
-| [[domain/services-index]] | Map of all 23 domain services |
+| [[domain/services-index]] | Map of all 22 domain services |
 | [[domain/auth-service]] | Login, session refresh, MFA |
 | [[domain/calendar-service]] | Event scheduling |
 | [[domain/data-io]] | Backup (JSON, AES), Excel import/export, PDF export |
@@ -91,7 +91,7 @@ Full catalog of every page in the obsidian-brain wiki.
 | Page | Description |
 |------|-------------|
 | [[infrastructure/ci-cd]] | GitHub Actions jobs, Codemagic, Xcode Cloud |
-| [[infrastructure/edge-functions]] | 8 Supabase functions, JWT enforcement, deployment |
+| [[infrastructure/edge-functions]] | 9 Supabase functions, JWT enforcement, deployment |
 | [[infrastructure/environment]] | dart-define vars, Edge Function secrets |
 | [[infrastructure/scripts]] | Quality scripts, anti-pattern checkers |
 | [[infrastructure/branch-workflow]] | main-only strategy, commit format, quality gates |

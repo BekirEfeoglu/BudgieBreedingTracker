@@ -10,7 +10,7 @@ Knowledge wiki for the BudgieBreedingTracker Flutter project. Maintained by LLM;
 | Task-oriented cheat sheet | [[cheat-sheet]] |
 | All pages | [[index]] |
 | Architecture | [[architecture/layers]] |
-| 25 Feature modules | [[features/_features-index]] |
+| 24 Feature modules | [[features/_features-index]] |
 | Data layer (Drift + Supabase) | [[data-layer/drift]] |
 | Domain services | [[domain/services-index]] |
 | CI/CD & infrastructure | [[infrastructure/ci-cd]] |

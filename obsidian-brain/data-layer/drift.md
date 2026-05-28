@@ -58,7 +58,7 @@ await db.batch((batch) {
 MigrationStrategy get migration => MigrationStrategy(
   onCreate: (m) => m.createAll(),
   onUpgrade: (m, from, to) async {
-    if (from < 24) {
+    if (from < 25) {
       await m.addColumn(birds, birds.ringNumber);
     }
     // Sequential, no skipping

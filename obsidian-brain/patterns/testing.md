@@ -4,7 +4,7 @@ Source: `.claude/rules/testing.md`, `.claude/rules/test-stability.md`
 
 ## Stats
 
-- 906 test files, 11,056+ individual tests
+- 901 test files, 11,048+ individual tests
 - CI timeout: 25 minutes
 - Golden tests excluded from main CI (`--exclude-tags golden`)
 

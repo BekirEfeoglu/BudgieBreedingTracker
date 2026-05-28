@@ -5,7 +5,7 @@ Source: `.claude/rules/assets-images.md`
 ## SVG Icon System
 
 - Domain icons: `AppIcon(AppIcons.x)` — rendered via `flutter_svg`
-- 84 constants in `lib/core/constants/app_icons.dart`
+- 89 constants in `lib/core/constants/app_icons.dart`
 - Asset directories: `assets/icons/<category>/` (10 categories)
 - Generic UI only: `LucideIcons.x` (settings, navigation)
 - **Never**: `Icon(Icons.x)` for domain concepts, raw SVG path strings

@@ -59,7 +59,10 @@ of consistent activity. Curve constants live in `xp_constants.dart`.
 
 `gamificationServiceProvider` is consumed via `ref.read()` in domain
 flows. UI surfaces `badgesProvider` (earned + locked badges),
-`userLevelProvider`, and `leaderboardProvider`.
+`userLevelProvider`, and `leaderboardProvider`. The leaderboard read goes
+through the `get_leaderboard` `SECURITY DEFINER` RPC (display names +
+`show_in_leaderboard` opt-out), not a direct table select — see
+[[features/gamification]] and [[data-layer/supabase]].
 
 ## Anti-Patterns
 

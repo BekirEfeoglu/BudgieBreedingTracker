@@ -19,7 +19,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  UI (25 Feature Modules — screens, widgets)         │
+│  UI (24 Feature Modules — screens, widgets)         │
 └───────────────────┬─────────────────────────────────┘
                     │ ref.watch / ref.read
 ┌───────────────────▼─────────────────────────────────┐
@@ -32,7 +32,7 @@
            │ DAO queries             │ remote upserts
 ┌──────────▼──────────┐  ┌──────────▼──────────────┐
 │  Drift (local SQLite)│  │  Supabase (remote Postgres)│
-│  20 tables, v24     │  │  27 remote sources        │
+│  20 tables, v25     │  │  26 remote sources        │
 └─────────────────────┘  └────────────────────────────┘
 ```
 
@@ -69,27 +69,27 @@ Enforced by `scripts/verify_code_quality.py` (27 checkers — 19/24 CLAUDE.md an
 ### 5. 3-Language Parity
 - Turkish is master language — all keys added to `tr.json` first
 - CI blocks PRs with missing keys in `en.json` or `de.json`
-- ~2,978 keys per language, 42 categories
+- ~2,987 keys per language, 41 categories
 - See [[patterns/l10n]]
 
-## Codebase Stats (as of 2026-05-25)
+## Codebase Stats (as of 2026-05-29)
 
 | Metric | Value |
 |--------|-------|
-| Source files (lib/) | 989 Dart files |
-| Test files | 906 files, 11,056+ tests |
-| Feature modules | 25 |
+| Source files (lib/) | 983 Dart files |
+| Test files | 901 files, 11,048+ tests |
+| Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
-| Remote sources | 27 entity + base + 2 caches + providers |
-| Freezed models | 30 model files |
-| Domain services | 23 directories |
+| Remote sources | 26 entity + base + 2 caches + providers |
+| Freezed models | 29 model files + statistics_models + supabase_extensions |
+| Domain services | 22 directories |
 | Routes | 73 |
-| Custom SVG icons | 84 constants, 84 files |
-| Shared widgets | 28 |
+| Custom SVG icons | 89 constants, 89 files |
+| Shared widgets | 29 |
 | Enum files | 15 |
-| Supabase constants | 146 |
-| L10n keys | ~2,978 per language |
-| DB schema version | 24 |
-| Supabase migrations | 158 SQL files |
-| Edge Functions | 8 |
+| Supabase constants | 137 |
+| L10n keys | ~2,987 per language, 41 categories |
+| DB schema version | 25 |
+| Supabase migrations | 160 SQL files |
+| Edge Functions | 9 |

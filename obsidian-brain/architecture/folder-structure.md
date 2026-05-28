@@ -15,38 +15,39 @@ lib/
 │   ├── providers/                 Cross-feature providers (auth, connectivity)
 │   ├── security/                  FlutterSecureStorage wrappers
 │   ├── theme/                     AppTheme, AppColors
-│   └── widgets/                   28 shared widgets
+│   └── widgets/                   29 shared widgets
 │       ├── buttons/               4 button widgets
 │       ├── cards/                 2 card widgets
-│       ├── dialogs/               1 dialog widget
-│       └── bottom_sheet/          1 bottom sheet widget
+│       ├── dialogs/               2 dialog widgets
+│       ├── bottom_sheet/          1 bottom sheet widget
+│       └── eggs/                  5 egg widgets
 │
 ├── data/
-│   ├── models/                    30 Freezed model files
+│   ├── models/                    29 Freezed model files
 │   ├── local/
 │   │   ├── database/
 │   │   │   ├── tables/            20 Drift table definitions
 │   │   │   ├── daos/              20 DAO classes
 │   │   │   ├── mappers/           20 Mapper classes
 │   │   │   ├── converters/        enum_converters.dart
-│   │   │   └── app_database.dart  schemaVersion=24, DriftDatabase class
+│   │   │   └── app_database.dart  schemaVersion=25, DriftDatabase class
 │   │   └── preferences/           AppPreferences (SharedPreferences wrapper)
 │   ├── remote/
-│   │   ├── api/                   27 remote source classes
+│   │   ├── api/                   26 remote source classes
 │   │   ├── storage/               storage_service.dart
 │   │   └── supabase/              Edge function invokers, SupabaseConstants
 │   └── repositories/              23 entity repos + base + sync_metadata
 │       └── repository_providers.dart
 │
 ├── domain/
-│   └── services/                  23 directories of business logic
+│   └── services/                  22 directories of business logic
 │       ├── genetics/
 │       ├── sync/
 │       ├── incubation/
 │       ├── local_ai/
 │       └── ...
 │
-├── features/                      25 feature modules
+├── features/                      24 feature modules
 │   └── <name>/
 │       ├── screens/
 │       ├── widgets/
@@ -73,7 +74,7 @@ lib/
 ```
 assets/
 ├── translations/
-│   ├── tr.json    Master (~2,978 keys, 42 categories)
+│   ├── tr.json    Master (~2,987 keys, 41 categories)
 │   ├── en.json
 │   └── de.json
 ├── images/

@@ -8,7 +8,7 @@ Two parallel migration systems: **Drift** (local SQLite) and **Supabase SQL** (r
 
 ### Schema Version
 
-`schemaVersion = 24` in `app_database.dart`. Must be incremented sequentially — no skipping.
+`schemaVersion = 25` in `app_database.dart`. Must be incremented sequentially — no skipping. (v25 added `profiles.show_in_leaderboard` via `_migrateV24ToV25`.)
 
 ### Pattern
 
@@ -16,7 +16,7 @@ Two parallel migration systems: **Drift** (local SQLite) and **Supabase SQL** (r
 MigrationStrategy(
   onCreate: (m) => m.createAll(),
   onUpgrade: (m, from, to) async {
-    if (from < 24) {
+    if (from < 25) {
       await m.addColumn(birds, birds.ringNumber);
       await m.createIndex(Index('idx_birds_ring', 'CREATE INDEX ...'));
     }
@@ -39,7 +39,7 @@ MigrationStrategy(
 
 Format: `YYYYMMDDHHmmss_short_description.sql`
 
-158 migration files in `supabase/migrations/` — applied in lexicographic (chronological) order.
+160 migration files in `supabase/migrations/` — applied in lexicographic (chronological) order.
 
 ### Idempotency (Required)
 
@@ -91,7 +91,7 @@ Never delete or rename migration files. If a mistake exists, create a new migrat
 
 ## Anti-Patterns
 
-1. Version skipping (24 → 26)
+1. Version skipping (25 → 27)
 2. Missing `IF NOT EXISTS` / `IF EXISTS` (not idempotent)
 3. NOT NULL column without backfill (table lock)
 4. Large index without `CONCURRENTLY`

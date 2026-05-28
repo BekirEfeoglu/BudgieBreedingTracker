@@ -87,7 +87,7 @@ Schema v23 adds composite indexes for the high-traffic FK and dashboard paths. K
 | growth chart by chick and measurement date | `idx_growth_measurements_chick_date` |
 
 CI coverage:
-- `test/data/local/database/app_database_indexes_test.dart` asserts schema v23 and required index names in `sqlite_master`.
+- `test/data/local/database/app_database_indexes_test.dart` asserts schema `>= 23` (a floor, not the exact version) and required index names in `sqlite_master`.
 - Future FK-heavy DAO work should extend the same test instead of relying on manual profiling notes.
 
 ## See Also

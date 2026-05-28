@@ -5,10 +5,10 @@ Source: `.claude/rules/data-layer.md`, `.claude/rules/security.md`
 ## Overview
 
 - **Package**: supabase_flutter ^2.5.0
-- **Remote sources**: 27 (entity + base + 2 caches + providers)
-- **Migrations**: 158 SQL files in `supabase/migrations/`
-- **Edge Functions**: 8 (see [[infrastructure/edge-functions]])
-- **Supabase constants**: 146 (tables + buckets + columns)
+- **Remote sources**: 26 (entity + base + 2 caches + providers)
+- **Migrations**: 160 SQL files in `supabase/migrations/`
+- **Edge Functions**: 9 (see [[infrastructure/edge-functions]])
+- **Supabase constants**: 137 (tables + buckets + columns)
 
 ## SupabaseConstants
 
@@ -53,6 +53,19 @@ await client.from('birds').insert(bird.toSupabase());
 
 Primary keys are client-generated `Uuid().v4()` — server never assigns IDs.
 
+## Server-Side RPCs
+
+Some reads need data the caller's RLS cannot reach. A `SECURITY DEFINER`
+Postgres function then exposes only public-safe columns:
+
+- `get_leaderboard(p_limit)` — joins `user_levels` + `profiles` server-side so
+  the leaderboard shows display names without opening the "own row" RLS on
+  `profiles`. Excludes opt-out users (`show_in_leaderboard = false`), returns
+  `COALESCE(display_name, full_name)`, clamps `LIMIT` to ≤ 100, and is granted
+  to `authenticated` only (anon `EXECUTE` revoked). Called via
+  `client.rpc('get_leaderboard', params: {'p_limit': limit})` in
+  `GamificationRemoteSource`. Migration `20260528120000_*`.
+
 ## Storage Buckets
 
 | Bucket | Access | Content |
@@ -74,7 +87,7 @@ Primary keys are client-generated `Uuid().v4()` — server never assigns IDs.
 
 ## Remote Source Location
 
-`lib/data/remote/api/` — 27 classes following naming:
+`lib/data/remote/api/` — 26 classes following naming:
 - Entity remote sources: `BirdRemoteSource`, `EggRemoteSource`, etc.
 - Base: `BaseRemoteSource`
 - Caches: `community_profile_cache`, `community_post_cache`
@@ -82,6 +95,6 @@ Primary keys are client-generated `Uuid().v4()` — server never assigns IDs.
 ## See Also
 
 - [[data-layer/repositories]] — how remote sources are used
-- [[infrastructure/edge-functions]] — 8 Edge Functions
+- [[infrastructure/edge-functions]] — 9 Edge Functions
 - [[data-layer/migrations]] — SQL migration workflow
 - [[patterns/security]] — RLS, auth
