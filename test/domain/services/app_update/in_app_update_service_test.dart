@@ -72,4 +72,18 @@ void main() {
     when(() => client.check()).thenThrow(Exception('play services missing'));
     await expectLater(service.checkAndStart(), completes);
   });
+
+  test('priority exactly at threshold (4) -> immediate', () async {
+    when(() => client.check()).thenAnswer((_) async => check(priority: 4));
+    await service.checkAndStart();
+    verify(() => client.startImmediate()).called(1);
+    verifyNever(() => client.startFlexible());
+  });
+
+  test('priority one below threshold (3) -> flexible', () async {
+    when(() => client.check()).thenAnswer((_) async => check(priority: 3));
+    await service.checkAndStart();
+    verify(() => client.startFlexible()).called(1);
+    verifyNever(() => client.startImmediate());
+  });
 }

@@ -73,7 +73,14 @@ class PlayInAppUpdateClient implements InAppUpdateClient {
 /// here; callers gate on `Platform.isAndroid`. Fail-open: any error is logged
 /// and swallowed so a failed check never blocks the app.
 class InAppUpdateService {
-  InAppUpdateService(this._client, {this.immediatePriorityThreshold = 4});
+  InAppUpdateService(
+    this._client, {
+    this.immediatePriorityThreshold = defaultImmediatePriorityThreshold,
+  });
+
+  /// Play `updatePriority` (0–5) at or above which an immediate (blocking)
+  /// update is launched instead of a flexible one.
+  static const int defaultImmediatePriorityThreshold = 4;
 
   final InAppUpdateClient _client;
   final int immediatePriorityThreshold;
@@ -88,9 +95,10 @@ class InAppUpdateService {
       } else if (check.flexibleAllowed) {
         await _client.startFlexible();
       }
-    } catch (e, st) {
+    } catch (e) {
+      // Fail-open: a failed check (no Play services, offline, non-Play build)
+      // must never block app use. Expected condition — warning only, no Sentry.
       AppLogger.warning('[InAppUpdate] check failed, continuing: $e');
-      AppLogger.error('[InAppUpdate] check error', e, st);
     }
   }
 
