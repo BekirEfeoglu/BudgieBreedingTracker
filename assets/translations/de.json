@@ -82,7 +82,9 @@
     "message": "BudgieBreedingTracker v{} ist verfügbar. Öffnen Sie den Store, um zu aktualisieren.",
     "message_with_notes": "BudgieBreedingTracker v{} ist verfügbar.\n\n{}",
     "update_now": "Jetzt aktualisieren",
-    "later": "Später"
+    "later": "Später",
+    "download_complete": "Update heruntergeladen",
+    "restart": "Neu starten"
   },
   "auth": {
     "login": "Anmelden",
