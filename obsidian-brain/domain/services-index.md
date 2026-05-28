@@ -1,6 +1,6 @@
 # Domain Services Index
 
-23 service directories in `lib/domain/services/` (ads, app_update, auth, backup, breeding, calendar, eggs, encryption, export, gamification, genetics, home_widget, import, incubation, local_ai, moderation, notifications, payment, premium, presence, profile, sync, update_check).
+22 service directories in `lib/domain/services/` (ads, app_update, auth, backup, breeding, calendar, eggs, encryption, export, gamification, genetics, home_widget, import, incubation, local_ai, moderation, notifications, payment, premium, presence, profile, sync).
 
 | Service | Page | Purpose | Network Required |
 |---------|------|---------|------------------|
