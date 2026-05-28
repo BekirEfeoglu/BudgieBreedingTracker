@@ -20,21 +20,22 @@ current shell so users can dismiss and continue.
 
 ```
 AppUpdatePrompt
-  └── watches appUpdateProvider (lib/domain/services/app_update/)
-        └── reads package_info_plus local build
-        └── reads remote AppVersionInfo (release notes + latest_build)
-        └── compares → UpdateStatus.softAvailable | hardRequired | upToDate
+  └── watches appUpdateStatusProvider (lib/domain/services/app_update/)
+        └── reads package_info_plus local build + version
+        └── reads remote AppUpdateInfo (system_settings.app_version) + iOS iTunes Lookup
+        └── AppUpdateInfo.evaluate() → AppUpdateStatus (isUpdateAvailable + isRequired)
 ```
 
-`UpdateStatus.softAvailable` opens the dismissible dialog. `hardRequired`
-renders the non-dismissible blocking dialog.
+An available update with `isRequired == false` opens the dismissible dialog;
+`isRequired == true` (local build < `min_supported_build`) renders the
+non-dismissible blocking dialog.
 
 ## Dismissal & Frequency
 
 - "Later" closes the dialog for this launch
 - "Update now" opens the platform store via `url_launcher`
-- Cool-down between prompts is handled by `appUpdateProvider` — repeated
-  same-version prompts are suppressed
+- Cool-down between prompts is handled by `AppUpdatePrompt` (tracks the shown
+  version key) — repeated same-version prompts are suppressed
 - Hard updates ignore dismissal entirely
 
 ## Placement
@@ -50,9 +51,9 @@ AppUpdatePrompt(
 
 ## Release Notes
 
-`AppVersionInfo.releaseNotesFor(localeCode)` returns localized notes from
-the remote config. Master locale is Turkish; fallback chain is
-`current → en → tr`.
+`AppUpdatePrompt` localizes release notes from `AppUpdateInfo`'s
+`releaseNotesTr` / `releaseNotesEn` / `releaseNotesDe` fields by device
+language, falling back to English.
 
 ## See Also
 
