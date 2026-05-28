@@ -93,7 +93,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | Domain services | 23 directories |
 | Routes | 73 |
 | Custom SVG icons | 89 constants, 89 files on disk |
-| Shared widgets | 29 (15 root + 4 buttons + 2 cards + 2 dialog + 1 bottom_sheet) |
+| Shared widgets | 29 (15 root + 4 buttons + 2 cards + 2 dialog + 1 bottom_sheet + 5 eggs) |
 | Enum files | 15 |
 | Supabase constants | 146 (tables + buckets + columns) |
 | L10n keys | ~2,991 per language, 42 categories |
