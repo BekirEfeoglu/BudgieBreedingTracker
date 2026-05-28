@@ -386,14 +386,14 @@ void main() {
         const period = StatsPeriod.threeMonths;
         final now = DateTime.now();
         final range = buildStatsDateRange(period, now: now);
-        final legacyCutoff = DateTime(
-          now.year,
-          now.month - period.monthCount,
-          now.day,
-        );
-        final bridgeDate = legacyCutoff.add(
-          range.currentStart.difference(legacyCutoff) ~/ 2,
-        );
+        // A record one day before the month-aligned window start must be
+        // excluded. Deriving it from `range.currentStart` is deterministic and
+        // avoids the month-overflow trap of `DateTime(year, month - N, now.day)`
+        // — e.g. on May 29 `month - 3` is February, and `DateTime(2026, 2, 29)`
+        // rolls over to Mar 1, colliding with `currentStart` (Expected null /
+        // Actual 1).
+        final outOfWindow =
+            range.currentStart.subtract(const Duration(days: 1));
 
         final container = _container(
           birds: const [],
@@ -402,8 +402,8 @@ void main() {
           chicks: const [],
           healthRecords: [
             _record(
-              id: 'legacy-window',
-              date: bridgeDate,
+              id: 'out-of-window',
+              date: outOfWindow,
               type: HealthRecordType.illness,
             ),
             _record(
@@ -656,8 +656,10 @@ void main() {
   group('trend providers', () {
     test('trendStatsProvider compares current and previous period', () async {
       final now = DateTime.now();
-      final currentDate = DateTime(now.year, now.month - 1, now.day);
-      final previousDate = DateTime(now.year, now.month - 4, now.day);
+      // Fixed mid-month day (15) so `now.month - N` never overflows a shorter
+      // month; the trend windows are month-aligned, so only the month matters.
+      final currentDate = DateTime(now.year, now.month - 1, 15);
+      final previousDate = DateTime(now.year, now.month - 4, 15);
 
       final container = _container(
         birds: [
