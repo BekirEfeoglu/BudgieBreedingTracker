@@ -19,13 +19,16 @@ void main() {
     releaseNotesEn: 'Nest tracking improved.',
   );
 
-  Widget subject(AppUpdateStatus? status) {
+  Widget subject(
+    AppUpdateStatus? status, {
+    TargetPlatform platform = TargetPlatform.iOS,
+  }) {
     return ProviderScope(
       overrides: [appUpdateStatusProvider.overrideWith((ref) async => status)],
       child: MaterialApp(
-        // Simulate iOS so Theme.of(context).platform == TargetPlatform.iOS,
-        // which is required for AppUpdatePrompt to show the dialog.
-        theme: ThemeData(platform: TargetPlatform.iOS),
+        // Simulate the given platform so Theme.of(context).platform is set;
+        // AppUpdatePrompt only shows the dialog on iOS.
+        theme: ThemeData(platform: platform),
         home: const AppUpdatePrompt(child: Text('app child')),
       ),
     );
@@ -100,4 +103,25 @@ void main() {
     expect(find.text('app_update.available_title'), findsNothing);
     expect(find.text('app child'), findsOneWidget);
   });
+
+  testWidgets(
+    'does not show update dialog on Android even when update is available',
+    (tester) async {
+      const status = AppUpdateStatus(
+        info: updateInfo,
+        isUpdateAvailable: true,
+        isRequired: false,
+        currentVersion: '1.0.0',
+        currentBuild: 1,
+      );
+
+      await pumpLocalizedApp(
+        tester,
+        subject(status, platform: TargetPlatform.android),
+      );
+
+      expect(find.text('app child'), findsOneWidget);
+      expect(find.text('app_update.available_title'), findsNothing);
+    },
+  );
 }
