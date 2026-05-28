@@ -4,6 +4,10 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-05-28] android in-app updates | Added Google Play native in-app updates (in_app_update pkg; InAppUpdateService + AndroidInAppUpdater): flexible by default, immediate when updatePriority>=4. Custom dialog scoped to iOS (appUpdateStatusProvider returns null on Android + Theme.platform gate) to avoid a double prompt. Added app_update.download_complete/restart l10n. Both platforms now auto-detect store versions.
+
+---
+
 ## [2026-05-28] consolidate update systems | Removed System B (update feature: UpdateListener, ForcedUpdateScreen, UpdateOptionalSheet, updateStatusProvider, update_check_service, AppVersionRemoteSource, AppVersion model, UpdateStatus enum, app_versions constants, update.* l10n). app_update is now the single update path. Feature modules 25 → 24; l10n 42 → 41 categories.
 
 ---
