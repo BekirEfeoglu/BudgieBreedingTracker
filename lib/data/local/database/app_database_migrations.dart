@@ -410,6 +410,19 @@ Future<void> _migrateV23ToV24(AppDatabase db, Migrator m) async {
   );
 }
 
+/// v25: adds `profiles.show_in_leaderboard` (privacy opt-out for the public
+/// leaderboard). Defaults to TRUE so existing rows stay visible, matching the
+/// Supabase column default.
+Future<void> _migrateV24ToV25(AppDatabase db, Migrator m) async {
+  final hasColumn = await _tableHasColumn(db, 'profiles', 'show_in_leaderboard');
+  if (!hasColumn) {
+    await db.customStatement(
+      'ALTER TABLE profiles ADD COLUMN show_in_leaderboard '
+      'INTEGER NOT NULL DEFAULT 1',
+    );
+  }
+}
+
 /// Checks whether [tableName] has a column named [columnName] via PRAGMA.
 ///
 /// Internal migration helper only — [tableName] and [columnName] must be

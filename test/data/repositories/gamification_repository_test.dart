@@ -68,6 +68,7 @@ Map<String, dynamic> _makeUserLevelRow({
   int currentLevelXp = 50,
   int nextLevelXp = 200,
   String title = 'Acemi Yetistirici',
+  String? displayName,
 }) =>
     {
       'id': id,
@@ -78,6 +79,7 @@ Map<String, dynamic> _makeUserLevelRow({
       'next_level_xp': nextLevelXp,
       'title': title,
       'updated_at': '2026-04-01T10:00:00Z',
+      'display_name': displayName,
     };
 
 Map<String, dynamic> _makeXpTransactionRow({
@@ -357,6 +359,20 @@ void main() {
       expect(leaderboard[1].userId, 'u2');
       expect(leaderboard[1].totalXp, 500);
       verify(() => mockRemoteSource.fetchLeaderboard(limit: 100)).called(1);
+    });
+
+    test('maps opt-out aware display name (null stays null)', () async {
+      when(() => mockRemoteSource.fetchLeaderboard(limit: 100)).thenAnswer(
+        (_) async => [
+          _makeUserLevelRow(userId: 'u1', displayName: 'Alice'),
+          _makeUserLevelRow(userId: 'u2', displayName: null),
+        ],
+      );
+
+      final leaderboard = await repository.getLeaderboard();
+
+      expect(leaderboard[0].displayName, 'Alice');
+      expect(leaderboard[1].displayName, isNull);
     });
 
     test('passes custom limit to remote source', () async {

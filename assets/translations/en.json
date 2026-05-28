@@ -678,6 +678,8 @@
     "sync_error": "An error occurred during synchronization",
     "last_synced_at": "Last synced: {}",
     "privacy_security": "Privacy & Security",
+    "show_in_leaderboard": "Show on leaderboard",
+    "show_in_leaderboard_desc": "When off, you won't appear on the public leaderboard.",
     "change_password": "Change Password",
     "two_factor_auth": "Two-Factor Authentication",
     "two_factor_desc": "Add an extra layer of security to your account",

@@ -8,6 +8,8 @@ class ProfilesTable extends Table {
   BoolColumn get isPremium => boolean().withDefault(const Constant(false))();
   TextColumn get subscriptionStatus =>
       text().map(subscriptionStatusConverter)();
+  BoolColumn get showInLeaderboard =>
+      boolean().withDefault(const Constant(true))();
   TextColumn get displayName => text().nullable()();
   TextColumn get fullName => text().nullable()();
   TextColumn get avatarUrl => text().nullable()();

@@ -16,6 +16,13 @@ class LeaderboardTile extends StatelessWidget {
     required this.userLevel,
   });
 
+  String get _resolvedName {
+    final name = userLevel.displayName?.trim();
+    return (name != null && name.isNotEmpty)
+        ? name
+        : 'community.anonymous_user'.tr();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -47,11 +54,10 @@ class LeaderboardTile extends StatelessWidget {
         ),
       ),
       title: Text(
-        // TODO(audit): leaderboard query should join `profiles.display_name`
-        // and surface resolved names. Until then, never display the raw
-        // user UUID prefix — show anonymous placeholder instead so user
-        // identifiers aren't leaked in the UI.
-        'community.anonymous_user'.tr(),
+        // Name resolved by the get_leaderboard RPC (opt-out aware). Null when
+        // the user has no display name set — fall back to anonymous so a raw
+        // user identifier is never leaked.
+        _resolvedName,
         style: theme.textTheme.titleSmall,
       ),
       subtitle: Text(

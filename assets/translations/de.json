@@ -678,6 +678,8 @@
     "sync_error": "Fehler bei der Synchronisierung",
     "last_synced_at": "Zuletzt synchronisiert: {}",
     "privacy_security": "Datenschutz & Sicherheit",
+    "show_in_leaderboard": "In der Bestenliste anzeigen",
+    "show_in_leaderboard_desc": "Wenn deaktiviert, erscheinst du nicht in der öffentlichen Bestenliste.",
     "change_password": "Passwort ändern",
     "two_factor_auth": "Zwei-Faktor-Authentifizierung",
     "two_factor_desc": "Fügen Sie Ihrem Konto eine zusätzliche Sicherheitsebene hinzu",

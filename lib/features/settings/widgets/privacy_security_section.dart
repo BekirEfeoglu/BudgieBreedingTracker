@@ -10,18 +10,23 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../router/route_names.dart';
+import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
+import 'package:budgie_breeding_tracker/data/providers/profile_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/shared/widgets/profile_account.dart';
 import 'settings_action_tile.dart';
 import 'settings_navigation_tile.dart';
 import 'settings_section_header.dart';
+import 'settings_toggle_tile.dart';
 
 class PrivacySecuritySection extends ConsumerWidget {
   const PrivacySecuritySection({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(userProfileProvider).value;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -29,6 +34,15 @@ class PrivacySecuritySection extends ConsumerWidget {
           title: 'settings.privacy_security'.tr(),
           icon: const AppIcon(AppIcons.security),
         ),
+        if (profile != null)
+          SettingsToggleTile(
+            title: 'settings.show_in_leaderboard'.tr(),
+            subtitle: 'settings.show_in_leaderboard_desc'.tr(),
+            icon: const Icon(LucideIcons.trophy),
+            value: profile.showInLeaderboard,
+            onChanged: (value) =>
+                _setLeaderboardVisibility(ref, profile, value),
+          ),
         SettingsNavigationTile(
           title: 'settings.change_password'.tr(),
           icon: const AppIcon(AppIcons.password),
@@ -78,6 +92,31 @@ class PrivacySecuritySection extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  Future<void> _setLeaderboardVisibility(
+    WidgetRef ref,
+    Profile profile,
+    bool value,
+  ) async {
+    try {
+      await ref
+          .read(profileRepositoryProvider)
+          .save(
+            profile.copyWith(
+              showInLeaderboard: value,
+              updatedAt: DateTime.now().toUtc(),
+            ),
+          );
+    } catch (e, st) {
+      AppLogger.error(
+        '[PrivacySecurity] Leaderboard visibility update failed',
+        e,
+        st,
+      );
+      await Sentry.captureException(e, stackTrace: st);
+      ActionFeedbackService.show('errors.unknown'.tr());
+    }
   }
 
   void _showPasswordChangeDialog(BuildContext context, WidgetRef ref) {

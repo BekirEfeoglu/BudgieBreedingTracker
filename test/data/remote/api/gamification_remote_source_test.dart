@@ -123,17 +123,21 @@ void main() {
       expect(xpSelect.limitValue, 25);
     });
 
-    test('fetchLeaderboard orders by total_xp desc with limit', () async {
-      userLevelsSelect.result = [
-        {'user_id': 'user-1', 'total_xp': 1000},
-        {'user_id': 'user-2', 'total_xp': 800},
-      ];
+    test('fetchLeaderboard calls get_leaderboard RPC with the limit', () async {
+      client.addRpc('get_leaderboard', [
+        {'user_id': 'user-1', 'total_xp': 1000, 'display_name': 'Alice'},
+        {'user_id': 'user-2', 'total_xp': 800, 'display_name': null},
+      ]);
 
       final result = await source.fetchLeaderboard(limit: 50);
 
       expect(result, hasLength(2));
-      expect(userLevelsSelect.orderCalls, contains('total_xp'));
-      expect(userLevelsSelect.limitValue, 50);
+      // Display name resolved server-side (opt-out aware) flows through.
+      expect(result[0]['display_name'], 'Alice');
+      expect(result[1]['display_name'], isNull);
+      expect(client.rpcCalls, hasLength(1));
+      expect(client.rpcCalls.first.fn, 'get_leaderboard');
+      expect(client.rpcCalls.first.params, {'p_limit': 50});
     });
 
     test('fetchDailyActionCount filters by user, action and date', () async {

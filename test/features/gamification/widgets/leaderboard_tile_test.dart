@@ -91,9 +91,8 @@ void main() {
     });
 
     testWidgets('does not display raw user UUID (PII)', (tester) async {
-      // Wave 1 audit: surfacing the UUID prefix as a "name" leaked user
-      // identifiers; widget now renders 'community.anonymous_user' until
-      // the leaderboard query joins profiles.display_name.
+      // Surfacing the UUID prefix as a "name" leaked user identifiers. With
+      // no resolved display name the tile renders 'community.anonymous_user'.
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -103,6 +102,52 @@ void main() {
       );
 
       expect(find.text('abcdefgh'), findsNothing);
+      expect(find.text('community.anonymous_user'), findsOneWidget);
+    });
+
+    testWidgets('shows resolved display name when present', (tester) async {
+      const namedLevel = UserLevel(
+        id: 'ul3',
+        userId: 'abcdefgh-9012',
+        totalXp: 2000,
+        level: 9,
+        title: 'Master',
+        displayName: 'Mavis',
+      );
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: LeaderboardTile(rank: 2, userLevel: namedLevel),
+          ),
+        ),
+      );
+
+      expect(find.text('Mavis'), findsOneWidget);
+      expect(find.text('community.anonymous_user'), findsNothing);
+    });
+
+    testWidgets('falls back to anonymous when display name is blank', (
+      tester,
+    ) async {
+      const blankLevel = UserLevel(
+        id: 'ul4',
+        userId: 'abcdefgh-3456',
+        totalXp: 100,
+        level: 1,
+        title: 'Rookie',
+        displayName: '   ',
+      );
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: LeaderboardTile(rank: 6, userLevel: blankLevel),
+          ),
+        ),
+      );
+
+      expect(find.text('community.anonymous_user'), findsOneWidget);
     });
   });
 }

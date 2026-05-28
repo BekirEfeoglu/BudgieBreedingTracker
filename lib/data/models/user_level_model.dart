@@ -16,6 +16,10 @@ abstract class UserLevel with _$UserLevel {
     @Default(100) int nextLevelXp,
     @Default('') String title,
     DateTime? updatedAt,
+    // Public display name resolved by the get_leaderboard RPC (opt-out aware).
+    // Null for the per-user level row (user_levels table has no name column)
+    // and for users who opted out of the leaderboard.
+    String? displayName,
   }) = _UserLevel;
 
   factory UserLevel.fromJson(Map<String, dynamic> json) => _$UserLevelFromJson(json);

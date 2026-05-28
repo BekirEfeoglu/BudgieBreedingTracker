@@ -16,6 +16,7 @@ abstract class Profile with _$Profile {
     @Default(SubscriptionStatus.free)
     @JsonKey(unknownEnumValue: SubscriptionStatus.free)
     SubscriptionStatus subscriptionStatus,
+    @Default(true) bool showInLeaderboard,
     String? displayName,
     String? fullName,
     String? avatarUrl,

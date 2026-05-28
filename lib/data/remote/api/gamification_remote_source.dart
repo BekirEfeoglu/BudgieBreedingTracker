@@ -95,12 +95,15 @@ class GamificationRemoteSource {
 
   Future<List<Map<String, dynamic>>> fetchLeaderboard({int limit = 100}) async {
     try {
-      final response = await _client
-          .from(SupabaseConstants.userLevelsTable)
-          .select()
-          .order('total_xp', ascending: false)
-          .limit(limit);
-      return List<Map<String, dynamic>>.from(response);
+      // SECURITY DEFINER RPC joins profiles server-side so display names
+      // resolve across users while honoring the show_in_leaderboard opt-out.
+      // A direct table select cannot read other users' profiles under the
+      // restrictive profiles RLS, which is why this is an RPC and not a join.
+      final response = await _client.rpc(
+        'get_leaderboard',
+        params: {'p_limit': limit},
+      );
+      return List<Map<String, dynamic>>.from(response as List);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag('gamification', e, st);
     }

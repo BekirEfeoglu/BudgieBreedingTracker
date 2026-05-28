@@ -251,6 +251,22 @@ class RoutingFakeClient extends Fake implements SupabaseClient {
     }
     return builder;
   }
+
+  final _rpcResults = <String, Object?>{};
+  final rpcCalls = <({String fn, Map<String, dynamic>? params})>[];
+
+  /// Registers a fake result for `client.rpc(fn, ...)` calls.
+  void addRpc(String fn, Object? result) => _rpcResults[fn] = result;
+
+  @override
+  PostgrestFilterBuilder<T> rpc<T>(
+    String fn, {
+    Map<String, dynamic>? params,
+    get = false,
+  }) {
+    rpcCalls.add((fn: fn, params: params));
+    return FakeFilterBuilder<T>(result: _rpcResults[fn] as T?);
+  }
 }
 
 /// Convenience factory that creates a complete fake Supabase stack.

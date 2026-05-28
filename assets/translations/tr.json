@@ -678,6 +678,8 @@
     "sync_error": "Senkronizasyon sırasında hata oluştu",
     "last_synced_at": "Son eşleme: {}",
     "privacy_security": "Gizlilik ve Güvenlik",
+    "show_in_leaderboard": "Liderlik tablosunda görün",
+    "show_in_leaderboard_desc": "Kapatırsanız, herkese açık liderlik tablosunda görünmezsiniz.",
     "change_password": "Şifre Değiştir",
     "two_factor_auth": "İki Adımlı Doğrulama",
     "two_factor_desc": "Hesabınıza ek güvenlik katmanı ekleyin",

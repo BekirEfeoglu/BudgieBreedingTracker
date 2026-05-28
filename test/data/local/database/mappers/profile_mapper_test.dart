@@ -14,6 +14,7 @@ void main() {
         email: 'test@example.com',
         isPremium: true,
         subscriptionStatus: SubscriptionStatus.premium,
+        showInLeaderboard: false,
         fullName: 'John Doe',
         avatarUrl: 'https://example.com/avatar.jpg',
         role: 'admin',
@@ -33,6 +34,7 @@ void main() {
       expect(model.role, 'admin');
       expect(model.language, 'en');
       expect(model.premiumExpiresAt, premiumExpiry);
+      expect(model.showInLeaderboard, false);
     });
 
     test('handles null optional fields', () {
@@ -41,6 +43,7 @@ void main() {
         email: 'free@example.com',
         isPremium: false,
         subscriptionStatus: SubscriptionStatus.free,
+        showInLeaderboard: true,
         fullName: null,
         avatarUrl: null,
         role: null,
@@ -65,6 +68,7 @@ void main() {
         email: 'user@example.com',
         isPremium: true,
         subscriptionStatus: SubscriptionStatus.trial,
+        showInLeaderboard: false,
         fullName: 'Jane Smith',
         avatarUrl: 'https://example.com/jane.png',
         role: 'user',
@@ -81,6 +85,7 @@ void main() {
       expect(companion.avatarUrl.value, 'https://example.com/jane.png');
       expect(companion.role.value, 'user');
       expect(companion.language.value, 'de');
+      expect(companion.showInLeaderboard.value, false);
     });
 
     test('sets updatedAt to current time', () {
