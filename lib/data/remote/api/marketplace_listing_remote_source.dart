@@ -222,8 +222,10 @@ class MarketplaceListingRemoteSource {
         'increment_marketplace_listing_view',
         params: {'p_id': id},
       );
-    } catch (e) {
-      AppLogger.warning('View count increment failed: $e');
+    } catch (e, st) {
+      // Best-effort: a failed increment doesn't break the detail view.
+      // Capture stack so a chronic failure becomes traceable.
+      AppLogger.error('MarketplaceListing.incrementViewCount', e, st);
     }
   }
 
@@ -360,8 +362,11 @@ class MarketplaceListingRemoteSource {
             .from(SupabaseConstants.marketplacePhotosBucket)
             .remove(paths);
       }
-    } catch (e) {
-      AppLogger.warning('marketplace: Failed to delete images: $e');
+    } catch (e, st) {
+      // Best-effort cleanup — the listing soft-delete already succeeded.
+      // Stack trace lets us see if orphans accumulate due to a recurring
+      // bucket / network issue.
+      AppLogger.error('MarketplaceListing.deleteImages', e, st);
     }
   }
 }

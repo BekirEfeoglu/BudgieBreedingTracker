@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/enums/bird_enums.dart';
-import '../../../core/enums/marketplace_enums.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/shared/providers/breeding.dart';
 import '../../../domain/services/moderation/moderation_providers.dart';
 import '../../../domain/services/moderation/content_moderation_service.dart';
+import 'marketplace_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 
 class MarketplaceFormState {
@@ -120,6 +120,10 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
         'image_urls': imageUrls,
         'city': city,
       });
+      // Invalidate the feed + owner-scoped list providers so the form
+      // screen pops to fresh data instead of stale cache. Audit M2.
+      ref.invalidate(marketplaceListingsProvider(userId));
+      ref.invalidate(myMarketplaceListingsProvider(userId));
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('marketplace', e, st);
@@ -202,6 +206,11 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
         'image_urls': imageUrls,
         'city': city,
       }, userId: userId);
+      ref.invalidate(marketplaceListingsProvider(userId));
+      ref.invalidate(myMarketplaceListingsProvider(userId));
+      ref.invalidate(
+        marketplaceListingByIdProvider((id: listingId, userId: userId)),
+      );
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('marketplace', e, st);
@@ -216,6 +225,8 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
       final repo = ref.read(marketplaceRepositoryProvider);
       final userId = ref.read(currentUserIdProvider);
       await repo.delete(listingId, userId: userId);
+      ref.invalidate(marketplaceListingsProvider(userId));
+      ref.invalidate(myMarketplaceListingsProvider(userId));
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('marketplace', e, st);
@@ -253,7 +264,15 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
         isFavorited: isFavorited,
       );
     } catch (e, st) {
-      AppLogger.error('marketplace', e, st);
+      AppLogger.error('marketplace.toggleFavorite', e, st);
+      // Audit M7: previously the catch swallowed the error silently — the
+      // heart icon kept its optimistic flip while the server state was
+      // unchanged, gaslighting the user. Surface via state.error so the
+      // form listener emits a snackbar; ref.listen consumers re-render
+      // the heart from the authoritative `marketplaceFavoritesProvider`.
+      state = state.copyWith(
+        error: 'marketplace.favorite_failed'.tr(),
+      );
     }
   }
 

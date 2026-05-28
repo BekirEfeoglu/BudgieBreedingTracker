@@ -51,6 +51,10 @@ void main() {
 
   setUp(() {
     mockRepo = MockMarketplaceRepository();
+    // Detail screen now fires incrementViewCount once per non-owner
+    // load (audit L7). Stub so the mock doesn't throw on the unmatched
+    // call.
+    when(() => mockRepo.incrementViewCount(any())).thenAnswer((_) async {});
   });
 
   Widget buildSubject({required AsyncValue<MarketplaceListing?> listingAsync}) {

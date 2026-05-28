@@ -3,10 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/app_icons.dart';
+import '../../../core/constants/feature_flags.dart';
 import '../../../core/enums/messaging_enums.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/buttons/app_icon_button.dart';
+import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/profile_stream_providers.dart';
 import '../providers/messaging_form_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 
@@ -58,12 +63,17 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
       child: SafeArea(
         child: Row(
           children: [
-            AppIconButton(
-              icon: const Icon(LucideIcons.plus),
-              onPressed: _showAttachmentOptions,
-              tooltip: 'messaging.attach_photo'.tr(),
-              semanticLabel: 'messaging.attach_photo'.tr(),
-            ),
+            // Attach button hidden until the upload pipeline ships.
+            // Messaging audit C1+C2 — the bottom-sheet options were dead
+            // UI (`onTap: Navigator.pop`) and the receive-side rendering
+            // path for image/bird/listing messages had no producer.
+            if (FeatureFlags.messageAttachmentsEnabled)
+              AppIconButton(
+                icon: const Icon(LucideIcons.plus),
+                onPressed: _showAttachmentOptions,
+                tooltip: 'messaging.attach_photo'.tr(),
+                semanticLabel: 'messaging.attach_photo'.tr(),
+              ),
             Expanded(
               child: TextField(
                 controller: _controller,
@@ -109,13 +119,19 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
 
     final userId = ref.read(currentUserIdProvider);
     final notifier = ref.read(messagingFormStateProvider.notifier);
+    // Pull the display name once at send time so the saved row carries
+    // attribution (audit M6 — group recipients otherwise saw no sender
+    // label). Falls back to empty string when the profile hasn't loaded
+    // yet; server-side trigger can backfill from `profiles` later.
+    final profile = ref.read(userProfileProvider).value;
+    final senderName = profile?.resolvedDisplayName ?? '';
     // Don't clear the input until we know the send succeeded. If the
     // call is rejected (cooldown, length cap, content moderation), the
     // user keeps their text instead of losing it and having to retype.
     await notifier.sendMessage(
       conversationId: widget.conversationId,
       senderId: userId,
-      senderName: '',
+      senderName: senderName,
       content: text,
       messageType: MessageType.text,
     );
@@ -141,7 +157,7 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
               },
             ),
             ListTile(
-              leading: const Icon(LucideIcons.bird),
+              leading: const AppIcon(AppIcons.bird),
               title: Text('messaging.attach_bird'.tr()),
               onTap: () {
                 Navigator.pop(context);

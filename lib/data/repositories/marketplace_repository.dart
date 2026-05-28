@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../models/marketplace_listing_model.dart';
 import '../remote/api/marketplace_listing_remote_source.dart';
 import '../remote/api/marketplace_favorite_remote_source.dart';
@@ -80,6 +82,11 @@ class MarketplaceRepository {
 
   Future<void> delete(String id, {required String userId}) async {
     await _listingSource.softDelete(id, userId: userId);
+    // Fire-and-forget storage cleanup. Without this, every soft-deleted
+    // listing leaks its images into the public bucket forever (audit
+    // C2). `deleteImages` already swallows its own errors — wrap in
+    // unawaited so the caller's UX flow doesn't block on slow storage.
+    unawaited(_listingSource.deleteImages(userId: userId, listingId: id));
   }
 
   Future<void> updateStatus(

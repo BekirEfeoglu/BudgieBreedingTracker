@@ -346,6 +346,13 @@ class _CommunityCreatePostScreenState
                   IconButton.filled(
                     onPressed: formState.isLoading ? null : _addTag,
                     icon: const Icon(LucideIcons.plus, size: 18),
+                    // WCAG 2.5.5: 48dp minimum touch target. Default
+                    // `IconButton.filled` with a 18px icon drops below
+                    // the floor (audit M7).
+                    constraints: const BoxConstraints(
+                      minWidth: 48,
+                      minHeight: 48,
+                    ),
                   ),
                 ],
               ),

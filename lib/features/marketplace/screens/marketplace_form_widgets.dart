@@ -3,7 +3,9 @@ part of 'marketplace_form_screen.dart';
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader({required this.icon, required this.label});
 
-  final IconData icon;
+  /// Widget icon (per anti-pattern #14). Accepts `AppIcon(AppIcons.x)` for
+  /// domain glyphs and `Icon(LucideIcons.x)` for generic UI.
+  final Widget icon;
   final String label;
 
   @override
@@ -11,7 +13,10 @@ class _SectionHeader extends StatelessWidget {
     final theme = Theme.of(context);
     return Row(
       children: [
-        Icon(icon, size: 16, color: theme.colorScheme.primary),
+        IconTheme(
+          data: IconThemeData(size: 16, color: theme.colorScheme.primary),
+          child: icon,
+        ),
         const SizedBox(width: AppSpacing.sm),
         Text(
           label,

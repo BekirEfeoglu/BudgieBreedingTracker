@@ -2836,6 +2836,7 @@
     "message_owner": "Besitzer kontaktieren",
     "favorite": "Zu Favoriten hinzufügen",
     "unfavorite": "Aus Favoriten entfernen",
+    "favorite_failed": "Favoritenstatus konnte nicht aktualisiert werden",
     "mark_sold": "Als verkauft markieren",
     "mark_reserved": "Reservieren",
     "close_listing": "Anzeige schließen",

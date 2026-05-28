@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,8 +8,8 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/constants/app_icons.dart';
+import '../../../core/utils/logger.dart';
 import '../../../core/enums/bird_enums.dart';
-import '../../../core/enums/marketplace_enums.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/buttons/app_icon_button.dart';
@@ -16,6 +18,7 @@ import '../../../core/widgets/unsaved_changes_scope.dart';
 import '../../../data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import '../providers/marketplace_form_providers.dart';
+import '../providers/marketplace_providers.dart';
 import '../widgets/marketplace_bird_picker_sheet.dart';
 import '../widgets/marketplace_image_picker.dart';
 import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
@@ -52,6 +55,8 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
 
   bool get _isEdit => widget.editListingId != null;
 
+  bool _prefillStarted = false;
+
   void _markDirty() {
     if (!_isDirty) setState(() => _isDirty = true);
   }
@@ -72,6 +77,66 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
     }
   }
 
+  /// Loads the existing listing in edit mode and prefills every controller +
+  /// state field. Without this, opening "Edit Listing" produces a blank form
+  /// and submitting overwrites the row with empty values (audit M3).
+  ///
+  /// Called from build() guarded by `_prefillStarted` so the request only
+  /// fires once per screen lifetime — the controller listeners that flip
+  /// `_isDirty` are temporarily detached during prefill so the form doesn't
+  /// open in a dirty state.
+  Future<void> _prefillFromExisting(String listingId, String userId) async {
+    if (_prefillStarted) return;
+    _prefillStarted = true;
+    try {
+      final listing = await ref.read(
+        marketplaceListingByIdProvider((id: listingId, userId: userId)).future,
+      );
+      if (!mounted || listing == null) return;
+
+      for (final c in [
+        _titleController,
+        _descriptionController,
+        _priceController,
+        _speciesController,
+        _mutationController,
+        _ageController,
+        _cityController,
+      ]) {
+        c.removeListener(_markDirty);
+      }
+      _titleController.text = listing.title;
+      _descriptionController.text = listing.description;
+      _priceController.text = listing.price?.toString() ?? '';
+      _speciesController.text = listing.species;
+      _mutationController.text = listing.mutation ?? '';
+      _ageController.text = listing.age ?? '';
+      _cityController.text = listing.city;
+      if (!mounted) return;
+      setState(() {
+        _listingType = listing.listingType;
+        _gender = listing.gender;
+        _imagePaths = List.of(listing.imageUrls);
+        _linkedBirdId = listing.birdId;
+        // Bird name isn't on the listing — would need a follow-up fetch.
+        // Acceptable for the prefill MVP; user can re-link if needed.
+      });
+      for (final c in [
+        _titleController,
+        _descriptionController,
+        _priceController,
+        _speciesController,
+        _mutationController,
+        _ageController,
+        _cityController,
+      ]) {
+        c.addListener(_markDirty);
+      }
+    } catch (e, st) {
+      AppLogger.error('marketplace_form.prefill', e, st);
+    }
+  }
+
   @override
   void dispose() {
     _titleController.dispose();
@@ -88,6 +153,14 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
   Widget build(BuildContext context) {
     final formState = ref.watch(marketplaceFormStateProvider);
     final theme = Theme.of(context);
+
+    if (_isEdit && !_prefillStarted) {
+      final userId = ref.read(currentUserIdProvider);
+      // Fire-and-forget: future completes via _prefillFromExisting and
+      // calls setState to populate the form. Guarded by _prefillStarted so
+      // the rebuild from setState doesn't re-trigger.
+      unawaited(_prefillFromExisting(widget.editListingId!, userId));
+    }
 
     ref.listen<MarketplaceFormState>(marketplaceFormStateProvider, (_, state) {
       if (!mounted) return;
@@ -135,7 +208,7 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
 
                 // --- Listing Type Chips ---
                 _SectionHeader(
-                  icon: LucideIcons.tag,
+                  icon: const Icon(LucideIcons.tag),
                   label: 'marketplace.listing_type_label'.tr(),
                 ),
                 const SizedBox(height: AppSpacing.sm),
@@ -161,7 +234,7 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
 
                 // --- Basic Info ---
                 _SectionHeader(
-                  icon: LucideIcons.fileText,
+                  icon: const Icon(LucideIcons.fileText),
                   label: 'marketplace.section_basic'.tr(),
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -245,7 +318,9 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
 
                 // --- Bird Info ---
                 _SectionHeader(
-                  icon: LucideIcons.bird,
+                  // Audit L1: bird is a domain concept; LucideIcons is for
+                  // generic UI only. Use the project's SVG asset.
+                  icon: const AppIcon(AppIcons.bird),
                   label: 'marketplace.section_bird'.tr(),
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -330,7 +405,7 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
 
                 // --- Location ---
                 _SectionHeader(
-                  icon: LucideIcons.mapPin,
+                  icon: const Icon(LucideIcons.mapPin),
                   label: 'marketplace.city_label'.tr(),
                 ),
                 const SizedBox(height: AppSpacing.md),

@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/core/enums/messaging_enums.dart';
+import 'package:budgie_breeding_tracker/data/providers/profile_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/messaging/providers/messaging_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/messaging/widgets/message_input_bar.dart';
@@ -20,6 +21,12 @@ void main() {
     return ProviderScope(
       overrides: [
         currentUserIdProvider.overrideWithValue('test-user'),
+        // MessageInputBar now reads the current user's profile to pass
+        // senderName into the message payload (audit M6). Override with
+        // a fixed stream so tests stay self-contained.
+        userProfileProvider.overrideWith(
+          (ref) => Stream.value(null),
+        ),
         if (notifierFactory != null)
           messagingFormStateProvider.overrideWith(notifierFactory),
       ],
@@ -54,14 +61,21 @@ void main() {
       expect(find.byIcon(LucideIcons.send), findsOneWidget);
     });
 
-    testWidgets('renders attachment button', (tester) async {
-      await pumpLocalizedApp(
-        tester,
-        buildSubject(notifierFactory: _FakeMessagingFormNotifier.new),
-      );
+    // Skipped: Attachments hidden behind
+    // FeatureFlags.messageAttachmentsEnabled (off by default). Re-enable
+    // when the upload pipeline ships — see messaging audit C1.
+    testWidgets(
+      'renders attachment button',
+      skip: true,
+      (tester) async {
+        await pumpLocalizedApp(
+          tester,
+          buildSubject(notifierFactory: _FakeMessagingFormNotifier.new),
+        );
 
-      expect(find.byIcon(LucideIcons.plus), findsOneWidget);
-    });
+        expect(find.byIcon(LucideIcons.plus), findsOneWidget);
+      },
+    );
 
     testWidgets('send button is disabled when text is empty', (tester) async {
       await pumpLocalizedApp(
@@ -108,7 +122,11 @@ void main() {
       expect(textField.controller?.text, isEmpty);
     });
 
-    testWidgets('attachment button opens bottom sheet', (tester) async {
+    // Skipped: see comment on `renders attachment button` above.
+    testWidgets(
+      'attachment button opens bottom sheet',
+      skip: true,
+      (tester) async {
       await pumpLocalizedApp(
         tester,
         buildSubject(notifierFactory: _FakeMessagingFormNotifier.new),
@@ -119,7 +137,7 @@ void main() {
 
       // Bottom sheet should show attachment options
       expect(find.byIcon(LucideIcons.image), findsOneWidget);
-      expect(find.byIcon(LucideIcons.bird), findsOneWidget);
+      // Bird icon is now AppIcon(AppIcons.bird) — see audit L5.
       expect(find.byIcon(LucideIcons.store), findsOneWidget);
       expect(
         find.text(l10n('messaging.attach_photo')),
@@ -130,7 +148,8 @@ void main() {
         find.text(l10n('messaging.attach_listing')),
         findsOneWidget,
       );
-    });
+    },
+    );
 
     testWidgets('send button is disabled for whitespace-only input',
         (tester) async {

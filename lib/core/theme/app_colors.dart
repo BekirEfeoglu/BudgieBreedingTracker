@@ -213,6 +213,11 @@ abstract class AppColors {
   static const listingTrade = Color(0xFF9C27B0);
   static const listingWanted = Color(0xFFFF9800);
 
+  // Marketplace Card Overlay Colors (sit on top of photos, intentionally
+  // theme-neutral so contrast stays predictable over arbitrary images).
+  static const listingFavoriteActive = Color(0xFFE53935);
+  static const listingFreeLabel = Color(0xFF4CAF50);
+
   // Community Guidelines Header Gradient
   static const guidelinesGradientStart = Color(0xFF102A62);
   static const guidelinesGradientMid = Color(0xFF1E40AF);

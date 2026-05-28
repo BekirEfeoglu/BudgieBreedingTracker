@@ -13,12 +13,15 @@ import '../../../core/widgets/status_badge.dart';
 import '../../../data/models/marketplace_listing_model.dart';
 import '../../../router/route_names.dart';
 
-// Image overlay UI colors (image overlay context, not theme-dependent)
+// Image overlay UI colors. Centralized AppColors lookup so the card's
+// semantic tokens (favorite/free) are documented once. The overlay
+// background + icon stay local because they're "sits-on-photo" pixel
+// colors, not theme tokens.
 abstract final class _ImageOverlayColors {
   static const overlayBackground = Color(0x8A000000); // black54 equivalent
   static const overlayIcon = Color(0xFFFFFFFF); // white
-  static const favoriteActive = Color(0xFFE53935); // red for active favorite
-  static const freeLabel = Color(0xFF4CAF50); // green for free/adoption
+  static const favoriteActive = AppColors.listingFavoriteActive;
+  static const freeLabel = AppColors.listingFreeLabel;
 }
 
 class MarketplaceListingCard extends StatelessWidget {

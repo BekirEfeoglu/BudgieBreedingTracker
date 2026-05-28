@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,6 +29,12 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
   final _scrollController = ScrollController();
   MessagingRealtimeNotifier? _realtimeNotifier;
   final Set<String> _markedRead = <String>{};
+  // Retry budget per message — flapping network used to schedule a new
+  // RPC every rebuild (audit M3). Cap at 3 attempts then give up; the
+  // next conversation open will retry.
+  final Map<String, int> _markReadAttempts = <String, int>{};
+  static const int _maxMarkReadAttempts = 3;
+  Timer? _markReadThrottle;
 
   @override
   void initState() {
@@ -39,9 +47,22 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
     });
   }
 
+  /// Throttles the visible-mark-as-read sweep so a stream of rebuilds
+  /// doesn't fire an RPC per frame. The dedupe-via-[_markedRead] still
+  /// applies; this just bounds how often we walk the message list.
+  void _scheduleMarkVisibleAsRead(List<Message> messages, String userId) {
+    _markReadThrottle?.cancel();
+    _markReadThrottle = Timer(const Duration(milliseconds: 750), () {
+      if (!mounted) return;
+      _markVisibleAsRead(messages, userId);
+    });
+  }
+
   /// Marks incoming messages as read once the conversation is on screen.
   /// Deduplicates via [_markedRead] so the build loop doesn't fan out a
-  /// new RPC for the same message every frame.
+  /// new RPC for the same message every frame; retries up to
+  /// [_maxMarkReadAttempts] times before giving up to avoid the
+  /// flapping-network unbounded-retry hazard.
   void _markVisibleAsRead(List<Message> messages, String userId) {
     final repo = ref.read(messagingRepositoryProvider);
     for (final msg in messages) {
@@ -54,14 +75,20 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
         AppLogger.warning(
           '[MessageDetailScreen] markAsRead failed for ${msg.id}: $e',
         );
-        // Allow a retry on the next visible-rebuild.
-        _markedRead.remove(msg.id);
+        // Capped retry: increment attempt counter; only re-allow if we
+        // haven't blown the budget yet.
+        final attempts = (_markReadAttempts[msg.id] ?? 0) + 1;
+        _markReadAttempts[msg.id] = attempts;
+        if (attempts < _maxMarkReadAttempts) {
+          _markedRead.remove(msg.id);
+        }
       });
     }
   }
 
   @override
   void dispose() {
+    _markReadThrottle?.cancel();
     _scrollController.dispose();
     // Drop the realtime channel and any buffered messages so they don't
     // leak into the next conversation the user opens. Use the cached
@@ -143,19 +170,24 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
                 for (final msg in fetchedMessages) {
                   allMessages.putIfAbsent(msg.id, () => msg);
                 }
+                // Sort newest-first. Optimistic (just-sent) messages may
+                // have null `createdAt` until the server timestamp comes
+                // back; treat them as "newest" so they appear at the top
+                // of the reversed ListView instead of falling to year 0
+                // and disappearing for the sender (audit M4).
+                final pinnedTop = DateTime.now()
+                    .add(const Duration(days: 365 * 1000));
                 final messages = allMessages.values.toList()
                   ..sort(
-                    (a, b) => (b.createdAt ?? DateTime(0)).compareTo(
-                      a.createdAt ?? DateTime(0),
+                    (a, b) => (b.createdAt ?? pinnedTop).compareTo(
+                      a.createdAt ?? pinnedTop,
                     ),
                   );
 
-                // Mark visible incoming messages as read after this frame
-                // so unread counts and read indicators converge.
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (!mounted) return;
-                  _markVisibleAsRead(messages, userId);
-                });
+                // Schedule the mark-as-read sweep with a 750ms throttle.
+                // Previously this fired on every rebuild — incoming
+                // realtime events caused fan-out RPCs (audit M3).
+                _scheduleMarkVisibleAsRead(messages, userId);
 
                 if (messages.isEmpty) {
                   return Center(

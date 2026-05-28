@@ -35,6 +35,17 @@ class _MarketplaceDetailScreenState
   late final PageController _pageController;
   int _currentPage = 0;
   bool _isStartingConversation = false;
+  bool _viewCountIncremented = false;
+
+  /// Increments the view counter once per detail-screen instance for
+  /// non-owners. Without this, the RPC was never called and view counts
+  /// stayed at zero. Audit L7.
+  void _incrementViewCountOnce(String userId, String ownerId) {
+    if (_viewCountIncremented || userId == ownerId) return;
+    _viewCountIncremented = true;
+    // Fire-and-forget — failures logged inside the remote source.
+    ref.read(marketplaceRepositoryProvider).incrementViewCount(widget.listingId);
+  }
 
   @override
   void initState() {
@@ -79,6 +90,7 @@ class _MarketplaceDetailScreenState
           if (listing == null) {
             return app.ErrorState(message: 'error.not_found'.tr());
           }
+          _incrementViewCountOnce(userId, listing.userId);
 
           final isOwner = listing.userId == userId;
 

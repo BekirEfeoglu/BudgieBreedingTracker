@@ -2836,6 +2836,7 @@
     "message_owner": "İlan Sahibine Mesaj",
     "favorite": "Favorilere Ekle",
     "unfavorite": "Favorilerden Kaldır",
+    "favorite_failed": "Favori durumu güncellenemedi",
     "mark_sold": "Satıldı Olarak İşaretle",
     "mark_reserved": "Rezerve Et",
     "close_listing": "İlanı Kapat",

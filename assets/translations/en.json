@@ -2836,6 +2836,7 @@
     "message_owner": "Message Owner",
     "favorite": "Add to Favorites",
     "unfavorite": "Remove from Favorites",
+    "favorite_failed": "Failed to update favorite status",
     "mark_sold": "Mark as Sold",
     "mark_reserved": "Reserve",
     "close_listing": "Close Listing",

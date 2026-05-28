@@ -106,8 +106,8 @@ class MessageRemoteSource {
           .eq('is_left', false)
           .maybeSingle();
       return result != null;
-    } catch (e) {
-      AppLogger.warning('Participant check failed: $e');
+    } catch (e, st) {
+      AppLogger.error('MessageRemoteSource.isConversationParticipant', e, st);
       return false;
     }
   }
@@ -177,8 +177,8 @@ class MessageRemoteSource {
   Future<void> unsubscribe(RealtimeChannel channel) async {
     try {
       await _client.removeChannel(channel);
-    } catch (e) {
-      AppLogger.warning('Channel unsubscribe failed: $e');
+    } catch (e, st) {
+      AppLogger.error('MessageRemoteSource.unsubscribe', e, st);
     }
   }
 }

@@ -190,9 +190,15 @@ final canCreateListingProvider = Provider.family<bool, String>((ref, userId) {
   return activeCount < marketplaceFreeTierMaxListings;
 });
 
-/// Filtered and sorted listings (computed)
+/// Filtered and sorted listings (computed).
+///
+/// autoDispose: family is keyed on `List<MarketplaceListing>`
+/// (identity-equality), so every emission of the source stream installs a
+/// new family entry. Without autoDispose those entries linger and the
+/// memory footprint grows linearly with refresh count — same leak pattern
+/// the Birds audit flagged for `filteredBirdsProvider`.
 final filteredMarketplaceListingsProvider =
-    Provider.family<List<MarketplaceListing>, List<MarketplaceListing>>(
+    Provider.autoDispose.family<List<MarketplaceListing>, List<MarketplaceListing>>(
   (ref, listings) {
     final sort = ref.watch(marketplaceSortProvider);
     final query = ref.watch(marketplaceSearchQueryProvider).toLowerCase().trim();

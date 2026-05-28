@@ -62,7 +62,11 @@ class CommentListNotifier extends Notifier<CommentListState> {
 
   @override
   CommentListState build() {
-    fetchInitial();
+    // Audit M2: defer `fetchInitial()` via a microtask. Calling a method
+    // that mutates `state` synchronously inside `build()` throws because
+    // Riverpod hasn't finished installing the element yet. Same pattern
+    // CommunityFeedNotifier uses elsewhere in the module.
+    Future.microtask(fetchInitial);
     return const CommentListState(isLoading: true);
   }
 
@@ -177,6 +181,10 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
       state = state.copyWith(
         isLoading: false,
         error: 'community.comment_cooldown'.tr(),
+        // Audit L10: clear stale isSuccess from the prior submit so the
+        // form listener doesn't re-display the previous success state
+        // when this cooldown rejection fires.
+        isSuccess: false,
       );
       return;
     }
@@ -281,6 +289,11 @@ final commentDeleteProvider = NotifierProvider<CommentDeleteNotifier, void>(
 // ---------------------------------------------------------------------------
 
 class CommentLikeToggleNotifier extends Notifier<void> {
+  /// Per-comment in-flight set so a rapid double-tap doesn't fire two
+  /// toggles against the same row (audit L13). Mirrors the existing
+  /// `LikeToggleNotifier` post-likes pattern in this file.
+  final Set<String> _inFlight = <String>{};
+
   @override
   void build() {}
 
@@ -290,6 +303,7 @@ class CommentLikeToggleNotifier extends Notifier<void> {
   }) async {
     final userId = ref.read(currentUserIdProvider);
     if (userId == 'anonymous') return;
+    if (!_inFlight.add(commentId)) return;
 
     try {
       final repo = ref.read(communitySocialRepositoryProvider);
@@ -298,6 +312,8 @@ class CommentLikeToggleNotifier extends Notifier<void> {
     } catch (e, st) {
       AppLogger.error('CommentLikeToggleNotifier', e, st);
       Sentry.captureException(e, stackTrace: st);
+    } finally {
+      _inFlight.remove(commentId);
     }
   }
 }

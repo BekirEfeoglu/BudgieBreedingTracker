@@ -115,7 +115,9 @@ class TypingIndicatorNotifier extends Notifier<Set<String>> {
     // get cleared by a stale timer.
     _autoStopTimers.remove(userId)?.cancel();
 
-    _autoStopTimers[userId] = Timer(const Duration(seconds: 5), () {
+    // Spec: 3s timeout (messaging.md). Was 5s — drifted from rule;
+    // audit L3.
+    _autoStopTimers[userId] = Timer(const Duration(seconds: 3), () {
       _autoStopTimers.remove(userId);
       if (!_disposed && state.contains(userId)) {
         userStoppedTyping(userId);

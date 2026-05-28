@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/core/enums/messaging_enums.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/message_model.dart';
 import 'package:budgie_breeding_tracker/features/messaging/widgets/message_bubble.dart';
 
@@ -250,7 +251,10 @@ void main() {
       );
 
       expect(find.text('Blue Budgie'), findsOneWidget);
-      expect(find.byIcon(LucideIcons.bird), findsOneWidget);
+      // Bird-card icon is now AppIcon(AppIcons.bird) — see messaging
+      // audit L5. AppIcon renders an SVG via flutter_svg, no longer a
+      // Material Icon. Smoke-check the AppIcon widget instead.
+      expect(find.byType(AppIcon), findsOneWidget);
     });
 
     testWidgets('renders listing card message', (tester) async {
