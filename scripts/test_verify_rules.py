@@ -68,6 +68,7 @@ def _make_sample_actual(overrides=None) -> dict:
         "widgets_cards": 2,
         "widgets_dialogs": 1,
         "widgets_bottom_sheet": 0,
+        "widgets_eggs": 0,
         "test_files": 680,
         "individual_tests": 7974,
         "source_files": 717,
@@ -335,6 +336,14 @@ class TestBuildFixUpdates(unittest.TestCase):
         self.assertEqual(
             updates["Shared widgets"],
             "20 (14 root + 2 buttons + 2 cards + 1 dialog + 1 bottom_sheet)",
+        )
+
+    def test_shared_widgets_format_includes_eggs(self):
+        actual = _make_sample_actual({"widgets_total": 24, "widgets_eggs": 5})
+        updates = build_fix_updates(actual)
+        self.assertEqual(
+            updates["Shared widgets"],
+            "24 (14 root + 2 buttons + 2 cards + 1 dialog + 5 eggs)",
         )
 
     def test_test_files_format(self):
@@ -710,6 +719,17 @@ class TestCollectWidgets(unittest.TestCase):
             self.assertEqual(result["widgets_cards"], 2)
             self.assertEqual(result["widgets_dialogs"], 1)
             self.assertEqual(result["widgets_bottom_sheet"], 1)
+
+    def test_counts_eggs_subdir(self):
+        with tempfile.TemporaryDirectory() as d:
+            lib = Path(d)
+            w = self._make_widgets_dir(lib)
+            (w / "eggs").mkdir()
+            (w / "eggs" / "egg_status_chip.dart").touch()
+            (w / "eggs" / "egg_summary_row.dart").touch()
+            result = collect_widgets(lib)
+            self.assertEqual(result["widgets_eggs"], 2)
+            self.assertEqual(result["widgets_total"], 2)
 
     def test_returns_zeros_when_no_widgets_dir(self):
         with tempfile.TemporaryDirectory() as d:

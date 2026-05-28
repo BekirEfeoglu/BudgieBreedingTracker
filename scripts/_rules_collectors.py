@@ -127,6 +127,7 @@ def collect_widgets(lib: Path) -> dict:
         if (widgets_dir / "bottom_sheet").exists()
         else 0
     )
+    eggs = count_files(widgets_dir / "eggs") if (widgets_dir / "eggs").exists() else 0
     return {
         "widgets_total": root_w + sub_w,
         "widgets_root": root_w,
@@ -134,6 +135,7 @@ def collect_widgets(lib: Path) -> dict:
         "widgets_cards": cards,
         "widgets_dialogs": dialogs,
         "widgets_bottom_sheet": bottom_sheet,
+        "widgets_eggs": eggs,
     }
 
 

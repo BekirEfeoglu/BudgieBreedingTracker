@@ -22,6 +22,9 @@ def _widget_summary(actual: dict) -> str:
     bottom_sheet = actual.get("widgets_bottom_sheet", 0)
     if bottom_sheet:
         parts.append(f"{bottom_sheet} bottom_sheet")
+    eggs = actual.get("widgets_eggs", 0)
+    if eggs:
+        parts.append(f"{eggs} eggs")
     return f"{actual['widgets_total']} (" + " + ".join(parts) + ")"
 
 
