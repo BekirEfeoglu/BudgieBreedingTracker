@@ -69,4 +69,8 @@ AS $$
   LIMIT GREATEST(1, LEAST(p_limit, 100));
 $$;
 
+-- Revoke the default PUBLIC grant so anon cannot call the RPC via REST and
+-- leak display names; only signed-in users may read the leaderboard.
+REVOKE ALL ON FUNCTION public.get_leaderboard(integer)
+  FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.get_leaderboard(integer) TO authenticated;
