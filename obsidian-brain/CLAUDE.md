@@ -21,7 +21,7 @@ obsidian-brain/
 ├── log.md               Chronological change log
 ├── overview.md          High-level synthesis
 ├── architecture/        Tech stack, layers, data flow
-├── features/            25 feature modules (one page each)
+├── features/            24 feature modules (one page each)
 ├── data-layer/          Drift, Supabase, repos, sync, migrations
 ├── domain/              Business logic services
 ├── infrastructure/      CI/CD, edge functions, environment, scripts

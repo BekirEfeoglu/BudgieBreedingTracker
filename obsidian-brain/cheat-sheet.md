@@ -63,7 +63,7 @@ start from.
 | Message received | FCM push + deeplink + read receipt ([[features/messaging]]) |
 | Sync conflict detected | `conflictNotifierProvider` notify + UI banner ([[data-layer/sync-strategy]]) |
 | Migration runs | Drift `onUpgrade` (local) or Supabase SQL (remote) ([[data-layer/migrations]]) |
-| `min_supported_build` bump | All users below version see [[features/update]] hard barrier |
+| `min_supported_build` bump | All users below version see non-dismissible blocking dialog ([[features/app_update]]) |
 
 ## "Which Edge Function does this?"
 

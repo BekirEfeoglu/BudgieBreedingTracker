@@ -4,6 +4,10 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-05-28] consolidate update systems | Removed System B (update feature: UpdateListener, ForcedUpdateScreen, UpdateOptionalSheet, updateStatusProvider, update_check_service, AppVersionRemoteSource, AppVersion model, UpdateStatus enum, app_versions constants, update.* l10n). app_update is now the single update path. Feature modules 25 → 24; l10n 42 → 41 categories.
+
+---
+
 ## [2026-05-27] sync | Map 13 new rule files to existing wiki pages
 
 13 new rule files added to `.claude/rules/` covering previously rule-gapped domains

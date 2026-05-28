@@ -10,7 +10,7 @@ lib/
 ├── core/           # Constants, enums, errors, security, theme, utils, shared widgets
 ├── data/           # Models, local DB (Drift), remote API (Supabase), repositories
 ├── domain/         # Business logic services (genetics, sync, etc.)
-├── features/       # 25 feature modules (screens, widgets, providers)
+├── features/       # 24 feature modules (screens, widgets, providers)
 ├── router/         # GoRouter config, route guards, route definitions
 ├── shared/         # Curated facade exports for cross-feature reuse
 └── test_support/   # Package-visible helpers imported by test/ only
@@ -71,8 +71,8 @@ Online-only classes that are NOT cross-user/multi-party streams (e.g. a single-u
 
 Canonical example: `LocalAiService` (`lib/domain/services/local_ai/local_ai_service.dart`) — LLM inference via Ollama/OpenRouter. Network is mandatory (inference happens on the remote endpoint), so offline-first does not apply; correctly named as `*Service`. Applies short-lived in-memory caching for repeated prompts but does not persist to Drift.
 
-## 25 Feature Modules
-admin, app_update, auth, birds, breeding, calendar, chicks, community, eggs, feedback, gamification, genealogy, genetics, health_records, home, marketplace, messaging, more, notifications, premium, profile, settings, splash, statistics, update
+## 24 Feature Modules
+admin, app_update, auth, birds, breeding, calendar, chicks, community, eggs, feedback, gamification, genealogy, genetics, health_records, home, marketplace, messaging, more, notifications, premium, profile, settings, splash, statistics
 
 ## Security
 - RLS policies managed server-side (Supabase)

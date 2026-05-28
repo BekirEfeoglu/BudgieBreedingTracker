@@ -22,7 +22,7 @@
 | Breeding / IncubationRiskAssistant | (see [[features/breeding]]) | Derived risk summary | No |
 | Profile | (see [[features/profile]]) | Account orchestration, storage cleanup | Yes |
 | Ads | (see [[domain/premium-service]] / ad gating) | Reward-based feature unlock | Partial |
-| Update check / App update | (see [[features/update]], [[features/app_update]]) | Forced + soft update prompts | Yes |
+| Update check / App update | (see [[features/app_update]]) | In-app update prompting (optional + hard-block) | Yes |
 
 ## Naming Rules
 

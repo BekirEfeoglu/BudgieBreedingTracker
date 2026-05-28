@@ -1,9 +1,11 @@
 # Feature: app_update
 
-**Purpose**: Soft, dismissible in-app prompt that nudges users to install
-the latest store version when their build is older than the latest
-available — but still above `min_supported_build`. Sister feature to
-[[features/update]] (hard block) and shares `AppVersionInfo`.
+**Purpose**: The single in-app update path. Shows an app-wide dialog when the
+local build is older than the latest store version. Optional updates are
+dismissible ("Later"); required updates (`local < min_supported_build`) render
+a non-dismissible blocking dialog. iOS auto-detects the live App Store version
+via iTunes Lookup; Android relies on the `system_settings.app_version` remote
+config.
 
 ## Key Widgets
 
@@ -25,7 +27,7 @@ AppUpdatePrompt
 ```
 
 `UpdateStatus.softAvailable` opens the dismissible dialog. `hardRequired`
-escalates to the [[features/update]] full-screen blocker via redirect.
+renders the non-dismissible blocking dialog.
 
 ## Dismissal & Frequency
 
@@ -54,7 +56,6 @@ the remote config. Master locale is Turkish; fallback chain is
 
 ## See Also
 
-- [[features/update]] — hard update barrier
 - [[domain/services-index]] — `app_update_service`, `app_store_lookup_service`
 - [[infrastructure/release-ops]] — version bump workflow
 - [[features/_features-index]]

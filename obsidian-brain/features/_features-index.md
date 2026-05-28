@@ -1,6 +1,6 @@
 # Features Index
 
-25 feature modules in `lib/features/`. Each has `screens/`, `widgets/`, `providers/`.
+24 feature modules in `lib/features/`. Each has `screens/`, `widgets/`, `providers/`.
 
 | Module | Purpose |
 |--------|---------|
@@ -28,7 +28,6 @@
 | [[features/settings]] | App settings |
 | [[features/splash]] | Splash screen, deep link handling |
 | [[features/statistics]] | Breeding stats and charts |
-| [[features/update]] | App version update flow |
 
 ## Entity Lifecycle (cross-feature)
 

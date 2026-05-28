@@ -4,7 +4,7 @@
 - Package: `easy_localization`
 - Languages: Turkish (master), English, German
 - Files: `assets/translations/{tr,en,de}.json`
-- ~2,991 keys per language, 42 categories
+- ~2,983 keys per language, 41 categories
 
 ## Key Naming
 ```
@@ -25,8 +25,8 @@ category.key_name
 'birds.item_count'.plural(count)           // "1 kus" / "5 kus"
 ```
 
-## 42 Categories
-admin, ads, app_update, auth, backup, badges, birds, breeding, calendar, chicks, common, community, eggs, environment, error, errors, export, feedback, gamification, genealogy, genetics, health_records, home, import, incubation, leaderboard, legal, maintenance, marketplace, messaging, more, nav, notifications, premium, profile, settings, splash, statistics, sync, update, user_guide, validation
+## 41 Categories
+admin, ads, app_update, auth, backup, badges, birds, breeding, calendar, chicks, common, community, eggs, environment, error, errors, export, feedback, gamification, genealogy, genetics, health_records, home, import, incubation, leaderboard, legal, maintenance, marketplace, messaging, more, nav, notifications, premium, profile, settings, splash, statistics, sync, user_guide, validation
 
 ## Workflow
 1. Add key to `tr.json` (master) first

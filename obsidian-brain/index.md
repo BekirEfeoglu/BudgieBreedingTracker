@@ -24,11 +24,11 @@ Full catalog of every page in the obsidian-brain wiki.
 | [[architecture/online-first-exemption]] | When *Repository ≠ offline-first (Community, Messaging) |
 | [[architecture/folder-structure]] | Full lib/ and assets/ topology |
 
-## Features (25 modules)
+## Features (24 modules)
 
 | Page | Module |
 |------|--------|
-| [[features/_features-index]] | Map of all 25 modules, entity lifecycle |
+| [[features/_features-index]] | Map of all 24 modules, entity lifecycle |
 | [[features/admin]] | Admin dashboard, system management |
 | [[features/app_update]] | In-app update prompting |
 | [[features/auth]] | Login, register, MFA, OAuth |
@@ -53,7 +53,6 @@ Full catalog of every page in the obsidian-brain wiki.
 | [[features/settings]] | App settings |
 | [[features/splash]] | Startup, deep link |
 | [[features/statistics]] | Breeding analytics and charts |
-| [[features/update]] | Forced update screen |
 
 ## Data Layer
 
@@ -107,7 +106,7 @@ Full catalog of every page in the obsidian-brain wiki.
 | [[patterns/providers]] | Riverpod types, ref usage, AsyncNotifier, race conditions |
 | [[patterns/ui-patterns]] | Widget types, AsyncValue, GoRouter, forms, shared widgets |
 | [[patterns/testing]] | Test stability, pump strategy, golden tests, 18 anti-patterns |
-| [[patterns/l10n]] | Localization workflow, 42 categories, key naming |
+| [[patterns/l10n]] | Localization workflow, 41 categories, key naming |
 | [[patterns/error-handling]] | Exception hierarchy, retry, Sentry usage |
 | [[patterns/observability]] | AppLogger + Sentry, PII rules, sample rate budget |
 | [[patterns/accessibility]] | WCAG 2.1 AA, 48dp touch targets, semantic labels |
