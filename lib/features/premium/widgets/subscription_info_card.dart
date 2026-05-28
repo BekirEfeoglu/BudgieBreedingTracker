@@ -1,3 +1,4 @@
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -146,7 +147,7 @@ class SubscriptionInfoCard extends StatelessWidget {
   }
 
   String _remainingDays(DateTime expirationDate) {
-    final remaining = expirationDate.difference(DateTime.now()).inDays;
+    final remaining = date_utils.DateUtils.dayDiff(DateTime.now(), expirationDate);
     if (remaining <= 0) return 'premium.expired'.tr();
     return 'premium.days_remaining'.tr(args: [remaining.toString()]);
   }
