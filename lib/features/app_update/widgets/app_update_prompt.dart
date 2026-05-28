@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_spacing.dart';
@@ -104,6 +105,7 @@ class _OptionalUpdateBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     return Positioned(
       left: 0,
       right: 0,
@@ -111,38 +113,91 @@ class _OptionalUpdateBanner extends StatelessWidget {
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.md),
-          child: Material(
-            elevation: 6,
-            borderRadius: BorderRadius.circular(16),
-            color: theme.colorScheme.surfaceContainerHigh,
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'app_update.available_title'.tr(),
-                    style: theme.textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(message, style: theme.textTheme.bodyMedium),
-                  const SizedBox(height: AppSpacing.sm),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: onDismiss,
-                        child: Text('app_update.later'.tr()),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      FilledButton(
-                        onPressed: onUpdate,
-                        child: Text('app_update.update_now'.tr()),
-                      ),
-                    ],
-                  ),
-                ],
+          child: TweenAnimationBuilder<double>(
+            duration: const Duration(milliseconds: 280),
+            curve: Curves.easeOutCubic,
+            tween: Tween<double>(begin: 0, end: 1),
+            builder: (context, t, child) => Opacity(
+              opacity: t.clamp(0.0, 1.0),
+              child: Transform.translate(
+                offset: Offset(0, (1 - t) * 24),
+                child: child,
+              ),
+            ),
+            child: Material(
+              elevation: 8,
+              shadowColor: cs.shadow.withValues(alpha: 0.25),
+              borderRadius: BorderRadius.circular(20),
+              color: cs.surfaceContainerHigh,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.md,
+                  AppSpacing.md,
+                  AppSpacing.sm,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: cs.primaryContainer,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            LucideIcons.rocket,
+                            color: cs.onPrimaryContainer,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'app_update.available_title'.tr(),
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                message,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: cs.onSurfaceVariant,
+                                  height: 1.35,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: onDismiss,
+                          child: Text('app_update.later'.tr()),
+                        ),
+                        const SizedBox(width: AppSpacing.xs),
+                        FilledButton.icon(
+                          onPressed: onUpdate,
+                          icon: const Icon(LucideIcons.download, size: 18),
+                          label: Text('app_update.update_now'.tr()),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -171,10 +226,20 @@ class _RequiredUpdateLayer extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Icon(
-                  Icons.system_update,
-                  size: 72,
-                  color: theme.colorScheme.primary,
+                Center(
+                  child: Container(
+                    width: 96,
+                    height: 96,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primaryContainer,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      LucideIcons.downloadCloud,
+                      size: 44,
+                      color: theme.colorScheme.onPrimaryContainer,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Text(
