@@ -22,7 +22,12 @@ void main() {
   Widget subject(AppUpdateStatus? status) {
     return ProviderScope(
       overrides: [appUpdateStatusProvider.overrideWith((ref) async => status)],
-      child: const MaterialApp(home: AppUpdatePrompt(child: Text('app child'))),
+      child: MaterialApp(
+        // Simulate iOS so Theme.of(context).platform == TargetPlatform.iOS,
+        // which is required for AppUpdatePrompt to show the dialog.
+        theme: ThemeData(platform: TargetPlatform.iOS),
+        home: const AppUpdatePrompt(child: Text('app child')),
+      ),
     );
   }
 

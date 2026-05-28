@@ -27,7 +27,10 @@ class _AppUpdatePromptState extends ConsumerState<AppUpdatePrompt> {
       next,
     ) {
       next.whenData((status) {
-        if (status == null) return;
+        if (status == null ||
+            Theme.of(context).platform != TargetPlatform.iOS) {
+          return;
+        }
         final versionKey =
             '${status.info.latestVersion}+${status.info.latestBuild}';
         if (_isDialogOpen || _shownVersionKey == versionKey) {

@@ -12,6 +12,9 @@ import 'app_update_info.dart';
 
 final appUpdateStatusProvider = FutureProvider<AppUpdateStatus?>((ref) async {
   try {
+    // Android uses native Play in-app updates (InAppUpdateService); the custom
+    // dialog path is iOS-only. Returning null here prevents a second prompt.
+    if (Platform.isAndroid) return null;
     final packageInfo = await PackageInfo.fromPlatform();
     final currentBuild = int.tryParse(packageInfo.buildNumber) ?? 0;
     final platform = Platform.isIOS ? 'ios' : 'android';
