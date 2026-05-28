@@ -1,3 +1,4 @@
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -39,7 +40,8 @@ class _PremiumStatusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final expires = profile?.premiumExpiresAt;
-    final daysRemaining = expires?.difference(DateTime.now()).inDays;
+    final daysRemaining =
+        expires != null ? date_utils.DateUtils.dayDiff(DateTime.now(), expires) : null;
 
     return Semantics(
       label: 'profile.subscription_active'.tr(),
