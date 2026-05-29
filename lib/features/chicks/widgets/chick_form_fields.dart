@@ -206,9 +206,26 @@ class _HealthStatusSelector extends StatelessWidget {
               label: Text('chicks.unknown_status'.tr()),
               icon: const Icon(LucideIcons.helpCircle),
             ),
+            // Deceased is only ever set via the detail-screen menu action
+            // (with its own confirm + death-date capture), never inline here.
+            // We expose it as a disabled segment purely so editing a deceased
+            // chick keeps a valid (non-empty) selection instead of asserting
+            // on a selected value that matches no segment.
+            if (healthStatus == ChickHealthStatus.deceased)
+              ButtonSegment(
+                value: ChickHealthStatus.deceased,
+                label: Text('chicks.status_deceased'.tr()),
+                icon: const AppIcon(AppIcons.heartCrack),
+                enabled: false,
+              ),
           ],
           selected: {healthStatus},
-          onSelectionChanged: (selection) => onChanged(selection.first),
+          onSelectionChanged: (selection) {
+            final next = selection.first;
+            // Defensive: deceased must route through the menu action.
+            if (next == ChickHealthStatus.deceased) return;
+            onChanged(next);
+          },
         ),
       ],
     );

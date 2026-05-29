@@ -64,8 +64,11 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
   }
 
   void _navigateWithAd(String route) {
-    final isPremium = ref.read(isPremiumProvider);
-    if (isPremium) {
+    // Use effectivePremiumProvider so grace-period subscribers (renewal
+    // failure within the grace window) skip the interstitial ad, matching the
+    // More tab. isPremiumProvider alone shows ads to paying customers in grace.
+    final hasPremiumAccess = ref.read(effectivePremiumProvider);
+    if (hasPremiumAccess) {
       context.push(route);
       return;
     }
@@ -114,7 +117,8 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
   /// clear (or partially clear) with no explanation. Mirrors the
   /// BirdListScreen pattern for cross-screen UX consistency.
   Future<void> _runBulkAction({
-    required Future<void> Function(dynamic notifier, String id) action,
+    required Future<void> Function(ChickFormNotifier notifier, String id)
+    action,
     required String logTag,
   }) async {
     final total = _selectedIds.length;
@@ -128,6 +132,10 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
       try {
         await action(notifier, id);
       } catch (e, st) {
+        // Broad catch is intentional: per-item resilience so one failing
+        // chick doesn't abort the whole bulk operation. The failure is
+        // logged with its stack trace and surfaced to the user via the
+        // partial-failure SnackBar below.
         AppLogger.error('[ChickListScreen] $logTag failed for $id', e, st);
         failures.add(id);
       }
@@ -139,9 +147,7 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
       _clearSelection();
       messenger.showSnackBar(
         SnackBar(
-          content: Text(
-            'chicks.bulk_action_success'.tr(args: ['$succeeded']),
-          ),
+          content: Text('chicks.bulk_action_success'.tr(args: ['$succeeded'])),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -205,6 +211,7 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
                   onPressed: _bulkDelete,
                 ),
                 PopupMenuButton<String>(
+                  tooltip: 'common.more'.tr(),
                   onSelected: (action) {
                     if (action == 'deceased') _bulkMarkAsDeceased();
                   },
@@ -275,7 +282,7 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
               ),
               data: (allChicks) {
                 final chicks = ref.watch(
-                  searchedAndFilteredChicksProvider(allChicks),
+                  searchedAndFilteredChicksProvider(userId),
                 );
                 final parentsByEgg = switch (parentsByEggAsync) {
                   AsyncData(:final value) => value,

@@ -13,6 +13,7 @@ import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
+import 'package:budgie_breeding_tracker/data/providers/date_format_providers.dart';
 import 'package:budgie_breeding_tracker/shared/providers/chicks.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
@@ -71,13 +72,31 @@ class _DetailContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final formState = ref.watch(chickFormStateProvider);
+    // Narrow the rebuild to the loading flag only — watching the whole
+    // ChickFormState rebuilt the entire detail screen on every form-state
+    // transition (success/error/warning), and the old isLoading branch swapped
+    // the whole body for a full-screen LoadingState, losing scroll position on
+    // every menu action.
+    final isBusy = ref.watch(
+      chickFormStateProvider.select((s) => s.isLoading),
+    );
     final weightHistoryAsync = ref.watch(
       growthMeasurementsByChickProvider(chick.id),
     );
+    final dateFormatter = ref.watch(dateFormatProvider).formatter();
 
     ref.listen<ChickFormState>(chickFormStateProvider, (_, state) {
       if (!context.mounted) return;
+      // Surface any best-effort warning (e.g. orphaned growth measurements on
+      // delete) BEFORE the isSuccess branch resets state. Routed through
+      // ActionFeedbackService (not a Scaffold SnackBar) so it survives the
+      // route pop that destructive actions trigger.
+      if (state.warning != null) {
+        ActionFeedbackService.show(
+          state.warning!,
+          type: ActionFeedbackType.info,
+        );
+      }
       if (state.isSuccess) {
         ref.read(chickFormStateProvider.notifier).reset();
         ActionFeedbackService.show('common.saved_successfully'.tr());
@@ -135,56 +154,74 @@ class _DetailContent extends ConsumerWidget {
           ),
         ],
       ),
-      body: formState.isLoading
-          ? const LoadingState()
-          : SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: AppSpacing.maxContentWidth,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ChickDetailHeader(chick: chick),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: AppSpacing.maxContentWidth,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ChickDetailHeader(chick: chick),
+                    const Divider(
+                      height: 1,
+                      indent: AppSpacing.lg,
+                      endIndent: AppSpacing.lg,
+                    ),
+                    ChickDetailInfo(chick: chick),
+                    const Divider(
+                      height: 1,
+                      indent: AppSpacing.lg,
+                      endIndent: AppSpacing.lg,
+                    ),
+                    weightHistoryAsync.when(
+                      loading: () => const Padding(
+                        padding: AppSpacing.screenPadding,
+                        child: LinearProgressIndicator(),
+                      ),
+                      error: (_, __) => Padding(
+                        padding: AppSpacing.screenPadding,
+                        child: Text('common.data_load_error'.tr()),
+                      ),
+                      data: (measurements) => ChickWeightHistorySection(
+                        measurements: measurements,
+                        dateFormatter: dateFormatter,
+                      ),
+                    ),
+                    if (chick.notes != null && chick.notes!.isNotEmpty) ...[
                       const Divider(
                         height: 1,
                         indent: AppSpacing.lg,
                         endIndent: AppSpacing.lg,
                       ),
-                      ChickDetailInfo(chick: chick),
-                      const Divider(
-                        height: 1,
-                        indent: AppSpacing.lg,
-                        endIndent: AppSpacing.lg,
-                      ),
-                      weightHistoryAsync.when(
-                        loading: () => const Padding(
-                          padding: AppSpacing.screenPadding,
-                          child: LinearProgressIndicator(),
-                        ),
-                        error: (_, __) => Padding(
-                          padding: AppSpacing.screenPadding,
-                          child: Text('common.data_load_error'.tr()),
-                        ),
-                        data: (measurements) => ChickWeightHistorySection(
-                          measurements: measurements,
-                        ),
-                      ),
-                      if (chick.notes != null && chick.notes!.isNotEmpty) ...[
-                        const Divider(
-                          height: 1,
-                          indent: AppSpacing.lg,
-                          endIndent: AppSpacing.lg,
-                        ),
-                        ChickDetailNotes(notes: chick.notes!),
-                      ],
+                      ChickDetailNotes(notes: chick.notes!),
                     ],
-                  ),
+                  ],
                 ),
               ),
             ),
+          ),
+          // Non-destructive busy overlay: keeps the scroll content (and its
+          // position) mounted while a menu action runs, blocking input with a
+          // scrim + spinner instead of swapping the whole body.
+          if (isBusy)
+            Positioned.fill(
+              child: ColoredBox(
+                color: Theme.of(
+                  context,
+                ).colorScheme.scrim.withValues(alpha: 0.12),
+                child: Semantics(
+                  label: 'common.loading'.tr(),
+                  child: const LoadingState(),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -237,7 +274,7 @@ class _DetailContent extends ConsumerWidget {
                 content: Text('chicks.moved_to_birds'.tr()),
                 action: SnackBarAction(
                   label: 'chicks.go_to_birds'.tr(),
-                  onPressed: () => context.push('/birds'),
+                  onPressed: () => context.push(AppRoutes.birds),
                 ),
               ),
             );
@@ -295,7 +332,7 @@ class _DetailContent extends ConsumerWidget {
           content: Text('chicks.moved_to_birds'.tr()),
           action: SnackBarAction(
             label: 'chicks.go_to_birds'.tr(),
-            onPressed: () => context.push('/birds'),
+            onPressed: () => context.push(AppRoutes.birds),
           ),
         ),
       );

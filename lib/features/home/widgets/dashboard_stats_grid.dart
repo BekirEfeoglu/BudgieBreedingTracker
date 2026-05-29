@@ -47,46 +47,42 @@ class DashboardStatsGrid extends ConsumerWidget {
         children: [
           // Row 1: Toplam Kuş + Aktif Üreme
           _StatsRow(
-            children: [
-              StatCard(
-                label: 'home.total_birds'.tr(),
-                value: birdValue,
-                icon: const AppIcon(AppIcons.bird),
-                color: isPremium
-                    ? Theme.of(context).colorScheme.primary
-                    : _ratioColor(birdRatio),
-                onTap: () => context.push(AppRoutes.birds),
-              ),
-              StatCard(
-                label: 'home.active_breedings'.tr(),
-                value: breedingValue,
-                icon: const AppIcon(AppIcons.breedingActive),
-                color: isPremium
-                    ? AppColors.stageOngoing
-                    : _ratioColor(breedingRatio),
-                onTap: () => context.push(AppRoutes.breeding),
-              ),
-            ],
+            left: StatCard(
+              label: 'home.total_birds'.tr(),
+              value: birdValue,
+              icon: const AppIcon(AppIcons.bird),
+              color: isPremium
+                  ? Theme.of(context).colorScheme.primary
+                  : _ratioColor(birdRatio),
+              onTap: () => context.push(AppRoutes.birds),
+            ),
+            right: StatCard(
+              label: 'home.active_breedings'.tr(),
+              value: breedingValue,
+              icon: const AppIcon(AppIcons.breedingActive),
+              color: isPremium
+                  ? AppColors.stageOngoing
+                  : _ratioColor(breedingRatio),
+              onTap: () => context.push(AppRoutes.breeding),
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
           // Row 2: Toplam Yavru + Toplam Yumurta
           _StatsRow(
-            children: [
-              StatCard(
-                label: 'home.total_chicks'.tr(),
-                value: '${stats.totalChicks}',
-                icon: const AppIcon(AppIcons.chick),
-                color: AppColors.budgieGreen,
-                onTap: () => context.push(AppRoutes.chicks),
-              ),
-              StatCard(
-                label: 'home.total_eggs'.tr(),
-                value: '${stats.totalEggs}',
-                icon: const AppIcon(AppIcons.egg),
-                color: AppColors.stageNearHatch,
-                onTap: () => context.push(AppRoutes.breeding),
-              ),
-            ],
+            left: StatCard(
+              label: 'home.total_chicks'.tr(),
+              value: '${stats.totalChicks}',
+              icon: const AppIcon(AppIcons.chick),
+              color: AppColors.budgieGreen,
+              onTap: () => context.push(AppRoutes.chicks),
+            ),
+            right: StatCard(
+              label: 'home.total_eggs'.tr(),
+              value: '${stats.totalEggs}',
+              icon: const AppIcon(AppIcons.egg),
+              color: AppColors.stageNearHatch,
+              onTap: () => context.push(AppRoutes.breeding),
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
           // Row 3: Kuluçkadaki Yumurta — tam genişlik, yatay layout
@@ -129,9 +125,10 @@ class DashboardStatsGrid extends ConsumerWidget {
 }
 
 class _StatsRow extends StatelessWidget {
-  final List<Widget> children;
+  final Widget left;
+  final Widget right;
 
-  const _StatsRow({required this.children});
+  const _StatsRow({required this.left, required this.right});
 
   @override
   Widget build(BuildContext context) {
@@ -139,9 +136,9 @@ class _StatsRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(child: children[0]),
+          Expanded(child: left),
           const SizedBox(width: AppSpacing.md),
-          Expanded(child: children[1]),
+          Expanded(child: right),
         ],
       ),
     );

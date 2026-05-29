@@ -164,9 +164,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                           onSelectionChanged: (selection) {
                             AppHaptics.selectionClick();
                             ref
-                                    .read(calendarEventFilterProvider.notifier)
-                                    .state =
-                                selection.first;
+                                .read(calendarEventFilterProvider.notifier)
+                                .setFilter(selection.first);
                           },
                           style: const ButtonStyle(
                             visualDensity: VisualDensity.compact,
@@ -296,17 +295,17 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final current = ref.read(selectedDateProvider);
     // DST-safe: use DateTime(y, m, d+n) instead of Duration(days:) so a 23h
     // or 25h day at a DST boundary still advances by one calendar day.
-    ref.read(selectedDateProvider.notifier).set(
-      DateTime(current.year, current.month, current.day + 7 * delta),
-    );
+    ref
+        .read(selectedDateProvider.notifier)
+        .set(DateTime(current.year, current.month, current.day + 7 * delta));
   }
 
   void _changeDay(int delta) {
     final current = ref.read(selectedDateProvider);
     // DST-safe day step (see _changeWeek note above).
-    ref.read(selectedDateProvider.notifier).set(
-      DateTime(current.year, current.month, current.day + delta),
-    );
+    ref
+        .read(selectedDateProvider.notifier)
+        .set(DateTime(current.year, current.month, current.day + delta));
   }
 
   void _showDaySheet(DateTime date, List<Event> events) {

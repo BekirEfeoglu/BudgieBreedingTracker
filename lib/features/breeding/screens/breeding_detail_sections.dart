@@ -110,7 +110,10 @@ class _SeasonSummarySection extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           summaryAsync.when(
-            loading: () => const LinearProgressIndicator(),
+            loading: () => Semantics(
+              label: 'common.loading'.tr(),
+              child: const LinearProgressIndicator(),
+            ),
             error: (_, __) => Text(
               'common.data_load_error'.tr(),
               style: theme.textTheme.bodySmall?.copyWith(

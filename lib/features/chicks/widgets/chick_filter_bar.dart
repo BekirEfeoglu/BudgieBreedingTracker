@@ -7,8 +7,8 @@ import 'package:budgie_breeding_tracker/shared/providers/chicks.dart';
 /// Horizontal scrollable filter bar with choice chips for chicks.
 ///
 /// Chips are grouped into two sections separated by a [VerticalDivider]:
-/// health status (Tümü, Sağlıklı, Hasta, Vefat) and development stage
-/// (Yeme Düşmemiş, Yeni Doğan, Yuva, Tüylenen, Genç). The selected chip
+/// health status (Tümü, Sağlıklı, Hasta, Bilinmiyor, Vefat) and development
+/// stage (Yeme Düşmemiş, Yeni Doğan, Yuva, Tüylenen, Genç). The selected chip
 /// scrolls into view automatically.
 class ChickFilterBar extends ConsumerStatefulWidget {
   const ChickFilterBar({super.key});
@@ -22,6 +22,7 @@ class _ChickFilterBarState extends ConsumerState<ChickFilterBar> {
     ChickFilter.all,
     ChickFilter.healthy,
     ChickFilter.sick,
+    ChickFilter.unknownHealth,
     ChickFilter.deceased,
   ];
 

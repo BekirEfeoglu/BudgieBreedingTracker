@@ -85,7 +85,13 @@ class _DetailContent extends ConsumerWidget {
           state.lastAction == BirdFormAction.delete;
       if (state.isSuccess && isOwnedAction) {
         ref.read(birdFormStateProvider.notifier).reset();
-        ActionFeedbackService.show('common.saved_successfully'.tr());
+        // Delete shows its own explicit `birds.bird_deleted` toast in the
+        // delete branch of `_handleMenuAction`; emitting the generic
+        // success toast here too would double-fire on delete. Only the
+        // status-change actions rely on this listener for feedback.
+        if (state.lastAction == BirdFormAction.statusChange) {
+          ActionFeedbackService.show('common.saved_successfully'.tr());
+        }
       }
       if (state.error != null && isOwnedAction) {
         ScaffoldMessenger.of(
@@ -136,53 +142,68 @@ class _DetailContent extends ConsumerWidget {
           ),
         ],
       ),
-      body: formState.isLoading
-          ? const LoadingState()
-          : SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: AppSpacing.maxContentWidth,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      BirdDetailHeader(bird: bird),
-                      BirdDetailPhotos(bird: bird),
+      // A detail-owned status-change / delete action sets formState.isLoading.
+      // Instead of swapping the whole body for a spinner (which destroys the
+      // scroll position and flashes the screen), keep the content mounted and
+      // lay a non-destructive translucent overlay on top while the action runs.
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: AppSpacing.maxContentWidth,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    BirdDetailHeader(bird: bird),
+                    BirdDetailPhotos(bird: bird),
+                    const Divider(
+                      height: 1,
+                      indent: AppSpacing.lg,
+                      endIndent: AppSpacing.lg,
+                    ),
+                    BirdDetailInfo(bird: bird),
+                    BirdDetailTimelineSection(bird: bird),
+                    const Divider(
+                      height: 1,
+                      indent: AppSpacing.lg,
+                      endIndent: AppSpacing.lg,
+                    ),
+                    BirdDetailParents(bird: bird),
+                    BirdFamilyInfo(bird: bird),
+                    const Divider(
+                      height: 1,
+                      indent: AppSpacing.lg,
+                      endIndent: AppSpacing.lg,
+                    ),
+                    BirdDetailHealth(birdId: bird.id),
+                    if (bird.notes != null && bird.notes!.isNotEmpty) ...[
                       const Divider(
                         height: 1,
                         indent: AppSpacing.lg,
                         endIndent: AppSpacing.lg,
                       ),
-                      BirdDetailInfo(bird: bird),
-                      BirdDetailTimelineSection(bird: bird),
-                      const Divider(
-                        height: 1,
-                        indent: AppSpacing.lg,
-                        endIndent: AppSpacing.lg,
-                      ),
-                      BirdDetailParents(bird: bird),
-                      BirdFamilyInfo(bird: bird),
-                      const Divider(
-                        height: 1,
-                        indent: AppSpacing.lg,
-                        endIndent: AppSpacing.lg,
-                      ),
-                      BirdDetailHealth(birdId: bird.id),
-                      if (bird.notes != null && bird.notes!.isNotEmpty) ...[
-                        const Divider(
-                          height: 1,
-                          indent: AppSpacing.lg,
-                          endIndent: AppSpacing.lg,
-                        ),
-                        BirdDetailNotes(notes: bird.notes!),
-                      ],
+                      BirdDetailNotes(notes: bird.notes!),
                     ],
-                  ),
+                  ],
                 ),
               ),
             ),
+          ),
+          if (formState.isLoading)
+            Positioned.fill(
+              child: ColoredBox(
+                color: Theme.of(
+                  context,
+                ).colorScheme.surface.withValues(alpha: 0.6),
+                child: const LoadingState(),
+              ),
+            ),
+        ],
+      ),
     );
   }
 

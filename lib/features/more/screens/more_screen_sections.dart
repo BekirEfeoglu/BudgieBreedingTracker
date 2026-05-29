@@ -11,7 +11,7 @@ void _showComingSoon(BuildContext context) {
     );
 }
 
-void _showMoreAboutDialog(BuildContext context, WidgetRef ref) {
+void _showMoreAboutDialog(BuildContext context) {
   final year = DateTime.now().year.toString();
   final theme = Theme.of(context);
   final colorScheme = theme.colorScheme;

@@ -222,7 +222,9 @@ class _EventDetailContent extends ConsumerWidget {
           AppLogger.error('Banding action failed', e, st);
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('common.data_load_error'.tr())),
+              // Write failure — use a write-specific message rather than the
+              // load-error string.
+              SnackBar(content: Text('errors.update_failed'.tr())),
             );
           }
         }

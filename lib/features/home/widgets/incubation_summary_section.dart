@@ -63,11 +63,17 @@ class _IncubatingEggTile extends StatelessWidget {
     // Overdue gets its own label rather than rendering "in 0 days".
     // Color-only differentiation between "today" and "overdue" failed
     // color-blind / high-contrast users; an explicit text key now
-    // carries the meaning.
-    final daysText = isOverdue
-        ? 'home.hatching_overdue_days'
-            .tr(args: [summary.daysRemaining.abs().toString()])
-        : 'home.hatching_in'.tr(args: [summary.daysRemaining.toString()]);
+    // carries the meaning. daysRemaining == 0 also gets a dedicated
+    // "hatching today" label instead of the nonsensical "in 0 days".
+    final String daysText;
+    if (isOverdue) {
+      daysText = 'home.hatching_overdue_days'
+          .tr(args: [summary.daysRemaining.abs().toString()]);
+    } else if (summary.daysRemaining == 0) {
+      daysText = 'home.hatching_today'.tr();
+    } else {
+      daysText = 'home.hatching_in'.tr(args: [summary.daysRemaining.toString()]);
+    }
 
     return Card(
       child: Padding(
@@ -101,9 +107,14 @@ class _IncubatingEggTile extends StatelessWidget {
                 ],
               ),
             ),
-            _ProgressIndicator(
-              progress: summary.progressPercent,
-              color: statusColor,
+            // The progress ring shows the percentage visually only; expose
+            // it to screen readers as a semantic value.
+            Semantics(
+              value: '${(summary.progressPercent * 100).round()}%',
+              child: _ProgressIndicator(
+                progress: summary.progressPercent,
+                color: statusColor,
+              ),
             ),
           ],
         ),

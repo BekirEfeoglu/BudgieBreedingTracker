@@ -18,6 +18,11 @@ class BreedingNotificationHelper {
 
   final Ref _ref;
 
+  /// Short, human-readable id prefix for notification/calendar labels.
+  /// Guards against ids shorter than 6 chars (e.g. test fixtures) which
+  /// would otherwise throw on `substring(0, 6)`.
+  String _shortId(String id) => id.length <= 6 ? id : id.substring(0, 6);
+
   /// Cancels incubation milestone and egg turning notifications
   /// associated with a breeding pair.
   ///
@@ -146,7 +151,7 @@ class BreedingNotificationHelper {
       final scheduler = _ref.read(notificationSchedulerProvider);
       final settings = _ref.read(notificationToggleSettingsProvider);
       final pairLabel = 'breeding.pair_label'.tr(
-        args: [pairId.substring(0, 6)],
+        args: [_shortId(pairId)],
       );
 
       await scheduler.scheduleIncubationMilestones(
@@ -179,7 +184,7 @@ class BreedingNotificationHelper {
         userId: userId,
         breedingPairId: pairId,
         startDate: pairingDate,
-        pairLabel: 'breeding.pair_label'.tr(args: [pairId.substring(0, 6)]),
+        pairLabel: 'breeding.pair_label'.tr(args: [_shortId(pairId)]),
         species: species,
         incubationId: incubationId,
       );

@@ -37,11 +37,16 @@ class CalendarDayView extends StatelessWidget {
           .map((e) => e.eventDate.toLocal().hour)
           .reduce(math.min);
       final maxHour = sortedEvents
-          .map(
-            (e) => e.endDate != null
-                ? e.endDate!.toLocal().hour
-                : e.eventDate.toLocal().hour,
-          )
+          .map((e) {
+            final localStart = e.eventDate.toLocal();
+            if (e.endDate == null) return localStart.hour;
+            final localEnd = e.endDate!.toLocal();
+            // For events that span past the start day, the end hour belongs
+            // to a later calendar day; clamp the day's range to end-of-day
+            // (23) instead of the smaller wall-clock end hour, which would
+            // otherwise pull the range backwards.
+            return _isSameDay(localStart, localEnd) ? localEnd.hour : 23;
+          })
           .reduce(math.max);
       startHour = math.min(startHour, minHour);
       endHour = math.max(endHour, maxHour + 1);
@@ -63,11 +68,14 @@ class CalendarDayView extends StatelessWidget {
           final startHr = localStart.hour;
           if (e.endDate != null) {
             final localEnd = e.endDate!.toLocal();
-            if (localEnd.day == localStart.day) {
+            // Compare full normalized dates, not the day-of-month alone — a
+            // next-month event with the same day number must not be treated
+            // as same-day.
+            if (_isSameDay(localStart, localEnd)) {
               // Same-day event
               return startHr <= hour && localEnd.hour >= hour;
             }
-            // Cross-midnight: show from start hour to end of day
+            // Cross-midnight (or multi-day): show from start hour to end of day
             return startHr <= hour;
           }
           return startHr == hour;
@@ -84,6 +92,11 @@ class CalendarDayView extends StatelessWidget {
     );
   }
 }
+
+/// Whether two local [DateTime]s fall on the same calendar day. Compares the
+/// full date (year/month/day), not just the day-of-month.
+bool _isSameDay(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;
 
 class _HourSlot extends StatelessWidget {
   final String hourLabel;

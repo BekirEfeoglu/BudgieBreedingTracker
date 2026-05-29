@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
@@ -60,13 +62,31 @@ class BirdParentSelector extends ConsumerWidget {
         items: const [],
         onChanged: null,
       ),
+      // Distinct from the loading branch: surface the failure with an
+      // error message and an inline retry that re-subscribes the stream,
+      // instead of a silent empty disabled dropdown that looks like "no
+      // candidates exist".
       error: (_, __) => DropdownButtonFormField<String>(
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
+          errorText: 'birds.parent_load_error'.tr(),
           prefixIcon: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: icon,
+          ),
+          suffixIcon: AppIconButton(
+            icon: const Icon(LucideIcons.refreshCw),
+            tooltip: 'common.retry'.tr(),
+            semanticLabel: 'common.retry'.tr(),
+            onPressed: () => ref.invalidate(
+              birdParentCandidatesProvider((
+                userId: userId,
+                gender: genderFilter,
+                species: speciesFilter,
+                excludeId: excludeId,
+              )),
+            ),
           ),
         ),
         items: const [],

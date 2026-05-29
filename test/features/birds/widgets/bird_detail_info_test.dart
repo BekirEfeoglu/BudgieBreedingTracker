@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/widgets/cards/info_card.dart';
@@ -9,24 +11,27 @@ import 'package:budgie_breeding_tracker/features/birds/widgets/bird_detail_info.
 import '../../../helpers/pump_helpers.dart';
 import '../../../helpers/test_helpers.dart';
 
-/// Formats a date using the same locale-aware format the widget uses, so
-/// expectations stay correct whether tests run under en_US or tr_TR.
+/// BirdDetailInfo formats dates via [dateFormatProvider], whose default is
+/// AppDateFormat.dmy → 'dd.MM.yyyy'. The tests wrap the widget in a bare
+/// ProviderScope, so that default format applies.
 String _expectedDate(DateTime date) {
-  // pumpWidgetSimple uses MaterialApp default locale (en_US). DateFormat.yMd
-  // produces "M/d/yyyy" there. Production uses Localizations.localeOf(context)
-  // — the helper mirrors that locale so the assertion stays stable if the
-  // test harness adds a localized wrapper later.
-  return DateFormat.yMd().format(date);
+  return DateFormat('dd.MM.yyyy').format(date);
 }
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
   group('BirdDetailInfo', () {
     testWidgets('shows gender InfoCard', (tester) async {
       final bird = createTestBird(gender: BirdGender.male);
 
       await pumpWidgetSimple(
         tester,
-        SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ProviderScope(
+          child: SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ),
       );
 
       // gender card shows male label key
@@ -38,7 +43,9 @@ void main() {
 
       await pumpWidgetSimple(
         tester,
-        SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ProviderScope(
+          child: SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ),
       );
 
       expect(find.text(l10n('birds.female')), findsAtLeastNWidgets(1));
@@ -49,7 +56,9 @@ void main() {
 
       await pumpWidgetSimple(
         tester,
-        SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ProviderScope(
+          child: SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ),
       );
 
       expect(find.text(l10n('birds.unknown')), findsAtLeastNWidgets(1));
@@ -60,7 +69,9 @@ void main() {
 
       await pumpWidgetSimple(
         tester,
-        SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ProviderScope(
+          child: SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ),
       );
 
       expect(find.text(_expectedDate(DateTime(2024, 3, 15))), findsOneWidget);
@@ -71,7 +82,9 @@ void main() {
 
       await pumpWidgetSimple(
         tester,
-        SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ProviderScope(
+          child: SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ),
       );
 
       expect(find.text(l10n('birds.unknown')), findsAtLeastNWidgets(1));
@@ -82,7 +95,9 @@ void main() {
 
       await pumpWidgetSimple(
         tester,
-        SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ProviderScope(
+          child: SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ),
       );
 
       expect(find.text('Kafes-5'), findsOneWidget);
@@ -93,7 +108,9 @@ void main() {
 
       await pumpWidgetSimple(
         tester,
-        SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ProviderScope(
+          child: SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ),
       );
 
       expect(find.text('TR-2026-042'), findsOneWidget);
@@ -110,7 +127,9 @@ void main() {
 
       await pumpWidgetSimple(
         tester,
-        SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ProviderScope(
+          child: SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ),
       );
 
       final ringCard = find.ancestor(
@@ -130,7 +149,9 @@ void main() {
 
       await pumpWidgetSimple(
         tester,
-        SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ProviderScope(
+          child: SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ),
       );
 
       expect(find.text(l10n('birds.ring_number')), findsNothing);
@@ -141,7 +162,9 @@ void main() {
 
       await pumpWidgetSimple(
         tester,
-        SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ProviderScope(
+          child: SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ),
       );
 
       expect(find.text(l10n('birds.cage_number')), findsNothing);
@@ -157,7 +180,9 @@ void main() {
 
       await pumpWidgetSimple(
         tester,
-        SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ProviderScope(
+          child: SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ),
       );
 
       expect(find.text(_expectedDate(DateTime(2025, 6, 1))), findsOneWidget);
@@ -168,7 +193,9 @@ void main() {
 
       await pumpWidgetSimple(
         tester,
-        SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ProviderScope(
+          child: SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ),
       );
 
       expect(find.text(l10n('birds.death_date')), findsNothing);
@@ -184,7 +211,9 @@ void main() {
 
       await pumpWidgetSimple(
         tester,
-        SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ProviderScope(
+          child: SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ),
       );
 
       expect(find.text(_expectedDate(DateTime(2025, 8, 20))), findsOneWidget);
@@ -197,7 +226,9 @@ void main() {
 
       await pumpWidgetSimple(
         tester,
-        SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ProviderScope(
+          child: SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ),
       );
 
       expect(find.byType(InfoCard), findsAtLeastNWidgets(2));
@@ -208,7 +239,9 @@ void main() {
 
       await pumpWidgetSimple(
         tester,
-        SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ProviderScope(
+          child: SingleChildScrollView(child: BirdDetailInfo(bird: bird)),
+        ),
       );
 
       expect(find.text(l10n('common.info')), findsOneWidget);

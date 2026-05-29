@@ -54,10 +54,14 @@ class _SelectableBirdGridCard extends StatelessWidget {
                   color: theme.colorScheme.surface.withValues(alpha: 0.9),
                   shape: BoxShape.circle,
                 ),
-                child: Checkbox(
-                  value: isSelected,
-                  onChanged: (_) => onTap(),
-                  visualDensity: VisualDensity.compact,
+                child: Semantics(
+                  selected: isSelected,
+                  label: bird.name,
+                  child: Checkbox(
+                    value: isSelected,
+                    onChanged: (_) => onTap(),
+                    visualDensity: VisualDensity.compact,
+                  ),
                 ),
               ),
             ),
@@ -106,10 +110,14 @@ class _SelectableBirdCard extends StatelessWidget {
             if (isSelectionMode)
               Padding(
                 padding: const EdgeInsetsDirectional.only(start: AppSpacing.sm),
-                child: Checkbox(
-                  value: isSelected,
-                  onChanged: (_) => onTap(),
-                  visualDensity: VisualDensity.compact,
+                child: Semantics(
+                  selected: isSelected,
+                  label: bird.name,
+                  child: Checkbox(
+                    value: isSelected,
+                    onChanged: (_) => onTap(),
+                    visualDensity: VisualDensity.compact,
+                  ),
                 ),
               ),
             Expanded(

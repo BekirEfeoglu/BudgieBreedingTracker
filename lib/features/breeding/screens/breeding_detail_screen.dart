@@ -74,8 +74,16 @@ class _DetailContent extends ConsumerWidget {
     // Side effects: success after complete/cancel/delete → pop + snackbar.
     // Partial-cascade warning shown ahead of the success pop so the user
     // sees it before the screen closes.
+    //
+    // `breedingFormStateProvider` is shared with the edit form screen. When
+    // that form is pushed on top of this detail screen, BOTH listeners fire
+    // on a save — so we ignore emissions while this route is not the topmost
+    // one. The foreground form screen owns the feedback in that case; this
+    // detail screen only reacts to its own complete/cancel/delete actions
+    // (when it is the current route).
     ref.listen<BreedingFormState>(breedingFormStateProvider, (prev, state) {
       if (!context.mounted) return;
+      if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
       if (state.warning != null && prev?.warning != state.warning) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -139,23 +147,19 @@ class _DetailContent extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 BreedingPairInfoSection(pair: pair),
-                ref
-                    .watch(pairIncubationRisksProvider(pair.id))
-                    .when(
-                      data: (risks) =>
-                          IncubationRiskCard(risks: risks, maxItems: 5),
-                      loading: () => const SizedBox.shrink(),
-                      error: (_, __) => const SizedBox.shrink(),
-                    ),
+                _PairRiskCard(pairId: pair.id),
                 const Divider(
                   height: 1,
                   indent: AppSpacing.lg,
                   endIndent: AppSpacing.lg,
                 ),
                 incubationsAsync.when(
-                  loading: () => const Padding(
+                  loading: () => Padding(
                     padding: AppSpacing.screenPadding,
-                    child: LinearProgressIndicator(),
+                    child: Semantics(
+                      label: 'common.loading'.tr(),
+                      child: const LinearProgressIndicator(),
+                    ),
                   ),
                   error: (_, __) => ErrorState(
                     message: 'common.data_load_error'.tr(),
@@ -259,5 +263,26 @@ class _DetailContent extends ConsumerWidget {
           await formNotifier.deleteBreeding(pair.id);
         }
     }
+  }
+}
+
+/// Risk card extracted to its own leaf so that
+/// [pairIncubationRisksProvider] — which depends on four streams plus
+/// `DateTime.now()` and re-runs a full risk reassessment on each emission —
+/// rebuilds only this card, not the entire scrolling detail body.
+class _PairRiskCard extends ConsumerWidget {
+  const _PairRiskCard({required this.pairId});
+
+  final String pairId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ref
+        .watch(pairIncubationRisksProvider(pairId))
+        .when(
+          data: (risks) => IncubationRiskCard(risks: risks, maxItems: 5),
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
+        );
   }
 }

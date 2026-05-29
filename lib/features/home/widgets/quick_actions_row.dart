@@ -138,6 +138,8 @@ class _ActionButton extends StatelessWidget {
         onTap: onPressed,
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         child: Container(
+          // Guarantee a 48dp minimum tap target height (WCAG 2.5.5).
+          constraints: const BoxConstraints(minHeight: 48),
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
             vertical: AppSpacing.md,

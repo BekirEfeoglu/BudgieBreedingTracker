@@ -136,32 +136,38 @@ class _PhotoThumbnail extends StatelessWidget {
               Positioned(
                 top: 0,
                 right: 0,
-                child: SizedBox(
-                  width: AppSpacing.touchTargetMin,
-                  height: AppSpacing.touchTargetMin,
-                  child: GestureDetector(
-                    onTap: onDelete,
-                    behavior: HitTestBehavior.opaque,
-                    child: Center(
-                      child: Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surface.withValues(
-                            alpha: 0.85,
-                          ),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: theme.shadowColor.withValues(alpha: 0.15),
-                              blurRadius: 4,
+                child: Semantics(
+                  button: true,
+                  label: 'birds.delete_photo'.tr(),
+                  child: SizedBox(
+                    width: AppSpacing.touchTargetMin,
+                    height: AppSpacing.touchTargetMin,
+                    child: GestureDetector(
+                      onTap: onDelete,
+                      behavior: HitTestBehavior.opaque,
+                      child: Center(
+                        child: Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surface.withValues(
+                              alpha: 0.85,
                             ),
-                          ],
-                        ),
-                        child: Icon(
-                          LucideIcons.x,
-                          size: 16,
-                          color: theme.colorScheme.error,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: theme.shadowColor.withValues(
+                                  alpha: 0.15,
+                                ),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            LucideIcons.x,
+                            size: 16,
+                            color: theme.colorScheme.error,
+                          ),
                         ),
                       ),
                     ),
@@ -220,24 +226,37 @@ class _FullScreenGalleryState extends State<_FullScreenGallery> {
           style: TextStyle(color: fgColor),
         ),
       ),
-      body: PhotoViewGallery.builder(
-        itemCount: widget.photoUrls.length,
-        pageController: _pageController,
-        onPageChanged: (index) => setState(() => _currentIndex = index),
-        builder: (context, index) {
-          return PhotoViewGalleryPageOptions(
-            imageProvider: CachedNetworkImageProvider(widget.photoUrls[index]),
-            minScale: PhotoViewComputedScale.contained,
-            maxScale: PhotoViewComputedScale.covered * 2,
-            heroAttributes: PhotoViewHeroAttributes(
-              tag: widget.photoUrls[index],
-            ),
-          );
-        },
-        scrollPhysics: const BouncingScrollPhysics(),
-        backgroundDecoration: BoxDecoration(color: bgColor),
-        loadingBuilder: (_, __) =>
-            const LoadingState(),
+      // Announce the currently visible photo to screen readers — the
+      // PhotoView image itself carries no semantic label, so without this
+      // the full-screen gallery is silent to assistive tech.
+      body: Semantics(
+        label: 'birds.photo_n_of_total'.tr(
+          namedArgs: {
+            'current': '${_currentIndex + 1}',
+            'total': '${widget.photoUrls.length}',
+          },
+        ),
+        image: true,
+        child: PhotoViewGallery.builder(
+          itemCount: widget.photoUrls.length,
+          pageController: _pageController,
+          onPageChanged: (index) => setState(() => _currentIndex = index),
+          builder: (context, index) {
+            return PhotoViewGalleryPageOptions(
+              imageProvider: CachedNetworkImageProvider(
+                widget.photoUrls[index],
+              ),
+              minScale: PhotoViewComputedScale.contained,
+              maxScale: PhotoViewComputedScale.covered * 2,
+              heroAttributes: PhotoViewHeroAttributes(
+                tag: widget.photoUrls[index],
+              ),
+            );
+          },
+          scrollPhysics: const BouncingScrollPhysics(),
+          backgroundDecoration: BoxDecoration(color: bgColor),
+          loadingBuilder: (_, __) => const LoadingState(),
+        ),
       ),
     );
   }

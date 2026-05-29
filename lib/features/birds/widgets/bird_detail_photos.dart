@@ -161,7 +161,20 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
       return targetPath != null && photoPath == targetPath;
     }).firstOrNull;
 
-    if (photo == null) return;
+    if (photo == null) {
+      // The gallery showed a URL with no matching Photo row — surface a brief
+      // error instead of silently doing nothing, so the user isn't left
+      // wondering why the delete tap had no effect.
+      AppLogger.warning(
+        '[BirdDetailPhotos] no Photo row matched url for delete: $url',
+      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('birds.photo_delete_error'.tr())),
+        );
+      }
+      return;
+    }
 
     try {
       await photoRepo.deleteStorageForPhoto(photo);

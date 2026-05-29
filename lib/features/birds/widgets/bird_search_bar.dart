@@ -33,13 +33,15 @@ class _BirdSearchBarState extends ConsumerState<BirdSearchBar> {
   Widget build(BuildContext context) {
     final query = ref.watch(birdSearchQueryProvider);
 
-    // Sync controller when query is cleared externally (deferred to avoid
-    // mutating controller during build which can trigger listener loops).
-    if (query.isEmpty && _controller.text.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _controller.clear();
-      });
-    }
+    // Sync the controller when the query is cleared externally (e.g. a
+    // filter reset). Done as a listen side-effect — mutating the controller
+    // during build can trigger listener loops, and a post-frame callback in
+    // build re-arms on every rebuild. listen fires only on actual changes.
+    ref.listen<String>(birdSearchQueryProvider, (_, next) {
+      if (next.isEmpty && _controller.text.isNotEmpty) {
+        _controller.clear();
+      }
+    });
 
     return Padding(
       padding: const EdgeInsets.symmetric(

@@ -150,10 +150,14 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
           ),
         );
       }
-      if (state.isSuccess) {
-        _savedSuccessfully = true;
+      if (state.isSuccess && !(prev?.isSuccess ?? false)) {
+        // Mark saved inside setState so UnsavedChangesScope sees isDirty flip
+        // to false before the pop (avoids a spurious "discard changes?"
+        // prompt). Guard on the prev transition so a re-emit of the same
+        // success state can't pop twice.
+        setState(() => _savedSuccessfully = true);
         ref.read(breedingFormStateProvider.notifier).reset();
-        context.pop();
+        if (context.mounted) context.pop();
       }
       if (state.isBreedingLimitReached || state.isIncubationLimitReached) {
         final errorMessage = state.error ?? '';

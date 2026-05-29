@@ -41,7 +41,9 @@ class UnweanedAlertBanner extends StatelessWidget {
             ),
             TextButton(
               onPressed: () => context.push(AppRoutes.chicks),
-              child: Text('common.view'.tr()),
+              // Specific label (not generic "View") so screen readers and
+              // sighted users know exactly what this action opens.
+              child: Text('home.view_unweaned'.tr()),
             ),
           ],
         ),

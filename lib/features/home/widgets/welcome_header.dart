@@ -8,39 +8,8 @@ import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/profile_stream_providers.dart';
 
 /// Gradient welcome header with time-based greeting and user name.
-class WelcomeHeader extends ConsumerStatefulWidget {
+class WelcomeHeader extends ConsumerWidget {
   const WelcomeHeader({super.key});
-
-  @override
-  ConsumerState<WelcomeHeader> createState() => _WelcomeHeaderState();
-}
-
-class _WelcomeHeaderState extends ConsumerState<WelcomeHeader>
-    with WidgetsBindingObserver {
-  String _greetingKey = '';
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _greetingKey = _computeGreetingKey();
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      final newKey = _computeGreetingKey();
-      if (newKey != _greetingKey) {
-        setState(() => _greetingKey = newKey);
-      }
-    }
-  }
 
   String _computeGreetingKey() {
     final hour = DateTime.now().hour;
@@ -68,8 +37,11 @@ class _WelcomeHeaderState extends ConsumerState<WelcomeHeader>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    // Compute the greeting on every build (cheap) so it stays fresh across
+    // day-part boundaries instead of going stale until the next app resume.
+    final greetingKey = _computeGreetingKey();
     // Narrow the watch to just the display name — avoids rebuilding the
     // welcome header on every other profile field change (plan tier,
     // grace period, etc.).
@@ -78,7 +50,7 @@ class _WelcomeHeaderState extends ConsumerState<WelcomeHeader>
         (async) => async.whenData((profile) => profile?.resolvedDisplayName),
       ),
     );
-    final greeting = _greetingKey.tr();
+    final greeting = greetingKey.tr();
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
@@ -182,7 +154,7 @@ class _WelcomeHeaderState extends ConsumerState<WelcomeHeader>
                     const SizedBox(width: AppSpacing.xs),
                     // White icon on primary gradient — intentional
                     Icon(
-                      _greetingIcon(_greetingKey),
+                      _greetingIcon(greetingKey),
                       size: 18,
                       color: Colors.white.withValues(alpha: 0.9),
                     ),

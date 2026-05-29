@@ -21,6 +21,9 @@ class CalendarWeekView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final now = DateTime.now();
+    // `today` and all week-cell dates are local date-only (year/month/day,
+    // no time-of-day); `eventsMap` keys are normalized to local calendar
+    // days upstream — keep date-only here to avoid mixed-timezone drift.
     final today = DateTime(now.year, now.month, now.day);
     final selected = DateTime(
       selectedDate.year,
@@ -119,9 +122,10 @@ class CalendarWeekView extends StatelessWidget {
                             margin: const EdgeInsets.symmetric(horizontal: 1),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: isSelected
-                                  ? theme.colorScheme.primary
-                                  : eventTypeColor(events[i].type),
+                              // Preserve per-event-type color even on a
+                              // selected day so the type distinction isn't
+                              // lost.
+                              color: eventTypeColor(events[i].type),
                             ),
                           ),
                         ),

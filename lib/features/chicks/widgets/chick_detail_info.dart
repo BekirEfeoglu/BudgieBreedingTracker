@@ -14,6 +14,7 @@ import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/shared/providers/chicks.dart';
 import 'package:budgie_breeding_tracker/data/providers/date_format_providers.dart';
+import 'package:budgie_breeding_tracker/router/route_names.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 /// Info section for the chick detail screen: parents, gender, dates, weights.
@@ -53,7 +54,9 @@ class ChickDetailInfo extends ConsumerWidget {
                               parents.maleName ?? 'chicks.unknown_gender'.tr(),
                           subtitle: 'chicks.father'.tr(),
                           onTap: parents.maleId != null
-                              ? () => context.push('/birds/${parents.maleId}')
+                              ? () => context.push(
+                                  '${AppRoutes.birds}/${parents.maleId}',
+                                )
                               : null,
                         ),
                       ),
@@ -66,7 +69,9 @@ class ChickDetailInfo extends ConsumerWidget {
                               'chicks.unknown_gender'.tr(),
                           subtitle: 'chicks.mother'.tr(),
                           onTap: parents.femaleId != null
-                              ? () => context.push('/birds/${parents.femaleId}')
+                              ? () => context.push(
+                                  '${AppRoutes.birds}/${parents.femaleId}',
+                                )
                               : null,
                         ),
                       ),
@@ -158,7 +163,7 @@ class ChickDetailInfo extends ConsumerWidget {
               icon: const AppIcon(AppIcons.bird),
               title: 'chicks.converted_to_bird'.tr(),
               subtitle: 'chicks.bird_record'.tr(),
-              onTap: () => context.push('/birds/${chick.birdId}'),
+              onTap: () => context.push('${AppRoutes.birds}/${chick.birdId}'),
             ),
           ],
         ],

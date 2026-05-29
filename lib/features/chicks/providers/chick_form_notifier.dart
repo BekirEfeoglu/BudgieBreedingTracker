@@ -60,8 +60,10 @@ class ChickFormNotifier extends Notifier<ChickFormState>
           durationDays: 14,
           settings: settings,
         );
-      } catch (e) {
-        AppLogger.warning('Failed to schedule chick care reminders: $e');
+      } catch (e, st) {
+        // Best-effort side effect: AppLogger.warning has no stackTrace param,
+        // so append it to the message to retain it for diagnosis.
+        AppLogger.warning('Failed to schedule chick care reminders: $e\n$st');
         sideEffectErrors.add('chick_care');
       }
 
@@ -76,8 +78,10 @@ class ChickFormNotifier extends Notifier<ChickFormState>
           bandingDay: bandingDay,
           settings: settings,
         );
-      } catch (e) {
-        AppLogger.warning('Failed to schedule banding reminders: $e');
+      } catch (e, st) {
+        // Best-effort side effect: AppLogger.warning has no stackTrace param,
+        // so append it to the message to retain it for diagnosis.
+        AppLogger.warning('Failed to schedule banding reminders: $e\n$st');
         sideEffectErrors.add('banding');
       }
 
@@ -91,13 +95,15 @@ class ChickFormNotifier extends Notifier<ChickFormState>
           chickId: chick.id,
           bandingDay: bandingDay,
         );
-      } catch (e) {
+      } catch (e, st) {
         if (isSupabaseUnavailableError(e)) {
           AppLogger.info(
             'Skipping chick calendar generation: Supabase is not initialized',
           );
         } else {
-          AppLogger.warning('Failed to generate chick calendar events: $e');
+          AppLogger.warning(
+            'Failed to generate chick calendar events: $e\n$st',
+          );
           sideEffectErrors.add('calendar');
         }
       }
@@ -147,8 +153,10 @@ class ChickFormNotifier extends Notifier<ChickFormState>
               settings: settings,
             );
           }
-        } catch (e) {
-          AppLogger.warning('Failed to reschedule banding reminders: $e');
+        } catch (e, st) {
+          AppLogger.warning(
+            'Failed to reschedule banding reminders: $e\n$st',
+          );
           sideEffectError = true;
         }
       }
@@ -184,9 +192,11 @@ class ChickFormNotifier extends Notifier<ChickFormState>
       bool eventCleanupFailed = false;
       try {
         await ref.read(eventRepositoryProvider).removeByChickIds([id]);
-      } catch (e) {
+      } catch (e, st) {
         eventCleanupFailed = true;
-        AppLogger.warning('Failed to delete calendar events for chick $id: $e');
+        AppLogger.warning(
+          'Failed to delete calendar events for chick $id: $e\n$st',
+        );
       }
       // Cascade-remove growth measurements. growth_measurements has no
       // isDeleted column, so soft-delete isn't an option — leaving the
@@ -198,18 +208,28 @@ class ChickFormNotifier extends Notifier<ChickFormState>
         await ref
             .read(growthMeasurementRepositoryProvider)
             .removeByChickIds([id]);
-      } catch (e) {
+      } catch (e, st) {
         growthCleanupFailed = true;
         AppLogger.warning(
-          'Failed to delete growth measurements for chick $id: $e',
+          'Failed to delete growth measurements for chick $id: $e\n$st',
         );
+      }
+      // The delete itself succeeded (soft-delete is done); these cleanups are
+      // best-effort and must not block. A failed growth-measurement cleanup is
+      // worth flagging more specifically than the generic background-tasks
+      // warning, because those orphaned rows would otherwise surface as
+      // recurring sync errors on every push (no isDeleted column to tombstone).
+      final String? cleanupWarning;
+      if (growthCleanupFailed) {
+        cleanupWarning = 'errors.chick_cleanup_partial'.tr();
+      } else if (sideEffectError || eventCleanupFailed) {
+        cleanupWarning = 'errors.background_tasks_partial'.tr();
+      } else {
+        cleanupWarning = null;
       }
       state = state.copyWith(
         isLoading: false,
-        warning:
-            (sideEffectError || eventCleanupFailed || growthCleanupFailed)
-                ? 'errors.background_tasks_partial'.tr()
-                : null,
+        warning: cleanupWarning,
         isSuccess: true,
       );
     } catch (e, st) {

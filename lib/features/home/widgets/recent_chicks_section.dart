@@ -83,9 +83,12 @@ class _ChickTile extends StatelessWidget {
             ? '${'chicks.chick_label'.tr()} #${chick.ringNumber}'
             : '${'chicks.chick_label'.tr()} #${chick.id.substring(0, 4)}');
     final age = chick.age;
+    // hatchDate is stored in UTC; convert to local before the same-day
+    // compare so it lines up with DateTime.now() (local) and doesn't flag
+    // the wrong calendar day near midnight / across timezones.
     final bool isBornToday =
         chick.hatchDate != null &&
-        DateUtils.isSameDay(chick.hatchDate, DateTime.now());
+        DateUtils.isSameDay(chick.hatchDate!.toLocal(), DateTime.now());
     final String ageText;
     if (isBornToday) {
       ageText = 'home.born_today'.tr();

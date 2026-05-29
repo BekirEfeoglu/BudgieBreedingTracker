@@ -33,13 +33,15 @@ class _BreedingSearchBarState extends ConsumerState<BreedingSearchBar> {
   Widget build(BuildContext context) {
     final query = ref.watch(breedingSearchQueryProvider);
 
-    // Sync controller when query is cleared externally (deferred to avoid
-    // mutating controller during build which can trigger listener loops).
-    if (query.isEmpty && _controller.text.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _controller.clear();
-      });
-    }
+    // Sync the controller when the query is cleared externally (e.g. a filter
+    // reset elsewhere). Done via ref.listen rather than a post-frame callback
+    // in build so the controller mutation happens exactly once per change,
+    // outside the build phase, with no listener-loop risk.
+    ref.listen<String>(breedingSearchQueryProvider, (_, next) {
+      if (next.isEmpty && _controller.text.isNotEmpty) {
+        _controller.clear();
+      }
+    });
 
     return Padding(
       padding: const EdgeInsets.symmetric(

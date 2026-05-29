@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/growth_measurement_model.dart';
+import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 
@@ -22,21 +23,20 @@ final growthMeasurementsByChickProvider =
       return repo.watchByChick(chickId).first;
     });
 
-/// Filtered chicks based on the current filter selection.
-/// autoDispose: family keyed on `List<Chick>` (identity equality), so every
-/// stream emission installs a fresh family entry. autoDispose evicts the
-/// stale ones once the screen rebuilds with the new list.
-final filteredChicksProvider = Provider.autoDispose.family<List<Chick>, List<Chick>>((
-  ref,
-  chicks,
-) {
-  final filter = ref.watch(chickFilterProvider);
+/// Applies the active [ChickFilter] to [chicks].
+///
+/// Pure helper so both the test-facing [filteredChicksProvider] and the
+/// userId-keyed [searchedAndFilteredChicksProvider] share one switch and stay
+/// exhaustive over [ChickFilter] (including the `unknown` health filter).
+List<Chick> _applyChickFilter(List<Chick> chicks, ChickFilter filter) {
   return switch (filter) {
     ChickFilter.all => chicks,
     ChickFilter.healthy =>
       chicks.where((c) => c.healthStatus == ChickHealthStatus.healthy).toList(),
     ChickFilter.sick =>
       chicks.where((c) => c.healthStatus == ChickHealthStatus.sick).toList(),
+    ChickFilter.unknownHealth =>
+      chicks.where((c) => c.healthStatus == ChickHealthStatus.unknown).toList(),
     ChickFilter.deceased =>
       chicks
           .where((c) => c.healthStatus == ChickHealthStatus.deceased)
@@ -60,13 +60,54 @@ final filteredChicksProvider = Provider.autoDispose.family<List<Chick>, List<Chi
           .where((c) => c.developmentStage == DevelopmentStage.juvenile)
           .toList(),
   };
-});
+}
 
-/// Searched, filtered and sorted chicks.
-/// autoDispose: see [filteredChicksProvider] — same identity-keyed leak.
-final searchedAndFilteredChicksProvider =
-    Provider.autoDispose.family<List<Chick>, List<Chick>>((ref, chicks) {
-      final filtered = ref.watch(filteredChicksProvider(chicks));
+/// Filtered chicks based on the current filter selection.
+/// Keyed on `List<Chick>` (identity equality) — used by unit tests that pass a
+/// fixed list. Production reads go through [searchedAndFilteredChicksProvider].
+final filteredChicksProvider = Provider.autoDispose
+    .family<List<Chick>, List<Chick>>((ref, chicks) {
+      final filter = ref.watch(chickFilterProvider);
+      return _applyChickFilter(chicks, filter);
+    });
+
+/// Sorts [chicks] in place according to [sort] and returns the list.
+void _applyChickSort(List<Chick> result, ChickSort sort) {
+  result.sort(
+    (a, b) => switch (sort) {
+      ChickSort.newest => (b.createdAt ?? DateTime(0)).compareTo(
+        a.createdAt ?? DateTime(0),
+      ),
+      ChickSort.oldest => (a.createdAt ?? DateTime(0)).compareTo(
+        b.createdAt ?? DateTime(0),
+      ),
+      ChickSort.nameAsc => (a.name ?? '').toLowerCase().compareTo(
+        (b.name ?? '').toLowerCase(),
+      ),
+      ChickSort.nameDesc => (b.name ?? '').toLowerCase().compareTo(
+        (a.name ?? '').toLowerCase(),
+      ),
+      ChickSort.ageYoungest => (b.hatchDate ?? DateTime(0)).compareTo(
+        a.hatchDate ?? DateTime(0),
+      ),
+      ChickSort.ageOldest => (a.hatchDate ?? DateTime(0)).compareTo(
+        b.hatchDate ?? DateTime(0),
+      ),
+    },
+  );
+}
+
+/// Searched, filtered and sorted chicks for [userId].
+///
+/// Keyed on the stable `userId` (not the `List<Chick>` identity) and reads the
+/// chick list from [chicksStreamProvider] internally, so a new stream emission
+/// reuses the same family entry instead of churning a fresh one per emission.
+final searchedAndFilteredChicksProvider = Provider.autoDispose
+    .family<List<Chick>, String>((ref, userId) {
+      final chicks =
+          ref.watch(chicksStreamProvider(userId)).asData?.value ?? const [];
+      final filter = ref.watch(chickFilterProvider);
+      final filtered = _applyChickFilter(chicks, filter);
       final query = ref.watch(chickSearchQueryProvider).toLowerCase().trim();
       final sort = ref.watch(chickSortProvider);
 
@@ -82,28 +123,7 @@ final searchedAndFilteredChicksProvider =
         }).toList();
       }
 
-      result.sort(
-        (a, b) => switch (sort) {
-          ChickSort.newest => (b.createdAt ?? DateTime(0)).compareTo(
-            a.createdAt ?? DateTime(0),
-          ),
-          ChickSort.oldest => (a.createdAt ?? DateTime(0)).compareTo(
-            b.createdAt ?? DateTime(0),
-          ),
-          ChickSort.nameAsc => (a.name ?? '').toLowerCase().compareTo(
-            (b.name ?? '').toLowerCase(),
-          ),
-          ChickSort.nameDesc => (b.name ?? '').toLowerCase().compareTo(
-            (a.name ?? '').toLowerCase(),
-          ),
-          ChickSort.ageYoungest => (b.hatchDate ?? DateTime(0)).compareTo(
-            a.hatchDate ?? DateTime(0),
-          ),
-          ChickSort.ageOldest => (a.hatchDate ?? DateTime(0)).compareTo(
-            b.hatchDate ?? DateTime(0),
-          ),
-        },
-      );
+      _applyChickSort(result, sort);
 
       return result;
     });

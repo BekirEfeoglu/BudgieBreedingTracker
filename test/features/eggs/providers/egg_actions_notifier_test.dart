@@ -460,8 +460,9 @@ void main() {
       () async {
         when(() => eggRepo.save(any())).thenAnswer((_) async {});
         when(() => chickRepo.getByEggId('egg-1')).thenAnswer((_) async => null);
-        when(() => chickRepo.save(any()))
-            .thenThrow(Exception('local DB write failed'));
+        when(
+          () => chickRepo.save(any()),
+        ).thenThrow(Exception('local DB write failed'));
 
         final container = makeContainer();
         addTearDown(container.dispose);
@@ -490,11 +491,12 @@ void main() {
     );
 
     test(
-      'continues with save when duplicate-check read fails',
+      'fails closed (no chick created) when duplicate-check read fails',
       () async {
         when(() => eggRepo.save(any())).thenAnswer((_) async {});
-        when(() => chickRepo.getByEggId('egg-1'))
-            .thenThrow(Exception('read failed'));
+        when(
+          () => chickRepo.getByEggId('egg-1'),
+        ).thenThrow(Exception('read failed'));
         when(() => chickRepo.save(any())).thenAnswer((_) async {});
 
         final container = makeContainer();
@@ -505,9 +507,14 @@ void main() {
             .updateEggStatus(testEgg(), EggStatus.hatched);
 
         final state = container.read(eggActionsProvider);
+        // The egg status update (primary mutation) still succeeds...
         expect(state.isSuccess, isTrue);
-        expect(state.chickCreated, isTrue);
-        verify(() => chickRepo.save(any())).called(1);
+        // ...but the chick is NOT auto-created: when the duplicate-check read
+        // fails we cannot prove a chick doesn't already exist, so we bail
+        // instead of risking a duplicate, and surface a warning.
+        expect(state.chickCreated, isFalse);
+        expect(state.warning, isNotNull);
+        verifyNever(() => chickRepo.save(any()));
       },
     );
 

@@ -43,9 +43,9 @@ class CalendarHeader extends ConsumerWidget {
             onTap: () => _goToToday(ref),
             borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                minHeight: AppSpacing.touchTargetMin,
-              ),
+              // WCAG 2.5.5: explicit 48dp floor (AppSpacing.touchTargetMin is
+              // 44dp, below the accessibility minimum).
+              constraints: const BoxConstraints(minHeight: 48),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 child: Center(

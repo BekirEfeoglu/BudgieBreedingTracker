@@ -38,6 +38,14 @@ class BirdFamilyInfo extends ConsumerWidget {
         return const SizedBox.shrink();
       },
       data: (allBirds) {
+        // TODO(birds-audit #8): offspring + sibling discovery scans the
+        // entire flock on every rebuild (O(n) each, O(n^2) effective with
+        // _findSiblings). There is currently no parent-id-filtered DAO /
+        // provider (only watchAliveByGenderAndSpecies near
+        // birdParentCandidatesProvider). Add a Drift query
+        // `watchByParentIds(fatherId, motherId)` in BirdsDao + a stream
+        // provider, then replace these in-Dart scans. Left intact here to
+        // avoid a half-refactor that reaches outside the birds feature.
         final offspring = allBirds
             .where((b) => b.fatherId == bird.id || b.motherId == bird.id)
             .toList();

@@ -39,6 +39,11 @@ enum CalendarEventFilter { all, incubation }
 class CalendarEventFilterNotifier extends Notifier<CalendarEventFilter> {
   @override
   CalendarEventFilter build() => CalendarEventFilter.all;
+
+  /// Sets the active event filter (mirrors [CalendarViewNotifier.setViewMode]).
+  void setFilter(CalendarEventFilter filter) {
+    state = filter;
+  }
 }
 
 final calendarEventFilterProvider =
@@ -155,27 +160,37 @@ final displayedMonthProvider =
       DisplayedMonthNotifier.new,
     );
 
+/// Monday (local date-only) of the week containing the selected date.
+///
+/// Derived separately so [eventsForWeekProvider] only recomputes when the
+/// week actually changes — selecting another day in the *same* week yields
+/// an equal [DateTime] here, so Riverpod skips the downstream grouping.
+///
+/// Get Monday of the selected date's week (ISO 8601: Monday=1). Locale-aware
+/// firstDayOfWeek requires BuildContext; Monday-first is correct for TR/DE
+/// locales. We build the date via DateTime year/month/day arithmetic to avoid
+/// DST 23h/25h skew that `subtract`/`add(Duration(days:))` introduces.
+final _weekStartProvider = Provider<DateTime>((ref) {
+  final selectedLocal = ref.watch(selectedDateProvider).toLocal();
+  return DateTime(
+    selectedLocal.year,
+    selectedLocal.month,
+    selectedLocal.day - (selectedLocal.weekday - 1),
+  );
+});
+
 /// Events for the week containing the selected date.
 final eventsForWeekProvider = Provider<Map<DateTime, List<Event>>>((ref) {
   final userId = ref.watch(currentUserIdProvider);
   final eventsAsync = ref.watch(eventsStreamProvider(userId));
-  final selectedDate = ref.watch(selectedDateProvider);
   final filter = ref.watch(calendarEventFilterProvider);
+  final monday = ref.watch(_weekStartProvider);
 
   final events = filterCalendarEvents(eventsAsync.value ?? [], filter);
-  // Get Monday of the selected date's week (ISO 8601: Monday=1).
-  // Locale-aware firstDayOfWeek requires BuildContext; Monday-first is
-  // correct for TR/DE locales. Future: add firstDayOfWeek provider.
-  // We build week keys via DateTime year/month/day arithmetic to avoid
-  // DST 23h/25h skew that `subtract`/`add(Duration(days:))` introduces.
-  final selectedLocal = selectedDate.toLocal();
-  final mondayY = selectedLocal.year;
-  final mondayM = selectedLocal.month;
-  final mondayD = selectedLocal.day - (selectedLocal.weekday - 1);
 
   final map = <DateTime, List<Event>>{};
   for (var i = 0; i < 7; i++) {
-    final key = DateTime(mondayY, mondayM, mondayD + i);
+    final key = DateTime(monday.year, monday.month, monday.day + i);
     map[key] = events.where((e) {
       return _localDateOnly(e.eventDate) == key;
     }).toList();

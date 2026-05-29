@@ -144,15 +144,13 @@ class BreedingListScreen extends ConsumerWidget {
                   incubationByPairMapProvider(userId),
                 );
                 final eggMap = ref.watch(eggsByIncubationMapProvider(userId));
-                // Use AsyncValue.value (T?) instead of .when with a
-                // side-effect-assigning data callback — loading/error keep
-                // the card hidden, data populates it. Equivalent semantics,
-                // less moving parts to misread.
-                final riskSummary = ref
-                    .watch(incubationRiskSummaryProvider(userId))
-                    .value;
-                final hasRiskCard = riskSummary != null;
 
+                // The risk summary derives from four streams + DateTime.now().
+                // It is rendered by a dedicated leaf widget (item 0) so that a
+                // summary change rebuilds only that card, not the whole list.
+                // Item 0 is always present and collapses to zero height while
+                // the summary is loading / errored, so the index math stays
+                // simple (no hasRiskCard offset).
                 return Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 800),
@@ -169,14 +167,12 @@ class BreedingListScreen extends ConsumerWidget {
                           top: AppSpacing.sm,
                           bottom: AppSpacing.lg,
                         ),
-                        itemCount: pairs.length + (hasRiskCard ? 1 : 0),
+                        itemCount: pairs.length + 1,
                         itemBuilder: (context, index) {
-                          if (hasRiskCard && index == 0) {
-                            return IncubationRiskCard(
-                              risks: riskSummary.topRisks(limit: 3),
-                            );
+                          if (index == 0) {
+                            return _RiskSummaryHeaderCard(userId: userId);
                           }
-                          final pair = pairs[index - (hasRiskCard ? 1 : 0)];
+                          final pair = pairs[index - 1];
                           final incubation = incubationMap[pair.id];
                           final eggs = incubation != null
                               ? eggMap[incubation.id] ?? const <Egg>[]
@@ -224,5 +220,28 @@ class BreedingListScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+/// List-header leaf for the incubation risk summary.
+///
+/// Isolated from the breeding list body so that
+/// [incubationRiskSummaryProvider] — which derives from four streams plus
+/// `DateTime.now()` and recomputes a full risk reassessment on each emission —
+/// rebuilds only this card. The card collapses to zero height while the
+/// summary is loading or errored, so the surrounding `ListView` index math
+/// can treat it as an always-present item 0.
+class _RiskSummaryHeaderCard extends ConsumerWidget {
+  const _RiskSummaryHeaderCard({required this.userId});
+
+  final String userId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final riskSummary = ref
+        .watch(incubationRiskSummaryProvider(userId))
+        .value;
+    if (riskSummary == null) return const SizedBox.shrink();
+    return IncubationRiskCard(risks: riskSummary.topRisks(limit: 3));
   }
 }

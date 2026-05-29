@@ -87,20 +87,18 @@ extension BreedingFormActions on BreedingFormNotifier {
       final incubations = await incubationRepo.getByBreedingPairIds([id]);
       final eggs = await _helper.getEggsForIncubations(incubations);
 
-      // Cascade order is intentional: side-effects first (notifications,
-      // calendar), then data deletes in dependency order (children → parent).
-      // Each step swallows per-item failures with eagerError: false so a
-      // single bad row never strands the rest of the cascade. Surviving
-      // children remain soft-deletable on retry — soft-delete is idempotent.
+      // Cascade order is intentional: data deletes in dependency order
+      // (children → parent) first, then side-effects (notifications,
+      // calendar). Each step swallows per-item failures with
+      // eagerError: false so a single bad row never strands the rest of the
+      // cascade. Surviving children remain soft-deletable on retry —
+      // soft-delete is idempotent.
+      //
+      // Reminders are cancelled only AFTER the cascade is confirmed to
+      // proceed (children removed). The cascade can return early below when a
+      // child is still live; cancelling up-front would strand a still-alive
+      // pair with its reminders already gone.
       var partial = false;
-
-      // Best-effort: notifications & calendar can fail without blocking the
-      // primary delete. They simply won't be cleaned up until a later sync.
-      await _helper.cancelBreedingNotifications(
-        id,
-        incubations: incubations,
-        eggs: eggs,
-      );
 
       // Detach chicks from soon-to-be-deleted eggs/clutches so they survive
       // as standalone records. Chicks are live entities with their own
@@ -196,7 +194,10 @@ extension BreedingFormActions on BreedingFormNotifier {
 
       // If any child is still live, block the pair remove too — otherwise
       // the surviving incubation.breedingPairId dangles. Surface a clear
-      // warning so the user knows to retry once children clear.
+      // warning so the user knows to retry once children clear. Reminders are
+      // intentionally NOT cancelled here: the pair is still alive, so its
+      // milestone/turning reminders must keep firing until the retry clears
+      // the children and the cascade actually proceeds.
       if (blockedIncubationIds.isNotEmpty || blockedEggIds.isNotEmpty) {
         state = state.copyWith(
           isLoading: false,
@@ -206,6 +207,16 @@ extension BreedingFormActions on BreedingFormNotifier {
         );
         return;
       }
+
+      // Children are confirmed removed and the cascade is proceeding, so it
+      // is now safe to cancel notifications & calendar reminders. Best-effort:
+      // a failure here won't block the primary delete — leftovers get cleaned
+      // up on a later sync.
+      await _helper.cancelBreedingNotifications(
+        id,
+        incubations: incubations,
+        eggs: eggs,
+      );
 
       try {
         await pairRepo.remove(id);

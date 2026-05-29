@@ -3,7 +3,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
-import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart'
+    as date_utils;
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
@@ -84,6 +85,7 @@ class _EggManagementContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final eggsAsync = ref.watch(eggsForIncubationProvider(incubationId));
+    final dateFormat = ref.watch(dateFormatProvider).formatter();
 
     // Show SnackBar when chick is auto-created from hatched egg
     ref.listen<EggActionsState>(eggActionsProvider, (_, state) {
@@ -106,6 +108,13 @@ class _EggManagementContent extends ConsumerWidget {
         );
       }
     });
+
+    // The currently rendered egg list (null while loading / on error). The FAB
+    // and the add-egg flow reuse this exact list instead of re-reading the
+    // provider in the onPressed callback, so the add sheet's "next egg number"
+    // always matches what the user is looking at.
+    final eggs = eggsAsync.value;
+    final hasEggs = eggs != null && eggs.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
@@ -155,6 +164,7 @@ class _EggManagementContent extends ConsumerWidget {
                       final egg = eggs[index];
                       return EggListItem(
                         egg: egg,
+                        dateFormatter: dateFormat,
                         onStatusUpdate: () async {
                           final newStatus = await showEggStatusUpdateSheet(
                             context,
@@ -177,21 +187,16 @@ class _EggManagementContent extends ConsumerWidget {
           );
         },
       ),
-      floatingActionButton: eggsAsync.maybeWhen(
-        data: (eggs) => eggs.isEmpty
-            ? null
-            : FabButton(
-                icon: const AppIcon(AppIcons.add),
-                tooltip: 'eggs.add_egg'.tr(),
-                onPressed: () {
-                  final eggs =
-                      ref.read(eggsForIncubationProvider(incubationId)).value ??
-                      [];
-                  _showAddEggSheet(context, ref, incubationId, eggs);
-                },
-              ),
-        orElse: () => null,
-      ),
+      // FAB shown only once eggs exist. When the list is empty the EmptyState's
+      // own action provides the add path, so we don't double up.
+      floatingActionButton: hasEggs
+          ? FabButton(
+              icon: const AppIcon(AppIcons.add),
+              tooltip: 'eggs.add_egg'.tr(),
+              onPressed: () =>
+                  _showAddEggSheet(context, ref, incubationId, eggs),
+            )
+          : null,
     );
   }
 }

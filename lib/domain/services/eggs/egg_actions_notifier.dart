@@ -252,23 +252,17 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       // Drop egg-turning reminders the moment the egg leaves an active
       // state — otherwise "turn egg #N" keeps firing every 4h for the
       // full 18-day window on hatched/damaged/discarded/infertile eggs.
-      if (_isTerminalEggStatus(newStatus) &&
-          !_isTerminalEggStatus(egg.status)) {
-        try {
-          var species = Species.unknown;
-          try {
-            species = await resolveEggSpecies(ref, updated);
-          } catch (_) {
-            // Resolution failure shouldn't block the save flow; cancel
-            // with unknown which covers the broadest id space.
-          }
-          final scheduler = ref.read(notificationSchedulerProvider);
-          await scheduler.cancelEggTurningReminders(egg.id, species: species);
-        } catch (e) {
-          AppLogger.warning(
-            'Failed to cancel egg turning reminders for ${egg.id}: $e',
-          );
-        }
+      //
+      // We cancel across EVERY species range rather than the egg's
+      // currently-resolved species: the parent pair's species may have
+      // changed since the reminders were scheduled, which would shift the
+      // cancel target to a different notification-ID offset range and leak
+      // the originally-scheduled reminders. The egg-turning ID slot is keyed
+      // by eggId (stable) and offsets stay well under the per-entity slot
+      // size, so the union of all species ranges safely covers whatever
+      // range was used at schedule time. Duplicate cancels are idempotent.
+      if (newStatus.isTerminal && !egg.status.isTerminal) {
+        await _cancelEggTurningRemindersAllSpecies(egg.id);
       }
 
       // Automatically create chick when egg hatches
@@ -286,7 +280,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       // a terminal status. Without this, completed clutches kept counting
       // against free-tier limits and showed as "in progress" forever.
       try {
-        if (_isTerminalEggStatus(newStatus)) {
+        if (newStatus.isTerminal) {
           await _completeIncubationIfAllEggsTerminal(updated);
         }
       } catch (e) {
@@ -329,8 +323,12 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
   _createChickFromHatchedEgg(Egg egg) async {
     final chickRepo = ref.read(chickRepositoryProvider);
 
-    // Duplicate check is best-effort: a read failure must not be treated as a
-    // save failure. If the read fails, we proceed and let `save` decide.
+    // Duplicate check is FAIL-CLOSED: `save` inserts a fresh v7-keyed chick
+    // (it is NOT an upsert on eggId), so if this read throws we cannot tell
+    // whether a chick already exists. Proceeding would risk inserting a
+    // SECOND chick for the same egg on a transient read error. Instead we
+    // bail with chickSaveFailed so the caller surfaces a warning and the user
+    // can add the chick manually — at-most-once is safer than possibly-twice.
     try {
       final existing = await chickRepo.getByEggId(egg.id);
       if (existing != null) {
@@ -341,10 +339,15 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
           chickSaveFailed: false,
         );
       }
-    } catch (e) {
-      AppLogger.warning(
-        'Duplicate-check read failed for egg ${egg.id}: $e — continuing',
+    } catch (e, st) {
+      AppLogger.error(
+        'Duplicate-check read failed for egg ${egg.id}; skipping '
+        'auto-create to avoid a duplicate chick',
+        e,
+        st,
       );
+      Sentry.captureException(e, stackTrace: st);
+      return (created: false, sideEffectError: false, chickSaveFailed: true);
     }
 
     final hatchDate = egg.hatchDate ?? DateTime.now();
@@ -469,7 +472,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
     final eggRepo = ref.read(eggRepositoryProvider);
     final siblings = await eggRepo.getByIncubation(incubationId);
     if (siblings.isEmpty) return;
-    final allTerminal = siblings.every((e) => _isTerminalEggStatus(e.status));
+    final allTerminal = siblings.every((e) => e.status.isTerminal);
     if (!allTerminal) return;
 
     final incubationRepo = ref.read(incubationRepositoryProvider);
@@ -559,37 +562,17 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
     try {
       final repo = ref.read(eggRepositoryProvider);
 
-      // Resolve species BEFORE soft-delete so we cancel the correct
-      // notification id space (turning hours and incubation length differ
-      // per species). After remove(), the egg row is filtered out by
-      // isDeleted=false and resolveEggSpecies falls back to unknown.
-      // Species lookup failure must NOT block deletion — the worst case
-      // is a generic cancellation pass.
-      var species = Species.unknown;
-      try {
-        final egg = await repo.getById(id);
-        if (egg != null) {
-          species = await resolveEggSpecies(ref, egg);
-        }
-      } catch (e) {
-        AppLogger.warning(
-          'Species lookup before deleteEgg($id) failed: $e — '
-          'continuing with unknown',
-        );
-      }
-
       await repo.remove(id);
 
       // Cancel scheduled turning reminders so they don't keep firing on
-      // a deleted egg for the remainder of the 18-day window.
-      try {
-        final scheduler = ref.read(notificationSchedulerProvider);
-        await scheduler.cancelEggTurningReminders(id, species: species);
-      } catch (e) {
-        AppLogger.warning(
-          'Failed to cancel egg turning reminders for $id: $e',
-        );
-      }
+      // a deleted egg for the remainder of the incubation window. Cancel
+      // across every species range: the parent pair's species may have
+      // changed since the reminders were scheduled, so resolving a single
+      // "current" species could miss the originally-scheduled ID range and
+      // leak reminders. The slot is keyed by egg id, so the union of all
+      // species ranges safely covers whatever range was used at schedule
+      // time. Best-effort and idempotent.
+      await _cancelEggTurningRemindersAllSpecies(id);
 
       // Soft-delete any calendar events that reference this egg so the
       // calendar doesn't keep displaying entries for a deleted entity.
@@ -612,16 +595,29 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
     }
   }
 
+  /// Cancels egg-turning reminders for [eggId] across every species range.
+  ///
+  /// The reminder ID range depends on the species (`days × turningHours`),
+  /// but the slot is keyed by [eggId] and offsets stay under the per-entity
+  /// slot size, so iterating every species and cancelling each range covers
+  /// whatever species was in effect at schedule time even if the parent
+  /// pair's species changed afterwards. Best-effort: failures are logged and
+  /// never block the calling flow.
+  Future<void> _cancelEggTurningRemindersAllSpecies(String eggId) async {
+    try {
+      final scheduler = ref.read(notificationSchedulerProvider);
+      for (final species in Species.values) {
+        await scheduler.cancelEggTurningReminders(eggId, species: species);
+      }
+    } catch (e) {
+      AppLogger.warning(
+        'Failed to cancel egg turning reminders for $eggId: $e',
+      );
+    }
+  }
+
   /// Resets the action state.
   void reset() {
     state = const EggActionsState();
   }
-}
-
-bool _isTerminalEggStatus(EggStatus status) {
-  return status == EggStatus.hatched ||
-      status == EggStatus.damaged ||
-      status == EggStatus.discarded ||
-      status == EggStatus.infertile ||
-      status == EggStatus.empty;
 }

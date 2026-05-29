@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/data/providers/date_format_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_timeline_providers.dart';
 
 /// Compact life timeline assembled from existing local data.
@@ -18,7 +19,10 @@ class BirdDetailTimeline extends ConsumerWidget {
     final events = ref.watch(birdTimelineProvider(bird));
     if (events.isEmpty) return const SizedBox.shrink();
 
-    return _TimelineContent(events: events);
+    return _TimelineContent(
+      events: events,
+      dateFormat: ref.watch(dateFormatProvider).formatter(),
+    );
   }
 }
 
@@ -41,7 +45,10 @@ class BirdDetailTimelineSection extends ConsumerWidget {
           indent: AppSpacing.lg,
           endIndent: AppSpacing.lg,
         ),
-        _TimelineContent(events: events),
+        _TimelineContent(
+          events: events,
+          dateFormat: ref.watch(dateFormatProvider).formatter(),
+        ),
       ],
     );
   }
@@ -49,8 +56,9 @@ class BirdDetailTimelineSection extends ConsumerWidget {
 
 class _TimelineContent extends StatelessWidget {
   final List<BirdTimelineEvent> events;
+  final DateFormat dateFormat;
 
-  const _TimelineContent({required this.events});
+  const _TimelineContent({required this.events, required this.dateFormat});
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +76,7 @@ class _TimelineContent extends StatelessWidget {
             (entry) => _TimelineRow(
               event: entry.$2,
               isLast: entry.$1 == events.length - 1,
+              dateFormat: dateFormat,
             ),
           ),
         ],
@@ -79,15 +88,20 @@ class _TimelineContent extends StatelessWidget {
 class _TimelineRow extends StatelessWidget {
   final BirdTimelineEvent event;
   final bool isLast;
+  final DateFormat dateFormat;
 
-  const _TimelineRow({required this.event, required this.isLast});
+  const _TimelineRow({
+    required this.event,
+    required this.isLast,
+    required this.dateFormat,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final dateText = DateFormat.yMd(
-      Localizations.localeOf(context).languageCode,
-    ).format(event.date);
+    // Use the user's chosen date format (dateFormatProvider) supplied by the
+    // parent instead of a locale-default yMd built per row.
+    final dateText = dateFormat.format(event.date);
     final title = event.title ?? event.titleKey.tr(namedArgs: event.namedArgs);
 
     return IntrinsicHeight(

@@ -5,11 +5,11 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
-import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
+import 'package:budgie_breeding_tracker/data/providers/date_format_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
 import 'package:budgie_breeding_tracker/domain/services/eggs/egg_actions_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/milestone_timeline.dart';
@@ -32,10 +32,20 @@ class BreedingEggsSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final eggsAsync = ref.watch(eggsByIncubationProvider(incubationId));
+    final dateFormat = ref.watch(dateFormatProvider).formatter();
 
-    // Show SnackBar when chick is auto-created from hatched egg
+    // Show SnackBar when chick is auto-created from hatched egg.
+    //
+    // `eggActionsProvider` is shared with the dedicated egg-management screen.
+    // When that screen is pushed on top of this detail screen, BOTH listeners
+    // would fire and double up the feedback. Suppress this (background)
+    // listener whenever this route is not the topmost one; the egg-management
+    // screen owns the feedback in that case. This section still surfaces
+    // feedback for status updates triggered from the detail screen itself
+    // (when it is the current route).
     ref.listen<EggActionsState>(eggActionsProvider, (_, state) {
       if (!context.mounted) return;
+      if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
       if (state.warning != null) {
         ScaffoldMessenger.of(
           context,
@@ -75,9 +85,12 @@ class BreedingEggsSection extends ConsumerWidget {
           ),
         ),
         eggsAsync.when(
-          loading: () => const Padding(
+          loading: () => Padding(
             padding: AppSpacing.screenPadding,
-            child: LinearProgressIndicator(),
+            child: Semantics(
+              label: 'common.loading'.tr(),
+              child: const LinearProgressIndicator(),
+            ),
           ),
           error: (_, __) => ErrorState(
             message: 'common.data_load_error'.tr(),
@@ -96,9 +109,12 @@ class BreedingEggsSection extends ConsumerWidget {
                 ),
               );
             }
-            // Filter out hatched eggs (they become chicks)
+            // Filter out all terminal eggs (hatched → chick, plus damaged /
+            // discarded / infertile / empty). Filtering only `hatched` meant
+            // the "all done" banner never appeared for clutches that ended in
+            // a mix of terminal outcomes.
             final activeEggs = eggs
-                .where((e) => e.status != EggStatus.hatched)
+                .where((e) => !e.status.isTerminal)
                 .toList();
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,6 +167,7 @@ class BreedingEggsSection extends ConsumerWidget {
                   ...activeEggs.map(
                     (egg) => EggListItem(
                       egg: egg,
+                      dateFormatter: dateFormat,
                       onStatusUpdate: () async {
                         final newStatus = await showEggStatusUpdateSheet(
                           context,

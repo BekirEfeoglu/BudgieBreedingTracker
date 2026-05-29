@@ -28,12 +28,29 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
       vsync: this,
       duration: const Duration(seconds: 2),
     );
+    // Seed the spinner once after the first frame so it matches the initial
+    // sync status without driving the controller from inside build().
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _applyRotation(ref.read(syncStatusProvider));
+    });
   }
 
   @override
   void dispose() {
     _rotationController.dispose();
     super.dispose();
+  }
+
+  /// Start/stop the rotation to match the current sync status. Called only on
+  /// state transitions (ref.listen) and the initial post-frame seed — never on
+  /// every build, so we don't re-trigger repeat()/stop() unnecessarily.
+  void _applyRotation(SyncDisplayStatus status) {
+    if (status == SyncDisplayStatus.syncing) {
+      if (!_rotationController.isAnimating) _rotationController.repeat();
+    } else {
+      _rotationController.stop();
+    }
   }
 
   String _errorLabel(String userId) {
@@ -49,6 +66,12 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
 
   @override
   Widget build(BuildContext context) {
+    // Drive the rotation animation from state transitions only — the listener
+    // fires when the status changes, not on every rebuild.
+    ref.listen<SyncDisplayStatus>(syncStatusProvider, (prev, next) {
+      _applyRotation(next);
+    });
+
     final status = ref.watch(syncStatusProvider);
     final userId = ref.watch(currentUserIdProvider);
     // Count of conflicts detected within the last 24h. Non-zero means at
@@ -59,12 +82,6 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
         userId,
       ).select((count) => count.asData?.value ?? 0),
     );
-
-    if (status == SyncDisplayStatus.syncing) {
-      _rotationController.repeat();
-    } else {
-      _rotationController.stop();
-    }
 
     final colorScheme = Theme.of(context).colorScheme;
 

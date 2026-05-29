@@ -182,16 +182,18 @@ Future<bool> _cancelChickReminders(
   if (cancelCare) {
     try {
       await scheduler.cancelChickCareReminders(chickId);
-    } catch (e) {
-      AppLogger.warning('Failed to cancel chick care reminders: $e');
+    } catch (e, st) {
+      // Best-effort side effect: AppLogger.warning has no stackTrace param,
+      // so append it to the message to retain it for diagnosis.
+      AppLogger.warning('Failed to cancel chick care reminders: $e\n$st');
       sideEffectError = true;
     }
   }
   if (cancelBanding) {
     try {
       await scheduler.cancelBandingReminders(chickId);
-    } catch (e) {
-      AppLogger.warning('Failed to cancel banding reminders: $e');
+    } catch (e, st) {
+      AppLogger.warning('Failed to cancel banding reminders: $e\n$st');
       sideEffectError = true;
     }
   }
@@ -199,6 +201,13 @@ Future<bool> _cancelChickReminders(
 }
 
 /// Resolves father/mother IDs by traversing egg → incubation → breeding pair.
+///
+/// A missing link in the chain (no egg, no incubation, no pair) is an
+/// *expected* outcome — the chick simply has no derivable parents, so we
+/// return `(null, null)` without logging. A thrown exception, by contrast, is
+/// an unexpected repository failure that silently degrades the promoted bird's
+/// pedigree, so it is logged at error level with its stack trace (which also
+/// adds a Sentry breadcrumb) before falling back to null parents.
 Future<({String? fatherId, String? motherId})> _resolveParentIds(
   Ref ref,
   String? eggId,
@@ -220,8 +229,12 @@ Future<({String? fatherId, String? motherId})> _resolveParentIds(
         .getById(incubation.breedingPairId!);
     if (pair == null) return (fatherId: null, motherId: null);
     return (fatherId: pair.maleId, motherId: pair.femaleId);
-  } catch (e) {
-    AppLogger.warning('Failed to resolve parents for chick promotion: $e');
+  } catch (e, st) {
+    AppLogger.error(
+      'Failed to resolve parents for chick promotion (eggId: $eggId)',
+      e,
+      st,
+    );
     return (fatherId: null, motherId: null);
   }
 }

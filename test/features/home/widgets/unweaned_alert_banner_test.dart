@@ -42,7 +42,7 @@ void main() {
 
       // count=0 returns SizedBox.shrink — no alert text visible
       expect(find.text(l10n('home.unweaned_alert')), findsNothing);
-      expect(find.text(l10n('common.view')), findsNothing);
+      expect(find.text(l10n('home.view_unweaned')), findsNothing);
     });
 
     testWidgets('shows banner container when count > 0', (tester) async {
@@ -63,14 +63,14 @@ void main() {
       await tester.pumpWidget(createSubject(2));
       await tester.pump();
 
-      expect(find.text(l10n('common.view')), findsOneWidget);
+      expect(find.text(l10n('home.view_unweaned')), findsOneWidget);
     });
 
     testWidgets('tapping view navigates to chicks screen', (tester) async {
       await tester.pumpWidget(createSubject(2));
       await tester.pump();
 
-      await tester.tap(find.text(l10n('common.view')));
+      await tester.tap(find.text(l10n('home.view_unweaned')));
       await tester.pumpAndSettle();
 
       expect(find.text('Chicks'), findsOneWidget);

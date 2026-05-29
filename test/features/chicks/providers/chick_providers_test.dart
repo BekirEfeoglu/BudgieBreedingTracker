@@ -197,18 +197,30 @@ void main() {
       );
     });
 
-    test('searchedAndFilteredChicksProvider applies query', () {
-      final container = makeContainer();
-      addTearDown(container.dispose);
-
+    test('searchedAndFilteredChicksProvider applies query', () async {
       final chicks = [
         _chick(id: 'c1', name: 'Lemon', ring: 'TR-001'),
         _chick(id: 'c2', name: 'Sky', ring: 'TR-ABC'),
       ];
+      // Provider now reads the list from chicksStreamProvider(userId)
+      // internally (keyed on userId, not the List<Chick> identity).
+      when(
+        () => chickRepo.watchAll('user-1'),
+      ).thenAnswer((_) => Stream.value(chicks));
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
       container.read(chickFilterProvider.notifier).state = ChickFilter.all;
       container.read(chickSearchQueryProvider.notifier).state = 'abc';
 
-      final result = container.read(searchedAndFilteredChicksProvider(chicks));
+      // Prime the stream so the provider sees the emitted data.
+      container.listen(chicksStreamProvider('user-1'), (_, __) {});
+      await container.read(chicksStreamProvider('user-1').future);
+
+      final result = container.read(
+        searchedAndFilteredChicksProvider('user-1'),
+      );
       expect(result.single.id, 'c2');
     });
   });

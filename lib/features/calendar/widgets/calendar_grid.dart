@@ -30,6 +30,10 @@ class CalendarGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final now = DateTime.now();
+    // `today` and all grid-cell dates are local date-only (year/month/day,
+    // no time-of-day). `eventsMap` keys are likewise normalized to local
+    // calendar days upstream — keep everything date-only here to avoid
+    // mixed-timezone equality drift.
     final today = DateTime(now.year, now.month, now.day);
     final selected = DateTime(
       selectedDate.year,
@@ -115,7 +119,9 @@ class CalendarGrid extends StatelessWidget {
               final dayNum = index - startOffset + 1;
 
               if (dayNum < 1 || dayNum > daysInMonth) {
-                return const Expanded(child: SizedBox(height: 44));
+                // Match real cell height (48) so out-of-month rows don't
+                // collapse and misalign the grid.
+                return const Expanded(child: SizedBox(height: 48));
               }
 
               final date = DateTime(
@@ -230,9 +236,9 @@ class _DayCell extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isSelected
-                          ? theme.colorScheme.primary
-                          : eventTypeColor(events[i].type),
+                      // Preserve per-event-type color even on a selected day
+                      // so the type distinction isn't lost.
+                      color: eventTypeColor(events[i].type),
                     ),
                   ),
                 ),

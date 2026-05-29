@@ -147,10 +147,13 @@ class _AddEggSheetBodyState extends ConsumerState<_AddEggSheetBody> {
                       }
                     },
               child: isLoading
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 18,
                       height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        semanticsLabel: 'common.loading'.tr(),
+                      ),
                     )
                   : Text('common.add'.tr()),
             ),

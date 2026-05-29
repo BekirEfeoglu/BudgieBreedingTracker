@@ -164,10 +164,12 @@ class _BirdFormIdentitySectionState
         // after pressing Save.
         _ringError = exists ? 'birds.ring_number_not_unique'.tr() : null;
       });
-    } catch (e) {
+    } catch (e, st) {
       // Don't block the user if the lookup itself fails — submit-time
-      // server check is still the source of truth. Log so we notice.
-      AppLogger.warning('Ring uniqueness check failed: $e');
+      // server check is still the source of truth. Log at error with the
+      // stack trace so a recurring lookup failure is diagnosable in
+      // observability instead of being a context-free warning.
+      AppLogger.error('Ring uniqueness check failed', e, st);
     }
   }
 
@@ -195,7 +197,10 @@ class _BirdFormIdentitySectionState
           label: 'birds.birth_date'.tr(),
           value: widget.birthDate,
           onChanged: widget.onBirthDateChanged,
-          firstDate: DateTime(2015),
+          // Relative lower bound (30 years back) instead of a fixed calendar
+          // year so the selectable range doesn't silently shrink as time
+          // passes — covers realistic budgie lifespans.
+          firstDate: DateTime(DateTime.now().year - 30),
           lastDate: DateTime.now(),
           isRequired: false,
           dateFormatter: widget.dateFormatter,

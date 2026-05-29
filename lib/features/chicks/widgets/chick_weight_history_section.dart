@@ -1,5 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+// ignore: unnecessary_import
+import 'package:intl/intl.dart' show DateFormat;
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
@@ -10,7 +12,16 @@ import 'package:budgie_breeding_tracker/data/models/growth_measurement_model.dar
 class ChickWeightHistorySection extends StatelessWidget {
   final List<GrowthMeasurement> measurements;
 
-  const ChickWeightHistorySection({super.key, required this.measurements});
+  /// User-preference date formatter (matches [ChickDetailInfo]); threaded down
+  /// so measurement rows respect the locale/format setting instead of a
+  /// hardcoded `dd.MM.yyyy`.
+  final DateFormat dateFormatter;
+
+  const ChickWeightHistorySection({
+    super.key,
+    required this.measurements,
+    required this.dateFormatter,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +65,12 @@ class ChickWeightHistorySection extends StatelessWidget {
                 children: [
                   _WeightSparkline(measurements: sorted),
                   const SizedBox(height: AppSpacing.md),
-                  ...sorted.take(5).map(_WeightMeasurementRow.new),
+                  ...sorted.take(5).map(
+                        (m) => _WeightMeasurementRow(
+                          m,
+                          dateFormatter: dateFormatter,
+                        ),
+                      ),
                 ],
               ),
             ),
@@ -119,8 +135,9 @@ class _WeightSparkline extends StatelessWidget {
 
 class _WeightMeasurementRow extends StatelessWidget {
   final GrowthMeasurement measurement;
+  final DateFormat dateFormatter;
 
-  const _WeightMeasurementRow(this.measurement);
+  const _WeightMeasurementRow(this.measurement, {required this.dateFormatter});
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +148,7 @@ class _WeightMeasurementRow extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}',
+              dateFormatter.format(date),
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),

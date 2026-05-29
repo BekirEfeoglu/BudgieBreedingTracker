@@ -131,7 +131,7 @@ class MoreScreen extends ConsumerWidget {
           _MoreTile(
             icon: const AppIcon(AppIcons.info),
             title: 'more.about'.tr(),
-            onTap: () => _showMoreAboutDialog(context, ref),
+            onTap: () => _showMoreAboutDialog(context),
           ),
         ],
       ),

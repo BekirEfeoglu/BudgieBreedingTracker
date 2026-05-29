@@ -152,9 +152,14 @@ class BreedingFormState {
       error: identical(error, _unset) ? this.error : error as String?,
       warning: identical(warning, _unset) ? this.warning : warning as String?,
       isSuccess: isSuccess ?? this.isSuccess,
-      // Limit reach flags remain transient by design: setters pass true
-      // explicitly, omission resets to false. The form screen listener
-      // calls `reset()` once the dialog is shown.
+      // INVARIANT: the two limit-reach flags are intentionally one-shot — they
+      // do NOT use the `_unset` sentinel. Any `copyWith` that omits them resets
+      // them to false. This is deliberate: the flags exist only to trigger the
+      // premium upsell dialog exactly once. The setter (`createBreeding`) sets
+      // the relevant flag to true on a FreeTierLimitException; the form screen
+      // listener reads it, shows the dialog, then calls `reset()`. No other
+      // emission should carry the flag forward, so every other `copyWith`
+      // (e.g. `copyWith(isLoading: true)` at the top of each action) clears it.
       isBreedingLimitReached: isBreedingLimitReached ?? false,
       isIncubationLimitReached: isIncubationLimitReached ?? false,
     );

@@ -165,7 +165,7 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
   /// user knows the operation outcome instead of seeing the selection
   /// silently clear (or partially clear) with no explanation.
   Future<void> _runBulkAction({
-    required Future<void> Function(dynamic notifier, String id) action,
+    required Future<void> Function(BirdFormNotifier notifier, String id) action,
     required String logTag,
   }) async {
     final total = _selectedIds.length;
@@ -175,7 +175,6 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
     // and producing a confusing partial-failure summary.
     if (_isBulkRunning) return;
     _isBulkRunning = true;
-    final messenger = ScaffoldMessenger.of(context);
     final notifier = ref.read(birdFormStateProvider.notifier);
     final failures = <String>[];
 
@@ -208,7 +207,10 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
     final succeeded = total - failures.length;
     if (failures.isEmpty) {
       _clearSelection();
-      messenger.showSnackBar(
+      // Re-resolve the messenger here (after the long async loop + mounted
+      // guard) instead of capturing it before the loop — the original
+      // context may have been deactivated while the bulk pass ran.
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             'birds.bulk_action_success'.tr(args: ['$succeeded']),
@@ -223,7 +225,8 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
           ..clear()
           ..addAll(failures);
       });
-      messenger.showSnackBar(
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             'birds.bulk_action_partial'.tr(
@@ -242,6 +245,14 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
     final birdsAsync = ref.watch(birdsStreamProvider(userId));
     final currentSort = ref.watch(birdSortProvider);
     final viewMode = ref.watch(birdListViewModeProvider);
+    // A filter chip or a non-empty search narrows the visible list. When
+    // either is active the header count should reflect what is actually on
+    // screen, not the full flock total.
+    final isFilterActive = ref.watch(birdFilterProvider) != BirdFilter.all;
+    final isSearchActive = ref.watch(
+      birdSearchQueryProvider.select((q) => q.trim().isNotEmpty),
+    );
+    final isNarrowed = isFilterActive || isSearchActive;
 
     return Scaffold(
       appBar: AppBar(
@@ -251,10 +262,17 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
                 style: Theme.of(context).textTheme.titleMedium,
               )
             : birdsAsync.whenOrNull(
-                    data: (allBirds) => AppScreenTitle(
-                      title: '${'birds.title'.tr()} (${allBirds.length})',
-                      iconAsset: AppIcons.bird,
-                    ),
+                    data: (allBirds) {
+                      final count = isNarrowed
+                          ? ref
+                                .watch(sortedAndFilteredBirdsProvider(allBirds))
+                                .length
+                          : allBirds.length;
+                      return AppScreenTitle(
+                        title: '${'birds.title'.tr()} ($count)',
+                        iconAsset: AppIcons.bird,
+                      );
+                    },
                   ) ??
                   AppScreenTitle(
                     title: 'birds.title'.tr(),

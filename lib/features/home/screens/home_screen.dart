@@ -87,6 +87,9 @@ class HomeScreen extends ConsumerWidget {
             // above the orchestrator boundary.
             result = await ref.read(syncOrchestratorProvider).forceFullSync();
           } catch (e, st) {
+            // Broad catch is intentional: this is the top-level pull-to-refresh
+            // boundary, so any unexpected error type must be logged + reported
+            // (below) rather than crashing the refresh gesture.
             AppLogger.error('[HomeScreen] forceFullSync failed', e, st);
             // Unexpected exception above the orchestrator boundary —
             // ship to Sentry so we learn about it. observability.md

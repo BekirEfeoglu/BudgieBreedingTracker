@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 
 part 'event_card_helpers.dart';
@@ -187,17 +188,14 @@ class _EventActions extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (onEdit != null)
-          IconButton(
+          AppIconButton(
             icon: const AppIcon(AppIcons.edit, size: 18),
             onPressed: onEdit,
             tooltip: 'calendar.edit_event'.tr(),
-            constraints: const BoxConstraints(
-              minWidth: AppSpacing.touchTargetMin,
-              minHeight: AppSpacing.touchTargetMin,
-            ),
+            semanticLabel: 'calendar.edit_event'.tr(),
           ),
         if (onDelete != null)
-          IconButton(
+          AppIconButton(
             icon: AppIcon(
               AppIcons.delete,
               size: 18,
@@ -205,10 +203,7 @@ class _EventActions extends StatelessWidget {
             ),
             onPressed: onDelete,
             tooltip: 'calendar.delete_event'.tr(),
-            constraints: const BoxConstraints(
-              minWidth: AppSpacing.touchTargetMin,
-              minHeight: AppSpacing.touchTargetMin,
-            ),
+            semanticLabel: 'calendar.delete_event'.tr(),
           ),
       ],
     );

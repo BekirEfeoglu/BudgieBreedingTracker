@@ -14,8 +14,8 @@ void main() {
   // ChickFilter enum
   // ---------------------------------------------------------------------------
   group('ChickFilter', () {
-    test('has 9 values', () {
-      expect(ChickFilter.values, hasLength(9));
+    test('has 10 values', () {
+      expect(ChickFilter.values, hasLength(10));
     });
 
     test('contains expected values', () {
@@ -25,6 +25,7 @@ void main() {
           ChickFilter.all,
           ChickFilter.healthy,
           ChickFilter.sick,
+          ChickFilter.unknownHealth,
           ChickFilter.deceased,
           ChickFilter.unweaned,
           ChickFilter.newborn,
@@ -77,8 +78,7 @@ void main() {
       container.read(chickFilterProvider.notifier).state = ChickFilter.sick;
       expect(container.read(chickFilterProvider), ChickFilter.sick);
 
-      container.read(chickFilterProvider.notifier).state =
-          ChickFilter.deceased;
+      container.read(chickFilterProvider.notifier).state = ChickFilter.deceased;
       expect(container.read(chickFilterProvider), ChickFilter.deceased);
     });
   });

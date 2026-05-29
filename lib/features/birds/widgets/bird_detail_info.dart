@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
@@ -7,21 +8,23 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/cards/info_card.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/data/providers/date_format_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/utils/bird_color_utils.dart';
 import 'package:budgie_breeding_tracker/features/birds/utils/bird_display_utils.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_form_helpers.dart';
 
 /// Info section for bird detail screen showing gender, species, age, ring, cage, dates.
-class BirdDetailInfo extends StatelessWidget {
+class BirdDetailInfo extends ConsumerWidget {
   final Bird bird;
 
   const BirdDetailInfo({super.key, required this.bird});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final locale = Localizations.localeOf(context).languageCode;
-    final dateFormat = DateFormat.yMd(locale);
+    // Use the user's chosen date format (dateFormatProvider) instead of a
+    // locale-default yMd, matching the bird form's date display.
+    final dateFormat = ref.watch(dateFormatProvider).formatter();
     final age = bird.age;
     final hasRingNumber =
         bird.ringNumber != null && bird.ringNumber!.trim().isNotEmpty;
@@ -121,6 +124,10 @@ class BirdDetailInfo extends StatelessWidget {
           if (bird.status == BirdStatus.gifted && bird.soldDate != null) ...[
             const SizedBox(height: AppSpacing.sm),
             _DetailInfoTile(
+              // TODO(birds-audit #14): no AppIcons.statusGifted SVG exists;
+              // add that asset (sibling of statusAlive/Sold/Dead) and switch
+              // to AppIcon(AppIcons.statusGifted). LucideIcons.gift is a
+              // generic-UI fallback until then.
               icon: const Icon(LucideIcons.gift),
               title: dateFormat.format(bird.soldDate!),
               subtitle: 'birds.transfer_date'.tr(),

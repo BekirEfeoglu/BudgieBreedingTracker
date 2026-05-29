@@ -38,6 +38,10 @@ class BirdStatusBadge extends StatelessWidget {
     BirdStatus.alive => const AppIcon(AppIcons.statusAlive),
     BirdStatus.dead => const AppIcon(AppIcons.statusDead),
     BirdStatus.sold => const AppIcon(AppIcons.statusSold),
+    // TODO(birds-audit #14): domain "gifted" status has no SVG yet. Add an
+    // `AppIcons.statusGifted` asset (sibling of statusAlive/Sold/Dead) and
+    // switch to `AppIcon(AppIcons.statusGifted)`. LucideIcons.gift is a
+    // generic-UI fallback until that asset exists.
     BirdStatus.gifted => const Icon(LucideIcons.gift, size: 16),
     BirdStatus.unknown => const Icon(LucideIcons.helpCircle, size: 16),
   };

@@ -95,7 +95,13 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
     XFile? photoFile,
   }) async {
     if (state.isLoading) return;
-    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      isSuccess: false,
+      lastAction: BirdFormAction.save,
+    );
+    String? uploadedPhotoUrl;
     try {
       final repo = ref.read(birdRepositoryProvider);
       final normalizedRingNumber = _normalizeOptionalText(ringNumber);
@@ -143,6 +149,10 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
           photoUrl = await ref
               .read(photoRepositoryProvider)
               .uploadBirdPhoto(userId: userId, birdId: birdId, file: photoFile);
+          // Track the uploaded object so we can compensate (delete it) if a
+          // later step — the bird row save or the Photo row save — fails.
+          // Otherwise the object leaks in storage with no DB row pointing to it.
+          uploadedPhotoUrl = photoUrl;
         } catch (e, st) {
           AppLogger.error('BirdFormNotifier photo upload', e, st);
           state = state.copyWith(
@@ -208,6 +218,32 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
     } catch (e, st) {
       AppLogger.error('BirdFormNotifier', e, st);
       reportIfUnexpected(e, st);
+      // Compensating cleanup: if persistence failed after the photo was
+      // already uploaded, delete the orphaned storage object so it doesn't
+      // leak. Best-effort — a cleanup failure must not mask the original
+      // error shown to the user.
+      if (uploadedPhotoUrl != null) {
+        try {
+          await ref
+              .read(photoRepositoryProvider)
+              .deleteStorageForPhoto(
+                Photo(
+                  id: '',
+                  userId: userId,
+                  entityType: PhotoEntityType.bird,
+                  entityId: '',
+                  fileName: '',
+                  filePath: uploadedPhotoUrl,
+                ),
+              );
+        } catch (cleanupError, cleanupSt) {
+          AppLogger.error(
+            'BirdFormNotifier photo cleanup after save failure',
+            cleanupError,
+            cleanupSt,
+          );
+        }
+      }
       state = state.copyWith(
         isLoading: false,
         error: _mapIntegrityError(e) ?? 'errors.unknown'.tr(),
@@ -217,7 +253,12 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
 
   Future<void> updateBird(Bird bird) async {
     if (state.isLoading) return;
-    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      isSuccess: false,
+      lastAction: BirdFormAction.save,
+    );
     try {
       final repo = ref.read(birdRepositoryProvider);
       final normalizedRingNumber = _normalizeOptionalText(bird.ringNumber);

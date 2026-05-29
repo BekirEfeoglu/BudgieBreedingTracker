@@ -36,9 +36,10 @@ class EggTurningSummarySection extends StatelessWidget {
               child: summary.hasEggs
                   ? Row(
                       children: [
-                        const _IconBubble(
+                        _IconBubble(
                           color: AppColors.warning,
-                          icon: Icon(LucideIcons.rotateCw, size: 20),
+                          semanticLabel: 'home.egg_turning_today'.tr(),
+                          icon: const Icon(LucideIcons.rotateCw, size: 20),
                         ),
                         const SizedBox(width: AppSpacing.md),
                         Text(
@@ -89,9 +90,10 @@ class EggTurningSummarySection extends StatelessWidget {
                     )
                   : Row(
                       children: [
-                        const _IconBubble(
+                        _IconBubble(
                           color: AppColors.success,
-                          icon: Icon(LucideIcons.checkCircle2, size: 20),
+                          semanticLabel: 'home.no_egg_turning_today'.tr(),
+                          icon: const Icon(LucideIcons.checkCircle2, size: 20),
                         ),
                         const SizedBox(width: AppSpacing.md),
                         Expanded(
@@ -115,17 +117,27 @@ class EggTurningSummarySection extends StatelessWidget {
 class _IconBubble extends StatelessWidget {
   final Color color;
   final Widget icon;
+  final String semanticLabel;
 
-  const _IconBubble({required this.color, required this.icon});
+  const _IconBubble({
+    required this.color,
+    required this.icon,
+    required this.semanticLabel,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return CircleAvatar(
-      radius: 18,
-      backgroundColor: color.withValues(alpha: 0.15),
-      child: IconTheme(
-        data: IconThemeData(color: color),
-        child: icon,
+    // The status glyph conveys meaning ("eggs to turn" vs "all done"); expose
+    // it to screen readers since color/icon alone is not accessible.
+    return Semantics(
+      label: semanticLabel,
+      child: CircleAvatar(
+        radius: 18,
+        backgroundColor: color.withValues(alpha: 0.15),
+        child: IconTheme(
+          data: IconThemeData(color: color),
+          child: icon,
+        ),
       ),
     );
   }
