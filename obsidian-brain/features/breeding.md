@@ -31,7 +31,7 @@ Breeding creates the pair + incubation as one atomic operation. Pair/incubation 
 - Hatch dates from `species_incubation_config.dart`, not literal day counts
 - Species change on pair → linked incubations updated
 - Pair cancel/complete → close active incubations + cancel reminders
-- Pair delete cascade order: cancel notifications → detach chicks (null `eggId`/`clutchId`) → remove eggs → remove incubations → remove pair. Chicks survive as standalone records since they are live entities with their own lifecycle. (`breeding_form_actions.dart` `deleteBreeding`)
+- Pair delete cascade order: detach chicks (null `eggId`/`clutchId`) → remove eggs → remove incubations → remove pair → **cancel notifications/calendar last**. Reminders are cancelled only AFTER the cascade is confirmed to proceed; if a child is still live the delete blocks with a warning and reminders keep firing — cancelling up-front would strand a still-alive pair with its reminders already gone (May 2026 5-tab audit). Chicks survive as standalone records since they are live entities with their own lifecycle. (`breeding_form_actions.dart` `deleteBreeding`)
 
 ## Free Tier Guards
 

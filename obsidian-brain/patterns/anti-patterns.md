@@ -2,7 +2,7 @@
 
 Source: `CLAUDE.md` § Critical Anti-Patterns, `.claude/rules/coding-standards.md`
 
-Enforced by `python3 scripts/verify_code_quality.py` (27 checkers — covers 19/24 CLAUDE.md anti-patterns + 8 audit-flagged extras).
+Enforced by `python3 scripts/verify_code_quality.py` (28 checkers — covers 19/24 CLAUDE.md anti-patterns + 9 audit-flagged extras).
 
 ## Flutter API & Riverpod
 

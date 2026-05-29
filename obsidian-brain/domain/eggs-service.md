@@ -39,7 +39,7 @@ addEgg(incubationId, layDate, eggNumber)
 
 updateEggStatus(egg, newStatus)
   ├── set status + status-specific date (hatchDate / fertileCheckDate / discardDate)
-  ├── if newStatus == hatched → _autoCreateChickIfMissing
+  ├── if newStatus == hatched → _createChickFromHatchedEgg (idempotent per eggId)
   ├── reschedule reminders for the egg
   └── _completeIncubationIfAllEggsTerminal (closes parent if all eggs terminal)
        └── _flipPairIfNoActiveIncubations (closes pair if no active incubations)
@@ -50,11 +50,24 @@ deleteEgg(id)
   └── propagate to _completeIncubationIfAllEggsTerminal
 ```
 
+## Terminal Status
+
+`EggStatus.isTerminal` (`lib/core/enums/egg_enums.dart`) is the **single source
+of truth** for end-of-lifecycle checks — turning-reminder cancellation,
+`_completeIncubationIfAllEggsTerminal`, and active-egg filtering all read it.
+Terminal: `hatched`, `damaged`, `discarded`, `infertile`, `empty`. Non-terminal:
+`laid`, `fertile`, `incubating`, `unknown`. Mirrors the no-transition arms of
+`IncubationCalculator.getValidStatusTransitions`; replaced the scattered private
+`_isTerminalEggStatus` helper (May 2026 5-tab audit).
+
 ## Auto-Create Chick
 
-`markAsHatched` on an egg triggers `_autoCreateChickIfMissing(egg)`. Behavior:
+Setting an egg's status to `hatched` triggers `_createChickFromHatchedEgg(egg)`. Behavior:
 
 - **Idempotent**: only inserts when no chick already exists for the egg
+- **Fail-closed on read failure**: if the duplicate-check read itself throws,
+  auto-create is skipped (never risk a duplicate chick) and a `warning` surfaces
+  so the user adds the chick manually (May 2026 5-tab audit)
 - **Inherits**: `userId`, `eggId`, `clutchId`, `hatchDate` from the egg
 - **Does not rollback**: if chick insert fails, the egg stays `hatched`,
   and the failure surfaces as a `warning` so the user can add the chick

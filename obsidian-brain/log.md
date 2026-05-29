@@ -4,6 +4,31 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-05-29] sync | 5-tab audit + l10n/checker stat drift
+
+Synced the five commits that landed after the `bb1798c` wiki sync: `f43b7ef`
+(5-tab audit), `27ed5ec` (l10n 2,987→2,992), `dc4efd3` (version 1.1.1+32),
+`77e091b` (checker count → 28), `615cffe` (community tab icons #92).
+
+- Stat drift: l10n **2,987 → 2,992** (`overview.md` ×2, `patterns/l10n.md`,
+  `architecture/folder-structure.md`); `verify_code_quality.py` checker count
+  **27 → 28** with **8 → 9** extras — added the `Spacing` (hardcoded →
+  `AppSpacing`) checker to the enumerated list (`overview.md`,
+  `patterns/anti-patterns.md`, `infrastructure/scripts.md`,
+  `infrastructure/ci-cd.md`).
+- `features/breeding.md`: pair-delete cascade reordered — notifications/calendar
+  are cancelled **last**, only after the cascade is confirmed to proceed. A
+  blocked delete (child still live) now keeps reminders firing instead of
+  stranding a live pair (`breeding_form_actions.dart` `deleteBreeding`).
+- `domain/eggs-service.md`: new **Terminal Status** section — `EggStatus.isTerminal`
+  (`hatched`/`damaged`/`discarded`/`infertile`/`empty`) is the single source of
+  truth, replacing private `_isTerminalEggStatus`. Added fail-closed chick
+  auto-create on duplicate-check read failure. Corrected stale symbols
+  (`markAsHatched`/`_autoCreateChickIfMissing` → `_createChickFromHatchedEgg`).
+- `verify_rules.py` PASS — all numeric stats already at baseline.
+
+---
+
 ## [2026-05-29] sync | Leaderboard display-name privacy + stat drift sweep
 
 Documented the leaderboard display-name + privacy opt-out feature (commits

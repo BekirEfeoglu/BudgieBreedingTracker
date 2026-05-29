@@ -58,7 +58,7 @@
 - See [[patterns/security]]
 
 ### 4. 24 Anti-Patterns
-Enforced by `scripts/verify_code_quality.py` (27 checkers — 19/24 CLAUDE.md anti-patterns + 8 audit-flagged extras). Key ones:
+Enforced by `scripts/verify_code_quality.py` (28 checkers — 19/24 CLAUDE.md anti-patterns + 9 audit-flagged extras). Key ones:
 - `withOpacity()` → `withValues(alpha: x)`
 - `context.go()` forward nav → `context.push()`
 - `ref.watch()` in callbacks → `ref.read()`
@@ -69,7 +69,7 @@ Enforced by `scripts/verify_code_quality.py` (27 checkers — 19/24 CLAUDE.md an
 ### 5. 3-Language Parity
 - Turkish is master language — all keys added to `tr.json` first
 - CI blocks PRs with missing keys in `en.json` or `de.json`
-- ~2,987 keys per language, 41 categories
+- ~2,992 keys per language, 41 categories
 - See [[patterns/l10n]]
 
 ## Codebase Stats (as of 2026-05-29)
@@ -89,7 +89,7 @@ Enforced by `scripts/verify_code_quality.py` (27 checkers — 19/24 CLAUDE.md an
 | Shared widgets | 29 |
 | Enum files | 15 |
 | Supabase constants | 137 |
-| L10n keys | ~2,987 per language, 41 categories |
+| L10n keys | ~2,992 per language, 41 categories |
 | DB schema version | 25 |
 | Supabase migrations | 160 SQL files |
 | Edge Functions | 9 |
