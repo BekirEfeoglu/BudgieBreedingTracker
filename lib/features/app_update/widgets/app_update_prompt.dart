@@ -19,8 +19,10 @@ import '../../../domain/services/app_update/app_update_providers.dart';
 /// - optional update -> dismissible banner over the content
 /// - required update (local build < min_supported_build) -> full-screen block
 ///
-/// Android uses native Play in-app updates (see AndroidInAppUpdater); this
-/// prompt is iOS-only.
+/// Platform split:
+/// - iOS: both optional banner and required block are rendered here.
+/// - Android: optional updates are handled natively by Play (see
+///   AndroidInAppUpdater); only the DB-driven required block is rendered here.
 class AppUpdatePrompt extends ConsumerStatefulWidget {
   const AppUpdatePrompt({super.key, required this.child});
 
@@ -43,7 +45,17 @@ class _AppUpdatePromptState extends ConsumerState<AppUpdatePrompt> {
 
   Widget? _overlayFor(BuildContext context, AppUpdateStatus? status) {
     if (status == null) return null;
-    if (Theme.of(context).platform != TargetPlatform.iOS) return null;
+    final platform = Theme.of(context).platform;
+    final isIOS = platform == TargetPlatform.iOS;
+    final isAndroid = platform == TargetPlatform.android;
+    if (!isIOS && !isAndroid) return null;
+
+    // On Android the optional banner is suppressed (native Play in-app updates
+    // own that path); only the DB-driven required block surfaces here. Defends
+    // alongside the provider, which already returns null for non-required
+    // Android statuses.
+    if (isAndroid && !status.isRequired) return null;
+
     final versionKey =
         '${status.info.latestVersion}+${status.info.latestBuild}';
     if (!status.isRequired && _dismissedVersionKey == versionKey) return null;

@@ -8,35 +8,48 @@ platform-native mechanism:
   The live App Store version is auto-detected via iTunes Lookup (merged with
   `system_settings.app_version`).
 - **Android** — Google Play **native in-app updates** via the `in_app_update`
-  package (`InAppUpdateService` + `AndroidInAppUpdater`). Flexible by default
-  (background download → "restart" SnackBar); immediate (full-screen, blocking)
-  when the Play release sets `updatePriority >= 4`. No remote config needed.
+  package (`InAppUpdateService` + `AndroidInAppUpdater`) for *optional* updates.
+  Flexible by default (background download → "restart" SnackBar); immediate
+  (full-screen, blocking) when the Play release sets `updatePriority >= 4`.
+  In addition, `AppUpdatePrompt` renders the **DB-driven required block** on
+  Android (`local < min_supported_build`), giving ops a server-side kill switch
+  for old builds on top of Play's `updatePriority`.
 
-To avoid a double prompt, the custom prompt is **iOS-only**:
-`appUpdateStatusProvider` returns null on Android, and the widget also gates on
-`Theme.of(context).platform == TargetPlatform.iOS`.
+To avoid a double prompt, the **optional** custom prompt is iOS-only:
+`appUpdateStatusProvider` returns null on Android unless the status is required,
+and the widget suppresses the optional banner on Android
+(`isAndroid && !isRequired → no overlay`). The required full-screen block is
+shown on both platforms.
+
+**Config source of truth**: `system_settings.app_version` (JSON, per-platform).
+The earlier `app_versions` table was orphaned (never read) and dropped in
+migration `20260529121000`.
 
 ## Key Widgets
 
 | Widget | Role |
 |--------|------|
-| `AppUpdatePrompt` | iOS prompt wrapper; renders an in-tree banner/overlay (not a route), mounted at the builder level alongside `OfflineBanner` |
+| `AppUpdatePrompt` | Update prompt wrapper; renders an in-tree banner/overlay (not a route), mounted at the builder level alongside `OfflineBanner`. iOS: optional banner + required block. Android: required block only. |
 | `AndroidInAppUpdater` | App-wide wrapper (outermost in the builder); on Android triggers the Play check at startup + resume and shows the flexible "restart" SnackBar. Passthrough on other platforms. |
 
 There's no dedicated screen — iOS draws an in-tree banner/overlay in the widget
 tree (a `Stack` over the child) so GoRouter page rebuilds can't dismiss it;
 Android uses Google Play's own native update UI.
 
-## iOS Provider Chain
+## Provider Chain
 
-`appUpdateStatusProvider` returns null on Android (the native flow handles it).
+On Android `appUpdateStatusProvider` returns the status only when required
+(optional updates are owned by the native Play flow); on iOS it returns any
+available update.
 
 ```
-AppUpdatePrompt (iOS only)
+AppUpdatePrompt
   └── watches appUpdateStatusProvider (lib/domain/services/app_update/)
         └── reads package_info_plus local build + version
-        └── reads remote AppUpdateInfo (system_settings.app_version) + iTunes Lookup
+        └── reads remote AppUpdateInfo (system_settings.app_version)
+        └── iTunes Lookup for live App Store version (iOS only)
         └── AppUpdateInfo.evaluate() → AppUpdateStatus (isUpdateAvailable + isRequired)
+        └── Android: returns status only if isRequired, else null
 ```
 
 An available update with `isRequired == false` renders the dismissible banner;

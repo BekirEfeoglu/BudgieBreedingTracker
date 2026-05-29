@@ -1,0 +1,11 @@
+-- Drop the orphaned app_versions table.
+--
+-- Created in 20260502120000 as a per-platform update-metadata table, but the
+-- implementation pivoted the same day to system_settings.app_version
+-- (20260502174216). No client code, edge function, script, or other migration
+-- reads app_versions — confirmed by repo-wide grep. Keeping it left two
+-- conflicting "sources of truth" for update config.
+--
+-- Forward-only cleanup: system_settings.app_version is now the single source.
+-- The table holds only seed config rows (no user data), so the drop is safe.
+DROP TABLE IF EXISTS public.app_versions;

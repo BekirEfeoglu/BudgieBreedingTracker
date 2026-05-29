@@ -199,3 +199,13 @@ statistics PDF share action backed by reusable highlight providers.
 
 Added bird-list cage ledger from existing `cageNumber`, same-cage breeding
 selector hints, and a local user-guide topic for cage tracking.
+
+## [2026-05-29] fix | app_update: Android DB force-update + config cleanup
+
+`appUpdateStatusProvider` now reads the Android `system_settings.app_version`
+block and surfaces the DB-driven required block (`local < min_supported_build`)
+on Android too — a server-side kill switch on top of Play `updatePriority`.
+Optional Android updates stay native (Play). Bumped stale config to 1.1.1+32
+(migration `20260529120000`); dropped the orphaned `app_versions` table
+(migration `20260529121000`). `system_settings.app_version` is the single
+source of truth.

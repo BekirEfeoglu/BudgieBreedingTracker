@@ -12,9 +12,6 @@ import 'app_update_info.dart';
 
 final appUpdateStatusProvider = FutureProvider<AppUpdateStatus?>((ref) async {
   try {
-    // Android uses native Play in-app updates (InAppUpdateService); the custom
-    // dialog path is iOS-only. Returning null here prevents a second prompt.
-    if (Platform.isAndroid) return null;
     final packageInfo = await PackageInfo.fromPlatform();
     final currentBuild = int.tryParse(packageInfo.buildNumber) ?? 0;
     final platform = Platform.isIOS ? 'ios' : 'android';
@@ -29,6 +26,9 @@ final appUpdateStatusProvider = FutureProvider<AppUpdateStatus?>((ref) async {
         .eq('key', 'app_version')
         .maybeSingle();
 
+    // App Store version lookup is iOS-only (iTunes API). On Android the live
+    // "latest version" comes from Play; this provider only consumes the
+    // DB-configured min_supported_build for the forced-update path.
     final appStoreListing = Platform.isIOS
         ? await const AppStoreLookupService().fetchLatest()
         : null;
@@ -44,6 +44,14 @@ final appUpdateStatusProvider = FutureProvider<AppUpdateStatus?>((ref) async {
       currentVersion: packageInfo.version,
       currentBuild: currentBuild,
     );
+
+    if (Platform.isAndroid) {
+      // Optional Android updates are driven natively by Play in-app updates
+      // (AndroidInAppUpdater). This provider only surfaces the DB-controlled
+      // forced update (currentBuild < min_supported_build), giving ops a
+      // server-side kill switch for old builds on top of Play's updatePriority.
+      return status.isRequired ? status : null;
+    }
     return status.isUpdateAvailable ? status : null;
   } catch (e, st) {
     AppLogger.warning('[AppUpdate] Check failed, continuing normally: $e');

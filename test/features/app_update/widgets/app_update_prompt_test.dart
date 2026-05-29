@@ -109,7 +109,7 @@ void main() {
   });
 
   testWidgets(
-    'does not show update dialog on Android even when update is available',
+    'does not show optional update on Android (Play owns that path)',
     (tester) async {
       const status = AppUpdateStatus(
         info: updateInfo,
@@ -126,6 +126,28 @@ void main() {
 
       expect(find.text('app child'), findsOneWidget);
       expect(find.text('app_update.available_title'), findsNothing);
+      expect(find.text('app_update.required_title'), findsNothing);
     },
   );
+
+  testWidgets('shows required update block on Android', (tester) async {
+    const status = AppUpdateStatus(
+      info: updateInfo,
+      isUpdateAvailable: true,
+      isRequired: true,
+      currentVersion: '1.0.0',
+      currentBuild: 1,
+    );
+
+    await pumpLocalizedApp(
+      tester,
+      subject(status, platform: TargetPlatform.android),
+    );
+
+    // DB-driven forced update (currentBuild < min_supported_build) is surfaced
+    // on Android as a non-dismissible full-screen block, with no "later".
+    expect(find.text('app_update.required_title'), findsOneWidget);
+    expect(find.text('app_update.update_now'), findsOneWidget);
+    expect(find.text('app_update.later'), findsNothing);
+  });
 }
