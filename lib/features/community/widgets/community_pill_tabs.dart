@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/app_haptics.dart';
+import '../../../core/widgets/app_icon.dart';
 import '../providers/community_providers.dart';
 
 /// Pill-shaped chip tab bar for community feed filtering.
@@ -175,13 +177,9 @@ class _PillTab extends StatelessWidget {
         size: 16,
         color: color,
       ),
-      CommunityFeedTab.guides => Icon(
-        LucideIcons.bookOpen,
-        size: 16,
-        color: color,
-      ),
+      CommunityFeedTab.guides => AppIcon(AppIcons.guide, size: 16, color: color),
       CommunityFeedTab.questions => Icon(
-        LucideIcons.store,
+        LucideIcons.helpCircle,
         size: 16,
         color: color,
       ),
