@@ -40,8 +40,14 @@ class MainActivity : FlutterActivity() {
                     View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         }
 
-        window.statusBarColor = Color.TRANSPARENT
-        window.navigationBarColor = Color.TRANSPARENT
+        // API 35+ : setStatusBarColor/setNavigationBarColor deprecated + no-op
+        // (edge-to-edge modunda barlar zaten şeffaf). Eski sürümlerde gerekli.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            @Suppress("DEPRECATION")
+            window.statusBarColor = Color.TRANSPARENT
+            @Suppress("DEPRECATION")
+            window.navigationBarColor = Color.TRANSPARENT
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             window.isNavigationBarContrastEnforced = false
