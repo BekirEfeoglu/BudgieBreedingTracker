@@ -184,7 +184,7 @@
        animation entirely for noscript users. -->
   <noscript>
     <style>
-      .reveal, .reveal-scale, .reveal-left, .reveal-right, .reveal-flip {
+      .reveal, .reveal-scale, .reveal-left, .reveal-right, .reveal-flip, .gsap-hidden, .hero-word {
         opacity: 1 !important;
         transform: none !important;
       }
@@ -310,17 +310,17 @@
             <span class="text-xs font-semibold tracking-wide uppercase" style="color: var(--gold);" data-i18n="hero_badge">Yetistiriciler Icin Tasarlandi</span>
           </div>
 
-          <h1 class="hero-title text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight mb-6">
-            <span class="hero-word" style="color: var(--sage-light); animation-delay: 0.5s;" data-i18n="hero_title_1">Muhabbet Kusu</span><br>
-            <span class="hero-word gradient-text" style="animation-delay: 0.7s;" data-i18n="hero_title_2">Ureme Takibi</span><br>
-            <span class="hero-word" style="color: var(--sage-light); animation-delay: 0.9s;" data-i18n="hero_title_3">Artik Kolay</span>
+          <h1 class="hero-title text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.15] tracking-tight mb-6">
+            <span class="hero-word-wrapper"><span class="hero-word" style="color: var(--sage-light);" data-i18n="hero_title_1">Muhabbet Kusu</span></span><br>
+            <span class="hero-word-wrapper"><span class="hero-word gradient-text" data-i18n="hero_title_2">Ureme Takibi</span></span><br>
+            <span class="hero-word-wrapper"><span class="hero-word" style="color: var(--sage-light);" data-i18n="hero_title_3">Artik Kolay</span></span>
           </h1>
 
-          <p class="hero-subtitle-gsap text-lg sm:text-xl max-w-lg mx-auto lg:mx-0 mb-10 leading-relaxed opacity-0 animate-fade-up-delay-2" style="color: var(--sage);" data-i18n="hero_subtitle">
+          <p class="hero-subtitle-gsap text-lg sm:text-xl max-w-lg mx-auto lg:mx-0 mb-10 leading-relaxed gsap-hidden" style="color: var(--sage);" data-i18n="hero_subtitle">
             Kuslarinizi, yumurtalarinizi, yavrularinizi ve genetik hesaplamarinizi tek bir uygulamada yonetin. Offline calisin, verileriniz guvende kalsin.
           </p>
 
-          <div class="hero-cta-gsap flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start opacity-0 animate-fade-up-delay-3">
+          <div class="hero-cta-gsap flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start gsap-hidden">
             <a href="#cta" class="group inline-flex items-center gap-2.5 px-8 py-4 btn-shimmer rounded-2xl transition-all hover:scale-[1.02] magnetic-btn cta-primary-enhanced" style="box-shadow: 0 8px 32px rgba(245,200,66,0.2);">
               <svg aria-hidden="true" class="w-5 h-5 transition-transform group-hover:-translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
               <span data-i18n="hero_cta_primary">Uygulamayi Indir</span>
@@ -839,6 +839,11 @@
               <!-- Arrow: DB ↔ Cloud (when online) -->
               <path id="arrow-db-cloud" d="M206 110 L248 110" stroke="#F5C842" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead-gold)" class="od-arrow-sync"/>
               <path id="arrow-cloud-db" d="M248 130 L206 130" stroke="#F5C842" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead-gold-rev)" class="od-arrow-sync"/>
+
+              <!-- Flow dots (data packets) -->
+              <circle r="3" fill="#FFE680" class="od-dot-db-cloud" filter="url(#glow)"/>
+              <circle r="3" fill="#FFE680" class="od-dot-cloud-db" filter="url(#glow)"/>
+              <circle r="3" fill="#5599DD" class="od-dot-phone-db" filter="url(#glow)"/>
 
               <!-- Labels -->
               <text x="113" y="113" text-anchor="middle" fill="#5599DD" font-size="7" font-family="DM Sans, sans-serif" data-i18n-svg="offline_svg_always">her zaman</text>
@@ -2047,35 +2052,74 @@
 
       document.querySelectorAll('.feature-card-enhanced').forEach(card => {
         let rect = null;
-        let pendingX = 0, pendingY = 0;
+        let isHovered = false;
+        
+        // Inertia variables (damping)
+        let currentRX = 0, currentRY = 0;
+        let targetRX = 0, targetRY = 0;
+        let currentX = 50, currentY = 50;
+        let targetX = 50, targetY = 50;
+        
         let rafId = 0;
+        const easing = 0.08; // Friction factor (lower = smoother/slower catch up)
 
-        const apply = () => {
-          rafId = 0;
-          if (!rect) return;
-          const x = pendingX - rect.left;
-          const y = pendingY - rect.top;
-          const cx = rect.width / 2;
-          const cy = rect.height / 2;
-          const rX = ((y - cy) / cy) * -3;
-          const rY = ((x - cx) / cx) * 3;
-          card.style.setProperty('--mouse-x', ((x / rect.width) * 100) + '%');
-          card.style.setProperty('--mouse-y', ((y / rect.height) * 100) + '%');
-          card.style.transform = `translateY(-8px) perspective(800px) rotateX(${rX}deg) rotateY(${rY}deg)`;
+        const update = () => {
+          // LERP formula
+          currentRX += (targetRX - currentRX) * easing;
+          currentRY += (targetRY - currentRY) * easing;
+          currentX += (targetX - currentX) * easing;
+          currentY += (targetY - currentY) * easing;
+
+          // Apply styling custom properties for glare effects
+          card.style.setProperty('--mouse-x', currentX + '%');
+          card.style.setProperty('--mouse-y', currentY + '%');
+          
+          if (isHovered) {
+            card.style.transform = `translateY(-8px) perspective(800px) rotateX(${currentRX}deg) rotateY(${currentRY}deg)`;
+          } else {
+            // Smooth release back to zero orientation
+            card.style.transform = `translateY(0px) perspective(800px) rotateX(${currentRX}deg) rotateY(${currentRY}deg)`;
+          }
+
+          // Stop loop when close to target rest state to save CPU cycles
+          const diff = Math.abs(targetRX - currentRX) + Math.abs(targetRY - currentRY);
+          if (!isHovered && diff < 0.01) {
+            card.style.transform = '';
+            rafId = 0;
+          } else {
+            rafId = requestAnimationFrame(update);
+          }
         };
 
         card.addEventListener('mouseenter', () => {
-          rect = card.getBoundingClientRect();  // cache once per hover session
+          rect = card.getBoundingClientRect(); // Cache bounds once
+          isHovered = true;
+          if (!rafId) rafId = requestAnimationFrame(update);
         });
+
         card.addEventListener('mousemove', (e) => {
-          pendingX = e.clientX;
-          pendingY = e.clientY;
-          if (!rafId) rafId = requestAnimationFrame(apply);
+          if (!rect) return;
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const cx = rect.width / 2;
+          const cy = rect.height / 2;
+          
+          // Max tilt angles: 4.5 degrees
+          targetRX = ((y - cy) / cy) * -4.5;
+          targetRY = ((x - cx) / cx) * 4.5;
+          targetX = (x / rect.width) * 100;
+          targetY = (y / rect.height) * 100;
+          
+          if (!rafId) rafId = requestAnimationFrame(update);
         });
+
         card.addEventListener('mouseleave', () => {
-          if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+          isHovered = false;
+          targetRX = 0;
+          targetRY = 0;
+          targetX = 50;
+          targetY = 50;
           rect = null;
-          card.style.transform = '';
         });
       });
     }
@@ -2203,14 +2247,7 @@
       }, { threshold: 0.5 });
       document.querySelectorAll('.heading-reveal').forEach(el => headingObserver.observe(el));
 
-      // ─── Pause carousel when off-screen ───
-      const carouselTrack = document.querySelector('.screenshot-track');
-      if (carouselTrack) {
-        const carouselObserver = new IntersectionObserver((entries) => {
-          entries.forEach(e => carouselTrack.classList.toggle('paused', !e.isIntersecting));
-        }, { threshold: 0 });
-        carouselObserver.observe(carouselTrack.parentElement || carouselTrack);
-      }
+
 
       // ─── Magnetic Buttons ───
       document.querySelectorAll('.magnetic-btn').forEach(btn => {
@@ -2411,13 +2448,18 @@
       gsap.registerPlugin(ScrollTrigger);
 
       // ── Hero entrance timeline ──
-      const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      const heroTl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+      
+      // Prevent flash of unstyled content (FOUC) by setting initial state
+      gsap.set('.hero-subtitle-gsap, .hero-cta-gsap', { opacity: 0, y: 30 });
+      gsap.set('.hero-word', { y: '102%' });
+      
       heroTl
-        .from('.hero-word',    { y: 50, opacity: 0, duration: 0.7, stagger: 0.15 })
-        .from('.hero-subtitle-gsap', { y: 20, opacity: 0, duration: 0.5 }, '-=0.2')
-        .from('.hero-cta-gsap',      { y: 20, opacity: 0, duration: 0.5 }, '-=0.2')
-        .from('.phone-mockup',       { x: 60, opacity: 0, duration: 0.8, ease: 'power2.out' }, '-=0.4')
-        .from('.budgie-hero',        { scale: 0.6, opacity: 0, duration: 0.5, ease: 'back.out(1.7)' }, '-=0.3');
+        .to('.hero-word',            { y: '0%', duration: 1.0, stagger: 0.15 })
+        .to('.hero-subtitle-gsap',   { opacity: 1, y: 0, duration: 0.7 }, '-=0.6')
+        .to('.hero-cta-gsap',        { opacity: 1, y: 0, duration: 0.7 }, '-=0.5')
+        .from('.phone-mockup',       { x: 80, opacity: 0, duration: 1.2, ease: 'power3.out' }, '-=0.9')
+        .from('.budgie-hero',        { scale: 0.4, opacity: 0, duration: 0.8, ease: 'back.out(1.5)' }, '-=0.7');
 
       // ── Feature cards stagger on scroll ──
       gsap.from('.feature-card-enhanced', {
@@ -2485,6 +2527,77 @@
           scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 2 },
           y: -80, ease: 'none',
         });
+      }
+
+      // ── Screenshot Carousel (ScrollTrigger + 3D Parallax & Velocity Skew) ──
+      const track = document.querySelector('.screenshot-track');
+      if (track) {
+        // Disable CSS scrolling animation since GSAP is active
+        track.style.animation = 'none';
+
+        // Calculate scroll width for animation.
+        // We have duplicated elements inside the track for infinite effect,
+        // so we scroll by half of its total scroll width.
+        const scrollVal = track.scrollWidth / 2;
+
+        const carouselAnim = gsap.to(track, {
+          x: -scrollVal,
+          ease: 'none',
+          scrollTrigger: {
+            id: 'carouselAnim',
+            trigger: '#screenshots',
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1.2,
+            invalidateOnRefresh: true,
+          }
+        });
+
+        // 3D Tilt/Rotate (Coveflow Depth) using containerAnimation
+        const items = track.querySelectorAll('.screenshot-item-3d');
+        items.forEach(item => {
+          gsap.fromTo(item, 
+            { rotateY: 15, scale: 0.95 },
+            {
+              rotateY: -15,
+              scale: 0.95,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: item,
+                containerAnimation: carouselAnim,
+                start: 'left right',
+                end: 'right left',
+                scrub: true
+              }
+            }
+          );
+        });
+
+        // Velocity-based Skew (Tilt on fast scrolling)
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          let proxy = { skew: 0 },
+              skewSetter = gsap.quickSetter('.screenshot-item-3d', 'skewX', 'deg'),
+              clamp = gsap.utils.clamp(-10, 10); // Max 10 degrees skew
+
+          ScrollTrigger.create({
+            trigger: '#screenshots',
+            start: 'top bottom',
+            end: 'bottom top',
+            onUpdate: (self) => {
+              let skew = clamp(self.getVelocity() / 350);
+              if (Math.abs(skew) > Math.abs(proxy.skew)) {
+                proxy.skew = skew;
+                gsap.to(proxy, {
+                  skew: 0,
+                  duration: 0.8,
+                  ease: 'power3.out',
+                  overwrite: 'auto',
+                  onUpdate: () => skewSetter(proxy.skew)
+                });
+              }
+            }
+          });
+        }
       }
 
     });
