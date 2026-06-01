@@ -81,7 +81,7 @@ dependencies:
   # Icons
   lucide_icons: ^0.257.0
   flutter_svg: ^2.0.10+1
-  sign_in_with_apple: ^8.0.0
+  sign_in_with_apple: ^8.1.0
   google_sign_in: ^7.2.0
   home_widget: ^0.9.1
   workmanager: ^0.9.0+3
