@@ -7,6 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_pill_tabs.dart';
 
@@ -34,22 +36,10 @@ void main() {
       await tester.pumpWidget(wrap());
       await tester.pumpAndSettle();
 
-      expect(
-        find.text(l10n('community.tab_explore')),
-        findsOneWidget,
-      );
-      expect(
-        find.text(l10n('community.tab_following')),
-        findsOneWidget,
-      );
-      expect(
-        find.text(l10n('community.tab_guides')),
-        findsOneWidget,
-      );
-      expect(
-        find.text(l10n('community.tab_questions')),
-        findsOneWidget,
-      );
+      expect(find.text(l10n('community.tab_explore')), findsOneWidget);
+      expect(find.text(l10n('community.tab_following')), findsOneWidget);
+      expect(find.text(l10n('community.tab_guides')), findsOneWidget);
+      expect(find.text(l10n('community.tab_questions')), findsOneWidget);
     });
 
     testWidgets('renders tab icons', (tester) async {
@@ -58,12 +48,18 @@ void main() {
 
       expect(find.byIcon(LucideIcons.flame), findsOneWidget);
       expect(find.byIcon(LucideIcons.users), findsOneWidget);
-      expect(find.byIcon(LucideIcons.bookOpen), findsOneWidget);
-      expect(find.byIcon(LucideIcons.store), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (widget) => widget is AppIcon && widget.asset == AppIcons.guide,
+        ),
+        findsOneWidget,
+      );
+      expect(find.byIcon(LucideIcons.helpCircle), findsOneWidget);
     });
 
-    testWidgets('tapping a tab updates the active tab provider',
-        (tester) async {
+    testWidgets('tapping a tab updates the active tab provider', (
+      tester,
+    ) async {
       await tester.pumpWidget(wrap());
       await tester.pumpAndSettle();
 
@@ -85,10 +81,7 @@ void main() {
           ],
           child: const MaterialApp(
             home: Scaffold(
-              body: SizedBox(
-                width: 250,
-                child: CommunityPillTabs(),
-              ),
+              body: SizedBox(width: 250, child: CommunityPillTabs()),
             ),
           ),
         ),
@@ -109,9 +102,7 @@ void main() {
     });
 
     testWidgets('active tab has gradient decoration', (tester) async {
-      await tester.pumpWidget(
-        wrap(initialTab: CommunityFeedTab.guides),
-      );
+      await tester.pumpWidget(wrap(initialTab: CommunityFeedTab.guides));
       await tester.pumpAndSettle();
 
       // All four tabs render with AnimatedContainer

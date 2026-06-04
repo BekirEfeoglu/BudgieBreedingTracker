@@ -37,10 +37,11 @@
 - [ ] `flutter analyze --no-fatal-infos` hatasız geçiyor
 - [ ] `python3 scripts/verify_code_quality.py` hatasız geçiyor
 - [ ] Testler yazıldı / güncellendi ve ilgili `flutter test ...` komutu geçti
+- [ ] Edge Function değiştiyse `deno test --allow-env --allow-net supabase/functions` geçti
 - [ ] Freezed/Drift/JSON/Riverpod değiştiyse `dart run build_runner build --delete-conflicting-outputs` çalıştırıldı
 - [ ] Lokalizasyon değiştiyse `python3 scripts/check_l10n_sync.py` geçti
 - [ ] Kural/metrik değiştiyse `python3 scripts/verify_rules.py --strict` geçti
-- [ ] CI/workflow değiştiyse `.claude/rules/ci-actions.md` güncellendi
+- [ ] CI/workflow değiştiyse `.claude/rules/ci-actions.md` ve `.github/pull_request_template.md` güncellendi
 - [ ] CI coverage upload değiştiyse token olmayan ortamda job bilinçli skip/no-op davranıyor
 - [ ] CI/workflow değiştiyse workflow YAML parse edildi ve push sonrası `python3 scripts/check_remote_status.py` ile exact commit doğrulandı
 - [ ] Release artifact davranışı değiştiyse `release-ready.yml`, `CLAUDE.md`, `.claude/rules/release-ops.md` birlikte güncellendi

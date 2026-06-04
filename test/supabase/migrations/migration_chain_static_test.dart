@@ -38,7 +38,124 @@ void main() {
       expect(sql, contains('REVOKE ALL ON FUNCTION'));
       expect(sql, contains('FROM PUBLIC, anon, authenticated'));
     });
+
+    test('community_blocks table is created with API grants and RLS', () {
+      final sql = _allMigrationSql();
+
+      expect(
+        sql,
+        contains('CREATE TABLE IF NOT EXISTS public.community_blocks'),
+      );
+      expect(sql, contains('community_blocks_no_self_block'));
+      expect(sql, contains('community_blocks_unique_pair'));
+      expect(
+        sql,
+        contains(
+          'ALTER TABLE public.community_blocks ENABLE ROW LEVEL SECURITY',
+        ),
+      );
+      expect(
+        sql,
+        contains(
+          'ALTER TABLE public.community_blocks FORCE ROW LEVEL SECURITY',
+        ),
+      );
+      expect(
+        sql,
+        contains(
+          'REVOKE ALL ON TABLE public.community_blocks FROM PUBLIC, anon, authenticated',
+        ),
+      );
+      expect(
+        sql,
+        contains(
+          'GRANT SELECT, INSERT, DELETE ON TABLE public.community_blocks TO authenticated',
+        ),
+      );
+      expect(sql, contains('idx_community_blocks_blocked_user'));
+    });
+
+    test(
+      'cleanup function drift is repaired after original audit migration',
+      () {
+        final repairSql = _migrationSqlAfter(
+          '20260413100000',
+          requiredText:
+              'CREATE OR REPLACE FUNCTION public.cleanup_expired_rate_limits()',
+        );
+
+        expect(
+          repairSql,
+          contains(
+            'CREATE OR REPLACE FUNCTION public.cleanup_expired_backups()',
+          ),
+        );
+        expect(
+          repairSql,
+          contains('GET DIAGNOSTICS deleted_count = ROW_COUNT'),
+        );
+        expect(repairSql, isNot(contains('RETURNING count(*) INTO')));
+      },
+    );
+
+    test('edge function tests run before deployment in CI', () {
+      final ci = File('.github/workflows/ci.yml').readAsStringSync();
+
+      expect(ci, contains('edge-functions-test:'));
+      expect(
+        ci,
+        contains('deno test --allow-env --allow-net supabase/functions'),
+      );
+      expect(ci, contains('needs: [analyze, test, edge-functions-test]'));
+    });
+
+    test('app-owned database lint warnings are repaired after grant fixes', () {
+      final lintRepairSql = _migrationSqlAfter(
+        '20260604190611',
+        requiredText:
+            'CREATE OR REPLACE FUNCTION private.admin_reset_all_user_data()',
+      );
+
+      expect(lintRepairSql, contains('reset_tables text[] := ARRAY[]::text[]'));
+      expect(
+        lintRepairSql,
+        contains(
+          'PERFORM p_is_premium, '
+          'p_subscription_status, '
+          'p_premium_expires_at, '
+          'p_plan, '
+          'p_current_period_end',
+        ),
+      );
+      expect(
+        lintRepairSql,
+        contains('premium_sync_requires_server_verification'),
+      );
+    });
   });
+}
+
+String _allMigrationSql() =>
+    _migrationFiles().map((file) => file.readAsStringSync()).join('\n');
+
+String _migrationSqlAfter(String version, {required String requiredText}) {
+  final matches = _migrationFiles()
+      .where((file) => file.uri.pathSegments.last.compareTo(version) > 0)
+      .map((file) => file.readAsStringSync())
+      .where((sql) => sql.contains(requiredText))
+      .toList();
+
+  expect(matches, isNotEmpty);
+  return matches.join('\n');
+}
+
+List<File> _migrationFiles() {
+  return Directory('supabase/migrations')
+      .listSync()
+      .whereType<File>()
+      .where((file) => file.path.endsWith('.sql'))
+      .toList()
+    ..sort((a, b) => a.path.compareTo(b.path));
 }
 
 String _functionBlock(String sql, String name) {

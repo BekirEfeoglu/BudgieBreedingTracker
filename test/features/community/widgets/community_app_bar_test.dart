@@ -7,8 +7,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_app_bar.dart';
 import 'package:budgie_breeding_tracker/features/gamification/providers/gamification_providers.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_list_providers.dart';
@@ -27,15 +29,13 @@ void main() {
         currentUserIdProvider.overrideWithValue(userId),
         userProfileProvider.overrideWith((ref) => Stream.value(null)),
         userLevelProvider(userId).overrideWith((ref) => Future.value(null)),
-        unreadNotificationsProvider(userId)
-            .overrideWith((ref) => Stream.value([])),
+        unreadNotificationsProvider(
+          userId,
+        ).overrideWith((ref) => Stream.value([])),
         actionFeedbackProvider.overrideWith(_EmptyActionFeedbackNotifier.new),
       ],
       child: const MaterialApp(
-        home: Scaffold(
-          appBar: CommunityAppBar(),
-          body: SizedBox.shrink(),
-        ),
+        home: Scaffold(appBar: CommunityAppBar(), body: SizedBox.shrink()),
       ),
     );
   }
@@ -55,8 +55,9 @@ void main() {
       expect(find.text(l10n('community.title')), findsOneWidget);
     });
 
-    testWidgets('implements PreferredSizeWidget with height 92',
-        (tester) async {
+    testWidgets('implements PreferredSizeWidget with height 92', (
+      tester,
+    ) async {
       const appBar = CommunityAppBar();
       expect(appBar.preferredSize, const Size.fromHeight(92));
     });
@@ -79,7 +80,12 @@ void main() {
       await tester.pumpWidget(wrap());
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(LucideIcons.search), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (widget) => widget is AppIcon && widget.asset == AppIcons.search,
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows user initials when no avatar', (tester) async {
@@ -94,14 +100,8 @@ void main() {
       await tester.pumpWidget(wrap());
       await tester.pumpAndSettle();
 
-      expect(
-        find.byTooltip(l10n('messaging.title')),
-        findsOneWidget,
-      );
-      expect(
-        find.byTooltip(l10n('community.search')),
-        findsOneWidget,
-      );
+      expect(find.byTooltip(l10n('messaging.title')), findsOneWidget);
+      expect(find.byTooltip(l10n('community.search')), findsOneWidget);
     });
 
     testWidgets('renders action IconButtons', (tester) async {
@@ -113,8 +113,7 @@ void main() {
       expect(find.byType(IconButton), findsNWidgets(4));
     });
 
-    testWidgets('renders with transparent AppBar background',
-        (tester) async {
+    testWidgets('renders with transparent AppBar background', (tester) async {
       await tester.pumpWidget(wrap());
       await tester.pumpAndSettle();
 

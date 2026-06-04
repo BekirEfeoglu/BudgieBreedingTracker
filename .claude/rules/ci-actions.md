@@ -15,12 +15,13 @@
 | `analyze` | `flutter analyze --no-fatal-infos` | PR merge |
 | `test` | Unit + widget tests, optional Codecov when `CODECOV_TOKEN` exists | PR merge |
 | `golden-test` | Visual regression (Linux) | PR merge |
+| `edge-functions-test` | `deno test --allow-env --allow-net supabase/functions` | PR merge + Edge deploy |
 | `scripts-test` | Python script tests (>=98% cov) | PR merge |
 | `l10n-sync` | Translation key parity | PR merge |
 | `code-quality` | Anti-pattern scan | PR merge |
 | `rules-sync` | CLAUDE.md stats verification | PR merge |
 | `auto-fix-stats` | Auto-PR for stats drift | main only |
-| `deploy-edge-functions` | Supabase Edge Function deploy | main only, needs analyze+test |
+| `deploy-edge-functions` | Supabase Edge Function deploy | main only, needs analyze+test+edge-functions-test |
 
 ## Release-Ready Workflow
 - `release-ready.yml` manuel calisir; main push CI'sini store artifact uretimiyle yavaslatma
@@ -48,6 +49,7 @@
 - Tekrar eden failure: once workflow'u duzelt, sonra eski run'lari temizle
 - Debug araclari: `gh run list`, `gh run view`, `gh api .../check-runs/.../annotations`
 - CI job isimleri degisirse branch protection / required checks'i guncelle
+- Supabase Edge Function deploy job'u `edge-functions-test` sonucuna bagli kalmali; function source veya shared helper degistiginde Deno testleri deploy oncesi kosmali
 - Codecov upload token gerektiriyorsa test job'unu kirmiziya dusurme; `CODECOV_TOKEN` yokken upload adimini intentional skip/no-op yap
 
 ## Post-Push Verification

@@ -205,6 +205,8 @@ void main() {
       final payload = blockQuery.upsertPayload as Map<String, dynamic>;
       expect(payload['user_id'], 'user-1');
       expect(payload['blocked_user_id'], 'bad-user');
+      expect(blockQuery.upsertOnConflict, 'user_id,blocked_user_id');
+      expect(blockQuery.upsertIgnoreDuplicates, isTrue);
     });
 
     test('unblockUser deletes with correct filters', () async {

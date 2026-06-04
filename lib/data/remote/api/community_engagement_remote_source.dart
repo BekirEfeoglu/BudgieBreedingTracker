@@ -49,7 +49,11 @@ class CommunityEngagementRemoteSource {
             ignoreDuplicates: true,
           );
     } catch (e, st) {
-      throw BaseRemoteSource.handleErrorForTag('community_engagement.bookmarkPost', e, st);
+      throw BaseRemoteSource.handleErrorForTag(
+        'community_engagement.bookmarkPost',
+        e,
+        st,
+      );
     }
   }
 
@@ -61,7 +65,11 @@ class CommunityEngagementRemoteSource {
           .eq('user_id', userId)
           .eq('post_id', postId);
     } catch (e, st) {
-      throw BaseRemoteSource.handleErrorForTag('community_engagement.unbookmarkPost', e, st);
+      throw BaseRemoteSource.handleErrorForTag(
+        'community_engagement.unbookmarkPost',
+        e,
+        st,
+      );
     }
   }
 
@@ -149,7 +157,11 @@ class CommunityEngagementRemoteSource {
             ignoreDuplicates: true,
           );
     } catch (e, st) {
-      throw BaseRemoteSource.handleErrorForTag('community_engagement.followUser', e, st);
+      throw BaseRemoteSource.handleErrorForTag(
+        'community_engagement.followUser',
+        e,
+        st,
+      );
     }
   }
 
@@ -161,7 +173,11 @@ class CommunityEngagementRemoteSource {
           .eq('follower_id', userId)
           .eq('following_id', targetUserId);
     } catch (e, st) {
-      throw BaseRemoteSource.handleErrorForTag('community_engagement.unfollowUser', e, st);
+      throw BaseRemoteSource.handleErrorForTag(
+        'community_engagement.unfollowUser',
+        e,
+        st,
+      );
     }
   }
 
@@ -191,13 +207,23 @@ class CommunityEngagementRemoteSource {
   /// Blocks a user on the server.
   Future<void> blockUser(String userId, String blockedUserId) async {
     try {
-      await _client.from(SupabaseConstants.communityBlocksTable).upsert({
-        'id': const Uuid().v7(),
-        'user_id': userId,
-        'blocked_user_id': blockedUserId,
-      }, onConflict: SupabaseConstants.colId);
+      await _client
+          .from(SupabaseConstants.communityBlocksTable)
+          .upsert(
+            {
+              'id': const Uuid().v7(),
+              'user_id': userId,
+              'blocked_user_id': blockedUserId,
+            },
+            onConflict: 'user_id,blocked_user_id',
+            ignoreDuplicates: true,
+          );
     } catch (e, st) {
-      throw BaseRemoteSource.handleErrorForTag('community_engagement.blockUser', e, st);
+      throw BaseRemoteSource.handleErrorForTag(
+        'community_engagement.blockUser',
+        e,
+        st,
+      );
     }
   }
 
@@ -210,7 +236,11 @@ class CommunityEngagementRemoteSource {
           .eq('user_id', userId)
           .eq('blocked_user_id', blockedUserId);
     } catch (e, st) {
-      throw BaseRemoteSource.handleErrorForTag('community_engagement.unblockUser', e, st);
+      throw BaseRemoteSource.handleErrorForTag(
+        'community_engagement.unblockUser',
+        e,
+        st,
+      );
     }
   }
 
@@ -235,7 +265,11 @@ class CommunityEngagementRemoteSource {
         if (description != null) 'description': description,
       }, onConflict: 'user_id,target_id,target_type');
     } catch (e, st) {
-      throw BaseRemoteSource.handleErrorForTag('community_engagement.reportContent', e, st);
+      throw BaseRemoteSource.handleErrorForTag(
+        'community_engagement.reportContent',
+        e,
+        st,
+      );
     }
   }
 }

@@ -135,6 +135,21 @@ jobs:
             **/golden_failures/*.txt
           if-no-files-found: ignore
 
+  edge-functions-test:
+    name: Edge Functions Test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Install Deno
+        run: |
+          curl -fsSL https://deno.land/install.sh | sh
+          echo "$HOME/.deno/bin" >> "$GITHUB_PATH"
+
+      - name: Run Supabase Edge Function tests
+        run: deno test --allow-env --allow-net supabase/functions
+
   e2e-community-test:
     name: E2E and Community Test
     runs-on: ubuntu-24.04
@@ -318,7 +333,7 @@ jobs:
     timeout-minutes: 10
     # Only deploy on main branch pushes, after tests pass
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [analyze, test]
+    needs: [analyze, test, edge-functions-test]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 

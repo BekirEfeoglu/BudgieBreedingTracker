@@ -59,7 +59,8 @@ Current webhook receivers: `revenuecat-webhook` (shared secret via `REVENUECAT_W
   3. Schema validation (malformed body)
   4. Business logic edge cases (limits, retries)
 - Tests live in `supabase/functions/<name>/test.ts` using Deno test runner
-- CI `deploy-edge-functions` job must run tests before deploy
+- CI `deploy-edge-functions` job must depend on `edge-functions-test`, which
+  runs `deno test --allow-env --allow-net supabase/functions` before deploy
 - Dart-side test of HTTP wrapper ≠ edge function test — both required
 
 ## Deployment

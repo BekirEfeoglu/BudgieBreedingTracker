@@ -145,6 +145,8 @@ class FakeQueryBuilder extends Fake implements SupabaseQueryBuilder {
   final FakeFilterBuilder<dynamic> updateBuilder;
   final FakeFilterBuilder<dynamic> deleteBuilder;
   Object? upsertPayload;
+  String? upsertOnConflict;
+  bool? upsertIgnoreDuplicates;
   Object? insertPayload;
   Object? updatePayload;
   String? selectedColumns;
@@ -163,6 +165,8 @@ class FakeQueryBuilder extends Fake implements SupabaseQueryBuilder {
     bool defaultToNull = true,
   }) {
     upsertPayload = values;
+    upsertOnConflict = onConflict;
+    upsertIgnoreDuplicates = ignoreDuplicates;
     return upsertBuilder;
   }
 
