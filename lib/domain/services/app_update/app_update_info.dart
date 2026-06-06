@@ -132,17 +132,37 @@ AppUpdateInfo? resolveAppUpdateInfo({
   );
 
   if (appStoreListing == null) return configured;
-  if (configured == null ||
-      compareVersionNames(appStoreListing.version, configured.latestVersion) >
-          0) {
+  if (configured == null) {
     return AppUpdateInfo(
       latestVersion: appStoreListing.version,
       latestBuild: 0,
-      minSupportedBuild: configured?.minSupportedBuild ?? 0,
+      minSupportedBuild: 0,
       storeUrl: appStoreListing.storeUrl,
-      releaseNotesTr: configured?.releaseNotesTr,
-      releaseNotesEn: configured?.releaseNotesEn,
-      releaseNotesDe: configured?.releaseNotesDe,
+    );
+  }
+
+  final storeVersionComparison = compareVersionNames(
+    appStoreListing.version,
+    configured.latestVersion,
+  );
+  if (storeVersionComparison < 0) {
+    return AppUpdateInfo(
+      latestVersion: appStoreListing.version,
+      latestBuild: 0,
+      minSupportedBuild: 0,
+      storeUrl: appStoreListing.storeUrl,
+    );
+  }
+
+  if (storeVersionComparison > 0) {
+    return AppUpdateInfo(
+      latestVersion: appStoreListing.version,
+      latestBuild: 0,
+      minSupportedBuild: configured.minSupportedBuild,
+      storeUrl: appStoreListing.storeUrl,
+      releaseNotesTr: configured.releaseNotesTr,
+      releaseNotesEn: configured.releaseNotesEn,
+      releaseNotesDe: configured.releaseNotesDe,
     );
   }
 

@@ -97,5 +97,37 @@ void main() {
         expect(info.storeUrl, 'https://apps.apple.com/tr/app/id6759828211');
       },
     );
+
+    test(
+      'App Store henuz Supabase latest surumune ulasmadiysa iOS uyarisi store surumune kilitlenir',
+      () {
+        final info = resolveAppUpdateInfo(
+          settingValue: {
+            'ios': {
+              'latest_version': '1.1.2',
+              'latest_build': 33,
+              'min_supported_build': 33,
+              'store_url': 'https://apps.apple.com/app/id6759828211',
+            },
+          },
+          appStoreListing: const AppStoreListing(
+            version: '1.1.1',
+            storeUrl:
+                'https://apps.apple.com/tr/app/budgie-breeding-tracker/id6759828211',
+          ),
+          platform: 'ios',
+          defaultStoreUrl: 'https://apps.apple.com/app/id6759828211',
+        );
+
+        expect(info, isNotNull);
+        expect(info!.latestVersion, '1.1.1');
+        expect(info.latestBuild, 0);
+        expect(info.minSupportedBuild, 0);
+        expect(
+          info.storeUrl,
+          'https://apps.apple.com/tr/app/budgie-breeding-tracker/id6759828211',
+        );
+      },
+    );
   });
 }
