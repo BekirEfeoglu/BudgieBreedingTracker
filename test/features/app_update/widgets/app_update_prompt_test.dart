@@ -108,27 +108,26 @@ void main() {
     expect(find.text('app child'), findsOneWidget);
   });
 
-  testWidgets(
-    'does not show optional update on Android (Play owns that path)',
-    (tester) async {
-      const status = AppUpdateStatus(
-        info: updateInfo,
-        isUpdateAvailable: true,
-        isRequired: false,
-        currentVersion: '1.0.0',
-        currentBuild: 1,
-      );
+  testWidgets('shows optional update banner on Android', (tester) async {
+    const status = AppUpdateStatus(
+      info: updateInfo,
+      isUpdateAvailable: true,
+      isRequired: false,
+      currentVersion: '1.0.0',
+      currentBuild: 1,
+    );
 
-      await pumpLocalizedApp(
-        tester,
-        subject(status, platform: TargetPlatform.android),
-      );
+    await pumpLocalizedApp(
+      tester,
+      subject(status, platform: TargetPlatform.android),
+    );
 
-      expect(find.text('app child'), findsOneWidget);
-      expect(find.text('app_update.available_title'), findsNothing);
-      expect(find.text('app_update.required_title'), findsNothing);
-    },
-  );
+    expect(find.text('app child'), findsOneWidget);
+    expect(find.text('app_update.available_title'), findsOneWidget);
+    expect(find.text('app_update.later'), findsOneWidget);
+    expect(find.text('app_update.update_now'), findsOneWidget);
+    expect(find.text('app_update.required_title'), findsNothing);
+  });
 
   testWidgets('shows required update block on Android', (tester) async {
     const status = AppUpdateStatus(

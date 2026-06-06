@@ -165,6 +165,10 @@ class AppUpdateStatus {
   final int currentBuild;
 }
 
+AppUpdateStatus? visibleAppUpdateStatus(AppUpdateStatus status) {
+  return status.isUpdateAvailable ? status : null;
+}
+
 int compareVersionNames(String left, String right) {
   final leftParts = _versionParts(left);
   final rightParts = _versionParts(right);

@@ -53,6 +53,23 @@ void main() {
       },
     );
 
+    test('opsiyonel guncelleme Android store bildirimi icin gorunur kalir', () {
+      const info = AppUpdateInfo(
+        latestVersion: '1.1.2',
+        latestBuild: 33,
+        minSupportedBuild: 0,
+        storeUrl:
+            'https://play.google.com/store/apps/details?id=com.budgiebreeding.budgie_breeding_tracker',
+      );
+
+      final status = info.evaluate(currentVersion: '1.1.1', currentBuild: 32);
+      final visible = visibleAppUpdateStatus(status);
+
+      expect(visible, isNotNull);
+      expect(visible!.isUpdateAvailable, isTrue);
+      expect(visible.isRequired, isFalse);
+    });
+
     test(
       'App Store surumu Supabase latest degerinden yeniyse onu kullanir',
       () {

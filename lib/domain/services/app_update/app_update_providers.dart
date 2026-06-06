@@ -26,9 +26,10 @@ final appUpdateStatusProvider = FutureProvider<AppUpdateStatus?>((ref) async {
         .eq('key', 'app_version')
         .maybeSingle();
 
-    // App Store version lookup is iOS-only (iTunes API). On Android the live
-    // "latest version" comes from Play; this provider only consumes the
-    // DB-configured min_supported_build for the forced-update path.
+    // App Store version lookup is iOS-only (iTunes API). Android update
+    // prompts use the DB-configured app_version value so users are informed on
+    // startup even when Play in-app updates are unavailable for the installed
+    // build/track.
     final appStoreListing = Platform.isIOS
         ? await const AppStoreLookupService().fetchLatest()
         : null;
@@ -45,14 +46,7 @@ final appUpdateStatusProvider = FutureProvider<AppUpdateStatus?>((ref) async {
       currentBuild: currentBuild,
     );
 
-    if (Platform.isAndroid) {
-      // Optional Android updates are driven natively by Play in-app updates
-      // (AndroidInAppUpdater). This provider only surfaces the DB-controlled
-      // forced update (currentBuild < min_supported_build), giving ops a
-      // server-side kill switch for old builds on top of Play's updatePriority.
-      return status.isRequired ? status : null;
-    }
-    return status.isUpdateAvailable ? status : null;
+    return visibleAppUpdateStatus(status);
   } catch (e, st) {
     AppLogger.warning('[AppUpdate] Check failed, continuing normally: $e');
     AppLogger.error('[AppUpdate] Version check error', e, st);
