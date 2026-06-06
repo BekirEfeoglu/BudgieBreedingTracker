@@ -169,7 +169,7 @@
   <link rel="preload" as="image" href="logo.png">
 
   <!-- Shared styles — render-critical, loaded synchronously -->
-  <link rel="stylesheet" href="style.css?v=20260515">
+  <link rel="stylesheet" href="style.css?v=20260606">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="logo.png">
@@ -232,7 +232,7 @@
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
         <!-- Logo -->
-        <a href="/" class="flex items-center gap-2.5 group" aria-label="BudgieBreedingTracker — ana sayfa">
+        <a href="/" class="flex items-center gap-2.5 group" aria-label="BudgieBreedingTracker — ana sayfa" data-i18n-aria-label="nav_home_aria">
           <img src="logo.png" alt="BudgieBreedingTracker" class="w-9 h-9 rounded-lg transition-transform duration-300 group-hover:scale-110" style="border: 1px solid rgba(245,200,66,0.3);">
           <span class="font-extrabold text-lg hidden sm:inline tracking-tight" style="color: var(--gold-light);">BudgieBreedingTracker</span>
           <span class="font-extrabold text-lg sm:hidden tracking-tight" style="color: var(--gold-light);">BBT</span>
@@ -321,11 +321,11 @@
           </p>
 
           <div class="hero-cta-gsap flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start gsap-hidden">
-            <a href="#cta" class="group inline-flex items-center gap-2.5 px-8 py-4 btn-shimmer rounded-2xl transition-all hover:scale-[1.02] magnetic-btn cta-primary-enhanced" style="box-shadow: 0 8px 32px rgba(245,200,66,0.2);">
+            <a href="#cta" class="group inline-flex items-center gap-2.5 px-8 py-4 btn-shimmer rounded-2xl transition-all hover:scale-[1.02] magnetic-btn cta-primary-enhanced" style="box-shadow: 0 8px 32px rgba(245,200,66,0.2);" aria-label="BudgieBreedingTracker indirme seçeneklerine git" data-i18n-aria-label="hero_cta_primary_aria">
               <svg aria-hidden="true" class="w-5 h-5 transition-transform group-hover:-translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
               <span data-i18n="hero_cta_primary">Uygulamayi Indir</span>
             </a>
-            <a href="#features" class="group inline-flex items-center gap-2 px-8 py-4 backdrop-blur font-semibold rounded-2xl transition-all hover:shadow-md" style="background: rgba(20,50,100,0.35); color: var(--gold-light); border: 1px solid var(--glass-border);" onmouseover="this.style.borderColor='var(--glass-border-hover)'" onmouseout="this.style.borderColor='var(--glass-border)'">
+            <a href="#features" class="group inline-flex items-center gap-2 px-8 py-4 backdrop-blur font-semibold rounded-2xl transition-all hover:shadow-md hero-cta-secondary">
               <span data-i18n="hero_cta_secondary">Ozellikleri Kesfet</span>
               <svg aria-hidden="true" class="w-4 h-4 transition-transform group-hover:translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </a>
@@ -341,7 +341,7 @@
             <div class="phone-mockup animate-float glow-pulse">
               <div class="pt-8 px-4 flex flex-col items-center">
                 <!-- App header inside phone -->
-                <img src="logo.png" alt="App Logo" class="w-20 h-20 rounded-2xl shadow-lg mt-6 mb-4" fetchpriority="high" decoding="async">
+                <img src="logo.png" alt="BudgieBreedingTracker uygulama logosu" data-i18n-alt="phone_logo_alt" class="w-20 h-20 rounded-2xl shadow-lg mt-6 mb-4" fetchpriority="high" decoding="async">
                 <div class="text-center mb-4">
                   <div class="text-sm font-bold" style="color: #2D5A9E;">BudgieBreedingTracker</div>
                   <div class="text-[10px] mt-0.5" style="color: #6B8AAE;" data-i18n="phone_subtitle">Ureme Takip Uygulamasi</div>
@@ -388,7 +388,7 @@
             <div class="absolute -top-16 -right-6 sm:-right-14 z-10">
               <div class="budgie-hero">
                 <span class="budgie-heart" aria-hidden="true">💛</span>
-                <svg class="budgie-svg" viewBox="0 0 130 160" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Animated budgie">
+                <svg class="budgie-svg" viewBox="0 0 130 160" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Animasyonlu muhabbet kuşu" data-i18n-aria-label="hero_budgie_aria">
                   <ellipse cx="65" cy="152" rx="28" ry="5" fill="rgba(0,0,0,0.2)"/>
                   <g><path d="M52 118 Q44 138 38 148 Q50 140 56 124 Z" fill="#1A3A6B"/><path d="M58 120 Q55 142 52 152 Q62 143 64 124 Z" fill="#2D5A9E"/><path d="M66 120 Q68 143 68 153 Q74 143 72 124 Z" fill="#1A3A6B"/><path d="M72 118 Q80 138 86 148 Q76 140 70 124 Z" fill="#4A8FD4"/></g>
                   <ellipse cx="62" cy="100" rx="26" ry="30" fill="#4A8FD4"/>
@@ -419,8 +419,8 @@
               <div class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(30,70,140,0.4);">☁️</div>
                 <div>
-                  <div class="text-[10px]" style="color: var(--sage);">Sync</div>
-                  <div class="text-xs font-bold" style="color: var(--leaf-light);">Online ✓</div>
+                  <div class="text-[10px]" style="color: var(--sage);" data-i18n="sync_badge_label">Senkron</div>
+                  <div class="text-xs font-bold" style="color: var(--leaf-light);" data-i18n="sync_badge_status">Çevrimiçi ✓</div>
                 </div>
               </div>
             </div>
@@ -585,65 +585,65 @@
           <div class="screenshot-track">
             <!-- First set (10 screenshots) -->
             <div class="screenshot-item-3d">
-              <img src="screenshots/1.png" alt="Ana Sayfa" width="1242" height="2688" loading="lazy" decoding="async">
+              <img src="screenshots/1.png" alt="Ana Sayfa" data-i18n-alt="ss_label_dashboard" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/2.png" alt="Kuş Listesi" width="1242" height="2688" loading="lazy" decoding="async">
+              <img src="screenshots/2.png" alt="Kuş Listesi" data-i18n-alt="ss_label_birds" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/6.png" alt="Sağlık Kayıtları" width="1242" height="2688" loading="lazy" decoding="async">
+              <img src="screenshots/6.png" alt="Sağlık Kayıtları" data-i18n-alt="ss_label_health" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/3.png" alt="Üreme Takibi" width="1242" height="2688" loading="lazy" decoding="async">
+              <img src="screenshots/3.png" alt="Üreme Takibi" data-i18n-alt="ss_label_breeding" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/10.png" alt="Ayarlar" width="1242" height="2688" loading="lazy" decoding="async">
+              <img src="screenshots/10.png" alt="Ayarlar" data-i18n-alt="ss_label_settings" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/9.png" alt="Genetik Hesaplayıcı" width="1242" height="2688" loading="lazy" decoding="async">
+              <img src="screenshots/9.png" alt="Genetik Hesaplayıcı" data-i18n-alt="ss_label_genetics" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/4.png" alt="Yavrular" width="1242" height="2688" loading="lazy" decoding="async">
+              <img src="screenshots/4.png" alt="Yavrular" data-i18n-alt="ss_label_chicks" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/5.png" alt="Takvim" width="1242" height="2688" loading="lazy" decoding="async">
+              <img src="screenshots/5.png" alt="Takvim" data-i18n-alt="ss_label_calendar" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/7.png" alt="İstatistikler" width="1242" height="2688" loading="lazy" decoding="async">
+              <img src="screenshots/7.png" alt="İstatistikler" data-i18n-alt="ss_label_statistics" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/8.png" alt="Soy Ağacı" width="1242" height="2688" loading="lazy" decoding="async">
+              <img src="screenshots/8.png" alt="Soy Ağacı" data-i18n-alt="ss_label_genealogy" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <!-- Duplicate for infinite scroll -->
             <div class="screenshot-item-3d">
-              <img src="screenshots/1.png" alt="Ana Sayfa" width="1242" height="2688" loading="lazy" decoding="async">
+              <img src="screenshots/1.png" alt="Ana Sayfa" data-i18n-alt="ss_label_dashboard" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/2.png" alt="Kuş Listesi" width="1242" height="2688" loading="lazy" decoding="async">
+              <img src="screenshots/2.png" alt="Kuş Listesi" data-i18n-alt="ss_label_birds" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/6.png" alt="Sağlık Kayıtları" width="1242" height="2688" loading="lazy" decoding="async">
+              <img src="screenshots/6.png" alt="Sağlık Kayıtları" data-i18n-alt="ss_label_health" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/3.png" alt="Üreme Takibi" width="1242" height="2688" loading="lazy" decoding="async">
+              <img src="screenshots/3.png" alt="Üreme Takibi" data-i18n-alt="ss_label_breeding" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/10.png" alt="Ayarlar" width="1242" height="2688" loading="lazy" decoding="async">
+              <img src="screenshots/10.png" alt="Ayarlar" data-i18n-alt="ss_label_settings" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/9.png" alt="Genetik Hesaplayıcı" width="1242" height="2688" loading="lazy" decoding="async">
+              <img src="screenshots/9.png" alt="Genetik Hesaplayıcı" data-i18n-alt="ss_label_genetics" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/4.png" alt="Yavrular" width="1242" height="2688" loading="lazy" decoding="async">
+              <img src="screenshots/4.png" alt="Yavrular" data-i18n-alt="ss_label_chicks" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/5.png" alt="Takvim" width="1242" height="2688" loading="lazy" decoding="async">
+              <img src="screenshots/5.png" alt="Takvim" data-i18n-alt="ss_label_calendar" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/7.png" alt="İstatistikler" width="1242" height="2688" loading="lazy" decoding="async">
+              <img src="screenshots/7.png" alt="İstatistikler" data-i18n-alt="ss_label_statistics" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
             <div class="screenshot-item-3d">
-              <img src="screenshots/8.png" alt="Soy Ağacı" width="1242" height="2688" loading="lazy" decoding="async">
+              <img src="screenshots/8.png" alt="Soy Ağacı" data-i18n-alt="ss_label_genealogy" width="1242" height="2688" loading="lazy" decoding="async">
             </div>
           </div>
         </div>
@@ -799,7 +799,7 @@
         <!-- Right: animated SVG diagram -->
         <div class="flex-1 flex justify-center reveal-right">
           <div class="relative w-full max-w-sm">
-            <svg id="offline-diagram" viewBox="0 0 340 240" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full" aria-label="Offline-first mimari diyagramı">
+            <svg id="offline-diagram" viewBox="0 0 340 240" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full" aria-label="Offline-first mimari diyagramı" data-i18n-aria-label="offline_diagram_aria">
               <!-- Background glow -->
               <defs>
                 <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
@@ -1224,7 +1224,7 @@
 
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4 reveal" style="transition-delay: 0.15s;">
         <!-- Google Play -->
-        <a href="https://play.google.com/store/apps/details?id=com.budgiebreeding.budgie_breeding_tracker" target="_blank" rel="noopener noreferrer" class="store-btn-enhanced magnetic-btn">
+        <a href="https://play.google.com/store/apps/details?id=com.budgiebreeding.budgie_breeding_tracker" target="_blank" rel="noopener noreferrer" class="store-btn-enhanced magnetic-btn" aria-label="BudgieBreedingTracker uygulamasını Google Play'de aç" data-i18n-aria-label="cta_google_aria">
           <svg aria-hidden="true" class="flex-shrink-0" style="width: 32px; height: 32px;" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
             <path d="M270.4 254.9L67.8 467.2c3.6 2.8 7.8 4.4 12.5 4.4 3.3 0 6.8-.8 10-2.6l228.3-131.8-48.2-82.3z" fill="#EA4335"/>
             <path d="M390.7 233.5L318.6 192 270.4 254.9l48.2 82.3 72-41.6c12.5-7.2 19.4-18.2 19.4-30.9s-6.9-24-19.3-31.2z" fill="#FBBC04"/>
@@ -1238,7 +1238,7 @@
         </a>
 
         <!-- App Store -->
-        <a href="https://apps.apple.com/us/app/budgie-breeding-tracker/id6759828211" target="_blank" rel="noopener noreferrer" class="store-btn-enhanced magnetic-btn">
+        <a href="https://apps.apple.com/us/app/budgie-breeding-tracker/id6759828211" target="_blank" rel="noopener noreferrer" class="store-btn-enhanced magnetic-btn" aria-label="BudgieBreedingTracker uygulamasını App Store'da aç" data-i18n-aria-label="cta_apple_aria">
           <svg aria-hidden="true" class="flex-shrink-0" style="width: 32px; height: 32px;" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" fill="url(#apple-grad)"/>
             <defs>
@@ -1290,7 +1290,7 @@
       <div class="py-12 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
         <!-- Brand -->
         <div class="flex items-center gap-3 justify-center md:justify-start">
-          <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-xl" style="border: 1px solid rgba(245,200,66,0.2);" loading="lazy" decoding="async">
+          <img src="logo.png" alt="BudgieBreedingTracker logosu" data-i18n-alt="footer_logo_alt" class="w-10 h-10 rounded-xl" style="border: 1px solid rgba(245,200,66,0.2);" loading="lazy" decoding="async">
           <div>
             <span class="font-bold text-lg" style="color: var(--gold-light);">BudgieBreedingTracker</span>
             <p class="text-xs mt-0.5" style="color: var(--sage); opacity: 0.7;" data-i18n="footer_tagline">Ureme Takip Uygulamasi</p>
@@ -1339,7 +1339,7 @@
         <p class="text-xs" style="color: var(--sage); opacity: 0.5;" data-i18n="footer_made">Yetistiriciler tarafindan, yetistiriciler icin yapildi ❤️</p>
         <p class="text-xs" style="color: var(--sage); opacity: 0.5; white-space: nowrap;">
           <span data-i18n="footer_copyright">&copy; 2025-2026 BudgieBreedingTracker. Tum haklari saklidir.</span>
-          <span class="version-badge" aria-label="Uygulama sürümü">
+          <span class="version-badge" aria-label="Uygulama sürümü" data-i18n-aria-label="app_version_aria">
             v1.0.9 · <time datetime="2026-05-09">2026-05-09</time>
           </span>
         </p>
@@ -1348,7 +1348,7 @@
   </footer>
 
   <!-- Back to Top Button -->
-  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="fixed bottom-6 right-6 w-12 h-12 rounded-xl shadow-lg transition-all duration-300 z-40 flex items-center justify-center" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);" aria-label="Sayfanın başına dön">
+  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="fixed bottom-6 right-6 w-12 h-12 rounded-xl shadow-lg transition-all duration-300 z-40 flex items-center justify-center" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);" aria-label="Sayfanın başına dön" data-i18n-aria-label="back_to_top_aria">
     <svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
   </button>
 
@@ -1361,19 +1361,25 @@
         nav_screenshots: 'Ekran Görüntüleri',
         nav_pricing: 'Fiyatlandırma',
         nav_download: 'İndir',
+        nav_home_aria: 'BudgieBreedingTracker — ana sayfa',
         hero_badge: 'Yetiştiriciler İçin Tasarlandı',
         hero_title_1: 'Muhabbet Kuşu',
         hero_title_2: 'Üreme Takibi',
         hero_title_3: 'Artık Kolay',
         hero_subtitle: 'Kuşlarınızı, yumurtalarınızı, yavrularınızı ve genetik hesaplamalarınızı tek bir uygulamada yönetin. Offline çalışın, verileriniz güvende kalsın.',
         hero_cta_primary: 'Uygulamayı İndir',
+        hero_cta_primary_aria: 'BudgieBreedingTracker indirme seçeneklerine git',
         hero_cta_secondary: 'Özellikleri Keşfet',
+        phone_logo_alt: 'BudgieBreedingTracker uygulama logosu',
+        hero_budgie_aria: 'Animasyonlu muhabbet kuşu',
         phone_subtitle: 'Üreme Takip Uygulaması',
         phone_birds: 'Kuşlarım',
         phone_pairs: 'Çiftler',
         phone_eggs: 'Yumurtalar',
         phone_eggs_incubating: '5 kuluçka',
         phone_chicks: 'Yavrular',
+        sync_badge_label: 'Senkron',
+        sync_badge_status: 'Çevrimiçi ✓',
         trust_1: 'AES-256 Şifreleme',
         trust_2: 'iOS & Android',
         trust_3: '3 Dil Desteği',
@@ -1409,8 +1415,10 @@
         cta_title: 'Hemen Başlayın',
         cta_subtitle: 'Kuşlarınızın bakımını profesyonel seviyeye taşıyın. Ücretsiz indirin, hemen kullanmaya başlayın.',
         cta_google_label: "Google Play'den",
+        cta_google_aria: "BudgieBreedingTracker uygulamasını Google Play'de aç",
         cta_google_action: 'İndirin',
         cta_apple_label: "App Store'dan",
+        cta_apple_aria: "BudgieBreedingTracker uygulamasını App Store'da aç",
         cta_apple_action: 'İndirin',
         cta_note: 'App Store ve Google Play\'de mevcut',
         screenshots_badge: 'Ekran Görüntüleri',
@@ -1432,8 +1440,11 @@
         footer_privacy: 'Gizlilik Politikası',
         footer_copyright: '© 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.',
         footer_tagline: 'Üreme Takip Uygulaması',
+        footer_logo_alt: 'BudgieBreedingTracker logosu',
         footer_made: 'Yetiştiriciler tarafından, yetiştiriciler için yapıldı ❤️',
         footer_contact_title: 'İletişim',
+        app_version_aria: 'Uygulama sürümü',
+        back_to_top_aria: 'Sayfanın başına dön',
         nav_how: 'Nasıl Çalışır?',
         nav_user_guide: 'Kullanım Kılavuzu',
         how_badge: 'Nasıl Çalışır?',
@@ -1521,6 +1532,7 @@
         offline_badge: '☁️ Offline-First',
         offline_title: 'Cebinde Çalışır, Bulutta Yedeklenir',
         offline_subtitle: 'İnternet yokken bile veri kaybı yok. Bağlantı geldiğinde tüm değişiklikler otomatik senkronize edilir.',
+        offline_diagram_aria: 'Offline-first mimari diyagramı',
         offline_point1_title: 'Yerel Veritabanı',
         offline_point1_desc: 'Tüm veriler önce cihazındaki SQLite\'a yazılır. UI her zaman yerel veritabanından okur.',
         offline_point2_title: 'Otomatik Senkronizasyon',
@@ -1533,19 +1545,25 @@
         nav_screenshots: 'Screenshots',
         nav_pricing: 'Pricing',
         nav_download: 'Download',
+        nav_home_aria: 'BudgieBreedingTracker — home',
         hero_badge: 'Designed for Breeders',
         hero_title_1: 'Budgie',
         hero_title_2: 'Breeding Tracker',
         hero_title_3: 'Made Easy',
         hero_subtitle: 'Manage your birds, eggs, chicks, and genetic calculations in one app. Work offline, keep your data safe.',
         hero_cta_primary: 'Download App',
+        hero_cta_primary_aria: 'Go to BudgieBreedingTracker download options',
         hero_cta_secondary: 'Explore Features',
+        phone_logo_alt: 'BudgieBreedingTracker app logo',
+        hero_budgie_aria: 'Animated budgie',
         phone_subtitle: 'Breeding Tracker App',
         phone_birds: 'My Birds',
         phone_pairs: 'Pairs',
         phone_eggs: 'Eggs',
         phone_eggs_incubating: '5 incubating',
         phone_chicks: 'Chicks',
+        sync_badge_label: 'Sync',
+        sync_badge_status: 'Online ✓',
         trust_1: 'AES-256 Encryption',
         trust_2: 'iOS & Android',
         trust_3: '3 Languages',
@@ -1581,8 +1599,10 @@
         cta_title: 'Get Started Now',
         cta_subtitle: 'Take your bird care to a professional level. Download for free and start using today.',
         cta_google_label: 'GET IT ON',
+        cta_google_aria: 'Open BudgieBreedingTracker on Google Play',
         cta_google_action: 'Google Play',
         cta_apple_label: 'DOWNLOAD ON THE',
+        cta_apple_aria: 'Open BudgieBreedingTracker on the App Store',
         cta_apple_action: 'App Store',
         cta_note: 'Available on the App Store and Google Play',
         screenshots_badge: 'Screenshots',
@@ -1604,8 +1624,11 @@
         footer_privacy: 'Privacy Policy',
         footer_copyright: '© 2025-2026 BudgieBreedingTracker. All rights reserved.',
         footer_tagline: 'Breeding Tracker App',
+        footer_logo_alt: 'BudgieBreedingTracker logo',
         footer_made: 'Made by breeders, for breeders ❤️',
         footer_contact_title: 'Contact',
+        app_version_aria: 'App version',
+        back_to_top_aria: 'Back to top',
         nav_how: 'How It Works',
         nav_user_guide: 'User Guide',
         how_badge: 'How It Works',
@@ -1693,6 +1716,7 @@
         offline_badge: '☁️ Offline-First',
         offline_title: 'Works in Your Pocket, Backed by the Cloud',
         offline_subtitle: 'No data loss even without internet. Changes sync automatically when you come back online.',
+        offline_diagram_aria: 'Offline-first architecture diagram',
         offline_point1_title: 'Local Database',
         offline_point1_desc: 'All data is written first to SQLite on your device. The UI always reads from the local database.',
         offline_point2_title: 'Automatic Sync',
@@ -1705,19 +1729,25 @@
         nav_screenshots: 'Screenshots',
         nav_pricing: 'Preise',
         nav_download: 'Herunterladen',
+        nav_home_aria: 'BudgieBreedingTracker — Startseite',
         hero_badge: 'Für Züchter entwickelt',
         hero_title_1: 'Wellensittich',
         hero_title_2: 'Zucht-Tracker',
         hero_title_3: 'Leicht gemacht',
         hero_subtitle: 'Verwalten Sie Ihre Vögel, Eier, Küken und genetischen Berechnungen in einer App. Offline arbeiten, Daten sicher aufbewahren.',
         hero_cta_primary: 'App herunterladen',
+        hero_cta_primary_aria: 'Zu den Download-Optionen von BudgieBreedingTracker gehen',
         hero_cta_secondary: 'Funktionen entdecken',
+        phone_logo_alt: 'BudgieBreedingTracker App-Logo',
+        hero_budgie_aria: 'Animierter Wellensittich',
         phone_subtitle: 'Zucht-Tracker-App',
         phone_birds: 'Meine Vögel',
         phone_pairs: 'Paare',
         phone_eggs: 'Eier',
         phone_eggs_incubating: '5 Brut',
         phone_chicks: 'Küken',
+        sync_badge_label: 'Sync',
+        sync_badge_status: 'Online ✓',
         trust_1: 'AES-256 Verschlüsselung',
         trust_2: 'iOS & Android',
         trust_3: '3 Sprachen',
@@ -1753,8 +1783,10 @@
         cta_title: 'Jetzt loslegen',
         cta_subtitle: 'Bringen Sie Ihre Vogelpflege auf professionelles Niveau. Kostenlos herunterladen und sofort nutzen.',
         cta_google_label: 'JETZT BEI',
+        cta_google_aria: 'BudgieBreedingTracker bei Google Play öffnen',
         cta_google_action: 'Google Play',
         cta_apple_label: 'LADEN IM',
+        cta_apple_aria: 'BudgieBreedingTracker im App Store öffnen',
         cta_apple_action: 'App Store',
         cta_note: 'Im App Store und bei Google Play verfügbar',
         screenshots_badge: 'Screenshots',
@@ -1776,8 +1808,11 @@
         footer_privacy: 'Datenschutzrichtlinie',
         footer_copyright: '© 2025-2026 BudgieBreedingTracker. Alle Rechte vorbehalten.',
         footer_tagline: 'Zucht-Tracker-App',
+        footer_logo_alt: 'BudgieBreedingTracker Logo',
         footer_made: 'Von Züchtern für Züchter gemacht ❤️',
         footer_contact_title: 'Kontakt',
+        app_version_aria: 'App-Version',
+        back_to_top_aria: 'Zurück nach oben',
         nav_how: 'Wie es funktioniert',
         nav_user_guide: 'Benutzerhandbuch',
         how_badge: 'Wie es funktioniert',
@@ -1865,6 +1900,7 @@
         offline_badge: '☁️ Offline-First',
         offline_title: 'In der Tasche, gesichert in der Cloud',
         offline_subtitle: 'Kein Datenverlust ohne Internet. Änderungen werden automatisch synchronisiert, wenn Sie wieder online sind.',
+        offline_diagram_aria: 'Offline-First-Architekturdiagramm',
         offline_point1_title: 'Lokale Datenbank',
         offline_point1_desc: 'Alle Daten werden zuerst in SQLite auf Ihrem Gerät gespeichert. Die UI liest immer aus der lokalen Datenbank.',
         offline_point2_title: 'Automatische Synchronisierung',
@@ -1889,6 +1925,14 @@
       document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
         const key = el.getAttribute('data-i18n-placeholder');
         if (t[key]) el.setAttribute('placeholder', t[key]);
+      });
+      document.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+        const key = el.getAttribute('data-i18n-aria-label');
+        if (t[key]) el.setAttribute('aria-label', t[key]);
+      });
+      document.querySelectorAll('[data-i18n-alt]').forEach(el => {
+        const key = el.getAttribute('data-i18n-alt');
+        if (t[key]) el.setAttribute('alt', t[key]);
       });
 
       const titles = {

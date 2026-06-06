@@ -15,7 +15,11 @@
       --glass-border-hover: rgba(245, 200, 66, 0.45);
     }
 
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
 
     body {
       font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
@@ -23,6 +27,7 @@
       color: var(--sage-light);
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      max-width: 100%;
       overflow-x: hidden;
       position: relative;
     }
@@ -373,8 +378,14 @@
 
 
     /* Nav & Footer hover (replaces inline onmouseover/onmouseout) */
+    #navbar a,
+    #mobile-menu a {
+      text-decoration: none;
+    }
+
     .nav-link {
       color: var(--sage);
+      text-decoration: none;
       transition: color 0.2s ease;
     }
     .nav-link:hover,
@@ -384,6 +395,7 @@
 
     .footer-forest a {
       color: var(--sage);
+      text-decoration: none;
       transition: color 0.2s ease;
     }
     .footer-forest a:hover,
@@ -395,6 +407,7 @@
       background: rgba(20,50,100,0.35);
       color: var(--gold-light);
       border: 1px solid var(--glass-border);
+      text-decoration: none;
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
     .hero-cta-secondary:hover,
@@ -406,6 +419,7 @@
       background: rgba(140,180,220,0.15);
       color: var(--sage-light);
       border: 1px solid var(--glass-border);
+      text-decoration: none;
       transition: background 0.2s ease;
     }
     .plan-free-cta:hover,
@@ -417,6 +431,7 @@
       background: linear-gradient(135deg, var(--gold), var(--gold-light));
       color: var(--forest-deep);
       border: none;
+      text-decoration: none;
       transition: filter 0.2s ease;
     }
     .plan-premium-cta:hover,
@@ -495,6 +510,7 @@
       color: var(--forest-deep);
       font-weight: 700;
       border: 1px solid rgba(245, 200, 66, 0.4);
+      text-decoration: none;
     }
 
     /* Mobile phone mockup */
@@ -521,6 +537,7 @@
     .screenshot-track {
       display: flex; gap: 20px;
       animation: scrollCarousel 50s linear infinite;
+      contain: paint;
       will-change: transform;
       width: max-content;
     }
