@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_icons.dart';
 import '../../../core/utils/app_haptics.dart';
 import '../../../core/utils/image_picker_guard.dart';
@@ -147,6 +148,7 @@ class _AvatarPickerContent extends StatelessWidget {
     final ok = await ImagePickerGuard.ensureWithinSizeLimit(
       messengerContext,
       file,
+      maxBytes: AppConstants.maxAvatarUploadSizeBytes,
     );
     if (!ok) return;
 

@@ -143,11 +143,13 @@ class _FakeDeleteQueryBuilder extends Fake implements SupabaseQueryBuilder {
 class _FakeBulkClient extends Fake implements SupabaseClient {
   _FakeBulkClient({
     required this.adminQueryBuilder,
+    required this.founderQueryBuilder,
     required this.profilesQueryBuilder,
     this.deleteError,
   });
 
   final _FakeAdminQueryBuilder adminQueryBuilder;
+  final _FakeAdminQueryBuilder founderQueryBuilder;
   final _FakeProfilesQueryBuilder profilesQueryBuilder;
   final Object? deleteError;
   final requestedTables = <String>[];
@@ -162,6 +164,8 @@ class _FakeBulkClient extends Fake implements SupabaseClient {
         _profilesCallCount++;
         if (_profilesCallCount == 1) return adminQueryBuilder;
         return profilesQueryBuilder;
+      case SupabaseConstants.adminUsersTable:
+        return founderQueryBuilder;
       default:
         // For bulkDeleteUserData — all other tables use delete().eq()
         return _FakeDeleteQueryBuilder(deleteError: deleteError);
@@ -214,6 +218,7 @@ class _StubUserManager extends AdminUserManager {
 
 _FakeBulkClient _makeClient({
   PostgrestMap? adminUserResult,
+  PostgrestMap? founderUserResult,
   List<Map<String, dynamic>> profilesResult = const [],
   Object? profilesError,
   Object? deleteError,
@@ -221,6 +226,9 @@ _FakeBulkClient _makeClient({
   return _FakeBulkClient(
     adminQueryBuilder: _FakeAdminQueryBuilder(
       _FakeAdminCheckBuilder(result: adminUserResult),
+    ),
+    founderQueryBuilder: _FakeAdminQueryBuilder(
+      _FakeAdminCheckBuilder(result: founderUserResult),
     ),
     profilesQueryBuilder: _FakeProfilesQueryBuilder(
       _FakeListBuilder(result: profilesResult, error: profilesError),
@@ -266,7 +274,7 @@ void main() {
     group('bulkExport', () {
       test('returns JSON with correct data when admin', () async {
         final client = _makeClient(
-          adminUserResult: const {'role': 'admin'},
+          adminUserResult: const {'role': 'admin', 'is_active': true},
           profilesResult: const [
             {
               'id': 'u1',
@@ -322,7 +330,7 @@ void main() {
 
       test('returns CSV format when requested', () async {
         final client = _makeClient(
-          adminUserResult: const {'role': 'admin'},
+          adminUserResult: const {'role': 'admin', 'is_active': true},
           profilesResult: const [
             {
               'id': 'u1',
@@ -362,7 +370,7 @@ void main() {
 
       test('returns empty string on error', () async {
         final client = _makeClient(
-          adminUserResult: const {'role': 'admin'},
+          adminUserResult: const {'role': 'admin', 'is_active': true},
           profilesError: StateError('profiles query failed'),
         );
         final container = _makeContainer(userId: 'admin-1', client: client);
@@ -418,7 +426,9 @@ void main() {
 
     group('bulkToggleActive', () {
       test('counts succeeded and skipped (protected users)', () async {
-        final client = _makeClient(adminUserResult: const {'role': 'admin'});
+        final client = _makeClient(
+          adminUserResult: const {'role': 'admin', 'is_active': true},
+        );
         final container = _makeContainer(userId: 'admin-1', client: client);
         addTearDown(container.dispose);
         final tracker = _StateTracker();
@@ -445,7 +455,9 @@ void main() {
       });
 
       test('all succeed when no protected users', () async {
-        final client = _makeClient(adminUserResult: const {'role': 'admin'});
+        final client = _makeClient(
+          adminUserResult: const {'role': 'admin', 'is_active': true},
+        );
         final container = _makeContainer(userId: 'admin-1', client: client);
         addTearDown(container.dispose);
         final tracker = _StateTracker();
@@ -467,7 +479,9 @@ void main() {
 
     group('bulkGrantPremium', () {
       test('counts succeeded and skipped', () async {
-        final client = _makeClient(adminUserResult: const {'role': 'admin'});
+        final client = _makeClient(
+          adminUserResult: const {'role': 'admin', 'is_active': true},
+        );
         final container = _makeContainer(userId: 'admin-1', client: client);
         addTearDown(container.dispose);
         final tracker = _StateTracker();
@@ -491,7 +505,9 @@ void main() {
 
     group('bulkRevokePremium', () {
       test('counts succeeded and skipped', () async {
-        final client = _makeClient(adminUserResult: const {'role': 'admin'});
+        final client = _makeClient(
+          adminUserResult: const {'role': 'admin', 'is_active': true},
+        );
         final container = _makeContainer(userId: 'admin-1', client: client);
         addTearDown(container.dispose);
         final tracker = _StateTracker();
@@ -515,8 +531,11 @@ void main() {
     });
 
     group('bulkDeleteUserData', () {
-      test('succeeds for valid admin', () async {
-        final client = _makeClient(adminUserResult: const {'role': 'admin'});
+      test('succeeds for founder', () async {
+        final client = _makeClient(
+          adminUserResult: const {'role': 'founder', 'is_active': true},
+          founderUserResult: const {'id': 'admin-row-1'},
+        );
         final container = _makeContainer(userId: 'admin-1', client: client);
         addTearDown(container.dispose);
         final tracker = _StateTracker();
@@ -539,6 +558,32 @@ void main() {
           client.requestedTables,
           contains(SupabaseConstants.profilesTable),
         );
+      });
+
+      test('fails for active admin that is not founder', () async {
+        final client = _makeClient(
+          adminUserResult: const {'role': 'admin', 'is_active': true},
+          founderUserResult: null,
+        );
+        final container = _makeContainer(userId: 'admin-1', client: client);
+        addTearDown(container.dispose);
+        final tracker = _StateTracker();
+        final ref = container.read(providerContainerRefProvider);
+
+        final userManager = _StubUserManager(ref, tracker.call);
+        final manager = AdminBulkManager(ref, userManager, tracker.call);
+
+        final result = await manager.bulkDeleteUserData({'user-1'});
+
+        expect(result.succeeded, 0);
+        expect(result.skipped, 0);
+        expect(client.requestedTables, [
+          SupabaseConstants.profilesTable,
+          SupabaseConstants.adminUsersTable,
+        ]);
+        final lastCall = tracker.calls.last;
+        expect(lastCall['isLoading'], isFalse);
+        expect(lastCall['error'], isNotNull);
       });
 
       test('fails when not admin', () async {
@@ -565,7 +610,8 @@ void main() {
         // deleteError causes every table delete to throw; the user must not be
         // counted as fully deleted because some data may remain.
         final client = _makeClient(
-          adminUserResult: const {'role': 'admin'},
+          adminUserResult: const {'role': 'founder', 'is_active': true},
+          founderUserResult: const {'id': 'admin-row-1'},
           deleteError: StateError('table delete failed'),
         );
         final container = _makeContainer(userId: 'admin-1', client: client);
@@ -587,7 +633,8 @@ void main() {
 
       test('handles multiple users with partial table failures', () async {
         final client = _makeClient(
-          adminUserResult: const {'role': 'admin'},
+          adminUserResult: const {'role': 'founder', 'is_active': true},
+          founderUserResult: const {'id': 'admin-row-1'},
           deleteError: StateError('table delete failed'),
         );
         final container = _makeContainer(userId: 'admin-1', client: client);
@@ -611,7 +658,9 @@ void main() {
 
     group('empty userIds set', () {
       test('bulkToggleActive with empty set returns zero counts', () async {
-        final client = _makeClient(adminUserResult: const {'role': 'admin'});
+        final client = _makeClient(
+          adminUserResult: const {'role': 'admin', 'is_active': true},
+        );
         final container = _makeContainer(userId: 'admin-1', client: client);
         addTearDown(container.dispose);
         final tracker = _StateTracker();
@@ -634,7 +683,9 @@ void main() {
       });
 
       test('bulkGrantPremium with empty set returns zero counts', () async {
-        final client = _makeClient(adminUserResult: const {'role': 'admin'});
+        final client = _makeClient(
+          adminUserResult: const {'role': 'admin', 'is_active': true},
+        );
         final container = _makeContainer(userId: 'admin-1', client: client);
         addTearDown(container.dispose);
         final tracker = _StateTracker();
@@ -651,7 +702,9 @@ void main() {
       });
 
       test('bulkRevokePremium with empty set returns zero counts', () async {
-        final client = _makeClient(adminUserResult: const {'role': 'admin'});
+        final client = _makeClient(
+          adminUserResult: const {'role': 'admin', 'is_active': true},
+        );
         final container = _makeContainer(userId: 'admin-1', client: client);
         addTearDown(container.dispose);
         final tracker = _StateTracker();
@@ -668,7 +721,10 @@ void main() {
       });
 
       test('bulkDeleteUserData with empty set returns zero counts', () async {
-        final client = _makeClient(adminUserResult: const {'role': 'admin'});
+        final client = _makeClient(
+          adminUserResult: const {'role': 'founder', 'is_active': true},
+          founderUserResult: const {'id': 'admin-row-1'},
+        );
         final container = _makeContainer(userId: 'admin-1', client: client);
         addTearDown(container.dispose);
         final tracker = _StateTracker();
@@ -684,6 +740,65 @@ void main() {
         final lastCall = tracker.calls.last;
         expect(lastCall['isSuccess'], isTrue);
       });
+    });
+
+    group('bulk size limit', () {
+      Set<String> tooManyUserIds() =>
+          List.generate(101, (index) => 'user-$index').toSet();
+
+      test(
+        'bulkToggleActive fails before processing more than 100 users',
+        () async {
+          final client = _makeClient(
+            adminUserResult: const {'role': 'admin', 'is_active': true},
+          );
+          final container = _makeContainer(userId: 'admin-1', client: client);
+          addTearDown(container.dispose);
+          final tracker = _StateTracker();
+          final ref = container.read(providerContainerRefProvider);
+
+          final userManager = _StubUserManager(ref, tracker.call);
+          final manager = AdminBulkManager(ref, userManager, tracker.call);
+
+          final result = await manager.bulkToggleActive(
+            tooManyUserIds(),
+            activate: true,
+          );
+
+          expect(result.succeeded, 0);
+          expect(result.skipped, 0);
+          expect(userManager.toggleCalls, 0);
+          final lastCall = tracker.calls.last;
+          expect(lastCall['isLoading'], isFalse);
+          expect(lastCall['error'], 'admin.bulk_limit_exceeded');
+        },
+      );
+
+      test(
+        'bulkDeleteUserData fails before founder check above 100 users',
+        () async {
+          final client = _makeClient(
+            adminUserResult: const {'role': 'founder', 'is_active': true},
+            founderUserResult: const {'id': 'admin-row-1'},
+          );
+          final container = _makeContainer(userId: 'admin-1', client: client);
+          addTearDown(container.dispose);
+          final tracker = _StateTracker();
+          final ref = container.read(providerContainerRefProvider);
+
+          final userManager = _StubUserManager(ref, tracker.call);
+          final manager = AdminBulkManager(ref, userManager, tracker.call);
+
+          final result = await manager.bulkDeleteUserData(tooManyUserIds());
+
+          expect(result.succeeded, 0);
+          expect(result.skipped, 0);
+          expect(client.requestedTables, isEmpty);
+          final lastCall = tracker.calls.last;
+          expect(lastCall['isLoading'], isFalse);
+          expect(lastCall['error'], 'admin.bulk_limit_exceeded');
+        },
+      );
     });
   });
 }

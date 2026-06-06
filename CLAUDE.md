@@ -84,7 +84,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | Metric | Value |
 | --- | --- |
 | Source files (lib/) | 983 Dart files |
-| Test files (test/) | 901 test files, 11,053+ individual tests |
+| Test files (test/) | 902 test files, 11,073+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -96,7 +96,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | Shared widgets | 29 (15 root + 4 buttons + 2 cards + 2 dialog + 1 bottom_sheet + 5 eggs) |
 | Enum files | 15 |
 | Supabase constants | 137 (tables + buckets + columns) |
-| L10n keys | ~2,992 per language, 41 categories |
+| L10n keys | ~2,995 per language, 41 categories |
 | DB schema version | 25 |
 
 ## CI/CD Pipeline
@@ -169,7 +169,7 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 | `validate-free-tier-limit` | Free tier entity limit enforcement |
 
 ### Migrations
-169 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
+171 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
 
 ## Rules
 
@@ -328,7 +328,7 @@ Security:      lib/core/security/
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
-Migrations:    supabase/migrations/ (169 files)
+Migrations:    supabase/migrations/ (171 files)
 Scripts:       scripts/
 CI:            .github/workflows/ + codemagic.yaml
 ```

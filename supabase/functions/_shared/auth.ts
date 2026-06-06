@@ -83,6 +83,16 @@ export function getAuthenticatorAssuranceLevel(req: Request): string | null {
   return typeof aal === "string" ? aal : null;
 }
 
+type AdminProfile = {
+  role?: unknown;
+  is_active?: unknown;
+};
+
+export function isActiveAdminProfile(profile: AdminProfile | null): boolean {
+  if (!profile || profile.is_active !== true) return false;
+  return profile.role === "admin" || profile.role === "founder";
+}
+
 /**
  * Check if a user has admin or founder role in the profiles table.
  * Uses a service-role client to bypass RLS.
@@ -91,11 +101,11 @@ export async function requireAdminRole(userId: string): Promise<boolean> {
   const supabase = createSupabaseAdmin();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, is_active")
     .eq("id", userId)
     .single();
 
-  return !!profile && ["admin", "founder"].includes(profile.role);
+  return isActiveAdminProfile(profile);
 }
 
 /**

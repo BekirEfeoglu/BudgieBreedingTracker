@@ -222,9 +222,12 @@ _FakeNotificationClient _makeClient({
   Object? notificationsInsertError,
   Object? logsInsertError,
 }) {
+  final normalizedAdminResult = adminUserResult == null
+      ? null
+      : {'is_active': true, ...adminUserResult};
   return _FakeNotificationClient(
     adminQueryBuilder: _FakeAdminQueryBuilder(
-      _FakeAdminCheckBuilder(result: adminUserResult),
+      _FakeAdminCheckBuilder(result: normalizedAdminResult),
     ),
     notificationsQueryBuilder: _FakeMutationQueryBuilder(
       insertError: notificationsInsertError,

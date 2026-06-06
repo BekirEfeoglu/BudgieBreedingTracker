@@ -6,10 +6,10 @@ import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 
 /// Client-side image size guard used by photo pickers.
 ///
-/// Rejects images that exceed [AppConstants.maxUploadSizeBytes] before the
-/// upload pipeline reads the full bytes. Without this guard, on low-bandwidth
-/// connections users would wait for the upload to start, only to be rejected
-/// after the server-side limit check.
+/// Rejects images that exceed the upload limit before the upload pipeline reads
+/// the full bytes. Without this guard, on low-bandwidth connections users would
+/// wait for the upload to start, only to be rejected after the server-side limit
+/// check.
 ///
 /// Server-side enforcement (StorageService / marketplace remote source) remains
 /// the source of truth — the client-side check is UX-only.
@@ -21,13 +21,14 @@ abstract final class ImagePickerGuard {
   /// the navigator.
   static Future<bool> ensureWithinSizeLimit(
     BuildContext context,
-    XFile file,
-  ) async {
+    XFile file, {
+    int maxBytes = AppConstants.maxUploadSizeBytes,
+  }) async {
     final bytes = await file.length();
-    if (bytes <= AppConstants.maxUploadSizeBytes) return true;
+    if (bytes <= maxBytes) return true;
     if (!context.mounted) return false;
 
-    const mb = AppConstants.maxUploadSizeBytes ~/ (1024 * 1024);
+    final mb = maxBytes ~/ (1024 * 1024);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('errors.image_too_large'.tr(args: ['$mb']))),
     );

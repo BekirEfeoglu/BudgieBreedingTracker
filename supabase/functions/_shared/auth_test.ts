@@ -191,6 +191,17 @@ Deno.test({
 // requireAdminRole
 // ---------------------------------------------------------------------------
 
+Deno.test("isActiveAdminProfile: accepts active admin and founder profiles only", async () => {
+  const { isActiveAdminProfile } = await import("./auth.ts");
+
+  assertEquals(isActiveAdminProfile({ role: "admin", is_active: true }), true);
+  assertEquals(isActiveAdminProfile({ role: "founder", is_active: true }), true);
+  assertEquals(isActiveAdminProfile({ role: "admin", is_active: false }), false);
+  assertEquals(isActiveAdminProfile({ role: "founder", is_active: false }), false);
+  assertEquals(isActiveAdminProfile({ role: "user", is_active: true }), false);
+  assertEquals(isActiveAdminProfile(null), false);
+});
+
 Deno.test({
   name: "requireAdminRole: returns false for non-existent user",
   ...clientTestOpts,

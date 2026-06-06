@@ -222,9 +222,12 @@ _FakeActionsClient _makeClient({
   Object? logsDeleteError,
   Object? logsInsertError,
 }) {
+  final normalizedAdminResult = adminUserResult == null
+      ? null
+      : {'is_active': true, ...adminUserResult};
   return _FakeActionsClient(
     adminQueryBuilder: _FakeAdminQueryBuilder(
-      _FakeAdminCheckBuilder(result: adminUserResult),
+      _FakeAdminCheckBuilder(result: normalizedAdminResult),
     ),
     profilesQueryBuilder: _FakeProfilesQueryBuilder(
       _FakeListBuilder(result: profilesResult, error: profilesError),
@@ -444,7 +447,7 @@ void main() {
     );
 
     test(
-      'clearAuditLogs stores translated action error when admin check fails',
+      'clearAuditLogs stores translated disabled error without deleting logs',
       () async {
         final client = _makeClient(adminUserResult: null);
         final container = _makeContainer(userId: 'anonymous', client: client);
@@ -455,7 +458,7 @@ void main() {
         final state = container.read(adminActionsProvider);
         expect(state.isLoading, isFalse);
         expect(state.isSuccess, isFalse);
-        expect(state.error, 'admin.action_error');
+        expect(state.error, 'admin.audit_log_delete_disabled');
         expect(client.adminLogsQueryBuilder.insertPayload, isNull);
       },
     );

@@ -131,7 +131,7 @@ void main() {
       expect(caught, isA<Exception>());
       expect(caught.toString(), contains(l10n('admin.permission_denied')));
       expect(client.requestedTables, [SupabaseConstants.profilesTable]);
-      expect(queryBuilder.selectedColumns, ['role']);
+      expect(queryBuilder.selectedColumns, ['role, is_active']);
       expect(filterBuilder.eqCalls, hasLength(1));
       expect(filterBuilder.eqCalls[0].key, 'id');
       expect(filterBuilder.eqCalls[0].value, 'user-1');
@@ -139,7 +139,7 @@ void main() {
 
     test('completes when user has an admin record', () async {
       final maybeSingleBuilder = _FakeMaybeSingleBuilder(
-        result: {'role': 'admin'},
+        result: {'role': 'admin', 'is_active': true},
       );
       final filterBuilder = _FakeFilterBuilder(maybeSingleBuilder);
       final queryBuilder = _FakeQueryBuilder(filterBuilder);
@@ -156,10 +156,40 @@ void main() {
 
       await runCheck();
       expect(client.requestedTables, [SupabaseConstants.profilesTable]);
-      expect(queryBuilder.selectedColumns, ['role']);
+      expect(queryBuilder.selectedColumns, ['role, is_active']);
       expect(filterBuilder.eqCalls, hasLength(1));
       expect(filterBuilder.eqCalls[0].key, 'id');
       expect(filterBuilder.eqCalls[0].value, 'user-42');
+    });
+
+    test('throws permission denied when admin profile is inactive', () async {
+      final maybeSingleBuilder = _FakeMaybeSingleBuilder(
+        result: {'role': 'admin', 'is_active': false},
+      );
+      final filterBuilder = _FakeFilterBuilder(maybeSingleBuilder);
+      final queryBuilder = _FakeQueryBuilder(filterBuilder);
+      final client = _FakeSupabaseClient(queryBuilder);
+      final container = ProviderContainer(
+        overrides: [
+          currentUserIdProvider.overrideWithValue('user-42'),
+          supabaseClientProvider.overrideWithValue(client),
+        ],
+        retry: (_, __) => null,
+      );
+      addTearDown(container.dispose);
+      final runCheck = container.read(_requireAdminRunnerProvider);
+
+      Object? caught;
+      try {
+        await runCheck();
+      } catch (e) {
+        caught = e;
+      }
+
+      expect(caught, isA<Exception>());
+      expect(caught.toString(), contains(l10n('admin.permission_denied')));
+      expect(client.requestedTables, [SupabaseConstants.profilesTable]);
+      expect(queryBuilder.selectedColumns, ['role, is_active']);
     });
 
     test('bubbles query errors from supabase', () async {

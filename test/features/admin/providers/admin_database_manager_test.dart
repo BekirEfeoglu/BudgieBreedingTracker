@@ -186,7 +186,9 @@ void main() {
         final client = _FakeAdminDatabaseClient(
           adminBuilder: _FakeQueryBuilder(
             _FakeAdminFilterBuilder(
-              _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
+              _FakeMaybeSingleBuilder(
+                result: {'role': 'admin', 'is_active': true},
+              ),
             ),
           ),
         );
@@ -214,7 +216,9 @@ void main() {
         final client = _FakeAdminDatabaseClient(
           adminBuilder: _FakeQueryBuilder(
             _FakeAdminFilterBuilder(
-              _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
+              _FakeMaybeSingleBuilder(
+                result: {'role': 'admin', 'is_active': true},
+              ),
             ),
           ),
         );
@@ -240,7 +244,7 @@ void main() {
       'exportTable authorizes admin and returns pretty JSON from RPC',
       () async {
         final adminFilter = _FakeAdminFilterBuilder(
-          _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
+          _FakeMaybeSingleBuilder(result: {'role': 'admin', 'is_active': true}),
         );
         final client = _FakeAdminDatabaseClient(
           adminBuilder: _FakeQueryBuilder(adminFilter),
@@ -263,7 +267,7 @@ void main() {
         expect(result, contains('"id": 1'));
         expect(result, contains('"name": "Kiwi"'));
         expect(client.requestedTables, [SupabaseConstants.profilesTable]);
-        expect(client.adminBuilder.selectedColumns, ['role']);
+        expect(client.adminBuilder.selectedColumns, ['role, is_active']);
         expect(adminFilter.eqCalls, hasLength(1));
         expect(adminFilter.eqCalls[0].key, 'id');
         expect(adminFilter.eqCalls[0].value, 'user-42');
@@ -290,7 +294,7 @@ void main() {
       // profiles (for the admin gate) AND admin_users (for the
       // founder gate). Provide both fixtures.
       final adminFilter = _FakeAdminFilterBuilder(
-        _FakeMaybeSingleBuilder(result: {'role': 'founder'}),
+        _FakeMaybeSingleBuilder(result: {'role': 'founder', 'is_active': true}),
       );
       final founderFilter = _FakeAdminFilterBuilder(
         _FakeMaybeSingleBuilder(result: {'id': 'admin-row-1'}),
@@ -317,7 +321,7 @@ void main() {
         SupabaseConstants.profilesTable,
         SupabaseConstants.adminUsersTable,
       ]);
-      expect(client.adminBuilder.selectedColumns, ['role']);
+      expect(client.adminBuilder.selectedColumns, ['role, is_active']);
       expect(adminFilter.eqCalls, hasLength(1));
       expect(adminFilter.eqCalls[0].key, 'id');
       expect(adminFilter.eqCalls[0].value, 'user-9');
@@ -338,7 +342,7 @@ void main() {
 
     test('resetTable fails closed when RPC errors', () async {
       final adminFilter = _FakeAdminFilterBuilder(
-        _FakeMaybeSingleBuilder(result: {'role': 'founder'}),
+        _FakeMaybeSingleBuilder(result: {'role': 'founder', 'is_active': true}),
       );
       final founderFilter = _FakeAdminFilterBuilder(
         _FakeMaybeSingleBuilder(result: {'id': 'admin-row-1'}),

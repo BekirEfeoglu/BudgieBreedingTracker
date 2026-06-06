@@ -43,12 +43,26 @@ class AdminBulkManager {
 
   AdminBulkManager(this._ref, this._userManager, this._updateState);
 
+  bool _validateBulkSize(Set<String> userIds) {
+    if (userIds.length <= AdminConstants.maxBulkOperationSize) return true;
+
+    _updateState(
+      isLoading: false,
+      error: 'admin.bulk_limit_exceeded'.tr(
+        args: [AdminConstants.maxBulkOperationSize.toString()],
+      ),
+      isSuccess: false,
+    );
+    return false;
+  }
+
   Future<({int succeeded, int skipped})> bulkToggleActive(
     Set<String> userIds, {
     required bool activate,
   }) async {
     var succeeded = 0;
     var skipped = 0;
+    if (!_validateBulkSize(userIds)) return (succeeded: 0, skipped: 0);
     _updateState(isLoading: true, error: null, isSuccess: false);
 
     try {
@@ -81,6 +95,7 @@ class AdminBulkManager {
   ) async {
     var succeeded = 0;
     var skipped = 0;
+    if (!_validateBulkSize(userIds)) return (succeeded: 0, skipped: 0);
     _updateState(isLoading: true, error: null, isSuccess: false);
 
     try {
@@ -113,6 +128,7 @@ class AdminBulkManager {
   ) async {
     var succeeded = 0;
     var skipped = 0;
+    if (!_validateBulkSize(userIds)) return (succeeded: 0, skipped: 0);
     _updateState(isLoading: true, error: null, isSuccess: false);
 
     try {
@@ -144,6 +160,7 @@ class AdminBulkManager {
     Set<String> userIds, {
     ExportFormat format = ExportFormat.json,
   }) async {
+    if (!_validateBulkSize(userIds)) return '';
     _updateState(isLoading: true, error: null, isSuccess: false);
     try {
       await requireAdmin(_ref);
@@ -168,10 +185,11 @@ class AdminBulkManager {
   ) async {
     var succeeded = 0;
     var skipped = 0;
+    if (!_validateBulkSize(userIds)) return (succeeded: 0, skipped: 0);
     _updateState(isLoading: true, error: null, isSuccess: false);
 
     try {
-      await requireAdmin(_ref);
+      await requireFounder(_ref);
       final client = _ref.read(supabaseClientProvider);
 
       AppLogger.info(
@@ -216,6 +234,12 @@ class AdminBulkManager {
       }
 
       _updateState(isLoading: false, isSuccess: true);
+      await logAdminAction(
+        client,
+        _ref.read(currentUserIdProvider),
+        'bulk_user_data_deleted',
+        details: {'user_count': userIds.length, 'succeeded': succeeded},
+      );
       _ref.invalidate(adminUsersProvider);
       return (succeeded: succeeded, skipped: skipped);
     } catch (e, st) {

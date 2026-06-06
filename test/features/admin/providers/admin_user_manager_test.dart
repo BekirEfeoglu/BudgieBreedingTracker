@@ -258,7 +258,7 @@ _FakeUserManagerClient _clientWithTargetRole({
   // Actually, the fake builder always returns the same result. We'll use a
   // stateful approach:
   final results = <PostgrestMap?>[
-    {'role': adminRole},
+    {'role': adminRole, 'is_active': true},
     if (targetRole != null) {'role': targetRole} else null,
   ];
 
@@ -757,7 +757,7 @@ void main() {
       // When maybeSingle returns null for the target user,
       // _fetchTargetUserRole throws "user not found"
       final results = <PostgrestMap?>[
-        {'role': 'admin'}, // admin check
+        {'role': 'admin', 'is_active': true}, // admin check
         null, // target user not found
       ];
 
@@ -781,7 +781,7 @@ void main() {
     test('target user with null role is not protected', () async {
       // User exists but has no role → role is null → not protected
       final results = <PostgrestMap?>[
-        {'role': 'admin'}, // admin check
+        {'role': 'admin', 'is_active': true}, // admin check
         {'role': null}, // target user exists, role is null
       ];
 

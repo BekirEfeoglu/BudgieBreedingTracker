@@ -185,7 +185,7 @@ void main() {
         adminBuilder: _FakeQueryBuilder(
           _FakeFilterBuilder(
             maybeSingleBuilder: _FakeMaybeSingleBuilder(
-              result: {'role': 'admin'},
+              result: {'role': 'admin', 'is_active': true},
             ),
           ),
         ),
@@ -208,7 +208,9 @@ void main() {
 
     test('returns empty trend when no snapshot rows exist', () async {
       final adminFilter = _FakeFilterBuilder(
-        maybeSingleBuilder: _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
+        maybeSingleBuilder: _FakeMaybeSingleBuilder(
+          result: {'role': 'admin', 'is_active': true},
+        ),
       );
       final snapshotFilter = _FakeFilterBuilder(
         maybeSingleBuilder: _FakeMaybeSingleBuilder(),
@@ -238,7 +240,7 @@ void main() {
       () async {
         final adminFilter = _FakeFilterBuilder(
           maybeSingleBuilder: _FakeMaybeSingleBuilder(
-            result: {'role': 'admin'},
+            result: {'role': 'admin', 'is_active': true},
           ),
         );
         final snapshotFilter = _FakeFilterBuilder(
@@ -314,7 +316,9 @@ void main() {
 
     test('rethrows when snapshot query fails', () async {
       final adminFilter = _FakeFilterBuilder(
-        maybeSingleBuilder: _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
+        maybeSingleBuilder: _FakeMaybeSingleBuilder(
+          result: {'role': 'admin', 'is_active': true},
+        ),
       );
       final snapshotFilter = _FakeFilterBuilder(
         maybeSingleBuilder: _FakeMaybeSingleBuilder(),
@@ -342,7 +346,9 @@ void main() {
   group('monitoringSnapshotsProvider malformed payloads', () {
     test('skips slow_queries entries that are not maps', () async {
       final adminFilter = _FakeFilterBuilder(
-        maybeSingleBuilder: _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
+        maybeSingleBuilder: _FakeMaybeSingleBuilder(
+          result: {'role': 'admin', 'is_active': true},
+        ),
       );
       final snapshotFilter = _FakeFilterBuilder(
         maybeSingleBuilder: _FakeMaybeSingleBuilder(),
@@ -383,7 +389,9 @@ void main() {
 
     test('tolerates non-map connection state entries', () async {
       final adminFilter = _FakeFilterBuilder(
-        maybeSingleBuilder: _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
+        maybeSingleBuilder: _FakeMaybeSingleBuilder(
+          result: {'role': 'admin', 'is_active': true},
+        ),
       );
       final snapshotFilter = _FakeFilterBuilder(
         maybeSingleBuilder: _FakeMaybeSingleBuilder(),
@@ -421,7 +429,9 @@ void main() {
 
     test('treats non-map data field as empty without crashing', () async {
       final adminFilter = _FakeFilterBuilder(
-        maybeSingleBuilder: _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
+        maybeSingleBuilder: _FakeMaybeSingleBuilder(
+          result: {'role': 'admin', 'is_active': true},
+        ),
       );
       final snapshotFilter = _FakeFilterBuilder(
         maybeSingleBuilder: _FakeMaybeSingleBuilder(),
@@ -508,7 +518,7 @@ void main() {
         adminBuilder: _FakeQueryBuilder(
           _FakeFilterBuilder(
             maybeSingleBuilder: _FakeMaybeSingleBuilder(
-              result: {'role': 'admin'},
+              result: {'role': 'admin', 'is_active': true},
             ),
           ),
         ),
@@ -561,7 +571,7 @@ void main() {
         adminBuilder: _FakeQueryBuilder(
           _FakeFilterBuilder(
             maybeSingleBuilder: _FakeMaybeSingleBuilder(
-              result: {'role': 'admin'},
+              result: {'role': 'admin', 'is_active': true},
             ),
           ),
         ),

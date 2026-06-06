@@ -6,6 +6,7 @@ import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/profile_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/repositories/profile_repository.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../helpers/mocks.dart';
 import '../../helpers/test_fixtures.dart';
@@ -22,6 +23,7 @@ void main() {
   late MockProfilesDao localDao;
   late MockProfileRemoteSource remoteSource;
   late MockSyncMetadataDao syncDao;
+  late MockStorageService storageService;
   late ProfileRepository repository;
 
   const userId = 'user-1';
@@ -29,17 +31,20 @@ void main() {
   setUpAll(() {
     registerFallbackValue(_sampleProfile());
     registerFallbackValue(TestFixtures.sampleSyncMetadata());
+    registerFallbackValue(XFile('fallback.jpg'));
   });
 
   setUp(() {
     localDao = MockProfilesDao();
     remoteSource = MockProfileRemoteSource();
     syncDao = MockSyncMetadataDao();
+    storageService = MockStorageService();
 
     repository = ProfileRepository(
       localDao: localDao,
       remoteSource: remoteSource,
       syncDao: syncDao,
+      storageService: storageService,
     );
 
     when(() => localDao.upsert(any())).thenAnswer((_) async {});
@@ -56,6 +61,15 @@ void main() {
     when(() => syncDao.deleteByRecord(any(), any())).thenAnswer((_) async {});
     when(() => syncDao.getByRecord(any(), any())).thenAnswer((_) async => null);
     when(() => syncDao.getPending(any())).thenAnswer((_) async => []);
+    when(
+      () => storageService.uploadAvatar(
+        userId: any(named: 'userId'),
+        file: any(named: 'file'),
+      ),
+    ).thenAnswer((_) async => 'https://cdn.example.com/user-1/avatar.jpg');
+    when(
+      () => storageService.deleteAvatar(userId: any(named: 'userId')),
+    ).thenAnswer((_) async {});
   });
 
   group('ProfileRepository', () {
@@ -94,6 +108,33 @@ void main() {
       verify(
         () => syncDao.deleteByRecord(SupabaseConstants.profilesTable, userId),
       ).called(1);
+    });
+
+    test('uploadAvatar creates a local profile when none exists', () async {
+      when(() => localDao.getById(userId)).thenAnswer((_) async => null);
+      final file = XFile('avatar.jpg');
+
+      await repository.uploadAvatar(userId: userId, file: file);
+
+      final captured = verify(() => localDao.upsert(captureAny())).captured;
+      final saved = captured.single as Profile;
+      expect(saved.id, userId);
+      expect(saved.avatarUrl, 'https://cdn.example.com/user-1/avatar.jpg');
+      verify(() => syncDao.insertItem(any())).called(1);
+    });
+
+    test('uploadAvatar updates existing local profile avatar', () async {
+      final existing = _sampleProfile(id: userId, email: 'owner@example.com');
+      when(() => localDao.getById(userId)).thenAnswer((_) async => existing);
+      final file = XFile('avatar.jpg');
+
+      await repository.uploadAvatar(userId: userId, file: file);
+
+      final captured = verify(() => localDao.upsert(captureAny())).captured;
+      final saved = captured.single as Profile;
+      expect(saved.email, existing.email);
+      expect(saved.avatarUrl, 'https://cdn.example.com/user-1/avatar.jpg');
+      verify(() => syncDao.insertItem(any())).called(1);
     });
   });
 }

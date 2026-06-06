@@ -128,11 +128,21 @@ void main() {
     test('returns true for founder role from profiles', () async {
       final container = makeContainer(
         userId: 'user-1',
-        result: {'role': 'founder'},
+        result: {'role': 'founder', 'is_active': true},
       );
       addTearDown(container.dispose);
 
       expect(await container.read(isAdminProvider.future), isTrue);
+    });
+
+    test('returns false for inactive admin profile', () async {
+      final container = makeContainer(
+        userId: 'user-1',
+        result: {'role': 'admin', 'is_active': false},
+      );
+      addTearDown(container.dispose);
+
+      expect(await container.read(isAdminProvider.future), isFalse);
     });
 
     test('returns false for standard user role from profiles', () async {
@@ -344,6 +354,45 @@ void main() {
   });
 
   group('isFounderProvider', () {
+    ProviderContainer makeContainer({
+      required String userId,
+      required PostgrestMap? result,
+    }) {
+      final client = _FakeSupabaseClient(
+        _FakeQueryBuilder(
+          _FakeFilterBuilder(_FakeMaybeSingleBuilder(result: result)),
+        ),
+      );
+      return ProviderContainer(
+        overrides: [
+          currentUserIdProvider.overrideWithValue(userId),
+          supabaseClientProvider.overrideWithValue(client),
+          supabaseInitializedProvider.overrideWithValue(true),
+        ],
+        retry: (_, __) => null,
+      );
+    }
+
+    test('returns true for active founder profile', () async {
+      final container = makeContainer(
+        userId: 'user-1',
+        result: {'role': 'founder', 'is_active': true},
+      );
+      addTearDown(container.dispose);
+
+      expect(await container.read(isFounderProvider.future), isTrue);
+    });
+
+    test('returns false for inactive founder profile', () async {
+      final container = makeContainer(
+        userId: 'user-1',
+        result: {'role': 'founder', 'is_active': false},
+      );
+      addTearDown(container.dispose);
+
+      expect(await container.read(isFounderProvider.future), isFalse);
+    });
+
     test('returns false when user is anonymous', () async {
       final mockClient = MockSupabaseClient();
       final container = ProviderContainer(

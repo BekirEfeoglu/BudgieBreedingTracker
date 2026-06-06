@@ -14,6 +14,7 @@ import '../../../core/utils/logger.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
+import '../../../core/widgets/dialogs/typed_confirm_dialog.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/loading_state.dart';
@@ -173,13 +174,12 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
             .read(adminActionsProvider.notifier)
             .toggleUserActive(userId, true);
       case 'deactivate':
-        final confirmed = await showConfirmDialog(
-          context,
+        final confirmed = await _confirmTypedDestructiveUserAction(
           title: 'admin.confirm_deactivate'.tr(),
           message: 'admin.confirm_deactivate_desc'.tr(),
-          isDestructive: true,
+          userId: userId,
         );
-        if (confirmed != true || !mounted) return;
+        if (!confirmed || !mounted) return;
         await ref
             .read(adminActionsProvider.notifier)
             .toggleUserActive(userId, false);
@@ -192,16 +192,36 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
         if (confirmed != true || !mounted) return;
         await ref.read(adminActionsProvider.notifier).grantPremium(userId);
       case 'revoke_premium':
-        final confirmed = await showConfirmDialog(
-          context,
+        final confirmed = await _confirmTypedDestructiveUserAction(
           title: 'admin.confirm_revoke_premium'.tr(),
           message: 'admin.confirm_revoke_premium_desc'.tr(),
-          isDestructive: true,
+          userId: userId,
         );
-        if (confirmed != true || !mounted) return;
+        if (!confirmed || !mounted) return;
         await ref.read(adminActionsProvider.notifier).revokePremium(userId);
     }
     if (mounted) _refreshUsers();
+  }
+
+  Future<bool> _confirmTypedDestructiveUserAction({
+    required String title,
+    required String message,
+    required String userId,
+  }) async {
+    final confirmed = await showConfirmDialog(
+      context,
+      title: title,
+      message: message,
+      isDestructive: true,
+    );
+    if (confirmed != true || !mounted) return false;
+    return showTypedConfirmDialog(
+      context,
+      title: title,
+      message: 'admin.typed_confirm_user_id'.tr(args: [userId]),
+      requiredPhrase: userId,
+      hintText: userId,
+    );
   }
 
   @override

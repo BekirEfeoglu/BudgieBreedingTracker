@@ -72,6 +72,31 @@ void main() {
       ]);
       expect(container.read(adminUserSelectionProvider), {'a', 'b'});
     });
+
+    test('selectAll caps selection at 100 unique users', () {
+      final ids = List.generate(125, (index) => 'user-$index');
+
+      container.read(adminUserSelectionProvider.notifier).selectAll(ids);
+
+      final selected = container.read(adminUserSelectionProvider);
+      expect(selected, hasLength(100));
+      expect(selected, contains('user-0'));
+      expect(selected, contains('user-99'));
+      expect(selected, isNot(contains('user-100')));
+    });
+
+    test('toggle ignores new users after 100 selections', () {
+      final notifier = container.read(adminUserSelectionProvider.notifier);
+      notifier.selectAll(List.generate(100, (index) => 'user-$index'));
+
+      notifier.toggle('user-100');
+
+      expect(container.read(adminUserSelectionProvider), hasLength(100));
+      expect(
+        container.read(adminUserSelectionProvider),
+        isNot(contains('user-100')),
+      );
+    });
   });
 
   group('isSelectionActiveProvider', () {

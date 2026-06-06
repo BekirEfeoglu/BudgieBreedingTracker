@@ -156,7 +156,7 @@ void main() {
       'returns newest feedback list with expected query modifiers',
       () async {
         final maybeSingleBuilder = _FakeAdminMaybeSingleBuilder(
-          result: {'role': 'admin'},
+          result: {'role': 'admin', 'is_active': true},
         );
         final filterBuilder = _FakeAdminSelectBuilder(
           maybeSingleBuilder: maybeSingleBuilder,
@@ -189,7 +189,7 @@ void main() {
           SupabaseConstants.profilesTable,
           SupabaseConstants.feedbackTable,
         ]);
-        expect(queryBuilder.selectedColumns, ['role', '*']);
+        expect(queryBuilder.selectedColumns, ['role, is_active', '*']);
         expect(filterBuilder.orderColumn, 'created_at');
         expect(filterBuilder.orderAscending, isFalse);
         expect(filterBuilder.limitCount, 50);

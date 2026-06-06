@@ -1,10 +1,12 @@
-import 'package:image_picker/image_picker.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:typed_data';
+
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/remote/storage/storage_utils.dart';
 import 'package:budgie_breeding_tracker/domain/services/moderation/image_safety_service.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Service for uploading and managing files in Supabase Storage.
 ///
@@ -94,10 +96,18 @@ class StorageService {
     }
     final path = '$userId/avatar.$ext';
 
-    await _uploadBinary(
+    final upload = await _readValidatedUpload(
+      bucket: _avatarsBucket,
+      file: file,
+      ext: ext,
+      maxBytes: AppConstants.maxAvatarUploadSizeBytes,
+      maxSizeLabel: '2 MB',
+    );
+    await _removeStaleAvatarFiles(userId: userId, keepPath: path);
+    await _uploadPreparedBinary(
       bucket: _avatarsBucket,
       path: path,
-      file: file,
+      upload: upload,
       upsert: true,
     );
 
@@ -128,6 +138,31 @@ class StorageService {
       }
     } on StorageException catch (e) {
       AppLogger.warning('Failed to delete avatar: ${e.message}');
+      rethrow;
+    }
+  }
+
+  Future<void> _removeStaleAvatarFiles({
+    required String userId,
+    required String keepPath,
+  }) async {
+    try {
+      final files = await _client.storage
+          .from(_avatarsBucket)
+          .list(path: userId);
+      final stalePaths = files
+          .where(
+            (file) => file.id != null && file.name != '.emptyFolderPlaceholder',
+          )
+          .map((file) => '$userId/${file.name}')
+          .where((path) => path != keepPath)
+          .toList();
+
+      if (stalePaths.isNotEmpty) {
+        await _client.storage.from(_avatarsBucket).remove(stalePaths);
+      }
+    } on StorageException catch (e) {
+      AppLogger.warning('Failed to clean stale avatars: ${e.message}');
       rethrow;
     }
   }
@@ -253,10 +288,39 @@ class StorageService {
       );
     }
 
+    final upload = await _readValidatedUpload(
+      bucket: bucket,
+      file: file,
+      ext: ext,
+      maxBytes: AppConstants.maxUploadSizeBytes,
+      maxSizeLabel: '10 MB',
+    );
+    await _uploadPreparedBinary(
+      bucket: bucket,
+      path: path,
+      upload: upload,
+      upsert: upsert,
+    );
+  }
+
+  Future<_ValidatedUpload> _readValidatedUpload({
+    required String bucket,
+    required XFile file,
+    required String ext,
+    required int maxBytes,
+    required String maxSizeLabel,
+  }) async {
+    if (!_allowedExtensions.contains(ext)) {
+      throw StorageException(
+        'File type .$ext is not allowed. '
+        'Allowed: ${_allowedExtensions.join(', ')}',
+      );
+    }
+
     final bytes = await file.readAsBytes();
 
-    if (bytes.length > AppConstants.maxUploadSizeBytes) {
-      throw const StorageException('File size exceeds 10 MB limit');
+    if (bytes.length > maxBytes) {
+      throw StorageException('File size exceeds $maxSizeLabel limit');
     }
 
     // Validate file content matches claimed extension via magic bytes
@@ -284,12 +348,24 @@ class StorageService {
       }
     }
 
+    return _ValidatedUpload(bytes: bytes, mimeType: mimeType);
+  }
+
+  Future<void> _uploadPreparedBinary({
+    required String bucket,
+    required String path,
+    required _ValidatedUpload upload,
+    bool upsert = false,
+  }) async {
     await _client.storage
         .from(bucket)
         .uploadBinary(
           path,
-          bytes,
-          fileOptions: FileOptions(contentType: mimeType, upsert: upsert),
+          upload.bytes,
+          fileOptions: FileOptions(
+            contentType: upload.mimeType,
+            upsert: upsert,
+          ),
         );
   }
 
@@ -359,4 +435,11 @@ class StorageService {
       await _client.storage.from(bucket).remove(filePaths);
     }
   }
+}
+
+class _ValidatedUpload {
+  const _ValidatedUpload({required this.bytes, required this.mimeType});
+
+  final Uint8List bytes;
+  final String mimeType;
 }

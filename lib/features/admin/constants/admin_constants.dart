@@ -21,13 +21,14 @@ abstract final class AdminConstants {
   static const int auditLogsPageSize = 100;
   static const int securityEventsPageSize = 100;
   static const int feedbackPageSize = 50;
+  static const int maxBulkOperationSize = 100;
 
   // Export
   static const int exportChunkSize = 500;
   static const int maxExportRows = 50000;
 
   // Retention
-  static const int auditLogRetentionDays = 90;
+  static const int auditLogRetentionDays = 365;
 
   // Capacity thresholds
   static const double capacityWarningPercent = 0.9;

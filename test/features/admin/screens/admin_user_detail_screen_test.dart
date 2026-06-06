@@ -18,8 +18,21 @@ const _testUserId = 'test-user-id';
 
 /// Fake notifier: avoids real Supabase calls during rendering.
 class _FakeAdminActionsNotifier extends AdminActionsNotifier {
+  int toggleCalls = 0;
+  int revokeCalls = 0;
+
   @override
   AdminActionState build() => const AdminActionState();
+
+  @override
+  Future<void> toggleUserActive(String targetUserId, bool isActive) async {
+    toggleCalls++;
+  }
+
+  @override
+  Future<void> revokePremium(String targetUserId) async {
+    revokeCalls++;
+  }
 
   void emitError(String message) {
     state = AdminActionState(error: message);
@@ -108,6 +121,38 @@ void main() {
       await pumpLocalizedApp(tester, _createSubject(), settle: false);
       await tester.pump();
       expect(find.byType(PopupMenuButton<String>), findsOneWidget);
+    });
+
+    testWidgets('deactivate action requires typed user id confirmation', (
+      tester,
+    ) async {
+      final detail = AdminUserDetail(
+        id: _testUserId,
+        email: 'user@example.com',
+        fullName: 'Test User',
+        createdAt: DateTime(2024, 1, 15),
+        isActive: true,
+      );
+
+      await pumpLocalizedApp(
+        tester,
+        _createSubject(
+          detailAsync: AsyncData(detail),
+          contentAsync: const AsyncData(AdminUserContent()),
+        ),
+        settle: false,
+      );
+      await tester.pump();
+
+      await tester.tap(find.byType(PopupMenuButton<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n('admin.deactivate_user')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n('common.confirm')));
+      await tester.pumpAndSettle();
+
+      expect(find.text(_testUserId), findsAtLeast(1));
+      expect(find.byType(TextField), findsOneWidget);
     });
 
     testWidgets('shows specific action error message in SnackBar', (

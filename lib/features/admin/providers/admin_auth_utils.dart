@@ -22,11 +22,12 @@ Future<void> requireAdmin(Ref ref) async {
   // consistent with the is_admin() Postgres function and RLS policies.
   final result = await client
       .from(SupabaseConstants.profilesTable)
-      .select('role')
+      .select('role, is_active')
       .eq('id', userId)
       .maybeSingle();
-  final role = result?['role'] as String?;
-  if (role != 'admin' && role != 'founder') {
+  final role = (result?['role'] as String?)?.toLowerCase();
+  final isActive = result?['is_active'] as bool?;
+  if (isActive != true || (role != 'admin' && role != 'founder')) {
     throw Exception('admin.permission_denied'.tr());
   }
 }

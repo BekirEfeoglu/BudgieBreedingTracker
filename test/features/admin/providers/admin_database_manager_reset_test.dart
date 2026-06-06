@@ -223,7 +223,7 @@ _FakeChunkedClient _makeClient({
   return _FakeChunkedClient(
     adminBuilder: _FakeProfilesQueryBuilder(
       _FakeAdminFilterBuilder(
-        _FakeMaybeSingleBuilder(result: {'role': 'admin'}),
+        _FakeMaybeSingleBuilder(result: {'role': 'admin', 'is_active': true}),
       ),
     ),
     rpcError: StateError('rpc unavailable'),

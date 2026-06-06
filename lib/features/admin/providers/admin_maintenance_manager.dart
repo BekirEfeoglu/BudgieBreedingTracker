@@ -55,38 +55,16 @@ class AdminMaintenanceManager {
     }
   }
 
-  /// Clear audit logs older than [before] (defaults to 90 days ago).
+  /// Audit logs are append-only.
   ///
-  /// Restricted to founder role only to prevent admins from
-  /// covering their tracks by clearing audit trails.
+  /// Retention/archive must run server-side; the admin client must not delete
+  /// audit rows because that can erase forensic evidence.
   Future<void> clearAuditLogs({DateTime? before}) async {
-    _updateState(isLoading: true, error: null, isSuccess: false);
-    try {
-      await requireFounder(_ref);
-      final client = _ref.read(supabaseClientProvider);
-      final cutoff =
-          before ?? DateTime.now().subtract(const Duration(days: 90));
-
-      await client
-          .from(SupabaseConstants.adminLogsTable)
-          .delete()
-          .lt('created_at', cutoff.toUtc().toIso8601String());
-
-      await logAdminAction(
-        client,
-        _ref.read(currentUserIdProvider),
-        'audit_logs_cleared',
-        details: {
-          'message':
-              'Logs before ${cutoff.toUtc().toIso8601String()} cleared',
-        },
-      );
-
-      _updateState(isLoading: false, isSuccess: true);
-    } catch (e, st) {
-      AppLogger.error('AdminMaintenanceManager.clearAuditLogs', e, st);
-      _updateState(isLoading: false, error: 'admin.action_error'.tr());
-    }
+    _updateState(
+      isLoading: false,
+      error: 'admin.audit_log_delete_disabled'.tr(),
+      isSuccess: false,
+    );
   }
 
   /// Permanently delete soft-deleted records older than [days] days.

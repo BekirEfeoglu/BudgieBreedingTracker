@@ -52,6 +52,9 @@ void main() {
     when(
       () => mockFileApi.createSignedUrl(any(), any()),
     ).thenAnswer((_) async => 'https://cdn.example.com/signed-object');
+    when(
+      () => mockFileApi.list(path: any(named: 'path')),
+    ).thenAnswer((_) async => []);
 
     // Default: safety scan passes for all image upload tests. Specific tests
     // can override this when verifying rejection behavior.
@@ -263,6 +266,74 @@ void main() {
         await service.uploadAvatar(userId: 'u1', file: file);
 
         expect(capturedPath, 'u1/avatar.heic');
+      });
+
+      test(
+        'removes stale avatar files with different extensions before upload',
+        () async {
+          final oldJpg = FileObject.fromJson({
+            'name': 'avatar.jpg',
+            'id': 'old',
+          });
+          final currentPng = FileObject.fromJson({
+            'name': 'avatar.png',
+            'id': 'current',
+          });
+          final file = makeXFile(name: 'avatar.png');
+          when(
+            () => mockFileApi.list(path: any(named: 'path')),
+          ).thenAnswer((_) async => [oldJpg, currentPng]);
+          when(() => mockFileApi.remove(any())).thenAnswer((_) async => []);
+          when(
+            () => mockFileApi.uploadBinary(
+              any(),
+              any(),
+              fileOptions: any(named: 'fileOptions'),
+            ),
+          ).thenAnswer((_) async => '');
+
+          await service.uploadAvatar(userId: 'u1', file: file);
+
+          final captured = verify(
+            () => mockFileApi.remove(captureAny()),
+          ).captured;
+          expect(captured.single, ['u1/avatar.jpg']);
+        },
+      );
+
+      test('rejects avatars larger than 2 MB before safety scan', () async {
+        final file = makeXFile(name: 'avatar.jpg', bytes: 2 * 1024 * 1024 + 1);
+        when(
+          () => mockFileApi.uploadBinary(
+            any(),
+            any(),
+            fileOptions: any(named: 'fileOptions'),
+          ),
+        ).thenAnswer((_) async => '');
+
+        await expectLater(
+          () => service.uploadAvatar(userId: 'u1', file: file),
+          throwsA(
+            isA<StorageException>().having(
+              (e) => e.message,
+              'message',
+              contains('2 MB'),
+            ),
+          ),
+        );
+        verifyNever(
+          () => mockImageSafety.scanImage(
+            bytes: any(named: 'bytes'),
+            mimeType: any(named: 'mimeType'),
+          ),
+        );
+        verifyNever(
+          () => mockFileApi.uploadBinary(
+            any(),
+            any(),
+            fileOptions: any(named: 'fileOptions'),
+          ),
+        );
       });
     });
 

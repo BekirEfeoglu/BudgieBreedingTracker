@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/security/sensitive_clipboard.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
+import '../../../core/widgets/dialogs/typed_confirm_dialog.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/loading_state.dart';
 import '../../../core/utils/logger.dart';
@@ -117,16 +118,18 @@ class _AdminUserDetailScreenState extends ConsumerState<AdminUserDetailScreen> {
       final detailAsync = ref.read(adminUserDetailProvider(widget.userId));
       final currentlyActive = detailAsync.value?.isActive ?? true;
 
-      final confirmed = await showConfirmDialog(
-        context,
-        title: currentlyActive
-            ? 'admin.confirm_deactivate'.tr()
-            : 'admin.confirm_activate'.tr(),
-        message: currentlyActive
-            ? 'admin.confirm_deactivate_desc'.tr()
-            : 'admin.confirm_activate_desc'.tr(),
-        isDestructive: currentlyActive,
-      );
+      final title = currentlyActive
+          ? 'admin.confirm_deactivate'.tr()
+          : 'admin.confirm_activate'.tr();
+      final message = currentlyActive
+          ? 'admin.confirm_deactivate_desc'.tr()
+          : 'admin.confirm_activate_desc'.tr();
+      final confirmed = currentlyActive
+          ? await _confirmTypedDestructiveUserAction(
+              title: title,
+              message: message,
+            )
+          : await _confirmUserAction(title: title, message: message);
       if (confirmed != true || !mounted) return;
       // Await so the AdminActionState listener has a chance to fire
       // before the user can navigate back (which tears down the
@@ -157,8 +160,7 @@ class _AdminUserDetailScreenState extends ConsumerState<AdminUserDetailScreen> {
   }
 
   Future<void> _handleGrantPremium() async {
-    final confirmed = await showConfirmDialog(
-      context,
+    final confirmed = await _confirmUserAction(
       title: 'admin.confirm_grant_premium'.tr(),
       message: 'admin.confirm_grant_premium_desc'.tr(),
     );
@@ -170,15 +172,40 @@ class _AdminUserDetailScreenState extends ConsumerState<AdminUserDetailScreen> {
   }
 
   Future<void> _handleRevokePremium() async {
-    final confirmed = await showConfirmDialog(
-      context,
+    final confirmed = await _confirmTypedDestructiveUserAction(
       title: 'admin.confirm_revoke_premium'.tr(),
       message: 'admin.confirm_revoke_premium_desc'.tr(),
-      isDestructive: true,
     );
-    if (confirmed != true || !mounted) return;
+    if (!confirmed || !mounted) return;
     // See `_handleGrantPremium`.
     await ref.read(adminActionsProvider.notifier).revokePremium(widget.userId);
+  }
+
+  Future<bool?> _confirmUserAction({
+    required String title,
+    required String message,
+  }) {
+    return showConfirmDialog(context, title: title, message: message);
+  }
+
+  Future<bool> _confirmTypedDestructiveUserAction({
+    required String title,
+    required String message,
+  }) async {
+    final confirmed = await showConfirmDialog(
+      context,
+      title: title,
+      message: message,
+      isDestructive: true,
+    );
+    if (confirmed != true || !mounted) return false;
+    return showTypedConfirmDialog(
+      context,
+      title: title,
+      message: 'admin.typed_confirm_user_id'.tr(args: [widget.userId]),
+      requiredPhrase: widget.userId,
+      hintText: widget.userId,
+    );
   }
 
   Future<void> _handleExportUserData() async {

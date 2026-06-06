@@ -94,9 +94,11 @@ class _FakeQueryBuilder extends Fake implements SupabaseQueryBuilder {
 /// all other tables → return the configured list result.
 class _FakeSupabaseClient extends Fake implements SupabaseClient {
   _FakeSupabaseClient({
-    required this.adminUserResult,
+    required PostgrestMap? adminUserResult,
     this.tableResults = const {},
-  });
+  }) : adminUserResult = adminUserResult == null
+           ? null
+           : {'is_active': true, ...adminUserResult};
 
   final PostgrestMap? adminUserResult;
   final Map<String, List<Map<String, dynamic>>> tableResults;

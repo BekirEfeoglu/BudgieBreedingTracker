@@ -4,7 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/avatar_picker_sheet.dart';
+
+import '../../../helpers/mocks.dart';
 
 /// Helper widget to open the avatar picker sheet via button
 class _TestScaffold extends ConsumerWidget {
@@ -95,6 +98,26 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text(l10n('profile.edit_avatar')), findsNothing);
+    });
+
+    testWidgets('remove option opens confirmation dialog after sheet closes', (
+      tester,
+    ) async {
+      final mockRepo = MockProfileRepository();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [profileRepositoryProvider.overrideWithValue(mockRepo)],
+          child: const MaterialApp(home: _TestScaffold(hasAvatar: true)),
+        ),
+      );
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n('profile.avatar_remove')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(find.text(l10n('profile.avatar_remove_confirm')), findsOneWidget);
     });
   });
 }

@@ -255,7 +255,7 @@ void main() {
       test('success - updates event, logs action, sets isSuccess', () async {
         final securityBuilder = _FakeMutationQueryBuilder();
         final client = _makeClient(
-          adminUserResult: const {'role': 'admin'},
+          adminUserResult: const {'role': 'admin', 'is_active': true},
           securityEventsQueryBuilder: securityBuilder,
         );
         final recorder = _StateRecorder();
@@ -318,8 +318,10 @@ void main() {
     // clearAuditLogs
     // -----------------------------------------------------------------------
     group('clearAuditLogs', () {
-      test('success - deletes old logs, logs action, sets isSuccess', () async {
-        final client = _makeClient(adminUserResult: const {'role': 'admin'});
+      test('fails closed without deleting admin logs', () async {
+        final client = _makeClient(
+          adminUserResult: const {'role': 'founder', 'is_active': true},
+        );
         final recorder = _StateRecorder();
         final setup = _makeContainerAndManager(
           userId: 'admin-user',
@@ -331,25 +333,11 @@ void main() {
         final manager = setup.container.read(setup.managerProvider);
         await manager.clearAuditLogs();
 
-        // Verify state ends with success
         expect(recorder.isLoading, isFalse);
-        expect(recorder.isSuccess, isTrue);
-        expect(recorder.error, isNull);
-
-        // Verify admin_logs table was accessed (delete + log insert)
-        expect(
-          client.requestedTables
-              .where((t) => t == SupabaseConstants.adminLogsTable)
-              .length,
-          greaterThanOrEqualTo(2),
-        );
-
-        // Verify admin log was recorded
-        expect(client.adminLogsQueryBuilder.insertCallCount, 1);
-        final logPayload =
-            client.adminLogsQueryBuilder.insertPayload as Map<String, dynamic>;
-        expect(logPayload['action'], 'audit_logs_cleared');
-        expect(logPayload['admin_user_id'], 'admin-user');
+        expect(recorder.isSuccess, isFalse);
+        expect(recorder.error, 'admin.audit_log_delete_disabled');
+        expect(client.requestedTables, isEmpty);
+        expect(client.adminLogsQueryBuilder.insertCallCount, 0);
       });
 
       test('fails when not admin', () async {
@@ -367,7 +355,8 @@ void main() {
 
         expect(recorder.isLoading, isFalse);
         expect(recorder.isSuccess, isFalse);
-        expect(recorder.error, 'admin.action_error');
+        expect(recorder.error, 'admin.audit_log_delete_disabled');
+        expect(client.requestedTables, isEmpty);
         expect(client.adminLogsQueryBuilder.insertCallCount, 0);
       });
     });
@@ -389,7 +378,7 @@ void main() {
             ),
           );
           final client = _makeClient(
-            adminUserResult: const {'role': 'admin'},
+            adminUserResult: const {'role': 'admin', 'is_active': true},
             genericTableBuilder: genericBuilder,
           );
           final recorder = _StateRecorder();
@@ -458,7 +447,7 @@ void main() {
         () async {
           final syncBuilder = _FakeMutationQueryBuilder();
           final client = _makeClient(
-            adminUserResult: const {'role': 'admin'},
+            adminUserResult: const {'role': 'admin', 'is_active': true},
             syncMetadataQueryBuilder: syncBuilder,
           );
           final recorder = _StateRecorder();

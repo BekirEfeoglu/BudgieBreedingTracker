@@ -94,6 +94,25 @@ void main() {
       expect(find.text(l10n('admin.bulk_revoke_premium')), findsOneWidget);
     });
 
+    testWidgets('destructive bulk deactivate requires typed user id', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_createSubject());
+      await tester.pumpAndSettle();
+
+      await tester.longPress(find.text('Alice Test'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(l10n('admin.bulk_deactivate')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(l10n('common.confirm')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('user-1'), findsAtLeast(1));
+      expect(find.byType(TextField), findsAtLeast(1));
+    });
+
     testWidgets('should_show_checkbox_in_selection_mode', (tester) async {
       await tester.pumpWidget(_createSubject());
       await tester.pumpAndSettle();

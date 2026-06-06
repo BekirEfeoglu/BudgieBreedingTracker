@@ -34,6 +34,11 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
     }
   }
 
+  String get _typedConfirmationTarget {
+    final ids = widget.selectedIds.toList()..sort();
+    return ids.first;
+  }
+
   Future<void> _run(
     Future<({int succeeded, int skipped})> Function() action,
     String actionLabel,
@@ -76,13 +81,11 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
   });
 
   Future<void> _onDeactivate() => _guard(() async {
-    final confirmed = await showConfirmDialog(
-      context,
+    final confirmed = await _confirmTypedDestructiveBulkAction(
       title: 'admin.confirm_deactivate'.tr(),
       message: 'admin.confirm_deactivate_desc'.tr(),
-      isDestructive: true,
     );
-    if (confirmed != true || !mounted) return;
+    if (!confirmed || !mounted) return;
     await _run(
       () => ref
           .read(adminActionsProvider.notifier)
@@ -107,13 +110,11 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
   });
 
   Future<void> _onRevokePremium() => _guard(() async {
-    final confirmed = await showConfirmDialog(
-      context,
+    final confirmed = await _confirmTypedDestructiveBulkAction(
       title: 'admin.confirm_revoke_premium'.tr(),
       message: 'admin.confirm_revoke_premium_desc'.tr(),
-      isDestructive: true,
     );
-    if (confirmed != true || !mounted) return;
+    if (!confirmed || !mounted) return;
     await _run(
       () => ref
           .read(adminActionsProvider.notifier)
@@ -174,6 +175,16 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
   Future<void> _onDelete() => _guard(() async {
     final confirmed = await _showDeletePreview();
     if (confirmed != true || !mounted) return;
+    final typedConfirmed = await showTypedConfirmDialog(
+      context,
+      title: 'admin.bulk_delete'.tr(),
+      message: 'admin.typed_confirm_user_id'.tr(
+        args: [_typedConfirmationTarget],
+      ),
+      requiredPhrase: _typedConfirmationTarget,
+      hintText: _typedConfirmationTarget,
+    );
+    if (!typedConfirmed || !mounted) return;
     await _run(
       () => ref
           .read(adminActionsProvider.notifier)
@@ -181,6 +192,28 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
       'admin.bulk_delete'.tr(),
     );
   });
+
+  Future<bool> _confirmTypedDestructiveBulkAction({
+    required String title,
+    required String message,
+  }) async {
+    final confirmed = await showConfirmDialog(
+      context,
+      title: title,
+      message: message,
+      isDestructive: true,
+    );
+    if (confirmed != true || !mounted) return false;
+    return showTypedConfirmDialog(
+      context,
+      title: title,
+      message: 'admin.typed_confirm_user_id'.tr(
+        args: [_typedConfirmationTarget],
+      ),
+      requiredPhrase: _typedConfirmationTarget,
+      hintText: _typedConfirmationTarget,
+    );
+  }
 
   Future<bool?> _showDeletePreview() {
     return showDialog<bool>(

@@ -69,10 +69,8 @@ class ProfileRepository {
       file: file,
     );
 
-    final profile = await getById(userId);
-    if (profile != null) {
-      await save(profile.copyWith(avatarUrl: avatarUrl));
-    }
+    final profile = await getById(userId) ?? Profile(id: userId, email: '');
+    await save(profile.copyWith(avatarUrl: avatarUrl));
   }
 
   /// Removes the user's avatar from storage and clears the local profile URL.

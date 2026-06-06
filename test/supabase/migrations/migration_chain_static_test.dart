@@ -132,6 +132,55 @@ void main() {
         contains('premium_sync_requires_server_verification'),
       );
     });
+
+    test('admin reset RPCs are founder-only and admin logs are append-only', () {
+      final hardeningSql = _migrationSqlAfter(
+        '20260604190921',
+        requiredText: 'CREATE OR REPLACE FUNCTION private.admin_reset_table',
+      );
+
+      expect(hardeningSql, contains("au.role = 'founder'"));
+      expect(hardeningSql, contains('p.is_active = TRUE'));
+      expect(
+        hardeningSql,
+        contains(
+          'CREATE OR REPLACE FUNCTION private.admin_reset_all_user_data()',
+        ),
+      );
+      expect(
+        hardeningSql,
+        contains('DROP POLICY IF EXISTS "admin_logs_update"'),
+      );
+      expect(
+        hardeningSql,
+        contains('DROP POLICY IF EXISTS "admin_logs_delete"'),
+      );
+      expect(
+        hardeningSql,
+        contains(
+          'REVOKE UPDATE, DELETE ON TABLE public.admin_logs FROM authenticated',
+        ),
+      );
+      expect(
+        hardeningSql,
+        isNot(contains('CREATE POLICY "admin_logs_update"')),
+      );
+      expect(
+        hardeningSql,
+        isNot(contains('CREATE POLICY "admin_logs_delete"')),
+      );
+    });
+
+    test('avatar bucket accepts client-supported small image types only', () {
+      final avatarBucketSql = _migrationSqlAfter(
+        '20260604205501',
+        requiredText: "UPDATE storage.buckets",
+      );
+
+      expect(avatarBucketSql, contains("id = 'avatars'"));
+      expect(avatarBucketSql, contains('file_size_limit = 2097152'));
+      expect(avatarBucketSql, contains("'image/heic'"));
+    });
   });
 }
 

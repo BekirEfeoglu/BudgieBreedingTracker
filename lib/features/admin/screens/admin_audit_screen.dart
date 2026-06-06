@@ -6,7 +6,6 @@ import 'package:easy_localization/easy_localization.dart';
 
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/loading_state.dart';
-import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
 import '../providers/admin_actions_provider.dart';
 import '../providers/admin_providers.dart';
@@ -96,7 +95,6 @@ class _AdminAuditScreenState extends ConsumerState<AdminAuditScreen> {
                   onRetry: () => ref.invalidate(adminAuditLogsProvider),
                 ),
                 data: (logs) {
-                  final isFounder = ref.watch(isFounderProvider).value ?? false;
                   return AuditContent(
                     logs: logs,
                     hasMore: logs.length >= ref.watch(adminAuditLimitProvider),
@@ -104,7 +102,6 @@ class _AdminAuditScreenState extends ConsumerState<AdminAuditScreen> {
                       ref.read(adminAuditLimitProvider.notifier).state +=
                           AdminConstants.auditLogsPageSize;
                     },
-                    onClearLogs: isFounder ? _onClearLogs : null,
                   );
                 },
               ),
@@ -113,16 +110,5 @@ class _AdminAuditScreenState extends ConsumerState<AdminAuditScreen> {
         ],
       ),
     );
-  }
-
-  Future<void> _onClearLogs() async {
-    final confirmed = await showConfirmDialog(
-      context,
-      title: 'admin.clear_logs'.tr(),
-      message: 'admin.confirm_clear_logs'.tr(),
-      isDestructive: true,
-    );
-    if (confirmed != true || !mounted) return;
-    ref.read(adminActionsProvider.notifier).clearAuditLogs();
   }
 }

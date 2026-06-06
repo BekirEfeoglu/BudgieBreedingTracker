@@ -238,7 +238,7 @@ _FakeSupabaseClient _makeClient({
   return _FakeSupabaseClient(
     adminCheckFilter: _FakeFilterBuilder(
       result: [
-        {'id': 'admin-user-id', 'role': adminRole},
+        {'id': 'admin-user-id', 'role': adminRole, 'is_active': true},
       ],
     ),
     usersListFilter: _FakeFilterBuilder(result: usersResult),
@@ -345,6 +345,22 @@ void main() {
         expect(
           client.usersListFilter.orCalls.first,
           'email.ilike.%john%,full_name.ilike.%john%',
+        );
+      });
+
+      test('should include exact user ID search for UUID terms', () async {
+        final client = _makeClient(usersResult: [_userRow()]);
+        final container = _makeContainer(client);
+        addTearDown(container.dispose);
+
+        const userId = '123e4567-e89b-12d3-a456-426614174000';
+        const query = AdminUsersQuery(searchTerm: userId);
+        await container.read(adminUsersProvider(query).future);
+
+        expect(client.usersListFilter.orCalls, hasLength(1));
+        expect(
+          client.usersListFilter.orCalls.first,
+          'email.ilike.%$userId%,full_name.ilike.%$userId%,id.eq.$userId',
         );
       });
     });

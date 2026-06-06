@@ -67,9 +67,12 @@ final adminUsersProvider = FutureProvider.family<List<AdminUser>, AdminUsersQuer
         .replaceAll('_', r'\_');
     if (sanitized.isNotEmpty) {
       // Do NOT Uri.encodeComponent — PostgREST client handles encoding.
-      request = request.or(
-        'email.ilike.%$sanitized%,full_name.ilike.%$sanitized%',
-      );
+      final filters = [
+        'email.ilike.%$sanitized%',
+        'full_name.ilike.%$sanitized%',
+        if (_isUuidSearchTerm(sanitized)) 'id.eq.$sanitized',
+      ];
+      request = request.or(filters.join(','));
     }
   }
 
@@ -143,6 +146,12 @@ final adminUsersProvider = FutureProvider.family<List<AdminUser>, AdminUsersQuer
 
   return users.take(query.limit).toList();
 });
+
+bool _isUuidSearchTerm(String value) {
+  return RegExp(
+    r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+  ).hasMatch(value);
+}
 
 void _mergeLocalPresence(
   Map<String, DateTime> activity,
