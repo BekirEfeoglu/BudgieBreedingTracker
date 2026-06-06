@@ -53,6 +53,15 @@ post_install do |installer|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
       config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
       config.build_settings['SWIFT_SUPPRESS_WARNINGS'] = 'YES'
+      # Silence harmless archive warnings from CocoaPods dummy/object files.
+      existing_libtool_flags = config.build_settings['OTHER_LIBTOOLFLAGS']
+      existing_libtool_flags =
+        if existing_libtool_flags.is_a?(Array)
+          existing_libtool_flags
+        else
+          existing_libtool_flags.to_s.split(/\s+/)
+        end
+      config.build_settings['OTHER_LIBTOOLFLAGS'] = (existing_libtool_flags + ['$(inherited)', '-no_warning_for_no_symbols']).uniq
       # Strip simulator architectures from release builds to pass App Store validation.
       # Fixes: "executable references an unsupported platform in the arm64 slice"
       config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
@@ -61,6 +70,10 @@ post_install do |installer|
       config.build_settings['VALID_ARCHS'] = 'arm64 x86_64'
       config.build_settings['VALID_ARCHS[sdk=iphonesimulator*]'] = 'arm64 x86_64'
       config.build_settings['VALID_ARCHS[sdk=iphoneos*]'] = 'arm64'
+
+      # google_mobile_ads 8.0.0 ships a third-party XIB that Xcode 26 warns
+      # about even though pod compiler warnings are otherwise inhibited.
+      config.build_settings['IBC_WARNINGS'] = 'NO' if target.name == 'google_mobile_ads-google_mobile_ads'
     end
   end
 
