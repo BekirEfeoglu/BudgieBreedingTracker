@@ -177,7 +177,9 @@ class _FakeSupabaseClient extends Fake implements SupabaseClient {
 
 _FakeFilterBuilder _adminCheck({String role = 'admin'}) {
   return _FakeFilterBuilder(
-    maybeSingleResult: _FakeMaybeSingleBuilder(result: {'role': role}),
+    maybeSingleResult: _FakeMaybeSingleBuilder(
+      result: {'role': role, 'is_active': true},
+    ),
   );
 }
 
