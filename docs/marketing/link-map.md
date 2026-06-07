@@ -21,6 +21,14 @@ Not: Lead magnet için en temiz uzun vadeli çözüm, CSV dosyasını siteye yü
 | Instagram story | Link sticker | `https://budgiebreedingtracker.online/?utm_source=instagram&utm_medium=organic&utm_campaign=202606_launch&utm_content=story_link_v1` |
 | Facebook story | Story link | `https://budgiebreedingtracker.online/?utm_source=facebook&utm_medium=organic&utm_campaign=202606_launch&utm_content=story_link_v1` |
 
+## Community Links
+
+| Kanal | Kullanım | Link |
+| --- | --- | --- |
+| Facebook grup | Admin onaylı tanıtım postu | `https://budgiebreedingtracker.online/?utm_source=facebook&utm_medium=group&utm_campaign=202606_group_outreach&utm_content=approved_intro_post` |
+| Facebook grup | Eğitim/kuluçka takip postu | `https://budgiebreedingtracker.online/?utm_source=facebook&utm_medium=group&utm_campaign=202606_group_outreach&utm_content=incubation_tracker_value_post` |
+| Facebook grup | Yorumda link isteyen kullanıcı | `https://budgiebreedingtracker.online/?utm_source=facebook&utm_medium=group&utm_campaign=202606_group_outreach&utm_content=comment_download_link` |
+
 ## DM And Automation Links
 
 | Kanal | Kullanım | Link |
@@ -37,4 +45,3 @@ Not: Lead magnet için en temiz uzun vadeli çözüm, CSV dosyasını siteye yü
 | Lead magnet | `https://budgiebreedingtracker.online/?utm_source=facebook&utm_medium=paid&utm_campaign=202606_lead_magnet&utm_content=incubation_table_v1` |
 | Click-to-message | `https://budgiebreedingtracker.online/?utm_source=instagram&utm_medium=paid&utm_campaign=202606_click_to_message&utm_content=reels_problem_v1` |
 | App install / traffic | `https://budgiebreedingtracker.online/?utm_source=instagram&utm_medium=paid&utm_campaign=202606_app_install&utm_content=carousel_features_v1` |
-
