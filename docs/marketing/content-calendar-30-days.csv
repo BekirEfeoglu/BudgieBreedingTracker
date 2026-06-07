@@ -1,0 +1,31 @@
+day,channel,format,topic,hook,cta,asset_note,utm_content
+1,instagram,reels,Kulucka takibi neden karisir?,"Yumurtlama ve tahmini cikim tarihleri notlarda kayboluyor mu?","Ucretsiz takip tablosunu al","Telefon ekran kaydi + yumurta takibi overlay",reels_day01_incubation_problem
+2,facebook,carousel,5 takip hatasi,"Ureticilerin en sik yaptigi 5 takip hatasi","Tabloyu indir","5 slayt problem/cozum",carousel_day02_tracking_mistakes
+3,instagram,story,Anket,"Yumurta takibini nerede yapiyorsunuz?","Cevap ver","Not defteri / Excel / Uygulama secenekleri",story_day03_poll_tracking
+4,instagram,reels,Uygulamada ilk cift ekleme,"Ilk ciftinizi 30 saniyede kaydedin","Uygulamayi indir","Ekran kaydi hizli demo",reels_day04_first_pair
+5,facebook,post,Kulucka takvim aciklamasi,"Tahmini cikim gununu nasil takip ediyorsunuz?","Yorumda sorunuzu yazin","Metin + tek gorsel",post_day05_incubation_calendar
+6,instagram,carousel,Yumurta durumlari,"Dolu, bos, kirik, cikti: her durum ayri takip edilmeli","Demo link iste","Durum ikonlari",carousel_day06_egg_status
+7,instagram,story,Soru kutusu,"Kulucka takibinde en cok zorlandiginiz sey ne?","Sorunu yaz","Soru sticker",story_day07_question
+8,instagram,reels,Yavru gelisim kaydi,"Yavrulari tek tek ayirt etmek zor mu?","Uygulamayi dene","Chick timeline ekran kaydi",reels_day08_chick_tracking
+9,facebook,carousel,Soyagaci faydasi,"Hangi eslesmeden hangi yavru geldi?","Soyagaci ozelligini incele","Pedigree ekran goruntuleri",carousel_day09_pedigree
+10,instagram,story,Mini ipucu,"Bugun yumurta tarihlerini kontrol ettiniz mi?","Hatirlaticilari ac","Hatirlatici ekran gorseli",story_day10_reminder
+11,instagram,reels,Coklu cift takibi,"Birden fazla cift varsa tablo cabuk karisir","Ucretsiz indir","Liste ekran kaydi",reels_day11_multi_pair
+12,facebook,post,Uretici senaryosu,"3 cift, 12 yumurta, 1 takip duzeni","Tabloyu al","Kisa vaka anlatimi",post_day12_breeder_scenario
+13,instagram,carousel,Premium degil once duzen,"Once kayit duzeni, sonra otomasyon","Ucretsiz basla","Free vs premium sade slayt",carousel_day13_free_start
+14,instagram,story,Link hatirlatma,"Ucretsiz kulucka takip tablosu hazir","Linke tikla","Lead magnet story",story_day14_lead_magnet
+15,instagram,reels,Ekran turu,"BudgieBreedingTracker'da 5 ana ekran","Uygulamayi indir","Hizli app tour",reels_day15_app_tour
+16,facebook,carousel,Kulucka gun gun,"1. gunden cikima kadar takip listesi","Takip tablosunu al","Gun gun checklist",carousel_day16_day_by_day
+17,instagram,story,DM tetikleyici,"Demo linki icin TAKIP yazin","TAKIP yaz","Click-to-message story",story_day17_dm_keyword
+18,instagram,reels,Hatirlaticilar,"Kritik tarihleri unutmayin","Hatirlaticilari deneyin","Notification mock",reels_day18_reminders
+19,facebook,post,Sik soru,"Uygulama internet olmadan calisir mi?","Sorularinizi yazin","Offline-first anlatim",post_day19_offline
+20,instagram,carousel,Kimler icin?,"Hobi sahibi, uretici, petshop: herkes icin farkli fayda","Profildeki linke git","3 persona slayti",carousel_day20_personas
+21,instagram,story,Anket,"Kac cift takip ediyorsunuz?","Oy ver","1 / 2-5 / 6+ secenekleri",story_day21_pair_count
+22,instagram,reels,Kayit disiplini,"Bugun kaydetmediginiz bilgi yarin lazim olabilir","Uygulamayi indir","Before/after anlatim",reels_day22_record_habit
+23,facebook,carousel,Yumurta kontrol akisi,"Yumurta ekle, durum guncelle, cikimi kaydet","Demo iste","3 adimli akis",carousel_day23_egg_flow
+24,instagram,story,Kullanici sorusu,"En cok sorulan soru: cikim tarihi nasil hesaplanir?","Cevabi izle","Kisa video teaser",story_day24_faq
+25,instagram,reels,Cikim sonrasi yavru,"Yumurta cikinca yavru kaydi nasil tutulur?","Uygulamayi dene","Egg to chick demo",reels_day25_hatch_to_chick
+26,facebook,post,Topluluk daveti,"Takip sisteminizi paylasin, diger yetistiricilerden fikir alin","Yorum yap","Community CTA",post_day26_community
+27,instagram,carousel,Soyagaci ve eslesme,"Akrabalik ve eslesme gecmisini kayit altina alin","Ozelligi incele","Pedigree slayt",carousel_day27_pair_history
+28,instagram,story,Lead magnet tekrar,"Takip tablosunu kacirmayin","Formu doldur","Sticker + link",story_day28_lead_repeat
+29,instagram,reels,30 saniye ozet,"Cift, yumurta, kulucka, yavru: tek uygulama","Ucretsiz indir","Fast montage",reels_day29_summary
+30,facebook,post,Ay sonu soru-cevap,"BudgieBreedingTracker hakkinda ne sormak istersiniz?","Sorunuzu yazin","Q&A post",post_day30_qa
