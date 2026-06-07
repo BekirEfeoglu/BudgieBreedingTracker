@@ -5,7 +5,8 @@
   "scripts": {
     "start": "npx remotion studio",
     "build": "npx remotion render src/index.ts BudgiePromo out/promo.mp4",
-    "build:gif": "npx remotion render src/index.ts BudgiePromo out/promo.gif --image-format png"
+    "build:gif": "npx remotion render src/index.ts BudgiePromo out/promo.gif --image-format png",
+    "build:reels": "npx remotion render src/index.ts BudgieReels out/reels.mp4"
   },
   "keywords": [],
   "author": "",

@@ -51,6 +51,19 @@ export const timing = {
   outro:       { from: 780, duration: 120 },
 };
 
+// Timing constants for Reels (in frames at 30fps, total 40 seconds = 1200 frames)
+export const timingReels = {
+  fps: 30,
+  totalDuration: 1200, // 40 seconds
+
+  intro:       { from: 0,    duration: 200 },
+  features:    { from: 180,  duration: 240 },
+  phoneDemo:   { from: 400,  duration: 280 },
+  stats:       { from: 660,  duration: 200 },
+  techStack:   { from: 840,  duration: 180 },
+  outro:       { from: 1000, duration: 200 },
+};
+
 // Spring presets
 export const springPresets = {
   bouncy:    { damping: 10, mass: 0.8, stiffness: 120 },
