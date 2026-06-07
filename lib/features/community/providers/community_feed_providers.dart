@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show RealtimeChannel;
 
 import '../../../core/utils/logger.dart';
 import '../../../data/local/preferences/app_preferences.dart';
@@ -20,6 +23,7 @@ class FeedState {
   final bool hasMore;
   final String? error;
   final DateTime? cursor;
+  final String? cursorPostId;
 
   const FeedState({
     this.posts = const [],
@@ -27,6 +31,7 @@ class FeedState {
     this.hasMore = true,
     this.error,
     this.cursor,
+    this.cursorPostId,
   });
 
   FeedState copyWith({
@@ -35,6 +40,7 @@ class FeedState {
     bool? hasMore,
     String? error,
     DateTime? cursor,
+    String? cursorPostId,
   }) {
     return FeedState(
       posts: posts ?? this.posts,
@@ -42,6 +48,7 @@ class FeedState {
       hasMore: hasMore ?? this.hasMore,
       error: error,
       cursor: cursor ?? this.cursor,
+      cursorPostId: cursorPostId ?? this.cursorPostId,
     );
   }
 }
@@ -76,6 +83,7 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
         isLoading: false,
         hasMore: posts.length >= _pageSize,
         cursor: posts.isNotEmpty ? posts.last.createdAt : null,
+        cursorPostId: posts.isNotEmpty ? posts.last.id : null,
       );
     } catch (e, st) {
       if (_isSupabaseUnavailableError(e)) {
@@ -106,6 +114,7 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
         currentUserId: userId,
         limit: _pageSize,
         before: state.cursor,
+        beforeId: state.cursorPostId,
       );
       if (!ref.mounted) return;
 
@@ -119,6 +128,9 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
       final nextCursor = newPosts.isNotEmpty
           ? newPosts.last.createdAt
           : state.cursor;
+      final nextCursorPostId = newPosts.isNotEmpty
+          ? newPosts.last.id
+          : state.cursorPostId;
 
       if (allPosts.length > _maxPosts) {
         allPosts = allPosts.sublist(0, _maxPosts);
@@ -129,6 +141,7 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
         isLoading: false,
         hasMore: newPosts.length >= _pageSize,
         cursor: nextCursor,
+        cursorPostId: nextCursorPostId,
       );
     } catch (e, st) {
       if (_isSupabaseUnavailableError(e)) {
@@ -207,3 +220,60 @@ final communityFeedProvider =
       CommunityFeedNotifier.new,
     );
 
+class CommunityNewPostNotifier extends Notifier<int> {
+  RealtimeChannel? _channel;
+  Future<void> Function(RealtimeChannel channel)? _unsubscribeCallback;
+
+  @override
+  int build() {
+    Future.microtask(_subscribe);
+    ref.onDispose(_unsubscribe);
+    return 0;
+  }
+
+  Future<void> _subscribe() async {
+    if (!ref.mounted || _channel != null) return;
+    final userId = ref.read(currentUserIdProvider);
+    if (userId == 'anonymous') return;
+
+    try {
+      final repo = ref.read(communityPostRepositoryProvider);
+      _unsubscribeCallback = repo.unsubscribeFromPostChanges;
+      _channel = repo.subscribeToPostChanges(
+        onInsert: (authorUserId) {
+          if (!ref.mounted || authorUserId == userId) return;
+          state = state + 1;
+        },
+        onRemove: (postId) {
+          if (!ref.mounted) return;
+          ref.read(communityFeedProvider.notifier).removePost(postId);
+        },
+      );
+    } catch (e, st) {
+      AppLogger.error('CommunityNewPostNotifier.subscribe', e, st);
+    }
+  }
+
+  void reset() {
+    state = 0;
+  }
+
+  void _unsubscribe() {
+    final channel = _channel;
+    if (channel == null) return;
+    _channel = null;
+    final unsubscribe = _unsubscribeCallback;
+    _unsubscribeCallback = null;
+    if (unsubscribe == null) return;
+    try {
+      unawaited(unsubscribe(channel));
+    } catch (e, st) {
+      AppLogger.error('CommunityNewPostNotifier.unsubscribe', e, st);
+    }
+  }
+}
+
+final communityNewPostCountProvider =
+    NotifierProvider<CommunityNewPostNotifier, int>(
+      CommunityNewPostNotifier.new,
+    );

@@ -488,8 +488,8 @@ void main() {
 
     test('returns list of blocked user IDs', () async {
       blocksSelect.result = [
-        {'blocked_user_id': 'u5'},
-        {'blocked_user_id': 'u6'},
+        {'user_id': 'user-1', 'blocked_user_id': 'u5'},
+        {'user_id': 'u6', 'blocked_user_id': 'user-1'},
       ];
 
       final result = await source.fetchBlockedUserIds('user-1');

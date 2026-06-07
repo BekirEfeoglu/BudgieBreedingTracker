@@ -347,8 +347,11 @@ jobs:
         run: |
           supabase functions deploy mfa-lockout --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
           supabase functions deploy moderate-content --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          supabase functions deploy create-community-post --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          supabase functions deploy create-community-comment --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
           supabase functions deploy revoke-oauth-token --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
           supabase functions deploy scan-image-safety --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          supabase functions deploy upload-community-photo --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
           supabase functions deploy send-push --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
           supabase functions deploy system-health --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
           supabase functions deploy sync-premium-status --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}

@@ -93,14 +93,14 @@ final compressed = await FlutterImageCompress.compressWithFile(
 - Bucket isimleri `SupabaseConstants` içinde sabit
 - Her bucket'ın RLS policy'si var (user kendi dosyalarına okuma/yazma)
 - Public bucket vs private bucket ayrımı:
-  - Public: marketplace listings, community posts
-  - Private: kullanıcı kuş fotoğrafları, sağlık kayıt fotoğrafları
+  - Public: marketplace listings
+  - Private/signed: kullanıcı kuş fotoğrafları, sağlık kayıt fotoğrafları, community post fotoğrafları
 - Public bucket için CDN URL, private için signed URL (TTL 1h)
 
 | Bucket | Erişim | İçerik |
 |--------|--------|--------|
 | `bird-photos` | Private (user-scoped RLS) | Kullanıcı kuşları |
-| `community-posts` | Public read, auth write | Topluluk paylaşımları |
+| `community-photos` | Server upload, signed URL read | Topluluk paylaşımları |
 | `marketplace-listings` | Public read, auth write | İlan fotoğrafları |
 | `health-records` | Private | Sağlık belgeleri |
 | `chat-attachments` | Conversation-scoped RLS | Mesajlaşma medyası |

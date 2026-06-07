@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/data/remote/storage/storage_service.dart';
+import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
 import 'package:budgie_breeding_tracker/domain/services/moderation/image_safety_service.dart';
 
 import '../../../helpers/mocks.dart';
@@ -25,6 +26,7 @@ void main() {
   late MockSupabaseStorageClient mockStorage;
   late MockStorageFileApi mockFileApi;
   late MockImageSafetyService mockImageSafety;
+  late MockEdgeFunctionClient mockEdgeClient;
   late StorageService service;
 
   setUpAll(() {
@@ -38,6 +40,7 @@ void main() {
     mockStorage = MockSupabaseStorageClient();
     mockFileApi = MockStorageFileApi();
     mockImageSafety = MockImageSafetyService();
+    mockEdgeClient = MockEdgeFunctionClient();
     when(() => mockClient.storage).thenReturn(mockStorage);
     when(() => mockStorage.from(any())).thenReturn(mockFileApi);
 
@@ -64,8 +67,25 @@ void main() {
         mimeType: any(named: 'mimeType'),
       ),
     ).thenAnswer((_) async => const ImageSafetyResult.safe());
+    when(
+      () => mockEdgeClient.uploadCommunityPhoto(
+        postId: any(named: 'postId'),
+        filename: any(named: 'filename'),
+        imageBase64: any(named: 'imageBase64'),
+        mimeType: any(named: 'mimeType'),
+      ),
+    ).thenAnswer(
+      (_) async => const EdgeFunctionResult(
+        success: true,
+        data: {'signed_url': 'https://cdn.example.com/community-photo.jpg'},
+      ),
+    );
 
-    service = StorageService(mockClient, imageSafetyService: mockImageSafety);
+    service = StorageService(
+      mockClient,
+      imageSafetyService: mockImageSafety,
+      edgeFunctionClient: mockEdgeClient,
+    );
   });
 
   /// Returns magic-byte header matching [ext] so _validateMagicBytes passes.
@@ -335,6 +355,76 @@ void main() {
           ),
         );
       });
+    });
+
+    // -----------------------------------------------------------------------
+    group('uploadCommunityPhoto', () {
+      test(
+        'uses upload-community-photo Edge Function instead of Storage API',
+        () async {
+          final file = makeXFile(name: 'photo.jpg');
+
+          final url = await service.uploadCommunityPhoto(
+            userId: 'u1',
+            postId: 'post-1',
+            file: file,
+          );
+
+          expect(url, 'https://cdn.example.com/community-photo.jpg');
+          verify(
+            () => mockEdgeClient.uploadCommunityPhoto(
+              postId: 'post-1',
+              filename: 'photo.jpg',
+              imageBase64: any(named: 'imageBase64'),
+              mimeType: 'image/jpeg',
+            ),
+          ).called(1);
+          verifyNever(
+            () => mockFileApi.uploadBinary(
+              any(),
+              any(),
+              fileOptions: any(named: 'fileOptions'),
+            ),
+          );
+        },
+      );
+
+      test(
+        'fails closed when community upload Edge Function rejects',
+        () async {
+          when(
+            () => mockEdgeClient.uploadCommunityPhoto(
+              postId: any(named: 'postId'),
+              filename: any(named: 'filename'),
+              imageBase64: any(named: 'imageBase64'),
+              mimeType: any(named: 'mimeType'),
+            ),
+          ).thenAnswer(
+            (_) async => const EdgeFunctionResult(
+              success: false,
+              error: 'image_rejected',
+            ),
+          );
+
+          final file = makeXFile(name: 'photo.jpg');
+
+          await expectLater(
+            () => service.uploadCommunityPhoto(
+              userId: 'u1',
+              postId: 'post-1',
+              file: file,
+            ),
+            throwsA(isA<StorageException>()),
+          );
+          verifyNever(
+            () => mockFileApi.uploadBinary(
+              any(),
+              any(),
+              fileOptions: any(named: 'fileOptions'),
+            ),
+          );
+        },
+      );
     });
 
     // -----------------------------------------------------------------------

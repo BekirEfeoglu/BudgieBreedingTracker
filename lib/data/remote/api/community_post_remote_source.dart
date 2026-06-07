@@ -1,6 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
+import '../../../core/utils/logger.dart';
+import '../supabase/edge_function_client.dart';
 import 'base_remote_source.dart';
 import 'community_profile_cache.dart';
 
@@ -12,8 +14,13 @@ import 'community_profile_cache.dart';
 class CommunityPostRemoteSource {
   final SupabaseClient _client;
   final CommunityProfileCache _profileCache;
+  final EdgeFunctionClient _edgeFunctionClient;
 
-  CommunityPostRemoteSource(this._client, this._profileCache);
+  CommunityPostRemoteSource(
+    this._client,
+    this._profileCache,
+    this._edgeFunctionClient,
+  );
 
   /// Selective columns for feed/list queries.
   /// Excludes admin-only columns (needs_review, is_reported, report_count)
@@ -24,30 +31,28 @@ class CommunityPostRemoteSource {
       'is_pinned, visibility, created_at, updated_at, is_deleted';
 
   Future<List<Map<String, dynamic>>> fetchFeed({
+    required String currentUserId,
     int limit = 20,
     DateTime? before,
+    String? beforeId,
   }) async {
     try {
-      var query = _client
-          .from(SupabaseConstants.communityPostsTable)
-          .select(_feedColumns)
-          .eq(SupabaseConstants.colIsDeleted, false)
-          // Hide posts that crossed the community report threshold; they
-          // stay visible to admins via fetchPendingReview until reviewed.
-          .eq(SupabaseConstants.colNeedsReview, false);
-
-      if (before != null) {
-        query = query.lt(
-          SupabaseConstants.colCreatedAt,
-          before.toIso8601String(),
-        );
+      if (currentUserId.isEmpty) {
+        throw ArgumentError('currentUserId is required');
       }
+      final result = await _client.rpc<List<dynamic>>(
+        'fetch_community_feed',
+        params: {
+          'p_limit': limit,
+          'p_before_created_at': before?.toIso8601String(),
+          'p_before_id': beforeId,
+        },
+      );
 
-      final result = await query
-          .order(SupabaseConstants.colCreatedAt, ascending: false)
-          .limit(limit);
-
-      final rows = List<Map<String, dynamic>>.from(result);
+      final rows = result
+          .whereType<Map>()
+          .map((row) => Map<String, dynamic>.from(row))
+          .toList(growable: false);
       return _profileCache.mergeIntoRows(rows);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
@@ -107,9 +112,10 @@ class CommunityPostRemoteSource {
 
   Future<void> insert(Map<String, dynamic> data) async {
     try {
-      await _client
-          .from(SupabaseConstants.communityPostsTable)
-          .upsert(data, onConflict: SupabaseConstants.colId);
+      final result = await _edgeFunctionClient.createCommunityPost(data);
+      if (!result.success) {
+        throw Exception(result.error ?? 'create_community_post_failed');
+      }
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
         'CommunityPostRemoteSource.insert',
@@ -267,6 +273,67 @@ class CommunityPostRemoteSource {
         e,
         st,
       );
+    }
+  }
+
+  RealtimeChannel subscribeToPostChanges({
+    required void Function(String authorUserId) onInsert,
+    required void Function(String postId) onRemove,
+  }) {
+    final channel = _client.channel('community-posts-feed');
+    channel
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: SupabaseConstants.communityPostsTable,
+          callback: (payload) {
+            final record = payload.newRecord;
+            if (record[SupabaseConstants.colIsDeleted] == true ||
+                record[SupabaseConstants.colNeedsReview] == true) {
+              return;
+            }
+            final authorId = record[SupabaseConstants.colUserId]?.toString();
+            if (authorId != null) onInsert(authorId);
+          },
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: SupabaseConstants.communityPostsTable,
+          callback: (payload) {
+            final record = payload.newRecord;
+            final isRemoved =
+                record[SupabaseConstants.colIsDeleted] == true ||
+                record[SupabaseConstants.colNeedsReview] == true;
+            final postId = record[SupabaseConstants.colId]?.toString();
+            if (isRemoved && postId != null) onRemove(postId);
+          },
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.delete,
+          schema: 'public',
+          table: SupabaseConstants.communityPostsTable,
+          callback: (payload) {
+            final postId = payload.oldRecord[SupabaseConstants.colId]
+                ?.toString();
+            if (postId != null) onRemove(postId);
+          },
+        )
+        .subscribe((status, error) {
+          if (error != null) {
+            AppLogger.warning(
+              '[community-posts-feed] Realtime status: $status, error: $error',
+            );
+          }
+        });
+    return channel;
+  }
+
+  Future<void> unsubscribe(RealtimeChannel channel) async {
+    try {
+      await _client.removeChannel(channel);
+    } catch (e, st) {
+      AppLogger.error('CommunityPostRemoteSource.unsubscribe', e, st);
     }
   }
 }

@@ -185,19 +185,30 @@ class CommunityEngagementRemoteSource {
   // Blocks
   // ---------------------------------------------------------------------------
 
-  /// Fetches all user IDs blocked by [userId].
+  /// Fetches users hidden from [userId]'s community feed.
+  ///
+  /// Includes both outbound blocks (the current user blocked someone) and
+  /// inbound blocks (someone blocked the current user) so local UI filters
+  /// match the server-side reciprocal feed policy.
   Future<List<String>> fetchBlockedUserIds(String userId) async {
     if (userId == 'anonymous') return [];
     try {
       final result = await _client
           .from(SupabaseConstants.communityBlocksTable)
-          .select('blocked_user_id')
-          .eq('user_id', userId);
+          .select('user_id,blocked_user_id')
+          .or('user_id.eq.$userId,blocked_user_id.eq.$userId');
 
-      return (result as List)
-          .map((r) => r['blocked_user_id']?.toString())
-          .whereType<String>()
-          .toList();
+      final hiddenIds = <String>{};
+      for (final row in result as List) {
+        final blockerId = row['user_id']?.toString();
+        final blockedId = row['blocked_user_id']?.toString();
+        if (blockerId == userId && blockedId != null) {
+          hiddenIds.add(blockedId);
+        } else if (blockedId == userId && blockerId != null) {
+          hiddenIds.add(blockerId);
+        }
+      }
+      return hiddenIds.toList(growable: false);
     } catch (e) {
       AppLogger.warning('Failed to fetch blocked user IDs: $e');
       return [];

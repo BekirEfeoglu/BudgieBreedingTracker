@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budgie_breeding_tracker/data/providers/edge_function_provider.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/supabase_client.dart';
 import 'package:budgie_breeding_tracker/domain/services/moderation/moderation_providers.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/bird_remote_source.dart';
@@ -116,6 +117,7 @@ final communityPostRemoteSourceProvider = Provider<CommunityPostRemoteSource>((
   return CommunityPostRemoteSource(
     ref.watch(supabaseClientProvider),
     ref.watch(communityProfileCacheProvider),
+    ref.watch(edgeFunctionClientProvider),
   );
 });
 
@@ -124,6 +126,7 @@ final communityCommentRemoteSourceProvider =
       return CommunityCommentRemoteSource(
         ref.watch(supabaseClientProvider),
         ref.watch(communityProfileCacheProvider),
+        ref.watch(edgeFunctionClientProvider),
       );
     });
 

@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show RealtimeChannel;
 
 import '../../core/constants/supabase_constants.dart';
 import '../../core/enums/community_enums.dart';
@@ -42,12 +43,19 @@ class CommunityPostRepository {
     required String currentUserId,
     int limit = 20,
     DateTime? before,
+    String? beforeId,
   }) async {
-    final cacheKey = 'feed:$currentUserId:$limit:${before?.toIso8601String()}';
+    final cacheKey =
+        'feed:$currentUserId:$limit:${before?.toIso8601String()}:$beforeId';
     final cached = _cache?.getFeed(cacheKey);
     if (cached != null) return cached;
 
-    final rows = await _postSource.fetchFeed(limit: limit, before: before);
+    final rows = await _postSource.fetchFeed(
+      currentUserId: currentUserId,
+      limit: limit,
+      before: before,
+      beforeId: beforeId,
+    );
     final posts = await _enrichPosts(rows, currentUserId);
     _cache?.putFeed(cacheKey, posts);
     return posts;
@@ -182,6 +190,20 @@ class CommunityPostRepository {
   }) async {
     final rows = await _postSource.search(query, limit: limit);
     return _enrichPosts(rows, currentUserId);
+  }
+
+  RealtimeChannel subscribeToPostChanges({
+    required void Function(String authorUserId) onInsert,
+    required void Function(String postId) onRemove,
+  }) {
+    return _postSource.subscribeToPostChanges(
+      onInsert: onInsert,
+      onRemove: onRemove,
+    );
+  }
+
+  Future<void> unsubscribeFromPostChanges(RealtimeChannel channel) {
+    return _postSource.unsubscribe(channel);
   }
 
   // ---------------------------------------------------------------------------

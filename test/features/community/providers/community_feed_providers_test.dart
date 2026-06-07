@@ -22,6 +22,7 @@ void main() {
       expect(state.hasMore, isTrue);
       expect(state.error, isNull);
       expect(state.cursor, isNull);
+      expect(state.cursorPostId, isNull);
     });
 
     test('copyWith updates specified fields', () {
@@ -219,6 +220,7 @@ void main() {
       expect(state.posts, hasLength(20));
       expect(state.hasMore, isTrue);
       expect(state.cursor, posts.last.createdAt);
+      expect(state.cursorPostId, posts.last.id);
       verify(() => repo.getFeed(currentUserId: 'user-1', limit: 20)).called(1);
     });
 
@@ -242,6 +244,7 @@ void main() {
             currentUserId: 'user-1',
             limit: 20,
             before: firstPage.last.createdAt,
+            beforeId: firstPage.last.id,
           ),
         ).thenAnswer((_) async => secondPage);
 
@@ -262,11 +265,13 @@ void main() {
         expect(state.posts.last.id, 'p21');
         expect(state.hasMore, isFalse);
         expect(state.cursor, secondPage.last.createdAt);
+        expect(state.cursorPostId, secondPage.last.id);
         verify(
           () => repo.getFeed(
             currentUserId: 'user-1',
             limit: 20,
             before: firstPage.last.createdAt,
+            beforeId: firstPage.last.id,
           ),
         ).called(1);
       },
@@ -312,6 +317,7 @@ void main() {
           currentUserId: 'user-1',
           limit: 20,
           before: firstPage.last.createdAt,
+          beforeId: firstPage.last.id,
         ),
       ).thenThrow(Exception('pagination failed'));
 

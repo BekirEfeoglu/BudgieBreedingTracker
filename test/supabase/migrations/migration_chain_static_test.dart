@@ -109,6 +109,46 @@ void main() {
       expect(ci, contains('needs: [analyze, test, edge-functions-test]'));
     });
 
+    test('every Edge Function is configured, deployed, and tested', () {
+      final ci = File('.github/workflows/ci.yml').readAsStringSync();
+      final config = File('supabase/config.toml').readAsStringSync();
+      final functionDirs =
+          Directory('supabase/functions')
+              .listSync()
+              .whereType<Directory>()
+              .where((dir) => !dir.uri.pathSegments.last.startsWith('_'))
+              .where((dir) => File('${dir.path}/index.ts').existsSync())
+              .toList()
+            ..sort((a, b) => a.path.compareTo(b.path));
+
+      expect(functionDirs, isNotEmpty);
+
+      for (final dir in functionDirs) {
+        final name = dir.uri.pathSegments[dir.uri.pathSegments.length - 2];
+        expect(
+          config,
+          contains('[functions.$name]'),
+          reason: '$name must declare verify_jwt explicitly',
+        );
+        expect(
+          ci,
+          contains('supabase functions deploy $name --project-ref'),
+          reason: '$name must be deployed by the main CI pipeline',
+        );
+
+        final testFiles = dir
+            .listSync()
+            .whereType<File>()
+            .where((file) => file.path.endsWith('_test.ts'))
+            .toList();
+        expect(
+          testFiles,
+          isNotEmpty,
+          reason: '$name must have Deno tests next to the function',
+        );
+      }
+    });
+
     test('app-owned database lint warnings are repaired after grant fixes', () {
       final lintRepairSql = _migrationSqlAfter(
         '20260604190611',
@@ -180,6 +220,37 @@ void main() {
       expect(avatarBucketSql, contains("id = 'avatars'"));
       expect(avatarBucketSql, contains('file_size_limit = 2097152'));
       expect(avatarBucketSql, contains("'image/heic'"));
+    });
+
+    test('community direct writes are forced through Edge Functions', () {
+      final hardeningSql = _migrationSqlAfter(
+        '20260606171613',
+        requiredText: 'community_posts_insert_requires_edge_function',
+      );
+
+      expect(
+        hardeningSql,
+        contains('DROP POLICY IF EXISTS "Users can insert own posts"'),
+      );
+      expect(
+        hardeningSql,
+        contains('DROP POLICY IF EXISTS "Users can insert own comments"'),
+      );
+      expect(
+        hardeningSql,
+        contains('community_comments_insert_requires_edge_function'),
+      );
+      expect(hardeningSql, contains('WITH CHECK (false)'));
+      expect(
+        hardeningSql,
+        contains('fetch_community_feed'),
+        reason: 'feed must be server-filtered for reciprocal blocks',
+      );
+      expect(
+        hardeningSql,
+        contains('prevent_self_community_report'),
+        reason: 'direct report inserts must reject self-reporting',
+      );
     });
   });
 }

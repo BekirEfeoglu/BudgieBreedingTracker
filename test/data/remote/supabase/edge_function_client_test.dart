@@ -272,6 +272,98 @@ void main() {
     });
 
     test(
+      'createCommunityPost invokes edge function without client user id',
+      () async {
+        Map<String, dynamic>? capturedBody;
+        when(
+          () => mockFunctions.invoke(
+            'create-community-post',
+            body: any(named: 'body'),
+            headers: _authHeader,
+          ),
+        ).thenAnswer((invocation) async {
+          capturedBody = Map<String, dynamic>.from(
+            invocation.namedArguments[#body] as Map,
+          );
+          return FunctionResponse(status: 200, data: {'id': 'post-1'});
+        });
+
+        final result = await client.createCommunityPost({
+          'id': 'post-1',
+          'user_id': 'spoofed-user',
+          'content': 'Hello',
+          'created_at': '2026-01-01T00:00:00Z',
+        });
+
+        expect(result.success, isTrue);
+        expect(capturedBody?['post'], isA<Map>());
+        final post = Map<String, dynamic>.from(capturedBody!['post'] as Map);
+        expect(post['id'], 'post-1');
+        expect(post['content'], 'Hello');
+        expect(post.containsKey('user_id'), isFalse);
+        expect(post.containsKey('created_at'), isFalse);
+      },
+    );
+
+    test('createCommunityComment sends post id and content only', () async {
+      Map<String, dynamic>? capturedBody;
+      when(
+        () => mockFunctions.invoke(
+          'create-community-comment',
+          body: any(named: 'body'),
+          headers: _authHeader,
+        ),
+      ).thenAnswer((invocation) async {
+        capturedBody = Map<String, dynamic>.from(
+          invocation.namedArguments[#body] as Map,
+        );
+        return FunctionResponse(status: 200, data: {'id': 'comment-1'});
+      });
+
+      final result = await client.createCommunityComment(
+        postId: 'post-1',
+        content: 'Nice post',
+      );
+
+      expect(result.success, isTrue);
+      expect(capturedBody, {'post_id': 'post-1', 'content': 'Nice post'});
+    });
+
+    test('uploadCommunityPhoto sends image payload to edge function', () async {
+      Map<String, dynamic>? capturedBody;
+      when(
+        () => mockFunctions.invoke(
+          'upload-community-photo',
+          body: any(named: 'body'),
+          headers: _authHeader,
+        ),
+      ).thenAnswer((invocation) async {
+        capturedBody = Map<String, dynamic>.from(
+          invocation.namedArguments[#body] as Map,
+        );
+        return FunctionResponse(
+          status: 200,
+          data: {'signed_url': 'https://cdn.example.com/community.jpg'},
+        );
+      });
+
+      final result = await client.uploadCommunityPhoto(
+        postId: 'post-1',
+        filename: 'photo.jpg',
+        imageBase64: 'abc123',
+        mimeType: 'image/jpeg',
+      );
+
+      expect(result.success, isTrue);
+      expect(capturedBody, {
+        'post_id': 'post-1',
+        'filename': 'photo.jpg',
+        'image_base64': 'abc123',
+        'mime_type': 'image/jpeg',
+      });
+    });
+
+    test(
       'checkSystemHealth returns failure when function is not deployed (404)',
       () async {
         when(

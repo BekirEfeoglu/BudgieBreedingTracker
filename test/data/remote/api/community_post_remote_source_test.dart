@@ -2,17 +2,21 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/data/remote/api/community_post_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/community_profile_cache.dart';
+import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
 
 import '../../../helpers/fake_supabase.dart';
+import '../../../helpers/mocks.dart';
 
 void main() {
   late RoutingFakeClient client;
   late FakeFilterBuilder<PostgrestList> postsSelect;
   late FakeFilterBuilder<PostgrestList> profilesSelect;
   late FakeQueryBuilder postsQuery;
+  late MockEdgeFunctionClient edgeClient;
   late CommunityPostRemoteSource source;
 
   setUp(() {
@@ -23,44 +27,54 @@ void main() {
     postsQuery = posts.queryBuilder;
     profilesSelect = profiles.selectBuilder;
     profilesSelect.result = [];
+    edgeClient = MockEdgeFunctionClient();
 
     final cache = CommunityProfileCache(client);
-    source = CommunityPostRemoteSource(client, cache);
+    source = CommunityPostRemoteSource(client, cache, edgeClient);
   });
 
   group('fetchFeed', () {
-    test('queries community_posts with correct filters', () async {
-      postsSelect.result = [
+    test('queries server-filtered feed RPC with current user', () async {
+      client.addRpc('fetch_community_feed', [
         {'id': 'p1', 'user_id': 'u1', 'content': 'Hello', 'is_deleted': false},
-      ];
+      ]);
 
-      final result = await source.fetchFeed();
+      final result = await source.fetchFeed(currentUserId: 'viewer-1');
 
       expect(result, hasLength(1));
       expect(result.first['content'], 'Hello');
-      expect(client.requestedTables, contains('community_posts'));
-      expect(postsSelect.eqCalls.first.key, 'is_deleted');
-      expect(postsSelect.eqCalls.first.value, false);
+      expect(client.rpcCalls.single.fn, 'fetch_community_feed');
+      expect(client.rpcCalls.single.params, {
+        'p_limit': 20,
+        'p_before_created_at': null,
+        'p_before_id': null,
+      });
     });
 
-    test('applies before filter and limit', () async {
-      postsSelect.result = [];
+    test('passes timestamp and id cursor to feed RPC', () async {
+      client.addRpc('fetch_community_feed', []);
 
       final before = DateTime(2026, 3, 1);
-      await source.fetchFeed(limit: 10, before: before);
+      await source.fetchFeed(
+        currentUserId: 'viewer-1',
+        limit: 10,
+        before: before,
+        beforeId: 'post-9',
+      );
 
-      expect(postsSelect.ltCalls, hasLength(1));
-      expect(postsSelect.ltCalls.first.key, 'created_at');
-      expect(postsSelect.limitValue, 10);
-      expect(postsSelect.orderCalls, contains('created_at'));
+      expect(client.rpcCalls.single.params, {
+        'p_limit': 10,
+        'p_before_created_at': before.toIso8601String(),
+        'p_before_id': 'post-9',
+      });
     });
 
     test('triggers profile lookup for returned rows', () async {
-      postsSelect.result = [
+      client.addRpc('fetch_community_feed', [
         {'id': 'p1', 'user_id': 'u1', 'content': 'Hello'},
-      ];
+      ]);
 
-      await source.fetchFeed();
+      await source.fetchFeed(currentUserId: 'viewer-1');
 
       expect(client.requestedTables, contains('profiles'));
     });
@@ -157,13 +171,32 @@ void main() {
   });
 
   group('insert', () {
-    test('upserts data to community_posts table', () async {
-      final data = {'id': 'p1', 'user_id': 'u1', 'content': 'New post'};
+    test(
+      'creates post through Edge Function instead of table upsert',
+      () async {
+        final data = {'id': 'p1', 'user_id': 'u1', 'content': 'New post'};
+        when(
+          () => edgeClient.createCommunityPost(data),
+        ).thenAnswer((_) async => const EdgeFunctionResult(success: true));
 
-      await source.insert(data);
+        await source.insert(data);
 
-      expect(postsQuery.upsertPayload, data);
-      expect(client.requestedTables, contains('community_posts'));
+        verify(() => edgeClient.createCommunityPost(data)).called(1);
+        expect(postsQuery.upsertPayload, isNull);
+        expect(client.requestedTables, isNot(contains('community_posts')));
+      },
+    );
+
+    test('throws when post Edge Function rejects creation', () async {
+      final data = {'id': 'p1', 'content': 'New post'};
+      when(() => edgeClient.createCommunityPost(data)).thenAnswer(
+        (_) async => const EdgeFunctionResult(
+          success: false,
+          error: 'moderation_failed',
+        ),
+      );
+
+      await expectLater(() => source.insert(data), throwsException);
     });
   });
 

@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
 import 'package:budgie_breeding_tracker/data/remote/storage/storage_utils.dart';
 import 'package:budgie_breeding_tracker/domain/services/moderation/image_safety_service.dart';
 import 'package:image_picker/image_picker.dart';
@@ -18,6 +20,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class StorageService {
   final SupabaseClient _client;
   final ImageSafetyService? _imageSafetyService;
+  final EdgeFunctionClient? _edgeFunctionClient;
 
   static const String _birdPhotosBucket = SupabaseConstants.birdPhotosBucket;
   static const String _avatarsBucket = SupabaseConstants.avatarsBucket;
@@ -49,8 +52,12 @@ class StorageService {
     SupabaseConstants.marketplacePhotosBucket,
   };
 
-  const StorageService(this._client, {ImageSafetyService? imageSafetyService})
-    : _imageSafetyService = imageSafetyService;
+  const StorageService(
+    this._client, {
+    ImageSafetyService? imageSafetyService,
+    EdgeFunctionClient? edgeFunctionClient,
+  }) : _imageSafetyService = imageSafetyService,
+       _edgeFunctionClient = edgeFunctionClient;
 
   /// Validates that a path component contains only safe characters (UUID format).
   /// Prevents path traversal attacks via crafted IDs.
@@ -177,14 +184,43 @@ class StorageService {
   }) async {
     _sanitizePath(userId);
     _sanitizePath(postId);
+    final edgeClient = _edgeFunctionClient;
+    if (edgeClient == null) {
+      throw const StorageException(
+        'Community photo upload requires server moderation',
+      );
+    }
+
     final ext = StorageUtils.safeExtension(file.name);
     if (ext == null) {
       throw const StorageException('File has no valid extension');
     }
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final path = '$userId/$postId/$timestamp.$ext';
 
-    return _uploadFile(bucket: _communityPhotosBucket, path: path, file: file);
+    final upload = await _readValidatedUpload(
+      bucket: _communityPhotosBucket,
+      file: file,
+      ext: ext,
+      maxBytes: AppConstants.maxUploadSizeBytes,
+      maxSizeLabel: '10 MB',
+      scanImage: false,
+    );
+    final result = await edgeClient.uploadCommunityPhoto(
+      postId: postId,
+      filename: file.name,
+      imageBase64: base64Encode(upload.bytes),
+      mimeType: upload.mimeType,
+    );
+    if (!result.success) {
+      throw StorageException(
+        result.error ?? result.data?['reason']?.toString() ?? 'upload_failed',
+      );
+    }
+
+    final signedUrl = result.data?['signed_url']?.toString();
+    if (signedUrl == null || signedUrl.isEmpty) {
+      throw const StorageException('Community photo upload returned no URL');
+    }
+    return signedUrl;
   }
 
   /// Deletes a community post photo by its storage path.
@@ -309,6 +345,7 @@ class StorageService {
     required String ext,
     required int maxBytes,
     required String maxSizeLabel,
+    bool scanImage = true,
   }) async {
     if (!_allowedExtensions.contains(ext)) {
       throw StorageException(
@@ -332,7 +369,7 @@ class StorageService {
 
     // Image safety scan for user-supplied imagery (App Store UGC guideline 1.2).
     // Fail-closed: if scan unavailable or image flagged, reject upload.
-    if (_imageBuckets.contains(bucket)) {
+    if (scanImage && _imageBuckets.contains(bucket)) {
       final scanner = _imageSafetyService;
       if (scanner == null) {
         throw const StorageException('Image safety scanner unavailable');

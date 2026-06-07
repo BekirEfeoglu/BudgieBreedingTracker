@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
+import '../supabase/edge_function_client.dart';
 import 'base_remote_source.dart';
 import 'community_profile_cache.dart';
 
@@ -8,8 +9,13 @@ import 'community_profile_cache.dart';
 class CommunityCommentRemoteSource {
   final SupabaseClient _client;
   final CommunityProfileCache _profileCache;
+  final EdgeFunctionClient _edgeFunctionClient;
 
-  CommunityCommentRemoteSource(this._client, this._profileCache);
+  CommunityCommentRemoteSource(
+    this._client,
+    this._profileCache,
+    this._edgeFunctionClient,
+  );
 
   Future<List<Map<String, dynamic>>> fetchByPost(
     String postId, {
@@ -46,9 +52,19 @@ class CommunityCommentRemoteSource {
 
   Future<void> insert(Map<String, dynamic> data) async {
     try {
-      await _client
-          .from(SupabaseConstants.communityCommentsTable)
-          .upsert(data, onConflict: SupabaseConstants.colId);
+      final postId = data['post_id']?.toString();
+      final content = data['content']?.toString();
+      if (postId == null || content == null || content.trim().isEmpty) {
+        throw ArgumentError('Community comment requires post_id and content');
+      }
+
+      final result = await _edgeFunctionClient.createCommunityComment(
+        postId: postId,
+        content: content,
+      );
+      if (!result.success) {
+        throw Exception(result.error ?? 'create_community_comment_failed');
+      }
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
         'community_comments.insert',

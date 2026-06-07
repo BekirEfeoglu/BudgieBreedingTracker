@@ -34,8 +34,10 @@
 - Edge Function isimleri workflow ve kod referanslarinda birebir tutarli olmali
 - Yeni function eklenirse:
   1. `supabase/functions/<name>/` altina kod ekle
-  2. Deploy workflow'una ekle
-  3. Gerekiyorsa ilgili service/provider katmanini guncelle
+  2. `supabase/config.toml` altina explicit `verify_jwt` ayari ekle
+  3. Deno test dosyasi ekle
+  4. Deploy workflow'una ekle
+  5. Gerekiyorsa ilgili service/provider katmanini guncelle
 - Client code'dan RLS degistirme, migration uydurma, production schema "tamir etme" yapma
 
 ## Release Safety

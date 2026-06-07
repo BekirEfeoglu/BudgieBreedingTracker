@@ -1,8 +1,10 @@
 # Supabase Edge Functions
 
-## Inventory (9)
+## Inventory (12)
 | Function | Trigger | Auth |
 |----------|---------|------|
+| `create-community-comment` | Community comment create path | JWT |
+| `create-community-post` | Community post create path | JWT |
 | `mfa-lockout` | MFA login attempts | JWT |
 | `moderate-content` | Community reports / threshold auto-flag | JWT |
 | `revenuecat-webhook` | RevenueCat subscription events (push) | Shared secret (`REVENUECAT_WEBHOOK_AUTH_TOKEN`) |
@@ -12,6 +14,7 @@
 | `validate-free-tier-limit` | Entity insert path | JWT |
 | `scan-image-safety` | Photo upload pipeline | JWT |
 | `sync-premium-status` | RevenueCat premium sync (client pull) | JWT |
+| `upload-community-photo` | Community photo upload path | JWT |
 
 All client-called functions MUST enforce JWT verification. Never deploy with `--no-verify-jwt` for those — audit flagged this as release-blocker.
 
@@ -51,6 +54,9 @@ Current webhook receivers: `revenuecat-webhook` (shared secret via `REVENUECAT_W
 | `validate-free-tier-limit` | Server-side enforcement, client cannot bypass | Free tier limits must not depend on client trust |
 | `sync-premium-status` | RevenueCat checked server-side with secret key | Premium access must not depend on client assertions |
 | `moderate-content` | Threshold-based auto-flag + human review queue | Scalable moderation, low false-positive risk |
+| `create-community-post` | Server-side moderation + post guard before insert | Public UGC publish cannot trust client validation |
+| `create-community-comment` | Server-side moderation + reciprocal block check before insert | Comment publish cannot bypass moderation or block privacy |
+| `upload-community-photo` | Server-side image moderation before Storage write | Unsafe community media must never land in Storage |
 
 ## Testing Requirements
 - Every edge function MUST have integration tests covering:
@@ -58,7 +64,7 @@ Current webhook receivers: `revenuecat-webhook` (shared secret via `REVENUECAT_W
   2. Auth failure (missing/invalid JWT)
   3. Schema validation (malformed body)
   4. Business logic edge cases (limits, retries)
-- Tests live in `supabase/functions/<name>/test.ts` using Deno test runner
+- Tests live next to the function as `supabase/functions/<name>/*_test.ts` using Deno test runner
 - CI `deploy-edge-functions` job must depend on `edge-functions-test`, which
   runs `deno test --allow-env --allow-net supabase/functions` before deploy
 - Dart-side test of HTTP wrapper ≠ edge function test — both required
@@ -67,10 +73,11 @@ Current webhook receivers: `revenuecat-webhook` (shared secret via `REVENUECAT_W
 - Function names must match exactly across: workflow, function folder, Dart `EdgeFunctionName` constants
 - New function checklist:
   1. Create `supabase/functions/<name>/index.ts`
-  2. Add tests: `supabase/functions/<name>/test.ts`
-  3. Add name to `deploy-edge-functions` workflow matrix
-  4. Add Dart constant + service wrapper if client-invoked
-  5. Add DB trigger / cron if server-invoked
+  2. Add Deno tests: `supabase/functions/<name>/*_test.ts`
+  3. Add `[functions.<name>] verify_jwt = true` to `supabase/config.toml` unless it is a documented webhook exception
+  4. Add name to the `deploy-edge-functions` workflow deploy list
+  5. Add Dart constant + service wrapper if client-invoked
+  6. Add DB trigger / cron if server-invoked
 - Secrets: Supabase Dashboard → Edge Functions → Secrets. Never commit to repo.
 
 ## Anti-Patterns

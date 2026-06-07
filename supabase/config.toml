@@ -395,10 +395,19 @@ verify_jwt = true
 [functions.moderate-content]
 verify_jwt = true
 
+[functions.create-community-post]
+verify_jwt = true
+
+[functions.create-community-comment]
+verify_jwt = true
+
 [functions.revoke-oauth-token]
 verify_jwt = true
 
 [functions.scan-image-safety]
+verify_jwt = true
+
+[functions.upload-community-photo]
 verify_jwt = true
 
 [functions.send-push]

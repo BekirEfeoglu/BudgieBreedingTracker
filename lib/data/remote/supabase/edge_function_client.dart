@@ -60,7 +60,12 @@ class EdgeFunctionClient {
   static const _defaultCooldown = Duration(seconds: 10);
 
   /// Edge Functions exempt from rate limiting (need rapid sequential calls).
-  static const _rateLimitExempt = {'mfa-lockout'};
+  static const _rateLimitExempt = {
+    'mfa-lockout',
+    'create-community-post',
+    'create-community-comment',
+    'upload-community-photo',
+  };
 
   /// Per-function last invocation timestamps for rate limiting.
   final Map<String, DateTime> _lastInvocationAt = {};
@@ -253,6 +258,49 @@ class EdgeFunctionClient {
   /// Invoke the system health check Edge Function.
   Future<EdgeFunctionResult> checkSystemHealth() {
     return invoke('system-health');
+  }
+
+  /// Create a community post through the moderated server-side write path.
+  ///
+  /// Caller-supplied ownership and timestamps are intentionally stripped. The
+  /// Edge Function derives the user ID from the authenticated JWT and lets the
+  /// database own timestamp columns.
+  Future<EdgeFunctionResult> createCommunityPost(Map<String, dynamic> post) {
+    final sanitized = Map<String, dynamic>.from(post)
+      ..remove('user_id')
+      ..remove('created_at')
+      ..remove('updated_at');
+
+    return invoke('create-community-post', body: {'post': sanitized});
+  }
+
+  /// Create a community comment through the moderated server-side write path.
+  Future<EdgeFunctionResult> createCommunityComment({
+    required String postId,
+    required String content,
+  }) {
+    return invoke(
+      'create-community-comment',
+      body: {'post_id': postId, 'content': content},
+    );
+  }
+
+  /// Upload a community post photo through server-side image moderation.
+  Future<EdgeFunctionResult> uploadCommunityPhoto({
+    required String postId,
+    required String filename,
+    required String imageBase64,
+    required String mimeType,
+  }) {
+    return invoke(
+      'upload-community-photo',
+      body: {
+        'post_id': postId,
+        'filename': filename,
+        'image_base64': imageBase64,
+        'mime_type': mimeType,
+      },
+    );
   }
 
   /// Invoke the image safety scan Edge Function.

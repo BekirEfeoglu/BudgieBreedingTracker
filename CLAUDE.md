@@ -84,7 +84,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | Metric | Value |
 | --- | --- |
 | Source files (lib/) | 983 Dart files |
-| Test files (test/) | 902 test files, 11,075+ individual tests |
+| Test files (test/) | 902 test files, 11,085+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -155,9 +155,11 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 
 ## Supabase
 
-### Edge Functions (9)
+### Edge Functions (12)
 | Function | Purpose |
 | --- | --- |
+| `create-community-comment` | Moderated server-side community comment creation |
+| `create-community-post` | Moderated server-side community post creation |
 | `mfa-lockout` | MFA brute-force lockout handling |
 | `moderate-content` | Community content moderation |
 | `revenuecat-webhook` | RevenueCat subscription events → server-side premium sync (shared-secret auth, `verify_jwt=false`) |
@@ -166,10 +168,11 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 | `send-push` | FCM push notification delivery |
 | `system-health` | Admin dashboard system health check |
 | `sync-premium-status` | Server-side RevenueCat premium status verification (client-initiated pull) |
+| `upload-community-photo` | Community photo moderation, storage upload, and signed URL creation |
 | `validate-free-tier-limit` | Free tier entity limit enforcement |
 
 ### Migrations
-173 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
+174 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
 
 ## Rules
 
@@ -328,7 +331,7 @@ Security:      lib/core/security/
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
-Migrations:    supabase/migrations/ (173 files)
+Migrations:    supabase/migrations/ (174 files)
 Scripts:       scripts/
 CI:            .github/workflows/ + codemagic.yaml
 ```

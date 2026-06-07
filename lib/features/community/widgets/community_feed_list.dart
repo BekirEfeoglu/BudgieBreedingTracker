@@ -50,7 +50,6 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
   final _scrollController = ScrollController();
   Timer? _swipeHintTimer;
   int _lastSeenCount = 0;
-  int _newPostCount = 0;
   bool _showSwipeHint = false;
   bool _showScrollToTop = false;
 
@@ -102,10 +101,8 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
   }
 
   void _scrollToTopAndDismiss() {
-    setState(() {
-      _newPostCount = 0;
-      _lastSeenCount = ref.read(communityFeedProvider).posts.length;
-    });
+    ref.read(communityNewPostCountProvider.notifier).reset();
+    _lastSeenCount = ref.read(communityFeedProvider).posts.length;
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
         0,
@@ -121,6 +118,7 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
     if (widget.tab == CommunityFeedTab.following) {
       return const CommunityFollowingList();
     }
+    final newPostCount = ref.watch(communityNewPostCountProvider);
 
     return _buildFeedScrollView(
       context: context,
@@ -128,11 +126,12 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
       tab: widget.tab,
       scrollController: _scrollController,
       mounted: mounted,
-      newPostCount: _newPostCount,
+      newPostCount: newPostCount,
       lastSeenCount: _lastSeenCount,
       showSwipeHint: _showSwipeHint,
       showScrollToTop: _showScrollToTop,
-      onUpdateNewPostCount: (v) => setState(() => _newPostCount = v),
+      onUpdateNewPostCount: (_) =>
+          ref.read(communityNewPostCountProvider.notifier).reset(),
       onUpdateLastSeenCount: (v) => _lastSeenCount = v,
       onScrollToTop: _scrollToTopAndDismiss,
       onDismissSwipeHint: _dismissSwipeHint,

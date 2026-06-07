@@ -185,12 +185,18 @@ void main() {
   group('Blocks', () {
     test('fetchBlockedUserIds returns list', () async {
       blockSelect.result = [
-        {'blocked_user_id': 'u3'},
+        {'user_id': 'user-1', 'blocked_user_id': 'u3'},
+        {'user_id': 'u4', 'blocked_user_id': 'user-1'},
       ];
 
       final result = await source.fetchBlockedUserIds('user-1');
 
-      expect(result, ['u3']);
+      expect(result, ['u3', 'u4']);
+      expect(blockQuery.selectedColumns, 'user_id,blocked_user_id');
+      expect(
+        blockSelect.orCalls.single,
+        'user_id.eq.user-1,blocked_user_id.eq.user-1',
+      );
     });
 
     test('fetchBlockedUserIds returns empty for anonymous', () async {

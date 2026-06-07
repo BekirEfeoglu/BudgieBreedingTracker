@@ -102,7 +102,9 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
       }
 
       // Server-side guard: account age, rate limit, spam dedup
-      final contentHash = md5.convert(utf8.encode(content.trim())).toString();
+      final contentHash = sha256
+          .convert(utf8.encode(content.trim()))
+          .toString();
       final repo = ref.read(communityPostRepositoryProvider);
       try {
         final guardResult = await repo.checkPostAllowed(contentHash);

@@ -15,7 +15,6 @@ void main() {
       'bird-photos',
       'egg-photos',
       'chick-photos',
-      'community-photos',
       'backups',
     ]) {
       expect(
@@ -29,6 +28,31 @@ void main() {
         reason: '$bucket policies must be declared in migrations',
       );
     }
+
+    expect(
+      migrations,
+      contains("'community-photos'"),
+      reason: 'community-photos bucket must be declared in migrations',
+    );
+    final hardeningSql = File(
+      'supabase/migrations/20260607120000_harden_community_edge_writes.sql',
+    ).readAsStringSync();
+    expect(
+      hardeningSql,
+      contains('community_photo_client_insert_disabled'),
+      reason: 'community photo client inserts must go through Edge Function',
+    );
+    expect(
+      hardeningSql,
+      isNot(
+        contains(
+          "FOR INSERT\nTO authenticated\nWITH CHECK (\n  bucket_id IN "
+          "('bird-photos', 'egg-photos', 'chick-photos', "
+          "'community-photos', 'backups')",
+        ),
+      ),
+      reason: 'community-photos must not be in authenticated insert policy',
+    );
 
     expect(
       migrations,

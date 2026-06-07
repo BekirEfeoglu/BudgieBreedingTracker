@@ -66,7 +66,14 @@ void main() {
 
   group('getFeed', () {
     test('returns enriched posts with social state', () async {
-      when(() => postSource.fetchFeed(limit: 20, before: null)).thenAnswer(
+      when(
+        () => postSource.fetchFeed(
+          currentUserId: 'u1',
+          limit: 20,
+          before: null,
+          beforeId: null,
+        ),
+      ).thenAnswer(
         (_) async => [
           _makePostRow(id: 'p1', likeCount: 5, commentCount: 2),
           _makePostRow(id: 'p2', likeCount: 1),
@@ -91,7 +98,14 @@ void main() {
     });
 
     test('parses schema image_urls from feed rows', () async {
-      when(() => postSource.fetchFeed(limit: 20, before: null)).thenAnswer(
+      when(
+        () => postSource.fetchFeed(
+          currentUserId: 'u1',
+          limit: 20,
+          before: null,
+          beforeId: null,
+        ),
+      ).thenAnswer(
         (_) async => [
           _makePostRow(id: 'p1')
             ..['image_urls'] = [
@@ -112,7 +126,12 @@ void main() {
 
     test('skips social enrichment for anonymous user', () async {
       when(
-        () => postSource.fetchFeed(limit: 20, before: null),
+        () => postSource.fetchFeed(
+          currentUserId: 'anonymous',
+          limit: 20,
+          before: null,
+          beforeId: null,
+        ),
       ).thenAnswer((_) async => [_makePostRow(id: 'p1')]);
 
       final posts = await repository.getFeed(currentUserId: 'anonymous');
@@ -125,7 +144,12 @@ void main() {
 
     test('returns empty list when no posts', () async {
       when(
-        () => postSource.fetchFeed(limit: 20, before: null),
+        () => postSource.fetchFeed(
+          currentUserId: 'u1',
+          limit: 20,
+          before: null,
+          beforeId: null,
+        ),
       ).thenAnswer((_) async => []);
 
       final posts = await repository.getFeed(currentUserId: 'u1');
@@ -133,9 +157,42 @@ void main() {
       expect(posts, isEmpty);
     });
 
+    test('passes timestamp and id cursor to remote source', () async {
+      final before = DateTime.utc(2026, 3, 15, 10);
+      when(
+        () => postSource.fetchFeed(
+          currentUserId: 'u1',
+          limit: 20,
+          before: before,
+          beforeId: 'p20',
+        ),
+      ).thenAnswer((_) async => []);
+
+      final posts = await repository.getFeed(
+        currentUserId: 'u1',
+        before: before,
+        beforeId: 'p20',
+      );
+
+      expect(posts, isEmpty);
+      verify(
+        () => postSource.fetchFeed(
+          currentUserId: 'u1',
+          limit: 20,
+          before: before,
+          beforeId: 'p20',
+        ),
+      ).called(1);
+    });
+
     test('handles social fetch failure gracefully', () async {
       when(
-        () => postSource.fetchFeed(limit: 20, before: null),
+        () => postSource.fetchFeed(
+          currentUserId: 'u1',
+          limit: 20,
+          before: null,
+          beforeId: null,
+        ),
       ).thenAnswer((_) async => [_makePostRow(id: 'p1')]);
       // The remote source swallows RPC errors and returns empty sets; the
       // repository should still render posts with neutral social state.
@@ -294,38 +351,41 @@ void main() {
       expect(result[1]['avatar_url'], isNull);
     });
 
-    test('uses anonymous placeholder when names are missing (K3 PII safety)', () async {
-      // K3 audit (commit 22eb4fb) removed the email-prefix fallback so emails
-      // never surface in the community follow list. When both names are null,
-      // display_name falls through to the localized 'community.anonymous_user'
-      // placeholder (which resolves to the key itself under the test asset
-      // loader).
-      final profiles = MockCommunityProfileCache();
-      final repository = CommunityPostRepository(
-        postSource: postSource,
-        socialSource: socialSource,
-        profileCache: profiles,
-      );
-      when(
-        () => socialSource.fetchFollowedUserIds('u1'),
-      ).thenAnswer((_) async => {'u4'});
-      when(() => profiles.getProfiles({'u4'})).thenAnswer(
-        (_) async => {
-          'u4': {
-            'id': 'u4',
-            'display_name': null,
-            'full_name': null,
-            'avatar_url': null,
+    test(
+      'uses anonymous placeholder when names are missing (K3 PII safety)',
+      () async {
+        // K3 audit (commit 22eb4fb) removed the email-prefix fallback so emails
+        // never surface in the community follow list. When both names are null,
+        // display_name falls through to the localized 'community.anonymous_user'
+        // placeholder (which resolves to the key itself under the test asset
+        // loader).
+        final profiles = MockCommunityProfileCache();
+        final repository = CommunityPostRepository(
+          postSource: postSource,
+          socialSource: socialSource,
+          profileCache: profiles,
+        );
+        when(
+          () => socialSource.fetchFollowedUserIds('u1'),
+        ).thenAnswer((_) async => {'u4'});
+        when(() => profiles.getProfiles({'u4'})).thenAnswer(
+          (_) async => {
+            'u4': {
+              'id': 'u4',
+              'display_name': null,
+              'full_name': null,
+              'avatar_url': null,
+            },
           },
-        },
-      );
+        );
 
-      final result = await repository.getFollowedUserSummaries(
-        currentUserId: 'u1',
-      );
+        final result = await repository.getFollowedUserSummaries(
+          currentUserId: 'u1',
+        );
 
-      expect(result.single['display_name'], 'community.anonymous_user');
-    });
+        expect(result.single['display_name'], 'community.anonymous_user');
+      },
+    );
   });
 
   group('create', () {
@@ -444,7 +504,14 @@ void main() {
 
   group('post parsing', () {
     test('parses post type correctly', () async {
-      when(() => postSource.fetchFeed(limit: 20, before: null)).thenAnswer(
+      when(
+        () => postSource.fetchFeed(
+          currentUserId: 'u1',
+          limit: 20,
+          before: null,
+          beforeId: null,
+        ),
+      ).thenAnswer(
         (_) async => [
           _makePostRow(id: 'p1', postType: 'question'),
           _makePostRow(id: 'p2', postType: 'invalid_type'),
@@ -459,7 +526,14 @@ void main() {
     });
 
     test('skips rows with missing required fields', () async {
-      when(() => postSource.fetchFeed(limit: 20, before: null)).thenAnswer(
+      when(
+        () => postSource.fetchFeed(
+          currentUserId: 'u1',
+          limit: 20,
+          before: null,
+          beforeId: null,
+        ),
+      ).thenAnswer(
         (_) async => [
           {'id': 'p1'},
           _makePostRow(id: 'p2'),

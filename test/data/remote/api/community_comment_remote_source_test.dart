@@ -2,16 +2,20 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/data/remote/api/community_comment_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/community_profile_cache.dart';
+import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
 
 import '../../../helpers/fake_supabase.dart';
+import '../../../helpers/mocks.dart';
 
 void main() {
   late RoutingFakeClient client;
   late FakeFilterBuilder<PostgrestList> commentsSelect;
   late FakeQueryBuilder commentsQuery;
+  late MockEdgeFunctionClient edgeClient;
   late CommunityCommentRemoteSource source;
 
   setUp(() {
@@ -21,9 +25,10 @@ void main() {
     commentsSelect = comments.selectBuilder;
     commentsQuery = comments.queryBuilder;
     profiles.selectBuilder.result = [];
+    edgeClient = MockEdgeFunctionClient();
 
     final cache = CommunityProfileCache(client);
-    source = CommunityCommentRemoteSource(client, cache);
+    source = CommunityCommentRemoteSource(client, cache, edgeClient);
   });
 
   group('fetchByPost', () {
@@ -120,18 +125,48 @@ void main() {
   });
 
   group('insert', () {
-    test('upserts data to community_comments table', () async {
-      final data = {
-        'id': 'c1',
-        'post_id': 'p1',
-        'user_id': 'u1',
-        'content': 'Great!',
-      };
+    test(
+      'creates comment through Edge Function instead of table upsert',
+      () async {
+        final data = {
+          'id': 'c1',
+          'post_id': 'p1',
+          'user_id': 'u1',
+          'content': 'Great!',
+        };
+        when(
+          () => edgeClient.createCommunityComment(
+            postId: 'p1',
+            content: 'Great!',
+          ),
+        ).thenAnswer((_) async => const EdgeFunctionResult(success: true));
 
-      await source.insert(data);
+        await source.insert(data);
 
-      expect(commentsQuery.upsertPayload, data);
-      expect(client.requestedTables, contains('community_comments'));
+        verify(
+          () => edgeClient.createCommunityComment(
+            postId: 'p1',
+            content: 'Great!',
+          ),
+        ).called(1);
+        expect(commentsQuery.upsertPayload, isNull);
+        expect(client.requestedTables, isNot(contains('community_comments')));
+      },
+    );
+
+    test('throws when comment Edge Function rejects creation', () async {
+      final data = {'post_id': 'p1', 'content': 'Great!'};
+      when(
+        () =>
+            edgeClient.createCommunityComment(postId: 'p1', content: 'Great!'),
+      ).thenAnswer(
+        (_) async => const EdgeFunctionResult(
+          success: false,
+          error: 'moderation_failed',
+        ),
+      );
+
+      await expectLater(() => source.insert(data), throwsException);
     });
   });
 

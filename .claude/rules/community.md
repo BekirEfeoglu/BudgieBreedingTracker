@@ -9,13 +9,13 @@ Public feed, post + comment + like + report akışı. **Online-first** (`*Reposi
 | Repository | `CommunityPostRepository` (online-first, no Drift table) |
 | Cache | `community_post_cache.dart` (in-memory + 1h TTL) |
 | Profile cache | `community_profile_cache.dart` (post author lookup) |
-| Moderation | `moderate-content` edge fn pre-publish |
-| Storage | `community-posts` bucket (public read) |
+| Moderation | `create-community-post` / `create-community-comment` Edge Functions |
+| Storage | `community-photos` bucket (server upload, signed URL read) |
 
 ## Online-First Contract
 - `CommunityPostRepository` Drift table'ı YOK
 - Read: Supabase realtime query veya pagination
-- Write: doğrudan `client.from(SupabaseConstants.communityPostsTable)` (Repository içinde, UI'da değil)
+- Write: `create-community-post` ve `create-community-comment` Edge Functions; client doğrudan tablo insert yapmaz
 - Cache: read latency için 1h in-memory, dirty bilgi yok
 - Offline'da feed görünmez (cached snapshot OK, mutations engellenir)
 - Repository class doc'unda exemption ifadesi zorunlu:
@@ -32,7 +32,8 @@ Public feed, post + comment + like + report akışı. **Online-first** (`*Reposi
 
 ## Post Lifecycle
 ```
-Compose -> Client moderation -> Edge moderate-content -> Insert to Supabase
+Compose -> Client moderation -> Edge create-community-post
+  -> server moderation + guard -> service-role insert
   -> Optimistic UI append
   -> Realtime broadcast diğer kullanıcılara
   -> Failure: revert optimistic add + l10n error
@@ -45,7 +46,7 @@ Compose -> Client moderation -> Edge moderate-content -> Insert to Supabase
 ## Comment
 - Nested 1 seviye (reply-to-reply YOK — UX kompleksite)
 - Per-post comment count cache invalidate'i write sonrası
-- Comment moderation: post ile aynı pipeline (`contextType: 'comment'`)
+- Comment moderation: `create-community-comment` Edge Function içinde fail-closed
 - Long comment 2K char limit, UI textarea expandable
 
 ## Like / Reaction
@@ -73,10 +74,11 @@ Compose -> Client moderation -> Edge moderate-content -> Insert to Supabase
 - Disconnect/reconnect: cursor invalidate, soft refresh
 
 ## Storage Integration
-- Post fotoğrafları: `community-posts` public bucket
-- Upload: `assets-images.md` pipeline (scan-image-safety zorunlu)
-- Public URL CDN cache (Cache-Control: 7 gün)
-- Storage path: `community-posts/<user_id>/<post_id>/<index>.jpg`
+- Post fotoğrafları: `community-photos` bucket
+- Upload: `upload-community-photo` Edge Function içinde server-side image moderation zorunlu
+- Client direct Storage insert/update kapalı; Edge Function service-role ile yükler
+- Okuma: post payload'ında signed URL; URL path'i `user_id/post_id` ile eşleşmeli
+- Storage path: `community-photos/<user_id>/<post_id>/<timestamp>-<uuid>.<ext>`
 
 ## Premium Features
 - Premium kullanıcı: max 10 fotoğraflı post, free max 3
@@ -85,7 +87,7 @@ Compose -> Client moderation -> Edge moderate-content -> Insert to Supabase
 
 ## RLS Policy Yapısı
 - SELECT: herkes okuyabilir (public feed)
-- INSERT: auth.uid() = user_id
+- INSERT: authenticated direct insert disabled; create post/comment Edge Functions service-role ile yazar ve JWT owner bilgisini kullanır
 - UPDATE: 5dk window + author only
 - DELETE: author OR admin
 - Soft delete: `deleted_at IS NULL` filter tüm SELECT'lerde
@@ -119,4 +121,4 @@ Compose -> Client moderation -> Edge moderate-content -> Insert to Supabase
 9. Moderation atlayıp publish (release-blocker — moderation.md fail-closed)
 10. Public bucket'ta kullanıcı kimliği tahmin edilebilir path (`<email>/...` gibi)
 
-> **İlgili**: architecture.md § Online-First Exemption, moderation.md (`moderate-content`), messaging.md (DM CTA + block sync), gamification.md (verified badge), edge-functions.md (`moderate-content`), assets-images.md (post images)
+> **İlgili**: architecture.md § Online-First Exemption, moderation.md (`moderate-content`), messaging.md (DM CTA + block sync), gamification.md (verified badge), edge-functions.md (`create-community-post`, `create-community-comment`, `upload-community-photo`), assets-images.md (post images)
