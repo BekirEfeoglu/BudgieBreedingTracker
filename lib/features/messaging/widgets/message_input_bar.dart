@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/constants/app_icons.dart';
-import '../../../core/constants/feature_flags.dart';
 import '../../../core/enums/messaging_enums.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
@@ -13,6 +12,8 @@ import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/profile_stream_providers.dart';
 import '../providers/messaging_form_providers.dart';
+import '../providers/messaging_providers.dart'
+    show messageAttachmentsEnabledProvider;
 import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 
 class MessageInputBar extends ConsumerStatefulWidget {
@@ -48,6 +49,7 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final attachmentsEnabled = ref.watch(messageAttachmentsEnabledProvider);
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -67,7 +69,7 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
             // Messaging audit C1+C2 — the bottom-sheet options were dead
             // UI (`onTap: Navigator.pop`) and the receive-side rendering
             // path for image/bird/listing messages had no producer.
-            if (FeatureFlags.messageAttachmentsEnabled)
+            if (attachmentsEnabled)
               AppIconButton(
                 icon: const Icon(LucideIcons.plus),
                 onPressed: _showAttachmentOptions,

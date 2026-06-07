@@ -10,6 +10,8 @@ import 'package:budgie_breeding_tracker/core/enums/messaging_enums.dart';
 import 'package:budgie_breeding_tracker/data/providers/profile_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/messaging/providers/messaging_form_providers.dart';
+import 'package:budgie_breeding_tracker/features/messaging/providers/messaging_providers.dart'
+    show messageAttachmentsEnabledProvider;
 import 'package:budgie_breeding_tracker/features/messaging/widgets/message_input_bar.dart';
 
 import '../../../helpers/test_localization.dart';
@@ -17,23 +19,24 @@ import '../../../helpers/test_localization.dart';
 void main() {
   Widget buildSubject({
     MessagingFormNotifier Function()? notifierFactory,
+    bool? attachmentsEnabled,
   }) {
     return ProviderScope(
       overrides: [
         currentUserIdProvider.overrideWithValue('test-user'),
+        if (attachmentsEnabled != null)
+          messageAttachmentsEnabledProvider.overrideWithValue(
+            attachmentsEnabled,
+          ),
         // MessageInputBar now reads the current user's profile to pass
         // senderName into the message payload (audit M6). Override with
         // a fixed stream so tests stay self-contained.
-        userProfileProvider.overrideWith(
-          (ref) => Stream.value(null),
-        ),
+        userProfileProvider.overrideWith((ref) => Stream.value(null)),
         if (notifierFactory != null)
           messagingFormStateProvider.overrideWith(notifierFactory),
       ],
       child: const MaterialApp(
-        home: Scaffold(
-          body: MessageInputBar(conversationId: 'conv-1'),
-        ),
+        home: Scaffold(body: MessageInputBar(conversationId: 'conv-1')),
       ),
     );
   }
@@ -46,10 +49,7 @@ void main() {
       );
 
       expect(find.byType(TextField), findsOneWidget);
-      expect(
-        find.text(l10n('messaging.type_message')),
-        findsOneWidget,
-      );
+      expect(find.text(l10n('messaging.type_message')), findsOneWidget);
     });
 
     testWidgets('renders send button', (tester) async {
@@ -61,21 +61,19 @@ void main() {
       expect(find.byIcon(LucideIcons.send), findsOneWidget);
     });
 
-    // Skipped: Attachments hidden behind
-    // FeatureFlags.messageAttachmentsEnabled (off by default). Re-enable
-    // when the upload pipeline ships — see messaging audit C1.
-    testWidgets(
-      'renders attachment button',
-      skip: true,
-      (tester) async {
-        await pumpLocalizedApp(
-          tester,
-          buildSubject(notifierFactory: _FakeMessagingFormNotifier.new),
-        );
+    testWidgets('renders attachment button when attachments flag is enabled', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
+        buildSubject(
+          notifierFactory: _FakeMessagingFormNotifier.new,
+          attachmentsEnabled: true,
+        ),
+      );
 
-        expect(find.byIcon(LucideIcons.plus), findsOneWidget);
-      },
-    );
+      expect(find.byIcon(LucideIcons.plus), findsOneWidget);
+    });
 
     testWidgets('send button is disabled when text is empty', (tester) async {
       await pumpLocalizedApp(
@@ -122,37 +120,31 @@ void main() {
       expect(textField.controller?.text, isEmpty);
     });
 
-    // Skipped: see comment on `renders attachment button` above.
     testWidgets(
-      'attachment button opens bottom sheet',
-      skip: true,
+      'attachment button opens bottom sheet when attachments flag is enabled',
       (tester) async {
-      await pumpLocalizedApp(
-        tester,
-        buildSubject(notifierFactory: _FakeMessagingFormNotifier.new),
-      );
+        await pumpLocalizedApp(
+          tester,
+          buildSubject(
+            notifierFactory: _FakeMessagingFormNotifier.new,
+            attachmentsEnabled: true,
+          ),
+        );
 
-      await tester.tap(find.byIcon(LucideIcons.plus));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byIcon(LucideIcons.plus));
+        await tester.pumpAndSettle();
 
-      // Bottom sheet should show attachment options
-      expect(find.byIcon(LucideIcons.image), findsOneWidget);
-      // Bird icon is now AppIcon(AppIcons.bird) — see audit L5.
-      expect(find.byIcon(LucideIcons.store), findsOneWidget);
-      expect(
-        find.text(l10n('messaging.attach_photo')),
-        findsAtLeast(1),
-      );
-      expect(find.text(l10n('messaging.attach_bird')), findsOneWidget);
-      expect(
-        find.text(l10n('messaging.attach_listing')),
-        findsOneWidget,
-      );
-    },
+        expect(find.byIcon(LucideIcons.image), findsOneWidget);
+        expect(find.byIcon(LucideIcons.store), findsOneWidget);
+        expect(find.text(l10n('messaging.attach_photo')), findsAtLeast(1));
+        expect(find.text(l10n('messaging.attach_bird')), findsOneWidget);
+        expect(find.text(l10n('messaging.attach_listing')), findsOneWidget);
+      },
     );
 
-    testWidgets('send button is disabled for whitespace-only input',
-        (tester) async {
+    testWidgets('send button is disabled for whitespace-only input', (
+      tester,
+    ) async {
       await pumpLocalizedApp(
         tester,
         buildSubject(notifierFactory: _FakeMessagingFormNotifier.new),

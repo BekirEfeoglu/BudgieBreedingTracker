@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/constants/feature_flags.dart';
 import '../../../data/models/conversation_model.dart';
 import '../../../data/models/message_model.dart';
 import '../../../data/repositories/repository_providers.dart';
@@ -13,6 +14,11 @@ export 'package:budgie_breeding_tracker/core/enums/messaging_enums.dart';
 /// Feature flag
 final isMessagingEnabledProvider = Provider<bool>((ref) => true);
 
+/// Feature flag for message attachment UI.
+final messageAttachmentsEnabledProvider = Provider<bool>(
+  (ref) => FeatureFlags.messageAttachmentsEnabled,
+);
+
 /// All conversations for current user, with blocked-user filtering.
 ///
 /// A direct conversation whose last message came from a blocked user is
@@ -21,8 +27,7 @@ final isMessagingEnabledProvider = Provider<bool>((ref) => true);
 /// abuse vector: "I keep getting unwanted DMs from X." Server-side
 /// `block_user` also stops new messages from blocked users from
 /// arriving, so the filter doesn't need to cover historical traffic.
-final conversationsProvider =
-    FutureProvider.family<List<Conversation>, String>(
+final conversationsProvider = FutureProvider.family<List<Conversation>, String>(
   (ref, userId) async {
     final repo = ref.watch(messagingRepositoryProvider);
     final blocked = ref.watch(blockedUsersProvider).toSet();
@@ -42,13 +47,13 @@ final conversationsProvider =
 );
 
 /// Single conversation by ID
-final conversationByIdProvider =
-    FutureProvider.family<Conversation?, String>(
-  (ref, conversationId) async {
-    final repo = ref.watch(messagingRepositoryProvider);
-    return repo.getConversationById(conversationId);
-  },
-);
+final conversationByIdProvider = FutureProvider.family<Conversation?, String>((
+  ref,
+  conversationId,
+) async {
+  final repo = ref.watch(messagingRepositoryProvider);
+  return repo.getConversationById(conversationId);
+});
 
 /// Messages for a conversation, with blocked-sender filtering.
 ///
@@ -56,16 +61,16 @@ final conversationByIdProvider =
 /// thread. Server-side block also prevents new ones from arriving, but
 /// this client filter handles historical messages and any in-flight
 /// realtime emissions before the server enforces the block.
-final messagesProvider =
-    FutureProvider.family<List<Message>, String>(
-  (ref, conversationId) async {
-    final repo = ref.watch(messagingRepositoryProvider);
-    final blocked = ref.watch(blockedUsersProvider).toSet();
-    final messages = await repo.getMessages(conversationId);
-    if (blocked.isEmpty) return messages;
-    return messages.where((m) => !blocked.contains(m.senderId)).toList();
-  },
-);
+final messagesProvider = FutureProvider.family<List<Message>, String>((
+  ref,
+  conversationId,
+) async {
+  final repo = ref.watch(messagingRepositoryProvider);
+  final blocked = ref.watch(blockedUsersProvider).toSet();
+  final messages = await repo.getMessages(conversationId);
+  if (blocked.isEmpty) return messages;
+  return messages.where((m) => !blocked.contains(m.senderId)).toList();
+});
 
 /// Search state
 class ConversationSearchQueryNotifier extends Notifier<String> {
@@ -75,28 +80,31 @@ class ConversationSearchQueryNotifier extends Notifier<String> {
 
 final conversationSearchQueryProvider =
     NotifierProvider<ConversationSearchQueryNotifier, String>(
-  ConversationSearchQueryNotifier.new,
-);
+      ConversationSearchQueryNotifier.new,
+    );
 
 /// Filtered conversations (computed)
 final filteredConversationsProvider =
-    Provider.family<List<Conversation>, List<Conversation>>(
-  (ref, conversations) {
-    final query =
-        ref.watch(conversationSearchQueryProvider).toLowerCase().trim();
-    if (query.isEmpty) return conversations;
+    Provider.family<List<Conversation>, List<Conversation>>((
+      ref,
+      conversations,
+    ) {
+      final query = ref
+          .watch(conversationSearchQueryProvider)
+          .toLowerCase()
+          .trim();
+      if (query.isEmpty) return conversations;
 
-    return conversations.where((c) {
-      return (c.name?.toLowerCase().contains(query) ?? false) ||
-          (c.lastMessageContent?.toLowerCase().contains(query) ?? false);
-    }).toList();
-  },
-);
+      return conversations.where((c) {
+        return (c.name?.toLowerCase().contains(query) ?? false) ||
+            (c.lastMessageContent?.toLowerCase().contains(query) ?? false);
+      }).toList();
+    });
 
 /// Total unread count across all conversations
-final totalUnreadCountProvider =
-    Provider.family<int, List<Conversation>>(
-  (ref, conversations) {
-    return conversations.fold<int>(0, (sum, c) => sum + c.unreadCount);
-  },
-);
+final totalUnreadCountProvider = Provider.family<int, List<Conversation>>((
+  ref,
+  conversations,
+) {
+  return conversations.fold<int>(0, (sum, c) => sum + c.unreadCount);
+});
