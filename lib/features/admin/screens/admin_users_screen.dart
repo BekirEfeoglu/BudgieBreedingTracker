@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/constants/app_icons.dart';
+import '../../../core/constants/supabase_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
@@ -28,7 +29,30 @@ part 'admin_users_screen_list.dart';
 part 'admin_users_screen_card.dart';
 part 'admin_users_screen_bulk_actions.dart';
 
-enum _UserStatusFilter { all, online, active, inactive, premium, free }
+enum AdminUsersInitialFilter {
+  all,
+  activeToday,
+  newToday;
+
+  static AdminUsersInitialFilter fromQueryParam(String? value) {
+    return switch (value) {
+      'activeToday' => AdminUsersInitialFilter.activeToday,
+      'newToday' => AdminUsersInitialFilter.newToday,
+      _ => AdminUsersInitialFilter.all,
+    };
+  }
+}
+
+enum _UserStatusFilter {
+  all,
+  online,
+  activeToday,
+  newToday,
+  active,
+  inactive,
+  premium,
+  free,
+}
 
 enum _UserSortOption { newest, oldest, recentlyActive, nameAsc, emailAsc }
 
@@ -38,11 +62,15 @@ extension _UserStatusFilterQuery on _UserStatusFilter {
     _UserStatusFilter.inactive => false,
     _UserStatusFilter.all ||
     _UserStatusFilter.online ||
+    _UserStatusFilter.activeToday ||
+    _UserStatusFilter.newToday ||
     _UserStatusFilter.premium ||
     _UserStatusFilter.free => null,
   };
 
   bool get onlineOnly => this == _UserStatusFilter.online;
+  bool get activeTodayOnly => this == _UserStatusFilter.activeToday;
+  bool get createdTodayOnly => this == _UserStatusFilter.newToday;
 
   bool? get premiumValue => switch (this) {
     _UserStatusFilter.premium => true,
@@ -51,10 +79,18 @@ extension _UserStatusFilterQuery on _UserStatusFilter {
   };
 }
 
+extension _AdminUsersInitialFilterDefaults on AdminUsersInitialFilter {
+  _UserStatusFilter get statusFilter => switch (this) {
+    AdminUsersInitialFilter.activeToday => _UserStatusFilter.activeToday,
+    AdminUsersInitialFilter.newToday => _UserStatusFilter.newToday,
+    AdminUsersInitialFilter.all => _UserStatusFilter.all,
+  };
+}
+
 extension _UserSortOptionQuery on _UserSortOption {
   String get sortField => switch (this) {
     _UserSortOption.newest || _UserSortOption.oldest => 'created_at',
-    _UserSortOption.recentlyActive => 'last_active_at',
+    _UserSortOption.recentlyActive => SupabaseConstants.colLastActiveAt,
     _UserSortOption.nameAsc => 'full_name',
     _UserSortOption.emailAsc => 'email',
   };
@@ -69,7 +105,12 @@ extension _UserSortOptionQuery on _UserSortOption {
 
 /// Admin users list screen with search and user cards.
 class AdminUsersScreen extends ConsumerStatefulWidget {
-  const AdminUsersScreen({super.key});
+  final AdminUsersInitialFilter initialFilter;
+
+  const AdminUsersScreen({
+    super.key,
+    this.initialFilter = AdminUsersInitialFilter.all,
+  });
 
   @override
   ConsumerState<AdminUsersScreen> createState() => _AdminUsersScreenState();
@@ -80,13 +121,15 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
   Timer? _debounceTimer;
 
   String _query = '';
-  _UserStatusFilter _statusFilter = _UserStatusFilter.all;
-  _UserSortOption _sortOption = _UserSortOption.newest;
+  late _UserStatusFilter _statusFilter;
+  late _UserSortOption _sortOption;
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController();
+    _statusFilter = widget.initialFilter.statusFilter;
+    _sortOption = _defaultSortForStatusFilter(_statusFilter);
   }
 
   @override
@@ -100,6 +143,8 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
     searchTerm: _query,
     isActiveFilter: _statusFilter.queryValue,
     isPremiumFilter: _statusFilter.premiumValue,
+    activeTodayOnly: _statusFilter.activeTodayOnly,
+    createdTodayOnly: _statusFilter.createdTodayOnly,
     onlineOnly: _statusFilter.onlineOnly,
     sortField: _sortOption.sortField,
     sortAscending: _sortOption.sortAscending,
@@ -259,9 +304,10 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
             onStatusFilterChanged: (value) {
               setState(() {
                 _statusFilter = value;
-                if (value == _UserStatusFilter.online) {
-                  _sortOption = _UserSortOption.recentlyActive;
-                }
+                _sortOption = _defaultSortForStatusFilter(
+                  value,
+                  current: _sortOption,
+                );
               });
               _resetPagination();
             },
@@ -356,5 +402,17 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
             )
           : null,
     );
+  }
+
+  _UserSortOption _defaultSortForStatusFilter(
+    _UserStatusFilter value, {
+    _UserSortOption? current,
+  }) {
+    return switch (value) {
+      _UserStatusFilter.online ||
+      _UserStatusFilter.activeToday => _UserSortOption.recentlyActive,
+      _UserStatusFilter.newToday => _UserSortOption.newest,
+      _ => current ?? _UserSortOption.newest,
+    };
   }
 }

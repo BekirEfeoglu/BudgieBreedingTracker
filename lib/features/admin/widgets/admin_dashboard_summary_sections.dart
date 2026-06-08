@@ -44,6 +44,8 @@ class DashboardStatsGrid extends StatelessWidget {
               label: 'admin.active_today'.tr(),
               value: '${stats.activeToday}',
               color: AppColors.success,
+              onTap: () =>
+                  context.push('${AppRoutes.adminUsers}?filter=activeToday'),
             ),
             DashboardStatCard(
               icon: Semantics(
@@ -53,6 +55,8 @@ class DashboardStatsGrid extends StatelessWidget {
               label: 'admin.new_today'.tr(),
               value: '${stats.newUsersToday}',
               color: AppColors.info,
+              onTap: () =>
+                  context.push('${AppRoutes.adminUsers}?filter=newToday'),
             ),
             DashboardStatCard(
               icon: AppIcon(

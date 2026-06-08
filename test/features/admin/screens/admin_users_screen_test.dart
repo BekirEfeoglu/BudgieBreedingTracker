@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
+import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -172,7 +173,14 @@ void main() {
       );
       await tester.pump();
 
-      await tester.tap(find.widgetWithText(ChoiceChip, l10n('admin.inactive')));
+      final inactiveChip = find.widgetWithText(
+        ChoiceChip,
+        l10n('admin.inactive'),
+      );
+      await tester.ensureVisible(inactiveChip);
+      await tester.pumpAndSettle();
+
+      await tester.tap(inactiveChip);
       await tester.pumpAndSettle();
 
       expect(find.text('Bob Test'), findsOneWidget);
@@ -187,7 +195,7 @@ void main() {
       );
       const onlineQuery = AdminUsersQuery(
         onlineOnly: true,
-        sortField: 'last_active_at',
+        sortField: SupabaseConstants.colLastActiveAt,
       );
 
       await tester.pumpWidget(

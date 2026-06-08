@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
+import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -21,14 +22,17 @@ final _testUsers = [
 
 Widget _createSubject({
   AsyncValue<List<AdminUser>> usersAsync = const AsyncLoading(),
+  AdminUsersInitialFilter initialFilter = AdminUsersInitialFilter.all,
+  AdminUsersQuery usersQuery = const AdminUsersQuery(),
 }) {
   final router = GoRouter(
     initialLocation: '/',
     routes: [
       GoRoute(
         path: '/',
-        pageBuilder: (_, __) =>
-            const NoTransitionPage(child: Scaffold(body: AdminUsersScreen())),
+        pageBuilder: (_, __) => NoTransitionPage(
+          child: Scaffold(body: AdminUsersScreen(initialFilter: initialFilter)),
+        ),
       ),
       GoRoute(
         path: '/admin/users/:userId',
@@ -39,9 +43,7 @@ Widget _createSubject({
   );
 
   return ProviderScope(
-    overrides: [
-      adminUsersProvider(const AdminUsersQuery()).overrideWithValue(usersAsync),
-    ],
+    overrides: [adminUsersProvider(usersQuery).overrideWithValue(usersAsync)],
     child: MaterialApp.router(routerConfig: router),
   );
 }
@@ -99,6 +101,45 @@ void main() {
 
       // Verify the text was entered
       expect(find.text('alice'), findsOneWidget);
+    });
+
+    testWidgets('initial active today filter selects active today chip', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _createSubject(
+          usersAsync: AsyncData(_testUsers),
+          initialFilter: AdminUsersInitialFilter.activeToday,
+          usersQuery: const AdminUsersQuery(
+            activeTodayOnly: true,
+            sortField: SupabaseConstants.colLastActiveAt,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final chip = tester.widget<ChoiceChip>(
+        find.widgetWithText(ChoiceChip, l10n('admin.active_today')),
+      );
+      expect(chip.selected, isTrue);
+    });
+
+    testWidgets('initial new today filter selects new today chip', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _createSubject(
+          usersAsync: AsyncData(_testUsers),
+          initialFilter: AdminUsersInitialFilter.newToday,
+          usersQuery: const AdminUsersQuery(createdTodayOnly: true),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final chip = tester.widget<ChoiceChip>(
+        find.widgetWithText(ChoiceChip, l10n('admin.new_today')),
+      );
+      expect(chip.selected, isTrue);
     });
   });
 }

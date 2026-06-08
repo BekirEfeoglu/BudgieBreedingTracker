@@ -40,15 +40,36 @@ final adminUsersProvider = FutureProvider.family<List<AdminUser>, AdminUsersQuer
   await requireAdmin(ref);
   final client = ref.watch(supabaseClientProvider);
   final localPresence = ref.watch(adminLocalPresenceProvider);
-  final onlineSince = DateTime.now().toUtc().subtract(
-    UserPresenceConstants.onlineThreshold,
-  );
-  final onlineActivity = query.onlineOnly
-      ? await _loadOnlineUserActivity(client, onlineSince)
+  final now = DateTime.now().toUtc();
+  final todayStart = _utcDayStart(now);
+  final onlineSince = now.subtract(UserPresenceConstants.onlineThreshold);
+  final filteredActivity = query.activeTodayOnly
+      ? await _loadUserActivitySince(
+          client,
+          todayStart,
+          sinceColumn: SupabaseConstants.colCreatedAt,
+          activeOnly: false,
+        )
+      : query.onlineOnly
+      ? await _loadUserActivitySince(
+          client,
+          onlineSince,
+          sinceColumn: SupabaseConstants.colLastActiveAt,
+          activeOnly: true,
+        )
       : <String, DateTime>{};
-  _mergeLocalPresence(onlineActivity, localPresence, onlineSince);
+  if (query.onlineOnly) {
+    _mergeLocalPresence(filteredActivity, localPresence, onlineSince);
+  }
 
-  if (query.onlineOnly && onlineActivity.isEmpty) return [];
+  if (query.onlineOnly && filteredActivity.isEmpty) {
+    return [];
+  }
+  final usesSessionActivityFilter =
+      query.onlineOnly ||
+      (query.activeTodayOnly && filteredActivity.isNotEmpty);
+  final usesActiveTodayProfileFallback =
+      query.activeTodayOnly && filteredActivity.isEmpty;
 
   var request = client
       .from(SupabaseConstants.profilesTable)
@@ -84,8 +105,22 @@ final adminUsersProvider = FutureProvider.family<List<AdminUser>, AdminUsersQuer
     request = request.eq('is_premium', query.isPremiumFilter!);
   }
 
-  if (query.onlineOnly) {
-    request = request.inFilter('id', onlineActivity.keys.toList());
+  if (query.createdTodayOnly) {
+    request = request.gte(
+      SupabaseConstants.colCreatedAt,
+      todayStart.toIso8601String(),
+    );
+  }
+
+  if (usesActiveTodayProfileFallback) {
+    request = request.gte(
+      SupabaseConstants.colUpdatedAt,
+      todayStart.toIso8601String(),
+    );
+  }
+
+  if (usesSessionActivityFilter) {
+    request = request.inFilter('id', filteredActivity.keys.toList());
   }
 
   // Validate sortField against allowed columns to prevent schema probing
@@ -97,11 +132,12 @@ final adminUsersProvider = FutureProvider.family<List<AdminUser>, AdminUsersQuer
     'is_premium',
     'role',
   };
-  final sortsByLastActive = query.sortField == 'last_active_at';
+  final sortsByLastActive =
+      query.sortField == SupabaseConstants.colLastActiveAt;
   final safeSortField = allowedSortFields.contains(query.sortField)
       ? query.sortField
       : 'created_at';
-  final requestLimit = query.onlineOnly && sortsByLastActive
+  final requestLimit = usesSessionActivityFilter && sortsByLastActive
       ? AdminConstants.onlineUsersCandidateLimit
       : query.limit;
 
@@ -110,8 +146,8 @@ final adminUsersProvider = FutureProvider.family<List<AdminUser>, AdminUsersQuer
       .limit(requestLimit);
 
   final rows = (result as List).cast<Map<String, dynamic>>();
-  final visibleActivity = query.onlineOnly
-      ? Map<String, DateTime>.of(onlineActivity)
+  final visibleActivity = usesSessionActivityFilter
+      ? Map<String, DateTime>.of(filteredActivity)
       : await _loadVisibleUserActivity(
           client,
           rows.map((row) => row['id'] as String),
@@ -127,7 +163,7 @@ final adminUsersProvider = FutureProvider.family<List<AdminUser>, AdminUsersQuer
         row['avatar_url'] as String?,
       ),
       if (lastActiveAt != null)
-        'last_active_at': lastActiveAt.toIso8601String(),
+        SupabaseConstants.colLastActiveAt: lastActiveAt.toIso8601String(),
     });
   }).toList();
 
@@ -146,6 +182,11 @@ final adminUsersProvider = FutureProvider.family<List<AdminUser>, AdminUsersQuer
 
   return users.take(query.limit).toList();
 });
+
+DateTime _utcDayStart(DateTime value) {
+  final utc = value.toUtc();
+  return DateTime.utc(utc.year, utc.month, utc.day);
+}
 
 bool _isUuidSearchTerm(String value) {
   return RegExp(
@@ -168,16 +209,24 @@ void _mergeLocalPresence(
   }
 }
 
-Future<Map<String, DateTime>> _loadOnlineUserActivity(
+Future<Map<String, DateTime>> _loadUserActivitySince(
   SupabaseClient client,
-  DateTime onlineSince,
-) async {
-  final rows = await client
+  DateTime since, {
+  required String sinceColumn,
+  required bool activeOnly,
+}) async {
+  var request = client
       .from(SupabaseConstants.userSessionsTable)
-      .select('user_id, last_active_at')
-      .eq('is_active', true)
-      .gte('last_active_at', onlineSince.toIso8601String())
-      .order('last_active_at', ascending: false)
+      .select(
+        'user_id, ${SupabaseConstants.colLastActiveAt}, ${SupabaseConstants.colCreatedAt}',
+      );
+  if (activeOnly) {
+    request = request.eq('is_active', true);
+  }
+
+  final rows = await request
+      .gte(sinceColumn, since.toIso8601String())
+      .order(SupabaseConstants.colLastActiveAt, ascending: false)
       .limit(AdminConstants.onlineUsersCandidateLimit);
 
   return _latestActivityByUser(rows as List);
@@ -193,11 +242,11 @@ Future<Map<String, DateTime>> _loadVisibleUserActivity(
 
   final rows = await client
       .from(SupabaseConstants.userSessionsTable)
-      .select('user_id, last_active_at')
+      .select('user_id, ${SupabaseConstants.colLastActiveAt}')
       .eq('is_active', true)
-      .gte('last_active_at', onlineSince.toIso8601String())
+      .gte(SupabaseConstants.colLastActiveAt, onlineSince.toIso8601String())
       .inFilter('user_id', ids)
-      .order('last_active_at', ascending: false);
+      .order(SupabaseConstants.colLastActiveAt, ascending: false);
 
   return _latestActivityByUser(rows as List);
 }
@@ -206,7 +255,7 @@ Map<String, DateTime> _latestActivityByUser(List<dynamic> rows) {
   final activity = <String, DateTime>{};
   for (final row in rows.cast<Map<String, dynamic>>()) {
     final userId = row['user_id'] as String?;
-    final rawLastActive = row['last_active_at'] as String?;
+    final rawLastActive = row[SupabaseConstants.colLastActiveAt] as String?;
     if (userId == null || rawLastActive == null) continue;
     final lastActive = DateTime.tryParse(rawLastActive);
     if (lastActive == null) continue;

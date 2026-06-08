@@ -235,6 +235,8 @@ abstract class AdminUsersQuery with _$AdminUsersQuery {
     @Default('') String searchTerm,
     @Default(null) bool? isActiveFilter,
     @Default(null) bool? isPremiumFilter,
+    @Default(false) bool activeTodayOnly,
+    @Default(false) bool createdTodayOnly,
     @Default(false) bool onlineOnly,
     @Default('created_at') String sortField,
     @Default(false) bool sortAscending,

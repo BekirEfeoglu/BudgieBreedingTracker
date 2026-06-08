@@ -227,7 +227,12 @@ Map<String, dynamic> _userRow({
 Map<String, dynamic> _sessionRow({
   String userId = 'user-1',
   String lastActiveAt = '2026-05-05T20:00:00Z',
-}) => {'user_id': userId, 'last_active_at': lastActiveAt};
+  String createdAt = '2026-05-05T19:00:00Z',
+}) => {
+  'user_id': userId,
+  'last_active_at': lastActiveAt,
+  'created_at': createdAt,
+};
 
 _FakeSupabaseClient _makeClient({
   List<Map<String, dynamic>> usersResult = const [],
@@ -482,6 +487,71 @@ void main() {
         );
         expect(isActiveCalls, isEmpty);
       });
+
+      test('should apply created today filter when requested', () async {
+        final client = _makeClient(usersResult: [_userRow()]);
+        final container = _makeContainer(client);
+        addTearDown(container.dispose);
+
+        const query = AdminUsersQuery(createdTodayOnly: true);
+        await container.read(adminUsersProvider(query).future);
+
+        final createdAtCall = client.usersListFilter.gteCalls.firstWhere(
+          (e) => e.key == SupabaseConstants.colCreatedAt,
+          orElse: () => const MapEntry('', ''),
+        );
+        expect(createdAtCall.key, SupabaseConstants.colCreatedAt);
+        expect(DateTime.tryParse(createdAtCall.value as String), isNotNull);
+      });
+
+      test(
+        'should filter active today users from recent session activity',
+        () async {
+          final lastActive = DateTime.now()
+              .toUtc()
+              .subtract(const Duration(minutes: 15))
+              .toIso8601String();
+          final client = _makeClient(
+            usersResult: [_userRow(id: 'u1')],
+            sessionsResult: [
+              _sessionRow(userId: 'u1', lastActiveAt: lastActive),
+            ],
+          );
+          final container = _makeContainer(client);
+          addTearDown(container.dispose);
+
+          const query = AdminUsersQuery(activeTodayOnly: true);
+          final users = await container.read(adminUsersProvider(query).future);
+
+          expect(users.map((user) => user.id), ['u1']);
+          expect(
+            client.sessionsListFilter.gteCalls.single.key,
+            SupabaseConstants.colCreatedAt,
+          );
+          final idFilter = client.usersListFilter.inFilterCalls.single;
+          expect(idFilter.key, 'id');
+          expect(idFilter.value, ['u1']);
+        },
+      );
+
+      test(
+        'should fall back to profiles updated today when no sessions exist today',
+        () async {
+          final client = _makeClient(usersResult: [_userRow(id: 'u1')]);
+          final container = _makeContainer(client);
+          addTearDown(container.dispose);
+
+          const query = AdminUsersQuery(activeTodayOnly: true);
+          final users = await container.read(adminUsersProvider(query).future);
+
+          expect(users.map((user) => user.id), ['u1']);
+          expect(client.usersListFilter.inFilterCalls, isEmpty);
+          final updatedAtCall = client.usersListFilter.gteCalls.singleWhere(
+            (entry) => entry.key == SupabaseConstants.colUpdatedAt,
+          );
+          expect(DateTime.tryParse(updatedAtCall.value as String), isNotNull);
+        },
+      );
     });
 
     group('result parsing', () {
