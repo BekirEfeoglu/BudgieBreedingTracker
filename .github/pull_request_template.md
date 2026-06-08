@@ -45,4 +45,4 @@
 - [ ] CI coverage upload değiştiyse token olmayan ortamda job bilinçli skip/no-op davranıyor
 - [ ] CI/workflow değiştiyse workflow YAML parse edildi ve push sonrası `python3 scripts/check_remote_status.py` ile exact commit doğrulandı
 - [ ] Release artifact davranışı değiştiyse `release-ready.yml`, `CLAUDE.md`, `.claude/rules/release-ops.md` birlikte güncellendi
-- [ ] Xcode Cloud/iOS workflow değiştiyse `ios/ci_scripts/ci_post_clone.sh` executable/retry-aware ve `.claude/rules/release-ops.md` güncel
+- [ ] Xcode Cloud/iOS workflow değiştiyse `ios/ci_scripts/ci_post_clone.sh` executable/retry-aware, Pods filelist fail-fast doğrulaması korunuyor ve `.claude/rules/release-ops.md` güncel

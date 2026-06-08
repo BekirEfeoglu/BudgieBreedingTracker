@@ -15,11 +15,15 @@ run_with_retries() {
 
   while [ "$attempt" -le "$max_attempts" ]; do
     echo "Running attempt $attempt/$max_attempts: $*"
-    if "$@"; then
+    set +e
+    "$@"
+    status="$?"
+    set -e
+
+    if [ "$status" -eq 0 ]; then
       return 0
     fi
 
-    status="$?"
     if [ "$attempt" -eq "$max_attempts" ]; then
       echo "Command failed after $attempt attempts with exit code $status: $*" >&2
       return "$status"
@@ -30,6 +34,13 @@ run_with_retries() {
     attempt=$((attempt + 1))
     delay_seconds=$((delay_seconds * 2))
   done
+}
+
+require_generated_file() {
+  if [ ! -f "$1" ]; then
+    echo "Required generated file is missing after dependency setup: $1" >&2
+    exit 1
+  fi
 }
 
 if [ -n "${CI_PRIMARY_REPOSITORY_PATH:-}" ]; then
@@ -67,5 +78,15 @@ cd ios
 # CocoaPods downloads transitive source archives such as sqlite3 from external
 # hosts. Xcode Cloud can fail a single attempt on transient DNS resolution.
 run_with_retries 4 15 pod install
+
+require_generated_file "Flutter/Generated.xcconfig"
+for configuration in Debug Release Profile; do
+  lowercase_configuration="$(printf '%s' "$configuration" | tr '[:upper:]' '[:lower:]')"
+  require_generated_file "Pods/Target Support Files/Pods-Runner/Pods-Runner.${lowercase_configuration}.xcconfig"
+  require_generated_file "Pods/Target Support Files/Pods-Runner/Pods-Runner-resources-${configuration}-input-files.xcfilelist"
+  require_generated_file "Pods/Target Support Files/Pods-Runner/Pods-Runner-resources-${configuration}-output-files.xcfilelist"
+  require_generated_file "Pods/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${configuration}-input-files.xcfilelist"
+  require_generated_file "Pods/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${configuration}-output-files.xcfilelist"
+done
 
 echo "Xcode Cloud Flutter iOS dependencies are ready."

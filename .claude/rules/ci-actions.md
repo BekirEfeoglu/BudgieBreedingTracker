@@ -70,5 +70,7 @@
 - Xcode Cloud main workflow build-only kalmali (`Build - iOS`, scheme `Runner`, `Any iOS Simulator`); archive/TestFlight/App Store export ancak Apple signing hesabi ve kayitli fiziksel cihaz/profil gereksinimleri hazir oldugunda acilmali
 - Flutter iOS build icin `ios/ci_scripts/ci_post_clone.sh` executable kalmali; clean clone'da `flutter pub get`, `dart run build_runner build` ve `pod install` generated Dart dosyalarini, `Generated.xcconfig`i ve Pods filelist'lerini uretir
 - Xcode Cloud post-clone script'indeki ag bagimli adimlar retry/backoff ile calismali; `sqlite3` gibi pod kaynak arsivleri dis host DNS/download hatalariyla tek denemede build'i dusurmemeli
+- Xcode Cloud post-clone retry helper'i gercek komut exit code'unu korumali; `pod install` gibi dependency hatalari yutulup Xcode build'e eksik Pods filelist'leriyle gecilmemeli
+- Xcode Cloud post-clone script'i `pod install` sonrasi `Generated.xcconfig`, `Pods-Runner.*.xcconfig` ve `Pods-Runner-*.xcfilelist` dosyalarini fail-fast dogrulamali
 
 > **Ilgili**: release-ops.md (deploy akisi), branch-workflow.md (branch protection), ai-workflow.md (kalite kapilari)

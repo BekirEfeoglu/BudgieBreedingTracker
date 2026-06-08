@@ -49,6 +49,8 @@
 - Xcode Cloud build hatalarinda once generated Dart dosyalari, `Generated.xcconfig` ve `Pods-Runner-*.xcfilelist` uretilmis mi kontrol et; bu dosyalari commit etme, post-clone script'i duzelt
 - Xcode Cloud archive/export hatalarinda `Development` veya `Ad Hoc` export gorulurse once Apple Developer hesabinda kayitli fiziksel cihaz ve provisioning profile gereksinimlerini dogrula
 - Xcode Cloud `pod install` hatalarinda ag/DNS kaynakli pod arsivi indirme sorunlarini ayir; transient indirme hatalari icin `ios/ci_scripts/ci_post_clone.sh` retry/backoff davranisini koru
+- Xcode Cloud `pod install` dependency/lock uyumsuzlugu hata verirse retry helper gercek exit code ile fail etmeli; basarisiz pod kurulumundan sonra "dependencies ready" yazip Xcode build'e gecmemeli
+- Xcode Cloud iOS dependency bump'larinda `pubspec.lock` ve `ios/Podfile.lock` birlikte senkron kalmali; temiz clone'da post-clone script'i Pods filelist dogrulamasindan gecmeli
 
 ## Release Verification Closure
 - Release/CI duzeltmesi ancak exact commit uzerinde GitHub status `success` ve check-run ozeti tamamen `completed:success` veya kabul edilen `completed:skipped` ise kapanmis sayilir

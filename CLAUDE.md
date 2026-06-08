@@ -122,6 +122,8 @@ Other workflow files: `release-ready.yml` (manual signed Android AAB), `release.
 
 Workflow changes must be validated locally before push: parse the edited YAML, quote or block-scalar `run:` commands containing `:`, and ensure each triggering event has at least one non-skipped job.
 
+Xcode Cloud is separate from GitHub Actions. Its Flutter iOS setup lives in `ios/ci_scripts/ci_post_clone.sh`; the script must remain executable, retry network-dependent setup, preserve real command exit codes, and fail fast if `Generated.xcconfig` or `Pods-Runner-*.xcfilelist` files are not generated.
+
 ### Codemagic (`codemagic.yaml`) — production releases
 - `android-release`: AAB → Google Play (alpha track)
 - `ios-release`: IPA → App Store TestFlight (App ID: 6759828211)
