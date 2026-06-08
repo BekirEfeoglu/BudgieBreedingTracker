@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Quality gates** (run before every commit): `.claude/rules/ai-workflow.md`
 - **New entity/feature steps**: `.claude/rules/new-feature-checklist.md`
 - **24 anti-patterns** (must avoid): see § Critical Anti-Patterns below
-- **Branch policy**: PRs target `develop`, not `main` (see `.claude/rules/branch-workflow.md`)
+- **Branch policy**: permanent remote branch is `main`; short-lived branches target `main` (see `.claude/rules/branch-workflow.md`)
 
 ## Project
 Comprehensive Flutter breeding tracker app for budgie breeders.
@@ -49,7 +49,7 @@ dart fix --apply
 ### Quality Scripts
 ```bash
 python3 scripts/check_l10n_sync.py       # Verify tr/en/de translation keys are in sync
-python3 scripts/verify_code_quality.py    # Anti-pattern scan (28 checkers, 19/24 CLAUDE.md patterns + 9 extra)
+python3 scripts/verify_code_quality.py    # Anti-pattern scan (27 checkers, 19/24 CLAUDE.md patterns + 9 extra documented scanners)
 python3 scripts/verify_rules.py          # Validate CLAUDE.md stats against codebase (single source of truth)
 python3 scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats + rule inline references
 ```
@@ -192,8 +192,8 @@ Comprehensive rules in `.claude/rules/` (auto-loaded):
 | `test-stability.md` | Pump strategy, 18 anti-patterns, async patterns, resource cleanup |
 | `error-handling.md` | Error hierarchy, Sentry, retry/backoff, user-facing messages, logging |
 | `new-feature-checklist.md` | Full-stack entity addition, non-entity features, shared widgets |
-| `git-rules.md` | Conventional commits, branch naming, PR workflow (develop-first) |
-| `branch-workflow.md` | develop/main branch strategy, merge policy, hotfix exception |
+| `git-rules.md` | Conventional commits, branch naming, PR workflow (main-first) |
+| `branch-workflow.md` | main-only branch strategy, merge policy, hotfix exception |
 | `ai-workflow.md` | Quality gates (canonical), task approach, prohibited actions, investigation |
 | `chat.md` | Response language (Turkish), debugging approach, code review feedback |
 | `ci-actions.md` | GitHub Actions design, Dependabot, billing failures, deployment safety |

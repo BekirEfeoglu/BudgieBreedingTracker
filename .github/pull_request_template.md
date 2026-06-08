@@ -37,8 +37,10 @@
 - [ ] `flutter analyze --no-fatal-infos` hatasız geçiyor
 - [ ] `python3 scripts/verify_code_quality.py` hatasız geçiyor
 - [ ] Testler yazıldı / güncellendi ve ilgili `flutter test ...` komutu geçti
+- [ ] Yeni/kalıcı `skip:`, `@Skip` veya tag-based test exclusion yok; varsa issue/reason/alternatif coverage yazıldı
 - [ ] Edge Function değiştiyse `deno test --allow-env --allow-net supabase/functions` geçti
 - [ ] Freezed/Drift/JSON/Riverpod değiştiyse `dart run build_runner build --delete-conflicting-outputs` çalıştırıldı
+- [ ] Dependency bump varsa `pubspec.lock`; iOS plugin/pod etkisi varsa `ios/Podfile.lock` senkron ve `pod install` geçti
 - [ ] Lokalizasyon değiştiyse `python3 scripts/check_l10n_sync.py` geçti
 - [ ] Kural/metrik değiştiyse `python3 scripts/verify_rules.py --strict` geçti
 - [ ] CI/workflow değiştiyse `.claude/rules/ci-actions.md` ve `.github/pull_request_template.md` güncellendi

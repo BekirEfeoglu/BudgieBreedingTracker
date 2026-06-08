@@ -29,6 +29,13 @@
 - Gecici dallar merge sonrasi silinir
 - Dependabot dallari incelenmedikce kalici tutulmaz; stale branch cleanup `main` disindakileri temizleyebilir
 
+## Remote Branch Cleanup Safety
+- `main` haric branch temizligi istendiginde once `git ls-remote --heads origin` ile silinecek dallari listele; `main`, protected/default branch veya aktif PR head'i silinmez
+- Silme komutlarini branch bazinda explicit calistir: `git push origin --delete <branch>`; wildcard/refspec ile toplu silme kullanma
+- Temizlikten sonra `git fetch --prune origin`, `git branch -r` ve tekrar `git ls-remote --heads origin` ile remote-tracking ve remote listeyi dogrula
+- Branch temizligi main push ile birlikte istendiyse once push edilen exact commit check-run'lari temiz olmali; sonra branch temizligi dogrulanmali
+- Final handoff'ta kalan remote branch listesini ve silinen branch adlarini yaz
+
 ## Hotfix Exception
 - Kritik production hatalarinda hotfix dogrudan `main` uzerinden alinabilir
 - Minimum degisiklik yap, testleri calistir

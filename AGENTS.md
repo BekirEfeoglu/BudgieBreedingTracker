@@ -22,6 +22,7 @@ Stack: Flutter/Dart, Riverpod 3, GoRouter 17, Drift, Supabase, Freezed, easy_loc
 - If the user asks for a clean working tree and unrelated pre-existing/user changes remain, preserve them with a descriptive stash or separate branch and report the exact ref. Never drop or reset those changes silently.
 - Keep each change focused on the requested behavior. Do not mix cleanup, rule updates, generated files, and feature logic unless the rulebook explicitly requires them together.
 - Before claiming a fix, run the smallest command that proves the changed behavior and read the output.
+- Do not treat skipped tests as success evidence unless the skip is intentional, documented with reason/issue, and reported in the handoff.
 - After pushing to `main`, verify the exact pushed commit with `python3 scripts/check_remote_status.py`; stale runs from previous commits do not count.
 - Treat Xcode Cloud separately from GitHub Actions: verify the App Store Connect status context and the matching check-run URL for the current commit.
 - If a CI failure requires UI-side workflow changes, document the intended workflow state in `CLAUDE.md` and `.claude/rules/*.md` in the same change.
@@ -123,6 +124,7 @@ Stack: Flutter/Dart, Riverpod 3, GoRouter 17, Drift, Supabase, Freezed, easy_loc
 
 - Tests should mirror the production path under `test/`.
 - Add or update tests for changed behavior, especially providers, repositories, services, route guards, and forms.
+- Audit and explain any `skip:`, `@Skip`, or tag-based test exclusion introduced or left behind by the task.
 - For breeding/egg changes, cover lifecycle transitions, rollback/error paths, duplicate submit guards, side-effect warnings, and notification cleanup.
 - Use `scripts/run_breeding_egg_regression.sh` for targeted breeding/egg regression before broad `flutter test` runs.
 - Use existing helpers from `test/helpers/` before adding new test infrastructure.

@@ -162,6 +162,6 @@ Test ara sıra başarısız oluyorsa:
 6. **Animation infinite?** `CircularProgressIndicator` ile `pumpAndSettle` → timeout
 7. **Platform-specific?** Test tag `@TestOn('linux')` ile pin'le veya path'i refactor
 
-Çözülemiyorsa: test'i `skip: 'flaky — see issue #X'` ile işaretle ve issue aç. **Asla silme** — sebep bulunmadan flaky test'i silmek production bug'ı saklar.
+Çözülemiyorsa: test'i en fazla geçici olarak `skip: 'flaky - see issue #X'` ile işaretle, issue aç, owner belirt ve handoff'ta kalan skip'i yaz. **Asla silme** — sebep bulunmadan flaky test'i silmek production bug'ı saklar. Skipped test merge öncesi yeniden değerlendirilmeli; aynı davranışı koruyan alternatif test yoksa skip kabul edilmez.
 
 > **Related**: testing.md (test patterns, mocking), providers.md (provider test setup), code-review.md (review checklist)

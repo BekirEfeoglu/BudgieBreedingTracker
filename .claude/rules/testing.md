@@ -89,6 +89,13 @@ test('handles loading and error states', () async {
 - Excluded from CI with `--exclude-tags golden`
 - Update baselines: `flutter test --update-goldens test/golden/`
 
+## Skipped Test Policy
+- Skips are temporary exceptions, not a way to keep CI green. Prefer fixing the test or the product bug in the same change.
+- Any `skip:`, `@Skip`, or tag-based exclusion must include a specific reason, owner/issue link when available, and the command that still covers the behavior.
+- Before handoff for test-related work, audit skips with `rg -n "skip\s*:|@Skip" test` and report remaining intentional skips.
+- A skipped regression, provider, repository, route guard, breeding/egg lifecycle, Edge Function, or security test blocks merge unless the linked issue and replacement coverage are explicit.
+- If the user asks to fix skipped tests, enumerate every skipped test first, then either unskip and fix it or document why it remains intentionally skipped.
+
 ## Coverage
 - CI uploads to Codecov (excludes golden & e2e)
 - Focus coverage on business logic (services, repositories, providers)

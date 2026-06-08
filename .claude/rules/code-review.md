@@ -10,9 +10,10 @@ Tümü local'de geçmeli (CI tekrar koşar):
 flutter analyze --no-fatal-infos
 python3 scripts/verify_code_quality.py
 python3 scripts/check_l10n_sync.py
-python3 scripts/verify_rules.py --fix
+python3 scripts/verify_rules.py --strict
 flutter test
 ```
+Stats veya inline rule referans drift'i varsa önce `python3 scripts/verify_rules.py --fix`, sonra `--strict` çalıştır.
 Detaylı liste: ai-workflow.md § Quality Gates (canonical).
 
 ### Diff Sanity
@@ -71,6 +72,7 @@ Tam liste: CLAUDE.md § Critical Anti-Patterns
 
 ### 5. Test
 - [ ] Yeni davranış için test eklendi/güncellendi
+- [ ] `skip:`, `@Skip` veya tag-based exclusion eklenmediyse doğrulandı; eklendiyse issue/reason/alternatif coverage açık
 - [ ] Provider test'lerinde `addTearDown(container.dispose)`
 - [ ] Mock setup'lar gerçekçi (overly-permissive `any()` kötüye kullanım yok)
 - [ ] `pumpAndSettle()` infinite animation üzerinde değil (timeout riski)

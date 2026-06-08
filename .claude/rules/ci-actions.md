@@ -35,6 +35,9 @@
 - Workflow'lari triage/summary odakli tut; destructive action kullanma
 - PR metadata icin `dependabot/fetch-metadata` kullan
 - Dependabot disi eventlerde workflow'un kirmiziya dusmemesi icin no-op guard job bulundur
+- Dependency bump main'e alinmadan once `flutter pub get` lockfile'i degistiriyor mu kontrol et; CI'da `flutter pub get` yeni lock uretiyorsa `pubspec.lock` committe eksiktir.
+- Flutter plugin iOS pod dependency'si degisirse `ios/Podfile.lock` da senkronlanmali; `pod install` snapshot uyumsuzlugu verirse ilgili pod icin `pod update <PodName>` kullan ve sonucu commit et.
+- Dependabot minor/patch bump'lari bile transitive Flutter SDK pinleriyle uyumsuz olabilir; `pubspec.lock`, `ios/Podfile.lock`, local analyze/test ve Xcode Cloud post-clone simülasyonu birlikte kanit sayilir.
 
 ## Billing / Runner Failures
 - Tum job'lar 0-5 saniyede dusuyorsa: Actions account durumunu kontrol et
@@ -59,6 +62,7 @@
   python3 scripts/check_remote_status.py
   ```
 - Basari saymak icin status state `success`, tum check-run'lar `completed` olmali; yalnizca bilinen/intentional skipped job kabul edilir
+- Main-only deploy veya Xcode Cloud gibi gec gelen check-run'lar sonradan baslayabilir; ilk `success` durumundan sonra script hala unfinished check gosteriyorsa kapanis yapma, poll etmeye devam et
 - `in_progress`, `queued`, `failure`, `error`, `action_required` veya conclusion'siz check varken "temiz" ya da "cozuldu" deme
 - Workflow UI degisikligi yapildiysa once yeni commit veya clean rebuild ile yeni run baslat; eski run sonucunu yeni ayarin kaniti sayma
 

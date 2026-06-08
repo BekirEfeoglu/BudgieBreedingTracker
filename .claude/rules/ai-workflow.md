@@ -8,6 +8,8 @@ flutter test                               # All tests pass
 ```
 Run before every commit when the changed surface is broad. CI enforces analysis, tests, golden tests, script tests, l10n sync, code quality, rules sync, and platform build gates on `main` PRs/pushes.
 
+Rule/docs/CI changes are not "just docs": run `scripts/run_local_quality_gate.sh` before commit/push, then use the smallest extra command that proves the changed contract. If a rule update changes codebase metrics or inline references, run `python3 scripts/verify_rules.py --fix` first, then `python3 scripts/verify_rules.py --strict`.
+
 ## Code Generation
 Run after modifying Freezed models, Drift tables, or Riverpod providers:
 ```bash
@@ -57,7 +59,7 @@ If generation gets stuck: `dart run build_runner clean` first.
 - Never import across feature modules
 
 ## Anti-Pattern Enforcement
-- `verify_code_quality.py` scans with 24 checkers (18 from CLAUDE.md + 6 extra)
+- `verify_code_quality.py` scans with 27 checkers (19/24 CLAUDE.md patterns plus 9 documented extra scanners; some scanners overlap)
 - CI `code-quality` job blocks PRs with violations
 - Full list: CLAUDE.md § "Critical Anti-Patterns (24 rules)"
 
