@@ -52,6 +52,7 @@ class _FakeFilterBuilder extends Fake
 class _FakeUpdateFilterBuilder extends Fake
     implements PostgrestFilterBuilder<dynamic> {
   Object? error;
+  final values = <Object>[];
   final eqCalls = <MapEntry<String, Object>>[];
 
   @override
@@ -76,6 +77,8 @@ class _FakeUpdateFilterBuilder extends Fake
 class _FakeUpsertFilterBuilder extends Fake
     implements PostgrestFilterBuilder<dynamic> {
   Object? error;
+  final values = <Object>[];
+  String? onConflictValue;
 
   @override
   Future<S> then<S>(
@@ -133,6 +136,7 @@ class _FakeQueryBuilder extends Fake implements SupabaseQueryBuilder {
     Object values, {
     bool defaultToNull = true,
   }) {
+    updateBuilder.values.add(values);
     return updateBuilder;
   }
 
@@ -143,6 +147,8 @@ class _FakeQueryBuilder extends Fake implements SupabaseQueryBuilder {
     bool ignoreDuplicates = false,
     bool defaultToNull = true,
   }) {
+    upsertBuilder.values.add(values);
+    upsertBuilder.onConflictValue = onConflict;
     return upsertBuilder;
   }
 
@@ -246,6 +252,7 @@ _FakeUserManagerClient _clientWithTargetRole({
   String? targetRole,
   _FakeUpdateFilterBuilder? updateBuilder,
   _FakeUpsertFilterBuilder? upsertBuilder,
+  SupabaseQueryBuilder? subscriptionsBuilder,
 }) {
   // The requireAdmin call reads role, then _fetchTargetUserRole reads role
   // again from the same profiles table. We use a single filter builder that
@@ -269,7 +276,10 @@ _FakeUserManagerClient _clientWithTargetRole({
     upsertBuilder: upsertBuilder,
   );
 
-  return _FakeUserManagerClient(profilesBuilder: profilesBuilder);
+  return _FakeUserManagerClient(
+    profilesBuilder: profilesBuilder,
+    subscriptionsBuilder: subscriptionsBuilder,
+  );
 }
 
 /// A filter builder that returns sequential maybeSingle results.
@@ -320,6 +330,7 @@ class _FakeQueryBuilderSequential extends Fake implements SupabaseQueryBuilder {
     Object values, {
     bool defaultToNull = true,
   }) {
+    updateBuilder.values.add(values);
     return updateBuilder;
   }
 
@@ -330,6 +341,8 @@ class _FakeQueryBuilderSequential extends Fake implements SupabaseQueryBuilder {
     bool ignoreDuplicates = false,
     bool defaultToNull = true,
   }) {
+    upsertBuilder.values.add(values);
+    upsertBuilder.onConflictValue = onConflict;
     return upsertBuilder;
   }
 
@@ -558,6 +571,53 @@ void main() {
       );
     });
 
+    test(
+      'clears expiry fields and marks subscription as manual grant',
+      () async {
+        final profileUpdateBuilder = _FakeUpdateFilterBuilder();
+        final subscriptionUpsertBuilder = _FakeUpsertFilterBuilder();
+        final subscriptionBuilder = _FakeQueryBuilder(
+          _FakeUserManagerClient._dummyFilter(),
+          upsertBuilder: subscriptionUpsertBuilder,
+        );
+        final client = _clientWithTargetRole(
+          adminRole: 'admin',
+          targetRole: 'user',
+          updateBuilder: profileUpdateBuilder,
+          subscriptionsBuilder: subscriptionBuilder,
+        );
+        final updates = <_StateUpdate>[];
+        final container = _makeContainer(userId: 'admin-1', client: client);
+        addTearDown(container.dispose);
+
+        final result = await _makeManager(
+          container,
+          updates,
+        ).grantPremium('target-user');
+
+        expect(result, AdminUserOperationResult.success);
+        final profilePayload = profileUpdateBuilder.values.single as Map;
+        expect(profilePayload['is_premium'], true);
+        expect(profilePayload['subscription_status'], 'premium');
+        expect(profilePayload, containsPair('premium_expires_at', null));
+        expect(profilePayload, containsPair('grace_period_until', null));
+
+        final subscriptionPayload =
+            subscriptionUpsertBuilder.values.single as Map;
+        expect(subscriptionUpsertBuilder.onConflictValue, 'user_id');
+        expect(subscriptionPayload['user_id'], 'target-user');
+        expect(subscriptionPayload['plan'], 'premium');
+        expect(subscriptionPayload['status'], 'active');
+        expect(subscriptionPayload['provider'], 'manual');
+        expect(subscriptionPayload, containsPair('current_period_end', null));
+        expect(subscriptionPayload['cancel_at_period_end'], false);
+        final currentPeriodStart =
+            subscriptionPayload['current_period_start'] as String?;
+        expect(currentPeriodStart, isNotNull);
+        expect(DateTime.tryParse(currentPeriodStart!), isNotNull);
+      },
+    );
+
     test('returns protected when target is founder', () async {
       final client = _clientWithTargetRole(
         adminRole: 'admin',
@@ -631,12 +691,17 @@ void main() {
       expect(updates.first.error, isNull);
     });
 
-    test('continues when subscription upsert fails (non-fatal)', () async {
+    test('returns failed when subscription upsert fails', () async {
+      final subscriptionUpsertBuilder = _FakeUpsertFilterBuilder()
+        ..error = Exception('upsert failed');
+      final subscriptionBuilder = _FakeQueryBuilder(
+        _FakeUserManagerClient._dummyFilter(),
+        upsertBuilder: subscriptionUpsertBuilder,
+      );
       final client = _clientWithTargetRole(
         adminRole: 'admin',
         targetRole: 'user',
-        upsertBuilder: _FakeUpsertFilterBuilder()
-          ..error = Exception('upsert failed'),
+        subscriptionsBuilder: subscriptionBuilder,
       );
       final updates = <_StateUpdate>[];
       final container = _makeContainer(userId: 'admin-1', client: client);
@@ -647,9 +712,8 @@ void main() {
         updates,
       ).grantPremium('target-user');
 
-      // Should still succeed — subscription record is non-fatal
-      expect(result, AdminUserOperationResult.success);
-      expect(updates.last.isSuccess, isTrue);
+      expect(result, AdminUserOperationResult.failed);
+      expect(updates.last.error, contains('admin.action_error'));
     });
   });
 
@@ -674,6 +738,30 @@ void main() {
         updates.last.successMessage,
         contains('admin.premium_revoked_success'),
       );
+    });
+
+    test('clears expiry and grace period fields on revoke', () async {
+      final profileUpdateBuilder = _FakeUpdateFilterBuilder();
+      final client = _clientWithTargetRole(
+        adminRole: 'admin',
+        targetRole: 'user',
+        updateBuilder: profileUpdateBuilder,
+      );
+      final updates = <_StateUpdate>[];
+      final container = _makeContainer(userId: 'admin-1', client: client);
+      addTearDown(container.dispose);
+
+      final result = await _makeManager(
+        container,
+        updates,
+      ).revokePremium('target-user');
+
+      expect(result, AdminUserOperationResult.success);
+      final profilePayload = profileUpdateBuilder.values.single as Map;
+      expect(profilePayload['is_premium'], false);
+      expect(profilePayload['subscription_status'], 'free');
+      expect(profilePayload, containsPair('premium_expires_at', null));
+      expect(profilePayload, containsPair('grace_period_until', null));
     });
 
     test('returns protected when target is founder', () async {
@@ -749,6 +837,31 @@ void main() {
       expect(updates.length, greaterThanOrEqualTo(2));
       expect(updates.first.isLoading, isTrue);
       expect(updates.last.isLoading, isFalse);
+    });
+
+    test('returns failed when subscription status update fails', () async {
+      final subscriptionUpdateBuilder = _FakeUpdateFilterBuilder()
+        ..error = Exception('subscription update failed');
+      final subscriptionBuilder = _FakeQueryBuilder(
+        _FakeUserManagerClient._dummyFilter(),
+        updateBuilder: subscriptionUpdateBuilder,
+      );
+      final client = _clientWithTargetRole(
+        adminRole: 'admin',
+        targetRole: 'user',
+        subscriptionsBuilder: subscriptionBuilder,
+      );
+      final updates = <_StateUpdate>[];
+      final container = _makeContainer(userId: 'admin-1', client: client);
+      addTearDown(container.dispose);
+
+      final result = await _makeManager(
+        container,
+        updates,
+      ).revokePremium('target-user');
+
+      expect(result, AdminUserOperationResult.failed);
+      expect(updates.last.error, contains('admin.action_error'));
     });
   });
 

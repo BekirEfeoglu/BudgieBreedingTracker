@@ -16,6 +16,9 @@ abstract final class AdminConstants {
   static const String statusRevoked = 'canceled';
   static const String statusFree = 'free';
 
+  // Subscription provider values
+  static const String providerManual = 'manual';
+
   // Pagination
   static const int usersPageSize = 50;
   static const int auditLogsPageSize = 100;

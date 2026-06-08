@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
@@ -87,35 +86,25 @@ class AdminUserManager {
       final role = await _fetchTargetUserRole(client, targetUserId);
       if (_isProtectedRole(role)) throw ProtectedRoleError(role!);
 
+      await _upsertSubscription(client, targetUserId, {
+        'plan': AdminConstants.planPremium,
+        'status': AdminConstants.statusActive,
+        'provider': AdminConstants.providerManual,
+        'current_period_start': now,
+        'current_period_end': null,
+        'cancel_at_period_end': false,
+        'updated_at': now,
+      });
+
       await client
           .from(SupabaseConstants.profilesTable)
           .update({
             'is_premium': true,
             'subscription_status': AdminConstants.planPremium,
+            'premium_expires_at': null,
+            'grace_period_until': null,
           })
           .eq('id', targetUserId);
-
-      // Supplementary record — non-fatal: profile is the source of truth
-      try {
-        await _upsertSubscription(client, targetUserId, {
-          'plan': AdminConstants.planPremium,
-          'status': AdminConstants.statusActive,
-          'updated_at': now,
-        });
-      } catch (e, st) {
-        AppLogger.warning(
-          'AdminUserManager.grantPremium: subscription record failed (non-fatal): $e\n$st',
-        );
-        Sentry.addBreadcrumb(
-          Breadcrumb(
-            message:
-                'subscription upsert failed for ${AppLogger.obfuscate(targetUserId)}',
-            category: 'admin.premium',
-            level: SentryLevel.warning,
-            data: {'error': e.toString()},
-          ),
-        );
-      }
 
       await logAdminAction(
         client,
@@ -172,33 +161,23 @@ class AdminUserManager {
           .update({
             'is_premium': false,
             'subscription_status': AdminConstants.planFree,
+            'premium_expires_at': null,
+            'grace_period_until': null,
           })
           .eq('id', targetUserId);
 
-      // Soft-revoke subscription record — non-fatal: profile is the source of truth.
+      // Soft-revoke subscription record while preserving subscription history.
       // Uses statusRevoked = 'canceled', a valid CHECK constraint value.
-      try {
-        await client
-            .from(SupabaseConstants.userSubscriptionsTable)
-            .update({
-              'status': AdminConstants.statusRevoked,
-              'updated_at': DateTime.now().toUtc().toIso8601String(),
-            })
-            .eq('user_id', targetUserId);
-      } catch (e, st) {
-        AppLogger.warning(
-          'AdminUserManager.revokePremium: subscription record failed (non-fatal): $e\n$st',
-        );
-        Sentry.addBreadcrumb(
-          Breadcrumb(
-            message:
-                'subscription update failed for ${AppLogger.obfuscate(targetUserId)}',
-            category: 'admin.premium',
-            level: SentryLevel.warning,
-            data: {'error': e.toString()},
-          ),
-        );
-      }
+      final now = DateTime.now().toUtc().toIso8601String();
+      await client
+          .from(SupabaseConstants.userSubscriptionsTable)
+          .update({
+            'status': AdminConstants.statusRevoked,
+            'current_period_end': now,
+            'cancel_at_period_end': false,
+            'updated_at': now,
+          })
+          .eq('user_id', targetUserId);
 
       await logAdminAction(
         client,
