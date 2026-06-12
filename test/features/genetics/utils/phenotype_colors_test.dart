@@ -17,10 +17,7 @@ void main() {
     });
 
     test('ino alone = Lutino color', () {
-      expect(
-        phenotypeColorFromMutations(['ino']),
-        AppColors.phenotypeLutino,
-      );
+      expect(phenotypeColorFromMutations(['ino']), AppColors.phenotypeLutino);
     });
 
     test('ino + cinnamon = Lacewing color', () {
@@ -60,10 +57,7 @@ void main() {
 
     // Grey compound
     test('grey alone = Grey color', () {
-      expect(
-        phenotypeColorFromMutations(['grey']),
-        AppColors.phenotypeGrey,
-      );
+      expect(phenotypeColorFromMutations(['grey']), AppColors.phenotypeGrey);
     });
 
     test('grey + blue = Grey color', () {
@@ -75,10 +69,7 @@ void main() {
 
     // Individual mutations
     test('blue returns blue color', () {
-      expect(
-        phenotypeColorFromMutations(['blue']),
-        AppColors.budgieBlue,
-      );
+      expect(phenotypeColorFromMutations(['blue']), AppColors.budgieBlue);
     });
 
     test('opaline returns opaline color', () {
@@ -131,10 +122,7 @@ void main() {
     });
 
     test('slate returns slate color', () {
-      expect(
-        phenotypeColorFromMutations(['slate']),
-        AppColors.phenotypeSlate,
-      );
+      expect(phenotypeColorFromMutations(['slate']), AppColors.phenotypeSlate);
     });
 
     test('crested_tufted returns crested color', () {
@@ -194,15 +182,9 @@ void main() {
 
     test('detects carrier keyword', () {
       // "green" matches before "carrier" in priority order
-      expect(
-        phenotypeColor('Light Green (carrier)'),
-        AppColors.budgieGreen,
-      );
+      expect(phenotypeColor('Light Green (carrier)'), AppColors.budgieGreen);
       // Pure "carrier" string
-      expect(
-        phenotypeColor('carrier'),
-        AppColors.neutral400,
-      );
+      expect(phenotypeColor('carrier'), AppColors.neutral400);
     });
 
     test('detects Normal keyword', () {
@@ -229,7 +211,11 @@ void main() {
 
     test('all values are non-null colors', () {
       for (final entry in mutationIdColorMap.entries) {
-        expect(entry.value, isNotNull, reason: '${entry.key} should have a color');
+        expect(
+          entry.value,
+          isNotNull,
+          reason: '${entry.key} should have a color',
+        );
       }
     });
   });

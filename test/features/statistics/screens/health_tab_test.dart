@@ -23,8 +23,9 @@ Widget _createSubject() {
   // .watchCountsByTypeInRange`. Without DAO overrides those StreamProviders
   // stay loading forever and pumpAndSettle times out.
   final chicksDao = _MockChicksDao();
-  when(() => chicksDao.watchMonthlyHatched(any()))
-      .thenAnswer((_) => Stream.value(<String, int>{}));
+  when(
+    () => chicksDao.watchMonthlyHatched(any()),
+  ).thenAnswer((_) => Stream.value(<String, int>{}));
   final healthDao = _MockHealthRecordsDao();
   when(
     () => healthDao.watchCountsByTypeInRange(

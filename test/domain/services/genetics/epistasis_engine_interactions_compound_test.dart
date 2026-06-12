@@ -258,10 +258,7 @@ void main() {
     });
 
     test('not detected when blue is present (yf1)', () {
-      final interactions = engine.getInteractions({
-        'yellowface_type1',
-        'blue',
-      });
+      final interactions = engine.getInteractions({'yellowface_type1', 'blue'});
 
       expect(
         interactions.any((i) => i.resultName == 'Yellowface (masked)'),
@@ -270,10 +267,7 @@ void main() {
     });
 
     test('not detected when blue is present (yf2)', () {
-      final interactions = engine.getInteractions({
-        'yellowface_type2',
-        'blue',
-      });
+      final interactions = engine.getInteractions({'yellowface_type2', 'blue'});
 
       expect(
         interactions.any((i) => i.resultName == 'Yellowface (masked)'),
@@ -282,10 +276,7 @@ void main() {
     });
 
     test('not detected when aqua is present (aqua counts as blue series)', () {
-      final interactions = engine.getInteractions({
-        'yellowface_type1',
-        'aqua',
-      });
+      final interactions = engine.getInteractions({'yellowface_type1', 'aqua'});
 
       expect(
         interactions.any((i) => i.resultName == 'Yellowface (masked)'),
@@ -353,9 +344,7 @@ void main() {
       test('detected for ino + aqua without cinnamon', () {
         final interactions = engine.getInteractions({'ino', 'aqua'});
 
-        final aquaIno = interactions.where(
-          (i) => i.resultName == 'Aqua Ino',
-        );
+        final aquaIno = interactions.where((i) => i.resultName == 'Aqua Ino');
         expect(aquaIno, hasLength(1));
         expect(aquaIno.first.mutationIds, containsAll(['aqua', 'ino']));
       });
@@ -367,19 +356,13 @@ void main() {
           'cinnamon',
         });
 
-        expect(
-          interactions.any((i) => i.resultName == 'Aqua Ino'),
-          isFalse,
-        );
+        expect(interactions.any((i) => i.resultName == 'Aqua Ino'), isFalse);
       });
 
       test('not detected without ino', () {
         final interactions = engine.getInteractions({'aqua'});
 
-        expect(
-          interactions.any((i) => i.resultName == 'Aqua Ino'),
-          isFalse,
-        );
+        expect(interactions.any((i) => i.resultName == 'Aqua Ino'), isFalse);
       });
     });
 
@@ -425,19 +408,13 @@ void main() {
           'turquoise',
         });
 
-        expect(
-          interactions.any((i) => i.resultName == 'Aqua Ino'),
-          isTrue,
-        );
+        expect(interactions.any((i) => i.resultName == 'Aqua Ino'), isTrue);
       });
 
       test('no parblue ino when neither aqua nor turquoise present', () {
         final interactions = engine.getInteractions({'ino', 'blue'});
 
-        expect(
-          interactions.any((i) => i.resultName == 'Aqua Ino'),
-          isFalse,
-        );
+        expect(interactions.any((i) => i.resultName == 'Aqua Ino'), isFalse);
         expect(
           interactions.any((i) => i.resultName == 'Turquoise Ino'),
           isFalse,
@@ -460,9 +437,7 @@ void main() {
       test('detected for pearly + opaline', () {
         final interactions = engine.getInteractions({'pearly', 'opaline'});
 
-        final op = interactions.where(
-          (i) => i.resultName == 'Opaline Pearly',
-        );
+        final op = interactions.where((i) => i.resultName == 'Opaline Pearly');
         expect(op, hasLength(1));
         expect(op.first.mutationIds, containsAll(['pearly', 'opaline']));
       });
@@ -499,9 +474,7 @@ void main() {
       test('detected for pearly + cinnamon', () {
         final interactions = engine.getInteractions({'pearly', 'cinnamon'});
 
-        final cp = interactions.where(
-          (i) => i.resultName == 'Cinnamon Pearly',
-        );
+        final cp = interactions.where((i) => i.resultName == 'Cinnamon Pearly');
         expect(cp, hasLength(1));
         expect(cp.first.mutationIds, containsAll(['pearly', 'cinnamon']));
       });
@@ -580,9 +553,7 @@ void main() {
         'crested_half_circular',
       });
 
-      final cc = interactions.where(
-        (i) => i.resultName == 'Crested Compound',
-      );
+      final cc = interactions.where((i) => i.resultName == 'Crested Compound');
       expect(cc, hasLength(1));
       expect(
         cc.first.mutationIds,
@@ -596,9 +567,7 @@ void main() {
         'crested_full_circular',
       });
 
-      final cc = interactions.where(
-        (i) => i.resultName == 'Crested Compound',
-      );
+      final cc = interactions.where((i) => i.resultName == 'Crested Compound');
       expect(cc, hasLength(1));
       expect(
         cc.first.mutationIds,
@@ -612,9 +581,7 @@ void main() {
         'crested_full_circular',
       });
 
-      final cc = interactions.where(
-        (i) => i.resultName == 'Crested Compound',
-      );
+      final cc = interactions.where((i) => i.resultName == 'Crested Compound');
       expect(cc, hasLength(1));
       expect(
         cc.first.mutationIds,
@@ -629,9 +596,7 @@ void main() {
         'crested_full_circular',
       });
 
-      final cc = interactions.where(
-        (i) => i.resultName == 'Crested Compound',
-      );
+      final cc = interactions.where((i) => i.resultName == 'Crested Compound');
       expect(cc, hasLength(1));
       expect(cc.first.mutationIds, hasLength(3));
       expect(
@@ -712,10 +677,7 @@ void main() {
         interactions.any((i) => i.resultName == 'Melanistic Spangle'),
         isTrue,
       );
-      expect(
-        interactions.any((i) => i.resultName == 'Opaline Pearly'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Opaline Pearly'), isTrue);
     });
 
     test('crested compound + yellowface masked coexist', () {
@@ -743,14 +705,8 @@ void main() {
         'opaline',
       });
 
-      expect(
-        interactions.any((i) => i.resultName == 'Aqua Ino'),
-        isTrue,
-      );
-      expect(
-        interactions.any((i) => i.resultName == 'Opaline Pearly'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Aqua Ino'), isTrue);
+      expect(interactions.any((i) => i.resultName == 'Opaline Pearly'), isTrue);
     });
   });
 
@@ -759,17 +715,19 @@ void main() {
       final interactions = engine.getInteractions({});
 
       expect(
-        interactions.any((i) =>
-            i.resultName == 'Dark-Eyed Clear' ||
-            i.resultName == 'Double Dominant Pied' ||
-            i.resultName == 'Dutch Clearflight Pied' ||
-            i.resultName == 'Melanistic Spangle' ||
-            i.resultName == 'Yellowface (masked)' ||
-            i.resultName == 'Aqua Ino' ||
-            i.resultName == 'Turquoise Ino' ||
-            i.resultName == 'Opaline Pearly' ||
-            i.resultName == 'Cinnamon Pearly' ||
-            i.resultName == 'Crested Compound'),
+        interactions.any(
+          (i) =>
+              i.resultName == 'Dark-Eyed Clear' ||
+              i.resultName == 'Double Dominant Pied' ||
+              i.resultName == 'Dutch Clearflight Pied' ||
+              i.resultName == 'Melanistic Spangle' ||
+              i.resultName == 'Yellowface (masked)' ||
+              i.resultName == 'Aqua Ino' ||
+              i.resultName == 'Turquoise Ino' ||
+              i.resultName == 'Opaline Pearly' ||
+              i.resultName == 'Cinnamon Pearly' ||
+              i.resultName == 'Crested Compound',
+        ),
         isFalse,
       );
     });
@@ -778,14 +736,16 @@ void main() {
       final interactions = engine.getInteractions({'blue', 'dark_factor'});
 
       expect(
-        interactions.any((i) =>
-            i.resultName == 'Dark-Eyed Clear' ||
-            i.resultName == 'Double Dominant Pied' ||
-            i.resultName == 'Melanistic Spangle' ||
-            i.resultName == 'Yellowface (masked)' ||
-            i.resultName == 'Opaline Pearly' ||
-            i.resultName == 'Cinnamon Pearly' ||
-            i.resultName == 'Crested Compound'),
+        interactions.any(
+          (i) =>
+              i.resultName == 'Dark-Eyed Clear' ||
+              i.resultName == 'Double Dominant Pied' ||
+              i.resultName == 'Melanistic Spangle' ||
+              i.resultName == 'Yellowface (masked)' ||
+              i.resultName == 'Opaline Pearly' ||
+              i.resultName == 'Cinnamon Pearly' ||
+              i.resultName == 'Crested Compound',
+        ),
         isFalse,
       );
     });

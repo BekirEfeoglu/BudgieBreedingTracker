@@ -161,10 +161,8 @@ void main() {
       await container.read(blockedUsersProvider.notifier).block('blocked-1');
 
       verify(
-        () => repository.blockUser(
-          userId: 'user-1',
-          blockedUserId: 'blocked-1',
-        ),
+        () =>
+            repository.blockUser(userId: 'user-1', blockedUserId: 'blocked-1'),
       ).called(1);
     });
 
@@ -206,10 +204,8 @@ void main() {
 
     test('rolls back local state when server push fails', () async {
       when(
-        () => repository.blockUser(
-          userId: 'user-1',
-          blockedUserId: 'blocked-1',
-        ),
+        () =>
+            repository.blockUser(userId: 'user-1', blockedUserId: 'blocked-1'),
       ).thenThrow(Exception('server error'));
 
       final container = createContainer();
@@ -241,9 +237,7 @@ void main() {
         'blocked-1',
         'blocked-2',
       ];
-      await container
-          .read(blockedUsersProvider.notifier)
-          .unblock('blocked-1');
+      await container.read(blockedUsersProvider.notifier).unblock('blocked-1');
 
       expect(
         container.read(blockedUsersProvider),
@@ -263,9 +257,7 @@ void main() {
       container.read(blockedUsersProvider);
       await container.read(blockedUsersProvider.notifier).load();
       container.read(blockedUsersProvider.notifier).state = ['blocked-1'];
-      await container
-          .read(blockedUsersProvider.notifier)
-          .unblock('blocked-1');
+      await container.read(blockedUsersProvider.notifier).unblock('blocked-1');
 
       verify(
         () => repository.unblockUser(
@@ -289,9 +281,7 @@ void main() {
       container.read(blockedUsersProvider);
       await container.read(blockedUsersProvider.notifier).load();
       container.read(blockedUsersProvider.notifier).state = ['blocked-1'];
-      await container
-          .read(blockedUsersProvider.notifier)
-          .unblock('blocked-1');
+      await container.read(blockedUsersProvider.notifier).unblock('blocked-1');
 
       expect(container.read(blockedUsersProvider), contains('blocked-1'));
     });

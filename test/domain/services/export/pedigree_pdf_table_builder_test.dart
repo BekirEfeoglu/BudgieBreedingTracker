@@ -82,33 +82,31 @@ void main() {
         );
 
         final doc = pw.Document();
-        doc.addPage(
-          pw.Page(build: (_) => builder.buildBirdInfoCard(bird)),
-        );
+        doc.addPage(pw.Page(build: (_) => builder.buildBirdInfoCard(bird)));
 
         final bytes = await doc.save();
         expect(bytes, isNotEmpty);
         expect(String.fromCharCodes(bytes.take(4)), '%PDF');
       });
 
-      test('renders correctly inside a PDF document with minimal bird',
-          () async {
-        final bird = createTestBird(
-          id: 'bird-min-pdf',
-          name: 'Min Bird',
-          gender: BirdGender.unknown,
-          status: BirdStatus.dead,
-        );
+      test(
+        'renders correctly inside a PDF document with minimal bird',
+        () async {
+          final bird = createTestBird(
+            id: 'bird-min-pdf',
+            name: 'Min Bird',
+            gender: BirdGender.unknown,
+            status: BirdStatus.dead,
+          );
 
-        final doc = pw.Document();
-        doc.addPage(
-          pw.Page(build: (_) => builder.buildBirdInfoCard(bird)),
-        );
+          final doc = pw.Document();
+          doc.addPage(pw.Page(build: (_) => builder.buildBirdInfoCard(bird)));
 
-        final bytes = await doc.save();
-        expect(bytes, isNotEmpty);
-        expect(String.fromCharCodes(bytes.take(4)), '%PDF');
-      });
+          final bytes = await doc.save();
+          expect(bytes, isNotEmpty);
+          expect(String.fromCharCodes(bytes.take(4)), '%PDF');
+        },
+      );
     });
 
     group('buildDeepTables', () {
@@ -132,11 +130,7 @@ void main() {
           ],
           2: [
             createTestBird(id: 'pgf', name: 'PGF'),
-            createTestBird(
-              id: 'pgm',
-              name: 'PGM',
-              gender: BirdGender.female,
-            ),
+            createTestBird(id: 'pgm', name: 'PGM', gender: BirdGender.female),
           ],
         };
 
@@ -182,9 +176,7 @@ void main() {
               gender: BirdGender.female,
             ),
           ],
-          4: [
-            createTestBird(id: 'gen4-1', name: 'Gen4 Bird 1'),
-          ],
+          4: [createTestBird(id: 'gen4-1', name: 'Gen4 Bird 1')],
           5: [
             createTestBird(id: 'gen5-1', name: 'Gen5 Bird 1'),
             createTestBird(id: 'gen5-2', name: 'Gen5 Bird 2'),
@@ -234,20 +226,14 @@ void main() {
               gender: BirdGender.female,
             ),
           ],
-          4: [
-            createTestBird(id: 'gggf', name: 'Great Great GF'),
-          ],
+          4: [createTestBird(id: 'gggf', name: 'Great Great GF')],
         };
 
         final widgets = builder.buildDeepTables(generations, 4);
         expect(widgets, isNotEmpty);
 
         final doc = pw.Document();
-        doc.addPage(
-          pw.Page(
-            build: (_) => pw.Column(children: widgets),
-          ),
-        );
+        doc.addPage(pw.Page(build: (_) => pw.Column(children: widgets)));
 
         final bytes = await doc.save();
         expect(bytes, isNotEmpty);

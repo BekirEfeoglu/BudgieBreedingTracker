@@ -122,10 +122,7 @@ class _ProbabilityGroupHeader extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.only(
-        top: AppSpacing.sm,
-        bottom: AppSpacing.xs,
-      ),
+      padding: const EdgeInsets.only(top: AppSpacing.sm, bottom: AppSpacing.xs),
       child: Row(
         children: [
           Container(
@@ -147,19 +144,13 @@ class _ProbabilityGroupHeader extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.sm),
           Text(
-            'genetics.probability_group_header'.tr(
-              args: [count.toString()],
-            ),
+            'genetics.probability_group_header'.tr(args: [count.toString()]),
             style: theme.textTheme.labelSmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Divider(
-              color: theme.colorScheme.outlineVariant,
-            ),
-          ),
+          Expanded(child: Divider(color: theme.colorScheme.outlineVariant)),
         ],
       ),
     );
@@ -171,10 +162,7 @@ class _FlatResultsList extends StatelessWidget {
   final List<OffspringResult> results;
   final bool showGenotype;
 
-  const _FlatResultsList({
-    required this.results,
-    this.showGenotype = false,
-  });
+  const _FlatResultsList({required this.results, this.showGenotype = false});
 
   @override
   Widget build(BuildContext context) {

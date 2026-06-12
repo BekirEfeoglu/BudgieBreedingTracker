@@ -21,39 +21,37 @@ void main() {
     bool flexible = true,
     int priority = 0,
   }) => UpdateCheck(
-        available: available,
-        immediateAllowed: immediate,
-        flexibleAllowed: flexible,
-        priority: priority,
-      );
+    available: available,
+    immediateAllowed: immediate,
+    flexibleAllowed: flexible,
+    priority: priority,
+  );
 
   test('no update available -> does nothing', () async {
-    when(() => client.check())
-        .thenAnswer((_) async => check(available: false));
+    when(() => client.check()).thenAnswer((_) async => check(available: false));
     await service.checkAndStart();
     verifyNever(() => client.startImmediate());
     verifyNever(() => client.startFlexible());
   });
 
   test('high priority + immediate allowed -> immediate update', () async {
-    when(() => client.check())
-        .thenAnswer((_) async => check(priority: 5));
+    when(() => client.check()).thenAnswer((_) async => check(priority: 5));
     await service.checkAndStart();
     verify(() => client.startImmediate()).called(1);
     verifyNever(() => client.startFlexible());
   });
 
   test('low priority -> flexible update', () async {
-    when(() => client.check())
-        .thenAnswer((_) async => check(priority: 0));
+    when(() => client.check()).thenAnswer((_) async => check(priority: 0));
     await service.checkAndStart();
     verify(() => client.startFlexible()).called(1);
     verifyNever(() => client.startImmediate());
   });
 
   test('high priority but immediate not allowed -> flexible', () async {
-    when(() => client.check())
-        .thenAnswer((_) async => check(immediate: false, priority: 5));
+    when(
+      () => client.check(),
+    ).thenAnswer((_) async => check(immediate: false, priority: 5));
     await service.checkAndStart();
     verify(() => client.startFlexible()).called(1);
     verifyNever(() => client.startImmediate());

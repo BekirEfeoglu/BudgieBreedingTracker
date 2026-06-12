@@ -171,7 +171,9 @@ List<_MultiLocusResult> _crossAllLoci(
     // Early pruning: discard very low probability entries to prevent
     // combinatorial explosion when many loci are selected.
     combined = combined
-        .where((c) => c.probability >= GeneticsConstants.probabilityPruningThreshold)
+        .where(
+          (c) => c.probability >= GeneticsConstants.probabilityPruningThreshold,
+        )
         .toList();
   }
 

@@ -270,9 +270,7 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
       // unchanged, gaslighting the user. Surface via state.error so the
       // form listener emits a snackbar; ref.listen consumers re-render
       // the heart from the authoritative `marketplaceFavoritesProvider`.
-      state = state.copyWith(
-        error: 'marketplace.favorite_failed'.tr(),
-      );
+      state = state.copyWith(error: 'marketplace.favorite_failed'.tr());
     }
   }
 

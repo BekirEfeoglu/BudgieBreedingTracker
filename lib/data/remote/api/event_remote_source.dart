@@ -3,7 +3,12 @@ import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 import 'package:budgie_breeding_tracker/data/models/supabase_extensions.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/base_remote_source.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show RealtimeChannel, PostgresChangeEvent, PostgresChangeFilter, PostgresChangeFilterType;
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show
+        RealtimeChannel,
+        PostgresChangeEvent,
+        PostgresChangeFilter,
+        PostgresChangeFilterType;
 
 /// Remote data source for [Event] records in Supabase.
 class EventRemoteSource extends BaseRemoteSource<Event> {
@@ -116,12 +121,12 @@ class EventRemoteSource extends BaseRemoteSource<Event> {
           },
         )
         .subscribe((status, error) {
-      if (error != null) {
-        AppLogger.warning(
-          '[events:$userId] Realtime status: $status, error: $error',
-        );
-      }
-    });
+          if (error != null) {
+            AppLogger.warning(
+              '[events:$userId] Realtime status: $status, error: $error',
+            );
+          }
+        });
     return channel;
   }
 

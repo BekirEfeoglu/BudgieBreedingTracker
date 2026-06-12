@@ -33,9 +33,7 @@ void main() {
     });
 
     test('formats AppException with l10n key and args', () {
-      const error = NetworkException(
-        'genetics.local_ai_error_http\x00404',
-      );
+      const error = NetworkException('genetics.local_ai_error_http\x00404');
       final result = formatAiError(error);
       expect(result, isNotEmpty);
     });

@@ -31,17 +31,14 @@ void main() {
       overrides: [
         currentUserIdProvider.overrideWithValue('user-1'),
         badgesProvider.overrideWith(
-          (ref) => loading
-              ? Completer<List<Badge>>().future
-              : Future.value(badges),
+          (ref) =>
+              loading ? Completer<List<Badge>>().future : Future.value(badges),
         ),
-        userBadgesProvider('user-1').overrideWith(
-          (ref) => Future.value(userBadges),
-        ),
+        userBadgesProvider(
+          'user-1',
+        ).overrideWith((ref) => Future.value(userBadges)),
       ],
-      child: const MaterialApp(
-        home: BadgeDetailScreen(badgeId: 'b1'),
-      ),
+      child: const MaterialApp(home: BadgeDetailScreen(badgeId: 'b1')),
     );
   }
 
@@ -68,12 +65,7 @@ void main() {
         tester,
         buildSubject(
           userBadges: const [
-            UserBadge(
-              id: 'ub1',
-              userId: 'user-1',
-              badgeId: 'b1',
-              progress: 3,
-            ),
+            UserBadge(id: 'ub1', userId: 'user-1', badgeId: 'b1', progress: 3),
           ],
         ),
       );

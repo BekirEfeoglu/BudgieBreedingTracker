@@ -16,12 +16,14 @@ void main() {
 
   group('contentModerationServiceProvider', () {
     test('returns ContentModerationService when Supabase is unavailable', () {
-      final container = ProviderContainer(overrides: [
-        // Simulate guest/offline mode where Supabase isn't initialized.
-        supabaseClientProvider.overrideWith(
-          (ref) => throw StateError('Supabase not initialized'),
-        ),
-      ]);
+      final container = ProviderContainer(
+        overrides: [
+          // Simulate guest/offline mode where Supabase isn't initialized.
+          supabaseClientProvider.overrideWith(
+            (ref) => throw StateError('Supabase not initialized'),
+          ),
+        ],
+      );
       addTearDown(container.dispose);
 
       // The provider must swallow the Supabase init failure and still
@@ -31,11 +33,13 @@ void main() {
     });
 
     test('caches the service instance (same Provider semantics)', () {
-      final container = ProviderContainer(overrides: [
-        supabaseClientProvider.overrideWith(
-          (ref) => throw StateError('Supabase not initialized'),
-        ),
-      ]);
+      final container = ProviderContainer(
+        overrides: [
+          supabaseClientProvider.overrideWith(
+            (ref) => throw StateError('Supabase not initialized'),
+          ),
+        ],
+      );
       addTearDown(container.dispose);
 
       final first = container.read(contentModerationServiceProvider);
@@ -46,11 +50,13 @@ void main() {
 
   group('imageSafetyServiceProvider', () {
     test('returns ImageSafetyService when Supabase is unavailable', () {
-      final container = ProviderContainer(overrides: [
-        supabaseClientProvider.overrideWith(
-          (ref) => throw StateError('Supabase not initialized'),
-        ),
-      ]);
+      final container = ProviderContainer(
+        overrides: [
+          supabaseClientProvider.overrideWith(
+            (ref) => throw StateError('Supabase not initialized'),
+          ),
+        ],
+      );
       addTearDown(container.dispose);
 
       final service = container.read(imageSafetyServiceProvider);
@@ -58,11 +64,13 @@ void main() {
     });
 
     test('caches the service instance (same Provider semantics)', () {
-      final container = ProviderContainer(overrides: [
-        supabaseClientProvider.overrideWith(
-          (ref) => throw StateError('Supabase not initialized'),
-        ),
-      ]);
+      final container = ProviderContainer(
+        overrides: [
+          supabaseClientProvider.overrideWith(
+            (ref) => throw StateError('Supabase not initialized'),
+          ),
+        ],
+      );
       addTearDown(container.dispose);
 
       final first = container.read(imageSafetyServiceProvider);

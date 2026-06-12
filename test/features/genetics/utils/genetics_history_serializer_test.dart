@@ -22,11 +22,7 @@ void main() {
 
     test('parses minimal offspring result', () {
       final json = jsonEncode([
-        {
-          'phenotype': 'Light Green',
-          'probability': 0.25,
-          'sex': 'both',
-        },
+        {'phenotype': 'Light Green', 'probability': 0.25, 'sex': 'both'},
       ]);
 
       final results = parseHistoryResults(json);
@@ -159,47 +155,40 @@ void main() {
 
   group('parseStoredGenotype', () {
     test('parses visual state', () {
-      final genotype = parseStoredGenotype(
-        {'blue': 'visual'},
-        BirdGender.male,
-      );
+      final genotype = parseStoredGenotype({'blue': 'visual'}, BirdGender.male);
 
       expect(genotype.mutations['blue'], AlleleState.visual);
       expect(genotype.gender, BirdGender.male);
     });
 
     test('parses carrier state', () {
-      final genotype = parseStoredGenotype(
-        {'blue': 'carrier'},
-        BirdGender.female,
-      );
+      final genotype = parseStoredGenotype({
+        'blue': 'carrier',
+      }, BirdGender.female);
 
       expect(genotype.mutations['blue'], AlleleState.carrier);
     });
 
     test('parses split state', () {
-      final genotype = parseStoredGenotype(
-        {'opaline': 'split'},
-        BirdGender.male,
-      );
+      final genotype = parseStoredGenotype({
+        'opaline': 'split',
+      }, BirdGender.male);
 
       expect(genotype.mutations['opaline'], AlleleState.split);
     });
 
     test('defaults unknown state to visual', () {
-      final genotype = parseStoredGenotype(
-        {'blue': 'gibberish'},
-        BirdGender.male,
-      );
+      final genotype = parseStoredGenotype({
+        'blue': 'gibberish',
+      }, BirdGender.male);
 
       expect(genotype.mutations['blue'], AlleleState.visual);
     });
 
     test('resolves legacy mutation IDs', () {
-      final genotype = parseStoredGenotype(
-        {'lutino': 'visual'},
-        BirdGender.female,
-      );
+      final genotype = parseStoredGenotype({
+        'lutino': 'visual',
+      }, BirdGender.female);
 
       // lutino should be resolved to ino
       expect(genotype.mutations.containsKey('ino'), isTrue);
@@ -207,10 +196,9 @@ void main() {
     });
 
     test('resolves legacy albino to ino', () {
-      final genotype = parseStoredGenotype(
-        {'albino': 'visual'},
-        BirdGender.male,
-      );
+      final genotype = parseStoredGenotype({
+        'albino': 'visual',
+      }, BirdGender.male);
 
       expect(genotype.mutations.containsKey('ino'), isTrue);
     });
@@ -223,14 +211,11 @@ void main() {
     });
 
     test('handles multiple mutations', () {
-      final genotype = parseStoredGenotype(
-        {
-          'blue': 'visual',
-          'opaline': 'carrier',
-          'dark_factor': 'visual',
-        },
-        BirdGender.male,
-      );
+      final genotype = parseStoredGenotype({
+        'blue': 'visual',
+        'opaline': 'carrier',
+        'dark_factor': 'visual',
+      }, BirdGender.male);
 
       expect(genotype.mutations, hasLength(3));
       expect(genotype.mutations['blue'], AlleleState.visual);

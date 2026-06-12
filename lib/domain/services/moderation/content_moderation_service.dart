@@ -7,14 +7,9 @@ class ModerationResult {
   final bool isAllowed;
   final String? rejectionReason;
 
-  const ModerationResult({
-    required this.isAllowed,
-    this.rejectionReason,
-  });
+  const ModerationResult({required this.isAllowed, this.rejectionReason});
 
-  const ModerationResult.allowed()
-    : isAllowed = true,
-      rejectionReason = null;
+  const ModerationResult.allowed() : isAllowed = true, rejectionReason = null;
   const ModerationResult.rejected(String reason)
     : isAllowed = false,
       rejectionReason = reason;

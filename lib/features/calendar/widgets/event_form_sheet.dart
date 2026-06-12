@@ -220,10 +220,7 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
               const SizedBox(height: AppSpacing.lg),
 
               // Time picker
-              _TimePickerField(
-                eventTime: _eventTime,
-                onTap: _pickTime,
-              ),
+              _TimePickerField(eventTime: _eventTime, onTap: _pickTime),
               const SizedBox(height: AppSpacing.lg),
 
               // Notes field

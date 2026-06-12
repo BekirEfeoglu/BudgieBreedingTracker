@@ -15,16 +15,22 @@ void main() {
       home: Scaffold(body: ChickSurvivalChart(data: data)),
     );
   }
+
   group('ChickSurvivalChart', () {
     testWidgets('renders ChartEmpty when all counts are zero', (tester) async {
-      await pumpLocalizedApp(tester, buildSubject(const ChickSurvivalData()), settle: false);
+      await pumpLocalizedApp(
+        tester,
+        buildSubject(const ChickSurvivalData()),
+        settle: false,
+      );
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.byType(ChartEmpty), findsOneWidget);
       expect(find.byType(PieChart), findsNothing);
     });
 
     testWidgets('renders PieChart when only healthy chicks', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(const ChickSurvivalData(healthy: 10)),
         settle: false,
       );
@@ -36,7 +42,8 @@ void main() {
     testWidgets('renders PieChart with all three status counts', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(const ChickSurvivalData(healthy: 8, sick: 2, deceased: 1)),
         settle: false,
       );
@@ -45,7 +52,8 @@ void main() {
     });
 
     testWidgets('renders PieChart with only deceased chicks', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(const ChickSurvivalData(deceased: 3)),
         settle: false,
       );
@@ -54,7 +62,8 @@ void main() {
     });
 
     testWidgets('renders legend with survival status keys', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(const ChickSurvivalData(healthy: 5, sick: 2, deceased: 1)),
         settle: false,
       );
@@ -64,7 +73,10 @@ void main() {
         find.textContaining(l10nContains('statistics.survival_healthy')),
         findsOneWidget,
       );
-      expect(find.textContaining(l10nContains('statistics.survival_sick')), findsOneWidget);
+      expect(
+        find.textContaining(l10nContains('statistics.survival_sick')),
+        findsOneWidget,
+      );
       expect(
         find.textContaining(l10nContains('statistics.survival_deceased')),
         findsOneWidget,
@@ -72,7 +84,8 @@ void main() {
     });
 
     testWidgets('renders RepaintBoundary around PieChart', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(const ChickSurvivalData(healthy: 5, sick: 1)),
         settle: false,
       );
@@ -81,7 +94,8 @@ void main() {
     });
 
     testWidgets('renders Column layout with chart and legend', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(const ChickSurvivalData(healthy: 4, sick: 1)),
         settle: false,
       );

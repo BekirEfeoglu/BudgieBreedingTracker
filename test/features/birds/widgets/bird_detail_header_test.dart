@@ -34,7 +34,10 @@ void main() {
 
       await pumpWidgetSimple(tester, BirdDetailHeader(bird: bird));
 
-      expect(find.textContaining(l10nContains('birds.ring_number')), findsNothing);
+      expect(
+        find.textContaining(l10nContains('birds.ring_number')),
+        findsNothing,
+      );
     });
 
     testWidgets('shows status badge with correct status', (tester) async {

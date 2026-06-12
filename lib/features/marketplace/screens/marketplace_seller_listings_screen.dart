@@ -12,23 +12,21 @@ import '../widgets/marketplace_listing_card.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 final _sellerListingsProvider = FutureProvider.autoDispose
-    .family<dynamic, ({String sellerId, String currentUserId})>(
-  (ref, params) async {
-    final repo = ref.watch(marketplaceRepositoryProvider);
-    return repo.getByUser(
-      userId: params.sellerId,
-      currentUserId: params.currentUserId,
-    );
-  },
-);
+    .family<dynamic, ({String sellerId, String currentUserId})>((
+      ref,
+      params,
+    ) async {
+      final repo = ref.watch(marketplaceRepositoryProvider);
+      return repo.getByUser(
+        userId: params.sellerId,
+        currentUserId: params.currentUserId,
+      );
+    });
 
 class MarketplaceSellerListingsScreen extends ConsumerWidget {
   final String sellerId;
 
-  const MarketplaceSellerListingsScreen({
-    super.key,
-    required this.sellerId,
-  });
+  const MarketplaceSellerListingsScreen({super.key, required this.sellerId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -37,9 +35,7 @@ class MarketplaceSellerListingsScreen extends ConsumerWidget {
     final listingsAsync = ref.watch(_sellerListingsProvider(params));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('marketplace.seller_listings'.tr()),
-      ),
+      appBar: AppBar(title: Text('marketplace.seller_listings'.tr())),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(_sellerListingsProvider(params));

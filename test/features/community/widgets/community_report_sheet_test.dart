@@ -116,7 +116,9 @@ void main() {
       );
     });
 
-    testWidgets('submit button is not visible before selection', (tester) async {
+    testWidgets('submit button is not visible before selection', (
+      tester,
+    ) async {
       await pumpTranslatedWidget(
         tester,
         Builder(
@@ -132,10 +134,7 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      expect(
-        find.text(resolvedL10n('community.report_confirm')),
-        findsNothing,
-      );
+      expect(find.text(resolvedL10n('community.report_confirm')), findsNothing);
     });
 
     testWidgets('tapping a reason shows confirm button', (tester) async {
@@ -216,8 +215,9 @@ void main() {
       expect(find.byType(TextField), findsOneWidget);
     });
 
-    testWidgets('selecting non-other reason does not show text field',
-        (tester) async {
+    testWidgets('selecting non-other reason does not show text field', (
+      tester,
+    ) async {
       await pumpTranslatedWidget(
         tester,
         Builder(
@@ -233,9 +233,7 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      await tester.tap(
-        find.text(resolvedL10n('community.report_reason_spam')),
-      );
+      await tester.tap(find.text(resolvedL10n('community.report_reason_spam')));
       await tester.pumpAndSettle();
 
       expect(find.byType(TextField), findsNothing);
@@ -249,10 +247,7 @@ void main() {
         Builder(
           builder: (context) => ElevatedButton(
             onPressed: () async {
-              result = await showCommunityReportSheet(
-                context,
-                title: 'Report',
-              );
+              result = await showCommunityReportSheet(context, title: 'Report');
             },
             child: const Text('Open'),
           ),
@@ -281,10 +276,7 @@ void main() {
         Builder(
           builder: (context) => ElevatedButton(
             onPressed: () async {
-              result = await showCommunityReportSheet(
-                context,
-                title: 'Report',
-              );
+              result = await showCommunityReportSheet(context, title: 'Report');
             },
             child: const Text('Open'),
           ),
@@ -318,9 +310,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Select spam first
-      await tester.tap(
-        find.text(resolvedL10n('community.report_reason_spam')),
-      );
+      await tester.tap(find.text(resolvedL10n('community.report_reason_spam')));
       await tester.pumpAndSettle();
 
       // Switch to harassment

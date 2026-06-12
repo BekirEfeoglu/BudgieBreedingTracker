@@ -48,11 +48,7 @@ class CalendarEventGenerator {
       // Raw `add(Duration(days: N))` adds N×24h wall-clock and lands on the
       // wrong calendar day across DST boundaries; UTC midnight + days math
       // sidesteps that.
-      final base = DateTime.utc(
-        startDate.year,
-        startDate.month,
-        startDate.day,
-      );
+      final base = DateTime.utc(startDate.year, startDate.month, startDate.day);
       final events = <Event>[];
       for (final entry in milestones.entries) {
         final eventDate = base.add(Duration(days: entry.key));
@@ -176,11 +172,7 @@ class CalendarEventGenerator {
       };
 
       // UTC-normalized base so day-offset math is DST-safe.
-      final base = DateTime.utc(
-        hatchDate.year,
-        hatchDate.month,
-        hatchDate.day,
-      );
+      final base = DateTime.utc(hatchDate.year, hatchDate.month, hatchDate.day);
       final events = <Event>[];
       for (final entry in milestones.entries) {
         final eventDate = base.add(Duration(days: entry.key));

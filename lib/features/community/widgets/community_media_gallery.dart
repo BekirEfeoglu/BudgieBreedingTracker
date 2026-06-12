@@ -84,8 +84,7 @@ class _CommunityMediaGalleryState extends State<CommunityMediaGallery>
             height: 320,
             child: GestureDetector(
               onDoubleTap: _handleDoubleTap,
-              onTap: () =>
-                  widget.onOpenImage(widget.imageUrls[_currentIndex]),
+              onTap: () => widget.onOpenImage(widget.imageUrls[_currentIndex]),
               child: PageView.builder(
                 controller: _pageController,
                 itemCount: widget.imageUrls.length,
@@ -109,8 +108,7 @@ class _CommunityMediaGalleryState extends State<CommunityMediaGallery>
                       child: const SizedBox(
                         height: 320,
                         width: double.infinity,
-                        child:
-                            Center(child: Icon(LucideIcons.image, size: 32)),
+                        child: Center(child: Icon(LucideIcons.image, size: 32)),
                       ),
                     ),
                     errorWidget: (_, __, ___) => Container(
@@ -128,16 +126,12 @@ class _CommunityMediaGalleryState extends State<CommunityMediaGallery>
               bottom: AppSpacing.md,
               child: Semantics(
                 label: 'community.image_indicator'.tr(
-                  args: [
-                    '${_currentIndex + 1}',
-                    '${widget.imageUrls.length}',
-                  ],
+                  args: ['${_currentIndex + 1}', '${widget.imageUrls.length}'],
                 ),
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.45),
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.radiusFull),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -161,10 +155,7 @@ class _CommunityMediaGalleryState extends State<CommunityMediaGallery>
               animation: _heartController,
               builder: (context, child) => Opacity(
                 opacity: _heartOpacity.value,
-                child: Transform.scale(
-                  scale: _heartScale.value,
-                  child: child,
-                ),
+                child: Transform.scale(scale: _heartScale.value, child: child),
               ),
               child: Icon(
                 Icons.favorite_rounded,

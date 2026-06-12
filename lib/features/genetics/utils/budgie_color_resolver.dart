@@ -137,14 +137,21 @@ class BudgieColorAppearance {
 
   @override
   int get hashCode => Object.hash(
-        Object.hash(bodyColor, maskColor, wingMarkingColor, wingFillColor),
-        Object.hash(cheekPatchColor, piedPatchColor, carrierAccentColor),
-        Object.hash(eyeColor, eyeRingColor, backColor, tailColor),
-        Object.hash(throatSpotColor, beakColor),
-        Object.hash(
-          showPiedPatch, showMantleHighlight, showCarrierAccent,
-          hideWingMarkings, showThroatSpots, throatSpotCount,
-          showEyeRing, isSpangle, isDutchPied, isDominantPied,
-        ),
-      );
+    Object.hash(bodyColor, maskColor, wingMarkingColor, wingFillColor),
+    Object.hash(cheekPatchColor, piedPatchColor, carrierAccentColor),
+    Object.hash(eyeColor, eyeRingColor, backColor, tailColor),
+    Object.hash(throatSpotColor, beakColor),
+    Object.hash(
+      showPiedPatch,
+      showMantleHighlight,
+      showCarrierAccent,
+      hideWingMarkings,
+      showThroatSpots,
+      throatSpotCount,
+      showEyeRing,
+      isSpangle,
+      isDutchPied,
+      isDominantPied,
+    ),
+  );
 }

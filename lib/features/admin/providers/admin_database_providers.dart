@@ -93,13 +93,17 @@ final orphanDataProvider = FutureProvider<OrphanDataSummary>((ref) async {
   try {
     // 4 RPCs run in parallel — independent counts, so serial awaits would
     // add 3× unnecessary RTT to admin dashboard load time.
-    final (orphanEggs, orphanChicks, orphanReminders, orphanHealthRecords) =
-        await (
-          client.rpc('admin_count_orphan_eggs'),
-          client.rpc('admin_count_orphan_chicks'),
-          client.rpc('admin_count_orphan_reminders'),
-          client.rpc('admin_count_orphan_health_records'),
-        ).wait;
+    final (
+      orphanEggs,
+      orphanChicks,
+      orphanReminders,
+      orphanHealthRecords,
+    ) = await (
+      client.rpc('admin_count_orphan_eggs'),
+      client.rpc('admin_count_orphan_chicks'),
+      client.rpc('admin_count_orphan_reminders'),
+      client.rpc('admin_count_orphan_health_records'),
+    ).wait;
 
     return OrphanDataSummary(
       orphanEggs: (orphanEggs as int?) ?? 0,

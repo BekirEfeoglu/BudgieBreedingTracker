@@ -29,7 +29,9 @@ extension _ExcelSheetBuilders on ExcelExportService {
         '${e.eggNumber ?? ""}',
         ExcelExportService._dateFormat.format(e.layDate),
         e.status.name,
-        e.hatchDate != null ? ExcelExportService._dateFormat.format(e.hatchDate!) : '',
+        e.hatchDate != null
+            ? ExcelExportService._dateFormat.format(e.hatchDate!)
+            : '',
         e.fertileCheckDate != null
             ? ExcelExportService._dateFormat.format(e.fertileCheckDate!)
             : '',
@@ -80,7 +82,9 @@ extension _ExcelSheetBuilders on ExcelExportService {
             ? ExcelExportService._dateFormat.format(incubation.startDate!)
             : '',
         incubation.computedExpectedHatchDate != null
-            ? ExcelExportService._dateFormat.format(incubation.computedExpectedHatchDate!)
+            ? ExcelExportService._dateFormat.format(
+                incubation.computedExpectedHatchDate!,
+              )
             : '',
         incubation.totalIncubationDays().toString(),
         incubation.notes ?? '',
@@ -126,8 +130,12 @@ extension _ExcelSheetBuilders on ExcelExportService {
         c.ringNumber ?? '',
         _genderLabel(c.gender.name),
         c.healthStatus.name,
-        c.hatchDate != null ? ExcelExportService._dateFormat.format(c.hatchDate!) : '',
-        c.weanDate != null ? ExcelExportService._dateFormat.format(c.weanDate!) : '',
+        c.hatchDate != null
+            ? ExcelExportService._dateFormat.format(c.hatchDate!)
+            : '',
+        c.weanDate != null
+            ? ExcelExportService._dateFormat.format(c.weanDate!)
+            : '',
         c.hatchWeight != null ? c.hatchWeight.toString() : '',
         c.notes ?? '',
       ];

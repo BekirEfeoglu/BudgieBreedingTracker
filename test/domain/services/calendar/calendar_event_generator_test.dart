@@ -42,9 +42,9 @@ void main() {
         pairLabel: 'Pair A',
       );
 
-      final captured = verify(() => mockRepo.saveAll(captureAny()))
-          .captured
-          .single as List<dynamic>;
+      final captured =
+          verify(() => mockRepo.saveAll(captureAny())).captured.single
+              as List<dynamic>;
       expect(captured.length, 5);
     });
 
@@ -107,9 +107,9 @@ void main() {
         chickLabel: 'Chick A',
       );
 
-      final captured = verify(() => mockRepo.saveAll(captureAny()))
-          .captured
-          .single as List<dynamic>;
+      final captured =
+          verify(() => mockRepo.saveAll(captureAny())).captured.single
+              as List<dynamic>;
       expect(captured.length, 3);
     });
   });

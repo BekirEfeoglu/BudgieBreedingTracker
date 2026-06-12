@@ -18,10 +18,7 @@ void main() {
       );
       final mother = ParentGenotype(
         gender: BirdGender.female,
-        mutations: {
-          'blue': AlleleState.carrier,
-          'opaline': AlleleState.visual,
-        },
+        mutations: {'blue': AlleleState.carrier, 'opaline': AlleleState.visual},
       );
 
       final results = calculator.calculateFromGenotypes(
@@ -120,8 +117,7 @@ void main() {
           expect(
             r.visualMutations,
             isNotEmpty,
-            reason:
-                '${r.phenotype} should have visual mutations listed',
+            reason: '${r.phenotype} should have visual mutations listed',
           );
         }
       }

@@ -52,10 +52,7 @@ void main() {
       const painter = BudgiePainter(appearance: defaultAppearance);
       final recorder = PictureRecorder();
       final canvas = Canvas(recorder);
-      expect(
-        () => painter.paint(canvas, const Size(60, 80)),
-        returnsNormally,
-      );
+      expect(() => painter.paint(canvas, const Size(60, 80)), returnsNormally);
     });
 
     test('paint does not throw with all optional features enabled', () {
@@ -79,10 +76,7 @@ void main() {
       );
       final recorder = PictureRecorder();
       final canvas = Canvas(recorder);
-      expect(
-        () => painter.paint(canvas, const Size(60, 80)),
-        returnsNormally,
-      );
+      expect(() => painter.paint(canvas, const Size(60, 80)), returnsNormally);
     });
 
     test('paint does not throw for ino (hidden elements)', () {
@@ -107,20 +101,14 @@ void main() {
       );
       final recorder = PictureRecorder();
       final canvas = Canvas(recorder);
-      expect(
-        () => painter.paint(canvas, const Size(60, 80)),
-        returnsNormally,
-      );
+      expect(() => painter.paint(canvas, const Size(60, 80)), returnsNormally);
     });
 
     test('paint does not throw at minimum size', () {
       const painter = BudgiePainter(appearance: defaultAppearance);
       final recorder = PictureRecorder();
       final canvas = Canvas(recorder);
-      expect(
-        () => painter.paint(canvas, const Size(36, 48)),
-        returnsNormally,
-      );
+      expect(() => painter.paint(canvas, const Size(36, 48)), returnsNormally);
     });
 
     test('paint does not throw at large size', () {
@@ -194,10 +182,7 @@ void main() {
       );
       final recorder = PictureRecorder();
       final canvas = Canvas(recorder);
-      expect(
-        () => painter.paint(canvas, const Size(60, 80)),
-        returnsNormally,
-      );
+      expect(() => painter.paint(canvas, const Size(60, 80)), returnsNormally);
     });
   });
 }

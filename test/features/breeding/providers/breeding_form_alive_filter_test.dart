@@ -86,8 +86,7 @@ void main() {
     test('returns empty list when stream is loading', () {
       final container = ProviderContainer(
         overrides: [
-          birdsStreamProvider('u1')
-              .overrideWithValue(const AsyncLoading()),
+          birdsStreamProvider('u1').overrideWithValue(const AsyncLoading()),
         ],
       );
       addTearDown(container.dispose);
@@ -161,8 +160,7 @@ void main() {
     test('returns empty list when stream is loading', () {
       final container = ProviderContainer(
         overrides: [
-          birdsStreamProvider('u1')
-              .overrideWithValue(const AsyncLoading()),
+          birdsStreamProvider('u1').overrideWithValue(const AsyncLoading()),
         ],
       );
       addTearDown(container.dispose);

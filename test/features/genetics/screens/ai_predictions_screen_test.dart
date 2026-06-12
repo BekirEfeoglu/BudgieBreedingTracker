@@ -87,8 +87,7 @@ void main() {
       return UncontrolledProviderScope(
         container: container,
         child: MaterialApp.router(
-          routerConfig:
-              buildRouter(initialTab: initialTab, birdId: birdId),
+          routerConfig: buildRouter(initialTab: initialTab, birdId: birdId),
         ),
       );
     }
@@ -120,9 +119,7 @@ void main() {
 
     group('without configured AI', () {
       testWidgets('shows welcome screen when no config', (tester) async {
-        await tester.pumpWidget(
-          buildSubject(config: _unconfiguredConfig),
-        );
+        await tester.pumpWidget(buildSubject(config: _unconfiguredConfig));
         await tester.pumpAndSettle();
 
         expect(find.byType(AiWelcomeScreen), findsOneWidget);

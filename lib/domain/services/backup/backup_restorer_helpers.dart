@@ -3,11 +3,12 @@ part of 'backup_restorer.dart';
 const _helperTag = '[BackupRestorer]';
 
 /// A typed restore step that captures generics via closure.
-typedef _RestoreStep = Future<int> Function(
-  Map<String, dynamic> data,
-  String userId,
-  void Function() onError,
-);
+typedef _RestoreStep =
+    Future<int> Function(
+      Map<String, dynamic> data,
+      String userId,
+      void Function() onError,
+    );
 
 /// Creates a typed [_RestoreStep] for a given entity.
 _RestoreStep _step<T>(
@@ -65,7 +66,9 @@ Future<int> _restoreEntity<T>({
       await saveAll(items);
     }
 
-    AppLogger.info('$_helperTag Restored ${items.length}/${jsonList.length} $key');
+    AppLogger.info(
+      '$_helperTag Restored ${items.length}/${jsonList.length} $key',
+    );
     return items.length;
   } catch (e, st) {
     AppLogger.error('$_helperTag Failed to restore $key', e, st);

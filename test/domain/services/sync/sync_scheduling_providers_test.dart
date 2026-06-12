@@ -56,7 +56,6 @@ void main() {
         // No sync calls because autoSync is disabled
         verifyNever(() => mock.fullSync());
         verifyNever(() => mock.retryFailedRecords(any()));
-
       });
     });
 
@@ -120,9 +119,7 @@ void main() {
           when(
             () => mock.fullSync(),
           ).thenAnswer((_) async => SyncResult.success);
-          when(
-            () => mock.retryFailedRecords(any()),
-          ).thenAnswer((_) async {});
+          when(() => mock.retryFailedRecords(any())).thenAnswer((_) async {});
 
           // Build the container with userId='user-1'; flip via
           // updateOverrides to simulate a sign-out mid-test.

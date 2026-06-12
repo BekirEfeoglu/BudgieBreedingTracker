@@ -10,47 +10,65 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   const mutations = MutationDataCompounds.yellowfaceMutations;
 
-  Map<String, BudgieMutationRecord> mutationMap() =>
-      {for (final m in mutations) m.id: m};
+  Map<String, BudgieMutationRecord> mutationMap() => {
+    for (final m in mutations) m.id: m,
+  };
 
-  group('MutationDataCompounds.yellowfaceMutations - record count and presence', () {
-    test('contains expected number of mutations', () {
-      expect(mutations, isNotEmpty);
-      expect(mutations.length, 7);
-    });
+  group(
+    'MutationDataCompounds.yellowfaceMutations - record count and presence',
+    () {
+      test('contains expected number of mutations', () {
+        expect(mutations, isNotEmpty);
+        expect(mutations.length, 7);
+      });
 
-    test('all expected mutation IDs are present', () {
-      final ids = mutations.map((m) => m.id).toSet();
+      test('all expected mutation IDs are present', () {
+        final ids = mutations.map((m) => m.id).toSet();
 
-      expect(ids, containsAll([
-        'yellowface_type1',
-        'yellowface_type2',
-        'goldenface',
-        'aqua',
-        'turquoise',
-        'bluefactor_1',
-        'bluefactor_2',
-      ]));
-    });
+        expect(
+          ids,
+          containsAll([
+            'yellowface_type1',
+            'yellowface_type2',
+            'goldenface',
+            'aqua',
+            'turquoise',
+            'bluefactor_1',
+            'bluefactor_2',
+          ]),
+        );
+      });
 
-    test('all IDs are unique', () {
-      final ids = mutations.map((m) => m.id).toList();
-      expect(ids.toSet().length, ids.length, reason: 'Duplicate IDs detected');
-    });
+      test('all IDs are unique', () {
+        final ids = mutations.map((m) => m.id).toList();
+        expect(
+          ids.toSet().length,
+          ids.length,
+          reason: 'Duplicate IDs detected',
+        );
+      });
 
-    test('all names are unique', () {
-      final names = mutations.map((m) => m.name).toList();
-      expect(names.toSet().length, names.length, reason: 'Duplicate names detected');
-    });
-  });
+      test('all names are unique', () {
+        final names = mutations.map((m) => m.name).toList();
+        expect(
+          names.toSet().length,
+          names.length,
+          reason: 'Duplicate names detected',
+        );
+      });
+    },
+  );
 
   group('MutationDataCompounds.yellowfaceMutations - data integrity', () {
     test('all records have non-empty required fields', () {
       for (final m in mutations) {
         expect(m.id, isNotEmpty, reason: '${m.id} ID');
         expect(m.name, isNotEmpty, reason: '${m.id} name');
-        expect(m.localizationKey, startsWith('genetics.mutation_'),
-            reason: '${m.id} localizationKey');
+        expect(
+          m.localizationKey,
+          startsWith('genetics.mutation_'),
+          reason: '${m.id} localizationKey',
+        );
         expect(m.description, isNotEmpty, reason: '${m.id} description');
         expect(m.alleleSymbol, isNotEmpty, reason: '${m.id} alleleSymbol');
         expect(m.alleles, hasLength(2), reason: '${m.id} alleles');
@@ -61,18 +79,28 @@ void main() {
     test('IDs use snake_case convention', () {
       final snakeCase = RegExp(r'^[a-z][a-z0-9_]*$');
       for (final m in mutations) {
-        expect(snakeCase.hasMatch(m.id), isTrue,
-            reason: '${m.id} should be snake_case');
+        expect(
+          snakeCase.hasMatch(m.id),
+          isTrue,
+          reason: '${m.id} should be snake_case',
+        );
       }
     });
 
     test('all mutations are autosomal incomplete dominant', () {
       for (final m in mutations) {
-        expect(m.inheritanceType, InheritanceType.autosomalIncompleteDominant,
-            reason: '${m.id} should be autosomal incomplete dominant');
+        expect(
+          m.inheritanceType,
+          InheritanceType.autosomalIncompleteDominant,
+          reason: '${m.id} should be autosomal incomplete dominant',
+        );
         expect(m.dominance, Dominance.incompleteDominant, reason: m.id);
         expect(m.isAutosomal, isTrue, reason: '${m.id} should be autosomal');
-        expect(m.isSexLinked, isFalse, reason: '${m.id} should not be sex-linked');
+        expect(
+          m.isSexLinked,
+          isFalse,
+          reason: '${m.id} should not be sex-linked',
+        );
       }
     });
 
@@ -86,22 +114,32 @@ void main() {
   group('MutationDataCompounds.yellowfaceMutations - allelic series', () {
     test('all mutations belong to blue_series locus', () {
       for (final m in mutations) {
-        expect(m.locusId, 'blue_series',
-            reason: '${m.id} should belong to blue_series locus');
+        expect(
+          m.locusId,
+          'blue_series',
+          reason: '${m.id} should belong to blue_series locus',
+        );
       }
     });
 
     test('all mutations have positive dominanceRank', () {
       for (final m in mutations) {
-        expect(m.dominanceRank, greaterThan(0),
-            reason: '${m.id} should have positive dominanceRank');
+        expect(
+          m.dominanceRank,
+          greaterThan(0),
+          reason: '${m.id} should have positive dominanceRank',
+        );
       }
     });
 
     test('dominance ranks are all distinct', () {
       final ranks = mutations.map((m) => m.dominanceRank).toList();
-      expect(ranks.toSet().length, ranks.length,
-          reason: 'All dominanceRanks should be distinct in blue_series compounds');
+      expect(
+        ranks.toSet().length,
+        ranks.length,
+        reason:
+            'All dominanceRanks should be distinct in blue_series compounds',
+      );
     });
 
     test('dominance ranks are ascending from type1 through bluefactor_2', () {
@@ -137,8 +175,11 @@ void main() {
       // Blue has dominanceRank 1 in MutationDataPrimary
       const blueRank = 1;
       for (final m in mutations) {
-        expect(m.dominanceRank, greaterThan(blueRank),
-            reason: '${m.id} should rank higher than blue');
+        expect(
+          m.dominanceRank,
+          greaterThan(blueRank),
+          reason: '${m.id} should rank higher than blue',
+        );
       }
     });
   });
@@ -238,8 +279,11 @@ void main() {
       final currentIds = mutations.map((m) => m.id).toSet();
 
       for (final legacyId in MutationDataCompounds.legacyIdMap.keys) {
-        expect(currentIds, isNot(contains(legacyId)),
-            reason: 'Legacy ID "$legacyId" should not be a current mutation ID');
+        expect(
+          currentIds,
+          isNot(contains(legacyId)),
+          reason: 'Legacy ID "$legacyId" should not be a current mutation ID',
+        );
       }
     });
 
@@ -255,8 +299,12 @@ void main() {
       };
 
       for (final entry in MutationDataCompounds.legacyIdMap.entries) {
-        expect(knownTargets, contains(entry.value),
-            reason: 'Legacy "${entry.key}" maps to "${entry.value}" which should be a known ID');
+        expect(
+          knownTargets,
+          contains(entry.value),
+          reason:
+              'Legacy "${entry.key}" maps to "${entry.value}" which should be a known ID',
+        );
       }
     });
 
@@ -265,11 +313,20 @@ void main() {
       expect(MutationDataCompounds.legacyIdMap['albino'], 'ino');
     });
 
-    test('incomplete dominant legacy IDs collapse single/double to base ID', () {
-      expect(MutationDataCompounds.legacyIdMap['dark_factor_single'], 'dark_factor');
-      expect(MutationDataCompounds.legacyIdMap['dark_factor_double'], 'dark_factor');
-      expect(MutationDataCompounds.legacyIdMap['spangle_single'], 'spangle');
-      expect(MutationDataCompounds.legacyIdMap['spangle_double'], 'spangle');
-    });
+    test(
+      'incomplete dominant legacy IDs collapse single/double to base ID',
+      () {
+        expect(
+          MutationDataCompounds.legacyIdMap['dark_factor_single'],
+          'dark_factor',
+        );
+        expect(
+          MutationDataCompounds.legacyIdMap['dark_factor_double'],
+          'dark_factor',
+        );
+        expect(MutationDataCompounds.legacyIdMap['spangle_single'], 'spangle');
+        expect(MutationDataCompounds.legacyIdMap['spangle_double'], 'spangle');
+      },
+    );
   });
 }

@@ -26,9 +26,7 @@ void main() {
     mockRepo = MockMessagingRepository();
   });
 
-  Widget buildSubject({
-    MessagingFormNotifier Function()? notifierFactory,
-  }) {
+  Widget buildSubject({MessagingFormNotifier Function()? notifierFactory}) {
     return ProviderScope(
       overrides: [
         currentUserIdProvider.overrideWithValue('test-user'),
@@ -36,9 +34,7 @@ void main() {
         if (notifierFactory != null)
           messagingFormStateProvider.overrideWith(notifierFactory),
       ],
-      child: const MaterialApp(
-        home: NewDmScreen(),
-      ),
+      child: const MaterialApp(home: NewDmScreen()),
     );
   }
 
@@ -64,12 +60,15 @@ void main() {
       expect(textField.autofocus, isTrue);
     });
 
-    testWidgets('shows no results when query has 2+ chars but no matches',
-        (tester) async {
-      when(() => mockRepo.searchProfiles(
-            any(),
-            excludeUserId: any(named: 'excludeUserId'),
-          )).thenAnswer((_) async => []);
+    testWidgets('shows no results when query has 2+ chars but no matches', (
+      tester,
+    ) async {
+      when(
+        () => mockRepo.searchProfiles(
+          any(),
+          excludeUserId: any(named: 'excludeUserId'),
+        ),
+      ).thenAnswer((_) async => []);
 
       await pumpLocalizedApp(
         tester,
@@ -84,18 +83,19 @@ void main() {
       expect(find.text(l10n('common.no_results')), findsOneWidget);
     });
 
-    testWidgets('shows search results when query matches users',
-        (tester) async {
-      when(() => mockRepo.searchProfiles(
-            any(),
-            excludeUserId: any(named: 'excludeUserId'),
-          )).thenAnswer((_) async => [
-            {
-              'id': 'user-2',
-              'display_name': 'John Doe',
-              'avatar_url': null,
-            },
-          ]);
+    testWidgets('shows search results when query matches users', (
+      tester,
+    ) async {
+      when(
+        () => mockRepo.searchProfiles(
+          any(),
+          excludeUserId: any(named: 'excludeUserId'),
+        ),
+      ).thenAnswer(
+        (_) async => [
+          {'id': 'user-2', 'display_name': 'John Doe', 'avatar_url': null},
+        ],
+      );
 
       await pumpLocalizedApp(
         tester,
@@ -110,8 +110,9 @@ void main() {
       expect(find.byIcon(LucideIcons.messageCircle), findsOneWidget);
     });
 
-    testWidgets('does not search when query is less than 2 characters',
-        (tester) async {
+    testWidgets('does not search when query is less than 2 characters', (
+      tester,
+    ) async {
       await pumpLocalizedApp(
         tester,
         buildSubject(notifierFactory: _FakeMessagingFormNotifier.new),
@@ -121,17 +122,21 @@ void main() {
       await tester.pump(const Duration(milliseconds: 350));
       await tester.pumpAndSettle();
 
-      verifyNever(() => mockRepo.searchProfiles(
-            any(),
-            excludeUserId: any(named: 'excludeUserId'),
-          ));
+      verifyNever(
+        () => mockRepo.searchProfiles(
+          any(),
+          excludeUserId: any(named: 'excludeUserId'),
+        ),
+      );
     });
 
     testWidgets('shows clear button when text is entered', (tester) async {
-      when(() => mockRepo.searchProfiles(
-            any(),
-            excludeUserId: any(named: 'excludeUserId'),
-          )).thenAnswer((_) async => []);
+      when(
+        () => mockRepo.searchProfiles(
+          any(),
+          excludeUserId: any(named: 'excludeUserId'),
+        ),
+      ).thenAnswer((_) async => []);
 
       await pumpLocalizedApp(
         tester,
@@ -152,10 +157,12 @@ void main() {
     testWidgets('shows loading indicator during search', (tester) async {
       final completer = Completer<List<Map<String, dynamic>>>();
 
-      when(() => mockRepo.searchProfiles(
-            any(),
-            excludeUserId: any(named: 'excludeUserId'),
-          )).thenAnswer((_) => completer.future);
+      when(
+        () => mockRepo.searchProfiles(
+          any(),
+          excludeUserId: any(named: 'excludeUserId'),
+        ),
+      ).thenAnswer((_) => completer.future);
 
       await pumpLocalizedApp(
         tester,

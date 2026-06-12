@@ -12,11 +12,10 @@ ParentGenotype _geno(BirdGender g, Map<String, AlleleState> m) =>
 List<OffspringResult> _cross(
   Map<String, AlleleState> fatherMuts,
   Map<String, AlleleState> motherMuts,
-) =>
-    _calc.calculateFromGenotypes(
-      father: _geno(BirdGender.male, fatherMuts),
-      mother: _geno(BirdGender.female, motherMuts),
-    );
+) => _calc.calculateFromGenotypes(
+  father: _geno(BirdGender.male, fatherMuts),
+  mother: _geno(BirdGender.female, motherMuts),
+);
 
 void main() {
   // -----------------------------------------------------------------------
@@ -71,19 +70,21 @@ void main() {
       expect(normal.probability, closeTo(0.25, 0.0001));
     });
 
-    test('incomplete dominant: hetero x hetero -> 25 DF / 50 SF / 25 normal',
-        () {
-      final r = _cross(
-        {'dark_factor': AlleleState.carrier},
-        {'dark_factor': AlleleState.carrier},
-      );
-      final df = r.firstWhere((x) => x.phenotype.contains('double'));
-      final sf = r.firstWhere((x) => x.phenotype.contains('single'));
-      final normal = r.firstWhere((x) => x.phenotype == 'Normal');
-      expect(df.probability, closeTo(0.25, 0.0001));
-      expect(sf.probability, closeTo(0.50, 0.0001));
-      expect(normal.probability, closeTo(0.25, 0.0001));
-    });
+    test(
+      'incomplete dominant: hetero x hetero -> 25 DF / 50 SF / 25 normal',
+      () {
+        final r = _cross(
+          {'dark_factor': AlleleState.carrier},
+          {'dark_factor': AlleleState.carrier},
+        );
+        final df = r.firstWhere((x) => x.phenotype.contains('double'));
+        final sf = r.firstWhere((x) => x.phenotype.contains('single'));
+        final normal = r.firstWhere((x) => x.phenotype == 'Normal');
+        expect(df.probability, closeTo(0.25, 0.0001));
+        expect(sf.probability, closeTo(0.50, 0.0001));
+        expect(normal.probability, closeTo(0.25, 0.0001));
+      },
+    );
 
     test('sex-linked: carrier male x normal female -> carriers + visuals', () {
       final r = _calc.calculateFromGenotypes(

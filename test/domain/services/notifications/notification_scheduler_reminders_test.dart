@@ -173,8 +173,9 @@ void main() {
             payload: null,
           ),
         ).called(1);
-        verify(() => mockRateLimiter.recordSent('test_type', 'user-1'))
-            .called(1);
+        verify(
+          () => mockRateLimiter.recordSent('test_type', 'user-1'),
+        ).called(1);
       });
 
       test('returns false when rate limited', () async {

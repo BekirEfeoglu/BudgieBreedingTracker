@@ -14,16 +14,16 @@ Widget _wrap(Widget child, {List<dynamic> overrides = const []}) {
   return ProviderScope(
     overrides: overrides.cast(),
     child: MaterialApp(
-      home: Scaffold(
-        body: SingleChildScrollView(child: child),
-      ),
+      home: Scaffold(body: SingleChildScrollView(child: child)),
     ),
   );
 }
+
 void main() {
   group('DihybridPunnettSection', () {
     testWidgets('renders without crashing with available loci', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const DihybridPunnettSection(
             availableLoci: ['blue', 'opaline', 'cinnamon'],
@@ -33,29 +33,32 @@ void main() {
       expect(find.byType(DihybridPunnettSection), findsOneWidget);
     });
 
-    testWidgets('returns SizedBox.shrink when no second loci options available',
-        (tester) async {
-      // When first selected locus is the only one available, secondLociOptions
-      // is empty and widget should shrink.
-      await pumpLocalizedApp(tester,
-        _wrap(
-          const DihybridPunnettSection(availableLoci: ['blue']),
-          overrides: [
-            effectivePunnettLocusProvider.overrideWith((ref) => 'blue'),
-          ],
-        ),
-      );
-      // The widget renders but is essentially invisible (SizedBox.shrink)
-      expect(find.text(l10n('genetics.dihybrid_punnett')), findsNothing);
-    });
-
-    testWidgets('shows dihybrid title text when multiple loci available',
-        (tester) async {
-      await pumpLocalizedApp(tester,
-        _wrap(
-          const DihybridPunnettSection(
-            availableLoci: ['blue', 'opaline'],
+    testWidgets(
+      'returns SizedBox.shrink when no second loci options available',
+      (tester) async {
+        // When first selected locus is the only one available, secondLociOptions
+        // is empty and widget should shrink.
+        await pumpLocalizedApp(
+          tester,
+          _wrap(
+            const DihybridPunnettSection(availableLoci: ['blue']),
+            overrides: [
+              effectivePunnettLocusProvider.overrideWith((ref) => 'blue'),
+            ],
           ),
+        );
+        // The widget renders but is essentially invisible (SizedBox.shrink)
+        expect(find.text(l10n('genetics.dihybrid_punnett')), findsNothing);
+      },
+    );
+
+    testWidgets('shows dihybrid title text when multiple loci available', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
+        _wrap(
+          const DihybridPunnettSection(availableLoci: ['blue', 'opaline']),
           overrides: [
             effectivePunnettLocusProvider.overrideWith((ref) => 'blue'),
           ],
@@ -65,7 +68,8 @@ void main() {
     });
 
     testWidgets('shows second locus label text', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const DihybridPunnettSection(
             availableLoci: ['blue', 'opaline', 'cinnamon'],
@@ -79,7 +83,8 @@ void main() {
     });
 
     testWidgets('shows dropdown for second locus selection', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const DihybridPunnettSection(
             availableLoci: ['blue', 'opaline', 'cinnamon'],
@@ -89,38 +94,32 @@ void main() {
           ],
         ),
       );
-      expect(
-        find.byType(DropdownButtonFormField<String?>),
-        findsOneWidget,
-      );
+      expect(find.byType(DropdownButtonFormField<String?>), findsOneWidget);
     });
 
-    testWidgets('excludes first selected locus from dropdown options',
-        (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('excludes first selected locus from dropdown options', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(
-          const DihybridPunnettSection(
-            availableLoci: ['blue', 'opaline'],
-          ),
+          const DihybridPunnettSection(availableLoci: ['blue', 'opaline']),
           overrides: [
             effectivePunnettLocusProvider.overrideWith((ref) => 'blue'),
           ],
         ),
       );
       // Dropdown should be present since 'opaline' is still available
-      expect(
-        find.byType(DropdownButtonFormField<String?>),
-        findsOneWidget,
-      );
+      expect(find.byType(DropdownButtonFormField<String?>), findsOneWidget);
     });
 
-    testWidgets('does not show PunnettSquareWidget when no dihybrid data',
-        (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('does not show PunnettSquareWidget when no dihybrid data', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(
-          const DihybridPunnettSection(
-            availableLoci: ['blue', 'opaline'],
-          ),
+          const DihybridPunnettSection(availableLoci: ['blue', 'opaline']),
           overrides: [
             effectivePunnettLocusProvider.overrideWith((ref) => 'blue'),
             dihybridPunnettSquareProvider.overrideWith((ref) => null),
@@ -130,8 +129,9 @@ void main() {
       expect(find.byType(PunnettSquareWidget), findsNothing);
     });
 
-    testWidgets('shows PunnettSquareWidget when dihybrid data is available',
-        (tester) async {
+    testWidgets('shows PunnettSquareWidget when dihybrid data is available', (
+      tester,
+    ) async {
       const dihybridData = PunnettSquareData(
         mutationName: 'Blue x Opaline',
         fatherAlleles: ['b+', 'b'],
@@ -143,15 +143,13 @@ void main() {
         isSexLinked: false,
       );
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
-          const DihybridPunnettSection(
-            availableLoci: ['blue', 'opaline'],
-          ),
+          const DihybridPunnettSection(availableLoci: ['blue', 'opaline']),
           overrides: [
             effectivePunnettLocusProvider.overrideWith((ref) => 'blue'),
-            dihybridPunnettSquareProvider
-                .overrideWith((ref) => dihybridData),
+            dihybridPunnettSquareProvider.overrideWith((ref) => dihybridData),
           ],
         ),
       );
@@ -161,40 +159,35 @@ void main() {
 
   group('PunnettLocusSelector', () {
     testWidgets('renders without crashing', (tester) async {
-      await pumpLocalizedApp(tester,
-        _wrap(
-          const PunnettLocusSelector(availableLoci: ['blue', 'opaline']),
-        ),
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const PunnettLocusSelector(availableLoci: ['blue', 'opaline'])),
       );
       expect(find.byType(PunnettLocusSelector), findsOneWidget);
     });
 
     testWidgets('shows select_punnett_locus label text', (tester) async {
-      await pumpLocalizedApp(tester,
-        _wrap(
-          const PunnettLocusSelector(availableLoci: ['blue', 'opaline']),
-        ),
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const PunnettLocusSelector(availableLoci: ['blue', 'opaline'])),
       );
       expect(find.text(l10n('genetics.select_punnett_locus')), findsOneWidget);
     });
 
-    testWidgets('shows dropdown form field for locus selection', (tester) async {
-      await pumpLocalizedApp(tester,
-        _wrap(
-          const PunnettLocusSelector(availableLoci: ['blue', 'opaline']),
-        ),
+    testWidgets('shows dropdown form field for locus selection', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const PunnettLocusSelector(availableLoci: ['blue', 'opaline'])),
       );
-      expect(
-        find.byType(DropdownButtonFormField<String>),
-        findsOneWidget,
-      );
+      expect(find.byType(DropdownButtonFormField<String>), findsOneWidget);
     });
 
     testWidgets('renders Row layout', (tester) async {
-      await pumpLocalizedApp(tester,
-        _wrap(
-          const PunnettLocusSelector(availableLoci: ['blue']),
-        ),
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const PunnettLocusSelector(availableLoci: ['blue'])),
       );
       expect(find.byType(Row), findsAtLeastNWidgets(1));
     });

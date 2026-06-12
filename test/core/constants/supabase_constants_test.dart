@@ -117,8 +117,11 @@ void main() {
           SupabaseConstants.backupSettingsTable,
         ];
 
-        expect(tables.toSet().length, tables.length,
-            reason: 'All table names must be unique');
+        expect(
+          tables.toSet().length,
+          tables.length,
+          reason: 'All table names must be unique',
+        );
       });
     });
 
@@ -173,8 +176,11 @@ void main() {
         ];
 
         for (final table in communityTables) {
-          expect(table.startsWith('community_'), isTrue,
-              reason: '"$table" should start with community_');
+          expect(
+            table.startsWith('community_'),
+            isTrue,
+            reason: '"$table" should start with community_',
+          );
         }
       });
     });
@@ -191,8 +197,11 @@ void main() {
         ];
 
         for (final bucket in buckets) {
-          expect(bucket, isNotEmpty,
-              reason: 'Bucket constant must not be empty');
+          expect(
+            bucket,
+            isNotEmpty,
+            reason: 'Bucket constant must not be empty',
+          );
         }
       });
 
@@ -226,8 +235,11 @@ void main() {
           SupabaseConstants.communityPhotosBucket,
         ];
 
-        expect(buckets.toSet().length, buckets.length,
-            reason: 'All bucket names must be unique');
+        expect(
+          buckets.toSet().length,
+          buckets.length,
+          reason: 'All bucket names must be unique',
+        );
       });
 
       test('expected bucket values', () {
@@ -261,10 +273,14 @@ void main() {
         expect(SupabaseConstants.communityPostsTable, 'community_posts');
         expect(SupabaseConstants.communityCommentsTable, 'community_comments');
         expect(SupabaseConstants.communityLikesTable, 'community_likes');
-        expect(SupabaseConstants.communityBookmarksTable,
-            'community_bookmarks');
-        expect(SupabaseConstants.communityCommentLikesTable,
-            'community_comment_likes');
+        expect(
+          SupabaseConstants.communityBookmarksTable,
+          'community_bookmarks',
+        );
+        expect(
+          SupabaseConstants.communityCommentLikesTable,
+          'community_comment_likes',
+        );
         expect(SupabaseConstants.communityFollowsTable, 'community_follows');
         expect(SupabaseConstants.communityReportsTable, 'community_reports');
         expect(SupabaseConstants.communityBlocksTable, 'community_blocks');

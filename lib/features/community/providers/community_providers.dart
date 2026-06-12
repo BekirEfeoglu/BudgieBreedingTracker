@@ -47,8 +47,8 @@ class CommunityActiveTabNotifier extends Notifier<CommunityFeedTab> {
 
 final communityActiveTabProvider =
     NotifierProvider<CommunityActiveTabNotifier, CommunityFeedTab>(
-  CommunityActiveTabNotifier.new,
-);
+      CommunityActiveTabNotifier.new,
+    );
 
 /// Shared relative date formatter for community widgets.
 String formatCommunityDate(DateTime? date) {

@@ -13,12 +13,7 @@ Widget _createSubject({required Size size}) {
     routes: [
       ShellRoute(
         builder: (_, __, child) => MainShell(child: child),
-        routes: [
-          GoRoute(
-            path: '/',
-            builder: (_, __) => const Placeholder(),
-          ),
-        ],
+        routes: [GoRoute(path: '/', builder: (_, __) => const Placeholder())],
       ),
     ],
   );

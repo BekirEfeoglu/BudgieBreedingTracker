@@ -33,8 +33,9 @@ void main() {
       overrides: [
         currentUserIdProvider.overrideWithValue(_testUserId),
         marketplaceRepositoryProvider.overrideWithValue(mockRepo),
-        marketplaceFormStateProvider
-            .overrideWith(() => MarketplaceFormNotifier()),
+        marketplaceFormStateProvider.overrideWith(
+          () => MarketplaceFormNotifier(),
+        ),
       ],
       child: MaterialApp(
         home: MarketplaceFormScreen(editListingId: editListingId),
@@ -43,20 +44,19 @@ void main() {
   }
 
   group('MarketplaceFormScreen', () {
-    testWidgets('renders new listing form title when no editId',
-        (tester) async {
+    testWidgets('renders new listing form title when no editId', (
+      tester,
+    ) async {
       await pumpLocalizedApp(tester, buildSubject());
 
       // AppBar title should show "new listing" key
       expect(find.text('marketplace.new_listing'), findsOneWidget);
     });
 
-    testWidgets('renders edit listing form title when editId provided',
-        (tester) async {
-      await pumpLocalizedApp(
-        tester,
-        buildSubject(editListingId: 'edit-1'),
-      );
+    testWidgets('renders edit listing form title when editId provided', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(tester, buildSubject(editListingId: 'edit-1'));
 
       expect(find.text('marketplace.edit_listing'), findsOneWidget);
     });
@@ -90,12 +90,10 @@ void main() {
       expect(find.text('marketplace.publish'), findsOneWidget);
     });
 
-    testWidgets('renders PrimaryButton with update label in edit mode',
-        (tester) async {
-      await pumpLocalizedApp(
-        tester,
-        buildSubject(editListingId: 'edit-1'),
-      );
+    testWidgets('renders PrimaryButton with update label in edit mode', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(tester, buildSubject(editListingId: 'edit-1'));
 
       expect(find.byType(PrimaryButton), findsOneWidget);
       expect(find.text('common.update'), findsOneWidget);
@@ -116,8 +114,9 @@ void main() {
       expect(find.text('marketplace.title_required'), findsOneWidget);
     });
 
-    testWidgets('validates required description field on submit',
-        (tester) async {
+    testWidgets('validates required description field on submit', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(800, 1600);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);

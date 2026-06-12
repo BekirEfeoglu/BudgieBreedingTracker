@@ -53,14 +53,16 @@ const _compoundResult = OffspringResult(
 void main() {
   group('OffspringPrediction', () {
     testWidgets('renders without crashing', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const OffspringPrediction(result: _basicResult)),
       );
       expect(find.byType(OffspringPrediction), findsOneWidget);
     });
 
     testWidgets('shows phenotype name', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const OffspringPrediction(result: _basicResult)),
       );
       expect(
@@ -70,14 +72,16 @@ void main() {
     });
 
     testWidgets('shows probability percentage', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const OffspringPrediction(result: _basicResult)),
       );
       expect(find.textContaining('%50.0'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows carrier badge when isCarrier is true', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const OffspringPrediction(result: _carrierResult)),
       );
       expect(find.text(l10n('genetics.carrier')), findsAtLeastNWidgets(1));
@@ -86,14 +90,16 @@ void main() {
     testWidgets('shows lethal badge when lethalCombinationIds is not empty', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const OffspringPrediction(result: _lethalResult)),
       );
       expect(find.text(l10n('genetics.lethal_badge')), findsOneWidget);
     });
 
     testWidgets('shows Card widget', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const OffspringPrediction(result: _basicResult)),
       );
       expect(find.byType(Card), findsOneWidget);
@@ -102,14 +108,16 @@ void main() {
     testWidgets('shows CircularProgressIndicator for probability', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const OffspringPrediction(result: _basicResult)),
       );
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
     testWidgets('shows male sex icon for male offspring', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const OffspringPrediction(result: _maleResult)),
       );
       // AppIcon widget is present (sex icon uses SVG AppIcon)
@@ -117,7 +125,8 @@ void main() {
     });
 
     testWidgets('shows compound phenotype name when provided', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const OffspringPrediction(result: _compoundResult)),
       );
       expect(
@@ -127,7 +136,8 @@ void main() {
     });
 
     testWidgets('shows carried mutations when not empty', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const OffspringPrediction(result: _carrierResult)),
       );
       expect(
@@ -144,7 +154,8 @@ void main() {
         probability: 0.5,
         genotype: '+/+ bl/bl',
       );
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const OffspringPrediction(
             result: resultWithGenotype,
@@ -157,35 +168,39 @@ void main() {
     });
 
     testWidgets('renders with female sex correctly', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const OffspringPrediction(result: _femaleResult)),
       );
       expect(find.byType(OffspringPrediction), findsOneWidget);
     });
 
     testWidgets('has Semantics wrapper for accessibility', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const OffspringPrediction(result: _basicResult)),
       );
       expect(find.byType(Semantics), findsAtLeastNWidgets(1));
     });
 
     group('probability indicator', () {
-      testWidgets('low probability (<1%) shows text badge instead of circular',
-          (tester) async {
-        const lowResult = OffspringResult(
-          phenotype: 'Rare Phenotype',
-          probability: 0.005,
-        );
-        await pumpLocalizedApp(
-          tester,
-          _wrap(const OffspringPrediction(result: lowResult)),
-        );
-        // No circular indicator for very low probabilities
-        expect(find.byType(CircularProgressIndicator), findsNothing);
-        // Text badge shows actual percentage
-        expect(find.text('%0.5'), findsOneWidget);
-      });
+      testWidgets(
+        'low probability (<1%) shows text badge instead of circular',
+        (tester) async {
+          const lowResult = OffspringResult(
+            phenotype: 'Rare Phenotype',
+            probability: 0.005,
+          );
+          await pumpLocalizedApp(
+            tester,
+            _wrap(const OffspringPrediction(result: lowResult)),
+          );
+          // No circular indicator for very low probabilities
+          expect(find.byType(CircularProgressIndicator), findsNothing);
+          // Text badge shows actual percentage
+          expect(find.text('%0.5'), findsOneWidget);
+        },
+      );
 
       testWidgets('low probability still shows actual percentage text', (
         tester,
@@ -235,19 +250,14 @@ void main() {
     });
 
     group('carrier mutations summary', () {
-      testWidgets('shows +N more badge when mutations exceed visible limit',
-          (tester) async {
+      testWidgets('shows +N more badge when mutations exceed visible limit', (
+        tester,
+      ) async {
         const multiCarrierResult = OffspringResult(
           phenotype: 'Normal Green',
           probability: 0.25,
           isCarrier: true,
-          carriedMutations: [
-            'Blue',
-            'Opaline',
-            'Cinnamon',
-            'Ino',
-            'Fallow',
-          ],
+          carriedMutations: ['Blue', 'Opaline', 'Cinnamon', 'Ino', 'Fallow'],
         );
         await pumpLocalizedApp(
           tester,
@@ -278,7 +288,8 @@ void main() {
       testWidgets('percentage shown only in circular indicator', (
         tester,
       ) async {
-        await pumpLocalizedApp(tester,
+        await pumpLocalizedApp(
+          tester,
           _wrap(const OffspringPrediction(result: _basicResult)),
         );
         // Percentage text appears exactly once (inside circular indicator)

@@ -37,7 +37,8 @@ void main() {
     testWidgets('renders without crashing with all-both results', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const SexSpecificResults(results: [_bothResult])),
       );
       expect(find.byType(SexSpecificResults), findsOneWidget);
@@ -46,7 +47,8 @@ void main() {
     testWidgets('shows no TabBar when all results are OffspringSex.both', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const SexSpecificResults(results: [_bothResult])),
       );
       // No sex-specific results → no tab bar
@@ -54,7 +56,8 @@ void main() {
     });
 
     testWidgets('shows TabBar when sex-specific results exist', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const SexSpecificResults(results: [_maleResult, _femaleResult])),
       );
       expect(find.byType(TabBar), findsOneWidget);
@@ -63,7 +66,8 @@ void main() {
     testWidgets('shows three tabs when sex-specific results exist', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const SexSpecificResults(results: [_maleResult, _femaleResult])),
       );
       expect(find.text(l10n('genetics.all_offspring')), findsOneWidget);
@@ -72,7 +76,8 @@ void main() {
     });
 
     testWidgets('shows OffspringPrediction cards for results', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const SexSpecificResults(results: [_bothResult])),
       );
       expect(find.byType(OffspringPrediction), findsAtLeastNWidgets(1));
@@ -81,7 +86,10 @@ void main() {
     testWidgets('shows empty message when results list is empty', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,_wrap(const SexSpecificResults(results: [])));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const SexSpecificResults(results: [])),
+      );
       // _ResultsList shows no_results text
       expect(find.text(l10n('genetics.no_results')), findsOneWidget);
     });
@@ -98,7 +106,10 @@ void main() {
             sex: OffspringSex.both,
           ),
         );
-        await pumpLocalizedApp(tester,_wrap(SexSpecificResults(results: results)));
+        await pumpLocalizedApp(
+          tester,
+          _wrap(SexSpecificResults(results: results)),
+        );
         expect(find.text(l10n('genetics.show_more_results')), findsOneWidget);
       },
     );
@@ -114,7 +125,10 @@ void main() {
           sex: OffspringSex.both,
         ),
       );
-      await pumpLocalizedApp(tester,_wrap(SexSpecificResults(results: results)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(SexSpecificResults(results: results)),
+      );
       expect(find.text(l10n('genetics.show_more_results')), findsNothing);
     });
 
@@ -127,7 +141,10 @@ void main() {
           sex: OffspringSex.both,
         ),
       );
-      await pumpLocalizedApp(tester,_wrap(SexSpecificResults(results: results)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(SexSpecificResults(results: results)),
+      );
       final showMoreFinder = find.text(l10n('genetics.show_more_results'));
       await tester.ensureVisible(showMoreFinder);
       await tester.tap(showMoreFinder, warnIfMissed: false);
@@ -137,7 +154,8 @@ void main() {
     });
 
     testWidgets('renders with mixed sex results', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const SexSpecificResults(
             results: [_bothResult, _maleResult, _femaleResult],

@@ -14,9 +14,8 @@ import 'package:budgie_breeding_tracker/features/marketplace/widgets/marketplace
 
 import '../../../helpers/test_localization.dart';
 
-Finder _findHeartAppIcon() => find.byWidgetPredicate(
-      (w) => w is AppIcon && w.asset == AppIcons.heart,
-    );
+Finder _findHeartAppIcon() =>
+    find.byWidgetPredicate((w) => w is AppIcon && w.asset == AppIcons.heart);
 
 const _saleListing = MarketplaceListing(
   id: 'listing-1',
@@ -129,8 +128,9 @@ void main() {
       expect(find.text('750 TRY'), findsNothing);
     });
 
-    testWidgets('shows free label for adoption listing with no price',
-        (tester) async {
+    testWidgets('shows free label for adoption listing with no price', (
+      tester,
+    ) async {
       await pumpLocalizedWidget(
         tester,
         const MarketplaceListingCard(listing: _adoptionListing),
@@ -216,8 +216,9 @@ void main() {
       expect(find.text('3'), findsOneWidget);
     });
 
-    testWidgets('does not show photo count badge for single image',
-        (tester) async {
+    testWidgets('does not show photo count badge for single image', (
+      tester,
+    ) async {
       await pumpLocalizedWidget(
         tester,
         const MarketplaceListingCard(listing: _listingWithImage),
@@ -227,8 +228,9 @@ void main() {
       expect(find.byIcon(LucideIcons.camera), findsNothing);
     });
 
-    testWidgets('hides heart icon overlay when onFavoriteToggle is null',
-        (tester) async {
+    testWidgets('hides heart icon overlay when onFavoriteToggle is null', (
+      tester,
+    ) async {
       // Without a callback the heart is dead UI, so it's now hidden
       // entirely. Callers that want the heart pass onFavoriteToggle.
       await pumpLocalizedWidget(
@@ -239,14 +241,12 @@ void main() {
       expect(_findHeartAppIcon(), findsNothing);
     });
 
-    testWidgets('shows heart icon overlay when onFavoriteToggle is wired',
-        (tester) async {
+    testWidgets('shows heart icon overlay when onFavoriteToggle is wired', (
+      tester,
+    ) async {
       await pumpLocalizedWidget(
         tester,
-        MarketplaceListingCard(
-          listing: _saleListing,
-          onFavoriteToggle: () {},
-        ),
+        MarketplaceListingCard(listing: _saleListing, onFavoriteToggle: () {}),
       );
 
       expect(_findHeartAppIcon(), findsWidgets);
@@ -297,8 +297,9 @@ void main() {
       expect(find.byType(MarketplaceListingCard), findsOneWidget);
     });
 
-    testWidgets('heart icon has active color for favorited listing',
-        (tester) async {
+    testWidgets('heart icon has active color for favorited listing', (
+      tester,
+    ) async {
       await pumpLocalizedWidget(
         tester,
         MarketplaceListingCard(

@@ -1,7 +1,8 @@
 import 'package:budgie_breeding_tracker/core/constants/incubation_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/species/species_registry.dart';
-import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart'
+    as date_utils;
 
 int incubationDaysForSpecies(Species species) =>
     SpeciesRegistry.of(species).incubationPeriodDays;

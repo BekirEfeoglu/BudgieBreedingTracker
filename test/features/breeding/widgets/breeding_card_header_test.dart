@@ -153,7 +153,10 @@ void main() {
 
       await _pump(tester, BreedingCardHeader(pair: pair));
 
-      expect(find.textContaining(l10nContains('breeding.cage_label')), findsNothing);
+      expect(
+        find.textContaining(l10nContains('breeding.cage_label')),
+        findsNothing,
+      );
     });
 
     testWidgets('shows StatusBadge', (tester) async {

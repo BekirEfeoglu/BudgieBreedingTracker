@@ -35,7 +35,7 @@ class FreeTierLimitException extends AppException {
   final int limit;
 
   FreeTierLimitException(this.entityType, this.limit)
-      : super('Free tier limit reached for $entityType');
+    : super('Free tier limit reached for $entityType');
 }
 
 /// Thrown when a requested entity does not exist (DB miss, stale ID).

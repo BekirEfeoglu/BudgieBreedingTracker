@@ -39,9 +39,7 @@ Future<T?> showAppBottomSheet<T>({
     elevation: elevation,
     barrierColor: barrierColor,
     builder: (ctx) => Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.viewInsetsOf(ctx).bottom,
-      ),
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
       child: SafeArea(
         minimum: const EdgeInsets.only(bottom: 16),
         child: builder(ctx),

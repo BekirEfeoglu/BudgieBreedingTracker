@@ -17,9 +17,8 @@ class GamificationRepository {
   final GamificationRemoteSource _remoteSource;
   late final GamificationService _service;
 
-  GamificationRepository({
-    required GamificationRemoteSource remoteSource,
-  }) : _remoteSource = remoteSource {
+  GamificationRepository({required GamificationRemoteSource remoteSource})
+    : _remoteSource = remoteSource {
     _service = GamificationService(_remoteSource);
   }
 

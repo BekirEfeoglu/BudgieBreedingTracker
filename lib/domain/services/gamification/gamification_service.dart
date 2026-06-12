@@ -46,8 +46,10 @@ class GamificationService {
       // Check daily limit
       final dailyLimit = XpConstants.getDailyLimit(action);
       if (dailyLimit != null) {
-        final todayCount =
-            await _remoteSource.fetchDailyActionCount(userId, action.toJson());
+        final todayCount = await _remoteSource.fetchDailyActionCount(
+          userId,
+          action.toJson(),
+        );
         if (todayCount >= dailyLimit) return;
       }
 
@@ -80,8 +82,7 @@ class GamificationService {
   Future<void> _updateUserLevel(String userId, int addedXp) async {
     try {
       final existing = await _remoteSource.fetchUserLevel(userId);
-      final currentTotalXp =
-          (existing?['total_xp'] as int? ?? 0) + addedXp;
+      final currentTotalXp = (existing?['total_xp'] as int? ?? 0) + addedXp;
       final levelResult = LevelCalculator.calculateLevel(currentTotalXp);
       final title = LevelCalculator.titleForLevel(levelResult.level);
 
@@ -113,10 +114,7 @@ class GamificationService {
     }
   }
 
-  Future<void> _updateBadgeProgress(
-    String userId,
-    XpAction action,
-  ) async {
+  Future<void> _updateBadgeProgress(String userId, XpAction action) async {
     try {
       final badges = await _remoteSource.fetchBadges();
       final userBadges = await _remoteSource.fetchUserBadges(userId);
@@ -169,9 +167,14 @@ class GamificationService {
             });
             // Update level directly without triggering badge progress again
             final existingLevel = await _remoteSource.fetchUserLevel(userId);
-            final updatedTotalXp = (existingLevel?['total_xp'] as int? ?? 0) + xpReward;
-            final bonusLevelResult = LevelCalculator.calculateLevel(updatedTotalXp);
-            final bonusTitle = LevelCalculator.titleForLevel(bonusLevelResult.level);
+            final updatedTotalXp =
+                (existingLevel?['total_xp'] as int? ?? 0) + xpReward;
+            final bonusLevelResult = LevelCalculator.calculateLevel(
+              updatedTotalXp,
+            );
+            final bonusTitle = LevelCalculator.titleForLevel(
+              bonusLevelResult.level,
+            );
 
             final bonusLevelData = <String, dynamic>{
               'user_id': userId,
@@ -200,15 +203,15 @@ class GamificationService {
   }
 
   List<String> _getRelatedBadgeKeys(XpAction action) => switch (action) {
-        XpAction.addBird => ['first_bird', 'bird_lover_10', 'bird_paradise_50'],
-        XpAction.createBreeding => ['first_breeding', 'breeder_10', 'breeder_50'],
-        XpAction.recordChick => ['first_chick', 'chick_100'],
-        XpAction.sharePost => ['social_butterfly_50'],
-        XpAction.addComment => ['commenter_100'],
-        XpAction.createListing => ['market_pro_20'],
-        XpAction.addHealthRecord => ['health_tracker_50'],
-        _ => [],
-      };
+    XpAction.addBird => ['first_bird', 'bird_lover_10', 'bird_paradise_50'],
+    XpAction.createBreeding => ['first_breeding', 'breeder_10', 'breeder_50'],
+    XpAction.recordChick => ['first_chick', 'chick_100'],
+    XpAction.sharePost => ['social_butterfly_50'],
+    XpAction.addComment => ['commenter_100'],
+    XpAction.createListing => ['market_pro_20'],
+    XpAction.addHealthRecord => ['health_tracker_50'],
+    _ => [],
+  };
 
   /// Minimum entity counts required for verified breeder status.
   static const _verifiedBreederCriteria = {

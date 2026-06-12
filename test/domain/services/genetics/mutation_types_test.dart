@@ -26,12 +26,15 @@ void main() {
 
   group('Dominance', () {
     test('has all expected values', () {
-      expect(Dominance.values, containsAll([
-        Dominance.dominant,
-        Dominance.recessive,
-        Dominance.incompleteDominant,
-        Dominance.codominant,
-      ]));
+      expect(
+        Dominance.values,
+        containsAll([
+          Dominance.dominant,
+          Dominance.recessive,
+          Dominance.incompleteDominant,
+          Dominance.codominant,
+        ]),
+      );
     });
   });
 

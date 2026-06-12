@@ -1,7 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
-import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart'
+    as date_utils;
 
 part 'chick_model.freezed.dart';
 part 'chick_model.g.dart';

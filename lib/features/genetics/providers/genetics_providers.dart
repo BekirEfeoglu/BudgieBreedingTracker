@@ -23,8 +23,13 @@ final mendelianCalculatorProvider = Provider<MendelianCalculator>((ref) {
 // IMPROVED: run genetics calculation in isolate to avoid UI thread blocking
 // for complex genotypes (8+ mutations). Uses compute() like reverse calculator.
 List<OffspringResult> _calculateInIsolate(
-  ({Map<String, String> father, String fatherGender,
-    Map<String, String> mother, String motherGender}) args,
+  ({
+    Map<String, String> father,
+    String fatherGender,
+    Map<String, String> mother,
+    String motherGender,
+  })
+  args,
 ) {
   final fatherMutations = args.father.map(
     (k, v) => MapEntry(k, AlleleState.values.byName(v)),

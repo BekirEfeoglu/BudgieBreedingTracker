@@ -17,7 +17,10 @@ class GenerationLabel extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.xs, top: AppSpacing.xs),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: _connectorPaddingH, vertical: _connectorPaddingV),
+        padding: const EdgeInsets.symmetric(
+          horizontal: _connectorPaddingH,
+          vertical: _connectorPaddingV,
+        ),
         decoration: BoxDecoration(
           color: theme.colorScheme.surfaceContainerHighest.withValues(
             alpha: 0.6,

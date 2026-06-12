@@ -77,19 +77,13 @@ void main() {
     });
 
     test('Creamino from bluefactor_1 + ino (implicitly blue series)', () {
-      final result = engine.resolveCompoundPhenotype({
-        'bluefactor_1',
-        'ino',
-      });
+      final result = engine.resolveCompoundPhenotype({'bluefactor_1', 'ino'});
 
       expect(result, contains('Creamino'));
     });
 
     test('Creamino from bluefactor_2 + ino (implicitly blue series)', () {
-      final result = engine.resolveCompoundPhenotype({
-        'bluefactor_2',
-        'ino',
-      });
+      final result = engine.resolveCompoundPhenotype({'bluefactor_2', 'ino'});
 
       expect(result, contains('Creamino'));
     });
@@ -155,19 +149,13 @@ void main() {
     });
 
     test('Ino masks Grey', () {
-      final result = engine.resolveCompoundPhenotypeDetailed({
-        'ino',
-        'grey',
-      });
+      final result = engine.resolveCompoundPhenotypeDetailed({'ino', 'grey'});
 
       expect(result.maskedMutations, contains('Grey'));
     });
 
     test('Ino masks Violet', () {
-      final result = engine.resolveCompoundPhenotypeDetailed({
-        'ino',
-        'violet',
-      });
+      final result = engine.resolveCompoundPhenotypeDetailed({'ino', 'violet'});
 
       expect(result.maskedMutations, contains('Violet'));
     });
@@ -191,19 +179,13 @@ void main() {
     });
 
     test('Ino masks Dilute', () {
-      final result = engine.resolveCompoundPhenotypeDetailed({
-        'ino',
-        'dilute',
-      });
+      final result = engine.resolveCompoundPhenotypeDetailed({'ino', 'dilute'});
 
       expect(result.maskedMutations, contains('Dilute'));
     });
 
     test('Ino masks Slate', () {
-      final result = engine.resolveCompoundPhenotypeDetailed({
-        'ino',
-        'slate',
-      });
+      final result = engine.resolveCompoundPhenotypeDetailed({'ino', 'slate'});
 
       expect(result.maskedMutations, contains('Slate'));
     });
@@ -227,10 +209,7 @@ void main() {
     });
 
     test('Ino masks Pearly', () {
-      final result = engine.resolveCompoundPhenotypeDetailed({
-        'ino',
-        'pearly',
-      });
+      final result = engine.resolveCompoundPhenotypeDetailed({'ino', 'pearly'});
 
       expect(result.maskedMutations, contains('Pearly'));
     });
@@ -784,13 +763,7 @@ void main() {
     });
 
     test('result is deterministic across multiple calls', () {
-      const mutations = {
-        'blue',
-        'violet',
-        'dark_factor',
-        'opaline',
-        'spangle',
-      };
+      const mutations = {'blue', 'violet', 'dark_factor', 'opaline', 'spangle'};
 
       final result1 = engine.resolveCompoundPhenotype(mutations);
       final result2 = engine.resolveCompoundPhenotype(mutations);
@@ -807,10 +780,7 @@ void main() {
     });
 
     test('Blackface with Spangle does NOT show standalone Blackface', () {
-      final result = engine.resolveCompoundPhenotype({
-        'blackface',
-        'spangle',
-      });
+      final result = engine.resolveCompoundPhenotype({'blackface', 'spangle'});
 
       // Should show "Melanistic Spangle", not separate "Blackface"
       expect(result, contains('Melanistic Spangle'));

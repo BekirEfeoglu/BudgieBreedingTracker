@@ -39,10 +39,7 @@ void main() {
     });
 
     test('default values are correct', () {
-      const transaction = XpTransaction(
-        id: 'xp-1',
-        userId: 'user-1',
-      );
+      const transaction = XpTransaction(id: 'xp-1', userId: 'user-1');
       expect(transaction.action, XpAction.unknown);
       expect(transaction.amount, 0);
       expect(transaction.referenceId, isNull);

@@ -17,9 +17,9 @@ void main() {
 
   setUp(() {
     mockRepo = MockMessagingRepository();
-    container = ProviderContainer(overrides: [
-      messagingRepositoryProvider.overrideWithValue(mockRepo),
-    ]);
+    container = ProviderContainer(
+      overrides: [messagingRepositoryProvider.overrideWithValue(mockRepo)],
+    );
   });
 
   tearDown(() => container.dispose());
@@ -38,9 +38,9 @@ void main() {
         content: 'Hello',
       );
 
-      container.read(messagingRealtimeProvider.notifier).addLocalMessage(
-            message,
-          );
+      container
+          .read(messagingRealtimeProvider.notifier)
+          .addLocalMessage(message);
 
       final state = container.read(messagingRealtimeProvider);
       expect(state.length, 1);

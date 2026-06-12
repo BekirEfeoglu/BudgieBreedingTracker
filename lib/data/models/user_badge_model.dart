@@ -18,7 +18,8 @@ abstract class UserBadge with _$UserBadge {
     DateTime? createdAt,
   }) = _UserBadge;
 
-  factory UserBadge.fromJson(Map<String, dynamic> json) => _$UserBadgeFromJson(json);
+  factory UserBadge.fromJson(Map<String, dynamic> json) =>
+      _$UserBadgeFromJson(json);
 }
 
 extension UserBadgeX on UserBadge {

@@ -204,18 +204,20 @@ void main() {
         // but with different probabilities.
         final container = ProviderContainer(
           overrides: [
-            offspringResultsProvider.overrideWithValue(const AsyncData([
-              OffspringResult(
-                phenotype: 'Albino',
-                probability: 0.25,
-                visualMutations: ['ino', 'blue'],
-              ),
-              OffspringResult(
-                phenotype: 'Albino (carrier)',
-                probability: 0.50,
-                visualMutations: ['ino', 'blue'],
-              ),
-            ])),
+            offspringResultsProvider.overrideWithValue(
+              const AsyncData([
+                OffspringResult(
+                  phenotype: 'Albino',
+                  probability: 0.25,
+                  visualMutations: ['ino', 'blue'],
+                ),
+                OffspringResult(
+                  phenotype: 'Albino (carrier)',
+                  probability: 0.50,
+                  visualMutations: ['ino', 'blue'],
+                ),
+              ]),
+            ),
           ],
         );
         addTearDown(container.dispose);
@@ -236,7 +238,9 @@ void main() {
 
     test('empty results produce empty interactions list', () {
       final container = ProviderContainer(
-        overrides: [offspringResultsProvider.overrideWithValue(const AsyncData([]))],
+        overrides: [
+          offspringResultsProvider.overrideWithValue(const AsyncData([])),
+        ],
       );
       addTearDown(container.dispose);
 
@@ -245,7 +249,9 @@ void main() {
 
     test('null results produce empty interactions list', () {
       final container = ProviderContainer(
-        overrides: [offspringResultsProvider.overrideWithValue(const AsyncData(null))],
+        overrides: [
+          offspringResultsProvider.overrideWithValue(const AsyncData(null)),
+        ],
       );
       addTearDown(container.dispose);
 
@@ -255,13 +261,15 @@ void main() {
     test('results with no visual mutations produce no interactions', () {
       final container = ProviderContainer(
         overrides: [
-          offspringResultsProvider.overrideWithValue(const AsyncData([
-            OffspringResult(
-              phenotype: 'Normal',
-              probability: 1.0,
-              visualMutations: [],
-            ),
-          ])),
+          offspringResultsProvider.overrideWithValue(
+            const AsyncData([
+              OffspringResult(
+                phenotype: 'Normal',
+                probability: 1.0,
+                visualMutations: [],
+              ),
+            ]),
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -276,18 +284,20 @@ void main() {
       // Both should appear independently.
       final container = ProviderContainer(
         overrides: [
-          offspringResultsProvider.overrideWithValue(const AsyncData([
-            OffspringResult(
-              phenotype: 'Lacewing Albino',
-              probability: 0.10,
-              visualMutations: ['ino', 'blue', 'cinnamon'],
-            ),
-            OffspringResult(
-              phenotype: 'Albino',
-              probability: 0.40,
-              visualMutations: ['ino', 'blue'],
-            ),
-          ])),
+          offspringResultsProvider.overrideWithValue(
+            const AsyncData([
+              OffspringResult(
+                phenotype: 'Lacewing Albino',
+                probability: 0.10,
+                visualMutations: ['ino', 'blue', 'cinnamon'],
+              ),
+              OffspringResult(
+                phenotype: 'Albino',
+                probability: 0.40,
+                visualMutations: ['ino', 'blue'],
+              ),
+            ]),
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -340,13 +350,15 @@ void main() {
     test('ino without blue produces Lutino interaction, not Albino', () {
       final container = ProviderContainer(
         overrides: [
-          offspringResultsProvider.overrideWithValue(const AsyncData([
-            OffspringResult(
-              phenotype: 'Lutino',
-              probability: 1.0,
-              visualMutations: ['ino'],
-            ),
-          ])),
+          offspringResultsProvider.overrideWithValue(
+            const AsyncData([
+              OffspringResult(
+                phenotype: 'Lutino',
+                probability: 1.0,
+                visualMutations: ['ino'],
+              ),
+            ]),
+          ),
         ],
       );
       addTearDown(container.dispose);

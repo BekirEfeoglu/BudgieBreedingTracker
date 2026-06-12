@@ -195,56 +195,56 @@ class _DayCell extends StatelessWidget {
           // not smaller than the accessibility floor.
           height: 48,
           child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isSelected
-                    ? theme.colorScheme.primary
-                    : isToday
-                    ? theme.colorScheme.primary.withValues(alpha: 0.15)
-                    : null,
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                '$day',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: isToday || isSelected ? FontWeight.w700 : null,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
                   color: isSelected
-                      ? theme.colorScheme.onPrimary
-                      : isToday
                       ? theme.colorScheme.primary
+                      : isToday
+                      ? theme.colorScheme.primary.withValues(alpha: 0.15)
                       : null,
                 ),
-              ),
-            ),
-            if (hasEvents)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  events.length.clamp(0, 3),
-                  (i) => Container(
-                    width: 4,
-                    height: 4,
-                    margin: const EdgeInsetsDirectional.only(
-                      top: 2,
-                      start: 1,
-                      end: 1,
-                    ),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      // Preserve per-event-type color even on a selected day
-                      // so the type distinction isn't lost.
-                      color: eventTypeColor(events[i].type),
-                    ),
+                alignment: Alignment.center,
+                child: Text(
+                  '$day',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: isToday || isSelected ? FontWeight.w700 : null,
+                    color: isSelected
+                        ? theme.colorScheme.onPrimary
+                        : isToday
+                        ? theme.colorScheme.primary
+                        : null,
                   ),
                 ),
               ),
-          ],
-        ),
+              if (hasEvents)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    events.length.clamp(0, 3),
+                    (i) => Container(
+                      width: 4,
+                      height: 4,
+                      margin: const EdgeInsetsDirectional.only(
+                        top: 2,
+                        start: 1,
+                        end: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        // Preserve per-event-type color even on a selected day
+                        // so the type distinction isn't lost.
+                        color: eventTypeColor(events[i].type),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

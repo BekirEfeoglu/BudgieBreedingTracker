@@ -151,7 +151,8 @@ abstract class MutationDataSexLinked {
       id: 'faded',
       name: 'Faded',
       localizationKey: 'genetics.mutation_faded',
-      description: 'Progressive melanin reduction producing a washed-out appearance',
+      description:
+          'Progressive melanin reduction producing a washed-out appearance',
       inheritanceType: InheritanceType.autosomalRecessive,
       dominance: Dominance.recessive,
       alleleSymbol: 'fd',
@@ -179,7 +180,8 @@ abstract class MutationDataSexLinked {
       alleleSymbol: 'mo',
       alleles: ['mo+', 'mo'],
       category: 'Pattern',
-      visualEffect: 'Increasing clear patches with each moult, variable expression',
+      visualEffect:
+          'Increasing clear patches with each moult, variable expression',
     ),
     // Feather Duster — always lethal condition with continuously growing feathers.
     // Homozygous recessive. Affected chicks rarely survive beyond a few months.
@@ -195,7 +197,8 @@ abstract class MutationDataSexLinked {
       alleleSymbol: 'fdu',
       alleles: ['fdu+', 'fdu'],
       category: 'Feather Structure',
-      visualEffect: 'Long, curly, continuously growing feathers; inability to fly',
+      visualEffect:
+          'Long, curly, continuously growing feathers; inability to fly',
     ),
 
     // ── Crested Allelic Locus ──

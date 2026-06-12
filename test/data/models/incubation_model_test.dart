@@ -162,9 +162,11 @@ void main() {
       // startDate was captured local time.
       expect(
         incubation.computedExpectedHatchDate,
-        DateTime.utc(2024, 1, 1).add(
-          const Duration(days: IncubationConstants.incubationPeriodDays),
-        ),
+        DateTime.utc(
+          2024,
+          1,
+          1,
+        ).add(const Duration(days: IncubationConstants.incubationPeriodDays)),
       );
     });
 

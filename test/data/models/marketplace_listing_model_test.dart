@@ -25,7 +25,10 @@ void main() {
           mutation: 'Lutino',
           gender: BirdGender.male,
           age: '6 ay',
-          imageUrls: ['https://example.com/img1.jpg', 'https://example.com/img2.jpg'],
+          imageUrls: [
+            'https://example.com/img1.jpg',
+            'https://example.com/img2.jpg',
+          ],
           city: 'Istanbul',
           status: MarketplaceListingStatus.active,
           viewCount: 42,
@@ -95,25 +98,31 @@ void main() {
     });
 
     group('unknown enum deserialization', () {
-      test('unknown listingType deserializes to MarketplaceListingType.unknown', () {
-        final listing = MarketplaceListing.fromJson({
-          'id': 'listing-1',
-          'user_id': 'user-1',
-          'listing_type': 'barter_supreme',
-        });
+      test(
+        'unknown listingType deserializes to MarketplaceListingType.unknown',
+        () {
+          final listing = MarketplaceListing.fromJson({
+            'id': 'listing-1',
+            'user_id': 'user-1',
+            'listing_type': 'barter_supreme',
+          });
 
-        expect(listing.listingType, MarketplaceListingType.unknown);
-      });
+          expect(listing.listingType, MarketplaceListingType.unknown);
+        },
+      );
 
-      test('unknown status deserializes to MarketplaceListingStatus.unknown', () {
-        final listing = MarketplaceListing.fromJson({
-          'id': 'listing-1',
-          'user_id': 'user-1',
-          'status': 'pending_review',
-        });
+      test(
+        'unknown status deserializes to MarketplaceListingStatus.unknown',
+        () {
+          final listing = MarketplaceListing.fromJson({
+            'id': 'listing-1',
+            'user_id': 'user-1',
+            'status': 'pending_review',
+          });
 
-        expect(listing.status, MarketplaceListingStatus.unknown);
-      });
+          expect(listing.status, MarketplaceListingStatus.unknown);
+        },
+      );
 
       test('unknown gender deserializes to BirdGender.unknown', () {
         final listing = MarketplaceListing.fromJson({

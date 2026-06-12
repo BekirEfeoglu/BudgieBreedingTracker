@@ -133,8 +133,7 @@ class FeedbackDetailSheet extends StatelessWidget {
                 Builder(
                   builder: (context) {
                     final local = entry.createdAt!.toLocal();
-                    final locale =
-                        Localizations.localeOf(context).languageCode;
+                    final locale = Localizations.localeOf(context).languageCode;
                     return Text(
                       '${DateFormat.yMd(locale).format(local)} '
                       '${DateFormat.Hm(locale).format(local)}',

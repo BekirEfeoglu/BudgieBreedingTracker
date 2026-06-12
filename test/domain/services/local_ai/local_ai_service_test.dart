@@ -393,21 +393,24 @@ Thanks.
       expect(insight.confidence, LocalAiConfidence.low);
     });
 
-    test('mutation insight downgrades high to medium with 2 evidence items', () {
-      final insight = LocalAiMutationInsight.fromJson({
-        'predicted_mutation': 'normal_light_green',
-        'confidence': 'high',
-        'base_series': 'green',
-        'pattern_family': 'normal',
-        'body_color': 'green',
-        'wing_pattern': 'black barring',
-        'eye_color': '',
-        'rationale': 'two items',
-        'secondary_possibilities': <String>[],
-      });
+    test(
+      'mutation insight downgrades high to medium with 2 evidence items',
+      () {
+        final insight = LocalAiMutationInsight.fromJson({
+          'predicted_mutation': 'normal_light_green',
+          'confidence': 'high',
+          'base_series': 'green',
+          'pattern_family': 'normal',
+          'body_color': 'green',
+          'wing_pattern': 'black barring',
+          'eye_color': '',
+          'rationale': 'two items',
+          'secondary_possibilities': <String>[],
+        });
 
-      expect(insight.confidence, LocalAiConfidence.medium);
-    });
+        expect(insight.confidence, LocalAiConfidence.medium);
+      },
+    );
 
     test('extractJsonObject throws on empty input', () {
       expect(
@@ -423,39 +426,45 @@ Thanks.
       );
     });
 
-    test('eye color gate: corrects albino to spangle_blue when eyes are dark', () {
-      final insight = LocalAiMutationInsight.fromJson({
-        'predicted_mutation': 'albino',
-        'confidence': 'high',
-        'base_series': 'blue',
-        'pattern_family': 'ino',
-        'body_color': 'beyaz',
-        'wing_pattern': 'beyaz',
-        'eye_color': 'koyu/siyah',
-        'rationale': 'test',
-        'secondary_possibilities': <String>[],
-      });
+    test(
+      'eye color gate: corrects albino to spangle_blue when eyes are dark',
+      () {
+        final insight = LocalAiMutationInsight.fromJson({
+          'predicted_mutation': 'albino',
+          'confidence': 'high',
+          'base_series': 'blue',
+          'pattern_family': 'ino',
+          'body_color': 'beyaz',
+          'wing_pattern': 'beyaz',
+          'eye_color': 'koyu/siyah',
+          'rationale': 'test',
+          'secondary_possibilities': <String>[],
+        });
 
-      expect(insight.predictedMutation, 'spangle_blue');
-      expect(insight.patternFamily, 'spangle');
-    });
+        expect(insight.predictedMutation, 'spangle_blue');
+        expect(insight.patternFamily, 'spangle');
+      },
+    );
 
-    test('eye color gate: corrects lutino to spangle_green when eyes are dark', () {
-      final insight = LocalAiMutationInsight.fromJson({
-        'predicted_mutation': 'lutino',
-        'confidence': 'high',
-        'base_series': 'green',
-        'pattern_family': 'ino',
-        'body_color': 'sarı',
-        'wing_pattern': 'sarı',
-        'eye_color': 'siyah',
-        'rationale': 'test',
-        'secondary_possibilities': <String>[],
-      });
+    test(
+      'eye color gate: corrects lutino to spangle_green when eyes are dark',
+      () {
+        final insight = LocalAiMutationInsight.fromJson({
+          'predicted_mutation': 'lutino',
+          'confidence': 'high',
+          'base_series': 'green',
+          'pattern_family': 'ino',
+          'body_color': 'sarı',
+          'wing_pattern': 'sarı',
+          'eye_color': 'siyah',
+          'rationale': 'test',
+          'secondary_possibilities': <String>[],
+        });
 
-      expect(insight.predictedMutation, 'spangle_green');
-      expect(insight.patternFamily, 'spangle');
-    });
+        expect(insight.predictedMutation, 'spangle_green');
+        expect(insight.patternFamily, 'spangle');
+      },
+    );
 
     test('eye color gate: keeps albino when eyes are kırmızı', () {
       final insight = LocalAiMutationInsight.fromJson({
@@ -521,21 +530,24 @@ Thanks.
       expect(insight.predictedMutation, 'albino');
     });
 
-    test('unknown fallback: infers spangle_blue for pale blue body with dark eyes', () {
-      final insight = LocalAiMutationInsight.fromJson({
-        'predicted_mutation': 'unknown',
-        'confidence': 'low',
-        'base_series': 'blue',
-        'pattern_family': 'unknown',
-        'body_color': 'açık mavi',
-        'wing_pattern': 'normal',
-        'eye_color': 'koyu',
-        'rationale': 'test',
-        'secondary_possibilities': <String>[],
-      });
+    test(
+      'unknown fallback: infers spangle_blue for pale blue body with dark eyes',
+      () {
+        final insight = LocalAiMutationInsight.fromJson({
+          'predicted_mutation': 'unknown',
+          'confidence': 'low',
+          'base_series': 'blue',
+          'pattern_family': 'unknown',
+          'body_color': 'açık mavi',
+          'wing_pattern': 'normal',
+          'eye_color': 'koyu',
+          'rationale': 'test',
+          'secondary_possibilities': <String>[],
+        });
 
-      expect(insight.predictedMutation, 'spangle_blue');
-    });
+        expect(insight.predictedMutation, 'spangle_blue');
+      },
+    );
 
     test('unknown fallback: infers from pattern_family when available', () {
       final insight = LocalAiMutationInsight.fromJson({
@@ -585,69 +597,81 @@ Thanks.
       expect(insight.predictedMutation, 'unknown');
     });
 
-    test('eye color gate: corrects fallow_green to cinnamon_green with dark eyes', () {
-      final insight = LocalAiMutationInsight.fromJson({
-        'predicted_mutation': 'fallow_green',
-        'confidence': 'high',
-        'base_series': 'green',
-        'pattern_family': 'fallow',
-        'body_color': 'yeşil',
-        'wing_pattern': 'kahverengi',
-        'eye_color': 'siyah',
-        'rationale': 'test',
-        'secondary_possibilities': <String>[],
-      });
+    test(
+      'eye color gate: corrects fallow_green to cinnamon_green with dark eyes',
+      () {
+        final insight = LocalAiMutationInsight.fromJson({
+          'predicted_mutation': 'fallow_green',
+          'confidence': 'high',
+          'base_series': 'green',
+          'pattern_family': 'fallow',
+          'body_color': 'yeşil',
+          'wing_pattern': 'kahverengi',
+          'eye_color': 'siyah',
+          'rationale': 'test',
+          'secondary_possibilities': <String>[],
+        });
 
-      expect(insight.predictedMutation, 'cinnamon_green');
-    });
+        expect(insight.predictedMutation, 'cinnamon_green');
+      },
+    );
 
-    test('eye color gate: corrects lacewing_blue to cinnamon_blue with dark eyes', () {
-      final insight = LocalAiMutationInsight.fromJson({
-        'predicted_mutation': 'lacewing_blue',
-        'confidence': 'medium',
-        'base_series': 'blue',
-        'pattern_family': 'lacewing',
-        'body_color': 'açık mavi',
-        'wing_pattern': 'soluk kahverengi',
-        'eye_color': 'koyu',
-        'rationale': 'test',
-        'secondary_possibilities': <String>[],
-      });
+    test(
+      'eye color gate: corrects lacewing_blue to cinnamon_blue with dark eyes',
+      () {
+        final insight = LocalAiMutationInsight.fromJson({
+          'predicted_mutation': 'lacewing_blue',
+          'confidence': 'medium',
+          'base_series': 'blue',
+          'pattern_family': 'lacewing',
+          'body_color': 'açık mavi',
+          'wing_pattern': 'soluk kahverengi',
+          'eye_color': 'koyu',
+          'rationale': 'test',
+          'secondary_possibilities': <String>[],
+        });
 
-      expect(insight.predictedMutation, 'cinnamon_blue');
-    });
+        expect(insight.predictedMutation, 'cinnamon_blue');
+      },
+    );
 
-    test('eye color gate: corrects texas_clearbody to clearbody with dark eyes', () {
-      final insight = LocalAiMutationInsight.fromJson({
-        'predicted_mutation': 'texas_clearbody_blue',
-        'confidence': 'medium',
-        'base_series': 'blue',
-        'pattern_family': 'clearbody',
-        'body_color': 'açık mavi',
-        'wing_pattern': 'koyu',
-        'eye_color': 'siyah',
-        'rationale': 'test',
-        'secondary_possibilities': <String>[],
-      });
+    test(
+      'eye color gate: corrects texas_clearbody to clearbody with dark eyes',
+      () {
+        final insight = LocalAiMutationInsight.fromJson({
+          'predicted_mutation': 'texas_clearbody_blue',
+          'confidence': 'medium',
+          'base_series': 'blue',
+          'pattern_family': 'clearbody',
+          'body_color': 'açık mavi',
+          'wing_pattern': 'koyu',
+          'eye_color': 'siyah',
+          'rationale': 'test',
+          'secondary_possibilities': <String>[],
+        });
 
-      expect(insight.predictedMutation, 'clearbody_blue');
-    });
+        expect(insight.predictedMutation, 'clearbody_blue');
+      },
+    );
 
-    test('eye color gate: corrects creamino to spangle_blue with dark eyes', () {
-      final insight = LocalAiMutationInsight.fromJson({
-        'predicted_mutation': 'creamino',
-        'confidence': 'medium',
-        'base_series': 'blue',
-        'pattern_family': 'ino',
-        'body_color': 'krem',
-        'wing_pattern': 'beyaz',
-        'eye_color': 'koyu siyah',
-        'rationale': 'test',
-        'secondary_possibilities': <String>[],
-      });
+    test(
+      'eye color gate: corrects creamino to spangle_blue with dark eyes',
+      () {
+        final insight = LocalAiMutationInsight.fromJson({
+          'predicted_mutation': 'creamino',
+          'confidence': 'medium',
+          'base_series': 'blue',
+          'pattern_family': 'ino',
+          'body_color': 'krem',
+          'wing_pattern': 'beyaz',
+          'eye_color': 'koyu siyah',
+          'rationale': 'test',
+          'secondary_possibilities': <String>[],
+        });
 
-      expect(insight.predictedMutation, 'spangle_blue');
-    });
+        expect(insight.predictedMutation, 'spangle_blue');
+      },
+    );
 
     test('keeps fallow_green when eyes are red', () {
       final insight = LocalAiMutationInsight.fromJson({
@@ -668,22 +692,32 @@ Thanks.
     test('new mutation signatures are valid', () {
       // Verify all new signatures exist and have correct structure
       final newMutations = [
-        'grey_green', 'grey_blue',
-        'fallow_green', 'fallow_blue',
-        'lacewing_green', 'lacewing_blue',
-        'opaline_cinnamon_green', 'opaline_cinnamon_blue',
-        'violet_blue', 'slate_blue',
-        'dark_eyed_clear_green', 'dark_eyed_clear_blue',
-        'texas_clearbody_green', 'texas_clearbody_blue',
+        'grey_green',
+        'grey_blue',
+        'fallow_green',
+        'fallow_blue',
+        'lacewing_green',
+        'lacewing_blue',
+        'opaline_cinnamon_green',
+        'opaline_cinnamon_blue',
+        'violet_blue',
+        'slate_blue',
+        'dark_eyed_clear_green',
+        'dark_eyed_clear_blue',
+        'texas_clearbody_green',
+        'texas_clearbody_blue',
         'creamino',
       ];
 
       for (final mutation in newMutations) {
         // Use 'kırmızı' eye color for red-eye mutations so gate doesn't correct them
         final needsRedEye = const {
-          'fallow_green', 'fallow_blue',
-          'lacewing_green', 'lacewing_blue',
-          'texas_clearbody_green', 'texas_clearbody_blue',
+          'fallow_green',
+          'fallow_blue',
+          'lacewing_green',
+          'lacewing_blue',
+          'texas_clearbody_green',
+          'texas_clearbody_blue',
           'creamino',
         }.contains(mutation);
         final insight = LocalAiMutationInsight.fromJson({
@@ -708,10 +742,15 @@ Thanks.
 
     test('ino confidence always low for all red-eye mutations', () {
       const redEyeMutations = [
-        'lutino', 'albino', 'creamino',
-        'fallow_green', 'fallow_blue',
-        'lacewing_green', 'lacewing_blue',
-        'texas_clearbody_green', 'texas_clearbody_blue',
+        'lutino',
+        'albino',
+        'creamino',
+        'fallow_green',
+        'fallow_blue',
+        'lacewing_green',
+        'lacewing_blue',
+        'texas_clearbody_green',
+        'texas_clearbody_blue',
       ];
 
       for (final mutation in redEyeMutations) {
@@ -735,22 +774,25 @@ Thanks.
       }
     });
 
-    test('diacritics-stripped eye color: kirmizi without accent detects red', () {
-      final insight = LocalAiMutationInsight.fromJson({
-        'predicted_mutation': 'albino',
-        'confidence': 'high',
-        'base_series': 'blue',
-        'pattern_family': 'ino',
-        'body_color': 'beyaz',
-        'wing_pattern': '',
-        'eye_color': 'kirmizi',
-        'rationale': 'test',
-        'secondary_possibilities': <String>[],
-      });
+    test(
+      'diacritics-stripped eye color: kirmizi without accent detects red',
+      () {
+        final insight = LocalAiMutationInsight.fromJson({
+          'predicted_mutation': 'albino',
+          'confidence': 'high',
+          'base_series': 'blue',
+          'pattern_family': 'ino',
+          'body_color': 'beyaz',
+          'wing_pattern': '',
+          'eye_color': 'kirmizi',
+          'rationale': 'test',
+          'secondary_possibilities': <String>[],
+        });
 
-      // kirmizi (without accent) should still match red → albino preserved
-      expect(insight.predictedMutation, 'albino');
-    });
+        // kirmizi (without accent) should still match red → albino preserved
+        expect(insight.predictedMutation, 'albino');
+      },
+    );
 
     test('diacritics-stripped eye color: crimson detects red', () {
       final insight = LocalAiMutationInsight.fromJson({

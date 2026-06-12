@@ -101,22 +101,24 @@ class _CommunityCommentInputState extends ConsumerState<CommunityCommentInput> {
                     ),
                     isDense: true,
                   ),
-                  buildCounter: (
-                    _,
-                    {required currentLength,
-                    required isFocused,
-                    maxLength}) {
-                    if (currentLength < 800) return null;
-                    final isNearLimit = currentLength >= 950;
-                    return Text(
-                      '$currentLength/$maxLength',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: isNearLimit
-                            ? theme.colorScheme.error
-                            : theme.colorScheme.onSurfaceVariant,
-                      ),
-                    );
-                  },
+                  buildCounter:
+                      (
+                        _, {
+                        required currentLength,
+                        required isFocused,
+                        maxLength,
+                      }) {
+                        if (currentLength < 800) return null;
+                        final isNearLimit = currentLength >= 950;
+                        return Text(
+                          '$currentLength/$maxLength',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: isNearLimit
+                                ? theme.colorScheme.error
+                                : theme.colorScheme.onSurfaceVariant,
+                          ),
+                        );
+                      },
                   textInputAction: TextInputAction.send,
                   onSubmitted: (_) => _submit(),
                 ),

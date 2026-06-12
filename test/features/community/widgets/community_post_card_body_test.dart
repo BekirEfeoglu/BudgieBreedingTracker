@@ -11,22 +11,22 @@ CommunityPost _post({
   String? title,
   List<String> imageUrls = const [],
 }) => CommunityPost(
-      id: 'p1',
-      userId: 'u1',
-      username: 'alice',
-      avatarUrl: null,
-      content: content,
-      title: title,
-      postType: postType,
-      createdAt: DateTime(2026, 4, 17),
-      likeCount: 0,
-      commentCount: 0,
-      isLikedByMe: false,
-      isFollowingAuthor: false,
-      imageUrls: imageUrls,
-      mutationTags: const [],
-      tags: const [],
-    );
+  id: 'p1',
+  userId: 'u1',
+  username: 'alice',
+  avatarUrl: null,
+  content: content,
+  title: title,
+  postType: postType,
+  createdAt: DateTime(2026, 4, 17),
+  likeCount: 0,
+  commentCount: 0,
+  isLikedByMe: false,
+  isFollowingAuthor: false,
+  imageUrls: imageUrls,
+  mutationTags: const [],
+  tags: const [],
+);
 
 void main() {
   group('CommunityPostCardBody', () {

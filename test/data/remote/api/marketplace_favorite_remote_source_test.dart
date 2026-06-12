@@ -28,7 +28,10 @@ void main() {
 
       final result = await source.fetchFavoritedListingIds('user-1');
 
-      expect(client.requestedTable, SupabaseConstants.marketplaceFavoritesTable);
+      expect(
+        client.requestedTable,
+        SupabaseConstants.marketplaceFavoritesTable,
+      );
       expect(result, ['listing-1', 'listing-2']);
       final eqKeys = selectBuilder.eqCalls
           .map((e) => '${e.key}:${e.value}')
@@ -47,7 +50,10 @@ void main() {
     test('addFavorite inserts with user_id and listing_id', () async {
       await source.addFavorite('user-1', 'listing-1');
 
-      expect(client.requestedTable, SupabaseConstants.marketplaceFavoritesTable);
+      expect(
+        client.requestedTable,
+        SupabaseConstants.marketplaceFavoritesTable,
+      );
       final payload = queryBuilder.upsertPayload as Map<String, dynamic>;
       expect(payload['user_id'], 'user-1');
       expect(payload['listing_id'], 'listing-1');
@@ -56,7 +62,10 @@ void main() {
     test('removeFavorite deletes matching record', () async {
       await source.removeFavorite('user-1', 'listing-1');
 
-      expect(client.requestedTable, SupabaseConstants.marketplaceFavoritesTable);
+      expect(
+        client.requestedTable,
+        SupabaseConstants.marketplaceFavoritesTable,
+      );
       final eqKeys = queryBuilder.deleteBuilder.eqCalls
           .map((e) => '${e.key}:${e.value}')
           .toList();

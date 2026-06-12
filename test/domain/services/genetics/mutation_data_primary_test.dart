@@ -9,8 +9,9 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   const mutations = MutationDataPrimary.coreMutations;
 
-  Map<String, BudgieMutationRecord> mutationMap() =>
-      {for (final m in mutations) m.id: m};
+  Map<String, BudgieMutationRecord> mutationMap() => {
+    for (final m in mutations) m.id: m,
+  };
 
   group('MutationDataPrimary.coreMutations - record count and presence', () {
     test('contains expected number of core mutations', () {
@@ -21,22 +22,25 @@ void main() {
     test('all expected mutation IDs are present', () {
       final ids = mutations.map((m) => m.id).toSet();
 
-      expect(ids, containsAll([
-        'blue',
-        'dilute',
-        'greywing',
-        'clearwing',
-        'dark_factor',
-        'violet',
-        'grey',
-        'anthracite',
-        'blackface',
-        'spangle',
-        'recessive_pied',
-        'dominant_pied',
-        'clearflight_pied',
-        'dutch_pied',
-      ]));
+      expect(
+        ids,
+        containsAll([
+          'blue',
+          'dilute',
+          'greywing',
+          'clearwing',
+          'dark_factor',
+          'violet',
+          'grey',
+          'anthracite',
+          'blackface',
+          'spangle',
+          'recessive_pied',
+          'dominant_pied',
+          'clearflight_pied',
+          'dutch_pied',
+        ]),
+      );
     });
 
     test('all IDs are unique', () {
@@ -46,7 +50,11 @@ void main() {
 
     test('all names are unique', () {
       final names = mutations.map((m) => m.name).toList();
-      expect(names.toSet().length, names.length, reason: 'Duplicate names detected');
+      expect(
+        names.toSet().length,
+        names.length,
+        reason: 'Duplicate names detected',
+      );
     });
   });
 
@@ -55,8 +63,11 @@ void main() {
       for (final m in mutations) {
         expect(m.id, isNotEmpty, reason: '${m.id} ID');
         expect(m.name, isNotEmpty, reason: '${m.id} name');
-        expect(m.localizationKey, startsWith('genetics.mutation_'),
-            reason: '${m.id} localizationKey');
+        expect(
+          m.localizationKey,
+          startsWith('genetics.mutation_'),
+          reason: '${m.id} localizationKey',
+        );
         expect(m.description, isNotEmpty, reason: '${m.id} description');
         expect(m.alleleSymbol, isNotEmpty, reason: '${m.id} alleleSymbol');
         expect(m.alleles, hasLength(2), reason: '${m.id} alleles');
@@ -67,15 +78,22 @@ void main() {
     test('IDs use snake_case convention', () {
       final snakeCase = RegExp(r'^[a-z][a-z0-9_]*$');
       for (final m in mutations) {
-        expect(snakeCase.hasMatch(m.id), isTrue,
-            reason: '${m.id} should be snake_case');
+        expect(
+          snakeCase.hasMatch(m.id),
+          isTrue,
+          reason: '${m.id} should be snake_case',
+        );
       }
     });
 
     test('all mutations are autosomal', () {
       for (final m in mutations) {
         expect(m.isAutosomal, isTrue, reason: '${m.id} should be autosomal');
-        expect(m.isSexLinked, isFalse, reason: '${m.id} should not be sex-linked');
+        expect(
+          m.isSexLinked,
+          isFalse,
+          reason: '${m.id} should not be sex-linked',
+        );
       }
     });
 
@@ -96,42 +114,61 @@ void main() {
     });
   });
 
-  group('MutationDataPrimary.coreMutations - inheritance type distribution', () {
-    test('contains autosomal recessive mutations', () {
-      final ar = mutations
-          .where((m) => m.inheritanceType == InheritanceType.autosomalRecessive)
-          .map((m) => m.id)
-          .toSet();
+  group(
+    'MutationDataPrimary.coreMutations - inheritance type distribution',
+    () {
+      test('contains autosomal recessive mutations', () {
+        final ar = mutations
+            .where(
+              (m) => m.inheritanceType == InheritanceType.autosomalRecessive,
+            )
+            .map((m) => m.id)
+            .toSet();
 
-      expect(ar, containsAll([
-        'blue',
-        'dilute',
-        'greywing',
-        'clearwing',
-        'recessive_pied',
-        'clearflight_pied',
-      ]));
-    });
+        expect(
+          ar,
+          containsAll([
+            'blue',
+            'dilute',
+            'greywing',
+            'clearwing',
+            'recessive_pied',
+            'clearflight_pied',
+          ]),
+        );
+      });
 
-    test('contains autosomal dominant mutations', () {
-      final ad = mutations
-          .where((m) => m.inheritanceType == InheritanceType.autosomalDominant)
-          .map((m) => m.id)
-          .toSet();
+      test('contains autosomal dominant mutations', () {
+        final ad = mutations
+            .where(
+              (m) => m.inheritanceType == InheritanceType.autosomalDominant,
+            )
+            .map((m) => m.id)
+            .toSet();
 
-      expect(ad, containsAll(['grey', 'blackface', 'dominant_pied', 'dutch_pied']));
-    });
+        expect(
+          ad,
+          containsAll(['grey', 'blackface', 'dominant_pied', 'dutch_pied']),
+        );
+      });
 
-    test('contains autosomal incomplete dominant mutations', () {
-      final aid = mutations
-          .where((m) =>
-              m.inheritanceType == InheritanceType.autosomalIncompleteDominant)
-          .map((m) => m.id)
-          .toSet();
+      test('contains autosomal incomplete dominant mutations', () {
+        final aid = mutations
+            .where(
+              (m) =>
+                  m.inheritanceType ==
+                  InheritanceType.autosomalIncompleteDominant,
+            )
+            .map((m) => m.id)
+            .toSet();
 
-      expect(aid, containsAll(['dark_factor', 'violet', 'spangle', 'anthracite']));
-    });
-  });
+        expect(
+          aid,
+          containsAll(['dark_factor', 'violet', 'spangle', 'anthracite']),
+        );
+      });
+    },
+  );
 
   group('MutationDataPrimary.coreMutations - specific mutations', () {
     test('blue mutation has correct properties', () {
@@ -270,8 +307,11 @@ void main() {
       final noLocus = mutations.where((m) => m.locusId == null);
 
       for (final m in noLocus) {
-        expect(m.dominanceRank, 0,
-            reason: '${m.id} without locusId should have dominanceRank 0');
+        expect(
+          m.dominanceRank,
+          0,
+          reason: '${m.id} without locusId should have dominanceRank 0',
+        );
       }
     });
 
@@ -279,8 +319,11 @@ void main() {
       final withLocus = mutations.where((m) => m.locusId != null);
 
       for (final m in withLocus) {
-        expect(m.dominanceRank, greaterThan(0),
-            reason: '${m.id} with locusId should have positive dominanceRank');
+        expect(
+          m.dominanceRank,
+          greaterThan(0),
+          reason: '${m.id} with locusId should have positive dominanceRank',
+        );
       }
     });
   });
@@ -289,16 +332,19 @@ void main() {
     test('contains expected categories', () {
       final categories = mutations.map((m) => m.category).toSet();
 
-      expect(categories, containsAll([
-        'Blue / Yellowface',
-        'Dilution',
-        'Dark Factor',
-        'Violet',
-        'Grey',
-        'Pattern',
-        'Pied',
-        'Melanin Modifier',
-      ]));
+      expect(
+        categories,
+        containsAll([
+          'Blue / Yellowface',
+          'Dilution',
+          'Dark Factor',
+          'Violet',
+          'Grey',
+          'Pattern',
+          'Pied',
+          'Melanin Modifier',
+        ]),
+      );
     });
 
     test('pied category has 4 mutations', () {
@@ -306,12 +352,15 @@ void main() {
 
       expect(pieds, hasLength(4));
       final ids = pieds.map((m) => m.id).toSet();
-      expect(ids, containsAll([
-        'recessive_pied',
-        'dominant_pied',
-        'clearflight_pied',
-        'dutch_pied',
-      ]));
+      expect(
+        ids,
+        containsAll([
+          'recessive_pied',
+          'dominant_pied',
+          'clearflight_pied',
+          'dutch_pied',
+        ]),
+      );
     });
   });
 }

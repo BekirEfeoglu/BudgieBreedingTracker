@@ -18,9 +18,7 @@ class LeaderboardScreen extends ConsumerWidget {
     final leaderboardAsync = ref.watch(leaderboardProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('leaderboard.title'.tr()),
-      ),
+      appBar: AppBar(title: Text('leaderboard.title'.tr())),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(leaderboardProvider);

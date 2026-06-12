@@ -7,7 +7,9 @@ import 'package:budgie_breeding_tracker/features/health_records/widgets/health_r
 
 Future<void> _pump(WidgetTester tester, Widget child) async {
   await tester.pumpWidget(
-    ProviderScope(child: MaterialApp(home: Scaffold(body: child))),
+    ProviderScope(
+      child: MaterialApp(home: Scaffold(body: child)),
+    ),
   );
   await tester.pump();
 }

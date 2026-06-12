@@ -43,15 +43,18 @@ void main() {
         expect(restored.updatedAt, conversation.updatedAt);
       });
 
-      test('unknown ConversationType falls back to ConversationType.unknown', () {
-        final conversation = Conversation.fromJson(const {
-          'id': 'conv-1',
-          'creator_id': 'user-1',
-          'type': 'channel',
-        });
+      test(
+        'unknown ConversationType falls back to ConversationType.unknown',
+        () {
+          final conversation = Conversation.fromJson(const {
+            'id': 'conv-1',
+            'creator_id': 'user-1',
+            'type': 'channel',
+          });
 
-        expect(conversation.type, ConversationType.unknown);
-      });
+          expect(conversation.type, ConversationType.unknown);
+        },
+      );
 
       test('defaults are correct', () {
         final conversation = Conversation.fromJson(const {

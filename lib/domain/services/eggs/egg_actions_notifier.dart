@@ -333,11 +333,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       final existing = await chickRepo.getByEggId(egg.id);
       if (existing != null) {
         AppLogger.info('Chick already exists for egg: ${egg.id}, skipping');
-        return (
-          created: false,
-          sideEffectError: false,
-          chickSaveFailed: false,
-        );
+        return (created: false, sideEffectError: false, chickSaveFailed: false);
       }
     } catch (e, st) {
       AppLogger.error(
@@ -446,11 +442,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       // Chick row was already persisted at this point; only side effects
       // (notifications, calendar) can have thrown unexpectedly here.
       AppLogger.error('Failed to schedule chick side effects', e, st);
-      return (
-        created: true,
-        sideEffectError: true,
-        chickSaveFailed: false,
-      );
+      return (created: true, sideEffectError: true, chickSaveFailed: false);
     }
   }
 
@@ -480,8 +472,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
     if (incubation == null) return;
     if (incubation.status == IncubationStatus.completed) return;
 
-    final anyHatched =
-        siblings.any((e) => e.status == EggStatus.hatched);
+    final anyHatched = siblings.any((e) => e.status == EggStatus.hatched);
     final now = DateTime.now();
     final newIncubationStatus = anyHatched
         ? IncubationStatus.completed
@@ -514,8 +505,9 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       final incubationRepo = ref.read(incubationRepositoryProvider);
       final pairRepo = ref.read(breedingPairRepositoryProvider);
 
-      final siblingIncubations =
-          await incubationRepo.getByBreedingPairIds([breedingPairId]);
+      final siblingIncubations = await incubationRepo.getByBreedingPairIds([
+        breedingPairId,
+      ]);
       final anyActive = siblingIncubations.any(
         (inc) => inc.status == IncubationStatus.active,
       );
@@ -527,7 +519,8 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
           pair.status != BreedingStatus.ongoing) {
         return;
       }
-      final anyIncubationHatched = anyHatched ||
+      final anyIncubationHatched =
+          anyHatched ||
           siblingIncubations.any(
             (inc) => inc.status == IncubationStatus.completed,
           );
@@ -582,9 +575,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       try {
         await ref.read(eventRepositoryProvider).removeByEggIds([id]);
       } catch (e) {
-        AppLogger.warning(
-          'Failed to delete calendar events for egg $id: $e',
-        );
+        AppLogger.warning('Failed to delete calendar events for egg $id: $e');
       }
 
       state = state.copyWith(isLoading: false, isSuccess: true);

@@ -17,7 +17,9 @@ Future<void> _pumpSelector(WidgetTester tester) {
     tester,
     const ProviderScope(
       child: MaterialApp(
-        home: Scaffold(body: SingleChildScrollView(child: StatsSpeciesFilterSelector())),
+        home: Scaffold(
+          body: SingleChildScrollView(child: StatsSpeciesFilterSelector()),
+        ),
       ),
     ),
   );
@@ -30,14 +32,12 @@ void main() {
       await _pumpSelector(tester);
 
       expect(find.byType(StatsSpeciesFilterSelector), findsOneWidget);
-      expect(
-        find.byType(DropdownButtonFormField<Species?>),
-        findsOneWidget,
-      );
+      expect(find.byType(DropdownButtonFormField<Species?>), findsOneWidget);
     });
 
-    testWidgets('shows all supported species plus all-species option',
-        (tester) async {
+    testWidgets('shows all supported species plus all-species option', (
+      tester,
+    ) async {
       SharedPreferences.setMockInitialValues({});
       await _pumpSelector(tester);
 
@@ -54,16 +54,18 @@ void main() {
       );
     });
 
-    testWidgets('does not show active filter chip when no species selected',
-        (tester) async {
+    testWidgets('does not show active filter chip when no species selected', (
+      tester,
+    ) async {
       SharedPreferences.setMockInitialValues({});
       await _pumpSelector(tester);
 
       expect(find.byType(Chip), findsNothing);
     });
 
-    testWidgets('shows active filter chip when species is selected',
-        (tester) async {
+    testWidgets('shows active filter chip when species is selected', (
+      tester,
+    ) async {
       SharedPreferences.setMockInitialValues({
         AppPreferences.keyStatsSpeciesFilter: Species.budgie.name,
       });
@@ -272,10 +274,7 @@ void main() {
         container.read(statsSpeciesFilterProvider).species,
         Species.budgie,
       );
-      expect(
-        container.read(statsSpeciesFilterProvider).loaded,
-        isTrue,
-      );
+      expect(container.read(statsSpeciesFilterProvider).loaded, isTrue);
     });
   });
 }

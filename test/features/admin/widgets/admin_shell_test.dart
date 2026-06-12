@@ -20,12 +20,7 @@ Widget _wrapWithRouter({
       GoRoute(
         path: '/admin/dashboard',
         builder: (_, __) => AdminShell(
-          child: Column(
-            children: [
-              shellChild,
-              const Text('Dashboard'),
-            ],
-          ),
+          child: Column(children: [shellChild, const Text('Dashboard')]),
         ),
       ),
       GoRoute(
@@ -178,23 +173,24 @@ void main() {
       expect(find.text('Home'), findsOneWidget);
     });
 
-    testWidgets('back action from every admin child route navigates dashboard', (
-      tester,
-    ) async {
-      for (final route in _adminChildRoutes) {
-        await _pumpShell(
-          tester,
-          size: const Size(600, 900),
-          initialLocation: route,
-        );
+    testWidgets(
+      'back action from every admin child route navigates dashboard',
+      (tester) async {
+        for (final route in _adminChildRoutes) {
+          await _pumpShell(
+            tester,
+            size: const Size(600, 900),
+            initialLocation: route,
+          );
 
-        await tester.tap(find.byTooltip('admin.dashboard'));
-        await tester.pumpAndSettle();
+          await tester.tap(find.byTooltip('admin.dashboard'));
+          await tester.pumpAndSettle();
 
-        expect(find.text('Dashboard'), findsOneWidget);
-        expect(find.text('Home'), findsNothing);
-      }
-    });
+          expect(find.text('Dashboard'), findsOneWidget);
+          expect(find.text('Home'), findsNothing);
+        }
+      },
+    );
   });
 
   group('AdminShell — wide layout (width >= 840)', () {

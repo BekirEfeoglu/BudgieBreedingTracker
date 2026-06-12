@@ -51,26 +51,26 @@ void main() {
 
   group('PrivacySecuritySection', () {
     testWidgets('hatasiz render edilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(PrivacySecuritySection), findsOneWidget);
     });
 
     testWidgets('SettingsSectionHeader render edilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(SettingsSectionHeader), findsOneWidget);
     });
 
     testWidgets('birden fazla ListTile render edilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       // Sifre degistir, 2FA, aktif oturumlar, veri disaaktar, gizlilik, sartlar, hesap sil
       expect(find.byType(ListTile), findsAtLeastNWidgets(5));
     });
 
     testWidgets('sifre degistir tile tiklama dialog acar', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       // Birinci ListTile sifre degistir
       await tester.tap(find.byType(ListTile).first);
@@ -80,7 +80,7 @@ void main() {
     });
 
     testWidgets('veri disa aktar tile tiklama dialog acar', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       // Veri disa aktar 4. tile (index 3)
       final tiles = find.byType(ListTile);
@@ -91,7 +91,7 @@ void main() {
     });
 
     testWidgets('aktif oturumlar tile tiklama dialog acar', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       // Aktif oturumlar 3. tile (index 2)
       final tiles = find.byType(ListTile);
@@ -102,7 +102,7 @@ void main() {
     });
 
     testWidgets('2FA tile tiklama GoRouter push calisir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       // 2FA tile index 1
       final tiles = find.byType(ListTile);

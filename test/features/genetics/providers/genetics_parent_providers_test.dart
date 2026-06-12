@@ -127,10 +127,7 @@ void main() {
 
       container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.male,
-        mutations: {
-          'blue': AlleleState.visual,
-          'violet': AlleleState.carrier,
-        },
+        mutations: {'blue': AlleleState.visual, 'violet': AlleleState.carrier},
       );
 
       final mutations = container.read(fatherMutationsProvider);
@@ -183,10 +180,7 @@ void main() {
 
       container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
         gender: BirdGender.female,
-        mutations: {
-          'ino': AlleleState.visual,
-          'blue': AlleleState.carrier,
-        },
+        mutations: {'ino': AlleleState.visual, 'blue': AlleleState.carrier},
       );
 
       // ino should be in set (sex-linked female is always visual)

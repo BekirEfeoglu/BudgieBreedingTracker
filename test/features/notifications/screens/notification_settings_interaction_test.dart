@@ -31,10 +31,12 @@ void main() {
           (ref) => NotificationRateLimiter(),
         ),
       ],
-      child: Builder(builder: (context) {
-        onContainer(ProviderScope.containerOf(context));
-        return const MaterialApp(home: NotificationSettingsScreen());
-      }),
+      child: Builder(
+        builder: (context) {
+          onContainer(ProviderScope.containerOf(context));
+          return const MaterialApp(home: NotificationSettingsScreen());
+        },
+      ),
     );
   }
 
@@ -109,10 +111,7 @@ void main() {
         isTrue,
       );
 
-      final tile = find.widgetWithText(
-        SwitchListTile,
-        'notifications.sound',
-      );
+      final tile = find.widgetWithText(SwitchListTile, 'notifications.sound');
       await tester.tap(tile);
       await tester.pumpAndSettle();
 
@@ -191,8 +190,9 @@ void main() {
       expect(s.cleanupDaysOld, equals(30));
     });
 
-    testWidgets('SegmentedButton selection updates cleanupDaysOld',
-        (tester) async {
+    testWidgets('SegmentedButton selection updates cleanupDaysOld', (
+      tester,
+    ) async {
       late ProviderContainer container;
       await tester.pumpWidget(createWithContainer((c) => container = c));
       await tester.pumpAndSettle();

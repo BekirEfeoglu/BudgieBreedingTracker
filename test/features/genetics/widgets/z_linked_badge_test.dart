@@ -7,7 +7,9 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calcu
 import 'package:budgie_breeding_tracker/features/genetics/widgets/z_linked_badge.dart';
 
 Widget _wrap(Widget child) {
-  return MaterialApp(home: Scaffold(body: Center(child: child)));
+  return MaterialApp(
+    home: Scaffold(body: Center(child: child)),
+  );
 }
 
 void main() {
@@ -126,8 +128,9 @@ void main() {
       expect(find.byType(AlertDialog), findsNothing);
     });
 
-    testWidgets('shows multiple linkage pairs for 3 linked mutations',
-        (tester) async {
+    testWidgets('shows multiple linkage pairs for 3 linked mutations', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrap(const ZLinkedBadge(linkedIds: ['opaline', 'cinnamon', 'ino'])),
       );
@@ -141,8 +144,9 @@ void main() {
       expect(find.textContaining('cM'), findsNWidgets(3));
     });
 
-    testWidgets('does not show popup when no linkage rates found',
-        (tester) async {
+    testWidgets('does not show popup when no linkage rates found', (
+      tester,
+    ) async {
       // Use mutations that have no linkage rate defined between them
       await tester.pumpWidget(
         _wrap(const ZLinkedBadge(linkedIds: ['pearly', 'texas_clearbody'])),

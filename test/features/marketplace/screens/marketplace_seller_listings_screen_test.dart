@@ -49,13 +49,11 @@ void main() {
     mockRepo = MockMarketplaceRepository();
   });
 
-  Widget buildSubject({
-    List<MarketplaceListing> listings = const [],
-  }) {
-    when(() => mockRepo.getByUser(
-          userId: _testSellerId,
-          currentUserId: _testUserId,
-        )).thenAnswer((_) async => listings);
+  Widget buildSubject({List<MarketplaceListing> listings = const []}) {
+    when(
+      () =>
+          mockRepo.getByUser(userId: _testSellerId, currentUserId: _testUserId),
+    ).thenAnswer((_) async => listings);
 
     return ProviderScope(
       overrides: [
@@ -69,10 +67,10 @@ void main() {
   }
 
   Widget buildLoadingSubject(Completer<List<MarketplaceListing>> completer) {
-    when(() => mockRepo.getByUser(
-          userId: _testSellerId,
-          currentUserId: _testUserId,
-        )).thenAnswer((_) => completer.future);
+    when(
+      () =>
+          mockRepo.getByUser(userId: _testSellerId, currentUserId: _testUserId),
+    ).thenAnswer((_) => completer.future);
 
     return ProviderScope(
       overrides: [
@@ -86,10 +84,10 @@ void main() {
   }
 
   Widget buildErrorSubject() {
-    when(() => mockRepo.getByUser(
-          userId: _testSellerId,
-          currentUserId: _testUserId,
-        )).thenThrow(Exception('Network error'));
+    when(
+      () =>
+          mockRepo.getByUser(userId: _testSellerId, currentUserId: _testUserId),
+    ).thenThrow(Exception('Network error'));
 
     return ProviderScope(
       overrides: [
@@ -103,8 +101,9 @@ void main() {
   }
 
   group('MarketplaceSellerListingsScreen', () {
-    testWidgets('should_show_loading_indicator_when_data_is_loading',
-        (tester) async {
+    testWidgets('should_show_loading_indicator_when_data_is_loading', (
+      tester,
+    ) async {
       final completer = Completer<List<MarketplaceListing>>();
 
       await pumpLocalizedApp(
@@ -119,42 +118,30 @@ void main() {
     });
 
     testWidgets('should_show_error_state_when_fetch_fails', (tester) async {
-      await pumpLocalizedApp(
-        tester,
-        buildErrorSubject(),
-      );
+      await pumpLocalizedApp(tester, buildErrorSubject());
 
       expect(find.byType(app.ErrorState), findsOneWidget);
     });
 
     testWidgets('should_show_empty_state_when_no_listings', (tester) async {
-      await pumpLocalizedApp(
-        tester,
-        buildSubject(listings: []),
-      );
+      await pumpLocalizedApp(tester, buildSubject(listings: []));
 
       expect(find.byType(EmptyState), findsOneWidget);
       expect(find.text('marketplace.no_listings'), findsOneWidget);
     });
 
-    testWidgets('should_show_listing_cards_when_data_available',
-        (tester) async {
-      await pumpLocalizedApp(
-        tester,
-        buildSubject(listings: _sampleListings),
-      );
+    testWidgets('should_show_listing_cards_when_data_available', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(tester, buildSubject(listings: _sampleListings));
 
       expect(find.byType(ListView), findsOneWidget);
       expect(find.byType(MarketplaceListingCard), findsAtLeastNWidgets(1));
       expect(find.text('Seller Budgie 1'), findsOneWidget);
     });
 
-    testWidgets('should_show_seller_listings_title_in_app_bar',
-        (tester) async {
-      await pumpLocalizedApp(
-        tester,
-        buildSubject(listings: []),
-      );
+    testWidgets('should_show_seller_listings_title_in_app_bar', (tester) async {
+      await pumpLocalizedApp(tester, buildSubject(listings: []));
 
       expect(find.text('marketplace.seller_listings'), findsOneWidget);
     });

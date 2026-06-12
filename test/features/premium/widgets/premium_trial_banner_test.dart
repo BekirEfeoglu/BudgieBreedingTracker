@@ -9,9 +9,7 @@ import 'package:budgie_breeding_tracker/features/premium/widgets/premium_paywall
 
 Widget _wrap(Widget child, {List<Package> offerings = const []}) {
   return ProviderScope(
-    overrides: [
-      premiumOfferingsProvider.overrideWith((_) async => offerings),
-    ],
+    overrides: [premiumOfferingsProvider.overrideWith((_) async => offerings)],
     child: MaterialApp(
       home: Scaffold(body: SingleChildScrollView(child: child)),
     ),

@@ -36,9 +36,24 @@ enum SecuritySeverityLevel {
   /// PostgREST `.ilike` patterns for `event_type` values that correspond to
   /// this severity level. Used for server-side filtering.
   List<String> get eventTypePatterns => switch (this) {
-    high => ['%bruteForce%', '%brute_force%', '%unauthorizedAccess%', '%unauthorized_access%'],
-    medium => ['%suspiciousActivity%', '%suspicious_activity%', '%mfaFailure%', '%mfa_failure%'],
-    low => ['%failedLogin%', '%failed_login%', '%rateLimited%', '%rate_limited%'],
+    high => [
+      '%bruteForce%',
+      '%brute_force%',
+      '%unauthorizedAccess%',
+      '%unauthorized_access%',
+    ],
+    medium => [
+      '%suspiciousActivity%',
+      '%suspicious_activity%',
+      '%mfaFailure%',
+      '%mfa_failure%',
+    ],
+    low => [
+      '%failedLogin%',
+      '%failed_login%',
+      '%rateLimited%',
+      '%rate_limited%',
+    ],
     unknown => [],
   };
 }
@@ -107,7 +122,8 @@ enum AdminActionType {
     if (json.contains('login')) return login;
     if (json.contains('logout')) return logout;
     if (json.contains('grant') && json.contains('premium')) return grantPremium;
-    if (json.contains('revoke') && json.contains('premium')) return revokePremium;
+    if (json.contains('revoke') && json.contains('premium'))
+      return revokePremium;
     if (json.contains('toggle') && json.contains('active')) return toggleActive;
     if (json.contains('export')) return export;
     if (json.contains('reset')) return reset;
@@ -137,7 +153,8 @@ enum SecurityEventType {
     // Fallback keyword matching for legacy data
     if (json.contains('failed') && json.contains('login')) return failedLogin;
     if (json.contains('suspicious')) return suspiciousActivity;
-    if (json.contains('rate_limit') || json.contains('ratelimit')) return rateLimited;
+    if (json.contains('rate_limit') || json.contains('ratelimit'))
+      return rateLimited;
     if (json.contains('brute')) return bruteForce;
     if (json.contains('unauthorized')) return unauthorizedAccess;
     if (json.contains('mfa')) return mfaFailure;

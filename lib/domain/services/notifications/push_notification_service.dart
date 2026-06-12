@@ -144,7 +144,8 @@ class PushNotificationService {
   }
 
   bool get _supportsPushNotifications =>
-      _overridePlatformSupport ?? (!kIsWeb && (Platform.isAndroid || Platform.isIOS));
+      _overridePlatformSupport ??
+      (!kIsWeb && (Platform.isAndroid || Platform.isIOS));
 
   FirebaseMessaging get _messagingInstance =>
       _messaging ??= FirebaseMessaging.instance;

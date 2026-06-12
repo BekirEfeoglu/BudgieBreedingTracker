@@ -23,10 +23,7 @@ void main() {
       gender: BirdGender.female,
       mutations: {allele2: AlleleState.visual},
     );
-    return calculator.calculateFromGenotypes(
-      father: father,
-      mother: mother,
-    );
+    return calculator.calculateFromGenotypes(father: father, mother: mother);
   }
 
   // Helper: cross father (visual allele1) x mother (visual allele2) for
@@ -40,10 +37,7 @@ void main() {
       gender: BirdGender.female,
       mutations: {allele2: AlleleState.visual},
     );
-    return calculator.calculateFromGenotypes(
-      father: father,
-      mother: mother,
-    );
+    return calculator.calculateFromGenotypes(father: father, mother: mother);
   }
 
   group('Dilution locus compound heterozygotes', () {
@@ -62,9 +56,7 @@ void main() {
       final results = crossAutosomal('greywing', 'dilute');
 
       expect(results, isNotEmpty);
-      final compoundResults = results.where(
-        (r) => r.phenotype == 'Greywing',
-      );
+      final compoundResults = results.where((r) => r.phenotype == 'Greywing');
       expect(compoundResults, isNotEmpty);
       // The compound heterozygote should carry dilute
       expect(
@@ -73,49 +65,49 @@ void main() {
       );
     });
 
-    test('clearwing x dilute produces Clearwing phenotype (dilute carried)', () {
-      final results = crossAutosomal('clearwing', 'dilute');
+    test(
+      'clearwing x dilute produces Clearwing phenotype (dilute carried)',
+      () {
+        final results = crossAutosomal('clearwing', 'dilute');
 
-      expect(results, isNotEmpty);
-      final compoundResults = results.where(
-        (r) => r.phenotype == 'Clearwing',
-      );
-      expect(compoundResults, isNotEmpty);
-      expect(
-        compoundResults.any((r) => r.carriedMutations.contains('dilute')),
-        isTrue,
-      );
-    });
+        expect(results, isNotEmpty);
+        final compoundResults = results.where(
+          (r) => r.phenotype == 'Clearwing',
+        );
+        expect(compoundResults, isNotEmpty);
+        expect(
+          compoundResults.any((r) => r.carriedMutations.contains('dilute')),
+          isTrue,
+        );
+      },
+    );
 
-    test('clearwing x greywing also produces Full-Body Greywing (order independent)', () {
-      final results = crossAutosomal('clearwing', 'greywing');
+    test(
+      'clearwing x greywing also produces Full-Body Greywing (order independent)',
+      () {
+        final results = crossAutosomal('clearwing', 'greywing');
 
-      expect(results, isNotEmpty);
-      expect(
-        results.any((r) => r.phenotype == 'Full-Body Greywing'),
-        isTrue,
-      );
-    });
+        expect(results, isNotEmpty);
+        expect(results.any((r) => r.phenotype == 'Full-Body Greywing'), isTrue);
+      },
+    );
 
     test('dilute x greywing produces Greywing (same as greywing x dilute)', () {
       final results = crossAutosomal('dilute', 'greywing');
 
       expect(results, isNotEmpty);
-      expect(
-        results.any((r) => r.phenotype == 'Greywing'),
-        isTrue,
-      );
+      expect(results.any((r) => r.phenotype == 'Greywing'), isTrue);
     });
 
-    test('dilute x clearwing produces Clearwing (same as clearwing x dilute)', () {
-      final results = crossAutosomal('dilute', 'clearwing');
+    test(
+      'dilute x clearwing produces Clearwing (same as clearwing x dilute)',
+      () {
+        final results = crossAutosomal('dilute', 'clearwing');
 
-      expect(results, isNotEmpty);
-      expect(
-        results.any((r) => r.phenotype == 'Clearwing'),
-        isTrue,
-      );
-    });
+        expect(results, isNotEmpty);
+        expect(results.any((r) => r.phenotype == 'Clearwing'), isTrue);
+      },
+    );
   });
 
   group('Blue series locus compound heterozygotes', () {
@@ -158,75 +150,60 @@ void main() {
       final results = crossAutosomal('goldenface', 'blue');
 
       expect(results, isNotEmpty);
-      expect(
-        results.any((r) => r.phenotype == 'Goldenface Blue'),
-        isTrue,
-      );
+      expect(results.any((r) => r.phenotype == 'Goldenface Blue'), isTrue);
     });
 
     test('turquoise x blue produces Turquoise Blue', () {
       final results = crossAutosomal('turquoise', 'blue');
 
       expect(results, isNotEmpty);
-      expect(
-        results.any((r) => r.phenotype == 'Turquoise Blue'),
-        isTrue,
-      );
+      expect(results.any((r) => r.phenotype == 'Turquoise Blue'), isTrue);
     });
 
     test('aqua x blue produces Aqua Blue', () {
       final results = crossAutosomal('aqua', 'blue');
 
       expect(results, isNotEmpty);
-      expect(
-        results.any((r) => r.phenotype == 'Aqua Blue'),
-        isTrue,
-      );
+      expect(results.any((r) => r.phenotype == 'Aqua Blue'), isTrue);
     });
 
     test('turquoise x aqua produces Turquoise Aqua (co-expressed parblue)', () {
       final results = crossAutosomal('turquoise', 'aqua');
 
       expect(results, isNotEmpty);
-      expect(
-        results.any((r) => r.phenotype == 'Turquoise Aqua'),
-        isTrue,
-      );
+      expect(results.any((r) => r.phenotype == 'Turquoise Aqua'), isTrue);
     });
 
     test('bluefactor_1 x blue produces Blue Factor I Blue', () {
       final results = crossAutosomal('bluefactor_1', 'blue');
 
       expect(results, isNotEmpty);
-      expect(
-        results.any((r) => r.phenotype == 'Blue Factor I Blue'),
-        isTrue,
-      );
+      expect(results.any((r) => r.phenotype == 'Blue Factor I Blue'), isTrue);
     });
 
     test('bluefactor_2 x blue produces Blue Factor II Blue', () {
       final results = crossAutosomal('bluefactor_2', 'blue');
 
       expect(results, isNotEmpty);
-      expect(
-        results.any((r) => r.phenotype == 'Blue Factor II Blue'),
-        isTrue,
-      );
+      expect(results.any((r) => r.phenotype == 'Blue Factor II Blue'), isTrue);
     });
 
-    test('bluefactor_2 x bluefactor_1 produces Blue Factor II (bf1 carried)', () {
-      final results = crossAutosomal('bluefactor_2', 'bluefactor_1');
+    test(
+      'bluefactor_2 x bluefactor_1 produces Blue Factor II (bf1 carried)',
+      () {
+        final results = crossAutosomal('bluefactor_2', 'bluefactor_1');
 
-      expect(results, isNotEmpty);
-      expect(
-        results.any(
-          (r) =>
-              r.phenotype == 'Blue Factor II' &&
-              r.carriedMutations.contains('bluefactor_1'),
-        ),
-        isTrue,
-      );
-    });
+        expect(results, isNotEmpty);
+        expect(
+          results.any(
+            (r) =>
+                r.phenotype == 'Blue Factor II' &&
+                r.carriedMutations.contains('bluefactor_1'),
+          ),
+          isTrue,
+        );
+      },
+    );
 
     test('blue x yellowface_type2 is symmetric', () {
       final forward = crossAutosomal('yellowface_type2', 'blue');
@@ -312,21 +289,24 @@ void main() {
       );
     });
 
-    test('texas_clearbody x pearly produces Texas Clearbody (pearly carried)', () {
-      final results = crossSexLinked('texas_clearbody', 'pearly');
+    test(
+      'texas_clearbody x pearly produces Texas Clearbody (pearly carried)',
+      () {
+        final results = crossSexLinked('texas_clearbody', 'pearly');
 
-      expect(results, isNotEmpty);
-      final males = results.where((r) => r.sex == OffspringSex.male).toList();
-      expect(males, isNotEmpty);
-      expect(
-        males.any(
-          (r) =>
-              r.visualMutations.contains('texas_clearbody') &&
-              r.carriedMutations.contains('pearly'),
-        ),
-        isTrue,
-      );
-    });
+        expect(results, isNotEmpty);
+        final males = results.where((r) => r.sex == OffspringSex.male).toList();
+        expect(males, isNotEmpty);
+        expect(
+          males.any(
+            (r) =>
+                r.visualMutations.contains('texas_clearbody') &&
+                r.carriedMutations.contains('pearly'),
+          ),
+          isTrue,
+        );
+      },
+    );
 
     test('pearly x pallid produces Pallid Pearly (both expressed)', () {
       final results = crossSexLinked('pearly', 'pallid');
@@ -434,20 +414,14 @@ void main() {
       final results = crossAutosomal('greywing', 'greywing');
 
       expect(results, isNotEmpty);
-      expect(
-        results.any((r) => r.phenotype == 'Greywing'),
-        isTrue,
-      );
+      expect(results.any((r) => r.phenotype == 'Greywing'), isTrue);
     });
 
     test('homozygous dilute x homozygous dilute produces Dilute', () {
       final results = crossAutosomal('dilute', 'dilute');
 
       expect(results, isNotEmpty);
-      expect(
-        results.any((r) => r.phenotype == 'Dilute'),
-        isTrue,
-      );
+      expect(results.any((r) => r.phenotype == 'Dilute'), isTrue);
     });
   });
 
@@ -456,21 +430,18 @@ void main() {
       final results = crossAutosomal('blue', 'blue');
 
       expect(results, isNotEmpty);
-      expect(
-        results.any((r) => r.phenotype == 'Blue'),
-        isTrue,
-      );
+      expect(results.any((r) => r.phenotype == 'Blue'), isTrue);
     });
 
-    test('homozygous goldenface x homozygous goldenface produces Goldenface', () {
-      final results = crossAutosomal('goldenface', 'goldenface');
+    test(
+      'homozygous goldenface x homozygous goldenface produces Goldenface',
+      () {
+        final results = crossAutosomal('goldenface', 'goldenface');
 
-      expect(results, isNotEmpty);
-      expect(
-        results.any((r) => r.phenotype == 'Goldenface'),
-        isTrue,
-      );
-    });
+        expect(results, isNotEmpty);
+        expect(results.any((r) => r.phenotype == 'Goldenface'), isTrue);
+      },
+    );
   });
 
   group('Ino locus fallback behavior', () {

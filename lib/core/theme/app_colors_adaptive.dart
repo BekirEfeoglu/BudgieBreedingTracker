@@ -41,21 +41,26 @@ abstract class _AdaptiveColors {
   static Color inheritanceColor(BuildContext context, String type) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return switch (type) {
-      'autosomalRecessive' => isDark
-          ? AppColors.inheritAutosomalRecessiveDark
-          : AppColors.inheritAutosomalRecessive,
-      'autosomalDominant' => isDark
-          ? AppColors.inheritAutosomalDominantDark
-          : AppColors.inheritAutosomalDominant,
-      'autosomalIncompleteDominant' => isDark
-          ? AppColors.inheritAutosomalIncompleteDominantDark
-          : AppColors.inheritAutosomalIncompleteDominant,
-      'sexLinkedRecessive' => isDark
-          ? AppColors.inheritSexLinkedRecessiveDark
-          : AppColors.inheritSexLinkedRecessive,
-      'sexLinkedCodominant' => isDark
-          ? AppColors.inheritSexLinkedCodominantDark
-          : AppColors.inheritSexLinkedCodominant,
+      'autosomalRecessive' =>
+        isDark
+            ? AppColors.inheritAutosomalRecessiveDark
+            : AppColors.inheritAutosomalRecessive,
+      'autosomalDominant' =>
+        isDark
+            ? AppColors.inheritAutosomalDominantDark
+            : AppColors.inheritAutosomalDominant,
+      'autosomalIncompleteDominant' =>
+        isDark
+            ? AppColors.inheritAutosomalIncompleteDominantDark
+            : AppColors.inheritAutosomalIncompleteDominant,
+      'sexLinkedRecessive' =>
+        isDark
+            ? AppColors.inheritSexLinkedRecessiveDark
+            : AppColors.inheritSexLinkedRecessive,
+      'sexLinkedCodominant' =>
+        isDark
+            ? AppColors.inheritSexLinkedCodominantDark
+            : AppColors.inheritSexLinkedCodominant,
       _ => AppColors.neutral400,
     };
   }
@@ -118,10 +123,8 @@ abstract class _AdaptiveColors {
   }
 
   /// AI confidence badge colors (adaptive for dark mode).
-  static ({Color background, Color foreground, Color border}) aiConfidenceColors(
-    BuildContext context,
-    String level,
-  ) {
+  static ({Color background, Color foreground, Color border})
+  aiConfidenceColors(BuildContext context, String level) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final theme = Theme.of(context);
     return switch (level) {
@@ -131,18 +134,34 @@ abstract class _AdaptiveColors {
         border: theme.colorScheme.error.withValues(alpha: 0.45),
       ),
       'medium' => (
-        background: (isDark ? AppColors.aiConfidenceMediumDark : AppColors.aiConfidenceMedium)
-            .withValues(alpha: 0.25),
-        foreground: isDark ? AppColors.aiConfidenceMediumDark : const Color(0xFF9A5B00),
-        border: (isDark ? AppColors.aiConfidenceMediumDark : AppColors.aiConfidenceMedium)
-            .withValues(alpha: 0.55),
+        background:
+            (isDark
+                    ? AppColors.aiConfidenceMediumDark
+                    : AppColors.aiConfidenceMedium)
+                .withValues(alpha: 0.25),
+        foreground: isDark
+            ? AppColors.aiConfidenceMediumDark
+            : const Color(0xFF9A5B00),
+        border:
+            (isDark
+                    ? AppColors.aiConfidenceMediumDark
+                    : AppColors.aiConfidenceMedium)
+                .withValues(alpha: 0.55),
       ),
       'high' => (
-        background: (isDark ? AppColors.aiConfidenceHighDark : AppColors.aiConfidenceHigh)
-            .withValues(alpha: 0.2),
-        foreground: isDark ? AppColors.aiConfidenceHighDark : const Color(0xFF166534),
-        border: (isDark ? AppColors.aiConfidenceHighDark : AppColors.aiConfidenceHigh)
-            .withValues(alpha: 0.55),
+        background:
+            (isDark
+                    ? AppColors.aiConfidenceHighDark
+                    : AppColors.aiConfidenceHigh)
+                .withValues(alpha: 0.2),
+        foreground: isDark
+            ? AppColors.aiConfidenceHighDark
+            : const Color(0xFF166534),
+        border:
+            (isDark
+                    ? AppColors.aiConfidenceHighDark
+                    : AppColors.aiConfidenceHigh)
+                .withValues(alpha: 0.55),
       ),
       _ => (
         background: theme.colorScheme.surfaceContainerHighest,

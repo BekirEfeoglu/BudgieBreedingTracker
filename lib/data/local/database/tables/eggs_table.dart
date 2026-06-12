@@ -9,8 +9,7 @@ class EggsTable extends Table {
   DateTimeColumn get layDate => dateTime()();
   TextColumn get userId => text()();
   TextColumn get status => text().map(eggStatusConverter)();
-  TextColumn get clutchId =>
-      text().nullable().references(ClutchesTable, #id)();
+  TextColumn get clutchId => text().nullable().references(ClutchesTable, #id)();
   TextColumn get incubationId =>
       text().nullable().references(IncubationsTable, #id)();
   IntColumn get eggNumber => integer().nullable()();

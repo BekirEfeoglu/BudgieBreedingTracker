@@ -2,9 +2,15 @@ part of 'epistasis_engine.dart';
 
 /// Adds pied mutation naming including Dark-Eyed Clear detection.
 void _addPiedNaming(List<String> parts, Set<String> visualMutations) {
-  final hasRecessivePied = visualMutations.contains(GeneticsConstants.mutRecessivePied);
-  final hasClearflightPied = visualMutations.contains(GeneticsConstants.mutClearflightPied);
-  final hasDominantPied = visualMutations.contains(GeneticsConstants.mutDominantPied);
+  final hasRecessivePied = visualMutations.contains(
+    GeneticsConstants.mutRecessivePied,
+  );
+  final hasClearflightPied = visualMutations.contains(
+    GeneticsConstants.mutClearflightPied,
+  );
+  final hasDominantPied = visualMutations.contains(
+    GeneticsConstants.mutDominantPied,
+  );
   final hasDutchPied = visualMutations.contains(GeneticsConstants.mutDutchPied);
 
   if (hasRecessivePied && hasClearflightPied) {

@@ -7,7 +7,10 @@ void _addPiedInteractions(
   if (f.hasRecessivePied && f.hasClearflightPied) {
     interactions.add(
       const EpistaticInteraction(
-        mutationIds: [GeneticsConstants.mutRecessivePied, GeneticsConstants.mutClearflightPied],
+        mutationIds: [
+          GeneticsConstants.mutRecessivePied,
+          GeneticsConstants.mutClearflightPied,
+        ],
         resultName: 'Dark-Eyed Clear',
         description:
             'Recessive Pied + Clearflight Pied combination produces '
@@ -20,7 +23,10 @@ void _addPiedInteractions(
   if (f.hasDutchPied && f.hasDominantPied) {
     interactions.add(
       const EpistaticInteraction(
-        mutationIds: [GeneticsConstants.mutDutchPied, GeneticsConstants.mutDominantPied],
+        mutationIds: [
+          GeneticsConstants.mutDutchPied,
+          GeneticsConstants.mutDominantPied,
+        ],
         resultName: 'Double Dominant Pied',
         description:
             'Dutch Pied and Dominant Pied together are labelled as a '
@@ -32,7 +38,10 @@ void _addPiedInteractions(
   if (f.hasDutchPied && f.hasClearflightPied && !f.hasRecessivePied) {
     interactions.add(
       const EpistaticInteraction(
-        mutationIds: [GeneticsConstants.mutDutchPied, GeneticsConstants.mutClearflightPied],
+        mutationIds: [
+          GeneticsConstants.mutDutchPied,
+          GeneticsConstants.mutClearflightPied,
+        ],
         resultName: 'Dutch Clearflight Pied',
         description:
             'Dutch Pied with Clearflight Pied can be tracked as a distinct '
@@ -49,7 +58,10 @@ void _addBlackfaceSpangleInteractions(
   if (f.hasBlackface && f.hasSpangle) {
     interactions.add(
       const EpistaticInteraction(
-        mutationIds: [GeneticsConstants.mutBlackface, GeneticsConstants.mutSpangle],
+        mutationIds: [
+          GeneticsConstants.mutBlackface,
+          GeneticsConstants.mutSpangle,
+        ],
         resultName: 'Melanistic Spangle',
         description:
             'Blackface with Spangle can produce a heavier melanin-edged '
@@ -90,7 +102,9 @@ void _addParblueInoInteractions(
     interactions.add(
       EpistaticInteraction(
         mutationIds: [
-          f.hasAqua ? GeneticsConstants.mutAqua : GeneticsConstants.mutTurquoise,
+          f.hasAqua
+              ? GeneticsConstants.mutAqua
+              : GeneticsConstants.mutTurquoise,
           GeneticsConstants.mutIno,
         ],
         resultName: '$parblueType Ino',
@@ -114,7 +128,10 @@ void _addPearlyInteractions(
   if (hasPearly && hasOpaline) {
     interactions.add(
       const EpistaticInteraction(
-        mutationIds: [GeneticsConstants.mutPearly, GeneticsConstants.mutOpaline],
+        mutationIds: [
+          GeneticsConstants.mutPearly,
+          GeneticsConstants.mutOpaline,
+        ],
         resultName: 'Opaline Pearly',
         description:
             'Pearly + Opaline combination: both sex-linked pattern '
@@ -127,7 +144,10 @@ void _addPearlyInteractions(
   if (hasPearly && f.hasCinnamon) {
     interactions.add(
       const EpistaticInteraction(
-        mutationIds: [GeneticsConstants.mutPearly, GeneticsConstants.mutCinnamon],
+        mutationIds: [
+          GeneticsConstants.mutPearly,
+          GeneticsConstants.mutCinnamon,
+        ],
         resultName: 'Cinnamon Pearly',
         description:
             'Pearly + Cinnamon combination: pearled wing pattern '

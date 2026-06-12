@@ -27,11 +27,13 @@ void main() {
   setUp(() {
     mockRepo = MockMarketplaceRepository();
     mockModeration = MockContentModerationService();
-    container = ProviderContainer(overrides: [
-      marketplaceRepositoryProvider.overrideWithValue(mockRepo),
-      contentModerationServiceProvider.overrideWithValue(mockModeration),
-      currentUserIdProvider.overrideWithValue('u1'),
-    ]);
+    container = ProviderContainer(
+      overrides: [
+        marketplaceRepositoryProvider.overrideWithValue(mockRepo),
+        contentModerationServiceProvider.overrideWithValue(mockModeration),
+        currentUserIdProvider.overrideWithValue('u1'),
+      ],
+    );
   });
 
   tearDown(() => container.dispose());
@@ -45,8 +47,9 @@ void main() {
 
   group('createListing', () {
     setUp(() {
-      when(() => mockModeration.checkText(any()))
-          .thenAnswer((_) async => const ModerationResult.allowed());
+      when(
+        () => mockModeration.checkText(any()),
+      ).thenAnswer((_) async => const ModerationResult.allowed());
       when(() => mockRepo.create(any())).thenAnswer(
         (_) async => const MarketplaceListing(id: 'new', userId: 'u1'),
       );
@@ -187,9 +190,13 @@ void main() {
 
   group('updateListing', () {
     setUp(() {
-      when(() => mockModeration.checkText(any()))
-          .thenAnswer((_) async => const ModerationResult.allowed());
-      when(() => mockRepo.updateListing(any(), any(), userId: any(named: 'userId'))).thenAnswer(
+      when(
+        () => mockModeration.checkText(any()),
+      ).thenAnswer((_) async => const ModerationResult.allowed());
+      when(
+        () =>
+            mockRepo.updateListing(any(), any(), userId: any(named: 'userId')),
+      ).thenAnswer(
         (_) async => const MarketplaceListing(id: 'listing-1', userId: 'u1'),
       );
     });
@@ -209,7 +216,9 @@ void main() {
           );
 
       verify(() => mockModeration.checkText('Updated New desc')).called(1);
-      verify(() => mockRepo.updateListing('listing-1', any(), userId: 'u1')).called(1);
+      verify(
+        () => mockRepo.updateListing('listing-1', any(), userId: 'u1'),
+      ).called(1);
       final state = container.read(marketplaceFormStateProvider);
       expect(state.isSuccess, isTrue);
     });
@@ -229,14 +238,19 @@ void main() {
             city: 'Istanbul',
           );
 
-      verifyNever(() => mockRepo.updateListing(any(), any(), userId: any(named: 'userId')));
+      verifyNever(
+        () =>
+            mockRepo.updateListing(any(), any(), userId: any(named: 'userId')),
+      );
       final state = container.read(marketplaceFormStateProvider);
       expect(state.error, isNotNull);
     });
   });
 
   test('deleteListing sets isSuccess on success', () async {
-    when(() => mockRepo.delete(any(), userId: any(named: 'userId'))).thenAnswer((_) async {});
+    when(
+      () => mockRepo.delete(any(), userId: any(named: 'userId')),
+    ).thenAnswer((_) async {});
 
     await container
         .read(marketplaceFormStateProvider.notifier)
@@ -247,8 +261,9 @@ void main() {
   });
 
   test('reset clears state', () async {
-    when(() => mockModeration.checkText(any()))
-        .thenAnswer((_) async => const ModerationResult.allowed());
+    when(
+      () => mockModeration.checkText(any()),
+    ).thenAnswer((_) async => const ModerationResult.allowed());
     when(() => mockRepo.create(any())).thenAnswer(
       (_) async => const MarketplaceListing(id: 'new', userId: 'u1'),
     );
@@ -275,7 +290,9 @@ void main() {
   });
 
   test('updateStatus sets isSuccess on success', () async {
-    when(() => mockRepo.updateStatus(any(), any(), userId: any(named: 'userId'))).thenAnswer((_) async {});
+    when(
+      () => mockRepo.updateStatus(any(), any(), userId: any(named: 'userId')),
+    ).thenAnswer((_) async {});
 
     await container
         .read(marketplaceFormStateProvider.notifier)

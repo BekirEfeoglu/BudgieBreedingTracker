@@ -49,9 +49,7 @@ void main() {
       final result = analyzer.analyze(
         fatherMutations: const {},
         motherMutations: const {},
-        offspringResults: [
-          _offspring(phenotype: 'Normal', probability: 1.0),
-        ],
+        offspringResults: [_offspring(phenotype: 'Normal', probability: 1.0)],
       );
 
       expect(result.hasWarnings, isFalse);
@@ -63,9 +61,7 @@ void main() {
       final result = analyzer.analyze(
         fatherMutations: const {},
         motherMutations: const {},
-        offspringResults: [
-          _offspring(phenotype: 'Normal', probability: 1.0),
-        ],
+        offspringResults: [_offspring(phenotype: 'Normal', probability: 1.0)],
       );
 
       expect(result.warnings, isEmpty);
@@ -76,9 +72,7 @@ void main() {
       final result = analyzer.analyze(
         fatherMutations: {'ino'},
         motherMutations: {'ino'},
-        offspringResults: [
-          _offspring(phenotype: 'Ino', probability: 1.0),
-        ],
+        offspringResults: [_offspring(phenotype: 'Ino', probability: 1.0)],
       );
 
       expect(result.warnings, isNotEmpty);
@@ -107,13 +101,11 @@ void main() {
         ],
       );
 
-      final spangleWarnings =
-          result.warnings.where((w) => w.combination.id == 'df_spangle');
-      expect(spangleWarnings, hasLength(1));
-      expect(
-        spangleWarnings.first.offspring.phenotype,
-        'DF Spangle',
+      final spangleWarnings = result.warnings.where(
+        (w) => w.combination.id == 'df_spangle',
       );
+      expect(spangleWarnings, hasLength(1));
+      expect(spangleWarnings.first.offspring.phenotype, 'DF Spangle');
     });
 
     test('does not flag SF Spangle offspring as DF Spangle', () {
@@ -129,8 +121,9 @@ void main() {
         ],
       );
 
-      final spangleWarnings =
-          result.warnings.where((w) => w.combination.id == 'df_spangle');
+      final spangleWarnings = result.warnings.where(
+        (w) => w.combination.id == 'df_spangle',
+      );
       expect(spangleWarnings, isEmpty);
     });
   });
@@ -146,8 +139,9 @@ void main() {
         ],
       );
 
-      final inoWarnings =
-          result.warnings.where((w) => w.combination.id == 'ino_x_ino');
+      final inoWarnings = result.warnings.where(
+        (w) => w.combination.id == 'ino_x_ino',
+      );
       expect(inoWarnings, hasLength(2));
     });
 
@@ -155,13 +149,12 @@ void main() {
       final result = analyzer.analyze(
         fatherMutations: {'ino'},
         motherMutations: {'blue'},
-        offspringResults: [
-          _offspring(phenotype: 'Ino', probability: 0.5),
-        ],
+        offspringResults: [_offspring(phenotype: 'Ino', probability: 0.5)],
       );
 
-      final inoWarnings =
-          result.warnings.where((w) => w.combination.id == 'ino_x_ino');
+      final inoWarnings = result.warnings.where(
+        (w) => w.combination.id == 'ino_x_ino',
+      );
       expect(inoWarnings, isEmpty);
     });
 
@@ -175,8 +168,9 @@ void main() {
         ],
       );
 
-      final crestedWarnings =
-          result.warnings.where((w) => w.combination.id == 'df_crested');
+      final crestedWarnings = result.warnings.where(
+        (w) => w.combination.id == 'df_crested',
+      );
       expect(crestedWarnings, hasLength(2));
     });
   });
@@ -199,9 +193,7 @@ void main() {
       final result = analyzer.analyze(
         fatherMutations: {'crested_tufted'},
         motherMutations: {'crested_half_circular'},
-        offspringResults: [
-          _offspring(phenotype: 'Crested', probability: 1.0),
-        ],
+        offspringResults: [_offspring(phenotype: 'Crested', probability: 1.0)],
       );
 
       expect(result.highestSeverity, LethalSeverity.lethal);
@@ -221,10 +213,7 @@ void main() {
             visualMutations: ['spangle'],
             doubleFactorIds: {'spangle'},
           ),
-          _offspring(
-            phenotype: 'Normal',
-            probability: 0.75,
-          ),
+          _offspring(phenotype: 'Normal', probability: 0.75),
         ],
       );
 
@@ -294,8 +283,9 @@ void main() {
         ],
       );
 
-      final spangleWarnings =
-          result.warnings.where((w) => w.combination.id == 'df_spangle');
+      final spangleWarnings = result.warnings.where(
+        (w) => w.combination.id == 'df_spangle',
+      );
       expect(spangleWarnings, hasLength(2));
       // (0.125 * 1.0) + (0.125 * 1.0) = 0.25
       expect(result.totalAffectedProbability, closeTo(0.25, 0.0001));
@@ -313,18 +303,18 @@ void main() {
             probability: 0.5,
             visualMutations: ['pallid'],
           ),
-          _offspring(
-            phenotype: 'Pallid carrier',
-            probability: 0.5,
-          ),
+          _offspring(phenotype: 'Pallid carrier', probability: 0.5),
         ],
       );
 
-      final pallidWarnings =
-          result.warnings.where((w) => w.combination.id == 'pallid_x_pallid');
+      final pallidWarnings = result.warnings.where(
+        (w) => w.combination.id == 'pallid_x_pallid',
+      );
       expect(pallidWarnings, hasLength(2));
-      expect(pallidWarnings.first.combination.severity,
-          LethalSeverity.subVital);
+      expect(
+        pallidWarnings.first.combination.severity,
+        LethalSeverity.subVital,
+      );
     });
 
     test('texas_clearbody x texas_clearbody flags all offspring', () {
@@ -340,8 +330,9 @@ void main() {
         ],
       );
 
-      final tcbWarnings = result.warnings
-          .where((w) => w.combination.id == 'texas_clearbody_x_texas_clearbody');
+      final tcbWarnings = result.warnings.where(
+        (w) => w.combination.id == 'texas_clearbody_x_texas_clearbody',
+      );
       expect(tcbWarnings, hasLength(1));
     });
 
@@ -349,12 +340,11 @@ void main() {
       final result = analyzer.analyze(
         fatherMutations: {'pallid'},
         motherMutations: {'blue'},
-        offspringResults: [
-          _offspring(phenotype: 'Pallid', probability: 0.5),
-        ],
+        offspringResults: [_offspring(phenotype: 'Pallid', probability: 0.5)],
       );
-      final pallidWarnings =
-          result.warnings.where((w) => w.combination.id == 'pallid_x_pallid');
+      final pallidWarnings = result.warnings.where(
+        (w) => w.combination.id == 'pallid_x_pallid',
+      );
       expect(pallidWarnings, isEmpty);
     });
   });
@@ -386,10 +376,12 @@ void main() {
 
         // Two distinct warning rows may exist for dfSpangleIno (ino_x_ino,
         // df_spangle) but totalAffectedProbability must reflect it once.
-        final inoWarnings =
-            result.warnings.where((w) => w.combination.id == 'ino_x_ino');
-        final dfSpangleWarnings =
-            result.warnings.where((w) => w.combination.id == 'df_spangle');
+        final inoWarnings = result.warnings.where(
+          (w) => w.combination.id == 'ino_x_ino',
+        );
+        final dfSpangleWarnings = result.warnings.where(
+          (w) => w.combination.id == 'df_spangle',
+        );
         expect(inoWarnings, isNotEmpty);
         expect(dfSpangleWarnings, isNotEmpty);
 

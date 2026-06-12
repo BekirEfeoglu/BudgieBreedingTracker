@@ -81,12 +81,7 @@ class AppLogger {
   }
 
   static void error(String message, [dynamic error, StackTrace? stackTrace]) {
-    _record(
-      log_pkg.Level.error,
-      message,
-      error: error,
-      stackTrace: stackTrace,
-    );
+    _record(log_pkg.Level.error, message, error: error, stackTrace: stackTrace);
     if (!silenceConsole) {
       _logger.e(message, error: error, stackTrace: stackTrace);
     }

@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart' show Species;
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart'
+    show Species;
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
-import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart'
+    as date_utils;
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
@@ -20,24 +22,25 @@ final incubationsStreamProvider =
 /// replaces the Dart `for (final egg in ...)` walk in
 /// `monthlyFertilityRateProvider` so memory stays O(monthCount).
 final _monthlyFertilityAggregateProvider =
-    StreamProvider.family<
-      Map<String, ({int fertile, int total})>,
-      String
-    >((ref, userId) {
+    StreamProvider.family<Map<String, ({int fertile, int total})>, String>((
+      ref,
+      userId,
+    ) {
       return ref.watch(eggsDaoProvider).watchMonthlyFertility(userId);
     });
 
 /// Species-filtered SQL-aggregated monthly fertility. Composite family key
 /// `(userId, species)` so different species filters don't clobber each
 /// other's stream subscription.
-final _monthlyFertilityAggregateBySpeciesProvider = StreamProvider.family<
-  Map<String, ({int fertile, int total})>,
-  ({String userId, Species species})
->((ref, args) {
-  return ref
-      .watch(eggsDaoProvider)
-      .watchMonthlyFertility(args.userId, species: args.species.toJson());
-});
+final _monthlyFertilityAggregateBySpeciesProvider =
+    StreamProvider.family<
+      Map<String, ({int fertile, int total})>,
+      ({String userId, Species species})
+    >((ref, args) {
+      return ref
+          .watch(eggsDaoProvider)
+          .watchMonthlyFertility(args.userId, species: args.species.toJson());
+    });
 
 /// Monthly fertility rate — period-aware.
 /// Calculates fertile / (fertile + infertile) per month.
@@ -53,9 +56,10 @@ final monthlyFertilityRateProvider =
       final aggregateAsync = speciesFilter == null
           ? ref.watch(_monthlyFertilityAggregateProvider(userId))
           : ref.watch(
-              _monthlyFertilityAggregateBySpeciesProvider(
-                (userId: userId, species: speciesFilter),
-              ),
+              _monthlyFertilityAggregateBySpeciesProvider((
+                userId: userId,
+                species: speciesFilter,
+              )),
             );
 
       return aggregateAsync.whenData((rawCounts) {

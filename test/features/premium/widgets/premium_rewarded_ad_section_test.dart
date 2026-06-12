@@ -33,9 +33,9 @@ void main() {
         ),
       ],
       child: const MaterialApp(
-        home: Scaffold(body: SingleChildScrollView(
-          child: PremiumRewardedAdSection(),
-        )),
+        home: Scaffold(
+          body: SingleChildScrollView(child: PremiumRewardedAdSection()),
+        ),
       ),
     );
   }
@@ -65,10 +65,7 @@ void main() {
     testWidgets('shows status chip when statistics reward is active', (
       tester,
     ) async {
-      await pumpLocalizedApp(
-        tester,
-        buildSubject(statsActive: true),
-      );
+      await pumpLocalizedApp(tester, buildSubject(statsActive: true));
 
       expect(find.text(l10n('ads.reward_statistics_active')), findsOneWidget);
       expect(find.text(l10n('ads.watch_for_statistics')), findsNothing);
@@ -77,10 +74,7 @@ void main() {
     testWidgets('shows status chip when genetics reward is active', (
       tester,
     ) async {
-      await pumpLocalizedApp(
-        tester,
-        buildSubject(geneticsActive: true),
-      );
+      await pumpLocalizedApp(tester, buildSubject(geneticsActive: true));
 
       expect(find.text(l10n('ads.reward_genetics_remaining')), findsOneWidget);
       expect(find.text(l10n('ads.watch_for_genetics')), findsNothing);
@@ -89,10 +83,7 @@ void main() {
     testWidgets('shows status chip when export reward is active', (
       tester,
     ) async {
-      await pumpLocalizedApp(
-        tester,
-        buildSubject(exportActive: true),
-      );
+      await pumpLocalizedApp(tester, buildSubject(exportActive: true));
 
       expect(find.text(l10n('ads.reward_export_remaining')), findsOneWidget);
       expect(find.text(l10n('ads.watch_for_export')), findsNothing);
@@ -126,9 +117,7 @@ void main() {
         tester,
         const ProviderScope(
           child: MaterialApp(
-            home: Scaffold(
-              body: RewardStatusChip(label: 'Active!'),
-            ),
+            home: Scaffold(body: RewardStatusChip(label: 'Active!')),
           ),
         ),
       );
@@ -142,9 +131,7 @@ void main() {
         tester,
         const ProviderScope(
           child: MaterialApp(
-            home: Scaffold(
-              body: RewardStatusChip(label: 'Active'),
-            ),
+            home: Scaffold(body: RewardStatusChip(label: 'Active')),
           ),
         ),
       );

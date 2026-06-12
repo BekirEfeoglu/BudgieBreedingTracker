@@ -33,9 +33,9 @@ void main() {
       overrides: [
         currentUserIdProvider.overrideWithValue('me'),
         communityPostByIdProvider('post-1').overrideWith((ref) async => null),
-        commentListProvider('post-1').overrideWith(
-          () => _FakeCommentListNotifier(),
-        ),
+        commentListProvider(
+          'post-1',
+        ).overrideWith(() => _FakeCommentListNotifier()),
         commentFormProvider.overrideWith(() => _FakeCommentFormNotifier()),
       ],
       child: MaterialApp.router(routerConfig: buildRouter(child)),
@@ -104,9 +104,9 @@ void main() {
                 createdAt: DateTime(2026, 4, 14),
               ),
             ),
-            commentListProvider('post-1').overrideWith(
-              () => _FakeCommentListNotifier(),
-            ),
+            commentListProvider(
+              'post-1',
+            ).overrideWith(() => _FakeCommentListNotifier()),
             commentFormProvider.overrideWith(() => _FakeCommentFormNotifier()),
           ],
           child: MaterialApp.router(

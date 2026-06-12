@@ -51,8 +51,8 @@ class CommentListState {
 
 final commentListProvider =
     NotifierProvider.family<CommentListNotifier, CommentListState, String>(
-  CommentListNotifier.new,
-);
+      CommentListNotifier.new,
+    );
 
 class CommentListNotifier extends Notifier<CommentListState> {
   CommentListNotifier(this._postId);
@@ -225,11 +225,7 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
       }
 
       final repo = ref.read(communityCommentRepositoryProvider);
-      await repo.create(
-        postId: postId,
-        userId: userId,
-        content: content,
-      );
+      await repo.create(postId: postId, userId: userId, content: content);
 
       ref.read(communityFeedProvider.notifier).incrementCommentCount(postId);
       ref.invalidate(commentsForPostProvider(postId));

@@ -32,13 +32,11 @@ Map<String, dynamic> _customerInfo({required bool premiumActive}) {
   return {
     'entitlements': {
       'all': {'premium': entitlement},
-      'active':
-          premiumActive ? {'premium': entitlement} : <String, dynamic>{},
+      'active': premiumActive ? {'premium': entitlement} : <String, dynamic>{},
       'verification': 'NOT_REQUESTED',
     },
     'allPurchaseDates': {'premium_monthly': '2026-01-01T00:00:00Z'},
-    'activeSubscriptions':
-        premiumActive ? ['premium_monthly'] : <String>[],
+    'activeSubscriptions': premiumActive ? ['premium_monthly'] : <String>[],
     'allPurchasedProductIdentifiers': ['premium_monthly'],
     'nonSubscriptionTransactions': <Map<String, dynamic>>[],
     'firstSeen': '2026-01-01T00:00:00Z',
@@ -81,10 +79,7 @@ void main() {
           return null;
         });
 
-        await initializer.initialize(
-          apiKey: 'test_api_key',
-          userId: 'user-1',
-        );
+        await initializer.initialize(apiKey: 'test_api_key', userId: 'user-1');
 
         expect(initializer.isInitialized, isTrue);
       });
@@ -97,10 +92,7 @@ void main() {
           return null;
         });
 
-        await initializer.initialize(
-          apiKey: 'test_api_key',
-          userId: 'user-1',
-        );
+        await initializer.initialize(apiKey: 'test_api_key', userId: 'user-1');
 
         expect(initializer.isInitialized, isFalse);
       });
@@ -167,10 +159,7 @@ void main() {
           if (call.method == 'setupPurchases') return null;
           return null;
         });
-        await initializer.initialize(
-          apiKey: 'key_v1',
-          userId: 'user-1',
-        );
+        await initializer.initialize(apiKey: 'key_v1', userId: 'user-1');
         expect(initializer.isInitialized, isTrue);
 
         // Now try with a different key that fails
@@ -180,10 +169,7 @@ void main() {
           }
           return null;
         });
-        await initializer.initialize(
-          apiKey: 'key_v2',
-          userId: 'user-1',
-        );
+        await initializer.initialize(apiKey: 'key_v2', userId: 'user-1');
 
         expect(initializer.isInitialized, isFalse);
       });
@@ -202,10 +188,7 @@ void main() {
           if (call.method == 'setupPurchases') return null;
           return null;
         });
-        await initializer.initialize(
-          apiKey: 'test_key',
-          userId: 'user-1',
-        );
+        await initializer.initialize(apiKey: 'test_key', userId: 'user-1');
 
         expect(initializer.isStoreUnavailableNow(), isFalse);
       });
@@ -222,10 +205,7 @@ void main() {
           return null;
         });
 
-        await initializer.initialize(
-          apiKey: 'test_key',
-          userId: 'user-1',
-        );
+        await initializer.initialize(apiKey: 'test_key', userId: 'user-1');
         final result = await initializer.initialize(
           apiKey: 'test_key',
           userId: 'user-1',
@@ -274,10 +254,7 @@ void main() {
           return null;
         });
 
-        await initializer.initialize(
-          apiKey: 'test_key',
-          userId: 'user-1',
-        );
+        await initializer.initialize(apiKey: 'test_key', userId: 'user-1');
 
         // Second call with same credentials should be idempotent
         // (not use stale future)
@@ -340,14 +317,8 @@ void main() {
           return null;
         });
 
-        await initializer.initialize(
-          apiKey: 'test_key',
-          userId: 'user-1',
-        );
-        await initializer.initialize(
-          apiKey: 'test_key',
-          userId: 'user-2',
-        );
+        await initializer.initialize(apiKey: 'test_key', userId: 'user-1');
+        await initializer.initialize(apiKey: 'test_key', userId: 'user-2');
 
         expect(setupCalls, 1);
         expect(loginCalls, 1);
@@ -366,10 +337,7 @@ void main() {
           return null;
         });
 
-        await initializer.initialize(
-          apiKey: 'test_key',
-          userId: 'user-1',
-        );
+        await initializer.initialize(apiKey: 'test_key', userId: 'user-1');
         final result = await initializer.initialize(
           apiKey: 'test_key',
           userId: 'user-2',
@@ -391,10 +359,7 @@ void main() {
           return null;
         });
 
-        await initializer.initialize(
-          apiKey: 'test_key',
-          userId: 'user-1',
-        );
+        await initializer.initialize(apiKey: 'test_key', userId: 'user-1');
 
         // Mark store unavailable
         final billingError = PlatformException(
@@ -405,10 +370,7 @@ void main() {
         expect(initializer.isStoreUnavailableNow(), isTrue);
 
         // Switch user
-        await initializer.initialize(
-          apiKey: 'test_key',
-          userId: 'user-2',
-        );
+        await initializer.initialize(apiKey: 'test_key', userId: 'user-2');
 
         expect(initializer.isStoreUnavailableNow(), isFalse);
       });
@@ -422,10 +384,7 @@ void main() {
           return null;
         });
 
-        await initializer.initialize(
-          apiKey: 'test_key',
-          userId: 'user-1',
-        );
+        await initializer.initialize(apiKey: 'test_key', userId: 'user-1');
         expect(initializer.isInitialized, isTrue);
 
         final result = await initializer.initialize(
@@ -456,14 +415,8 @@ void main() {
           return null;
         });
 
-        await initializer.initialize(
-          apiKey: 'key_v1',
-          userId: 'user-1',
-        );
-        await initializer.initialize(
-          apiKey: 'key_v2',
-          userId: 'user-1',
-        );
+        await initializer.initialize(apiKey: 'key_v1', userId: 'user-1');
+        await initializer.initialize(apiKey: 'key_v2', userId: 'user-1');
 
         // Different apiKey should trigger full configure, not logIn
         expect(setupCalls, 2);
@@ -483,10 +436,7 @@ void main() {
           return null;
         });
 
-        await initializer.initialize(
-          apiKey: 'test_key',
-          userId: 'user-1',
-        );
+        await initializer.initialize(apiKey: 'test_key', userId: 'user-1');
         await initializer.logout();
 
         expect(logoutCalls, 1);
@@ -513,10 +463,7 @@ void main() {
           return null;
         });
 
-        await initializer.initialize(
-          apiKey: 'test_key',
-          userId: 'user-1',
-        );
+        await initializer.initialize(apiKey: 'test_key', userId: 'user-1');
         expect(initializer.isInitialized, isTrue);
 
         await initializer.logout();
@@ -533,10 +480,7 @@ void main() {
           return null;
         });
 
-        await initializer.initialize(
-          apiKey: 'test_key',
-          userId: 'user-1',
-        );
+        await initializer.initialize(apiKey: 'test_key', userId: 'user-1');
         expect(initializer.isInitialized, isTrue);
 
         await initializer.logout();
@@ -553,10 +497,7 @@ void main() {
           return null;
         });
 
-        await initializer.initialize(
-          apiKey: 'test_key',
-          userId: 'user-1',
-        );
+        await initializer.initialize(apiKey: 'test_key', userId: 'user-1');
 
         // Mark store unavailable
         final billingError = PlatformException(
@@ -579,10 +520,7 @@ void main() {
           return null;
         });
 
-        await initializer.initialize(
-          apiKey: 'test_key',
-          userId: 'user-1',
-        );
+        await initializer.initialize(apiKey: 'test_key', userId: 'user-1');
         expect(initializer.isInitialized, isTrue);
 
         initializer.clearIdentity();
@@ -620,18 +558,12 @@ void main() {
           return null;
         });
 
-        await initializer.initialize(
-          apiKey: 'test_key',
-          userId: 'user-1',
-        );
+        await initializer.initialize(apiKey: 'test_key', userId: 'user-1');
         expect(setupCalls, 1);
 
         initializer.clearIdentity();
 
-        await initializer.initialize(
-          apiKey: 'test_key',
-          userId: 'user-1',
-        );
+        await initializer.initialize(apiKey: 'test_key', userId: 'user-1');
         expect(setupCalls, 2);
         expect(initializer.isInitialized, isTrue);
       });

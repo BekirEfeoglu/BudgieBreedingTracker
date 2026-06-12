@@ -169,7 +169,9 @@ void main() {
       await tester.pump();
 
       // Tap save with an empty name
-      final saveButton = find.widgetWithText(FilledButton, l10n('common.save')).first;
+      final saveButton = find
+          .widgetWithText(FilledButton, l10n('common.save'))
+          .first;
       await tester.ensureVisible(saveButton);
       await tester.pump();
       await tester.tap(saveButton);
@@ -186,7 +188,9 @@ void main() {
       await tester.enterText(find.byType(TextFormField).first, 'Mavi');
       await tester.pump();
 
-      final saveButton = find.widgetWithText(FilledButton, l10n('common.save')).first;
+      final saveButton = find
+          .widgetWithText(FilledButton, l10n('common.save'))
+          .first;
       await tester.ensureVisible(saveButton);
       await tester.pump();
       await tester.tap(saveButton);
@@ -292,7 +296,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final updateButton = find.widgetWithText(FilledButton, l10n('common.update'));
+      final updateButton = find.widgetWithText(
+        FilledButton,
+        l10n('common.update'),
+      );
       await tester.ensureVisible(updateButton);
       await tester.tap(updateButton);
       await tester.pumpAndSettle();

@@ -169,13 +169,15 @@ void main() {
       () {
         final container = ProviderContainer(
           overrides: [
-            offspringResultsProvider.overrideWithValue(const AsyncData([
-              OffspringResult(
-                phenotype: 'Albino',
-                probability: 1.0,
-                visualMutations: ['ino', 'blue'],
-              ),
-            ])),
+            offspringResultsProvider.overrideWithValue(
+              const AsyncData([
+                OffspringResult(
+                  phenotype: 'Albino',
+                  probability: 1.0,
+                  visualMutations: ['ino', 'blue'],
+                ),
+              ]),
+            ),
           ],
         );
         addTearDown(container.dispose);

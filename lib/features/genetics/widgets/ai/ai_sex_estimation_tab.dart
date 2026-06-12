@@ -6,7 +6,8 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
-import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart'
+    as date_utils;
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/local_ai/local_ai_models.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/local_ai_providers.dart';
@@ -22,8 +23,7 @@ class AiSexEstimationTab extends ConsumerStatefulWidget {
   const AiSexEstimationTab({super.key});
 
   @override
-  ConsumerState<AiSexEstimationTab> createState() =>
-      _AiSexEstimationTabState();
+  ConsumerState<AiSexEstimationTab> createState() => _AiSexEstimationTabState();
 }
 
 class _AiSexEstimationTabState extends ConsumerState<AiSexEstimationTab>
@@ -89,11 +89,16 @@ class _AiSexEstimationTabState extends ConsumerState<AiSexEstimationTab>
         info.add(bird.mutations!.join(', '));
       }
       if (bird.birthDate != null) {
-        final age = date_utils.DateUtils.dayDiff(bird.birthDate!, DateTime.now());
+        final age = date_utils.DateUtils.dayDiff(
+          bird.birthDate!,
+          DateTime.now(),
+        );
         info.add('${'birds.age'.tr()}: $age ${'common.days'.tr()}');
       }
       if (info.isNotEmpty) {
-        parts.add('[${'genetics.ai_bird_info_label'.tr()}: ${info.join(', ')}]');
+        parts.add(
+          '[${'genetics.ai_bird_info_label'.tr()}: ${info.join(', ')}]',
+        );
       }
     }
 
@@ -178,8 +183,8 @@ class _AiSexEstimationTabState extends ConsumerState<AiSexEstimationTab>
                 onPressed: configAsync.isLoading || isLoading
                     ? null
                     : () async {
-                        final observations =
-                            _observationsController.text.trim();
+                        final observations = _observationsController.text
+                            .trim();
                         if (observations.isEmpty && _selectedTags.isEmpty) {
                           setState(() => _showObservationError = true);
                           return;
@@ -269,10 +274,7 @@ class _AiSexEstimationTabState extends ConsumerState<AiSexEstimationTab>
                 // 48dp hit area — the previous 14px GestureDetector was
                 // below WCAG 2.5.5 and effectively unreachable with a
                 // thumb on the AI sex tab's dense info row.
-                constraints: const BoxConstraints(
-                  minWidth: 48,
-                  minHeight: 48,
-                ),
+                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
                 padding: EdgeInsets.zero,
                 visualDensity: VisualDensity.compact,
                 icon: Icon(
@@ -299,9 +301,8 @@ class _AiSexEstimationTabState extends ConsumerState<AiSexEstimationTab>
   }
 
   static String _localizedSex(LocalAiSexPrediction sex) => switch (sex) {
-        LocalAiSexPrediction.male => 'birds.male'.tr(),
-        LocalAiSexPrediction.female => 'birds.female'.tr(),
-        LocalAiSexPrediction.uncertain =>
-          'genetics.sex_uncertain'.tr(),
-      };
+    LocalAiSexPrediction.male => 'birds.male'.tr(),
+    LocalAiSexPrediction.female => 'birds.female'.tr(),
+    LocalAiSexPrediction.uncertain => 'genetics.sex_uncertain'.tr(),
+  };
 }

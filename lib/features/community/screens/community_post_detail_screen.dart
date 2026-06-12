@@ -172,9 +172,7 @@ class _CommunityPostDetailScreenState
 
                   // Comments list
                   if (commentState.isLoading)
-                    const SliverToBoxAdapter(
-                      child: CommunityCommentSkeleton(),
-                    )
+                    const SliverToBoxAdapter(child: CommunityCommentSkeleton())
                   else if (commentState.error != null &&
                       commentState.comments.isEmpty)
                     SliverToBoxAdapter(
@@ -195,57 +193,52 @@ class _CommunityPostDetailScreenState
                         child: Center(
                           child: Text(
                             'community.no_comments'.tr(),
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurfaceVariant,
-                                    ),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
                           ),
                         ),
                       ),
                     )
                   else
                     SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final comments = commentState.comments;
-                          if (index < comments.length) {
-                            return CommunityCommentTile(
-                              key: ValueKey(comments[index].id),
-                              comment: comments[index],
-                            );
-                          }
-                          // Load-more footer
-                          if (commentState.isLoadingMore) {
-                            return const Padding(
-                              padding: EdgeInsets.all(AppSpacing.lg),
-                              child: LoadingState(),
-                            );
-                          }
-                          if (commentState.hasMore) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: AppSpacing.sm,
-                              ),
-                              child: Center(
-                                child: TextButton(
-                                  onPressed: () => ref
-                                      .read(
-                                        commentListProvider(postId).notifier,
-                                      )
-                                      .fetchMore(),
-                                  child: Text(
-                                    'community.load_more_comments'.tr(),
-                                  ),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final comments = commentState.comments;
+                        if (index < comments.length) {
+                          return CommunityCommentTile(
+                            key: ValueKey(comments[index].id),
+                            comment: comments[index],
+                          );
+                        }
+                        // Load-more footer
+                        if (commentState.isLoadingMore) {
+                          return const Padding(
+                            padding: EdgeInsets.all(AppSpacing.lg),
+                            child: LoadingState(),
+                          );
+                        }
+                        if (commentState.hasMore) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: AppSpacing.sm,
+                            ),
+                            child: Center(
+                              child: TextButton(
+                                onPressed: () => ref
+                                    .read(commentListProvider(postId).notifier)
+                                    .fetchMore(),
+                                child: Text(
+                                  'community.load_more_comments'.tr(),
                                 ),
                               ),
-                            );
-                          }
-                          return const SizedBox.shrink();
-                        },
-                        childCount: commentState.comments.length + 1,
-                      ),
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      }, childCount: commentState.comments.length + 1),
                     ),
 
                   const SliverPadding(

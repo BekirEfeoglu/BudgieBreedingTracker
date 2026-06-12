@@ -63,15 +63,14 @@ void main() {
           },
         ),
       ],
-      child: const MaterialApp(
-        home: MarketplaceMyListingsScreen(),
-      ),
+      child: const MaterialApp(home: MarketplaceMyListingsScreen()),
     );
   }
 
   group('MarketplaceMyListingsScreen', () {
-    testWidgets('loading state shows CircularProgressIndicator',
-        (tester) async {
+    testWidgets('loading state shows CircularProgressIndicator', (
+      tester,
+    ) async {
       final completer = Completer<List<MarketplaceListing>>();
 
       await pumpLocalizedApp(
@@ -80,13 +79,11 @@ void main() {
           overrides: [
             currentUserIdProvider.overrideWithValue(_testUserId),
             marketplaceRepositoryProvider.overrideWithValue(mockRepo),
-            myMarketplaceListingsProvider(_testUserId).overrideWith(
-              (_) => completer.future,
-            ),
+            myMarketplaceListingsProvider(
+              _testUserId,
+            ).overrideWith((_) => completer.future),
           ],
-          child: const MaterialApp(
-            home: MarketplaceMyListingsScreen(),
-          ),
+          child: const MaterialApp(home: MarketplaceMyListingsScreen()),
         ),
         settle: false,
       );
@@ -100,8 +97,10 @@ void main() {
       await pumpLocalizedApp(
         tester,
         buildSubject(
-          listingsAsync:
-              AsyncError(Exception('Network error'), StackTrace.empty),
+          listingsAsync: AsyncError(
+            Exception('Network error'),
+            StackTrace.empty,
+          ),
         ),
       );
 

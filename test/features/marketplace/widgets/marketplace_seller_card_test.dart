@@ -37,8 +37,9 @@ void main() {
       expect(find.byIcon(LucideIcons.badgeCheck), findsOneWidget);
     });
 
-    testWidgets('should_not_show_verified_badge_when_not_verified',
-        (tester) async {
+    testWidgets('should_not_show_verified_badge_when_not_verified', (
+      tester,
+    ) async {
       await pumpLocalizedWidget(
         tester,
         const MarketplaceSellerCard(

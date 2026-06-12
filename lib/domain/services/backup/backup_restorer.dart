@@ -67,16 +67,16 @@ class BackupRestorer {
 
       final version = backupData['version'] as int?;
       if (version == null) {
-        return BackupResult.failure(
-          'backup.error_invalid_format'.tr(),
-        );
+        return BackupResult.failure('backup.error_invalid_format'.tr());
       }
       if (version > BackupDataCollector.backupVersion) {
         return BackupResult.failure(
-          'backup.error_unsupported_version'.tr(args: [
-            version.toString(),
-            BackupDataCollector.backupVersion.toString(),
-          ]),
+          'backup.error_unsupported_version'.tr(
+            args: [
+              version.toString(),
+              BackupDataCollector.backupVersion.toString(),
+            ],
+          ),
         );
       }
 
@@ -91,9 +91,7 @@ class BackupRestorer {
 
       final rawData = backupData['data'];
       if (rawData is! Map<String, dynamic>) {
-        return BackupResult.failure(
-          'backup.error_invalid_format'.tr(),
-        );
+        return BackupResult.failure('backup.error_invalid_format'.tr());
       }
       final data = rawData;
       final result = await _restoreAllEntities(data, userId);
@@ -107,7 +105,8 @@ class BackupRestorer {
         return BackupResult(
           success: false,
           filePath: filePath,
-          error: 'Backup restored partially: ${result.errors} entity type(s) failed',
+          error:
+              'Backup restored partially: ${result.errors} entity type(s) failed',
           recordCount: result.total,
           timestamp: DateTime.now(),
         );
@@ -134,7 +133,11 @@ class BackupRestorer {
     _step('chicks', Chick.fromJson, r.chick.saveAll),
     _step('health_records', HealthRecord.fromJson, r.healthRecord.saveAll),
     _step('events', Event.fromJson, r.event.saveAll),
-    _step('growth_measurements', GrowthMeasurement.fromJson, r.growthMeasurement.saveAll),
+    _step(
+      'growth_measurements',
+      GrowthMeasurement.fromJson,
+      r.growthMeasurement.saveAll,
+    ),
     _step('notifications', AppNotification.fromJson, r.notification.saveAll),
     _step('photos', Photo.fromJson, r.photo.saveAll),
   ];

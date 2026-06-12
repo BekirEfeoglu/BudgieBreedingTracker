@@ -39,9 +39,7 @@ void main() {
           },
         ),
       ],
-      child: const MaterialApp(
-        home: MessagesScreen(),
-      ),
+      child: const MaterialApp(home: MessagesScreen()),
     );
   }
 
@@ -54,13 +52,11 @@ void main() {
         overrides: [
           currentUserIdProvider.overrideWithValue('test-user'),
           messagingRepositoryProvider.overrideWithValue(mockRepo),
-          conversationsProvider('test-user').overrideWith(
-            (_) => completer.future,
-          ),
+          conversationsProvider(
+            'test-user',
+          ).overrideWith((_) => completer.future),
         ],
-        child: const MaterialApp(
-          home: MessagesScreen(),
-        ),
+        child: const MaterialApp(home: MessagesScreen()),
       ),
       settle: false,
     );

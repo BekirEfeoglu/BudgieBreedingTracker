@@ -54,16 +54,16 @@ const _sampleResult = LocalAiMutationInsight(
 /// Using UncontrolledProviderScope lets us pre-set phase state via the
 /// container since [_AiPhaseNotifier] is file-private and cannot be subclassed.
 Widget _subject({
-  AsyncValue<LocalAiMutationInsight?> mutationState =
-      const AsyncData(null),
+  AsyncValue<LocalAiMutationInsight?> mutationState = const AsyncData(null),
   AiAnalysisPhase phase = AiAnalysisPhase.idle,
   AsyncValue<LocalAiConfig>? configState,
   required void Function(ProviderContainer) onContainer,
 }) {
   final container = ProviderContainer(
     overrides: [
-      mutationImageAiAnalysisProvider
-          .overrideWith(() => _FakeMutationAnalysis(mutationState)),
+      mutationImageAiAnalysisProvider.overrideWith(
+        () => _FakeMutationAnalysis(mutationState),
+      ),
       localAiConfigProvider.overrideWith(
         () => _FakeConfig(configState ?? const AsyncData(_testConfig)),
       ),
@@ -79,9 +79,7 @@ Widget _subject({
 
   return UncontrolledProviderScope(
     container: container,
-    child: const MaterialApp(
-      home: Scaffold(body: AiMutationTab()),
-    ),
+    child: const MaterialApp(home: Scaffold(body: AiMutationTab())),
   );
 }
 
@@ -97,18 +95,18 @@ void main() {
 
   group('AiMutationTab', () {
     testWidgets('renders image picker zone in idle state', (tester) async {
-      await tester.pumpWidget(_subject(
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+      await tester.pumpWidget(
+        _subject(onContainer: (c) => addTearDown(c.dispose)),
+      );
       await tester.pump();
 
       expect(find.byType(AiImagePickerZone), findsOneWidget);
     });
 
     testWidgets('renders section title and subtitle', (tester) async {
-      await tester.pumpWidget(_subject(
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+      await tester.pumpWidget(
+        _subject(onContainer: (c) => addTearDown(c.dispose)),
+      );
       await tester.pump();
 
       // Without EasyLocalization, .tr() returns the raw key
@@ -116,87 +114,104 @@ void main() {
       expect(find.text('genetics.image_ai_subtitle'), findsOneWidget);
     });
 
-    testWidgets('analyze button is disabled when no image is selected',
-        (tester) async {
-      await tester.pumpWidget(_subject(
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+    testWidgets('analyze button is disabled when no image is selected', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _subject(onContainer: (c) => addTearDown(c.dispose)),
+      );
       await tester.pump();
 
       final buttons = find.byType(FilledButton);
       expect(buttons, findsAtLeast(1));
       final analyzeButton = tester.widget<FilledButton>(buttons.last);
-      expect(analyzeButton.onPressed, isNull,
-          reason: 'Analyze button should be disabled without image');
+      expect(
+        analyzeButton.onPressed,
+        isNull,
+        reason: 'Analyze button should be disabled without image',
+      );
     });
 
     testWidgets('analyze button shows label text', (tester) async {
-      await tester.pumpWidget(_subject(
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+      await tester.pumpWidget(
+        _subject(onContainer: (c) => addTearDown(c.dispose)),
+      );
       await tester.pump();
 
       expect(find.text('genetics.run_image_ai'), findsOneWidget);
     });
 
-    testWidgets('shows skeleton loader during loading state',
-        (tester) async {
-      await tester.pumpWidget(_subject(
-        mutationState: const AsyncLoading<LocalAiMutationInsight?>(),
-        phase: AiAnalysisPhase.analyzing,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+    testWidgets('shows skeleton loader during loading state', (tester) async {
+      await tester.pumpWidget(
+        _subject(
+          mutationState: const AsyncLoading<LocalAiMutationInsight?>(),
+          phase: AiAnalysisPhase.analyzing,
+          onContainer: (c) => addTearDown(c.dispose),
+        ),
+      );
       await tester.pump();
 
       expect(find.byType(AiInsightSkeleton), findsOneWidget);
     });
 
     testWidgets('shows error box when analysis fails', (tester) async {
-      await tester.pumpWidget(_subject(
-        mutationState: AsyncError<LocalAiMutationInsight?>(
-          Exception('Connection refused'),
-          StackTrace.current,
+      await tester.pumpWidget(
+        _subject(
+          mutationState: AsyncError<LocalAiMutationInsight?>(
+            Exception('Connection refused'),
+            StackTrace.current,
+          ),
+          phase: AiAnalysisPhase.error,
+          onContainer: (c) => addTearDown(c.dispose),
         ),
-        phase: AiAnalysisPhase.error,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+      );
       await tester.pump();
 
       expect(find.byType(AiErrorBox), findsOneWidget);
     });
 
-    testWidgets('displays result section on successful analysis',
-        (tester) async {
-      await tester.pumpWidget(_subject(
-        mutationState:
-            const AsyncData<LocalAiMutationInsight?>(_sampleResult),
-        phase: AiAnalysisPhase.complete,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+    testWidgets('displays result section on successful analysis', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _subject(
+          mutationState: const AsyncData<LocalAiMutationInsight?>(
+            _sampleResult,
+          ),
+          phase: AiAnalysisPhase.complete,
+          onContainer: (c) => addTearDown(c.dispose),
+        ),
+      );
       await tester.pump();
 
       expect(find.byType(AiResultSection), findsOneWidget);
     });
 
     testWidgets('result section shows confidence badge', (tester) async {
-      await tester.pumpWidget(_subject(
-        mutationState:
-            const AsyncData<LocalAiMutationInsight?>(_sampleResult),
-        phase: AiAnalysisPhase.complete,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+      await tester.pumpWidget(
+        _subject(
+          mutationState: const AsyncData<LocalAiMutationInsight?>(
+            _sampleResult,
+          ),
+          phase: AiAnalysisPhase.complete,
+          onContainer: (c) => addTearDown(c.dispose),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('genetics.ai_confidence_high'), findsOneWidget);
     });
 
     testWidgets('result section shows rationale text', (tester) async {
-      await tester.pumpWidget(_subject(
-        mutationState:
-            const AsyncData<LocalAiMutationInsight?>(_sampleResult),
-        phase: AiAnalysisPhase.complete,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+      await tester.pumpWidget(
+        _subject(
+          mutationState: const AsyncData<LocalAiMutationInsight?>(
+            _sampleResult,
+          ),
+          phase: AiAnalysisPhase.complete,
+          onContainer: (c) => addTearDown(c.dispose),
+        ),
+      );
       await tester.pump();
 
       expect(
@@ -205,13 +220,14 @@ void main() {
       );
     });
 
-    testWidgets('progress phases are visible during analysis',
-        (tester) async {
-      await tester.pumpWidget(_subject(
-        mutationState: const AsyncLoading<LocalAiMutationInsight?>(),
-        phase: AiAnalysisPhase.analyzing,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+    testWidgets('progress phases are visible during analysis', (tester) async {
+      await tester.pumpWidget(
+        _subject(
+          mutationState: const AsyncLoading<LocalAiMutationInsight?>(),
+          phase: AiAnalysisPhase.analyzing,
+          onContainer: (c) => addTearDown(c.dispose),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('genetics.ai_phase_preparing'), findsOneWidget);
@@ -219,10 +235,12 @@ void main() {
     });
 
     testWidgets('progress phases hidden in idle state', (tester) async {
-      await tester.pumpWidget(_subject(
-        phase: AiAnalysisPhase.idle,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+      await tester.pumpWidget(
+        _subject(
+          phase: AiAnalysisPhase.idle,
+          onContainer: (c) => addTearDown(c.dispose),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('genetics.ai_phase_preparing'), findsNothing);
@@ -230,24 +248,28 @@ void main() {
     });
 
     testWidgets('analyze button is disabled during loading', (tester) async {
-      await tester.pumpWidget(_subject(
-        mutationState: const AsyncLoading<LocalAiMutationInsight?>(),
-        phase: AiAnalysisPhase.analyzing,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+      await tester.pumpWidget(
+        _subject(
+          mutationState: const AsyncLoading<LocalAiMutationInsight?>(),
+          phase: AiAnalysisPhase.analyzing,
+          onContainer: (c) => addTearDown(c.dispose),
+        ),
+      );
       await tester.pump();
 
       final buttons = find.byType(FilledButton);
       final analyzeButton = tester.widget<FilledButton>(buttons.last);
-      expect(analyzeButton.onPressed, isNull,
-          reason: 'Analyze button should be disabled while loading');
+      expect(
+        analyzeButton.onPressed,
+        isNull,
+        reason: 'Analyze button should be disabled while loading',
+      );
     });
 
-    testWidgets('no result section displayed in idle state',
-        (tester) async {
-      await tester.pumpWidget(_subject(
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+    testWidgets('no result section displayed in idle state', (tester) async {
+      await tester.pumpWidget(
+        _subject(onContainer: (c) => addTearDown(c.dispose)),
+      );
       await tester.pump();
 
       expect(find.byType(AiResultSection), findsNothing);
@@ -255,16 +277,19 @@ void main() {
       expect(find.byType(AiErrorBox), findsNothing);
     });
 
-    testWidgets('error phase shows error label in progress phases',
-        (tester) async {
-      await tester.pumpWidget(_subject(
-        mutationState: AsyncError<LocalAiMutationInsight?>(
-          Exception('timeout'),
-          StackTrace.current,
+    testWidgets('error phase shows error label in progress phases', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _subject(
+          mutationState: AsyncError<LocalAiMutationInsight?>(
+            Exception('timeout'),
+            StackTrace.current,
+          ),
+          phase: AiAnalysisPhase.error,
+          onContainer: (c) => addTearDown(c.dispose),
         ),
-        phase: AiAnalysisPhase.error,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+      );
       await tester.pump();
 
       expect(find.text('genetics.ai_phase_error'), findsOneWidget);
@@ -283,12 +308,15 @@ void main() {
         secondaryPossibilities: [],
       );
 
-      await tester.pumpWidget(_subject(
-        mutationState: const AsyncData<LocalAiMutationInsight?>(
-            lowConfidenceResult),
-        phase: AiAnalysisPhase.complete,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+      await tester.pumpWidget(
+        _subject(
+          mutationState: const AsyncData<LocalAiMutationInsight?>(
+            lowConfidenceResult,
+          ),
+          phase: AiAnalysisPhase.complete,
+          onContainer: (c) => addTearDown(c.dispose),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('genetics.ai_confidence_low'), findsOneWidget);

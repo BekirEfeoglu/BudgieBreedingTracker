@@ -99,7 +99,9 @@ class _AiSettingsSheetState extends ConsumerState<AiSettingsSheet> {
     String? apiKey,
     bool force = false,
   }) async {
-    await ref.read(localAiModelListProvider.notifier).fetch(
+    await ref
+        .read(localAiModelListProvider.notifier)
+        .fetch(
           baseUrl: baseUrl,
           selectedModel: model,
           provider: provider ?? _selectedProvider,
@@ -110,9 +112,9 @@ class _AiSettingsSheetState extends ConsumerState<AiSettingsSheet> {
 
   void _showMessage(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _testConnection() async {
@@ -151,11 +153,7 @@ class _AiSettingsSheetState extends ConsumerState<AiSettingsSheet> {
           .timeout(const Duration(seconds: 8));
       return true;
     } catch (error, st) {
-      AppLogger.error(
-        '[AiSettingsSheet] Connectivity probe failed',
-        error,
-        st,
-      );
+      AppLogger.error('[AiSettingsSheet] Connectivity probe failed', error, st);
       return false;
     }
   }
@@ -166,9 +164,7 @@ class _AiSettingsSheetState extends ConsumerState<AiSettingsSheet> {
       if (msg.startsWith(LocalAiService.errorKeyPrefix)) {
         final parts = msg.split('\x00');
         final key = parts[0];
-        return parts.length > 1
-            ? key.tr(args: parts.sublist(1))
-            : key.tr();
+        return parts.length > 1 ? key.tr(args: parts.sublist(1)) : key.tr();
       }
       return msg;
     }

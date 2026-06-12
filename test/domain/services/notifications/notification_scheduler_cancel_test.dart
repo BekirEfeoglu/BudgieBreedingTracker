@@ -45,14 +45,8 @@ void main() {
       await scheduler.cancelEggTurningReminders('egg-1');
 
       for (final id in cancelledIds) {
-        expect(
-          id,
-          greaterThanOrEqualTo(NotificationIds.eggTurningBaseId),
-        );
-        expect(
-          id,
-          lessThan(NotificationIds.eggTurningBaseId + 100000),
-        );
+        expect(id, greaterThanOrEqualTo(NotificationIds.eggTurningBaseId));
+        expect(id, lessThan(NotificationIds.eggTurningBaseId + 100000));
       }
     });
   });
@@ -73,14 +67,8 @@ void main() {
       await scheduler.cancelIncubationMilestones('incubation-1');
 
       for (final id in cancelledIds) {
-        expect(
-          id,
-          greaterThanOrEqualTo(NotificationIds.incubationBaseId),
-        );
-        expect(
-          id,
-          lessThan(NotificationIds.incubationBaseId + 100000),
-        );
+        expect(id, greaterThanOrEqualTo(NotificationIds.incubationBaseId));
+        expect(id, lessThan(NotificationIds.incubationBaseId + 100000));
       }
     });
   });
@@ -114,14 +102,8 @@ void main() {
       await scheduler.cancelHealthCheckReminders('bird-1', maxDays: 5);
 
       for (final id in cancelledIds) {
-        expect(
-          id,
-          greaterThanOrEqualTo(NotificationIds.healthCheckBaseId),
-        );
-        expect(
-          id,
-          lessThan(NotificationIds.healthCheckBaseId + 100000),
-        );
+        expect(id, greaterThanOrEqualTo(NotificationIds.healthCheckBaseId));
+        expect(id, lessThan(NotificationIds.healthCheckBaseId + 100000));
       }
     });
   });
@@ -139,19 +121,13 @@ void main() {
     });
 
     test('returns early for invalid intervalHours <= 0', () async {
-      await scheduler.cancelChickCareReminders(
-        'chick-1',
-        intervalHours: 0,
-      );
+      await scheduler.cancelChickCareReminders('chick-1', intervalHours: 0);
 
       verifyNever(() => mockService.cancel(any()));
     });
 
     test('returns early for intervalHours > 24', () async {
-      await scheduler.cancelChickCareReminders(
-        'chick-1',
-        intervalHours: 25,
-      );
+      await scheduler.cancelChickCareReminders('chick-1', intervalHours: 25);
 
       verifyNever(() => mockService.cancel(any()));
     });
@@ -181,14 +157,8 @@ void main() {
       );
 
       for (final id in cancelledIds) {
-        expect(
-          id,
-          greaterThanOrEqualTo(NotificationIds.chickCareBaseId),
-        );
-        expect(
-          id,
-          lessThan(NotificationIds.chickCareBaseId + 100000),
-        );
+        expect(id, greaterThanOrEqualTo(NotificationIds.chickCareBaseId));
+        expect(id, lessThan(NotificationIds.chickCareBaseId + 100000));
       }
     });
   });
@@ -219,7 +189,11 @@ void main() {
       final scheduledIds = <int>[];
       for (var i = 0; i < 4; i++) {
         scheduledIds.add(
-          NotificationIds.generate(NotificationIds.bandingBaseId, 'chick-det', i),
+          NotificationIds.generate(
+            NotificationIds.bandingBaseId,
+            'chick-det',
+            i,
+          ),
         );
       }
 

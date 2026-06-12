@@ -62,25 +62,25 @@ void main() {
 
   group('LanguageSection', () {
     testWidgets('hatasiz render edilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(LanguageSection), findsOneWidget);
     });
 
     testWidgets('SettingsSectionHeader render edilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(SettingsSectionHeader), findsOneWidget);
     });
 
     testWidgets('dil secim tile render edilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(SettingsSelectionTile<AppLocale>), findsOneWidget);
     });
 
     testWidgets('tarih formati secim tile render edilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(SettingsSelectionTile<AppDateFormat>), findsOneWidget);
     });
@@ -88,7 +88,7 @@ void main() {
     testWidgets('turkce seciliyken Turkce native label gosterilir', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,buildSubject(locale: AppLocale.turkish));
+      await pumpLocalizedApp(tester, buildSubject(locale: AppLocale.turkish));
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.text('Türkçe'), findsOneWidget);
     });
@@ -96,7 +96,7 @@ void main() {
     testWidgets('ingilizce seciliyken English native label gosterilir', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,buildSubject(locale: AppLocale.english));
+      await pumpLocalizedApp(tester, buildSubject(locale: AppLocale.english));
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.text('English'), findsOneWidget);
     });
@@ -104,7 +104,7 @@ void main() {
     testWidgets('almanca seciliyken Deutsch native label gosterilir', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,buildSubject(locale: AppLocale.german));
+      await pumpLocalizedApp(tester, buildSubject(locale: AppLocale.german));
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.text('Deutsch'), findsOneWidget);
     });
@@ -112,7 +112,10 @@ void main() {
     testWidgets('dmy tarih formati seciliyken label gosterilir', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,buildSubject(dateFormat: AppDateFormat.dmy));
+      await pumpLocalizedApp(
+        tester,
+        buildSubject(dateFormat: AppDateFormat.dmy),
+      );
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.text('GG.AA.YYYY'), findsOneWidget);
     });
@@ -120,13 +123,16 @@ void main() {
     testWidgets('mdy tarih formati seciliyken label gosterilir', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,buildSubject(dateFormat: AppDateFormat.mdy));
+      await pumpLocalizedApp(
+        tester,
+        buildSubject(dateFormat: AppDateFormat.mdy),
+      );
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.text('AA/GG/YYYY'), findsOneWidget);
     });
 
     testWidgets('dil degistirme notifier state guncellenir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject(locale: AppLocale.turkish));
+      await pumpLocalizedApp(tester, buildSubject(locale: AppLocale.turkish));
       await tester.pump(const Duration(milliseconds: 500));
 
       final container = ProviderScope.containerOf(

@@ -50,7 +50,8 @@ class EventFormState {
 }
 
 /// Notifier for event form operations.
-class EventFormNotifier extends Notifier<EventFormState> with SentryErrorFilter {
+class EventFormNotifier extends Notifier<EventFormState>
+    with SentryErrorFilter {
   @override
   EventFormState build() => const EventFormState();
 
@@ -90,7 +91,10 @@ class EventFormNotifier extends Notifier<EventFormState> with SentryErrorFilter 
     } catch (e, st) {
       AppLogger.error('EventFormNotifier', e, st);
       reportIfUnexpected(e, st);
-      state = state.copyWith(isLoading: false, error: 'errors.save_failed'.tr());
+      state = state.copyWith(
+        isLoading: false,
+        error: 'errors.save_failed'.tr(),
+      );
     }
   }
 
@@ -105,7 +109,8 @@ class EventFormNotifier extends Notifier<EventFormState> with SentryErrorFilter 
       // If the event time shifted, cancel any already-scheduled OS
       // notification(s) and re-arm pending reminders so the processor
       // re-schedules with the new triggerTime on its next tick.
-      final dateShifted = previous == null ||
+      final dateShifted =
+          previous == null ||
           !previous.eventDate.isAtSameMomentAs(event.eventDate);
       if (dateShifted) {
         await _resetRemindersForReschedule(event.id);
@@ -114,7 +119,10 @@ class EventFormNotifier extends Notifier<EventFormState> with SentryErrorFilter 
     } catch (e, st) {
       AppLogger.error('EventFormNotifier', e, st);
       reportIfUnexpected(e, st);
-      state = state.copyWith(isLoading: false, error: 'errors.update_failed'.tr());
+      state = state.copyWith(
+        isLoading: false,
+        error: 'errors.update_failed'.tr(),
+      );
     }
   }
 
@@ -133,7 +141,10 @@ class EventFormNotifier extends Notifier<EventFormState> with SentryErrorFilter 
     } catch (e, st) {
       AppLogger.error('EventFormNotifier', e, st);
       reportIfUnexpected(e, st);
-      state = state.copyWith(isLoading: false, error: 'errors.delete_failed'.tr());
+      state = state.copyWith(
+        isLoading: false,
+        error: 'errors.delete_failed'.tr(),
+      );
     }
   }
 
@@ -244,7 +255,10 @@ class EventFormNotifier extends Notifier<EventFormState> with SentryErrorFilter 
     } catch (e, st) {
       AppLogger.error('EventFormNotifier', e, st);
       reportIfUnexpected(e, st);
-      state = state.copyWith(isLoading: false, error: 'errors.update_failed'.tr());
+      state = state.copyWith(
+        isLoading: false,
+        error: 'errors.update_failed'.tr(),
+      );
     }
   }
 

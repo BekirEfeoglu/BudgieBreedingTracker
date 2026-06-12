@@ -78,8 +78,12 @@ void main() {
       if (raw != null) {
         final map = jsonDecode(raw) as Map<String, dynamic>;
         final retryCount = (map['retryCount'] as num?)?.toInt() ?? 0;
-        expect(retryCount, anyOf(equals(0), equals(1)),
-            reason: 'retryCount should be 0 (unavailable skip) or 1 (failed retry)');
+        expect(
+          retryCount,
+          anyOf(equals(0), equals(1)),
+          reason:
+              'retryCount should be 0 (unavailable skip) or 1 (failed retry)',
+        );
       }
     });
 
@@ -106,8 +110,11 @@ void main() {
       final raw = prefs.getString('pending_premium_sync_user-1');
 
       // Max retries reached → pending sync is kept for retry after reset duration
-      expect(raw, isNotNull,
-          reason: 'Pending sync should be kept after max retries for later retry');
+      expect(
+        raw,
+        isNotNull,
+        reason: 'Pending sync should be kept after max retries for later retry',
+      );
     });
 
     test('skips retry for anonymous user', () async {
@@ -129,8 +136,11 @@ void main() {
       // Pending sync for anonymous should remain untouched (skipped)
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString('pending_premium_sync_anonymous');
-      expect(raw, isNotNull,
-          reason: 'Anonymous user pending sync should not be processed');
+      expect(
+        raw,
+        isNotNull,
+        reason: 'Anonymous user pending sync should not be processed',
+      );
     });
 
     test('clears corrupt pending sync data', () async {
@@ -151,8 +161,11 @@ void main() {
       final raw = prefs.getString('pending_premium_sync_user-1');
 
       // Corrupt data should be cleared
-      expect(raw, isNull,
-          reason: 'Corrupt pending sync data should be removed');
+      expect(
+        raw,
+        isNull,
+        reason: 'Corrupt pending sync data should be removed',
+      );
     });
 
     test('refresh also triggers retryPendingSync', () async {

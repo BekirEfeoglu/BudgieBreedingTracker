@@ -77,10 +77,7 @@ pw.Widget _buildChartNode(
           ),
         pw.Text(
           '${PedigreePdfHelpers.genderLabel(bird.gender.name)} · ${PedigreePdfHelpers.statusLabel(bird.status.name)}',
-          style: pw.TextStyle(
-            fontSize: subFontSize,
-            color: PdfColors.grey600,
-          ),
+          style: pw.TextStyle(fontSize: subFontSize, color: PdfColors.grey600),
         ),
         if (isRoot && bird.birthDate != null)
           pw.Text(

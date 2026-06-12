@@ -146,14 +146,24 @@ void main() {
 
     test('male blue when isFemale=false', () {
       expect(
-        () => BudgieDetailsAnatomy.paintCere(makeCanvas(), 60, 80, isFemale: false),
+        () => BudgieDetailsAnatomy.paintCere(
+          makeCanvas(),
+          60,
+          80,
+          isFemale: false,
+        ),
         returnsNormally,
       );
     });
 
     test('female brown when isFemale=true', () {
       expect(
-        () => BudgieDetailsAnatomy.paintCere(makeCanvas(), 60, 80, isFemale: true),
+        () => BudgieDetailsAnatomy.paintCere(
+          makeCanvas(),
+          60,
+          80,
+          isFemale: true,
+        ),
         returnsNormally,
       );
     });
@@ -161,8 +171,11 @@ void main() {
     test('ino male pink when isIno=true, isFemale=false', () {
       expect(
         () => BudgieDetailsAnatomy.paintCere(
-          makeCanvas(), 60, 80,
-          isFemale: false, isIno: true,
+          makeCanvas(),
+          60,
+          80,
+          isFemale: false,
+          isIno: true,
         ),
         returnsNormally,
       );
@@ -171,8 +184,11 @@ void main() {
     test('ino female pale pink when isIno=true, isFemale=true', () {
       expect(
         () => BudgieDetailsAnatomy.paintCere(
-          makeCanvas(), 60, 80,
-          isFemale: true, isIno: true,
+          makeCanvas(),
+          60,
+          80,
+          isFemale: true,
+          isIno: true,
         ),
         returnsNormally,
       );
@@ -185,7 +201,11 @@ void main() {
         final w = size * 0.75;
         expect(
           () => BudgieDetails.paintSpangleScallops(
-            makeCanvas(), w, size, const Color(0xFF2F3138), 2.0,
+            makeCanvas(),
+            w,
+            size,
+            const Color(0xFF2F3138),
+            2.0,
           ),
           returnsNormally,
         );
@@ -206,7 +226,10 @@ void main() {
       test('does not throw at height $size', () {
         expect(
           () => BudgieDetails.paintTailStripes(
-            makeCanvas(), size * 0.75, size, const Color(0xFF2B4F6F),
+            makeCanvas(),
+            size * 0.75,
+            size,
+            const Color(0xFF2B4F6F),
           ),
           returnsNormally,
         );
@@ -217,7 +240,10 @@ void main() {
       // paintTailStripes calls canvas.save/clipPath/restore — verify no throw
       expect(
         () => BudgieDetails.paintTailStripes(
-          makeCanvas(), 60, 80, const Color(0xFF2B4F6F),
+          makeCanvas(),
+          60,
+          80,
+          const Color(0xFF2B4F6F),
         ),
         returnsNormally,
       );
@@ -229,7 +255,11 @@ void main() {
       // barCount is const 6 inside paintWingBars
       expect(
         () => BudgieDetails.paintWingBars(
-          makeCanvas(), 60, 80, const Color(0xFF2F3138), 2.0,
+          makeCanvas(),
+          60,
+          80,
+          const Color(0xFF2F3138),
+          2.0,
         ),
         returnsNormally,
       );
@@ -247,7 +277,11 @@ void main() {
     test('default 4 stripes do not throw', () {
       expect(
         () => BudgieDetails.paintHeadStripes(
-          makeCanvas(), 60, 80, const Color(0xFF2F3138), 2.0,
+          makeCanvas(),
+          60,
+          80,
+          const Color(0xFF2F3138),
+          2.0,
         ),
         returnsNormally,
       );
@@ -256,8 +290,13 @@ void main() {
     test('opaline uses 2 stripes with 0.30 opacity', () {
       expect(
         () => BudgieDetails.paintHeadStripes(
-          makeCanvas(), 60, 80, const Color(0xFF2F3138), 2.0,
-          stripeCount: 2, opacity: 0.30,
+          makeCanvas(),
+          60,
+          80,
+          const Color(0xFF2F3138),
+          2.0,
+          stripeCount: 2,
+          opacity: 0.30,
         ),
         returnsNormally,
       );
@@ -266,7 +305,11 @@ void main() {
     test('clips to head shape (save/restore pair)', () {
       expect(
         () => BudgieDetails.paintHeadStripes(
-          makeCanvas(), 60, 80, const Color(0xFF2F3138), 2.0,
+          makeCanvas(),
+          60,
+          80,
+          const Color(0xFF2F3138),
+          2.0,
         ),
         returnsNormally,
       );
@@ -284,8 +327,12 @@ void main() {
     test('shows ring when showRing=true', () {
       expect(
         () => BudgieDetailsAnatomy.paintEye(
-          makeCanvas(), 60, 80,
-          const Color(0xFF1A1A1A), const Color(0xFFF0F0F0), true,
+          makeCanvas(),
+          60,
+          80,
+          const Color(0xFF1A1A1A),
+          const Color(0xFFF0F0F0),
+          true,
         ),
         returnsNormally,
       );
@@ -294,8 +341,12 @@ void main() {
     test('hides ring when showRing=false', () {
       expect(
         () => BudgieDetailsAnatomy.paintEye(
-          makeCanvas(), 60, 80,
-          const Color(0xFF1A1A1A), const Color(0xFFF0F0F0), false,
+          makeCanvas(),
+          60,
+          80,
+          const Color(0xFF1A1A1A),
+          const Color(0xFFF0F0F0),
+          false,
         ),
         returnsNormally,
       );
@@ -304,8 +355,12 @@ void main() {
     test('highlight dot is present (no throw with small sizes)', () {
       expect(
         () => BudgieDetailsAnatomy.paintEye(
-          makeCanvas(), 36, 48,
-          const Color(0xFFCC2233), const Color(0xFFF0F0F0), true,
+          makeCanvas(),
+          36,
+          48,
+          const Color(0xFFCC2233),
+          const Color(0xFFF0F0F0),
+          true,
         ),
         returnsNormally,
       );
@@ -322,7 +377,11 @@ void main() {
     test('zero count does not draw', () {
       expect(
         () => BudgieDetailsAnatomy.paintThroatSpots(
-          makeCanvas(), 60, 80, const Color(0xFF1A1A1A), 0,
+          makeCanvas(),
+          60,
+          80,
+          const Color(0xFF1A1A1A),
+          0,
         ),
         returnsNormally,
       );
@@ -338,17 +397,28 @@ void main() {
 
   group('BudgiePaths', () {
     const pathMethods = [
-      'tail', 'belly', 'back', 'wing', 'head', 'mask', 'beak',
-      'cheekPatch', 'piedPatch',
+      'tail',
+      'belly',
+      'back',
+      'wing',
+      'head',
+      'mask',
+      'beak',
+      'cheekPatch',
+      'piedPatch',
     ];
 
     test('all 9 path methods return non-empty paths', () {
       const w = 60.0, h = 80.0;
       final paths = [
-        BudgiePaths.tail(w, h), BudgiePaths.belly(w, h),
-        BudgiePaths.back(w, h), BudgiePaths.wing(w, h),
-        BudgiePaths.head(w, h), BudgiePaths.mask(w, h),
-        BudgiePaths.beak(w, h), BudgiePathsExtra.cheekPatch(w, h),
+        BudgiePaths.tail(w, h),
+        BudgiePaths.belly(w, h),
+        BudgiePaths.back(w, h),
+        BudgiePaths.wing(w, h),
+        BudgiePaths.head(w, h),
+        BudgiePaths.mask(w, h),
+        BudgiePaths.beak(w, h),
+        BudgiePathsExtra.cheekPatch(w, h),
         BudgiePathsExtra.piedPatch(w, h),
       ];
       expect(paths.length, equals(pathMethods.length));

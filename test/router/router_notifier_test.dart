@@ -29,12 +29,8 @@ void main() {
           isAdminProvider.overrideWith((_) => false),
           isPremiumProvider.overrideWithValue(false),
           appInitializationProvider.overrideWith((_) {}),
-          initSkippedProvider.overrideWith(
-            _TestInitSkippedNotifier.new,
-          ),
-          pendingMfaFactorIdProvider.overrideWith(
-            _TestPendingMfaNotifier.new,
-          ),
+          initSkippedProvider.overrideWith(_TestInitSkippedNotifier.new),
+          pendingMfaFactorIdProvider.overrideWith(_TestPendingMfaNotifier.new),
         ],
       );
     });
@@ -67,12 +63,8 @@ void main() {
         isAdminProvider.overrideWith((_) => false),
         isPremiumProvider.overrideWithValue(false),
         appInitializationProvider.overrideWith((_) {}),
-        initSkippedProvider.overrideWith(
-          _TestInitSkippedNotifier.new,
-        ),
-        pendingMfaFactorIdProvider.overrideWith(
-          _TestPendingMfaNotifier.new,
-        ),
+        initSkippedProvider.overrideWith(_TestInitSkippedNotifier.new),
+        pendingMfaFactorIdProvider.overrideWith(_TestPendingMfaNotifier.new),
       ]);
 
       // The notification is scheduled via addPostFrameCallback.
@@ -99,12 +91,8 @@ void main() {
         isAdminProvider.overrideWith((_) => true),
         isPremiumProvider.overrideWithValue(true),
         appInitializationProvider.overrideWith((_) {}),
-        initSkippedProvider.overrideWith(
-          _TestInitSkippedNotifier.new,
-        ),
-        pendingMfaFactorIdProvider.overrideWith(
-          _TestPendingMfaNotifier.new,
-        ),
+        initSkippedProvider.overrideWith(_TestInitSkippedNotifier.new),
+        pendingMfaFactorIdProvider.overrideWith(_TestPendingMfaNotifier.new),
       ]);
 
       // Schedule a frame and pump to fire the coalesced post-frame callback

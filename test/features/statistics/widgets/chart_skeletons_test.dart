@@ -27,20 +27,17 @@ void main() {
   group('ChartLoading (pie skeleton)', () {
     testWidgets('renders without errors', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(body: ChartLoading(isPieChart: true)),
-        ),
+        const MaterialApp(home: Scaffold(body: ChartLoading(isPieChart: true))),
       );
 
       expect(find.byType(ChartLoading), findsOneWidget);
     });
 
-    testWidgets('contains SkeletonLoader widgets for pie variant',
-        (tester) async {
+    testWidgets('contains SkeletonLoader widgets for pie variant', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(body: ChartLoading(isPieChart: true)),
-        ),
+        const MaterialApp(home: Scaffold(body: ChartLoading(isPieChart: true))),
       );
 
       // Pie skeleton has a circular SkeletonLoader and legend loaders

@@ -68,9 +68,7 @@ class CommunityStoryStrip extends StatelessWidget {
                     color: theme.colorScheme.primaryContainer.withValues(
                       alpha: 0.6,
                     ),
-                    borderRadius: BorderRadius.circular(
-                      AppSpacing.radiusFull,
-                    ),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                   ),
                   child: Text(
                     'community.last_24h'.tr(),
@@ -163,6 +161,5 @@ class StoryPreview {
   });
 
   /// Whether the user posted very recently (within last hour).
-  bool get isVeryRecent =>
-      DateTime.now().difference(lastPostAt).inHours < 1;
+  bool get isVeryRecent => DateTime.now().difference(lastPostAt).inHours < 1;
 }

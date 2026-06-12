@@ -188,7 +188,11 @@ class AiImagePickerZone extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(LucideIcons.lightbulb, size: 14, color: theme.colorScheme.primary),
+              Icon(
+                LucideIcons.lightbulb,
+                size: 14,
+                color: theme.colorScheme.primary,
+              ),
               const SizedBox(width: AppSpacing.xs),
               Text(
                 'genetics.ai_photo_tips_title'.tr(),

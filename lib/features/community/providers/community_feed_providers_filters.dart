@@ -6,9 +6,7 @@ part of 'community_feed_providers.dart';
 
 final communityVisiblePostsProvider =
     Provider.family<List<CommunityPost>, CommunityFeedTab>((ref, tab) {
-      final posts = ref.watch(
-        communityFeedProvider.select((s) => s.posts),
-      );
+      final posts = ref.watch(communityFeedProvider.select((s) => s.posts));
       final currentUserId = ref.watch(currentUserIdProvider);
       final blockedUserIds = ref.watch(blockedUsersProvider);
 

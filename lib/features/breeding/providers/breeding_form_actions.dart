@@ -114,37 +114,31 @@ extension BreedingFormActions on BreedingFormNotifier {
           if (chicks.isNotEmpty) {
             final now = DateTime.now();
             final results = await Future.wait(
-              chicks.map(
-                (chick) async {
-                  try {
-                    await chickRepo.save(
-                      chick.copyWith(
-                        eggId: null,
-                        clutchId: null,
-                        updatedAt: now,
-                      ),
-                    );
-                    return null;
-                  } catch (e, st) {
-                    AppLogger.warning(
-                      'Failed to detach chick ${chick.id} during cascade '
-                      'delete of pair $id: $e',
-                    );
-                    AppLogger.error(
-                      'BreedingFormNotifier.deleteBreeding.detach',
-                      e,
-                      st,
-                    );
-                    // Remember which egg still has a live chick reference;
-                    // we skip its removal below to avoid dangling FK.
-                    final blockedEggId = chick.eggId;
-                    if (blockedEggId != null) {
-                      blockedEggIds.add(blockedEggId);
-                    }
-                    return e;
+              chicks.map((chick) async {
+                try {
+                  await chickRepo.save(
+                    chick.copyWith(eggId: null, clutchId: null, updatedAt: now),
+                  );
+                  return null;
+                } catch (e, st) {
+                  AppLogger.warning(
+                    'Failed to detach chick ${chick.id} during cascade '
+                    'delete of pair $id: $e',
+                  );
+                  AppLogger.error(
+                    'BreedingFormNotifier.deleteBreeding.detach',
+                    e,
+                    st,
+                  );
+                  // Remember which egg still has a live chick reference;
+                  // we skip its removal below to avoid dangling FK.
+                  final blockedEggId = chick.eggId;
+                  if (blockedEggId != null) {
+                    blockedEggIds.add(blockedEggId);
                   }
-                },
-              ),
+                  return e;
+                }
+              }),
               eagerError: false,
             );
             if (results.any((r) => r != null)) partial = true;
@@ -175,17 +169,19 @@ extension BreedingFormActions on BreedingFormNotifier {
       final incubationsToRemove = blockedIncubationIds.isEmpty
           ? incubations
           : incubations
-              .where((inc) => !blockedIncubationIds.contains(inc.id))
-              .toList();
+                .where((inc) => !blockedIncubationIds.contains(inc.id))
+                .toList();
       if (incubationsToRemove.length != incubations.length) partial = true;
 
-      partial = await _removeAllResilient(
+      partial =
+          await _removeAllResilient(
             entities: eggsToRemove,
             label: 'egg',
             remove: (egg) => eggRepo.remove(egg.id),
           ) ||
           partial;
-      partial = await _removeAllResilient(
+      partial =
+          await _removeAllResilient(
             entities: incubationsToRemove,
             label: 'incubation',
             remove: (inc) => incubationRepo.remove(inc.id),
@@ -272,14 +268,13 @@ extension BreedingFormActions on BreedingFormNotifier {
     if (entities.isEmpty) return false;
     final results = await Future.wait(
       entities.map(
-        (e) => remove(e)
-            .then<Object?>((_) => null)
-            .catchError((Object error, StackTrace st) {
-              AppLogger.warning(
-                'Failed to remove $label during cascade: $error',
-              );
-              return error;
-            }),
+        (e) => remove(e).then<Object?>((_) => null).catchError((
+          Object error,
+          StackTrace st,
+        ) {
+          AppLogger.warning('Failed to remove $label during cascade: $error');
+          return error;
+        }),
       ),
       eagerError: false,
     );

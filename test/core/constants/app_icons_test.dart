@@ -266,14 +266,17 @@ void main() {
 
   group('AppIcons — path format validation', () {
     for (final entry in _allIcons.entries) {
-      test('${entry.key} has valid path format (no spaces, no special chars)', () {
-        // SVG paths should only contain alphanumeric, underscore, forward slash, dot, hyphen
-        expect(
-          RegExp(r'^[a-zA-Z0-9/_.\-]+$').hasMatch(entry.value),
-          isTrue,
-          reason: 'Path "${entry.value}" contains invalid characters',
-        );
-      });
+      test(
+        '${entry.key} has valid path format (no spaces, no special chars)',
+        () {
+          // SVG paths should only contain alphanumeric, underscore, forward slash, dot, hyphen
+          expect(
+            RegExp(r'^[a-zA-Z0-9/_.\-]+$').hasMatch(entry.value),
+            isTrue,
+            reason: 'Path "${entry.value}" contains invalid characters',
+          );
+        },
+      );
     }
   });
 }

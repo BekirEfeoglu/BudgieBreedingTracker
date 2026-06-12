@@ -140,10 +140,7 @@ void main() {
           gender: BirdGender.female,
           fatherId: 'common-anc',
         ),
-        'common-anc': createTestBird(
-          id: 'common-anc',
-          gender: BirdGender.male,
-        ),
+        'common-anc': createTestBird(id: 'common-anc', gender: BirdGender.male),
       };
 
       final result = calculator.calculate(

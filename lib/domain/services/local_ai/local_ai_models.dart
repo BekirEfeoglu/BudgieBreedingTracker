@@ -84,9 +84,7 @@ class LocalAiConfig {
   String get normalizedModel {
     final trimmed = model.trim();
     if (trimmed.isEmpty) {
-      return isOpenRouter
-          ? openRouterDefaults.model
-          : defaults.model;
+      return isOpenRouter ? openRouterDefaults.model : defaults.model;
     }
     return trimmed;
   }

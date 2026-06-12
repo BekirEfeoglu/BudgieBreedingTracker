@@ -242,6 +242,5 @@ void _drainPendingQueue() {
   addTearDown(container.dispose);
   try {
     container.read(_drainPendingProvider);
-  } finally {
-  }
+  } finally {}
 }

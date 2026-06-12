@@ -291,9 +291,9 @@ void main() {
         await repository.markSyncError('entity-5', _userId, 'missing parent');
 
         verifyNever(() => mockSyncDao.updateItem(any()));
-        final captured = verify(() => mockSyncDao.insertItem(captureAny()))
-            .captured
-            .single as SyncMetadata;
+        final captured =
+            verify(() => mockSyncDao.insertItem(captureAny())).captured.single
+                as SyncMetadata;
         expect(captured.table, _tableName);
         expect(captured.recordId, 'entity-5');
         expect(captured.userId, _userId);

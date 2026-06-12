@@ -49,9 +49,7 @@ class ActionFeedbacksSection extends ConsumerWidget {
             ],
           ),
         ),
-        ...feedbacks.take(10).map(
-          (f) => ActionFeedbackListTile(feedback: f),
-        ),
+        ...feedbacks.take(10).map((f) => ActionFeedbackListTile(feedback: f)),
       ],
     );
   }
@@ -68,14 +66,20 @@ class ActionFeedbackListTile extends StatelessWidget {
     final theme = Theme.of(context);
 
     final (icon, color) = switch (feedback.type) {
-      ActionFeedbackType.success => (LucideIcons.checkCircle2, AppColors.success),
-      ActionFeedbackType.error => (LucideIcons.alertCircle, theme.colorScheme.error),
+      ActionFeedbackType.success => (
+        LucideIcons.checkCircle2,
+        AppColors.success,
+      ),
+      ActionFeedbackType.error => (
+        LucideIcons.alertCircle,
+        theme.colorScheme.error,
+      ),
       ActionFeedbackType.info => (LucideIcons.info, theme.colorScheme.primary),
     };
 
     final timeAgo = _formatTimeAgo(feedback.createdAt);
-    final hasAction = feedback.actionRoute != null &&
-        feedback.actionRoute!.startsWith('/');
+    final hasAction =
+        feedback.actionRoute != null && feedback.actionRoute!.startsWith('/');
 
     return InkWell(
       onTap: hasAction ? () => context.push(feedback.actionRoute!) : null,
@@ -140,9 +144,7 @@ class ActionFeedbackListTile extends StatelessWidget {
     final diff = DateTime.now().difference(createdAt);
     if (diff.inMinutes < 1) return 'common.just_now'.tr();
     if (diff.inHours < 1) {
-      return 'common.minutes_ago'.tr(
-        args: ['${diff.inMinutes}'],
-      );
+      return 'common.minutes_ago'.tr(args: ['${diff.inMinutes}']);
     }
     if (diff.inDays < 1) {
       return 'common.hours_ago'.tr(args: ['${diff.inHours}']);

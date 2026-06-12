@@ -93,10 +93,16 @@ void main() {
       expect(square, isNotNull);
       for (final row in square!.cells) {
         for (final cell in row) {
-          expect(cell, contains('/'),
-              reason: 'Each cell should contain genotype with /');
-          expect(cell, contains(','),
-              reason: 'Each cell should show both loci separated by comma');
+          expect(
+            cell,
+            contains('/'),
+            reason: 'Each cell should contain genotype with /',
+          );
+          expect(
+            cell,
+            contains(','),
+            reason: 'Each cell should show both loci separated by comma',
+          );
         }
       }
     });
@@ -126,29 +132,29 @@ void main() {
 
       expect(square, isNotNull);
       for (final gamete in square!.fatherAlleles) {
-        expect(gamete, contains('; '),
-            reason: 'Gamete should show both loci: $gamete');
+        expect(
+          gamete,
+          contains('; '),
+          reason: 'Gamete should show both loci: $gamete',
+        );
       }
       for (final gamete in square.motherAlleles) {
-        expect(gamete, contains('; '),
-            reason: 'Gamete should show both loci: $gamete');
+        expect(
+          gamete,
+          contains('; '),
+          reason: 'Gamete should show both loci: $gamete',
+        );
       }
     });
 
     test('sex-linked + autosomal combination marks isSexLinked true', () {
       final father = ParentGenotype(
         gender: BirdGender.male,
-        mutations: {
-          'ino': AlleleState.carrier,
-          'blue': AlleleState.carrier,
-        },
+        mutations: {'ino': AlleleState.carrier, 'blue': AlleleState.carrier},
       );
       final mother = ParentGenotype(
         gender: BirdGender.female,
-        mutations: {
-          'ino': AlleleState.visual,
-          'blue': AlleleState.carrier,
-        },
+        mutations: {'ino': AlleleState.visual, 'blue': AlleleState.carrier},
       );
 
       final square = calculator.buildDihybridPunnettSquare(
@@ -159,8 +165,11 @@ void main() {
       );
 
       expect(square, isNotNull);
-      expect(square!.isSexLinked, isTrue,
-          reason: 'Ino is sex-linked, so dihybrid should be marked');
+      expect(
+        square!.isSexLinked,
+        isTrue,
+        reason: 'Ino is sex-linked, so dihybrid should be marked',
+      );
     });
 
     test('two autosomal loci marks isSexLinked false', () {

@@ -65,7 +65,8 @@ final statsPeriodProvider = NotifierProvider<StatsPeriodNotifier, StatsPeriod>(
 /// Optional species filter for statistics views. `null` means all species.
 /// Persists the selection to SharedPreferences.
 /// Uses a record to track loading state alongside the selected species.
-class StatsSpeciesFilterNotifier extends Notifier<({Species? species, bool loaded})> {
+class StatsSpeciesFilterNotifier
+    extends Notifier<({Species? species, bool loaded})> {
   @override
   ({Species? species, bool loaded}) build() {
     _loadFromPrefs();
@@ -94,10 +95,7 @@ class StatsSpeciesFilterNotifier extends Notifier<({Species? species, bool loade
     state = (species: species, loaded: true);
     final prefs = await SharedPreferences.getInstance();
     if (species != null) {
-      await prefs.setString(
-        AppPreferences.keyStatsSpeciesFilter,
-        species.name,
-      );
+      await prefs.setString(AppPreferences.keyStatsSpeciesFilter, species.name);
     } else {
       await prefs.remove(AppPreferences.keyStatsSpeciesFilter);
     }
@@ -105,9 +103,10 @@ class StatsSpeciesFilterNotifier extends Notifier<({Species? species, bool loade
 }
 
 final statsSpeciesFilterProvider =
-    NotifierProvider<StatsSpeciesFilterNotifier, ({Species? species, bool loaded})>(
-      StatsSpeciesFilterNotifier.new,
-    );
+    NotifierProvider<
+      StatsSpeciesFilterNotifier,
+      ({Species? species, bool loaded})
+    >(StatsSpeciesFilterNotifier.new);
 
 /// Month-aligned date windows used by statistics providers.
 ///
@@ -220,15 +219,17 @@ final genderDistributionProvider =
       final unknown = genderMap[BirdGender.unknown] ?? 0;
       final total = genderMap.values.fold<int>(0, (a, b) => a + b);
 
-      return AsyncData(BirdStatistics(
-        total: total,
-        male: male,
-        female: female,
-        unknown: unknown,
-        alive: statusMap[BirdStatus.alive] ?? 0,
-        dead: statusMap[BirdStatus.dead] ?? 0,
-        sold: statusMap[BirdStatus.sold] ?? 0,
-      ));
+      return AsyncData(
+        BirdStatistics(
+          total: total,
+          male: male,
+          female: female,
+          unknown: unknown,
+          alive: statusMap[BirdStatus.alive] ?? 0,
+          dead: statusMap[BirdStatus.dead] ?? 0,
+          sold: statusMap[BirdStatus.sold] ?? 0,
+        ),
+      );
     });
 
 /// Species distribution statistics from bird data.
@@ -252,4 +253,3 @@ final speciesDistributionProvider =
         return Map<Species, int>.fromEntries(entries);
       });
     });
-

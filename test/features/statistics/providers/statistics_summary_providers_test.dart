@@ -92,5 +92,4 @@ void main() {
       expect(updated.female, 10);
     });
   });
-
 }

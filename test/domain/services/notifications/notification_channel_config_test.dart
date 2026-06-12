@@ -145,8 +145,10 @@ void main() {
 
     group('id validation (security)', () {
       test('rejects bird payload with malformed (non-UUID) id', () {
-        expect(NotificationChannelConfig.payloadToRoute('bird:not-a-uuid'),
-            isNull);
+        expect(
+          NotificationChannelConfig.payloadToRoute('bird:not-a-uuid'),
+          isNull,
+        );
       });
 
       test('rejects breeding payload with malformed id', () {
@@ -157,15 +159,14 @@ void main() {
       });
 
       test('rejects chick payload with malformed id', () {
-        expect(
-          NotificationChannelConfig.payloadToRoute('chick:foo'),
-          isNull,
-        );
+        expect(NotificationChannelConfig.payloadToRoute('chick:foo'), isNull);
       });
 
       test('rejects health_check payload with path-traversal in id', () {
         expect(
-          NotificationChannelConfig.payloadToRoute('health_check:../etc/passwd'),
+          NotificationChannelConfig.payloadToRoute(
+            'health_check:../etc/passwd',
+          ),
           isNull,
         );
       });

@@ -30,10 +30,10 @@ class FreeTierLimitService {
     required BreedingPairRepository breedingPairRepo,
     required IncubationRepository incubationRepo,
     EdgeFunctionClient? edgeFunctionClient,
-  })  : _birdRepo = birdRepo,
-        _breedingPairRepo = breedingPairRepo,
-        _incubationRepo = incubationRepo,
-        _edgeFunctionClient = edgeFunctionClient;
+  }) : _birdRepo = birdRepo,
+       _breedingPairRepo = breedingPairRepo,
+       _incubationRepo = incubationRepo,
+       _edgeFunctionClient = edgeFunctionClient;
 
   /// Throws [FreeTierLimitException] if bird count >= [AppConstants.freeTierMaxBirds].
   Future<void> guardBirdLimit(String userId) async {
@@ -115,9 +115,7 @@ class FreeTierLimitService {
       final allowed = result.data?['allowed'] as bool? ?? true;
       if (!allowed) {
         final limit = result.data?['limit'] as int? ?? 0;
-        AppLogger.warning(
-          '[FreeTier] Server rejected: $table limit=$limit',
-        );
+        AppLogger.warning('[FreeTier] Server rejected: $table limit=$limit');
         throw FreeTierLimitException(table, limit);
       }
       return;

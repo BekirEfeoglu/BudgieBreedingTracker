@@ -83,7 +83,10 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.textContaining(l10nContains('genetics.mutation')), findsAtLeastNWidgets(1));
+      expect(
+        find.textContaining(l10nContains('genetics.mutation')),
+        findsAtLeastNWidgets(1),
+      );
     });
 
     testWidgets('shows carrier_ratio when carrier results exist', (

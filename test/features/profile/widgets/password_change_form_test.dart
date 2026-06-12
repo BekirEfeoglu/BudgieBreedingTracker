@@ -21,10 +21,11 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           PasswordChangeForm(
-            onSubmit: ({
-              required String currentPassword,
-              required String newPassword,
-            }) async {},
+            onSubmit:
+                ({
+                  required String currentPassword,
+                  required String newPassword,
+                }) async {},
           ),
         ),
       );
@@ -37,10 +38,11 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           PasswordChangeForm(
-            onSubmit: ({
-              required String currentPassword,
-              required String newPassword,
-            }) async {},
+            onSubmit:
+                ({
+                  required String currentPassword,
+                  required String newPassword,
+                }) async {},
           ),
         ),
       );
@@ -53,10 +55,11 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           PasswordChangeForm(
-            onSubmit: ({
-              required String currentPassword,
-              required String newPassword,
-            }) async {},
+            onSubmit:
+                ({
+                  required String currentPassword,
+                  required String newPassword,
+                }) async {},
           ),
         ),
       );
@@ -69,10 +72,11 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           PasswordChangeForm(
-            onSubmit: ({
-              required String currentPassword,
-              required String newPassword,
-            }) async {},
+            onSubmit:
+                ({
+                  required String currentPassword,
+                  required String newPassword,
+                }) async {},
           ),
         ),
       );
@@ -87,10 +91,11 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           PasswordChangeForm(
-            onSubmit: ({
-              required String currentPassword,
-              required String newPassword,
-            }) async {},
+            onSubmit:
+                ({
+                  required String currentPassword,
+                  required String newPassword,
+                }) async {},
           ),
         ),
       );
@@ -103,10 +108,11 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           PasswordChangeForm(
-            onSubmit: ({
-              required String currentPassword,
-              required String newPassword,
-            }) async {},
+            onSubmit:
+                ({
+                  required String currentPassword,
+                  required String newPassword,
+                }) async {},
           ),
         ),
       );
@@ -119,10 +125,11 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           PasswordChangeForm(
-            onSubmit: ({
-              required String currentPassword,
-              required String newPassword,
-            }) async {},
+            onSubmit:
+                ({
+                  required String currentPassword,
+                  required String newPassword,
+                }) async {},
           ),
         ),
       );
@@ -142,20 +149,18 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           PasswordChangeForm(
-            onSubmit: ({
-              required String currentPassword,
-              required String newPassword,
-            }) async {},
+            onSubmit:
+                ({
+                  required String currentPassword,
+                  required String newPassword,
+                }) async {},
           ),
         ),
       );
       await tester.pump();
 
       // Enter current password but leave new password empty
-      await tester.enterText(
-        find.byType(TextFormField).first,
-        'oldpassword',
-      );
+      await tester.enterText(find.byType(TextFormField).first, 'oldpassword');
       await tester.tap(find.text(l10n('profile.change_password')));
       await tester.pump();
 
@@ -166,20 +171,18 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           PasswordChangeForm(
-            onSubmit: ({
-              required String currentPassword,
-              required String newPassword,
-            }) async {},
+            onSubmit:
+                ({
+                  required String currentPassword,
+                  required String newPassword,
+                }) async {},
           ),
         ),
       );
       await tester.pump();
 
       // Enter current password and a short new password
-      await tester.enterText(
-        find.byType(TextFormField).first,
-        'oldpassword',
-      );
+      await tester.enterText(find.byType(TextFormField).first, 'oldpassword');
       await tester.enterText(find.byType(TextFormField).at(1), 'short');
       await tester.tap(find.text(l10n('profile.change_password')));
       await tester.pump();
@@ -191,19 +194,17 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           PasswordChangeForm(
-            onSubmit: ({
-              required String currentPassword,
-              required String newPassword,
-            }) async {},
+            onSubmit:
+                ({
+                  required String currentPassword,
+                  required String newPassword,
+                }) async {},
           ),
         ),
       );
       await tester.pump();
 
-      await tester.enterText(
-        find.byType(TextFormField).first,
-        'oldpassword',
-      );
+      await tester.enterText(find.byType(TextFormField).first, 'oldpassword');
       await tester.enterText(
         find.byType(TextFormField).at(1),
         'newpassword123',
@@ -222,19 +223,17 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           PasswordChangeForm(
-            onSubmit: ({
-              required String currentPassword,
-              required String newPassword,
-            }) async {},
+            onSubmit:
+                ({
+                  required String currentPassword,
+                  required String newPassword,
+                }) async {},
           ),
         ),
       );
       await tester.pump();
 
-      await tester.enterText(
-        find.byType(TextFormField).first,
-        'oldpassword',
-      );
+      await tester.enterText(find.byType(TextFormField).first, 'oldpassword');
       await tester.enterText(
         find.byType(TextFormField).at(1),
         'newpassword123',
@@ -256,22 +255,20 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           PasswordChangeForm(
-            onSubmit: ({
-              required String currentPassword,
-              required String newPassword,
-            }) async {
-              capturedCurrentPassword = currentPassword;
-              capturedNewPassword = newPassword;
-            },
+            onSubmit:
+                ({
+                  required String currentPassword,
+                  required String newPassword,
+                }) async {
+                  capturedCurrentPassword = currentPassword;
+                  capturedNewPassword = newPassword;
+                },
           ),
         ),
       );
       await tester.pump();
 
-      await tester.enterText(
-        find.byType(TextFormField).first,
-        'oldpassword',
-      );
+      await tester.enterText(find.byType(TextFormField).first, 'oldpassword');
       await tester.enterText(
         find.byType(TextFormField).at(1),
         'newpassword123',
@@ -293,20 +290,18 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           PasswordChangeForm(
-            onSubmit: ({
-              required String currentPassword,
-              required String newPassword,
-            }) async {},
+            onSubmit:
+                ({
+                  required String currentPassword,
+                  required String newPassword,
+                }) async {},
           ),
         ),
       );
       await tester.pump();
 
       // Enter text in the new password field (second TextFormField)
-      await tester.enterText(
-        find.byType(TextFormField).at(1),
-        'StrongPass1!',
-      );
+      await tester.enterText(find.byType(TextFormField).at(1), 'StrongPass1!');
       await tester.pump();
 
       expect(find.byType(PasswordStrengthMeter), findsOneWidget);
@@ -317,30 +312,29 @@ void main() {
         _wrap(
           PasswordChangeForm(
             isLoading: true,
-            onSubmit: ({
-              required String currentPassword,
-              required String newPassword,
-            }) async {},
+            onSubmit:
+                ({
+                  required String currentPassword,
+                  required String newPassword,
+                }) async {},
           ),
         ),
       );
       await tester.pump();
 
       // PrimaryButton with isLoading shows a CircularProgressIndicator
-      expect(
-        find.byType(CircularProgressIndicator),
-        findsOneWidget,
-      );
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
     testWidgets('wraps content in a Form widget', (tester) async {
       await tester.pumpWidget(
         _wrap(
           PasswordChangeForm(
-            onSubmit: ({
-              required String currentPassword,
-              required String newPassword,
-            }) async {},
+            onSubmit:
+                ({
+                  required String currentPassword,
+                  required String newPassword,
+                }) async {},
           ),
         ),
       );

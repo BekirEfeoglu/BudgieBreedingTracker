@@ -1,7 +1,8 @@
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
-import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart'
+    as date_utils;
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';

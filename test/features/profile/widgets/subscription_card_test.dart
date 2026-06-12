@@ -30,9 +30,7 @@ Widget _wrap(Widget child, {bool isPremium = false}) {
     ],
   );
   return ProviderScope(
-    overrides: [
-      effectivePremiumProvider.overrideWithValue(isPremium),
-    ],
+    overrides: [effectivePremiumProvider.overrideWithValue(isPremium)],
     child: MaterialApp.router(routerConfig: router),
   );
 }
@@ -77,7 +75,10 @@ void main() {
         _wrap(const SubscriptionCard(profile: null)),
       );
 
-      expect(find.text(l10n('profile.subscription_benefit_stats')), findsOneWidget);
+      expect(
+        find.text(l10n('profile.subscription_benefit_stats')),
+        findsOneWidget,
+      );
       expect(
         find.text(l10n('profile.subscription_benefit_genealogy')),
         findsOneWidget,
@@ -143,7 +144,9 @@ void main() {
 
       // 'profile.subscription_days_remaining' should be present
       expect(
-        find.textContaining(l10nContains('profile.subscription_days_remaining')),
+        find.textContaining(
+          l10nContains('profile.subscription_days_remaining'),
+        ),
         findsAtLeastNWidgets(1),
       );
     });

@@ -78,7 +78,9 @@ abstract class AppColors {
   static const premiumGoldDark = Color(0xFFFFA000);
 
   // AI Confidence Colors
-  static const aiConfidenceMedium = Color(0xFFF59E0B); // amber (matches warning)
+  static const aiConfidenceMedium = Color(
+    0xFFF59E0B,
+  ); // amber (matches warning)
   static const aiConfidenceMediumDark = Color(0xFFFFB74D);
   static const aiConfidenceHigh = Color(0xFF22C55E); // green (matches success)
   static const aiConfidenceHighDark = Color(0xFF4ADE80);
@@ -243,8 +245,7 @@ abstract class AppColors {
   static Color inheritanceColor(BuildContext context, String type) =>
       _AdaptiveColors.inheritanceColor(context, type);
 
-  static bool isLightColor(Color color) =>
-      _AdaptiveColors.isLightColor(color);
+  static bool isLightColor(Color color) => _AdaptiveColors.isLightColor(color);
 
   static Color premiumOnGold(BuildContext context) =>
       _AdaptiveColors.premiumOnGold(context);
@@ -276,8 +277,7 @@ abstract class AppColors {
   static Color statusColor(BuildContext context, String status) =>
       _AdaptiveColors.statusColor(context, status);
 
-  static ({Color background, Color foreground, Color border}) aiConfidenceColorsAdaptive(
-    BuildContext context,
-    String level,
-  ) => _AdaptiveColors.aiConfidenceColors(context, level);
+  static ({Color background, Color foreground, Color border})
+  aiConfidenceColorsAdaptive(BuildContext context, String level) =>
+      _AdaptiveColors.aiConfidenceColors(context, level);
 }

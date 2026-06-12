@@ -12,59 +12,56 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 
 void main() {
   group('LocalAiService caching', () {
-    test('analyzeGenetics reuses cached response on identical inputs', () async {
-      var callCount = 0;
-      final service = LocalAiService(
-        cache: LocalAiCache(
-          maxEntries: 4,
-          ttl: const Duration(minutes: 5),
-        ),
-        breadcrumbSink: (_) {},
-        client: MockClient((_) async {
-          callCount++;
-          return http.Response(
-            jsonEncode({
-              'response': {
-                'summary': 'cached summary',
-                'confidence': 'medium',
-                'likely_mutations': <String>[],
-                'matched_genetics': <String>[],
-                'sex_linked_note': '',
-                'warnings': <String>[],
-                'next_checks': <String>[],
-              },
-            }),
-            200,
-          );
-        }),
-      );
+    test(
+      'analyzeGenetics reuses cached response on identical inputs',
+      () async {
+        var callCount = 0;
+        final service = LocalAiService(
+          cache: LocalAiCache(maxEntries: 4, ttl: const Duration(minutes: 5)),
+          breadcrumbSink: (_) {},
+          client: MockClient((_) async {
+            callCount++;
+            return http.Response(
+              jsonEncode({
+                'response': {
+                  'summary': 'cached summary',
+                  'confidence': 'medium',
+                  'likely_mutations': <String>[],
+                  'matched_genetics': <String>[],
+                  'sex_linked_note': '',
+                  'warnings': <String>[],
+                  'next_checks': <String>[],
+                },
+              }),
+              200,
+            );
+          }),
+        );
 
-      const father = ParentGenotype.empty(gender: BirdGender.male);
-      const mother = ParentGenotype.empty(gender: BirdGender.female);
+        const father = ParentGenotype.empty(gender: BirdGender.male);
+        const mother = ParentGenotype.empty(gender: BirdGender.female);
 
-      final first = await service.analyzeGenetics(
-        config: LocalAiConfig.defaults,
-        father: father,
-        mother: mother,
-      );
-      final second = await service.analyzeGenetics(
-        config: LocalAiConfig.defaults,
-        father: father,
-        mother: mother,
-      );
+        final first = await service.analyzeGenetics(
+          config: LocalAiConfig.defaults,
+          father: father,
+          mother: mother,
+        );
+        final second = await service.analyzeGenetics(
+          config: LocalAiConfig.defaults,
+          father: father,
+          mother: mother,
+        );
 
-      expect(callCount, 1, reason: 'second call served from cache');
-      expect(first.summary, 'cached summary');
-      expect(second.summary, 'cached summary');
-    });
+        expect(callCount, 1, reason: 'second call served from cache');
+        expect(first.summary, 'cached summary');
+        expect(second.summary, 'cached summary');
+      },
+    );
 
     test('different model ids miss cache and hit the endpoint twice', () async {
       var callCount = 0;
       final service = LocalAiService(
-        cache: LocalAiCache(
-          maxEntries: 4,
-          ttl: const Duration(minutes: 5),
-        ),
+        cache: LocalAiCache(maxEntries: 4, ttl: const Duration(minutes: 5)),
         breadcrumbSink: (_) {},
         client: MockClient((_) async {
           callCount++;
@@ -109,10 +106,7 @@ void main() {
     test('failed responses are not cached', () async {
       var callCount = 0;
       final service = LocalAiService(
-        cache: LocalAiCache(
-          maxEntries: 4,
-          ttl: const Duration(minutes: 5),
-        ),
+        cache: LocalAiCache(maxEntries: 4, ttl: const Duration(minutes: 5)),
         breadcrumbSink: (_) {},
         client: MockClient((_) async {
           callCount++;
@@ -148,10 +142,7 @@ void main() {
     test('emits success breadcrumb on cache miss path', () async {
       final breadcrumbs = <Breadcrumb>[];
       final service = LocalAiService(
-        cache: LocalAiCache(
-          maxEntries: 4,
-          ttl: const Duration(minutes: 5),
-        ),
+        cache: LocalAiCache(maxEntries: 4, ttl: const Duration(minutes: 5)),
         breadcrumbSink: breadcrumbs.add,
         client: MockClient((_) async {
           return http.Response(
@@ -193,10 +184,7 @@ void main() {
     test('emits cache hit breadcrumb on repeated call', () async {
       final breadcrumbs = <Breadcrumb>[];
       final service = LocalAiService(
-        cache: LocalAiCache(
-          maxEntries: 4,
-          ttl: const Duration(minutes: 5),
-        ),
+        cache: LocalAiCache(maxEntries: 4, ttl: const Duration(minutes: 5)),
         breadcrumbSink: breadcrumbs.add,
         client: MockClient((_) async {
           return http.Response(
@@ -229,10 +217,7 @@ void main() {
         mother: mother,
       );
 
-      expect(
-        breadcrumbs.any((b) => b.message == 'LocalAI cache hit'),
-        isTrue,
-      );
+      expect(breadcrumbs.any((b) => b.message == 'LocalAI cache hit'), isTrue);
       final hit = breadcrumbs.firstWhere(
         (b) => b.message == 'LocalAI cache hit',
       );
@@ -242,10 +227,7 @@ void main() {
     test('emits failure breadcrumb when inference throws', () async {
       final breadcrumbs = <Breadcrumb>[];
       final service = LocalAiService(
-        cache: LocalAiCache(
-          maxEntries: 4,
-          ttl: const Duration(minutes: 5),
-        ),
+        cache: LocalAiCache(maxEntries: 4, ttl: const Duration(minutes: 5)),
         breadcrumbSink: breadcrumbs.add,
         client: MockClient((_) async => http.Response('nope', 500)),
       );
@@ -268,10 +250,7 @@ void main() {
 
     test('breadcrumb sink errors do not break inference', () async {
       final service = LocalAiService(
-        cache: LocalAiCache(
-          maxEntries: 4,
-          ttl: const Duration(minutes: 5),
-        ),
+        cache: LocalAiCache(maxEntries: 4, ttl: const Duration(minutes: 5)),
         breadcrumbSink: (_) => throw StateError('telemetry down'),
         client: MockClient((_) async {
           return http.Response(

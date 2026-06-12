@@ -76,10 +76,7 @@ void main() {
 
     testWidgets('renders health status selector', (tester) async {
       await pumpFields(tester);
-      expect(
-        find.byType(SegmentedButton<ChickHealthStatus>),
-        findsOneWidget,
-      );
+      expect(find.byType(SegmentedButton<ChickHealthStatus>), findsOneWidget);
       expect(find.text(l10n('chicks.health_status')), findsOneWidget);
     });
 

@@ -25,7 +25,9 @@ void main() {
       expect(find.text('Hello world'), findsOneWidget);
     });
 
-    testWidgets('renders markdown content when showFull is true', (tester) async {
+    testWidgets('renders markdown content when showFull is true', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -153,11 +155,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: ContentText(
-              content: '',
-              showFull: false,
-              maxLines: 3,
-            ),
+            body: ContentText(content: '', showFull: false, maxLines: 3),
           ),
         ),
       );
@@ -166,7 +164,9 @@ void main() {
       expect(find.byType(ContentText), findsOneWidget);
     });
 
-    testWidgets('handles content with newlines when showFull is false', (tester) async {
+    testWidgets('handles content with newlines when showFull is false', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(

@@ -21,19 +21,20 @@ void main() {
       ),
     );
   }
+
   group('SummaryStatsGrid', () {
     testWidgets('renders without crashing', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       expect(find.byType(SummaryStatsGrid), findsOneWidget);
     });
 
     testWidgets('renders 6 StatCard widgets', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       expect(find.byType(StatCard), findsNWidgets(6));
     });
 
     testWidgets('renders GridView with 2 columns', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       final gridView = tester.widget<GridView>(find.byType(GridView));
       final delegate =
           gridView.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
@@ -41,18 +42,34 @@ void main() {
     });
 
     testWidgets('shows correct labels for each stat card', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       // easy_localization returns key strings in test env
       expect(find.text(l10n('statistics.summary_total_birds')), findsOneWidget);
-      expect(find.text(l10n('statistics.summary_active_breedings')), findsOneWidget);
-      expect(find.text(l10n('statistics.summary_incubating_eggs')), findsOneWidget);
-      expect(find.text(l10n('statistics.summary_fertility_rate')), findsOneWidget);
-      expect(find.text(l10n('statistics.summary_survival_rate')), findsOneWidget);
-      expect(find.text(l10n('statistics.summary_health_records')), findsOneWidget);
+      expect(
+        find.text(l10n('statistics.summary_active_breedings')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(l10n('statistics.summary_incubating_eggs')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(l10n('statistics.summary_fertility_rate')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(l10n('statistics.summary_survival_rate')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(l10n('statistics.summary_health_records')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('displays totalBirds value', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(stats: const SummaryStats(totalBirds: 42)),
       );
       // Advance past 800ms TweenAnimationBuilder in _AnimatedStatValue
@@ -61,7 +78,8 @@ void main() {
     });
 
     testWidgets('displays activeBreedings value', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(stats: const SummaryStats(activeBreedings: 7)),
       );
       await tester.pump(const Duration(seconds: 1));
@@ -69,7 +87,8 @@ void main() {
     });
 
     testWidgets('displays incubatingEggs value', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(stats: const SummaryStats(incubatingEggs: 15)),
       );
       await tester.pump(const Duration(seconds: 1));
@@ -77,7 +96,8 @@ void main() {
     });
 
     testWidgets('displays totalHealthRecords value', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(stats: const SummaryStats(totalHealthRecords: 23)),
       );
       await tester.pump(const Duration(seconds: 1));
@@ -85,7 +105,8 @@ void main() {
     });
 
     testWidgets('displays fertility rate as percentage', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(stats: const SummaryStats(fertilityRate: 0.75)),
       );
       await tester.pump(const Duration(seconds: 1));
@@ -93,7 +114,8 @@ void main() {
     });
 
     testWidgets('displays chick survival rate as percentage', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(stats: const SummaryStats(chickSurvivalRate: 0.9)),
       );
       await tester.pump(const Duration(seconds: 1));
@@ -101,7 +123,7 @@ void main() {
     });
 
     testWidgets('handles zero data gracefully', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject(stats: const SummaryStats()));
+      await pumpLocalizedApp(tester, buildSubject(stats: const SummaryStats()));
       await tester.pump(const Duration(seconds: 1));
       // All default zero values should render
       expect(find.byType(StatCard), findsNWidgets(6));
@@ -110,7 +132,8 @@ void main() {
     });
 
     testWidgets('renders with all fields populated', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(
           stats: const SummaryStats(
             totalBirds: 50,
@@ -132,7 +155,8 @@ void main() {
     });
 
     testWidgets('renders with trend data without crashing', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(
           stats: const SummaryStats(totalBirds: 10),
           trends: const TrendStats(birdsTrend: 5.0, fertilityTrend: -2.0),
@@ -142,14 +166,16 @@ void main() {
     });
 
     testWidgets('renders without trends when trends is null', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(stats: const SummaryStats(totalBirds: 5), trends: null),
       );
       expect(find.byType(StatCard), findsNWidgets(6));
     });
 
     testWidgets('handles 100% rates correctly', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(
           stats: const SummaryStats(fertilityRate: 1.0, chickSurvivalRate: 1.0),
         ),

@@ -124,9 +124,7 @@ void main() {
         );
         when(
           () => socialSource.fetchPostSocialState('user-1', ['post-1']),
-        ).thenAnswer(
-          (_) async => (liked: <String>{}, bookmarked: {'post-1'}),
-        );
+        ).thenAnswer((_) async => (liked: <String>{}, bookmarked: {'post-1'}));
 
         final container = ProviderContainer(
           overrides: [

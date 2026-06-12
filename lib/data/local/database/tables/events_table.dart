@@ -15,18 +15,15 @@ class EventsTable extends Table {
   TextColumn get userId => text()();
   TextColumn get status => text().map(eventStatusConverter)();
   TextColumn get description => text().nullable()();
-  TextColumn get birdId =>
-      text().nullable().references(BirdsTable, #id)();
+  TextColumn get birdId => text().nullable().references(BirdsTable, #id)();
   TextColumn get breedingPairId =>
       text().nullable().references(BreedingPairsTable, #id)();
-  TextColumn get chickId =>
-      text().nullable().references(ChicksTable, #id)();
+  TextColumn get chickId => text().nullable().references(ChicksTable, #id)();
   // FK columns introduced to make egg/incubation calendar entries
   // cleanable on parent delete. Without these, egg + incubation
   // milestone events were created with no FK back-pointer and
   // accumulated as permanent orphans after the parent was deleted.
-  TextColumn get eggId =>
-      text().nullable().references(EggsTable, #id)();
+  TextColumn get eggId => text().nullable().references(EggsTable, #id)();
   TextColumn get incubationId =>
       text().nullable().references(IncubationsTable, #id)();
   TextColumn get notes => text().nullable()();

@@ -34,7 +34,10 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: AppIcon('assets/icons/navigation/home.svg', color: Colors.red),
+            body: AppIcon(
+              'assets/icons/navigation/home.svg',
+              color: Colors.red,
+            ),
           ),
         ),
       );

@@ -18,10 +18,7 @@ void main() {
         gender: BirdGender.male,
         mutations: {'ino': AlleleState.carrier},
       );
-      final mother = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {},
-      );
+      final mother = ParentGenotype(gender: BirdGender.female, mutations: {});
 
       final results = calculator.calculateFromGenotypes(
         father: father,
@@ -31,13 +28,21 @@ void main() {
       expectNormalizedProbabilities(results);
 
       // Males: 50% Normal (carrier+pure merged, allelic series behavior)
-      final maleNormal = sumProbability(results, 'Normal', sex: OffspringSex.male);
+      final maleNormal = sumProbability(
+        results,
+        'Normal',
+        sex: OffspringSex.male,
+      );
       expect(maleNormal, closeTo(0.50, 0.01));
 
       // Females: 25% visual Ino, 25% normal
       final femaleResults = results.where((r) => r.sex == OffspringSex.female);
       expect(femaleResults.length, greaterThanOrEqualTo(1));
-      final femaleNormal = sumProbability(results, 'Normal', sex: OffspringSex.female);
+      final femaleNormal = sumProbability(
+        results,
+        'Normal',
+        sex: OffspringSex.female,
+      );
       expect(femaleNormal, closeTo(0.25, 0.01));
     });
 
@@ -59,17 +64,15 @@ void main() {
       expectNormalizedProbabilities(results);
       expect(
         results.every(
-          (r) => r.visualMutations.contains('ino') || r.phenotype.contains('Ino'),
+          (r) =>
+              r.visualMutations.contains('ino') || r.phenotype.contains('Ino'),
         ),
         isTrue,
       );
     });
 
     test('female cannot be carrier for sex-linked → treated as visual', () {
-      final father = ParentGenotype(
-        gender: BirdGender.male,
-        mutations: {},
-      );
+      final father = ParentGenotype(gender: BirdGender.male, mutations: {});
       final mother = ParentGenotype(
         gender: BirdGender.female,
         mutations: {'ino': AlleleState.carrier}, // invalid, treated as visual

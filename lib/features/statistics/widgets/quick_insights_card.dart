@@ -129,9 +129,7 @@ class _InsightRow extends StatelessWidget {
         Expanded(
           child: Text(
             insight.text,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: color,
-            ),
+            style: theme.textTheme.bodySmall?.copyWith(color: color),
           ),
         ),
       ],

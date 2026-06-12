@@ -14,10 +14,7 @@ Widget _wrap(Widget child) {
   );
 }
 
-Widget _wrapWithProviders(
-  Widget child, {
-  String userId = 'test-user',
-}) {
+Widget _wrapWithProviders(Widget child, {String userId = 'test-user'}) {
   return ProviderScope(
     overrides: [
       currentUserIdProvider.overrideWithValue(userId),
@@ -77,10 +74,7 @@ void main() {
 
     testWidgets('shows sign-in text for anonymous user', (tester) async {
       await tester.pumpWidget(
-        _wrapWithProviders(
-          const PremiumRestoreSection(),
-          userId: 'anonymous',
-        ),
+        _wrapWithProviders(const PremiumRestoreSection(), userId: 'anonymous'),
       );
       await tester.pump();
 
@@ -89,10 +83,7 @@ void main() {
 
     testWidgets('shows login button for anonymous user', (tester) async {
       await tester.pumpWidget(
-        _wrapWithProviders(
-          const PremiumRestoreSection(),
-          userId: 'anonymous',
-        ),
+        _wrapWithProviders(const PremiumRestoreSection(), userId: 'anonymous'),
       );
       await tester.pump();
 
@@ -101,10 +92,7 @@ void main() {
 
     testWidgets('shows logIn icon for anonymous user', (tester) async {
       await tester.pumpWidget(
-        _wrapWithProviders(
-          const PremiumRestoreSection(),
-          userId: 'anonymous',
-        ),
+        _wrapWithProviders(const PremiumRestoreSection(), userId: 'anonymous'),
       );
       await tester.pump();
 

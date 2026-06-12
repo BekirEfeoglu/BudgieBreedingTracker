@@ -256,4 +256,3 @@ class _MutationChip extends StatelessWidget {
     );
   }
 }
-

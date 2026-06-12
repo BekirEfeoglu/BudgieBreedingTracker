@@ -48,17 +48,15 @@ void main() {
     return GoRouter(
       initialLocation: initialLocation ?? '/login',
       routes: [
-        GoRoute(
-          path: '/login',
-          builder: (_, __) => const BudgieLoginScreen(),
-        ),
+        GoRoute(path: '/login', builder: (_, __) => const BudgieLoginScreen()),
         GoRoute(
           path: '/register',
           builder: (_, __) => const Scaffold(body: Text('RegisterScreen')),
         ),
         GoRoute(
           path: '/forgot-password',
-          builder: (_, __) => const Scaffold(body: Text('ForgotPasswordScreen')),
+          builder: (_, __) =>
+              const Scaffold(body: Text('ForgotPasswordScreen')),
         ),
         GoRoute(
           path: '/',
@@ -103,8 +101,9 @@ void main() {
       await disposeCleanly(tester);
     });
 
-    testWidgets('renders two AuthFormField widgets (email and password)',
-        (tester) async {
+    testWidgets('renders two AuthFormField widgets (email and password)', (
+      tester,
+    ) async {
       await pumpLogin(tester);
       expect(find.byType(AuthFormField), findsNWidgets(2));
       await disposeCleanly(tester);
@@ -178,8 +177,9 @@ void main() {
       await disposeCleanly(tester);
     });
 
-    testWidgets('shows invalid email error for malformed email',
-        (tester) async {
+    testWidgets('shows invalid email error for malformed email', (
+      tester,
+    ) async {
       await pumpLogin(tester);
 
       final textFields = find.byType(TextFormField);
@@ -200,8 +200,9 @@ void main() {
       await disposeCleanly(tester);
     });
 
-    testWidgets('shows required field error for empty password',
-        (tester) async {
+    testWidgets('shows required field error for empty password', (
+      tester,
+    ) async {
       await pumpLogin(tester);
 
       final textFields = find.byType(TextFormField);
@@ -221,8 +222,7 @@ void main() {
       await disposeCleanly(tester);
     });
 
-    testWidgets('shows password too short error for < 8 chars',
-        (tester) async {
+    testWidgets('shows password too short error for < 8 chars', (tester) async {
       await pumpLogin(tester);
 
       final textFields = find.byType(TextFormField);
@@ -243,8 +243,9 @@ void main() {
       await disposeCleanly(tester);
     });
 
-    testWidgets('accepts valid email and password without validation errors',
-        (tester) async {
+    testWidgets('accepts valid email and password without validation errors', (
+      tester,
+    ) async {
       await pumpLogin(tester);
 
       final textFields = find.byType(TextFormField);
@@ -319,12 +320,14 @@ void main() {
       await disposeCleanly(tester);
     });
 
-    testWidgets('login button is disabled during loading state',
-        (tester) async {
+    testWidgets('login button is disabled during loading state', (
+      tester,
+    ) async {
       final completer = await triggerLoading(tester);
 
-      final filledButton =
-          tester.widget<FilledButton>(find.byType(FilledButton));
+      final filledButton = tester.widget<FilledButton>(
+        find.byType(FilledButton),
+      );
       expect(filledButton.onPressed, isNull);
 
       completer.completeError(
@@ -375,8 +378,9 @@ void main() {
   });
 
   group('BudgieLoginScreen — navigation', () {
-    testWidgets('tapping register navigates to register screen',
-        (tester) async {
+    testWidgets('tapping register navigates to register screen', (
+      tester,
+    ) async {
       final router = buildRouter();
       await pumpLogin(tester, router: router);
 
@@ -396,8 +400,9 @@ void main() {
       await disposeCleanly(tester);
     });
 
-    testWidgets('tapping forgot password navigates to forgot password screen',
-        (tester) async {
+    testWidgets('tapping forgot password navigates to forgot password screen', (
+      tester,
+    ) async {
       final router = buildRouter();
       await pumpLogin(tester, router: router);
 
@@ -427,15 +432,13 @@ void main() {
 
       // Find the password EditableText (the one with obscureText)
       final editableTexts = find.byType(EditableText);
-      final passwordEditable =
-          tester.widget<EditableText>(editableTexts.last);
+      final passwordEditable = tester.widget<EditableText>(editableTexts.last);
       expect(passwordEditable.obscureText, isTrue);
 
       await disposeCleanly(tester);
     });
 
-    testWidgets('tapping eye icon toggles password visibility',
-        (tester) async {
+    testWidgets('tapping eye icon toggles password visibility', (tester) async {
       await pumpLogin(tester);
 
       // Initially obscured — eyeOff icon should be visible
@@ -451,8 +454,7 @@ void main() {
 
       // The password EditableText should no longer be obscured
       final editableTexts = find.byType(EditableText);
-      final passwordEditable =
-          tester.widget<EditableText>(editableTexts.last);
+      final passwordEditable = tester.widget<EditableText>(editableTexts.last);
       expect(passwordEditable.obscureText, isFalse);
 
       await disposeCleanly(tester);
@@ -517,16 +519,15 @@ void main() {
       await disposeCleanly(tester);
     });
 
-    testWidgets('error state resets login button text after 3 seconds',
-        (tester) async {
+    testWidgets('error state resets login button text after 3 seconds', (
+      tester,
+    ) async {
       when(
         () => mockAuth.signInWithEmail(
           email: any(named: 'email'),
           password: any(named: 'password'),
         ),
-      ).thenThrow(
-        const AuthException('Bad request', statusCode: '400'),
-      );
+      ).thenThrow(const AuthException('Bad request', statusCode: '400'));
 
       await pumpLogin(tester);
 
@@ -575,15 +576,15 @@ void main() {
 
       // Password text exists in the editing controller even though obscured
       final editableTexts = find.byType(EditableText);
-      final passwordEditable =
-          tester.widget<EditableText>(editableTexts.last);
+      final passwordEditable = tester.widget<EditableText>(editableTexts.last);
       expect(passwordEditable.controller.text, 'mypassword');
 
       await disposeCleanly(tester);
     });
 
-    testWidgets('email field trims whitespace before submission',
-        (tester) async {
+    testWidgets('email field trims whitespace before submission', (
+      tester,
+    ) async {
       await pumpLogin(tester);
 
       final textFields = find.byType(TextFormField);

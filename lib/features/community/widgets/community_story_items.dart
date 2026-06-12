@@ -211,8 +211,6 @@ class _StoryAvatar extends StatelessWidget {
         args: [diff.inMinutes.toString()],
       );
     }
-    return 'community.hours_ago_short'.tr(
-      args: [diff.inHours.toString()],
-    );
+    return 'community.hours_ago_short'.tr(args: [diff.inHours.toString()]);
   }
 }

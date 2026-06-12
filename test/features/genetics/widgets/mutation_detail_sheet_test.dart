@@ -60,7 +60,10 @@ void main() {
       await tester.tap(find.text('open'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-      expect(find.text(l10n('genetics.mutation_blue')), findsAtLeastNWidgets(1));
+      expect(
+        find.text(l10n('genetics.mutation_blue')),
+        findsAtLeastNWidgets(1),
+      );
     });
 
     testWidgets('shows InheritanceBadge in sheet', (tester) async {

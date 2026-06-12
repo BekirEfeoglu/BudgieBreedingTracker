@@ -177,7 +177,11 @@ class _PillTab extends StatelessWidget {
         size: 16,
         color: color,
       ),
-      CommunityFeedTab.guides => AppIcon(AppIcons.guide, size: 16, color: color),
+      CommunityFeedTab.guides => AppIcon(
+        AppIcons.guide,
+        size: 16,
+        color: color,
+      ),
       CommunityFeedTab.questions => Icon(
         LucideIcons.helpCircle,
         size: 16,

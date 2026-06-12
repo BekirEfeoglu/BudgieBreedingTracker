@@ -30,8 +30,8 @@ final breedingFilterProvider =
 /// so every emission of the source stream installs a new entry. autoDispose
 /// evicts the old ones once the screen no longer watches them — without it,
 /// memory grows linearly with mutation count.
-final filteredBreedingPairsProvider =
-    Provider.autoDispose.family<List<BreedingPair>, List<BreedingPair>>((ref, pairs) {
+final filteredBreedingPairsProvider = Provider.autoDispose
+    .family<List<BreedingPair>, List<BreedingPair>>((ref, pairs) {
       final filter = ref.watch(breedingFilterProvider);
       return switch (filter) {
         BreedingFilter.all => pairs,
@@ -60,8 +60,8 @@ final breedingSearchQueryProvider =
 
 /// Searched and filtered breeding pairs (filter first, then search by cage number + bird names).
 /// autoDispose: see [filteredBreedingPairsProvider] — same identity-keyed leak.
-final searchedAndFilteredBreedingPairsProvider =
-    Provider.autoDispose.family<List<BreedingPair>, List<BreedingPair>>((ref, pairs) {
+final searchedAndFilteredBreedingPairsProvider = Provider.autoDispose
+    .family<List<BreedingPair>, List<BreedingPair>>((ref, pairs) {
       final filtered = ref.watch(filteredBreedingPairsProvider(pairs));
       final query = ref.watch(
         breedingSearchQueryProvider.select(
@@ -116,8 +116,8 @@ final breedingSortProvider =
 
 /// Sorted, searched and filtered breeding pairs (final display list).
 /// autoDispose: see [filteredBreedingPairsProvider] — same identity-keyed leak.
-final sortedAndFilteredBreedingPairsProvider =
-    Provider.autoDispose.family<List<BreedingPair>, List<BreedingPair>>((ref, pairs) {
+final sortedAndFilteredBreedingPairsProvider = Provider.autoDispose
+    .family<List<BreedingPair>, List<BreedingPair>>((ref, pairs) {
       final searched = ref.watch(
         searchedAndFilteredBreedingPairsProvider(pairs),
       );

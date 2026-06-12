@@ -27,7 +27,10 @@ Widget _createSubject() {
     () => mockEggsDao.watchMonthlyProduction(any()),
   ).thenAnswer((_) => Stream.value(<String, int>{}));
   when(
-    () => mockEggsDao.watchMonthlyFertility(any(), species: any(named: 'species')),
+    () => mockEggsDao.watchMonthlyFertility(
+      any(),
+      species: any(named: 'species'),
+    ),
   ).thenAnswer((_) => Stream.value(const {}));
 
   // BreedingTab now reaches breedingPairsDaoProvider and chicksDaoProvider
@@ -35,8 +38,9 @@ Widget _createSubject() {
   // these mocks the StreamProviders stay in loading forever and
   // pumpAndSettle times out trying to settle the spinner.
   final mockChicksDao = _MockChicksDao();
-  when(() => mockChicksDao.watchMonthlyHatched(any()))
-      .thenAnswer((_) => Stream.value(<String, int>{}));
+  when(
+    () => mockChicksDao.watchMonthlyHatched(any()),
+  ).thenAnswer((_) => Stream.value(<String, int>{}));
   final mockBreedingPairsDao = _MockBreedingPairsDao();
   when(
     () => mockBreedingPairsDao.watchMonthlyOutcomes(

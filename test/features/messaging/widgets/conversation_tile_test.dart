@@ -20,13 +20,17 @@ void main() {
         name: 'My Budgies Chat',
       );
 
-      await pumpLocalizedWidget(tester, const ConversationTile(conversation: conversation));
+      await pumpLocalizedWidget(
+        tester,
+        const ConversationTile(conversation: conversation),
+      );
 
       expect(find.text('My Budgies Chat'), findsOneWidget);
     });
 
-    testWidgets('renders fallback name for direct message without name',
-        (tester) async {
+    testWidgets('renders fallback name for direct message without name', (
+      tester,
+    ) async {
       const conversation = Conversation(
         id: 'conv-1',
         creatorId: 'user-1',
@@ -34,12 +38,12 @@ void main() {
         type: ConversationType.direct,
       );
 
-      await pumpLocalizedWidget(tester, const ConversationTile(conversation: conversation));
-
-      expect(
-        find.text(l10n('messaging.direct_message')),
-        findsOneWidget,
+      await pumpLocalizedWidget(
+        tester,
+        const ConversationTile(conversation: conversation),
       );
+
+      expect(find.text(l10n('messaging.direct_message')), findsOneWidget);
     });
 
     testWidgets('shows last message content', (tester) async {
@@ -50,13 +54,17 @@ void main() {
         lastMessageContent: 'Hello world!',
       );
 
-      await pumpLocalizedWidget(tester, const ConversationTile(conversation: conversation));
+      await pumpLocalizedWidget(
+        tester,
+        const ConversationTile(conversation: conversation),
+      );
 
       expect(find.text('Hello world!'), findsOneWidget);
     });
 
-    testWidgets('shows unread badge when there are unread messages',
-        (tester) async {
+    testWidgets('shows unread badge when there are unread messages', (
+      tester,
+    ) async {
       const conversation = Conversation(
         id: 'conv-1',
         creatorId: 'user-1',
@@ -64,13 +72,17 @@ void main() {
         unreadCount: 3,
       );
 
-      await pumpLocalizedWidget(tester, const ConversationTile(conversation: conversation));
+      await pumpLocalizedWidget(
+        tester,
+        const ConversationTile(conversation: conversation),
+      );
 
       expect(find.text('3'), findsOneWidget);
     });
 
-    testWidgets('does not show unread badge when count is zero',
-        (tester) async {
+    testWidgets('does not show unread badge when count is zero', (
+      tester,
+    ) async {
       const conversation = Conversation(
         id: 'conv-1',
         creatorId: 'user-1',
@@ -78,7 +90,10 @@ void main() {
         unreadCount: 0,
       );
 
-      await pumpLocalizedWidget(tester, const ConversationTile(conversation: conversation));
+      await pumpLocalizedWidget(
+        tester,
+        const ConversationTile(conversation: conversation),
+      );
 
       // No unread count badge
       expect(find.text('0'), findsNothing);
@@ -92,7 +107,10 @@ void main() {
         type: ConversationType.group,
       );
 
-      await pumpLocalizedWidget(tester, const ConversationTile(conversation: conversation));
+      await pumpLocalizedWidget(
+        tester,
+        const ConversationTile(conversation: conversation),
+      );
 
       expect(find.byIcon(LucideIcons.users), findsOneWidget);
     });
@@ -105,7 +123,10 @@ void main() {
         type: ConversationType.direct,
       );
 
-      await pumpLocalizedWidget(tester, const ConversationTile(conversation: conversation));
+      await pumpLocalizedWidget(
+        tester,
+        const ConversationTile(conversation: conversation),
+      );
 
       expect(find.byIcon(LucideIcons.user), findsOneWidget);
     });
@@ -117,7 +138,10 @@ void main() {
         name: 'Chat',
       );
 
-      await pumpLocalizedWidget(tester, const ConversationTile(conversation: conversation));
+      await pumpLocalizedWidget(
+        tester,
+        const ConversationTile(conversation: conversation),
+      );
 
       expect(find.byType(ListTile), findsOneWidget);
     });
@@ -129,7 +153,10 @@ void main() {
         name: 'Chat',
       );
 
-      await pumpLocalizedWidget(tester, const ConversationTile(conversation: conversation));
+      await pumpLocalizedWidget(
+        tester,
+        const ConversationTile(conversation: conversation),
+      );
 
       expect(find.byType(CircleAvatar), findsOneWidget);
     });
@@ -142,7 +169,10 @@ void main() {
         lastMessageAt: DateTime.now().subtract(const Duration(hours: 2)),
       );
 
-      await pumpLocalizedWidget(tester, ConversationTile(conversation: conversation));
+      await pumpLocalizedWidget(
+        tester,
+        ConversationTile(conversation: conversation),
+      );
 
       // Time text should be present (e.g. "2 hours ago" or localized key)
       expect(find.byType(ConversationTile), findsOneWidget);

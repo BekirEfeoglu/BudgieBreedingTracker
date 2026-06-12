@@ -31,9 +31,7 @@ class GeneticsResultsStep extends ConsumerWidget {
       return const LoadingState();
     }
     if (rawResultsAsync.hasError) {
-      return Center(
-        child: Text('errors.unknown_error'.tr()),
-      );
+      return Center(child: Text('errors.unknown_error'.tr()));
     }
     final rawResults = rawResultsAsync.value;
     final results = ref.watch(enrichedOffspringResultsProvider);
@@ -115,8 +113,7 @@ class GeneticsResultsStep extends ConsumerWidget {
                 ),
               ),
               // Lethal warning
-              if (lethalAnalysis != null &&
-                  lethalAnalysis.hasWarnings)
+              if (lethalAnalysis != null && lethalAnalysis.hasWarnings)
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.only(top: AppSpacing.sm),
@@ -141,9 +138,7 @@ class GeneticsResultsStep extends ConsumerWidget {
                 ),
               // Results list — sex-specific uses box adapter (has "show more"),
               // grouped list uses SliverList for true lazy rendering
-              const SliverToBoxAdapter(
-                child: SizedBox(height: AppSpacing.sm),
-              ),
+              const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
               if (showSexSpecific)
                 SliverToBoxAdapter(
                   child: Padding(
@@ -211,4 +206,3 @@ class GeneticsResultsStep extends ConsumerWidget {
     );
   }
 }
-

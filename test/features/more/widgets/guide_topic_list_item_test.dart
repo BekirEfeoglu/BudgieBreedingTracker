@@ -71,7 +71,10 @@ void main() {
       final topic = _createTopic(isPremium: true);
       await pumpTranslatedWidget(tester, createSubject(topic: topic));
 
-      expect(find.text(resolvedL10n('user_guide.premium_feature')), findsOneWidget);
+      expect(
+        find.text(resolvedL10n('user_guide.premium_feature')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('hides premium badge when topic.isPremium is false', (
@@ -80,7 +83,10 @@ void main() {
       final topic = _createTopic(isPremium: false);
       await pumpTranslatedWidget(tester, createSubject(topic: topic));
 
-      expect(find.text(resolvedL10n('user_guide.premium_feature')), findsNothing);
+      expect(
+        find.text(resolvedL10n('user_guide.premium_feature')),
+        findsNothing,
+      );
     });
 
     testWidgets('calls onTap callback when tapped', (tester) async {

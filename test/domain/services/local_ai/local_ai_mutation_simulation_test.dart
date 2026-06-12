@@ -158,21 +158,24 @@ void main() {
       expect(r.predictedMutation, 'spangle_blue');
     });
 
-    test('spangle_blue DF — nearly white, DARK eyes (model might say albino)', () {
-      // Model incorrectly says albino but reports dark eyes
-      final r = _sim(
-        mutation: 'albino',
-        confidence: 'high',
-        series: 'blue',
-        pattern: 'ino',
-        bodyColor: 'beyaz',
-        wingPattern: 'beyaz',
-        eyeColor: 'koyu siyah',
-        secondary: ['spangle_blue'],
-      );
-      // Eye color gate should correct to spangle_blue
-      expect(r.predictedMutation, 'spangle_blue');
-    });
+    test(
+      'spangle_blue DF — nearly white, DARK eyes (model might say albino)',
+      () {
+        // Model incorrectly says albino but reports dark eyes
+        final r = _sim(
+          mutation: 'albino',
+          confidence: 'high',
+          series: 'blue',
+          pattern: 'ino',
+          bodyColor: 'beyaz',
+          wingPattern: 'beyaz',
+          eyeColor: 'koyu siyah',
+          secondary: ['spangle_blue'],
+        );
+        // Eye color gate should correct to spangle_blue
+        expect(r.predictedMutation, 'spangle_blue');
+      },
+    );
 
     test('spangle_blue DF — model correctly identifies with dark eyes', () {
       final r = _sim(
@@ -402,21 +405,24 @@ void main() {
   // ===== YELLOWFACE =====
 
   group('Simulated: Yellowface', () {
-    test('yellowface_blue — blue body + yellow face, model says normal pattern', () {
-      final r = _sim(
-        mutation: 'yellowface_blue',
-        confidence: 'high',
-        series: 'blue',
-        pattern: 'normal',
-        bodyColor: 'kobalt mavi',
-        wingPattern: 'siyah çizgili',
-        eyeColor: 'koyu',
-        secondary: ['normal_cobalt'],
-      );
-      expect(r.predictedMutation, 'yellowface_blue');
-      // Pattern 'normal' should be accepted for yellowface (overlay mutation)
-      expect(r.confidence, LocalAiConfidence.high);
-    });
+    test(
+      'yellowface_blue — blue body + yellow face, model says normal pattern',
+      () {
+        final r = _sim(
+          mutation: 'yellowface_blue',
+          confidence: 'high',
+          series: 'blue',
+          pattern: 'normal',
+          bodyColor: 'kobalt mavi',
+          wingPattern: 'siyah çizgili',
+          eyeColor: 'koyu',
+          secondary: ['normal_cobalt'],
+        );
+        expect(r.predictedMutation, 'yellowface_blue');
+        // Pattern 'normal' should be accepted for yellowface (overlay mutation)
+        expect(r.confidence, LocalAiConfidence.high);
+      },
+    );
 
     test('yellowface_blue — model says yellowface pattern', () {
       final r = _sim(
@@ -787,27 +793,49 @@ void main() {
     test('total mutation labels covered by simulation tests', () {
       // This test documents that we've simulated all 45 labels
       const allLabels = {
-        'normal_light_green', 'normal_dark_green', 'normal_olive',
-        'normal_skyblue', 'normal_cobalt', 'normal_mauve',
-        'spangle_green', 'spangle_blue',
-        'cinnamon_green', 'cinnamon_blue',
-        'opaline_green', 'opaline_blue',
-        'opaline_cinnamon_green', 'opaline_cinnamon_blue',
-        'dominant_pied_green', 'dominant_pied_blue',
-        'recessive_pied_green', 'recessive_pied_blue',
-        'clearwing_green', 'clearwing_blue',
-        'greywing_green', 'greywing_blue',
-        'dilute_green', 'dilute_blue',
-        'clearbody_green', 'clearbody_blue',
+        'normal_light_green',
+        'normal_dark_green',
+        'normal_olive',
+        'normal_skyblue',
+        'normal_cobalt',
+        'normal_mauve',
+        'spangle_green',
+        'spangle_blue',
+        'cinnamon_green',
+        'cinnamon_blue',
+        'opaline_green',
+        'opaline_blue',
+        'opaline_cinnamon_green',
+        'opaline_cinnamon_blue',
+        'dominant_pied_green',
+        'dominant_pied_blue',
+        'recessive_pied_green',
+        'recessive_pied_blue',
+        'clearwing_green',
+        'clearwing_blue',
+        'greywing_green',
+        'greywing_blue',
+        'dilute_green',
+        'dilute_blue',
+        'clearbody_green',
+        'clearbody_blue',
         'yellowface_blue',
-        'grey_green', 'grey_blue',
-        'violet_green', 'violet_blue',
+        'grey_green',
+        'grey_blue',
+        'violet_green',
+        'violet_blue',
         'slate_blue',
-        'lutino', 'albino', 'creamino',
-        'fallow_green', 'fallow_blue',
-        'lacewing_green', 'lacewing_blue',
-        'dark_eyed_clear_green', 'dark_eyed_clear_blue',
-        'texas_clearbody_green', 'texas_clearbody_blue',
+        'lutino',
+        'albino',
+        'creamino',
+        'fallow_green',
+        'fallow_blue',
+        'lacewing_green',
+        'lacewing_blue',
+        'dark_eyed_clear_green',
+        'dark_eyed_clear_blue',
+        'texas_clearbody_green',
+        'texas_clearbody_blue',
         'unknown',
       };
       expect(allLabels.length, 44); // 43 mutations + unknown

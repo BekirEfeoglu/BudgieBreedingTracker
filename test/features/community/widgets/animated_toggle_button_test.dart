@@ -64,10 +64,7 @@ void main() {
 
     testWidgets('applies semanticLabel', (tester) async {
       await pump(tester, semanticLabel: 'Like button');
-      expect(
-        find.bySemanticsLabel('Like button'),
-        findsOneWidget,
-      );
+      expect(find.bySemanticsLabel('Like button'), findsOneWidget);
     });
 
     testWidgets('triggers scale animation when isActive changes', (

@@ -51,7 +51,10 @@ void main() {
 
     test('fromJson parses valid values', () {
       expect(GracePeriodStatus.fromJson('active'), GracePeriodStatus.active);
-      expect(GracePeriodStatus.fromJson('gracePeriod'), GracePeriodStatus.gracePeriod);
+      expect(
+        GracePeriodStatus.fromJson('gracePeriod'),
+        GracePeriodStatus.gracePeriod,
+      );
       expect(GracePeriodStatus.fromJson('expired'), GracePeriodStatus.expired);
       expect(GracePeriodStatus.fromJson('free'), GracePeriodStatus.free);
     });

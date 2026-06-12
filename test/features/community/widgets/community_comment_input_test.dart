@@ -88,8 +88,9 @@ void main() {
       expect(opacity.opacity, lessThan(1.0));
     });
 
-    testWidgets('send button is fully opaque when text is entered',
-        (tester) async {
+    testWidgets('send button is fully opaque when text is entered', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         wrap(
           const CommunityCommentInput(postId: 'post-1'),
@@ -141,8 +142,9 @@ void main() {
       expect(find.textContaining('/1000'), findsOneWidget);
     });
 
-    testWidgets('character counter shows error color at 950+ chars',
-        (tester) async {
+    testWidgets('character counter shows error color at 950+ chars', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         wrap(
           const CommunityCommentInput(postId: 'post-1'),
@@ -154,14 +156,9 @@ void main() {
       await tester.enterText(find.byType(TextField), 'A' * 950);
       await tester.pumpAndSettle();
 
-      final counterText = tester.widget<Text>(
-        find.textContaining('/1000'),
-      );
+      final counterText = tester.widget<Text>(find.textContaining('/1000'));
       final theme = Theme.of(tester.element(find.byType(TextField)));
-      expect(
-        counterText.style?.color,
-        equals(theme.colorScheme.error),
-      );
+      expect(counterText.style?.color, equals(theme.colorScheme.error));
     });
   });
 }

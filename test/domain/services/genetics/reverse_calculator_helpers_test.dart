@@ -19,7 +19,12 @@ void main() {
     test('single sex-linked target produces sex-specific results', () {
       final results = calculator.calculateParents({'ino'});
       expect(results, isNotEmpty);
-      expect(results.any((r) => (r.probabilityMale - r.probabilityFemale).abs() > 0.001), isTrue);
+      expect(
+        results.any(
+          (r) => (r.probabilityMale - r.probabilityFemale).abs() > 0.001,
+        ),
+        isTrue,
+      );
     });
 
     test('empty target set returns empty results', () {
@@ -74,7 +79,10 @@ void main() {
     });
 
     test('result count does not exceed max limit', () {
-      expect(calculator.calculateParents({'blue', 'ino'}).length, lessThanOrEqualTo(25));
+      expect(
+        calculator.calculateParents({'blue', 'ino'}).length,
+        lessThanOrEqualTo(25),
+      );
     });
   });
 
@@ -82,7 +90,9 @@ void main() {
     test('returns true when parent has target', () {
       expect(
         ReverseCalculatorHelpers.canPossiblyProduceTargets(
-          {'blue': AlleleState.carrier}, {'blue': AlleleState.visual}, ['blue'],
+          {'blue': AlleleState.carrier},
+          {'blue': AlleleState.visual},
+          ['blue'],
         ),
         isTrue,
       );
@@ -91,7 +101,9 @@ void main() {
     test('returns false when neither parent has target', () {
       expect(
         ReverseCalculatorHelpers.canPossiblyProduceTargets(
-          {'opaline': AlleleState.visual}, {'cinnamon': AlleleState.visual}, ['blue'],
+          {'opaline': AlleleState.visual},
+          {'cinnamon': AlleleState.visual},
+          ['blue'],
         ),
         isFalse,
       );
@@ -100,11 +112,18 @@ void main() {
 
   group('ReverseCalculatorHelpers.dedupeAndTrim', () {
     test('trims to limit', () {
-      final items = List.generate(10, (i) => ReverseCalculationResult(
-        father: ParentGenotype(gender: BirdGender.male, mutations: {'m$i': AlleleState.visual}),
-        mother: const ParentGenotype.empty(gender: BirdGender.female),
-        probabilityMale: (10 - i) / 10, probabilityFemale: (10 - i) / 10,
-      ));
+      final items = List.generate(
+        10,
+        (i) => ReverseCalculationResult(
+          father: ParentGenotype(
+            gender: BirdGender.male,
+            mutations: {'m$i': AlleleState.visual},
+          ),
+          mother: const ParentGenotype.empty(gender: BirdGender.female),
+          probabilityMale: (10 - i) / 10,
+          probabilityFemale: (10 - i) / 10,
+        ),
+      );
       expect(ReverseCalculatorHelpers.dedupeAndTrim(items, limit: 3).length, 3);
     });
 
@@ -119,5 +138,6 @@ String _sig(ReverseCalculationResult r) {
     final l = m.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
     return l.map((x) => '${x.key}:${x.value.name}').join('|');
   }
+
   return '${e(r.father.mutations)}#${e(r.mother.mutations)}';
 }

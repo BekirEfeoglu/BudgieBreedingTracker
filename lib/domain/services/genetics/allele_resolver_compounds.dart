@@ -125,8 +125,7 @@ _AllelicPhenotypeResult _resolveBlueSeriesCompound(
   }
 
   // aqua + blue = Aqua Blue
-  if (alleles.contains('aqua') &&
-      alleles.contains(GeneticsConstants.mutBlue)) {
+  if (alleles.contains('aqua') && alleles.contains(GeneticsConstants.mutBlue)) {
     return const _AllelicPhenotypeResult(
       phenotype: 'Aqua Blue',
       genotype: 'Aq/bl',

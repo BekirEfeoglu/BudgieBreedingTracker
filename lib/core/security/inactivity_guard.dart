@@ -130,7 +130,9 @@ class InactivityGuard with WidgetsBindingObserver {
 
   void _handleTimeout() {
     if (!_isRunning || _isDisposed) return;
-    AppLogger.info('$_tag Session timed out after ${timeout.inMinutes} minutes');
+    AppLogger.info(
+      '$_tag Session timed out after ${timeout.inMinutes} minutes',
+    );
     _isRunning = false;
     onTimeout();
   }

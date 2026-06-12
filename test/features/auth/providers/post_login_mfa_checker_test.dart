@@ -30,8 +30,9 @@ void main() {
 
   group('PostLoginMfaChecker', () {
     test('returns MfaNotRequired when user has no 2FA', () async {
-      when(() => mockTwoFactor.needsVerification())
-          .thenAnswer((_) async => false);
+      when(
+        () => mockTwoFactor.needsVerification(),
+      ).thenAnswer((_) async => false);
 
       final result = await checker.check();
 
@@ -41,10 +42,12 @@ void main() {
     });
 
     test('returns MfaVerificationNeeded when user has TOTP factor', () async {
-      when(() => mockTwoFactor.needsVerification())
-          .thenAnswer((_) async => true);
-      when(() => mockTwoFactor.getFactors())
-          .thenAnswer((_) async => [_FakeFactor('factor-123')]);
+      when(
+        () => mockTwoFactor.needsVerification(),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockTwoFactor.getFactors(),
+      ).thenAnswer((_) async => [_FakeFactor('factor-123')]);
 
       final result = await checker.check();
 
@@ -54,60 +57,74 @@ void main() {
     });
 
     test(
-        'signs out and returns MfaCheckFailed when needsVerification but no factors',
-        () async {
-      when(() => mockTwoFactor.needsVerification())
-          .thenAnswer((_) async => true);
-      when(() => mockTwoFactor.getFactors()).thenAnswer((_) async => []);
-      when(() => mockAuth.signOut()).thenAnswer((_) async {});
+      'signs out and returns MfaCheckFailed when needsVerification but no factors',
+      () async {
+        when(
+          () => mockTwoFactor.needsVerification(),
+        ).thenAnswer((_) async => true);
+        when(() => mockTwoFactor.getFactors()).thenAnswer((_) async => []);
+        when(() => mockAuth.signOut()).thenAnswer((_) async {});
 
-      final result = await checker.check();
+        final result = await checker.check();
 
-      expect(result, isA<MfaCheckFailed>());
-      expect((result as MfaCheckFailed).didSignOut, isTrue);
-      verify(() => mockAuth.signOut()).called(1);
-    });
-
-    test('signs out and returns MfaCheckFailed when getFactors throws',
-        () async {
-      when(() => mockTwoFactor.needsVerification())
-          .thenAnswer((_) async => true);
-      when(() => mockTwoFactor.getFactors()).thenThrow(Exception('MFA error'));
-      when(() => mockAuth.signOut()).thenAnswer((_) async {});
-
-      final result = await checker.check();
-
-      expect(result, isA<MfaCheckFailed>());
-      expect((result as MfaCheckFailed).didSignOut, isTrue);
-      verify(() => mockAuth.signOut()).called(1);
-    });
-
-    test('returns MfaCheckFailed with didSignOut=false when signOut also fails',
-        () async {
-      when(() => mockTwoFactor.needsVerification())
-          .thenAnswer((_) async => true);
-      when(() => mockTwoFactor.getFactors()).thenThrow(Exception('MFA error'));
-      when(() => mockAuth.signOut()).thenThrow(Exception('SignOut failed'));
-
-      final result = await checker.check();
-
-      expect(result, isA<MfaCheckFailed>());
-      expect((result as MfaCheckFailed).didSignOut, isFalse);
-      verify(() => mockAuth.signOut()).called(1);
-    });
+        expect(result, isA<MfaCheckFailed>());
+        expect((result as MfaCheckFailed).didSignOut, isTrue);
+        verify(() => mockAuth.signOut()).called(1);
+      },
+    );
 
     test(
-        'signs out and returns MfaCheckFailed when needsVerification itself throws',
-        () async {
-      when(() => mockTwoFactor.needsVerification())
-          .thenThrow(Exception('Service down'));
-      when(() => mockAuth.signOut()).thenAnswer((_) async {});
+      'signs out and returns MfaCheckFailed when getFactors throws',
+      () async {
+        when(
+          () => mockTwoFactor.needsVerification(),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockTwoFactor.getFactors(),
+        ).thenThrow(Exception('MFA error'));
+        when(() => mockAuth.signOut()).thenAnswer((_) async {});
 
-      final result = await checker.check();
+        final result = await checker.check();
 
-      expect(result, isA<MfaCheckFailed>());
-      expect((result as MfaCheckFailed).didSignOut, isTrue);
-      verify(() => mockAuth.signOut()).called(1);
-    });
+        expect(result, isA<MfaCheckFailed>());
+        expect((result as MfaCheckFailed).didSignOut, isTrue);
+        verify(() => mockAuth.signOut()).called(1);
+      },
+    );
+
+    test(
+      'returns MfaCheckFailed with didSignOut=false when signOut also fails',
+      () async {
+        when(
+          () => mockTwoFactor.needsVerification(),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockTwoFactor.getFactors(),
+        ).thenThrow(Exception('MFA error'));
+        when(() => mockAuth.signOut()).thenThrow(Exception('SignOut failed'));
+
+        final result = await checker.check();
+
+        expect(result, isA<MfaCheckFailed>());
+        expect((result as MfaCheckFailed).didSignOut, isFalse);
+        verify(() => mockAuth.signOut()).called(1);
+      },
+    );
+
+    test(
+      'signs out and returns MfaCheckFailed when needsVerification itself throws',
+      () async {
+        when(
+          () => mockTwoFactor.needsVerification(),
+        ).thenThrow(Exception('Service down'));
+        when(() => mockAuth.signOut()).thenAnswer((_) async {});
+
+        final result = await checker.check();
+
+        expect(result, isA<MfaCheckFailed>());
+        expect((result as MfaCheckFailed).didSignOut, isTrue);
+        verify(() => mockAuth.signOut()).called(1);
+      },
+    );
   });
 }

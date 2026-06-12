@@ -78,8 +78,7 @@ class ClutchRepository extends BaseRepository<Clutch>
   Future<String?> validateForeignKeys(Clutch clutch) async {
     if (clutch.incubationId != null) {
       // Incubation hard-deletes — no isDeleted check needed.
-      final incubation =
-          await _incubationsDao.getById(clutch.incubationId!);
+      final incubation = await _incubationsDao.getById(clutch.incubationId!);
       if (incubation == null) {
         return 'Referenced incubation ${clutch.incubationId} not found locally';
       }

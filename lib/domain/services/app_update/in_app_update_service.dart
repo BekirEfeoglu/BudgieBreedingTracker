@@ -39,8 +39,7 @@ class PlayInAppUpdateClient implements InAppUpdateClient {
   Future<UpdateCheck> check() async {
     final info = await InAppUpdate.checkForUpdate();
     return UpdateCheck(
-      available:
-          info.updateAvailability == UpdateAvailability.updateAvailable,
+      available: info.updateAvailability == UpdateAvailability.updateAvailable,
       immediateAllowed: info.immediateUpdateAllowed,
       flexibleAllowed: info.flexibleUpdateAllowed,
       // updatePriority is a non-null int in in_app_update 4.x.

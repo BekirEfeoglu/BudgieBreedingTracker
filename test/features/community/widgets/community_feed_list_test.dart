@@ -162,7 +162,9 @@ void main() {
       expect(find.text('Question title'), findsNothing);
     });
 
-    testWidgets('scroll-to-top FAB is hidden initially (scale 0)', (tester) async {
+    testWidgets('scroll-to-top FAB is hidden initially (scale 0)', (
+      tester,
+    ) async {
       final posts = List.generate(
         3,
         (i) => CommunityPost(
@@ -349,7 +351,11 @@ void main() {
     testWidgets('guides tab shows empty state when no guides', (tester) async {
       await tester.pumpWidget(
         createSubject(
-          feedState: const FeedState(posts: [], isLoading: false, hasMore: false),
+          feedState: const FeedState(
+            posts: [],
+            isLoading: false,
+            hasMore: false,
+          ),
           tab: CommunityFeedTab.guides,
         ),
       );
@@ -388,7 +394,11 @@ void main() {
     testWidgets('loading state shows shimmer placeholder', (tester) async {
       await tester.pumpWidget(
         createSubject(
-          feedState: const FeedState(posts: [], isLoading: true, hasMore: false),
+          feedState: const FeedState(
+            posts: [],
+            isLoading: true,
+            hasMore: false,
+          ),
         ),
       );
       await tester.pump();

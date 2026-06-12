@@ -7,9 +7,7 @@ List<Widget> _buildGroupedSlivers(
   if (results.isEmpty) {
     return [
       SliverToBoxAdapter(
-        child: Center(
-          child: Text('genetics.no_results'.tr()),
-        ),
+        child: Center(child: Text('genetics.no_results'.tr())),
       ),
     ];
   }
@@ -89,10 +87,7 @@ class _ProbabilityGroupHeader extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.only(
-        top: AppSpacing.sm,
-        bottom: AppSpacing.xs,
-      ),
+      padding: const EdgeInsets.only(top: AppSpacing.sm, bottom: AppSpacing.xs),
       child: Row(
         children: [
           Container(
@@ -114,19 +109,13 @@ class _ProbabilityGroupHeader extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.sm),
           Text(
-            'genetics.probability_group_header'.tr(
-              args: [count.toString()],
-            ),
+            'genetics.probability_group_header'.tr(args: [count.toString()]),
             style: theme.textTheme.labelSmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Divider(
-              color: theme.colorScheme.outlineVariant,
-            ),
-          ),
+          Expanded(child: Divider(color: theme.colorScheme.outlineVariant)),
         ],
       ),
     );
@@ -139,10 +128,8 @@ List<OffspringResult> _applyFilter(
 ) {
   return switch (filter) {
     OffspringFilter.all => results,
-    OffspringFilter.carrierOnly =>
-      results.where((r) => r.isCarrier).toList(),
-    OffspringFilter.visualOnly =>
-      results.where((r) => !r.isCarrier).toList(),
+    OffspringFilter.carrierOnly => results.where((r) => r.isCarrier).toList(),
+    OffspringFilter.visualOnly => results.where((r) => !r.isCarrier).toList(),
   };
 }
 

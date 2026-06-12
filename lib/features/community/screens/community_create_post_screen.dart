@@ -147,8 +147,10 @@ class _CommunityCreatePostScreenState
       imageQuality: 85,
     );
     if (images.isEmpty || !mounted) return;
-    final filtered =
-        await ImagePickerGuard.filterWithinSizeLimit(context, images);
+    final filtered = await ImagePickerGuard.filterWithinSizeLimit(
+      context,
+      images,
+    );
     if (filtered.isEmpty || !mounted) return;
     setState(() => _selectedImages.addAll(filtered));
   }
@@ -224,9 +226,7 @@ class _CommunityCreatePostScreenState
       }
       if (state.error != null && mounted) {
         messenger.showSnackBar(
-          SnackBar(
-            content: Text(state.error ?? 'community.post_error'.tr()),
-          ),
+          SnackBar(content: Text(state.error ?? 'community.post_error'.tr())),
         );
       }
     });
@@ -236,7 +236,8 @@ class _CommunityCreatePostScreenState
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
         final navigator = Navigator.of(context);
-        final hasContent = _titleController.text.isNotEmpty ||
+        final hasContent =
+            _titleController.text.isNotEmpty ||
             _contentController.text.isNotEmpty ||
             _tags.isNotEmpty ||
             _selectedImages.isNotEmpty;

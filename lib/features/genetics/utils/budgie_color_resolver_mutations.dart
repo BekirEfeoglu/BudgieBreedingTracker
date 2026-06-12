@@ -100,11 +100,7 @@ extension _MutationModifiers on BudgieColorResolver {
 
     if (hasPallid) {
       body = _mix(body, mask, 0.30);
-      wingMarkings = _mix(
-        wingMarkings,
-        BudgiePhenotypePalette.wingGrey,
-        0.50,
-      );
+      wingMarkings = _mix(wingMarkings, BudgiePhenotypePalette.wingGrey, 0.50);
       cheekPatch = _mix(cheekPatch, mask, 0.28);
     }
 

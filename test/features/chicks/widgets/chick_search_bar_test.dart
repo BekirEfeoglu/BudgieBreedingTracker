@@ -13,16 +13,16 @@ void main() {
       await pumpLocalizedApp(
         tester,
         const ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(body: ChickSearchBar()),
-          ),
+          child: MaterialApp(home: Scaffold(body: ChickSearchBar())),
         ),
       );
 
       expect(find.byType(TextField), findsOneWidget);
     });
 
-    testWidgets('updates provider on text input after debounce', (tester) async {
+    testWidgets('updates provider on text input after debounce', (
+      tester,
+    ) async {
       late ProviderContainer container;
 
       await pumpLocalizedApp(
@@ -60,9 +60,7 @@ void main() {
               return notifier;
             }),
           ],
-          child: const MaterialApp(
-            home: Scaffold(body: ChickSearchBar()),
-          ),
+          child: const MaterialApp(home: Scaffold(body: ChickSearchBar())),
         ),
       );
 

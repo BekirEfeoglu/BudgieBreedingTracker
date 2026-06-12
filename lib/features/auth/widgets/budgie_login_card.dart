@@ -128,7 +128,10 @@ class BudgieLoginCard extends StatelessWidget {
               prefixIcon: const Icon(LucideIcons.mail),
               keyboardType: TextInputType.emailAddress,
               textInputAction: TextInputAction.next,
-              autofillHints: const [AutofillHints.email, AutofillHints.username],
+              autofillHints: const [
+                AutofillHints.email,
+                AutofillHints.username,
+              ],
               enabled: !_isLoading,
               validator: (v) {
                 if (v == null || v.trim().isEmpty) {

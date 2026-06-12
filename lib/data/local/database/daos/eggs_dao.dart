@@ -207,8 +207,7 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
         final month = row.read<String>('month');
         final status = row.read<String>('status');
         final count = row.read<int>('cnt');
-        final current =
-            result[month] ?? (fertile: 0, total: 0);
+        final current = result[month] ?? (fertile: 0, total: 0);
         // fertile + hatched both count as fertile; all three add to total.
         final isFertile = status == 'fertile' || status == 'hatched';
         result[month] = (

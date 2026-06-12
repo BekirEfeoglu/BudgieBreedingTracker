@@ -54,11 +54,7 @@ void main() {
       await pumpLocalizedApp(
         tester,
         buildSubject(
-          imagePaths: [
-            '/fake/path1.jpg',
-            '/fake/path2.jpg',
-            '/fake/path3.jpg',
-          ],
+          imagePaths: ['/fake/path1.jpg', '/fake/path2.jpg', '/fake/path3.jpg'],
         ),
       );
 
@@ -94,16 +90,13 @@ void main() {
       expect(find.text('marketplace.cover_photo'), findsNothing);
     });
 
-    testWidgets('shows cover badge only on first image with multiple images',
-        (tester) async {
+    testWidgets('shows cover badge only on first image with multiple images', (
+      tester,
+    ) async {
       await pumpLocalizedApp(
         tester,
         buildSubject(
-          imagePaths: [
-            '/fake/path1.jpg',
-            '/fake/path2.jpg',
-            '/fake/path3.jpg',
-          ],
+          imagePaths: ['/fake/path1.jpg', '/fake/path2.jpg', '/fake/path3.jpg'],
         ),
       );
 

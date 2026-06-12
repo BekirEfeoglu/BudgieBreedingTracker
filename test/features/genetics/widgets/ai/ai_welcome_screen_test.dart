@@ -7,10 +7,7 @@ import '../../../../helpers/pump_helpers.dart';
 void main() {
   group('AiWelcomeScreen', () {
     testWidgets('renders welcome screen with title and button', (tester) async {
-      await pumpWidgetSimple(
-        tester,
-        AiWelcomeScreen(onSetup: () {}),
-      );
+      await pumpWidgetSimple(tester, AiWelcomeScreen(onSetup: () {}));
       await tester.pumpAndSettle();
 
       expect(find.byType(AiWelcomeScreen), findsOneWidget);
@@ -30,10 +27,7 @@ void main() {
     });
 
     testWidgets('shows three feature pills', (tester) async {
-      await pumpWidgetSimple(
-        tester,
-        AiWelcomeScreen(onSetup: () {}),
-      );
+      await pumpWidgetSimple(tester, AiWelcomeScreen(onSetup: () {}));
       await tester.pumpAndSettle();
 
       // Three feature pills with their L10n labels
@@ -42,10 +36,7 @@ void main() {
     });
 
     testWidgets('shows DNA icon', (tester) async {
-      await pumpWidgetSimple(
-        tester,
-        AiWelcomeScreen(onSetup: () {}),
-      );
+      await pumpWidgetSimple(tester, AiWelcomeScreen(onSetup: () {}));
       await tester.pumpAndSettle();
 
       // AppIcon wrapping the DNA icon
@@ -64,10 +55,7 @@ void main() {
     });
 
     testWidgets('renders Wrap for feature pills', (tester) async {
-      await pumpWidgetSimple(
-        tester,
-        AiWelcomeScreen(onSetup: () {}),
-      );
+      await pumpWidgetSimple(tester, AiWelcomeScreen(onSetup: () {}));
       await tester.pumpAndSettle();
 
       // Feature pills are inside a Wrap widget

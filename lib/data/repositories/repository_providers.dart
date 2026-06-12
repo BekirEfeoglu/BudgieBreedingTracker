@@ -223,8 +223,10 @@ final feedbackServiceProvider = Provider<FeedbackRemoteService>((ref) {
   );
 });
 
-@Deprecated('Use feedbackServiceProvider — FeedbackRepository was renamed '
-    'to FeedbackRemoteService.')
+@Deprecated(
+  'Use feedbackServiceProvider — FeedbackRepository was renamed '
+  'to FeedbackRemoteService.',
+)
 final feedbackRepositoryProvider = feedbackServiceProvider;
 
 final marketplaceRepositoryProvider = Provider<MarketplaceRepository>((ref) {

@@ -90,7 +90,8 @@ void main() {
 
     group('unicode strings', () {
       test('emoji roundtrips correctly', () async {
-        const emoji = '\u{1F600}\u{1F4A9}\u{1F680}\u{2764}\u{FE0F}\u{1F1F9}\u{1F1F7}';
+        const emoji =
+            '\u{1F600}\u{1F4A9}\u{1F680}\u{2764}\u{FE0F}\u{1F1F9}\u{1F1F7}';
 
         final encrypted = await service.encrypt(emoji);
         final decrypted = await service.decrypt(encrypted);
@@ -108,7 +109,8 @@ void main() {
       });
 
       test('Arabic text roundtrips correctly', () async {
-        const arabic = '\u0645\u0631\u062D\u0628\u0627 \u0628\u0627\u0644\u0639\u0627\u0644\u0645';
+        const arabic =
+            '\u0645\u0631\u062D\u0628\u0627 \u0628\u0627\u0644\u0639\u0627\u0644\u0645';
 
         final encrypted = await service.encrypt(arabic);
         final decrypted = await service.decrypt(encrypted);
@@ -173,10 +175,7 @@ void main() {
         // Random bytes hit the legacy path (no magic prefix) and AES
         // decryption fails with either ArgumentError (bad padding) or
         // FormatException depending on the random data.
-        await expectLater(
-          service.decrypt(encoded),
-          throwsA(anything),
-        );
+        await expectLater(service.decrypt(encoded), throwsA(anything));
       });
 
       test('truncated ciphertext throws on decrypt', () async {
@@ -215,49 +214,53 @@ void main() {
     });
 
     group('HMAC tampering', () {
-      test('modified HMAC throws FormatException with integrity message',
-          () async {
-        final encrypted = await service.encrypt('integrity test');
-        final bytes = base64Decode(encrypted);
+      test(
+        'modified HMAC throws FormatException with integrity message',
+        () async {
+          final encrypted = await service.encrypt('integrity test');
+          final bytes = base64Decode(encrypted);
 
-        // Flip a bit in the last byte (HMAC region)
-        bytes[bytes.length - 1] ^= 0xFF;
-        final tampered = base64Encode(bytes);
+          // Flip a bit in the last byte (HMAC region)
+          bytes[bytes.length - 1] ^= 0xFF;
+          final tampered = base64Encode(bytes);
 
-        await expectLater(
-          service.decrypt(tampered),
-          throwsA(
-            isA<FormatException>().having(
-              (e) => e.message,
-              'message',
-              contains('integrity'),
+          await expectLater(
+            service.decrypt(tampered),
+            throwsA(
+              isA<FormatException>().having(
+                (e) => e.message,
+                'message',
+                contains('integrity'),
+              ),
             ),
-          ),
-        );
-      });
+          );
+        },
+      );
 
-      test('zeroed HMAC throws FormatException with integrity message',
-          () async {
-        final encrypted = await service.encrypt('zero mac test');
-        final bytes = base64Decode(encrypted);
+      test(
+        'zeroed HMAC throws FormatException with integrity message',
+        () async {
+          final encrypted = await service.encrypt('zero mac test');
+          final bytes = base64Decode(encrypted);
 
-        // Zero out the entire HMAC (last 32 bytes)
-        for (var i = bytes.length - 32; i < bytes.length; i++) {
-          bytes[i] = 0;
-        }
-        final tampered = base64Encode(bytes);
+          // Zero out the entire HMAC (last 32 bytes)
+          for (var i = bytes.length - 32; i < bytes.length; i++) {
+            bytes[i] = 0;
+          }
+          final tampered = base64Encode(bytes);
 
-        await expectLater(
-          service.decrypt(tampered),
-          throwsA(
-            isA<FormatException>().having(
-              (e) => e.message,
-              'message',
-              contains('integrity'),
+          await expectLater(
+            service.decrypt(tampered),
+            throwsA(
+              isA<FormatException>().having(
+                (e) => e.message,
+                'message',
+                contains('integrity'),
+              ),
             ),
-          ),
-        );
-      });
+          );
+        },
+      );
     });
 
     group('IV tampering', () {
@@ -340,27 +343,26 @@ void main() {
 
         final values = [current, legacy, ''];
         final auditResult = service.auditPayloads(values);
-        final reportResult = service.auditAndReport(
-          values,
-          source: 'test',
-        );
+        final reportResult = service.auditAndReport(values, source: 'test');
 
         expect(reportResult.current, auditResult.current);
         expect(reportResult.legacy, auditResult.legacy);
         expect(reportResult.invalid, auditResult.invalid);
       });
 
-      test('auditAndReport does not report when all payloads are current',
-          () async {
-        final c1 = await service.encrypt('data-1');
-        final c2 = await service.encrypt('data-2');
+      test(
+        'auditAndReport does not report when all payloads are current',
+        () async {
+          final c1 = await service.encrypt('data-1');
+          final c2 = await service.encrypt('data-2');
 
-        // Should not throw or report — all payloads are current format
-        final result = service.auditAndReport([c1, c2], source: 'test');
-        expect(result.current, 2);
-        expect(result.legacy, 0);
-        expect(result.invalid, 0);
-      });
+          // Should not throw or report — all payloads are current format
+          final result = service.auditAndReport([c1, c2], source: 'test');
+          expect(result.current, 2);
+          expect(result.legacy, 0);
+          expect(result.invalid, 0);
+        },
+      );
     });
 
     group('batchReEncrypt', () {
@@ -399,10 +401,7 @@ void main() {
         final c1 = await service.encrypt('data-1');
         final c2 = await service.encrypt('data-2');
 
-        final results = await service.batchReEncrypt({
-          'id-1': c1,
-          'id-2': c2,
-        });
+        final results = await service.batchReEncrypt({'id-1': c1, 'id-2': c2});
 
         expect(results, isEmpty);
       });
@@ -417,10 +416,7 @@ void main() {
             enc.AES(enc.Key(rawKey), mode: enc.AESMode.cbc),
           );
           final encrypted = encrypter.encrypt('data-$i', iv: iv);
-          idToCipher['id-$i'] = base64Encode([
-            ...iv.bytes,
-            ...encrypted.bytes,
-          ]);
+          idToCipher['id-$i'] = base64Encode([...iv.bytes, ...encrypted.bytes]);
         }
 
         final results = await service.batchReEncrypt(idToCipher);
@@ -446,9 +442,7 @@ void main() {
         final encrypted = encrypter.encrypt('wrong-key-data', iv: iv);
         final badLegacy = base64Encode([...iv.bytes, ...encrypted.bytes]);
 
-        final results = await service.batchReEncrypt({
-          'id-bad': badLegacy,
-        });
+        final results = await service.batchReEncrypt({'id-bad': badLegacy});
 
         // Should be empty — reEncrypt returns null for failed decryption
         expect(results, isEmpty);
@@ -496,26 +490,25 @@ void main() {
     });
 
     group('concurrent operations', () {
-      test('concurrent encrypt calls produce valid distinct ciphertexts',
-          () async {
-        const plainText = 'concurrent test';
+      test(
+        'concurrent encrypt calls produce valid distinct ciphertexts',
+        () async {
+          const plainText = 'concurrent test';
 
-        final futures = List.generate(
-          10,
-          (_) => service.encrypt(plainText),
-        );
-        final results = await Future.wait(futures);
+          final futures = List.generate(10, (_) => service.encrypt(plainText));
+          final results = await Future.wait(futures);
 
-        // All results should be valid and distinct (random IVs)
-        final uniqueResults = results.toSet();
-        expect(uniqueResults.length, results.length);
+          // All results should be valid and distinct (random IVs)
+          final uniqueResults = results.toSet();
+          expect(uniqueResults.length, results.length);
 
-        // All should decrypt to the same plaintext
-        for (final cipher in results) {
-          final decrypted = await service.decrypt(cipher);
-          expect(decrypted, plainText);
-        }
-      });
+          // All should decrypt to the same plaintext
+          for (final cipher in results) {
+            final decrypted = await service.decrypt(cipher);
+            expect(decrypted, plainText);
+          }
+        },
+      );
 
       test('concurrent encrypt and decrypt calls work correctly', () async {
         // First create some ciphertexts

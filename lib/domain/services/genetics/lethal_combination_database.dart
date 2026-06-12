@@ -231,4 +231,3 @@ abstract class LethalCombinationDatabase {
     return null;
   }
 }
-

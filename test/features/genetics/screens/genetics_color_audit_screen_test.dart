@@ -30,10 +30,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Primary board is visible on initial render
-      expect(
-        find.byType(GeneticsPrimaryColorAuditBoard),
-        findsOneWidget,
-      );
+      expect(find.byType(GeneticsPrimaryColorAuditBoard), findsOneWidget);
     });
 
     testWidgets('renders a ListView for scrollable content', (tester) async {
@@ -128,15 +125,22 @@ void main() {
         ...compoundAuditSamples,
       ];
       for (final sample in all) {
-        expect(sample.title.isNotEmpty, isTrue,
-            reason: 'Sample has empty title');
-        expect(sample.phenotype.isNotEmpty, isTrue,
-            reason: '${sample.title} has empty phenotype');
+        expect(
+          sample.title.isNotEmpty,
+          isTrue,
+          reason: 'Sample has empty title',
+        );
+        expect(
+          sample.phenotype.isNotEmpty,
+          isTrue,
+          reason: '${sample.title} has empty phenotype',
+        );
       }
     });
 
     test('total samples across all boards is 36', () {
-      final total = primaryAuditSamples.length +
+      final total =
+          primaryAuditSamples.length +
           advancedAuditSamples.length +
           compoundAuditSamples.length;
       expect(total, 36);

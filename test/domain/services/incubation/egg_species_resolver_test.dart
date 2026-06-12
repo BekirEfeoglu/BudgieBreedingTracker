@@ -42,7 +42,9 @@ void main() {
 
   /// Calls [resolveEggSpecies] inside a temporary provider so we get a [Ref].
   Future<Species> resolve(ProviderContainer container, Egg egg) async {
-    final provider = FutureProvider<Species>((ref) => resolveEggSpecies(ref, egg));
+    final provider = FutureProvider<Species>(
+      (ref) => resolveEggSpecies(ref, egg),
+    );
     return container.read(provider.future);
   }
 
@@ -59,14 +61,13 @@ void main() {
     required String id,
     required BirdGender gender,
     Species species = Species.budgie,
-  }) =>
-      Bird(
-        id: id,
-        userId: 'user-1',
-        name: 'Bird-$id',
-        gender: gender,
-        species: species,
-      );
+  }) => Bird(
+    id: id,
+    userId: 'user-1',
+    name: 'Bird-$id',
+    gender: gender,
+    species: species,
+  );
 
   group('resolveEggSpecies', () {
     test('returns incubation species when known', () async {
@@ -250,9 +251,9 @@ void main() {
     test('returns unknown when incubation not found', () async {
       final container = createContainer();
       addTearDown(container.dispose);
-      when(() => mockIncubationRepo.getById('inc-1')).thenAnswer(
-        (_) async => null,
-      );
+      when(
+        () => mockIncubationRepo.getById('inc-1'),
+      ).thenAnswer((_) async => null);
 
       final result = await resolve(container, makeEgg(incubationId: 'inc-1'));
 
@@ -262,9 +263,9 @@ void main() {
     test('returns unknown when clutch not found', () async {
       final container = createContainer();
       addTearDown(container.dispose);
-      when(() => mockClutchRepo.getById('clutch-1')).thenAnswer(
-        (_) async => null,
-      );
+      when(
+        () => mockClutchRepo.getById('clutch-1'),
+      ).thenAnswer((_) async => null);
 
       final result = await resolve(container, makeEgg(clutchId: 'clutch-1'));
 
@@ -282,10 +283,7 @@ void main() {
         ),
       );
       when(() => mockBreedingPairRepo.getById('pair-1')).thenAnswer(
-        (_) async => const BreedingPair(
-          id: 'pair-1',
-          userId: 'user-1',
-        ),
+        (_) async => const BreedingPair(id: 'pair-1', userId: 'user-1'),
       );
 
       final result = await resolve(container, makeEgg(incubationId: 'inc-1'));
@@ -310,9 +308,7 @@ void main() {
           maleId: 'male-1',
         ),
       );
-      when(() => mockBirdRepo.getById('male-1')).thenAnswer(
-        (_) async => null,
-      );
+      when(() => mockBirdRepo.getById('male-1')).thenAnswer((_) async => null);
 
       final result = await resolve(container, makeEgg(incubationId: 'inc-1'));
 

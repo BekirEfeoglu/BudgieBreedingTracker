@@ -48,8 +48,7 @@ abstract class MarketplaceListing with _$MarketplaceListing {
 }
 
 extension MarketplaceListingX on MarketplaceListing {
-  String? get primaryImageUrl =>
-      imageUrls.isNotEmpty ? imageUrls.first : null;
+  String? get primaryImageUrl => imageUrls.isNotEmpty ? imageUrls.first : null;
 
   bool get hasBirdLinked => birdId != null && birdId!.isNotEmpty;
 

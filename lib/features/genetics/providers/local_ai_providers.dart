@@ -181,8 +181,12 @@ class GeneticsAiAnalysisNotifier
     });
     if (requestId == _requestId) {
       state = nextState;
-      ref.read(geneticsAiPhaseProvider.notifier).set(
-            nextState.hasError ? AiAnalysisPhase.error : AiAnalysisPhase.complete,
+      ref
+          .read(geneticsAiPhaseProvider.notifier)
+          .set(
+            nextState.hasError
+                ? AiAnalysisPhase.error
+                : AiAnalysisPhase.complete,
           );
     }
   }
@@ -217,7 +221,9 @@ class SexAiAnalysisNotifier extends Notifier<AsyncValue<LocalAiSexInsight?>> {
     if (requestId != _requestId) return;
     ref.read(sexAiPhaseProvider.notifier).set(AiAnalysisPhase.analyzing);
     final nextState = await AsyncValue.guard(() {
-      return ref.read(localAiServiceProvider).analyzeSex(
+      return ref
+          .read(localAiServiceProvider)
+          .analyzeSex(
             config: config,
             observations: observations,
             imagePath: imagePath,
@@ -225,8 +231,12 @@ class SexAiAnalysisNotifier extends Notifier<AsyncValue<LocalAiSexInsight?>> {
     });
     if (requestId == _requestId) {
       state = nextState;
-      ref.read(sexAiPhaseProvider.notifier).set(
-            nextState.hasError ? AiAnalysisPhase.error : AiAnalysisPhase.complete,
+      ref
+          .read(sexAiPhaseProvider.notifier)
+          .set(
+            nextState.hasError
+                ? AiAnalysisPhase.error
+                : AiAnalysisPhase.complete,
           );
     }
   }
@@ -268,8 +278,12 @@ class MutationImageAiAnalysisNotifier
     });
     if (requestId == _requestId) {
       state = nextState;
-      ref.read(mutationAiPhaseProvider.notifier).set(
-            nextState.hasError ? AiAnalysisPhase.error : AiAnalysisPhase.complete,
+      ref
+          .read(mutationAiPhaseProvider.notifier)
+          .set(
+            nextState.hasError
+                ? AiAnalysisPhase.error
+                : AiAnalysisPhase.complete,
           );
     }
   }
@@ -290,16 +304,11 @@ class _AiPhaseNotifier extends Notifier<AiAnalysisPhase> {
 }
 
 final geneticsAiPhaseProvider =
-    NotifierProvider<_AiPhaseNotifier, AiAnalysisPhase>(
-      _AiPhaseNotifier.new,
-    );
+    NotifierProvider<_AiPhaseNotifier, AiAnalysisPhase>(_AiPhaseNotifier.new);
 
-final sexAiPhaseProvider =
-    NotifierProvider<_AiPhaseNotifier, AiAnalysisPhase>(
-      _AiPhaseNotifier.new,
-    );
+final sexAiPhaseProvider = NotifierProvider<_AiPhaseNotifier, AiAnalysisPhase>(
+  _AiPhaseNotifier.new,
+);
 
 final mutationAiPhaseProvider =
-    NotifierProvider<_AiPhaseNotifier, AiAnalysisPhase>(
-      _AiPhaseNotifier.new,
-    );
+    NotifierProvider<_AiPhaseNotifier, AiAnalysisPhase>(_AiPhaseNotifier.new);

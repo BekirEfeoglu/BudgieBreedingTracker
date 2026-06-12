@@ -13,12 +13,11 @@ import '../../../helpers/test_localization.dart';
 Widget _wrap(Widget child) {
   return ProviderScope(
     child: MaterialApp(
-      home: Scaffold(
-        body: SingleChildScrollView(child: child),
-      ),
+      home: Scaffold(body: SingleChildScrollView(child: child)),
     ),
   );
 }
+
 GeneticsHistory _makeEntry({
   String? notes,
   DateTime? createdAt,
@@ -32,12 +31,15 @@ GeneticsHistory _makeEntry({
     userId: 'test-user-id',
     fatherGenotype: fatherGenotype ?? const {'blue': 'visual'},
     motherGenotype: motherGenotype ?? const {'opaline': 'visual'},
-    resultsJson: resultsJson ??
+    resultsJson:
+        resultsJson ??
         '[{"phenotype":"Normal Green","probability":0.5,"sex":"both","isCarrier":false},'
             '{"phenotype":"Blue","probability":0.25,"sex":"both","isCarrier":false},'
             '{"phenotype":"Opaline","probability":0.25,"sex":"both","isCarrier":false}]',
     notes: notes,
-    createdAt: useNullDate ? null : (createdAt ?? DateTime(2025, 6, 15, 14, 30)),
+    createdAt: useNullDate
+        ? null
+        : (createdAt ?? DateTime(2025, 6, 15, 14, 30)),
     updatedAt: DateTime(2025, 6, 15, 14, 30),
   );
 }
@@ -45,7 +47,8 @@ GeneticsHistory _makeEntry({
 void main() {
   group('GeneticsHistoryCard', () {
     testWidgets('renders without crashing', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(),
@@ -60,7 +63,8 @@ void main() {
     });
 
     testWidgets('shows Card widget', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(),
@@ -75,7 +79,8 @@ void main() {
     });
 
     testWidgets('shows formatted date', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(createdAt: DateTime(2025, 3, 10, 9, 5)),
@@ -94,7 +99,8 @@ void main() {
     });
 
     testWidgets('shows clock icon in header', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(),
@@ -108,9 +114,11 @@ void main() {
       expect(find.byIcon(LucideIcons.clock), findsOneWidget);
     });
 
-    testWidgets('shows delete button when not in selection mode',
-        (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('shows delete button when not in selection mode', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(),
@@ -126,7 +134,8 @@ void main() {
     });
 
     testWidgets('shows checkbox in selection mode', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(),
@@ -141,7 +150,8 @@ void main() {
     });
 
     testWidgets('checkbox is checked when isSelected is true', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(),
@@ -157,7 +167,8 @@ void main() {
     });
 
     testWidgets('hides delete button in selection mode', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(),
@@ -172,7 +183,8 @@ void main() {
     });
 
     testWidgets('shows total_variations text', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(),
@@ -190,7 +202,8 @@ void main() {
     });
 
     testWidgets('shows result chips when results exist', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(),
@@ -205,7 +218,8 @@ void main() {
     });
 
     testWidgets('shows notes when present', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(notes: 'Test note for calculation'),
@@ -220,7 +234,8 @@ void main() {
     });
 
     testWidgets('does not show notes when null', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(notes: null),
@@ -235,9 +250,11 @@ void main() {
       expect(find.text('Test note for calculation'), findsNothing);
     });
 
-    testWidgets('shows parent mutation summary with icon chips',
-        (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('shows parent mutation summary with icon chips', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(),
@@ -253,7 +270,8 @@ void main() {
     });
 
     testWidgets('shows X cross icon between parents', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(),
@@ -268,7 +286,8 @@ void main() {
     });
 
     testWidgets('card has higher elevation when selected', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(),
@@ -284,7 +303,8 @@ void main() {
     });
 
     testWidgets('card has lower elevation when not selected', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(),
@@ -299,11 +319,13 @@ void main() {
       expect(card.elevation, equals(1));
     });
 
-    testWidgets('onLongPress callback is registered on InkWell',
-        (tester) async {
+    testWidgets('onLongPress callback is registered on InkWell', (
+      tester,
+    ) async {
       var longPressed = false;
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(),
@@ -319,11 +341,13 @@ void main() {
       expect(longPressed, isTrue);
     });
 
-    testWidgets('onSelect callback fires in selection mode when tapped',
-        (tester) async {
+    testWidgets('onSelect callback fires in selection mode when tapped', (
+      tester,
+    ) async {
       var selected = false;
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(),
@@ -339,9 +363,11 @@ void main() {
       expect(selected, isTrue);
     });
 
-    testWidgets('shows delete dialog when delete button tapped',
-        (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('shows delete dialog when delete button tapped', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(),
@@ -355,11 +381,15 @@ void main() {
       await tester.tap(find.byType(IconButton));
       await tester.pumpAndSettle();
       expect(find.text(l10n('common.confirm_delete')), findsOneWidget);
-      expect(find.text(l10n('genetics.delete_history_confirm')), findsOneWidget);
+      expect(
+        find.text(l10n('genetics.delete_history_confirm')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows date as dash when createdAt is null', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(useNullDate: true),
@@ -373,10 +403,11 @@ void main() {
       expect(find.text('-'), findsOneWidget);
     });
 
-    testWidgets(
-        'shows mutation_normal for parent with empty genotype',
-        (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('shows mutation_normal for parent with empty genotype', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           GeneticsHistoryCard(
             entry: _makeEntry(
@@ -391,10 +422,7 @@ void main() {
         ),
       );
       // Both father and mother should show "Normal" when no mutations
-      expect(
-        find.text(l10n('genetics.mutation_normal')),
-        findsNWidgets(2),
-      );
+      expect(find.text(l10n('genetics.mutation_normal')), findsNWidgets(2));
     });
   });
 }

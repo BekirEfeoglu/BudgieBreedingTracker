@@ -148,7 +148,9 @@ void main() {
         event: activeEvent,
         onEdit: () => editCalled = true,
       );
-      await tester.tap(find.widgetWithText(OutlinedButton, l10n('common.edit')));
+      await tester.tap(
+        find.widgetWithText(OutlinedButton, l10n('common.edit')),
+      );
       await tester.pumpAndSettle();
       expect(editCalled, isTrue);
     });

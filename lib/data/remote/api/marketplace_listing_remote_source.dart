@@ -336,11 +336,7 @@ class MarketplaceListingRemoteSource {
         // to specific rejection reasons (size, mime, safety-scan, …).
         // Everything else gets the error-mapping wrapper which
         // converts PostgrestException to typed AppException subtypes.
-        throw BaseRemoteSource.handleErrorForTag(
-          'marketplace_listings',
-          e,
-          st,
-        );
+        throw BaseRemoteSource.handleErrorForTag('marketplace_listings', e, st);
       }
     }
     return urls;

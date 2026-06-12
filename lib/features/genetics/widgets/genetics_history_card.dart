@@ -213,8 +213,7 @@ class GeneticsHistoryCard extends ConsumerWidget {
               (r.isCarrier
                   ? r.phenotype.replaceAll(' (carrier)', '')
                   : r.phenotype);
-          final localizedLabel =
-              PhenotypeLocalizer.localizePhenotype(rawLabel);
+          final localizedLabel = PhenotypeLocalizer.localizePhenotype(rawLabel);
           return Chip(
             label: Text(
               '$localizedLabel (${(r.probability * 100).toStringAsFixed(1)}%)',
@@ -225,9 +224,7 @@ class GeneticsHistoryCard extends ConsumerWidget {
             backgroundColor:
                 (r.visualMutations.isNotEmpty
                         ? phenotypeColorFromMutations(r.visualMutations)
-                        : phenotypeColor(
-                            r.compoundPhenotype ?? r.phenotype,
-                          ))
+                        : phenotypeColor(r.compoundPhenotype ?? r.phenotype))
                     .withValues(alpha: 0.15),
           );
         }).toList(),
@@ -302,4 +299,3 @@ class GeneticsHistoryCard extends ConsumerWidget {
         '${DateFormat.Hm(locale).format(local)}';
   }
 }
-

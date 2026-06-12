@@ -49,9 +49,7 @@ class _CommunityPostActionsState extends ConsumerState<CommunityPostActions> {
     if (shareText.isEmpty) {
       shareText.write('community.share_post'.tr());
     }
-    SharePlus.instance.share(
-      ShareParams(text: shareText.toString()),
-    );
+    SharePlus.instance.share(ShareParams(text: shareText.toString()));
   }
 
   void _onBookmark() {
@@ -78,8 +76,7 @@ class _CommunityPostActionsState extends ConsumerState<CommunityPostActions> {
           child: AnimatedToggleButton(
             isActive: post.isLikedByMe,
             activeIcon: AppIcon(AppIcons.like, size: 20, color: likedColor),
-            inactiveIcon:
-                AppIcon(AppIcons.like, size: 20, color: defaultColor),
+            inactiveIcon: AppIcon(AppIcons.like, size: 20, color: defaultColor),
             onToggle: _onLike,
             label: post.likeCount > 0 ? '${post.likeCount}' : null,
             labelStyle: theme.textTheme.labelSmall?.copyWith(
@@ -109,10 +106,12 @@ class _CommunityPostActionsState extends ConsumerState<CommunityPostActions> {
           onTap: _onBookmark,
           child: AnimatedToggleButton(
             isActive: post.isBookmarkedByMe,
-            activeIcon:
-                AppIcon(AppIcons.bookmark, size: 22, color: likedColor),
-            inactiveIcon:
-                AppIcon(AppIcons.bookmark, size: 22, color: defaultColor),
+            activeIcon: AppIcon(AppIcons.bookmark, size: 22, color: likedColor),
+            inactiveIcon: AppIcon(
+              AppIcons.bookmark,
+              size: 22,
+              color: defaultColor,
+            ),
             onToggle: _onBookmark,
           ),
         ),
@@ -146,7 +145,8 @@ class _PillActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final content = child ??
+    final content =
+        child ??
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [

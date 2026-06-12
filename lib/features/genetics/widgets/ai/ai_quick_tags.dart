@@ -26,15 +26,17 @@ class AiQuickTags extends StatelessWidget {
     return Wrap(
       spacing: AppSpacing.xs,
       runSpacing: AppSpacing.xs,
-      children: defaultTags.map((tag) {
-        final isSelected = selectedTags.contains(tag);
-        return FilterChip(
-          label: Text(tag.tr()),
-          selected: isSelected,
-          onSelected: (_) => onTagToggled(tag),
-          visualDensity: VisualDensity.compact,
-        );
-      }).toList(growable: false),
+      children: defaultTags
+          .map((tag) {
+            final isSelected = selectedTags.contains(tag);
+            return FilterChip(
+              label: Text(tag.tr()),
+              selected: isSelected,
+              onSelected: (_) => onTagToggled(tag),
+              visualDensity: VisualDensity.compact,
+            );
+          })
+          .toList(growable: false),
     );
   }
 }

@@ -15,6 +15,7 @@ void main() {
       home: Scaffold(body: ColorMutationChart(data: data)),
     );
   }
+
   group('ColorMutationChart', () {
     testWidgets('renders ChartEmpty when data map is empty', (tester) async {
       await pumpLocalizedApp(tester, buildSubject({}), settle: false);
@@ -24,7 +25,8 @@ void main() {
     });
 
     testWidgets('renders ChartEmpty when all counts are zero', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject({
           BirdColor.green: 0,
           BirdColor.blue: 0,
@@ -37,7 +39,11 @@ void main() {
     });
 
     testWidgets('renders BarChart with single color mutation', (tester) async {
-      await pumpLocalizedApp(tester, buildSubject({BirdColor.green: 5}), settle: false);
+      await pumpLocalizedApp(
+        tester,
+        buildSubject({BirdColor.green: 5}),
+        settle: false,
+      );
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.byType(BarChart), findsOneWidget);
       expect(find.byType(ChartEmpty), findsNothing);
@@ -46,7 +52,8 @@ void main() {
     testWidgets('renders BarChart with multiple color mutations', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject({
           BirdColor.green: 8,
           BirdColor.blue: 5,
@@ -63,7 +70,8 @@ void main() {
     testWidgets('renders BarChart filtering out zero-count mutations', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject({
           BirdColor.green: 4,
           BirdColor.blue: 0,
@@ -78,7 +86,8 @@ void main() {
     });
 
     testWidgets('renders RepaintBoundary around BarChart', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject({BirdColor.blue: 3, BirdColor.green: 7}),
         settle: false,
       );
@@ -87,7 +96,8 @@ void main() {
     });
 
     testWidgets('chart is wrapped in SizedBox with height 200', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject({BirdColor.green: 4, BirdColor.blue: 6}),
         settle: false,
       );
@@ -104,7 +114,8 @@ void main() {
     });
 
     testWidgets('shows bottom axis labels for color mutations', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject({
           BirdColor.green: 5,
           BirdColor.blue: 3,
@@ -120,7 +131,8 @@ void main() {
     });
 
     testWidgets('renders with all BirdColor values populated', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject({for (final c in BirdColor.values) c: 1}),
         settle: false,
       );
@@ -129,7 +141,8 @@ void main() {
     });
 
     testWidgets('renders with large count values', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject({
           BirdColor.green: 150,
           BirdColor.blue: 200,

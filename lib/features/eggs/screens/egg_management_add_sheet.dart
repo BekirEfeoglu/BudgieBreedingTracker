@@ -59,9 +59,7 @@ class _AddEggSheetBodyState extends ConsumerState<_AddEggSheetBody> {
 
   @override
   Widget build(BuildContext context) {
-    final isLoading = ref.watch(
-      eggActionsProvider.select((s) => s.isLoading),
-    );
+    final isLoading = ref.watch(eggActionsProvider.select((s) => s.isLoading));
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.fromLTRB(
@@ -129,7 +127,9 @@ class _AddEggSheetBodyState extends ConsumerState<_AddEggSheetBody> {
                   ? null
                   : () async {
                       final navigator = Navigator.of(context);
-                      await ref.read(eggActionsProvider.notifier).addEgg(
+                      await ref
+                          .read(eggActionsProvider.notifier)
+                          .addEgg(
                             incubationId: widget.incubationId,
                             layDate: _layDate,
                             eggNumber: widget.nextEggNumber,

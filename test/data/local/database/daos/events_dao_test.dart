@@ -228,9 +228,7 @@ void main() {
 
       // getById filters out soft-deleted rows; verify via raw SQL.
       final rows = await db
-          .customSelect(
-            "SELECT is_deleted FROM events WHERE id = 'evt-1'",
-          )
+          .customSelect("SELECT is_deleted FROM events WHERE id = 'evt-1'")
           .get();
       expect(rows, hasLength(1));
       expect(rows.first.read<int>('is_deleted'), equals(1));

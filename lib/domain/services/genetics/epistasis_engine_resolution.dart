@@ -27,9 +27,15 @@ CompoundPhenotypeResult _resolveCompoundPhenotypeDetailed(
   // 2. Yellowface detection
   final hasYf1 = visualMutations.contains(GeneticsConstants.mutYellowfaceType1);
   final hasYf2 = visualMutations.contains(GeneticsConstants.mutYellowfaceType2);
-  final hasGoldenface = visualMutations.contains(GeneticsConstants.mutGoldenface);
-  final hasBlueFactor1 = visualMutations.contains(GeneticsConstants.mutBlueFactor1);
-  final hasBlueFactor2 = visualMutations.contains(GeneticsConstants.mutBlueFactor2);
+  final hasGoldenface = visualMutations.contains(
+    GeneticsConstants.mutGoldenface,
+  );
+  final hasBlueFactor1 = visualMutations.contains(
+    GeneticsConstants.mutBlueFactor1,
+  );
+  final hasBlueFactor2 = visualMutations.contains(
+    GeneticsConstants.mutBlueFactor2,
+  );
   final hasYellowface =
       hasYf1 || hasYf2 || hasGoldenface || hasBlueFactor1 || hasBlueFactor2;
 
@@ -64,7 +70,9 @@ CompoundPhenotypeResult _resolveCompoundPhenotypeDetailed(
   }
 
   // 4. Dark factor dosage (single locus: SF=1 copy, DF=2 copies)
-  final hasDarkFactor = visualMutations.contains(GeneticsConstants.mutDarkFactor);
+  final hasDarkFactor = visualMutations.contains(
+    GeneticsConstants.mutDarkFactor,
+  );
   final darkFactorCount = !hasDarkFactor
       ? 0
       : doubleFactorIds.contains(GeneticsConstants.mutDarkFactor)

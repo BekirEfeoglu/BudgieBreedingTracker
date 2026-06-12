@@ -17,25 +17,28 @@ void main() {
   // 6. ALLELIC SERIES — Dilution Locus
   // =====================================================================
   group('Allelic series — Dilution locus', () {
-    test('greywing carrier x clearwing carrier → Full-Body Greywing possible', () {
-      final father = ParentGenotype(
-        gender: BirdGender.male,
-        mutations: {'greywing': AlleleState.carrier},
-      );
-      final mother = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {'clearwing': AlleleState.carrier},
-      );
+    test(
+      'greywing carrier x clearwing carrier → Full-Body Greywing possible',
+      () {
+        final father = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {'greywing': AlleleState.carrier},
+        );
+        final mother = ParentGenotype(
+          gender: BirdGender.female,
+          mutations: {'clearwing': AlleleState.carrier},
+        );
 
-      final results = calculator.calculateFromGenotypes(
-        father: father,
-        mother: mother,
-      );
+        final results = calculator.calculateFromGenotypes(
+          father: father,
+          mother: mother,
+        );
 
-      expectNormalizedProbabilities(results);
-      final fbg = findResult(results, 'Full-Body Greywing');
-      expect(fbg, isNotNull);
-    });
+        expectNormalizedProbabilities(results);
+        final fbg = findResult(results, 'Full-Body Greywing');
+        expect(fbg, isNotNull);
+      },
+    );
 
     test('greywing visual x dilute visual → all Greywing (dilute carried)', () {
       final father = ParentGenotype(
@@ -90,15 +93,9 @@ void main() {
     test('pallid/ino compound male → daughters get one allele each', () {
       final father = ParentGenotype(
         gender: BirdGender.male,
-        mutations: {
-          'pallid': AlleleState.visual,
-          'ino': AlleleState.visual,
-        },
+        mutations: {'pallid': AlleleState.visual, 'ino': AlleleState.visual},
       );
-      final mother = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {},
-      );
+      final mother = ParentGenotype(gender: BirdGender.female, mutations: {});
 
       final results = calculator.calculateFromGenotypes(
         father: father,
@@ -154,16 +151,20 @@ void main() {
       expect(result.maskedMutations, contains('Opaline'));
       expect(
         result.maskedMutations,
-        anyOf(contains('Dark Factor (Single)'), contains('Dark Factor (Double)')),
+        anyOf(
+          contains('Dark Factor (Single)'),
+          contains('Dark Factor (Double)'),
+        ),
       );
       expect(result.maskedMutations, contains('Violet'));
     });
 
     test('Visual Violet = Blue + 1DF + Violet', () {
-      final result = epistasis.resolveCompoundPhenotypeDetailed(
-        {'blue', 'dark_factor', 'violet'},
-        doubleFactorIds: {},
-      );
+      final result = epistasis.resolveCompoundPhenotypeDetailed({
+        'blue',
+        'dark_factor',
+        'violet',
+      }, doubleFactorIds: {});
       expect(result.name, contains('Visual Violet'));
     });
 
@@ -324,18 +325,12 @@ void main() {
   group('Epistasis interactions', () {
     test('Ino + Blue → Albino interaction detected', () {
       final interactions = epistasis.getInteractions({'ino', 'blue'});
-      expect(
-        interactions.any((i) => i.resultName == 'Albino'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Albino'), isTrue);
     });
 
     test('Ino + Green → Lutino interaction detected', () {
       final interactions = epistasis.getInteractions({'ino'});
-      expect(
-        interactions.any((i) => i.resultName == 'Lutino'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Lutino'), isTrue);
     });
 
     test('Violet + Blue + DF → Visual Violet interaction detected', () {
@@ -344,10 +339,7 @@ void main() {
         'blue',
         'dark_factor',
       });
-      expect(
-        interactions.any((i) => i.resultName == 'Visual Violet'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Visual Violet'), isTrue);
     });
 
     test('Greywing + Clearwing → Full-Body Greywing interaction', () {
@@ -391,10 +383,7 @@ void main() {
         gender: BirdGender.male,
         mutations: {'crested_tufted': AlleleState.carrier},
       );
-      final mother = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {},
-      );
+      final mother = ParentGenotype(gender: BirdGender.female, mutations: {});
 
       final results = calculator.calculateFromGenotypes(
         father: father,
@@ -405,13 +394,21 @@ void main() {
       final carrierCrested = results.where(
         (r) => r.isCarrier && r.carriedMutations.contains('crested_tufted'),
       );
-      expect(carrierCrested, isEmpty, reason: 'Crested is dominant — heterozygote is visual');
+      expect(
+        carrierCrested,
+        isEmpty,
+        reason: 'Crested is dominant — heterozygote is visual',
+      );
 
       // Should produce visual crested offspring
       final visualCrested = results.where(
         (r) => r.visualMutations.contains('crested_tufted'),
       );
-      expect(visualCrested, isNotEmpty, reason: 'Crested heterozygote should be expressed');
+      expect(
+        visualCrested,
+        isNotEmpty,
+        reason: 'Crested heterozygote should be expressed',
+      );
     });
 
     test('Recessive allelic series (dilute) still correctly carried', () {
@@ -419,10 +416,7 @@ void main() {
         gender: BirdGender.male,
         mutations: {'dilute': AlleleState.carrier},
       );
-      final mother = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {},
-      );
+      final mother = ParentGenotype(gender: BirdGender.female, mutations: {});
 
       final results = calculator.calculateFromGenotypes(
         father: father,
@@ -433,7 +427,11 @@ void main() {
       final carrierDilute = results.where(
         (r) => r.isCarrier && r.carriedMutations.contains('dilute'),
       );
-      expect(carrierDilute, isNotEmpty, reason: 'Dilute is recessive — heterozygote is carrier');
+      expect(
+        carrierDilute,
+        isNotEmpty,
+        reason: 'Dilute is recessive — heterozygote is carrier',
+      );
     });
   });
 }

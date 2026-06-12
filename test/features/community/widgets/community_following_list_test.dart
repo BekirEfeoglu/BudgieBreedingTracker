@@ -30,9 +30,7 @@ void main() {
           return Future.value(followedUsers ?? []);
         }),
       ],
-      child: const MaterialApp(
-        home: Scaffold(body: CommunityFollowingList()),
-      ),
+      child: const MaterialApp(home: Scaffold(body: CommunityFollowingList())),
     );
   }
 
@@ -40,9 +38,7 @@ void main() {
     testWidgets('shows skeleton while loading', (tester) async {
       final completer = Completer<List<Map<String, dynamic>>>();
 
-      await tester.pumpWidget(
-        createSubject(completer: completer),
-      );
+      await tester.pumpWidget(createSubject(completer: completer));
       await tester.pump();
 
       expect(find.byType(SkeletonLoader), findsWidgets);
@@ -53,9 +49,7 @@ void main() {
     });
 
     testWidgets('shows empty state when no followed users', (tester) async {
-      await tester.pumpWidget(
-        createSubject(followedUsers: []),
-      );
+      await tester.pumpWidget(createSubject(followedUsers: []));
       await tester.pumpAndSettle();
 
       expect(find.byType(EmptyState), findsOneWidget);
@@ -69,11 +63,7 @@ void main() {
       await tester.pumpWidget(
         createSubject(
           followedUsers: [
-            {
-              'id': 'u1',
-              'display_name': 'Alice',
-              'avatar_url': null,
-            },
+            {'id': 'u1', 'display_name': 'Alice', 'avatar_url': null},
             {
               'id': 'u2',
               'display_name': 'Bob',
@@ -92,20 +82,13 @@ void main() {
       await tester.pumpWidget(
         createSubject(
           followedUsers: [
-            {
-              'id': 'u1',
-              'display_name': 'Alice',
-              'avatar_url': null,
-            },
+            {'id': 'u1', 'display_name': 'Alice', 'avatar_url': null},
           ],
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(
-        find.text(l10n('community.following_label')),
-        findsOneWidget,
-      );
+      expect(find.text(l10n('community.following_label')), findsOneWidget);
     });
 
     testWidgets('shows DM button for non-anonymous users', (tester) async {
@@ -113,20 +96,13 @@ void main() {
         createSubject(
           currentUserId: 'me',
           followedUsers: [
-            {
-              'id': 'u1',
-              'display_name': 'Alice',
-              'avatar_url': null,
-            },
+            {'id': 'u1', 'display_name': 'Alice', 'avatar_url': null},
           ],
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(
-        find.byTooltip(l10n('messaging.direct_message')),
-        findsOneWidget,
-      );
+      expect(find.byTooltip(l10n('messaging.direct_message')), findsOneWidget);
     });
 
     testWidgets('hides DM button for anonymous users', (tester) async {
@@ -134,43 +110,27 @@ void main() {
         createSubject(
           currentUserId: 'anonymous',
           followedUsers: [
-            {
-              'id': 'u1',
-              'display_name': 'Alice',
-              'avatar_url': null,
-            },
+            {'id': 'u1', 'display_name': 'Alice', 'avatar_url': null},
           ],
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(
-        find.byTooltip(l10n('messaging.direct_message')),
-        findsNothing,
-      );
+      expect(find.byTooltip(l10n('messaging.direct_message')), findsNothing);
     });
 
     testWidgets('shows error message on failure', (tester) async {
-      await tester.pumpWidget(
-        createSubject(error: Exception('fail')),
-      );
+      await tester.pumpWidget(createSubject(error: Exception('fail')));
       await tester.pumpAndSettle();
 
-      expect(
-        find.text(l10n('community.following_load_error')),
-        findsOneWidget,
-      );
+      expect(find.text(l10n('community.following_load_error')), findsOneWidget);
     });
 
     testWidgets('shows initial letter when no avatar', (tester) async {
       await tester.pumpWidget(
         createSubject(
           followedUsers: [
-            {
-              'id': 'u1',
-              'display_name': 'Zeynep',
-              'avatar_url': null,
-            },
+            {'id': 'u1', 'display_name': 'Zeynep', 'avatar_url': null},
           ],
         ),
       );

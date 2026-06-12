@@ -25,9 +25,9 @@ void main() {
       // Mock the HapticFeedback platform channel so calls don't crash.
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(
-        SystemChannels.platform,
-        (message) async => null,
-      );
+            SystemChannels.platform,
+            (message) async => null,
+          );
     });
 
     tearDown(() {
@@ -90,9 +90,9 @@ void main() {
     setUp(() {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(
-        SystemChannels.platform,
-        (message) async => null,
-      );
+            SystemChannels.platform,
+            (message) async => null,
+          );
     });
 
     tearDown(() {

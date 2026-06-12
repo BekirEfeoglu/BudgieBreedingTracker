@@ -11,13 +11,26 @@ import '../providers/marketplace_providers.dart';
 import 'marketplace_filter_sheet.dart';
 import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 
-Widget _filterIcon(MarketplaceFilter filter, {double? size, Color? color}) => switch (filter) {
-  MarketplaceFilter.all => Icon(LucideIcons.list, size: size, color: color),
-  MarketplaceFilter.sale => Icon(LucideIcons.tag, size: size, color: color),
-  MarketplaceFilter.adoption => AppIcon(AppIcons.heart, size: size, color: color),
-  MarketplaceFilter.trade => Icon(LucideIcons.arrowLeftRight, size: size, color: color),
-  MarketplaceFilter.wanted => Icon(LucideIcons.search, size: size, color: color),
-};
+Widget _filterIcon(MarketplaceFilter filter, {double? size, Color? color}) =>
+    switch (filter) {
+      MarketplaceFilter.all => Icon(LucideIcons.list, size: size, color: color),
+      MarketplaceFilter.sale => Icon(LucideIcons.tag, size: size, color: color),
+      MarketplaceFilter.adoption => AppIcon(
+        AppIcons.heart,
+        size: size,
+        color: color,
+      ),
+      MarketplaceFilter.trade => Icon(
+        LucideIcons.arrowLeftRight,
+        size: size,
+        color: color,
+      ),
+      MarketplaceFilter.wanted => Icon(
+        LucideIcons.search,
+        size: size,
+        color: color,
+      ),
+    };
 
 class MarketplaceFilterBar extends ConsumerWidget {
   const MarketplaceFilterBar({super.key});

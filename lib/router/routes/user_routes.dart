@@ -54,10 +54,7 @@ List<RouteBase> buildUserRoutes() => [
         _ => 0,
       };
       final birdId = state.uri.queryParameters['birdId'];
-      return AiPredictionsScreen(
-        initialTab: initialTab,
-        initialBirdId: birdId,
-      );
+      return AiPredictionsScreen(initialTab: initialTab, initialBirdId: birdId);
     },
   ),
   GoRoute(
@@ -74,11 +71,9 @@ List<RouteBase> buildUserRoutes() => [
       // Prefer extra for in-app navigation, fall back to query param for deep links
       final extra = state.extra as List<String>?;
       final idsParam = state.uri.queryParameters['ids'];
-      final ids = extra ??
-          idsParam
-              ?.split(',')
-              .where((s) => isValidRouteId(s))
-              .toList();
+      final ids =
+          extra ??
+          idsParam?.split(',').where((s) => isValidRouteId(s)).toList();
       if (ids == null || ids.isEmpty) return const NotFoundScreen();
       return GeneticsCompareScreen(historyIds: ids);
     },
@@ -179,8 +174,7 @@ List<RouteBase> buildUserRoutes() => [
           final preselected = state.uri.queryParameters['birdId'];
           return HealthRecordFormScreen(
             editRecordId: validEditIdOrNull(state),
-            preselectedBirdId:
-                isValidRouteId(preselected) ? preselected : null,
+            preselectedBirdId: isValidRouteId(preselected) ? preselected : null,
           );
         },
       ),

@@ -88,8 +88,8 @@ class _OffspringPredictionState extends State<OffspringPrediction>
     final cardColor = _expanded
         ? theme.colorScheme.surfaceContainerHigh
         : result.isCarrier
-            ? AppColors.warning.withValues(alpha: isDark ? 0.12 : 0.05)
-            : null;
+        ? AppColors.warning.withValues(alpha: isDark ? 0.12 : 0.05)
+        : null;
 
     return RepaintBoundary(
       child: Semantics(
@@ -112,55 +112,60 @@ class _OffspringPredictionState extends State<OffspringPrediction>
                     );
                   }
                 : null,
-          child: AnimatedSize(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeInOut,
-            alignment: Alignment.topCenter,
-            child: Row(
-              children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: _expanded ? AppSpacing.xs : 3,
-                  decoration: BoxDecoration(
-                    color: _expanded
-                        ? borderColor
-                        : borderColor.withValues(alpha: 0.4),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(AppSpacing.radiusMd),
-                      bottomLeft: Radius.circular(AppSpacing.radiusMd),
+            child: AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              alignment: Alignment.topCenter,
+              child: Row(
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: _expanded ? AppSpacing.xs : 3,
+                    decoration: BoxDecoration(
+                      color: _expanded
+                          ? borderColor
+                          : borderColor.withValues(alpha: 0.4),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(AppSpacing.radiusMd),
+                        bottomLeft: Radius.circular(AppSpacing.radiusMd),
+                      ),
                     ),
                   ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                      vertical: AppSpacing.sm,
-                    ),
-                    child: Column(
-                      children: [
-                        _buildCollapsedRow(theme, result, displayName,
-                            percentage, localizedCarriedMutations),
-                        if (_expanded) ...[
-                          const SizedBox(height: AppSpacing.sm),
-                          const Divider(height: 1),
-                          const SizedBox(height: AppSpacing.sm),
-                          ExpandedDetails(
-                            result: result,
-                            localizedCarriedMutations:
-                                localizedCarriedMutations,
-                            localizedMaskedMutations:
-                                localizedMaskedMutations,
-                            showGenotype: widget.showGenotype,
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.sm,
+                      ),
+                      child: Column(
+                        children: [
+                          _buildCollapsedRow(
+                            theme,
+                            result,
+                            displayName,
+                            percentage,
+                            localizedCarriedMutations,
                           ),
+                          if (_expanded) ...[
+                            const SizedBox(height: AppSpacing.sm),
+                            const Divider(height: 1),
+                            const SizedBox(height: AppSpacing.sm),
+                            ExpandedDetails(
+                              result: result,
+                              localizedCarriedMutations:
+                                  localizedCarriedMutations,
+                              localizedMaskedMutations:
+                                  localizedMaskedMutations,
+                              showGenotype: widget.showGenotype,
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
           ),
         ),
       ),
@@ -183,8 +188,8 @@ class _OffspringPredictionState extends State<OffspringPrediction>
           height: _expanded
               ? _kBirdHeightExpanded
               : (widget.showGenotype
-                  ? _kBirdHeightGenotype
-                  : _kBirdHeightDefault),
+                    ? _kBirdHeightGenotype
+                    : _kBirdHeightDefault),
           isFemale: switch (result.sex) {
             OffspringSex.female => true,
             OffspringSex.male => false,
@@ -250,4 +255,3 @@ class _OffspringPredictionState extends State<OffspringPrediction>
     );
   }
 }
-

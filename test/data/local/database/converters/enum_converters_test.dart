@@ -113,10 +113,7 @@ void main() {
     });
 
     test('returns fallback for unknown value', () {
-      expect(
-        breedingStatusConverter.fromSql('paused'),
-        BreedingStatus.active,
-      );
+      expect(breedingStatusConverter.fromSql('paused'), BreedingStatus.active);
     });
   });
 
@@ -206,10 +203,7 @@ void main() {
     });
 
     test('returns fallback for unknown value', () {
-      expect(
-        notificationTypeConverter.fromSql('sms'),
-        NotificationType.custom,
-      );
+      expect(notificationTypeConverter.fromSql('sms'), NotificationType.custom);
     });
   });
 
@@ -274,10 +268,7 @@ void main() {
     });
 
     test('returns fallback for unknown value', () {
-      expect(
-        photoEntityTypeConverter.fromSql('cage'),
-        PhotoEntityType.bird,
-      );
+      expect(photoEntityTypeConverter.fromSql('cage'), PhotoEntityType.bird);
     });
   });
 
@@ -291,10 +282,7 @@ void main() {
     });
 
     test('returns fallback for unknown value', () {
-      expect(
-        reminderTypeConverter.fromSql('sms'),
-        ReminderType.notification,
-      );
+      expect(reminderTypeConverter.fromSql('sms'), ReminderType.notification);
     });
   });
 

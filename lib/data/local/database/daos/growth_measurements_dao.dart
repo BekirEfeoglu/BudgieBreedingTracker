@@ -74,13 +74,11 @@ class GrowthMeasurementsDao extends DatabaseAccessor<AppDatabase>
   /// Returns every measurement linked to any of the given chick ids.
   /// Used by the chick-deletion flow to cascade-clean orphan
   /// measurement rows so they don't pile up as permanent sync errors.
-  Future<List<GrowthMeasurement>> getByChickIds(
-    List<String> chickIds,
-  ) async {
+  Future<List<GrowthMeasurement>> getByChickIds(List<String> chickIds) async {
     if (chickIds.isEmpty) return const <GrowthMeasurement>[];
-    final rows = await (select(growthMeasurementsTable)
-          ..where((t) => t.chickId.isIn(chickIds)))
-        .get();
+    final rows = await (select(
+      growthMeasurementsTable,
+    )..where((t) => t.chickId.isIn(chickIds))).get();
     return rows.map((r) => r.toModel()).toList();
   }
 

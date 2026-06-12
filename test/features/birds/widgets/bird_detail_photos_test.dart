@@ -18,7 +18,8 @@ Future<void> _pump(
   List<dynamic> overrides = const [],
   bool settle = true,
 }) async {
-  await pumpLocalizedApp(tester,
+  await pumpLocalizedApp(
+    tester,
     ProviderScope(
       overrides: List.from(overrides),
       child: MaterialApp(

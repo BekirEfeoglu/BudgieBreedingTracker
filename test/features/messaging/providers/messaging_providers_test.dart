@@ -61,15 +61,18 @@ void main() {
         _makeConversation('c2', name: 'Chat 2'),
       ];
 
-      when(() => mockRepo.getConversations('user-1'))
-          .thenAnswer((_) async => conversations);
+      when(
+        () => mockRepo.getConversations('user-1'),
+      ).thenAnswer((_) async => conversations);
 
-      final container = ProviderContainer(overrides: [
-        messagingRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [messagingRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
-      final result = await container.read(conversationsProvider('user-1').future);
+      final result = await container.read(
+        conversationsProvider('user-1').future,
+      );
 
       expect(result.length, 2);
       expect(result.first.id, 'c1');
@@ -78,26 +81,30 @@ void main() {
     });
 
     test('returns empty list when no conversations', () async {
-      when(() => mockRepo.getConversations('user-1'))
-          .thenAnswer((_) async => []);
+      when(
+        () => mockRepo.getConversations('user-1'),
+      ).thenAnswer((_) async => []);
 
-      final container = ProviderContainer(overrides: [
-        messagingRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [messagingRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
-      final result = await container.read(conversationsProvider('user-1').future);
+      final result = await container.read(
+        conversationsProvider('user-1').future,
+      );
 
       expect(result, isEmpty);
     });
 
     test('exposes error when repository fails', () async {
-      when(() => mockRepo.getConversations('user-1'))
-          .thenAnswer((_) async => throw Exception('Network error'));
+      when(
+        () => mockRepo.getConversations('user-1'),
+      ).thenAnswer((_) async => throw Exception('Network error'));
 
-      final container = ProviderContainer(overrides: [
-        messagingRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [messagingRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
       final sub = container.listen(
@@ -120,16 +127,18 @@ void main() {
     test('returns conversation when found', () async {
       final conversation = _makeConversation('c1', name: 'Test Chat');
 
-      when(() => mockRepo.getConversationById('c1'))
-          .thenAnswer((_) async => conversation);
+      when(
+        () => mockRepo.getConversationById('c1'),
+      ).thenAnswer((_) async => conversation);
 
-      final container = ProviderContainer(overrides: [
-        messagingRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [messagingRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
-      final result =
-          await container.read(conversationByIdProvider('c1').future);
+      final result = await container.read(
+        conversationByIdProvider('c1').future,
+      );
 
       expect(result, isNotNull);
       expect(result!.id, 'c1');
@@ -137,27 +146,30 @@ void main() {
     });
 
     test('returns null when conversation not found', () async {
-      when(() => mockRepo.getConversationById('nonexistent'))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockRepo.getConversationById('nonexistent'),
+      ).thenAnswer((_) async => null);
 
-      final container = ProviderContainer(overrides: [
-        messagingRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [messagingRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
-      final result =
-          await container.read(conversationByIdProvider('nonexistent').future);
+      final result = await container.read(
+        conversationByIdProvider('nonexistent').future,
+      );
 
       expect(result, isNull);
     });
 
     test('exposes error when repository fails', () async {
-      when(() => mockRepo.getConversationById('c1'))
-          .thenAnswer((_) async => throw Exception('fetch failed'));
+      when(
+        () => mockRepo.getConversationById('c1'),
+      ).thenAnswer((_) async => throw Exception('fetch failed'));
 
-      final container = ProviderContainer(overrides: [
-        messagingRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [messagingRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
       final sub = container.listen(
@@ -183,16 +195,16 @@ void main() {
         _makeMessage('m3'),
       ];
 
-      when(() => mockRepo.getMessages('conv-1'))
-          .thenAnswer((_) async => messages);
+      when(
+        () => mockRepo.getMessages('conv-1'),
+      ).thenAnswer((_) async => messages);
 
-      final container = ProviderContainer(overrides: [
-        messagingRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [messagingRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
-      final result =
-          await container.read(messagesProvider('conv-1').future);
+      final result = await container.read(messagesProvider('conv-1').future);
 
       expect(result.length, 3);
       expect(result.first.id, 'm1');
@@ -200,27 +212,26 @@ void main() {
     });
 
     test('returns empty list when no messages', () async {
-      when(() => mockRepo.getMessages('conv-1'))
-          .thenAnswer((_) async => []);
+      when(() => mockRepo.getMessages('conv-1')).thenAnswer((_) async => []);
 
-      final container = ProviderContainer(overrides: [
-        messagingRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [messagingRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
-      final result =
-          await container.read(messagesProvider('conv-1').future);
+      final result = await container.read(messagesProvider('conv-1').future);
 
       expect(result, isEmpty);
     });
 
     test('exposes error when repository fails', () async {
-      when(() => mockRepo.getMessages('conv-1'))
-          .thenAnswer((_) async => throw Exception('fetch failed'));
+      when(
+        () => mockRepo.getMessages('conv-1'),
+      ).thenAnswer((_) async => throw Exception('fetch failed'));
 
-      final container = ProviderContainer(overrides: [
-        messagingRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [messagingRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
       final sub = container.listen(
@@ -399,9 +410,7 @@ void main() {
     });
 
     test('no match when both name and lastMessageContent are null', () {
-      final conversationsWithNull = [
-        _makeConversation('c1'),
-      ];
+      final conversationsWithNull = [_makeConversation('c1')];
 
       final container = ProviderContainer();
       addTearDown(container.dispose);
@@ -457,9 +466,7 @@ void main() {
     });
 
     test('handles single conversation', () {
-      final conversations = [
-        _makeConversation('c1', unreadCount: 7),
-      ];
+      final conversations = [_makeConversation('c1', unreadCount: 7)];
 
       final container = ProviderContainer();
       addTearDown(container.dispose);

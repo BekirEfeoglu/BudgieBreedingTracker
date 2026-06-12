@@ -69,15 +69,14 @@ void main() {
             (listingsAsync as AsyncData<List<MarketplaceListing>>).value,
           ).overrideWithValue(filteredListings),
       ],
-      child: const MaterialApp(
-        home: Scaffold(body: MarketplaceTabContent()),
-      ),
+      child: const MaterialApp(home: Scaffold(body: MarketplaceTabContent())),
     );
   }
 
   group('MarketplaceTabContent', () {
-    testWidgets('loading state shows CircularProgressIndicator',
-        (tester) async {
+    testWidgets('loading state shows CircularProgressIndicator', (
+      tester,
+    ) async {
       final completer = Completer<List<MarketplaceListing>>();
 
       await pumpLocalizedApp(
@@ -86,9 +85,9 @@ void main() {
           overrides: [
             currentUserIdProvider.overrideWithValue(_testUserId),
             marketplaceRepositoryProvider.overrideWithValue(mockRepo),
-            marketplaceListingsProvider(_testUserId).overrideWith(
-              (_) => completer.future,
-            ),
+            marketplaceListingsProvider(
+              _testUserId,
+            ).overrideWith((_) => completer.future),
           ],
           child: const MaterialApp(
             home: Scaffold(body: MarketplaceTabContent()),
@@ -106,16 +105,19 @@ void main() {
       await pumpLocalizedApp(
         tester,
         buildSubject(
-          listingsAsync:
-              AsyncError(Exception('Network error'), StackTrace.empty),
+          listingsAsync: AsyncError(
+            Exception('Network error'),
+            StackTrace.empty,
+          ),
         ),
       );
 
       expect(find.byType(app.ErrorState), findsOneWidget);
     });
 
-    testWidgets('empty data shows EmptyState with action button',
-        (tester) async {
+    testWidgets('empty data shows EmptyState with action button', (
+      tester,
+    ) async {
       await pumpLocalizedApp(
         tester,
         buildSubject(listingsAsync: const AsyncData([])),
@@ -126,8 +128,9 @@ void main() {
       expect(find.text('marketplace.add_listing'), findsOneWidget);
     });
 
-    testWidgets('no search results shows EmptyState without action',
-        (tester) async {
+    testWidgets('no search results shows EmptyState without action', (
+      tester,
+    ) async {
       await pumpLocalizedApp(
         tester,
         buildSubject(

@@ -127,7 +127,10 @@ void main() {
       await tester.pump();
 
       // severity.labelKey.tr() returns key string in test environment
-      expect(find.text(l10n('genetics.lethal_severity_lethal')), findsOneWidget);
+      expect(
+        find.text(l10n('genetics.lethal_severity_lethal')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows severity labelKey for semiLethal severity', (
@@ -142,7 +145,10 @@ void main() {
       await tester.pumpWidget(_wrap(LethalWarning(analysis: analysis)));
       await tester.pump();
 
-      expect(find.text(l10n('genetics.lethal_severity_semi_lethal')), findsOneWidget);
+      expect(
+        find.text(l10n('genetics.lethal_severity_semi_lethal')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('renders without crashing for subVital severity', (
@@ -171,7 +177,10 @@ void main() {
       await tester.pump();
 
       // combo.nameKey.tr() returns the key in test environment
-      expect(find.text(l10n('genetics.lethal_df_crested_name')), findsOneWidget);
+      expect(
+        find.text(l10n('genetics.lethal_df_crested_name')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows affected ratio text', (tester) async {

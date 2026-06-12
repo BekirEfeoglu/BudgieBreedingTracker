@@ -12,7 +12,9 @@ import 'package:budgie_breeding_tracker/features/notifications/screens/notificat
 
 /// Fake notifier that returns configurable settings without accessing DAO.
 class _FakeToggleNotifier extends NotificationToggleSettingsNotifier {
-  _FakeToggleNotifier([NotificationToggleSettings initial = const NotificationToggleSettings()]) : _initial = initial;
+  _FakeToggleNotifier([
+    NotificationToggleSettings initial = const NotificationToggleSettings(),
+  ]) : _initial = initial;
   final NotificationToggleSettings _initial;
 
   @override
@@ -82,9 +84,7 @@ void main() {
       expect(find.text(l10n('notifications.dnd_end')), findsOneWidget);
     });
 
-    testWidgets('displays default DnD hours (23:00 and 07:00)', (
-      tester,
-    ) async {
+    testWidgets('displays default DnD hours (23:00 and 07:00)', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
       await scrollToDndSection(tester);

@@ -242,7 +242,10 @@ void main() {
 
       expect(find.byType(BottomSheet), findsOneWidget);
       expect(find.text(l10n('community.report_reason_spam')), findsOneWidget);
-      expect(find.text(l10n('community.report_reason_harassment')), findsOneWidget);
+      expect(
+        find.text(l10n('community.report_reason_harassment')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('report submits and shows snackbar on success', (tester) async {

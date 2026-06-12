@@ -59,9 +59,7 @@ List<dynamic> _parentSelectorOverrides({
     birdParentCandidatesProvider.overrideWith(
       (ref, args) => Stream.value(filtered),
     ),
-    birdByIdProvider.overrideWith(
-      (ref, id) => Stream.value(byId[id]),
-    ),
+    birdByIdProvider.overrideWith((ref, id) => Stream.value(byId[id])),
   ];
 }
 

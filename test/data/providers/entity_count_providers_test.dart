@@ -48,8 +48,9 @@ void main() {
 
   group('count providers forward to DAO watchers', () {
     test('birdCountProvider -> birdsDao.watchCount', () async {
-      when(() => birdsDao.watchCount(userId))
-          .thenAnswer((_) => Stream.value(7));
+      when(
+        () => birdsDao.watchCount(userId),
+      ).thenAnswer((_) => Stream.value(7));
 
       final container = makeContainer();
       container.listen(birdCountProvider(userId), (_, __) {});
@@ -58,8 +59,9 @@ void main() {
     });
 
     test('eggCountProvider -> eggsDao.watchCount', () async {
-      when(() => eggsDao.watchCount(userId))
-          .thenAnswer((_) => Stream.value(12));
+      when(
+        () => eggsDao.watchCount(userId),
+      ).thenAnswer((_) => Stream.value(12));
 
       final container = makeContainer();
       container.listen(eggCountProvider(userId), (_, __) {});
@@ -67,8 +69,9 @@ void main() {
     });
 
     test('chickCountProvider -> chicksDao.watchCount', () async {
-      when(() => chicksDao.watchCount(userId))
-          .thenAnswer((_) => Stream.value(3));
+      when(
+        () => chicksDao.watchCount(userId),
+      ).thenAnswer((_) => Stream.value(3));
 
       final container = makeContainer();
       container.listen(chickCountProvider(userId), (_, __) {});
@@ -76,8 +79,9 @@ void main() {
     });
 
     test('activeBreedingCountProvider -> watchActiveCount', () async {
-      when(() => breedingPairsDao.watchActiveCount(userId))
-          .thenAnswer((_) => Stream.value(2));
+      when(
+        () => breedingPairsDao.watchActiveCount(userId),
+      ).thenAnswer((_) => Stream.value(2));
 
       final container = makeContainer();
       container.listen(activeBreedingCountProvider(userId), (_, __) {});
@@ -88,8 +92,9 @@ void main() {
     });
 
     test('incubatingEggCountProvider -> watchIncubatingCount', () async {
-      when(() => eggsDao.watchIncubatingCount(userId))
-          .thenAnswer((_) => Stream.value(4));
+      when(
+        () => eggsDao.watchIncubatingCount(userId),
+      ).thenAnswer((_) => Stream.value(4));
 
       final container = makeContainer();
       container.listen(incubatingEggCountProvider(userId), (_, __) {});
@@ -100,8 +105,9 @@ void main() {
     });
 
     test('unweanedChicksCountProvider -> watchUnweanedCount', () async {
-      when(() => chicksDao.watchUnweanedCount(userId))
-          .thenAnswer((_) => Stream.value(5));
+      when(
+        () => chicksDao.watchUnweanedCount(userId),
+      ).thenAnswer((_) => Stream.value(5));
 
       final container = makeContainer();
       container.listen(unweanedChicksCountProvider(userId), (_, __) {});
@@ -115,10 +121,12 @@ void main() {
     });
 
     test('family distinguishes different users', () async {
-      when(() => birdsDao.watchCount('user-a'))
-          .thenAnswer((_) => Stream.value(1));
-      when(() => birdsDao.watchCount('user-b'))
-          .thenAnswer((_) => Stream.value(9));
+      when(
+        () => birdsDao.watchCount('user-a'),
+      ).thenAnswer((_) => Stream.value(1));
+      when(
+        () => birdsDao.watchCount('user-b'),
+      ).thenAnswer((_) => Stream.value(9));
 
       final container = makeContainer();
       container.listen(birdCountProvider('user-a'), (_, __) {});
@@ -135,10 +143,12 @@ void main() {
           birdCountProvider(userId).overrideWith((_) => Stream.value(10)),
           eggCountProvider(userId).overrideWith((_) => Stream.value(5)),
           chickCountProvider(userId).overrideWith((_) => Stream.value(3)),
-          activeBreedingCountProvider(userId)
-              .overrideWith((_) => Stream.value(2)),
-          incubatingEggCountProvider(userId)
-              .overrideWith((_) => Stream.value(4)),
+          activeBreedingCountProvider(
+            userId,
+          ).overrideWith((_) => Stream.value(2)),
+          incubatingEggCountProvider(
+            userId,
+          ).overrideWith((_) => Stream.value(4)),
         ],
       );
       addTearDown(container.dispose);
@@ -174,10 +184,12 @@ void main() {
           birdCountProvider(userId).overrideWith((_) => const Stream.empty()),
           eggCountProvider(userId).overrideWith((_) => Stream.value(5)),
           chickCountProvider(userId).overrideWith((_) => Stream.value(3)),
-          activeBreedingCountProvider(userId)
-              .overrideWith((_) => Stream.value(2)),
-          incubatingEggCountProvider(userId)
-              .overrideWith((_) => Stream.value(4)),
+          activeBreedingCountProvider(
+            userId,
+          ).overrideWith((_) => Stream.value(2)),
+          incubatingEggCountProvider(
+            userId,
+          ).overrideWith((_) => Stream.value(4)),
         ],
       );
       addTearDown(container.dispose);
@@ -189,14 +201,17 @@ void main() {
     test('falls back to 0 for an errored count', () async {
       final container = ProviderContainer(
         overrides: [
-          birdCountProvider(userId)
-              .overrideWith((_) => Stream<int>.error(StateError('boom'))),
+          birdCountProvider(
+            userId,
+          ).overrideWith((_) => Stream<int>.error(StateError('boom'))),
           eggCountProvider(userId).overrideWith((_) => Stream.value(2)),
           chickCountProvider(userId).overrideWith((_) => Stream.value(1)),
-          activeBreedingCountProvider(userId)
-              .overrideWith((_) => Stream.value(0)),
-          incubatingEggCountProvider(userId)
-              .overrideWith((_) => Stream.value(0)),
+          activeBreedingCountProvider(
+            userId,
+          ).overrideWith((_) => Stream.value(0)),
+          incubatingEggCountProvider(
+            userId,
+          ).overrideWith((_) => Stream.value(0)),
         ],
       );
       addTearDown(container.dispose);

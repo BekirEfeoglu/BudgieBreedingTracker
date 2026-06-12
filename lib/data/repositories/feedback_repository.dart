@@ -60,7 +60,9 @@ class FeedbackRemoteService {
 
 /// Deprecated alias kept so older imports of `FeedbackRepository` keep
 /// compiling. New code should depend on [FeedbackRemoteService] directly.
-@Deprecated('Use FeedbackRemoteService — this class is single-user online '
-    '(architecture.md § Online-First Exemption) so the *Repository name '
-    'is incorrect.')
+@Deprecated(
+  'Use FeedbackRemoteService — this class is single-user online '
+  '(architecture.md § Online-First Exemption) so the *Repository name '
+  'is incorrect.',
+)
 typedef FeedbackRepository = FeedbackRemoteService;

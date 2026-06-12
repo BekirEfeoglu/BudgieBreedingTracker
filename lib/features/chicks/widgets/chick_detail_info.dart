@@ -203,9 +203,9 @@ class ChickDetailInfo extends ConsumerWidget {
         // text leaked to the user.
         error: (e, _) {
           final messageKey = e is AppException ? e.message : 'errors.unknown';
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(messageKey.tr())),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(messageKey.tr())));
         },
         loading: () {},
       );

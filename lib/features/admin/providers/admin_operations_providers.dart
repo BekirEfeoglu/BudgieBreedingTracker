@@ -46,15 +46,14 @@ final adminSystemHealthOverviewProvider =
       // 6 underlying providers are independent — fetch in parallel so the
       // dashboard's worst-case latency is one RTT rather than six. Each
       // `ref.watch(...)` still registers a dependency normally.
-      final (health, sync, feedbackCount, security, alerts, storage) =
-          await (
-            ref.watch(systemHealthProvider.future),
-            ref.watch(syncStatusSummaryProvider.future),
-            ref.watch(adminOpenFeedbackCountProvider.future),
-            ref.watch(recentErrorsSummaryProvider.future),
-            ref.watch(adminSystemAlertsProvider.future),
-            ref.watch(storageUsageProvider.future),
-          ).wait;
+      final (health, sync, feedbackCount, security, alerts, storage) = await (
+        ref.watch(systemHealthProvider.future),
+        ref.watch(syncStatusSummaryProvider.future),
+        ref.watch(adminOpenFeedbackCountProvider.future),
+        ref.watch(recentErrorsSummaryProvider.future),
+        ref.watch(adminSystemAlertsProvider.future),
+        ref.watch(storageUsageProvider.future),
+      ).wait;
 
       final checks = health['checks'] as Map<String, dynamic>?;
       final degradedServices = <String>[];

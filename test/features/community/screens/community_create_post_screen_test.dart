@@ -185,8 +185,9 @@ void main() {
       expect(prefs.getString('community_post_draft'), isNull);
     });
 
-    testWidgets('does not show restore dialog when no draft exists',
-        (tester) async {
+    testWidgets('does not show restore dialog when no draft exists', (
+      tester,
+    ) async {
       SharedPreferences.setMockInitialValues({});
 
       await tester.pumpWidget(buildScope(const CommunityCreatePostScreen()));
@@ -226,7 +227,9 @@ void main() {
       expect(find.text(l10n('community.create_post')), findsOneWidget);
 
       // Simulate back — no content, so should just pop
-      final NavigatorState navigator = tester.state(find.byType(Navigator).first);
+      final NavigatorState navigator = tester.state(
+        find.byType(Navigator).first,
+      );
       navigator.pop();
       await tester.pumpAndSettle();
 
@@ -234,8 +237,9 @@ void main() {
       expect(find.byType(_HomeStub), findsOneWidget);
     });
 
-    testWidgets('shows unsaved changes dialog when content exists',
-        (tester) async {
+    testWidgets('shows unsaved changes dialog when content exists', (
+      tester,
+    ) async {
       final navigatorKey = GlobalKey<NavigatorState>();
       final router = GoRouter(
         navigatorKey: navigatorKey,
@@ -268,8 +272,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // Simulate back button via maybePop (triggers PopScope)
-      final NavigatorState navigator =
-          tester.state(find.byType(Navigator).first);
+      final NavigatorState navigator = tester.state(
+        find.byType(Navigator).first,
+      );
       navigator.maybePop();
       await tester.pumpAndSettle();
 

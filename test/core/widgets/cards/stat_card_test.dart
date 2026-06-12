@@ -9,7 +9,9 @@ void main() {
     testWidgets('renders label and value', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(body: StatCard(label: 'Birds', value: '42')),
+          home: Scaffold(
+            body: StatCard(label: 'Birds', value: '42'),
+          ),
         ),
       );
 
@@ -23,11 +25,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: StatCard(
-              label: 'Birds',
-              value: '10',
-              icon: Icon(Icons.pets),
-            ),
+            body: StatCard(label: 'Birds', value: '10', icon: Icon(Icons.pets)),
           ),
         ),
       );
@@ -88,8 +86,9 @@ void main() {
       expect(find.byType(Column), findsWidgets);
     });
 
-    testWidgets('renders horizontal layout when isHorizontal is true',
-        (tester) async {
+    testWidgets('renders horizontal layout when isHorizontal is true', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -207,11 +206,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: StatCard(
-              label: 'Birds',
-              value: '10',
-              color: Colors.green,
-            ),
+            body: StatCard(label: 'Birds', value: '10', color: Colors.green),
           ),
         ),
       );
@@ -219,26 +214,25 @@ void main() {
       expect(find.byType(Card), findsOneWidget);
     });
 
-    testWidgets('marks as button in semantics when onTap is provided',
-        (tester) async {
+    testWidgets('marks as button in semantics when onTap is provided', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: StatCard(
-              label: 'Birds',
-              value: '10',
-              onTap: () {},
-            ),
+            body: StatCard(label: 'Birds', value: '10', onTap: () {}),
           ),
         ),
       );
 
       // Find the Semantics widget that is a direct descendant of StatCard
       final semantics = tester.widget<Semantics>(
-        find.descendant(
-          of: find.byType(StatCard),
-          matching: find.byType(Semantics),
-        ).first,
+        find
+            .descendant(
+              of: find.byType(StatCard),
+              matching: find.byType(Semantics),
+            )
+            .first,
       );
       expect(semantics.properties.button, isTrue);
     });

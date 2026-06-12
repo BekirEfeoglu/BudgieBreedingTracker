@@ -13,89 +13,82 @@ void main() {
   // 5. Z CHROMOSOME LINKAGE (Cinnamon + Ino)
   // =====================================================================
   group('Z chromosome linkage (Cinnamon-Ino)', () {
-    test('coupling: carrier male x normal female → Lacewing daughters from parental gametes', () {
-      final father = ParentGenotype(
-        gender: BirdGender.male,
-        mutations: {
-          'cinnamon': AlleleState.carrier,
-          'ino': AlleleState.carrier,
-        },
-      );
-      final mother = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {},
-      );
+    test(
+      'coupling: carrier male x normal female → Lacewing daughters from parental gametes',
+      () {
+        final father = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'cinnamon': AlleleState.carrier,
+            'ino': AlleleState.carrier,
+          },
+        );
+        final mother = ParentGenotype(gender: BirdGender.female, mutations: {});
 
-      final results = calculator.calculateFromGenotypes(
-        father: father,
-        mother: mother,
-      );
+        final results = calculator.calculateFromGenotypes(
+          father: father,
+          mother: mother,
+        );
 
-      expectNormalizedProbabilities(results);
+        expectNormalizedProbabilities(results);
 
-      // Lacewing females from parental gametes (~24.25%)
-      final lacewingFemale = findResult(
-        results,
-        'Lacewing',
-        sex: OffspringSex.female,
-      );
-      expect(lacewingFemale, isNotNull);
-      expect(lacewingFemale!.probability, greaterThan(0.20));
+        // Lacewing females from parental gametes (~24.25%)
+        final lacewingFemale = findResult(
+          results,
+          'Lacewing',
+          sex: OffspringSex.female,
+        );
+        expect(lacewingFemale, isNotNull);
+        expect(lacewingFemale!.probability, greaterThan(0.20));
 
-      // Recombinant daughters should be rare (Cin-Ino ~3%)
-      final cinOnlyFemale = findResult(
-        results,
-        'Cinnamon',
-        sex: OffspringSex.female,
-      );
-      if (cinOnlyFemale != null) {
-        expect(cinOnlyFemale.probability, lessThan(0.05));
-      }
-    });
+        // Recombinant daughters should be rare (Cin-Ino ~3%)
+        final cinOnlyFemale = findResult(
+          results,
+          'Cinnamon',
+          sex: OffspringSex.female,
+        );
+        if (cinOnlyFemale != null) {
+          expect(cinOnlyFemale.probability, lessThan(0.05));
+        }
+      },
+    );
 
-    test('repulsion: split male x normal female → recombinant Lacewings rare', () {
-      final father = ParentGenotype(
-        gender: BirdGender.male,
-        mutations: {
-          'cinnamon': AlleleState.split,
-          'ino': AlleleState.split,
-        },
-      );
-      final mother = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {},
-      );
+    test(
+      'repulsion: split male x normal female → recombinant Lacewings rare',
+      () {
+        final father = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {'cinnamon': AlleleState.split, 'ino': AlleleState.split},
+        );
+        final mother = ParentGenotype(gender: BirdGender.female, mutations: {});
 
-      final results = calculator.calculateFromGenotypes(
-        father: father,
-        mother: mother,
-      );
+        final results = calculator.calculateFromGenotypes(
+          father: father,
+          mother: mother,
+        );
 
-      expectNormalizedProbabilities(results);
+        expectNormalizedProbabilities(results);
 
-      // In repulsion, Lacewing females are RECOMBINANT (rare ~1.5%)
-      final lacewingFemale = findResult(
-        results,
-        'Lacewing',
-        sex: OffspringSex.female,
-      );
-      if (lacewingFemale != null) {
-        expect(lacewingFemale.probability, lessThan(0.05));
-      }
+        // In repulsion, Lacewing females are RECOMBINANT (rare ~1.5%)
+        final lacewingFemale = findResult(
+          results,
+          'Lacewing',
+          sex: OffspringSex.female,
+        );
+        if (lacewingFemale != null) {
+          expect(lacewingFemale.probability, lessThan(0.05));
+        }
 
-      // Parental types: Cinnamon-only and Ino-only females should be common
-      final cinFemale = results.where(
-        (r) =>
-            r.sex == OffspringSex.female &&
-            r.phenotype == 'Cinnamon',
-      );
-      final inoFemale = results.where(
-        (r) =>
-            r.sex == OffspringSex.female &&
-            r.phenotype == 'Ino',
-      );
-      expect(cinFemale.isNotEmpty || inoFemale.isNotEmpty, isTrue);
-    });
+        // Parental types: Cinnamon-only and Ino-only females should be common
+        final cinFemale = results.where(
+          (r) => r.sex == OffspringSex.female && r.phenotype == 'Cinnamon',
+        );
+        final inoFemale = results.where(
+          (r) => r.sex == OffspringSex.female && r.phenotype == 'Ino',
+        );
+        expect(cinFemale.isNotEmpty || inoFemale.isNotEmpty, isTrue);
+      },
+    );
   });
 
   // =====================================================================
@@ -110,10 +103,7 @@ void main() {
           'slate': AlleleState.carrier,
         },
       );
-      final mother = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {},
-      );
+      final mother = ParentGenotype(gender: BirdGender.female, mutations: {});
 
       final results = calculator.calculateFromGenotypes(
         father: father,
@@ -122,9 +112,7 @@ void main() {
 
       expectNormalizedProbabilities(results);
 
-      final femaleResults = results.where(
-        (r) => r.sex == OffspringSex.female,
-      );
+      final femaleResults = results.where((r) => r.sex == OffspringSex.female);
       expect(femaleResults.length, greaterThanOrEqualTo(2));
     });
   });
@@ -142,10 +130,7 @@ void main() {
           'ino': AlleleState.carrier,
         },
       );
-      final mother = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {},
-      );
+      final mother = ParentGenotype(gender: BirdGender.female, mutations: {});
 
       final results = calculator.calculateFromGenotypes(
         father: father,
@@ -198,15 +183,9 @@ void main() {
     test('repulsion: recombinant Lacewing rare, parental singles common', () {
       final father = ParentGenotype(
         gender: BirdGender.male,
-        mutations: {
-          'cinnamon': AlleleState.split,
-          'ino': AlleleState.split,
-        },
+        mutations: {'cinnamon': AlleleState.split, 'ino': AlleleState.split},
       );
-      final mother = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {},
-      );
+      final mother = ParentGenotype(gender: BirdGender.female, mutations: {});
 
       final results = calculator.calculateFromGenotypes(
         father: father,
@@ -251,82 +230,71 @@ void main() {
   // Wider tolerance (0.02) due to recombination frequency approximation.
   // =====================================================================
   group('Ino-Slate explicit linkage (2 cM)', () {
-    test('coupling: parental compound daughters dominate, recombinant rare', () {
-      final father = ParentGenotype(
-        gender: BirdGender.male,
-        mutations: {
-          'ino': AlleleState.carrier,
-          'slate': AlleleState.carrier,
-        },
-      );
-      final mother = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {},
-      );
+    test(
+      'coupling: parental compound daughters dominate, recombinant rare',
+      () {
+        final father = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {'ino': AlleleState.carrier, 'slate': AlleleState.carrier},
+        );
+        final mother = ParentGenotype(gender: BirdGender.female, mutations: {});
 
-      final results = calculator.calculateFromGenotypes(
-        father: father,
-        mother: mother,
-      );
+        final results = calculator.calculateFromGenotypes(
+          father: father,
+          mother: mother,
+        );
 
-      expectNormalizedProbabilities(results);
+        expectNormalizedProbabilities(results);
 
-      // Parental compound (Ino+Slate) females: ~(1-0.02)/2 * 0.5 = ~24.5%
-      final compoundFemale = results.where(
-        (r) =>
-            r.sex == OffspringSex.female &&
-            r.visualMutations.contains('ino') &&
-            r.visualMutations.contains('slate'),
-      );
-      expect(compoundFemale, isNotEmpty);
-      final compoundProb = compoundFemale.fold<double>(
-        0,
-        (s, r) => s + r.probability,
-      );
-      expect(compoundProb, closeTo(0.245, 0.02));
+        // Parental compound (Ino+Slate) females: ~(1-0.02)/2 * 0.5 = ~24.5%
+        final compoundFemale = results.where(
+          (r) =>
+              r.sex == OffspringSex.female &&
+              r.visualMutations.contains('ino') &&
+              r.visualMutations.contains('slate'),
+        );
+        expect(compoundFemale, isNotEmpty);
+        final compoundProb = compoundFemale.fold<double>(
+          0,
+          (s, r) => s + r.probability,
+        );
+        expect(compoundProb, closeTo(0.245, 0.02));
 
-      // Parental Normal females: ~24.5%
-      final normalFemale = sumProbability(
-        results,
-        'Normal',
-        sex: OffspringSex.female,
-      );
-      expect(normalFemale, closeTo(0.245, 0.02));
+        // Parental Normal females: ~24.5%
+        final normalFemale = sumProbability(
+          results,
+          'Normal',
+          sex: OffspringSex.female,
+        );
+        expect(normalFemale, closeTo(0.245, 0.02));
 
-      // Recombinant single-mutation females: each ~0.5%
-      final inoOnlyFemale = results.where(
-        (r) =>
-            r.sex == OffspringSex.female &&
-            r.visualMutations.contains('ino') &&
-            !r.visualMutations.contains('slate'),
-      );
-      final slateOnlyFemale = results.where(
-        (r) =>
-            r.sex == OffspringSex.female &&
-            r.visualMutations.contains('slate') &&
-            !r.visualMutations.contains('ino'),
-      );
-      final recombProb = inoOnlyFemale.fold<double>(
-            0,
-            (s, r) => s + r.probability,
-          ) +
-          slateOnlyFemale.fold<double>(0, (s, r) => s + r.probability);
-      // Total recombinant females: ~0.02 * 0.5 = ~1%
-      expect(recombProb, closeTo(0.01, 0.008));
-    });
+        // Recombinant single-mutation females: each ~0.5%
+        final inoOnlyFemale = results.where(
+          (r) =>
+              r.sex == OffspringSex.female &&
+              r.visualMutations.contains('ino') &&
+              !r.visualMutations.contains('slate'),
+        );
+        final slateOnlyFemale = results.where(
+          (r) =>
+              r.sex == OffspringSex.female &&
+              r.visualMutations.contains('slate') &&
+              !r.visualMutations.contains('ino'),
+        );
+        final recombProb =
+            inoOnlyFemale.fold<double>(0, (s, r) => s + r.probability) +
+            slateOnlyFemale.fold<double>(0, (s, r) => s + r.probability);
+        // Total recombinant females: ~0.02 * 0.5 = ~1%
+        expect(recombProb, closeTo(0.01, 0.008));
+      },
+    );
 
     test('repulsion: singles common, compound rare', () {
       final father = ParentGenotype(
         gender: BirdGender.male,
-        mutations: {
-          'ino': AlleleState.split,
-          'slate': AlleleState.split,
-        },
+        mutations: {'ino': AlleleState.split, 'slate': AlleleState.split},
       );
-      final mother = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {},
-      );
+      final mother = ParentGenotype(gender: BirdGender.female, mutations: {});
 
       final results = calculator.calculateFromGenotypes(
         father: father,
@@ -432,87 +400,78 @@ void main() {
       },
     );
 
-    test(
-      'pallid+cinnamon (repulsion): single-mutation daughters dominate',
-      () {
-        final father = ParentGenotype(
-          gender: BirdGender.male,
-          mutations: {
-            'pallid': AlleleState.split,
-            'cinnamon': AlleleState.split,
-          },
-        );
-        const mother = ParentGenotype.empty(gender: BirdGender.female);
+    test('pallid+cinnamon (repulsion): single-mutation daughters dominate', () {
+      final father = ParentGenotype(
+        gender: BirdGender.male,
+        mutations: {'pallid': AlleleState.split, 'cinnamon': AlleleState.split},
+      );
+      const mother = ParentGenotype.empty(gender: BirdGender.female);
 
-        final results = calculator.calculateFromGenotypes(
-          father: father,
-          mother: mother,
-        );
+      final results = calculator.calculateFromGenotypes(
+        father: father,
+        mother: mother,
+      );
 
-        expectNormalizedProbabilities(results);
+      expectNormalizedProbabilities(results);
 
-        final pallidOnlyFemale = results
-            .where(
-              (r) =>
-                  r.sex == OffspringSex.female &&
-                  r.visualMutations.contains('pallid') &&
-                  !r.visualMutations.contains('cinnamon'),
-            )
-            .fold<double>(0, (s, r) => s + r.probability);
-        expect(pallidOnlyFemale, closeTo(0.2425, 0.02));
+      final pallidOnlyFemale = results
+          .where(
+            (r) =>
+                r.sex == OffspringSex.female &&
+                r.visualMutations.contains('pallid') &&
+                !r.visualMutations.contains('cinnamon'),
+          )
+          .fold<double>(0, (s, r) => s + r.probability);
+      expect(pallidOnlyFemale, closeTo(0.2425, 0.02));
 
-        final cinnamonOnlyFemale = results
-            .where(
-              (r) =>
-                  r.sex == OffspringSex.female &&
-                  r.visualMutations.contains('cinnamon') &&
-                  !r.visualMutations.contains('pallid'),
-            )
-            .fold<double>(0, (s, r) => s + r.probability);
-        expect(cinnamonOnlyFemale, closeTo(0.2425, 0.02));
+      final cinnamonOnlyFemale = results
+          .where(
+            (r) =>
+                r.sex == OffspringSex.female &&
+                r.visualMutations.contains('cinnamon') &&
+                !r.visualMutations.contains('pallid'),
+          )
+          .fold<double>(0, (s, r) => s + r.probability);
+      expect(cinnamonOnlyFemale, closeTo(0.2425, 0.02));
 
-        final compoundFemale = results
-            .where(
-              (r) =>
-                  r.sex == OffspringSex.female &&
-                  r.visualMutations.contains('pallid') &&
-                  r.visualMutations.contains('cinnamon'),
-            )
-            .fold<double>(0, (s, r) => s + r.probability);
-        expect(compoundFemale, lessThan(0.03));
-      },
-    );
+      final compoundFemale = results
+          .where(
+            (r) =>
+                r.sex == OffspringSex.female &&
+                r.visualMutations.contains('pallid') &&
+                r.visualMutations.contains('cinnamon'),
+          )
+          .fold<double>(0, (s, r) => s + r.probability);
+      expect(compoundFemale, lessThan(0.03));
+    });
 
-    test(
-      'pearly+slate (coupling): compound daughters ≈ (1-0.02)/2 * 0.5',
-      () {
-        final father = ParentGenotype(
-          gender: BirdGender.male,
-          mutations: {
-            'pearly': AlleleState.carrier,
-            'slate': AlleleState.carrier,
-          },
-        );
-        const mother = ParentGenotype.empty(gender: BirdGender.female);
+    test('pearly+slate (coupling): compound daughters ≈ (1-0.02)/2 * 0.5', () {
+      final father = ParentGenotype(
+        gender: BirdGender.male,
+        mutations: {
+          'pearly': AlleleState.carrier,
+          'slate': AlleleState.carrier,
+        },
+      );
+      const mother = ParentGenotype.empty(gender: BirdGender.female);
 
-        final results = calculator.calculateFromGenotypes(
-          father: father,
-          mother: mother,
-        );
+      final results = calculator.calculateFromGenotypes(
+        father: father,
+        mother: mother,
+      );
 
-        expectNormalizedProbabilities(results);
+      expectNormalizedProbabilities(results);
 
-        final compoundFemale = results
-            .where(
-              (r) =>
-                  r.sex == OffspringSex.female &&
-                  r.visualMutations.contains('pearly') &&
-                  r.visualMutations.contains('slate'),
-            )
-            .fold<double>(0, (s, r) => s + r.probability);
-        expect(compoundFemale, closeTo(0.245, 0.02));
-      },
-    );
+      final compoundFemale = results
+          .where(
+            (r) =>
+                r.sex == OffspringSex.female &&
+                r.visualMutations.contains('pearly') &&
+                r.visualMutations.contains('slate'),
+          )
+          .fold<double>(0, (s, r) => s + r.probability);
+      expect(compoundFemale, closeTo(0.245, 0.02));
+    });
 
     test(
       'texas_clearbody+cinnamon (coupling): compound daughters dominate',
@@ -545,43 +504,39 @@ void main() {
       },
     );
 
-    test(
-      'ino + pallid compound het in father: linkage skipped, allelic series '
-      'handles ino_locus, cinnamon remains independent',
-      () {
-        final father = ParentGenotype(
-          gender: BirdGender.male,
-          mutations: {
-            'ino': AlleleState.carrier,
-            'pallid': AlleleState.carrier,
-            'cinnamon': AlleleState.carrier,
-          },
-        );
-        const mother = ParentGenotype.empty(gender: BirdGender.female);
+    test('ino + pallid compound het in father: linkage skipped, allelic series '
+        'handles ino_locus, cinnamon remains independent', () {
+      final father = ParentGenotype(
+        gender: BirdGender.male,
+        mutations: {
+          'ino': AlleleState.carrier,
+          'pallid': AlleleState.carrier,
+          'cinnamon': AlleleState.carrier,
+        },
+      );
+      const mother = ParentGenotype.empty(gender: BirdGender.female);
 
-        final results = calculator.calculateFromGenotypes(
-          father: father,
-          mother: mother,
-        );
+      final results = calculator.calculateFromGenotypes(
+        father: father,
+        mother: mother,
+      );
 
-        expectNormalizedProbabilities(results);
-        expect(results, isNotEmpty);
+      expectNormalizedProbabilities(results);
+      expect(results, isNotEmpty);
 
-        // Both ino and pallid should remain expressible in offspring because
-        // neither is silently dropped by the linkage branch.
-        final hasInoDaughter = results.any(
-          (r) =>
-              r.sex == OffspringSex.female &&
-              r.visualMutations.contains('ino'),
-        );
-        final hasPallidDaughter = results.any(
-          (r) =>
-              r.sex == OffspringSex.female &&
-              r.visualMutations.contains('pallid'),
-        );
-        expect(hasInoDaughter, isTrue);
-        expect(hasPallidDaughter, isTrue);
-      },
-    );
+      // Both ino and pallid should remain expressible in offspring because
+      // neither is silently dropped by the linkage branch.
+      final hasInoDaughter = results.any(
+        (r) =>
+            r.sex == OffspringSex.female && r.visualMutations.contains('ino'),
+      );
+      final hasPallidDaughter = results.any(
+        (r) =>
+            r.sex == OffspringSex.female &&
+            r.visualMutations.contains('pallid'),
+      );
+      expect(hasInoDaughter, isTrue);
+      expect(hasPallidDaughter, isTrue);
+    });
   });
 }

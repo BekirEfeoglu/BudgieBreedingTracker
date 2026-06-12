@@ -60,4 +60,3 @@ Widget developmentStageIconWidget(
     color: color,
   ),
 };
-

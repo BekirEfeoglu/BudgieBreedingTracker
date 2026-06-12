@@ -42,9 +42,10 @@ class GeneticsHistoryDao extends DatabaseAccessor<AppDatabase>
 
   /// Get a single history entry by ID.
   Future<GeneticsHistory?> getById(String id) async {
-    final row = await (select(geneticsHistoryTable)..where(
-      (t) => t.id.equals(id) & t.isDeleted.equals(false),
-    )).getSingleOrNull();
+    final row =
+        await (select(geneticsHistoryTable)
+              ..where((t) => t.id.equals(id) & t.isDeleted.equals(false)))
+            .getSingleOrNull();
     return row?.toModel();
   }
 

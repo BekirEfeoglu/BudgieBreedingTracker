@@ -22,12 +22,12 @@ enum MarketplaceFilter {
   wanted;
 
   String get label => switch (this) {
-        MarketplaceFilter.all => 'common.all'.tr(),
-        MarketplaceFilter.sale => 'marketplace.type_sale'.tr(),
-        MarketplaceFilter.adoption => 'marketplace.type_adoption'.tr(),
-        MarketplaceFilter.trade => 'marketplace.type_trade'.tr(),
-        MarketplaceFilter.wanted => 'marketplace.type_wanted'.tr(),
-      };
+    MarketplaceFilter.all => 'common.all'.tr(),
+    MarketplaceFilter.sale => 'marketplace.type_sale'.tr(),
+    MarketplaceFilter.adoption => 'marketplace.type_adoption'.tr(),
+    MarketplaceFilter.trade => 'marketplace.type_trade'.tr(),
+    MarketplaceFilter.wanted => 'marketplace.type_wanted'.tr(),
+  };
 }
 
 enum MarketplaceSort {
@@ -36,10 +36,10 @@ enum MarketplaceSort {
   priceDesc;
 
   String get label => switch (this) {
-        MarketplaceSort.newest => 'marketplace.sort_newest'.tr(),
-        MarketplaceSort.priceAsc => 'marketplace.sort_price_asc'.tr(),
-        MarketplaceSort.priceDesc => 'marketplace.sort_price_desc'.tr(),
-      };
+    MarketplaceSort.newest => 'marketplace.sort_newest'.tr(),
+    MarketplaceSort.priceAsc => 'marketplace.sort_price_asc'.tr(),
+    MarketplaceSort.priceDesc => 'marketplace.sort_price_desc'.tr(),
+  };
 }
 
 /// Filter state
@@ -50,8 +50,8 @@ class MarketplaceFilterNotifier extends Notifier<MarketplaceFilter> {
 
 final marketplaceFilterProvider =
     NotifierProvider<MarketplaceFilterNotifier, MarketplaceFilter>(
-  MarketplaceFilterNotifier.new,
-);
+      MarketplaceFilterNotifier.new,
+    );
 
 /// Sort state
 class MarketplaceSortNotifier extends Notifier<MarketplaceSort> {
@@ -61,8 +61,8 @@ class MarketplaceSortNotifier extends Notifier<MarketplaceSort> {
 
 final marketplaceSortProvider =
     NotifierProvider<MarketplaceSortNotifier, MarketplaceSort>(
-  MarketplaceSortNotifier.new,
-);
+      MarketplaceSortNotifier.new,
+    );
 
 /// Search state
 class MarketplaceSearchQueryNotifier extends Notifier<String> {
@@ -72,8 +72,8 @@ class MarketplaceSearchQueryNotifier extends Notifier<String> {
 
 final marketplaceSearchQueryProvider =
     NotifierProvider<MarketplaceSearchQueryNotifier, String>(
-  MarketplaceSearchQueryNotifier.new,
-);
+      MarketplaceSearchQueryNotifier.new,
+    );
 
 /// City filter state
 class MarketplaceCityFilterNotifier extends Notifier<String?> {
@@ -83,8 +83,8 @@ class MarketplaceCityFilterNotifier extends Notifier<String?> {
 
 final marketplaceCityFilterProvider =
     NotifierProvider<MarketplaceCityFilterNotifier, String?>(
-  MarketplaceCityFilterNotifier.new,
-);
+      MarketplaceCityFilterNotifier.new,
+    );
 
 /// Price range filter state
 class MarketplacePriceRangeNotifier
@@ -93,10 +93,11 @@ class MarketplacePriceRangeNotifier
   ({double? min, double? max}) build() => (min: null, max: null);
 }
 
-final marketplacePriceRangeProvider = NotifierProvider<
-    MarketplacePriceRangeNotifier, ({double? min, double? max})>(
-  MarketplacePriceRangeNotifier.new,
-);
+final marketplacePriceRangeProvider =
+    NotifierProvider<
+      MarketplacePriceRangeNotifier,
+      ({double? min, double? max})
+    >(MarketplacePriceRangeNotifier.new);
 
 /// Gender filter state
 class MarketplaceGenderFilterNotifier extends Notifier<BirdGender?> {
@@ -106,8 +107,8 @@ class MarketplaceGenderFilterNotifier extends Notifier<BirdGender?> {
 
 final marketplaceGenderFilterProvider =
     NotifierProvider<MarketplaceGenderFilterNotifier, BirdGender?>(
-  MarketplaceGenderFilterNotifier.new,
-);
+      MarketplaceGenderFilterNotifier.new,
+    );
 
 /// Count of active advanced filters for badge display
 final activeFilterCountProvider = Provider<int>((ref) {
@@ -121,51 +122,55 @@ final activeFilterCountProvider = Provider<int>((ref) {
 
 /// Listings feed provider
 final marketplaceListingsProvider =
-    FutureProvider.family<List<MarketplaceListing>, String>(
-  (ref, userId) async {
-    final repo = ref.watch(marketplaceRepositoryProvider);
-    final filter = ref.watch(marketplaceFilterProvider);
-    final city = ref.watch(marketplaceCityFilterProvider);
+    FutureProvider.family<List<MarketplaceListing>, String>((
+      ref,
+      userId,
+    ) async {
+      final repo = ref.watch(marketplaceRepositoryProvider);
+      final filter = ref.watch(marketplaceFilterProvider);
+      final city = ref.watch(marketplaceCityFilterProvider);
 
-    String? listingType;
-    if (filter != MarketplaceFilter.all) {
-      listingType = filter.name;
-    }
+      String? listingType;
+      if (filter != MarketplaceFilter.all) {
+        listingType = filter.name;
+      }
 
-    return repo.getListings(
-      currentUserId: userId,
-      city: city,
-      listingType: listingType,
-    );
-  },
-);
+      return repo.getListings(
+        currentUserId: userId,
+        city: city,
+        listingType: listingType,
+      );
+    });
 
 /// Single listing detail
 final marketplaceListingByIdProvider =
-    FutureProvider.family<MarketplaceListing?, ({String id, String userId})>(
-  (ref, params) async {
-    final repo = ref.watch(marketplaceRepositoryProvider);
-    return repo.getById(id: params.id, currentUserId: params.userId);
-  },
-);
+    FutureProvider.family<MarketplaceListing?, ({String id, String userId})>((
+      ref,
+      params,
+    ) async {
+      final repo = ref.watch(marketplaceRepositoryProvider);
+      return repo.getById(id: params.id, currentUserId: params.userId);
+    });
 
 /// My listings
 final myMarketplaceListingsProvider =
-    FutureProvider.family<List<MarketplaceListing>, String>(
-  (ref, userId) async {
-    final repo = ref.watch(marketplaceRepositoryProvider);
-    return repo.getByUser(userId: userId, currentUserId: userId);
-  },
-);
+    FutureProvider.family<List<MarketplaceListing>, String>((
+      ref,
+      userId,
+    ) async {
+      final repo = ref.watch(marketplaceRepositoryProvider);
+      return repo.getByUser(userId: userId, currentUserId: userId);
+    });
 
 /// Favorites
 final marketplaceFavoritesProvider =
-    FutureProvider.family<List<MarketplaceListing>, String>(
-  (ref, userId) async {
-    final repo = ref.watch(marketplaceRepositoryProvider);
-    return repo.getFavorites(currentUserId: userId);
-  },
-);
+    FutureProvider.family<List<MarketplaceListing>, String>((
+      ref,
+      userId,
+    ) async {
+      final repo = ref.watch(marketplaceRepositoryProvider);
+      return repo.getFavorites(currentUserId: userId);
+    });
 
 /// Maximum active listings for free tier users.
 const marketplaceFreeTierMaxListings = 3;
@@ -197,57 +202,64 @@ final canCreateListingProvider = Provider.family<bool, String>((ref, userId) {
 /// new family entry. Without autoDispose those entries linger and the
 /// memory footprint grows linearly with refresh count — same leak pattern
 /// the Birds audit flagged for `filteredBirdsProvider`.
-final filteredMarketplaceListingsProvider =
-    Provider.autoDispose.family<List<MarketplaceListing>, List<MarketplaceListing>>(
-  (ref, listings) {
-    final sort = ref.watch(marketplaceSortProvider);
-    final query = ref.watch(marketplaceSearchQueryProvider).toLowerCase().trim();
+final filteredMarketplaceListingsProvider = Provider.autoDispose
+    .family<List<MarketplaceListing>, List<MarketplaceListing>>((
+      ref,
+      listings,
+    ) {
+      final sort = ref.watch(marketplaceSortProvider);
+      final query = ref
+          .watch(marketplaceSearchQueryProvider)
+          .toLowerCase()
+          .trim();
 
-    var result = List<MarketplaceListing>.from(listings);
+      var result = List<MarketplaceListing>.from(listings);
 
-    if (query.isNotEmpty) {
-      result = result.where((l) {
-        return l.title.toLowerCase().contains(query) ||
-            l.description.toLowerCase().contains(query) ||
-            l.species.toLowerCase().contains(query) ||
-            l.city.toLowerCase().contains(query) ||
-            (l.mutation?.toLowerCase().contains(query) ?? false);
-      }).toList();
-    }
+      if (query.isNotEmpty) {
+        result = result.where((l) {
+          return l.title.toLowerCase().contains(query) ||
+              l.description.toLowerCase().contains(query) ||
+              l.species.toLowerCase().contains(query) ||
+              l.city.toLowerCase().contains(query) ||
+              (l.mutation?.toLowerCase().contains(query) ?? false);
+        }).toList();
+      }
 
-    // Price range filter. Listings without a price (adoption / trade /
-    // wanted, or sale ads pre-dating the price field) are excluded from
-    // a price filter rather than treated as 0 — previously a `max=100`
-    // filter would surface every free-price listing alongside sale ads
-    // priced under 100, and `min=0` (the default) included them
-    // unconditionally.
-    final priceRange = ref.watch(marketplacePriceRangeProvider);
-    if (priceRange.min != null || priceRange.max != null) {
-      result = result.where((l) {
-        final price = l.price;
-        if (price == null) return false;
-        if (priceRange.min != null && price < priceRange.min!) return false;
-        if (priceRange.max != null && price > priceRange.max!) return false;
-        return true;
-      }).toList();
-    }
+      // Price range filter. Listings without a price (adoption / trade /
+      // wanted, or sale ads pre-dating the price field) are excluded from
+      // a price filter rather than treated as 0 — previously a `max=100`
+      // filter would surface every free-price listing alongside sale ads
+      // priced under 100, and `min=0` (the default) included them
+      // unconditionally.
+      final priceRange = ref.watch(marketplacePriceRangeProvider);
+      if (priceRange.min != null || priceRange.max != null) {
+        result = result.where((l) {
+          final price = l.price;
+          if (price == null) return false;
+          if (priceRange.min != null && price < priceRange.min!) return false;
+          if (priceRange.max != null && price > priceRange.max!) return false;
+          return true;
+        }).toList();
+      }
 
-    // Gender filter
-    final genderFilter = ref.watch(marketplaceGenderFilterProvider);
-    if (genderFilter != null) {
-      result = result.where((l) => l.gender == genderFilter).toList();
-    }
+      // Gender filter
+      final genderFilter = ref.watch(marketplaceGenderFilterProvider);
+      if (genderFilter != null) {
+        result = result.where((l) => l.gender == genderFilter).toList();
+      }
 
-    switch (sort) {
-      case MarketplaceSort.newest:
-        result.sort((a, b) =>
-            (b.createdAt ?? DateTime(0)).compareTo(a.createdAt ?? DateTime(0)));
-      case MarketplaceSort.priceAsc:
-        result.sort((a, b) => (a.price ?? 0).compareTo(b.price ?? 0));
-      case MarketplaceSort.priceDesc:
-        result.sort((a, b) => (b.price ?? 0).compareTo(a.price ?? 0));
-    }
+      switch (sort) {
+        case MarketplaceSort.newest:
+          result.sort(
+            (a, b) => (b.createdAt ?? DateTime(0)).compareTo(
+              a.createdAt ?? DateTime(0),
+            ),
+          );
+        case MarketplaceSort.priceAsc:
+          result.sort((a, b) => (a.price ?? 0).compareTo(b.price ?? 0));
+        case MarketplaceSort.priceDesc:
+          result.sort((a, b) => (b.price ?? 0).compareTo(a.price ?? 0));
+      }
 
-    return result;
-  },
-);
+      return result;
+    });

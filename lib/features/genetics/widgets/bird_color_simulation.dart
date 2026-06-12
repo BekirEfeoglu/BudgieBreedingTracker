@@ -46,10 +46,7 @@ class BirdColorSimulation extends StatelessWidget {
       child: RepaintBoundary(
         child: CustomPaint(
           size: Size(effectiveWidth, effectiveHeight),
-          painter: BudgiePainter(
-            appearance: appearance,
-            isFemale: isFemale,
-          ),
+          painter: BudgiePainter(appearance: appearance, isFemale: isFemale),
         ),
       ),
     );

@@ -70,40 +70,39 @@ final Map<String, String> _secureStorageStore = <String, String>{};
 
 void _installFlutterSecureStorageMock() {
   _secureStorageStore.clear();
-  TestDefaultBinaryMessengerBinding
-      .instance
-      .defaultBinaryMessenger
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
       .setMockMethodCallHandler(_secureStorageChannel, (call) async {
-    final args = (call.arguments as Map?)?.cast<String, Object?>() ??
-        const <String, Object?>{};
-    final key = args['key'] as String?;
-    switch (call.method) {
-      case 'read':
-        return key == null ? null : _secureStorageStore[key];
-      case 'write':
-        if (key != null) {
-          final value = args['value'] as String?;
-          if (value == null) {
-            _secureStorageStore.remove(key);
-          } else {
-            _secureStorageStore[key] = value;
-          }
+        final args =
+            (call.arguments as Map?)?.cast<String, Object?>() ??
+            const <String, Object?>{};
+        final key = args['key'] as String?;
+        switch (call.method) {
+          case 'read':
+            return key == null ? null : _secureStorageStore[key];
+          case 'write':
+            if (key != null) {
+              final value = args['value'] as String?;
+              if (value == null) {
+                _secureStorageStore.remove(key);
+              } else {
+                _secureStorageStore[key] = value;
+              }
+            }
+            return null;
+          case 'delete':
+            if (key != null) _secureStorageStore.remove(key);
+            return null;
+          case 'deleteAll':
+            _secureStorageStore.clear();
+            return null;
+          case 'containsKey':
+            return key != null && _secureStorageStore.containsKey(key);
+          case 'readAll':
+            return Map<String, String>.from(_secureStorageStore);
+          default:
+            return null;
         }
-        return null;
-      case 'delete':
-        if (key != null) _secureStorageStore.remove(key);
-        return null;
-      case 'deleteAll':
-        _secureStorageStore.clear();
-        return null;
-      case 'containsKey':
-        return key != null && _secureStorageStore.containsKey(key);
-      case 'readAll':
-        return Map<String, String>.from(_secureStorageStore);
-      default:
-        return null;
-    }
-  });
+      });
 }
 
 void registerCommonFallbackValues() {

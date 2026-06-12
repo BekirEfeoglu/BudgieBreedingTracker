@@ -21,7 +21,10 @@ void main() {
         probability: 0.5,
       );
 
-      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const OffspringPrediction(result: result)),
+      );
       expect(find.byType(OffspringPrediction), findsOneWidget);
     });
 
@@ -31,9 +34,15 @@ void main() {
         probability: 0.25,
       );
 
-      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const OffspringPrediction(result: result)),
+      );
       // PhenotypeLocalizer converts 'Normal Blue' to localization keys
-      expect(find.textContaining(l10nContains('genetics.mutation')), findsAtLeastNWidgets(1));
+      expect(
+        find.textContaining(l10nContains('genetics.mutation')),
+        findsAtLeastNWidgets(1),
+      );
     });
 
     testWidgets('shows probability percentage for 50%', (tester) async {
@@ -42,7 +51,10 @@ void main() {
         probability: 0.5,
       );
 
-      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const OffspringPrediction(result: result)),
+      );
       expect(find.textContaining('%50.0'), findsAtLeastNWidgets(1));
     });
 
@@ -52,7 +64,10 @@ void main() {
         probability: 0.25,
       );
 
-      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const OffspringPrediction(result: result)),
+      );
       expect(find.textContaining('%25.0'), findsAtLeastNWidgets(1));
     });
 
@@ -62,7 +77,10 @@ void main() {
         probability: 1.0,
       );
 
-      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const OffspringPrediction(result: result)),
+      );
       expect(find.textContaining('%100.0'), findsAtLeastNWidgets(1));
     });
 
@@ -74,7 +92,10 @@ void main() {
         probability: 0.75,
       );
 
-      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const OffspringPrediction(result: result)),
+      );
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
@@ -84,7 +105,10 @@ void main() {
         probability: 0.5,
       );
 
-      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const OffspringPrediction(result: result)),
+      );
       expect(find.byType(Card), findsOneWidget);
     });
 
@@ -96,7 +120,10 @@ void main() {
         carriedMutations: ['Blue'],
       );
 
-      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const OffspringPrediction(result: result)),
+      );
       expect(find.text(l10n('genetics.carrier')), findsAtLeastNWidgets(1));
     });
 
@@ -106,7 +133,10 @@ void main() {
         probability: 0.5,
       );
 
-      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const OffspringPrediction(result: result)),
+      );
       // Carrier text appears only inside carrier badge and semantics
       final carrierFinder = find.text(l10n('genetics.carrier'));
       expect(carrierFinder, findsNothing);
@@ -119,7 +149,10 @@ void main() {
         lethalCombinationIds: ['df_crested'],
       );
 
-      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const OffspringPrediction(result: result)),
+      );
       expect(find.text(l10n('genetics.lethal_badge')), findsOneWidget);
     });
 
@@ -131,7 +164,10 @@ void main() {
         probability: 0.5,
       );
 
-      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const OffspringPrediction(result: result)),
+      );
       expect(find.text(l10n('genetics.lethal_badge')), findsNothing);
     });
 
@@ -144,7 +180,8 @@ void main() {
         genotype: '+/+ bl/bl',
       );
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const OffspringPrediction(result: result, showGenotype: true)),
       );
       // Collapsed view shows inline genotype string
@@ -160,7 +197,10 @@ void main() {
         genotype: '+/+ bl/bl',
       );
 
-      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const OffspringPrediction(result: result)),
+      );
       expect(find.textContaining('+/+ bl/bl'), findsNothing);
     });
 
@@ -172,7 +212,10 @@ void main() {
         carriedMutations: ['Blue'],
       );
 
-      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const OffspringPrediction(result: result)),
+      );
       expect(
         find.textContaining(l10nContains('genetics.mutation_blue')),
         findsAtLeastNWidgets(1),
@@ -187,7 +230,10 @@ void main() {
         genotype: 'ino/ino',
       );
 
-      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const OffspringPrediction(result: result)),
+      );
       // Collapsed view does not show masked mutations (compact design)
       // Tap to expand
       await tester.tap(find.byType(OffspringPrediction));
@@ -204,7 +250,10 @@ void main() {
         probability: 0.5,
       );
 
-      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const OffspringPrediction(result: result)),
+      );
       expect(find.byType(Semantics), findsAtLeastNWidgets(1));
     });
 
@@ -215,7 +264,10 @@ void main() {
         compoundPhenotype: 'Opaline Blue',
       );
 
-      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const OffspringPrediction(result: result)),
+      );
       expect(
         find.textContaining(l10nContains('genetics.mutation_opaline')),
         findsAtLeastNWidgets(1),
@@ -229,7 +281,10 @@ void main() {
         sex: OffspringSex.male,
       );
 
-      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const OffspringPrediction(result: result)),
+      );
       expect(find.byType(OffspringPrediction), findsOneWidget);
     });
 
@@ -240,7 +295,10 @@ void main() {
         sex: OffspringSex.female,
       );
 
-      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const OffspringPrediction(result: result)),
+      );
       expect(find.byType(OffspringPrediction), findsOneWidget);
     });
 
@@ -250,7 +308,10 @@ void main() {
         probability: 0.0,
       );
 
-      await pumpLocalizedApp(tester,_wrap(const OffspringPrediction(result: result)));
+      await pumpLocalizedApp(
+        tester,
+        _wrap(const OffspringPrediction(result: result)),
+      );
       expect(find.textContaining('%0.0'), findsAtLeastNWidgets(1));
     });
   });

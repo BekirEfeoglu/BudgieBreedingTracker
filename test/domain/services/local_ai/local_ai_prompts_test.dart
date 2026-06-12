@@ -18,12 +18,12 @@ OffspringResult _result({
   List<String> visualMutations = const [],
   List<String> carriedMutations = const [],
 }) => OffspringResult(
-      phenotype: phenotype,
-      probability: probability,
-      sex: sex,
-      visualMutations: visualMutations,
-      carriedMutations: carriedMutations,
-    );
+  phenotype: phenotype,
+  probability: probability,
+  sex: sex,
+  visualMutations: visualMutations,
+  carriedMutations: carriedMutations,
+);
 
 void main() {
   group('LocalAiPrompts.formatGenotype', () {
@@ -32,9 +32,7 @@ void main() {
     });
 
     test('formats single mutation with allele state', () {
-      final genotype = _genotype(
-        mutations: const {'blue': AlleleState.visual},
-      );
+      final genotype = _genotype(mutations: const {'blue': AlleleState.visual});
       expect(LocalAiPrompts.formatGenotype(genotype), 'blue:visual');
     });
 
@@ -48,10 +46,7 @@ void main() {
         },
       );
       final formatted = LocalAiPrompts.formatGenotype(genotype);
-      expect(
-        formatted,
-        'blue:carrier, clearwing:visual, dilute:visual',
-      );
+      expect(formatted, 'blue:carrier, clearwing:visual, dilute:visual');
     });
   });
 
@@ -93,29 +88,32 @@ void main() {
       expect(prompt, contains('Allowed IDs: none'));
     });
 
-    test('formats calculator results as "phenotype prob% sex" and caps at 8 entries', () {
-      final results = List<OffspringResult>.generate(
-        10,
-        (i) => _result(
-          phenotype: 'pheno_$i',
-          probability: 0.1 * (i + 1),
-          sex: i.isEven ? OffspringSex.male : OffspringSex.female,
-        ),
-      );
-      final prompt = LocalAiPrompts.buildGeneticsPrompt(
-        father: _genotype(),
-        mother: _genotype(),
-        calculatorResults: results,
-        allowedGenetics: const [],
-      );
-      // First entry present
-      expect(prompt, contains('pheno_0 10% male'));
-      // 8th entry present
-      expect(prompt, contains('pheno_7 80% female'));
-      // 9th and 10th entries truncated
-      expect(prompt, isNot(contains('pheno_8')));
-      expect(prompt, isNot(contains('pheno_9')));
-    });
+    test(
+      'formats calculator results as "phenotype prob% sex" and caps at 8 entries',
+      () {
+        final results = List<OffspringResult>.generate(
+          10,
+          (i) => _result(
+            phenotype: 'pheno_$i',
+            probability: 0.1 * (i + 1),
+            sex: i.isEven ? OffspringSex.male : OffspringSex.female,
+          ),
+        );
+        final prompt = LocalAiPrompts.buildGeneticsPrompt(
+          father: _genotype(),
+          mother: _genotype(),
+          calculatorResults: results,
+          allowedGenetics: const [],
+        );
+        // First entry present
+        expect(prompt, contains('pheno_0 10% male'));
+        // 8th entry present
+        expect(prompt, contains('pheno_7 80% female'));
+        // 9th and 10th entries truncated
+        expect(prompt, isNot(contains('pheno_8')));
+        expect(prompt, isNot(contains('pheno_9')));
+      },
+    );
 
     test('joins allowed genetics as "id(name)" tokens', () {
       final blue = MutationDatabase.getById('blue')!;
@@ -142,9 +140,7 @@ void main() {
     });
 
     test('collects mutation records from parents and calculator results', () {
-      final father = _genotype(
-        mutations: const {'blue': AlleleState.visual},
-      );
+      final father = _genotype(mutations: const {'blue': AlleleState.visual});
       final mother = _genotype(
         gender: BirdGender.female,
         mutations: const {'dilute': AlleleState.carrier},
@@ -164,13 +160,14 @@ void main() {
         calculatorResults: results,
       ).map((r) => r.id).toSet();
 
-      expect(ids, containsAll(<String>{'blue', 'dilute', 'clearwing', 'greywing'}));
+      expect(
+        ids,
+        containsAll(<String>{'blue', 'dilute', 'clearwing', 'greywing'}),
+      );
     });
 
     test('deduplicates mutation IDs referenced in multiple places', () {
-      final genotype = _genotype(
-        mutations: const {'blue': AlleleState.visual},
-      );
+      final genotype = _genotype(mutations: const {'blue': AlleleState.visual});
       final results = [
         _result(
           phenotype: 'blue',
@@ -234,10 +231,13 @@ void main() {
         // Each prompt must specify JSON output and Turkish language to
         // preserve UI consistency (downstream parsers + l10n contract).
         final hasJsonHint = p.contains('JSON');
-        final hasTurkishHint =
-            p.contains('Turkish') || p.contains('Türkçe');
+        final hasTurkishHint = p.contains('Turkish') || p.contains('Türkçe');
         expect(hasJsonHint, isTrue, reason: 'prompt missing JSON directive');
-        expect(hasTurkishHint, isTrue, reason: 'prompt missing Turkish directive');
+        expect(
+          hasTurkishHint,
+          isTrue,
+          reason: 'prompt missing Turkish directive',
+        );
       }
     });
   });

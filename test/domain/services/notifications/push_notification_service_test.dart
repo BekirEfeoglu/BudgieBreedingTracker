@@ -78,11 +78,13 @@ void main() {
 
       // No Firebase or token calls should be made
       verifyNever(() => mockMessaging.getToken());
-      verifyNever(() => mockTokenRemote.upsertToken(
-            userId: any(named: 'userId'),
-            token: any(named: 'token'),
-            platform: any(named: 'platform'),
-          ));
+      verifyNever(
+        () => mockTokenRemote.upsertToken(
+          userId: any(named: 'userId'),
+          token: any(named: 'token'),
+          platform: any(named: 'platform'),
+        ),
+      );
     });
   });
 
@@ -121,14 +123,16 @@ void main() {
   });
 
   group('firebaseMessagingBackgroundHandler', () {
-    test('is a top-level function that handles missing Firebase gracefully',
-        () async {
-      // The background handler should not throw even when Firebase is not
-      // configured. It catches all errors from Firebase.initializeApp().
-      // We cannot easily call it in unit tests without Firebase being
-      // initialized, but we verify it exists as a callable function.
-      expect(firebaseMessagingBackgroundHandler, isA<Function>());
-    });
+    test(
+      'is a top-level function that handles missing Firebase gracefully',
+      () async {
+        // The background handler should not throw even when Firebase is not
+        // configured. It catches all errors from Firebase.initializeApp().
+        // We cannot easily call it in unit tests without Firebase being
+        // initialized, but we verify it exists as a callable function.
+        expect(firebaseMessagingBackgroundHandler, isA<Function>());
+      },
+    );
   });
 
   // --- Tests for internal logic that can be verified via behavior ---
@@ -191,15 +195,15 @@ void main() {
         overrideFirebaseReady: true,
       );
 
-      when(() => mockMessaging.getToken())
-          .thenThrow(Exception('FCM unavailable'));
+      when(
+        () => mockMessaging.getToken(),
+      ).thenThrow(Exception('FCM unavailable'));
 
       // Should not throw — error is caught internally
       await pushService.syncToken('user-123');
     });
 
-    test('deactivateCurrentToken handles getToken error gracefully',
-        () async {
+    test('deactivateCurrentToken handles getToken error gracefully', () async {
       // Even if _firebaseReady were true, on desktop the platform check
       // prevents execution. This test verifies no crash.
       await service.deactivateCurrentToken();

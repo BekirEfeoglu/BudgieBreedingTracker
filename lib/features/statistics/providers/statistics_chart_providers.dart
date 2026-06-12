@@ -15,7 +15,10 @@ final _monthlyEggAggregateBySpeciesProvider =
       (ref, args) {
         return ref
             .watch(eggsDaoProvider)
-            .watchMonthlyProductionBySpecies(args.userId, args.species.toJson());
+            .watchMonthlyProductionBySpecies(
+              args.userId,
+              args.species.toJson(),
+            );
       },
     );
 
@@ -26,9 +29,12 @@ final monthlyEggProductionProvider =
 
       final aggregateAsync = speciesFilter == null
           ? ref.watch(_monthlyEggAggregateProvider(userId))
-          : ref.watch(_monthlyEggAggregateBySpeciesProvider(
-              (userId: userId, species: speciesFilter),
-            ));
+          : ref.watch(
+              _monthlyEggAggregateBySpeciesProvider((
+                userId: userId,
+                species: speciesFilter,
+              )),
+            );
 
       return aggregateAsync.whenData((rawCounts) {
         final range = buildStatsDateRange(period);
@@ -73,23 +79,25 @@ final monthlyHatchedChicksProvider =
     });
 
 /// Raw SQL-aggregated outcomes (no species filter).
-final _monthlyOutcomesAggregateProvider = StreamProvider.family<
-  Map<String, ({int completed, int cancelled})>,
-  String
->((ref, userId) {
-  return ref.watch(breedingPairsDaoProvider).watchMonthlyOutcomes(userId);
-});
+final _monthlyOutcomesAggregateProvider =
+    StreamProvider.family<
+      Map<String, ({int completed, int cancelled})>,
+      String
+    >((ref, userId) {
+      return ref.watch(breedingPairsDaoProvider).watchMonthlyOutcomes(userId);
+    });
 
 /// Species-filtered SQL-aggregated outcomes. Composite key keeps
 /// independent filter streams cached separately.
-final _monthlyOutcomesAggregateBySpeciesProvider = StreamProvider.family<
-  Map<String, ({int completed, int cancelled})>,
-  ({String userId, Species species})
->((ref, args) {
-  return ref
-      .watch(breedingPairsDaoProvider)
-      .watchMonthlyOutcomes(args.userId, species: args.species.toJson());
-});
+final _monthlyOutcomesAggregateBySpeciesProvider =
+    StreamProvider.family<
+      Map<String, ({int completed, int cancelled})>,
+      ({String userId, Species species})
+    >((ref, args) {
+      return ref
+          .watch(breedingPairsDaoProvider)
+          .watchMonthlyOutcomes(args.userId, species: args.species.toJson());
+    });
 
 final monthlyBreedingOutcomesProvider =
     Provider.family<AsyncValue<MonthlyBreedingData>, String>((ref, userId) {
@@ -99,9 +107,10 @@ final monthlyBreedingOutcomesProvider =
       final aggregate = speciesFilter == null
           ? ref.watch(_monthlyOutcomesAggregateProvider(userId))
           : ref.watch(
-              _monthlyOutcomesAggregateBySpeciesProvider(
-                (userId: userId, species: speciesFilter),
-              ),
+              _monthlyOutcomesAggregateBySpeciesProvider((
+                userId: userId,
+                species: speciesFilter,
+              )),
             );
 
       return aggregate.whenData((rawCounts) {

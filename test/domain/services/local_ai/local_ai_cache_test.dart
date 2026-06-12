@@ -67,11 +67,9 @@ void main() {
       cache.put('a', {'v': 11});
       cache.put('c', {'v': 3});
 
-      expect(
-        cache.get('a'),
-        {'v': 11},
-        reason: 'a was refreshed so it survives eviction',
-      );
+      expect(cache.get('a'), {
+        'v': 11,
+      }, reason: 'a was refreshed so it survives eviction');
       expect(cache.get('b'), isNull, reason: 'b is now oldest and evicted');
       expect(cache.get('c'), {'v': 3});
     });

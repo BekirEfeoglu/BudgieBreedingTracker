@@ -53,21 +53,22 @@ class BreedingNotificationHelper {
         ),
       );
 
-      // Build (id, species) pairs so each cancel call uses the same
-      // species/day-count that was used at schedule time. Eggs inherit
-      // their parent incubation's species — falls back to unknown only
-      // when the incubation itself records unknown.
-      final speciesById = <String, Species>{};
+      // Build egg → species pairs so each cancel call uses the same
+      // species/day-count that was used at schedule time. Egg-turning
+      // reminders are scheduled by egg id, not incubation id.
+      final speciesByIncubationId = <String, Species>{};
       for (final incubation in loadedIncubations) {
-        speciesById[incubation.id] = incubation.species;
+        speciesByIncubationId[incubation.id] = incubation.species;
       }
+      final speciesByEggId = <String, Species>{};
       for (final egg in loadedEggs) {
-        final parentSpecies =
-            egg.incubationId != null ? speciesById[egg.incubationId!] : null;
-        speciesById[egg.id] = parentSpecies ?? Species.unknown;
+        final parentSpecies = egg.incubationId != null
+            ? speciesByIncubationId[egg.incubationId!]
+            : null;
+        speciesByEggId[egg.id] = parentSpecies ?? Species.unknown;
       }
       await Future.wait(
-        speciesById.entries.map(
+        speciesByEggId.entries.map(
           (entry) => scheduler.cancelEggTurningReminders(
             entry.key,
             species: entry.value,
@@ -150,9 +151,7 @@ class BreedingNotificationHelper {
     try {
       final scheduler = _ref.read(notificationSchedulerProvider);
       final settings = _ref.read(notificationToggleSettingsProvider);
-      final pairLabel = 'breeding.pair_label'.tr(
-        args: [_shortId(pairId)],
-      );
+      final pairLabel = 'breeding.pair_label'.tr(args: [_shortId(pairId)]);
 
       await scheduler.scheduleIncubationMilestones(
         incubationId: incubationId,

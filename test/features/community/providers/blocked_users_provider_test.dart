@@ -187,10 +187,7 @@ void main() {
 
       final prefs = await SharedPreferences.getInstance();
       expect(container.read(blockedUsersProvider), isEmpty);
-      expect(
-        prefs.getStringList(AppPreferences.keyBlockedUserIds),
-        isEmpty,
-      );
+      expect(prefs.getStringList(AppPreferences.keyBlockedUserIds), isEmpty);
     });
   });
 }

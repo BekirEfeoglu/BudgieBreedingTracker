@@ -106,10 +106,7 @@ void main() {
         MessageBubble(message: message, isMe: true),
       );
 
-      expect(
-        find.text(l10n('messaging.message_deleted')),
-        findsOneWidget,
-      );
+      expect(find.text(l10n('messaging.message_deleted')), findsOneWidget);
       // Original content should not be visible
       expect(find.text('Secret'), findsNothing);
     });
@@ -154,8 +151,9 @@ void main() {
       expect(find.byIcon(LucideIcons.check), findsNothing);
     });
 
-    testWidgets('does not show read receipt icons for other users',
-        (tester) async {
+    testWidgets('does not show read receipt icons for other users', (
+      tester,
+    ) async {
       final message = Message(
         id: 'msg-1',
         conversationId: 'conv-1',
@@ -278,8 +276,9 @@ void main() {
   });
 
   group('MessageBubble — time formatting', () {
-    testWidgets('shows formatted time with zero-padded hour and minute',
-        (tester) async {
+    testWidgets('shows formatted time with zero-padded hour and minute', (
+      tester,
+    ) async {
       final message = Message(
         id: 'msg-time',
         conversationId: 'conv-1',

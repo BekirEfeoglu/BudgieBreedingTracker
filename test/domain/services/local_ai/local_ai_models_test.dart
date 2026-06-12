@@ -10,10 +10,7 @@ void main() {
     });
 
     test('openRouterDefaults have correct values', () {
-      expect(
-        LocalAiConfig.openRouterDefaults.baseUrl,
-        'https://openrouter.ai',
-      );
+      expect(LocalAiConfig.openRouterDefaults.baseUrl, 'https://openrouter.ai');
       expect(
         LocalAiConfig.openRouterDefaults.provider,
         LocalAiProvider.openRouter,
@@ -52,14 +49,17 @@ void main() {
       expect(config.normalizedModel, LocalAiConfig.defaults.model);
     });
 
-    test('normalizedModel returns openRouter default for empty + openRouter', () {
-      const config = LocalAiConfig(
-        provider: LocalAiProvider.openRouter,
-        baseUrl: 'test',
-        model: '',
-      );
-      expect(config.normalizedModel, LocalAiConfig.openRouterDefaults.model);
-    });
+    test(
+      'normalizedModel returns openRouter default for empty + openRouter',
+      () {
+        const config = LocalAiConfig(
+          provider: LocalAiProvider.openRouter,
+          baseUrl: 'test',
+          model: '',
+        );
+        expect(config.normalizedModel, LocalAiConfig.openRouterDefaults.model);
+      },
+    );
 
     test('normalizedModel trims whitespace', () {
       const config = LocalAiConfig(baseUrl: 'test', model: '  gemma  ');
@@ -90,10 +90,7 @@ void main() {
   group('LocalAiProvider', () {
     test('fromRaw parses known values', () {
       expect(LocalAiProvider.fromRaw('ollama'), LocalAiProvider.ollama);
-      expect(
-        LocalAiProvider.fromRaw('openRouter'),
-        LocalAiProvider.openRouter,
-      );
+      expect(LocalAiProvider.fromRaw('openRouter'), LocalAiProvider.openRouter);
     });
 
     test('fromRaw defaults to openRouter for unknown', () {
@@ -149,18 +146,9 @@ void main() {
     });
 
     test('fromRaw parses Turkish values', () {
-      expect(
-        LocalAiSexPrediction.fromRaw('erkek'),
-        LocalAiSexPrediction.male,
-      );
-      expect(
-        LocalAiSexPrediction.fromRaw('dişi'),
-        LocalAiSexPrediction.female,
-      );
-      expect(
-        LocalAiSexPrediction.fromRaw('disi'),
-        LocalAiSexPrediction.female,
-      );
+      expect(LocalAiSexPrediction.fromRaw('erkek'), LocalAiSexPrediction.male);
+      expect(LocalAiSexPrediction.fromRaw('dişi'), LocalAiSexPrediction.female);
+      expect(LocalAiSexPrediction.fromRaw('disi'), LocalAiSexPrediction.female);
       expect(
         LocalAiSexPrediction.fromRaw('belirsiz'),
         LocalAiSexPrediction.uncertain,
@@ -189,15 +177,18 @@ void main() {
 
   group('LocalAiGeneticsInsight.fromJson', () {
     test('parses complete JSON', () {
-      final insight = LocalAiGeneticsInsight.fromJson({
-        'summary': 'Test summary',
-        'confidence': 'high',
-        'likely_mutations': ['Green Normal', 'Blue Opaline'],
-        'matched_genetics': ['opaline', 'blue'],
-        'sex_linked_note': 'Opaline is sex-linked',
-        'warnings': ['Warning 1'],
-        'next_checks': ['Check 1'],
-      }, allowedGenetics: {'opaline', 'blue', 'ino'});
+      final insight = LocalAiGeneticsInsight.fromJson(
+        {
+          'summary': 'Test summary',
+          'confidence': 'high',
+          'likely_mutations': ['Green Normal', 'Blue Opaline'],
+          'matched_genetics': ['opaline', 'blue'],
+          'sex_linked_note': 'Opaline is sex-linked',
+          'warnings': ['Warning 1'],
+          'next_checks': ['Check 1'],
+        },
+        allowedGenetics: {'opaline', 'blue', 'ino'},
+      );
 
       expect(insight.summary, 'Test summary');
       expect(insight.confidence, LocalAiConfidence.high);
@@ -209,15 +200,18 @@ void main() {
     });
 
     test('filters matched_genetics by allowed set', () {
-      final insight = LocalAiGeneticsInsight.fromJson({
-        'summary': '',
-        'confidence': 'low',
-        'likely_mutations': <String>[],
-        'matched_genetics': ['opaline', 'fake_mutation', 'blue'],
-        'sex_linked_note': '',
-        'warnings': <String>[],
-        'next_checks': <String>[],
-      }, allowedGenetics: {'opaline', 'blue'});
+      final insight = LocalAiGeneticsInsight.fromJson(
+        {
+          'summary': '',
+          'confidence': 'low',
+          'likely_mutations': <String>[],
+          'matched_genetics': ['opaline', 'fake_mutation', 'blue'],
+          'sex_linked_note': '',
+          'warnings': <String>[],
+          'next_checks': <String>[],
+        },
+        allowedGenetics: {'opaline', 'blue'},
+      );
 
       expect(insight.matchedGenetics, ['opaline', 'blue']);
       expect(insight.matchedGenetics, isNot(contains('fake_mutation')));
@@ -346,16 +340,10 @@ void main() {
         'wing_pattern': 'normal',
         'eye_color': 'koyu',
         'rationale': 'test',
-        'secondary_possibilities': [
-          'normal_skyblue',
-          'normal_cobalt',
-        ],
+        'secondary_possibilities': ['normal_skyblue', 'normal_cobalt'],
       });
 
-      expect(
-        insight.secondaryPossibilities,
-        isNot(contains('normal_skyblue')),
-      );
+      expect(insight.secondaryPossibilities, isNot(contains('normal_skyblue')));
     });
 
     test('infers baseSeries from signature when unknown', () {

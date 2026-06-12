@@ -52,16 +52,15 @@ Widget _buildSubject({
         },
       ),
     ],
-    child: const MaterialApp(
-      home: MarketplaceFavoritesScreen(),
-    ),
+    child: const MaterialApp(home: MarketplaceFavoritesScreen()),
   );
 }
 
 void main() {
   group('MarketplaceFavoritesScreen', () {
-    testWidgets('should_show_loading_indicator_when_data_is_loading',
-        (tester) async {
+    testWidgets('should_show_loading_indicator_when_data_is_loading', (
+      tester,
+    ) async {
       final completer = Completer<List<MarketplaceListing>>();
 
       await pumpLocalizedApp(
@@ -69,13 +68,11 @@ void main() {
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue(_testUserId),
-            marketplaceFavoritesProvider(_testUserId).overrideWith(
-              (_) => completer.future,
-            ),
+            marketplaceFavoritesProvider(
+              _testUserId,
+            ).overrideWith((_) => completer.future),
           ],
-          child: const MaterialApp(
-            home: MarketplaceFavoritesScreen(),
-          ),
+          child: const MaterialApp(home: MarketplaceFavoritesScreen()),
         ),
         settle: false,
       );
@@ -89,8 +86,10 @@ void main() {
       await pumpLocalizedApp(
         tester,
         _buildSubject(
-          listingsAsync:
-              AsyncError(Exception('Network error'), StackTrace.empty),
+          listingsAsync: AsyncError(
+            Exception('Network error'),
+            StackTrace.empty,
+          ),
         ),
       );
 
@@ -107,8 +106,9 @@ void main() {
       expect(find.text('marketplace.no_favorites'), findsOneWidget);
     });
 
-    testWidgets('should_show_listing_cards_when_favorites_exist',
-        (tester) async {
+    testWidgets('should_show_listing_cards_when_favorites_exist', (
+      tester,
+    ) async {
       await pumpLocalizedApp(
         tester,
         _buildSubject(listingsAsync: const AsyncData(_sampleListings)),

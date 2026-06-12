@@ -19,31 +19,37 @@ void main() {
       expect(XpConstants.getXpAmount(XpAction.sendMessage), 2);
     });
 
-    test('returns 0 for actions not in the xpValues map (unknown fallback)', () {
-      // unlockBadge is awarded via badge engine, not direct XP table.
-      // unknown is the deserialization fallback — must never grant XP.
-      expect(XpConstants.getXpAmount(XpAction.unlockBadge), 0);
-      expect(XpConstants.getXpAmount(XpAction.unknown), 0);
-    });
+    test(
+      'returns 0 for actions not in the xpValues map (unknown fallback)',
+      () {
+        // unlockBadge is awarded via badge engine, not direct XP table.
+        // unknown is the deserialization fallback — must never grant XP.
+        expect(XpConstants.getXpAmount(XpAction.unlockBadge), 0);
+        expect(XpConstants.getXpAmount(XpAction.unknown), 0);
+      },
+    );
 
-    test('every gameplay XpAction (excluding unknown/unlockBadge) is mapped', () {
-      // Catches regression where a new gameplay action is added to the enum
-      // but its XP reward is forgotten in xpConstants.
-      const excluded = {XpAction.unlockBadge, XpAction.unknown};
-      for (final action in XpAction.values) {
-        if (excluded.contains(action)) continue;
-        expect(
-          XpConstants.xpValues.containsKey(action),
-          isTrue,
-          reason: 'XpAction.$action is missing from xpValues map',
-        );
-        expect(
-          XpConstants.getXpAmount(action),
-          greaterThan(0),
-          reason: 'XpAction.$action should award positive XP',
-        );
-      }
-    });
+    test(
+      'every gameplay XpAction (excluding unknown/unlockBadge) is mapped',
+      () {
+        // Catches regression where a new gameplay action is added to the enum
+        // but its XP reward is forgotten in xpConstants.
+        const excluded = {XpAction.unlockBadge, XpAction.unknown};
+        for (final action in XpAction.values) {
+          if (excluded.contains(action)) continue;
+          expect(
+            XpConstants.xpValues.containsKey(action),
+            isTrue,
+            reason: 'XpAction.$action is missing from xpValues map',
+          );
+          expect(
+            XpConstants.getXpAmount(action),
+            greaterThan(0),
+            reason: 'XpAction.$action should award positive XP',
+          );
+        }
+      },
+    );
 
     test('XP values are positive integers (no negative XP regressions)', () {
       for (final entry in XpConstants.xpValues.entries) {

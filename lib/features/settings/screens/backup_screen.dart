@@ -165,9 +165,7 @@ class BackupScreen extends ConsumerWidget {
       // import-side AppConstants.freeTierMaxBirds limit entirely (audit K8).
       if (!isPremium) {
         try {
-          await ref
-              .read(freeTierLimitServiceProvider)
-              .guardBirdLimit(userId);
+          await ref.read(freeTierLimitServiceProvider).guardBirdLimit(userId);
         } on FreeTierLimitException {
           if (context.mounted) {
             _showPremiumDialog(

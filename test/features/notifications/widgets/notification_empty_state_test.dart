@@ -84,10 +84,7 @@ void main() {
     testWidgets('shows correct subtitle text', (tester) async {
       await tester.pumpWidget(createSubject());
 
-      expect(
-        find.text(resolvedL10n('common.no_results_hint')),
-        findsOneWidget,
-      );
+      expect(find.text(resolvedL10n('common.no_results_hint')), findsOneWidget);
     });
 
     testWidgets('shows searchX icon', (tester) async {

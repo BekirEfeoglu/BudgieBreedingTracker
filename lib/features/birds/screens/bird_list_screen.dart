@@ -212,9 +212,7 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
       // context may have been deactivated while the bulk pass ran.
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'birds.bulk_action_success'.tr(args: ['$succeeded']),
-          ),
+          content: Text('birds.bulk_action_success'.tr(args: ['$succeeded'])),
           behavior: SnackBarBehavior.floating,
         ),
       );

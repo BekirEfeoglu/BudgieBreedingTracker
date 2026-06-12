@@ -70,8 +70,10 @@ class DataImportService {
 
     final maleBird = await _birdRepo.getById(pair.maleId!);
     final femaleBird = await _birdRepo.getById(pair.femaleId!);
-    if (maleBird == null || femaleBird == null ||
-        maleBird.userId != pair.userId || femaleBird.userId != pair.userId) {
+    if (maleBird == null ||
+        femaleBird == null ||
+        maleBird.userId != pair.userId ||
+        femaleBird.userId != pair.userId) {
       throw const _ImportValidationException('birds.not_found');
     }
     if (maleBird.gender != BirdGender.male ||

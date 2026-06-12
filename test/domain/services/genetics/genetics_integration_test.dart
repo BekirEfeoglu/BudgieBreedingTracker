@@ -96,10 +96,7 @@ void main() {
       );
 
       expect(predictions, isNotEmpty);
-      expect(
-        predictions.any((r) => r.compoundPhenotype == 'Albino'),
-        isTrue,
-      );
+      expect(predictions.any((r) => r.compoundPhenotype == 'Albino'), isTrue);
 
       final resolved = epistasis.resolveCompoundPhenotype({'blue', 'ino'});
       expect(resolved, 'Albino');

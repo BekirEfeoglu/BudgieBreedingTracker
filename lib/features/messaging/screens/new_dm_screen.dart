@@ -177,11 +177,7 @@ class _UserTile extends StatelessWidget {
       leading: CircleAvatar(
         backgroundColor: theme.colorScheme.primaryContainer,
         backgroundImage: avatarUrl != null
-            ? CachedNetworkImageProvider(
-                avatarUrl,
-                maxWidth: 96,
-                maxHeight: 96,
-              )
+            ? CachedNetworkImageProvider(avatarUrl, maxWidth: 96, maxHeight: 96)
             : null,
         child: avatarUrl == null
             ? Text(

@@ -48,9 +48,7 @@ void main() {
         ),
       );
 
-      final semantics = tester.getSemantics(
-        find.byType(BirdColorSimulation),
-      );
+      final semantics = tester.getSemantics(find.byType(BirdColorSimulation));
       expect(semantics.label, contains('Cobalt Opaline'));
     });
 
@@ -139,9 +137,7 @@ void main() {
       expect(customPaint.painter, isA<BudgiePainter>());
     });
 
-    testWidgets('renders without crash for various mutations', (
-      tester,
-    ) async {
+    testWidgets('renders without crash for various mutations', (tester) async {
       final testCases = [
         (['blue'], 'Skyblue'),
         (['opaline'], 'Opaline Light Green'),

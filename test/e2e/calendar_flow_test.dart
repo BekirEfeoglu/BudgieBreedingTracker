@@ -22,8 +22,7 @@ void main() {
       () async {
         final mockEventRepository = MockEventRepository();
         when(() => mockEventRepository.save(any())).thenAnswer((_) async {});
-        when(() => mockEventRepository.saveAll(any()))
-            .thenAnswer((_) async {});
+        when(() => mockEventRepository.saveAll(any())).thenAnswer((_) async {});
 
         final generator = CalendarEventGenerator(mockEventRepository);
         await generator.generateIncubationEvents(
@@ -33,12 +32,16 @@ void main() {
           pairLabel: 'B2',
         );
 
-        final saved = verify(
-          () => mockEventRepository.saveAll(captureAny()),
-        ).captured.single as List<dynamic>;
+        final saved =
+            verify(
+                  () => mockEventRepository.saveAll(captureAny()),
+                ).captured.single
+                as List<dynamic>;
         expect(saved, isNotEmpty);
         expect(
-          saved.cast<Event>().every((event) => event.type == EventType.breeding),
+          saved.cast<Event>().every(
+            (event) => event.type == EventType.breeding,
+          ),
           isTrue,
         );
       },
@@ -81,8 +84,7 @@ void main() {
       () async {
         final mockEventRepository = MockEventRepository();
         when(() => mockEventRepository.save(any())).thenAnswer((_) async {});
-        when(() => mockEventRepository.saveAll(any()))
-            .thenAnswer((_) async {});
+        when(() => mockEventRepository.saveAll(any())).thenAnswer((_) async {});
 
         final generator = CalendarEventGenerator(mockEventRepository);
         final layDate = DateTime.now().add(const Duration(days: 1));
@@ -103,9 +105,11 @@ void main() {
         final eggEvents = verify(
           () => mockEventRepository.save(captureAny()),
         ).captured.cast<Event>();
-        final chickEvents = verify(
-          () => mockEventRepository.saveAll(captureAny()),
-        ).captured.single as List<dynamic>;
+        final chickEvents =
+            verify(
+                  () => mockEventRepository.saveAll(captureAny()),
+                ).captured.single
+                as List<dynamic>;
 
         final allEvents = [...eggEvents, ...chickEvents.cast<Event>()];
         expect(
@@ -124,8 +128,9 @@ void main() {
         final eggRoute = NotificationService.payloadToRoute(
           'egg_turning:inc-1',
         );
-        final chickRoute =
-            NotificationService.payloadToRoute('chick:$chickUuid');
+        final chickRoute = NotificationService.payloadToRoute(
+          'chick:$chickUuid',
+        );
 
         expect(eggRoute, '/breeding');
         expect(chickRoute, '/chicks/$chickUuid');

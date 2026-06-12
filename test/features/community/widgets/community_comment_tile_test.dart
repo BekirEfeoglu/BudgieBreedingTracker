@@ -244,7 +244,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text(l10n('community.report_reason_spam')), findsOneWidget);
-      expect(find.text(l10n('community.report_reason_harassment')), findsOneWidget);
+      expect(
+        find.text(l10n('community.report_reason_harassment')),
+        findsOneWidget,
+      );
       expect(
         find.text(l10n('community.report_reason_inappropriate')),
         findsOneWidget,

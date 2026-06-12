@@ -45,7 +45,11 @@ void main() {
       tester,
       const Size(980, 1100),
       const Scaffold(
-        body: SafeArea(child: SingleChildScrollView(child: GeneticsAdvancedColorAuditBoard())),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: GeneticsAdvancedColorAuditBoard(),
+          ),
+        ),
       ),
     );
 

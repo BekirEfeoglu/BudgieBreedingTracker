@@ -32,7 +32,9 @@ void main() {
 
   group('safeMap', () {
     test('returns typed map for Map<String, dynamic> value', () {
-      final result = safeMap({'data': {'a': 1}}, 'data');
+      final result = safeMap({
+        'data': {'a': 1},
+      }, 'data');
       expect(result, {'a': 1});
     });
 
@@ -57,7 +59,12 @@ void main() {
 
   group('safeList', () {
     test('returns the list when present', () {
-      expect(safeList({'items': [1, 2]}, 'items'), [1, 2]);
+      expect(
+        safeList({
+          'items': [1, 2],
+        }, 'items'),
+        [1, 2],
+      );
     });
 
     test('returns empty list for missing key or non-list value', () {

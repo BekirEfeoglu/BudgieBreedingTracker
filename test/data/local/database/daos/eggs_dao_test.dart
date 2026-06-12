@@ -267,48 +267,50 @@ void main() {
       expect(result['2024-02']?.total, 1);
     });
 
-    test('filters by species via incubation join when species provided',
-        () async {
-      await db.incubationsDao.insertItem(
-        makeIncubation(id: 'budgie-inc', species: Species.budgie),
-      );
-      await db.incubationsDao.insertItem(
-        makeIncubation(id: 'canary-inc', species: Species.canary),
-      );
+    test(
+      'filters by species via incubation join when species provided',
+      () async {
+        await db.incubationsDao.insertItem(
+          makeIncubation(id: 'budgie-inc', species: Species.budgie),
+        );
+        await db.incubationsDao.insertItem(
+          makeIncubation(id: 'canary-inc', species: Species.canary),
+        );
 
-      await dao.insertItem(
-        makeEgg(
-          id: 'budgie-fertile',
-          layDate: DateTime(2024, 1, 5),
-          incubationId: 'budgie-inc',
-          status: EggStatus.fertile,
-        ),
-      );
-      await dao.insertItem(
-        makeEgg(
-          id: 'canary-fertile',
-          layDate: DateTime(2024, 1, 6),
-          incubationId: 'canary-inc',
-          status: EggStatus.fertile,
-        ),
-      );
-      await dao.insertItem(
-        makeEgg(
-          id: 'canary-infertile',
-          layDate: DateTime(2024, 1, 7),
-          incubationId: 'canary-inc',
-          status: EggStatus.infertile,
-        ),
-      );
+        await dao.insertItem(
+          makeEgg(
+            id: 'budgie-fertile',
+            layDate: DateTime(2024, 1, 5),
+            incubationId: 'budgie-inc',
+            status: EggStatus.fertile,
+          ),
+        );
+        await dao.insertItem(
+          makeEgg(
+            id: 'canary-fertile',
+            layDate: DateTime(2024, 1, 6),
+            incubationId: 'canary-inc',
+            status: EggStatus.fertile,
+          ),
+        );
+        await dao.insertItem(
+          makeEgg(
+            id: 'canary-infertile',
+            layDate: DateTime(2024, 1, 7),
+            incubationId: 'canary-inc',
+            status: EggStatus.infertile,
+          ),
+        );
 
-      final result = await dao
-          .watchMonthlyFertility(userId, species: Species.budgie.toJson())
-          .first;
+        final result = await dao
+            .watchMonthlyFertility(userId, species: Species.budgie.toJson())
+            .first;
 
-      // Only the budgie incubation row counts; canary rows ignored.
-      expect(result['2024-01']?.fertile, 1);
-      expect(result['2024-01']?.total, 1);
-    });
+        // Only the budgie incubation row counts; canary rows ignored.
+        expect(result['2024-01']?.fertile, 1);
+        expect(result['2024-01']?.total, 1);
+      },
+    );
 
     test('returns empty map when user has no eggs', () async {
       final result = await dao.watchMonthlyFertility(userId).first;

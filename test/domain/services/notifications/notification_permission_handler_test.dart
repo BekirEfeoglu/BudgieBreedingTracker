@@ -44,22 +44,16 @@ void main() {
               >(),
         ).thenReturn(mockIOS);
         when(
-          () => mockIOS.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          ),
+          () =>
+              mockIOS.requestPermissions(alert: true, badge: true, sound: true),
         ).thenAnswer((_) async => true);
 
         final result = await handler.requestPermission();
 
         expect(result, isTrue);
         verify(
-          () => mockIOS.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          ),
+          () =>
+              mockIOS.requestPermissions(alert: true, badge: true, sound: true),
         ).called(1);
       });
 
@@ -72,11 +66,8 @@ void main() {
               >(),
         ).thenReturn(mockIOS);
         when(
-          () => mockIOS.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          ),
+          () =>
+              mockIOS.requestPermissions(alert: true, badge: true, sound: true),
         ).thenAnswer((_) async => false);
 
         final result = await handler.requestPermission();
@@ -93,11 +84,8 @@ void main() {
               >(),
         ).thenReturn(mockIOS);
         when(
-          () => mockIOS.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          ),
+          () =>
+              mockIOS.requestPermissions(alert: true, badge: true, sound: true),
         ).thenAnswer((_) async => null);
 
         final result = await handler.requestPermission();
@@ -107,30 +95,32 @@ void main() {
     });
 
     group('Android platform', () {
-      test('falls through to requestAndroidPermission when no iOS impl',
-          () async {
-        final mockAndroid = _MockAndroidPlugin();
-        when(
-          () => mockPlugin
-              .resolvePlatformSpecificImplementation<
-                IOSFlutterLocalNotificationsPlugin
-              >(),
-        ).thenReturn(null);
-        when(
-          () => mockPlugin
-              .resolvePlatformSpecificImplementation<
-                AndroidFlutterLocalNotificationsPlugin
-              >(),
-        ).thenReturn(mockAndroid);
-        when(
-          () => mockAndroid.requestNotificationsPermission(),
-        ).thenAnswer((_) async => true);
+      test(
+        'falls through to requestAndroidPermission when no iOS impl',
+        () async {
+          final mockAndroid = _MockAndroidPlugin();
+          when(
+            () => mockPlugin
+                .resolvePlatformSpecificImplementation<
+                  IOSFlutterLocalNotificationsPlugin
+                >(),
+          ).thenReturn(null);
+          when(
+            () => mockPlugin
+                .resolvePlatformSpecificImplementation<
+                  AndroidFlutterLocalNotificationsPlugin
+                >(),
+          ).thenReturn(mockAndroid);
+          when(
+            () => mockAndroid.requestNotificationsPermission(),
+          ).thenAnswer((_) async => true);
 
-        final result = await handler.requestPermission();
+          final result = await handler.requestPermission();
 
-        expect(result, isTrue);
-        verify(() => mockAndroid.requestNotificationsPermission()).called(1);
-      });
+          expect(result, isTrue);
+          verify(() => mockAndroid.requestNotificationsPermission()).called(1);
+        },
+      );
     });
   });
 
@@ -143,19 +133,21 @@ void main() {
       handler = _TestPermissionHandler(mockPlugin);
     });
 
-    test('returns true when no Android implementation (non-Android platform)',
-        () async {
-      when(
-        () => mockPlugin
-            .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >(),
-      ).thenReturn(null);
+    test(
+      'returns true when no Android implementation (non-Android platform)',
+      () async {
+        when(
+          () => mockPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >(),
+        ).thenReturn(null);
 
-      final result = await handler.requestAndroidPermission();
+        final result = await handler.requestAndroidPermission();
 
-      expect(result, isTrue);
-    });
+        expect(result, isTrue);
+      },
+    );
 
     test('returns true when Android permission is granted', () async {
       final mockAndroid = _MockAndroidPlugin();
@@ -218,19 +210,21 @@ void main() {
       handler = _TestPermissionHandler(mockPlugin);
     });
 
-    test('returns true when no Android implementation (non-Android platform)',
-        () async {
-      when(
-        () => mockPlugin
-            .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >(),
-      ).thenReturn(null);
+    test(
+      'returns true when no Android implementation (non-Android platform)',
+      () async {
+        when(
+          () => mockPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >(),
+        ).thenReturn(null);
 
-      final result = await handler.areNotificationsEnabled();
+        final result = await handler.areNotificationsEnabled();
 
-      expect(result, isTrue);
-    });
+        expect(result, isTrue);
+      },
+    );
 
     test('returns true when notifications are enabled', () async {
       final mockAndroid = _MockAndroidPlugin();
@@ -293,19 +287,21 @@ void main() {
       handler = _TestPermissionHandler(mockPlugin);
     });
 
-    test('returns true when no Android implementation (non-Android platform)',
-        () async {
-      when(
-        () => mockPlugin
-            .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >(),
-      ).thenReturn(null);
+    test(
+      'returns true when no Android implementation (non-Android platform)',
+      () async {
+        when(
+          () => mockPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >(),
+        ).thenReturn(null);
 
-      final result = await handler.checkExactAlarmPermission();
+        final result = await handler.checkExactAlarmPermission();
 
-      expect(result, isTrue);
-    });
+        expect(result, isTrue);
+      },
+    );
 
     test('returns true when exact alarms are allowed', () async {
       final mockAndroid = _MockAndroidPlugin();
@@ -341,93 +337,101 @@ void main() {
       expect(result, isFalse);
     });
 
-    test('returns true when canScheduleExactNotifications returns null',
+    test(
+      'returns true when canScheduleExactNotifications returns null',
+      () async {
+        final mockAndroid = _MockAndroidPlugin();
+        when(
+          () => mockPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >(),
+        ).thenReturn(mockAndroid);
+        when(
+          () => mockAndroid.canScheduleExactNotifications(),
+        ).thenAnswer((_) async => null);
+
+        final result = await handler.checkExactAlarmPermission();
+
+        expect(result, isTrue);
+      },
+    );
+  });
+
+  group(
+    'NotificationPermissionHandler.requestExactAlarmPermissionIfNeeded',
+    () {
+      late _MockPlugin mockPlugin;
+      late _TestPermissionHandler handler;
+
+      setUp(() {
+        mockPlugin = _MockPlugin();
+        handler = _TestPermissionHandler(mockPlugin);
+      });
+
+      test('returns true when exact alarms are already allowed', () async {
+        final mockAndroid = _MockAndroidPlugin();
+        when(
+          () => mockPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >(),
+        ).thenReturn(mockAndroid);
+        when(
+          () => mockAndroid.canScheduleExactNotifications(),
+        ).thenAnswer((_) async => true);
+
+        final result = await handler.requestExactAlarmPermissionIfNeeded();
+
+        expect(result, isTrue);
+        verifyNever(() => mockAndroid.requestExactAlarmsPermission());
+      });
+
+      test(
+        'requests permission when exact alarms are not yet allowed',
         () async {
-      final mockAndroid = _MockAndroidPlugin();
-      when(
-        () => mockPlugin
-            .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >(),
-      ).thenReturn(mockAndroid);
-      when(
-        () => mockAndroid.canScheduleExactNotifications(),
-      ).thenAnswer((_) async => null);
+          final mockAndroid = _MockAndroidPlugin();
+          when(
+            () => mockPlugin
+                .resolvePlatformSpecificImplementation<
+                  AndroidFlutterLocalNotificationsPlugin
+                >(),
+          ).thenReturn(mockAndroid);
+          when(
+            () => mockAndroid.canScheduleExactNotifications(),
+          ).thenAnswer((_) async => false);
+          when(
+            () => mockAndroid.requestExactAlarmsPermission(),
+          ).thenAnswer((_) async => true);
 
-      final result = await handler.checkExactAlarmPermission();
+          final result = await handler.requestExactAlarmPermissionIfNeeded();
 
-      expect(result, isTrue);
-    });
-  });
+          expect(result, isTrue);
+          verify(() => mockAndroid.requestExactAlarmsPermission()).called(1);
+        },
+      );
 
-  group('NotificationPermissionHandler.requestExactAlarmPermissionIfNeeded', () {
-    late _MockPlugin mockPlugin;
-    late _TestPermissionHandler handler;
+      test('returns false when request is denied', () async {
+        final mockAndroid = _MockAndroidPlugin();
+        when(
+          () => mockPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >(),
+        ).thenReturn(mockAndroid);
+        when(
+          () => mockAndroid.canScheduleExactNotifications(),
+        ).thenAnswer((_) async => false);
+        when(
+          () => mockAndroid.requestExactAlarmsPermission(),
+        ).thenAnswer((_) async => false);
 
-    setUp(() {
-      mockPlugin = _MockPlugin();
-      handler = _TestPermissionHandler(mockPlugin);
-    });
+        final result = await handler.requestExactAlarmPermissionIfNeeded();
 
-    test('returns true when exact alarms are already allowed', () async {
-      final mockAndroid = _MockAndroidPlugin();
-      when(
-        () => mockPlugin
-            .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >(),
-      ).thenReturn(mockAndroid);
-      when(
-        () => mockAndroid.canScheduleExactNotifications(),
-      ).thenAnswer((_) async => true);
-
-      final result = await handler.requestExactAlarmPermissionIfNeeded();
-
-      expect(result, isTrue);
-      verifyNever(() => mockAndroid.requestExactAlarmsPermission());
-    });
-
-    test('requests permission when exact alarms are not yet allowed', () async {
-      final mockAndroid = _MockAndroidPlugin();
-      when(
-        () => mockPlugin
-            .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >(),
-      ).thenReturn(mockAndroid);
-      when(
-        () => mockAndroid.canScheduleExactNotifications(),
-      ).thenAnswer((_) async => false);
-      when(
-        () => mockAndroid.requestExactAlarmsPermission(),
-      ).thenAnswer((_) async => true);
-
-      final result = await handler.requestExactAlarmPermissionIfNeeded();
-
-      expect(result, isTrue);
-      verify(() => mockAndroid.requestExactAlarmsPermission()).called(1);
-    });
-
-    test('returns false when request is denied', () async {
-      final mockAndroid = _MockAndroidPlugin();
-      when(
-        () => mockPlugin
-            .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >(),
-      ).thenReturn(mockAndroid);
-      when(
-        () => mockAndroid.canScheduleExactNotifications(),
-      ).thenAnswer((_) async => false);
-      when(
-        () => mockAndroid.requestExactAlarmsPermission(),
-      ).thenAnswer((_) async => false);
-
-      final result = await handler.requestExactAlarmPermissionIfNeeded();
-
-      expect(result, isFalse);
-    });
-  });
+        expect(result, isFalse);
+      });
+    },
+  );
 
   group('NotificationPermissionHandler.resolveExactAlarmPermission', () {
     late _MockPlugin mockPlugin;
@@ -438,29 +442,31 @@ void main() {
       handler = _TestPermissionHandler(mockPlugin);
     });
 
-    test('returns cached result on subsequent calls without forceRefresh',
-        () async {
-      final mockAndroid = _MockAndroidPlugin();
-      when(
-        () => mockPlugin
-            .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >(),
-      ).thenReturn(mockAndroid);
-      when(
-        () => mockAndroid.canScheduleExactNotifications(),
-      ).thenAnswer((_) async => true);
+    test(
+      'returns cached result on subsequent calls without forceRefresh',
+      () async {
+        final mockAndroid = _MockAndroidPlugin();
+        when(
+          () => mockPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >(),
+        ).thenReturn(mockAndroid);
+        when(
+          () => mockAndroid.canScheduleExactNotifications(),
+        ).thenAnswer((_) async => true);
 
-      // First call populates cache
-      final result1 = await handler.resolveExactAlarmPermission();
-      expect(result1, isTrue);
+        // First call populates cache
+        final result1 = await handler.resolveExactAlarmPermission();
+        expect(result1, isTrue);
 
-      // Second call should use cache — not call the plugin again
-      final result2 = await handler.resolveExactAlarmPermission();
-      expect(result2, isTrue);
+        // Second call should use cache — not call the plugin again
+        final result2 = await handler.resolveExactAlarmPermission();
+        expect(result2, isTrue);
 
-      verify(() => mockAndroid.canScheduleExactNotifications()).called(1);
-    });
+        verify(() => mockAndroid.canScheduleExactNotifications()).called(1);
+      },
+    );
 
     test('refreshes cache when forceRefresh is true', () async {
       final mockAndroid = _MockAndroidPlugin();
@@ -541,23 +547,27 @@ void main() {
       handler = _TestPermissionHandler(mockPlugin);
     });
 
-    test('isIgnoringBatteryOptimizations returns true on non-Android',
-        () async {
-      final result = await handler.isIgnoringBatteryOptimizations();
-      expect(result, isTrue);
-    });
+    test(
+      'isIgnoringBatteryOptimizations returns true on non-Android',
+      () async {
+        final result = await handler.isIgnoringBatteryOptimizations();
+        expect(result, isTrue);
+      },
+    );
 
-    test('requestIgnoreBatteryOptimizations returns true on non-Android',
-        () async {
-      final result = await handler.requestIgnoreBatteryOptimizations();
-      expect(result, isTrue);
-    });
+    test(
+      'requestIgnoreBatteryOptimizations returns true on non-Android',
+      () async {
+        final result = await handler.requestIgnoreBatteryOptimizations();
+        expect(result, isTrue);
+      },
+    );
 
     test(
       'requestBatteryOptimizationExemptionIfNeeded returns true on non-Android',
       () async {
-        final result =
-            await handler.requestBatteryOptimizationExemptionIfNeeded();
+        final result = await handler
+            .requestBatteryOptimizationExemptionIfNeeded();
         expect(result, isTrue);
       },
     );

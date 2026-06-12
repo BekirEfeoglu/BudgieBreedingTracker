@@ -6,14 +6,22 @@ void main() {
   group('GeneticsConstants', () {
     group('inbreeding thresholds', () {
       test('thresholds are in ascending order', () {
-        expect(GeneticsConstants.inbreedingMinimal,
-            lessThan(GeneticsConstants.inbreedingLow));
-        expect(GeneticsConstants.inbreedingLow,
-            lessThan(GeneticsConstants.inbreedingModerate));
-        expect(GeneticsConstants.inbreedingModerate,
-            lessThan(GeneticsConstants.inbreedingHigh));
-        expect(GeneticsConstants.inbreedingHigh,
-            lessThan(GeneticsConstants.inbreedingCritical));
+        expect(
+          GeneticsConstants.inbreedingMinimal,
+          lessThan(GeneticsConstants.inbreedingLow),
+        );
+        expect(
+          GeneticsConstants.inbreedingLow,
+          lessThan(GeneticsConstants.inbreedingModerate),
+        );
+        expect(
+          GeneticsConstants.inbreedingModerate,
+          lessThan(GeneticsConstants.inbreedingHigh),
+        );
+        expect(
+          GeneticsConstants.inbreedingHigh,
+          lessThan(GeneticsConstants.inbreedingCritical),
+        );
       });
 
       test('thresholds are in valid range 0.0 to 1.0', () {
@@ -26,10 +34,16 @@ void main() {
         ];
 
         for (final threshold in thresholds) {
-          expect(threshold, greaterThanOrEqualTo(0.0),
-              reason: 'Threshold $threshold must be >= 0.0');
-          expect(threshold, lessThanOrEqualTo(1.0),
-              reason: 'Threshold $threshold must be <= 1.0');
+          expect(
+            threshold,
+            greaterThanOrEqualTo(0.0),
+            reason: 'Threshold $threshold must be >= 0.0',
+          );
+          expect(
+            threshold,
+            lessThanOrEqualTo(1.0),
+            reason: 'Threshold $threshold must be <= 1.0',
+          );
         }
       });
 
@@ -54,10 +68,16 @@ void main() {
         ];
 
         for (final rate in rates) {
-          expect(rate, greaterThan(0.0),
-              reason: 'Recombination rate $rate must be > 0.0');
-          expect(rate, lessThan(1.0),
-              reason: 'Recombination rate $rate must be < 1.0');
+          expect(
+            rate,
+            greaterThan(0.0),
+            reason: 'Recombination rate $rate must be > 0.0',
+          );
+          expect(
+            rate,
+            lessThan(1.0),
+            reason: 'Recombination rate $rate must be < 1.0',
+          );
         }
       });
 
@@ -70,8 +90,7 @@ void main() {
         expect(GeneticsConstants.inoSlateRecombination, 0.02);
       });
 
-      test(
-          'cinnamon-ino is smaller than opaline-cinnamon '
+      test('cinnamon-ino is smaller than opaline-cinnamon '
           '(closely linked loci)', () {
         expect(
           GeneticsConstants.cinnamonInoRecombination,
@@ -89,15 +108,12 @@ void main() {
           GeneticsConstants.inoSlateRecombination,
         ];
 
-        final minRate = rates.reduce(
-          (a, b) => a < b ? a : b,
-        );
+        final minRate = rates.reduce((a, b) => a < b ? a : b);
 
         expect(minRate, GeneticsConstants.inoSlateRecombination);
       });
 
-      test(
-          'opaline-slate is the largest recombination rate '
+      test('opaline-slate is the largest recombination rate '
           '(farthest apart on Z)', () {
         final rates = [
           GeneticsConstants.cinnamonInoRecombination,
@@ -108,9 +124,7 @@ void main() {
           GeneticsConstants.inoSlateRecombination,
         ];
 
-        final maxRate = rates.reduce(
-          (a, b) => a > b ? a : b,
-        );
+        final maxRate = rates.reduce((a, b) => a > b ? a : b);
 
         expect(maxRate, GeneticsConstants.opalineSlateRecombination);
       });
@@ -126,8 +140,7 @@ void main() {
         ];
 
         for (final locus in loci) {
-          expect(locus, isNotEmpty,
-              reason: 'Locus ID must not be empty');
+          expect(locus, isNotEmpty, reason: 'Locus ID must not be empty');
         }
       });
 
@@ -146,8 +159,11 @@ void main() {
           GeneticsConstants.locusCrested,
         ];
 
-        expect(loci.toSet().length, loci.length,
-            reason: 'All locus IDs must be unique');
+        expect(
+          loci.toSet().length,
+          loci.length,
+          reason: 'All locus IDs must be unique',
+        );
       });
     });
 
@@ -175,8 +191,11 @@ void main() {
 
       test('all allele IDs start with crested_ prefix', () {
         for (final allele in GeneticsConstants.crestedAlleleIds) {
-          expect(allele.startsWith('crested_'), isTrue,
-              reason: '"$allele" should start with crested_');
+          expect(
+            allele.startsWith('crested_'),
+            isTrue,
+            reason: '"$allele" should start with crested_',
+          );
         }
       });
     });

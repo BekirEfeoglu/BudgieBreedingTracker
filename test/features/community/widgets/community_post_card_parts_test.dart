@@ -14,9 +14,8 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/community_post_model.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_post_card_parts.dart';
 
-Finder _findHeartAppIcon() => find.byWidgetPredicate(
-      (w) => w is AppIcon && w.asset == AppIcons.heart,
-    );
+Finder _findHeartAppIcon() =>
+    find.byWidgetPredicate((w) => w is AppIcon && w.asset == AppIcons.heart);
 
 void main() {
   Widget wrap(Widget child) {

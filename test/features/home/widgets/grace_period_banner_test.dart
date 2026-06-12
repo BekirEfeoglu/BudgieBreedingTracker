@@ -17,9 +17,7 @@ Widget _createSubject({
       premiumGracePeriodProvider.overrideWithValue(gracePeriodStatus),
       userProfileProvider.overrideWith((ref) => Stream.value(null)),
     ],
-    child: const MaterialApp(
-      home: Scaffold(body: GracePeriodBanner()),
-    ),
+    child: const MaterialApp(home: Scaffold(body: GracePeriodBanner())),
   );
 }
 

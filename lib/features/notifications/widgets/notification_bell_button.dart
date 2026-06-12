@@ -56,8 +56,7 @@ class _NotificationBellButtonState
   void _showFeedbackPopup(List<ActionFeedback> feedbacks) {
     _removeOverlay();
 
-    final renderBox =
-        _bellKey.currentContext?.findRenderObject() as RenderBox?;
+    final renderBox = _bellKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
 
     final position = renderBox.localToGlobal(Offset.zero);
@@ -99,13 +98,10 @@ class _NotificationBellButtonState
                   if (!mounted) return;
                   context.push(AppRoutes.notifications);
                   // Reset after a short delay to allow navigation to complete
-                  Future.delayed(
-                    const Duration(milliseconds: 500),
-                    () {
-                      if (!mounted) return;
-                      _isNavigating = false;
-                    },
-                  );
+                  Future.delayed(const Duration(milliseconds: 500), () {
+                    if (!mounted) return;
+                    _isNavigating = false;
+                  });
                 },
               ),
             ),
@@ -142,13 +138,10 @@ class _NotificationBellButtonState
         } else {
           _isNavigating = true;
           context.push(AppRoutes.notifications);
-          Future.delayed(
-            const Duration(milliseconds: 500),
-            () {
-              if (!mounted) return;
-              _isNavigating = false;
-            },
-          );
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (!mounted) return;
+            _isNavigating = false;
+          });
         }
       },
       semanticLabel: 'notifications.inbox_title'.tr(),
@@ -156,9 +149,9 @@ class _NotificationBellButtonState
           ? Badge(
               label: Text(
                 totalBadge > 99 ? '99+' : '$totalBadge',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  fontSize: 10,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.labelSmall?.copyWith(fontSize: 10),
               ),
               child: const AppIcon(AppIcons.notification, size: 22),
             )

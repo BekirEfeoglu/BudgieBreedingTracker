@@ -38,7 +38,10 @@ void main() {
     test('covers both green and blue series', () {
       final titles = primaryAuditSamples.map((s) => s.title).toSet();
       expect(titles.any((t) => t.contains('Green')), isTrue);
-      expect(titles.any((t) => t.contains('Blue') || t.contains('Skyblue')), isTrue);
+      expect(
+        titles.any((t) => t.contains('Blue') || t.contains('Skyblue')),
+        isTrue,
+      );
     });
 
     test('has no duplicate titles', () {
@@ -91,15 +94,17 @@ void main() {
     });
 
     test('compound samples typically have multiple visual mutations', () {
-      final multiMutation = compoundAuditSamples
-          .where((s) => s.visualMutations.length >= 2);
+      final multiMutation = compoundAuditSamples.where(
+        (s) => s.visualMutations.length >= 2,
+      );
       expect(multiMutation, isNotEmpty);
     });
   });
 
   group('all audit samples combined', () {
     test('total sample count matches expected', () {
-      final total = primaryAuditSamples.length +
+      final total =
+          primaryAuditSamples.length +
           advancedAuditSamples.length +
           compoundAuditSamples.length;
       // 36 documented phenotypes across 3 boards

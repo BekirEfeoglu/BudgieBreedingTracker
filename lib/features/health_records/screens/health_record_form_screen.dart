@@ -82,10 +82,10 @@ class _HealthRecordFormScreenState
     _treatmentController.text = record.treatment ?? '';
     _vetController.text = record.veterinarian ?? '';
     _notesController.text = record.notes ?? '';
-    _weightController.text =
-        record.weight != null ? record.weight.toString() : '';
-    _costController.text =
-        record.cost != null ? record.cost.toString() : '';
+    _weightController.text = record.weight != null
+        ? record.weight.toString()
+        : '';
+    _costController.text = record.cost != null ? record.cost.toString() : '';
     _followUpDate = record.followUpDate;
     _didPopulateFromExisting = true;
   }
@@ -148,8 +148,7 @@ class _HealthRecordFormScreenState
               appBar: AppBar(title: Text('common.not_found'.tr())),
               body: ErrorState(
                 message: 'health_records.not_found'.tr(),
-                onRetry: () =>
-                    ref.invalidate(healthRecordByIdProvider(editId)),
+                onRetry: () => ref.invalidate(healthRecordByIdProvider(editId)),
               ),
             );
           }
@@ -179,64 +178,66 @@ class _HealthRecordFormScreenState
     return UnsavedChangesScope(
       isDirty: _isDirty,
       child: Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _isEdit
-              ? 'health_records.edit_record'.tr()
-              : 'health_records.new_record'.tr(),
+        appBar: AppBar(
+          title: Text(
+            _isEdit
+                ? 'health_records.edit_record'.tr()
+                : 'health_records.new_record'.tr(),
+          ),
         ),
-      ),
-      body: Form(
-        key: _formKey,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        child: SingleChildScrollView(
-          padding: AppSpacing.screenPadding,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: AppSpacing.maxContentWidth,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  HealthRecordFormFields(
-                    titleController: _titleController,
-                    descriptionController: _descriptionController,
-                    treatmentController: _treatmentController,
-                    vetController: _vetController,
-                    notesController: _notesController,
-                    weightController: _weightController,
-                    costController: _costController,
-                    type: _type,
-                    date: _date,
-                    followUpDate: _followUpDate,
-                    birdId: _birdId,
-                    birds: birdsAsync.value ?? [],
-                    chicks: chicksAsync.value ?? [],
-                    isAnimalsLoading:
-                        birdsAsync.isLoading || chicksAsync.isLoading,
-                    dateFormatter: ref.watch(dateFormatProvider).formatter(),
-                    onTypeChanged: (t) => setState(() => _type = t),
-                    onDateChanged: (d) => setState(() => _date = d),
-                    onFollowUpDateChanged: (d) =>
-                        setState(() => _followUpDate = d),
-                    onBirdChanged: (v) => setState(() => _birdId = v),
-                  ),
-                  const SizedBox(height: AppSpacing.xxl),
+        body: Form(
+          key: _formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          child: SingleChildScrollView(
+            padding: AppSpacing.screenPadding,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: AppSpacing.maxContentWidth,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    HealthRecordFormFields(
+                      titleController: _titleController,
+                      descriptionController: _descriptionController,
+                      treatmentController: _treatmentController,
+                      vetController: _vetController,
+                      notesController: _notesController,
+                      weightController: _weightController,
+                      costController: _costController,
+                      type: _type,
+                      date: _date,
+                      followUpDate: _followUpDate,
+                      birdId: _birdId,
+                      birds: birdsAsync.value ?? [],
+                      chicks: chicksAsync.value ?? [],
+                      isAnimalsLoading:
+                          birdsAsync.isLoading || chicksAsync.isLoading,
+                      dateFormatter: ref.watch(dateFormatProvider).formatter(),
+                      onTypeChanged: (t) => setState(() => _type = t),
+                      onDateChanged: (d) => setState(() => _date = d),
+                      onFollowUpDateChanged: (d) =>
+                          setState(() => _followUpDate = d),
+                      onBirdChanged: (v) => setState(() => _birdId = v),
+                    ),
+                    const SizedBox(height: AppSpacing.xxl),
 
-                  // Submit
-                  PrimaryButton(
-                    label: _isEdit ? 'common.update'.tr() : 'common.save'.tr(),
-                    isLoading: formState.isLoading,
-                    onPressed: _submit,
-                  ),
-                ],
+                    // Submit
+                    PrimaryButton(
+                      label: _isEdit
+                          ? 'common.update'.tr()
+                          : 'common.save'.tr(),
+                      isLoading: formState.isLoading,
+                      onPressed: _submit,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
-    ),
     );
   }
 

@@ -238,5 +238,4 @@ abstract final class BudgieDetails {
 
     canvas.restore();
   }
-
 }

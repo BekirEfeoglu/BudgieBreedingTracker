@@ -10,7 +10,9 @@ import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_bu
 Widget _wrap(Widget child, {List<dynamic> overrides = const []}) {
   return ProviderScope(
     overrides: overrides.cast(),
-    child: MaterialApp(home: Scaffold(appBar: AppBar(actions: [child]))),
+    child: MaterialApp(
+      home: Scaffold(appBar: AppBar(actions: [child])),
+    ),
   );
 }
 
@@ -106,10 +108,7 @@ void main() {
           overrides: [
             userProfileProvider.overrideWith((_) {
               return Stream.value(
-                const Profile(
-                  id: 'user-1',
-                  email: 'bekir@example.com',
-                ),
+                const Profile(id: 'user-1', email: 'bekir@example.com'),
               );
             }),
             currentUserProvider.overrideWith((_) => null),
@@ -184,9 +183,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final avatar = tester.widget<CircleAvatar>(
-        find.byType(CircleAvatar),
-      );
+      final avatar = tester.widget<CircleAvatar>(find.byType(CircleAvatar));
       expect(avatar.radius, 18);
     });
 

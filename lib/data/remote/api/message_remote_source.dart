@@ -41,7 +41,9 @@ class MessageRemoteSource {
     // Client-side message length validation
     final content = data['content'] as String?;
     if (content != null && content.length > maxMessageLength) {
-      throw Exception('Message exceeds maximum length of $maxMessageLength characters');
+      throw Exception(
+        'Message exceeds maximum length of $maxMessageLength characters',
+      );
     }
 
     try {
@@ -59,10 +61,10 @@ class MessageRemoteSource {
   Future<void> markAsRead(String messageId, String userId) async {
     try {
       // Append userId to read_by array if not already present
-      await _client.rpc('mark_message_read', params: {
-        'p_message_id': messageId,
-        'p_user_id': userId,
-      });
+      await _client.rpc(
+        'mark_message_read',
+        params: {'p_message_id': messageId, 'p_user_id': userId},
+      );
     } catch (e, st) {
       // Stack trace was being dropped on the floor — log it so this is
       // greppable in Sentry. We keep the warning-level rethrow-via-log
@@ -136,12 +138,12 @@ class MessageRemoteSource {
           },
         )
         .subscribe((status, error) {
-      if (error != null) {
-        AppLogger.warning(
-          '[messages:$conversationId] Realtime status: $status, error: $error',
-        );
-      }
-    });
+          if (error != null) {
+            AppLogger.warning(
+              '[messages:$conversationId] Realtime status: $status, error: $error',
+            );
+          }
+        });
     return channel;
   }
 
@@ -164,12 +166,12 @@ class MessageRemoteSource {
           },
         )
         .subscribe((status, error) {
-      if (error != null) {
-        AppLogger.warning(
-          '[conversation-updates] Realtime status: $status, error: $error',
-        );
-      }
-    });
+          if (error != null) {
+            AppLogger.warning(
+              '[conversation-updates] Realtime status: $status, error: $error',
+            );
+          }
+        });
     return channel;
   }
 

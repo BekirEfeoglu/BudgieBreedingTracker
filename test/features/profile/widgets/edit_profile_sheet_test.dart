@@ -24,8 +24,7 @@ Profile _fakeProfile({
   String? avatarUrl,
 }) => Profile(id: id, email: email, fullName: fullName, avatarUrl: avatarUrl);
 
-void _consumeOverflowExceptions(WidgetTester tester) {
-}
+void _consumeOverflowExceptions(WidgetTester tester) {}
 
 Widget _buildSubject({
   Profile? profile,
@@ -61,7 +60,8 @@ void main() {
 
   group('EditProfileSheet', () {
     testWidgets('renders without crashing', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _buildSubject(profile: _fakeProfile(), mockRepo: mockRepo),
       );
       _consumeOverflowExceptions(tester);
@@ -70,7 +70,8 @@ void main() {
     });
 
     testWidgets('shows profile.edit_profile title key', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _buildSubject(profile: _fakeProfile(), mockRepo: mockRepo),
       );
       _consumeOverflowExceptions(tester);
@@ -79,7 +80,8 @@ void main() {
     });
 
     testWidgets('renders ProfileForm', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _buildSubject(profile: _fakeProfile(), mockRepo: mockRepo),
       );
       _consumeOverflowExceptions(tester);
@@ -88,7 +90,8 @@ void main() {
     });
 
     testWidgets('shows drag handle container at top', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _buildSubject(profile: _fakeProfile(), mockRepo: mockRepo),
       );
       _consumeOverflowExceptions(tester);
@@ -98,7 +101,8 @@ void main() {
     });
 
     testWidgets('populates initialFullName in the text field', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _buildSubject(
           profile: _fakeProfile(fullName: 'Mevcut Ad'),
           mockRepo: mockRepo,
@@ -110,14 +114,18 @@ void main() {
     });
 
     testWidgets('works with null profile', (tester) async {
-      await pumpLocalizedApp(tester,_buildSubject(profile: null, mockRepo: mockRepo));
+      await pumpLocalizedApp(
+        tester,
+        _buildSubject(profile: null, mockRepo: mockRepo),
+      );
       _consumeOverflowExceptions(tester);
 
       expect(find.byType(EditProfileSheet), findsOneWidget);
     });
 
     testWidgets('shows email in ProfileForm when provided', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _buildSubject(
           profile: _fakeProfile(),
           email: 'someone@test.com',
@@ -132,7 +140,8 @@ void main() {
     testWidgets('validation error shown when name is empty and save tapped', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _buildSubject(
           profile: _fakeProfile(fullName: ''),
           email: 'test@test.com',
@@ -166,7 +175,8 @@ void main() {
     ) async {
       when(() => mockRepo.save(any())).thenAnswer((_) async {});
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('user-1'),
@@ -205,7 +215,8 @@ void main() {
       final completer = Completer<void>();
       when(() => mockRepo.save(any())).thenAnswer((_) => completer.future);
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('user-1'),
@@ -249,7 +260,8 @@ void main() {
         () => mockRepo.save(any()),
       ).thenAnswer((_) async => throw Exception('Save failed'));
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             currentUserIdProvider.overrideWithValue('user-1'),

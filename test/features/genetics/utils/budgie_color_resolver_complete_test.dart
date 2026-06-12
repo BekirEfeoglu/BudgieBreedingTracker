@@ -89,10 +89,10 @@ void main() {
   group('Yellowface Type I', () {
     test('blue series: mask yellow, body NOT suffused', () {
       final plain = _resolve(['blue'], 'Skyblue');
-      final r = _resolve(
-        ['blue', 'yellowface_type1'],
-        'Yellowface Type I Skyblue',
-      );
+      final r = _resolve([
+        'blue',
+        'yellowface_type1',
+      ], 'Yellowface Type I Skyblue');
       expect(r.maskColor, BudgiePhenotypePalette.maskYellow);
       expect(r.bodyColor, plain.bodyColor);
     });
@@ -126,18 +126,18 @@ void main() {
 
   group('Anthracite', () {
     test('DF blue: body = anthraciteDouble', () {
-      final r = _resolve(
-        ['blue', 'anthracite'],
-        'Double Factor Anthracite Skyblue',
-      );
+      final r = _resolve([
+        'blue',
+        'anthracite',
+      ], 'Double Factor Anthracite Skyblue');
       expect(r.bodyColor, BudgiePhenotypePalette.anthraciteDouble);
     });
 
     test('SF blue: body = mix(cobalt, anthraciteSingle, 0.50)', () {
-      final r = _resolve(
-        ['blue', 'anthracite'],
-        'Single Factor Anthracite Skyblue',
-      );
+      final r = _resolve([
+        'blue',
+        'anthracite',
+      ], 'Single Factor Anthracite Skyblue');
       final expected = _mix(
         BudgiePhenotypePalette.cobalt,
         BudgiePhenotypePalette.anthraciteSingle,
@@ -169,10 +169,9 @@ void main() {
       expect(r.bodyColor, expected);
       expect(r.wingMarkingColor, BudgiePhenotypePalette.fallowTaupe);
       // Less lightened than English
-      final english = _resolve(
-        ['fallow_english'],
-        'English Fallow Light Green',
-      );
+      final english = _resolve([
+        'fallow_english',
+      ], 'English Fallow Light Green');
       expect(
         r.bodyColor.computeLuminance(),
         lessThan(english.bodyColor.computeLuminance()),
@@ -203,20 +202,21 @@ void main() {
 
   group('Dark-Eyed Clear', () {
     test('green: body = mask color (yellow), wings hidden', () {
-      final r = _resolve(
-        ['recessive_pied', 'clearwing'],
-        'Dark-Eyed Clear Light Green',
-      );
+      final r = _resolve([
+        'recessive_pied',
+        'clearwing',
+      ], 'Dark-Eyed Clear Light Green');
       expect(r.bodyColor, BudgiePhenotypePalette.maskYellow);
       expect(r.maskColor, BudgiePhenotypePalette.maskYellow);
       expect(r.hideWingMarkings, isTrue);
     });
 
     test('blue: body = mask color (white), wings hidden', () {
-      final r = _resolve(
-        ['blue', 'recessive_pied', 'clearwing'],
-        'Dark-Eyed Clear Skyblue',
-      );
+      final r = _resolve([
+        'blue',
+        'recessive_pied',
+        'clearwing',
+      ], 'Dark-Eyed Clear Skyblue');
       expect(r.bodyColor, BudgiePhenotypePalette.maskWhite);
       expect(r.maskColor, BudgiePhenotypePalette.maskWhite);
       expect(r.hideWingMarkings, isTrue);
@@ -225,10 +225,12 @@ void main() {
 
   group('Rainbow combination', () {
     test('opaline + clearwing + yellowface_type2 + blue', () {
-      final r = _resolve(
-        ['opaline', 'clearwing', 'yellowface_type2', 'blue'],
-        'Yellowface Type II Skyblue Opaline Clearwing',
-      );
+      final r = _resolve([
+        'opaline',
+        'clearwing',
+        'yellowface_type2',
+        'blue',
+      ], 'Yellowface Type II Skyblue Opaline Clearwing');
       // Mask should be yellow (YF2 on blue series)
       expect(r.maskColor, BudgiePhenotypePalette.maskYellow);
       // Body should be suffused (YF2 suffusion applied)

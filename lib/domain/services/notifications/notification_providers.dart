@@ -115,9 +115,9 @@ Future<void> _requestNotificationPermissionIfNeeded(
         final userId = ref.read(currentUserIdProvider);
         if (userId != 'anonymous') {
           try {
-            await ref.read(notificationReschedulerProvider).rescheduleAll(
-              userId,
-            );
+            await ref
+                .read(notificationReschedulerProvider)
+                .rescheduleAll(userId);
             AppLogger.info(
               '[NotificationProviders] Rescheduled notifications after '
               'permission granted from settings',
@@ -158,9 +158,7 @@ Future<void> _requestNotificationPermissionIfNeeded(
       try {
         await ref.read(pushNotificationServiceProvider).syncToken(userId);
       } catch (e) {
-        AppLogger.warning(
-          '[NotificationProviders] FCM token sync failed: $e',
-        );
+        AppLogger.warning('[NotificationProviders] FCM token sync failed: $e');
       }
     }
     return;

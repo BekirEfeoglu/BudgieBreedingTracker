@@ -218,8 +218,9 @@ class IncubationRepository extends BaseRepository<Incubation>
       // should report as "pending tombstone sync" so the mixin's
       // continue-loop retries on the next push rather than treating
       // the child as a true orphan and stranding it forever.
-      final pair = await _breedingPairsDao
-          .getByIdIncludingDeleted(incubation.breedingPairId!);
+      final pair = await _breedingPairsDao.getByIdIncludingDeleted(
+        incubation.breedingPairId!,
+      );
       if (pair == null) {
         return 'Referenced breeding pair ${incubation.breedingPairId} not found locally';
       }
@@ -237,8 +238,9 @@ class IncubationRepository extends BaseRepository<Incubation>
       }
     }
     if (incubation.clutchId != null) {
-      final clutch =
-          await _clutchesDao.getByIdIncludingDeleted(incubation.clutchId!);
+      final clutch = await _clutchesDao.getByIdIncludingDeleted(
+        incubation.clutchId!,
+      );
       if (clutch == null) {
         return 'Referenced clutch ${incubation.clutchId} not found locally';
       }

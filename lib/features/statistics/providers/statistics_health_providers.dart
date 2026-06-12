@@ -38,16 +38,19 @@ final chickSurvivalProvider =
     });
 
 /// Raw SQL-aggregated health-record counts (key = enum name).
-final _healthCountsByTypeProvider = StreamProvider.family<
-  Map<String, int>,
-  ({String userId, DateTime from, DateTime to})
->((ref, args) {
-  return ref.watch(healthRecordsDaoProvider).watchCountsByTypeInRange(
-        userId: args.userId,
-        from: args.from,
-        to: args.to,
-      );
-});
+final _healthCountsByTypeProvider =
+    StreamProvider.family<
+      Map<String, int>,
+      ({String userId, DateTime from, DateTime to})
+    >((ref, args) {
+      return ref
+          .watch(healthRecordsDaoProvider)
+          .watchCountsByTypeInRange(
+            userId: args.userId,
+            from: args.from,
+            to: args.to,
+          );
+    });
 
 /// Health record type distribution — period-aware.
 ///
@@ -62,9 +65,11 @@ final healthRecordTypeDistributionProvider =
       final period = ref.watch(statsPeriodProvider);
       final range = buildStatsDateRange(period);
       final countsAsync = ref.watch(
-        _healthCountsByTypeProvider(
-          (userId: userId, from: range.currentStart, to: range.currentEnd),
-        ),
+        _healthCountsByTypeProvider((
+          userId: userId,
+          from: range.currentStart,
+          to: range.currentEnd,
+        )),
       );
 
       return countsAsync.whenData((raw) {

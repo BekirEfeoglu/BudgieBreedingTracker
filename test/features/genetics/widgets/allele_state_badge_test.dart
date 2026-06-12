@@ -6,18 +6,22 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype
 import 'package:budgie_breeding_tracker/features/genetics/widgets/allele_state_badge.dart';
 
 Widget _wrap(Widget child) {
-  return MaterialApp(home: Scaffold(body: Center(child: child)));
+  return MaterialApp(
+    home: Scaffold(body: Center(child: child)),
+  );
 }
 
 void main() {
   group('AlleleStateBadge', () {
     testWidgets('renders without crashing for visual state', (tester) async {
       await tester.pumpWidget(
-        _wrap(AlleleStateBadge(
-          state: AlleleState.visual,
-          canToggle: true,
-          onToggle: () {},
-        )),
+        _wrap(
+          AlleleStateBadge(
+            state: AlleleState.visual,
+            canToggle: true,
+            onToggle: () {},
+          ),
+        ),
       );
       await tester.pump();
 
@@ -26,11 +30,13 @@ void main() {
 
     testWidgets('renders without crashing for carrier state', (tester) async {
       await tester.pumpWidget(
-        _wrap(AlleleStateBadge(
-          state: AlleleState.carrier,
-          canToggle: true,
-          onToggle: () {},
-        )),
+        _wrap(
+          AlleleStateBadge(
+            state: AlleleState.carrier,
+            canToggle: true,
+            onToggle: () {},
+          ),
+        ),
       );
       await tester.pump();
 
@@ -39,11 +45,13 @@ void main() {
 
     testWidgets('renders without crashing for split state', (tester) async {
       await tester.pumpWidget(
-        _wrap(AlleleStateBadge(
-          state: AlleleState.split,
-          canToggle: true,
-          onToggle: () {},
-        )),
+        _wrap(
+          AlleleStateBadge(
+            state: AlleleState.split,
+            canToggle: true,
+            onToggle: () {},
+          ),
+        ),
       );
       await tester.pump();
 
@@ -52,11 +60,13 @@ void main() {
 
     testWidgets('shows localized label for visual state', (tester) async {
       await tester.pumpWidget(
-        _wrap(AlleleStateBadge(
-          state: AlleleState.visual,
-          canToggle: false,
-          onToggle: () {},
-        )),
+        _wrap(
+          AlleleStateBadge(
+            state: AlleleState.visual,
+            canToggle: false,
+            onToggle: () {},
+          ),
+        ),
       );
       await tester.pump();
 
@@ -65,11 +75,13 @@ void main() {
 
     testWidgets('shows localized label for carrier state', (tester) async {
       await tester.pumpWidget(
-        _wrap(AlleleStateBadge(
-          state: AlleleState.carrier,
-          canToggle: false,
-          onToggle: () {},
-        )),
+        _wrap(
+          AlleleStateBadge(
+            state: AlleleState.carrier,
+            canToggle: false,
+            onToggle: () {},
+          ),
+        ),
       );
       await tester.pump();
 
@@ -78,11 +90,13 @@ void main() {
 
     testWidgets('shows localized label for split state', (tester) async {
       await tester.pumpWidget(
-        _wrap(AlleleStateBadge(
-          state: AlleleState.split,
-          canToggle: false,
-          onToggle: () {},
-        )),
+        _wrap(
+          AlleleStateBadge(
+            state: AlleleState.split,
+            canToggle: false,
+            onToggle: () {},
+          ),
+        ),
       );
       await tester.pump();
 
@@ -91,12 +105,14 @@ void main() {
 
     testWidgets('shows DF label for dosage-based visual', (tester) async {
       await tester.pumpWidget(
-        _wrap(AlleleStateBadge(
-          state: AlleleState.visual,
-          canToggle: false,
-          isDosageBased: true,
-          onToggle: () {},
-        )),
+        _wrap(
+          AlleleStateBadge(
+            state: AlleleState.visual,
+            canToggle: false,
+            isDosageBased: true,
+            onToggle: () {},
+          ),
+        ),
       );
       await tester.pump();
 
@@ -105,12 +121,14 @@ void main() {
 
     testWidgets('shows SF label for dosage-based carrier', (tester) async {
       await tester.pumpWidget(
-        _wrap(AlleleStateBadge(
-          state: AlleleState.carrier,
-          canToggle: false,
-          isDosageBased: true,
-          onToggle: () {},
-        )),
+        _wrap(
+          AlleleStateBadge(
+            state: AlleleState.carrier,
+            canToggle: false,
+            isDosageBased: true,
+            onToggle: () {},
+          ),
+        ),
       );
       await tester.pump();
 
@@ -120,11 +138,13 @@ void main() {
     testWidgets('calls onToggle when canToggle is true', (tester) async {
       var toggled = false;
       await tester.pumpWidget(
-        _wrap(AlleleStateBadge(
-          state: AlleleState.visual,
-          canToggle: true,
-          onToggle: () => toggled = true,
-        )),
+        _wrap(
+          AlleleStateBadge(
+            state: AlleleState.visual,
+            canToggle: true,
+            onToggle: () => toggled = true,
+          ),
+        ),
       );
       await tester.pump();
 
@@ -132,15 +152,18 @@ void main() {
       expect(toggled, isTrue);
     });
 
-    testWidgets('does not call onToggle when canToggle is false',
-        (tester) async {
+    testWidgets('does not call onToggle when canToggle is false', (
+      tester,
+    ) async {
       var toggled = false;
       await tester.pumpWidget(
-        _wrap(AlleleStateBadge(
-          state: AlleleState.visual,
-          canToggle: false,
-          onToggle: () => toggled = true,
-        )),
+        _wrap(
+          AlleleStateBadge(
+            state: AlleleState.visual,
+            canToggle: false,
+            onToggle: () => toggled = true,
+          ),
+        ),
       );
       await tester.pump();
 
@@ -150,11 +173,13 @@ void main() {
 
     testWidgets('wraps content in Material and InkWell', (tester) async {
       await tester.pumpWidget(
-        _wrap(AlleleStateBadge(
-          state: AlleleState.visual,
-          canToggle: true,
-          onToggle: () {},
-        )),
+        _wrap(
+          AlleleStateBadge(
+            state: AlleleState.visual,
+            canToggle: true,
+            onToggle: () {},
+          ),
+        ),
       );
       await tester.pump();
 
@@ -164,11 +189,13 @@ void main() {
 
     testWidgets('contains Container with decoration', (tester) async {
       await tester.pumpWidget(
-        _wrap(AlleleStateBadge(
-          state: AlleleState.carrier,
-          canToggle: false,
-          onToggle: () {},
-        )),
+        _wrap(
+          AlleleStateBadge(
+            state: AlleleState.carrier,
+            canToggle: false,
+            onToggle: () {},
+          ),
+        ),
       );
       await tester.pump();
 

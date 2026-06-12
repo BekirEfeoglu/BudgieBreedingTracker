@@ -52,7 +52,10 @@ class EncryptionService {
     final macKey = hmac.convert(utf8.encode('BBTMAC')).bytes;
 
     _cachedMasterKeyHash = keyHash;
-    _cachedSubKeys = (encKey: encKey.sublist(0, 32), macKey: macKey.sublist(0, 32));
+    _cachedSubKeys = (
+      encKey: encKey.sublist(0, 32),
+      macKey: macKey.sublist(0, 32),
+    );
     return _cachedSubKeys!;
   }
 
@@ -116,7 +119,9 @@ class EncryptionService {
       final keyBytes = await _getOrCreateKeyBytes();
       return _decryptWithKey(cipherText, keyBytes);
     } catch (e, st) {
-      AppLogger.warning('[Encryption] Active key decrypt failed, trying previous keys: $e');
+      AppLogger.warning(
+        '[Encryption] Active key decrypt failed, trying previous keys: $e',
+      );
       firstError = e;
       firstStack = st;
     }
@@ -132,7 +137,11 @@ class EncryptionService {
     }
 
     // All keys exhausted — throw original error
-    AppLogger.error('Decryption failed with all key versions', firstError, firstStack);
+    AppLogger.error(
+      'Decryption failed with all key versions',
+      firstError,
+      firstStack,
+    );
     Error.throwWithStackTrace(firstError, firstStack);
   }
 

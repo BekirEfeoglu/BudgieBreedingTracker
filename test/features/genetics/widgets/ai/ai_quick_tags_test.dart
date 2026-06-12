@@ -9,10 +9,7 @@ void main() {
     testWidgets('renders all 6 default tags', (tester) async {
       await pumpWidgetSimple(
         tester,
-        AiQuickTags(
-          selectedTags: const {},
-          onTagToggled: (_) {},
-        ),
+        AiQuickTags(selectedTags: const {}, onTagToggled: (_) {}),
       );
       await tester.pumpAndSettle();
 
@@ -29,7 +26,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final chips = tester.widgetList<FilterChip>(find.byType(FilterChip)).toList();
+      final chips = tester
+          .widgetList<FilterChip>(find.byType(FilterChip))
+          .toList();
       expect(chips[0].selected, isTrue);
       expect(chips[1].selected, isFalse);
     });
@@ -62,19 +61,18 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final chips = tester.widgetList<FilterChip>(find.byType(FilterChip)).toList();
-      expect(chips[0].selected, isTrue);  // blue_cere
+      final chips = tester
+          .widgetList<FilterChip>(find.byType(FilterChip))
+          .toList();
+      expect(chips[0].selected, isTrue); // blue_cere
       expect(chips[1].selected, isFalse); // brown_cere
-      expect(chips[2].selected, isTrue);  // young_bird
+      expect(chips[2].selected, isTrue); // young_bird
     });
 
     testWidgets('empty selectedTags shows all unselected', (tester) async {
       await pumpWidgetSimple(
         tester,
-        AiQuickTags(
-          selectedTags: const {},
-          onTagToggled: (_) {},
-        ),
+        AiQuickTags(selectedTags: const {}, onTagToggled: (_) {}),
       );
       await tester.pumpAndSettle();
 

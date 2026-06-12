@@ -83,20 +83,22 @@ void main() {
         expect(json.containsKey('created_at'), isTrue);
       });
 
-      test('isLikedByMe is excluded from fromJson (includeFromJson: false)',
-          () {
-        final comment = CommunityComment.fromJson(const {
-          'id': 'c1',
-          'post_id': 'p1',
-          'user_id': 'u1',
-          'content': 'text',
-          'is_liked_by_me': true,
-        });
+      test(
+        'isLikedByMe is excluded from fromJson (includeFromJson: false)',
+        () {
+          final comment = CommunityComment.fromJson(const {
+            'id': 'c1',
+            'post_id': 'p1',
+            'user_id': 'u1',
+            'content': 'text',
+            'is_liked_by_me': true,
+          });
 
-        // isLikedByMe should always be false from JSON because of
-        // @JsonKey(includeFromJson: false)
-        expect(comment.isLikedByMe, false);
-      });
+          // isLikedByMe should always be false from JSON because of
+          // @JsonKey(includeFromJson: false)
+          expect(comment.isLikedByMe, false);
+        },
+      );
 
       test('fromJson parses DateTime strings', () {
         final comment = CommunityComment.fromJson(const {

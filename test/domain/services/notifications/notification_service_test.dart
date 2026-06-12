@@ -506,28 +506,29 @@ void main() {
       expect(receivedPayload, 'chick:test-id');
     });
 
-    test('restores launch payload when app opens from notification tap', () async {
-      String? receivedPayload;
-      service.onNotificationTap = (payload) => receivedPayload = payload;
+    test(
+      'restores launch payload when app opens from notification tap',
+      () async {
+        String? receivedPayload;
+        service.onNotificationTap = (payload) => receivedPayload = payload;
 
-      when(
-        () => mockPlugin.getNotificationAppLaunchDetails(),
-      ).thenAnswer(
-        (_) async => const NotificationAppLaunchDetails(
-          true,
-          notificationResponse: NotificationResponse(
-            notificationResponseType:
-                NotificationResponseType.selectedNotification,
-            payload: 'bird:launch-id',
+        when(() => mockPlugin.getNotificationAppLaunchDetails()).thenAnswer(
+          (_) async => const NotificationAppLaunchDetails(
+            true,
+            notificationResponse: NotificationResponse(
+              notificationResponseType:
+                  NotificationResponseType.selectedNotification,
+              payload: 'bird:launch-id',
+            ),
           ),
-        ),
-      );
+        );
 
-      await service.init();
+        await service.init();
 
-      expect(receivedPayload, 'bird:launch-id');
-      verify(() => mockPlugin.getNotificationAppLaunchDetails()).called(1);
-    });
+        expect(receivedPayload, 'bird:launch-id');
+        verify(() => mockPlugin.getNotificationAppLaunchDetails()).called(1);
+      },
+    );
   });
 
   group('FlutterTimezone integration (v5 TimezoneInfo)', () {

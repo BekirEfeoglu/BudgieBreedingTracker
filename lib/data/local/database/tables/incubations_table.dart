@@ -11,8 +11,7 @@ class IncubationsTable extends Table {
       text().map(speciesConverter).withDefault(const Constant('unknown'))();
   TextColumn get status => text().map(incubationStatusConverter)();
   IntColumn get version => integer().withDefault(const Constant(1))();
-  TextColumn get clutchId =>
-      text().nullable().references(ClutchesTable, #id)();
+  TextColumn get clutchId => text().nullable().references(ClutchesTable, #id)();
   TextColumn get breedingPairId =>
       text().nullable().references(BreedingPairsTable, #id)();
   TextColumn get notes => text().nullable()();

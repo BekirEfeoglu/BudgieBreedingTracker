@@ -162,47 +162,48 @@ class _BirdTile extends StatelessWidget {
     final hasGeneticData = hasMutations || hasColor;
 
     return Semantics(
-      label: '${bird.name}${bird.ringNumber != null ? ', ${bird.ringNumber}' : ''}, ${bird.gender.name}',
+      label:
+          '${bird.name}${bird.ringNumber != null ? ', ${bird.ringNumber}' : ''}, ${bird.gender.name}',
       child: ListTile(
-      dense: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-      ),
-      leading: CircleAvatar(
-        radius: 18,
-        backgroundColor: bird.gender == BirdGender.male
-            ? AppColors.genderMale.withValues(alpha: 0.15)
-            : AppColors.genderFemale.withValues(alpha: 0.15),
-        child: AppIcon(
-          bird.gender == BirdGender.male ? AppIcons.male : AppIcons.female,
-          size: 20,
-          color: bird.gender == BirdGender.male
-              ? AppColors.genderMale
-              : AppColors.genderFemale,
+        dense: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         ),
-      ),
-      title: Text(
-        bird.name,
-        style: theme.textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.w500,
+        leading: CircleAvatar(
+          radius: 18,
+          backgroundColor: bird.gender == BirdGender.male
+              ? AppColors.genderMale.withValues(alpha: 0.15)
+              : AppColors.genderFemale.withValues(alpha: 0.15),
+          child: AppIcon(
+            bird.gender == BirdGender.male ? AppIcons.male : AppIcons.female,
+            size: 20,
+            color: bird.gender == BirdGender.male
+                ? AppColors.genderMale
+                : AppColors.genderFemale,
+          ),
         ),
-      ),
-      subtitle: Text(
-        [
-          if (bird.ringNumber != null) bird.ringNumber!,
-          if (hasMutations)
-            'genetics.mutation_count'.tr(args: ['${bird.mutations!.length}']),
-          if (!hasMutations && hasColor) bird.colorMutation!.name,
-        ].join(' - '),
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant,
+        title: Text(
+          bird.name,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w500,
+          ),
         ),
+        subtitle: Text(
+          [
+            if (bird.ringNumber != null) bird.ringNumber!,
+            if (hasMutations)
+              'genetics.mutation_count'.tr(args: ['${bird.mutations!.length}']),
+            if (!hasMutations && hasColor) bird.colorMutation!.name,
+          ].join(' - '),
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        trailing: hasGeneticData
+            ? AppIcon(AppIcons.dna, size: 18, color: theme.colorScheme.primary)
+            : null,
+        onTap: onTap,
       ),
-      trailing: hasGeneticData
-          ? AppIcon(AppIcons.dna, size: 18, color: theme.colorScheme.primary)
-          : null,
-      onTap: onTap,
-    ),
     );
   }
 }

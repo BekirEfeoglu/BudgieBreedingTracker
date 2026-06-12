@@ -7,7 +7,9 @@ import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_types.
 import 'package:budgie_breeding_tracker/features/genetics/widgets/compound_mutation_chip.dart';
 
 Widget _wrap(Widget child) {
-  return MaterialApp(home: Scaffold(body: Center(child: child)));
+  return MaterialApp(
+    home: Scaffold(body: Center(child: child)),
+  );
 }
 
 BudgieMutationRecord _mutation({
@@ -52,8 +54,9 @@ void main() {
       expect(find.byType(CompoundMutationChip), findsOneWidget);
     });
 
-    testWidgets('shows compound label from mutation localization keys',
-        (tester) async {
+    testWidgets('shows compound label from mutation localization keys', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrap(CompoundMutationChip(records: records, onRemove: () {})),
       );
@@ -96,10 +99,12 @@ void main() {
     testWidgets('calls onRemove when delete is tapped', (tester) async {
       var removed = false;
       await tester.pumpWidget(
-        _wrap(CompoundMutationChip(
-          records: records,
-          onRemove: () => removed = true,
-        )),
+        _wrap(
+          CompoundMutationChip(
+            records: records,
+            onRemove: () => removed = true,
+          ),
+        ),
       );
       await tester.pump();
 

@@ -42,9 +42,7 @@ void main() {
           },
         ),
       ],
-      child: const MaterialApp(
-        home: MarketplaceScreen(),
-      ),
+      child: const MaterialApp(home: MarketplaceScreen()),
     );
   }
 
@@ -60,13 +58,11 @@ void main() {
           marketplaceRepositoryProvider.overrideWithValue(mockRepo),
           effectivePremiumProvider.overrideWithValue(false),
           canCreateListingProvider('test-user').overrideWithValue(true),
-          marketplaceListingsProvider('test-user').overrideWith(
-            (_) => completer.future,
-          ),
+          marketplaceListingsProvider(
+            'test-user',
+          ).overrideWith((_) => completer.future),
         ],
-        child: const MaterialApp(
-          home: MarketplaceScreen(),
-        ),
+        child: const MaterialApp(home: MarketplaceScreen()),
       ),
       settle: false,
     );

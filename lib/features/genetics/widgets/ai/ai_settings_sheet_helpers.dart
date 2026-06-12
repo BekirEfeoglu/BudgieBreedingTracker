@@ -91,12 +91,15 @@ extension _AiSettingsHelpers on _AiSettingsSheetState {
                         ),
                         decoration: BoxDecoration(
                           color: m.tag.contains('free')
-                              ? AppColors.aiFeatureMutation
-                                  .withValues(alpha: 0.15)
-                              : theme.colorScheme.primaryContainer
-                                  .withValues(alpha: 0.3),
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusSm),
+                              ? AppColors.aiFeatureMutation.withValues(
+                                  alpha: 0.15,
+                                )
+                              : theme.colorScheme.primaryContainer.withValues(
+                                  alpha: 0.3,
+                                ),
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusSm,
+                          ),
                         ),
                         child: Text(
                           m.tag.tr(),
@@ -133,11 +136,7 @@ extension _AiSettingsHelpers on _AiSettingsSheetState {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            LucideIcons.info,
-            size: 14,
-            color: theme.colorScheme.primary,
-          ),
+          Icon(LucideIcons.info, size: 14, color: theme.colorScheme.primary),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(

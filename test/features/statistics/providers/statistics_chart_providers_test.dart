@@ -101,12 +101,12 @@ _MockEggsDao _mockEggsDao({
   Map<String, int> speciesFilteredCounts = const {},
 }) {
   final dao = _MockEggsDao();
-  when(() => dao.watchMonthlyProduction(any())).thenAnswer(
-    (_) => Stream.value(monthlyCounts),
-  );
-  when(() => dao.watchMonthlyProductionBySpecies(any(), any())).thenAnswer(
-    (_) => Stream.value(speciesFilteredCounts),
-  );
+  when(
+    () => dao.watchMonthlyProduction(any()),
+  ).thenAnswer((_) => Stream.value(monthlyCounts));
+  when(
+    () => dao.watchMonthlyProductionBySpecies(any(), any()),
+  ).thenAnswer((_) => Stream.value(speciesFilteredCounts));
   return dao;
 }
 
@@ -134,9 +134,9 @@ _MockChicksDao _mockChicksDao(List<Chick> chicks) {
     final key = '${hatch.year}-${hatch.month.toString().padLeft(2, '0')}';
     counts[key] = (counts[key] ?? 0) + 1;
   }
-  when(() => dao.watchMonthlyHatched(any())).thenAnswer(
-    (_) => Stream.value(counts),
-  );
+  when(
+    () => dao.watchMonthlyHatched(any()),
+  ).thenAnswer((_) => Stream.value(counts));
   return dao;
 }
 
@@ -154,10 +154,10 @@ _MockBreedingPairsDao _mockBreedingPairsDao(
     final allowedIds = filter == null
         ? null
         : incubations
-            .where((i) => i.species == filter)
-            .map((i) => i.breedingPairId)
-            .whereType<String>()
-            .toSet();
+              .where((i) => i.species == filter)
+              .map((i) => i.breedingPairId)
+              .whereType<String>()
+              .toSet();
     final result = <String, ({int completed, int cancelled})>{};
     for (final pair in pairs) {
       if (allowedIds != null && !allowedIds.contains(pair.id)) continue;
@@ -171,9 +171,11 @@ _MockBreedingPairsDao _mockBreedingPairsDao(
       final current = result[key] ?? (completed: 0, cancelled: 0);
       result[key] = (
         completed:
-            current.completed + (pair.status == BreedingStatus.completed ? 1 : 0),
+            current.completed +
+            (pair.status == BreedingStatus.completed ? 1 : 0),
         cancelled:
-            current.cancelled + (pair.status == BreedingStatus.cancelled ? 1 : 0),
+            current.cancelled +
+            (pair.status == BreedingStatus.cancelled ? 1 : 0),
       );
     }
     return result;
@@ -224,12 +226,14 @@ ProviderContainer _container({
   final container = ProviderContainer(
     overrides: [
       // Override DAO for both unfiltered and species-filtered SQL aggregates.
-      eggsDaoProvider.overrideWithValue(_mockEggsDao(
-        monthlyCounts: _eggsToCounts(eggs),
-        speciesFilteredCounts: speciesFilter == null
-            ? const {}
-            : _eggsToCountsBySpecies(eggs, incubations, speciesFilter),
-      )),
+      eggsDaoProvider.overrideWithValue(
+        _mockEggsDao(
+          monthlyCounts: _eggsToCounts(eggs),
+          speciesFilteredCounts: speciesFilter == null
+              ? const {}
+              : _eggsToCountsBySpecies(eggs, incubations, speciesFilter),
+        ),
+      ),
       // Chart providers now consume DAO aggregates instead of pulling the
       // full list and looping in Dart. Mock the DAO output shape so the
       // tests stay self-contained.
@@ -304,8 +308,7 @@ void main() {
       final now = DateTime.now();
       final currentMonth = DateTime(now.year, now.month, 15);
       final lastMonth = DateTime(now.year, now.month - 1, 10);
-      final currentKey =
-          '${now.year}-${now.month.toString().padLeft(2, '0')}';
+      final currentKey = '${now.year}-${now.month.toString().padLeft(2, '0')}';
       final lastKey =
           '${lastMonth.year}-${lastMonth.month.toString().padLeft(2, '0')}';
 
@@ -391,9 +394,7 @@ void main() {
           _egg(id: 'e1', layDate: date, incubationId: 'inc-1'),
           _egg(id: 'e2', layDate: date),
         ],
-        incubations: [
-          _incubation(id: 'inc-1', species: Species.budgie),
-        ],
+        incubations: [_incubation(id: 'inc-1', species: Species.budgie)],
         period: StatsPeriod.threeMonths,
       );
       addTearDown(container.dispose);
@@ -407,12 +408,12 @@ void main() {
 
     test('returns loading when DAO stream has not emitted (filtered path)', () {
       final dao = _MockEggsDao();
-      when(() => dao.watchMonthlyProduction(any())).thenAnswer(
-        (_) => Stream.value(<String, int>{}),
-      );
-      when(() => dao.watchMonthlyProductionBySpecies(any(), any())).thenAnswer(
-        (_) => const Stream<Map<String, int>>.empty(),
-      );
+      when(
+        () => dao.watchMonthlyProduction(any()),
+      ).thenAnswer((_) => Stream.value(<String, int>{}));
+      when(
+        () => dao.watchMonthlyProductionBySpecies(any(), any()),
+      ).thenAnswer((_) => const Stream<Map<String, int>>.empty());
       final container = ProviderContainer(
         overrides: [eggsDaoProvider.overrideWithValue(dao)],
       );
@@ -425,7 +426,6 @@ void main() {
       final value = container.read(monthlyEggProductionProvider(userId));
       expect(value.isLoading, isTrue);
     });
-
   });
 
   // ── monthlyHatchedChicksProvider ──
@@ -446,8 +446,7 @@ void main() {
       final now = DateTime.now();
       final currentMonth = DateTime(now.year, now.month, 10);
       final lastMonth = DateTime(now.year, now.month - 1, 20);
-      final currentKey =
-          '${now.year}-${now.month.toString().padLeft(2, '0')}';
+      final currentKey = '${now.year}-${now.month.toString().padLeft(2, '0')}';
       final lastKey =
           '${lastMonth.year}-${lastMonth.month.toString().padLeft(2, '0')}';
 
@@ -511,12 +510,11 @@ void main() {
       // chicksDaoProvider.watchMonthlyHatched. Empty stream simulates the
       // still-loading SQL aggregate.
       final dao = _MockChicksDao();
-      when(() => dao.watchMonthlyHatched(any()))
-          .thenAnswer((_) => const Stream<Map<String, int>>.empty());
+      when(
+        () => dao.watchMonthlyHatched(any()),
+      ).thenAnswer((_) => const Stream<Map<String, int>>.empty());
       final container = ProviderContainer(
-        overrides: [
-          chicksDaoProvider.overrideWithValue(dao),
-        ],
+        overrides: [chicksDaoProvider.overrideWithValue(dao)],
       );
       addTearDown(container.dispose);
 
@@ -553,8 +551,7 @@ void main() {
     test('counts completed and cancelled pairs per month', () async {
       final now = DateTime.now();
       final thisMonth = DateTime(now.year, now.month, 15);
-      final currentKey =
-          '${now.year}-${now.month.toString().padLeft(2, '0')}';
+      final currentKey = '${now.year}-${now.month.toString().padLeft(2, '0')}';
 
       final container = _container(
         pairs: [
@@ -589,8 +586,7 @@ void main() {
     test('uses updatedAt as fallback when separationDate is null', () async {
       final now = DateTime.now();
       final thisMonth = DateTime(now.year, now.month, 15);
-      final currentKey =
-          '${now.year}-${now.month.toString().padLeft(2, '0')}';
+      final currentKey = '${now.year}-${now.month.toString().padLeft(2, '0')}';
 
       final container = _container(
         pairs: [
@@ -698,26 +694,33 @@ void main() {
 
       final value = container.read(monthlyBreedingOutcomesProvider(userId));
       expect(value.hasValue, isTrue);
-      final totalCompleted = value.requireValue.completed.values
-          .fold<int>(0, (a, b) => a + b);
+      final totalCompleted = value.requireValue.completed.values.fold<int>(
+        0,
+        (a, b) => a + b,
+      );
       expect(totalCompleted, 1);
     });
 
-    test('skips pairs where both separationDate and updatedAt are null',
-        () async {
-      final container = _container(
-        pairs: [
-          _pair(id: 'p1', status: BreedingStatus.completed, updatedAt: null),
-        ],
-        period: StatsPeriod.threeMonths,
-      );
-      addTearDown(container.dispose);
-      await _awaitStreams(container);
+    test(
+      'skips pairs where both separationDate and updatedAt are null',
+      () async {
+        final container = _container(
+          pairs: [
+            _pair(id: 'p1', status: BreedingStatus.completed, updatedAt: null),
+          ],
+          period: StatsPeriod.threeMonths,
+        );
+        addTearDown(container.dispose);
+        await _awaitStreams(container);
 
-      final value = container.read(monthlyBreedingOutcomesProvider(userId));
-      expect(value.hasValue, isTrue);
-      expect(value.requireValue.completed.values.every((v) => v == 0), isTrue);
-    });
+        final value = container.read(monthlyBreedingOutcomesProvider(userId));
+        expect(value.hasValue, isTrue);
+        expect(
+          value.requireValue.completed.values.every((v) => v == 0),
+          isTrue,
+        );
+      },
+    );
 
     test('returns loading when DAO stream is loading', () {
       // Provider now reads `breedingPairsDaoProvider.watchMonthlyOutcomes`;
@@ -727,9 +730,7 @@ void main() {
         () => dao.watchMonthlyOutcomes(any(), species: any(named: 'species')),
       ).thenAnswer((_) => const Stream.empty());
       final container = ProviderContainer(
-        overrides: [
-          breedingPairsDaoProvider.overrideWithValue(dao),
-        ],
+        overrides: [breedingPairsDaoProvider.overrideWithValue(dao)],
       );
       addTearDown(container.dispose);
 
@@ -746,8 +747,9 @@ void main() {
       // the AsyncError lands; the public provider may stay loading until
       // the next pump, but its inner state has the error.
       final controller =
-          StreamController<Map<String, ({int completed, int cancelled})>>
-              .broadcast();
+          StreamController<
+            Map<String, ({int completed, int cancelled})>
+          >.broadcast();
       addTearDown(controller.close);
       final dao = _MockBreedingPairsDao();
       when(

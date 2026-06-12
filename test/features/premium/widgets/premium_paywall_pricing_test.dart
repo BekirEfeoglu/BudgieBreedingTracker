@@ -160,14 +160,8 @@ void main() {
         find.textContaining('\$25.00', findRichText: true),
         findsOneWidget,
       );
-      expect(
-        find.textContaining('\$10.00', findRichText: true),
-        findsNothing,
-      );
-      expect(
-        find.textContaining('\$50.00', findRichText: true),
-        findsNothing,
-      );
+      expect(find.textContaining('\$10.00', findRichText: true), findsNothing);
+      expect(find.textContaining('\$50.00', findRichText: true), findsNothing);
     });
 
     testWidgets('shows best value badge on yearly plan', (tester) async {

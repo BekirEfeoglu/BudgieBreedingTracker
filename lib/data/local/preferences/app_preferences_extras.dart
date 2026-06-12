@@ -12,8 +12,9 @@ class _PreferencesExtras {
 
   /// When statistics was last unlocked by watching an ad (24h validity).
   DateTime? get rewardStatisticsUnlockedAt {
-    final value =
-        _prefs.getString(AppPreferences.keyRewardStatisticsUnlockedAt);
+    final value = _prefs.getString(
+      AppPreferences.keyRewardStatisticsUnlockedAt,
+    );
     if (value == null) return null;
     final parsed = DateTime.tryParse(value);
     if (parsed == null) {
@@ -77,10 +78,10 @@ class _PreferencesExtras {
   Future<bool> addBlockedUser(String userId) {
     final current = blockedUserIds;
     if (current.contains(userId)) return Future.value(true);
-    return _prefs.setStringList(
-      AppPreferences.keyBlockedUserIds,
-      [...current, userId],
-    );
+    return _prefs.setStringList(AppPreferences.keyBlockedUserIds, [
+      ...current,
+      userId,
+    ]);
   }
 
   /// Unblock a user — removes their ID from the blocked list.

@@ -99,5 +99,4 @@ void main() {
       expect(result.map((c) => c.id), ['deceased']);
     });
   });
-
 }

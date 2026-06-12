@@ -69,18 +69,14 @@ ProviderContainer _container({
 }) {
   return ProviderContainer(
     overrides: [
-      eggsStreamProvider(_userId).overrideWith(
-        (_) => Stream.value(eggs),
-      ),
-      chicksStreamProvider(_userId).overrideWith(
-        (_) => Stream.value(chicks),
-      ),
-      breedingPairsStreamProvider(_userId).overrideWith(
-        (_) => Stream.value(pairs),
-      ),
-      trendStatsProvider(_userId).overrideWithValue(
-        trendOverride ?? const AsyncLoading(),
-      ),
+      eggsStreamProvider(_userId).overrideWith((_) => Stream.value(eggs)),
+      chicksStreamProvider(_userId).overrideWith((_) => Stream.value(chicks)),
+      breedingPairsStreamProvider(
+        _userId,
+      ).overrideWith((_) => Stream.value(pairs)),
+      trendStatsProvider(
+        _userId,
+      ).overrideWithValue(trendOverride ?? const AsyncLoading()),
     ],
   );
 }
@@ -111,8 +107,10 @@ void main() {
       final value = container.read(quickInsightsProvider(_userId));
       expect(value.hasValue, isTrue);
       final insights = value.requireValue;
-      expect(insights.any((i) => i.sentiment == InsightSentiment.positive),
-          isTrue);
+      expect(
+        insights.any((i) => i.sentiment == InsightSentiment.positive),
+        isTrue,
+      );
     });
 
     test('egg production insight with negative trend', () async {
@@ -126,8 +124,10 @@ void main() {
 
       final value = container.read(quickInsightsProvider(_userId));
       final insights = value.requireValue;
-      expect(insights.any((i) => i.sentiment == InsightSentiment.negative),
-          isTrue);
+      expect(
+        insights.any((i) => i.sentiment == InsightSentiment.negative),
+        isTrue,
+      );
     });
 
     test('egg insight is neutral when trend is loading', () async {
@@ -192,11 +192,7 @@ void main() {
           _chick(id: 'c1', hatchDate: now),
           _chick(id: 'c2', hatchDate: now),
           _chick(id: 'c3', hatchDate: now),
-          _chick(
-            id: 'c4',
-            hatchDate: now,
-            health: ChickHealthStatus.deceased,
-          ),
+          _chick(id: 'c4', hatchDate: now, health: ChickHealthStatus.deceased),
         ],
       );
       addTearDown(container.dispose);
@@ -216,16 +212,8 @@ void main() {
       final container = _container(
         chicks: [
           _chick(id: 'c1', hatchDate: now),
-          _chick(
-            id: 'c2',
-            hatchDate: now,
-            health: ChickHealthStatus.deceased,
-          ),
-          _chick(
-            id: 'c3',
-            hatchDate: now,
-            health: ChickHealthStatus.deceased,
-          ),
+          _chick(id: 'c2', hatchDate: now, health: ChickHealthStatus.deceased),
+          _chick(id: 'c3', hatchDate: now, health: ChickHealthStatus.deceased),
         ],
       );
       addTearDown(container.dispose);
@@ -272,15 +260,13 @@ void main() {
     test('returns loading when streams are loading', () {
       final container = ProviderContainer(
         overrides: [
-          eggsStreamProvider(_userId).overrideWith(
-            (_) => const Stream.empty(),
-          ),
-          chicksStreamProvider(_userId).overrideWith(
-            (_) => Stream.value(<Chick>[]),
-          ),
-          breedingPairsStreamProvider(_userId).overrideWith(
-            (_) => Stream.value(<BreedingPair>[]),
-          ),
+          eggsStreamProvider(_userId).overrideWith((_) => const Stream.empty()),
+          chicksStreamProvider(
+            _userId,
+          ).overrideWith((_) => Stream.value(<Chick>[])),
+          breedingPairsStreamProvider(
+            _userId,
+          ).overrideWith((_) => Stream.value(<BreedingPair>[])),
           trendStatsProvider(_userId).overrideWithValue(const AsyncLoading()),
         ],
       );
@@ -295,15 +281,15 @@ void main() {
     test('returns error when a stream has error', () async {
       final container = ProviderContainer(
         overrides: [
-          eggsStreamProvider(_userId).overrideWith(
-            (_) => Stream.error('egg error'),
-          ),
-          chicksStreamProvider(_userId).overrideWith(
-            (_) => Stream.value(<Chick>[]),
-          ),
-          breedingPairsStreamProvider(_userId).overrideWith(
-            (_) => Stream.value(<BreedingPair>[]),
-          ),
+          eggsStreamProvider(
+            _userId,
+          ).overrideWith((_) => Stream.error('egg error')),
+          chicksStreamProvider(
+            _userId,
+          ).overrideWith((_) => Stream.value(<Chick>[])),
+          breedingPairsStreamProvider(
+            _userId,
+          ).overrideWith((_) => Stream.value(<BreedingPair>[])),
           trendStatsProvider(_userId).overrideWithValue(const AsyncLoading()),
         ],
       );

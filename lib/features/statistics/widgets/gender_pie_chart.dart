@@ -53,31 +53,31 @@ class _GenderPieChartState extends State<GenderPieChart> {
         Semantics(
           label: 'statistics.gender_chart_a11y'.tr(args: ['$total']),
           child: SizedBox(
-          height: 200,
-          child: RepaintBoundary(
-            child: PieChart(
-              PieChartData(
-                pieTouchData: PieTouchData(
-                  touchCallback: (event, response) {
-                    setState(() {
-                      if (!event.isInterestedForInteractions ||
-                          response == null ||
-                          response.touchedSection == null) {
-                        _touchedIndex = -1;
-                        return;
-                      }
-                      _touchedIndex =
-                          response.touchedSection!.touchedSectionIndex;
-                    });
-                  },
+            height: 200,
+            child: RepaintBoundary(
+              child: PieChart(
+                PieChartData(
+                  pieTouchData: PieTouchData(
+                    touchCallback: (event, response) {
+                      setState(() {
+                        if (!event.isInterestedForInteractions ||
+                            response == null ||
+                            response.touchedSection == null) {
+                          _touchedIndex = -1;
+                          return;
+                        }
+                        _touchedIndex =
+                            response.touchedSection!.touchedSectionIndex;
+                      });
+                    },
+                  ),
+                  sectionsSpace: 2,
+                  centerSpaceRadius: 44,
+                  sections: _buildSections(context, total),
                 ),
-                sectionsSpace: 2,
-                centerSpaceRadius: 44,
-                sections: _buildSections(context, total),
               ),
             ),
           ),
-        ),
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
@@ -146,4 +146,3 @@ class _GenderPieChartState extends State<GenderPieChart> {
     );
   }
 }
-

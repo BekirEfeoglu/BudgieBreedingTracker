@@ -71,19 +71,19 @@ void main() {
 
   group('NotificationsSection', () {
     testWidgets('hatasiz render edilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(NotificationsSection), findsOneWidget);
     });
 
     testWidgets('SettingsSectionHeader render edilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(SettingsSectionHeader), findsOneWidget);
     });
 
     testWidgets('master toggle tile render edilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(SettingsToggleTile), findsOneWidget);
     });
@@ -91,7 +91,7 @@ void main() {
     testWidgets('bildirim kategorileri navigasyon tile render edilir', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(SettingsNavigationTile), findsOneWidget);
     });
@@ -99,7 +99,7 @@ void main() {
     testWidgets('masterEnabled=true iken switch acik gosterilir', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,buildSubject(masterEnabled: true));
+      await pumpLocalizedApp(tester, buildSubject(masterEnabled: true));
       await tester.pump(const Duration(milliseconds: 500));
       final tile = tester.widget<SwitchListTile>(find.byType(SwitchListTile));
       expect(tile.value, isTrue);
@@ -108,14 +108,14 @@ void main() {
     testWidgets('masterEnabled=false iken switch kapali gosterilir', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,buildSubject(masterEnabled: false));
+      await pumpLocalizedApp(tester, buildSubject(masterEnabled: false));
       await tester.pump(const Duration(milliseconds: 500));
       final tile = tester.widget<SwitchListTile>(find.byType(SwitchListTile));
       expect(tile.value, isFalse);
     });
 
     testWidgets('master toggle tiklama sonrasi durum degisir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject(masterEnabled: true));
+      await pumpLocalizedApp(tester, buildSubject(masterEnabled: true));
       await tester.pump(const Duration(milliseconds: 500));
 
       final container = ProviderScope.containerOf(
@@ -133,7 +133,7 @@ void main() {
     testWidgets('bildirim kategorileri tile tiklama GoRouter push calisir', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
 
       await tester.tap(find.byType(SettingsNavigationTile));

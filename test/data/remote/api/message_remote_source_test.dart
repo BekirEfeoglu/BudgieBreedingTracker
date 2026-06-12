@@ -76,10 +76,7 @@ void main() {
     test('rethrows on fetch error', () {
       selectBuilder.error = Exception('network error');
 
-      expect(
-        () => source.fetchMessages('conv-1'),
-        throwsA(isA<Exception>()),
-      );
+      expect(() => source.fetchMessages('conv-1'), throwsA(isA<Exception>()));
     });
   });
 }

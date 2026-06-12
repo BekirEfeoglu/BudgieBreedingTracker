@@ -77,9 +77,7 @@ class _DetailContent extends ConsumerWidget {
     // transition (success/error/warning), and the old isLoading branch swapped
     // the whole body for a full-screen LoadingState, losing scroll position on
     // every menu action.
-    final isBusy = ref.watch(
-      chickFormStateProvider.select((s) => s.isLoading),
-    );
+    final isBusy = ref.watch(chickFormStateProvider.select((s) => s.isLoading));
     final weightHistoryAsync = ref.watch(
       growthMeasurementsByChickProvider(chick.id),
     );

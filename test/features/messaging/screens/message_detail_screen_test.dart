@@ -59,9 +59,7 @@ void main() {
           () => _FakeRealtimeNotifier(realtimeMessages),
         ),
         typingIndicatorProvider.overrideWith(_FakeTypingNotifier.new),
-        messagingFormStateProvider.overrideWith(
-          _FakeMessagingFormNotifier.new,
-        ),
+        messagingFormStateProvider.overrideWith(_FakeMessagingFormNotifier.new),
       ],
       child: const MaterialApp(
         home: MessageDetailScreen(conversationId: 'conv-1'),
@@ -70,8 +68,9 @@ void main() {
   }
 
   group('MessageDetailScreen', () {
-    testWidgets('loading state shows CircularProgressIndicator',
-        (tester) async {
+    testWidgets('loading state shows CircularProgressIndicator', (
+      tester,
+    ) async {
       final completer = Completer<List<Message>>();
 
       await pumpLocalizedApp(
@@ -80,12 +79,10 @@ void main() {
           overrides: [
             currentUserIdProvider.overrideWithValue('test-user'),
             messagingRepositoryProvider.overrideWithValue(mockRepo),
-            conversationByIdProvider('conv-1').overrideWith(
-              (_) => Future.value(null),
-            ),
-            messagesProvider('conv-1').overrideWith(
-              (_) => completer.future,
-            ),
+            conversationByIdProvider(
+              'conv-1',
+            ).overrideWith((_) => Future.value(null)),
+            messagesProvider('conv-1').overrideWith((_) => completer.future),
             messagingRealtimeProvider.overrideWith(
               () => _FakeRealtimeNotifier([]),
             ),
@@ -110,7 +107,10 @@ void main() {
       await pumpLocalizedApp(
         tester,
         buildSubject(
-          messagesAsync: AsyncError(Exception('Network error'), StackTrace.empty),
+          messagesAsync: AsyncError(
+            Exception('Network error'),
+            StackTrace.empty,
+          ),
         ),
       );
 
@@ -183,9 +183,7 @@ void main() {
     testWidgets('renders MessageInputBar', (tester) async {
       await pumpLocalizedApp(
         tester,
-        buildSubject(
-          messagesAsync: const AsyncData([]),
-        ),
+        buildSubject(messagesAsync: const AsyncData([])),
       );
 
       expect(find.byType(MessageInputBar), findsOneWidget);

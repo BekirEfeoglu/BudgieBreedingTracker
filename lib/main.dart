@@ -38,10 +38,7 @@ void main() async {
     final easyLocFuture = EasyLocalization.ensureInitialized().whenComplete(() {
       easyLocMs = easyLocSw.elapsedMilliseconds;
     });
-    await Future.wait([
-      easyLocFuture,
-      bootstrapPreInit(),
-    ]).timeout(
+    await Future.wait([easyLocFuture, bootstrapPreInit()]).timeout(
       const Duration(seconds: 15),
       onTimeout: () {
         AppLogger.warning(
@@ -55,8 +52,12 @@ void main() async {
   }
   final parallelMs = parallelSw.elapsedMilliseconds;
   if (kDebugMode || const bool.fromEnvironment('PROFILE_STARTUP')) {
-    AppLogger.info('[bootstrap] phase EasyLocalization.ensureInitialized: ${easyLocMs}ms');
-    AppLogger.info('[bootstrap] phase parallel(easyLoc+preInit): ${parallelMs}ms');
+    AppLogger.info(
+      '[bootstrap] phase EasyLocalization.ensureInitialized: ${easyLocMs}ms',
+    );
+    AppLogger.info(
+      '[bootstrap] phase parallel(easyLoc+preInit): ${parallelMs}ms',
+    );
   }
 
   final runSw = Stopwatch()..start();

@@ -174,15 +174,26 @@ class _EventDetailContent extends ConsumerWidget {
       children: [
         Row(
           children: [
-            Icon(LucideIcons.clock, size: 18, color: theme.colorScheme.onSurfaceVariant),
+            Icon(
+              LucideIcons.clock,
+              size: 18,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
             const SizedBox(width: AppSpacing.sm),
-            Text(dateFormat.format(event.eventDate.toLocal()), style: theme.textTheme.bodyMedium),
+            Text(
+              dateFormat.format(event.eventDate.toLocal()),
+              style: theme.textTheme.bodyMedium,
+            ),
           ],
         ),
         const SizedBox(height: AppSpacing.sm),
         Row(
           children: [
-            Icon(LucideIcons.checkCircle, size: 18, color: theme.colorScheme.onSurfaceVariant),
+            Icon(
+              LucideIcons.checkCircle,
+              size: 18,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(

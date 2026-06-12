@@ -102,17 +102,13 @@ void main() {
       expect(find.text(l10n('auth.register')), findsOneWidget);
     });
 
-    testWidgets('shows CircularProgressIndicator when loading', (
-      tester,
-    ) async {
+    testWidgets('shows CircularProgressIndicator when loading', (tester) async {
       await pumpWidgetSimple(tester, buildSubject(isLoading: true));
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('register button text is hidden when loading', (
-      tester,
-    ) async {
+    testWidgets('register button text is hidden when loading', (tester) async {
       await pumpWidgetSimple(tester, buildSubject(isLoading: true));
 
       // The register text should not be visible (replaced by progress indicator)
@@ -288,9 +284,7 @@ void main() {
     });
 
     group('callbacks', () {
-      testWidgets('calls onSubmit when register button tapped', (
-        tester,
-      ) async {
+      testWidgets('calls onSubmit when register button tapped', (tester) async {
         await pumpWidgetSimple(tester, buildSubject());
 
         await tester.ensureVisible(find.byType(FilledButton));

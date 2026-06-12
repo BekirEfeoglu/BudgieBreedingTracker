@@ -80,7 +80,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap the save button without filling in title
-      final saveButton = find.widgetWithText(FilledButton, l10n('common.save')).first;
+      final saveButton = find
+          .widgetWithText(FilledButton, l10n('common.save'))
+          .first;
       await tester.ensureVisible(saveButton);
       await tester.pump();
       await tester.tap(saveButton);

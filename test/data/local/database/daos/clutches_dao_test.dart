@@ -104,15 +104,12 @@ void main() {
       expect(result, isNull);
     });
 
-    test(
-      'filters out soft-deleted clutch',
-      () async {
-        await dao.insertItem(makeEntry(id: 'c-1', isDeleted: true));
+    test('filters out soft-deleted clutch', () async {
+      await dao.insertItem(makeEntry(id: 'c-1', isDeleted: true));
 
-        final result = await dao.watchById('c-1').first;
-        expect(result, isNull);
-      },
-    );
+      final result = await dao.watchById('c-1').first;
+      expect(result, isNull);
+    });
   });
 
   group('getAll', () {
@@ -224,9 +221,7 @@ void main() {
 
       // getById filters out soft-deleted rows; verify via raw SQL.
       final rows = await db
-          .customSelect(
-            "SELECT is_deleted FROM clutches WHERE id = 'c-1'",
-          )
+          .customSelect("SELECT is_deleted FROM clutches WHERE id = 'c-1'")
           .get();
       expect(rows, hasLength(1));
       expect(rows.first.read<int>('is_deleted'), equals(1));

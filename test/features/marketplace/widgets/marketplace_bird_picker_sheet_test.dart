@@ -42,9 +42,7 @@ const _femaleBird = Bird(
   status: BirdStatus.alive,
 );
 
-Widget _buildSubject({
-  required AsyncValue<List<Bird>> birdsAsync,
-}) {
+Widget _buildSubject({required AsyncValue<List<Bird>> birdsAsync}) {
   return ProviderScope(
     overrides: [
       birdsStreamProvider(_testUserId).overrideWith(
@@ -56,17 +54,16 @@ Widget _buildSubject({
       ),
     ],
     child: const MaterialApp(
-      home: Scaffold(
-        body: MarketplaceBirdPickerSheet(userId: _testUserId),
-      ),
+      home: Scaffold(body: MarketplaceBirdPickerSheet(userId: _testUserId)),
     ),
   );
 }
 
 void main() {
   group('MarketplaceBirdPickerSheet', () {
-    testWidgets('should_show_loading_state_when_birds_are_loading',
-        (tester) async {
+    testWidgets('should_show_loading_state_when_birds_are_loading', (
+      tester,
+    ) async {
       await pumpLocalizedApp(
         tester,
         _buildSubject(birdsAsync: const AsyncLoading()),
@@ -86,8 +83,9 @@ void main() {
       expect(find.text('marketplace.no_birds_to_link'), findsOneWidget);
     });
 
-    testWidgets('should_show_alive_birds_only_when_data_available',
-        (tester) async {
+    testWidgets('should_show_alive_birds_only_when_data_available', (
+      tester,
+    ) async {
       await pumpLocalizedApp(
         tester,
         _buildSubject(

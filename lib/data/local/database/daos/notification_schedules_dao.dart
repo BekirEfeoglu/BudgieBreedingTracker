@@ -113,10 +113,11 @@ class NotificationSchedulesDao extends DatabaseAccessor<AppDatabase>
   Future<int> deleteOldStale(String userId, {int daysOld = 90}) async {
     final cutoff = DateTime.now().subtract(Duration(days: daysOld));
     return (delete(notificationSchedulesTable)..where(
-      (t) =>
-          t.userId.equals(userId) &
-          t.scheduledAt.isSmallerThanValue(cutoff) &
-          (t.processedAt.isNotNull() | t.isActive.equals(false)),
-    )).go();
+          (t) =>
+              t.userId.equals(userId) &
+              t.scheduledAt.isSmallerThanValue(cutoff) &
+              (t.processedAt.isNotNull() | t.isActive.equals(false)),
+        ))
+        .go();
   }
 }

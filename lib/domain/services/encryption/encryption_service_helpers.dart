@@ -15,13 +15,18 @@ extension _EncryptionKeyHelpers on EncryptionService {
 
   /// Returns the current key version number (0 for the original key).
   Future<int> _getCurrentKeyVersion() async {
-    final versionStr = await _secureStorage.read(key: EncryptionService._keyVersionName);
+    final versionStr = await _secureStorage.read(
+      key: EncryptionService._keyVersionName,
+    );
     return int.tryParse(versionStr ?? '') ?? 0;
   }
 
   String _generateKey() {
     final random = Random.secure();
-    final bytes = List<int>.generate(EncryptionService._keyLength, (_) => random.nextInt(256));
+    final bytes = List<int>.generate(
+      EncryptionService._keyLength,
+      (_) => random.nextInt(256),
+    );
     return base64Encode(bytes);
   }
 
@@ -39,7 +44,10 @@ extension _EncryptionKeyHelpers on EncryptionService {
     var keyString = await _secureStorage.read(key: EncryptionService._keyName);
     if (keyString == null) {
       keyString = _generateKey();
-      await _secureStorage.write(key: EncryptionService._keyName, value: keyString);
+      await _secureStorage.write(
+        key: EncryptionService._keyName,
+        value: keyString,
+      );
       AppLogger.info('Encryption key generated and stored');
     }
 
@@ -63,7 +71,10 @@ extension _EncryptionKeyHelpers on EncryptionService {
       await _secureStorage.delete(key: EncryptionService._keyName);
       final freshKey = _generateKey();
       final newVersion = currentVersion + 1;
-      await _secureStorage.write(key: EncryptionService._keyName, value: freshKey);
+      await _secureStorage.write(
+        key: EncryptionService._keyName,
+        value: freshKey,
+      );
       await _secureStorage.write(
         key: EncryptionService._keyVersionName,
         value: newVersion.toString(),
@@ -73,7 +84,9 @@ extension _EncryptionKeyHelpers on EncryptionService {
         freshDecoded.sublist(0, EncryptionService._keyLength),
       );
     } else {
-      _cachedKeyBytes = Uint8List.fromList(decoded.sublist(0, EncryptionService._keyLength));
+      _cachedKeyBytes = Uint8List.fromList(
+        decoded.sublist(0, EncryptionService._keyLength),
+      );
     }
     return _cachedKeyBytes!;
   }
@@ -97,7 +110,11 @@ extension _EncryptionKeyHelpers on EncryptionService {
             );
             continue;
           }
-          keys.add(Uint8List.fromList(decoded.sublist(0, EncryptionService._keyLength)));
+          keys.add(
+            Uint8List.fromList(
+              decoded.sublist(0, EncryptionService._keyLength),
+            ),
+          );
         }
       }
     } catch (_) {
@@ -129,12 +146,15 @@ extension _EncryptionKeyHelpers on EncryptionService {
       // Pre-separation fallback: BBTENC1! + AES(rawKey) + HMAC(rawKey).
       // Handles payloads encrypted before _deriveSubKeys was introduced.
       // HMAC is still verified inside _decodeEncryptedPayload using rawKey.
-      Sentry.addBreadcrumb(Breadcrumb(
-        message: 'Pre-separation authenticated payload detected — HMAC uses raw key',
-        category: 'encryption',
-        level: SentryLevel.warning,
-        data: {'payloadLength': combined.length},
-      ));
+      Sentry.addBreadcrumb(
+        Breadcrumb(
+          message:
+              'Pre-separation authenticated payload detected — HMAC uses raw key',
+          category: 'encryption',
+          level: SentryLevel.warning,
+          data: {'payloadLength': combined.length},
+        ),
+      );
       final rawDecrypted = _decodeEncryptedPayload(combined, keyBytes);
       final rawEncrypter = enc.Encrypter(
         enc.AES(enc.Key(keyBytes), mode: enc.AESMode.cbc),
@@ -143,12 +163,14 @@ extension _EncryptionKeyHelpers on EncryptionService {
     }
 
     // Legacy only: IV+ciphertext, no magic prefix, no HMAC verification.
-    Sentry.addBreadcrumb(Breadcrumb(
-      message: 'Legacy encryption payload without HMAC detected',
-      category: 'encryption',
-      level: SentryLevel.warning,
-      data: {'payloadLength': combined.length},
-    ));
+    Sentry.addBreadcrumb(
+      Breadcrumb(
+        message: 'Legacy encryption payload without HMAC detected',
+        category: 'encryption',
+        level: SentryLevel.warning,
+        data: {'payloadLength': combined.length},
+      ),
+    );
     final legacyDecrypted = _decodeEncryptedPayload(combined, keyBytes);
     final legacyEncrypter = enc.Encrypter(
       enc.AES(enc.Key(keyBytes), mode: enc.AESMode.cbc),

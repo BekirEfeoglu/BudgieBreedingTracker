@@ -37,14 +37,14 @@ class AiAnimatedResultSlot extends StatelessWidget {
                 child: isLoading
                     ? const AiInsightSkeleton(key: ValueKey('skeleton'))
                     : hasError
-                        ? AiErrorBox(
-                            key: const ValueKey('error'),
-                            message: errorMessage ?? '',
-                          )
-                        : KeyedSubtree(
-                            key: const ValueKey('result'),
-                            child: child!,
-                          ),
+                    ? AiErrorBox(
+                        key: const ValueKey('error'),
+                        message: errorMessage ?? '',
+                      )
+                    : KeyedSubtree(
+                        key: const ValueKey('result'),
+                        child: child!,
+                      ),
               ),
             )
           : const SizedBox.shrink(),
@@ -70,8 +70,9 @@ class AiResultSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final filteredBullets =
-        bullets.where((item) => item.trim().isNotEmpty).toList();
+    final filteredBullets = bullets
+        .where((item) => item.trim().isNotEmpty)
+        .toList();
     final level = switch (confidence) {
       LocalAiConfidence.low => 'low',
       LocalAiConfidence.medium => 'medium',
@@ -123,8 +124,7 @@ class AiResultSection extends StatelessWidget {
                 style: theme.textTheme.bodySmall?.copyWith(
                   height: 1.5,
                   fontStyle: FontStyle.italic,
-                  color:
-                      theme.colorScheme.onSurface.withValues(alpha: 0.85),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
                 ),
               ),
             ),
@@ -144,8 +144,7 @@ class AiResultSection extends StatelessWidget {
                         height: 5,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color:
-                              colors.foreground.withValues(alpha: 0.5),
+                          color: colors.foreground.withValues(alpha: 0.5),
                         ),
                       ),
                     ),
@@ -185,8 +184,7 @@ class AiInsightSkeleton extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         border: Border.all(
-          color:
-              theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -194,9 +192,7 @@ class AiInsightSkeleton extends StatelessWidget {
         children: [
           const Row(
             children: [
-              Expanded(
-                child: SkeletonLoader(height: 16, width: 180),
-              ),
+              Expanded(child: SkeletonLoader(height: 16, width: 180)),
               SizedBox(width: AppSpacing.md),
               SkeletonLoader(
                 height: 24,
@@ -219,8 +215,9 @@ class AiInsightSkeleton extends StatelessWidget {
                   height: 4,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: theme.colorScheme.onSurfaceVariant
-                        .withValues(alpha: 0.2),
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.2,
+                    ),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),

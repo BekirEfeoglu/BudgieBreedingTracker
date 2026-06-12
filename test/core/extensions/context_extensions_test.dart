@@ -153,7 +153,9 @@ void main() {
       expect(find.text('Error!'), findsOneWidget);
     });
 
-    testWidgets('showSnackBar with isSuccess uses ActionFeedbackService', (tester) async {
+    testWidgets('showSnackBar with isSuccess uses ActionFeedbackService', (
+      tester,
+    ) async {
       ActionFeedbackService.resetForTesting();
       final received = <ActionFeedback>[];
       final sub = ActionFeedbackService.stream.listen(received.add);

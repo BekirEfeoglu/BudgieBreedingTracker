@@ -165,9 +165,7 @@ void main() {
       expect(find.text('Chart'), findsOneWidget);
     });
 
-    testWidgets('hides low data banner when dataCount is null', (
-      tester,
-    ) async {
+    testWidgets('hides low data banner when dataCount is null', (tester) async {
       await pumpWidgetSimple(
         tester,
         const ChartCard(

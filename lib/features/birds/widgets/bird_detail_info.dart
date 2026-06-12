@@ -124,11 +124,7 @@ class BirdDetailInfo extends ConsumerWidget {
           if (bird.status == BirdStatus.gifted && bird.soldDate != null) ...[
             const SizedBox(height: AppSpacing.sm),
             _DetailInfoTile(
-              // TODO(birds-audit #14): no AppIcons.statusGifted SVG exists;
-              // add that asset (sibling of statusAlive/Sold/Dead) and switch
-              // to AppIcon(AppIcons.statusGifted). LucideIcons.gift is a
-              // generic-UI fallback until then.
-              icon: const Icon(LucideIcons.gift),
+              icon: const AppIcon(AppIcons.heartHandshake),
               title: dateFormat.format(bird.soldDate!),
               subtitle: 'birds.transfer_date'.tr(),
             ),

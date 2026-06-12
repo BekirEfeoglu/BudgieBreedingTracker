@@ -70,8 +70,7 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
             icon: const AppIcon(AppIcons.heart),
             tooltip: 'marketplace.favorites'.tr(),
             semanticLabel: 'marketplace.favorites'.tr(),
-            onPressed: () =>
-                context.push('${AppRoutes.marketplace}/favorites'),
+            onPressed: () => context.push('${AppRoutes.marketplace}/favorites'),
           ),
           PopupMenuButton<MarketplaceSort>(
             icon: const Icon(LucideIcons.arrowUpDown),
@@ -132,8 +131,9 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
                         onPressed: () {
                           _searchController.clear();
                           ref
-                              .read(marketplaceSearchQueryProvider.notifier)
-                              .state = '';
+                                  .read(marketplaceSearchQueryProvider.notifier)
+                                  .state =
+                              '';
                         },
                       )
                     : null,
@@ -152,8 +152,7 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
                 ref.invalidate(marketplaceListingsProvider(userId));
               },
               child: listingsAsync.when(
-                loading: () =>
-                    const LoadingState(),
+                loading: () => const LoadingState(),
                 error: (error, _) => app.ErrorState(
                   message: '${'common.data_load_error'.tr()}: $error',
                   onRetry: () =>
@@ -216,8 +215,7 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
       ),
       floatingActionButton: Builder(
         builder: (context) {
-          final canCreate =
-              ref.watch(canCreateListingProvider(userId));
+          final canCreate = ref.watch(canCreateListingProvider(userId));
           return FabButton(
             icon: const Icon(LucideIcons.plus),
             tooltip: 'marketplace.add_listing'.tr(),

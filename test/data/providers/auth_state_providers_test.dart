@@ -23,9 +23,7 @@ void main() {
       // Override supabaseClientProvider so it does not try the real singleton.
       final mockClient = MockSupabaseClient();
       final container = ProviderContainer(
-        overrides: [
-          supabaseClientProvider.overrideWithValue(mockClient),
-        ],
+        overrides: [supabaseClientProvider.overrideWithValue(mockClient)],
       );
       addTearDown(container.dispose);
 
@@ -58,9 +56,9 @@ void main() {
 
       when(() => mockClient.auth).thenReturn(mockAuth);
       when(() => mockAuth.currentSession).thenReturn(mockSession);
-      when(() => mockAuth.onAuthStateChange).thenAnswer(
-        (_) => const Stream<AuthState>.empty(),
-      );
+      when(
+        () => mockAuth.onAuthStateChange,
+      ).thenAnswer((_) => const Stream<AuthState>.empty());
 
       final container = ProviderContainer(
         overrides: [
@@ -83,9 +81,9 @@ void main() {
 
       when(() => mockClient.auth).thenReturn(mockAuth);
       when(() => mockAuth.currentSession).thenReturn(null);
-      when(() => mockAuth.onAuthStateChange).thenAnswer(
-        (_) => const Stream<AuthState>.empty(),
-      );
+      when(
+        () => mockAuth.onAuthStateChange,
+      ).thenAnswer((_) => const Stream<AuthState>.empty());
 
       final container = ProviderContainer(
         overrides: [
@@ -126,9 +124,9 @@ void main() {
       when(() => mockClient.auth).thenReturn(mockAuth);
       when(() => mockAuth.currentUser).thenReturn(mockUser);
       when(() => mockUser.id).thenReturn('user-abc-123');
-      when(() => mockAuth.onAuthStateChange).thenAnswer(
-        (_) => const Stream<AuthState>.empty(),
-      );
+      when(
+        () => mockAuth.onAuthStateChange,
+      ).thenAnswer((_) => const Stream<AuthState>.empty());
 
       final container = ProviderContainer(
         overrides: [
@@ -151,9 +149,9 @@ void main() {
 
       when(() => mockClient.auth).thenReturn(mockAuth);
       when(() => mockAuth.currentUser).thenReturn(null);
-      when(() => mockAuth.onAuthStateChange).thenAnswer(
-        (_) => const Stream<AuthState>.empty(),
-      );
+      when(
+        () => mockAuth.onAuthStateChange,
+      ).thenAnswer((_) => const Stream<AuthState>.empty());
 
       final container = ProviderContainer(
         overrides: [
@@ -193,8 +191,9 @@ void main() {
       final controller = StreamController<AuthState>.broadcast();
 
       when(() => mockClient.auth).thenReturn(mockAuth);
-      when(() => mockAuth.onAuthStateChange)
-          .thenAnswer((_) => controller.stream);
+      when(
+        () => mockAuth.onAuthStateChange,
+      ).thenAnswer((_) => controller.stream);
 
       final container = ProviderContainer(
         overrides: [

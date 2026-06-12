@@ -65,7 +65,9 @@ class ChickWeightHistorySection extends StatelessWidget {
                 children: [
                   _WeightSparkline(measurements: sorted),
                   const SizedBox(height: AppSpacing.md),
-                  ...sorted.take(5).map(
+                  ...sorted
+                      .take(5)
+                      .map(
                         (m) => _WeightMeasurementRow(
                           m,
                           dateFormatter: dateFormatter,

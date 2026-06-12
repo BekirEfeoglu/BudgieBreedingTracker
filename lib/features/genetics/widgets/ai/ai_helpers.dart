@@ -24,9 +24,7 @@ String formatAiError(Object? error) {
     if (msg.startsWith(LocalAiService.errorKeyPrefix)) {
       final parts = msg.split('\x00');
       final key = parts[0];
-      return parts.length > 1
-          ? key.tr(args: parts.sublist(1))
-          : key.tr();
+      return parts.length > 1 ? key.tr(args: parts.sublist(1)) : key.tr();
     }
     return msg;
   }

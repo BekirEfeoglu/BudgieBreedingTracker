@@ -64,7 +64,9 @@ class ReverseCalculator {
 
     combinations.sort((a, b) => b.maxProbability.compareTo(a.maxProbability));
 
-    return combinations.take(GeneticsConstants.reverseMaxDisplayResults).toList();
+    return combinations
+        .take(GeneticsConstants.reverseMaxDisplayResults)
+        .toList();
   }
 
   List<LocusPairResult> _findValidPairsForLocus(
@@ -74,14 +76,14 @@ class ReverseCalculator {
   ) {
     final fatherGenotypes =
         ReverseCalculatorHelpers.generateAllGenotypesAtLocus(
-      locusId,
-      BirdGender.male,
-    );
+          locusId,
+          BirdGender.male,
+        );
     final motherGenotypes =
         ReverseCalculatorHelpers.generateAllGenotypesAtLocus(
-      locusId,
-      BirdGender.female,
-    );
+          locusId,
+          BirdGender.female,
+        );
 
     final List<LocusPairResult> validPairs = [];
 

@@ -11,11 +11,14 @@ final quickInsightsProvider =
 
       // Fast-fail on any error
       for (final a in [eggsAsync, chicksAsync, pairsAsync, trendAsync]) {
-        if (a.hasError) return AsyncError(a.error!, a.stackTrace ?? StackTrace.empty);
+        if (a.hasError)
+          return AsyncError(a.error!, a.stackTrace ?? StackTrace.empty);
       }
       // Loading if any data stream hasn't resolved (trend loading is handled
       // below via trendAsync.value returning null → neutral sentiment)
-      if (eggsAsync.isLoading || chicksAsync.isLoading || pairsAsync.isLoading) {
+      if (eggsAsync.isLoading ||
+          chicksAsync.isLoading ||
+          pairsAsync.isLoading) {
         return const AsyncLoading();
       }
 
@@ -28,8 +31,7 @@ final quickInsightsProvider =
       final trends = trendAsync.value;
 
       // Egg production insight
-      final periodEggs =
-          eggs.where((e) => range.isInCurrent(e.layDate)).length;
+      final periodEggs = eggs.where((e) => range.isInCurrent(e.layDate)).length;
       if (periodEggs > 0) {
         final trendText = trends != null && trends.eggsTrend.abs() > 0
             ? ' (${trends.eggsTrend > 0 ? "+" : ""}${trends.eggsTrend.toStringAsFixed(0)}%)'
@@ -60,8 +62,7 @@ final quickInsightsProvider =
       final infertile = eggs
           .where(
             (e) =>
-                range.isInCurrent(e.layDate) &&
-                e.status == EggStatus.infertile,
+                range.isInCurrent(e.layDate) && e.status == EggStatus.infertile,
           )
           .length;
       final checked = fertile + infertile;
@@ -79,9 +80,7 @@ final quickInsightsProvider =
 
       // Chick survival insight
       final periodChicks = chicks
-          .where(
-            (c) => c.hatchDate != null && range.isInCurrent(c.hatchDate!),
-          )
+          .where((c) => c.hatchDate != null && range.isInCurrent(c.hatchDate!))
           .toList();
       final survivedChicks = periodChicks
           .where((c) => c.healthStatus != ChickHealthStatus.deceased)

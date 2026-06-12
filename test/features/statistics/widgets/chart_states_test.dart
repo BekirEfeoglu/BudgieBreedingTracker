@@ -18,20 +18,20 @@ void main() {
       expect(find.byType(SkeletonLoader), findsWidgets);
     });
 
-    testWidgets('renders pie chart skeleton when isPieChart is true',
-        (tester) async {
+    testWidgets('renders pie chart skeleton when isPieChart is true', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(body: ChartLoading(isPieChart: true)),
-        ),
+        const MaterialApp(home: Scaffold(body: ChartLoading(isPieChart: true))),
       );
 
       expect(find.byType(ChartLoading), findsOneWidget);
       expect(find.byType(SkeletonLoader), findsWidgets);
     });
 
-    testWidgets('renders line chart skeleton when isLineChart is true',
-        (tester) async {
+    testWidgets('renders line chart skeleton when isLineChart is true', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(body: ChartLoading(isLineChart: true)),
@@ -54,8 +54,7 @@ void main() {
       expect(find.text('Something went wrong'), findsOneWidget);
     });
 
-    testWidgets('shows retry button when onRetry is provided',
-        (tester) async {
+    testWidgets('shows retry button when onRetry is provided', (tester) async {
       await pumpTranslatedWidget(
         tester,
         ChartError(message: 'Error', onRetry: () {}),
@@ -65,12 +64,10 @@ void main() {
       expect(find.text(resolvedL10n('common.retry')), findsOneWidget);
     });
 
-    testWidgets('does not show retry button when onRetry is null',
-        (tester) async {
-      await pumpTranslatedWidget(
-        tester,
-        const ChartError(message: 'Error'),
-      );
+    testWidgets('does not show retry button when onRetry is null', (
+      tester,
+    ) async {
+      await pumpTranslatedWidget(tester, const ChartError(message: 'Error'));
 
       expect(find.byType(TextButton), findsNothing);
     });
@@ -94,7 +91,10 @@ void main() {
       await pumpTranslatedWidget(tester, const ChartEmpty());
 
       expect(find.text(resolvedL10n('statistics.no_data')), findsOneWidget);
-      expect(find.text(resolvedL10n('statistics.no_data_hint')), findsOneWidget);
+      expect(
+        find.text(resolvedL10n('statistics.no_data_hint')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('renders custom message when provided', (tester) async {
@@ -104,7 +104,10 @@ void main() {
       );
 
       expect(find.text('Custom empty message'), findsOneWidget);
-      expect(find.text(resolvedL10n('statistics.no_data_hint')), findsOneWidget);
+      expect(
+        find.text(resolvedL10n('statistics.no_data_hint')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('has correct height', (tester) async {
@@ -127,18 +130,19 @@ void main() {
         const ChartLowData(child: Text('Chart content')),
       );
 
-      expect(find.text(resolvedL10n('statistics.low_data_hint')), findsOneWidget);
+      expect(
+        find.text(resolvedL10n('statistics.low_data_hint')),
+        findsOneWidget,
+      );
       expect(find.text('Chart content'), findsOneWidget);
     });
 
-    testWidgets('shows action button when onAction is provided',
-        (tester) async {
+    testWidgets('shows action button when onAction is provided', (
+      tester,
+    ) async {
       await pumpTranslatedWidget(
         tester,
-        ChartLowData(
-          onAction: () {},
-          child: const Text('Chart'),
-        ),
+        ChartLowData(onAction: () {}, child: const Text('Chart')),
       );
 
       expect(find.text(resolvedL10n('common.add')), findsOneWidget);
@@ -161,10 +165,7 @@ void main() {
       var tapped = false;
       await pumpTranslatedWidget(
         tester,
-        ChartLowData(
-          onAction: () => tapped = true,
-          child: const Text('Chart'),
-        ),
+        ChartLowData(onAction: () => tapped = true, child: const Text('Chart')),
       );
 
       await tester.tap(find.byType(TextButton));

@@ -9,14 +9,20 @@ abstract final class LevelCalculator {
     return total;
   }
 
-  static ({int level, int currentLevelXp, int nextLevelXp}) calculateLevel(int totalXp) {
+  static ({int level, int currentLevelXp, int nextLevelXp}) calculateLevel(
+    int totalXp,
+  ) {
     int level = 1;
     int remaining = totalXp;
     while (remaining >= xpForLevel(level)) {
       remaining -= xpForLevel(level);
       level++;
     }
-    return (level: level, currentLevelXp: remaining, nextLevelXp: xpForLevel(level));
+    return (
+      level: level,
+      currentLevelXp: remaining,
+      nextLevelXp: xpForLevel(level),
+    );
   }
 
   static String titleForLevel(int level) => switch (level) {

@@ -27,9 +27,9 @@ class _ActionFeedbackCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: AppSpacing.xs),
-            ...feedbacks.take(5).map(
-              (f) => _FeedbackItem(feedback: f, onDismiss: onDismiss),
-            ),
+            ...feedbacks
+                .take(5)
+                .map((f) => _FeedbackItem(feedback: f, onDismiss: onDismiss)),
             const Divider(height: 1),
             InkWell(
               onTap: onViewAll,

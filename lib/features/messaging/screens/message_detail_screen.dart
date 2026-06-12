@@ -175,8 +175,9 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
                 // back; treat them as "newest" so they appear at the top
                 // of the reversed ListView instead of falling to year 0
                 // and disappearing for the sender (audit M4).
-                final pinnedTop = DateTime.now()
-                    .add(const Duration(days: 365 * 1000));
+                final pinnedTop = DateTime.now().add(
+                  const Duration(days: 365 * 1000),
+                );
                 final messages = allMessages.values.toList()
                   ..sort(
                     (a, b) => (b.createdAt ?? pinnedTop).compareTo(

@@ -72,14 +72,26 @@ class ViabilityAnalyzer {
   }) {
     switch (combo.scope) {
       case LethalScope.parentBothVisual:
-        return _checkParentBothVisual(combo, fatherMutations, motherMutations,
-            offspringResults);
+        return _checkParentBothVisual(
+          combo,
+          fatherMutations,
+          motherMutations,
+          offspringResults,
+        );
       case LethalScope.parentAnyVisual:
-        return _checkParentAnyVisual(combo, fatherMutations, motherMutations,
-            offspringResults);
+        return _checkParentAnyVisual(
+          combo,
+          fatherMutations,
+          motherMutations,
+          offspringResults,
+        );
       case LethalScope.offspringHomozygous:
-        return _checkOffspringHomozygous(combo, fatherMutations, motherMutations,
-            offspringResults);
+        return _checkOffspringHomozygous(
+          combo,
+          fatherMutations,
+          motherMutations,
+          offspringResults,
+        );
       case LethalScope.offspringVisual:
         return _checkOffspringVisual(combo, offspringResults);
     }
@@ -109,10 +121,12 @@ class ViabilityAnalyzer {
     List<OffspringResult> offspringResults,
   ) {
     // Each parent must visually express at least one allele from the set.
-    final fatherHasAny =
-        combo.requiredMutationIds.any(fatherMutations.contains);
-    final motherHasAny =
-        combo.requiredMutationIds.any(motherMutations.contains);
+    final fatherHasAny = combo.requiredMutationIds.any(
+      fatherMutations.contains,
+    );
+    final motherHasAny = combo.requiredMutationIds.any(
+      motherMutations.contains,
+    );
     if (!fatherHasAny || !motherHasAny) return const [];
     return [
       for (final result in offspringResults)
@@ -128,10 +142,12 @@ class ViabilityAnalyzer {
   ) {
     // Short-circuit: if neither parent can contribute the allele, no offspring
     // can be homozygous for it.
-    final fatherCanProvide =
-        combo.requiredMutationIds.any(fatherMutations.contains);
-    final motherCanProvide =
-        combo.requiredMutationIds.any(motherMutations.contains);
+    final fatherCanProvide = combo.requiredMutationIds.any(
+      fatherMutations.contains,
+    );
+    final motherCanProvide = combo.requiredMutationIds.any(
+      motherMutations.contains,
+    );
     if (!fatherCanProvide || !motherCanProvide) return const [];
 
     final warnings = <ViabilityWarning>[];

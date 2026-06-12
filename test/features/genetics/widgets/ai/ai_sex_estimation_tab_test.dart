@@ -65,8 +65,7 @@ Widget _subject({
 }) {
   final container = ProviderContainer(
     overrides: [
-      sexAiAnalysisProvider
-          .overrideWith(() => _FakeSexAnalysis(sexState)),
+      sexAiAnalysisProvider.overrideWith(() => _FakeSexAnalysis(sexState)),
       localAiConfigProvider.overrideWith(
         () => _FakeConfig(configState ?? const AsyncData(_testConfig)),
       ),
@@ -82,9 +81,7 @@ Widget _subject({
 
   return UncontrolledProviderScope(
     container: container,
-    child: const MaterialApp(
-      home: Scaffold(body: AiSexEstimationTab()),
-    ),
+    child: const MaterialApp(home: Scaffold(body: AiSexEstimationTab())),
   );
 }
 
@@ -99,11 +96,12 @@ void main() {
   });
 
   group('AiSexEstimationTab', () {
-    testWidgets('renders quick tags and observation field in idle state',
-        (tester) async {
-      await tester.pumpWidget(_subject(
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+    testWidgets('renders quick tags and observation field in idle state', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _subject(onContainer: (c) => addTearDown(c.dispose)),
+      );
       await tester.pump();
 
       expect(find.byType(AiQuickTags), findsOneWidget);
@@ -111,9 +109,9 @@ void main() {
     });
 
     testWidgets('renders section title and subtitle', (tester) async {
-      await tester.pumpWidget(_subject(
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+      await tester.pumpWidget(
+        _subject(onContainer: (c) => addTearDown(c.dispose)),
+      );
       await tester.pump();
 
       expect(find.text('genetics.sex_ai_title'), findsOneWidget);
@@ -121,20 +119,20 @@ void main() {
     });
 
     testWidgets('analyze button has correct label', (tester) async {
-      await tester.pumpWidget(_subject(
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+      await tester.pumpWidget(
+        _subject(onContainer: (c) => addTearDown(c.dispose)),
+      );
       await tester.pump();
 
       expect(find.text('genetics.run_sex_ai'), findsOneWidget);
     });
 
-    testWidgets(
-        'analyze button is enabled in idle state (validation on tap)',
-        (tester) async {
-      await tester.pumpWidget(_subject(
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+    testWidgets('analyze button is enabled in idle state (validation on tap)', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _subject(onContainer: (c) => addTearDown(c.dispose)),
+      );
       await tester.pump();
 
       // The analyze OutlinedButton is the last one (first is gallery in picker).
@@ -146,81 +144,94 @@ void main() {
       expect(analyzeBtn.onPressed, isNotNull);
     });
 
-    testWidgets('analyze button is disabled during loading state',
-        (tester) async {
-      await tester.pumpWidget(_subject(
-        sexState: const AsyncLoading<LocalAiSexInsight?>(),
-        phase: AiAnalysisPhase.analyzing,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+    testWidgets('analyze button is disabled during loading state', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _subject(
+          sexState: const AsyncLoading<LocalAiSexInsight?>(),
+          phase: AiAnalysisPhase.analyzing,
+          onContainer: (c) => addTearDown(c.dispose),
+        ),
+      );
       await tester.pump();
 
       // The analyze button is the last OutlinedButton (first is gallery picker)
       final analyzeBtn = tester.widget<OutlinedButton>(
         find.byType(OutlinedButton).last,
       );
-      expect(analyzeBtn.onPressed, isNull,
-          reason: 'Analyze button should be disabled while loading');
+      expect(
+        analyzeBtn.onPressed,
+        isNull,
+        reason: 'Analyze button should be disabled while loading',
+      );
     });
 
-    testWidgets('shows skeleton loader during loading state',
-        (tester) async {
-      await tester.pumpWidget(_subject(
-        sexState: const AsyncLoading<LocalAiSexInsight?>(),
-        phase: AiAnalysisPhase.analyzing,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+    testWidgets('shows skeleton loader during loading state', (tester) async {
+      await tester.pumpWidget(
+        _subject(
+          sexState: const AsyncLoading<LocalAiSexInsight?>(),
+          phase: AiAnalysisPhase.analyzing,
+          onContainer: (c) => addTearDown(c.dispose),
+        ),
+      );
       await tester.pump();
 
       expect(find.byType(AiInsightSkeleton), findsOneWidget);
     });
 
     testWidgets('shows error box when analysis fails', (tester) async {
-      await tester.pumpWidget(_subject(
-        sexState: AsyncError<LocalAiSexInsight?>(
-          Exception('Network error'),
-          StackTrace.current,
+      await tester.pumpWidget(
+        _subject(
+          sexState: AsyncError<LocalAiSexInsight?>(
+            Exception('Network error'),
+            StackTrace.current,
+          ),
+          phase: AiAnalysisPhase.error,
+          onContainer: (c) => addTearDown(c.dispose),
         ),
-        phase: AiAnalysisPhase.error,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+      );
       await tester.pump();
 
       expect(find.byType(AiErrorBox), findsOneWidget);
     });
 
-    testWidgets('displays result section on successful analysis',
-        (tester) async {
-      await tester.pumpWidget(_subject(
-        sexState: const AsyncData<LocalAiSexInsight?>(_maleResult),
-        phase: AiAnalysisPhase.complete,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+    testWidgets('displays result section on successful analysis', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _subject(
+          sexState: const AsyncData<LocalAiSexInsight?>(_maleResult),
+          phase: AiAnalysisPhase.complete,
+          onContainer: (c) => addTearDown(c.dispose),
+        ),
+      );
       await tester.pump();
 
       expect(find.byType(AiResultSection), findsOneWidget);
     });
 
     testWidgets('result section shows rationale text', (tester) async {
-      await tester.pumpWidget(_subject(
-        sexState: const AsyncData<LocalAiSexInsight?>(_maleResult),
-        phase: AiAnalysisPhase.complete,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+      await tester.pumpWidget(
+        _subject(
+          sexState: const AsyncData<LocalAiSexInsight?>(_maleResult),
+          phase: AiAnalysisPhase.complete,
+          onContainer: (c) => addTearDown(c.dispose),
+        ),
+      );
       await tester.pump();
 
-      expect(
-        find.text('Blue cere indicates adult male.'),
-        findsOneWidget,
-      );
+      expect(find.text('Blue cere indicates adult male.'), findsOneWidget);
     });
 
     testWidgets('result section shows indicator bullets', (tester) async {
-      await tester.pumpWidget(_subject(
-        sexState: const AsyncData<LocalAiSexInsight?>(_maleResult),
-        phase: AiAnalysisPhase.complete,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+      await tester.pumpWidget(
+        _subject(
+          sexState: const AsyncData<LocalAiSexInsight?>(_maleResult),
+          phase: AiAnalysisPhase.complete,
+          onContainer: (c) => addTearDown(c.dispose),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('Blue cere coloring'), findsOneWidget);
@@ -228,46 +239,54 @@ void main() {
     });
 
     testWidgets('result section shows next checks', (tester) async {
-      await tester.pumpWidget(_subject(
-        sexState: const AsyncData<LocalAiSexInsight?>(_maleResult),
-        phase: AiAnalysisPhase.complete,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+      await tester.pumpWidget(
+        _subject(
+          sexState: const AsyncData<LocalAiSexInsight?>(_maleResult),
+          phase: AiAnalysisPhase.complete,
+          onContainer: (c) => addTearDown(c.dispose),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('DNA test for confirmation'), findsOneWidget);
     });
 
     testWidgets('high confidence result shows high badge', (tester) async {
-      await tester.pumpWidget(_subject(
-        sexState: const AsyncData<LocalAiSexInsight?>(_maleResult),
-        phase: AiAnalysisPhase.complete,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+      await tester.pumpWidget(
+        _subject(
+          sexState: const AsyncData<LocalAiSexInsight?>(_maleResult),
+          phase: AiAnalysisPhase.complete,
+          onContainer: (c) => addTearDown(c.dispose),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('genetics.ai_confidence_high'), findsOneWidget);
     });
 
-    testWidgets('low confidence uncertain result shows low badge',
-        (tester) async {
-      await tester.pumpWidget(_subject(
-        sexState:
-            const AsyncData<LocalAiSexInsight?>(_uncertainResult),
-        phase: AiAnalysisPhase.complete,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+    testWidgets('low confidence uncertain result shows low badge', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _subject(
+          sexState: const AsyncData<LocalAiSexInsight?>(_uncertainResult),
+          phase: AiAnalysisPhase.complete,
+          onContainer: (c) => addTearDown(c.dispose),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('genetics.ai_confidence_low'), findsOneWidget);
     });
 
     testWidgets('progress phases visible during analysis', (tester) async {
-      await tester.pumpWidget(_subject(
-        sexState: const AsyncLoading<LocalAiSexInsight?>(),
-        phase: AiAnalysisPhase.analyzing,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+      await tester.pumpWidget(
+        _subject(
+          sexState: const AsyncLoading<LocalAiSexInsight?>(),
+          phase: AiAnalysisPhase.analyzing,
+          onContainer: (c) => addTearDown(c.dispose),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('genetics.ai_phase_preparing'), findsOneWidget);
@@ -275,35 +294,39 @@ void main() {
     });
 
     testWidgets('progress phases hidden in idle state', (tester) async {
-      await tester.pumpWidget(_subject(
-        phase: AiAnalysisPhase.idle,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+      await tester.pumpWidget(
+        _subject(
+          phase: AiAnalysisPhase.idle,
+          onContainer: (c) => addTearDown(c.dispose),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('genetics.ai_phase_preparing'), findsNothing);
     });
 
-    testWidgets('error phase shows error label in progress phases',
-        (tester) async {
-      await tester.pumpWidget(_subject(
-        sexState: AsyncError<LocalAiSexInsight?>(
-          Exception('Server error'),
-          StackTrace.current,
+    testWidgets('error phase shows error label in progress phases', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _subject(
+          sexState: AsyncError<LocalAiSexInsight?>(
+            Exception('Server error'),
+            StackTrace.current,
+          ),
+          phase: AiAnalysisPhase.error,
+          onContainer: (c) => addTearDown(c.dispose),
         ),
-        phase: AiAnalysisPhase.error,
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+      );
       await tester.pump();
 
       expect(find.text('genetics.ai_phase_error'), findsOneWidget);
     });
 
-    testWidgets('tapping filter chip toggles tag selection',
-        (tester) async {
-      await tester.pumpWidget(_subject(
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+    testWidgets('tapping filter chip toggles tag selection', (tester) async {
+      await tester.pumpWidget(
+        _subject(onContainer: (c) => addTearDown(c.dispose)),
+      );
       await tester.pump();
 
       // Tap the first filter chip
@@ -317,11 +340,10 @@ void main() {
       expect(chip.selected, isTrue);
     });
 
-    testWidgets('typing in observation field updates text',
-        (tester) async {
-      await tester.pumpWidget(_subject(
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+    testWidgets('typing in observation field updates text', (tester) async {
+      await tester.pumpWidget(
+        _subject(onContainer: (c) => addTearDown(c.dispose)),
+      );
       await tester.pump();
 
       final textField = find.byType(TextField);
@@ -332,44 +354,44 @@ void main() {
     });
 
     testWidgets(
-        'tapping analyze with empty observations and no tags shows validation error',
-        (tester) async {
-      // Use a tall surface so all widgets including the analyze button
-      // are within the render bounds and hittable.
-      tester.view.physicalSize = const Size(800, 2400);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+      'tapping analyze with empty observations and no tags shows validation error',
+      (tester) async {
+        // Use a tall surface so all widgets including the analyze button
+        // are within the render bounds and hittable.
+        tester.view.physicalSize = const Size(800, 2400);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(_subject(
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
-      // Wait for async config provider to resolve so button is enabled
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _subject(onContainer: (c) => addTearDown(c.dispose)),
+        );
+        // Wait for async config provider to resolve so button is enabled
+        await tester.pumpAndSettle();
 
-      // The analyze button is the last OutlinedButton (first is gallery picker)
-      final analyzeBtn = tester.widget<OutlinedButton>(
-        find.byType(OutlinedButton).last,
+        // The analyze button is the last OutlinedButton (first is gallery picker)
+        final analyzeBtn = tester.widget<OutlinedButton>(
+          find.byType(OutlinedButton).last,
+        );
+        expect(
+          analyzeBtn.onPressed,
+          isNotNull,
+          reason: 'Button should be enabled after config resolves',
+        );
+
+        // Tap the analyze button with empty observations and no tags
+        await tester.tap(find.byType(OutlinedButton).last);
+        await tester.pump();
+
+        // Validation logic sets _showObservationError=true which renders the text
+        expect(find.text('genetics.sex_observations_required'), findsOneWidget);
+      },
+    );
+
+    testWidgets('no result section displayed in idle state', (tester) async {
+      await tester.pumpWidget(
+        _subject(onContainer: (c) => addTearDown(c.dispose)),
       );
-      expect(analyzeBtn.onPressed, isNotNull,
-          reason: 'Button should be enabled after config resolves');
-
-      // Tap the analyze button with empty observations and no tags
-      await tester.tap(find.byType(OutlinedButton).last);
-      await tester.pump();
-
-      // Validation logic sets _showObservationError=true which renders the text
-      expect(
-        find.text('genetics.sex_observations_required'),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('no result section displayed in idle state',
-        (tester) async {
-      await tester.pumpWidget(_subject(
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
       await tester.pump();
 
       expect(find.byType(AiResultSection), findsNothing);
@@ -377,17 +399,15 @@ void main() {
       expect(find.byType(AiErrorBox), findsNothing);
     });
 
-    testWidgets('bird selector is rendered with optional label',
-        (tester) async {
-      await tester.pumpWidget(_subject(
-        onContainer: (c) => addTearDown(c.dispose),
-      ));
+    testWidgets('bird selector is rendered with optional label', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _subject(onContainer: (c) => addTearDown(c.dispose)),
+      );
       await tester.pump();
 
-      expect(
-        find.text('genetics.ai_select_bird_optional'),
-        findsOneWidget,
-      );
+      expect(find.text('genetics.ai_select_bird_optional'), findsOneWidget);
     });
   });
 }

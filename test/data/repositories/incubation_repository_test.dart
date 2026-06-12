@@ -117,9 +117,8 @@ void main() {
       ),
     );
     when(() => clutchesDao.getByIdIncludingDeleted(any())).thenAnswer(
-      (invocation) => clutchesDao.getById(
-        invocation.positionalArguments.first as String,
-      ),
+      (invocation) =>
+          clutchesDao.getById(invocation.positionalArguments.first as String),
     );
   });
 

@@ -99,7 +99,10 @@ void main() {
 
         expect(router.state.uri.path, AppRoutes.emailVerification);
         expect(find.byType(EmailVerificationScreen), findsWidgets);
-        expect(find.text(l10n('auth.email_verification_title')), findsOneWidget);
+        expect(
+          find.text(l10n('auth.email_verification_title')),
+          findsOneWidget,
+        );
         verify(
           () => mockAuthActions.signUpWithEmail(
             email: 'test@example.com',
@@ -280,7 +283,10 @@ void main() {
         ); // SnackBar animation
 
         expect(find.byType(BudgieLoginScreen), findsOneWidget);
-        expect(find.text(l10n('auth.error_invalid_credentials')), findsOneWidget);
+        expect(
+          find.text(l10n('auth.error_invalid_credentials')),
+          findsOneWidget,
+        );
       },
       timeout: e2eTimeout,
     );
@@ -369,16 +375,17 @@ void main() {
             data: {'locked': false, 'remaining_seconds': 0},
           ),
         );
-        when(() => mockEdgeFunctionClient.resetMfaLockout()).thenAnswer(
-          (_) async => const EdgeFunctionResult(success: true),
-        );
+        when(
+          () => mockEdgeFunctionClient.resetMfaLockout(),
+        ).thenAnswer((_) async => const EdgeFunctionResult(success: true));
 
         final container = createTestContainer(
           isAuthenticated: true,
           twoFactorService: mockTwoFactorService,
           overrides: [
-            edgeFunctionClientProvider
-                .overrideWithValue(mockEdgeFunctionClient),
+            edgeFunctionClientProvider.overrideWithValue(
+              mockEdgeFunctionClient,
+            ),
           ],
         );
         addTearDown(container.dispose);

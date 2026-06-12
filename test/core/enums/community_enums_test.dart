@@ -32,10 +32,7 @@ void main() {
         CommunityReportReason.fromJson('invalid'),
         CommunityReportReason.unknown,
       );
-      expect(
-        CommunityReportReason.fromJson(''),
-        CommunityReportReason.unknown,
-      );
+      expect(CommunityReportReason.fromJson(''), CommunityReportReason.unknown);
     });
 
     test('has expected value count', () {

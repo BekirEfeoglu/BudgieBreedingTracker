@@ -205,4 +205,3 @@ List<_RawResult> _autosomalIncompleteDominantGenotype(
 
   return results;
 }
-

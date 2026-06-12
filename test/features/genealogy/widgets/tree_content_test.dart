@@ -26,7 +26,8 @@ void main() {
       tester,
     ) async {
       // Loading state never settles (spinner animation), so skip pumpAndSettle.
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             ancestorsProvider(
@@ -47,7 +48,8 @@ void main() {
     testWidgets('shows ErrorState when ancestorsProvider has error', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             ancestorsProvider('entity-1').overrideWithValue(
@@ -67,7 +69,8 @@ void main() {
     testWidgets('shows bird_not_found text when entity not in ancestors map', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             ancestorsProvider('entity-1').overrideWithValue(
@@ -87,7 +90,8 @@ void main() {
     testWidgets('renders SegmentedButton for view mode when data loaded', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             ancestorsProvider(
@@ -119,7 +123,8 @@ void main() {
     testWidgets('switches to list view when list segment selected', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             ancestorsProvider(
@@ -159,7 +164,8 @@ void main() {
     testWidgets('shows genealogy.tree_error in ErrorState retry message', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             ancestorsProvider(

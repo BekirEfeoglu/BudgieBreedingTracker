@@ -67,12 +67,15 @@ class _IncubatingEggTile extends StatelessWidget {
     // "hatching today" label instead of the nonsensical "in 0 days".
     final String daysText;
     if (isOverdue) {
-      daysText = 'home.hatching_overdue_days'
-          .tr(args: [summary.daysRemaining.abs().toString()]);
+      daysText = 'home.hatching_overdue_days'.tr(
+        args: [summary.daysRemaining.abs().toString()],
+      );
     } else if (summary.daysRemaining == 0) {
       daysText = 'home.hatching_today'.tr();
     } else {
-      daysText = 'home.hatching_in'.tr(args: [summary.daysRemaining.toString()]);
+      daysText = 'home.hatching_in'.tr(
+        args: [summary.daysRemaining.toString()],
+      );
     }
 
     return Card(

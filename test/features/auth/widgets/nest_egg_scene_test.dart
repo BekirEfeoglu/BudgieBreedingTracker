@@ -69,9 +69,7 @@ void main() {
       expect(opacityFinder, findsWidgets);
 
       // First AnimatedOpacity is the baby bird
-      final babyOpacity = tester.widget<AnimatedOpacity>(
-        opacityFinder.first,
-      );
+      final babyOpacity = tester.widget<AnimatedOpacity>(opacityFinder.first);
       expect(babyOpacity.opacity, 0.0);
     });
 
@@ -87,9 +85,7 @@ void main() {
       );
 
       // First AnimatedOpacity is the baby bird — should be visible
-      final babyOpacity = tester.widget<AnimatedOpacity>(
-        opacityFinder.first,
-      );
+      final babyOpacity = tester.widget<AnimatedOpacity>(opacityFinder.first);
       expect(babyOpacity.opacity, 1.0);
     });
 
@@ -102,9 +98,7 @@ void main() {
         matching: find.byType(AnimatedOpacity),
       );
 
-      final babyOpacity = tester.widget<AnimatedOpacity>(
-        opacityFinder.first,
-      );
+      final babyOpacity = tester.widget<AnimatedOpacity>(opacityFinder.first);
       expect(babyOpacity.opacity, 1.0);
     });
 

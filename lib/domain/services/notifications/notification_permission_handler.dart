@@ -102,10 +102,7 @@ mixin NotificationPermissionHandler {
 
   /// Checks whether exact alarm scheduling is allowed on Android 12+.
   Future<bool> checkExactAlarmPermission() async {
-    return resolveExactAlarmPermission(
-      forceRefresh: true,
-      logWhenDenied: true,
-    );
+    return resolveExactAlarmPermission(forceRefresh: true, logWhenDenied: true);
   }
 
   /// Requests exact alarm scheduling permission on Android 12+ when needed.

@@ -10,12 +10,9 @@ class ChicksTable extends Table {
   TextColumn get userId => text()();
   TextColumn get gender => text().map(birdGenderConverter)();
   TextColumn get healthStatus => text().map(chickHealthStatusConverter)();
-  TextColumn get clutchId =>
-      text().nullable().references(ClutchesTable, #id)();
-  TextColumn get eggId =>
-      text().nullable().references(EggsTable, #id)();
-  TextColumn get birdId =>
-      text().nullable().references(BirdsTable, #id)();
+  TextColumn get clutchId => text().nullable().references(ClutchesTable, #id)();
+  TextColumn get eggId => text().nullable().references(EggsTable, #id)();
+  TextColumn get birdId => text().nullable().references(BirdsTable, #id)();
   TextColumn get name => text().nullable()();
   TextColumn get ringNumber => text().nullable()();
   IntColumn get bandingDay => integer().withDefault(const Constant(10))();

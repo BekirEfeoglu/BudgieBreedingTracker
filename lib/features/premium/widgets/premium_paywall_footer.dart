@@ -132,10 +132,7 @@ class _PremiumLegalLinksSection extends StatelessWidget {
                   url: AppConstants.privacyPolicyUrl,
                   fallbackRoute: AppRoutes.privacyPolicy,
                 ),
-                child: Text(
-                  'settings.privacy_policy'.tr(),
-                  style: linkStyle,
-                ),
+                child: Text('settings.privacy_policy'.tr(), style: linkStyle),
               ),
             ],
           ),

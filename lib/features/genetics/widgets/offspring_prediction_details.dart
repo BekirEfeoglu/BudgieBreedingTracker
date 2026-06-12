@@ -192,20 +192,14 @@ class _DetailRow extends StatelessWidget {
   final Widget icon;
   final Widget child;
 
-  const _DetailRow({
-    required this.icon,
-    required this.child,
-  });
+  const _DetailRow({required this.icon, required this.child});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 2),
-          child: icon,
-        ),
+        Padding(padding: const EdgeInsets.only(top: 2), child: icon),
         const SizedBox(width: AppSpacing.sm),
         Expanded(child: child),
       ],

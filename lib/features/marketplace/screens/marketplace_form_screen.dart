@@ -220,9 +220,7 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
                         final selected = _listingType == type;
                         return ChoiceChip(
                           label: Text(_typeLabel(type)),
-                          avatar: selected
-                              ? null
-                              : _typeIcon(type, size: 16),
+                          avatar: selected ? null : _typeIcon(type, size: 16),
                           selected: selected,
                           onSelected: (_) =>
                               setState(() => _listingType = type),
@@ -289,10 +287,7 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
                     textInputAction: TextInputAction.next,
                     decoration: InputDecoration(
                       labelText: 'marketplace.price_label'.tr(),
-                      prefixIcon: const Icon(
-                        LucideIcons.dollarSign,
-                        size: 18,
-                      ),
+                      prefixIcon: const Icon(LucideIcons.dollarSign, size: 18),
                     ),
                     validator: (value) {
                       if (_listingType != MarketplaceListingType.sale) {
@@ -304,9 +299,7 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
                       }
                       // Accept both ',' and '.' as decimal separators
                       // so TR/DE locales aren't rejected.
-                      final parsed = double.tryParse(
-                        raw.replaceAll(',', '.'),
-                      );
+                      final parsed = double.tryParse(raw.replaceAll(',', '.'));
                       if (parsed == null || parsed <= 0) {
                         return 'marketplace.price_required'.tr();
                       }
@@ -478,9 +471,7 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
         price: _listingType == MarketplaceListingType.sale
-            ? double.tryParse(
-                _priceController.text.trim().replaceAll(',', '.'),
-              )
+            ? double.tryParse(_priceController.text.trim().replaceAll(',', '.'))
             : null,
         birdId: _linkedBirdId,
         species: _speciesController.text.trim(),
@@ -501,9 +492,7 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
         price: _listingType == MarketplaceListingType.sale
-            ? double.tryParse(
-                _priceController.text.trim().replaceAll(',', '.'),
-              )
+            ? double.tryParse(_priceController.text.trim().replaceAll(',', '.'))
             : null,
         birdId: _linkedBirdId,
         species: _speciesController.text.trim(),
@@ -540,11 +529,32 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
     MarketplaceListingType.unknown => '',
   };
 
-  Widget _typeIcon(MarketplaceListingType type, {double? size, Color? color}) => switch (type) {
-    MarketplaceListingType.sale => Icon(LucideIcons.shoppingBag, size: size, color: color),
-    MarketplaceListingType.adoption => AppIcon(AppIcons.heart, size: size, color: color),
-    MarketplaceListingType.trade => Icon(LucideIcons.repeat, size: size, color: color),
-    MarketplaceListingType.wanted => Icon(LucideIcons.search, size: size, color: color),
-    MarketplaceListingType.unknown => Icon(LucideIcons.tag, size: size, color: color),
-  };
+  Widget _typeIcon(MarketplaceListingType type, {double? size, Color? color}) =>
+      switch (type) {
+        MarketplaceListingType.sale => Icon(
+          LucideIcons.shoppingBag,
+          size: size,
+          color: color,
+        ),
+        MarketplaceListingType.adoption => AppIcon(
+          AppIcons.heart,
+          size: size,
+          color: color,
+        ),
+        MarketplaceListingType.trade => Icon(
+          LucideIcons.repeat,
+          size: size,
+          color: color,
+        ),
+        MarketplaceListingType.wanted => Icon(
+          LucideIcons.search,
+          size: size,
+          color: color,
+        ),
+        MarketplaceListingType.unknown => Icon(
+          LucideIcons.tag,
+          size: size,
+          color: color,
+        ),
+      };
 }

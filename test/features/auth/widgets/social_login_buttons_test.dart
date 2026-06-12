@@ -62,9 +62,7 @@ void main() {
       expect(googleCalled, isTrue);
     });
 
-    testWidgets('calls onAppleTap when Apple button is tapped', (
-      tester,
-    ) async {
+    testWidgets('calls onAppleTap when Apple button is tapped', (tester) async {
       await pumpWidgetSimple(tester, buildSubject());
 
       await tester.tap(find.byType(SignInWithAppleButton));
@@ -84,9 +82,7 @@ void main() {
       expect(outlinedButton.onPressed, isNull);
     });
 
-    testWidgets('disables Apple button when isLoading is true', (
-      tester,
-    ) async {
+    testWidgets('disables Apple button when isLoading is true', (tester) async {
       await pumpWidgetSimple(tester, buildSubject(isLoading: true));
 
       final appleButton = tester.widget<SignInWithAppleButton>(
@@ -104,9 +100,7 @@ void main() {
       expect(googleCalled, isFalse);
     });
 
-    testWidgets('Google button uses OutlinedButton.icon style', (
-      tester,
-    ) async {
+    testWidgets('Google button uses OutlinedButton.icon style', (tester) async {
       await pumpWidgetSimple(tester, buildSubject());
 
       // The OutlinedButton should have icon and label

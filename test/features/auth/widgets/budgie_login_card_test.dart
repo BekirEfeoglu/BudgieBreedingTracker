@@ -97,9 +97,7 @@ void main() {
       expect(find.text(l10n('auth.logging_in')), findsOneWidget);
     });
 
-    testWidgets('shows welcome_success title in success state', (
-      tester,
-    ) async {
+    testWidgets('shows welcome_success title in success state', (tester) async {
       await pumpWidgetSimple(
         tester,
         buildSubject(loginState: LoginState.success),
@@ -282,8 +280,9 @@ void main() {
         find.byType(TextButton),
       );
       // Find guest button by checking if it has null onPressed
-      final disabledCount =
-          guestButtons.where((b) => b.onPressed == null).length;
+      final disabledCount = guestButtons
+          .where((b) => b.onPressed == null)
+          .length;
       expect(disabledCount, greaterThanOrEqualTo(1));
     });
 
@@ -294,9 +293,7 @@ void main() {
       expect(find.byType(SignInWithAppleButton), findsOneWidget); // Apple
     });
 
-    testWidgets('uses AnimatedSwitcher for title transitions', (
-      tester,
-    ) async {
+    testWidgets('uses AnimatedSwitcher for title transitions', (tester) async {
       await pumpWidgetSimple(tester, buildSubject());
 
       expect(find.byType(AnimatedSwitcher), findsWidgets);

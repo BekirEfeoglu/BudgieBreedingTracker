@@ -98,15 +98,15 @@ void main() {
     late Map<String, dynamic> deJson;
 
     setUpAll(() {
-      trJson = jsonDecode(
-        File('assets/translations/tr.json').readAsStringSync(),
-      ) as Map<String, dynamic>;
-      enJson = jsonDecode(
-        File('assets/translations/en.json').readAsStringSync(),
-      ) as Map<String, dynamic>;
-      deJson = jsonDecode(
-        File('assets/translations/de.json').readAsStringSync(),
-      ) as Map<String, dynamic>;
+      trJson =
+          jsonDecode(File('assets/translations/tr.json').readAsStringSync())
+              as Map<String, dynamic>;
+      enJson =
+          jsonDecode(File('assets/translations/en.json').readAsStringSync())
+              as Map<String, dynamic>;
+      deJson =
+          jsonDecode(File('assets/translations/de.json').readAsStringSync())
+              as Map<String, dynamic>;
     });
 
     test('all PhenotypeLocalizer phrase keys exist in tr.json', () {
@@ -140,8 +140,11 @@ void main() {
           missing.add('${m.id}: ${m.localizationKey}');
         }
       }
-      expect(missing, isEmpty,
-          reason: 'Missing mutation l10n keys in tr.json: $missing');
+      expect(
+        missing,
+        isEmpty,
+        reason: 'Missing mutation l10n keys in tr.json: $missing',
+      );
     });
 
     test('all MutationDatabase localizationKeys exist in en.json', () {
@@ -151,8 +154,11 @@ void main() {
           missing.add('${m.id}: ${m.localizationKey}');
         }
       }
-      expect(missing, isEmpty,
-          reason: 'Missing mutation l10n keys in en.json: $missing');
+      expect(
+        missing,
+        isEmpty,
+        reason: 'Missing mutation l10n keys in en.json: $missing',
+      );
     });
 
     test('all MutationDatabase localizationKeys exist in de.json', () {
@@ -162,17 +168,17 @@ void main() {
           missing.add('${m.id}: ${m.localizationKey}');
         }
       }
-      expect(missing, isEmpty,
-          reason: 'Missing mutation l10n keys in de.json: $missing');
+      expect(
+        missing,
+        isEmpty,
+        reason: 'Missing mutation l10n keys in de.json: $missing',
+      );
     });
   });
 
   group('shortenPhenotype', () {
     test('returns original when shorter than maxLength', () {
-      expect(
-        PhenotypeLocalizer.shortenPhenotype('Skyblue'),
-        'Skyblue',
-      );
+      expect(PhenotypeLocalizer.shortenPhenotype('Skyblue'), 'Skyblue');
     });
 
     test('abbreviates Texas Clearbody', () {
@@ -211,12 +217,12 @@ void main() {
     test('respects custom maxLength', () {
       const input = 'Dark Green Spangle Opaline';
       // Already 25 chars, under default 28
-      expect(
-        PhenotypeLocalizer.shortenPhenotype(input),
-        input,
-      );
+      expect(PhenotypeLocalizer.shortenPhenotype(input), input);
       // But not under 20
-      final shortened = PhenotypeLocalizer.shortenPhenotype(input, maxLength: 20);
+      final shortened = PhenotypeLocalizer.shortenPhenotype(
+        input,
+        maxLength: 20,
+      );
       expect(shortened.length, lessThan(input.length));
     });
   });

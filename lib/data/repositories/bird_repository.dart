@@ -57,13 +57,12 @@ class BirdRepository extends BaseRepository<Bird>
     required BirdGender gender,
     Species? species,
     String? excludeId,
-  }) =>
-      _localDao.watchAliveByGenderAndSpecies(
-        userId: userId,
-        gender: gender,
-        species: species,
-        excludeId: excludeId,
-      );
+  }) => _localDao.watchAliveByGenderAndSpecies(
+    userId: userId,
+    gender: gender,
+    species: species,
+    excludeId: excludeId,
+  );
 
   @override
   Stream<Bird?> watchById(String id) => _localDao.watchById(id);

@@ -230,9 +230,7 @@ class FeedbackFormNotifier extends Notifier<FeedbackFormState> {
           e.toString().toLowerCase().contains('timeout');
       state = state.copyWith(
         isLoading: false,
-        error: isNetworkErr
-            ? 'errors.network_unavailable'
-            : 'feedback.error',
+        error: isNetworkErr ? 'errors.network_unavailable' : 'feedback.error',
       );
     }
   }

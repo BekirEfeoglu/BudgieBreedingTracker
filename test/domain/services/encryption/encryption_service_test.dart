@@ -152,10 +152,8 @@ void main() {
 
       // Verify: corrupted key was archived under version 0
       verify(
-        () => mockStorage.write(
-          key: 'budgie_encryption_key_v0',
-          value: shortKey,
-        ),
+        () =>
+            mockStorage.write(key: 'budgie_encryption_key_v0', value: shortKey),
       ).called(1);
 
       // Verify: old key deleted and new key + version stored
@@ -167,10 +165,8 @@ void main() {
         ),
       ).called(1);
       verify(
-        () => mockStorage.write(
-          key: 'budgie_encryption_key_version',
-          value: '1',
-        ),
+        () =>
+            mockStorage.write(key: 'budgie_encryption_key_version', value: '1'),
       ).called(1);
     });
 
@@ -219,11 +215,7 @@ void main() {
         );
         final encrypted = encrypter.encrypt(plainText, iv: iv);
 
-        final payload = <int>[
-          ...magicBytes,
-          ...iv.bytes,
-          ...encrypted.bytes,
-        ];
+        final payload = <int>[...magicBytes, ...iv.bytes, ...encrypted.bytes];
         final hmac = crypto.Hmac(crypto.sha256, rawKey);
         final mac = hmac.convert(payload).bytes;
         return base64Encode([...payload, ...mac]);
@@ -237,49 +229,41 @@ void main() {
         final hmac = crypto.Hmac(crypto.sha256, masterKey);
         final encKey = hmac.convert(utf8.encode('BBTENC')).bytes;
         final macKey = hmac.convert(utf8.encode('BBTMAC')).bytes;
-        return (
-          encKey: encKey.sublist(0, 32),
-          macKey: macKey.sublist(0, 32),
-        );
+        return (encKey: encKey.sublist(0, 32), macKey: macKey.sublist(0, 32));
       }
 
-      test(
-        'new format round-trip uses derived sub-keys',
-        () async {
-          when(
-            () => mockStorage.read(key: _keyName),
-          ).thenAnswer((_) async => _validBase64Key);
+      test('new format round-trip uses derived sub-keys', () async {
+        when(
+          () => mockStorage.read(key: _keyName),
+        ).thenAnswer((_) async => _validBase64Key);
 
-          final encrypted = await service.encrypt('derived-key-data');
-          final decrypted = await service.decrypt(encrypted);
+        final encrypted = await service.encrypt('derived-key-data');
+        final decrypted = await service.decrypt(encrypted);
 
-          expect(decrypted, 'derived-key-data');
+        expect(decrypted, 'derived-key-data');
 
-          // Verify the payload is authenticated (has BBTENC1! magic prefix)
-          final payloadBytes = base64Decode(encrypted);
-          final magic = ascii.decode(payloadBytes.sublist(0, 8));
-          expect(magic, 'BBTENC1!');
-        },
-      );
+        // Verify the payload is authenticated (has BBTENC1! magic prefix)
+        final payloadBytes = base64Decode(encrypted);
+        final magic = ascii.decode(payloadBytes.sublist(0, 8));
+        expect(magic, 'BBTENC1!');
+      });
 
-      test(
-        'decrypts pre-separation payload via raw-key fallback',
-        () async {
-          when(
-            () => mockStorage.read(key: _keyName),
-          ).thenAnswer((_) async => _validBase64Key);
+      test('decrypts pre-separation payload via raw-key fallback', () async {
+        when(
+          () => mockStorage.read(key: _keyName),
+        ).thenAnswer((_) async => _validBase64Key);
 
-          final rawKey =
-              Uint8List.fromList(base64Decode(_validBase64Key));
-          final preSepCipher =
-              _buildPreSeparationPayload('before-separation', rawKey);
+        final rawKey = Uint8List.fromList(base64Decode(_validBase64Key));
+        final preSepCipher = _buildPreSeparationPayload(
+          'before-separation',
+          rawKey,
+        );
 
-          // The service should fail with derived keys (HMAC mismatch),
-          // then succeed with the raw master key fallback.
-          final decrypted = await service.decrypt(preSepCipher);
-          expect(decrypted, 'before-separation');
-        },
-      );
+        // The service should fail with derived keys (HMAC mismatch),
+        // then succeed with the raw master key fallback.
+        final decrypted = await service.decrypt(preSepCipher);
+        expect(decrypted, 'before-separation');
+      });
 
       test(
         'derived-key payload cannot be decrypted with raw key only',
@@ -294,8 +278,7 @@ void main() {
           // Attempt to manually decrypt with the RAW master key —
           // HMAC check should fail because the MAC was computed with
           // the derived macKey, not the raw key.
-          final rawKey =
-              Uint8List.fromList(base64Decode(_validBase64Key));
+          final rawKey = Uint8List.fromList(base64Decode(_validBase64Key));
           final combined = base64Decode(encrypted);
 
           final payloadEnd = combined.length - 32; // MAC length
@@ -311,55 +294,46 @@ void main() {
         },
       );
 
-      test(
-        'derived encKey differs from raw master key',
-        () {
-          final rawKey = base64Decode(_validBase64Key);
-          final sub = _deriveSubKeys(rawKey);
+      test('derived encKey differs from raw master key', () {
+        final rawKey = base64Decode(_validBase64Key);
+        final sub = _deriveSubKeys(rawKey);
 
-          // Sub-keys must not equal the master key
-          expect(sub.encKey, isNot(equals(rawKey)));
-          expect(sub.macKey, isNot(equals(rawKey)));
-          // encKey and macKey must differ from each other
-          expect(sub.encKey, isNot(equals(sub.macKey)));
-        },
-      );
+        // Sub-keys must not equal the master key
+        expect(sub.encKey, isNot(equals(rawKey)));
+        expect(sub.macKey, isNot(equals(rawKey)));
+        // encKey and macKey must differ from each other
+        expect(sub.encKey, isNot(equals(sub.macKey)));
+      });
 
-      test(
-        'reEncrypt upgrades pre-separation payload to new format',
-        () async {
-          when(
-            () => mockStorage.read(key: _keyName),
-          ).thenAnswer((_) async => _validBase64Key);
+      test('reEncrypt upgrades pre-separation payload to new format', () async {
+        when(
+          () => mockStorage.read(key: _keyName),
+        ).thenAnswer((_) async => _validBase64Key);
 
-          final rawKey =
-              Uint8List.fromList(base64Decode(_validBase64Key));
-          final preSepCipher =
-              _buildPreSeparationPayload('upgrade-me', rawKey);
+        final rawKey = Uint8List.fromList(base64Decode(_validBase64Key));
+        final preSepCipher = _buildPreSeparationPayload('upgrade-me', rawKey);
 
-          // Re-encrypt should decrypt (via fallback) then encrypt (with
-          // derived keys).
-          final reEncrypted = await service.reEncrypt(preSepCipher);
-          expect(reEncrypted, isNotNull);
-          expect(reEncrypted, isNot(preSepCipher));
+        // Re-encrypt should decrypt (via fallback) then encrypt (with
+        // derived keys).
+        final reEncrypted = await service.reEncrypt(preSepCipher);
+        expect(reEncrypted, isNotNull);
+        expect(reEncrypted, isNot(preSepCipher));
 
-          // The re-encrypted payload should decrypt successfully.
-          final decrypted = await service.decrypt(reEncrypted!);
-          expect(decrypted, 'upgrade-me');
+        // The re-encrypted payload should decrypt successfully.
+        final decrypted = await service.decrypt(reEncrypted!);
+        expect(decrypted, 'upgrade-me');
 
-          // Verify the re-encrypted payload uses derived-key HMAC.
-          // Manually verify the HMAC matches derived macKey.
-          final sub = _deriveSubKeys(rawKey);
-          final combined = base64Decode(reEncrypted);
-          final payloadEnd = combined.length - 32;
-          final payload = combined.sublist(0, payloadEnd);
-          final providedMac = combined.sublist(payloadEnd);
-          final derivedHmac =
-              crypto.Hmac(crypto.sha256, sub.macKey);
-          final expectedMac = derivedHmac.convert(payload).bytes;
-          expect(providedMac, equals(expectedMac));
-        },
-      );
+        // Verify the re-encrypted payload uses derived-key HMAC.
+        // Manually verify the HMAC matches derived macKey.
+        final sub = _deriveSubKeys(rawKey);
+        final combined = base64Decode(reEncrypted);
+        final payloadEnd = combined.length - 32;
+        final payload = combined.sublist(0, payloadEnd);
+        final providedMac = combined.sublist(payloadEnd);
+        final derivedHmac = crypto.Hmac(crypto.sha256, sub.macKey);
+        final expectedMac = derivedHmac.convert(payload).bytes;
+        expect(providedMac, equals(expectedMac));
+      });
 
       test(
         'reEncrypt returns null for completely invalid ciphertext',
@@ -373,27 +347,26 @@ void main() {
         },
       );
 
-      test(
-        'pre-separation payload with wrong key is rejected',
-        () async {
-          when(
-            () => mockStorage.read(key: _keyName),
-          ).thenAnswer((_) async => _validBase64Key);
+      test('pre-separation payload with wrong key is rejected', () async {
+        when(
+          () => mockStorage.read(key: _keyName),
+        ).thenAnswer((_) async => _validBase64Key);
 
-          // Build payload with a completely different key
-          final wrongKey = Uint8List.fromList(
-            List<int>.generate(32, (i) => 255 - i),
-          );
-          final wrongKeyCipher =
-              _buildPreSeparationPayload('wrong-key-data', wrongKey);
+        // Build payload with a completely different key
+        final wrongKey = Uint8List.fromList(
+          List<int>.generate(32, (i) => 255 - i),
+        );
+        final wrongKeyCipher = _buildPreSeparationPayload(
+          'wrong-key-data',
+          wrongKey,
+        );
 
-          // Neither derived keys nor raw key should match — both should fail.
-          await expectLater(
-            service.decrypt(wrongKeyCipher),
-            throwsA(isA<FormatException>()),
-          );
-        },
-      );
+        // Neither derived keys nor raw key should match — both should fail.
+        await expectLater(
+          service.decrypt(wrongKeyCipher),
+          throwsA(isA<FormatException>()),
+        );
+      });
     });
   });
 }

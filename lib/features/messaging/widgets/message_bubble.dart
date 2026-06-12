@@ -13,11 +13,7 @@ class MessageBubble extends StatelessWidget {
   final Message message;
   final bool isMe;
 
-  const MessageBubble({
-    super.key,
-    required this.message,
-    required this.isMe,
-  });
+  const MessageBubble({super.key, required this.message, required this.isMe});
 
   @override
   Widget build(BuildContext context) {
@@ -61,8 +57,9 @@ class MessageBubble extends StatelessWidget {
           ),
         ),
         child: Column(
-          crossAxisAlignment:
-              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment: isMe
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           children: [
             if (!isMe && message.senderName.isNotEmpty)
               Padding(
@@ -153,22 +150,21 @@ class MessageBubble extends StatelessWidget {
           label: 'messaging.listing_card_message'.tr(),
         );
       case MessageType.unknown:
-        return Text(
-          message.content ?? '',
-          style: theme.textTheme.bodyMedium,
-        );
+        return Text(message.content ?? '', style: theme.textTheme.bodyMedium);
     }
   }
 
   Widget _buildReferenceCard(
     BuildContext context,
     ThemeData theme, {
+
     /// Widget icon (anti-pattern #14) — accepts `AppIcon(AppIcons.x)`
     /// for domain glyphs and `Icon(LucideIcons.x)` for generic UI.
     required Widget icon,
     required String label,
   }) {
-    final title = message.referenceData['name'] as String? ??
+    final title =
+        message.referenceData['name'] as String? ??
         message.referenceData['title'] as String? ??
         label;
 

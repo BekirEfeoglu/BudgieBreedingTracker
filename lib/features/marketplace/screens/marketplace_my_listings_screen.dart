@@ -20,9 +20,7 @@ class MarketplaceMyListingsScreen extends ConsumerWidget {
     final listingsAsync = ref.watch(myMarketplaceListingsProvider(userId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('marketplace.my_listings'.tr()),
-      ),
+      appBar: AppBar(title: Text('marketplace.my_listings'.tr())),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(myMarketplaceListingsProvider(userId));
@@ -49,11 +47,10 @@ class MarketplaceMyListingsScreen extends ConsumerWidget {
                 bottom: AppSpacing.xxxl * 2,
               ),
               itemCount: listings.length,
-              itemBuilder: (context, index) =>
-                  MarketplaceListingCard(
-                    key: ValueKey(listings[index].id),
-                    listing: listings[index],
-                  ),
+              itemBuilder: (context, index) => MarketplaceListingCard(
+                key: ValueKey(listings[index].id),
+                listing: listings[index],
+              ),
             );
           },
         ),

@@ -28,19 +28,21 @@ void main() {
     });
 
     test('returns short days-only key when short is true and weeks is 0', () {
-      final result = formatChickAge(
-        (weeks: 0, days: 3, totalDays: 3),
-        short: true,
-      );
+      final result = formatChickAge((
+        weeks: 0,
+        days: 3,
+        totalDays: 3,
+      ), short: true);
 
       expect(result, contains(l10n('chicks.age_days_only_short')));
     });
 
     test('returns short weeks-days key when short is true and weeks > 0', () {
-      final result = formatChickAge(
-        (weeks: 1, days: 2, totalDays: 9),
-        short: true,
-      );
+      final result = formatChickAge((
+        weeks: 1,
+        days: 2,
+        totalDays: 9,
+      ), short: true);
 
       expect(result, contains(l10n('chicks.age_weeks_days_short')));
     });

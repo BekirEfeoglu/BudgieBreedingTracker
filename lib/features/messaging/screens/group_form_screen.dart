@@ -39,19 +39,17 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
         );
       }
       if (state.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(state.error!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(state.error!)));
       }
     });
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('messaging.new_group'.tr()),
-      ),
+      appBar: AppBar(title: Text('messaging.new_group'.tr())),
       body: Form(
         key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         child: SingleChildScrollView(
           padding: AppSpacing.screenPadding,
           child: Column(
@@ -92,7 +90,9 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final userId = ref.read(currentUserIdProvider);
-    ref.read(messagingFormStateProvider.notifier).createGroupConversation(
+    ref
+        .read(messagingFormStateProvider.notifier)
+        .createGroupConversation(
           creatorId: userId,
           name: _nameController.text.trim(),
           participantIds: [userId],

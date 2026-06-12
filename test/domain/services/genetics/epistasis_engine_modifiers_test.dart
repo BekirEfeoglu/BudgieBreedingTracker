@@ -13,37 +13,52 @@ void main() {
   group('_addYellowfaceNaming edge cases', () {
     test('Yellowface Type I + Ino on blue shows Yellowface label', () {
       // Yf1 + Blue + Ino → Creamino with Yellowface I
-      final result = engine.resolveCompoundPhenotypeDetailed(
-        {'yellowface_type1', 'blue', 'ino'},
-      );
+      final result = engine.resolveCompoundPhenotypeDetailed({
+        'yellowface_type1',
+        'blue',
+        'ino',
+      });
       // Should become a Creamino or show Yellowface I labeling
       expect(result.name, isNotEmpty);
     });
 
-    test('Yellowface Type I DF + Ino on blue suppresses Whitefaced (Albino)', () {
-      final result = engine.resolveCompoundPhenotypeDetailed(
-        {'yellowface_type1', 'blue', 'ino'},
-        doubleFactorIds: {'yellowface_type1'},
-      );
-      // Whitefaced is suppressed when Ino+Blue (already Albino)
-      expect(result.name, isNot(contains('Whitefaced')));
-    });
+    test(
+      'Yellowface Type I DF + Ino on blue suppresses Whitefaced (Albino)',
+      () {
+        final result = engine.resolveCompoundPhenotypeDetailed(
+          {'yellowface_type1', 'blue', 'ino'},
+          doubleFactorIds: {'yellowface_type1'},
+        );
+        // Whitefaced is suppressed when Ino+Blue (already Albino)
+        expect(result.name, isNot(contains('Whitefaced')));
+      },
+    );
 
-    test('Yellowface Type II + Green series (no blue) has no visible label', () {
-      final result = engine.resolveCompoundPhenotypeDetailed(
-        {'yellowface_type2', 'opaline'},
-      );
-      // On green series, Yf2 has no visible effect (green mask)
-      expect(result.name, isNot(contains('Yellowface')));
-    });
+    test(
+      'Yellowface Type II + Green series (no blue) has no visible label',
+      () {
+        final result = engine.resolveCompoundPhenotypeDetailed({
+          'yellowface_type2',
+          'opaline',
+        });
+        // On green series, Yf2 has no visible effect (green mask)
+        expect(result.name, isNot(contains('Yellowface')));
+      },
+    );
 
     test('Blue Factor I on green series shows label', () {
-      final result = engine.resolveCompoundPhenotype({'bluefactor_1', 'opaline'});
+      final result = engine.resolveCompoundPhenotype({
+        'bluefactor_1',
+        'opaline',
+      });
       expect(result, contains('Blue Factor I'));
     });
 
     test('Blue Factor II on green series shows label', () {
-      final result = engine.resolveCompoundPhenotype({'bluefactor_2', 'opaline'});
+      final result = engine.resolveCompoundPhenotype({
+        'bluefactor_2',
+        'opaline',
+      });
       expect(result, contains('Blue Factor II'));
     });
 
@@ -85,9 +100,10 @@ void main() {
     });
 
     test('Single Factor Anthracite on blue', () {
-      final result = engine.resolveCompoundPhenotypeDetailed(
-        {'anthracite', 'blue'},
-      );
+      final result = engine.resolveCompoundPhenotypeDetailed({
+        'anthracite',
+        'blue',
+      });
       expect(result.name, contains('Single Factor Anthracite'));
     });
 

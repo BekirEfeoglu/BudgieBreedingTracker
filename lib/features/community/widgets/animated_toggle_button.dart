@@ -43,13 +43,17 @@ class _AnimatedToggleButtonState extends State<AnimatedToggleButton>
     );
     _scaleAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween(begin: 1.0, end: 1.3)
-            .chain(CurveTween(curve: Curves.easeOut)),
+        tween: Tween(
+          begin: 1.0,
+          end: 1.3,
+        ).chain(CurveTween(curve: Curves.easeOut)),
         weight: 50,
       ),
       TweenSequenceItem(
-        tween: Tween(begin: 1.3, end: 1.0)
-            .chain(CurveTween(curve: Curves.bounceOut)),
+        tween: Tween(
+          begin: 1.3,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.bounceOut)),
         weight: 50,
       ),
     ]).animate(_controller);

@@ -328,17 +328,20 @@ void main() {
       expect(result.predictedMutation, 'lutino');
     });
 
-    test('unknown + blue series + normal pattern → normal_skyblue fallback', () {
-      final result = _parse(
-        mutation: 'unknown',
-        series: 'blue',
-        pattern: 'normal',
-        bodyColor: 'mavi',
-        wingPattern: 'siyah çizgili',
-      );
-      // 'normal_blue' is not in signature, so falls to series fallback
-      expect(result.predictedMutation, 'normal_skyblue');
-    });
+    test(
+      'unknown + blue series + normal pattern → normal_skyblue fallback',
+      () {
+        final result = _parse(
+          mutation: 'unknown',
+          series: 'blue',
+          pattern: 'normal',
+          bodyColor: 'mavi',
+          wingPattern: 'siyah çizgili',
+        );
+        // 'normal_blue' is not in signature, so falls to series fallback
+        expect(result.predictedMutation, 'normal_skyblue');
+      },
+    );
 
     test('unknown + green series + no other info → normal_light_green', () {
       final result = _parse(
@@ -544,7 +547,12 @@ void main() {
         eyeColor: 'kırmızı',
         bodyColor: 'beyaz',
         wingPattern: 'beyaz',
-        secondary: ['dilute_blue', 'greywing_blue', 'clearwing_blue', 'dominant_pied_blue'],
+        secondary: [
+          'dilute_blue',
+          'greywing_blue',
+          'clearwing_blue',
+          'dominant_pied_blue',
+        ],
       );
       expect(result.secondaryPossibilities.length, lessThanOrEqualTo(3));
     });
@@ -593,10 +601,15 @@ void main() {
 
     test('all red-eye mutations have non-empty warning', () {
       const redEyeMutations = [
-        'lutino', 'albino', 'creamino',
-        'fallow_green', 'fallow_blue',
-        'lacewing_green', 'lacewing_blue',
-        'texas_clearbody_green', 'texas_clearbody_blue',
+        'lutino',
+        'albino',
+        'creamino',
+        'fallow_green',
+        'fallow_blue',
+        'lacewing_green',
+        'lacewing_blue',
+        'texas_clearbody_green',
+        'texas_clearbody_blue',
       ];
 
       for (final mutation in redEyeMutations) {

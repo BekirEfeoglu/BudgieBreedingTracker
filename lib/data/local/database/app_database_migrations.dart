@@ -389,8 +389,7 @@ Future<void> _migrateV23ToV24(AppDatabase db, Migrator m) async {
   if (!hasEggId) {
     await db.customStatement('ALTER TABLE events ADD COLUMN egg_id TEXT');
   }
-  final hasIncubationId =
-      await _tableHasColumn(db, 'events', 'incubation_id');
+  final hasIncubationId = await _tableHasColumn(db, 'events', 'incubation_id');
   if (!hasIncubationId) {
     await db.customStatement(
       'ALTER TABLE events ADD COLUMN incubation_id TEXT',
@@ -414,7 +413,11 @@ Future<void> _migrateV23ToV24(AppDatabase db, Migrator m) async {
 /// leaderboard). Defaults to TRUE so existing rows stay visible, matching the
 /// Supabase column default.
 Future<void> _migrateV24ToV25(AppDatabase db, Migrator m) async {
-  final hasColumn = await _tableHasColumn(db, 'profiles', 'show_in_leaderboard');
+  final hasColumn = await _tableHasColumn(
+    db,
+    'profiles',
+    'show_in_leaderboard',
+  );
   if (!hasColumn) {
     await db.customStatement(
       'ALTER TABLE profiles ADD COLUMN show_in_leaderboard '

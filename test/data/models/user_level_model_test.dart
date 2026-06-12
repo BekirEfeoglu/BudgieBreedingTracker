@@ -50,11 +50,7 @@ void main() {
     });
 
     test('levelProgress returns 0 when nextLevelXp is 0', () {
-      const level = UserLevel(
-        id: 'l1',
-        userId: 'u1',
-        nextLevelXp: 0,
-      );
+      const level = UserLevel(id: 'l1', userId: 'u1', nextLevelXp: 0);
       expect(level.levelProgress, 0);
     });
 

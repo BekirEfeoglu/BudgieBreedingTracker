@@ -137,8 +137,8 @@ Map<String, int> _healthCountsInRange(
 Map<String, ({int fertile, int total})> _eggsToFertility(List<Egg> eggs) {
   final result = <String, ({int fertile, int total})>{};
   for (final egg in eggs) {
-    final isFertile = egg.status == EggStatus.fertile ||
-        egg.status == EggStatus.hatched;
+    final isFertile =
+        egg.status == EggStatus.fertile || egg.status == EggStatus.hatched;
     final isInfertile = egg.status == EggStatus.infertile;
     if (!isFertile && !isInfertile) continue;
     final key =
@@ -174,10 +174,7 @@ ProviderContainer _container({
   final eggsDao = MockEggsDao();
   final fertilityCounts = _eggsToFertility(eggs);
   when(
-    () => eggsDao.watchMonthlyFertility(
-      any(),
-      species: any(named: 'species'),
-    ),
+    () => eggsDao.watchMonthlyFertility(any(), species: any(named: 'species')),
   ).thenAnswer((_) => Stream.value(fertilityCounts));
 
   // `healthRecordTypeDistributionProvider` now reads
@@ -191,8 +188,7 @@ ProviderContainer _container({
       to: any(named: 'to'),
     ),
   ).thenAnswer((invocation) {
-    final from =
-        invocation.namedArguments[const Symbol('from')] as DateTime;
+    final from = invocation.namedArguments[const Symbol('from')] as DateTime;
     final to = invocation.namedArguments[const Symbol('to')] as DateTime;
     return Stream.value(_healthCountsInRange(healthRecords, from, to));
   });
@@ -392,8 +388,9 @@ void main() {
         // — e.g. on May 29 `month - 3` is February, and `DateTime(2026, 2, 29)`
         // rolls over to Mar 1, colliding with `currentStart` (Expected null /
         // Actual 1).
-        final outOfWindow =
-            range.currentStart.subtract(const Duration(days: 1));
+        final outOfWindow = range.currentStart.subtract(
+          const Duration(days: 1),
+        );
 
         final container = _container(
           birds: const [],

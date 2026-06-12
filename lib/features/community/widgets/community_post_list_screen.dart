@@ -61,10 +61,8 @@ class CommunityPostListScreen extends ConsumerWidget {
                 bottom: AppSpacing.xxxl * 2,
               ),
               itemCount: posts.length,
-              itemBuilder: (_, i) => CommunityPostCard(
-                key: ValueKey(posts[i].id),
-                post: posts[i],
-              ),
+              itemBuilder: (_, i) =>
+                  CommunityPostCard(key: ValueKey(posts[i].id), post: posts[i]),
             ),
           );
         },

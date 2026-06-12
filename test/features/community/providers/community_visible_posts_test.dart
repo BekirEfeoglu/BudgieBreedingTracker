@@ -81,7 +81,10 @@ void main() {
         );
         // guide posts (p2) are excluded from explore tab
         expect(visible.length, testPosts.length - 1);
-        expect(visible.any((p) => p.postType == CommunityPostType.guide), isFalse);
+        expect(
+          visible.any((p) => p.postType == CommunityPostType.guide),
+          isFalse,
+        );
       });
 
       test('sorts by newest by default', () {

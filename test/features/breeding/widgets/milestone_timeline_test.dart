@@ -8,7 +8,8 @@ import 'package:budgie_breeding_tracker/features/breeding/widgets/milestone_time
 import '../../../helpers/test_localization.dart';
 
 Future<void> _pump(WidgetTester tester, Widget child) async {
-  await pumpLocalizedApp(tester,
+  await pumpLocalizedApp(
+    tester,
     ProviderScope(
       child: MaterialApp(
         home: Scaffold(body: SingleChildScrollView(child: child)),

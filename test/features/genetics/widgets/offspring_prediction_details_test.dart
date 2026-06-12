@@ -10,7 +10,9 @@ import 'package:budgie_breeding_tracker/features/notifications/providers/action_
 import '../../../helpers/test_localization.dart';
 
 Widget _wrap(Widget child) {
-  return MaterialApp(home: Scaffold(body: SingleChildScrollView(child: child)));
+  return MaterialApp(
+    home: Scaffold(body: SingleChildScrollView(child: child)),
+  );
 }
 
 void main() {
@@ -27,10 +29,9 @@ void main() {
 
       await pumpLocalizedApp(
         tester,
-        _wrap(const PhenotypeBadges(
-          displayName: 'Normal Green',
-          result: result,
-        )),
+        _wrap(
+          const PhenotypeBadges(displayName: 'Normal Green', result: result),
+        ),
       );
 
       expect(find.text('Normal Green'), findsOneWidget);
@@ -46,18 +47,15 @@ void main() {
 
       await pumpLocalizedApp(
         tester,
-        _wrap(const PhenotypeBadges(
-          displayName: 'Normal Green',
-          result: result,
-        )),
+        _wrap(
+          const PhenotypeBadges(displayName: 'Normal Green', result: result),
+        ),
       );
 
       expect(find.text(l10n('genetics.carrier')), findsOneWidget);
     });
 
-    testWidgets('does not show carrier badge when not carrier', (
-      tester,
-    ) async {
+    testWidgets('does not show carrier badge when not carrier', (tester) async {
       const result = OffspringResult(
         phenotype: 'Normal Green',
         probability: 0.5,
@@ -65,10 +63,9 @@ void main() {
 
       await pumpLocalizedApp(
         tester,
-        _wrap(const PhenotypeBadges(
-          displayName: 'Normal Green',
-          result: result,
-        )),
+        _wrap(
+          const PhenotypeBadges(displayName: 'Normal Green', result: result),
+        ),
       );
 
       expect(find.text(l10n('genetics.carrier')), findsNothing);
@@ -85,10 +82,7 @@ void main() {
 
       await pumpLocalizedApp(
         tester,
-        _wrap(const PhenotypeBadges(
-          displayName: 'DF Crested',
-          result: result,
-        )),
+        _wrap(const PhenotypeBadges(displayName: 'DF Crested', result: result)),
       );
 
       expect(find.text(l10n('genetics.lethal_badge')), findsOneWidget);
@@ -97,17 +91,11 @@ void main() {
     testWidgets('does not show lethal badge when no lethal combinations', (
       tester,
     ) async {
-      const result = OffspringResult(
-        phenotype: 'Normal',
-        probability: 0.5,
-      );
+      const result = OffspringResult(phenotype: 'Normal', probability: 0.5);
 
       await pumpLocalizedApp(
         tester,
-        _wrap(const PhenotypeBadges(
-          displayName: 'Normal',
-          result: result,
-        )),
+        _wrap(const PhenotypeBadges(displayName: 'Normal', result: result)),
       );
 
       expect(find.text(l10n('genetics.lethal_badge')), findsNothing);
@@ -125,12 +113,14 @@ void main() {
 
       await pumpLocalizedApp(
         tester,
-        _wrap(const ExpandedDetails(
-          result: result,
-          localizedCarriedMutations: ['Blue', 'Opaline'],
-          localizedMaskedMutations: [],
-          showGenotype: false,
-        )),
+        _wrap(
+          const ExpandedDetails(
+            result: result,
+            localizedCarriedMutations: ['Blue', 'Opaline'],
+            localizedMaskedMutations: [],
+            showGenotype: false,
+          ),
+        ),
       );
 
       expect(find.text('Blue, Opaline'), findsOneWidget);
@@ -145,12 +135,14 @@ void main() {
 
       await pumpLocalizedApp(
         tester,
-        _wrap(const ExpandedDetails(
-          result: result,
-          localizedCarriedMutations: [],
-          localizedMaskedMutations: ['Opaline'],
-          showGenotype: false,
-        )),
+        _wrap(
+          const ExpandedDetails(
+            result: result,
+            localizedCarriedMutations: [],
+            localizedMaskedMutations: ['Opaline'],
+            showGenotype: false,
+          ),
+        ),
       );
 
       expect(
@@ -168,12 +160,14 @@ void main() {
 
       await pumpLocalizedApp(
         tester,
-        _wrap(const ExpandedDetails(
-          result: result,
-          localizedCarriedMutations: [],
-          localizedMaskedMutations: [],
-          showGenotype: true,
-        )),
+        _wrap(
+          const ExpandedDetails(
+            result: result,
+            localizedCarriedMutations: [],
+            localizedMaskedMutations: [],
+            showGenotype: true,
+          ),
+        ),
       );
 
       expect(find.text('+/+ bl/bl'), findsOneWidget);
@@ -188,12 +182,14 @@ void main() {
 
       await pumpLocalizedApp(
         tester,
-        _wrap(const ExpandedDetails(
-          result: result,
-          localizedCarriedMutations: [],
-          localizedMaskedMutations: [],
-          showGenotype: false,
-        )),
+        _wrap(
+          const ExpandedDetails(
+            result: result,
+            localizedCarriedMutations: [],
+            localizedMaskedMutations: [],
+            showGenotype: false,
+          ),
+        ),
       );
 
       expect(find.text('+/+ bl/bl'), findsNothing);
@@ -209,12 +205,14 @@ void main() {
 
       await pumpLocalizedApp(
         tester,
-        _wrap(const ExpandedDetails(
-          result: result,
-          localizedCarriedMutations: [],
-          localizedMaskedMutations: [],
-          showGenotype: false,
-        )),
+        _wrap(
+          const ExpandedDetails(
+            result: result,
+            localizedCarriedMutations: [],
+            localizedMaskedMutations: [],
+            showGenotype: false,
+          ),
+        ),
       );
 
       // ExpandedDetails renders an empty Column

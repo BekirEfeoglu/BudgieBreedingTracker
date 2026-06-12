@@ -34,9 +34,7 @@ Future<Species> resolveEggSpecies(Ref ref, Egg egg) async {
   // 3. Try via clutch (when incubationId is null or couldn't resolve)
   final clutchId = egg.clutchId;
   if (clutchId != null) {
-    final clutch = await ref
-        .read(clutchRepositoryProvider)
-        .getById(clutchId);
+    final clutch = await ref.read(clutchRepositoryProvider).getById(clutchId);
     if (clutch != null) {
       final resolved = await _resolveFromBirdIds(
         ref,

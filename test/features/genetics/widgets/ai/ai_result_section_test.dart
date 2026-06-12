@@ -95,10 +95,7 @@ void main() {
     testWidgets('shows nothing when no content', (tester) async {
       await pumpWidgetSimple(
         tester,
-        const AiAnimatedResultSlot(
-          isLoading: false,
-          hasError: false,
-        ),
+        const AiAnimatedResultSlot(isLoading: false, hasError: false),
       );
       await tester.pump();
 
@@ -109,10 +106,7 @@ void main() {
     testWidgets('shows skeleton when loading', (tester) async {
       await pumpWidgetSimple(
         tester,
-        const AiAnimatedResultSlot(
-          isLoading: true,
-          hasError: false,
-        ),
+        const AiAnimatedResultSlot(isLoading: true, hasError: false),
       );
       await tester.pump();
 
@@ -170,10 +164,7 @@ void main() {
     });
 
     testWidgets('renders empty message', (tester) async {
-      await pumpWidgetSimple(
-        tester,
-        const AiErrorBox(message: ''),
-      );
+      await pumpWidgetSimple(tester, const AiErrorBox(message: ''));
       await tester.pump();
 
       expect(find.byType(AiErrorBox), findsOneWidget);

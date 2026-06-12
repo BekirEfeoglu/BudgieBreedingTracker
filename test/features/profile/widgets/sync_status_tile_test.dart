@@ -117,7 +117,10 @@ void main() {
       await tester.pump();
 
       // 'sync.stale_errors' with args: ['3']
-      expect(find.textContaining(l10nContains('sync.stale_errors')), findsOneWidget);
+      expect(
+        find.textContaining(l10nContains('sync.stale_errors')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('does NOT show stale error count when staleCount is 0', (
@@ -126,7 +129,10 @@ void main() {
       await tester.pumpWidget(_createSubject(staleCount: 0));
       await tester.pump();
 
-      expect(find.textContaining(l10nContains('sync.stale_errors')), findsNothing);
+      expect(
+        find.textContaining(l10nContains('sync.stale_errors')),
+        findsNothing,
+      );
     });
   });
 }

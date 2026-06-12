@@ -268,8 +268,7 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
 
     setState(() {
       if (_isLockedOut) {
-        final seconds =
-            _lockoutUntil!.difference(DateTime.now()).inSeconds;
+        final seconds = _lockoutUntil!.difference(DateTime.now()).inSeconds;
         _error = serverContactFailed
             ? 'auth.2fa_server_unavailable'.tr()
             : 'auth.2fa_too_many_attempts'.tr(args: ['$seconds']);

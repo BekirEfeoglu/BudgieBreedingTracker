@@ -18,9 +18,7 @@ void main() {
     testWidgets('shows trophy icon for top 3 ranks', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: LeaderboardTile(rank: 1, userLevel: userLevel),
-          ),
+          home: Scaffold(body: LeaderboardTile(rank: 1, userLevel: userLevel)),
         ),
       );
 
@@ -30,9 +28,7 @@ void main() {
     testWidgets('shows rank number for rank > 3', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: LeaderboardTile(rank: 5, userLevel: userLevel),
-          ),
+          home: Scaffold(body: LeaderboardTile(rank: 5, userLevel: userLevel)),
         ),
       );
 
@@ -43,9 +39,7 @@ void main() {
     testWidgets('displays total XP', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: LeaderboardTile(rank: 1, userLevel: userLevel),
-          ),
+          home: Scaffold(body: LeaderboardTile(rank: 1, userLevel: userLevel)),
         ),
       );
 
@@ -55,18 +49,14 @@ void main() {
     testWidgets('shows title when not empty', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: LeaderboardTile(rank: 1, userLevel: userLevel),
-          ),
+          home: Scaffold(body: LeaderboardTile(rank: 1, userLevel: userLevel)),
         ),
       );
 
       expect(find.text('Expert Breeder'), findsOneWidget);
     });
 
-    testWidgets('shows level fallback key when title is empty', (
-      tester,
-    ) async {
+    testWidgets('shows level fallback key when title is empty', (tester) async {
       // After Wave 1 audit (UUID-PII fix): empty title falls back to the
       // localized `gamification.level` key. In tests easy_localization
       // isn't initialized so .tr() returns the bare key; the `{}` placeholder
@@ -95,9 +85,7 @@ void main() {
       // no resolved display name the tile renders 'community.anonymous_user'.
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: LeaderboardTile(rank: 1, userLevel: userLevel),
-          ),
+          home: Scaffold(body: LeaderboardTile(rank: 1, userLevel: userLevel)),
         ),
       );
 
@@ -117,9 +105,7 @@ void main() {
 
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: LeaderboardTile(rank: 2, userLevel: namedLevel),
-          ),
+          home: Scaffold(body: LeaderboardTile(rank: 2, userLevel: namedLevel)),
         ),
       );
 
@@ -141,9 +127,7 @@ void main() {
 
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: LeaderboardTile(rank: 6, userLevel: blankLevel),
-          ),
+          home: Scaffold(body: LeaderboardTile(rank: 6, userLevel: blankLevel)),
         ),
       );
 

@@ -9,10 +9,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: ConfirmDialog(
-              title: 'Delete Bird',
-              message: 'Are you sure?',
-            ),
+            body: ConfirmDialog(title: 'Delete Bird', message: 'Are you sure?'),
           ),
         ),
       );
@@ -21,15 +18,13 @@ void main() {
       expect(find.text('Are you sure?'), findsOneWidget);
     });
 
-    testWidgets('shows default cancel and confirm labels from l10n',
-        (tester) async {
+    testWidgets('shows default cancel and confirm labels from l10n', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: ConfirmDialog(
-              title: 'Delete',
-              message: 'Sure?',
-            ),
+            body: ConfirmDialog(title: 'Delete', message: 'Sure?'),
           ),
         ),
       );
@@ -121,8 +116,9 @@ void main() {
       expect(result, isTrue);
     });
 
-    testWidgets('destructive mode applies error color to confirm button',
-        (tester) async {
+    testWidgets('destructive mode applies error color to confirm button', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData(colorScheme: const ColorScheme.light()),

@@ -14,9 +14,11 @@ void main() {
       home: Scaffold(body: AgeDistributionChart(data: data)),
     );
   }
+
   group('AgeDistributionChart', () {
     testWidgets('renders ChartEmpty when all counts are zero', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject({'0-6m': 0, '6-12m': 0, '1-2y': 0, '2-3y': 0, '3+y': 0}),
         settle: false,
       );
@@ -34,7 +36,8 @@ void main() {
     testWidgets('renders BarChart when at least one age group has data', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject({'0-6m': 5, '6-12m': 0, '1-2y': 0, '2-3y': 0, '3+y': 0}),
         settle: false,
       );
@@ -44,7 +47,8 @@ void main() {
     });
 
     testWidgets('renders BarChart with full age distribution', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject({'0-6m': 3, '6-12m': 5, '1-2y': 4, '2-3y': 2, '3+y': 1}),
         settle: false,
       );
@@ -53,7 +57,8 @@ void main() {
     });
 
     testWidgets('renders with only oldest age group populated', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject({'0-6m': 0, '6-12m': 0, '1-2y': 0, '2-3y': 0, '3+y': 7}),
         settle: false,
       );
@@ -62,7 +67,8 @@ void main() {
     });
 
     testWidgets('renders RepaintBoundary around chart', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject({'0-6m': 2, '6-12m': 3, '1-2y': 1, '2-3y': 0, '3+y': 0}),
         settle: false,
       );
@@ -71,7 +77,8 @@ void main() {
     });
 
     testWidgets('chart is wrapped in SizedBox with height 200', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject({'0-6m': 1, '6-12m': 2, '1-2y': 3, '2-3y': 4, '3+y': 5}),
         settle: false,
       );
@@ -88,7 +95,8 @@ void main() {
     });
 
     testWidgets('shows bottom axis labels for age groups', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject({'0-6m': 2, '6-12m': 4, '1-2y': 1, '2-3y': 3, '3+y': 5}),
         settle: false,
       );
@@ -103,7 +111,11 @@ void main() {
 
     testWidgets('handles partial data map gracefully', (tester) async {
       // Only some age groups provided, others default to 0
-      await pumpLocalizedApp(tester, buildSubject({'0-6m': 3, '3+y': 2}), settle: false);
+      await pumpLocalizedApp(
+        tester,
+        buildSubject({'0-6m': 3, '3+y': 2}),
+        settle: false,
+      );
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.byType(BarChart), findsOneWidget);
     });
@@ -116,7 +128,8 @@ void main() {
     });
 
     testWidgets('renders with large count values', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject({
           '0-6m': 100,
           '6-12m': 200,

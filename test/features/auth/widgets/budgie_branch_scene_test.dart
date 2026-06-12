@@ -129,9 +129,7 @@ void main() {
       expect(find.byType(AnimatedBuilder), findsWidgets);
     });
 
-    testWidgets('disposes animation controllers without error', (
-      tester,
-    ) async {
+    testWidgets('disposes animation controllers without error', (tester) async {
       await tester.pumpWidget(buildSubject());
       await tester.pump();
 
@@ -152,7 +150,8 @@ class _AnimatedWrapper extends StatefulWidget {
     AnimationController wobble,
     AnimationController wing,
     AnimationController hop,
-  ) builder;
+  )
+  builder;
 
   const _AnimatedWrapper({required this.builder});
 

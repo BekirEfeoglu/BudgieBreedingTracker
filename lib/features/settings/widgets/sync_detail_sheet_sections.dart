@@ -15,10 +15,7 @@ class _PendingSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: AppSpacing.md),
-        _SectionHeader(
-          title: 'sync.pending_section'.tr(),
-          theme: theme,
-        ),
+        _SectionHeader(title: 'sync.pending_section'.tr(), theme: theme),
         const SizedBox(height: AppSpacing.sm),
         ...pending.map(
           (detail) => _TableRow(
@@ -206,11 +203,7 @@ class _EmptyState extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({
-    required this.title,
-    required this.theme,
-    this.color,
-  });
+  const _SectionHeader({required this.title, required this.theme, this.color});
 
   final String title;
   final ThemeData theme;

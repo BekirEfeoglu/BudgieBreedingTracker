@@ -959,13 +959,19 @@ void main() {
     test('detects Light Grey-Green interaction on green series', () {
       final interactions = engine.getInteractions({'grey'});
 
-      expect(interactions.any((i) => i.resultName == 'Light Grey-Green'), isTrue);
+      expect(
+        interactions.any((i) => i.resultName == 'Light Grey-Green'),
+        isTrue,
+      );
     });
 
     test('no Light Grey-Green interaction on blue series', () {
       final interactions = engine.getInteractions({'grey', 'blue'});
 
-      expect(interactions.any((i) => i.resultName == 'Light Grey-Green'), isFalse);
+      expect(
+        interactions.any((i) => i.resultName == 'Light Grey-Green'),
+        isFalse,
+      );
     });
 
     test('detects Dark-Eyed Clear interaction', () {
@@ -1073,7 +1079,8 @@ void main() {
 
       final albino = interactions.firstWhere(
         (i) => i.resultName == 'Albino',
-        orElse: () => throw StateError('Expected Albino interaction for {ino, blue}'),
+        orElse: () =>
+            throw StateError('Expected Albino interaction for {ino, blue}'),
       );
       expect(albino.mutationIds, containsAll(['ino', 'blue']));
       expect(albino.description, isNotEmpty);
@@ -1122,10 +1129,7 @@ void main() {
     });
 
     test('Blackface + Spangle yields Melanistic Spangle', () {
-      final interactions = engine.getInteractions({
-        'blackface',
-        'spangle',
-      });
+      final interactions = engine.getInteractions({'blackface', 'spangle'});
 
       final ms = interactions.firstWhere(
         (i) => i.resultName == 'Melanistic Spangle',
@@ -1195,9 +1199,7 @@ void main() {
     test('Aqua + Ino yields Aqua Ino interaction', () {
       final interactions = engine.getInteractions({'ino', 'aqua'});
 
-      final ai = interactions.firstWhere(
-        (i) => i.resultName == 'Aqua Ino',
-      );
+      final ai = interactions.firstWhere((i) => i.resultName == 'Aqua Ino');
       expect(ai.mutationIds, contains('aqua'));
       expect(ai.mutationIds, contains('ino'));
       expect(ai.description, contains('Aqua'));
@@ -1216,16 +1218,9 @@ void main() {
     });
 
     test('Parblue + Ino + Cinnamon does not yield parblue-ino interaction', () {
-      final interactions = engine.getInteractions({
-        'ino',
-        'aqua',
-        'cinnamon',
-      });
+      final interactions = engine.getInteractions({'ino', 'aqua', 'cinnamon'});
 
-      expect(
-        interactions.any((i) => i.resultName == 'Aqua Ino'),
-        isFalse,
-      );
+      expect(interactions.any((i) => i.resultName == 'Aqua Ino'), isFalse);
     });
 
     test('Pearly + Opaline yields Opaline Pearly interaction', () {
@@ -1278,10 +1273,7 @@ void main() {
         interactions.any((i) => i.resultName == 'Dark-Eyed Clear'),
         isTrue,
       );
-      expect(
-        interactions.any((i) => i.resultName == 'Opaline Pearly'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Opaline Pearly'), isTrue);
     });
   });
 

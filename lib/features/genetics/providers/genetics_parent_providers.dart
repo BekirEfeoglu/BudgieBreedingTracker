@@ -88,8 +88,8 @@ class OffspringFilterNotifier extends Notifier<OffspringFilter> {
 
 final offspringFilterProvider =
     NotifierProvider<OffspringFilterNotifier, OffspringFilter>(
-  OffspringFilterNotifier.new,
-);
+      OffspringFilterNotifier.new,
+    );
 
 /// Current wizard step (0=parents, 1=preview, 2=results).
 class WizardStepNotifier extends Notifier<int> {

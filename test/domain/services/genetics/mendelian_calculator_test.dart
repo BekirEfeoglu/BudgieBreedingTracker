@@ -1131,10 +1131,7 @@ void main() {
       );
       final mother = ParentGenotype(
         gender: BirdGender.female,
-        mutations: {
-          'blue': AlleleState.visual,
-          'opaline': AlleleState.visual,
-        },
+        mutations: {'blue': AlleleState.visual, 'opaline': AlleleState.visual},
       );
 
       final square = calculator.buildDihybridPunnettSquare(
@@ -1148,10 +1145,7 @@ void main() {
       expect(square!.isSexLinked, isTrue);
       expect(square.cells, hasLength(4));
       // Sex-linked locus should produce W chromosome notation
-      expect(
-        square.motherAlleles.any((g) => g.contains('W')),
-        isTrue,
-      );
+      expect(square.motherAlleles.any((g) => g.contains('W')), isTrue);
     });
   });
 }

@@ -187,9 +187,8 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'form',
                 parentNavigatorKey: rootNavigatorKey,
-                builder: (context, state) => BirdFormScreen(
-                  editBirdId: validEditIdOrNull(state),
-                ),
+                builder: (context, state) =>
+                    BirdFormScreen(editBirdId: validEditIdOrNull(state)),
               ),
               GoRoute(
                 path: ':id',
@@ -212,9 +211,8 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'form',
                 parentNavigatorKey: rootNavigatorKey,
-                builder: (context, state) => BreedingFormScreen(
-                  editPairId: validEditIdOrNull(state),
-                ),
+                builder: (context, state) =>
+                    BreedingFormScreen(editPairId: validEditIdOrNull(state)),
               ),
               GoRoute(
                 path: ':id',
@@ -248,9 +246,8 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'form',
                 parentNavigatorKey: rootNavigatorKey,
-                builder: (context, state) => ChickFormScreen(
-                  editChickId: validEditIdOrNull(state),
-                ),
+                builder: (context, state) =>
+                    ChickFormScreen(editChickId: validEditIdOrNull(state)),
               ),
               GoRoute(
                 path: ':id',

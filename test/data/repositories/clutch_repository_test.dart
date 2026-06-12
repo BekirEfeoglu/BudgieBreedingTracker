@@ -86,9 +86,7 @@ void main() {
     ).thenAnswer((_) async => []);
     when(() => syncDao.hardDelete(any())).thenAnswer((_) async {});
 
-    when(
-      () => incubationsDao.getById(any()),
-    ).thenAnswer((_) async => null);
+    when(() => incubationsDao.getById(any())).thenAnswer((_) async => null);
     when(
       () => birdsDao.getByIdIncludingDeleted(any()),
     ).thenAnswer((_) async => null);

@@ -217,4 +217,3 @@ class IndependentMutationChip extends StatelessWidget {
     );
   }
 }
-

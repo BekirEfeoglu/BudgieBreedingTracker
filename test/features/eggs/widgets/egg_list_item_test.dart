@@ -8,7 +8,9 @@ import 'package:budgie_breeding_tracker/features/eggs/widgets/egg_list_item.dart
 
 Future<void> _pump(WidgetTester tester, Widget child) async {
   await tester.pumpWidget(
-    ProviderScope(child: MaterialApp(home: Scaffold(body: child))),
+    ProviderScope(
+      child: MaterialApp(home: Scaffold(body: child)),
+    ),
   );
   await tester.pump();
 }
@@ -44,10 +46,7 @@ void main() {
     testWidgets('onStatusUpdate button is shown when callback provided', (
       tester,
     ) async {
-      await _pump(
-        tester,
-        EggListItem(egg: testEgg, onStatusUpdate: () {}),
-      );
+      await _pump(tester, EggListItem(egg: testEgg, onStatusUpdate: () {}));
 
       expect(find.byType(IconButton), findsWidgets);
     });
@@ -55,10 +54,7 @@ void main() {
     testWidgets('onDelete button is shown when callback provided', (
       tester,
     ) async {
-      await _pump(
-        tester,
-        EggListItem(egg: testEgg, onDelete: () {}),
-      );
+      await _pump(tester, EggListItem(egg: testEgg, onDelete: () {}));
 
       expect(find.byType(IconButton), findsWidgets);
     });

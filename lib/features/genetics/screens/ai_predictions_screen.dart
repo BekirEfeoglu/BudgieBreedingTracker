@@ -66,7 +66,8 @@ class _AiPredictionsScreenState extends ConsumerState<AiPredictionsScreen>
     final config = configAsync.asData?.value;
     // Show welcome if not ready: openRouter needs an API key, ollama needs a
     // non-empty model.
-    final isConfigured = config != null &&
+    final isConfigured =
+        config != null &&
         config.model.trim().isNotEmpty &&
         (!config.isOpenRouter || config.apiKey.trim().isNotEmpty);
 
@@ -94,14 +95,11 @@ class _AiPredictionsScreenState extends ConsumerState<AiPredictionsScreen>
       body: configAsync.isLoading
           ? const LoadingState()
           : isConfigured
-              ? TabBarView(
-                  controller: _tabController,
-                  children: [
-                    const AiMutationTab(),
-                    const AiSexEstimationTab(),
-                  ],
-                )
-              : AiWelcomeScreen(onSetup: _openSettings),
+          ? TabBarView(
+              controller: _tabController,
+              children: [const AiMutationTab(), const AiSexEstimationTab()],
+            )
+          : AiWelcomeScreen(onSetup: _openSettings),
     );
   }
 }

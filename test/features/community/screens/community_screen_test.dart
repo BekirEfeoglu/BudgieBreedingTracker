@@ -34,10 +34,10 @@ void main() {
         currentUserIdProvider.overrideWithValue(testUserId),
         userProfileProvider.overrideWith((ref) => Stream.value(null)),
         userLevelProvider(testUserId).overrideWith((ref) => Future.value(null)),
-        unreadNotificationsProvider(testUserId)
-            .overrideWith((ref) => Stream.value([])),
-        actionFeedbackProvider
-            .overrideWith(_EmptyActionFeedbackNotifier.new),
+        unreadNotificationsProvider(
+          testUserId,
+        ).overrideWith((ref) => Stream.value([])),
+        actionFeedbackProvider.overrideWith(_EmptyActionFeedbackNotifier.new),
         if (communityEnabled && feedState != null)
           communityFeedProvider.overrideWith(
             () => _FakeFeedNotifier(feedState),

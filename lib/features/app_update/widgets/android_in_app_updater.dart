@@ -60,9 +60,7 @@ class _AndroidInAppUpdaterState extends ConsumerState<AndroidInAppUpdater> {
                       e,
                       st,
                     );
-                    unawaited(
-                      Sentry.captureException(e, stackTrace: st),
-                    );
+                    unawaited(Sentry.captureException(e, stackTrace: st));
                   }),
             );
           },

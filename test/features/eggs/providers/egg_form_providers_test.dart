@@ -305,9 +305,7 @@ void main() {
       // K11 ownership validation rejects when incubation.userId !=
       // currentUserId, so we keep the incubation present but break the
       // breeding-pair lookup so species resolution falls back to unknown.
-      when(() => breedingPairRepo.getById(any())).thenAnswer(
-        (_) async => null,
-      );
+      when(() => breedingPairRepo.getById(any())).thenAnswer((_) async => null);
 
       final container = makeContainer();
       addTearDown(container.dispose);

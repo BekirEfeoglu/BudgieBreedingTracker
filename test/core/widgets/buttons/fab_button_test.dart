@@ -64,7 +64,11 @@ void main() {
         MaterialApp(
           home: Scaffold(
             floatingActionButton: FabButton(
-              icon: const SizedBox(key: Key('custom_icon'), width: 24, height: 24),
+              icon: const SizedBox(
+                key: Key('custom_icon'),
+                width: 24,
+                height: 24,
+              ),
               onPressed: () {},
             ),
           ),
@@ -79,9 +83,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            floatingActionButton: FabButton(
-              icon: Icon(Icons.add),
-            ),
+            floatingActionButton: FabButton(icon: Icon(Icons.add)),
           ),
         ),
       );

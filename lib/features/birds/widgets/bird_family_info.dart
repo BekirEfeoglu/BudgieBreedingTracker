@@ -32,25 +32,13 @@ class BirdFamilyInfo extends ConsumerWidget {
         // pattern). Log so a recurring failure surfaces in observability;
         // still render `SizedBox.shrink` because we don't have anything
         // useful to put in its place.
-        AppLogger.warning(
-          '[BirdFamilyInfo] birds stream failed: $error',
-        );
+        AppLogger.warning('[BirdFamilyInfo] birds stream failed: $error');
         return const SizedBox.shrink();
       },
       data: (allBirds) {
-        // TODO(birds-audit #8): offspring + sibling discovery scans the
-        // entire flock on every rebuild (O(n) each, O(n^2) effective with
-        // _findSiblings). There is currently no parent-id-filtered DAO /
-        // provider (only watchAliveByGenderAndSpecies near
-        // birdParentCandidatesProvider). Add a Drift query
-        // `watchByParentIds(fatherId, motherId)` in BirdsDao + a stream
-        // provider, then replace these in-Dart scans. Left intact here to
-        // avoid a half-refactor that reaches outside the birds feature.
-        final offspring = allBirds
-            .where((b) => b.fatherId == bird.id || b.motherId == bird.id)
-            .toList();
-
-        final siblings = _findSiblings(allBirds);
+        final familyLinks = _collectFamilyLinks(allBirds);
+        final offspring = familyLinks.offspring;
+        final siblings = familyLinks.siblings;
 
         if (offspring.isEmpty && siblings.isEmpty) {
           return const SizedBox.shrink();
@@ -89,17 +77,38 @@ class BirdFamilyInfo extends ConsumerWidget {
     );
   }
 
-  List<Bird> _findSiblings(List<Bird> allBirds) {
-    if (bird.fatherId == null && bird.motherId == null) return [];
+  _FamilyLinks _collectFamilyLinks(List<Bird> allBirds) {
+    final offspring = <Bird>[];
+    final siblings = <Bird>[];
+    final hasKnownParent = bird.fatherId != null || bird.motherId != null;
 
-    return allBirds.where((b) {
-      if (b.id == bird.id) return false;
-      // Share at least one parent
-      final sameFather = bird.fatherId != null && b.fatherId == bird.fatherId;
-      final sameMother = bird.motherId != null && b.motherId == bird.motherId;
-      return sameFather || sameMother;
-    }).toList();
+    for (final candidate in allBirds) {
+      if (candidate.id == bird.id) continue;
+
+      if (candidate.fatherId == bird.id || candidate.motherId == bird.id) {
+        offspring.add(candidate);
+      }
+
+      if (hasKnownParent) {
+        final sameFather =
+            bird.fatherId != null && candidate.fatherId == bird.fatherId;
+        final sameMother =
+            bird.motherId != null && candidate.motherId == bird.motherId;
+        if (sameFather || sameMother) {
+          siblings.add(candidate);
+        }
+      }
+    }
+
+    return _FamilyLinks(offspring: offspring, siblings: siblings);
   }
+}
+
+class _FamilyLinks {
+  final List<Bird> offspring;
+  final List<Bird> siblings;
+
+  const _FamilyLinks({required this.offspring, required this.siblings});
 }
 
 class _FamilySubSection extends StatelessWidget {

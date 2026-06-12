@@ -168,8 +168,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
     });
 
-    test('second resetPassword within cooldown throws AuthException',
-        () async {
+    test('second resetPassword within cooldown throws AuthException', () async {
       when(
         () => mockAuth.resetPasswordForEmail(
           any(),
@@ -192,25 +191,27 @@ void main() {
       ).called(1);
     });
 
-    test('cooldown survives a fresh AuthActions instance (app restart)',
-        () async {
-      when(
-        () => mockAuth.resetPasswordForEmail(
-          any(),
-          redirectTo: any(named: 'redirectTo'),
-        ),
-      ).thenAnswer((_) async {});
-      // First instance records the call.
-      await actions.resetPassword('persist@example.com');
+    test(
+      'cooldown survives a fresh AuthActions instance (app restart)',
+      () async {
+        when(
+          () => mockAuth.resetPasswordForEmail(
+            any(),
+            redirectTo: any(named: 'redirectTo'),
+          ),
+        ).thenAnswer((_) async {});
+        // First instance records the call.
+        await actions.resetPassword('persist@example.com');
 
-      // Simulate a kill+restart by constructing a brand-new instance with the
-      // same underlying SharedPreferences mock state.
-      final restarted = AuthActions(mockClient);
-      await expectLater(
-        restarted.resetPassword('persist@example.com'),
-        throwsA(isA<AuthException>()),
-      );
-    });
+        // Simulate a kill+restart by constructing a brand-new instance with the
+        // same underlying SharedPreferences mock state.
+        final restarted = AuthActions(mockClient);
+        await expectLater(
+          restarted.resetPassword('persist@example.com'),
+          throwsA(isA<AuthException>()),
+        );
+      },
+    );
 
     test('cooldown is per-email — different email is allowed', () async {
       when(
@@ -232,24 +233,26 @@ void main() {
       ).called(2);
     });
 
-    test('resendVerification respects per-email cooldown across restart',
-        () async {
-      when(
-        () => mockAuth.resend(
-          type: any(named: 'type'),
-          email: any(named: 'email'),
-          emailRedirectTo: any(named: 'emailRedirectTo'),
-        ),
-      ).thenAnswer((_) async => ResendResponse());
+    test(
+      'resendVerification respects per-email cooldown across restart',
+      () async {
+        when(
+          () => mockAuth.resend(
+            type: any(named: 'type'),
+            email: any(named: 'email'),
+            emailRedirectTo: any(named: 'emailRedirectTo'),
+          ),
+        ).thenAnswer((_) async => ResendResponse());
 
-      await actions.resendVerification('resend@example.com');
+        await actions.resendVerification('resend@example.com');
 
-      final restarted = AuthActions(mockClient);
-      await expectLater(
-        restarted.resendVerification('resend@example.com'),
-        throwsA(isA<AuthException>()),
-      );
-    });
+        final restarted = AuthActions(mockClient);
+        await expectLater(
+          restarted.resendVerification('resend@example.com'),
+          throwsA(isA<AuthException>()),
+        );
+      },
+    );
   });
 
   group('AuthActions.signOut', () {

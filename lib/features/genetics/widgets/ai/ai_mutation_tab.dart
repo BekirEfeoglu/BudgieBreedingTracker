@@ -70,7 +70,8 @@ class _AiMutationTabState extends ConsumerState<AiMutationTab>
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
-                onPressed: configAsync.isLoading ||
+                onPressed:
+                    configAsync.isLoading ||
                         isLoading ||
                         _selectedImagePath == null
                     ? null
@@ -83,9 +84,7 @@ class _AiMutationTabState extends ConsumerState<AiMutationTab>
                           return;
                         }
                         await ref
-                            .read(
-                              mutationImageAiAnalysisProvider.notifier,
-                            )
+                            .read(mutationImageAiAnalysisProvider.notifier)
                             .analyze(
                               config: config,
                               imagePath: _selectedImagePath!,
@@ -122,10 +121,12 @@ class _AiMutationTabState extends ConsumerState<AiMutationTab>
       bullets: [
         if (result.inoWarning.isNotEmpty)
           '\u26A0\uFE0F ${result.inoWarning.tr()}',
-        'genetics.local_ai_series_label'
-            .tr(args: [_seriesLabel(result.baseSeries)]),
-        'genetics.local_ai_pattern_label'
-            .tr(args: [_patternLabel(result.patternFamily)]),
+        'genetics.local_ai_series_label'.tr(
+          args: [_seriesLabel(result.baseSeries)],
+        ),
+        'genetics.local_ai_pattern_label'.tr(
+          args: [_patternLabel(result.patternFamily)],
+        ),
         if (result.bodyColor.isNotEmpty)
           '${'genetics.image_body_color'.tr()}: ${_translateUnknown(result.bodyColor)}',
         if (result.wingPattern.isNotEmpty)
@@ -135,9 +136,7 @@ class _AiMutationTabState extends ConsumerState<AiMutationTab>
         if (result.secondaryPossibilities.isNotEmpty)
           'genetics.local_ai_alternatives_label'.tr(
             args: [
-              result.secondaryPossibilities
-                  .map(_mutationLabel)
-                  .join(', '),
+              result.secondaryPossibilities.map(_mutationLabel).join(', '),
             ],
           ),
       ],

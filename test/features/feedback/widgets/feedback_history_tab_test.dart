@@ -55,7 +55,10 @@ void main() {
       await tester.pumpWidget(buildSubject(historyValue: const AsyncData([])));
       await tester.pump();
 
-      expect(find.text(l10n('feedback.no_submissions')), findsAtLeastNWidgets(1));
+      expect(
+        find.text(l10n('feedback.no_submissions')),
+        findsAtLeastNWidgets(1),
+      );
     });
 
     testWidgets('shows no_submissions_hint text in empty state', (
@@ -108,7 +111,10 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text(l10n('feedback.history_error')), findsAtLeastNWidgets(1));
+      expect(
+        find.text(l10n('feedback.history_error')),
+        findsAtLeastNWidgets(1),
+      );
     });
 
     testWidgets('RefreshIndicator wraps the list', (tester) async {
@@ -124,11 +130,7 @@ void main() {
     testWidgets('renders without errors', (tester) async {
       await tester.pumpWidget(
         const ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(
-              body: FeedbackHistoryEmpty(),
-            ),
-          ),
+          child: MaterialApp(home: Scaffold(body: FeedbackHistoryEmpty())),
         ),
       );
       await tester.pump();

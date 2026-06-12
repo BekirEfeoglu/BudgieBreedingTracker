@@ -147,14 +147,46 @@ class HealthRecordCard extends ConsumerWidget {
 
 /// Returns the icon for a health record type as a [Widget].
 /// Heart variants use [AppIcon] (domain SVG); others use [Icon] with [LucideIcons].
-Widget healthRecordTypeIcon(HealthRecordType type, {double? size, Color? color}) => switch (type) {
-  HealthRecordType.checkup => Icon(LucideIcons.stethoscope, size: size, color: color),
-  HealthRecordType.illness => Icon(LucideIcons.thermometer, size: size, color: color),
-  HealthRecordType.injury => AppIcon(AppIcons.heartPulse, size: size, color: color),
-  HealthRecordType.vaccination => Icon(LucideIcons.syringe, size: size, color: color),
-  HealthRecordType.medication => Icon(LucideIcons.pill, size: size, color: color),
-  HealthRecordType.death => AppIcon(AppIcons.heartOff, size: size, color: color),
-  HealthRecordType.unknown => Icon(LucideIcons.helpCircle, size: size, color: color),
+Widget healthRecordTypeIcon(
+  HealthRecordType type, {
+  double? size,
+  Color? color,
+}) => switch (type) {
+  HealthRecordType.checkup => Icon(
+    LucideIcons.stethoscope,
+    size: size,
+    color: color,
+  ),
+  HealthRecordType.illness => Icon(
+    LucideIcons.thermometer,
+    size: size,
+    color: color,
+  ),
+  HealthRecordType.injury => AppIcon(
+    AppIcons.heartPulse,
+    size: size,
+    color: color,
+  ),
+  HealthRecordType.vaccination => Icon(
+    LucideIcons.syringe,
+    size: size,
+    color: color,
+  ),
+  HealthRecordType.medication => Icon(
+    LucideIcons.pill,
+    size: size,
+    color: color,
+  ),
+  HealthRecordType.death => AppIcon(
+    AppIcons.heartOff,
+    size: size,
+    color: color,
+  ),
+  HealthRecordType.unknown => Icon(
+    LucideIcons.helpCircle,
+    size: size,
+    color: color,
+  ),
 };
 
 /// Returns the color for a health record type.

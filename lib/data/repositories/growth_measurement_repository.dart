@@ -65,8 +65,7 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
     // Use IncludingDeleted so a chick awaiting tombstone push is reported
     // as "pending tombstone sync" instead of triggering the orphan-cleanup
     // path that would permanently strand the measurement.
-    final chick =
-        await _chicksDao.getByIdIncludingDeleted(measurement.chickId);
+    final chick = await _chicksDao.getByIdIncludingDeleted(measurement.chickId);
     if (chick == null) {
       return 'Referenced chick ${measurement.chickId} not found locally';
     }
@@ -257,7 +256,11 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
           AppLogger.warning(
             '[$syncLogTag] True orphan ${getEntityId(item)}: $orphanReason',
           );
-          await markError(getEntityId(item), getEntityUserId(item), orphanReason);
+          await markError(
+            getEntityId(item),
+            getEntityUserId(item),
+            orphanReason,
+          );
           orphansCleaned++;
         }
         continue;

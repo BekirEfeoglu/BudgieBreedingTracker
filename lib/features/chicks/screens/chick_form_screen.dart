@@ -165,77 +165,79 @@ class _ChickFormScreenState extends ConsumerState<ChickFormScreen> {
     return UnsavedChangesScope(
       isDirty: _isDirty,
       child: Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _isEdit ? 'chicks.edit_chick'.tr() : 'chicks.new_chick'.tr(),
+        appBar: AppBar(
+          title: Text(
+            _isEdit ? 'chicks.edit_chick'.tr() : 'chicks.new_chick'.tr(),
+          ),
         ),
-      ),
-      body: Form(
-        key: _formKey,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        child: SingleChildScrollView(
-          padding: AppSpacing.screenPadding,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: AppSpacing.maxContentWidth,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  ChickFormFields(
-                    nameController: _nameController,
-                    ringController: _ringController,
-                    hatchWeightController: _hatchWeightController,
-                    notesController: _notesController,
-                    gender: _gender,
-                    healthStatus: _healthStatus,
-                    hatchDate: _hatchDate,
-                    dateFormatter: ref.watch(dateFormatProvider).formatter(),
-                    onGenderChanged: (g) => setState(() => _gender = g),
-                    onHealthStatusChanged: (h) =>
-                        setState(() => _healthStatus = h),
-                    onHatchDateChanged: (d) => setState(() => _hatchDate = d),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-
-                  // Banding Day
-                  TextFormField(
-                    controller: _bandingDayController,
-                    enabled: _existingChick?.isBanded != true,
-                    decoration: InputDecoration(
-                      labelText: 'chicks.banding_day_label'.tr(),
-                      hintText: 'chicks.banding_day_hint'.tr(),
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const AppIcon(AppIcons.ring),
+        body: Form(
+          key: _formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          child: SingleChildScrollView(
+            padding: AppSpacing.screenPadding,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: AppSpacing.maxContentWidth,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ChickFormFields(
+                      nameController: _nameController,
+                      ringController: _ringController,
+                      hatchWeightController: _hatchWeightController,
+                      notesController: _notesController,
+                      gender: _gender,
+                      healthStatus: _healthStatus,
+                      hatchDate: _hatchDate,
+                      dateFormatter: ref.watch(dateFormatProvider).formatter(),
+                      onGenderChanged: (g) => setState(() => _gender = g),
+                      onHealthStatusChanged: (h) =>
+                          setState(() => _healthStatus = h),
+                      onHatchDateChanged: (d) => setState(() => _hatchDate = d),
                     ),
-                    keyboardType: TextInputType.number,
-                    textInputAction: TextInputAction.next,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'validation.required'.tr();
-                      }
-                      final parsed = int.tryParse(value.trim());
-                      if (parsed == null || parsed < 5 || parsed > 21) {
-                        return 'chicks.banding_day_validation'.tr();
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: AppSpacing.xxl),
+                    const SizedBox(height: AppSpacing.lg),
 
-                  // Submit
-                  PrimaryButton(
-                    label: _isEdit ? 'common.update'.tr() : 'common.save'.tr(),
-                    isLoading: formState.isLoading,
-                    onPressed: _submit,
-                  ),
-                ],
+                    // Banding Day
+                    TextFormField(
+                      controller: _bandingDayController,
+                      enabled: _existingChick?.isBanded != true,
+                      decoration: InputDecoration(
+                        labelText: 'chicks.banding_day_label'.tr(),
+                        hintText: 'chicks.banding_day_hint'.tr(),
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const AppIcon(AppIcons.ring),
+                      ),
+                      keyboardType: TextInputType.number,
+                      textInputAction: TextInputAction.next,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'validation.required'.tr();
+                        }
+                        final parsed = int.tryParse(value.trim());
+                        if (parsed == null || parsed < 5 || parsed > 21) {
+                          return 'chicks.banding_day_validation'.tr();
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.xxl),
+
+                    // Submit
+                    PrimaryButton(
+                      label: _isEdit
+                          ? 'common.update'.tr()
+                          : 'common.save'.tr(),
+                      isLoading: formState.isLoading,
+                      onPressed: _submit,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
-      ),
       ),
     );
   }

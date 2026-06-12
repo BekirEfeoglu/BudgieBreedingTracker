@@ -94,8 +94,14 @@ void main() {
     test('fromJson handles snake_case action strings', () {
       expect(AdminActionType.fromJson('delete_user'), AdminActionType.delete);
       expect(AdminActionType.fromJson('create_bird'), AdminActionType.create);
-      expect(AdminActionType.fromJson('grant_premium'), AdminActionType.grantPremium);
-      expect(AdminActionType.fromJson('toggle_active'), AdminActionType.toggleActive);
+      expect(
+        AdminActionType.fromJson('grant_premium'),
+        AdminActionType.grantPremium,
+      );
+      expect(
+        AdminActionType.fromJson('toggle_active'),
+        AdminActionType.toggleActive,
+      );
     });
   });
 

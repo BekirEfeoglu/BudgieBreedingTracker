@@ -29,7 +29,10 @@ void main() {
         ),
       );
 
-      await pumpLocalizedWidget(tester, const BadgeCard(enrichedBadge: enriched));
+      await pumpLocalizedWidget(
+        tester,
+        const BadgeCard(enrichedBadge: enriched),
+      );
 
       expect(find.byType(LinearProgressIndicator), findsOneWidget);
       expect(find.text('3/10'), findsOneWidget);
@@ -48,7 +51,10 @@ void main() {
         ),
       );
 
-      await pumpLocalizedWidget(tester, const BadgeCard(enrichedBadge: enriched));
+      await pumpLocalizedWidget(
+        tester,
+        const BadgeCard(enrichedBadge: enriched),
+      );
 
       expect(find.byIcon(LucideIcons.checkCircle), findsOneWidget);
       expect(find.byIcon(LucideIcons.award), findsOneWidget);

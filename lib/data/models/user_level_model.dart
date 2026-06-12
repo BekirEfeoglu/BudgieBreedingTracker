@@ -22,7 +22,8 @@ abstract class UserLevel with _$UserLevel {
     String? displayName,
   }) = _UserLevel;
 
-  factory UserLevel.fromJson(Map<String, dynamic> json) => _$UserLevelFromJson(json);
+  factory UserLevel.fromJson(Map<String, dynamic> json) =>
+      _$UserLevelFromJson(json);
 }
 
 extension UserLevelX on UserLevel {

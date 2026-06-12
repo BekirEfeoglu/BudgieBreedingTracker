@@ -53,20 +53,22 @@ class SortBottomSheet<T> extends StatelessWidget {
               child: ListView(
                 shrinkWrap: true,
                 children: [
-                  ...values.map((value) => ListTile(
-                        leading: value == current
-                            ? Icon(
-                                LucideIcons.check,
-                                color: theme.colorScheme.primary,
-                              )
-                            : const SizedBox(width: 24),
-                        title: Text(labelOf(value)),
-                        selected: value == current,
-                        onTap: () {
-                          onSelected(value);
-                          Navigator.of(context).pop();
-                        },
-                      )),
+                  ...values.map(
+                    (value) => ListTile(
+                      leading: value == current
+                          ? Icon(
+                              LucideIcons.check,
+                              color: theme.colorScheme.primary,
+                            )
+                          : const SizedBox(width: 24),
+                      title: Text(labelOf(value)),
+                      selected: value == current,
+                      onTap: () {
+                        onSelected(value);
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ),
                   const SizedBox(height: AppSpacing.sm),
                 ],
               ),

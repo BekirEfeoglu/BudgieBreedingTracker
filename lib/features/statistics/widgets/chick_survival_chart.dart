@@ -27,17 +27,17 @@ class ChickSurvivalChart extends StatelessWidget {
         Semantics(
           label: 'statistics.survival_chart_a11y'.tr(args: ['$total']),
           child: SizedBox(
-          height: 200,
-          child: RepaintBoundary(
-            child: PieChart(
-              PieChartData(
-                sectionsSpace: 2,
-                centerSpaceRadius: 40,
-                sections: _buildSections(context, total),
+            height: 200,
+            child: RepaintBoundary(
+              child: PieChart(
+                PieChartData(
+                  sectionsSpace: 2,
+                  centerSpaceRadius: 40,
+                  sections: _buildSections(context, total),
+                ),
               ),
             ),
           ),
-        ),
         ),
         const SizedBox(height: AppSpacing.md),
         _buildLegend(theme, total),
@@ -124,4 +124,3 @@ class ChickSurvivalChart extends StatelessWidget {
     );
   }
 }
-

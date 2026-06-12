@@ -142,10 +142,7 @@ class GeneticsColorAuditBoard extends StatelessWidget {
                   itemCount: samples.length,
                   itemBuilder: (context, index) {
                     final sample = samples[index];
-                    return _AuditSampleCard(
-                      sample: sample,
-                      birdSize: birdSize,
-                    );
+                    return _AuditSampleCard(sample: sample, birdSize: birdSize);
                   },
                 );
               },

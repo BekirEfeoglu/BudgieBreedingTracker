@@ -14,15 +14,14 @@ abstract final class StorageUtils {
   static bool validateMagicBytes(List<int> bytes, String ext) {
     if (bytes.length < 4) return false;
     return switch (ext) {
-      'jpg' || 'jpeg' =>
-        bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF,
+      'jpg' ||
+      'jpeg' => bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF,
       'png' =>
         bytes[0] == 0x89 &&
             bytes[1] == 0x50 &&
             bytes[2] == 0x4E &&
             bytes[3] == 0x47,
-      'gif' =>
-        bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46,
+      'gif' => bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46,
       'webp' =>
         bytes.length >= 12 &&
             bytes[0] == 0x52 &&

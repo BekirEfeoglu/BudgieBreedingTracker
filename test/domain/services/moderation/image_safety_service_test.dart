@@ -27,8 +27,8 @@ class _FakeEdgeFunctionClient extends EdgeFunctionClient {
   _FakeEdgeFunctionClient({
     EdgeFunctionResult? fixedResult,
     this.shouldThrow = false,
-  })  : _fixedResult = fixedResult,
-        super(_MockSupabaseClient());
+  }) : _fixedResult = fixedResult,
+       super(_MockSupabaseClient());
 
   @override
   Future<EdgeFunctionResult> scanImageSafety({
@@ -72,26 +72,27 @@ void main() {
 
   group('ImageSafetyService - large image', () {
     test(
-        'rejects images exceeding 2MB without calling edge function',
-        () async {
-      final fakeClient = _FakeEdgeFunctionClient(
-        fixedResult: const EdgeFunctionResult(
-          success: true,
-          data: {'safe': false, 'reason': 'should_not_reach'},
-        ),
-      );
-      final service = ImageSafetyService(edgeFunctionClient: fakeClient);
+      'rejects images exceeding 2MB without calling edge function',
+      () async {
+        final fakeClient = _FakeEdgeFunctionClient(
+          fixedResult: const EdgeFunctionResult(
+            success: true,
+            data: {'safe': false, 'reason': 'should_not_reach'},
+          ),
+        );
+        final service = ImageSafetyService(edgeFunctionClient: fakeClient);
 
-      final result = await service.scanImage(
-        bytes: largeBytes,
-        mimeType: testMimeType,
-      );
+        final result = await service.scanImage(
+          bytes: largeBytes,
+          mimeType: testMimeType,
+        );
 
-      expect(result.isSafe, isFalse);
-      expect(result.rejectionReason, 'image_too_large');
-      // Edge function should not have been called.
-      expect(fakeClient.lastImageBase64, isNull);
-    });
+        expect(result.isSafe, isFalse);
+        expect(result.rejectionReason, 'image_too_large');
+        // Edge function should not have been called.
+        expect(fakeClient.lastImageBase64, isNull);
+      },
+    );
   });
 
   group('ImageSafetyService - safe response', () {

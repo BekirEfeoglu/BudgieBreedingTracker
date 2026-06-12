@@ -70,7 +70,9 @@ class PedigreePdfChartBuilder {
                         ),
                       ),
                     ),
-                    child: pw.Center(child: _buildChartNode(root, isRoot: true)),
+                    child: pw.Center(
+                      child: _buildChartNode(root, isRoot: true),
+                    ),
                   ),
                 ),
                 // Gen 1: Parents
@@ -151,7 +153,10 @@ class PedigreePdfChartBuilder {
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
         children: [
-          _buildStatItem('genealogy.ancestors_found'.tr(), '$found / $possible'),
+          _buildStatItem(
+            'genealogy.ancestors_found'.tr(),
+            '$found / $possible',
+          ),
           _buildStatDivider(),
           _buildStatItem(
             'genealogy.completeness'.tr(),
@@ -199,5 +204,4 @@ class PedigreePdfChartBuilder {
       ),
     );
   }
-
 }

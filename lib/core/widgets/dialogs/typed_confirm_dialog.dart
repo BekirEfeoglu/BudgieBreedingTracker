@@ -121,9 +121,7 @@ class _TypedConfirmDialogState extends State<TypedConfirmDialog> {
                   Navigator.of(context).pop(true);
                 }
               : null,
-          style: TextButton.styleFrom(
-            foregroundColor: theme.colorScheme.error,
-          ),
+          style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
           child: Text(widget.confirmLabel ?? 'common.confirm'.tr()),
         ),
       ],

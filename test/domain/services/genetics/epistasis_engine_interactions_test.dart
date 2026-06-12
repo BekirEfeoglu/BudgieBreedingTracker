@@ -34,28 +34,18 @@ void main() {
         interactions.any((i) => i.resultName == 'PallidIno (Lacewing)'),
         isTrue,
       );
-      expect(
-        interactions.any((i) => i.resultName == 'Creamino'),
-        isFalse,
-      );
+      expect(interactions.any((i) => i.resultName == 'Creamino'), isFalse);
     });
 
     test('PallidIno takes priority over Albino', () {
-      final interactions = engine.getInteractions({
-        'ino',
-        'pallid',
-        'blue',
-      });
+      final interactions = engine.getInteractions({'ino', 'pallid', 'blue'});
 
       expect(
         interactions.any((i) => i.resultName == 'PallidIno (Lacewing)'),
         isTrue,
       );
       // Albino should NOT be detected when PallidIno is present
-      expect(
-        interactions.any((i) => i.resultName == 'Albino'),
-        isFalse,
-      );
+      expect(interactions.any((i) => i.resultName == 'Albino'), isFalse);
     });
 
     test('Creamino from yellowface_type2 + blue + ino', () {
@@ -86,10 +76,7 @@ void main() {
     });
 
     test('Creamino from bluefactor_1 + ino (implicitly blue series)', () {
-      final interactions = engine.getInteractions({
-        'ino',
-        'bluefactor_1',
-      });
+      final interactions = engine.getInteractions({'ino', 'bluefactor_1'});
 
       final creamino = interactions.where((i) => i.resultName == 'Creamino');
       expect(creamino, hasLength(1));
@@ -97,10 +84,7 @@ void main() {
     });
 
     test('Creamino from bluefactor_2 + ino (implicitly blue series)', () {
-      final interactions = engine.getInteractions({
-        'ino',
-        'bluefactor_2',
-      });
+      final interactions = engine.getInteractions({'ino', 'bluefactor_2'});
 
       final creamino = interactions.where((i) => i.resultName == 'Creamino');
       expect(creamino, hasLength(1));
@@ -136,29 +120,20 @@ void main() {
 
       // Aqua counts as blue series, so albino should be detected
       // (plus Aqua Ino interaction)
-      expect(
-        interactions.any((i) => i.resultName == 'Albino'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Albino'), isTrue);
     });
 
     test('Albino detected for ino + turquoise (turquoise is blue series)', () {
       final interactions = engine.getInteractions({'ino', 'turquoise'});
 
-      expect(
-        interactions.any((i) => i.resultName == 'Albino'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Albino'), isTrue);
     });
 
     test('Albino detected for ino + bluefactor_1 (bf1 is blue series)', () {
       final interactions = engine.getInteractions({'ino', 'bluefactor_1'});
 
       // Should detect Creamino (bf1 + ino), NOT Albino
-      expect(
-        interactions.any((i) => i.resultName == 'Creamino'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Creamino'), isTrue);
     });
 
     test('Lutino detected for ino without blue series alleles', () {
@@ -172,10 +147,7 @@ void main() {
     test('no Lutino when ino + blue series is present', () {
       final interactions = engine.getInteractions({'ino', 'blue'});
 
-      expect(
-        interactions.any((i) => i.resultName == 'Lutino'),
-        isFalse,
-      );
+      expect(interactions.any((i) => i.resultName == 'Lutino'), isFalse);
     });
   });
 
@@ -185,36 +157,24 @@ void main() {
 
       final lacewing = interactions.where((i) => i.resultName == 'Lacewing');
       expect(lacewing, hasLength(1));
-      expect(
-        lacewing.first.mutationIds,
-        containsAll(['ino', 'cinnamon']),
-      );
+      expect(lacewing.first.mutationIds, containsAll(['ino', 'cinnamon']));
     });
 
-    test('Lacewing + Lutino both detected for ino + cinnamon (green series)', () {
-      final interactions = engine.getInteractions({'ino', 'cinnamon'});
+    test(
+      'Lacewing + Lutino both detected for ino + cinnamon (green series)',
+      () {
+        final interactions = engine.getInteractions({'ino', 'cinnamon'});
 
-      expect(
-        interactions.any((i) => i.resultName == 'Lacewing'),
-        isTrue,
-      );
-      expect(
-        interactions.any((i) => i.resultName == 'Lutino'),
-        isTrue,
-      );
-    });
+        expect(interactions.any((i) => i.resultName == 'Lacewing'), isTrue);
+        expect(interactions.any((i) => i.resultName == 'Lutino'), isTrue);
+      },
+    );
 
     test('Lacewing + Albino both detected for ino + cinnamon + blue', () {
       final interactions = engine.getInteractions({'ino', 'cinnamon', 'blue'});
 
-      expect(
-        interactions.any((i) => i.resultName == 'Lacewing'),
-        isTrue,
-      );
-      expect(
-        interactions.any((i) => i.resultName == 'Albino'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Lacewing'), isTrue);
+      expect(interactions.any((i) => i.resultName == 'Albino'), isTrue);
     });
   });
 
@@ -239,19 +199,13 @@ void main() {
     test('no Visual Violet without dark_factor', () {
       final interactions = engine.getInteractions({'blue', 'violet'});
 
-      expect(
-        interactions.any((i) => i.resultName == 'Visual Violet'),
-        isFalse,
-      );
+      expect(interactions.any((i) => i.resultName == 'Visual Violet'), isFalse);
     });
 
     test('no Visual Violet without blue series', () {
       final interactions = engine.getInteractions({'violet', 'dark_factor'});
 
-      expect(
-        interactions.any((i) => i.resultName == 'Visual Violet'),
-        isFalse,
-      );
+      expect(interactions.any((i) => i.resultName == 'Visual Violet'), isFalse);
     });
 
     test('Visual Violet detected with aqua as blue series', () {
@@ -261,10 +215,7 @@ void main() {
         'dark_factor',
       });
 
-      expect(
-        interactions.any((i) => i.resultName == 'Visual Violet'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Visual Violet'), isTrue);
     });
 
     test('Visual Violet detected with turquoise as blue series', () {
@@ -274,10 +225,7 @@ void main() {
         'dark_factor',
       });
 
-      expect(
-        interactions.any((i) => i.resultName == 'Visual Violet'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Visual Violet'), isTrue);
     });
   });
 
@@ -346,23 +294,20 @@ void main() {
         (i) => i.resultName == 'Full-Body Greywing',
       );
       expect(fbg, hasLength(1));
-      expect(
-        fbg.first.mutationIds,
-        containsAll(['greywing', 'clearwing']),
-      );
+      expect(fbg.first.mutationIds, containsAll(['greywing', 'clearwing']));
     });
 
     test('no Full-Body Greywing without both greywing and clearwing', () {
       expect(
-        engine.getInteractions({'greywing'}).any(
-          (i) => i.resultName == 'Full-Body Greywing',
-        ),
+        engine
+            .getInteractions({'greywing'})
+            .any((i) => i.resultName == 'Full-Body Greywing'),
         isFalse,
       );
       expect(
-        engine.getInteractions({'clearwing'}).any(
-          (i) => i.resultName == 'Full-Body Greywing',
-        ),
+        engine
+            .getInteractions({'clearwing'})
+            .any((i) => i.resultName == 'Full-Body Greywing'),
         isFalse,
       );
     });
@@ -375,9 +320,7 @@ void main() {
         'clearflight_pied',
       });
 
-      final dec = interactions.where(
-        (i) => i.resultName == 'Dark-Eyed Clear',
-      );
+      final dec = interactions.where((i) => i.resultName == 'Dark-Eyed Clear');
       expect(dec, hasLength(1));
       expect(
         dec.first.mutationIds,
@@ -401,21 +344,24 @@ void main() {
       );
     });
 
-    test('detects Dutch Clearflight Pied for dutch_pied + clearflight_pied', () {
-      final interactions = engine.getInteractions({
-        'dutch_pied',
-        'clearflight_pied',
-      });
+    test(
+      'detects Dutch Clearflight Pied for dutch_pied + clearflight_pied',
+      () {
+        final interactions = engine.getInteractions({
+          'dutch_pied',
+          'clearflight_pied',
+        });
 
-      final dcp = interactions.where(
-        (i) => i.resultName == 'Dutch Clearflight Pied',
-      );
-      expect(dcp, hasLength(1));
-      expect(
-        dcp.first.mutationIds,
-        containsAll(['dutch_pied', 'clearflight_pied']),
-      );
-    });
+        final dcp = interactions.where(
+          (i) => i.resultName == 'Dutch Clearflight Pied',
+        );
+        expect(dcp, hasLength(1));
+        expect(
+          dcp.first.mutationIds,
+          containsAll(['dutch_pied', 'clearflight_pied']),
+        );
+      },
+    );
 
     test('no Dutch Clearflight Pied when recessive_pied is also present', () {
       final interactions = engine.getInteractions({
@@ -445,10 +391,7 @@ void main() {
         (i) => i.resultName == 'Melanistic Spangle',
       );
       expect(ms, hasLength(1));
-      expect(
-        ms.first.mutationIds,
-        containsAll(['blackface', 'spangle']),
-      );
+      expect(ms.first.mutationIds, containsAll(['blackface', 'spangle']));
     });
 
     test('no Melanistic Spangle without spangle', () {
@@ -490,10 +433,7 @@ void main() {
     });
 
     test('no Yellowface masked when blue series is present', () {
-      final interactions = engine.getInteractions({
-        'yellowface_type1',
-        'blue',
-      });
+      final interactions = engine.getInteractions({'yellowface_type1', 'blue'});
 
       expect(
         interactions.any((i) => i.resultName == 'Yellowface (masked)'),
@@ -502,10 +442,7 @@ void main() {
     });
 
     test('no Yellowface masked when aqua is present', () {
-      final interactions = engine.getInteractions({
-        'yellowface_type2',
-        'aqua',
-      });
+      final interactions = engine.getInteractions({'yellowface_type2', 'aqua'});
 
       expect(
         interactions.any((i) => i.resultName == 'Yellowface (masked)'),
@@ -526,25 +463,16 @@ void main() {
     test('detects Turquoise Ino for turquoise + ino', () {
       final interactions = engine.getInteractions({'ino', 'turquoise'});
 
-      final tqIno = interactions.where(
-        (i) => i.resultName == 'Turquoise Ino',
-      );
+      final tqIno = interactions.where((i) => i.resultName == 'Turquoise Ino');
       expect(tqIno, hasLength(1));
       expect(tqIno.first.mutationIds, containsAll(['turquoise', 'ino']));
     });
 
     test('no Aqua Ino when cinnamon is also present', () {
       // The interaction is guarded by !hasCinnamon
-      final interactions = engine.getInteractions({
-        'ino',
-        'aqua',
-        'cinnamon',
-      });
+      final interactions = engine.getInteractions({'ino', 'aqua', 'cinnamon'});
 
-      expect(
-        interactions.any((i) => i.resultName == 'Aqua Ino'),
-        isFalse,
-      );
+      expect(interactions.any((i) => i.resultName == 'Aqua Ino'), isFalse);
     });
 
     test('no Turquoise Ino when cinnamon is also present', () {
@@ -554,24 +482,14 @@ void main() {
         'cinnamon',
       });
 
-      expect(
-        interactions.any((i) => i.resultName == 'Turquoise Ino'),
-        isFalse,
-      );
+      expect(interactions.any((i) => i.resultName == 'Turquoise Ino'), isFalse);
     });
 
     test('prefers Aqua over Turquoise when both present with ino', () {
-      final interactions = engine.getInteractions({
-        'ino',
-        'aqua',
-        'turquoise',
-      });
+      final interactions = engine.getInteractions({'ino', 'aqua', 'turquoise'});
 
       // hasAqua is checked first in the code
-      expect(
-        interactions.any((i) => i.resultName == 'Aqua Ino'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Aqua Ino'), isTrue);
     });
   });
 
@@ -579,9 +497,7 @@ void main() {
     test('detects Opaline Pearly for pearly + opaline', () {
       final interactions = engine.getInteractions({'pearly', 'opaline'});
 
-      final op = interactions.where(
-        (i) => i.resultName == 'Opaline Pearly',
-      );
+      final op = interactions.where((i) => i.resultName == 'Opaline Pearly');
       expect(op, hasLength(1));
       expect(op.first.mutationIds, containsAll(['pearly', 'opaline']));
     });
@@ -589,9 +505,7 @@ void main() {
     test('detects Cinnamon Pearly for pearly + cinnamon', () {
       final interactions = engine.getInteractions({'pearly', 'cinnamon'});
 
-      final cp = interactions.where(
-        (i) => i.resultName == 'Cinnamon Pearly',
-      );
+      final cp = interactions.where((i) => i.resultName == 'Cinnamon Pearly');
       expect(cp, hasLength(1));
       expect(cp.first.mutationIds, containsAll(['pearly', 'cinnamon']));
     });
@@ -621,10 +535,7 @@ void main() {
         'cinnamon',
       });
 
-      expect(
-        interactions.any((i) => i.resultName == 'Opaline Pearly'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Opaline Pearly'), isTrue);
       expect(
         interactions.any((i) => i.resultName == 'Cinnamon Pearly'),
         isTrue,
@@ -639,9 +550,7 @@ void main() {
         'crested_half_circular',
       });
 
-      final cc = interactions.where(
-        (i) => i.resultName == 'Crested Compound',
-      );
+      final cc = interactions.where((i) => i.resultName == 'Crested Compound');
       expect(cc, hasLength(1));
       expect(
         cc.first.mutationIds,
@@ -656,9 +565,7 @@ void main() {
         'crested_full_circular',
       });
 
-      final cc = interactions.where(
-        (i) => i.resultName == 'Crested Compound',
-      );
+      final cc = interactions.where((i) => i.resultName == 'Crested Compound');
       expect(cc, hasLength(1));
       expect(cc.first.mutationIds, hasLength(3));
     });
@@ -709,10 +616,7 @@ void main() {
         'clearwing',
       });
 
-      expect(
-        interactions.any((i) => i.resultName == 'Visual Violet'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Visual Violet'), isTrue);
       expect(
         interactions.any((i) => i.resultName == 'Dark-Eyed Clear'),
         isTrue,
@@ -733,18 +637,9 @@ void main() {
 
       // Lacewing (ino+cinnamon), Lutino (ino on green),
       // Opaline Pearly, Cinnamon Pearly
-      expect(
-        interactions.any((i) => i.resultName == 'Lacewing'),
-        isTrue,
-      );
-      expect(
-        interactions.any((i) => i.resultName == 'Lutino'),
-        isTrue,
-      );
-      expect(
-        interactions.any((i) => i.resultName == 'Opaline Pearly'),
-        isTrue,
-      );
+      expect(interactions.any((i) => i.resultName == 'Lacewing'), isTrue);
+      expect(interactions.any((i) => i.resultName == 'Lutino'), isTrue);
+      expect(interactions.any((i) => i.resultName == 'Opaline Pearly'), isTrue);
       expect(
         interactions.any((i) => i.resultName == 'Cinnamon Pearly'),
         isTrue,

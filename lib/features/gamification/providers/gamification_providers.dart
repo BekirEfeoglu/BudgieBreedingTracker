@@ -20,22 +20,28 @@ final badgesProvider = FutureProvider<List<Badge>>((ref) async {
 });
 
 /// Current user's badge progress
-final userBadgesProvider =
-    FutureProvider.family<List<UserBadge>, String>((ref, userId) async {
+final userBadgesProvider = FutureProvider.family<List<UserBadge>, String>((
+  ref,
+  userId,
+) async {
   final repo = ref.watch(gamificationRepositoryProvider);
   return repo.getUserBadges(userId);
 });
 
 /// Current user's level
-final userLevelProvider =
-    FutureProvider.family<UserLevel?, String>((ref, userId) async {
+final userLevelProvider = FutureProvider.family<UserLevel?, String>((
+  ref,
+  userId,
+) async {
   final repo = ref.watch(gamificationRepositoryProvider);
   return repo.getUserLevel(userId);
 });
 
 /// XP history
-final xpHistoryProvider =
-    FutureProvider.family<List<XpTransaction>, String>((ref, userId) async {
+final xpHistoryProvider = FutureProvider.family<List<XpTransaction>, String>((
+  ref,
+  userId,
+) async {
   final repo = ref.watch(gamificationRepositoryProvider);
   return repo.getXpHistory(userId);
 });
@@ -57,14 +63,14 @@ enum BadgeCategoryFilter {
   special;
 
   String get label => switch (this) {
-        BadgeCategoryFilter.all => 'common.all'.tr(),
-        BadgeCategoryFilter.breeding => 'badges.category_breeding'.tr(),
-        BadgeCategoryFilter.community => 'badges.category_community'.tr(),
-        BadgeCategoryFilter.marketplace => 'badges.category_marketplace'.tr(),
-        BadgeCategoryFilter.health => 'badges.category_health'.tr(),
-        BadgeCategoryFilter.milestone => 'badges.category_milestone'.tr(),
-        BadgeCategoryFilter.special => 'badges.category_special'.tr(),
-      };
+    BadgeCategoryFilter.all => 'common.all'.tr(),
+    BadgeCategoryFilter.breeding => 'badges.category_breeding'.tr(),
+    BadgeCategoryFilter.community => 'badges.category_community'.tr(),
+    BadgeCategoryFilter.marketplace => 'badges.category_marketplace'.tr(),
+    BadgeCategoryFilter.health => 'badges.category_health'.tr(),
+    BadgeCategoryFilter.milestone => 'badges.category_milestone'.tr(),
+    BadgeCategoryFilter.special => 'badges.category_special'.tr(),
+  };
 }
 
 class BadgeCategoryFilterNotifier extends Notifier<BadgeCategoryFilter> {
@@ -74,12 +80,14 @@ class BadgeCategoryFilterNotifier extends Notifier<BadgeCategoryFilter> {
 
 final badgeCategoryFilterProvider =
     NotifierProvider<BadgeCategoryFilterNotifier, BadgeCategoryFilter>(
-  BadgeCategoryFilterNotifier.new,
-);
+      BadgeCategoryFilterNotifier.new,
+    );
 
 /// Filtered badges
-final filteredBadgesProvider =
-    Provider.family<List<Badge>, List<Badge>>((ref, badges) {
+final filteredBadgesProvider = Provider.family<List<Badge>, List<Badge>>((
+  ref,
+  badges,
+) {
   final filter = ref.watch(badgeCategoryFilterProvider);
   if (filter == BadgeCategoryFilter.all) return badges;
 
@@ -100,18 +108,17 @@ class EnrichedBadge {
       userBadge?.progressPercent(badge.requirement) ?? 0;
 }
 
-final enrichedBadgesProvider = Provider.family<
-    List<EnrichedBadge>,
-    ({List<Badge> badges, List<UserBadge> userBadges})>((ref, params) {
-  final userBadgeMap = <String, UserBadge>{};
-  for (final ub in params.userBadges) {
-    userBadgeMap[ub.badgeId] = ub;
-  }
+final enrichedBadgesProvider =
+    Provider.family<
+      List<EnrichedBadge>,
+      ({List<Badge> badges, List<UserBadge> userBadges})
+    >((ref, params) {
+      final userBadgeMap = <String, UserBadge>{};
+      for (final ub in params.userBadges) {
+        userBadgeMap[ub.badgeId] = ub;
+      }
 
-  return params.badges.map((badge) {
-    return EnrichedBadge(
-      badge: badge,
-      userBadge: userBadgeMap[badge.id],
-    );
-  }).toList();
-});
+      return params.badges.map((badge) {
+        return EnrichedBadge(badge: badge, userBadge: userBadgeMap[badge.id]);
+      }).toList();
+    });

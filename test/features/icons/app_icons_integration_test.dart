@@ -95,9 +95,7 @@ void main() {
       );
     });
 
-    testWidgets('deceased status renders AppIcons.heartCrack', (
-      tester,
-    ) async {
+    testWidgets('deceased status renders AppIcons.heartCrack', (tester) async {
       await _pump(
         tester,
         const ChickHealthBadge(status: ChickHealthStatus.deceased),

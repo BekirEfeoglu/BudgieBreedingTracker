@@ -16,7 +16,11 @@ List<OffspringResult> _normalizeAndSort(
     ..sort((a, b) => b.probability.compareTo(a.probability));
 
   return sorted
-      .where((r) => r.probability * normalizer > GeneticsConstants.probabilityMinThreshold)
+      .where(
+        (r) =>
+            r.probability * normalizer >
+            GeneticsConstants.probabilityMinThreshold,
+      )
       .map(
         (r) => OffspringResult(
           phenotype: r.phenotype,

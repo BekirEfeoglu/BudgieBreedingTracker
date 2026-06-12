@@ -160,9 +160,11 @@ void main() {
       // this value remains DST-safe regardless of layDate's time-of-day.
       expect(
         egg.expectedHatchDate,
-        DateTime.utc(2024, 1, 1).add(
-          const Duration(days: IncubationConstants.incubationPeriodDays),
-        ),
+        DateTime.utc(
+          2024,
+          1,
+          1,
+        ).add(const Duration(days: IncubationConstants.incubationPeriodDays)),
       );
     });
 

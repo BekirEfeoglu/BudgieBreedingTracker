@@ -92,9 +92,7 @@ void main() {
   group('CommunityPostListScreen', () {
     testWidgets('renders app bar title', (tester) async {
       await tester.pumpWidget(
-        _buildSubject(
-          postsAsync: const AsyncData(<CommunityPost>[]),
-        ),
+        _buildSubject(postsAsync: const AsyncData(<CommunityPost>[])),
       );
       await tester.pumpAndSettle();
 
@@ -103,9 +101,7 @@ void main() {
 
     testWidgets('shows empty state when list is empty', (tester) async {
       await tester.pumpWidget(
-        _buildSubject(
-          postsAsync: const AsyncData(<CommunityPost>[]),
-        ),
+        _buildSubject(postsAsync: const AsyncData(<CommunityPost>[])),
       );
       await tester.pumpAndSettle();
 
@@ -115,11 +111,7 @@ void main() {
 
     testWidgets('shows post cards when list has data', (tester) async {
       final posts = [_testPost(id: 'p1', content: 'Hello budgie')];
-      await tester.pumpWidget(
-        _buildSubject(
-          postsAsync: AsyncData(posts),
-        ),
-      );
+      await tester.pumpWidget(_buildSubject(postsAsync: AsyncData(posts)));
       await tester.pumpAndSettle();
 
       expect(find.text('Hello budgie'), findsOneWidget);
@@ -134,17 +126,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(
-        find.text(l10n('common.data_load_error')),
-        findsOneWidget,
-      );
+      expect(find.text(l10n('common.data_load_error')), findsOneWidget);
     });
 
     testWidgets('shows skeleton while loading', (tester) async {
       await tester.pumpWidget(
-        _buildSubject(
-          postsAsync: const AsyncLoading<List<CommunityPost>>(),
-        ),
+        _buildSubject(postsAsync: const AsyncLoading<List<CommunityPost>>()),
       );
       await tester.pump();
 

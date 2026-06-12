@@ -253,9 +253,8 @@ class PedigreeNode extends StatelessWidget {
           memCacheWidth: size * 2,
           memCacheHeight: size * 2,
           fit: BoxFit.cover,
-          placeholder: (_, __) => ColoredBox(
-            color: _genderBackgroundColor.withValues(alpha: 0.08),
-          ),
+          placeholder: (_, __) =>
+              ColoredBox(color: _genderBackgroundColor.withValues(alpha: 0.08)),
           errorWidget: (_, __, ___) => ColoredBox(
             color: _genderBackgroundColor.withValues(alpha: 0.12),
             child: Center(child: _genderIconWidget),

@@ -54,7 +54,11 @@ Color _resolveBaseBodyColor({
   // Violet applied BEFORE cobalt/mauve so it modifies dark factor bases
   if ((lower.contains('violet') || hasViolet) && isBlueSeries) {
     if (lower.contains('mauve')) {
-      return _mix(BudgiePhenotypePalette.mauve, BudgiePhenotypePalette.violet, 0.40);
+      return _mix(
+        BudgiePhenotypePalette.mauve,
+        BudgiePhenotypePalette.violet,
+        0.40,
+      );
     }
     if (lower.contains('cobalt') || lower.contains('visual violet')) {
       return BudgiePhenotypePalette.violet;
@@ -193,7 +197,8 @@ typedef SpecialPhenotypeFlags = ({
 /// to fall through to individual mutation modifiers.
 SpecialPhenotypeResult? _resolveSpecialPhenotype(SpecialPhenotypeFlags f) {
   if (f.isDarkEyedClear) return _resolveDarkEyedClear(f.isBlueSeries);
-  if (f.isDoubleFactorSpangle) return _resolveDoubleFactorSpangle(f.isBlueSeries);
+  if (f.isDoubleFactorSpangle)
+    return _resolveDoubleFactorSpangle(f.isBlueSeries);
   if (f.isAlbino || f.isLutino || f.isCreamino || f.isLacewing) {
     return _resolveInoVariant(f);
   }
@@ -267,4 +272,3 @@ SpecialPhenotypeResult _resolveInoVariant(SpecialPhenotypeFlags f) {
     showMantleHighlight: f.currentShowMantleHighlight,
   );
 }
-

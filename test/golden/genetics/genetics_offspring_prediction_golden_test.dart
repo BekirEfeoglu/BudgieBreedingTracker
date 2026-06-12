@@ -93,10 +93,7 @@ Future<void> _pumpGolden(WidgetTester tester, Size size, Widget child) async {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       home: Scaffold(
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: child,
-        ),
+        body: Padding(padding: const EdgeInsets.all(16), child: child),
       ),
     ),
   );

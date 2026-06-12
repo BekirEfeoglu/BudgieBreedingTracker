@@ -124,8 +124,9 @@ class _CommunityUserTile extends StatelessWidget {
           AppRoutes.communityUserPosts.replaceFirst(':userId', user.userId),
         ),
         leading: CircleAvatar(
-          foregroundImage:
-              user.avatarUrl != null ? CachedNetworkImageProvider(user.avatarUrl!) : null,
+          foregroundImage: user.avatarUrl != null
+              ? CachedNetworkImageProvider(user.avatarUrl!)
+              : null,
           child: user.avatarUrl == null
               ? Text(
                   user.username.isNotEmpty
@@ -249,9 +250,7 @@ class _SearchSuggestionsBody extends ConsumerWidget {
             ),
           )
         else
-          ...suggestedUsers.map(
-            (user) => _CommunityUserTile(user: user),
-          ),
+          ...suggestedUsers.map((user) => _CommunityUserTile(user: user)),
       ],
     );
   }

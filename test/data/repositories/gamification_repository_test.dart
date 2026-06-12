@@ -26,19 +26,18 @@ Map<String, dynamic> _makeBadgeRow({
   int xpReward = 50,
   int requirement = 1,
   int sortOrder = 0,
-}) =>
-    {
-      'id': id,
-      'key': key,
-      'category': category,
-      'tier': tier,
-      'name_key': nameKey,
-      'description_key': descriptionKey,
-      'icon_path': iconPath,
-      'xp_reward': xpReward,
-      'requirement': requirement,
-      'sort_order': sortOrder,
-    };
+}) => {
+  'id': id,
+  'key': key,
+  'category': category,
+  'tier': tier,
+  'name_key': nameKey,
+  'description_key': descriptionKey,
+  'icon_path': iconPath,
+  'xp_reward': xpReward,
+  'requirement': requirement,
+  'sort_order': sortOrder,
+};
 
 Map<String, dynamic> _makeUserBadgeRow({
   required String id,
@@ -48,17 +47,16 @@ Map<String, dynamic> _makeUserBadgeRow({
   int progress = 1,
   bool isUnlocked = false,
   String? unlockedAt,
-}) =>
-    {
-      'id': id,
-      'user_id': userId,
-      'badge_id': badgeId,
-      'badge_key': badgeKey,
-      'progress': progress,
-      'is_unlocked': isUnlocked,
-      if (unlockedAt != null) 'unlocked_at': unlockedAt,
-      'created_at': '2026-04-01T10:00:00Z',
-    };
+}) => {
+  'id': id,
+  'user_id': userId,
+  'badge_id': badgeId,
+  'badge_key': badgeKey,
+  'progress': progress,
+  'is_unlocked': isUnlocked,
+  if (unlockedAt != null) 'unlocked_at': unlockedAt,
+  'created_at': '2026-04-01T10:00:00Z',
+};
 
 Map<String, dynamic> _makeUserLevelRow({
   String id = 'level-1',
@@ -69,18 +67,17 @@ Map<String, dynamic> _makeUserLevelRow({
   int nextLevelXp = 200,
   String title = 'Acemi Yetistirici',
   String? displayName,
-}) =>
-    {
-      'id': id,
-      'user_id': userId,
-      'total_xp': totalXp,
-      'level': level,
-      'current_level_xp': currentLevelXp,
-      'next_level_xp': nextLevelXp,
-      'title': title,
-      'updated_at': '2026-04-01T10:00:00Z',
-      'display_name': displayName,
-    };
+}) => {
+  'id': id,
+  'user_id': userId,
+  'total_xp': totalXp,
+  'level': level,
+  'current_level_xp': currentLevelXp,
+  'next_level_xp': nextLevelXp,
+  'title': title,
+  'updated_at': '2026-04-01T10:00:00Z',
+  'display_name': displayName,
+};
 
 Map<String, dynamic> _makeXpTransactionRow({
   required String id,
@@ -88,15 +85,14 @@ Map<String, dynamic> _makeXpTransactionRow({
   String action = 'addBird',
   int amount = 10,
   String? referenceId,
-}) =>
-    {
-      'id': id,
-      'user_id': userId,
-      'action': action,
-      'amount': amount,
-      if (referenceId != null) 'reference_id': referenceId,
-      'created_at': '2026-04-01T10:00:00Z',
-    };
+}) => {
+  'id': id,
+  'user_id': userId,
+  'action': action,
+  'amount': amount,
+  if (referenceId != null) 'reference_id': referenceId,
+  'created_at': '2026-04-01T10:00:00Z',
+};
 
 void main() {
   late MockGamificationRemoteSource mockRemoteSource;
@@ -138,8 +134,7 @@ void main() {
     });
 
     test('returns empty list when no badges', () async {
-      when(() => mockRemoteSource.fetchBadges())
-          .thenAnswer((_) async => []);
+      when(() => mockRemoteSource.fetchBadges()).thenAnswer((_) async => []);
 
       final badges = await repository.getBadges();
 
@@ -147,19 +142,16 @@ void main() {
     });
 
     test('rethrows exception from remote source', () async {
-      when(() => mockRemoteSource.fetchBadges())
-          .thenThrow(Exception('Network error'));
+      when(
+        () => mockRemoteSource.fetchBadges(),
+      ).thenThrow(Exception('Network error'));
 
-      expect(
-        () => repository.getBadges(),
-        throwsA(isA<Exception>()),
-      );
+      expect(() => repository.getBadges(), throwsA(isA<Exception>()));
     });
 
     test('parses unknown badge category to unknown', () async {
       final row = _makeBadgeRow(id: 'b1', category: 'nonexistent_category');
-      when(() => mockRemoteSource.fetchBadges())
-          .thenAnswer((_) async => [row]);
+      when(() => mockRemoteSource.fetchBadges()).thenAnswer((_) async => [row]);
 
       final badges = await repository.getBadges();
 
@@ -168,8 +160,7 @@ void main() {
 
     test('parses unknown badge tier to unknown', () async {
       final row = _makeBadgeRow(id: 'b1', tier: 'diamond');
-      when(() => mockRemoteSource.fetchBadges())
-          .thenAnswer((_) async => [row]);
+      when(() => mockRemoteSource.fetchBadges()).thenAnswer((_) async => [row]);
 
       final badges = await repository.getBadges();
 
@@ -181,12 +172,12 @@ void main() {
     test('returns parsed UserBadge list for a user', () async {
       when(() => mockRemoteSource.fetchUserBadges('u1')).thenAnswer(
         (_) async => [
-          _makeUserBadgeRow(id: 'ub1', badgeKey: 'first_bird', isUnlocked: true),
           _makeUserBadgeRow(
-            id: 'ub2',
-            badgeKey: 'bird_lover_10',
-            progress: 5,
+            id: 'ub1',
+            badgeKey: 'first_bird',
+            isUnlocked: true,
           ),
+          _makeUserBadgeRow(id: 'ub2', badgeKey: 'bird_lover_10', progress: 5),
         ],
       );
 
@@ -203,8 +194,9 @@ void main() {
     });
 
     test('returns empty list when user has no badges', () async {
-      when(() => mockRemoteSource.fetchUserBadges('u1'))
-          .thenAnswer((_) async => []);
+      when(
+        () => mockRemoteSource.fetchUserBadges('u1'),
+      ).thenAnswer((_) async => []);
 
       final userBadges = await repository.getUserBadges('u1');
 
@@ -212,21 +204,19 @@ void main() {
     });
 
     test('rethrows exception from remote source', () async {
-      when(() => mockRemoteSource.fetchUserBadges(any()))
-          .thenThrow(Exception('Network error'));
+      when(
+        () => mockRemoteSource.fetchUserBadges(any()),
+      ).thenThrow(Exception('Network error'));
 
-      expect(
-        () => repository.getUserBadges('u1'),
-        throwsA(isA<Exception>()),
-      );
+      expect(() => repository.getUserBadges('u1'), throwsA(isA<Exception>()));
     });
   });
 
   group('getUserLevel', () {
     test('returns parsed UserLevel when found', () async {
-      when(() => mockRemoteSource.fetchUserLevel('u1')).thenAnswer(
-        (_) async => _makeUserLevelRow(totalXp: 250, level: 3),
-      );
+      when(
+        () => mockRemoteSource.fetchUserLevel('u1'),
+      ).thenAnswer((_) async => _makeUserLevelRow(totalXp: 250, level: 3));
 
       final level = await repository.getUserLevel('u1');
 
@@ -240,8 +230,9 @@ void main() {
     });
 
     test('returns null when user has no level', () async {
-      when(() => mockRemoteSource.fetchUserLevel('u1'))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockRemoteSource.fetchUserLevel('u1'),
+      ).thenAnswer((_) async => null);
 
       final level = await repository.getUserLevel('u1');
 
@@ -249,20 +240,19 @@ void main() {
     });
 
     test('rethrows exception from remote source', () async {
-      when(() => mockRemoteSource.fetchUserLevel(any()))
-          .thenThrow(Exception('Network error'));
+      when(
+        () => mockRemoteSource.fetchUserLevel(any()),
+      ).thenThrow(Exception('Network error'));
 
-      expect(
-        () => repository.getUserLevel('u1'),
-        throwsA(isA<Exception>()),
-      );
+      expect(() => repository.getUserLevel('u1'), throwsA(isA<Exception>()));
     });
   });
 
   group('getXpHistory', () {
     test('returns parsed XpTransaction list with default limit', () async {
-      when(() => mockRemoteSource.fetchXpTransactions('u1', limit: 50))
-          .thenAnswer(
+      when(
+        () => mockRemoteSource.fetchXpTransactions('u1', limit: 50),
+      ).thenAnswer(
         (_) async => [
           _makeXpTransactionRow(id: 'xp1', action: 'addBird', amount: 10),
           _makeXpTransactionRow(
@@ -288,8 +278,9 @@ void main() {
     });
 
     test('passes custom limit to remote source', () async {
-      when(() => mockRemoteSource.fetchXpTransactions('u1', limit: 10))
-          .thenAnswer((_) async => []);
+      when(
+        () => mockRemoteSource.fetchXpTransactions('u1', limit: 10),
+      ).thenAnswer((_) async => []);
 
       await repository.getXpHistory('u1', limit: 10);
 
@@ -299,8 +290,9 @@ void main() {
     });
 
     test('returns empty list when no transactions', () async {
-      when(() => mockRemoteSource.fetchXpTransactions('u1', limit: 50))
-          .thenAnswer((_) async => []);
+      when(
+        () => mockRemoteSource.fetchXpTransactions('u1', limit: 50),
+      ).thenAnswer((_) async => []);
 
       final history = await repository.getXpHistory('u1');
 
@@ -312,8 +304,9 @@ void main() {
         id: 'xp1',
         action: 'nonexistent_action',
       );
-      when(() => mockRemoteSource.fetchXpTransactions('u1', limit: 50))
-          .thenAnswer((_) async => [row]);
+      when(
+        () => mockRemoteSource.fetchXpTransactions('u1', limit: 50),
+      ).thenAnswer((_) async => [row]);
 
       final history = await repository.getXpHistory('u1');
 
@@ -321,13 +314,14 @@ void main() {
     });
 
     test('rethrows exception from remote source', () async {
-      when(() => mockRemoteSource.fetchXpTransactions(any(), limit: any(named: 'limit')))
-          .thenThrow(Exception('Network error'));
+      when(
+        () => mockRemoteSource.fetchXpTransactions(
+          any(),
+          limit: any(named: 'limit'),
+        ),
+      ).thenThrow(Exception('Network error'));
 
-      expect(
-        () => repository.getXpHistory('u1'),
-        throwsA(isA<Exception>()),
-      );
+      expect(() => repository.getXpHistory('u1'), throwsA(isA<Exception>()));
     });
   });
 
@@ -335,18 +329,8 @@ void main() {
     test('returns sorted UserLevel list with default limit', () async {
       when(() => mockRemoteSource.fetchLeaderboard(limit: 100)).thenAnswer(
         (_) async => [
-          _makeUserLevelRow(
-            id: 'l1',
-            userId: 'u1',
-            totalXp: 1000,
-            level: 5,
-          ),
-          _makeUserLevelRow(
-            id: 'l2',
-            userId: 'u2',
-            totalXp: 500,
-            level: 3,
-          ),
+          _makeUserLevelRow(id: 'l1', userId: 'u1', totalXp: 1000, level: 5),
+          _makeUserLevelRow(id: 'l2', userId: 'u2', totalXp: 500, level: 3),
         ],
       );
 
@@ -376,8 +360,9 @@ void main() {
     });
 
     test('passes custom limit to remote source', () async {
-      when(() => mockRemoteSource.fetchLeaderboard(limit: 10))
-          .thenAnswer((_) async => []);
+      when(
+        () => mockRemoteSource.fetchLeaderboard(limit: 10),
+      ).thenAnswer((_) async => []);
 
       await repository.getLeaderboard(limit: 10);
 
@@ -385,8 +370,9 @@ void main() {
     });
 
     test('returns empty list when no users on leaderboard', () async {
-      when(() => mockRemoteSource.fetchLeaderboard(limit: 100))
-          .thenAnswer((_) async => []);
+      when(
+        () => mockRemoteSource.fetchLeaderboard(limit: 100),
+      ).thenAnswer((_) async => []);
 
       final leaderboard = await repository.getLeaderboard();
 
@@ -394,13 +380,11 @@ void main() {
     });
 
     test('rethrows exception from remote source', () async {
-      when(() => mockRemoteSource.fetchLeaderboard(limit: any(named: 'limit')))
-          .thenThrow(Exception('Network error'));
+      when(
+        () => mockRemoteSource.fetchLeaderboard(limit: any(named: 'limit')),
+      ).thenThrow(Exception('Network error'));
 
-      expect(
-        () => repository.getLeaderboard(),
-        throwsA(isA<Exception>()),
-      );
+      expect(() => repository.getLeaderboard(), throwsA(isA<Exception>()));
     });
   });
 
@@ -409,23 +393,29 @@ void main() {
       // recordAction delegates to GamificationService which uses the remote source.
       // Since GamificationService is created internally with the real remote source,
       // we need to stub the remote source methods that the service calls.
-      when(() => mockRemoteSource.fetchDailyActionCount(any(), any()))
-          .thenAnswer((_) async => 0);
-      when(() => mockRemoteSource.insertXpTransaction(any()))
-          .thenAnswer((_) async {});
-      when(() => mockRemoteSource.fetchUserLevel(any()))
-          .thenAnswer((_) async => _makeUserLevelRow());
-      when(() => mockRemoteSource.upsertUserLevel(any()))
-          .thenAnswer((_) async {});
-      when(() => mockRemoteSource.updateProfileLevelInfo(
-            any(),
-            level: any(named: 'level'),
-            title: any(named: 'title'),
-          )).thenAnswer((_) async {});
-      when(() => mockRemoteSource.fetchBadges())
-          .thenAnswer((_) async => []);
-      when(() => mockRemoteSource.fetchUserBadges(any()))
-          .thenAnswer((_) async => []);
+      when(
+        () => mockRemoteSource.fetchDailyActionCount(any(), any()),
+      ).thenAnswer((_) async => 0);
+      when(
+        () => mockRemoteSource.insertXpTransaction(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRemoteSource.fetchUserLevel(any()),
+      ).thenAnswer((_) async => _makeUserLevelRow());
+      when(
+        () => mockRemoteSource.upsertUserLevel(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRemoteSource.updateProfileLevelInfo(
+          any(),
+          level: any(named: 'level'),
+          title: any(named: 'title'),
+        ),
+      ).thenAnswer((_) async {});
+      when(() => mockRemoteSource.fetchBadges()).thenAnswer((_) async => []);
+      when(
+        () => mockRemoteSource.fetchUserBadges(any()),
+      ).thenAnswer((_) async => []);
 
       await repository.recordAction('u1', XpAction.addBird);
 
@@ -433,23 +423,29 @@ void main() {
     });
 
     test('passes referenceId to service', () async {
-      when(() => mockRemoteSource.fetchDailyActionCount(any(), any()))
-          .thenAnswer((_) async => 0);
-      when(() => mockRemoteSource.insertXpTransaction(any()))
-          .thenAnswer((_) async {});
-      when(() => mockRemoteSource.fetchUserLevel(any()))
-          .thenAnswer((_) async => _makeUserLevelRow());
-      when(() => mockRemoteSource.upsertUserLevel(any()))
-          .thenAnswer((_) async {});
-      when(() => mockRemoteSource.updateProfileLevelInfo(
-            any(),
-            level: any(named: 'level'),
-            title: any(named: 'title'),
-          )).thenAnswer((_) async {});
-      when(() => mockRemoteSource.fetchBadges())
-          .thenAnswer((_) async => []);
-      when(() => mockRemoteSource.fetchUserBadges(any()))
-          .thenAnswer((_) async => []);
+      when(
+        () => mockRemoteSource.fetchDailyActionCount(any(), any()),
+      ).thenAnswer((_) async => 0);
+      when(
+        () => mockRemoteSource.insertXpTransaction(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRemoteSource.fetchUserLevel(any()),
+      ).thenAnswer((_) async => _makeUserLevelRow());
+      when(
+        () => mockRemoteSource.upsertUserLevel(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRemoteSource.updateProfileLevelInfo(
+          any(),
+          level: any(named: 'level'),
+          title: any(named: 'title'),
+        ),
+      ).thenAnswer((_) async {});
+      when(() => mockRemoteSource.fetchBadges()).thenAnswer((_) async => []);
+      when(
+        () => mockRemoteSource.fetchUserBadges(any()),
+      ).thenAnswer((_) async => []);
 
       await repository.recordAction(
         'u1',
@@ -467,8 +463,9 @@ void main() {
 
     test('does not throw on service error (swallowed by service)', () async {
       // GamificationService catches all errors internally
-      when(() => mockRemoteSource.fetchDailyActionCount(any(), any()))
-          .thenThrow(Exception('Network error'));
+      when(
+        () => mockRemoteSource.fetchDailyActionCount(any(), any()),
+      ).thenThrow(Exception('Network error'));
 
       // Should not throw — service catches internally
       await repository.recordAction('u1', XpAction.addBird);
@@ -477,11 +474,12 @@ void main() {
 
   group('checkVerifiedBreeder', () {
     test('delegates to gamification service', () async {
-      when(() => mockRemoteSource.fetchUserLevel('u1')).thenAnswer(
-        (_) async => _makeUserLevelRow(level: 5),
-      );
-      when(() => mockRemoteSource.fetchUserBadges('u1'))
-          .thenAnswer((_) async => []);
+      when(
+        () => mockRemoteSource.fetchUserLevel('u1'),
+      ).thenAnswer((_) async => _makeUserLevelRow(level: 5));
+      when(
+        () => mockRemoteSource.fetchUserBadges('u1'),
+      ).thenAnswer((_) async => []);
 
       await repository.checkVerifiedBreeder('u1');
 
@@ -489,8 +487,9 @@ void main() {
     });
 
     test('does not throw on service error (swallowed by service)', () async {
-      when(() => mockRemoteSource.fetchUserLevel(any()))
-          .thenThrow(Exception('Network error'));
+      when(
+        () => mockRemoteSource.fetchUserLevel(any()),
+      ).thenThrow(Exception('Network error'));
 
       // Should not throw — service catches internally
       await repository.checkVerifiedBreeder('u1');

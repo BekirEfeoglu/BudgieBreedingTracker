@@ -31,7 +31,9 @@ void main() {
 
     test('accepts modern publishable keys', () {
       expect(
-        debugIsValidSupabaseApiKey('sb_publishable_JE0AXA9bMbUwBIb0x91djA_tUkw4Kpj'),
+        debugIsValidSupabaseApiKey(
+          'sb_publishable_JE0AXA9bMbUwBIb0x91djA_tUkw4Kpj',
+        ),
         isTrue,
       );
     });

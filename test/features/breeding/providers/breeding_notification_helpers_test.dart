@@ -39,17 +39,11 @@ void main() {
     });
 
     test('returns false for empty error', () {
-      expect(
-        helper.isSupabaseUnavailableError(Exception('')),
-        isFalse,
-      );
+      expect(helper.isSupabaseUnavailableError(Exception('')), isFalse);
     });
 
     test('returns false for null-like error messages', () {
-      expect(
-        helper.isSupabaseUnavailableError('Some random error'),
-        isFalse,
-      );
+      expect(helper.isSupabaseUnavailableError('Some random error'), isFalse);
     });
   });
 }

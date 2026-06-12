@@ -258,9 +258,7 @@ class NotificationService with NotificationPermissionHandler {
       if (details?.didNotificationLaunchApp != true) return;
 
       final payload = details?.notificationResponse?.payload;
-      AppLogger.info(
-        '[NotificationService] Restored launch payload: $payload',
-      );
+      AppLogger.info('[NotificationService] Restored launch payload: $payload');
       onNotificationTap?.call(payload);
     } catch (e) {
       AppLogger.warning(

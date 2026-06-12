@@ -33,8 +33,7 @@ class AiSectionCard extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
         border: Border.all(
-          color:
-              theme.colorScheme.outlineVariant.withValues(alpha: 0.45),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.45),
         ),
       ),
       child: IntrinsicHeight(
@@ -44,8 +43,7 @@ class AiSectionCard extends StatelessWidget {
             Container(
               width: 3.5,
               decoration: BoxDecoration(
-                color:
-                    theme.colorScheme.primary.withValues(alpha: 0.6),
+                color: theme.colorScheme.primary.withValues(alpha: 0.6),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(AppSpacing.radiusXl),
                   bottomLeft: Radius.circular(AppSpacing.radiusXl),
@@ -60,17 +58,12 @@ class AiSectionCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(
-                          icon,
-                          size: 16,
-                          color: theme.colorScheme.primary,
-                        ),
+                        Icon(icon, size: 16, color: theme.colorScheme.primary),
                         const SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: Text(
                             title,
-                            style:
-                                theme.textTheme.titleSmall?.copyWith(
+                            style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.w700,
                             ),
                           ),

@@ -215,14 +215,16 @@ void main() {
       expect(prefs.rewardExportUsesRemaining, 5);
     });
 
-    test('returns null for invalid rewardStatisticsUnlockedAt format',
-        () async {
-      final prefs = await _createPrefs({
-        AppPreferences.keyRewardStatisticsUnlockedAt: 'not-a-date',
-      });
+    test(
+      'returns null for invalid rewardStatisticsUnlockedAt format',
+      () async {
+        final prefs = await _createPrefs({
+          AppPreferences.keyRewardStatisticsUnlockedAt: 'not-a-date',
+        });
 
-      expect(prefs.rewardStatisticsUnlockedAt, isNull);
-    });
+        expect(prefs.rewardStatisticsUnlockedAt, isNull);
+      },
+    );
   });
 
   group('AppPreferences blocked users', () {
@@ -356,8 +358,11 @@ void main() {
       ];
 
       for (final key in keys) {
-        expect(key.startsWith('pref_'), isTrue,
-            reason: '"$key" should start with pref_');
+        expect(
+          key.startsWith('pref_'),
+          isTrue,
+          reason: '"$key" should start with pref_',
+        );
       }
     });
 
@@ -393,8 +398,11 @@ void main() {
         AppPreferences.keyBlockedUserIds,
       ];
 
-      expect(keys.toSet().length, keys.length,
-          reason: 'All key constants must be unique');
+      expect(
+        keys.toSet().length,
+        keys.length,
+        reason: 'All key constants must be unique',
+      );
     });
   });
 

@@ -238,9 +238,7 @@ class _RiskSummaryHeaderCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final riskSummary = ref
-        .watch(incubationRiskSummaryProvider(userId))
-        .value;
+    final riskSummary = ref.watch(incubationRiskSummaryProvider(userId)).value;
     if (riskSummary == null) return const SizedBox.shrink();
     return IncubationRiskCard(risks: riskSummary.topRisks(limit: 3));
   }

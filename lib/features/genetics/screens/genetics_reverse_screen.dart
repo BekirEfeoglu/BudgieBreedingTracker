@@ -232,9 +232,7 @@ class _GeneticsReverseScreenState extends ConsumerState<GeneticsReverseScreen> {
           child: PrimaryButton(
             label: 'genetics.find_parents'.tr(),
             icon: const Icon(LucideIcons.search),
-            onPressed: _selectedModifiers.isNotEmpty
-                ? _calculateParents
-                : null,
+            onPressed: _selectedModifiers.isNotEmpty ? _calculateParents : null,
             isLoading: _isLoading,
           ),
         ),

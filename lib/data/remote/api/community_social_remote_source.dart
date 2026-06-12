@@ -51,8 +51,10 @@ class CommunitySocialRemoteSource {
   /// On any failure (RPC missing, network error, RLS rejection) returns empty
   /// sets — the caller should degrade gracefully (posts render as not-liked /
   /// not-bookmarked rather than erroring).
-  Future<({Set<String> liked, Set<String> bookmarked})>
-  fetchPostSocialState(String userId, List<String> postIds) async {
+  Future<({Set<String> liked, Set<String> bookmarked})> fetchPostSocialState(
+    String userId,
+    List<String> postIds,
+  ) async {
     if (postIds.isEmpty || userId == 'anonymous') {
       return (liked: <String>{}, bookmarked: <String>{});
     }
@@ -80,17 +82,19 @@ class CommunitySocialRemoteSource {
 
   Future<void> likePost(String userId, String postId) async {
     try {
-      await _client.from(SupabaseConstants.communityLikesTable).upsert(
-        {
-          'id': const Uuid().v7(),
-          'user_id': userId,
-          'post_id': postId,
-        },
-        onConflict: 'post_id,user_id',
-        ignoreDuplicates: true,
-      );
+      await _client
+          .from(SupabaseConstants.communityLikesTable)
+          .upsert(
+            {'id': const Uuid().v7(), 'user_id': userId, 'post_id': postId},
+            onConflict: 'post_id,user_id',
+            ignoreDuplicates: true,
+          );
     } catch (e, st) {
-      throw BaseRemoteSource.handleErrorForTag('community_social.likePost', e, st);
+      throw BaseRemoteSource.handleErrorForTag(
+        'community_social.likePost',
+        e,
+        st,
+      );
     }
   }
 
@@ -102,7 +106,11 @@ class CommunitySocialRemoteSource {
           .eq('user_id', userId)
           .eq('post_id', postId);
     } catch (e, st) {
-      throw BaseRemoteSource.handleErrorForTag('community_social.unlikePost', e, st);
+      throw BaseRemoteSource.handleErrorForTag(
+        'community_social.unlikePost',
+        e,
+        st,
+      );
     }
   }
 
@@ -149,17 +157,23 @@ class CommunitySocialRemoteSource {
 
   Future<void> likeComment(String userId, String commentId) async {
     try {
-      await _client.from(SupabaseConstants.communityCommentLikesTable).upsert(
-        {
-          'id': const Uuid().v7(),
-          'user_id': userId,
-          'comment_id': commentId,
-        },
-        onConflict: 'comment_id,user_id',
-        ignoreDuplicates: true,
-      );
+      await _client
+          .from(SupabaseConstants.communityCommentLikesTable)
+          .upsert(
+            {
+              'id': const Uuid().v7(),
+              'user_id': userId,
+              'comment_id': commentId,
+            },
+            onConflict: 'comment_id,user_id',
+            ignoreDuplicates: true,
+          );
     } catch (e, st) {
-      throw BaseRemoteSource.handleErrorForTag('community_social.likeComment', e, st);
+      throw BaseRemoteSource.handleErrorForTag(
+        'community_social.likeComment',
+        e,
+        st,
+      );
     }
   }
 
@@ -171,7 +185,11 @@ class CommunitySocialRemoteSource {
           .eq('user_id', userId)
           .eq('comment_id', commentId);
     } catch (e, st) {
-      throw BaseRemoteSource.handleErrorForTag('community_social.unlikeComment', e, st);
+      throw BaseRemoteSource.handleErrorForTag(
+        'community_social.unlikeComment',
+        e,
+        st,
+      );
     }
   }
 

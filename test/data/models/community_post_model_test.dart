@@ -182,11 +182,7 @@ void main() {
 
       test('postType round-trips all valid values', () {
         for (final type in CommunityPostType.values) {
-          final post = CommunityPost(
-            id: 'p1',
-            userId: 'u1',
-            postType: type,
-          );
+          final post = CommunityPost(id: 'p1', userId: 'u1', postType: type);
 
           final json = post.toJson();
           final restored = CommunityPost.fromJson(json);
@@ -198,11 +194,7 @@ void main() {
 
     group('copyWith', () {
       test('creates new instance with changed field', () {
-        const post = CommunityPost(
-          id: 'p1',
-          userId: 'u1',
-          content: 'Original',
-        );
+        const post = CommunityPost(id: 'p1', userId: 'u1', content: 'Original');
         final updated = post.copyWith(content: 'Updated');
 
         expect(updated.content, 'Updated');
@@ -230,32 +222,16 @@ void main() {
 
     group('equality', () {
       test('two posts with same fields are equal', () {
-        const p1 = CommunityPost(
-          id: 'p1',
-          userId: 'u1',
-          content: 'Hello',
-        );
-        const p2 = CommunityPost(
-          id: 'p1',
-          userId: 'u1',
-          content: 'Hello',
-        );
+        const p1 = CommunityPost(id: 'p1', userId: 'u1', content: 'Hello');
+        const p2 = CommunityPost(id: 'p1', userId: 'u1', content: 'Hello');
 
         expect(p1, equals(p2));
         expect(p1.hashCode, equals(p2.hashCode));
       });
 
       test('two posts with different fields are not equal', () {
-        const p1 = CommunityPost(
-          id: 'p1',
-          userId: 'u1',
-          content: 'Hello',
-        );
-        const p2 = CommunityPost(
-          id: 'p2',
-          userId: 'u1',
-          content: 'Hello',
-        );
+        const p1 = CommunityPost(id: 'p1', userId: 'u1', content: 'Hello');
+        const p2 = CommunityPost(id: 'p2', userId: 'u1', content: 'Hello');
 
         expect(p1, isNot(equals(p2)));
       });
@@ -265,10 +241,7 @@ void main() {
   group('CommunityPostX extension', () {
     group('allImageUrls', () {
       test('returns empty list when no images', () {
-        const post = CommunityPost(
-          id: 'p1',
-          userId: 'u1',
-        );
+        const post = CommunityPost(id: 'p1', userId: 'u1');
 
         expect(post.allImageUrls, isEmpty);
       });

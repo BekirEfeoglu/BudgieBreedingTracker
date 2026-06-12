@@ -67,10 +67,7 @@ void main() {
       });
 
       test('rejects UUID without dashes', () {
-        expect(
-          isValidRouteId('550e8400e29b41d4a716446655440000'),
-          isFalse,
-        );
+        expect(isValidRouteId('550e8400e29b41d4a716446655440000'), isFalse);
       });
 
       test('rejects UUID with extra dashes', () {
@@ -91,10 +88,7 @@ void main() {
       });
 
       test('rejects UNION SELECT injection', () {
-        expect(
-          isValidRouteId("' UNION SELECT * FROM users --"),
-          isFalse,
-        );
+        expect(isValidRouteId("' UNION SELECT * FROM users --"), isFalse);
       });
 
       test('rejects double-dash comment injection', () {
@@ -223,11 +217,17 @@ void main() {
       });
 
       test('rejects null byte injection', () {
-        expect(isValidRouteId('550e8400\x00e29b-41d4-a716-446655440000'), isFalse);
+        expect(
+          isValidRouteId('550e8400\x00e29b-41d4-a716-446655440000'),
+          isFalse,
+        );
       });
 
       test('rejects newline injection', () {
-        expect(isValidRouteId('550e8400\ne29b-41d4-a716-446655440000'), isFalse);
+        expect(
+          isValidRouteId('550e8400\ne29b-41d4-a716-446655440000'),
+          isFalse,
+        );
       });
 
       test('rejects HTML/script tag', () {
@@ -410,10 +410,7 @@ void main() {
     });
 
     test('returns null for path traversal attempt', () {
-      expect(
-        validEditIdFromQuery({'editId': '../../../etc/passwd'}),
-        isNull,
-      );
+      expect(validEditIdFromQuery({'editId': '../../../etc/passwd'}), isNull);
     });
 
     test('returns null for SQL injection attempt', () {

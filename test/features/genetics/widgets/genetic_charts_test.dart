@@ -12,6 +12,7 @@ Widget _wrap(Widget child) {
     home: Scaffold(body: SingleChildScrollView(child: child)),
   );
 }
+
 final _singleItem = [
   const GeneticChartItem(label: 'Normal', value: 50.0, color: Colors.green),
 ];
@@ -38,21 +39,24 @@ void main() {
 
   group('MutationDistributionPieChart', () {
     testWidgets('renders without crashing with empty data', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const MutationDistributionPieChart(data: [])),
       );
       expect(find.byType(MutationDistributionPieChart), findsOneWidget);
     });
 
     testWidgets('shows no_data text when data is empty', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const MutationDistributionPieChart(data: [])),
       );
       expect(find.text(l10n('genetics.no_data')), findsOneWidget);
     });
 
     testWidgets('shows title when provided', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const MutationDistributionPieChart(data: [], title: 'My Chart Title'),
         ),
@@ -61,14 +65,16 @@ void main() {
     });
 
     testWidgets('renders PieChart when data is not empty', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(MutationDistributionPieChart(data: _singleItem)),
       );
       expect(find.byType(PieChart), findsOneWidget);
     });
 
     testWidgets('shows legend labels for each item', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(MutationDistributionPieChart(data: _multipleItems)),
       );
       expect(find.text('Normal'), findsAtLeastNWidgets(1));
@@ -77,7 +83,8 @@ void main() {
     });
 
     testWidgets('shows Card wrapper', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(MutationDistributionPieChart(data: _singleItem)),
       );
       expect(find.byType(Card), findsOneWidget);
@@ -87,14 +94,16 @@ void main() {
       final zeroData = [
         const GeneticChartItem(label: 'Zero', value: 0.0, color: Colors.grey),
       ];
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(MutationDistributionPieChart(data: zeroData)),
       );
       expect(find.text(l10n('genetics.no_data')), findsOneWidget);
     });
 
     testWidgets('shows RepaintBoundary for PieChart', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(MutationDistributionPieChart(data: _singleItem)),
       );
       expect(find.byType(RepaintBoundary), findsAtLeastNWidgets(1));
@@ -103,21 +112,24 @@ void main() {
 
   group('OffspringProbabilityBarChart', () {
     testWidgets('renders without crashing with empty data', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const OffspringProbabilityBarChart(data: [])),
       );
       expect(find.byType(OffspringProbabilityBarChart), findsOneWidget);
     });
 
     testWidgets('shows no_data text when data is empty', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const OffspringProbabilityBarChart(data: [])),
       );
       expect(find.text(l10n('genetics.no_data')), findsOneWidget);
     });
 
     testWidgets('shows title when provided', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const OffspringProbabilityBarChart(
             data: [],
@@ -129,28 +141,32 @@ void main() {
     });
 
     testWidgets('renders BarChart when data is not empty', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(OffspringProbabilityBarChart(data: _singleItem)),
       );
       expect(find.byType(BarChart), findsOneWidget);
     });
 
     testWidgets('shows Card wrapper', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(OffspringProbabilityBarChart(data: _singleItem)),
       );
       expect(find.byType(Card), findsOneWidget);
     });
 
     testWidgets('shows RepaintBoundary around BarChart', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(OffspringProbabilityBarChart(data: _singleItem)),
       );
       expect(find.byType(RepaintBoundary), findsAtLeastNWidgets(1));
     });
 
     testWidgets('renders multiple bar items without crashing', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(OffspringProbabilityBarChart(data: _multipleItems)),
       );
       expect(find.byType(BarChart), findsOneWidget);

@@ -73,10 +73,18 @@ void main() {
 
     test('sorts by trending when explore sort is trending', () {
       final posts = [
-        makePost('low', likeCount: 1, commentCount: 0,
-            createdAt: now.subtract(const Duration(hours: 1))),
-        makePost('high', likeCount: 50, commentCount: 10,
-            createdAt: now.subtract(const Duration(hours: 2))),
+        makePost(
+          'low',
+          likeCount: 1,
+          commentCount: 0,
+          createdAt: now.subtract(const Duration(hours: 1)),
+        ),
+        makePost(
+          'high',
+          likeCount: 50,
+          commentCount: 10,
+          createdAt: now.subtract(const Duration(hours: 2)),
+        ),
       ];
 
       final container = createContainer(posts: posts);
@@ -97,10 +105,18 @@ void main() {
 
     test('trending sort falls back to newest on tie', () {
       final posts = [
-        makePost('older', likeCount: 5, commentCount: 0,
-            createdAt: now.subtract(const Duration(hours: 2))),
-        makePost('newer', likeCount: 5, commentCount: 0,
-            createdAt: now.subtract(const Duration(hours: 1))),
+        makePost(
+          'older',
+          likeCount: 5,
+          commentCount: 0,
+          createdAt: now.subtract(const Duration(hours: 2)),
+        ),
+        makePost(
+          'newer',
+          likeCount: 5,
+          commentCount: 0,
+          createdAt: now.subtract(const Duration(hours: 1)),
+        ),
       ];
 
       final container = createContainer(posts: posts);
@@ -122,12 +138,19 @@ void main() {
   group('communityVisiblePostsProvider - following tab', () {
     test('shows only followed authors, excludes own posts', () {
       final posts = [
-        makePost('followed', userId: 'u1', isFollowingAuthor: true,
-            createdAt: now),
-        makePost('not-followed', userId: 'u2', isFollowingAuthor: false,
-            createdAt: now),
-        makePost('own', userId: 'me', isFollowingAuthor: false,
-            createdAt: now),
+        makePost(
+          'followed',
+          userId: 'u1',
+          isFollowingAuthor: true,
+          createdAt: now,
+        ),
+        makePost(
+          'not-followed',
+          userId: 'u2',
+          isFollowingAuthor: false,
+          createdAt: now,
+        ),
+        makePost('own', userId: 'me', isFollowingAuthor: false, createdAt: now),
       ];
 
       final container = createContainer(posts: posts);
@@ -144,12 +167,20 @@ void main() {
 
     test('always sorts by newest regardless of explore sort setting', () {
       final posts = [
-        makePost('p1', userId: 'u1', isFollowingAuthor: true,
-            likeCount: 100,
-            createdAt: now.subtract(const Duration(hours: 2))),
-        makePost('p2', userId: 'u1', isFollowingAuthor: true,
-            likeCount: 1,
-            createdAt: now.subtract(const Duration(hours: 1))),
+        makePost(
+          'p1',
+          userId: 'u1',
+          isFollowingAuthor: true,
+          likeCount: 100,
+          createdAt: now.subtract(const Duration(hours: 2)),
+        ),
+        makePost(
+          'p2',
+          userId: 'u1',
+          isFollowingAuthor: true,
+          likeCount: 1,
+          createdAt: now.subtract(const Duration(hours: 1)),
+        ),
       ];
 
       final container = createContainer(posts: posts);
@@ -173,10 +204,16 @@ void main() {
     test('shows only guide-type posts', () {
       final posts = [
         makePost('guide1', postType: CommunityPostType.guide, createdAt: now),
-        makePost('general', postType: CommunityPostType.general,
-            createdAt: now),
-        makePost('guide2', postType: CommunityPostType.guide,
-            createdAt: now.subtract(const Duration(hours: 1))),
+        makePost(
+          'general',
+          postType: CommunityPostType.general,
+          createdAt: now,
+        ),
+        makePost(
+          'guide2',
+          postType: CommunityPostType.guide,
+          createdAt: now.subtract(const Duration(hours: 1)),
+        ),
       ];
 
       final container = createContainer(posts: posts);
@@ -188,8 +225,10 @@ void main() {
       );
 
       expect(visible.length, 2);
-      expect(visible.every((p) => p.postType == CommunityPostType.guide),
-          isTrue);
+      expect(
+        visible.every((p) => p.postType == CommunityPostType.guide),
+        isTrue,
+      );
     });
   });
 
@@ -197,8 +236,11 @@ void main() {
     test('shows only question-type posts', () {
       final posts = [
         makePost('q1', postType: CommunityPostType.question, createdAt: now),
-        makePost('general', postType: CommunityPostType.general,
-            createdAt: now),
+        makePost(
+          'general',
+          postType: CommunityPostType.general,
+          createdAt: now,
+        ),
       ];
 
       final container = createContainer(posts: posts);
@@ -239,8 +281,7 @@ void main() {
     test('returns all posts when no users are blocked', () {
       final posts = [
         makePost('p1', createdAt: now),
-        makePost('p2',
-            createdAt: now.subtract(const Duration(hours: 1))),
+        makePost('p2', createdAt: now.subtract(const Duration(hours: 1))),
       ];
 
       final container = createContainer(posts: posts, blockedUserIds: []);
@@ -291,9 +332,7 @@ void main() {
     });
 
     test('returns empty list when all posts are from blocked users', () {
-      final posts = [
-        makePost('p1', userId: 'blocked', createdAt: now),
-      ];
+      final posts = [makePost('p1', userId: 'blocked', createdAt: now)];
 
       final container = createContainer(
         posts: posts,
@@ -312,9 +351,7 @@ void main() {
 
   group('communityVisiblePostsProvider - select optimization', () {
     test('does not recompute when only isLoading changes', () {
-      final posts = [
-        makePost('p1', createdAt: now),
-      ];
+      final posts = [makePost('p1', createdAt: now)];
 
       final container = ProviderContainer(
         overrides: [
@@ -410,7 +447,7 @@ class _StatefulFakeFeedNotifier extends CommunityFeedNotifier {
   final List<CommunityPost> _posts;
 
   _StatefulFakeFeedNotifier({List<CommunityPost>? posts})
-      : _posts = posts ?? const [];
+    : _posts = posts ?? const [];
 
   @override
   FeedState build() => FeedState(posts: _posts, isLoading: false);

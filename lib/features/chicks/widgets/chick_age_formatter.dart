@@ -9,8 +9,7 @@ String formatChickAge(
   bool short = false,
 }) {
   if (age.weeks > 0) {
-    final key =
-        short ? 'chicks.age_weeks_days_short' : 'chicks.age_weeks_days';
+    final key = short ? 'chicks.age_weeks_days_short' : 'chicks.age_weeks_days';
     return key.tr(args: [age.weeks.toString(), age.days.toString()]);
   }
   final key = short ? 'chicks.age_days_only_short' : 'chicks.age_days_only';

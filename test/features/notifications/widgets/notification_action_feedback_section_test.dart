@@ -17,24 +17,21 @@ ActionFeedback _makeFeedback({
   String? actionRoute,
   String? actionLabel,
   DateTime? createdAt,
-}) =>
-    ActionFeedback(
-      id: id,
-      message: message,
-      type: type,
-      createdAt: createdAt ?? DateTime.now(),
-      actionRoute: actionRoute,
-      actionLabel: actionLabel,
-    );
+}) => ActionFeedback(
+  id: id,
+  message: message,
+  type: type,
+  createdAt: createdAt ?? DateTime.now(),
+  actionRoute: actionRoute,
+  actionLabel: actionLabel,
+);
 
 void main() {
   setUp(() {
     ActionFeedbackService.resetForTesting();
   });
 
-  Widget buildSubject({
-    required List<ActionFeedback> feedbacks,
-  }) {
+  Widget buildSubject({required List<ActionFeedback> feedbacks}) {
     final router = GoRouter(
       initialLocation: '/',
       routes: [
@@ -53,22 +50,14 @@ void main() {
       ],
     );
 
-    return ProviderScope(
-      child: MaterialApp.router(routerConfig: router),
-    );
+    return ProviderScope(child: MaterialApp.router(routerConfig: router));
   }
 
   group('ActionFeedbacksSection', () {
     testWidgets('renders section title', (tester) async {
-      await pumpLocalizedApp(
-        tester,
-        buildSubject(feedbacks: []),
-      );
+      await pumpLocalizedApp(tester, buildSubject(feedbacks: []));
 
-      expect(
-        find.text(l10n('notifications.recent_actions')),
-        findsOneWidget,
-      );
+      expect(find.text(l10n('notifications.recent_actions')), findsOneWidget);
     });
 
     testWidgets('shows clear button when feedbacks are not empty', (
@@ -85,10 +74,7 @@ void main() {
     testWidgets('hides clear button when feedbacks list is empty', (
       tester,
     ) async {
-      await pumpLocalizedApp(
-        tester,
-        buildSubject(feedbacks: []),
-      );
+      await pumpLocalizedApp(tester, buildSubject(feedbacks: []));
 
       expect(find.byType(TextButton), findsNothing);
     });
@@ -124,9 +110,9 @@ void main() {
     testWidgets('displays success icon for success type', (tester) async {
       await pumpLocalizedApp(
         tester,
-        buildSubject(feedbacks: [
-          _makeFeedback(type: ActionFeedbackType.success),
-        ]),
+        buildSubject(
+          feedbacks: [_makeFeedback(type: ActionFeedbackType.success)],
+        ),
       );
 
       expect(find.byIcon(LucideIcons.checkCircle2), findsOneWidget);
@@ -135,9 +121,9 @@ void main() {
     testWidgets('displays alert icon for error type', (tester) async {
       await pumpLocalizedApp(
         tester,
-        buildSubject(feedbacks: [
-          _makeFeedback(type: ActionFeedbackType.error),
-        ]),
+        buildSubject(
+          feedbacks: [_makeFeedback(type: ActionFeedbackType.error)],
+        ),
       );
 
       expect(find.byIcon(LucideIcons.alertCircle), findsOneWidget);
@@ -146,9 +132,7 @@ void main() {
     testWidgets('displays info icon for info type', (tester) async {
       await pumpLocalizedApp(
         tester,
-        buildSubject(feedbacks: [
-          _makeFeedback(type: ActionFeedbackType.info),
-        ]),
+        buildSubject(feedbacks: [_makeFeedback(type: ActionFeedbackType.info)]),
       );
 
       expect(find.byIcon(LucideIcons.info), findsOneWidget);
@@ -157,12 +141,11 @@ void main() {
     testWidgets('shows action label when actionRoute is set', (tester) async {
       await pumpLocalizedApp(
         tester,
-        buildSubject(feedbacks: [
-          _makeFeedback(
-            actionRoute: '/birds/123',
-            actionLabel: 'View bird',
-          ),
-        ]),
+        buildSubject(
+          feedbacks: [
+            _makeFeedback(actionRoute: '/birds/123', actionLabel: 'View bird'),
+          ],
+        ),
       );
 
       expect(find.text('View bird'), findsOneWidget);
@@ -181,15 +164,10 @@ void main() {
     testWidgets('shows time ago text', (tester) async {
       await pumpLocalizedApp(
         tester,
-        buildSubject(feedbacks: [
-          _makeFeedback(createdAt: DateTime.now()),
-        ]),
+        buildSubject(feedbacks: [_makeFeedback(createdAt: DateTime.now())]),
       );
 
-      expect(
-        find.text(l10n('common.just_now')),
-        findsOneWidget,
-      );
+      expect(find.text(l10n('common.just_now')), findsOneWidget);
     });
   });
 }

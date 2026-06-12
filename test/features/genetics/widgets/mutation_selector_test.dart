@@ -35,7 +35,8 @@ void _suppressOverflowErrors() {
 void main() {
   group('MutationSelector', () {
     testWidgets('renders without crashing with empty genotype', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           MutationSelector(
             label: 'genetics.father_mutations',
@@ -49,7 +50,8 @@ void main() {
     });
 
     testWidgets('shows label text', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           MutationSelector(
             label: 'genetics.father_mutations',
@@ -63,7 +65,8 @@ void main() {
     });
 
     testWidgets('shows the provided icon', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           MutationSelector(
             label: 'genetics.mother_mutations',
@@ -76,9 +79,11 @@ void main() {
       expect(find.byIcon(Icons.female), findsOneWidget);
     });
 
-    testWidgets('does not show mutation count badge when genotype is empty',
-        (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('does not show mutation count badge when genotype is empty', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           MutationSelector(
             label: 'Test',
@@ -93,18 +98,17 @@ void main() {
       expect(find.text('0'), findsNothing);
     });
 
-    testWidgets('shows mutation count badge when genotype has mutations',
-        (tester) async {
+    testWidgets('shows mutation count badge when genotype has mutations', (
+      tester,
+    ) async {
       _suppressOverflowErrors();
       final genotype = ParentGenotype(
-        mutations: {
-          'blue': AlleleState.visual,
-          'opaline': AlleleState.carrier,
-        },
+        mutations: {'blue': AlleleState.visual, 'opaline': AlleleState.carrier},
         gender: BirdGender.male,
       );
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           MutationSelector(
             label: 'Test',
@@ -117,9 +121,11 @@ void main() {
       expect(find.text('2'), findsOneWidget);
     });
 
-    testWidgets('shows ExpansionTile for each mutation category',
-        (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('shows ExpansionTile for each mutation category', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           MutationSelector(
             label: 'Test',
@@ -130,40 +136,41 @@ void main() {
         ),
       );
       final categories = MutationDatabase.getCategories();
-      expect(
-        find.byType(ExpansionTile),
-        findsNWidgets(categories.length),
-      );
+      expect(find.byType(ExpansionTile), findsNWidgets(categories.length));
     });
 
-    testWidgets('ExpansionTile is initially expanded when category has selections',
-        (tester) async {
-      _suppressOverflowErrors();
-      // Use a real mutation from the database
-      final blueMutation = MutationDatabase.getById('blue');
-      if (blueMutation == null) return; // Skip if mutation not found
+    testWidgets(
+      'ExpansionTile is initially expanded when category has selections',
+      (tester) async {
+        _suppressOverflowErrors();
+        // Use a real mutation from the database
+        final blueMutation = MutationDatabase.getById('blue');
+        if (blueMutation == null) return; // Skip if mutation not found
 
-      final genotype = ParentGenotype(
-        mutations: {'blue': AlleleState.visual},
-        gender: BirdGender.male,
-      );
+        final genotype = ParentGenotype(
+          mutations: {'blue': AlleleState.visual},
+          gender: BirdGender.male,
+        );
 
-      await pumpLocalizedApp(tester,
-        _wrap(
-          MutationSelector(
-            label: 'Test',
-            icon: const Icon(Icons.male),
-            genotype: genotype,
-            onGenotypeChanged: (_) {},
+        await pumpLocalizedApp(
+          tester,
+          _wrap(
+            MutationSelector(
+              label: 'Test',
+              icon: const Icon(Icons.male),
+              genotype: genotype,
+              onGenotypeChanged: (_) {},
+            ),
           ),
-        ),
-      );
-      // The ExpansionTile that contains 'blue' should be expanded
-      expect(find.byType(ExpansionTile), findsAtLeastNWidgets(1));
-    });
+        );
+        // The ExpansionTile that contains 'blue' should be expanded
+        expect(find.byType(ExpansionTile), findsAtLeastNWidgets(1));
+      },
+    );
 
     testWidgets('renders Column as root layout', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           MutationSelector(
             label: 'Test',
@@ -177,7 +184,8 @@ void main() {
     });
 
     testWidgets('wraps icon in IconTheme', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           MutationSelector(
             label: 'Test',
@@ -190,8 +198,7 @@ void main() {
       expect(find.byType(IconTheme), findsAtLeastNWidgets(1));
     });
 
-    testWidgets('shows selected count badge in category title',
-        (tester) async {
+    testWidgets('shows selected count badge in category title', (tester) async {
       _suppressOverflowErrors();
       // Get mutations from a known category
       final categories = MutationDatabase.getCategories();
@@ -206,7 +213,8 @@ void main() {
         gender: BirdGender.male,
       );
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           MutationSelector(
             label: 'Test',
@@ -221,7 +229,8 @@ void main() {
     });
 
     testWidgets('renders for female gender', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           MutationSelector(
             label: 'genetics.mother_mutations',

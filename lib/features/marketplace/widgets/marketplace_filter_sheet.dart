@@ -58,8 +58,9 @@ class _MarketplaceFilterSheetState
       min: parsePrice(minText),
       max: parsePrice(maxText),
     );
-    ref.read(marketplaceCityFilterProvider.notifier).state =
-        city.isNotEmpty ? city : null;
+    ref.read(marketplaceCityFilterProvider.notifier).state = city.isNotEmpty
+        ? city
+        : null;
     ref.read(marketplaceGenderFilterProvider.notifier).state = _selectedGender;
 
     if (!mounted) return;
@@ -67,8 +68,10 @@ class _MarketplaceFilterSheetState
   }
 
   void _clear() {
-    ref.read(marketplacePriceRangeProvider.notifier).state =
-        (min: null, max: null);
+    ref.read(marketplacePriceRangeProvider.notifier).state = (
+      min: null,
+      max: null,
+    );
     ref.read(marketplaceCityFilterProvider.notifier).state = null;
     ref.read(marketplaceGenderFilterProvider.notifier).state = null;
 

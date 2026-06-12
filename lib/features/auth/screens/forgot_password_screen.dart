@@ -46,7 +46,11 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       AppLogger.warning('[ForgotPassword] Reset failed: ${e.message}');
       // Always show success to prevent user enumeration.
       // Attacker should not learn whether an email is registered.
-      if (mounted) setState(() { _sent = true; _loading = false; });
+      if (mounted)
+        setState(() {
+          _sent = true;
+          _loading = false;
+        });
       return;
     } catch (e, st) {
       // Non-Auth exceptions (Socket, Handshake, Timeout). Still show the
@@ -59,7 +63,11 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         stackTrace: st,
         withScope: (scope) => scope.setTag('feature', 'auth.forgot_password'),
       );
-      if (mounted) setState(() { _sent = true; _loading = false; });
+      if (mounted)
+        setState(() {
+          _sent = true;
+          _loading = false;
+        });
       return;
     } finally {
       if (mounted) setState(() => _loading = false);

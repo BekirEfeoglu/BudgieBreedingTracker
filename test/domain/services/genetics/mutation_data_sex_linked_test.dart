@@ -10,8 +10,9 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   const mutations = MutationDataSexLinked.sexLinkedAndRareMutations;
 
-  Map<String, BudgieMutationRecord> mutationMap() =>
-      {for (final m in mutations) m.id: m};
+  Map<String, BudgieMutationRecord> mutationMap() => {
+    for (final m in mutations) m.id: m,
+  };
 
   group('MutationDataSexLinked - record count and presence', () {
     test('contains expected number of mutations', () {
@@ -22,26 +23,29 @@ void main() {
     test('all expected mutation IDs are present', () {
       final ids = mutations.map((m) => m.id).toSet();
 
-      expect(ids, containsAll([
-        // Sex-linked recessive
-        'pallid',
-        'ino',
-        'opaline',
-        'pearly',
-        'cinnamon',
-        'slate',
-        // Rare / newer
-        'fallow_english',
-        'fallow_german',
-        'saddleback',
-        // Crested
-        'crested_tufted',
-        'crested_half_circular',
-        'crested_full_circular',
-        // Clearbody
-        'texas_clearbody',
-        'dominant_clearbody',
-      ]));
+      expect(
+        ids,
+        containsAll([
+          // Sex-linked recessive
+          'pallid',
+          'ino',
+          'opaline',
+          'pearly',
+          'cinnamon',
+          'slate',
+          // Rare / newer
+          'fallow_english',
+          'fallow_german',
+          'saddleback',
+          // Crested
+          'crested_tufted',
+          'crested_half_circular',
+          'crested_full_circular',
+          // Clearbody
+          'texas_clearbody',
+          'dominant_clearbody',
+        ]),
+      );
     });
 
     test('all IDs are unique', () {
@@ -51,7 +55,11 @@ void main() {
 
     test('all names are unique', () {
       final names = mutations.map((m) => m.name).toList();
-      expect(names.toSet().length, names.length, reason: 'Duplicate names detected');
+      expect(
+        names.toSet().length,
+        names.length,
+        reason: 'Duplicate names detected',
+      );
     });
   });
 
@@ -60,8 +68,11 @@ void main() {
       for (final m in mutations) {
         expect(m.id, isNotEmpty, reason: '${m.id} ID');
         expect(m.name, isNotEmpty, reason: '${m.id} name');
-        expect(m.localizationKey, startsWith('genetics.mutation_'),
-            reason: '${m.id} localizationKey');
+        expect(
+          m.localizationKey,
+          startsWith('genetics.mutation_'),
+          reason: '${m.id} localizationKey',
+        );
         expect(m.description, isNotEmpty, reason: '${m.id} description');
         expect(m.alleleSymbol, isNotEmpty, reason: '${m.id} alleleSymbol');
         expect(m.alleles, hasLength(2), reason: '${m.id} alleles');
@@ -72,8 +83,11 @@ void main() {
     test('IDs use snake_case convention', () {
       final snakeCase = RegExp(r'^[a-z][a-z0-9_]*$');
       for (final m in mutations) {
-        expect(snakeCase.hasMatch(m.id), isTrue,
-            reason: '${m.id} should be snake_case');
+        expect(
+          snakeCase.hasMatch(m.id),
+          isTrue,
+          reason: '${m.id} should be snake_case',
+        );
       }
     });
 
@@ -101,24 +115,32 @@ void main() {
           .map((m) => m.id)
           .toSet();
 
-      expect(slr, containsAll([
-        'pallid',
-        'ino',
-        'opaline',
-        'pearly',
-        'cinnamon',
-        'slate',
-        'texas_clearbody',
-      ]));
+      expect(
+        slr,
+        containsAll([
+          'pallid',
+          'ino',
+          'opaline',
+          'pearly',
+          'cinnamon',
+          'slate',
+          'texas_clearbody',
+        ]),
+      );
     });
 
     test('sex-linked mutations report isSexLinked true', () {
-      final slrMutations = mutations
-          .where((m) => m.inheritanceType == InheritanceType.sexLinkedRecessive);
+      final slrMutations = mutations.where(
+        (m) => m.inheritanceType == InheritanceType.sexLinkedRecessive,
+      );
 
       for (final m in slrMutations) {
         expect(m.isSexLinked, isTrue, reason: '${m.id} should be sex-linked');
-        expect(m.isAutosomal, isFalse, reason: '${m.id} should not be autosomal');
+        expect(
+          m.isAutosomal,
+          isFalse,
+          reason: '${m.id} should not be autosomal',
+        );
       }
     });
   });
@@ -129,8 +151,11 @@ void main() {
 
       for (final id in ['fallow_english', 'fallow_german', 'saddleback']) {
         final m = map[id]!;
-        expect(m.inheritanceType, InheritanceType.autosomalRecessive,
-            reason: '$id should be autosomal recessive');
+        expect(
+          m.inheritanceType,
+          InheritanceType.autosomalRecessive,
+          reason: '$id should be autosomal recessive',
+        );
         expect(m.isAutosomal, isTrue, reason: '$id should be autosomal');
       }
     });
@@ -142,8 +167,11 @@ void main() {
 
       expect(crested, hasLength(3));
       for (final m in crested) {
-        expect(m.inheritanceType, InheritanceType.autosomalDominant,
-            reason: '${m.id} should be autosomal dominant');
+        expect(
+          m.inheritanceType,
+          InheritanceType.autosomalDominant,
+          reason: '${m.id} should be autosomal dominant',
+        );
         expect(m.dominance, Dominance.dominant, reason: m.id);
         expect(m.isAutosomal, isTrue, reason: m.id);
       }
@@ -299,25 +327,37 @@ void main() {
       });
     });
 
-    test('crested locus has descending dominance ranks (full > half > tufted)', () {
-      final crestedLocus = mutations
-          .where((m) => m.locusId == 'crested')
-          .toList();
+    test(
+      'crested locus has descending dominance ranks (full > half > tufted)',
+      () {
+        final crestedLocus = mutations
+            .where((m) => m.locusId == 'crested')
+            .toList();
 
-      final ranks = {for (final m in crestedLocus) m.id: m.dominanceRank};
+        final ranks = {for (final m in crestedLocus) m.id: m.dominanceRank};
 
-      // Full circular has lowest rank (1), half circular (2), tufted (3)
-      // Lower rank = more dominant in this series
-      expect(ranks['crested_full_circular'], lessThan(ranks['crested_half_circular']!));
-      expect(ranks['crested_half_circular'], lessThan(ranks['crested_tufted']!));
-    });
+        // Full circular has lowest rank (1), half circular (2), tufted (3)
+        // Lower rank = more dominant in this series
+        expect(
+          ranks['crested_full_circular'],
+          lessThan(ranks['crested_half_circular']!),
+        );
+        expect(
+          ranks['crested_half_circular'],
+          lessThan(ranks['crested_tufted']!),
+        );
+      },
+    );
 
     test('mutations with locusId have positive dominanceRank', () {
       final withLocus = mutations.where((m) => m.locusId != null);
 
       for (final m in withLocus) {
-        expect(m.dominanceRank, greaterThan(0),
-            reason: '${m.id} with locusId should have positive dominanceRank');
+        expect(
+          m.dominanceRank,
+          greaterThan(0),
+          reason: '${m.id} with locusId should have positive dominanceRank',
+        );
       }
     });
 
@@ -325,8 +365,11 @@ void main() {
       final noLocus = mutations.where((m) => m.locusId == null);
 
       for (final m in noLocus) {
-        expect(m.dominanceRank, 0,
-            reason: '${m.id} without locusId should have dominanceRank 0');
+        expect(
+          m.dominanceRank,
+          0,
+          reason: '${m.id} without locusId should have dominanceRank 0',
+        );
       }
     });
   });
@@ -335,14 +378,17 @@ void main() {
     test('contains expected categories', () {
       final categories = mutations.map((m) => m.category).toSet();
 
-      expect(categories, containsAll([
-        'Ino',
-        'Pattern',
-        'Melanin Modifier',
-        'Fallow',
-        'Feather Structure',
-        'Clearbody',
-      ]));
+      expect(
+        categories,
+        containsAll([
+          'Ino',
+          'Pattern',
+          'Melanin Modifier',
+          'Fallow',
+          'Feather Structure',
+          'Clearbody',
+        ]),
+      );
     });
 
     test('ino category has ino, pallid, pearly', () {
@@ -360,11 +406,14 @@ void main() {
           .map((m) => m.id)
           .toSet();
 
-      expect(featherStructure, containsAll([
-        'crested_tufted',
-        'crested_half_circular',
-        'crested_full_circular',
-      ]));
+      expect(
+        featherStructure,
+        containsAll([
+          'crested_tufted',
+          'crested_half_circular',
+          'crested_full_circular',
+        ]),
+      );
     });
   });
 }

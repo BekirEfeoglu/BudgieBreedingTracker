@@ -56,9 +56,7 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 
-    testWidgets('elapsed counter Text appears while analyzing', (
-      tester,
-    ) async {
+    testWidgets('elapsed counter Text appears while analyzing', (tester) async {
       await pumpWidgetSimple(
         tester,
         const AiProgressPhases(phase: AiAnalysisPhase.analyzing),
@@ -67,8 +65,9 @@ void main() {
       final elapsedFinder = find.byWidgetPredicate(
         (w) =>
             w is Text &&
-            (w.style?.fontFeatures ?? const <FontFeature>[])
-                .contains(const FontFeature.tabularFigures()),
+            (w.style?.fontFeatures ?? const <FontFeature>[]).contains(
+              const FontFeature.tabularFigures(),
+            ),
       );
 
       expect(elapsedFinder, findsNothing, reason: 'no label before 1s tick');
@@ -103,8 +102,9 @@ void main() {
       final elapsedFinder = find.byWidgetPredicate(
         (w) =>
             w is Text &&
-            (w.style?.fontFeatures ?? const <FontFeature>[])
-                .contains(const FontFeature.tabularFigures()),
+            (w.style?.fontFeatures ?? const <FontFeature>[]).contains(
+              const FontFeature.tabularFigures(),
+            ),
       );
       expect(
         elapsedFinder,

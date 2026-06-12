@@ -122,9 +122,7 @@ void main() {
       expect(find.text('1'), findsAtLeastNWidgets(1));
     });
 
-    testWidgets('badge accumulates rapid feedbacks correctly', (
-      tester,
-    ) async {
+    testWidgets('badge accumulates rapid feedbacks correctly', (tester) async {
       await tester.pumpWidget(buildSubject());
       await tester.pump();
 

@@ -4,17 +4,32 @@ import 'package:budgie_breeding_tracker/data/models/user_badge_model.dart';
 void main() {
   group('UserBadge', () {
     test('progressPercent returns correct ratio', () {
-      const badge = UserBadge(id: 'ub1', userId: 'u1', badgeId: 'b1', progress: 5);
+      const badge = UserBadge(
+        id: 'ub1',
+        userId: 'u1',
+        badgeId: 'b1',
+        progress: 5,
+      );
       expect(badge.progressPercent(10), 0.5);
     });
 
     test('progressPercent clamps to 1.0', () {
-      const badge = UserBadge(id: 'ub1', userId: 'u1', badgeId: 'b1', progress: 15);
+      const badge = UserBadge(
+        id: 'ub1',
+        userId: 'u1',
+        badgeId: 'b1',
+        progress: 15,
+      );
       expect(badge.progressPercent(10), 1.0);
     });
 
     test('progressPercent returns 0 for zero requirement', () {
-      const badge = UserBadge(id: 'ub1', userId: 'u1', badgeId: 'b1', progress: 5);
+      const badge = UserBadge(
+        id: 'ub1',
+        userId: 'u1',
+        badgeId: 'b1',
+        progress: 5,
+      );
       expect(badge.progressPercent(0), 0);
     });
 

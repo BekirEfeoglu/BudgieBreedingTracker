@@ -7,9 +7,16 @@ void main() {
   group('ReverseCalculationResult', () {
     test('has correct fields', () {
       final r = ReverseCalculationResult(
-        father: ParentGenotype(gender: BirdGender.male, mutations: {'blue': AlleleState.visual}),
-        mother: ParentGenotype(gender: BirdGender.female, mutations: {'blue': AlleleState.carrier}),
-        probabilityMale: 0.5, probabilityFemale: 0.5,
+        father: ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {'blue': AlleleState.visual},
+        ),
+        mother: ParentGenotype(
+          gender: BirdGender.female,
+          mutations: {'blue': AlleleState.carrier},
+        ),
+        probabilityMale: 0.5,
+        probabilityFemale: 0.5,
       );
       expect(r.father.gender, BirdGender.male);
       expect(r.mother.gender, BirdGender.female);
@@ -21,7 +28,8 @@ void main() {
       const r = ReverseCalculationResult(
         father: ParentGenotype.empty(gender: BirdGender.male),
         mother: ParentGenotype.empty(gender: BirdGender.female),
-        probabilityMale: 0.8, probabilityFemale: 0.4,
+        probabilityMale: 0.8,
+        probabilityFemale: 0.4,
       );
       expect(r.probabilityAny, closeTo(0.6, 1e-12));
       expect(r.maxProbability, 0.8);
@@ -29,9 +37,16 @@ void main() {
 
     test('father and mother genotypes are accessible', () {
       final r = ReverseCalculationResult(
-        father: ParentGenotype(gender: BirdGender.male, mutations: {'ino': AlleleState.carrier, 'blue': AlleleState.visual}),
-        mother: ParentGenotype(gender: BirdGender.female, mutations: {'ino': AlleleState.visual}),
-        probabilityMale: 0.25, probabilityFemale: 0.5,
+        father: ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {'ino': AlleleState.carrier, 'blue': AlleleState.visual},
+        ),
+        mother: ParentGenotype(
+          gender: BirdGender.female,
+          mutations: {'ino': AlleleState.visual},
+        ),
+        probabilityMale: 0.25,
+        probabilityFemale: 0.5,
       );
       expect(r.father.mutations, hasLength(2));
       expect(r.mother.hasVisual('ino'), isTrue);
@@ -42,7 +57,8 @@ void main() {
       const r = ReverseCalculationResult(
         father: ParentGenotype.empty(gender: BirdGender.male),
         mother: ParentGenotype.empty(gender: BirdGender.female),
-        probabilityMale: 0.0, probabilityFemale: 1.0,
+        probabilityMale: 0.0,
+        probabilityFemale: 1.0,
       );
       expect(r.maxProbability, 1.0);
     });
@@ -51,7 +67,8 @@ void main() {
       const r = ReverseCalculationResult(
         father: ParentGenotype.empty(gender: BirdGender.male),
         mother: ParentGenotype.empty(gender: BirdGender.female),
-        probabilityMale: 0.0, probabilityFemale: 0.0,
+        probabilityMale: 0.0,
+        probabilityFemale: 0.0,
       );
       expect(r.father.isEmpty, isTrue);
       expect(r.mother.isEmpty, isTrue);
@@ -90,7 +107,8 @@ void main() {
       const lpr = LocusPairResult(
         fatherGenotype: {'blue': AlleleState.visual},
         motherGenotype: {'blue': AlleleState.carrier},
-        probabilityMale: 0.5, probabilityFemale: 0.5,
+        probabilityMale: 0.5,
+        probabilityFemale: 0.5,
       );
       expect(lpr.fatherGenotype['blue'], AlleleState.visual);
       expect(lpr.motherGenotype['blue'], AlleleState.carrier);

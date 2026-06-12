@@ -64,29 +64,30 @@ final birdListViewModeProvider =
 /// Without autoDispose the old entries linger indefinitely, leaking memory
 /// proportional to mutation frequency. autoDispose evicts the stale entries
 /// as soon as the screen rebuilds with the new list.
-final filteredBirdsProvider = Provider.autoDispose.family<List<Bird>, List<Bird>>((
-  ref,
-  birds,
-) {
-  final filter = ref.watch(birdFilterProvider);
-  return switch (filter) {
-    BirdFilter.all => birds,
-    BirdFilter.male => birds.where((b) => b.gender == BirdGender.male).toList(),
-    BirdFilter.female =>
-      birds.where((b) => b.gender == BirdGender.female).toList(),
-    BirdFilter.alive =>
-      birds.where((b) => b.status == BirdStatus.alive).toList(),
-    BirdFilter.dead => birds.where((b) => b.status == BirdStatus.dead).toList(),
-    BirdFilter.sold => birds.where((b) => b.status == BirdStatus.sold).toList(),
-    BirdFilter.gifted =>
-      birds.where((b) => b.status == BirdStatus.gifted).toList(),
-  };
-});
+final filteredBirdsProvider = Provider.autoDispose
+    .family<List<Bird>, List<Bird>>((ref, birds) {
+      final filter = ref.watch(birdFilterProvider);
+      return switch (filter) {
+        BirdFilter.all => birds,
+        BirdFilter.male =>
+          birds.where((b) => b.gender == BirdGender.male).toList(),
+        BirdFilter.female =>
+          birds.where((b) => b.gender == BirdGender.female).toList(),
+        BirdFilter.alive =>
+          birds.where((b) => b.status == BirdStatus.alive).toList(),
+        BirdFilter.dead =>
+          birds.where((b) => b.status == BirdStatus.dead).toList(),
+        BirdFilter.sold =>
+          birds.where((b) => b.status == BirdStatus.sold).toList(),
+        BirdFilter.gifted =>
+          birds.where((b) => b.status == BirdStatus.gifted).toList(),
+      };
+    });
 
 /// Searched and filtered birds (applies search on top of filter).
 /// autoDispose: see [filteredBirdsProvider] — same identity-keyed leak.
-final searchedAndFilteredBirdsProvider =
-    Provider.autoDispose.family<List<Bird>, List<Bird>>((ref, birds) {
+final searchedAndFilteredBirdsProvider = Provider.autoDispose
+    .family<List<Bird>, List<Bird>>((ref, birds) {
       final filtered = ref.watch(filteredBirdsProvider(birds));
       final query = ref.watch(
         birdSearchQueryProvider.select((value) => value.toLowerCase().trim()),
@@ -106,62 +107,60 @@ final searchedAndFilteredBirdsProvider =
 
 /// Sorted, searched and filtered birds (final display list).
 /// autoDispose: see [filteredBirdsProvider] — same identity-keyed leak.
-final sortedAndFilteredBirdsProvider = Provider.autoDispose.family<List<Bird>, List<Bird>>((
-  ref,
-  birds,
-) {
-  final searched = ref.watch(searchedAndFilteredBirdsProvider(birds));
-  final sort = ref.watch(birdSortProvider);
+final sortedAndFilteredBirdsProvider = Provider.autoDispose
+    .family<List<Bird>, List<Bird>>((ref, birds) {
+      final searched = ref.watch(searchedAndFilteredBirdsProvider(birds));
+      final sort = ref.watch(birdSortProvider);
 
-  final sorted = List<Bird>.of(searched);
-  switch (sort) {
-    case BirdSort.nameAsc:
-      sorted.sort((a, b) => _naturalCompare(a.name, b.name));
-    case BirdSort.nameDesc:
-      sorted.sort((a, b) => _naturalCompare(b.name, a.name));
-    case BirdSort.ageNewest:
-      sorted.sort(
-        (a, b) => (b.birthDate ?? DateTime(1900)).compareTo(
-          a.birthDate ?? DateTime(1900),
-        ),
-      );
-    case BirdSort.ageOldest:
-      sorted.sort(
-        (a, b) => (a.birthDate ?? DateTime(1900)).compareTo(
-          b.birthDate ?? DateTime(1900),
-        ),
-      );
-    case BirdSort.dateNewest:
-      sorted.sort(
-        (a, b) => (b.createdAt ?? DateTime(1900)).compareTo(
-          a.createdAt ?? DateTime(1900),
-        ),
-      );
-    case BirdSort.dateOldest:
-      sorted.sort(
-        (a, b) => (a.createdAt ?? DateTime(1900)).compareTo(
-          b.createdAt ?? DateTime(1900),
-        ),
-      );
-    case BirdSort.ringAsc:
-      sorted.sort(
-        (a, b) => _compareOptionalNatural(
-          a.ringNumber,
-          b.ringNumber,
-          descending: false,
-        ),
-      );
-    case BirdSort.ringDesc:
-      sorted.sort(
-        (a, b) => _compareOptionalNatural(
-          a.ringNumber,
-          b.ringNumber,
-          descending: true,
-        ),
-      );
-  }
-  return sorted;
-});
+      final sorted = List<Bird>.of(searched);
+      switch (sort) {
+        case BirdSort.nameAsc:
+          sorted.sort((a, b) => _naturalCompare(a.name, b.name));
+        case BirdSort.nameDesc:
+          sorted.sort((a, b) => _naturalCompare(b.name, a.name));
+        case BirdSort.ageNewest:
+          sorted.sort(
+            (a, b) => (b.birthDate ?? DateTime(1900)).compareTo(
+              a.birthDate ?? DateTime(1900),
+            ),
+          );
+        case BirdSort.ageOldest:
+          sorted.sort(
+            (a, b) => (a.birthDate ?? DateTime(1900)).compareTo(
+              b.birthDate ?? DateTime(1900),
+            ),
+          );
+        case BirdSort.dateNewest:
+          sorted.sort(
+            (a, b) => (b.createdAt ?? DateTime(1900)).compareTo(
+              a.createdAt ?? DateTime(1900),
+            ),
+          );
+        case BirdSort.dateOldest:
+          sorted.sort(
+            (a, b) => (a.createdAt ?? DateTime(1900)).compareTo(
+              b.createdAt ?? DateTime(1900),
+            ),
+          );
+        case BirdSort.ringAsc:
+          sorted.sort(
+            (a, b) => _compareOptionalNatural(
+              a.ringNumber,
+              b.ringNumber,
+              descending: false,
+            ),
+          );
+        case BirdSort.ringDesc:
+          sorted.sort(
+            (a, b) => _compareOptionalNatural(
+              a.ringNumber,
+              b.ringNumber,
+              descending: true,
+            ),
+          );
+      }
+      return sorted;
+    });
 
 /// Read-only cage occupancy summary assembled from current bird records.
 class CageSummary {

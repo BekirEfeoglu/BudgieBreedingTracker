@@ -4,7 +4,8 @@ import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/constants/genetics_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
-import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart'
+    as date_utils;
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
@@ -312,9 +313,7 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
             incubationId: incubation.id,
             startDate: startDate,
             label: 'breeding.pair_label'.tr(
-              args: [
-                pairId.length <= 6 ? pairId : pairId.substring(0, 6),
-              ],
+              args: [pairId.length <= 6 ? pairId : pairId.substring(0, 6)],
             ),
             species: species,
             settings: settings,
@@ -324,9 +323,7 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
             await scheduler.scheduleEggTurningReminders(
               eggId: egg.id,
               startDate: egg.layDate,
-              eggLabel: 'eggs.egg_label'.tr(
-                args: ['${egg.eggNumber ?? 1}'],
-              ),
+              eggLabel: 'eggs.egg_label'.tr(args: ['${egg.eggNumber ?? 1}']),
               species: species,
               settings: settings,
             );

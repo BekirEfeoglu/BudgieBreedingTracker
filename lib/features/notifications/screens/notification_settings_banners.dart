@@ -28,10 +28,7 @@ final _batteryWarningDismissedProvider =
 /// Shown at the top of notification settings to advise disabling
 /// battery optimization for reliable notification delivery.
 class _BatteryOptimizationBanner extends ConsumerStatefulWidget {
-  const _BatteryOptimizationBanner({
-    required this.isDismissed,
-    this.onDismiss,
-  });
+  const _BatteryOptimizationBanner({required this.isDismissed, this.onDismiss});
 
   final bool isDismissed;
   final VoidCallback? onDismiss;
@@ -64,11 +61,13 @@ class _BatteryOptimizationBannerState
   String _oemBatterySteps(String manufacturer) {
     return switch (manufacturer) {
       'samsung' => 'notifications.battery_steps_samsung'.tr(),
-      'xiaomi' || 'redmi' || 'poco' => 'notifications.battery_steps_xiaomi'
-          .tr(),
+      'xiaomi' ||
+      'redmi' ||
+      'poco' => 'notifications.battery_steps_xiaomi'.tr(),
       'huawei' || 'honor' => 'notifications.battery_steps_huawei'.tr(),
-      'oppo' || 'realme' || 'oneplus' => 'notifications.battery_steps_oppo'
-          .tr(),
+      'oppo' ||
+      'realme' ||
+      'oneplus' => 'notifications.battery_steps_oppo'.tr(),
       'vivo' || 'iqoo' => 'notifications.battery_steps_vivo'.tr(),
       _ => '',
     };
@@ -125,8 +124,9 @@ class _BatteryOptimizationBannerState
             Text(
               _oemSteps,
               style: theme.textTheme.bodySmall?.copyWith(
-                color:
-                    theme.colorScheme.onErrorContainer.withValues(alpha: 0.8),
+                color: theme.colorScheme.onErrorContainer.withValues(
+                  alpha: 0.8,
+                ),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -137,9 +137,7 @@ class _BatteryOptimizationBannerState
             children: [
               TextButton(
                 onPressed: widget.onDismiss,
-                child: Text(
-                  'notifications.battery_optimization_dismiss'.tr(),
-                ),
+                child: Text('notifications.battery_optimization_dismiss'.tr()),
               ),
               const SizedBox(width: AppSpacing.sm),
               FilledButton.tonalIcon(

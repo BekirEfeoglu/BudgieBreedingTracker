@@ -5,22 +5,14 @@ extension _BudgiePainterEffects on BudgiePainter {
     final shadowCenter = Offset(w * 0.42, h * 0.96);
     // Outer soft shadow
     canvas.drawOval(
-      Rect.fromCenter(
-        center: shadowCenter,
-        width: w * 0.40,
-        height: h * 0.045,
-      ),
+      Rect.fromCenter(center: shadowCenter, width: w * 0.40, height: h * 0.045),
       Paint()
         ..color = const Color(0x10000000)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
     );
     // Inner dense shadow
     canvas.drawOval(
-      Rect.fromCenter(
-        center: shadowCenter,
-        width: w * 0.28,
-        height: h * 0.025,
-      ),
+      Rect.fromCenter(center: shadowCenter, width: w * 0.28, height: h * 0.025),
       Paint()..color = const Color(0x22000000),
     );
   }

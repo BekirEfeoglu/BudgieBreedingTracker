@@ -12,9 +12,7 @@ void main() {
 
   Widget buildSubject({required AsyncValue<void> initState}) {
     return ProviderScope(
-      overrides: [
-        appInitializationProvider.overrideWithValue(initState),
-      ],
+      overrides: [appInitializationProvider.overrideWithValue(initState)],
       child: const MaterialApp(home: SplashScreen()),
     );
   }
@@ -131,39 +129,38 @@ void main() {
       expect(find.byType(SplashScreen), findsOneWidget);
     });
 
-    testWidgets(
-      'tapping continue offline sets initSkippedProvider to true',
-      (tester) async {
-        late ProviderContainer container;
+    testWidgets('tapping continue offline sets initSkippedProvider to true', (
+      tester,
+    ) async {
+      late ProviderContainer container;
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              appInitializationProvider.overrideWithValue(
-                const AsyncError<void>('init failed', StackTrace.empty),
-              ),
-            ],
-            child: Builder(
-              builder: (context) {
-                container = ProviderScope.containerOf(context);
-                return const MaterialApp(home: SplashScreen());
-              },
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            appInitializationProvider.overrideWithValue(
+              const AsyncError<void>('init failed', StackTrace.empty),
             ),
+          ],
+          child: Builder(
+            builder: (context) {
+              container = ProviderScope.containerOf(context);
+              return const MaterialApp(home: SplashScreen());
+            },
           ),
-        );
-        await tester.pump();
+        ),
+      );
+      await tester.pump();
 
-        // Verify initial state is false.
-        expect(container.read(initSkippedProvider), isFalse);
+      // Verify initial state is false.
+      expect(container.read(initSkippedProvider), isFalse);
 
-        // Tap "Continue offline" (OutlinedButton).
-        await tester.tap(find.byType(OutlinedButton));
-        await tester.pump();
+      // Tap "Continue offline" (OutlinedButton).
+      await tester.tap(find.byType(OutlinedButton));
+      await tester.pump();
 
-        // State should now be true.
-        expect(container.read(initSkippedProvider), isTrue);
-      },
-    );
+      // State should now be true.
+      expect(container.read(initSkippedProvider), isTrue);
+    });
 
     testWidgets('error body does not show AppBrandTitle', (tester) async {
       await tester.pumpWidget(

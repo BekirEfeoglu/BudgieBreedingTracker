@@ -136,9 +136,7 @@ void main() {
       expect(find.byType(VerticalDivider), findsOneWidget);
     });
 
-    testWidgets('does not use Wrap widget on any screen size', (
-      tester,
-    ) async {
+    testWidgets('does not use Wrap widget on any screen size', (tester) async {
       // Small mobile size
       await tester.binding.setSurfaceSize(const Size(375, 812));
       addTearDown(() => tester.binding.setSurfaceSize(null));

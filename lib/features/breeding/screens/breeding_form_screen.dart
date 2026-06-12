@@ -1,5 +1,6 @@
 import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
-import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart'
+    as date_utils;
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -69,7 +70,7 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
       final pairingChanged = existingPairing == null
           ? true
           : date_utils.DateUtils.utcMidnight(_pairingDate) !=
-              date_utils.DateUtils.utcMidnight(existingPairing);
+                date_utils.DateUtils.utcMidnight(existingPairing);
       return _maleId != existing.maleId ||
           _femaleId != existing.femaleId ||
           pairingChanged ||

@@ -245,10 +245,8 @@ class _TransitionNotifier extends BirdFormNotifier {
   // BirdFormScreen can filter their listeners; the form screen reacts
   // only to BirdFormAction.save. Tag the simulated error with save so
   // the form screen's listener treats it as its own.
-  void simulateError(String msg) => state = state.copyWith(
-    error: msg,
-    lastAction: BirdFormAction.save,
-  );
+  void simulateError(String msg) =>
+      state = state.copyWith(error: msg, lastAction: BirdFormAction.save);
   @override
   void reset() => state = const BirdFormState();
 }

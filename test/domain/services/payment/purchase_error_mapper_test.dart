@@ -68,8 +68,8 @@ void main() {
       });
 
       test('uses error code when message is null', () {
-        final errorCode =
-            PurchasesErrorCode.purchaseNotAllowedError.index.toString();
+        final errorCode = PurchasesErrorCode.purchaseNotAllowedError.index
+            .toString();
         final exception = PlatformException(code: errorCode);
 
         // The message check: e.message ?? e.code — message is null, so
@@ -109,32 +109,25 @@ void main() {
     });
 
     group('markStoreUnavailableIfNeeded', () {
-      test(
-        'returns true for purchaseNotAllowedError error code',
-        () {
-          final exception = PlatformException(
-            code:
-                PurchasesErrorCode.purchaseNotAllowedError.index.toString(),
-            message: 'Not allowed',
-          );
+      test('returns true for purchaseNotAllowedError error code', () {
+        final exception = PlatformException(
+          code: PurchasesErrorCode.purchaseNotAllowedError.index.toString(),
+          message: 'Not allowed',
+        );
 
-          expect(mapper.markStoreUnavailableIfNeeded(exception), isTrue);
-          expect(mapper.isStoreUnavailableNow(), isTrue);
-        },
-      );
+        expect(mapper.markStoreUnavailableIfNeeded(exception), isTrue);
+        expect(mapper.isStoreUnavailableNow(), isTrue);
+      });
 
-      test(
-        'returns true when message contains BILLING_UNAVAILABLE',
-        () {
-          final exception = PlatformException(
-            code: '0',
-            message: 'Error: BILLING_UNAVAILABLE on this device',
-          );
+      test('returns true when message contains BILLING_UNAVAILABLE', () {
+        final exception = PlatformException(
+          code: '0',
+          message: 'Error: BILLING_UNAVAILABLE on this device',
+        );
 
-          expect(mapper.markStoreUnavailableIfNeeded(exception), isTrue);
-          expect(mapper.isStoreUnavailableNow(), isTrue);
-        },
-      );
+        expect(mapper.markStoreUnavailableIfNeeded(exception), isTrue);
+        expect(mapper.isStoreUnavailableNow(), isTrue);
+      });
 
       test(
         'returns true when message contains BILLING SERVICE UNAVAILABLE',
@@ -171,27 +164,29 @@ void main() {
         expect(mapper.isStoreUnavailableNow(), isFalse);
       });
 
-      test('does not overwrite existing unavailable state on repeated calls',
-          () {
-        final firstException = PlatformException(
-          code: PurchasesErrorCode.purchaseNotAllowedError.index.toString(),
-          message: 'First billing error',
-        );
-        final secondException = PlatformException(
-          code: PurchasesErrorCode.purchaseNotAllowedError.index.toString(),
-          message: 'Second billing error',
-        );
+      test(
+        'does not overwrite existing unavailable state on repeated calls',
+        () {
+          final firstException = PlatformException(
+            code: PurchasesErrorCode.purchaseNotAllowedError.index.toString(),
+            message: 'First billing error',
+          );
+          final secondException = PlatformException(
+            code: PurchasesErrorCode.purchaseNotAllowedError.index.toString(),
+            message: 'Second billing error',
+          );
 
-        mapper.markStoreUnavailableIfNeeded(firstException);
-        mapper.markStoreUnavailableIfNeeded(secondException);
+          mapper.markStoreUnavailableIfNeeded(firstException);
+          mapper.markStoreUnavailableIfNeeded(secondException);
 
-        // Reason should still be from the first call
-        expect(mapper.storeUnavailableReason, 'First billing error');
-      });
+          // Reason should still be from the first call
+          expect(mapper.storeUnavailableReason, 'First billing error');
+        },
+      );
 
       test('uses error code as message fallback when message is null', () {
-        final errorCode =
-            PurchasesErrorCode.purchaseNotAllowedError.index.toString();
+        final errorCode = PurchasesErrorCode.purchaseNotAllowedError.index
+            .toString();
         final exception = PlatformException(code: errorCode);
 
         mapper.markStoreUnavailableIfNeeded(exception);
@@ -217,15 +212,17 @@ void main() {
         );
       });
 
-      test('maps productNotAvailableForPurchaseError to productUnavailable',
-          () {
-        expect(
-          mapper.mapPurchaseErrorCode(
-            PurchasesErrorCode.productNotAvailableForPurchaseError,
-          ),
-          PurchaseErrorCodes.productUnavailable,
-        );
-      });
+      test(
+        'maps productNotAvailableForPurchaseError to productUnavailable',
+        () {
+          expect(
+            mapper.mapPurchaseErrorCode(
+              PurchasesErrorCode.productNotAvailableForPurchaseError,
+            ),
+            PurchaseErrorCodes.productUnavailable,
+          );
+        },
+      );
 
       test('maps productAlreadyPurchasedError to alreadyOwned', () {
         expect(
@@ -309,17 +306,14 @@ void main() {
         );
       });
 
-      test(
-        'maps receiptInUseByOtherSubscriberError to configurationError',
-        () {
-          expect(
-            mapper.mapPurchaseErrorCode(
-              PurchasesErrorCode.receiptInUseByOtherSubscriberError,
-            ),
-            PurchaseErrorCodes.configurationError,
-          );
-        },
-      );
+      test('maps receiptInUseByOtherSubscriberError to configurationError', () {
+        expect(
+          mapper.mapPurchaseErrorCode(
+            PurchasesErrorCode.receiptInUseByOtherSubscriberError,
+          ),
+          PurchaseErrorCodes.configurationError,
+        );
+      });
 
       test('maps purchaseCancelledError to genericError (wildcard)', () {
         expect(

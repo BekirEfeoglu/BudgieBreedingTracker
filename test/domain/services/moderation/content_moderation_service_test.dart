@@ -171,19 +171,24 @@ void main() {
       expect(result.rejectionReason, 'inappropriate_language');
     });
 
-    test('rejects content when edge function is unavailable (fail-closed)', () async {
-      final edgeClient = _FakeEdgeFunctionClient(
-        fixedResult: const EdgeFunctionResult(
-          success: false,
-          error: 'Function not deployed',
-        ),
-      );
-      final service = ContentModerationService(edgeFunctionClient: edgeClient);
+    test(
+      'rejects content when edge function is unavailable (fail-closed)',
+      () async {
+        final edgeClient = _FakeEdgeFunctionClient(
+          fixedResult: const EdgeFunctionResult(
+            success: false,
+            error: 'Function not deployed',
+          ),
+        );
+        final service = ContentModerationService(
+          edgeFunctionClient: edgeClient,
+        );
 
-      final result = await service.checkText('Some content');
-      expect(result.isAllowed, isFalse);
-      expect(result.rejectionReason, 'moderation_unavailable');
-    });
+        final result = await service.checkText('Some content');
+        expect(result.isAllowed, isFalse);
+        expect(result.rejectionReason, 'moderation_unavailable');
+      },
+    );
 
     test('rejects content when edge function throws (fail-closed)', () async {
       final edgeClient = _FakeEdgeFunctionClient(shouldThrow: true);
@@ -194,13 +199,16 @@ void main() {
       expect(result.rejectionReason, 'moderation_unavailable');
     });
 
-    test('rejects content when no edge function client (fail-closed)', () async {
-      const service = ContentModerationService();
+    test(
+      'rejects content when no edge function client (fail-closed)',
+      () async {
+        const service = ContentModerationService();
 
-      final result = await service.checkText('Normal budgie content');
-      expect(result.isAllowed, isFalse);
-      expect(result.rejectionReason, 'moderation_unavailable');
-    });
+        final result = await service.checkText('Normal budgie content');
+        expect(result.isAllowed, isFalse);
+        expect(result.rejectionReason, 'moderation_unavailable');
+      },
+    );
 
     test('client-side filter runs before server-side', () async {
       // Even if server would allow, client-side should block first

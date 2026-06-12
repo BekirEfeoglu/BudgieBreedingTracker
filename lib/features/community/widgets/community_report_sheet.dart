@@ -73,98 +73,103 @@ class _CommunityReportSheetState extends State<_CommunityReportSheet> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-              // Drag handle
-              Padding(
-                padding: const EdgeInsets.only(top: AppSpacing.md),
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.outlineVariant,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                  ),
-                ),
-              ),
-              // Title
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  AppSpacing.lg,
-                  AppSpacing.lg,
-                  AppSpacing.md,
-                ),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    widget.title,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
+                // Drag handle
+                Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.md),
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.outlineVariant,
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.radiusFull,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              // Reason cards
-              ...kCommunityReportReasons.map((reason) => _ReasonCard(
+                // Title
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                    AppSpacing.md,
+                  ),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      widget.title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+                // Reason cards
+                ...kCommunityReportReasons.map(
+                  (reason) => _ReasonCard(
                     icon: iconForReportReason(reason),
                     title: titleForReportReason(reason),
                     hint: hintForReportReason(reason),
                     isSelected: _selected == reason,
                     onTap: () => _onTapReason(reason),
-                  )),
-              // "Other" text input
-              if (_selected == CommunityReportReason.other) ...[
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.lg,
-                    AppSpacing.md,
-                    AppSpacing.lg,
-                    0,
                   ),
-                  child: TextField(
-                    controller: _otherController,
-                    maxLength: 200,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      hintText: 'community.report_other_placeholder'.tr(),
-                      border: OutlineInputBorder(
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusLg),
+                ),
+                // "Other" text input
+                if (_selected == CommunityReportReason.other) ...[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      AppSpacing.md,
+                      AppSpacing.lg,
+                      0,
+                    ),
+                    child: TextField(
+                      controller: _otherController,
+                      maxLength: 200,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        hintText: 'community.report_other_placeholder'.tr(),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusLg,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-              // Confirmation + submit button
-              if (_selected != null) ...[
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.lg,
-                    AppSpacing.md,
-                    AppSpacing.lg,
-                    AppSpacing.lg,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        'community.report_confirm_message'.tr(),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
+                ],
+                // Confirmation + submit button
+                if (_selected != null) ...[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      AppSpacing.md,
+                      AppSpacing.lg,
+                      AppSpacing.lg,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'community.report_confirm_message'.tr(),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      FilledButton(
-                        onPressed: _onSubmit,
-                        child: Text('community.report_confirm'.tr()),
-                      ),
-                    ],
+                        const SizedBox(height: AppSpacing.md),
+                        FilledButton(
+                          onPressed: _onSubmit,
+                          child: Text('community.report_confirm'.tr()),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ] else ...[
-                const SizedBox(height: AppSpacing.lg),
+                ] else ...[
+                  const SizedBox(height: AppSpacing.lg),
+                ],
               ],
-            ],
             ),
           ),
         ),
@@ -234,8 +239,9 @@ class _ReasonCard extends StatelessWidget {
                         hint,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: isSelected
-                              ? theme.colorScheme.onPrimaryContainer
-                                  .withValues(alpha: 0.75)
+                              ? theme.colorScheme.onPrimaryContainer.withValues(
+                                  alpha: 0.75,
+                                )
                               : theme.colorScheme.onSurfaceVariant,
                         ),
                       ),

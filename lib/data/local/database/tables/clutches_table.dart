@@ -14,12 +14,10 @@ class ClutchesTable extends Table {
       text().nullable().references(BreedingPairsTable, #id)();
   TextColumn get incubationId =>
       text().nullable().references(IncubationsTable, #id)();
-  TextColumn get maleBirdId =>
-      text().nullable().references(BirdsTable, #id)();
+  TextColumn get maleBirdId => text().nullable().references(BirdsTable, #id)();
   TextColumn get femaleBirdId =>
       text().nullable().references(BirdsTable, #id)();
-  TextColumn get nestId =>
-      text().nullable().references(NestsTable, #id)();
+  TextColumn get nestId => text().nullable().references(NestsTable, #id)();
   DateTimeColumn get pairDate => dateTime().nullable()();
   DateTimeColumn get startDate => dateTime().nullable()();
   DateTimeColumn get endDate => dateTime().nullable()();

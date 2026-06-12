@@ -8,35 +8,41 @@ import 'package:budgie_breeding_tracker/domain/services/app_update/app_store_loo
 
 void main() {
   group('AppStoreLookupService.fetchLatest', () {
-    test('returns AppStoreListing when lookup succeeds with valid payload', () async {
-      final client = MockClient((request) async {
-        expect(request.url.host, 'itunes.apple.com');
-        expect(request.url.path, '/lookup');
-        expect(request.url.queryParameters['id'], '6759828211');
-        expect(request.url.queryParameters['country'], 'tr');
-        return http.Response(
-          jsonEncode({
-            'resultCount': 1,
-            'results': [
-              {
-                'version': '1.2.3',
-                'trackViewUrl':
-                    'https://apps.apple.com/tr/app/budgie/id6759828211',
-              },
-            ],
-          }),
-          200,
-          headers: {'content-type': 'application/json'},
+    test(
+      'returns AppStoreListing when lookup succeeds with valid payload',
+      () async {
+        final client = MockClient((request) async {
+          expect(request.url.host, 'itunes.apple.com');
+          expect(request.url.path, '/lookup');
+          expect(request.url.queryParameters['id'], '6759828211');
+          expect(request.url.queryParameters['country'], 'tr');
+          return http.Response(
+            jsonEncode({
+              'resultCount': 1,
+              'results': [
+                {
+                  'version': '1.2.3',
+                  'trackViewUrl':
+                      'https://apps.apple.com/tr/app/budgie/id6759828211',
+                },
+              ],
+            }),
+            200,
+            headers: {'content-type': 'application/json'},
+          );
+        });
+
+        final service = AppStoreLookupService(client: client);
+        final listing = await service.fetchLatest();
+
+        expect(listing, isNotNull);
+        expect(listing!.version, '1.2.3');
+        expect(
+          listing.storeUrl,
+          'https://apps.apple.com/tr/app/budgie/id6759828211',
         );
-      });
-
-      final service = AppStoreLookupService(client: client);
-      final listing = await service.fetchLatest();
-
-      expect(listing, isNotNull);
-      expect(listing!.version, '1.2.3');
-      expect(listing.storeUrl, 'https://apps.apple.com/tr/app/budgie/id6759828211');
-    });
+      },
+    );
 
     test('passes through custom country code', () async {
       String? capturedCountry;
@@ -62,7 +68,10 @@ void main() {
 
     test('returns null when results array is empty', () async {
       final client = MockClient((request) async {
-        return http.Response(jsonEncode({'resultCount': 0, 'results': []}), 200);
+        return http.Response(
+          jsonEncode({'resultCount': 0, 'results': []}),
+          200,
+        );
       });
 
       final service = AppStoreLookupService(client: client);

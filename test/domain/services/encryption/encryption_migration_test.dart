@@ -46,8 +46,9 @@ void main() {
 
     test('returns true for real encrypted output', () async {
       final mockStorage = MockFlutterSecureStorage();
-      when(() => mockStorage.read(key: _keyName))
-          .thenAnswer((_) async => _validBase64Key);
+      when(
+        () => mockStorage.read(key: _keyName),
+      ).thenAnswer((_) async => _validBase64Key);
       when(
         () => mockStorage.write(
           key: any(named: 'key'),
@@ -73,16 +74,18 @@ void main() {
 
     setUp(() {
       mockStorage = MockFlutterSecureStorage();
-      when(() => mockStorage.read(key: _keyName))
-          .thenAnswer((_) async => _validBase64Key);
+      when(
+        () => mockStorage.read(key: _keyName),
+      ).thenAnswer((_) async => _validBase64Key);
       when(
         () => mockStorage.write(
           key: any(named: 'key'),
           value: any(named: 'value'),
         ),
       ).thenAnswer((_) async {});
-      when(() => mockStorage.delete(key: any(named: 'key')))
-          .thenAnswer((_) async {});
+      when(
+        () => mockStorage.delete(key: any(named: 'key')),
+      ).thenAnswer((_) async {});
       service = EncryptionService(mockStorage);
     });
 

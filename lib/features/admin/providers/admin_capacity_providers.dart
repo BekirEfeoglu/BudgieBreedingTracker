@@ -151,9 +151,7 @@ final serverCapacityProvider = FutureProvider<ServerCapacity>((ref) async {
           ),
         );
       } catch (e2, st2) {
-        AppLogger.warning(
-          'serverCapacityProvider fallback: $table: $e2\n$st2',
-        );
+        AppLogger.warning('serverCapacityProvider fallback: $table: $e2\n$st2');
         tableCapacities.add(
           TableCapacity(
             name: table,

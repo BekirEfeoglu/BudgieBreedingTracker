@@ -26,12 +26,12 @@ void main() {
     return ProviderScope(
       overrides: [
         currentUserIdProvider.overrideWithValue('user-1'),
-        pendingByTableProvider('user-1').overrideWith(
-          (_) => Stream.value(pending),
-        ),
-        syncErrorDetailsProvider('user-1').overrideWith(
-          (_) => Stream.value(errors),
-        ),
+        pendingByTableProvider(
+          'user-1',
+        ).overrideWith((_) => Stream.value(pending)),
+        syncErrorDetailsProvider(
+          'user-1',
+        ).overrideWith((_) => Stream.value(errors)),
         conflictHistoryProvider.overrideWith(
           () => _FakeConflictNotifier(conflicts),
         ),
@@ -127,12 +127,7 @@ void main() {
       await pumpLocalizedApp(
         tester,
         buildSubject(
-          pending: [
-            const SyncErrorDetail(
-              tableName: 'birds',
-              errorCount: 3,
-            ),
-          ],
+          pending: [const SyncErrorDetail(tableName: 'birds', errorCount: 3)],
         ),
       );
 
@@ -199,13 +194,13 @@ void main() {
       expect(find.text(l10n('sync.error_details_title')), findsNothing);
     });
 
-    testWidgets('shows both pending and failed sections together', (tester) async {
+    testWidgets('shows both pending and failed sections together', (
+      tester,
+    ) async {
       await pumpLocalizedApp(
         tester,
         buildSubject(
-          pending: [
-            const SyncErrorDetail(tableName: 'birds', errorCount: 3),
-          ],
+          pending: [const SyncErrorDetail(tableName: 'birds', errorCount: 3)],
           errors: [
             const SyncErrorDetail(
               tableName: 'eggs',

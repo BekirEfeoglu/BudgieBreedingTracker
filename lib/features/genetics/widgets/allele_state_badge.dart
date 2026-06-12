@@ -53,43 +53,43 @@ class AlleleStateBadge extends StatelessWidget {
       message: tooltipMessage,
       preferBelow: false,
       child: Semantics(
-      button: canToggle,
-      label: 'genetics.toggle_allele_state'.tr(),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: canToggle ? onToggle : null,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.sm,
-              vertical: AppSpacing.xs,
-            ),
-            child: Container(
+        button: canToggle,
+        label: 'genetics.toggle_allele_state'.tr(),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: canToggle ? onToggle : null,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+            child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.sm,
-                vertical: 2,
+                vertical: AppSpacing.xs,
               ),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                border: Border.all(
-                  color: color.withValues(alpha: 0.5),
-                  width: 1,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: 2,
                 ),
-              ),
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: color,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  border: Border.all(
+                    color: color.withValues(alpha: 0.5),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
                 ),
               ),
             ),
           ),
         ),
-      ),
       ),
     );
   }

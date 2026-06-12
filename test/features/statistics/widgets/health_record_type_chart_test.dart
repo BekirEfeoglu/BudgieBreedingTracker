@@ -14,6 +14,7 @@ void main() {
       home: Scaffold(body: HealthRecordTypeChart(data: data)),
     );
   }
+
   group('HealthRecordTypeChart', () {
     testWidgets('renders ChartEmpty when data map is empty', (tester) async {
       await pumpLocalizedApp(tester, buildSubject({}), settle: false);
@@ -23,7 +24,8 @@ void main() {
     });
 
     testWidgets('renders ChartEmpty when all values are zero', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject({
           HealthRecordType.checkup: 0,
           HealthRecordType.illness: 0,
@@ -38,7 +40,11 @@ void main() {
     testWidgets('renders BarChart when at least one type has records', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester, buildSubject({HealthRecordType.checkup: 5}), settle: false);
+      await pumpLocalizedApp(
+        tester,
+        buildSubject({HealthRecordType.checkup: 5}),
+        settle: false,
+      );
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.byType(BarChart), findsOneWidget);
       expect(find.byType(ChartEmpty), findsNothing);
@@ -47,7 +53,8 @@ void main() {
     testWidgets('renders BarChart with all 6 health record types', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject({
           HealthRecordType.checkup: 4,
           HealthRecordType.illness: 2,
@@ -63,7 +70,8 @@ void main() {
     });
 
     testWidgets('renders RepaintBoundary around BarChart', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject({
           HealthRecordType.illness: 3,
           HealthRecordType.checkup: 5,
@@ -75,13 +83,21 @@ void main() {
     });
 
     testWidgets('renders with vaccination as only type', (tester) async {
-      await pumpLocalizedApp(tester, buildSubject({HealthRecordType.vaccination: 8}), settle: false);
+      await pumpLocalizedApp(
+        tester,
+        buildSubject({HealthRecordType.vaccination: 8}),
+        settle: false,
+      );
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.byType(BarChart), findsOneWidget);
     });
 
     testWidgets('renders non-zero bar for unknown type data', (tester) async {
-      await pumpLocalizedApp(tester, buildSubject({HealthRecordType.unknown: 3}), settle: false);
+      await pumpLocalizedApp(
+        tester,
+        buildSubject({HealthRecordType.unknown: 3}),
+        settle: false,
+      );
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.byType(BarChart), findsOneWidget);
       final chart = tester.widget<BarChart>(find.byType(BarChart));
@@ -92,7 +108,8 @@ void main() {
     });
 
     testWidgets('renders SizedBox with height constraint', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject({
           HealthRecordType.medication: 2,
           HealthRecordType.checkup: 6,

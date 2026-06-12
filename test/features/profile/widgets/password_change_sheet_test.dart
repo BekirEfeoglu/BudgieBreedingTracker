@@ -63,7 +63,10 @@ void main() {
     testWidgets('shows change_password title', (tester) async {
       await _openSheet(tester);
 
-      expect(find.text(l10n('profile.change_password')), findsAtLeastNWidgets(1));
+      expect(
+        find.text(l10n('profile.change_password')),
+        findsAtLeastNWidgets(1),
+      );
     });
 
     testWidgets('shows PasswordChangeForm', (tester) async {
@@ -94,7 +97,10 @@ void main() {
       await _openSheet(tester);
 
       // change_password key appears in title + button
-      expect(find.text(l10n('profile.change_password')), findsAtLeastNWidgets(1));
+      expect(
+        find.text(l10n('profile.change_password')),
+        findsAtLeastNWidgets(1),
+      );
     });
 
     testWidgets('shows loading state when isLoading is true', (tester) async {

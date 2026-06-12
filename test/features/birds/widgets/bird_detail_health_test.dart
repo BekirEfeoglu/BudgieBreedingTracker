@@ -24,7 +24,8 @@ Future<void> _pump(
   tester.view.devicePixelRatio = 1.0;
   addTearDown(() => tester.view.resetPhysicalSize());
   addTearDown(() => tester.view.resetDevicePixelRatio());
-  await pumpLocalizedApp(tester,
+  await pumpLocalizedApp(
+    tester,
     ProviderScope(
       overrides: [
         dateFormatProvider.overrideWith(() => DateFormatNotifier()),
@@ -182,7 +183,8 @@ void main() {
       // Note: Stream.error() with StreamProvider in Riverpod 3 may not
       // reliably trigger AsyncError in widget tests without real async events.
       // We verify the error UI exists by constructing it directly instead.
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             dateFormatProvider.overrideWith(() => DateFormatNotifier()),

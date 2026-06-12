@@ -40,16 +40,15 @@ void main() {
       overrides: [
         currentUserIdProvider.overrideWithValue('user-1'),
         badgesProvider.overrideWith(
-          (ref) => loading
-              ? Completer<List<Badge>>().future
-              : Future.value(badges),
+          (ref) =>
+              loading ? Completer<List<Badge>>().future : Future.value(badges),
         ),
-        userBadgesProvider('user-1').overrideWith(
-          (ref) => Future.value(userBadges),
-        ),
-        userLevelProvider('user-1').overrideWith(
-          (ref) => Future.value(userLevel ?? testUserLevel),
-        ),
+        userBadgesProvider(
+          'user-1',
+        ).overrideWith((ref) => Future.value(userBadges)),
+        userLevelProvider(
+          'user-1',
+        ).overrideWith((ref) => Future.value(userLevel ?? testUserLevel)),
       ],
       child: const MaterialApp(home: BadgesScreen()),
     );
@@ -74,10 +73,7 @@ void main() {
     });
 
     testWidgets('shows badges when data available', (tester) async {
-      await pumpLocalizedApp(
-        tester,
-        buildSubject(badges: [testBadge]),
-      );
+      await pumpLocalizedApp(tester, buildSubject(badges: [testBadge]));
 
       expect(find.byType(GridView), findsOneWidget);
     });

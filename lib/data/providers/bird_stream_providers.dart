@@ -31,18 +31,19 @@ final birdsStreamProvider = StreamProvider.family<List<Bird>, String>((
 /// set of rows, and changes to the bird table only re-trigger the matching
 /// streams. Material gain over `birdsStreamProvider` for power users
 /// because filtering runs in Drift instead of Dart.
-final birdParentCandidatesProvider = StreamProvider.autoDispose.family<
-  List<Bird>,
-  ({String userId, BirdGender gender, Species? species, String? excludeId})
->((ref, args) {
-  final repo = ref.watch(birdRepositoryProvider);
-  return repo.watchAliveByGenderAndSpecies(
-    userId: args.userId,
-    gender: args.gender,
-    species: args.species,
-    excludeId: args.excludeId,
-  );
-});
+final birdParentCandidatesProvider = StreamProvider.autoDispose
+    .family<
+      List<Bird>,
+      ({String userId, BirdGender gender, Species? species, String? excludeId})
+    >((ref, args) {
+      final repo = ref.watch(birdRepositoryProvider);
+      return repo.watchAliveByGenderAndSpecies(
+        userId: args.userId,
+        gender: args.gender,
+        species: args.species,
+        excludeId: args.excludeId,
+      );
+    });
 
 /// Photo URLs for a bird (from local Photo DB, offline-first).
 final birdPhotosProvider = StreamProvider.family<List<String>, String>((

@@ -19,10 +19,16 @@ void main() {
       );
     });
 
-    test('incubationPeriodDays matches budgie biology (17-19 days typical)', () {
-      expect(IncubationConstants.incubationPeriodDays, greaterThanOrEqualTo(17));
-      expect(IncubationConstants.incubationPeriodDays, lessThanOrEqualTo(19));
-    });
+    test(
+      'incubationPeriodDays matches budgie biology (17-19 days typical)',
+      () {
+        expect(
+          IncubationConstants.incubationPeriodDays,
+          greaterThanOrEqualTo(17),
+        );
+        expect(IncubationConstants.incubationPeriodDays, lessThanOrEqualTo(19));
+      },
+    );
 
     test('latePeriodDays is within reasonable range (20-23)', () {
       expect(IncubationConstants.latePeriodDays, greaterThanOrEqualTo(20));
@@ -197,7 +203,8 @@ void main() {
         expect(
           milestones[i],
           lessThan(milestones[i + 1]),
-          reason: 'Milestone at index $i should be before milestone at ${i + 1}',
+          reason:
+              'Milestone at index $i should be before milestone at ${i + 1}',
         );
       }
     });

@@ -27,8 +27,8 @@ class ChartLoading extends StatelessWidget {
       child: isPieChart
           ? const _PieChartSkeleton()
           : isLineChart
-              ? const _LineChartSkeleton()
-              : const _BarChartSkeleton(),
+          ? const _LineChartSkeleton()
+          : const _BarChartSkeleton(),
     );
   }
 }
@@ -161,9 +161,12 @@ class _LineSkeletonPainter extends CustomPainter {
     final path = Path()..moveTo(0, h * _segments[0][0]);
     for (final seg in _segments) {
       path.cubicTo(
-        w * seg[1], h * seg[2],
-        w * seg[3], h * seg[4],
-        w * seg[5], h * seg[6],
+        w * seg[1],
+        h * seg[2],
+        w * seg[3],
+        h * seg[4],
+        w * seg[5],
+        h * seg[6],
       );
     }
 

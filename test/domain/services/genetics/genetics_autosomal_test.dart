@@ -72,10 +72,7 @@ void main() {
         gender: BirdGender.male,
         mutations: {'blue': AlleleState.visual},
       );
-      final mother = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {},
-      );
+      final mother = ParentGenotype(gender: BirdGender.female, mutations: {});
 
       final results = calculator.calculateFromGenotypes(
         father: father,
@@ -97,10 +94,7 @@ void main() {
         gender: BirdGender.male,
         mutations: {'grey': AlleleState.carrier},
       );
-      final mother = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {},
-      );
+      final mother = ParentGenotype(gender: BirdGender.female, mutations: {});
 
       final results = calculator.calculateFromGenotypes(
         father: father,
@@ -117,10 +111,7 @@ void main() {
         gender: BirdGender.male,
         mutations: {'grey': AlleleState.visual},
       );
-      final mother = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {},
-      );
+      final mother = ParentGenotype(gender: BirdGender.female, mutations: {});
 
       final results = calculator.calculateFromGenotypes(
         father: father,
@@ -128,10 +119,7 @@ void main() {
       );
 
       expectNormalizedProbabilities(results);
-      expect(
-        results.every((r) => r.phenotype.contains('Grey')),
-        isTrue,
-      );
+      expect(results.every((r) => r.phenotype.contains('Grey')), isTrue);
     });
   });
 
@@ -176,10 +164,10 @@ void main() {
     });
 
     test('Blue + 1DF(SF) = Cobalt', () {
-      final result = epistasis.resolveCompoundPhenotypeDetailed(
-        {'blue', 'dark_factor'},
-        doubleFactorIds: {},
-      );
+      final result = epistasis.resolveCompoundPhenotypeDetailed({
+        'blue',
+        'dark_factor',
+      }, doubleFactorIds: {});
       expect(result.name, contains('Cobalt'));
     });
 
@@ -227,10 +215,7 @@ void main() {
         gender: BirdGender.male,
         mutations: {'crested_tufted': AlleleState.carrier},
       );
-      final mother = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {},
-      );
+      final mother = ParentGenotype(gender: BirdGender.female, mutations: {});
 
       final results = calculator.calculateFromGenotypes(
         father: father,
@@ -254,10 +239,10 @@ void main() {
   // =====================================================================
   group('Grey + Dark Factor naming', () {
     test('Grey + Green + 1DF = Dark Grey-Green', () {
-      final result = epistasis.resolveCompoundPhenotypeDetailed(
-        {'grey', 'dark_factor'},
-        doubleFactorIds: {},
-      );
+      final result = epistasis.resolveCompoundPhenotypeDetailed({
+        'grey',
+        'dark_factor',
+      }, doubleFactorIds: {});
       expect(result.name, contains('Dark'));
       expect(result.name, contains('Grey-Green'));
     });

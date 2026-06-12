@@ -6,7 +6,9 @@ import '../../../../helpers/pump_helpers.dart';
 
 void main() {
   group('AiImagePickerZone', () {
-    testWidgets('shows camera and gallery buttons when no image', (tester) async {
+    testWidgets('shows camera and gallery buttons when no image', (
+      tester,
+    ) async {
       await pumpWidgetSimple(
         tester,
         AiImagePickerZone(

@@ -9,14 +9,9 @@ class ImageSafetyResult {
   final bool isSafe;
   final String? rejectionReason;
 
-  const ImageSafetyResult({
-    required this.isSafe,
-    this.rejectionReason,
-  });
+  const ImageSafetyResult({required this.isSafe, this.rejectionReason});
 
-  const ImageSafetyResult.safe()
-    : isSafe = true,
-      rejectionReason = null;
+  const ImageSafetyResult.safe() : isSafe = true, rejectionReason = null;
   const ImageSafetyResult.unsafe(String reason)
     : isSafe = false,
       rejectionReason = reason;

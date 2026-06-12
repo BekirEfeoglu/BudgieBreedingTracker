@@ -74,9 +74,7 @@ void main() {
       expect(button.onPressed, isNull);
     });
 
-    testWidgets('delete button enables with lowercase delete', (
-      tester,
-    ) async {
+    testWidgets('delete button enables with lowercase delete', (tester) async {
       await pumpDialog(tester);
 
       final textFields = find.byType(TextField);
@@ -142,7 +140,9 @@ void main() {
       expect(dialogResult, isNull);
     });
 
-    testWidgets('confirm returns password when phrase and password entered', (tester) async {
+    testWidgets('confirm returns password when phrase and password entered', (
+      tester,
+    ) async {
       String? dialogResult;
 
       await pumpLocalizedApp(

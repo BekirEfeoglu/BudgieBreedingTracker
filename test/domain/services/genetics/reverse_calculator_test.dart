@@ -196,10 +196,12 @@ void main() {
 
         // At least one parent must carry crested_tufted in every result
         for (final result in results) {
-          final fatherHas =
-              result.father.mutations.containsKey('crested_tufted');
-          final motherHas =
-              result.mother.mutations.containsKey('crested_tufted');
+          final fatherHas = result.father.mutations.containsKey(
+            'crested_tufted',
+          );
+          final motherHas = result.mother.mutations.containsKey(
+            'crested_tufted',
+          );
           expect(
             fatherHas || motherHas,
             isTrue,
@@ -228,18 +230,17 @@ void main() {
 
         // Both parents must carry a dilution-locus allele
         for (final result in results) {
-          final fatherHasDilution =
-              result.father.mutations.keys.any(
-                (id) => const {'greywing', 'clearwing', 'dilute'}.contains(id),
-              );
-          final motherHasDilution =
-              result.mother.mutations.keys.any(
-                (id) => const {'greywing', 'clearwing', 'dilute'}.contains(id),
-              );
+          final fatherHasDilution = result.father.mutations.keys.any(
+            (id) => const {'greywing', 'clearwing', 'dilute'}.contains(id),
+          );
+          final motherHasDilution = result.mother.mutations.keys.any(
+            (id) => const {'greywing', 'clearwing', 'dilute'}.contains(id),
+          );
           expect(
             fatherHasDilution && motherHasDilution,
             isTrue,
-            reason: 'Both parents must carry dilution-locus allele for greywing',
+            reason:
+                'Both parents must carry dilution-locus allele for greywing',
           );
         }
       });

@@ -19,9 +19,9 @@ part of 'encryption_service.dart';
   if (_hasMagicPrefix(combined)) {
     final minimumLength =
         EncryptionService._payloadMagicBytes.length +
-            EncryptionService._ivLength +
-            1 +
-            EncryptionService._macLength;
+        EncryptionService._ivLength +
+        1 +
+        EncryptionService._macLength;
     if (combined.length < minimumLength) {
       throw FormatException(
         'Invalid ciphertext: too short authenticated payload '
@@ -34,9 +34,7 @@ part of 'encryption_service.dart';
     final providedMac = combined.sublist(payloadEnd);
     final expectedMac = _computeMac(payload, keyBytes);
     if (!_constantTimeEquals(providedMac, expectedMac)) {
-      throw const FormatException(
-        'Invalid ciphertext: integrity check failed',
-      );
+      throw const FormatException('Invalid ciphertext: integrity check failed');
     }
 
     final ivStart = EncryptionService._payloadMagicBytes.length;

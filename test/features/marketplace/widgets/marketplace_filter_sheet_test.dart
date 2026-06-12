@@ -22,11 +22,7 @@ Widget _buildSubject() {
         () => MarketplaceGenderFilterNotifier(),
       ),
     ],
-    child: const MaterialApp(
-      home: Scaffold(
-        body: MarketplaceFilterSheet(),
-      ),
-    ),
+    child: const MaterialApp(home: Scaffold(body: MarketplaceFilterSheet())),
   );
 }
 

@@ -52,14 +52,16 @@ void main() {
       expect(prefix, equals(_magic));
     });
 
-    test('encrypt output has correct structure: magic + IV + cipher + MAC',
-        () async {
-      final encrypted = await service.encrypt('test data');
-      final decoded = base64Decode(encrypted);
+    test(
+      'encrypt output has correct structure: magic + IV + cipher + MAC',
+      () async {
+        final encrypted = await service.encrypt('test data');
+        final decoded = base64Decode(encrypted);
 
-      // minimum: magic(8) + IV(16) + at least 1 byte cipher + MAC(32) = 57
-      expect(decoded.length, greaterThanOrEqualTo(57));
-    });
+        // minimum: magic(8) + IV(16) + at least 1 byte cipher + MAC(32) = 57
+        expect(decoded.length, greaterThanOrEqualTo(57));
+      },
+    );
 
     test('decrypt verifies HMAC integrity', () async {
       final encrypted = await service.encrypt('integrity test');
@@ -87,8 +89,7 @@ void main() {
       final decoded = base64Decode(encrypted).toList();
 
       // Tamper with the last byte (part of HMAC)
-      decoded[decoded.length - 1] =
-          (decoded[decoded.length - 1] + 1) % 256;
+      decoded[decoded.length - 1] = (decoded[decoded.length - 1] + 1) % 256;
 
       final tampered = base64Encode(decoded);
       await expectLater(
@@ -160,17 +161,13 @@ void main() {
 
     test('round-trips unicode text', () async {
       const unicode = 'Muhabbet kusu yetistiricileri icin';
-      final decrypted = await service.decrypt(
-        await service.encrypt(unicode),
-      );
+      final decrypted = await service.decrypt(await service.encrypt(unicode));
       expect(decrypted, unicode);
     });
 
     test('round-trips long text', () async {
       final longText = 'x' * 10000;
-      final decrypted = await service.decrypt(
-        await service.encrypt(longText),
-      );
+      final decrypted = await service.decrypt(await service.encrypt(longText));
       expect(decrypted, longText);
     });
 
@@ -211,29 +208,29 @@ void main() {
 
       // Will try to decrypt as legacy format (IV + cipher)
       // Should fail with a decryption error, not a format error about magic
-      await expectLater(
-        service.decrypt(encoded),
-        throwsA(anything),
-      );
+      await expectLater(service.decrypt(encoded), throwsA(anything));
     });
   });
 
   group('legacy payload with derived-key system', () {
-    test('legacy payload decrypts correctly despite derived-key system', () async {
-      // Build a legacy payload: IV + AES-CBC(rawKey, plaintext) — no magic prefix
-      final rawKey = Uint8List.fromList(List<int>.generate(32, (i) => i));
-      final iv = enc.IV.fromLength(16);
-      final encrypter = enc.Encrypter(
-        enc.AES(enc.Key(rawKey), mode: enc.AESMode.cbc),
-      );
-      final encrypted = encrypter.encrypt('legacy-derived-clash', iv: iv);
-      final legacyCipher = base64Encode([...iv.bytes, ...encrypted.bytes]);
+    test(
+      'legacy payload decrypts correctly despite derived-key system',
+      () async {
+        // Build a legacy payload: IV + AES-CBC(rawKey, plaintext) — no magic prefix
+        final rawKey = Uint8List.fromList(List<int>.generate(32, (i) => i));
+        final iv = enc.IV.fromLength(16);
+        final encrypter = enc.Encrypter(
+          enc.AES(enc.Key(rawKey), mode: enc.AESMode.cbc),
+        );
+        final encrypted = encrypter.encrypt('legacy-derived-clash', iv: iv);
+        final legacyCipher = base64Encode([...iv.bytes, ...encrypted.bytes]);
 
-      // Service uses derived keys for new encryptions, but the legacy path
-      // must use the raw master key directly (no HMAC, no magic prefix).
-      final decrypted = await service.decrypt(legacyCipher);
-      expect(decrypted, 'legacy-derived-clash');
-    });
+        // Service uses derived keys for new encryptions, but the legacy path
+        // must use the raw master key directly (no HMAC, no magic prefix).
+        final decrypted = await service.decrypt(legacyCipher);
+        expect(decrypted, 'legacy-derived-clash');
+      },
+    );
 
     test('needsReEncryption detects legacy payload for upgrade', () {
       final rawKey = Uint8List.fromList(List<int>.generate(32, (i) => i));
@@ -247,34 +244,37 @@ void main() {
       expect(service.needsReEncryption(legacyCipher), isTrue);
     });
 
-    test('legacy payload re-encrypted to authenticated derived-key format', () async {
-      final rawKey = Uint8List.fromList(List<int>.generate(32, (i) => i));
-      final iv = enc.IV.fromLength(16);
-      final encrypter = enc.Encrypter(
-        enc.AES(enc.Key(rawKey), mode: enc.AESMode.cbc),
-      );
-      final encrypted = encrypter.encrypt('upgrade-to-derived', iv: iv);
-      final legacyCipher = base64Encode([...iv.bytes, ...encrypted.bytes]);
+    test(
+      'legacy payload re-encrypted to authenticated derived-key format',
+      () async {
+        final rawKey = Uint8List.fromList(List<int>.generate(32, (i) => i));
+        final iv = enc.IV.fromLength(16);
+        final encrypter = enc.Encrypter(
+          enc.AES(enc.Key(rawKey), mode: enc.AESMode.cbc),
+        );
+        final encrypted = encrypter.encrypt('upgrade-to-derived', iv: iv);
+        final legacyCipher = base64Encode([...iv.bytes, ...encrypted.bytes]);
 
-      // Re-encrypt: decrypt with raw key (legacy), encrypt with derived keys
-      final reEncrypted = await service.reEncrypt(legacyCipher);
-      expect(reEncrypted, isNotNull);
-      expect(service.needsReEncryption(reEncrypted!), isFalse);
+        // Re-encrypt: decrypt with raw key (legacy), encrypt with derived keys
+        final reEncrypted = await service.reEncrypt(legacyCipher);
+        expect(reEncrypted, isNotNull);
+        expect(service.needsReEncryption(reEncrypted!), isFalse);
 
-      // Verify the re-encrypted payload uses derived-key HMAC (not raw key)
-      final combined = base64Decode(reEncrypted);
-      final payloadEnd = combined.length - 32;
-      final payload = combined.sublist(0, payloadEnd);
-      final providedMac = combined.sublist(payloadEnd);
+        // Verify the re-encrypted payload uses derived-key HMAC (not raw key)
+        final combined = base64Decode(reEncrypted);
+        final payloadEnd = combined.length - 32;
+        final payload = combined.sublist(0, payloadEnd);
+        final providedMac = combined.sublist(payloadEnd);
 
-      // HMAC with raw key should NOT match (proving derived macKey was used)
-      final rawHmac = crypto.Hmac(crypto.sha256, rawKey);
-      final rawMac = rawHmac.convert(payload).bytes;
-      expect(providedMac, isNot(equals(rawMac)));
+        // HMAC with raw key should NOT match (proving derived macKey was used)
+        final rawHmac = crypto.Hmac(crypto.sha256, rawKey);
+        final rawMac = rawHmac.convert(payload).bytes;
+        expect(providedMac, isNot(equals(rawMac)));
 
-      // Content should still be recoverable
-      final decrypted = await service.decrypt(reEncrypted);
-      expect(decrypted, 'upgrade-to-derived');
-    });
+        // Content should still be recoverable
+        final decrypted = await service.decrypt(reEncrypted);
+        expect(decrypted, 'upgrade-to-derived');
+      },
+    );
   });
 }

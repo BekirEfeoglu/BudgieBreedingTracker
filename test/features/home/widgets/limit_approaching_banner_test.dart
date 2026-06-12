@@ -95,7 +95,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // 15 - 12 = 3 remaining, .tr(args:) returns key in test context
-      expect(find.text(l10n('premium.limit_approaching_birds')), findsOneWidget);
+      expect(
+        find.text(l10n('premium.limit_approaching_birds')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows try free trial button', (tester) async {

@@ -27,10 +27,7 @@ Map<String, ({int fertile, int total})> _eggsToFertility(
   final result = <String, ({int fertile, int total})>{};
   final allowedIncubations = species == null
       ? null
-      : incubations
-          .where((i) => i.species == species)
-          .map((i) => i.id)
-          .toSet();
+      : incubations.where((i) => i.species == species).map((i) => i.id).toSet();
   for (final egg in eggs) {
     if (allowedIncubations != null) {
       if (egg.incubationId == null ||
@@ -38,8 +35,8 @@ Map<String, ({int fertile, int total})> _eggsToFertility(
         continue;
       }
     }
-    final isFertile = egg.status == EggStatus.fertile ||
-        egg.status == EggStatus.hatched;
+    final isFertile =
+        egg.status == EggStatus.fertile || egg.status == EggStatus.hatched;
     final isInfertile = egg.status == EggStatus.infertile;
     if (!isFertile && !isInfertile) continue;
     final key =
@@ -61,7 +58,8 @@ MockEggsDao _fertilityDao({
   when(
     () => dao.watchMonthlyFertility(any(), species: any(named: 'species')),
   ).thenAnswer((invocation) {
-    final hasSpecies = invocation.namedArguments[const Symbol('species')] != null;
+    final hasSpecies =
+        invocation.namedArguments[const Symbol('species')] != null;
     return Stream.value(hasSpecies ? filtered : unfiltered);
   });
   return dao;

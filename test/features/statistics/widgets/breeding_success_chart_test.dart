@@ -19,6 +19,7 @@ void main() {
       ),
     );
   }
+
   group('BreedingSuccessChart', () {
     testWidgets('renders ChartEmpty when completed map is empty', (
       tester,
@@ -30,7 +31,8 @@ void main() {
     });
 
     testWidgets('renders BarChart with single month data', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(completed: {'2026-01': 3}, cancelled: {'2026-01': 1}),
         settle: false,
       );
@@ -40,7 +42,8 @@ void main() {
     });
 
     testWidgets('renders BarChart with multiple months', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(
           completed: {'2026-01': 2, '2026-02': 4, '2026-03': 1},
           cancelled: {'2026-01': 0, '2026-02': 1, '2026-03': 2},
@@ -52,7 +55,8 @@ void main() {
     });
 
     testWidgets('renders legend row below chart', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(completed: {'2026-01': 3}, cancelled: {'2026-01': 1}),
         settle: false,
       );
@@ -65,7 +69,8 @@ void main() {
     testWidgets('renders with only completed data (no cancellations)', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(completed: {'2026-01': 5, '2026-02': 3}, cancelled: {}),
         settle: false,
       );
@@ -74,7 +79,8 @@ void main() {
     });
 
     testWidgets('renders legend localization keys', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(completed: {'2026-01': 2}, cancelled: {'2026-01': 1}),
         settle: false,
       );

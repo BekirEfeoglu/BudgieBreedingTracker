@@ -195,19 +195,33 @@ const List<String> _blueTerms = [
 
 /// Computes eye, throat-spot, tail, back and beak details from mutations.
 ({
-  Color eyeColor, Color eyeRingColor, bool showEyeRing,
-  Color? backColor, Color tailColor,
-  Color throatSpotColor, bool showThroatSpots, int throatSpotCount,
+  Color eyeColor,
+  Color eyeRingColor,
+  bool showEyeRing,
+  Color? backColor,
+  Color tailColor,
+  Color throatSpotColor,
+  bool showThroatSpots,
+  int throatSpotCount,
   Color beakColor,
-}) _resolveAnatomyDetails({
-  required bool isAlbino, required bool isLutino,
-  required bool isCreamino, required bool isLacewing,
-  required bool isDarkEyedClear, required bool isDoubleFactorSpangle,
-  required bool isBlueSeries, required bool hasOpaline,
-  required bool hasCinnamon, required bool hasDilute,
-  required bool hasGreywing, required bool hasEnglishFallow,
-  required bool hasGermanFallow, required bool hasRecessivePied,
-  required bool hasTexasClearbody, required Color body,
+})
+_resolveAnatomyDetails({
+  required bool isAlbino,
+  required bool isLutino,
+  required bool isCreamino,
+  required bool isLacewing,
+  required bool isDarkEyedClear,
+  required bool isDoubleFactorSpangle,
+  required bool isBlueSeries,
+  required bool hasOpaline,
+  required bool hasCinnamon,
+  required bool hasDilute,
+  required bool hasGreywing,
+  required bool hasEnglishFallow,
+  required bool hasGermanFallow,
+  required bool hasRecessivePied,
+  required bool hasTexasClearbody,
+  required Color body,
 }) {
   final isIno = isAlbino || isLutino || isCreamino || isLacewing;
   const black = Color(0xFF1A1A1A);
@@ -226,16 +240,27 @@ const List<String> _blueTerms = [
   };
 
   // Throat spots
-  final (bool showThroatSpots, int throatSpotCount, Color throatSpotColor) =
-      switch (true) {
-    _ when isIno || isDoubleFactorSpangle || isDarkEyedClear =>
-      (false, 0, black),
+  final (
+    bool showThroatSpots,
+    int throatSpotCount,
+    Color throatSpotColor,
+  ) = switch (true) {
+    _ when isIno || isDoubleFactorSpangle || isDarkEyedClear => (
+      false,
+      0,
+      black,
+    ),
     _ when hasOpaline => (
-        true, 4,
-        hasCinnamon ? BudgiePhenotypePalette.cinnamon : black,
-      ),
+      true,
+      4,
+      hasCinnamon ? BudgiePhenotypePalette.cinnamon : black,
+    ),
     _ when hasCinnamon => (true, 6, BudgiePhenotypePalette.cinnamon),
-    _ when hasDilute || hasGreywing => (true, 6, BudgiePhenotypePalette.wingGrey),
+    _ when hasDilute || hasGreywing => (
+      true,
+      6,
+      BudgiePhenotypePalette.wingGrey,
+    ),
     _ => (true, 6, black),
   };
 
@@ -253,8 +278,11 @@ const List<String> _blueTerms = [
 
   // Back
   final Color? backColor = switch (true) {
-    _ when hasCinnamon && hasOpaline =>
-      _mix(body, BudgiePhenotypePalette.cinnamon, 0.15),
+    _ when hasCinnamon && hasOpaline => _mix(
+      body,
+      BudgiePhenotypePalette.cinnamon,
+      0.15,
+    ),
     _ when hasOpaline => body,
     _ when hasTexasClearbody => _lighten(body, 0.08),
     _ => null,
@@ -268,9 +296,14 @@ const List<String> _blueTerms = [
   };
 
   return (
-    eyeColor: eyeColor, eyeRingColor: eyeRingColor, showEyeRing: showEyeRing,
-    backColor: backColor, tailColor: tailColor,
-    throatSpotColor: throatSpotColor, showThroatSpots: showThroatSpots,
-    throatSpotCount: throatSpotCount, beakColor: beakColor,
+    eyeColor: eyeColor,
+    eyeRingColor: eyeRingColor,
+    showEyeRing: showEyeRing,
+    backColor: backColor,
+    tailColor: tailColor,
+    throatSpotColor: throatSpotColor,
+    showThroatSpots: showThroatSpots,
+    throatSpotCount: throatSpotCount,
+    beakColor: beakColor,
   );
 }

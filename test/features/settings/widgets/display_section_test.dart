@@ -63,7 +63,7 @@ void main() {
 
   group('DisplaySection', () {
     testWidgets('hatasiz render edilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
 
       // Overflow hatalarini tüket
@@ -71,25 +71,25 @@ void main() {
     });
 
     testWidgets('SettingsSectionHeader render edilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(SettingsSectionHeader), findsOneWidget);
     });
 
     testWidgets('tema secim tile render edilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(SettingsSelectionTile<ThemeMode>), findsOneWidget);
     });
 
     testWidgets('compact view toggle tile render edilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(SettingsToggleTile), findsOneWidget);
     });
 
     testWidgets('compactView=true iken switch acik gosterilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject(compactView: true));
+      await pumpLocalizedApp(tester, buildSubject(compactView: true));
       await tester.pump(const Duration(milliseconds: 500));
       final tile = tester.widget<SwitchListTile>(find.byType(SwitchListTile));
       expect(tile.value, isTrue);
@@ -98,7 +98,7 @@ void main() {
     testWidgets('compactView=false iken switch kapali gosterilir', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,buildSubject(compactView: false));
+      await pumpLocalizedApp(tester, buildSubject(compactView: false));
       await tester.pump(const Duration(milliseconds: 500));
       final tile = tester.widget<SwitchListTile>(find.byType(SwitchListTile));
       expect(tile.value, isFalse);
@@ -107,7 +107,7 @@ void main() {
     testWidgets('compact view toggle tiklama sonrasi durum degisir', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,buildSubject(compactView: false));
+      await pumpLocalizedApp(tester, buildSubject(compactView: false));
       await tester.pump(const Duration(milliseconds: 500));
 
       final container = ProviderScope.containerOf(
@@ -120,7 +120,7 @@ void main() {
     });
 
     testWidgets('tema degistirme calisiyor', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject(themeMode: ThemeMode.light));
+      await pumpLocalizedApp(tester, buildSubject(themeMode: ThemeMode.light));
       await tester.pump(const Duration(milliseconds: 500));
 
       final container = ProviderScope.containerOf(

@@ -154,9 +154,7 @@ class ChickFormNotifier extends Notifier<ChickFormState>
             );
           }
         } catch (e, st) {
-          AppLogger.warning(
-            'Failed to reschedule banding reminders: $e\n$st',
-          );
+          AppLogger.warning('Failed to reschedule banding reminders: $e\n$st');
           sideEffectError = true;
         }
       }
@@ -205,9 +203,9 @@ class ChickFormNotifier extends Notifier<ChickFormState>
       // the measurement orphan on every push).
       bool growthCleanupFailed = false;
       try {
-        await ref
-            .read(growthMeasurementRepositoryProvider)
-            .removeByChickIds([id]);
+        await ref.read(growthMeasurementRepositoryProvider).removeByChickIds([
+          id,
+        ]);
       } catch (e, st) {
         growthCleanupFailed = true;
         AppLogger.warning(

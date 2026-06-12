@@ -89,9 +89,9 @@ class LeaderboardTile extends StatelessWidget {
   }
 
   Color _rankColor(int rank) => switch (rank) {
-        1 => AppColors.tierGold,
-        2 => AppColors.tierSilver,
-        3 => AppColors.tierBronze,
-        _ => AppColors.tierDefault,
-      };
+    1 => AppColors.tierGold,
+    2 => AppColors.tierSilver,
+    3 => AppColors.tierBronze,
+    _ => AppColors.tierDefault,
+  };
 }

@@ -117,9 +117,7 @@ void main() {
   });
 
   group('showStorageInfoDialog', () {
-    testWidgets('displays storage info dialog with three rows', (
-      tester,
-    ) async {
+    testWidgets('displays storage info dialog with three rows', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [

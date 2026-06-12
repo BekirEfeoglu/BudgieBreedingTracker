@@ -59,9 +59,7 @@ void main() {
         const BudgieCharacter(bodyColor: BudgieLoginPalette.maleBudgie),
       );
 
-      final sizedBox = tester.widget<SizedBox>(
-        find.byType(SizedBox).first,
-      );
+      final sizedBox = tester.widget<SizedBox>(find.byType(SizedBox).first);
       expect(sizedBox.width, 64);
       expect(sizedBox.height, 85);
     });

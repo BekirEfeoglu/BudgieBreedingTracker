@@ -74,10 +74,7 @@ extension _AiSettingsFormBody on _AiSettingsSheetState {
               .map(
                 (model) => DropdownMenuItem<String>(
                   value: model,
-                  child: Text(
-                    model,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  child: Text(model, overflow: TextOverflow.ellipsis),
                 ),
               )
               .toList(growable: false),

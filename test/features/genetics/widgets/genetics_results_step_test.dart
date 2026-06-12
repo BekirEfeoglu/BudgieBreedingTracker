@@ -155,7 +155,9 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           overrides: [
-            offspringResultsProvider.overrideWithValue(const AsyncData(_results)),
+            offspringResultsProvider.overrideWithValue(
+              const AsyncData(_results),
+            ),
             enrichedOffspringResultsProvider.overrideWithValue(_results),
             punnettSquareProvider.overrideWithValue(null),
             offspringChartDataProvider.overrideWithValue(const []),
@@ -185,7 +187,9 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           overrides: [
-            offspringResultsProvider.overrideWithValue(const AsyncData(interactionResults)),
+            offspringResultsProvider.overrideWithValue(
+              const AsyncData(interactionResults),
+            ),
             enrichedOffspringResultsProvider.overrideWithValue(
               interactionResults,
             ),

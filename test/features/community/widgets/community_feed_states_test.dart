@@ -154,8 +154,9 @@ void main() {
       expect(find.byIcon(LucideIcons.searchX), findsOneWidget);
     });
 
-    testWidgets('explore: shows FilledButton.tonal when onReset is provided',
-        (tester) async {
+    testWidgets('explore: shows FilledButton.tonal when onReset is provided', (
+      tester,
+    ) async {
       var resetCalled = false;
       await tester.pumpWidget(
         wrap(
@@ -173,8 +174,9 @@ void main() {
       expect(resetCalled, isTrue);
     });
 
-    testWidgets('explore: hides reset button when onReset is null',
-        (tester) async {
+    testWidgets('explore: hides reset button when onReset is null', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         wrap(
           const FilteredFeedEmptyState(
@@ -189,26 +191,28 @@ void main() {
       expect(find.byType(OutlinedButton), findsNothing);
     });
 
-    testWidgets('following: shows OutlinedButton.icon when onReset is provided',
-        (tester) async {
-      var resetCalled = false;
-      await tester.pumpWidget(
-        wrap(
-          FilteredFeedEmptyState(
-            tab: CommunityFeedTab.following,
-            onReset: () => resetCalled = true,
+    testWidgets(
+      'following: shows OutlinedButton.icon when onReset is provided',
+      (tester) async {
+        var resetCalled = false;
+        await tester.pumpWidget(
+          wrap(
+            FilteredFeedEmptyState(
+              tab: CommunityFeedTab.following,
+              onReset: () => resetCalled = true,
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.byType(OutlinedButton), findsOneWidget);
-      expect(find.byIcon(LucideIcons.compass), findsOneWidget);
-      expect(find.text(l10n('community.go_to_explore')), findsOneWidget);
+        expect(find.byType(OutlinedButton), findsOneWidget);
+        expect(find.byIcon(LucideIcons.compass), findsOneWidget);
+        expect(find.text(l10n('community.go_to_explore')), findsOneWidget);
 
-      await tester.tap(find.byType(OutlinedButton));
-      expect(resetCalled, isTrue);
-    });
+        await tester.tap(find.byType(OutlinedButton));
+        expect(resetCalled, isTrue);
+      },
+    );
 
     testWidgets('following: hides button when onReset is null', (tester) async {
       await tester.pumpWidget(
@@ -225,44 +229,47 @@ void main() {
       expect(find.byType(FilledButton), findsNothing);
     });
 
-    testWidgets('guides (founder): shows FilledButton.icon with write guide CTA',
-        (tester) async {
-      var resetCalled = false;
-      await tester.pumpWidget(
-        wrap(
-          FilteredFeedEmptyState(
-            tab: CommunityFeedTab.guides,
-            onReset: () => resetCalled = true,
+    testWidgets(
+      'guides (founder): shows FilledButton.icon with write guide CTA',
+      (tester) async {
+        var resetCalled = false;
+        await tester.pumpWidget(
+          wrap(
+            FilteredFeedEmptyState(
+              tab: CommunityFeedTab.guides,
+              onReset: () => resetCalled = true,
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.byType(FilledButton), findsOneWidget);
-      expect(find.byIcon(LucideIcons.pencil), findsOneWidget);
-      expect(find.text(l10n('community.write_first_guide')), findsOneWidget);
+        expect(find.byType(FilledButton), findsOneWidget);
+        expect(find.byIcon(LucideIcons.pencil), findsOneWidget);
+        expect(find.text(l10n('community.write_first_guide')), findsOneWidget);
 
-      await tester.tap(find.byType(FilledButton));
-      expect(resetCalled, isTrue);
-    });
+        await tester.tap(find.byType(FilledButton));
+        expect(resetCalled, isTrue);
+      },
+    );
 
     testWidgets(
-        'guides (non-founder): shows guides_coming_soon subtitle, no CTA',
-        (tester) async {
-      await tester.pumpWidget(
-        wrap(
-          const FilteredFeedEmptyState(
-            tab: CommunityFeedTab.guides,
-            onReset: null,
+      'guides (non-founder): shows guides_coming_soon subtitle, no CTA',
+      (tester) async {
+        await tester.pumpWidget(
+          wrap(
+            const FilteredFeedEmptyState(
+              tab: CommunityFeedTab.guides,
+              onReset: null,
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text(l10n('community.guides_coming_soon')), findsOneWidget);
-      expect(find.byType(FilledButton), findsNothing);
-      expect(find.byType(OutlinedButton), findsNothing);
-    });
+        expect(find.text(l10n('community.guides_coming_soon')), findsOneWidget);
+        expect(find.byType(FilledButton), findsNothing);
+        expect(find.byType(OutlinedButton), findsNothing);
+      },
+    );
 
     testWidgets('questions: no CTA button', (tester) async {
       await tester.pumpWidget(

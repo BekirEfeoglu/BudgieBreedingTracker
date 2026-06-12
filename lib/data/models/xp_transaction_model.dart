@@ -19,5 +19,6 @@ abstract class XpTransaction with _$XpTransaction {
     DateTime? createdAt,
   }) = _XpTransaction;
 
-  factory XpTransaction.fromJson(Map<String, dynamic> json) => _$XpTransactionFromJson(json);
+  factory XpTransaction.fromJson(Map<String, dynamic> json) =>
+      _$XpTransactionFromJson(json);
 }

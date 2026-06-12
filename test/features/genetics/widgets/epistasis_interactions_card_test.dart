@@ -7,16 +7,15 @@ import 'package:budgie_breeding_tracker/features/genetics/widgets/epistasis_inte
 
 Widget _wrap(Widget child) {
   return MaterialApp(
-    home: Scaffold(
-      body: SingleChildScrollView(child: child),
-    ),
+    home: Scaffold(body: SingleChildScrollView(child: child)),
   );
 }
 
 void main() {
   group('EpistasisInteractionsCard', () {
-    testWidgets('returns SizedBox.shrink when interactions is empty',
-        (tester) async {
+    testWidgets('returns SizedBox.shrink when interactions is empty', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrap(const EpistasisInteractionsCard(interactions: [])),
       );
@@ -26,8 +25,9 @@ void main() {
       expect(find.text(l10n('genetics.interaction_info')), findsNothing);
     });
 
-    testWidgets('renders without crashing with one interaction',
-        (tester) async {
+    testWidgets('renders without crashing with one interaction', (
+      tester,
+    ) async {
       const interactions = [
         EpistaticInteraction(
           mutationIds: ['blue', 'ino'],
@@ -78,8 +78,9 @@ void main() {
       expect(find.text(l10n('genetics.epistasis_note')), findsOneWidget);
     });
 
-    testWidgets('shows interaction result name with bullet point',
-        (tester) async {
+    testWidgets('shows interaction result name with bullet point', (
+      tester,
+    ) async {
       const interactions = [
         EpistaticInteraction(
           mutationIds: ['blue', 'ino'],

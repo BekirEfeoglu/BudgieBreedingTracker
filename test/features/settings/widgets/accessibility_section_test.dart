@@ -82,19 +82,19 @@ void main() {
 
   group('AccessibilitySection', () {
     testWidgets('hatasiz render edilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(AccessibilitySection), findsOneWidget);
     });
 
     testWidgets('SettingsSectionHeader render edilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(SettingsSectionHeader), findsOneWidget);
     });
 
     testWidgets('yazi boyutu secim tile render edilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(SettingsSelectionTile<AppFontScale>), findsOneWidget);
     });
@@ -102,13 +102,13 @@ void main() {
     testWidgets('iki toggle tile render edilir (animasyon+haptic)', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(SettingsToggleTile), findsNWidgets(2));
     });
 
     testWidgets('reduceAnimations=true iken ilk switch acik', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject(reduceAnimations: true));
+      await pumpLocalizedApp(tester, buildSubject(reduceAnimations: true));
       await tester.pump(const Duration(milliseconds: 500));
 
       final tiles = tester
@@ -121,7 +121,7 @@ void main() {
     testWidgets('hapticFeedback=false iken ikinci switch kapali', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,buildSubject(hapticFeedback: false));
+      await pumpLocalizedApp(tester, buildSubject(hapticFeedback: false));
       await tester.pump(const Duration(milliseconds: 500));
 
       final tiles = tester
@@ -132,7 +132,7 @@ void main() {
     });
 
     testWidgets('reduceAnimations toggle calisir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject(reduceAnimations: false));
+      await pumpLocalizedApp(tester, buildSubject(reduceAnimations: false));
       await tester.pump(const Duration(milliseconds: 500));
 
       final container = ProviderScope.containerOf(
@@ -145,7 +145,7 @@ void main() {
     });
 
     testWidgets('hapticFeedback toggle calisir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject(hapticFeedback: true));
+      await pumpLocalizedApp(tester, buildSubject(hapticFeedback: true));
       await tester.pump(const Duration(milliseconds: 500));
 
       final container = ProviderScope.containerOf(
@@ -160,7 +160,10 @@ void main() {
     testWidgets('fontScale degistirme notifier state guncellenir', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,buildSubject(fontScale: AppFontScale.normal));
+      await pumpLocalizedApp(
+        tester,
+        buildSubject(fontScale: AppFontScale.normal),
+      );
       await tester.pump(const Duration(milliseconds: 500));
 
       final container = ProviderScope.containerOf(

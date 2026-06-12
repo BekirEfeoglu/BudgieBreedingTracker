@@ -25,8 +25,8 @@ class _FakeEdgeFunctionClient extends EdgeFunctionClient {
   _FakeEdgeFunctionClient({
     EdgeFunctionResult? fixedResult,
     this.shouldThrow = false,
-  })  : _fixedResult = fixedResult,
-        super(_MockSupabaseClient());
+  }) : _fixedResult = fixedResult,
+       super(_MockSupabaseClient());
 
   @override
   Future<EdgeFunctionResult> invoke(
@@ -59,8 +59,9 @@ void main() {
 
   group('guardBirdLimit', () {
     test('does not throw when under limit', () async {
-      when(() => mockBirdRepo.getCount('u1'))
-          .thenAnswer((_) async => AppConstants.freeTierMaxBirds - 1);
+      when(
+        () => mockBirdRepo.getCount('u1'),
+      ).thenAnswer((_) async => AppConstants.freeTierMaxBirds - 1);
 
       await service.guardBirdLimit('u1');
 
@@ -68,8 +69,9 @@ void main() {
     });
 
     test('throws FreeTierLimitException at limit', () async {
-      when(() => mockBirdRepo.getCount('u1'))
-          .thenAnswer((_) async => AppConstants.freeTierMaxBirds);
+      when(
+        () => mockBirdRepo.getCount('u1'),
+      ).thenAnswer((_) async => AppConstants.freeTierMaxBirds);
 
       await expectLater(
         service.guardBirdLimit('u1'),
@@ -78,8 +80,9 @@ void main() {
     });
 
     test('throws FreeTierLimitException above limit', () async {
-      when(() => mockBirdRepo.getCount('u1'))
-          .thenAnswer((_) async => AppConstants.freeTierMaxBirds + 2);
+      when(
+        () => mockBirdRepo.getCount('u1'),
+      ).thenAnswer((_) async => AppConstants.freeTierMaxBirds + 2);
 
       await expectLater(
         service.guardBirdLimit('u1'),
@@ -98,8 +101,9 @@ void main() {
 
   group('guardBreedingPairLimit', () {
     test('does not throw when active count is zero', () async {
-      when(() => mockBreedingRepo.getActiveCount('u1'))
-          .thenAnswer((_) async => 0);
+      when(
+        () => mockBreedingRepo.getActiveCount('u1'),
+      ).thenAnswer((_) async => 0);
 
       await service.guardBreedingPairLimit('u1');
 
@@ -107,8 +111,9 @@ void main() {
     });
 
     test('does not throw when under limit', () async {
-      when(() => mockBreedingRepo.getActiveCount('u1'))
-          .thenAnswer((_) async => 1);
+      when(
+        () => mockBreedingRepo.getActiveCount('u1'),
+      ).thenAnswer((_) async => 1);
 
       await service.guardBreedingPairLimit('u1');
 
@@ -116,8 +121,9 @@ void main() {
     });
 
     test('throws when active pairs reach limit', () async {
-      when(() => mockBreedingRepo.getActiveCount('u1'))
-          .thenAnswer((_) async => AppConstants.freeTierMaxBreedingPairs);
+      when(
+        () => mockBreedingRepo.getActiveCount('u1'),
+      ).thenAnswer((_) async => AppConstants.freeTierMaxBreedingPairs);
 
       await expectLater(
         service.guardBreedingPairLimit('u1'),
@@ -126,8 +132,9 @@ void main() {
     });
 
     test('throws when active pairs exceed limit', () async {
-      when(() => mockBreedingRepo.getActiveCount('u1'))
-          .thenAnswer((_) async => AppConstants.freeTierMaxBreedingPairs + 3);
+      when(
+        () => mockBreedingRepo.getActiveCount('u1'),
+      ).thenAnswer((_) async => AppConstants.freeTierMaxBreedingPairs + 3);
 
       await expectLater(
         service.guardBreedingPairLimit('u1'),
@@ -137,8 +144,9 @@ void main() {
 
     test('counts both active and ongoing pairs together', () async {
       // getActiveCount already combines active + ongoing at SQL level
-      when(() => mockBreedingRepo.getActiveCount('u1'))
-          .thenAnswer((_) async => AppConstants.freeTierMaxBreedingPairs);
+      when(
+        () => mockBreedingRepo.getActiveCount('u1'),
+      ).thenAnswer((_) async => AppConstants.freeTierMaxBreedingPairs);
 
       await expectLater(
         service.guardBreedingPairLimit('u1'),
@@ -149,8 +157,9 @@ void main() {
 
   group('guardIncubationLimit', () {
     test('does not throw when count is zero', () async {
-      when(() => mockIncubationRepo.getActiveCount('u1'))
-          .thenAnswer((_) async => 0);
+      when(
+        () => mockIncubationRepo.getActiveCount('u1'),
+      ).thenAnswer((_) async => 0);
 
       await service.guardIncubationLimit('u1');
 
@@ -158,8 +167,9 @@ void main() {
     });
 
     test('does not throw when under limit', () async {
-      when(() => mockIncubationRepo.getActiveCount('u1'))
-          .thenAnswer((_) async => AppConstants.freeTierMaxActiveIncubations - 1);
+      when(
+        () => mockIncubationRepo.getActiveCount('u1'),
+      ).thenAnswer((_) async => AppConstants.freeTierMaxActiveIncubations - 1);
 
       await service.guardIncubationLimit('u1');
 
@@ -167,8 +177,9 @@ void main() {
     });
 
     test('throws when active incubations reach limit', () async {
-      when(() => mockIncubationRepo.getActiveCount('u1'))
-          .thenAnswer((_) async => AppConstants.freeTierMaxActiveIncubations);
+      when(
+        () => mockIncubationRepo.getActiveCount('u1'),
+      ).thenAnswer((_) async => AppConstants.freeTierMaxActiveIncubations);
 
       await expectLater(
         service.guardIncubationLimit('u1'),
@@ -177,8 +188,9 @@ void main() {
     });
 
     test('throws when active incubations exceed limit', () async {
-      when(() => mockIncubationRepo.getActiveCount('u1'))
-          .thenAnswer((_) async => AppConstants.freeTierMaxActiveIncubations + 5);
+      when(
+        () => mockIncubationRepo.getActiveCount('u1'),
+      ).thenAnswer((_) async => AppConstants.freeTierMaxActiveIncubations + 5);
 
       await expectLater(
         service.guardIncubationLimit('u1'),

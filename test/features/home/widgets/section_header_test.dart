@@ -20,10 +20,7 @@ void main() {
     testWidgets('renders icon when provided', (tester) async {
       await pumpTranslatedWidget(
         tester,
-        const SectionHeader(
-          title: 'With Icon',
-          icon: Icon(Icons.star),
-        ),
+        const SectionHeader(title: 'With Icon', icon: Icon(Icons.star)),
       );
 
       expect(find.byIcon(Icons.star), findsOneWidget);
@@ -31,17 +28,15 @@ void main() {
     });
 
     testWidgets('does not render icon when null', (tester) async {
-      await pumpTranslatedWidget(
-        tester,
-        const SectionHeader(title: 'No Icon'),
-      );
+      await pumpTranslatedWidget(tester, const SectionHeader(title: 'No Icon'));
 
       // When icon is null, no Icon widget is rendered inside the header
       expect(find.byIcon(Icons.star), findsNothing);
     });
 
-    testWidgets('shows view all button when onViewAll is provided',
-        (tester) async {
+    testWidgets('shows view all button when onViewAll is provided', (
+      tester,
+    ) async {
       await pumpTranslatedWidget(
         tester,
         SectionHeader(title: 'Section', onViewAll: () {}),
@@ -51,12 +46,8 @@ void main() {
       expect(find.byType(TextButton), findsOneWidget);
     });
 
-    testWidgets('hides view all button when onViewAll is null',
-        (tester) async {
-      await pumpTranslatedWidget(
-        tester,
-        const SectionHeader(title: 'Section'),
-      );
+    testWidgets('hides view all button when onViewAll is null', (tester) async {
+      await pumpTranslatedWidget(tester, const SectionHeader(title: 'Section'));
 
       expect(find.byType(TextButton), findsNothing);
     });

@@ -44,7 +44,9 @@ class _MarketplaceDetailScreenState
     if (_viewCountIncremented || userId == ownerId) return;
     _viewCountIncremented = true;
     // Fire-and-forget — failures logged inside the remote source.
-    ref.read(marketplaceRepositoryProvider).incrementViewCount(widget.listingId);
+    ref
+        .read(marketplaceRepositoryProvider)
+        .incrementViewCount(widget.listingId);
   }
 
   @override

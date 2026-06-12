@@ -25,7 +25,8 @@ final trendStatsProvider = Provider.family<AsyncValue<TrendStats>, String>((
 
   // Fast-fail on any error
   for (final a in [birdsAsync, pairsAsync, eggsAsync, chicksAsync]) {
-    if (a.hasError) return AsyncError(a.error!, a.stackTrace ?? StackTrace.empty);
+    if (a.hasError)
+      return AsyncError(a.error!, a.stackTrace ?? StackTrace.empty);
   }
   // Loading if any stream hasn't resolved
   if (birdsAsync.isLoading ||
@@ -70,10 +71,8 @@ final trendStatsProvider = Provider.family<AsyncValue<TrendStats>, String>((
       .length;
 
   // Eggs in current vs previous period
-  final currentEggs =
-      eggs.where((e) => range.isInCurrent(e.layDate)).length;
-  final previousEggs =
-      eggs.where((e) => range.isInPrevious(e.layDate)).length;
+  final currentEggs = eggs.where((e) => range.isInCurrent(e.layDate)).length;
+  final previousEggs = eggs.where((e) => range.isInPrevious(e.layDate)).length;
 
   // Fertility rate in current vs previous
   final currentFertile = eggs
@@ -85,13 +84,13 @@ final trendStatsProvider = Provider.family<AsyncValue<TrendStats>, String>((
       .length;
   final currentInfertile = eggs
       .where(
-        (e) =>
-            range.isInCurrent(e.layDate) && e.status == EggStatus.infertile,
+        (e) => range.isInCurrent(e.layDate) && e.status == EggStatus.infertile,
       )
       .length;
   final currentChecked = currentFertile + currentInfertile;
-  final currentFertilityRate =
-      currentChecked > 0 ? currentFertile / currentChecked : 0.0;
+  final currentFertilityRate = currentChecked > 0
+      ? currentFertile / currentChecked
+      : 0.0;
 
   final prevFertile = eggs
       .where(
@@ -102,13 +101,11 @@ final trendStatsProvider = Provider.family<AsyncValue<TrendStats>, String>((
       .length;
   final prevInfertile = eggs
       .where(
-        (e) =>
-            range.isInPrevious(e.layDate) && e.status == EggStatus.infertile,
+        (e) => range.isInPrevious(e.layDate) && e.status == EggStatus.infertile,
       )
       .length;
   final prevChecked = prevFertile + prevInfertile;
-  final prevFertilityRate =
-      prevChecked > 0 ? prevFertile / prevChecked : 0.0;
+  final prevFertilityRate = prevChecked > 0 ? prevFertile / prevChecked : 0.0;
 
   // Survival rate in current vs previous
   final currentChicks = chicks
@@ -150,4 +147,3 @@ double _calcTrend(int current, int previous) {
   }
   return ((current - previous) / previous) * 100;
 }
-

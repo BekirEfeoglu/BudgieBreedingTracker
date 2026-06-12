@@ -217,9 +217,10 @@ class FilteredFeedEmptyState extends StatelessWidget {
     final hintKey = switch (tab) {
       CommunityFeedTab.explore => 'community.empty_filtered_hint',
       CommunityFeedTab.following => 'community.empty_following_hint',
-      CommunityFeedTab.guides => onReset == null
-          ? 'community.guides_coming_soon'
-          : 'community.empty_guides_hint',
+      CommunityFeedTab.guides =>
+        onReset == null
+            ? 'community.guides_coming_soon'
+            : 'community.empty_guides_hint',
       CommunityFeedTab.questions => 'community.empty_questions_hint',
     };
 
@@ -234,10 +235,11 @@ class FilteredFeedEmptyState extends StatelessWidget {
         icon: const Icon(LucideIcons.pencil, size: 18),
         label: Text('community.write_first_guide'.tr()),
       ),
-      _ when onReset != null && tab == CommunityFeedTab.explore => FilledButton.tonal(
-        onPressed: onReset,
-        child: Text('community.show_all'.tr()),
-      ),
+      _ when onReset != null && tab == CommunityFeedTab.explore =>
+        FilledButton.tonal(
+          onPressed: onReset,
+          child: Text('community.show_all'.tr()),
+        ),
       _ => null,
     };
 

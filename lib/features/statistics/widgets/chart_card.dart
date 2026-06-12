@@ -33,63 +33,63 @@ class ChartCard extends StatelessWidget {
     return Semantics(
       label: title,
       child: Card(
-      elevation: 1,
-      child: Padding(
-        padding: AppSpacing.cardPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                IconTheme(
-                  data: const IconThemeData(size: AppSpacing.xl),
-                  child: icon,
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (subtitle != null)
+        elevation: 1,
+        child: Padding(
+          padding: AppSpacing.cardPadding,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  IconTheme(
+                    data: const IconThemeData(size: AppSpacing.xl),
+                    child: icon,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          subtitle!,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
+                          title,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
-                    ],
+                        if (subtitle != null)
+                          Text(
+                            subtitle!,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Divider(
-              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-              height: 1,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            if (dataCount != null &&
-                dataCount! > 0 &&
-                dataCount! < lowDataThreshold)
-              ChartLowData(
-                onAction: onLowDataAction,
-                actionLabel: lowDataActionLabel,
-                child: child,
-              )
-            else
-              child,
-          ],
+                ],
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Divider(
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                height: 1,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              if (dataCount != null &&
+                  dataCount! > 0 &&
+                  dataCount! < lowDataThreshold)
+                ChartLowData(
+                  onAction: onLowDataAction,
+                  actionLabel: lowDataActionLabel,
+                  child: child,
+                )
+              else
+                child,
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
 }

@@ -91,7 +91,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text(l10n('birds.family_info')), findsOneWidget);
-      expect(find.textContaining(l10nContains('birds.offspring')), findsAtLeastNWidgets(1));
+      expect(
+        find.textContaining(l10nContains('birds.offspring')),
+        findsAtLeastNWidgets(1),
+      );
     });
 
     testWidgets('shows offspring chip with bird name', (tester) async {
@@ -144,7 +147,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.textContaining(l10nContains('birds.siblings')), findsAtLeastNWidgets(1));
+      expect(
+        find.textContaining(l10nContains('birds.siblings')),
+        findsAtLeastNWidgets(1),
+      );
       expect(find.text('Kardes'), findsOneWidget);
     });
 
@@ -228,8 +234,14 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.textContaining(l10nContains('birds.offspring')), findsAtLeastNWidgets(1));
-      expect(find.textContaining(l10nContains('birds.siblings')), findsAtLeastNWidgets(1));
+      expect(
+        find.textContaining(l10nContains('birds.offspring')),
+        findsAtLeastNWidgets(1),
+      );
+      expect(
+        find.textContaining(l10nContains('birds.siblings')),
+        findsAtLeastNWidgets(1),
+      );
     });
   });
 

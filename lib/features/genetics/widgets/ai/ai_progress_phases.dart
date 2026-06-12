@@ -78,13 +78,17 @@ class _AiProgressPhasesState extends State<AiProgressPhases> {
                   _PhaseRow(
                     label: 'genetics.ai_phase_preparing'.tr(),
                     status: _stepStatus(AiAnalysisPhase.preparing),
-                    elapsed: phase == AiAnalysisPhase.preparing ? _elapsed : null,
+                    elapsed: phase == AiAnalysisPhase.preparing
+                        ? _elapsed
+                        : null,
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   _PhaseRow(
                     label: 'genetics.ai_phase_analyzing'.tr(),
                     status: _stepStatus(AiAnalysisPhase.analyzing),
-                    elapsed: phase == AiAnalysisPhase.analyzing ? _elapsed : null,
+                    elapsed: phase == AiAnalysisPhase.analyzing
+                        ? _elapsed
+                        : null,
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   _PhaseRow(
@@ -117,11 +121,7 @@ class _AiProgressPhasesState extends State<AiProgressPhases> {
 enum _StepStatus { pending, active, done, error }
 
 class _PhaseRow extends StatelessWidget {
-  const _PhaseRow({
-    required this.label,
-    required this.status,
-    this.elapsed,
-  });
+  const _PhaseRow({required this.label, required this.status, this.elapsed});
 
   final String label;
   final _StepStatus status;
@@ -133,35 +133,39 @@ class _PhaseRow extends StatelessWidget {
 
     final (icon, color) = switch (status) {
       _StepStatus.done => (
-          Icon(LucideIcons.checkCircle2, size: 18, color: theme.colorScheme.primary),
-          theme.colorScheme.primary,
+        Icon(
+          LucideIcons.checkCircle2,
+          size: 18,
+          color: theme.colorScheme.primary,
         ),
+        theme.colorScheme.primary,
+      ),
       _StepStatus.active => (
-          SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: theme.colorScheme.primary,
-            ),
+        SizedBox(
+          width: 18,
+          height: 18,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: theme.colorScheme.primary,
           ),
-          theme.colorScheme.primary,
         ),
+        theme.colorScheme.primary,
+      ),
       _StepStatus.error => (
-          Icon(LucideIcons.xCircle, size: 18, color: theme.colorScheme.error),
-          theme.colorScheme.error,
-        ),
+        Icon(LucideIcons.xCircle, size: 18, color: theme.colorScheme.error),
+        theme.colorScheme.error,
+      ),
       _StepStatus.pending => (
-          Container(
-            width: 18,
-            height: 18,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: theme.colorScheme.surfaceContainerHighest,
-            ),
+        Container(
+          width: 18,
+          height: 18,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: theme.colorScheme.surfaceContainerHighest,
           ),
-          theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
         ),
+        theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+      ),
     };
 
     final elapsedLabel = _formatElapsed(elapsed);

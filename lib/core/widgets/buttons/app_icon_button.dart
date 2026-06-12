@@ -34,10 +34,7 @@ class AppIconButton extends StatelessWidget {
       color: color,
       iconSize: iconSize,
       padding: padding,
-      constraints: const BoxConstraints(
-        minWidth: 48,
-        minHeight: 48,
-      ),
+      constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
     );
   }
 }

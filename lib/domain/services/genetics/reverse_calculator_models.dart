@@ -23,9 +23,8 @@ class ReverseCalculationResult {
   /// female)`, so ranking by `max(male, female)` is always the stricter and
   /// more informative signal — it tells the breeder the best sex-targeted
   /// scenario rather than the average.
-  double get maxProbability => probabilityMale > probabilityFemale
-      ? probabilityMale
-      : probabilityFemale;
+  double get maxProbability =>
+      probabilityMale > probabilityFemale ? probabilityMale : probabilityFemale;
 }
 
 /// Internal locus-level result used during reverse calculation.

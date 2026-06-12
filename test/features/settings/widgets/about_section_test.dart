@@ -54,13 +54,13 @@ void main() {
 
   group('AboutSection', () {
     testWidgets('hatasiz render edilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(AboutSection), findsOneWidget);
     });
 
     testWidgets('SettingsSectionHeader render edilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.byType(SettingsSectionHeader), findsOneWidget);
     });
@@ -68,7 +68,7 @@ void main() {
     testWidgets('appInfo yuklendikten sonra versiyon gosterilir', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
 
       // Overflow tüket
@@ -80,7 +80,8 @@ void main() {
       tester,
     ) async {
       // AsyncLoading ile direkt override - pending timer olusturmaz
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             appInfoProvider.overrideWithValue(
@@ -96,7 +97,8 @@ void main() {
     testWidgets('appInfo hatali oldugunda widget hatasiz render edilir', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           overrides: [
             appInfoProvider.overrideWith(
@@ -113,7 +115,7 @@ void main() {
     });
 
     testWidgets('yenilikler tile tiklama dialog acar', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       // 'Whats new' tile'i bul - SettingsNavigationTile ile
       final tiles = find.byType(ListTile);
@@ -122,7 +124,7 @@ void main() {
     });
 
     testWidgets('birden fazla ListTile render edilir', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject());
+      await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       // AboutSection en az 5 tile icerir (versiyon, yenilikler, degerlendir, lisanslar, paylas, destek)
       expect(find.byType(ListTile), findsAtLeastNWidgets(5));

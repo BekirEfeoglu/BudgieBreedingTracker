@@ -13,11 +13,10 @@ import '../../../helpers/test_localization.dart';
 
 Widget _wrap(Widget child) {
   return MaterialApp(
-    home: Scaffold(
-      body: SingleChildScrollView(child: child),
-    ),
+    home: Scaffold(body: SingleChildScrollView(child: child)),
   );
 }
+
 ReverseCalculationResult _makeResult({
   Map<String, AlleleState>? fatherMutations,
   Map<String, AlleleState>? motherMutations,
@@ -41,28 +40,32 @@ ReverseCalculationResult _makeResult({
 void main() {
   group('ParentComboCard', () {
     testWidgets('renders without crashing', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(ParentComboCard(result: _makeResult(), rank: 1)),
       );
       expect(find.byType(ParentComboCard), findsOneWidget);
     });
 
     testWidgets('shows Card widget', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(ParentComboCard(result: _makeResult(), rank: 1)),
       );
       expect(find.byType(Card), findsOneWidget);
     });
 
     testWidgets('shows rank with option label', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(ParentComboCard(result: _makeResult(), rank: 3)),
       );
       expect(find.textContaining('#3'), findsOneWidget);
     });
 
     testWidgets('shows probability percentage', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           ParentComboCard(
             result: _makeResult(probabilityMale: 0.5, probabilityFemale: 0.5),
@@ -74,14 +77,19 @@ void main() {
     });
 
     testWidgets('shows chance label', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(ParentComboCard(result: _makeResult(), rank: 1)),
       );
-      expect(find.textContaining(l10nContains('common.chance')), findsOneWidget);
+      expect(
+        find.textContaining(l10nContains('common.chance')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows father and mother labels', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(ParentComboCard(result: _makeResult(), rank: 1)),
       );
       expect(find.text(l10n('genetics.father')), findsOneWidget);
@@ -89,22 +97,25 @@ void main() {
     });
 
     testWidgets('shows X cross icon between parents', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(ParentComboCard(result: _makeResult(), rank: 1)),
       );
       expect(find.byIcon(LucideIcons.x), findsOneWidget);
     });
 
     testWidgets('shows AppIcon for parent gender icons', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(ParentComboCard(result: _makeResult(), rank: 1)),
       );
       // Both father and mother sides should have AppIcon
       expect(find.byType(AppIcon), findsAtLeastNWidgets(2));
     });
 
-    testWidgets('shows mutation_normal for empty parent genotypes',
-        (tester) async {
+    testWidgets('shows mutation_normal for empty parent genotypes', (
+      tester,
+    ) async {
       const result = ReverseCalculationResult(
         father: ParentGenotype.empty(gender: BirdGender.male),
         mother: ParentGenotype.empty(gender: BirdGender.female),
@@ -112,7 +123,8 @@ void main() {
         probabilityFemale: 1.0,
       );
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const ParentComboCard(result: result, rank: 1)),
       );
       expect(find.text(l10n('genetics.mutation_normal')), findsNWidgets(2));
@@ -124,15 +136,20 @@ void main() {
         motherMutations: {},
       );
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(ParentComboCard(result: result, rank: 1)),
       );
-      expect(find.textContaining(l10nContains('genetics.carrier')), findsAtLeastNWidgets(1));
+      expect(
+        find.textContaining(l10nContains('genetics.carrier')),
+        findsAtLeastNWidgets(1),
+      );
     });
 
     testWidgets('renders with different ranks', (tester) async {
       for (final rank in [1, 2, 5]) {
-        await pumpLocalizedApp(tester,
+        await pumpLocalizedApp(
+          tester,
           _wrap(ParentComboCard(result: _makeResult(), rank: rank)),
         );
         expect(find.textContaining('#$rank'), findsOneWidget);
@@ -142,7 +159,8 @@ void main() {
 
   group('ParentSideRender', () {
     testWidgets('renders without crashing for male parent', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const ParentSideRender(
             title: 'genetics.father',
@@ -155,7 +173,8 @@ void main() {
     });
 
     testWidgets('renders without crashing for female parent', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const ParentSideRender(
             title: 'genetics.mother',
@@ -168,7 +187,8 @@ void main() {
     });
 
     testWidgets('shows title text', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const ParentSideRender(
             title: 'genetics.father',
@@ -181,7 +201,8 @@ void main() {
     });
 
     testWidgets('shows mutation_normal when no mutations', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const ParentSideRender(
             title: 'Test',
@@ -193,14 +214,16 @@ void main() {
       expect(find.text(l10n('genetics.mutation_normal')), findsOneWidget);
     });
 
-    testWidgets('shows mutation labels when parent has mutations',
-        (tester) async {
+    testWidgets('shows mutation labels when parent has mutations', (
+      tester,
+    ) async {
       final parent = ParentGenotype(
         mutations: {'blue': AlleleState.visual},
         gender: BirdGender.male,
       );
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           ParentSideRender(
             title: 'Test',
@@ -214,7 +237,8 @@ void main() {
     });
 
     testWidgets('shows AppIcon for gender', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(
           const ParentSideRender(
             title: 'Test',

@@ -14,24 +14,21 @@ import 'package:budgie_breeding_tracker/features/messaging/screens/group_form_sc
 import '../../../helpers/test_localization.dart';
 
 void main() {
-  Widget buildSubject({
-    MessagingFormNotifier Function()? notifierFactory,
-  }) {
+  Widget buildSubject({MessagingFormNotifier Function()? notifierFactory}) {
     return ProviderScope(
       overrides: [
         currentUserIdProvider.overrideWithValue('test-user'),
         if (notifierFactory != null)
           messagingFormStateProvider.overrideWith(notifierFactory),
       ],
-      child: const MaterialApp(
-        home: GroupFormScreen(),
-      ),
+      child: const MaterialApp(home: GroupFormScreen()),
     );
   }
 
   group('GroupFormScreen', () {
-    testWidgets('renders form with group name field and create button',
-        (tester) async {
+    testWidgets('renders form with group name field and create button', (
+      tester,
+    ) async {
       await pumpLocalizedApp(
         tester,
         buildSubject(notifierFactory: _FakeMessagingFormNotifier.new),
@@ -55,18 +52,14 @@ void main() {
       await tester.tap(find.byType(PrimaryButton));
       await tester.pumpAndSettle();
 
-      expect(
-        find.text(l10n('messaging.group_name_required')),
-        findsOneWidget,
-      );
+      expect(find.text(l10n('messaging.group_name_required')), findsOneWidget);
     });
 
     testWidgets('shows loading state on PrimaryButton', (tester) async {
       await pumpLocalizedApp(
         tester,
         buildSubject(
-          notifierFactory: () =>
-              _FakeMessagingFormNotifier(isLoading: true),
+          notifierFactory: () => _FakeMessagingFormNotifier(isLoading: true),
         ),
         settle: false,
       );
@@ -88,8 +81,9 @@ void main() {
       expect(find.text('My Budgie Group'), findsOneWidget);
     });
 
-    testWidgets('does not show validation error with valid name',
-        (tester) async {
+    testWidgets('does not show validation error with valid name', (
+      tester,
+    ) async {
       await pumpLocalizedApp(
         tester,
         buildSubject(notifierFactory: _FakeMessagingFormNotifier.new),
@@ -99,10 +93,7 @@ void main() {
       await tester.tap(find.byType(PrimaryButton));
       await tester.pumpAndSettle();
 
-      expect(
-        find.text(l10n('messaging.group_name_required')),
-        findsNothing,
-      );
+      expect(find.text(l10n('messaging.group_name_required')), findsNothing);
     });
   });
 }

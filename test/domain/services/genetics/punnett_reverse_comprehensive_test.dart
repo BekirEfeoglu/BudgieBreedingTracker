@@ -19,39 +19,43 @@ void main() {
     Map<String, AlleleState> father,
     Map<String, AlleleState> mother, [
     String? mutId,
-  ]) =>
-      calc.buildPunnettSquareFromGenotypes(
-        father: m(father),
-        mother: f(mother),
-        mutationId: mutId,
-      );
+  ]) => calc.buildPunnettSquareFromGenotypes(
+    father: m(father),
+    mother: f(mother),
+    mutationId: mutId,
+  );
 
   PunnettSquareData? di(
     Map<String, AlleleState> father,
     Map<String, AlleleState> mother,
     String l1,
     String l2,
-  ) =>
-      calc.buildDihybridPunnettSquare(
-        father: m(father),
-        mother: f(mother),
-        locusId1: l1,
-        locusId2: l2,
-      );
+  ) => calc.buildDihybridPunnettSquare(
+    father: m(father),
+    mother: f(mother),
+    locusId1: l1,
+    locusId2: l2,
+  );
 
   // ── PunnettSquareBuilder ──────────────────────────────────────────────
   group('PunnettSquareBuilder', () {
     test('autosomal recessive (blue) carrier x carrier: 2x2', () {
-      final sq = mono({'blue': AlleleState.carrier},
-          {'blue': AlleleState.carrier}, 'blue')!;
+      final sq = mono(
+        {'blue': AlleleState.carrier},
+        {'blue': AlleleState.carrier},
+        'blue',
+      )!;
       expect(sq.cells, hasLength(2));
       expect(sq.cells.first, hasLength(2));
       expect(sq.isSexLinked, isFalse);
     });
 
     test('sex-linked (opaline) Z/W notation', () {
-      final sq = mono({'opaline': AlleleState.carrier},
-          {'opaline': AlleleState.visual}, 'opaline')!;
+      final sq = mono(
+        {'opaline': AlleleState.carrier},
+        {'opaline': AlleleState.visual},
+        'opaline',
+      )!;
       expect(sq.isSexLinked, isTrue);
       expect(sq.fatherAlleles.every((a) => a.startsWith('Z')), isTrue);
       expect(sq.motherAlleles, contains('W'));
@@ -59,37 +63,52 @@ void main() {
     });
 
     test('incomplete dominant (dark_factor) SF x SF: distinct genotypes', () {
-      final sq = mono({'dark_factor': AlleleState.carrier},
-          {'dark_factor': AlleleState.carrier}, 'dark_factor')!;
+      final sq = mono(
+        {'dark_factor': AlleleState.carrier},
+        {'dark_factor': AlleleState.carrier},
+        'dark_factor',
+      )!;
       expect(sq.cells, hasLength(2));
       expect(sq.cells.expand((r) => r).toSet().length, greaterThanOrEqualTo(2));
     });
 
     test('returns non-null for valid genotypes', () {
       expect(
-        mono({'spangle': AlleleState.visual},
-            {'spangle': AlleleState.carrier}, 'spangle'),
+        mono(
+          {'spangle': AlleleState.visual},
+          {'spangle': AlleleState.carrier},
+          'spangle',
+        ),
         isNotNull,
       );
     });
 
     test('homozygous parents: identical alleles per parent', () {
-      final sq = mono({'blue': AlleleState.visual},
-          {'blue': AlleleState.visual}, 'blue')!;
+      final sq = mono(
+        {'blue': AlleleState.visual},
+        {'blue': AlleleState.visual},
+        'blue',
+      )!;
       expect(sq.fatherAlleles.toSet().length, 1);
       expect(sq.motherAlleles.toSet().length, 1);
     });
 
     test('headers contain allele display names', () {
-      final sq = mono({'dark_factor': AlleleState.carrier},
-          {'dark_factor': AlleleState.carrier}, 'dark_factor')!;
+      final sq = mono(
+        {'dark_factor': AlleleState.carrier},
+        {'dark_factor': AlleleState.carrier},
+        'dark_factor',
+      )!;
       expect(sq.fatherAlleles.any((a) => a.contains('D')), isTrue);
       expect(sq.motherAlleles.any((a) => a.contains('D')), isTrue);
     });
 
     test('cell content has slash genotype notation', () {
-      final sq = mono({'violet': AlleleState.carrier},
-          {'violet': AlleleState.visual}, 'violet')!;
+      final sq = mono(
+        {'violet': AlleleState.carrier},
+        {'violet': AlleleState.visual},
+        'violet',
+      )!;
       for (final row in sq.cells) {
         for (final cell in row) {
           expect(cell, contains('/'));
@@ -108,16 +127,22 @@ void main() {
     });
 
     test('allelic series (dilution) square', () {
-      final sq = mono({'greywing': AlleleState.carrier},
-          {'clearwing': AlleleState.visual}, GeneticsConstants.locusDilution)!;
+      final sq = mono(
+        {'greywing': AlleleState.carrier},
+        {'clearwing': AlleleState.visual},
+        GeneticsConstants.locusDilution,
+      )!;
       expect(sq.mutationName, 'Dilution');
       expect(sq.isSexLinked, isFalse);
       expect(sq.cells.expand((r) => r).every((c) => c.contains('/')), isTrue);
     });
 
     test('sex-linked locus alleles have Z prefix', () {
-      final sq = mono({'ino': AlleleState.carrier},
-          {'ino': AlleleState.visual}, GeneticsConstants.locusIno)!;
+      final sq = mono(
+        {'ino': AlleleState.carrier},
+        {'ino': AlleleState.visual},
+        GeneticsConstants.locusIno,
+      )!;
       expect(sq.isSexLinked, isTrue);
       for (final a in sq.fatherAlleles) {
         expect(a, startsWith('Z'));
@@ -131,7 +156,8 @@ void main() {
       final sq = di(
         {'blue': AlleleState.carrier, 'dark_factor': AlleleState.carrier},
         {'blue': AlleleState.carrier, 'dark_factor': AlleleState.carrier},
-        'blue', 'dark_factor',
+        'blue',
+        'dark_factor',
       )!;
       expect(sq.cells, hasLength(4));
       for (final row in sq.cells) {
@@ -143,7 +169,8 @@ void main() {
       final sq = di(
         {'blue': AlleleState.carrier, 'spangle': AlleleState.carrier},
         {'blue': AlleleState.carrier, 'spangle': AlleleState.carrier},
-        'blue', 'spangle',
+        'blue',
+        'spangle',
       )!;
       for (final g in [...sq.fatherAlleles, ...sq.motherAlleles]) {
         expect(g, contains('; '));
@@ -154,7 +181,8 @@ void main() {
       final sq = di(
         {'violet': AlleleState.carrier, 'spangle': AlleleState.carrier},
         {'violet': AlleleState.carrier, 'spangle': AlleleState.carrier},
-        'violet', 'spangle',
+        'violet',
+        'spangle',
       )!;
       expect(sq.cells.expand((r) => r).length, 16);
     });
@@ -163,7 +191,8 @@ void main() {
       final sq = di(
         {'blue': AlleleState.carrier, 'opaline': AlleleState.carrier},
         {'blue': AlleleState.carrier, 'opaline': AlleleState.visual},
-        'blue', 'opaline',
+        'blue',
+        'opaline',
       )!;
       expect(sq.isSexLinked, isTrue);
       expect(sq.cells, hasLength(4));
@@ -173,7 +202,8 @@ void main() {
       final sq = di(
         {'blue': AlleleState.carrier, 'dark_factor': AlleleState.carrier},
         {'blue': AlleleState.carrier, 'dark_factor': AlleleState.carrier},
-        'blue', 'dark_factor',
+        'blue',
+        'dark_factor',
       )!;
       expect(sq.fatherAlleles, hasLength(4));
       expect(sq.motherAlleles, hasLength(4));
@@ -183,22 +213,31 @@ void main() {
       final sq = di(
         {'blue': AlleleState.carrier},
         {'dark_factor': AlleleState.carrier},
-        'blue', 'dark_factor',
+        'blue',
+        'dark_factor',
       )!;
       expect(sq.mutationName, contains('\u00d7'));
     });
 
     test('same locus twice does not crash', () {
       expect(
-        di({'blue': AlleleState.carrier}, {'blue': AlleleState.carrier},
-            'blue', 'blue'),
+        di(
+          {'blue': AlleleState.carrier},
+          {'blue': AlleleState.carrier},
+          'blue',
+          'blue',
+        ),
         isNotNull,
       );
     });
 
     test('wildtype at one locus produces valid square', () {
-      final sq = di({'blue': AlleleState.carrier},
-          {'blue': AlleleState.carrier}, 'blue', 'spangle')!;
+      final sq = di(
+        {'blue': AlleleState.carrier},
+        {'blue': AlleleState.carrier},
+        'blue',
+        'spangle',
+      )!;
       expect(sq.cells, hasLength(4));
     });
   });
@@ -232,8 +271,10 @@ void main() {
       final results = rev.calculateParents({'blue'});
       expect(results, isNotEmpty);
       for (var i = 1; i < results.length; i++) {
-        expect(results[i - 1].maxProbability,
-            greaterThanOrEqualTo(results[i].maxProbability));
+        expect(
+          results[i - 1].maxProbability,
+          greaterThanOrEqualTo(results[i].maxProbability),
+        );
       }
     });
 
@@ -277,8 +318,14 @@ void main() {
 
 bool _hasBlue(ParentGenotype p) {
   const ids = {
-    'blue', 'yellowface_type1', 'yellowface_type2', 'goldenface',
-    'aqua', 'turquoise', 'bluefactor_1', 'bluefactor_2',
+    'blue',
+    'yellowface_type1',
+    'yellowface_type2',
+    'goldenface',
+    'aqua',
+    'turquoise',
+    'bluefactor_1',
+    'bluefactor_2',
   };
   return p.mutations.keys.any(ids.contains);
 }
@@ -288,5 +335,6 @@ String _sig(ReverseCalculationResult r) {
     final e = m.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
     return e.map((x) => '${x.key}:${x.value.name}').join('|');
   }
+
   return '${enc(r.father.mutations)}#${enc(r.mother.mutations)}';
 }

@@ -24,6 +24,7 @@ void main() {
       ),
     );
   }
+
   group('GenderPieChart', () {
     testWidgets('renders ChartEmpty when all counts are zero', (tester) async {
       await pumpLocalizedApp(tester, buildSubject(), settle: false);
@@ -40,13 +41,18 @@ void main() {
     });
 
     testWidgets('renders PieChart when female count provided', (tester) async {
-      await pumpLocalizedApp(tester, buildSubject(femaleCount: 3), settle: false);
+      await pumpLocalizedApp(
+        tester,
+        buildSubject(femaleCount: 3),
+        settle: false,
+      );
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.byType(PieChart), findsOneWidget);
     });
 
     testWidgets('renders PieChart with mixed gender counts', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(maleCount: 4, femaleCount: 3, unknownCount: 1),
         settle: false,
       );
@@ -57,13 +63,18 @@ void main() {
     testWidgets('renders without crashing when only unknown count', (
       tester,
     ) async {
-      await pumpLocalizedApp(tester, buildSubject(unknownCount: 2), settle: false);
+      await pumpLocalizedApp(
+        tester,
+        buildSubject(unknownCount: 2),
+        settle: false,
+      );
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.byType(PieChart), findsOneWidget);
     });
 
     testWidgets('shows legend items when data present', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         buildSubject(maleCount: 2, femaleCount: 2, unknownCount: 1),
         settle: false,
       );
@@ -73,21 +84,24 @@ void main() {
     });
 
     testWidgets('shows total label text key when data present', (tester) async {
-      await pumpLocalizedApp(tester, buildSubject(maleCount: 3, femaleCount: 2), settle: false);
+      await pumpLocalizedApp(
+        tester,
+        buildSubject(maleCount: 3, femaleCount: 2),
+        settle: false,
+      );
       await tester.pump(const Duration(milliseconds: 300));
       // easy_localization returns the key in test env
-      expect(find.textContaining(l10nContains('statistics.total_label')), findsOneWidget);
+      expect(
+        find.textContaining(l10nContains('statistics.total_label')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('resets touch state when data changes via didUpdateWidget', (
       tester,
     ) async {
       // Start with initial data
-      final widget = MaterialApp(
-        home: Scaffold(
-          body: _UpdatableGenderChart(),
-        ),
-      );
+      final widget = MaterialApp(home: Scaffold(body: _UpdatableGenderChart()));
       await pumpLocalizedApp(tester, widget, settle: false);
       await tester.pump(const Duration(milliseconds: 300));
 

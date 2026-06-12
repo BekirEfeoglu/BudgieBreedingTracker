@@ -10,12 +10,12 @@ void main() {
     // Stub SharedPreferences used by easy_localization
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      const MethodChannel('plugins.flutter.io/shared_preferences'),
-      (call) async {
-        if (call.method == 'getAll') return <String, dynamic>{};
-        return null;
-      },
-    );
+          const MethodChannel('plugins.flutter.io/shared_preferences'),
+          (call) async {
+            if (call.method == 'getAll') return <String, dynamic>{};
+            return null;
+          },
+        );
   });
 
   AuthException makeError(String message, {String? statusCode}) {
@@ -61,7 +61,10 @@ void main() {
 
     test('maps weak password', () {
       final result = mapAuthError(
-        makeError('Password should be at least 6 characters', statusCode: '422'),
+        makeError(
+          'Password should be at least 6 characters',
+          statusCode: '422',
+        ),
       );
       expect(result, isNotEmpty);
     });

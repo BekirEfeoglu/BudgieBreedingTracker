@@ -52,8 +52,7 @@ class MarketplaceTabContent extends ConsumerWidget {
               ref.invalidate(marketplaceListingsProvider(userId));
             },
             child: listingsAsync.when(
-              loading: () =>
-                  const LoadingState(),
+              loading: () => const LoadingState(),
               error: (error, _) => app.ErrorState(
                 message: '${'common.data_load_error'.tr()}: $error',
                 onRetry: () =>

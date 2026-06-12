@@ -69,8 +69,9 @@ void main() {
       await tester.pumpWidget(const MaterialApp(home: SizedBox()));
     });
 
-    testWidgets('shows skeleton loader when feed is loading with no posts',
-        (tester) async {
+    testWidgets('shows skeleton loader when feed is loading with no posts', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -126,7 +127,9 @@ void main() {
       await tester.pumpWidget(const MaterialApp(home: SizedBox()));
     });
 
-    testWidgets('TabBar is always in widget tree (no layout shift)', (tester) async {
+    testWidgets('TabBar is always in widget tree (no layout shift)', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildScope());
       await tester.pump();
 
@@ -146,7 +149,9 @@ void main() {
       await tester.enterText(find.byType(TextField), 'budgie');
       await tester.pump();
 
-      final opacityAfter = tester.widget<AnimatedOpacity>(animatedOpacityFinder);
+      final opacityAfter = tester.widget<AnimatedOpacity>(
+        animatedOpacityFinder,
+      );
       expect(opacityAfter.opacity, 1.0);
 
       await tester.pumpWidget(const MaterialApp(home: SizedBox()));
@@ -154,8 +159,9 @@ void main() {
   });
 
   group('CommunitySearchScreen recent searches', () {
-    testWidgets('does not show recent searches section when history is empty',
-        (tester) async {
+    testWidgets('does not show recent searches section when history is empty', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildScope());
       await tester.pump();
 
@@ -165,8 +171,9 @@ void main() {
       await tester.pumpWidget(const MaterialApp(home: SizedBox()));
     });
 
-    testWidgets('shows recent searches section when history has items',
-        (tester) async {
+    testWidgets('shows recent searches section when history has items', (
+      tester,
+    ) async {
       SharedPreferences.setMockInitialValues({
         'community_search_history': ['budgie', 'muhabbet'],
       });
@@ -182,8 +189,9 @@ void main() {
       await tester.pumpWidget(const MaterialApp(home: SizedBox()));
     });
 
-    testWidgets('tapping clear history removes recent searches section',
-        (tester) async {
+    testWidgets('tapping clear history removes recent searches section', (
+      tester,
+    ) async {
       SharedPreferences.setMockInitialValues({
         'community_search_history': ['budgie'],
       });

@@ -30,7 +30,8 @@ class LimitApproachingBanner extends ConsumerWidget {
     );
     final ratio = birdCount / AppConstants.freeTierMaxBirds;
 
-    if (ratio < AppConstants.freeTierWarningRatio) return const SizedBox.shrink();
+    if (ratio < AppConstants.freeTierWarningRatio)
+      return const SizedBox.shrink();
 
     final remaining = AppConstants.freeTierMaxBirds - birdCount;
     final bannerColor = ratio >= AppConstants.freeTierCriticalRatio

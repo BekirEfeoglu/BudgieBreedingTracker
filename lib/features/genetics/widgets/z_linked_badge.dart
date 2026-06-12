@@ -80,7 +80,11 @@ class ZLinkedBadge extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(LucideIcons.link, size: 10, color: theme.colorScheme.tertiary),
+                Icon(
+                  LucideIcons.link,
+                  size: 10,
+                  color: theme.colorScheme.tertiary,
+                ),
                 const SizedBox(width: 3),
                 Flexible(
                   child: Text(

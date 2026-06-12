@@ -12,9 +12,7 @@ void main() {
 
   Widget buildSubject({required AsyncValue<void> initState}) {
     return ProviderScope(
-      overrides: [
-        appInitializationProvider.overrideWithValue(initState),
-      ],
+      overrides: [appInitializationProvider.overrideWithValue(initState)],
       child: const MaterialApp(home: SplashScreen()),
     );
   }
@@ -73,9 +71,7 @@ void main() {
   });
 
   group('SplashScreen - state transitions', () {
-    testWidgets('loading to error transition shows error body', (
-      tester,
-    ) async {
+    testWidgets('loading to error transition shows error body', (tester) async {
       // Start in loading state.
       await tester.pumpWidget(
         buildSubject(initState: const AsyncLoading<void>()),
@@ -215,9 +211,7 @@ void main() {
   });
 
   group('SplashScreen - image precaching', () {
-    testWidgets('loading body attempts precache without crash', (
-      tester,
-    ) async {
+    testWidgets('loading body attempts precache without crash', (tester) async {
       // Pump loading state — _LoadingBody.didChangeDependencies calls
       // precacheImage('assets/images/budgie-icon.png'). The image will
       // not resolve in tests, but it must not throw.

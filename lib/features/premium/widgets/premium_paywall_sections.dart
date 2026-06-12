@@ -105,8 +105,10 @@ class PremiumTrialBannerSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final packages = ref.watch(premiumOfferingsProvider).value ?? [];
-    final semiAnnualPackage =
-        matchPackageForPlan(packages, PremiumPlan.semiAnnual);
+    final semiAnnualPackage = matchPackageForPlan(
+      packages,
+      PremiumPlan.semiAnnual,
+    );
 
     // Only show trial banner if the package has an introductory offer
     final hasIntroOffer =

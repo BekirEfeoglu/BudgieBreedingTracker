@@ -119,4 +119,3 @@ final geneticsHistorySaveProvider =
     NotifierProvider<GeneticsHistorySaveNotifier, AsyncValue<void>>(
       GeneticsHistorySaveNotifier.new,
     );
-

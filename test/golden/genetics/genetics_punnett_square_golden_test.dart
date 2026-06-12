@@ -11,9 +11,7 @@ import 'package:budgie_breeding_tracker/features/genetics/widgets/punnett_square
 // IMPROVED: golden tests for Punnett square visual regression detection
 
 void main() {
-  testWidgets('renders 4x4 autosomal recessive Punnett square', (
-    tester,
-  ) async {
+  testWidgets('renders 4x4 autosomal recessive Punnett square', (tester) async {
     const data = PunnettSquareData(
       mutationName: 'Ino',
       fatherAlleles: ['ino', '+'],
@@ -25,7 +23,11 @@ void main() {
       isSexLinked: false,
     );
 
-    await _pumpGolden(tester, const Size(400, 300), const PunnettSquareWidget(data: data));
+    await _pumpGolden(
+      tester,
+      const Size(400, 300),
+      const PunnettSquareWidget(data: data),
+    );
 
     await expectLater(
       find.byType(PunnettSquareWidget),
@@ -45,7 +47,11 @@ void main() {
       isSexLinked: true,
     );
 
-    await _pumpGolden(tester, const Size(400, 300), const PunnettSquareWidget(data: data));
+    await _pumpGolden(
+      tester,
+      const Size(400, 300),
+      const PunnettSquareWidget(data: data),
+    );
 
     await expectLater(
       find.byType(PunnettSquareWidget),
@@ -65,10 +71,7 @@ Future<void> _pumpGolden(WidgetTester tester, Size size, Widget child) async {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       home: Scaffold(
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: child,
-        ),
+        body: Padding(padding: const EdgeInsets.all(16), child: child),
       ),
     ),
   );

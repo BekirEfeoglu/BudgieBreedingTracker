@@ -67,9 +67,7 @@ void main() {
 
     ProviderContainer makeContainer() {
       return ProviderContainer(
-        overrides: [
-          localAiServiceProvider.overrideWithValue(mockService),
-        ],
+        overrides: [localAiServiceProvider.overrideWithValue(mockService)],
       );
     }
 
@@ -104,30 +102,38 @@ void main() {
 
     ProviderContainer makeContainer() {
       return ProviderContainer(
-        overrides: [
-          localAiServiceProvider.overrideWithValue(mockService),
-        ],
+        overrides: [localAiServiceProvider.overrideWithValue(mockService)],
       );
     }
 
-    test('GeneticsAiAnalysisNotifier.clear() resets geneticsAiPhaseProvider to idle', () {
-      final container = makeContainer();
-      addTearDown(container.dispose);
+    test(
+      'GeneticsAiAnalysisNotifier.clear() resets geneticsAiPhaseProvider to idle',
+      () {
+        final container = makeContainer();
+        addTearDown(container.dispose);
 
-      // Manually set phase to a non-idle state
-      container.read(geneticsAiPhaseProvider.notifier).set(AiAnalysisPhase.complete);
-      expect(container.read(geneticsAiPhaseProvider), AiAnalysisPhase.complete);
+        // Manually set phase to a non-idle state
+        container
+            .read(geneticsAiPhaseProvider.notifier)
+            .set(AiAnalysisPhase.complete);
+        expect(
+          container.read(geneticsAiPhaseProvider),
+          AiAnalysisPhase.complete,
+        );
 
-      container.read(geneticsAiAnalysisProvider.notifier).clear();
+        container.read(geneticsAiAnalysisProvider.notifier).clear();
 
-      expect(container.read(geneticsAiPhaseProvider), AiAnalysisPhase.idle);
-    });
+        expect(container.read(geneticsAiPhaseProvider), AiAnalysisPhase.idle);
+      },
+    );
 
     test('SexAiAnalysisNotifier.clear() resets sexAiPhaseProvider to idle', () {
       final container = makeContainer();
       addTearDown(container.dispose);
 
-      container.read(sexAiPhaseProvider.notifier).set(AiAnalysisPhase.analyzing);
+      container
+          .read(sexAiPhaseProvider.notifier)
+          .set(AiAnalysisPhase.analyzing);
       expect(container.read(sexAiPhaseProvider), AiAnalysisPhase.analyzing);
 
       container.read(sexAiAnalysisProvider.notifier).clear();
@@ -135,16 +141,21 @@ void main() {
       expect(container.read(sexAiPhaseProvider), AiAnalysisPhase.idle);
     });
 
-    test('MutationImageAiAnalysisNotifier.clear() resets mutationAiPhaseProvider to idle', () {
-      final container = makeContainer();
-      addTearDown(container.dispose);
+    test(
+      'MutationImageAiAnalysisNotifier.clear() resets mutationAiPhaseProvider to idle',
+      () {
+        final container = makeContainer();
+        addTearDown(container.dispose);
 
-      container.read(mutationAiPhaseProvider.notifier).set(AiAnalysisPhase.error);
-      expect(container.read(mutationAiPhaseProvider), AiAnalysisPhase.error);
+        container
+            .read(mutationAiPhaseProvider.notifier)
+            .set(AiAnalysisPhase.error);
+        expect(container.read(mutationAiPhaseProvider), AiAnalysisPhase.error);
 
-      container.read(mutationImageAiAnalysisProvider.notifier).clear();
+        container.read(mutationImageAiAnalysisProvider.notifier).clear();
 
-      expect(container.read(mutationAiPhaseProvider), AiAnalysisPhase.idle);
-    });
+        expect(container.read(mutationAiPhaseProvider), AiAnalysisPhase.idle);
+      },
+    );
   });
 }

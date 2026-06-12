@@ -21,9 +21,7 @@ class MarketplaceFavoritesScreen extends ConsumerWidget {
     final listingsAsync = ref.watch(marketplaceFavoritesProvider(userId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('marketplace.favorites'.tr()),
-      ),
+      appBar: AppBar(title: Text('marketplace.favorites'.tr())),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(marketplaceFavoritesProvider(userId));
@@ -32,8 +30,7 @@ class MarketplaceFavoritesScreen extends ConsumerWidget {
           loading: () => const LoadingState(),
           error: (error, _) => app.ErrorState(
             message: '${'common.data_load_error'.tr()}: $error',
-            onRetry: () =>
-                ref.invalidate(marketplaceFavoritesProvider(userId)),
+            onRetry: () => ref.invalidate(marketplaceFavoritesProvider(userId)),
           ),
           data: (listings) {
             if (listings.isEmpty) {

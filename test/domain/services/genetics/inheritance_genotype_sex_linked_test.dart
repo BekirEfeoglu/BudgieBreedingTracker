@@ -8,37 +8,41 @@ void main() {
   const calculator = MendelianCalculator();
 
   group('Sex-linked genotype inheritance', () {
-    test('visual father x normal mother gives carrier males and visual females',
-        () {
-      final father = ParentGenotype(
-        gender: BirdGender.male,
-        mutations: {'ino': AlleleState.visual},
-      );
-      const mother = ParentGenotype.empty(gender: BirdGender.female);
+    test(
+      'visual father x normal mother gives carrier males and visual females',
+      () {
+        final father = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {'ino': AlleleState.visual},
+        );
+        const mother = ParentGenotype.empty(gender: BirdGender.female);
 
-      final results = calculator.calculateFromGenotypes(
-        father: father,
-        mother: mother,
-      );
+        final results = calculator.calculateFromGenotypes(
+          father: father,
+          mother: mother,
+        );
 
-      expect(results, isNotEmpty);
-      final total = results.fold<double>(0, (sum, r) => sum + r.probability);
-      expect(total, closeTo(1.0, 0.0001));
+        expect(results, isNotEmpty);
+        final total = results.fold<double>(0, (sum, r) => sum + r.probability);
+        expect(total, closeTo(1.0, 0.0001));
 
-      final maleResults =
-          results.where((r) => r.sex == OffspringSex.male).toList();
-      final femaleResults =
-          results.where((r) => r.sex == OffspringSex.female).toList();
+        final maleResults = results
+            .where((r) => r.sex == OffspringSex.male)
+            .toList();
+        final femaleResults = results
+            .where((r) => r.sex == OffspringSex.female)
+            .toList();
 
-      expect(maleResults, isNotEmpty);
-      expect(femaleResults, isNotEmpty);
+        expect(maleResults, isNotEmpty);
+        expect(femaleResults, isNotEmpty);
 
-      expect(
-        maleResults.every((r) => r.isCarrier),
-        isTrue,
-        reason: 'All male offspring should be carriers',
-      );
-    });
+        expect(
+          maleResults.every((r) => r.isCarrier),
+          isTrue,
+          reason: 'All male offspring should be carriers',
+        );
+      },
+    );
 
     test('carrier father x visual mother gives mixed offspring', () {
       final father = ParentGenotype(
@@ -67,8 +71,11 @@ void main() {
                 r.phenotype != 'Normal',
           )
           .toList();
-      expect(visualMales, isNotEmpty,
-          reason: 'Should have visual male offspring');
+      expect(
+        visualMales,
+        isNotEmpty,
+        reason: 'Should have visual male offspring',
+      );
     });
 
     test('normal father x normal mother gives all normal offspring', () {
@@ -84,29 +91,33 @@ void main() {
     });
 
     test(
-        'female carrier state treated as visual for sex-linked (hemizygous rule)',
-        () {
-      const father = ParentGenotype.empty(gender: BirdGender.male);
-      final mother = ParentGenotype(
-        gender: BirdGender.female,
-        mutations: {'cinnamon': AlleleState.carrier},
-      );
+      'female carrier state treated as visual for sex-linked (hemizygous rule)',
+      () {
+        const father = ParentGenotype.empty(gender: BirdGender.male);
+        final mother = ParentGenotype(
+          gender: BirdGender.female,
+          mutations: {'cinnamon': AlleleState.carrier},
+        );
 
-      final results = calculator.calculateFromGenotypes(
-        father: father,
-        mother: mother,
-      );
+        final results = calculator.calculateFromGenotypes(
+          father: father,
+          mother: mother,
+        );
 
-      expect(results, isNotEmpty);
-      final total = results.fold<double>(0, (sum, r) => sum + r.probability);
-      expect(total, closeTo(1.0, 0.0001));
+        expect(results, isNotEmpty);
+        final total = results.fold<double>(0, (sum, r) => sum + r.probability);
+        expect(total, closeTo(1.0, 0.0001));
 
-      final carrierMales = results.where(
-        (r) => r.sex == OffspringSex.male && r.isCarrier,
-      );
-      expect(carrierMales, isNotEmpty,
-          reason: 'Males from visual mother should be carriers');
-    });
+        final carrierMales = results.where(
+          (r) => r.sex == OffspringSex.male && r.isCarrier,
+        );
+        expect(
+          carrierMales,
+          isNotEmpty,
+          reason: 'Males from visual mother should be carriers',
+        );
+      },
+    );
 
     test('visual father x visual mother gives all visual offspring', () {
       final father = ParentGenotype(
@@ -125,10 +136,16 @@ void main() {
 
       expect(results, isNotEmpty);
       for (final r in results) {
-        expect(r.phenotype, isNot('Normal'),
-            reason: 'All offspring should express the mutation');
-        expect(r.isCarrier, isFalse,
-            reason: 'No carriers when both parents are visual');
+        expect(
+          r.phenotype,
+          isNot('Normal'),
+          reason: 'All offspring should express the mutation',
+        );
+        expect(
+          r.isCarrier,
+          isFalse,
+          reason: 'No carriers when both parents are visual',
+        );
       }
     });
 

@@ -131,10 +131,7 @@ class _MutationChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        border: Border.all(
-          color: color.withValues(alpha: 0.20),
-          width: 0.5,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.20), width: 0.5),
       ),
       child: Text(
         label,

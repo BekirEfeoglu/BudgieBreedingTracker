@@ -83,11 +83,16 @@ void main() {
     test('all records have non-empty required fields', () {
       for (final mutation in MutationData.allMutations) {
         expect(mutation.id, isNotEmpty, reason: 'ID should be non-empty');
-        expect(mutation.name, isNotEmpty, reason: '${mutation.id} name should be non-empty');
+        expect(
+          mutation.name,
+          isNotEmpty,
+          reason: '${mutation.id} name should be non-empty',
+        );
         expect(
           mutation.localizationKey,
           startsWith('genetics.mutation_'),
-          reason: '${mutation.id} localizationKey should start with genetics.mutation_',
+          reason:
+              '${mutation.id} localizationKey should start with genetics.mutation_',
         );
         expect(
           mutation.description,
@@ -133,7 +138,8 @@ void main() {
         expect(
           mutation.alleles.length,
           2,
-          reason: '${mutation.id} should have exactly 2 alleles (wildtype + mutant)',
+          reason:
+              '${mutation.id} should have exactly 2 alleles (wildtype + mutant)',
         );
       }
     });
@@ -187,16 +193,21 @@ void main() {
 
     test('contains sex-linked recessive mutations', () {
       final slrMutations = MutationData.allMutations
-          .where(
-            (m) => m.inheritanceType == InheritanceType.sexLinkedRecessive,
-          )
+          .where((m) => m.inheritanceType == InheritanceType.sexLinkedRecessive)
           .toList();
 
       expect(slrMutations, isNotEmpty);
       final slrIds = slrMutations.map((m) => m.id).toSet();
       expect(
         slrIds,
-        containsAll(['ino', 'opaline', 'cinnamon', 'pallid', 'pearly', 'slate']),
+        containsAll([
+          'ino',
+          'opaline',
+          'cinnamon',
+          'pallid',
+          'pearly',
+          'slate',
+        ]),
       );
     });
 
@@ -229,13 +240,15 @@ void main() {
             expect(
               mutation.dominance,
               Dominance.recessive,
-              reason: '${mutation.id} recessive type should have recessive dominance',
+              reason:
+                  '${mutation.id} recessive type should have recessive dominance',
             );
           case InheritanceType.autosomalDominant:
             expect(
               mutation.dominance,
               Dominance.dominant,
-              reason: '${mutation.id} dominant type should have dominant dominance',
+              reason:
+                  '${mutation.id} dominant type should have dominant dominance',
             );
           case InheritanceType.autosomalIncompleteDominant:
             expect(
@@ -248,7 +261,8 @@ void main() {
             expect(
               mutation.dominance,
               Dominance.codominant,
-              reason: '${mutation.id} codominant type should have codominant dominance',
+              reason:
+                  '${mutation.id} codominant type should have codominant dominance',
             );
         }
       }
@@ -283,10 +297,7 @@ void main() {
           .map((m) => m.id)
           .toSet();
 
-      expect(
-        dilutionAlleles,
-        containsAll({'greywing', 'clearwing', 'dilute'}),
-      );
+      expect(dilutionAlleles, containsAll({'greywing', 'clearwing', 'dilute'}));
     });
 
     test('ino locus contains ino, pallid, texas_clearbody, pearly', () {
@@ -348,7 +359,8 @@ void main() {
           expect(
             rank,
             greaterThan(0),
-            reason: 'Alleles at locus ${entry.key} should have positive dominanceRank',
+            reason:
+                'Alleles at locus ${entry.key} should have positive dominanceRank',
           );
         }
       }
@@ -446,9 +458,7 @@ void main() {
     });
 
     test('spangle mutation is incomplete dominant', () {
-      final sp = MutationData.allMutations.firstWhere(
-        (m) => m.id == 'spangle',
-      );
+      final sp = MutationData.allMutations.firstWhere((m) => m.id == 'spangle');
 
       expect(sp.inheritanceType, InheritanceType.autosomalIncompleteDominant);
       expect(sp.dominance, Dominance.incompleteDominant);
@@ -466,15 +476,18 @@ void main() {
       expect(pearly.category, 'Ino');
     });
 
-    test('texas_clearbody mutation is ino-locus sex-linked with highest rank', () {
-      final tcb = MutationData.allMutations.firstWhere(
-        (m) => m.id == 'texas_clearbody',
-      );
+    test(
+      'texas_clearbody mutation is ino-locus sex-linked with highest rank',
+      () {
+        final tcb = MutationData.allMutations.firstWhere(
+          (m) => m.id == 'texas_clearbody',
+        );
 
-      expect(tcb.inheritanceType, InheritanceType.sexLinkedRecessive);
-      expect(tcb.locusId, 'ino_locus');
-      expect(tcb.dominanceRank, 4);
-    });
+        expect(tcb.inheritanceType, InheritanceType.sexLinkedRecessive);
+        expect(tcb.locusId, 'ino_locus');
+        expect(tcb.dominanceRank, 4);
+      },
+    );
 
     test('crested mutations share the crested locus', () {
       final crested = MutationData.allMutations
@@ -513,10 +526,11 @@ void main() {
     });
 
     test('blue series locus has ascending dominance ranks', () {
-      final blueSeries = MutationData.allMutations
-          .where((m) => m.locusId == 'blue_series')
-          .toList()
-        ..sort((a, b) => a.dominanceRank.compareTo(b.dominanceRank));
+      final blueSeries =
+          MutationData.allMutations
+              .where((m) => m.locusId == 'blue_series')
+              .toList()
+            ..sort((a, b) => a.dominanceRank.compareTo(b.dominanceRank));
 
       // blue should have the lowest rank
       expect(blueSeries.first.id, 'blue');

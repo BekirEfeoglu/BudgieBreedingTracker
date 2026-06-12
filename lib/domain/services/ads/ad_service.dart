@@ -9,9 +9,7 @@ import 'package:budgie_breeding_tracker/bootstrap.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 
 bool get _shouldDeferAdsOnDebugIosSimulator =>
-    !kReleaseMode &&
-    Platform.isIOS &&
-    isIosSimulatorRuntime;
+    !kReleaseMode && Platform.isIOS && isIosSimulatorRuntime;
 
 /// Manages interstitial, banner, and rewarded ads for free-tier users.
 ///

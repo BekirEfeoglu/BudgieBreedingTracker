@@ -46,10 +46,7 @@ void main() {
     });
 
     test('throws on empty string', () {
-      expect(
-        () => assertSafeIdentifier(''),
-        throwsA(isA<ArgumentError>()),
-      );
+      expect(() => assertSafeIdentifier(''), throwsA(isA<ArgumentError>()));
     });
 
     test('throws on special characters', () {

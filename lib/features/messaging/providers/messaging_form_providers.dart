@@ -27,14 +27,12 @@ class MessagingFormState {
     String? error,
     bool? isSuccess,
     String? resultConversationId,
-  }) =>
-      MessagingFormState(
-        isLoading: isLoading ?? this.isLoading,
-        error: error,
-        isSuccess: isSuccess ?? this.isSuccess,
-        resultConversationId:
-            resultConversationId ?? this.resultConversationId,
-      );
+  }) => MessagingFormState(
+    isLoading: isLoading ?? this.isLoading,
+    error: error,
+    isSuccess: isSuccess ?? this.isSuccess,
+    resultConversationId: resultConversationId ?? this.resultConversationId,
+  );
 }
 
 class MessagingFormNotifier extends Notifier<MessagingFormState> {
@@ -63,18 +61,14 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
       // Client-side throttle — prevent rapid-fire messages
       final now = DateTime.now();
       if (_lastSentAt != null && now.difference(_lastSentAt!) < _sendCooldown) {
-        state = state.copyWith(
-          error: 'messaging.send_cooldown'.tr(),
-        );
+        state = state.copyWith(error: 'messaging.send_cooldown'.tr());
         return;
       }
 
       // Content length validation
       final trimmedContent = content?.trim();
       if (trimmedContent != null && trimmedContent.length > _maxContentLength) {
-        state = state.copyWith(
-          error: 'community.content_too_long'.tr(),
-        );
+        state = state.copyWith(error: 'community.content_too_long'.tr());
         return;
       }
 
@@ -219,5 +213,5 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
 
 final messagingFormStateProvider =
     NotifierProvider<MessagingFormNotifier, MessagingFormState>(
-  MessagingFormNotifier.new,
-);
+      MessagingFormNotifier.new,
+    );

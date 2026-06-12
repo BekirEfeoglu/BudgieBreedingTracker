@@ -164,9 +164,8 @@ class MarketplaceListingCard extends StatelessWidget {
               imageUrl: listing.primaryImageUrl!,
               fit: BoxFit.cover,
               memCacheWidth: 640,
-              placeholder: (_, __) => ColoredBox(
-                color: theme.colorScheme.surfaceContainerHighest,
-              ),
+              placeholder: (_, __) =>
+                  ColoredBox(color: theme.colorScheme.surfaceContainerHighest),
               errorWidget: (_, _, _) => Container(
                 color: theme.colorScheme.surfaceContainerHighest,
                 child: Icon(
@@ -297,12 +296,36 @@ class MarketplaceListingCard extends StatelessWidget {
     MarketplaceListingType.unknown => '',
   };
 
-  Widget _listingTypeIcon(MarketplaceListingType type, {double? size, Color? color}) => switch (type) {
-    MarketplaceListingType.sale => Icon(LucideIcons.tag, size: size, color: color),
-    MarketplaceListingType.adoption => AppIcon(AppIcons.heart, size: size, color: color),
-    MarketplaceListingType.trade => Icon(LucideIcons.arrowLeftRight, size: size, color: color),
-    MarketplaceListingType.wanted => Icon(LucideIcons.search, size: size, color: color),
-    MarketplaceListingType.unknown => Icon(LucideIcons.helpCircle, size: size, color: color),
+  Widget _listingTypeIcon(
+    MarketplaceListingType type, {
+    double? size,
+    Color? color,
+  }) => switch (type) {
+    MarketplaceListingType.sale => Icon(
+      LucideIcons.tag,
+      size: size,
+      color: color,
+    ),
+    MarketplaceListingType.adoption => AppIcon(
+      AppIcons.heart,
+      size: size,
+      color: color,
+    ),
+    MarketplaceListingType.trade => Icon(
+      LucideIcons.arrowLeftRight,
+      size: size,
+      color: color,
+    ),
+    MarketplaceListingType.wanted => Icon(
+      LucideIcons.search,
+      size: size,
+      color: color,
+    ),
+    MarketplaceListingType.unknown => Icon(
+      LucideIcons.helpCircle,
+      size: size,
+      color: color,
+    ),
   };
 
   Color _listingTypeColor(MarketplaceListingType type) => switch (type) {

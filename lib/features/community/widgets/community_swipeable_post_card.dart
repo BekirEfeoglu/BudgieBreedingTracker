@@ -79,14 +79,16 @@ class _SwipeablePostCardState extends ConsumerState<SwipeablePostCard>
               child: Container(
                 margin: const EdgeInsets.only(bottom: AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: (isRight
-                          ? theme.colorScheme.primaryContainer
-                          : theme.colorScheme.tertiaryContainer)
-                      .withValues(alpha: progress * 0.8),
+                  color:
+                      (isRight
+                              ? theme.colorScheme.primaryContainer
+                              : theme.colorScheme.tertiaryContainer)
+                          .withValues(alpha: progress * 0.8),
                   borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
                 ),
-                alignment:
-                    isRight ? Alignment.centerLeft : Alignment.centerRight,
+                alignment: isRight
+                    ? Alignment.centerLeft
+                    : Alignment.centerRight,
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
                 child: Opacity(
                   opacity: progress,

@@ -119,9 +119,7 @@ class NotificationListScreen extends ConsumerWidget {
                                           feedbacks: feedbacks,
                                         ),
                                         if (filtered.isNotEmpty)
-                                          const Divider(
-                                            height: AppSpacing.lg,
-                                          ),
+                                          const Divider(height: AppSpacing.lg),
                                       ],
                                     )
                                   : const SizedBox.shrink(),
@@ -148,11 +146,8 @@ class NotificationListScreen extends ConsumerWidget {
                                     ref,
                                     notification,
                                   ),
-                                  onDismiss: () => _onDelete(
-                                    context,
-                                    ref,
-                                    notification.id,
-                                  ),
+                                  onDismiss: () =>
+                                      _onDelete(context, ref, notification.id),
                                 );
                               },
                             ),

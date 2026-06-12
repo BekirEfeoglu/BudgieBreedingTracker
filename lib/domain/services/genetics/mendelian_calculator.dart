@@ -270,5 +270,4 @@ class MendelianCalculator {
     // Multi-locus combination: multiply probabilities across loci
     return _combineMultiLocus(perLocusResults);
   }
-
 }

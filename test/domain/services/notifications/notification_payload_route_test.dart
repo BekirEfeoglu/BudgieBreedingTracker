@@ -33,17 +33,11 @@ void main() {
     });
 
     test('maps bird payload', () {
-      expect(
-        NotificationService.payloadToRoute('bird:$_id'),
-        '/birds/$_id',
-      );
+      expect(NotificationService.payloadToRoute('bird:$_id'), '/birds/$_id');
     });
 
     test('maps chick payload', () {
-      expect(
-        NotificationService.payloadToRoute('chick:$_id'),
-        '/chicks/$_id',
-      );
+      expect(NotificationService.payloadToRoute('chick:$_id'), '/chicks/$_id');
     });
 
     test('maps chick_care payload to chick route', () {
@@ -61,10 +55,7 @@ void main() {
     });
 
     test('maps egg payload to breeding list (id not validated)', () {
-      expect(
-        NotificationService.payloadToRoute('egg:any-id'),
-        '/breeding',
-      );
+      expect(NotificationService.payloadToRoute('egg:any-id'), '/breeding');
     });
 
     test('maps egg_turning payload to breeding list (id not validated)', () {
@@ -82,10 +73,7 @@ void main() {
     });
 
     test('maps event payload to calendar (id not validated)', () {
-      expect(
-        NotificationService.payloadToRoute('event:any-id'),
-        '/calendar',
-      );
+      expect(NotificationService.payloadToRoute('event:any-id'), '/calendar');
     });
 
     test('maps event_reminder payload to calendar (id not validated)', () {
@@ -103,18 +91,12 @@ void main() {
     });
 
     test('returns null for unknown type', () {
-      expect(
-        NotificationService.payloadToRoute('unknown:$_id'),
-        isNull,
-      );
+      expect(NotificationService.payloadToRoute('unknown:$_id'), isNull);
     });
 
     group('security: rejects malformed ids', () {
       test('rejects bird payload with non-UUID id', () {
-        expect(
-          NotificationService.payloadToRoute('bird:not-a-uuid'),
-          isNull,
-        );
+        expect(NotificationService.payloadToRoute('bird:not-a-uuid'), isNull);
       });
 
       test('rejects breeding payload with path traversal', () {
@@ -125,10 +107,7 @@ void main() {
       });
 
       test('rejects health_check payload with empty id', () {
-        expect(
-          NotificationService.payloadToRoute('health_check:'),
-          isNull,
-        );
+        expect(NotificationService.payloadToRoute('health_check:'), isNull);
       });
     });
   });

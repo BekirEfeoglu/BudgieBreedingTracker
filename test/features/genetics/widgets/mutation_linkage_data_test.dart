@@ -41,38 +41,44 @@ void main() {
     });
 
     test('opaline-cinnamon linkage is 34 cM', () {
-      final entry = mutationLinkageMap['opaline']!
-          .firstWhere((e) => e.label == 'Cinnamon');
+      final entry = mutationLinkageMap['opaline']!.firstWhere(
+        (e) => e.label == 'Cinnamon',
+      );
       expect(entry.centiMorgans, equals(34));
     });
 
     test('opaline-ino linkage is 30 cM', () {
-      final entry = mutationLinkageMap['opaline']!
-          .firstWhere((e) => e.label == 'Ino');
+      final entry = mutationLinkageMap['opaline']!.firstWhere(
+        (e) => e.label == 'Ino',
+      );
       expect(entry.centiMorgans, equals(30));
     });
 
     test('opaline-slate linkage is 40 cM', () {
-      final entry = mutationLinkageMap['opaline']!
-          .firstWhere((e) => e.label == 'Slate');
+      final entry = mutationLinkageMap['opaline']!.firstWhere(
+        (e) => e.label == 'Slate',
+      );
       expect(entry.centiMorgans, equals(40));
     });
 
     test('cinnamon-ino linkage is 3 cM', () {
-      final entry = mutationLinkageMap['cinnamon']!
-          .firstWhere((e) => e.label == 'Ino');
+      final entry = mutationLinkageMap['cinnamon']!.firstWhere(
+        (e) => e.label == 'Ino',
+      );
       expect(entry.centiMorgans, equals(3));
     });
 
     test('ino-slate linkage is 2 cM', () {
-      final entry = mutationLinkageMap['ino']!
-          .firstWhere((e) => e.label == 'Slate');
+      final entry = mutationLinkageMap['ino']!.firstWhere(
+        (e) => e.label == 'Slate',
+      );
       expect(entry.centiMorgans, equals(2));
     });
 
     test('cinnamon-slate linkage is 5 cM', () {
-      final entry = mutationLinkageMap['cinnamon']!
-          .firstWhere((e) => e.label == 'Slate');
+      final entry = mutationLinkageMap['cinnamon']!.firstWhere(
+        (e) => e.label == 'Slate',
+      );
       expect(entry.centiMorgans, equals(5));
     });
 
@@ -83,7 +89,9 @@ void main() {
       for (var i = 0; i < pearlyEntries.length; i++) {
         expect(pearlyEntries[i].label, equals(inoEntries[i].label));
         expect(
-            pearlyEntries[i].centiMorgans, equals(inoEntries[i].centiMorgans));
+          pearlyEntries[i].centiMorgans,
+          equals(inoEntries[i].centiMorgans),
+        );
       }
     });
 
@@ -94,7 +102,9 @@ void main() {
       for (var i = 0; i < pallidEntries.length; i++) {
         expect(pallidEntries[i].label, equals(inoEntries[i].label));
         expect(
-            pallidEntries[i].centiMorgans, equals(inoEntries[i].centiMorgans));
+          pallidEntries[i].centiMorgans,
+          equals(inoEntries[i].centiMorgans),
+        );
       }
     });
 

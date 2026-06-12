@@ -87,18 +87,15 @@ void main() {
       expect(result, contains('Dutch Clearflight Pied'));
     });
 
-    test(
-      'Recessive Pied + Dominant Pied shows both independently',
-      () {
-        final result = engine.resolveCompoundPhenotype({
-          GeneticsConstants.mutRecessivePied,
-          GeneticsConstants.mutDominantPied,
-        });
+    test('Recessive Pied + Dominant Pied shows both independently', () {
+      final result = engine.resolveCompoundPhenotype({
+        GeneticsConstants.mutRecessivePied,
+        GeneticsConstants.mutDominantPied,
+      });
 
-        expect(result, contains('Recessive Pied'));
-        expect(result, contains('Dominant Pied'));
-      },
-    );
+      expect(result, contains('Recessive Pied'));
+      expect(result, contains('Dominant Pied'));
+    });
   });
 
   group('_addCrestedNaming — single crested alleles', () {
@@ -301,8 +298,7 @@ void main() {
       });
 
       // Should NOT show individual pied names separately
-      final recessiveCount =
-          'Recessive Pied'.allMatches(result).length;
+      final recessiveCount = 'Recessive Pied'.allMatches(result).length;
       expect(recessiveCount, 0);
     });
   });

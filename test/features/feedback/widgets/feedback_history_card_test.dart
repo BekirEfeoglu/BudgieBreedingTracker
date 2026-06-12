@@ -42,24 +42,24 @@ void main() {
 
   group('FeedbackHistoryCard', () {
     testWidgets('renders without errors', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject(_makeEntry()));
+      await pumpLocalizedApp(tester, buildSubject(_makeEntry()));
       expect(find.byType(FeedbackHistoryCard), findsOneWidget);
     });
 
     testWidgets('displays entry subject text', (tester) async {
       final entry = _makeEntry(subject: 'Unique card subject');
-      await pumpLocalizedApp(tester,buildSubject(entry));
+      await pumpLocalizedApp(tester, buildSubject(entry));
       expect(find.text('Unique card subject'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('displays message preview text', (tester) async {
       final entry = _makeEntry(message: 'Preview message text here');
-      await pumpLocalizedApp(tester,buildSubject(entry));
+      await pumpLocalizedApp(tester, buildSubject(entry));
       expect(find.text('Preview message text here'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('shows FeedbackStatusBadge', (tester) async {
-      await pumpLocalizedApp(tester,buildSubject(_makeEntry()));
+      await pumpLocalizedApp(tester, buildSubject(_makeEntry()));
       expect(find.byType(FeedbackStatusBadge), findsOneWidget);
     });
 
@@ -67,8 +67,11 @@ void main() {
       'shows admin response indicator when adminResponse is non-empty',
       (tester) async {
         final entry = _makeEntry(adminResponse: 'Admin replied here');
-        await pumpLocalizedApp(tester,buildSubject(entry));
-        expect(find.text(l10n('feedback.admin_response')), findsAtLeastNWidgets(1));
+        await pumpLocalizedApp(tester, buildSubject(entry));
+        expect(
+          find.text(l10n('feedback.admin_response')),
+          findsAtLeastNWidgets(1),
+        );
       },
     );
 
@@ -76,7 +79,7 @@ void main() {
       'does not show admin response indicator when adminResponse is null',
       (tester) async {
         final entry = _makeEntry(adminResponse: null);
-        await pumpLocalizedApp(tester,buildSubject(entry));
+        await pumpLocalizedApp(tester, buildSubject(entry));
         expect(find.text(l10n('feedback.admin_response')), findsNothing);
       },
     );
@@ -85,14 +88,14 @@ void main() {
       'does not show admin response indicator when adminResponse is empty',
       (tester) async {
         final entry = _makeEntry(adminResponse: '');
-        await pumpLocalizedApp(tester,buildSubject(entry));
+        await pumpLocalizedApp(tester, buildSubject(entry));
         expect(find.text(l10n('feedback.admin_response')), findsNothing);
       },
     );
 
     testWidgets('shows "just_now" label for very recent entry', (tester) async {
       final entry = _makeEntry(createdAt: DateTime.now());
-      await pumpLocalizedApp(tester,buildSubject(entry));
+      await pumpLocalizedApp(tester, buildSubject(entry));
       expect(find.text(l10n('common.just_now')), findsAtLeastNWidgets(1));
     });
 
@@ -111,7 +114,8 @@ void main() {
       tester,
     ) async {
       final entry = _makeEntry(subject: 'Detail sheet trigger');
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(body: FeedbackHistoryCard(entry: entry)),
@@ -135,7 +139,7 @@ void main() {
     ) async {
       for (final cat in FeedbackCategory.values) {
         final entry = _makeEntry(category: cat);
-        await pumpLocalizedApp(tester,buildSubject(entry));
+        await pumpLocalizedApp(tester, buildSubject(entry));
         expect(find.byType(FeedbackHistoryCard), findsOneWidget);
       }
     });

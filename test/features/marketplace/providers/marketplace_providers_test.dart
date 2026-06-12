@@ -117,10 +117,7 @@ void main() {
       container.read(marketplaceSortProvider.notifier).state =
           MarketplaceSort.priceAsc;
 
-      expect(
-        container.read(marketplaceSortProvider),
-        MarketplaceSort.priceAsc,
-      );
+      expect(container.read(marketplaceSortProvider), MarketplaceSort.priceAsc);
     });
 
     test('can be updated to priceDesc', () {
@@ -214,9 +211,7 @@ void main() {
       ).thenAnswer((_) async => listings);
 
       final container = ProviderContainer(
-        overrides: [
-          marketplaceRepositoryProvider.overrideWithValue(mockRepo),
-        ],
+        overrides: [marketplaceRepositoryProvider.overrideWithValue(mockRepo)],
       );
       addTearDown(container.dispose);
 
@@ -305,9 +300,7 @@ void main() {
       ).thenAnswer((_) async => throw Exception('network error'));
 
       final container = ProviderContainer(
-        overrides: [
-          marketplaceRepositoryProvider.overrideWithValue(mockRepo),
-        ],
+        overrides: [marketplaceRepositoryProvider.overrideWithValue(mockRepo)],
       );
       addTearDown(container.dispose);
 
@@ -343,16 +336,12 @@ void main() {
       ).thenAnswer((_) async => listing);
 
       final container = ProviderContainer(
-        overrides: [
-          marketplaceRepositoryProvider.overrideWithValue(mockRepo),
-        ],
+        overrides: [marketplaceRepositoryProvider.overrideWithValue(mockRepo)],
       );
       addTearDown(container.dispose);
 
       final result = await container.read(
-        marketplaceListingByIdProvider(
-          (id: 'l1', userId: 'user-1'),
-        ).future,
+        marketplaceListingByIdProvider((id: 'l1', userId: 'user-1')).future,
       );
 
       expect(result, isNotNull);
@@ -366,16 +355,15 @@ void main() {
       ).thenAnswer((_) async => null);
 
       final container = ProviderContainer(
-        overrides: [
-          marketplaceRepositoryProvider.overrideWithValue(mockRepo),
-        ],
+        overrides: [marketplaceRepositoryProvider.overrideWithValue(mockRepo)],
       );
       addTearDown(container.dispose);
 
       final result = await container.read(
-        marketplaceListingByIdProvider(
-          (id: 'missing', userId: 'user-1'),
-        ).future,
+        marketplaceListingByIdProvider((
+          id: 'missing',
+          userId: 'user-1',
+        )).future,
       );
 
       expect(result, isNull);
@@ -390,18 +378,13 @@ void main() {
     });
 
     test('fetches user listings', () async {
-      final listings = [
-        _makeListing(id: 'l1'),
-        _makeListing(id: 'l2'),
-      ];
+      final listings = [_makeListing(id: 'l1'), _makeListing(id: 'l2')];
       when(
         () => mockRepo.getByUser(userId: 'user-1', currentUserId: 'user-1'),
       ).thenAnswer((_) async => listings);
 
       final container = ProviderContainer(
-        overrides: [
-          marketplaceRepositoryProvider.overrideWithValue(mockRepo),
-        ],
+        overrides: [marketplaceRepositoryProvider.overrideWithValue(mockRepo)],
       );
       addTearDown(container.dispose);
 
@@ -421,9 +404,7 @@ void main() {
       ).thenAnswer((_) async => []);
 
       final container = ProviderContainer(
-        overrides: [
-          marketplaceRepositoryProvider.overrideWithValue(mockRepo),
-        ],
+        overrides: [marketplaceRepositoryProvider.overrideWithValue(mockRepo)],
       );
       addTearDown(container.dispose);
 

@@ -79,22 +79,24 @@ class PunnettSquareWidget extends StatelessWidget {
             final columnCount = data.cells.isNotEmpty
                 ? data.cells.first.length + 1
                 : 3;
-            final columnWidth = (constraints.maxWidth / columnCount)
-                .clamp(70.0, 110.0);
+            final columnWidth = (constraints.maxWidth / columnCount).clamp(
+              70.0,
+              110.0,
+            );
 
             return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Table(
-            defaultColumnWidth: FixedColumnWidth(columnWidth),
-            border: TableBorder.all(color: tableBorderColor, width: 1),
-            children: [
-              _buildHeaderRow(theme),
-              ...data.cells.asMap().entries.map(
-                (entry) => _buildDataRow(theme, entry.key, entry.value),
+              scrollDirection: Axis.horizontal,
+              child: Table(
+                defaultColumnWidth: FixedColumnWidth(columnWidth),
+                border: TableBorder.all(color: tableBorderColor, width: 1),
+                children: [
+                  _buildHeaderRow(theme),
+                  ...data.cells.asMap().entries.map(
+                    (entry) => _buildDataRow(theme, entry.key, entry.value),
+                  ),
+                ],
               ),
-            ],
-          ),
-        );
+            );
           },
         ),
       ],

@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_utils;
+import 'package:budgie_breeding_tracker/core/utils/date_utils.dart'
+    as date_utils;
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/utils/sentry_error_filter.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
@@ -107,8 +108,10 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
       final settings = ref.read(notificationToggleSettingsProvider);
 
       final durationDays = followUpDate != null
-          ? date_utils.DateUtils.dayDiff(DateTime.now(), followUpDate)
-                .clamp(1, 30)
+          ? date_utils.DateUtils.dayDiff(
+              DateTime.now(),
+              followUpDate,
+            ).clamp(1, 30)
           : 7;
 
       await scheduler.scheduleHealthCheckReminder(

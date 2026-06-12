@@ -60,8 +60,8 @@ final communitySearchProvider =
 
 final communitySearchHistoryProvider =
     NotifierProvider<CommunitySearchHistoryNotifier, List<String>>(
-  CommunitySearchHistoryNotifier.new,
-);
+      CommunitySearchHistoryNotifier.new,
+    );
 
 class CommunitySearchHistoryNotifier extends Notifier<List<String>> {
   static const _key = 'community_search_history';

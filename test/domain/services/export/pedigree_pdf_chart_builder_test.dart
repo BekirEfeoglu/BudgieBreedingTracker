@@ -213,11 +213,7 @@ void main() {
 
       test('renders correctly inside a PDF document', () async {
         final doc = pw.Document();
-        doc.addPage(
-          pw.Page(
-            build: (_) => builder.buildStats(4, 7, 2, 57.1),
-          ),
-        );
+        doc.addPage(pw.Page(build: (_) => builder.buildStats(4, 7, 2, 57.1)));
 
         final bytes = await doc.save();
         expect(bytes, isNotEmpty);

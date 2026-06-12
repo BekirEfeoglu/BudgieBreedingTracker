@@ -10,20 +10,17 @@ import '../../../helpers/test_localization.dart';
 
 Widget _wrap(Widget child) {
   return MaterialApp(
-    home: Scaffold(
-      body: SingleChildScrollView(child: child),
-    ),
+    home: Scaffold(body: SingleChildScrollView(child: child)),
   );
 }
 
 Widget _wrapDark(Widget child) {
   return MaterialApp(
     theme: ThemeData.dark(),
-    home: Scaffold(
-      body: SingleChildScrollView(child: child),
-    ),
+    home: Scaffold(body: SingleChildScrollView(child: child)),
   );
 }
+
 const _autosomalData = PunnettSquareData(
   mutationName: 'Blue Series',
   fatherAlleles: ['b+', 'b'],
@@ -61,29 +58,34 @@ const _largeData = PunnettSquareData(
 void main() {
   group('PunnettSquareWidget', () {
     testWidgets('renders without crashing with autosomal data', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
       expect(find.byType(PunnettSquareWidget), findsOneWidget);
     });
 
-    testWidgets('renders without crashing with sex-linked data',
-        (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('renders without crashing with sex-linked data', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: _sexLinkedData)),
       );
       expect(find.byType(PunnettSquareWidget), findsOneWidget);
     });
 
     testWidgets('shows punnett_square title', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
       expect(find.text(l10n('genetics.punnett_square')), findsOneWidget);
     });
 
     testWidgets('shows mutation name for known locus', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
       // "Blue Series" maps to 'genetics.locus_blue_series' localization key
@@ -102,29 +104,36 @@ void main() {
         isSexLinked: false,
       );
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: customData)),
       );
       expect(find.text('CustomMutation'), findsOneWidget);
     });
 
     testWidgets('shows sex_linked badge for sex-linked data', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: _sexLinkedData)),
       );
       expect(find.text(l10n('genetics.sex_linked')), findsOneWidget);
     });
 
-    testWidgets('does not show sex_linked badge for autosomal data',
-        (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('does not show sex_linked badge for autosomal data', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
       expect(find.text(l10n('genetics.sex_linked')), findsNothing);
     });
 
-    testWidgets('shows AppIcon for punnett icon and gender icons', (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('shows AppIcon for punnett icon and gender icons', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
       // 1 punnett icon + gender icons in header cells
@@ -132,15 +141,18 @@ void main() {
     });
 
     testWidgets('renders Table widget', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
       expect(find.byType(Table), findsOneWidget);
     });
 
-    testWidgets('renders correct number of table rows for 2x2 grid',
-        (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('renders correct number of table rows for 2x2 grid', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
       // 1 header row + 2 data rows = 3 TableRow objects
@@ -148,9 +160,11 @@ void main() {
       expect(table.children.length, equals(3));
     });
 
-    testWidgets('renders correct number of table rows for 3x3 grid',
-        (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('renders correct number of table rows for 3x3 grid', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: _largeData)),
       );
       // 1 header row + 3 data rows = 4 TableRow objects
@@ -159,7 +173,8 @@ void main() {
     });
 
     testWidgets('shows father allele labels in data rows', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
       // Father alleles shown as text alongside AppIcon
@@ -168,7 +183,8 @@ void main() {
     });
 
     testWidgets('shows mother allele labels in header row', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
       // Mother alleles shown as text alongside AppIcon
@@ -177,7 +193,8 @@ void main() {
     });
 
     testWidgets('shows genotype text in cells', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
       expect(find.text('b+/b+'), findsOneWidget);
@@ -187,7 +204,8 @@ void main() {
     });
 
     testWidgets('shows corner cell with backslash separator', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
       // Corner cell now uses AppIcons for gender, with \\ text
@@ -195,22 +213,26 @@ void main() {
     });
 
     testWidgets('has Tooltip on data cells', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
       expect(find.byType(Tooltip), findsAtLeastNWidgets(1));
     });
 
     testWidgets('renders in dark mode without crashing', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrapDark(const PunnettSquareWidget(data: _autosomalData)),
       );
       expect(find.byType(PunnettSquareWidget), findsOneWidget);
     });
 
-    testWidgets('renders sex-linked data with W chromosome label',
-        (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('renders sex-linked data with W chromosome label', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: _sexLinkedData)),
       );
       // W chromosome should appear in the mother alleles header
@@ -218,52 +240,50 @@ void main() {
     });
 
     testWidgets('has horizontal scroll for wide tables', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
       expect(find.byType(SingleChildScrollView), findsAtLeastNWidgets(1));
     });
 
-    testWidgets('tooltip shows genotype description for homozygous normal',
-        (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('tooltip shows genotype description for homozygous normal', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
       // b+/b+ should have homozygous normal tooltip
       final tooltips = tester.widgetList<Tooltip>(find.byType(Tooltip));
       final messages = tooltips.map((t) => t.message).toList();
-      expect(
-        messages.any((m) => m == 'genetics.homozygous_normal'),
-        isTrue,
-      );
+      expect(messages.any((m) => m == 'genetics.homozygous_normal'), isTrue);
     });
 
-    testWidgets('tooltip shows genotype description for homozygous visual',
-        (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('tooltip shows genotype description for homozygous visual', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
       // b/b should have homozygous visual tooltip
       final tooltips = tester.widgetList<Tooltip>(find.byType(Tooltip));
       final messages = tooltips.map((t) => t.message).toList();
-      expect(
-        messages.any((m) => m == 'genetics.homozygous_visual'),
-        isTrue,
-      );
+      expect(messages.any((m) => m == 'genetics.homozygous_visual'), isTrue);
     });
 
-    testWidgets('tooltip shows genotype description for heterozygous carrier',
-        (tester) async {
-      await pumpLocalizedApp(tester,
+    testWidgets('tooltip shows genotype description for heterozygous carrier', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
         _wrap(const PunnettSquareWidget(data: _autosomalData)),
       );
       // b+/b should have heterozygous carrier tooltip
       final tooltips = tester.widgetList<Tooltip>(find.byType(Tooltip));
       final messages = tooltips.map((t) => t.message).toList();
-      expect(
-        messages.any((m) => m == 'genetics.heterozygous_carrier'),
-        isTrue,
-      );
+      expect(messages.any((m) => m == 'genetics.heterozygous_carrier'), isTrue);
     });
   });
 }

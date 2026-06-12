@@ -11,10 +11,7 @@ Widget _wrap(Widget child) {
   return MaterialApp(home: Scaffold(body: child));
 }
 
-Egg _buildEgg({
-  String id = 'egg-1',
-  EggStatus status = EggStatus.laid,
-}) {
+Egg _buildEgg({String id = 'egg-1', EggStatus status = EggStatus.laid}) {
   return Egg(
     id: id,
     userId: 'user-1',
@@ -74,9 +71,7 @@ void main() {
     testWidgets('shows no eggs text for empty list via EggSummaryRow', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        _wrap(const EggSummaryRow(eggs: [])),
-      );
+      await tester.pumpWidget(_wrap(const EggSummaryRow(eggs: [])));
       await tester.pump();
 
       expect(find.text(l10n('eggs.summary_no_eggs')), findsOneWidget);
@@ -101,10 +96,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: SizedBox(
-              width: 600,
-              child: EggSummaryRow(eggs: eggs),
-            ),
+            body: SizedBox(width: 600, child: EggSummaryRow(eggs: eggs)),
           ),
         ),
       );

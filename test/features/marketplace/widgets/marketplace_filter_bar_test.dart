@@ -20,9 +20,7 @@ void main() {
           return notifier;
         }),
       ],
-      child: const MaterialApp(
-        home: Scaffold(body: MarketplaceFilterBar()),
-      ),
+      child: const MaterialApp(home: Scaffold(body: MarketplaceFilterBar())),
     );
   }
 
@@ -61,7 +59,9 @@ void main() {
       await pumpLocalizedApp(tester, buildSubject());
 
       // Tap the "sale" filter chip
-      await tester.tap(find.widgetWithText(FilterChip, 'marketplace.type_sale'));
+      await tester.tap(
+        find.widgetWithText(FilterChip, 'marketplace.type_sale'),
+      );
       await tester.pumpAndSettle();
 
       final saleChip = tester.widget<FilterChip>(

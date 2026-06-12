@@ -10,17 +10,13 @@ import '../../../helpers/test_localization.dart';
 
 Widget _wrap(Widget child) {
   return MaterialApp(
-    home: Scaffold(
-      body: SingleChildScrollView(child: child),
-    ),
+    home: Scaffold(body: SingleChildScrollView(child: child)),
   );
 }
 
 void main() {
   group('GroupedResultsList', () {
-    testWidgets('shows no results message when list is empty', (
-      tester,
-    ) async {
+    testWidgets('shows no results message when list is empty', (tester) async {
       await pumpLocalizedApp(
         tester,
         _wrap(const GroupedResultsList(results: [])),
@@ -42,10 +38,7 @@ void main() {
       );
 
       // Each result is unique probability, so flat list is used
-      expect(
-        find.byType(OffspringPrediction),
-        findsNWidgets(3),
-      );
+      expect(find.byType(OffspringPrediction), findsNWidgets(3));
     });
 
     testWidgets('groups results with same probability', (tester) async {
@@ -62,10 +55,7 @@ void main() {
 
       // Two Normal Green and Blue share 25.0%, so grouped
       expect(find.text('%25.0'), findsOneWidget);
-      expect(
-        find.byType(OffspringPrediction),
-        findsNWidgets(3),
-      );
+      expect(find.byType(OffspringPrediction), findsNWidgets(3));
     });
 
     testWidgets('shows group header with count', (tester) async {
@@ -121,10 +111,7 @@ void main() {
 
       await pumpLocalizedApp(
         tester,
-        _wrap(const GroupedResultsList(
-          results: results,
-          showGenotype: true,
-        )),
+        _wrap(const GroupedResultsList(results: results, showGenotype: true)),
       );
 
       // Genotype is shown inline in collapsed view

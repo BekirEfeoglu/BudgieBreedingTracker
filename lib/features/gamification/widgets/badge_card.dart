@@ -84,10 +84,10 @@ class BadgeCard extends StatelessWidget {
   }
 
   Color _tierColor(BadgeTier tier, ThemeData theme) => switch (tier) {
-        BadgeTier.bronze => AppColors.tierBronze,
-        BadgeTier.silver => AppColors.tierSilver,
-        BadgeTier.gold => AppColors.tierGold,
-        BadgeTier.platinum => AppColors.tierPlatinum,
-        BadgeTier.unknown => theme.colorScheme.outline,
-      };
+    BadgeTier.bronze => AppColors.tierBronze,
+    BadgeTier.silver => AppColors.tierSilver,
+    BadgeTier.gold => AppColors.tierGold,
+    BadgeTier.platinum => AppColors.tierPlatinum,
+    BadgeTier.unknown => theme.colorScheme.outline,
+  };
 }

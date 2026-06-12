@@ -113,9 +113,7 @@ class BreedingEggsSection extends ConsumerWidget {
             // discarded / infertile / empty). Filtering only `hatched` meant
             // the "all done" banner never appeared for clutches that ended in
             // a mix of terminal outcomes.
-            final activeEggs = eggs
-                .where((e) => !e.status.isTerminal)
-                .toList();
+            final activeEggs = eggs.where((e) => !e.status.isTerminal).toList();
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

@@ -163,4 +163,3 @@ PunnettSquareData _buildSexLinkedPunnettFromGenotype(
     isSexLinked: true,
   );
 }
-

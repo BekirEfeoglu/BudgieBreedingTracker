@@ -104,7 +104,8 @@ _AllelicPhenotypeResult _resolveAllelicPhenotype(
     // Dominant / incomplete dominant: heterozygote is visually expressed
     if (record != null &&
         (record.inheritanceType == InheritanceType.autosomalDominant ||
-         record.inheritanceType == InheritanceType.autosomalIncompleteDominant)) {
+            record.inheritanceType ==
+                InheritanceType.autosomalIncompleteDominant)) {
       final name = record.name;
       return _AllelicPhenotypeResult(
         phenotype: name,

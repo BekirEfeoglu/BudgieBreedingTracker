@@ -64,7 +64,8 @@ class _InteractionFlags {
 
   factory _InteractionFlags.from(Set<String> mutations) {
     return _InteractionFlags(
-      isBlue: mutations.contains(GeneticsConstants.mutBlue) ||
+      isBlue:
+          mutations.contains(GeneticsConstants.mutBlue) ||
           mutations.contains(GeneticsConstants.mutAqua) ||
           mutations.contains(GeneticsConstants.mutTurquoise) ||
           mutations.contains(GeneticsConstants.mutBlueFactor1) ||
@@ -81,7 +82,9 @@ class _InteractionFlags {
       hasBlueFactor1: mutations.contains(GeneticsConstants.mutBlueFactor1),
       hasBlueFactor2: mutations.contains(GeneticsConstants.mutBlueFactor2),
       hasRecessivePied: mutations.contains(GeneticsConstants.mutRecessivePied),
-      hasClearflightPied: mutations.contains(GeneticsConstants.mutClearflightPied),
+      hasClearflightPied: mutations.contains(
+        GeneticsConstants.mutClearflightPied,
+      ),
       hasDominantPied: mutations.contains(GeneticsConstants.mutDominantPied),
       hasDutchPied: mutations.contains(GeneticsConstants.mutDutchPied),
       hasAqua: mutations.contains(GeneticsConstants.mutAqua),
@@ -117,7 +120,11 @@ void _addInoAllelicInteractions(
         : GeneticsConstants.mutBlueFactor1;
     interactions.add(
       EpistaticInteraction(
-        mutationIds: [creaminoSource, GeneticsConstants.mutBlue, GeneticsConstants.mutIno],
+        mutationIds: [
+          creaminoSource,
+          GeneticsConstants.mutBlue,
+          GeneticsConstants.mutIno,
+        ],
         resultName: 'Creamino',
         description:
             'Yellowface/Blue-factor allele + Blue + Ino produces Creamino: '
@@ -213,7 +220,10 @@ void _addGreywingClearwingInteractions(
       mutations.contains(GeneticsConstants.mutClearwing)) {
     interactions.add(
       const EpistaticInteraction(
-        mutationIds: [GeneticsConstants.mutGreywing, GeneticsConstants.mutClearwing],
+        mutationIds: [
+          GeneticsConstants.mutGreywing,
+          GeneticsConstants.mutClearwing,
+        ],
         resultName: 'Full-Body Greywing',
         description:
             'Greywing/Clearwing heterozygote produces a Full-Body '

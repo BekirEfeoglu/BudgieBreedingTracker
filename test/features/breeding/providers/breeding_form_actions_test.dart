@@ -2,15 +2,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_form_providers.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
-import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
+import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_form_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../helpers/mocks.dart';
@@ -33,10 +34,12 @@ Incubation _incubation({
   String id = 'inc-1',
   IncubationStatus status = IncubationStatus.active,
   String breedingPairId = 'pair-1',
+  Species species = Species.unknown,
 }) {
   return Incubation(
     id: id,
     userId: 'user-1',
+    species: species,
     status: status,
     breedingPairId: breedingPairId,
     startDate: DateTime(2025, 1, 1),
@@ -77,11 +80,15 @@ void main() {
     );
     registerFallbackValue(_egg());
     registerFallbackValue(const Chick(id: 'fallback', userId: 'fallback-user'));
+    registerFallbackValue(Species.unknown);
     when(
       () => mockScheduler.cancelIncubationMilestones(any()),
     ).thenAnswer((_) async {});
     when(
-      () => mockScheduler.cancelEggTurningReminders(any()),
+      () => mockScheduler.cancelEggTurningReminders(
+        any(),
+        species: any(named: 'species'),
+      ),
     ).thenAnswer((_) async {});
     // Default: no chicks linked to any egg
     when(() => mockChickRepo.getByEggIds(any())).thenAnswer((_) async => []);
@@ -460,7 +467,7 @@ void main() {
     test(
       'cancels incubation and egg notifications for related records',
       () async {
-        final incubations = [_incubation()];
+        final incubations = [_incubation(species: Species.budgie)];
         final eggs = [_egg(), _egg(id: 'egg-2')];
         stubHelperDeps(incubations: incubations, eggs: eggs);
         when(() => mockEggRepo.remove(any())).thenAnswer((_) async {});
@@ -477,14 +484,23 @@ void main() {
         verify(
           () => mockScheduler.cancelIncubationMilestones('inc-1'),
         ).called(1);
+        verifyNever(
+          () => mockScheduler.cancelEggTurningReminders(
+            'inc-1',
+            species: any(named: 'species'),
+          ),
+        );
         verify(
-          () => mockScheduler.cancelEggTurningReminders('inc-1'),
+          () => mockScheduler.cancelEggTurningReminders(
+            'egg-1',
+            species: Species.budgie,
+          ),
         ).called(1);
         verify(
-          () => mockScheduler.cancelEggTurningReminders('egg-1'),
-        ).called(1);
-        verify(
-          () => mockScheduler.cancelEggTurningReminders('egg-2'),
+          () => mockScheduler.cancelEggTurningReminders(
+            'egg-2',
+            species: Species.budgie,
+          ),
         ).called(1);
       },
     );

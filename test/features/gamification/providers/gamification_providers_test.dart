@@ -99,9 +99,9 @@ void main() {
       ];
       when(() => mockRepo.getBadges()).thenAnswer((_) async => badges);
 
-      final container = ProviderContainer(overrides: [
-        gamificationRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [gamificationRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
       final result = await container.read(badgesProvider.future);
@@ -113,9 +113,9 @@ void main() {
     test('returns empty list when no badges exist', () async {
       when(() => mockRepo.getBadges()).thenAnswer((_) async => []);
 
-      final container = ProviderContainer(overrides: [
-        gamificationRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [gamificationRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
       final result = await container.read(badgesProvider.future);
@@ -123,16 +123,20 @@ void main() {
     });
 
     test('exposes error state on repository failure', () async {
-      when(() => mockRepo.getBadges())
-          .thenAnswer((_) async => throw Exception('Network error'));
+      when(
+        () => mockRepo.getBadges(),
+      ).thenAnswer((_) async => throw Exception('Network error'));
 
-      final container = ProviderContainer(overrides: [
-        gamificationRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [gamificationRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
-      final sub = container.listen(badgesProvider, (_, __) {},
-          fireImmediately: true);
+      final sub = container.listen(
+        badgesProvider,
+        (_, __) {},
+        fireImmediately: true,
+      );
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
       final value = container.read(badgesProvider);
@@ -155,47 +159,48 @@ void main() {
           isUnlocked: true,
         ),
       ];
-      when(() => mockRepo.getUserBadges('user-1'))
-          .thenAnswer((_) async => userBadges);
+      when(
+        () => mockRepo.getUserBadges('user-1'),
+      ).thenAnswer((_) async => userBadges);
 
-      final container = ProviderContainer(overrides: [
-        gamificationRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [gamificationRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
-      final result =
-          await container.read(userBadgesProvider('user-1').future);
+      final result = await container.read(userBadgesProvider('user-1').future);
       expect(result, userBadges);
       expect(result.length, 2);
       verify(() => mockRepo.getUserBadges('user-1')).called(1);
     });
 
     test('returns empty list when user has no badges', () async {
-      when(() => mockRepo.getUserBadges('user-1'))
-          .thenAnswer((_) async => []);
+      when(() => mockRepo.getUserBadges('user-1')).thenAnswer((_) async => []);
 
-      final container = ProviderContainer(overrides: [
-        gamificationRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [gamificationRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
-      final result =
-          await container.read(userBadgesProvider('user-1').future);
+      final result = await container.read(userBadgesProvider('user-1').future);
       expect(result, isEmpty);
     });
 
     test('exposes error state on repository failure', () async {
-      when(() => mockRepo.getUserBadges('user-1'))
-          .thenAnswer((_) async => throw Exception('Fetch failed'));
+      when(
+        () => mockRepo.getUserBadges('user-1'),
+      ).thenAnswer((_) async => throw Exception('Fetch failed'));
 
-      final container = ProviderContainer(overrides: [
-        gamificationRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [gamificationRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
       final sub = container.listen(
-          userBadgesProvider('user-1'), (_, __) {},
-          fireImmediately: true);
+        userBadgesProvider('user-1'),
+        (_, __) {},
+        fireImmediately: true,
+      );
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
       final value = container.read(userBadgesProvider('user-1'));
@@ -210,47 +215,48 @@ void main() {
   group('userLevelProvider', () {
     test('returns user level on success', () async {
       final level = createTestUserLevel(level: 5, totalXp: 500);
-      when(() => mockRepo.getUserLevel('user-1'))
-          .thenAnswer((_) async => level);
+      when(
+        () => mockRepo.getUserLevel('user-1'),
+      ).thenAnswer((_) async => level);
 
-      final container = ProviderContainer(overrides: [
-        gamificationRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [gamificationRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
-      final result =
-          await container.read(userLevelProvider('user-1').future);
+      final result = await container.read(userLevelProvider('user-1').future);
       expect(result, level);
       expect(result!.level, 5);
       expect(result.totalXp, 500);
     });
 
     test('returns null when user has no level', () async {
-      when(() => mockRepo.getUserLevel('user-1'))
-          .thenAnswer((_) async => null);
+      when(() => mockRepo.getUserLevel('user-1')).thenAnswer((_) async => null);
 
-      final container = ProviderContainer(overrides: [
-        gamificationRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [gamificationRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
-      final result =
-          await container.read(userLevelProvider('user-1').future);
+      final result = await container.read(userLevelProvider('user-1').future);
       expect(result, isNull);
     });
 
     test('exposes error state on repository failure', () async {
-      when(() => mockRepo.getUserLevel('user-1'))
-          .thenAnswer((_) async => throw Exception('Server error'));
+      when(
+        () => mockRepo.getUserLevel('user-1'),
+      ).thenAnswer((_) async => throw Exception('Server error'));
 
-      final container = ProviderContainer(overrides: [
-        gamificationRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [gamificationRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
       final sub = container.listen(
-          userLevelProvider('user-1'), (_, __) {},
-          fireImmediately: true);
+        userLevelProvider('user-1'),
+        (_, __) {},
+        fireImmediately: true,
+      );
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
       final value = container.read(userLevelProvider('user-1'));
@@ -277,46 +283,47 @@ void main() {
           amount: 5,
         ),
       ];
-      when(() => mockRepo.getXpHistory('user-1'))
-          .thenAnswer((_) async => transactions);
+      when(
+        () => mockRepo.getXpHistory('user-1'),
+      ).thenAnswer((_) async => transactions);
 
-      final container = ProviderContainer(overrides: [
-        gamificationRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [gamificationRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
-      final result =
-          await container.read(xpHistoryProvider('user-1').future);
+      final result = await container.read(xpHistoryProvider('user-1').future);
       expect(result.length, 3);
       expect(result.first.action, XpAction.addBird);
     });
 
     test('returns empty list when no XP history', () async {
-      when(() => mockRepo.getXpHistory('user-1'))
-          .thenAnswer((_) async => []);
+      when(() => mockRepo.getXpHistory('user-1')).thenAnswer((_) async => []);
 
-      final container = ProviderContainer(overrides: [
-        gamificationRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [gamificationRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
-      final result =
-          await container.read(xpHistoryProvider('user-1').future);
+      final result = await container.read(xpHistoryProvider('user-1').future);
       expect(result, isEmpty);
     });
 
     test('exposes error state on repository failure', () async {
-      when(() => mockRepo.getXpHistory('user-1'))
-          .thenAnswer((_) async => throw Exception('Timeout'));
+      when(
+        () => mockRepo.getXpHistory('user-1'),
+      ).thenAnswer((_) async => throw Exception('Timeout'));
 
-      final container = ProviderContainer(overrides: [
-        gamificationRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [gamificationRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
       final sub = container.listen(
-          xpHistoryProvider('user-1'), (_, __) {},
-          fireImmediately: true);
+        xpHistoryProvider('user-1'),
+        (_, __) {},
+        fireImmediately: true,
+      );
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
       final value = container.read(xpHistoryProvider('user-1'));
@@ -350,13 +357,13 @@ void main() {
           level: 1,
         ),
       ];
-      when(() => mockRepo.getLeaderboard()).thenAnswer(
-        (_) async => leaderboard,
-      );
+      when(
+        () => mockRepo.getLeaderboard(),
+      ).thenAnswer((_) async => leaderboard);
 
-      final container = ProviderContainer(overrides: [
-        gamificationRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [gamificationRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
       final result = await container.read(leaderboardProvider.future);
@@ -368,9 +375,9 @@ void main() {
     test('returns empty list when no users on leaderboard', () async {
       when(() => mockRepo.getLeaderboard()).thenAnswer((_) async => []);
 
-      final container = ProviderContainer(overrides: [
-        gamificationRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [gamificationRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
       final result = await container.read(leaderboardProvider.future);
@@ -378,16 +385,20 @@ void main() {
     });
 
     test('exposes error state on repository failure', () async {
-      when(() => mockRepo.getLeaderboard())
-          .thenAnswer((_) async => throw Exception('Network error'));
+      when(
+        () => mockRepo.getLeaderboard(),
+      ).thenAnswer((_) async => throw Exception('Network error'));
 
-      final container = ProviderContainer(overrides: [
-        gamificationRepositoryProvider.overrideWithValue(mockRepo),
-      ]);
+      final container = ProviderContainer(
+        overrides: [gamificationRepositoryProvider.overrideWithValue(mockRepo)],
+      );
       addTearDown(container.dispose);
 
-      final sub = container.listen(leaderboardProvider, (_, __) {},
-          fireImmediately: true);
+      final sub = container.listen(
+        leaderboardProvider,
+        (_, __) {},
+        fireImmediately: true,
+      );
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
       final value = container.read(leaderboardProvider);
@@ -522,17 +533,13 @@ void main() {
         createTestBadge(id: 'b1', requirement: 10),
         createTestBadge(id: 'b2', requirement: 5),
       ];
-      final userBadges = [
-        createTestUserBadge(badgeId: 'b1', progress: 7),
-      ];
+      final userBadges = [createTestUserBadge(badgeId: 'b1', progress: 7)];
 
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
       final result = container.read(
-        enrichedBadgesProvider(
-          (badges: badges, userBadges: userBadges),
-        ),
+        enrichedBadgesProvider((badges: badges, userBadges: userBadges)),
       );
 
       expect(result.length, 2);
@@ -553,24 +560,16 @@ void main() {
     });
 
     test('handles unlocked badges', () {
-      final badges = [
-        createTestBadge(id: 'b1', requirement: 10),
-      ];
+      final badges = [createTestBadge(id: 'b1', requirement: 10)];
       final userBadges = [
-        createTestUserBadge(
-          badgeId: 'b1',
-          progress: 10,
-          isUnlocked: true,
-        ),
+        createTestUserBadge(badgeId: 'b1', progress: 10, isUnlocked: true),
       ];
 
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
       final result = container.read(
-        enrichedBadgesProvider(
-          (badges: badges, userBadges: userBadges),
-        ),
+        enrichedBadgesProvider((badges: badges, userBadges: userBadges)),
       );
 
       expect(result.length, 1);
@@ -583,27 +582,20 @@ void main() {
       addTearDown(container.dispose);
 
       final result = container.read(
-        enrichedBadgesProvider(
-          (badges: <Badge>[], userBadges: <UserBadge>[]),
-        ),
+        enrichedBadgesProvider((badges: <Badge>[], userBadges: <UserBadge>[])),
       );
 
       expect(result, isEmpty);
     });
 
     test('handles empty user badges list', () {
-      final badges = [
-        createTestBadge(id: 'b1'),
-        createTestBadge(id: 'b2'),
-      ];
+      final badges = [createTestBadge(id: 'b1'), createTestBadge(id: 'b2')];
 
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
       final result = container.read(
-        enrichedBadgesProvider(
-          (badges: badges, userBadges: <UserBadge>[]),
-        ),
+        enrichedBadgesProvider((badges: badges, userBadges: <UserBadge>[])),
       );
 
       expect(result.length, 2);
@@ -622,9 +614,7 @@ void main() {
       addTearDown(container.dispose);
 
       final result = container.read(
-        enrichedBadgesProvider(
-          (badges: badges, userBadges: <UserBadge>[]),
-        ),
+        enrichedBadgesProvider((badges: badges, userBadges: <UserBadge>[])),
       );
 
       expect(result[0].badge.id, 'b3');
@@ -647,9 +637,7 @@ void main() {
     });
 
     test('progressPercent returns 0 when no userBadge', () {
-      final enriched = EnrichedBadge(
-        badge: createTestBadge(requirement: 10),
-      );
+      final enriched = EnrichedBadge(badge: createTestBadge(requirement: 10));
       expect(enriched.progressPercent, 0);
     });
 
@@ -689,17 +677,11 @@ void main() {
     });
 
     test('all filter has common.all label key', () {
-      expect(
-        BadgeCategoryFilter.all.label,
-        'common.all',
-      );
+      expect(BadgeCategoryFilter.all.label, 'common.all');
     });
 
     test('breeding filter has correct label key', () {
-      expect(
-        BadgeCategoryFilter.breeding.label,
-        'badges.category_breeding',
-      );
+      expect(BadgeCategoryFilter.breeding.label, 'badges.category_breeding');
     });
   });
 }

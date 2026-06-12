@@ -50,31 +50,30 @@ class BirdTimelineEvent {
 /// instance — so each edit installs a new family entry while the old one
 /// keeps 5 stream subscriptions alive. autoDispose drops the stale entry
 /// once the previous Bird value is no longer watched.
-final birdTimelineProvider = Provider.autoDispose.family<List<BirdTimelineEvent>, Bird>((
-  ref,
-  bird,
-) {
-  final breedingPairs =
-      ref.watch(breedingPairsStreamProvider(bird.userId)).value ??
-      <BreedingPair>[];
-  final incubations =
-      ref.watch(allIncubationsStreamProvider(bird.userId)).value ??
-      <Incubation>[];
-  final eggs = ref.watch(eggsStreamProvider(bird.userId)).value ?? <Egg>[];
-  final chicks =
-      ref.watch(chicksStreamProvider(bird.userId)).value ?? <Chick>[];
-  final healthRecords =
-      ref.watch(healthRecordsByBirdProvider(bird.id)).value ?? <HealthRecord>[];
+final birdTimelineProvider = Provider.autoDispose
+    .family<List<BirdTimelineEvent>, Bird>((ref, bird) {
+      final breedingPairs =
+          ref.watch(breedingPairsStreamProvider(bird.userId)).value ??
+          <BreedingPair>[];
+      final incubations =
+          ref.watch(allIncubationsStreamProvider(bird.userId)).value ??
+          <Incubation>[];
+      final eggs = ref.watch(eggsStreamProvider(bird.userId)).value ?? <Egg>[];
+      final chicks =
+          ref.watch(chicksStreamProvider(bird.userId)).value ?? <Chick>[];
+      final healthRecords =
+          ref.watch(healthRecordsByBirdProvider(bird.id)).value ??
+          <HealthRecord>[];
 
-  return buildBirdTimelineEvents(
-    bird: bird,
-    breedingPairs: breedingPairs,
-    incubations: incubations,
-    eggs: eggs,
-    chicks: chicks,
-    healthRecords: healthRecords,
-  );
-});
+      return buildBirdTimelineEvents(
+        bird: bird,
+        breedingPairs: breedingPairs,
+        incubations: incubations,
+        eggs: eggs,
+        chicks: chicks,
+        healthRecords: healthRecords,
+      );
+    });
 
 /// Pure builder kept testable without Riverpod.
 List<BirdTimelineEvent> buildBirdTimelineEvents({

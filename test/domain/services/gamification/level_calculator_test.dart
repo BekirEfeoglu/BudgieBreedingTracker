@@ -66,10 +66,16 @@ void main() {
     test('titleForLevel returns correct titles', () {
       expect(LevelCalculator.titleForLevel(1), 'gamification.title_beginner');
       expect(LevelCalculator.titleForLevel(2), 'gamification.title_novice');
-      expect(LevelCalculator.titleForLevel(3), 'gamification.title_experienced');
+      expect(
+        LevelCalculator.titleForLevel(3),
+        'gamification.title_experienced',
+      );
       expect(LevelCalculator.titleForLevel(5), 'gamification.title_expert');
       expect(LevelCalculator.titleForLevel(10), 'gamification.title_master');
-      expect(LevelCalculator.titleForLevel(15), 'gamification.title_grand_master');
+      expect(
+        LevelCalculator.titleForLevel(15),
+        'gamification.title_grand_master',
+      );
       expect(LevelCalculator.titleForLevel(20), 'gamification.title_legendary');
       expect(LevelCalculator.titleForLevel(25), 'gamification.title_legendary');
     });

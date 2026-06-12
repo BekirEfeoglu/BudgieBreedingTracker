@@ -30,13 +30,11 @@ Map<String, dynamic> _customerInfo({required bool premiumActive}) {
   return {
     'entitlements': {
       'all': {'premium': entitlement},
-      'active':
-          premiumActive ? {'premium': entitlement} : <String, dynamic>{},
+      'active': premiumActive ? {'premium': entitlement} : <String, dynamic>{},
       'verification': 'NOT_REQUESTED',
     },
     'allPurchaseDates': {'premium_monthly': '2026-01-01T00:00:00Z'},
-    'activeSubscriptions':
-        premiumActive ? ['premium_monthly'] : <String>[],
+    'activeSubscriptions': premiumActive ? ['premium_monthly'] : <String>[],
     'allPurchasedProductIdentifiers': ['premium_monthly'],
     'nonSubscriptionTransactions': <Map<String, dynamic>>[],
     'firstSeen': '2026-01-01T00:00:00Z',
@@ -62,119 +60,106 @@ void main() {
   });
 
   group('Purchase Flow E2E – initialization & user merge', () {
-    test(
-      'GIVEN valid API key and user WHEN initialize is called THEN service '
-      'reports ready and isPremium reflects entitlement status',
-      () async {
-        await _installHandler((call) async {
-          if (call.method == 'setupPurchases') return null;
-          if (call.method == 'getCustomerInfo') {
-            return _customerInfo(premiumActive: true);
-          }
-          return null;
-        });
+    test('GIVEN valid API key and user WHEN initialize is called THEN service '
+        'reports ready and isPremium reflects entitlement status', () async {
+      await _installHandler((call) async {
+        if (call.method == 'setupPurchases') return null;
+        if (call.method == 'getCustomerInfo') {
+          return _customerInfo(premiumActive: true);
+        }
+        return null;
+      });
 
-        final service = PurchaseService();
-        final result = await service.initialize(
-          apiKey: 'test_api_key_12345',
-          userId: 'user-1',
-        );
+      final service = PurchaseService();
+      final result = await service.initialize(
+        apiKey: 'test_api_key_12345',
+        userId: 'user-1',
+      );
 
-        expect(result, isTrue);
-        expect(await service.isPremium(), isTrue);
-      },
-      timeout: e2eTimeout,
-    );
+      expect(result, isTrue);
+      expect(await service.isPremium(), isTrue);
+    }, timeout: e2eTimeout);
 
-    test(
-      'GIVEN initialized service WHEN same apiKey but different userId is '
-      'passed THEN _switchUser is invoked via logIn and entitlements '
-      'reflect new user',
-      () async {
-        var logInCalls = 0;
-        String? lastLoggedInUserId;
+    test('GIVEN initialized service WHEN same apiKey but different userId is '
+        'passed THEN _switchUser is invoked via logIn and entitlements '
+        'reflect new user', () async {
+      var logInCalls = 0;
+      String? lastLoggedInUserId;
 
-        await _installHandler((call) async {
-          if (call.method == 'setupPurchases') return null;
-          if (call.method == 'logIn') {
-            logInCalls++;
-            lastLoggedInUserId =
-                (call.arguments as Map)['appUserID'] as String;
-            return {
-              'customerInfo': _customerInfo(premiumActive: true),
-              'created': false,
-            };
-          }
-          if (call.method == 'getCustomerInfo') {
-            return _customerInfo(premiumActive: true);
-          }
-          return null;
-        });
+      await _installHandler((call) async {
+        if (call.method == 'setupPurchases') return null;
+        if (call.method == 'logIn') {
+          logInCalls++;
+          lastLoggedInUserId = (call.arguments as Map)['appUserID'] as String;
+          return {
+            'customerInfo': _customerInfo(premiumActive: true),
+            'created': false,
+          };
+        }
+        if (call.method == 'getCustomerInfo') {
+          return _customerInfo(premiumActive: true);
+        }
+        return null;
+      });
 
-        final service = PurchaseService();
+      final service = PurchaseService();
 
-        // First init: full configure
-        await service.initialize(apiKey: 'test_key', userId: 'user-A');
+      // First init: full configure
+      await service.initialize(apiKey: 'test_key', userId: 'user-A');
 
-        // Second init with different user: triggers _switchUser (logIn)
-        final switched = await service.initialize(
-          apiKey: 'test_key',
-          userId: 'user-B',
-        );
+      // Second init with different user: triggers _switchUser (logIn)
+      final switched = await service.initialize(
+        apiKey: 'test_key',
+        userId: 'user-B',
+      );
 
-        expect(switched, isTrue);
-        expect(logInCalls, 1);
-        expect(lastLoggedInUserId, 'user-B');
-        // New user has premium
-        expect(await service.isPremium(), isTrue);
-      },
-      timeout: e2eTimeout,
-    );
+      expect(switched, isTrue);
+      expect(logInCalls, 1);
+      expect(lastLoggedInUserId, 'user-B');
+      // New user has premium
+      expect(await service.isPremium(), isTrue);
+    }, timeout: e2eTimeout);
 
-    test(
-      'GIVEN initialized service WHEN _switchUser (logIn) fails THEN '
-      'identity is cleared, Sentry exception is captured, and isPremium '
-      'returns false to prevent stale entitlement leakage',
-      () async {
-        var logInCalls = 0;
+    test('GIVEN initialized service WHEN _switchUser (logIn) fails THEN '
+        'identity is cleared, Sentry exception is captured, and isPremium '
+        'returns false to prevent stale entitlement leakage', () async {
+      var logInCalls = 0;
 
-        await _installHandler((call) async {
-          if (call.method == 'setupPurchases') return null;
-          if (call.method == 'logIn') {
-            logInCalls++;
-            throw PlatformException(
-              code: '0',
-              message: 'Network error during user merge',
-            );
-          }
-          if (call.method == 'getCustomerInfo') {
-            return _customerInfo(premiumActive: true);
-          }
-          return null;
-        });
+      await _installHandler((call) async {
+        if (call.method == 'setupPurchases') return null;
+        if (call.method == 'logIn') {
+          logInCalls++;
+          throw PlatformException(
+            code: '0',
+            message: 'Network error during user merge',
+          );
+        }
+        if (call.method == 'getCustomerInfo') {
+          return _customerInfo(premiumActive: true);
+        }
+        return null;
+      });
 
-        final service = PurchaseService();
+      final service = PurchaseService();
 
-        // First user: init succeeds and has premium
-        await service.initialize(apiKey: 'test_key', userId: 'user-A');
-        expect(await service.isPremium(), isTrue);
+      // First user: init succeeds and has premium
+      await service.initialize(apiKey: 'test_key', userId: 'user-A');
+      expect(await service.isPremium(), isTrue);
 
-        // Switch to new user: logIn (merge) fails
-        final switchResult = await service.initialize(
-          apiKey: 'test_key',
-          userId: 'user-B',
-        );
+      // Switch to new user: logIn (merge) fails
+      final switchResult = await service.initialize(
+        apiKey: 'test_key',
+        userId: 'user-B',
+      );
 
-        expect(switchResult, isFalse);
-        expect(logInCalls, 1);
+      expect(switchResult, isFalse);
+      expect(logInCalls, 1);
 
-        // Critical: stale entitlements from user-A must NOT leak to user-B.
-        // _clearIdentity() resets _initialized, so isPremium short-circuits
-        // to false without hitting RevenueCat.
-        expect(await service.isPremium(), isFalse);
-      },
-      timeout: e2eTimeout,
-    );
+      // Critical: stale entitlements from user-A must NOT leak to user-B.
+      // _clearIdentity() resets _initialized, so isPremium short-circuits
+      // to false without hitting RevenueCat.
+      expect(await service.isPremium(), isFalse);
+    }, timeout: e2eTimeout);
 
     test(
       'GIVEN _switchUser succeeded WHEN isPremium is checked THEN it '
@@ -185,7 +170,9 @@ void main() {
         await _installHandler((call) async {
           if (call.method == 'setupPurchases') return null;
           if (call.method == 'logIn') {
-            breadcrumbTrace.add('logIn:${(call.arguments as Map)['appUserID']}');
+            breadcrumbTrace.add(
+              'logIn:${(call.arguments as Map)['appUserID']}',
+            );
             return {
               'customerInfo': _customerInfo(premiumActive: false),
               'created': false,
@@ -213,55 +200,47 @@ void main() {
   });
 
   group('Purchase Flow E2E – isPremium when not initialized', () {
-    test(
-      'GIVEN fresh service with no initialization WHEN isPremium is called '
-      'THEN it returns false without attempting RevenueCat calls',
-      () async {
-        var getCustomerInfoCalls = 0;
-        await _installHandler((call) async {
-          if (call.method == 'getCustomerInfo') {
-            getCustomerInfoCalls++;
-            return _customerInfo(premiumActive: true);
-          }
-          return null;
-        });
+    test('GIVEN fresh service with no initialization WHEN isPremium is called '
+        'THEN it returns false without attempting RevenueCat calls', () async {
+      var getCustomerInfoCalls = 0;
+      await _installHandler((call) async {
+        if (call.method == 'getCustomerInfo') {
+          getCustomerInfoCalls++;
+          return _customerInfo(premiumActive: true);
+        }
+        return null;
+      });
 
-        final service = PurchaseService();
-        final result = await service.isPremium();
+      final service = PurchaseService();
+      final result = await service.isPremium();
 
-        expect(result, isFalse);
-        // Must not call getCustomerInfo when not initialized
-        expect(getCustomerInfoCalls, 0);
-      },
-      timeout: e2eTimeout,
-    );
+      expect(result, isFalse);
+      // Must not call getCustomerInfo when not initialized
+      expect(getCustomerInfoCalls, 0);
+    }, timeout: e2eTimeout);
 
-    test(
-      'GIVEN service with failed initialization WHEN isPremium is called '
-      'THEN it returns false safely',
-      () async {
-        await _installHandler((call) async {
-          if (call.method == 'setupPurchases') {
-            throw PlatformException(
-              code: '0',
-              message: 'RevenueCat config error',
-            );
-          }
-          return null;
-        });
+    test('GIVEN service with failed initialization WHEN isPremium is called '
+        'THEN it returns false safely', () async {
+      await _installHandler((call) async {
+        if (call.method == 'setupPurchases') {
+          throw PlatformException(
+            code: '0',
+            message: 'RevenueCat config error',
+          );
+        }
+        return null;
+      });
 
-        final service = PurchaseService();
-        final initResult = await service.initialize(
-          apiKey: 'bad_key',
-          userId: 'user-1',
-        );
+      final service = PurchaseService();
+      final initResult = await service.initialize(
+        apiKey: 'bad_key',
+        userId: 'user-1',
+      );
 
-        expect(initResult, isFalse);
-        expect(await service.isPremium(), isFalse);
-        expect(await service.getOfferings(), isEmpty);
-      },
-      timeout: e2eTimeout,
-    );
+      expect(initResult, isFalse);
+      expect(await service.isPremium(), isFalse);
+      expect(await service.getOfferings(), isEmpty);
+    }, timeout: e2eTimeout);
   });
 
   group('Purchase Flow E2E – restore error handling', () {
@@ -415,94 +394,84 @@ void main() {
       timeout: e2eTimeout,
     );
 
-    test(
-      'GIVEN billing unavailable state WHEN clearStoreUnavailableCache is '
-      'called THEN next isPremium call reaches RevenueCat again',
-      () async {
-        var getCustomerInfoCalls = 0;
-        var shouldFail = true;
+    test('GIVEN billing unavailable state WHEN clearStoreUnavailableCache is '
+        'called THEN next isPremium call reaches RevenueCat again', () async {
+      var getCustomerInfoCalls = 0;
+      var shouldFail = true;
 
-        await _installHandler((call) async {
-          if (call.method == 'setupPurchases') return null;
-          if (call.method == 'getCustomerInfo') {
-            getCustomerInfoCalls++;
-            if (shouldFail) {
-              throw PlatformException(
-                code: PurchasesErrorCode.purchaseNotAllowedError.index
-                    .toString(),
-                message: 'BILLING_UNAVAILABLE',
-              );
-            }
-            return _customerInfo(premiumActive: true);
+      await _installHandler((call) async {
+        if (call.method == 'setupPurchases') return null;
+        if (call.method == 'getCustomerInfo') {
+          getCustomerInfoCalls++;
+          if (shouldFail) {
+            throw PlatformException(
+              code: PurchasesErrorCode.purchaseNotAllowedError.index.toString(),
+              message: 'BILLING_UNAVAILABLE',
+            );
           }
-          return null;
-        });
+          return _customerInfo(premiumActive: true);
+        }
+        return null;
+      });
 
-        final service = PurchaseService();
-        await service.initialize(apiKey: 'test_key', userId: 'user-1');
+      final service = PurchaseService();
+      await service.initialize(apiKey: 'test_key', userId: 'user-1');
 
-        // Trigger store unavailable
-        expect(await service.isPremium(), isFalse);
-        expect(getCustomerInfoCalls, 1);
+      // Trigger store unavailable
+      expect(await service.isPremium(), isFalse);
+      expect(getCustomerInfoCalls, 1);
 
-        // Clear the cache and fix the store
-        shouldFail = false;
-        service.clearStoreUnavailableCache();
+      // Clear the cache and fix the store
+      shouldFail = false;
+      service.clearStoreUnavailableCache();
 
-        // Now it should reach RevenueCat and return true
-        expect(await service.isPremium(), isTrue);
-        expect(getCustomerInfoCalls, 2);
-      },
-      timeout: e2eTimeout,
-    );
+      // Now it should reach RevenueCat and return true
+      expect(await service.isPremium(), isTrue);
+      expect(getCustomerInfoCalls, 2);
+    }, timeout: e2eTimeout);
 
-    test(
-      'GIVEN successful initialization clears store unavailable WHEN user '
-      'switches THEN store unavailable flag is also cleared',
-      () async {
-        var getCustomerInfoCalls = 0;
-        await _installHandler((call) async {
-          if (call.method == 'setupPurchases') return null;
-          if (call.method == 'getCustomerInfo') {
-            getCustomerInfoCalls++;
-            if (getCustomerInfoCalls == 1) {
-              throw PlatformException(
-                code: PurchasesErrorCode.purchaseNotAllowedError.index
-                    .toString(),
-                message: 'BILLING_UNAVAILABLE',
-              );
-            }
-            return _customerInfo(premiumActive: true);
+    test('GIVEN successful initialization clears store unavailable WHEN user '
+        'switches THEN store unavailable flag is also cleared', () async {
+      var getCustomerInfoCalls = 0;
+      await _installHandler((call) async {
+        if (call.method == 'setupPurchases') return null;
+        if (call.method == 'getCustomerInfo') {
+          getCustomerInfoCalls++;
+          if (getCustomerInfoCalls == 1) {
+            throw PlatformException(
+              code: PurchasesErrorCode.purchaseNotAllowedError.index.toString(),
+              message: 'BILLING_UNAVAILABLE',
+            );
           }
-          if (call.method == 'logIn') {
-            return {
-              'customerInfo': _customerInfo(premiumActive: true),
-              'created': false,
-            };
-          }
-          return null;
-        });
+          return _customerInfo(premiumActive: true);
+        }
+        if (call.method == 'logIn') {
+          return {
+            'customerInfo': _customerInfo(premiumActive: true),
+            'created': false,
+          };
+        }
+        return null;
+      });
 
-        final service = PurchaseService();
-        await service.initialize(apiKey: 'test_key', userId: 'user-1');
+      final service = PurchaseService();
+      await service.initialize(apiKey: 'test_key', userId: 'user-1');
 
-        // Trigger store unavailable via isPremium
-        expect(await service.isPremium(), isFalse);
-        expect(getCustomerInfoCalls, 1);
+      // Trigger store unavailable via isPremium
+      expect(await service.isPremium(), isFalse);
+      expect(getCustomerInfoCalls, 1);
 
-        // Short-circuit check: should not hit RevenueCat
-        expect(await service.isPremium(), isFalse);
-        expect(getCustomerInfoCalls, 1);
+      // Short-circuit check: should not hit RevenueCat
+      expect(await service.isPremium(), isFalse);
+      expect(getCustomerInfoCalls, 1);
 
-        // User switch via _switchUser clears store unavailable
-        await service.initialize(apiKey: 'test_key', userId: 'user-2');
+      // User switch via _switchUser clears store unavailable
+      await service.initialize(apiKey: 'test_key', userId: 'user-2');
 
-        // After switch, isPremium should reach RevenueCat again
-        expect(await service.isPremium(), isTrue);
-        expect(getCustomerInfoCalls, 2);
-      },
-      timeout: e2eTimeout,
-    );
+      // After switch, isPremium should reach RevenueCat again
+      expect(await service.isPremium(), isTrue);
+      expect(getCustomerInfoCalls, 2);
+    }, timeout: e2eTimeout);
   });
 
   group('Purchase Flow E2E – multi-step user journey', () {
@@ -522,10 +491,7 @@ void main() {
           if (call.method == 'logIn') {
             logInCalls++;
             if (shouldLogInFail) {
-              throw PlatformException(
-                code: '0',
-                message: 'merge failed',
-              );
+              throw PlatformException(code: '0', message: 'merge failed');
             }
             return {
               'customerInfo': _customerInfo(premiumActive: true),
@@ -569,50 +535,46 @@ void main() {
       timeout: e2eTimeout,
     );
 
-    test(
-      'GIVEN initialized service WHEN logout is called and then re-init '
-      'THEN full configure runs again (not just logIn)',
-      () async {
-        var setupCalls = 0;
-        var logInCalls = 0;
+    test('GIVEN initialized service WHEN logout is called and then re-init '
+        'THEN full configure runs again (not just logIn)', () async {
+      var setupCalls = 0;
+      var logInCalls = 0;
 
-        await _installHandler((call) async {
-          if (call.method == 'setupPurchases') {
-            setupCalls++;
-            return null;
-          }
-          if (call.method == 'logIn') {
-            logInCalls++;
-            return {
-              'customerInfo': _customerInfo(premiumActive: false),
-              'created': false,
-            };
-          }
-          if (call.method == 'logOut') {
-            return _customerInfo(premiumActive: false);
-          }
-          if (call.method == 'getCustomerInfo') {
-            return _customerInfo(premiumActive: false);
-          }
+      await _installHandler((call) async {
+        if (call.method == 'setupPurchases') {
+          setupCalls++;
           return null;
-        });
+        }
+        if (call.method == 'logIn') {
+          logInCalls++;
+          return {
+            'customerInfo': _customerInfo(premiumActive: false),
+            'created': false,
+          };
+        }
+        if (call.method == 'logOut') {
+          return _customerInfo(premiumActive: false);
+        }
+        if (call.method == 'getCustomerInfo') {
+          return _customerInfo(premiumActive: false);
+        }
+        return null;
+      });
 
-        final service = PurchaseService();
+      final service = PurchaseService();
 
-        // Initial setup
-        await service.initialize(apiKey: 'key', userId: 'user-1');
-        expect(setupCalls, 1);
+      // Initial setup
+      await service.initialize(apiKey: 'key', userId: 'user-1');
+      expect(setupCalls, 1);
 
-        // Logout clears identity
-        await service.logout();
-        expect(await service.isPremium(), isFalse);
+      // Logout clears identity
+      await service.logout();
+      expect(await service.isPremium(), isFalse);
 
-        // Re-init after logout: needs full configure, not just logIn
-        await service.initialize(apiKey: 'key', userId: 'user-2');
-        expect(setupCalls, 2);
-        expect(logInCalls, 0);
-      },
-      timeout: e2eTimeout,
-    );
+      // Re-init after logout: needs full configure, not just logIn
+      await service.initialize(apiKey: 'key', userId: 'user-2');
+      expect(setupCalls, 2);
+      expect(logInCalls, 0);
+    }, timeout: e2eTimeout);
   });
 }

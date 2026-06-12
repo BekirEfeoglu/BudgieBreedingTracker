@@ -59,11 +59,7 @@ class _SocialLoginButtonsState extends State<SocialLoginButtons> {
           onTap: widget.isLoading ? null : widget.onGoogleTap,
           child: OutlinedButton.icon(
             onPressed: widget.isLoading ? null : widget.onGoogleTap,
-            icon: SvgPicture.asset(
-              AppIcons.googleLogo,
-              width: 18,
-              height: 18,
-            ),
+            icon: SvgPicture.asset(AppIcons.googleLogo, width: 18, height: 18),
             label: Text('auth.sign_in_with_google'.tr()),
             style: OutlinedButton.styleFrom(
               backgroundColor: theme.colorScheme.surface,

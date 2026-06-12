@@ -222,8 +222,10 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
 
     if (picked == null) return;
     if (!context.mounted) return;
-    final withinSize =
-        await ImagePickerGuard.ensureWithinSizeLimit(context, picked);
+    final withinSize = await ImagePickerGuard.ensureWithinSizeLimit(
+      context,
+      picked,
+    );
     if (!withinSize || !mounted) return;
 
     setState(() => _isUploading = true);

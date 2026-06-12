@@ -110,7 +110,9 @@ abstract final class BudgieDetailsAnatomy {
   /// Color depends on sex: blue for male, brown/tan for female,
   /// neutral blue-grey when sex is unknown.
   static void paintCere(
-    Canvas canvas, double w, double h, {
+    Canvas canvas,
+    double w,
+    double h, {
     bool? isFemale,
     bool isIno = false,
   }) {
@@ -163,11 +165,7 @@ abstract final class BudgieDetailsAnatomy {
     }
 
     // Iris
-    canvas.drawCircle(
-      Offset(cx, cy),
-      eyeRadius,
-      Paint()..color = eyeColor,
-    );
+    canvas.drawCircle(Offset(cx, cy), eyeRadius, Paint()..color = eyeColor);
 
     // Highlight dot (top-right of iris)
     final highlightRadius = (eyeRadius * 0.30).clamp(0.8, 2.0);

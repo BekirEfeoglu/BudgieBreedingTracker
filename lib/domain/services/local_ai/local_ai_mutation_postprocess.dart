@@ -59,7 +59,8 @@ String _inferFromEvidence({
   // Pale/white body + blue series + unknown pattern → likely spangle DF or dilute
   // Strip diacritics so 'açık'/'acik', 'seyreltilmiş'/'seyreltilmis' etc. match.
   final lowerBody = _stripDiacritics(bodyColor.toLowerCase());
-  final isPaleBody = lowerBody.contains('beyaz') ||
+  final isPaleBody =
+      lowerBody.contains('beyaz') ||
       lowerBody.contains('white') ||
       lowerBody.contains('acik') ||
       lowerBody.contains('soluk') ||
@@ -89,10 +90,15 @@ String _inferFromEvidence({
 /// Mutations that require red/pink eyes. Includes ino-based and fallow.
 bool _isInoMutation(String mutation) {
   const redEyeMutations = {
-    'lutino', 'albino', 'creamino',
-    'fallow_green', 'fallow_blue',
-    'lacewing_green', 'lacewing_blue',
-    'texas_clearbody_green', 'texas_clearbody_blue',
+    'lutino',
+    'albino',
+    'creamino',
+    'fallow_green',
+    'fallow_blue',
+    'lacewing_green',
+    'lacewing_blue',
+    'texas_clearbody_green',
+    'texas_clearbody_blue',
   };
   return redEyeMutations.contains(mutation);
 }
@@ -101,8 +107,18 @@ bool _isInoMutation(String mutation) {
 bool _hasRedPinkEyes(String eyeColor) {
   final lower = _stripDiacritics(eyeColor.toLowerCase());
   const redPinkTokens = [
-    'red', 'pink', 'kirmizi', 'pembe', 'ruby', 'rot', 'rosa',
-    'kizil', 'rosy', 'crimson', 'scarlet', 'magenta',
+    'red',
+    'pink',
+    'kirmizi',
+    'pembe',
+    'ruby',
+    'rot',
+    'rosa',
+    'kizil',
+    'rosy',
+    'crimson',
+    'scarlet',
+    'magenta',
   ];
   return redPinkTokens.any(lower.contains);
 }
@@ -119,7 +135,8 @@ String _correctInoToNonIno({
     if (!_isInoMutation(alt) && alt != 'unknown') return alt;
   }
   // Map each red-eye mutation to its dark-eye equivalent
-  final isBlue = baseSeries == 'blue' ||
+  final isBlue =
+      baseSeries == 'blue' ||
       predictedMutation.contains('blue') ||
       predictedMutation == 'albino' ||
       predictedMutation == 'creamino';
@@ -209,7 +226,10 @@ const _mutationSignature = <String, ({Set<String> series, Set<String> family})>{
   'fallow_blue': (series: {'blue'}, family: {'fallow'}),
   'lacewing_green': (series: {'green'}, family: {'lacewing'}),
   'lacewing_blue': (series: {'blue'}, family: {'lacewing'}),
-  'opaline_cinnamon_green': (series: {'green'}, family: {'opaline', 'cinnamon'}),
+  'opaline_cinnamon_green': (
+    series: {'green'},
+    family: {'opaline', 'cinnamon'},
+  ),
   'opaline_cinnamon_blue': (series: {'blue'}, family: {'opaline', 'cinnamon'}),
   'violet_blue': (series: {'blue'}, family: {'violet', 'normal'}),
   'slate_blue': (series: {'blue'}, family: {'slate', 'normal'}),

@@ -24,10 +24,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: PrimaryButton(
-              label: 'Save',
-              onPressed: () => tapped = true,
-            ),
+            body: PrimaryButton(label: 'Save', onPressed: () => tapped = true),
           ),
         ),
       );
@@ -40,9 +37,7 @@ void main() {
     testWidgets('shows CircularProgressIndicator when loading', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: PrimaryButton(label: 'Save', isLoading: true),
-          ),
+          home: Scaffold(body: PrimaryButton(label: 'Save', isLoading: true)),
         ),
       );
 
@@ -113,10 +108,13 @@ void main() {
       );
 
       // No icon widget should be a direct child of the Row inside the button
-      expect(find.descendant(
-        of: find.byType(FilledButton),
-        matching: find.byType(Icon),
-      ), findsNothing);
+      expect(
+        find.descendant(
+          of: find.byType(FilledButton),
+          matching: find.byType(Icon),
+        ),
+        findsNothing,
+      );
     });
 
     testWidgets('has full-width minimum size', (tester) async {

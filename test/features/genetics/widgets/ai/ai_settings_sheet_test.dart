@@ -12,9 +12,7 @@ class MockLocalAiService extends Mock implements LocalAiService {}
 
 Widget _buildSheet(MockLocalAiService mockService) {
   return ProviderScope(
-    overrides: [
-      localAiServiceProvider.overrideWithValue(mockService),
-    ],
+    overrides: [localAiServiceProvider.overrideWithValue(mockService)],
     child: MaterialApp(
       home: Scaffold(
         body: Builder(

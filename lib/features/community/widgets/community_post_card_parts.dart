@@ -228,4 +228,3 @@ class _MetricBadge extends StatelessWidget {
     );
   }
 }
-

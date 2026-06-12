@@ -17,8 +17,7 @@ class InbreedingCalculator {
   double calculate({
     required String birdId,
     required Map<String, Bird> ancestors,
-  }) =>
-      calculateDetailed(birdId: birdId, ancestors: ancestors).coefficient;
+  }) => calculateDetailed(birdId: birdId, ancestors: ancestors).coefficient;
 
   /// Calculates the inbreeding coefficient with metadata about the traversal.
   ///
@@ -43,11 +42,17 @@ class InbreedingCalculator {
     void onDepthLimit() => depthLimited = true;
 
     _collectAncestors(
-      bird.fatherId!, ancestors, fatherAncestors, 0,
+      bird.fatherId!,
+      ancestors,
+      fatherAncestors,
+      0,
       onDepthLimit: onDepthLimit,
     );
     _collectAncestors(
-      bird.motherId!, ancestors, motherAncestors, 0,
+      bird.motherId!,
+      ancestors,
+      motherAncestors,
+      0,
       onDepthLimit: onDepthLimit,
     );
 

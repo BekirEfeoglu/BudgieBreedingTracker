@@ -338,28 +338,30 @@ void main() {
   });
 
   group('delete', () {
-    test('delegates to listingSource.softDelete and triggers image cleanup',
-        () async {
-      when(
-        () => listingSource.softDelete('l1', userId: 'u1'),
-      ).thenAnswer((_) async {});
-      // Audit C2: delete now also fires a fire-and-forget storage cleanup
-      // so soft-deleted listings stop leaking images into the public
-      // bucket. Stub the call so the test doesn't blow up.
-      when(
-        () => listingSource.deleteImages(userId: 'u1', listingId: 'l1'),
-      ).thenAnswer((_) async {});
+    test(
+      'delegates to listingSource.softDelete and triggers image cleanup',
+      () async {
+        when(
+          () => listingSource.softDelete('l1', userId: 'u1'),
+        ).thenAnswer((_) async {});
+        // Audit C2: delete now also fires a fire-and-forget storage cleanup
+        // so soft-deleted listings stop leaking images into the public
+        // bucket. Stub the call so the test doesn't blow up.
+        when(
+          () => listingSource.deleteImages(userId: 'u1', listingId: 'l1'),
+        ).thenAnswer((_) async {});
 
-      await repository.delete('l1', userId: 'u1');
+        await repository.delete('l1', userId: 'u1');
 
-      verify(() => listingSource.softDelete('l1', userId: 'u1')).called(1);
-      // Cleanup is async; one microtask is enough to settle the
-      // fire-and-forget Future created by `unawaited(...)`.
-      await Future<void>.delayed(Duration.zero);
-      verify(
-        () => listingSource.deleteImages(userId: 'u1', listingId: 'l1'),
-      ).called(1);
-    });
+        verify(() => listingSource.softDelete('l1', userId: 'u1')).called(1);
+        // Cleanup is async; one microtask is enough to settle the
+        // fire-and-forget Future created by `unawaited(...)`.
+        await Future<void>.delayed(Duration.zero);
+        verify(
+          () => listingSource.deleteImages(userId: 'u1', listingId: 'l1'),
+        ).called(1);
+      },
+    );
 
     test('rethrows on delete failure', () async {
       when(

@@ -8,7 +8,8 @@ import '../../../helpers/test_localization.dart';
 void main() {
   group('DepthChip', () {
     testWidgets('renders current depth value in chip label', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         MaterialApp(
           home: Scaffold(
             appBar: AppBar(actions: [DepthChip(depth: 5, onChanged: (_) {})]),
@@ -20,7 +21,8 @@ void main() {
     });
 
     testWidgets('renders with depth 3', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         MaterialApp(
           home: Scaffold(
             appBar: AppBar(actions: [DepthChip(depth: 3, onChanged: (_) {})]),
@@ -32,7 +34,8 @@ void main() {
     });
 
     testWidgets('opens popup menu on tap', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         MaterialApp(
           home: Scaffold(
             appBar: AppBar(actions: [DepthChip(depth: 4, onChanged: (_) {})]),
@@ -52,7 +55,8 @@ void main() {
     testWidgets('calls onChanged when menu item selected', (tester) async {
       int? selectedValue;
 
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         MaterialApp(
           home: Scaffold(
             appBar: AppBar(
@@ -75,7 +79,8 @@ void main() {
     });
 
     testWidgets('shows Chip widget', (tester) async {
-      await pumpLocalizedApp(tester,
+      await pumpLocalizedApp(
+        tester,
         MaterialApp(
           home: Scaffold(
             appBar: AppBar(actions: [DepthChip(depth: 6, onChanged: (_) {})]),
