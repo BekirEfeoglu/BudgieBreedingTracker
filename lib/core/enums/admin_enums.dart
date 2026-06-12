@@ -122,8 +122,9 @@ enum AdminActionType {
     if (json.contains('login')) return login;
     if (json.contains('logout')) return logout;
     if (json.contains('grant') && json.contains('premium')) return grantPremium;
-    if (json.contains('revoke') && json.contains('premium'))
+    if (json.contains('revoke') && json.contains('premium')) {
       return revokePremium;
+    }
     if (json.contains('toggle') && json.contains('active')) return toggleActive;
     if (json.contains('export')) return export;
     if (json.contains('reset')) return reset;
@@ -153,8 +154,9 @@ enum SecurityEventType {
     // Fallback keyword matching for legacy data
     if (json.contains('failed') && json.contains('login')) return failedLogin;
     if (json.contains('suspicious')) return suspiciousActivity;
-    if (json.contains('rate_limit') || json.contains('ratelimit'))
+    if (json.contains('rate_limit') || json.contains('ratelimit')) {
       return rateLimited;
+    }
     if (json.contains('brute')) return bruteForce;
     if (json.contains('unauthorized')) return unauthorizedAccess;
     if (json.contains('mfa')) return mfaFailure;

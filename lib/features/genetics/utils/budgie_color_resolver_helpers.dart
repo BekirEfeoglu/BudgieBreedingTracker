@@ -197,8 +197,9 @@ typedef SpecialPhenotypeFlags = ({
 /// to fall through to individual mutation modifiers.
 SpecialPhenotypeResult? _resolveSpecialPhenotype(SpecialPhenotypeFlags f) {
   if (f.isDarkEyedClear) return _resolveDarkEyedClear(f.isBlueSeries);
-  if (f.isDoubleFactorSpangle)
+  if (f.isDoubleFactorSpangle) {
     return _resolveDoubleFactorSpangle(f.isBlueSeries);
+  }
   if (f.isAlbino || f.isLutino || f.isCreamino || f.isLacewing) {
     return _resolveInoVariant(f);
   }

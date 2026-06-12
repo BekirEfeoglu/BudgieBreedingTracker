@@ -25,8 +25,9 @@ final trendStatsProvider = Provider.family<AsyncValue<TrendStats>, String>((
 
   // Fast-fail on any error
   for (final a in [birdsAsync, pairsAsync, eggsAsync, chicksAsync]) {
-    if (a.hasError)
+    if (a.hasError) {
       return AsyncError(a.error!, a.stackTrace ?? StackTrace.empty);
+    }
   }
   // Loading if any stream hasn't resolved
   if (birdsAsync.isLoading ||

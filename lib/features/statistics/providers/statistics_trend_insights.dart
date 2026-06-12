@@ -11,8 +11,9 @@ final quickInsightsProvider =
 
       // Fast-fail on any error
       for (final a in [eggsAsync, chicksAsync, pairsAsync, trendAsync]) {
-        if (a.hasError)
+        if (a.hasError) {
           return AsyncError(a.error!, a.stackTrace ?? StackTrace.empty);
+        }
       }
       // Loading if any data stream hasn't resolved (trend loading is handled
       // below via trendAsync.value returning null → neutral sentiment)
