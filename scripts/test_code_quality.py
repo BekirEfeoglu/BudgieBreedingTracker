@@ -1190,9 +1190,30 @@ class TestCheckLayerImports(unittest.TestCase):
         cat = _run_checker(check_layer_imports, lines, self.CORE_PATH)
         self.assertEqual(len(cat.findings), 0)
 
-    def test_skips_feature_layer_file(self):
+    def test_detects_feature_importing_other_feature(self):
         lines = [
-            "import '../features/other/providers/provider.dart';",
+            "import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';",
+        ]
+        cat = _run_checker(check_layer_imports, lines, self.FEATURE_PATH)
+        self.assertEqual(len(cat.findings), 1)
+
+    def test_allows_feature_importing_same_feature(self):
+        lines = [
+            "import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';",
+        ]
+        cat = _run_checker(check_layer_imports, lines, self.FEATURE_PATH)
+        self.assertEqual(len(cat.findings), 0)
+
+    def test_detects_feature_importing_data_remote(self):
+        lines = [
+            "import 'package:budgie_breeding_tracker/data/remote/storage/storage_providers.dart';",
+        ]
+        cat = _run_checker(check_layer_imports, lines, self.FEATURE_PATH)
+        self.assertEqual(len(cat.findings), 1)
+
+    def test_allows_feature_importing_shared_facade(self):
+        lines = [
+            "import 'package:budgie_breeding_tracker/shared/providers/auth.dart';",
         ]
         cat = _run_checker(check_layer_imports, lines, self.FEATURE_PATH)
         self.assertEqual(len(cat.findings), 0)

@@ -5,8 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../statistics/widgets/chart_states.dart';
-import '../../statistics/widgets/chart_utils.dart';
+import '../../../shared/widgets/statistics.dart';
 import '../providers/admin_filter_providers.dart';
 import '../providers/admin_models.dart';
 

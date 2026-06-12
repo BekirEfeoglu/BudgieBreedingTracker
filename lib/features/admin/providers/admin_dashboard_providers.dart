@@ -4,7 +4,7 @@ import '../../../core/constants/supabase_constants.dart';
 import '../../../core/enums/admin_enums.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/utils/storage_url_normalizer.dart';
-import '../../auth/providers/auth_providers.dart';
+import '../../../shared/providers/auth.dart';
 import '../constants/admin_constants.dart';
 import 'admin_auth_utils.dart';
 import 'admin_models.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:budgie_breeding_tracker/data/providers/supabase_client_provider.dart';
 import 'package:budgie_breeding_tracker/domain/services/auth/two_factor_service.dart';
-import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 
 /// Provider for [TwoFactorService].
 final twoFactorServiceProvider = Provider<TwoFactorService>((ref) {

@@ -5,7 +5,7 @@
 - **DAOs**: `lib/data/local/database/daos/` (20 DAOs)
 - **Mappers**: `lib/data/local/database/mappers/` (20 mappers)
 - **Converters**: `lib/data/local/database/converters/enum_converters.dart`
-- **Schema version**: 22
+- **Schema version**: 25
 - Import tables DIRECTLY from table file, not via `app_database.dart`
 - Use `.equalsValue()` for enum columns, not `.equals()`
 

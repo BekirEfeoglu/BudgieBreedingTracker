@@ -3,11 +3,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/storage_url_normalizer.dart';
-import '../../../data/remote/storage/storage_providers.dart';
-import '../../../data/remote/storage/storage_url_resolver.dart';
+import '../../../data/providers/storage_service_provider.dart';
 import '../../../domain/services/presence/user_presence_constants.dart';
 import '../../../domain/services/presence/user_presence_providers.dart';
-import '../../auth/providers/auth_providers.dart';
+import '../../../shared/providers/auth.dart';
 import '../constants/admin_constants.dart';
 import 'admin_auth_utils.dart';
 import 'admin_content_models.dart';

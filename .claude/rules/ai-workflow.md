@@ -55,8 +55,8 @@ If generation gets stuck: `dart run build_runner clean` first.
 - Never use `context.go()` for forward navigation
 - Never use `withOpacity()` — use `withValues(alpha:)`
 - Never send `created_at`/`updated_at` to Supabase — use `.toSupabase()`
-- Never import from `data/remote/` directly in UI — use Repository
-- Never import across feature modules
+- Never import from `data/remote/` directly in feature/UI code — use `data/providers`, Repository, or domain service boundaries
+- Never import across feature modules — use `shared/`, `core/`, `domain/`, or `data/providers` facades
 
 ## Anti-Pattern Enforcement
 - `verify_code_quality.py` scans with 27 checkers (19/24 CLAUDE.md patterns plus 9 documented extra scanners; some scanners overlap)

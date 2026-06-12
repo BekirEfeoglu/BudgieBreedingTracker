@@ -5,7 +5,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
-import '../../auth/providers/auth_providers.dart';
+import '../../../shared/providers/auth.dart';
 import '../constants/admin_constants.dart';
 import 'admin_auth_utils.dart';
 import 'admin_dashboard_providers.dart';

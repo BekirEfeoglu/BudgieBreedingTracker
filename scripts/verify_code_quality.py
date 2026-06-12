@@ -103,7 +103,7 @@ ANTI_PATTERN_COVERAGE = {
 EXTRA_CHECKERS = {
     "check_hardcoded_spacing": "Hardcoded spacing values (#19 spacing kismi, AppSpacing convention)",
     "check_freezed3_pattern": "@freezed abstract class syntax (Freezed 3 gerekliligi)",
-    "check_layer_imports": "Layer hierarchy import violations (architecture.md)",
+    "check_layer_imports": "Layer hierarchy, feature-to-feature, and feature data/remote import violations (architecture.md)",
     "check_bare_circular_progress": "Ad-hoc CircularProgressIndicator -> LoadingState (ui-patterns.md)",
     "check_iconbutton_constraints": "IconButton 48dp tap target (a11y, WCAG 2.1 AA)",
     "check_provider_container_dispose": "ProviderContainer dispose missing in test/ (test-stability.md)",
@@ -778,7 +778,14 @@ def check_mounted_async(lines: List[str], filepath: Path, cat: Category):
 
 
 def check_layer_imports(lines: List[str], filepath: Path, cat: Category):
-    """Layer hierarchy import violations: core->data/features, data->features."""
+    """Layer hierarchy import violations.
+
+    Covered rules:
+    - core/ must not import data/remote or features/
+    - data/ must not import features/
+    - features/ must not import other feature modules
+    - features/ must not import data/remote directly
+    """
     if is_whitelisted('check_layer_imports', filepath):
         return
 
@@ -787,12 +794,28 @@ def check_layer_imports(lines: List[str], filepath: Path, cat: Category):
     # Determine which layer this file is in
     is_core = rel.startswith("lib/core/")
     is_data = rel.startswith("lib/data/")
+    is_feature = rel.startswith("lib/features/")
+    source_feature = rel.split("/")[2] if is_feature else None
 
-    if not is_core and not is_data:
+    if not is_core and not is_data and not is_feature:
         return
 
     # Package name for matching package-style imports
     pkg = "budgie_breeding_tracker"
+
+    def _import_path(stripped: str) -> str:
+        match = re.search(r'import\s+[\'"]([^\'"]+)[\'"]', stripped)
+        if not match:
+            return ""
+        uri = match.group(1)
+        if uri.startswith(f"package:{pkg}/"):
+            return f"lib/{uri.split(f'package:{pkg}/', 1)[1]}"
+        if uri.startswith("."):
+            try:
+                return str((filepath.parent / uri).resolve().relative_to(ROOT_DIR.resolve())).replace("\\", "/")
+            except ValueError:
+                return ""
+        return ""
 
     def _imports_layer(stripped: str, layer: str) -> bool:
         """Check if an import line references a specific layer.
@@ -809,6 +832,7 @@ def check_layer_imports(lines: List[str], filepath: Path, cat: Category):
         stripped = line.strip()
         if not stripped.startswith("import"):
             continue
+        import_path = _import_path(stripped)
 
         if is_core:
             # core/ must NOT import from features/ or data/ (except models)
@@ -836,6 +860,24 @@ def check_layer_imports(lines: List[str], filepath: Path, cat: Category):
                     line_text=line.rstrip(),
                     suggestion="data/ katmani features/ katmanindan import edemez",
                 ))
+        elif is_feature:
+            if import_path.startswith("lib/data/remote/"):
+                cat.findings.append(Finding(
+                    file=relative_path(filepath),
+                    line_num=i,
+                    line_text=line.rstrip(),
+                    suggestion="features/ data/remote katmanini dogrudan import edemez; data/providers, repository veya domain servis kullan",
+                ))
+                continue
+            if import_path.startswith("lib/features/"):
+                imported_feature = import_path.split("/")[2]
+                if imported_feature != source_feature:
+                    cat.findings.append(Finding(
+                        file=relative_path(filepath),
+                        line_num=i,
+                        line_text=line.rstrip(),
+                        suggestion="Feature-to-feature import yerine core/domain/data veya shared facade kullan",
+                    ))
 
 
 def check_freezed_private_constructor(lines: List[str], filepath: Path, cat: Category):

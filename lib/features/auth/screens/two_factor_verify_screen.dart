@@ -9,8 +9,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
-import 'package:budgie_breeding_tracker/data/providers/edge_function_provider.dart';
-import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
+import 'package:budgie_breeding_tracker/domain/services/auth/mfa_lockout_service.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/widgets/otp_input_field.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
@@ -98,28 +97,25 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
   /// Checks server-side lockout status via Edge Function.
   Future<void> _checkServerLockout() async {
     try {
-      final client = ref.read(edgeFunctionClientProvider);
-      final result = await client.checkMfaLockout();
+      final result = await ref.read(mfaLockoutServiceProvider).check();
       if (!mounted) return;
       if (!result.success) {
-        AppLogger.warning(
-          '$_tag Server lockout check failed — failing closed: ${result.error}',
-        );
+        AppLogger.warning('$_tag Server lockout check failed — failing closed');
         setState(() {
           _error = 'auth.2fa_server_unavailable'.tr();
           _lockoutUntil = DateTime.now().add(const Duration(seconds: 30));
         });
         return;
       }
-      if (result.success && result.data != null) {
-        final locked = result.data!['locked'] as bool? ?? false;
-        final remaining = result.data!['remaining_seconds'] as int? ?? 0;
-        if (locked && remaining > 0) {
-          setState(() {
-            _lockoutUntil = DateTime.now().add(Duration(seconds: remaining));
-            _error = 'auth.2fa_too_many_attempts'.tr(args: ['$remaining']);
-          });
-        }
+      if (result.locked && result.remainingSeconds > 0) {
+        setState(() {
+          _lockoutUntil = DateTime.now().add(
+            Duration(seconds: result.remainingSeconds),
+          );
+          _error = 'auth.2fa_too_many_attempts'.tr(
+            args: ['${result.remainingSeconds}'],
+          );
+        });
       }
     } catch (e, st) {
       // Fail closed: if we can't verify server lockout status, block verification
@@ -202,8 +198,7 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
   Future<void> _handleSuccess() async {
     // Reset server-side lockout
     try {
-      final client = ref.read(edgeFunctionClientProvider);
-      await client.resetMfaLockout();
+      await ref.read(mfaLockoutServiceProvider).reset();
     } catch (e, st) {
       AppLogger.error('$_tag Server lockout reset failed: $e', e, st);
     }
@@ -223,11 +218,10 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
     // function gets unlimited brute force on a 6-digit TOTP (~1M space),
     // because the server-side `failed_attempts` counter never increments
     // and the local lockout resets across reinstalls.
-    EdgeFunctionResult? serverResult;
+    MfaLockoutResult? serverResult;
     bool serverContactFailed = false;
     try {
-      final client = ref.read(edgeFunctionClientProvider);
-      serverResult = await client.recordMfaFailure();
+      serverResult = await ref.read(mfaLockoutServiceProvider).recordFailure();
       if (!serverResult.success) {
         serverContactFailed = true;
         AppLogger.warning(
@@ -242,9 +236,8 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
     if (!mounted) return;
 
     // Check if server responded with lockout
-    final serverLocked = serverResult?.data?['locked'] as bool? ?? false;
-    final serverRemaining =
-        serverResult?.data?['remaining_seconds'] as int? ?? 0;
+    final serverLocked = serverResult?.locked ?? false;
+    final serverRemaining = serverResult?.remainingSeconds ?? 0;
 
     // Always accumulate attempts locally (never reset to 0)
     _failedAttempts++;

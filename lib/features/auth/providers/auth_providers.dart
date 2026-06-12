@@ -20,12 +20,12 @@ import 'two_factor_providers.dart';
 
 // Import for internal use within this file.
 import '../../../data/providers/auth_state_providers.dart';
-import '../../../data/remote/supabase/supabase_client.dart';
+import '../../../data/providers/supabase_client_provider.dart';
 
 // Re-export infrastructure auth providers from data layer so existing
 // feature-level imports continue to work without changes.
 export 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
-export 'package:budgie_breeding_tracker/data/remote/supabase/supabase_client.dart'
+export 'package:budgie_breeding_tracker/data/providers/supabase_client_provider.dart'
     show supabaseClientProvider;
 export 'auth_actions.dart';
 

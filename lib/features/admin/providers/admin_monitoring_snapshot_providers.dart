@@ -4,7 +4,7 @@ import '../../../core/constants/supabase_constants.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/utils/safe_cast.dart';
-import '../../auth/providers/auth_providers.dart';
+import '../../../shared/providers/auth.dart';
 import 'admin_auth_utils.dart';
 
 /// A single monitoring snapshot from pg_cron automated collection.

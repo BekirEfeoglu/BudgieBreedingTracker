@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/enums/admin_enums.dart';
-import '../../auth/providers/auth_providers.dart';
+import '../../../shared/providers/auth.dart';
 import '../constants/admin_constants.dart';
 import 'admin_auth_utils.dart';
 import 'admin_models.dart';

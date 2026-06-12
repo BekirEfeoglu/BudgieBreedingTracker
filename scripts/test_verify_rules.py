@@ -564,9 +564,9 @@ class TestApplyInlineFixes(unittest.TestCase):
 
     def test_updates_quality_checker_counts(self):
         actual = _make_sample_actual({
-            "quality_covered": 18,
-            "quality_extra": 5,
-            "quality_total": 23,
+            "quality_covered": 19,
+            "quality_extra": 9,
+            "quality_total": 27,
         })
         content = "\n".join([
             "python3 scripts/verify_code_quality.py    # Anti-pattern scan (21 checkers, 16/24 CLAUDE.md patterns + 5 extra)",
@@ -574,9 +574,9 @@ class TestApplyInlineFixes(unittest.TestCase):
             "Enforced by: `verify_code_quality.py` (21 automated checkers)",
         ])
         fixed, messages = _apply_inline_fixes(content, actual)
-        self.assertIn("Anti-pattern scan (23 checkers, 18/24 CLAUDE.md patterns + 5 extra)", fixed)
-        self.assertIn("scans with 23 checkers (18 from CLAUDE.md + 5 extra)", fixed)
-        self.assertIn("Enforced by: `verify_code_quality.py` (23 automated checkers)", fixed)
+        self.assertIn("Anti-pattern scan (27 checkers, 19/24 CLAUDE.md patterns + 9 extra)", fixed)
+        self.assertIn("scans with 27 checkers (19 from CLAUDE.md + 9 extra)", fixed)
+        self.assertIn("Enforced by: `verify_code_quality.py` (27 automated checkers)", fixed)
         self.assertTrue(any("quality checker" in m.lower() for m in messages))
 
     def test_updates_inline_asset_index_constant_and_migration_counts(self):

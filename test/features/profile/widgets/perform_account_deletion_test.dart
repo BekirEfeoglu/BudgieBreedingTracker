@@ -6,7 +6,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/data/local/database/database_provider.dart';
-import 'package:budgie_breeding_tracker/data/remote/storage/storage_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/storage_service_provider.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/account_deletion_dialog.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';

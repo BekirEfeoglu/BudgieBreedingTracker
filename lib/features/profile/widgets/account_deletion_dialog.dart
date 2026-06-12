@@ -4,18 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
-import 'package:budgie_breeding_tracker/data/local/database/database_provider.dart';
-import 'package:budgie_breeding_tracker/data/remote/storage/storage_providers.dart';
+import 'package:budgie_breeding_tracker/features/profile/providers/account_deletion_providers.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
-
-import '../../auth/providers/auth_providers.dart';
 
 part 'account_deletion_dialog_widget.dart';
 
@@ -45,7 +41,6 @@ Future<void> performAccountDeletion(
   required String password,
 }) async {
   final messenger = ScaffoldMessenger.of(context);
-  final userId = ref.read(currentUserIdProvider);
 
   // Show loading dialog (non-dismissible)
   showDialog(
@@ -66,57 +61,10 @@ Future<void> performAccountDeletion(
   );
 
   try {
-    // 1. Validate the current password before any destructive cleanup.
     await ref
-        .read(authActionsProvider)
-        .verifyCurrentPassword(currentPassword: password);
+        .read(accountDeletionControllerProvider)
+        .deleteAccount(password: password);
 
-    if (!context.mounted) return;
-
-    // 2. Delete remote storage files. This must fail closed because the
-    //    server RPC deletes auth.users and cannot retry user-scoped storage.
-    await ref.read(storageServiceProvider).deleteAllUserFiles(userId);
-
-    // 3. Revoke OAuth provider token (best-effort — token may not be
-    //    available if the session was restored from storage)
-    try {
-      await ref.read(authActionsProvider).revokeOAuthToken();
-    } catch (e) {
-      AppLogger.warning('[AccountDeletion] OAuth token revocation failed: $e');
-    }
-
-    if (!context.mounted) return;
-
-    // 4. Request server-side account deletion. The RPC deletes auth.users, so
-    //    storage cleanup must already have been attempted by this point.
-    await ref
-        .read(authActionsProvider)
-        .requestAccountDeletionForVerifiedSession();
-
-    if (!context.mounted) return;
-
-    // 5. Wipe local database (atomic transaction)
-    await ref.read(appDatabaseProvider).clearAllUserData(userId);
-
-    // 6. Clear SharedPreferences (after all remote ops completed)
-    // NOTE: prefs.clear() removes ALL preferences, not just user-specific
-    // ones. This is acceptable here because account deletion is a full reset.
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-
-    if (!context.mounted) return;
-
-    // 7. Sign out globally (best-effort — auth user may already be deleted
-    // server-side, which invalidates all sessions automatically).
-    try {
-      await ref.read(authActionsProvider).signOutAllSessions();
-    } catch (e) {
-      AppLogger.debug(
-        '[AccountDeletion] Sign-out after deletion failed (expected if auth user already deleted): $e',
-      );
-    }
-
-    // 8. Dismiss loading dialog and navigate to login
     if (context.mounted) {
       Navigator.of(context).pop(); // close loading dialog
       messenger.showSnackBar(

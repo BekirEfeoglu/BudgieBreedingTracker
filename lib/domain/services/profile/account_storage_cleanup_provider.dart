@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../data/remote/storage/storage_providers.dart';
+import '../../../data/providers/storage_service_provider.dart';
 
 final accountStorageCleanupProvider = Provider<AccountStorageCleanup>((ref) {
   return AccountStorageCleanup(ref);

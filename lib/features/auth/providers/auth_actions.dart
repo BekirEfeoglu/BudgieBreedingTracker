@@ -17,7 +17,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/utils/logger.dart';
 import '../../../core/utils/safe_cast.dart';
-import '../../../data/remote/supabase/supabase_client.dart';
+import '../../../data/providers/supabase_client_provider.dart';
 import '../../../domain/services/notifications/notification_providers.dart';
 import 'native_google_auth_errors.dart';
 

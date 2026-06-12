@@ -59,8 +59,8 @@ final [birds, eggs] = await Future.wait([
 
 ## 24 Critical Anti-Patterns
 Full list with explanations: CLAUDE.md § "Critical Anti-Patterns (24 rules)"
-Enforced by: `verify_code_quality.py` — 18/24 CLAUDE.md kuralı + 6 ek checker = 24 statik tarayıcı.
-Statik tarayıcı dışı (manuel review): #7, #8, #9, #13, #23 (kısmi), #24.
+Enforced by: `verify_code_quality.py` — 27 checker kategorisi; 19/24 CLAUDE.md kuralı + 9 ek dokümante scanner.
+Statik tarayıcı dışı (manuel review): #8, #9, #13, #23 (kısmi), #24.
 
 **Top 10 most common:**
 1. `withOpacity()` -> `withValues(alpha:)` — Flutter deprecation
@@ -80,5 +80,6 @@ Statik tarayıcı dışı (manuel review): #7, #8, #9, #13, #23 (kısmi), #24.
 - `client.insert()` -> `client.upsert()` — idempotent retry/sync replay
 - FK parent'li syncable repo -> `ValidatedSyncMixin` (orphan push engelle)
 - `IconButton` -> `constraints: BoxConstraints(minWidth: 48, minHeight: 48)` (a11y, accessibility.md)
+- Feature-to-feature import veya feature katmanından `data/remote/` import -> `shared/`, `data/providers`, repository veya domain servis sınırı kullan
 
 > **Related**: ai-workflow.md (prohibited actions), ui-patterns.md (widget patterns), data-layer.md (Drift conventions), accessibility.md (a11y), observability.md (logging + Sentry)
