@@ -5,6 +5,8 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 git diff --check
+python3 scripts/check_platform_targets.py
+python3 scripts/check_obsidian_brain.py
 python3 scripts/verify_rules.py --strict
 python3 scripts/verify_code_quality.py
 

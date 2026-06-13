@@ -248,6 +248,12 @@ jobs:
       - name: Anti-pattern scan
         run: python scripts/verify_code_quality.py
 
+      - name: Platform target policy
+        run: python scripts/check_platform_targets.py
+
+      - name: Obsidian brain lint
+        run: python scripts/check_obsidian_brain.py
+
   rules-sync:
     name: Rules Sync
     runs-on: ubuntu-24.04

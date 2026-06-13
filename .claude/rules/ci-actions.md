@@ -18,7 +18,7 @@
 | `edge-functions-test` | `deno test --allow-env --allow-net supabase/functions` | PR merge + Edge deploy |
 | `scripts-test` | Python script tests (>=98% cov) | PR merge |
 | `l10n-sync` | Translation key parity | PR merge |
-| `code-quality` | Anti-pattern scan | PR merge |
+| `code-quality` | Anti-pattern scan + platform target policy + obsidian-brain lint | PR merge |
 | `rules-sync` | CLAUDE.md stats verification | PR merge |
 | `auto-fix-stats` | Auto-PR for stats drift | main only |
 | `deploy-edge-functions` | Supabase Edge Function deploy | main only, needs analyze+test+edge-functions-test |

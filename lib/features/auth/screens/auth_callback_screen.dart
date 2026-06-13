@@ -5,13 +5,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/utils/logger.dart';
 import '../../../router/route_names.dart';
 import '../providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Handles OAuth callback redirect, then navigates to home or login.
 class AuthCallbackScreen extends ConsumerStatefulWidget {
-  const AuthCallbackScreen({super.key});
+  const AuthCallbackScreen({
+    super.key,
+    this.debugIsIos,
+    this.debugResumeWindowReclaim,
+  });
+
+  final bool? debugIsIos;
+  final Future<void> Function()? debugResumeWindowReclaim;
 
   @override
   ConsumerState<AuthCallbackScreen> createState() => _AuthCallbackScreenState();
@@ -31,11 +39,18 @@ class _AuthCallbackScreenState extends ConsumerState<AuthCallbackScreen> {
   }
 
   Future<void> _resumeIosWindowReclaimGuard() async {
-    if (!Platform.isIOS) return;
+    final isIos = widget.debugIsIos ?? Platform.isIOS;
+    if (!isIos) return;
     try {
-      await _iosWindowGuardChannel.invokeMethod<void>('resumeWindowReclaim');
-    } catch (_) {
-      // Best-effort only.
+      final debugResume = widget.debugResumeWindowReclaim;
+      if (debugResume != null) {
+        await debugResume();
+      } else {
+        await _iosWindowGuardChannel.invokeMethod<void>('resumeWindowReclaim');
+      }
+    } catch (e, st) {
+      AppLogger.warning('[AuthCallback] iOS window reclaim failed: $e');
+      AppLogger.debug('[AuthCallback] iOS window reclaim stack: $st');
     }
   }
 

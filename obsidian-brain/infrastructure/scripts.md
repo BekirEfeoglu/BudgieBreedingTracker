@@ -9,6 +9,8 @@ All scripts in `scripts/` directory.
 | Script | Purpose |
 |--------|---------|
 | `check_l10n_sync.py` | Verify tr/en/de translation keys are in sync |
+| `check_platform_targets.py` | Verify unsupported Flutter web target is absent |
+| `check_obsidian_brain.py` | Verify wiki index entries, wikilinks, log entry, and 200-line limit |
 | `verify_code_quality.py` | Anti-pattern scan (27 checker categories: 19/24 CLAUDE.md anti-patterns + 9 documented extras; some overlap) |
 | `verify_rules.py` | Validate CLAUDE.md stats against codebase |
 | `verify_rules.py --fix` | Auto-fix CLAUDE.md stats + inline rule references |
@@ -36,6 +38,8 @@ scripts/run_local_quality_gate.sh
 | `test_code_quality.py` | Tests for verify_code_quality.py |
 | `test_code_quality_main.py` | Main entry tests for code quality |
 | `test_verify_rules.py` | Tests for verify_rules.py |
+| `test_check_platform_targets.py` | Tests for platform target policy |
+| `test_check_obsidian_brain.py` | Tests for wiki lint |
 
 ## Internal Modules
 

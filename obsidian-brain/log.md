@@ -4,6 +4,15 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-06-13] automation | platform/wiki lint
+
+- Removed unsupported Flutter web target files; GitHub Pages remains served from
+  `docs/`.
+- Added `check_platform_targets.py` and `check_obsidian_brain.py` to local and
+  CI quality gates.
+
+---
+
 ## [2026-06-13] sync | Rule metadata + wiki stat drift
 
 Synced wiki summaries with current `CLAUDE.md` and `.claude/rules/` after the

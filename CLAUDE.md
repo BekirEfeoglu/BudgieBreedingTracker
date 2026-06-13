@@ -49,6 +49,8 @@ dart fix --apply
 ### Quality Scripts
 ```bash
 python3 scripts/check_l10n_sync.py       # Verify tr/en/de translation keys are in sync
+python3 scripts/check_platform_targets.py # Verify unsupported Flutter web target is absent
+python3 scripts/check_obsidian_brain.py  # Verify obsidian-brain index, links, and page length
 python3 scripts/verify_code_quality.py    # Anti-pattern scan (27 checkers, 19/24 CLAUDE.md patterns + 9 extra documented scanners)
 python3 scripts/verify_rules.py          # Validate CLAUDE.md stats against codebase (single source of truth)
 python3 scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats + rule inline references
@@ -77,6 +79,8 @@ scripts/test_l10n_sync_main.py          # Main entry tests for l10n sync
 scripts/test_code_quality.py            # Tests for verify_code_quality.py
 scripts/test_code_quality_main.py       # Main entry tests for code quality
 scripts/test_verify_rules.py            # Tests for verify_rules.py
+scripts/test_check_platform_targets.py  # Tests for platform target policy
+scripts/test_check_obsidian_brain.py    # Tests for obsidian-brain wiki lint
 ```
 
 ## Codebase Stats
@@ -84,7 +88,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | Metric | Value |
 | --- | --- |
 | Source files (lib/) | 987 Dart files |
-| Test files (test/) | 903 test files, 11,095+ individual tests |
+| Test files (test/) | 903 test files, 11,096+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -95,7 +99,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | Custom SVG icons | 89 constants, 89 files on disk |
 | Shared widgets | 29 (15 root + 4 buttons + 2 cards + 2 dialog + 1 bottom_sheet + 5 eggs) |
 | Enum files | 15 |
-| Supabase constants | 138 (tables + buckets + columns) |
+| Supabase constants | 141 (tables + buckets + columns) |
 | L10n keys | ~2,995 per language, 41 categories |
 | DB schema version | 25 |
 
@@ -110,7 +114,7 @@ scripts/test_verify_rules.py            # Tests for verify_rules.py
 | `e2e-community-test` | E2E + community tagged tests |
 | `scripts-test` | Python script tests (>=98% coverage) |
 | `l10n-sync` | Translation key parity (--strict-keys) |
-| `code-quality` | Anti-pattern scan (depends on scripts-test) |
+| `code-quality` | Anti-pattern scan + platform target policy + obsidian-brain lint (depends on scripts-test) |
 | `rules-sync` | CLAUDE.md stats verification (--strict) |
 | `security-audit` | Security posture verification (cert pinning, secrets) |
 | `auto-fix-stats` | Auto-PR for CLAUDE.md drift (main only) |

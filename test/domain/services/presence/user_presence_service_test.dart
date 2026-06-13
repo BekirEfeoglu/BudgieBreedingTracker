@@ -99,11 +99,12 @@ void main() {
         expect(sessionId, isNotNull);
         final payload =
             client.queryBuilder.insertPayload as Map<String, dynamic>;
-        expect(payload['id'], sessionId);
-        expect(payload['user_id'], 'user-1');
-        expect(payload['is_active'], true);
-        expect(payload['last_active_at'], isA<String>());
-        expect(payload['expires_at'], isA<String>());
+        expect(payload[SupabaseConstants.colId], sessionId);
+        expect(payload[SupabaseConstants.colUserId], 'user-1');
+        expect(payload[SupabaseConstants.colPlatform], isNotEmpty);
+        expect(payload[SupabaseConstants.colIsActive], true);
+        expect(payload[SupabaseConstants.colLastActiveAt], isA<String>());
+        expect(payload[SupabaseConstants.colExpiresAt], isA<String>());
       },
     );
 
@@ -126,17 +127,20 @@ void main() {
       final payload = Map<String, dynamic>.from(
         client.queryBuilder.updatePayload! as Map,
       );
-      expect(payload['is_active'], true);
-      expect(payload['last_active_at'], isA<String>());
+      expect(payload[SupabaseConstants.colIsActive], true);
+      expect(payload[SupabaseConstants.colLastActiveAt], isA<String>());
+      expect(payload[SupabaseConstants.colExpiresAt], isA<String>());
       expect(
         client.queryBuilder.updateBuilder.eqCalls.any(
-          (call) => call.key == 'id' && call.value == 'session-1',
+          (call) =>
+              call.key == SupabaseConstants.colId && call.value == 'session-1',
         ),
         isTrue,
       );
       expect(
         client.queryBuilder.updateBuilder.eqCalls.any(
-          (call) => call.key == 'user_id' && call.value == 'user-1',
+          (call) =>
+              call.key == SupabaseConstants.colUserId && call.value == 'user-1',
         ),
         isTrue,
       );

@@ -3,19 +3,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/screens/auth_callback_screen.dart';
 
 void main() {
-  Widget createSubject({bool isAuthenticated = false}) {
+  Widget createSubject({
+    bool isAuthenticated = false,
+    AuthCallbackScreen callbackScreen = const AuthCallbackScreen(),
+  }) {
     // NoTransitionPage prevents animation timers from running during tests
     final router = GoRouter(
       initialLocation: '/auth/callback',
       routes: [
         GoRoute(
           path: '/auth/callback',
-          pageBuilder: (_, __) =>
-              const NoTransitionPage(child: AuthCallbackScreen()),
+          pageBuilder: (_, __) => NoTransitionPage(child: callbackScreen),
         ),
         GoRoute(
           path: '/',
@@ -37,6 +40,8 @@ void main() {
   }
 
   group('AuthCallbackScreen', () {
+    setUp(AppLogger.clearRecentLogs);
+
     testWidgets('renders AuthCallbackScreen without crashing', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pump();
@@ -89,6 +94,32 @@ void main() {
       expect(find.byType(Scaffold), findsAtLeastNWidgets(1));
 
       // Drain the pending timer
+      await tester.pump(const Duration(seconds: 2));
+    });
+
+    testWidgets('logs iOS window reclaim failures', (tester) async {
+      await tester.pumpWidget(
+        createSubject(
+          callbackScreen: AuthCallbackScreen(
+            debugIsIos: true,
+            debugResumeWindowReclaim: () async {
+              throw StateError('channel unavailable');
+            },
+          ),
+        ),
+      );
+
+      await tester.pump();
+
+      expect(
+        AppLogger.recentLogs.any(
+          (entry) =>
+              entry.message.contains('[AuthCallback]') &&
+              entry.message.contains('window reclaim'),
+        ),
+        isTrue,
+      );
+
       await tester.pump(const Duration(seconds: 2));
     });
   });

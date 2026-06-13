@@ -13,7 +13,7 @@ Runs on PRs and main pushes.
 | `golden-test` | Visual regression (Linux baseline) | PR merge |
 | `scripts-test` | Python script tests (≥98% coverage) | PR merge |
 | `l10n-sync` | Translation key parity (--strict-keys) | PR merge |
-| `code-quality` | Anti-pattern scan (27 checker categories) | PR merge |
+| `code-quality` | Anti-pattern scan + platform target policy + wiki lint | PR merge |
 | `rules-sync` | CLAUDE.md stats verification | PR merge |
 | `auto-fix-stats` | Auto-PR for CLAUDE.md drift | main only |
 | `deploy-edge-functions` | Supabase Edge Function deploy | main only, needs analyze+test |
@@ -28,6 +28,9 @@ The public marketing site lives in `docs/`. Pages deploys on `main` pushes, so
 web changes should be verified against the exact pushed commit like app changes.
 See [[infrastructure/marketing-site]] for anchor-navigation, accessibility, SEO,
 and visual QA checks.
+
+The Flutter app does not ship a Flutter Web target. `check_platform_targets.py`
+keeps `web/` absent so the static `docs/` site remains the only web surface.
 
 ## CI Rules
 

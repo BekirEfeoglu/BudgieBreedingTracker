@@ -19,12 +19,12 @@ class UserPresenceService {
     final sessionId = _uuid.v7();
     try {
       await _client.from(SupabaseConstants.userSessionsTable).insert({
-        'id': sessionId,
-        'user_id': userId,
-        'platform': _platformName(),
-        'is_active': true,
-        'last_active_at': now.toIso8601String(),
-        'expires_at': now
+        SupabaseConstants.colId: sessionId,
+        SupabaseConstants.colUserId: userId,
+        SupabaseConstants.colPlatform: _platformName(),
+        SupabaseConstants.colIsActive: true,
+        SupabaseConstants.colLastActiveAt: now.toIso8601String(),
+        SupabaseConstants.colExpiresAt: now
             .add(UserPresenceConstants.sessionTtl)
             .toIso8601String(),
       });
@@ -50,14 +50,14 @@ class UserPresenceService {
       await _client
           .from(SupabaseConstants.userSessionsTable)
           .update({
-            'is_active': true,
-            'last_active_at': now.toIso8601String(),
-            'expires_at': now
+            SupabaseConstants.colIsActive: true,
+            SupabaseConstants.colLastActiveAt: now.toIso8601String(),
+            SupabaseConstants.colExpiresAt: now
                 .add(UserPresenceConstants.sessionTtl)
                 .toIso8601String(),
           })
-          .eq('id', sessionId)
-          .eq('user_id', userId);
+          .eq(SupabaseConstants.colId, sessionId)
+          .eq(SupabaseConstants.colUserId, userId);
     } catch (e, st) {
       AppLogger.warning('[UserPresence] heartbeat failed: $e');
       AppLogger.error('[UserPresence] heartbeat stack', e, st);
@@ -74,11 +74,13 @@ class UserPresenceService {
       await _client
           .from(SupabaseConstants.userSessionsTable)
           .update({
-            'is_active': false,
-            'last_active_at': DateTime.now().toUtc().toIso8601String(),
+            SupabaseConstants.colIsActive: false,
+            SupabaseConstants.colLastActiveAt: DateTime.now()
+                .toUtc()
+                .toIso8601String(),
           })
-          .eq('id', sessionId)
-          .eq('user_id', userId);
+          .eq(SupabaseConstants.colId, sessionId)
+          .eq(SupabaseConstants.colUserId, userId);
     } catch (e, st) {
       AppLogger.warning('[UserPresence] endSession failed: $e');
       AppLogger.error('[UserPresence] endSession stack', e, st);

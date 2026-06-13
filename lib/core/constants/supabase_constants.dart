@@ -96,6 +96,7 @@ abstract class SupabaseConstants {
   static const String colCreatedAt = 'created_at';
   static const String colUpdatedAt = 'updated_at';
   static const String colLastActiveAt = 'last_active_at';
+  static const String colExpiresAt = 'expires_at';
   static const String colId = 'id';
   static const String colStatus = 'status';
   static const String colRole = 'role';
@@ -103,6 +104,8 @@ abstract class SupabaseConstants {
   static const String colDate = 'date';
   static const String colNeedsReview = 'needs_review';
   static const String colGender = 'gender';
+  static const String colIsActive = 'is_active';
+  static const String colPlatform = 'platform';
 
   // Foreign-key columns (shared across multiple tables)
   static const String colBirdId = 'bird_id';
