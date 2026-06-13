@@ -11,6 +11,7 @@ Full catalog of every page in the obsidian-brain wiki.
 | [[index]] | This page |
 | [[cheat-sheet]] | Task-oriented "how do I…" / "where is…" / "when does…" |
 | [[log]] | Chronological change log |
+| [[log-archive-2026-05]] | Archived May 2026 change log entries |
 | [[overview]] | High-level synthesis — what the app does, architecture diagram, key decisions |
 
 ## Architecture
@@ -91,7 +92,7 @@ Full catalog of every page in the obsidian-brain wiki.
 | Page | Description |
 |------|-------------|
 | [[infrastructure/ci-cd]] | GitHub Actions jobs, Codemagic, Xcode Cloud |
-| [[infrastructure/edge-functions]] | 9 Supabase functions, JWT enforcement, deployment |
+| [[infrastructure/edge-functions]] | 12 Supabase functions, JWT enforcement, deployment |
 | [[infrastructure/environment]] | dart-define vars, Edge Function secrets |
 | [[infrastructure/scripts]] | Quality scripts, anti-pattern checkers |
 | [[infrastructure/branch-workflow]] | main-only strategy, commit format, quality gates |

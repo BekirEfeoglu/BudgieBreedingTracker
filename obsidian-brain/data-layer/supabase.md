@@ -6,9 +6,9 @@ Source: `.claude/rules/data-layer.md`, `.claude/rules/security.md`
 
 - **Package**: supabase_flutter ^2.5.0
 - **Remote sources**: 26 (entity + base + 2 caches + providers)
-- **Migrations**: 160 SQL files in `supabase/migrations/`
-- **Edge Functions**: 9 (see [[infrastructure/edge-functions]])
-- **Supabase constants**: 137 (tables + buckets + columns)
+- **Migrations**: 174 SQL files in `supabase/migrations/`
+- **Edge Functions**: 12 (see [[infrastructure/edge-functions]])
+- **Supabase constants**: 138 (tables + buckets + columns)
 
 ## SupabaseConstants
 
@@ -51,7 +51,7 @@ await client.from(SupabaseConstants.birdsTable)
 await client.from('birds').insert(bird.toSupabase());
 ```
 
-Primary keys are client-generated `Uuid().v4()` — server never assigns IDs.
+Primary keys are client-generated `const Uuid().v7()` for new entity creation paths — server never assigns IDs.
 
 ## Server-Side RPCs
 
@@ -71,7 +71,7 @@ Postgres function then exposes only public-safe columns:
 | Bucket | Access | Content |
 |--------|--------|---------|
 | `bird-photos` | Private (user-scoped RLS) | Bird photos |
-| `community-posts` | Public read, auth write | Community images |
+| `community-photos` | Server upload, signed URL read | Community images |
 | `marketplace-listings` | Public read, auth write | Listing photos |
 | `health-records` | Private | Health documents |
 | `chat-attachments` | Conversation-scoped RLS | DM attachments |
@@ -95,6 +95,6 @@ Postgres function then exposes only public-safe columns:
 ## See Also
 
 - [[data-layer/repositories]] — how remote sources are used
-- [[infrastructure/edge-functions]] — 9 Edge Functions
+- [[infrastructure/edge-functions]] — 12 Edge Functions
 - [[data-layer/migrations]] — SQL migration workflow
 - [[patterns/security]] — RLS, auth

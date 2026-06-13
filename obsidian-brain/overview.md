@@ -46,7 +46,7 @@
 
 ### 2. Idempotent Writes
 - All remote writes use `.upsert()` (never `.insert()`)
-- Primary keys are client-generated UUIDs (`Uuid().v4()`)
+- Primary keys are client-generated UUIDs (`const Uuid().v7()` for new entity creation paths)
 - Safe to replay on retry or sync conflict
 - See [[data-layer/sync-strategy]]
 
@@ -58,7 +58,7 @@
 - See [[patterns/security]]
 
 ### 4. 24 Anti-Patterns
-Enforced by `scripts/verify_code_quality.py` (28 checkers — 19/24 CLAUDE.md anti-patterns + 9 audit-flagged extras). Key ones:
+Enforced by `scripts/verify_code_quality.py` (27 checker categories — 19/24 CLAUDE.md anti-patterns + 9 documented extras; some overlap). Key ones:
 - `withOpacity()` → `withValues(alpha: x)`
 - `context.go()` forward nav → `context.push()`
 - `ref.watch()` in callbacks → `ref.read()`
@@ -69,15 +69,15 @@ Enforced by `scripts/verify_code_quality.py` (28 checkers — 19/24 CLAUDE.md an
 ### 5. 3-Language Parity
 - Turkish is master language — all keys added to `tr.json` first
 - CI blocks PRs with missing keys in `en.json` or `de.json`
-- ~2,992 keys per language, 41 categories
+- ~2,995 keys per language, 41 categories
 - See [[patterns/l10n]]
 
-## Codebase Stats (as of 2026-05-29)
+## Codebase Stats (as of 2026-06-13)
 
 | Metric | Value |
 |--------|-------|
-| Source files (lib/) | 983 Dart files |
-| Test files | 901 files, 11,048+ tests |
+| Source files (lib/) | 987 Dart files |
+| Test files | 903 files, 11,095+ tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -88,8 +88,8 @@ Enforced by `scripts/verify_code_quality.py` (28 checkers — 19/24 CLAUDE.md an
 | Custom SVG icons | 89 constants, 89 files |
 | Shared widgets | 29 |
 | Enum files | 15 |
-| Supabase constants | 137 |
-| L10n keys | ~2,992 per language, 41 categories |
+| Supabase constants | 138 |
+| L10n keys | ~2,995 per language, 41 categories |
 | DB schema version | 25 |
-| Supabase migrations | 160 SQL files |
-| Edge Functions | 9 |
+| Supabase migrations | 174 SQL files |
+| Edge Functions | 12 |

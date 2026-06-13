@@ -4,12 +4,14 @@ Source: `.claude/rules/edge-functions.md`
 
 **Location**: `supabase/functions/`
 
-9 Edge Functions. All client-called functions require JWT verification; webhook receivers use shared-secret auth (see Webhook Receiver Exception).
+12 Edge Functions. All client-called functions require JWT verification; webhook receivers use shared-secret auth (see Webhook Receiver Exception).
 
 ## Inventory
 
 | Function | Trigger | Auth |
 |----------|---------|------|
+| `create-community-comment` | Community comment create path | JWT |
+| `create-community-post` | Community post create path | JWT |
 | `mfa-lockout` | MFA login attempts | JWT |
 | `moderate-content` | Community reports / threshold auto-flag | JWT |
 | `revenuecat-webhook` | RevenueCat subscription events (server-to-server push) | Shared secret (`REVENUECAT_WEBHOOK_AUTH_TOKEN`) |
@@ -19,6 +21,7 @@ Source: `.claude/rules/edge-functions.md`
 | `validate-free-tier-limit` | Entity insert path | JWT |
 | `scan-image-safety` | Photo upload pipeline | JWT |
 | `sync-premium-status` | RevenueCat premium sync (client pull) | JWT |
+| `upload-community-photo` | Community photo upload path | JWT |
 
 **Rule**: All client-called functions MUST enforce JWT verification. Never deploy with `--no-verify-jwt` for those (release-blocker). Webhook receivers are exempt — see below.
 
@@ -45,6 +48,9 @@ Current webhook receivers: `revenuecat-webhook` (shared secret via `REVENUECAT_W
 | `sync-premium-status` | RevenueCat checked with secret key; client assertions not trusted |
 | `revenuecat-webhook` | Refetches full subscriber on every event; converges with `sync-premium-status` on identical state. TEST events ack 200 without DB writes. Unknown event types still refetch defensively. Founder/admin short-circuit mirrors `sync-premium-status`. |
 | `moderate-content` | Threshold auto-flag + human review queue |
+| `create-community-post` | Server-side moderation + post guard before insert |
+| `create-community-comment` | Server-side moderation + reciprocal block check before insert |
+| `upload-community-photo` | Server-side image moderation before Storage write |
 
 ## Input Validation Rules
 

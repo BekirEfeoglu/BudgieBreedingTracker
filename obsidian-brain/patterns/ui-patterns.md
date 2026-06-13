@@ -66,15 +66,16 @@ class _MyFormState extends ConsumerState<MyFormScreen> {
 - Alpha: `.withValues(alpha: 0.5)` — never `.withOpacity()`
 - Exceptions: genetics phenotype colors, budgie painter
 
-## Shared Widgets (28)
+## Shared Widgets (29)
 
 `lib/core/widgets/` — all accept `Widget icon` param, NOT `IconData`:
 
 - Root (15): `EmptyState`, `LoadingState`, `ErrorState`, `SkeletonLoader`, `OfflineBanner`, etc.
 - `buttons/` (4)
 - `cards/` (2)
-- `dialogs/` (1): `ConfirmDialog`
+- `dialogs/` (2): `ConfirmDialog`, `TypedConfirmDialog`
 - `bottom_sheet/` (1)
+- `eggs/` (5)
 
 ## List Patterns
 

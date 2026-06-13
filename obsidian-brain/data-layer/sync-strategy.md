@@ -32,7 +32,7 @@ Source: `.claude/rules/background-sync.md`, `.claude/rules/data-layer.md`
 ## Idempotency
 
 - All remote writes: `.upsert(entity, onConflict: 'id')`
-- Primary keys: client-generated `Uuid().v4()`
+- Primary keys: client-generated `const Uuid().v7()` for new entity creation paths
 - Safe to replay on network retry or sync restart
 
 ## Retry & Backoff

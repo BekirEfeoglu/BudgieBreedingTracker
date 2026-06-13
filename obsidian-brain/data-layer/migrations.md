@@ -39,7 +39,7 @@ MigrationStrategy(
 
 Format: `YYYYMMDDHHmmss_short_description.sql`
 
-160 migration files in `supabase/migrations/` — applied in lexicographic (chronological) order.
+174 migration files in `supabase/migrations/` — applied in lexicographic (chronological) order.
 
 ### Idempotency (Required)
 
