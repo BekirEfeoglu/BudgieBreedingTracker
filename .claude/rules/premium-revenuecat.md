@@ -6,7 +6,7 @@ Premium abonelik akışı RevenueCat üzerinden yönetilir, ama yetkilendirme **
 | Katman | Araç |
 |--------|------|
 | Store | App Store + Google Play |
-| Aggregator | RevenueCat (`purchases_flutter ^9.14.0`) |
+| Aggregator | RevenueCat (`purchases_flutter ^10.0.2`) |
 | Server verify | Supabase Edge Function `sync-premium-status` |
 | Client state | `premiumStatusProvider` (Riverpod) |
 | Route guard | `PremiumGuard` (`lib/router/guards/`) |

@@ -53,7 +53,7 @@ ve `retryCount >= RetryScheduler.maxRetries` kayıtlar için
 
 ## Idempotency
 - Tüm remote write `.upsert()` (NEVER `.insert()`)
-- Primary key client-generated `Uuid().v4()` — server-assigned değil
+- Primary key client-generated `const Uuid().v7()` — server-assigned değil
 - Retry replay duplicate oluşturmaz
 - Detay: data-layer.md § Write Safety
 

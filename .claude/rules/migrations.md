@@ -5,7 +5,7 @@
 ## Drift Migration (Local)
 
 ### Schema Version
-- `app_database.dart` içinde `schemaVersion = 22`
+- `app_database.dart` içinde `schemaVersion = 25`
 - Yeni table/column/index → version bump zorunlu
 - Version atlama YOK (22 → 23, asla 22 → 25)
 
@@ -62,7 +62,7 @@ Drift test helper `setSchemaVersion(int)` ile geçmiş versiyondan upgrade simü
 - Format: `YYYYMMDDHHmmss_short_description.sql`
 - Örnek: `20260514120000_add_ring_number_to_birds.sql`
 - Timestamp UTC, lexicographic sort = chronological run order
-- 155 migration mevcut, sıralı uygulanır
+- 174 migration mevcut, sıralı uygulanır
 
 ### Migration File Structure
 ```sql

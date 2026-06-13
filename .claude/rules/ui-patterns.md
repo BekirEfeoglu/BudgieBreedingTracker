@@ -52,7 +52,7 @@ GoRoute(
 ```
 
 ## Shared Widgets (29)
-`lib/core/widgets/`: 15 root widgets plus `buttons/` (4), `cards/` (2), `dialogs/` (1), and `bottom_sheet/` (1)
+`lib/core/widgets/`: 15 root widgets plus `buttons/` (4), `cards/` (2), `dialogs/` (2), `bottom_sheet/` (1), and `eggs/` (5)
 - Accept `Widget icon` param, not `IconData`
 - Use existing shared widgets before creating new ones
 

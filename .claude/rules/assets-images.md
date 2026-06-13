@@ -4,7 +4,7 @@ Fotoğraf yükleme, ikon yönetimi, network image cache ve dosya boyutu güvenli
 
 ## SVG İkon Sistemi
 - Domain ikonlar: `AppIcon(AppIcons.x)` — flutter_svg ile render edilir
-- 84 sabit, `lib/core/constants/app_icons.dart` içinde
+- 89 sabit, `lib/core/constants/app_icons.dart` içinde
 - Asset dizini: `assets/icons/<category>/` (10 kategori)
 - Generic UI: `LucideIcons.x` (sadece settings, generic action — domain için DEĞİL)
 - Asla `Icon(Icons.x)` — domain ikonu varsa SVG, yoksa LucideIcons
