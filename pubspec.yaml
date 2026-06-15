@@ -25,7 +25,7 @@ dependencies:
   firebase_messaging: ^16.2.2
 
   # Local Database
-  drift: ^2.31.0
+  drift: ^2.34.0
   # Required while drift depends on sqlite3 2.x; 0.6.0+eol no longer ships native libs.
   sqlite3_flutter_libs: 0.5.42
   path: ^1.9.0
