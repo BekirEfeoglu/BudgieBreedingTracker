@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:encrypt/encrypt.dart' as enc;
@@ -167,16 +166,23 @@ void main() {
     });
 
     group('corrupted ciphertext', () {
-      test('random bytes throw on decrypt', () async {
-        final random = Random.secure();
-        final randomBytes = List<int>.generate(64, (_) => random.nextInt(256));
-        final encoded = base64Encode(randomBytes);
+      test(
+        'legacy payload with non-text plaintext throws on decrypt',
+        () async {
+          final rawKey = Uint8List.fromList(List<int>.generate(32, (i) => i));
+          final iv = enc.IV.fromLength(16);
+          final encrypter = enc.Encrypter(
+            enc.AES(enc.Key(rawKey), mode: enc.AESMode.cbc),
+          );
+          final encrypted = encrypter.encrypt('bad\u0000payload', iv: iv);
+          final encoded = base64Encode([...iv.bytes, ...encrypted.bytes]);
 
-        // Random bytes hit the legacy path (no magic prefix) and AES
-        // decryption fails with either ArgumentError (bad padding) or
-        // FormatException depending on the random data.
-        await expectLater(service.decrypt(encoded), throwsA(anything));
-      });
+          await expectLater(
+            service.decrypt(encoded),
+            throwsA(isA<FormatException>()),
+          );
+        },
+      );
 
       test('truncated ciphertext throws on decrypt', () async {
         final encrypted = await service.encrypt('test data');

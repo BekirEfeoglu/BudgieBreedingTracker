@@ -175,6 +175,24 @@ extension _EncryptionKeyHelpers on EncryptionService {
     final legacyEncrypter = enc.Encrypter(
       enc.AES(enc.Key(keyBytes), mode: enc.AESMode.cbc),
     );
-    return legacyEncrypter.decrypt(legacyDecrypted.$1, iv: legacyDecrypted.$2);
+    final plainText = legacyEncrypter.decrypt(
+      legacyDecrypted.$1,
+      iv: legacyDecrypted.$2,
+    );
+    _validateLegacyPlainText(plainText);
+    return plainText;
+  }
+
+  void _validateLegacyPlainText(String plainText) {
+    for (final rune in plainText.runes) {
+      final isAllowedWhitespace = rune == 0x09 || rune == 0x0A || rune == 0x0D;
+      if (rune == 0xFFFD ||
+          rune == 0x7F ||
+          (rune < 0x20 && !isAllowedWhitespace)) {
+        throw const FormatException(
+          'Invalid legacy ciphertext: decoded payload is not valid text',
+        );
+      }
+    }
   }
 }
