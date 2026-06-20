@@ -561,9 +561,21 @@
       localStorage.setItem('bbt-lang', lang);
       document.documentElement.lang = lang;
 
-      // Handle blog redirect logic for multi-language SEO support
+      // Handle redirect logic for multi-language SEO support (folder-based routing)
+      const i18nPaths = [
+        '/blog',
+        '/muhabbet-kusu-genetik-rehberi.html',
+        '/privacy-policy.html',
+        '/terms-of-use.html',
+        '/community-guidelines.html',
+        '/accessibility.html',
+        '/404.html'
+      ];
+      
       let path = window.location.pathname;
-      if (path.includes('/blog')) {
+      const isI18nPath = i18nPaths.some(p => path.includes(p));
+      
+      if (isI18nPath) {
         // Strip out existing language prefix if any
         let cleanPath = path.replace(/^\/(en|de)\//, '/');
         
