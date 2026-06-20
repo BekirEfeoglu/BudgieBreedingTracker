@@ -1904,3 +1904,21 @@
 .faq-item {
   contain: layout style;
 }
+
+/* Article & TOC Styles */
+.article-content {
+  line-height: 1.7;
+}
+.toc-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+.toc-sidebar::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 4px;
+}
+.markdown-table th, .markdown-table td {
+  border-bottom-width: 1px;
+}
+.markdown-table tr:last-child td {
+  border-bottom-width: 0;
+}

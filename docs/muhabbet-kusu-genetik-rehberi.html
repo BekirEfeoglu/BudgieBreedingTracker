@@ -1,0 +1,2475 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Muhabbet Kuşu Genetik Rehberi — BudgieBreedingTracker</title>
+  <meta name="description" content="Muhabbet kuşu genetik mutasyonları ve kalıtım kuralları hakkında kapsamlı rehber. Kuş, yumurta, yavru, genetik hesaplama ve soy ağacı yönetimi.">
+  <meta name="keywords" content="budgie, breeding, tracker, muhabbet kuşu, üreme takip, genetik, soy ağacı, parakeet, wellensittich">
+  <meta name="author" content="BudgieBreedingTracker">
+  <meta name="theme-color" content="#0B1A3D">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Muhabbet Kuşu Genetik Rehberi — BudgieBreedingTracker">
+  <meta property="og:description" content="Muhabbet kuşu yetiştiricileri için kapsamlı üreme takip uygulaması.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://budgiebreedingtracker.online/">
+  <meta property="og:image" content="https://budgiebreedingtracker.online/og-image.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Muhabbet Kuşu Genetik Rehberi — BudgieBreedingTracker">
+  <meta name="twitter:description" content="Muhabbet kuşu yetiştiricileri için kapsamlı üreme takip uygulaması.">
+  <meta name="twitter:image" content="https://budgiebreedingtracker.online/og-image.png">
+
+  <!-- Canonical & Robots -->
+  <link rel="canonical" href="https://budgiebreedingtracker.online/">
+  <meta name="robots" content="index, follow">
+
+  <!-- Schema.org Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "BudgieBreedingTracker",
+    "alternateName": "Muhabbet Kuşu Üreme Takip",
+    "operatingSystem": "iOS 15+, Android 8+",
+    "applicationCategory": "LifestyleApplication",
+    "applicationSubCategory": "PetApplication",
+    "offers": [
+      {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "name": "Ücretsiz Plan",
+        "description": "15 kuş, 5 çiftleştirme çifti, temel özellikler"
+      },
+      {
+        "@type": "Offer",
+        "price": "4.99",
+        "priceCurrency": "USD",
+        "name": "Premium",
+        "description": "Sınırsız kayıt, genetik hesaplayıcı, istatistikler, soy ağacı"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "2400",
+      "bestRating": "5",
+      "worstRating": "1"
+    },
+    "description": "Muhabbet kuşu yetiştiricileri için kapsamlı üreme takip uygulaması. Kuş, yumurta, yavru, genetik hesaplama ve soy ağacı yönetimi. Offline-first mimari ile internet olmadan da çalışır.",
+    "url": "https://budgiebreedingtracker.online/",
+    "downloadUrl": "https://apps.apple.com/app/id6759828211",
+    "installUrl": "https://play.google.com/store/apps/details?id=com.budgiebreeding.budgie_breeding_tracker",
+    "screenshot": [
+      "https://budgiebreedingtracker.online/assets/screenshot-1.jpg",
+      "https://budgiebreedingtracker.online/assets/screenshot-2.jpg"
+    ],
+    "featureList": [
+      "Kuş profili ve fotoğraf galerisi",
+      "Genetik mutasyon hesaplayıcı (Punnett karesi)",
+      "Soy ağacı ve pedigree görünümü",
+      "Yumurta ve yavru takibi",
+      "Kuluçka takvimi ve hatırlatmalar",
+      "Üreme istatistikleri",
+      "Offline-first mimari",
+      "Excel/PDF dışa aktarım"
+    ],
+    "author": {
+      "@type": "Person",
+      "name": "Bekir Efeoglu"
+    },
+    "datePublished": "2024-01-01",
+    "inLanguage": ["tr", "en", "de"],
+    "isAccessibleForFree": true,
+    "keywords": "muhabbet kuşu, üreme takip, genetik hesaplayıcı, budgerigar, breeding tracker, parakeet genetics"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "BudgieBreedingTracker ücretsiz mi?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Evet, temel özellikler tamamen ücretsizdir. Genetik hesaplayıcı, istatistikler ve soy ağacı gibi gelişmiş özellikler için premium abonelik gereklidir."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Uygulama internet olmadan çalışıyor mu?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Evet! BudgieBreedingTracker offline-first mimarisine sahiptir. İnternet olmadan tüm özelliklerden yararlanabilirsiniz. Bağlantı geldiğinde verileriniz otomatik senkronize edilir."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Kaç kuş kaydedebilirim?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Ücretsiz planda 15 kuş ve 5 çiftleştirme çifti ekleyebilirsiniz. Premium ile sınırsız kayıt yapabilirsiniz."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Verilerim güvende mi?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Evet. Verileriniz AES-256 şifreleme ile korunur ve yalnızca sizin hesabınızla erişilebilir. Yedeklemeler de şifreli olarak saklanır."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Hangi platformlarda çalışıyor?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "BudgieBreedingTracker iOS (iPhone/iPad) cihazlarda App Store, Android cihazlarda Google Play üzerinden kullanılabilir."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Genetik hesaplayıcı nasıl çalışıyor?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Anne ve baba kuşun mutasyonlarını seçin, uygulama Punnett karesi ile olası yavru renk ve genotiplerini hesaplasın. 40'tan fazla mutasyon desteği ile kapsamlı sonuçlar alırsınız."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Verilerimi başka cihaza aktarabilir miyim?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Evet! Aynı hesapla giriş yaptığınızda verileriniz otomatik senkronize edilir. Ayrıca şifreli yedekleme dosyası oluşturup başka cihazda geri yükleyebilirsiniz."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <!-- Resource hints — critical connections first -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+
+  <!-- Fonts: preload then stylesheet (eliminates render-block delay) -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
+
+  <!-- Hero image preload (LCP candidate) -->
+  <link rel="preload" as="image" href="logo.png">
+
+  <!-- Shared styles — render-critical, loaded synchronously -->
+  <link rel="stylesheet" href="style.css?v=20260606">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
+
+  <!-- GSAP + ScrollTrigger — non-critical, deferred -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+
+  <!-- JS-off fallback: reveal animations need JS to flip to .active. Without
+       JS the content would stay opacity:0 forever, so disable the entrance
+       animation entirely for noscript users. -->
+  <noscript>
+    <style>
+      .reveal, .reveal-scale, .reveal-left, .reveal-right, .reveal-flip, .gsap-hidden, .hero-word {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    </style>
+  </noscript>
+
+  <!-- Mermaid JS -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:true, theme: "dark"});</script>
+</head>
+<body>
+
+  <a class="skip-to-content" href="#main">İçeriğe geç</a>
+
+  <div class="page-curtain" aria-hidden="true"></div>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+  <!-- cursor-glow removed for performance -->
+
+  <!-- Background Layer -->
+  <div class="bg-layer" aria-hidden="true"></div>
+
+  <!-- Decorative Orbs -->
+  <div class="orb orb-1" aria-hidden="true"></div>
+  <div class="orb orb-2" aria-hidden="true"></div>
+  <div class="orb orb-3" aria-hidden="true"></div>
+
+  <!-- Floating Particles -->
+  <div class="particles" aria-hidden="true">
+    <div class="particle leaf"></div>
+    <div class="particle"></div>
+    <div class="particle leaf"></div>
+    <div class="particle feather"></div>
+    <div class="particle leaf"></div>
+    <div class="particle"></div>
+  </div>
+
+  <!-- Sparkle Stars -->
+  <div class="sparkles" aria-hidden="true">
+    <div class="sparkle star" style="--star-size: 14px;"></div>
+    <div class="sparkle"></div>
+    <div class="sparkle star" style="--star-size: 10px;"></div>
+    <div class="sparkle"></div>
+    <div class="sparkle star" style="--star-size: 12px;"></div>
+    <div class="sparkle"></div>
+  </div>
+
+  <!-- Navbar -->
+  <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" style="background: rgba(15,27,77,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(140,180,220,0.15);">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <a href="/" class="flex items-center gap-2.5 group" aria-label="BudgieBreedingTracker — ana sayfa" data-i18n-aria-label="nav_home_aria">
+          <img src="logo.png" alt="BudgieBreedingTracker" class="w-9 h-9 rounded-lg transition-transform duration-300 group-hover:scale-110" style="border: 1px solid rgba(245,200,66,0.3);">
+          <span class="font-extrabold text-lg hidden sm:inline tracking-tight" style="color: var(--gold-light);">BudgieBreedingTracker</span>
+          <span class="font-extrabold text-lg sm:hidden tracking-tight" style="color: var(--gold-light);">BBT</span>
+        </a>
+
+        <!-- Nav Links (desktop) -->
+        <div class="hidden md:flex items-center gap-6">
+          <a href="#features" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_features">Özellikler</a>
+          <a href="#genetics-demo" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_genetics">🧬 Genetik</a>
+          <a href="#screenshots" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_screenshots">Ekran Görüntüleri</a>
+          <a href="#pricing" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_pricing">Fiyatlandırma</a>
+          <a href="#faq" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="faq_badge">SSS</a>
+          <a href="#cta" class="text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-200" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);" data-i18n="nav_download">İndir</a>
+        </div>
+
+        <!-- Language Switcher + Hamburger -->
+        <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1 rounded-lg p-1" style="background: rgba(20,50,100,0.4); border: 1px solid var(--glass-border);">
+            <button type="button" onclick="setLanguage('tr')" class="lang-btn active" data-lang="tr" aria-label="Türkçe dilini seç" aria-pressed="true">TR</button>
+            <button type="button" onclick="setLanguage('en')" class="lang-btn" data-lang="en" aria-label="Select English language" aria-pressed="false">EN</button>
+            <button type="button" onclick="setLanguage('de')" class="lang-btn" data-lang="de" aria-label="Deutsch auswählen" aria-pressed="false">DE</button>
+          </div>
+          <!-- Hamburger (mobile only) -->
+          <button id="hamburger-btn" type="button" class="md:hidden p-2 rounded-lg transition-colors" style="color: var(--sage);" onclick="toggleMobileMenu()" aria-label="Menü aç" aria-controls="mobile-menu" aria-expanded="false">
+            <svg aria-hidden="true" id="hamburger-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+            <svg aria-hidden="true" id="close-icon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+<!-- Mobile Menu Panel -->
+  <div id="mobile-menu" class="fixed inset-0 z-40 hidden" aria-hidden="true">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeMobileMenu()"></div>
+    <div id="mobile-panel" class="absolute top-16 left-0 right-0 shadow-xl" style="background: rgba(15,27,77,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); transform: translateY(-110%);">
+      <div class="px-4 py-4 space-y-1">
+        <a href="#features" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_features">Özellikler</a>
+        <a href="#genetics-demo" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_genetics">🧬 Genetik</a>
+        <a href="#screenshots" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_screenshots">Ekran Görüntüleri</a>
+        <a href="#pricing" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_pricing">Fiyatlandırma</a>
+        <a href="#faq" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="faq_badge">SSS</a>
+        <a href="/user-guide/" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_user_guide">Kullanım Kılavuzu</a>
+        <div class="px-4 pt-2 pb-3">
+          <a href="#cta" onclick="closeMobileMenu()" class="flex items-center justify-center w-full py-3 font-semibold rounded-xl transition-all" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);" data-i18n="nav_download">İndir</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+
+<main id="main" class="pt-28 pb-20">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-10 xl:gap-16 items-start">
+      
+      <!-- Left Sidebar (Sticky TOC) -->
+      <aside class="relative">
+        <div class="toc-sidebar sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto p-6 rounded-2xl border border-[var(--glass-border)] bg-[rgba(18,30,65,0.4)] backdrop-blur-md hidden lg:block">
+<h4 class="text-[var(--gold)] font-bold mb-4 uppercase tracking-wider text-sm">İçindekiler</h4>
+<ul class="space-y-3 text-sm">
+<li class=""><a href="#kapsam" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">Kapsam</a></li>
+<li class=""><a href="#hizli-sozluk" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">Hizli Sozluk</a></li>
+<li class=""><a href="#genetik-harita" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">Genetik Harita</a></li>
+<li class=""><a href="#temel-kalitim-kurallari" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">Temel Kalitim Kurallari</a></li>
+<li class="pl-4"><a href="#1-otozomal-resesif-mutasyonlar" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">1. Otozomal resesif mutasyonlar</a></li>
+<li class="pl-4"><a href="#2-otozomal-dominant-mutasyonlar" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">2. Otozomal dominant mutasyonlar</a></li>
+<li class="pl-4"><a href="#3-otozomal-eksik-dominant-mutasyonlar" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">3. Otozomal eksik dominant mutasyonlar</a></li>
+<li class="pl-4"><a href="#4-cinsiyete-bagli-resesif-mutasyonlar" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">4. Cinsiyete bagli resesif mutasyonlar</a></li>
+<li class=""><a href="#z-kromozomu-ve-crossing-over" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">Z Kromozomu ve Crossing-Over</a></li>
+<li class=""><a href="#ayni-lokusta-calisan-ozel-seriler" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">Ayni Lokusta Calisan Ozel Seriler</a></li>
+<li class="pl-4"><a href="#1-blue-lokusu" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">1. Blue lokusu</a></li>
+<li class="pl-4"><a href="#2-dilution-lokusu" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">2. Dilution lokusu</a></li>
+<li class="pl-4"><a href="#3-ino-lokusu" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">3. Ino lokusu</a></li>
+<li class=""><a href="#en-sik-birlesik-fenotipler" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">En Sik Birlesik Fenotipler</a></li>
+<li class=""><a href="#mutasyon-katalogu" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">Mutasyon Katalogu</a></li>
+<li class="pl-4"><a href="#a-temel-seri-yuz-ve-ton-mutasyonlari" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">A. Temel seri, yuz ve ton mutasyonlari</a></li>
+<li class="pl-4"><a href="#b-dilution-ve-melanin-modifikatorleri" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">B. Dilution ve melanin modifikatorleri</a></li>
+<li class="pl-4"><a href="#c-desen-ala-ve-clearbody-mutasyonlari" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">C. Desen, ala ve clearbody mutasyonlari</a></li>
+<li class="pl-4"><a href="#d-tuyu-yapisi-ve-saglikla-ilgili-ozel-durumlar" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">D. Tuyu yapisi ve saglikla ilgili ozel durumlar</a></li>
+<li class=""><a href="#cok-sorulan-eslesmeler" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">Cok Sorulan Eslesmeler</a></li>
+<li class="pl-4"><a href="#blue-ile-green-split-blue" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">Blue ile Green split Blue</a></li>
+<li class="pl-4"><a href="#cinnamon-ile-normal-disi" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">Cinnamon ile normal disi</a></li>
+<li class="pl-4"><a href="#ino-ile-normal-disi" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">Ino ile normal disi</a></li>
+<li class="pl-4"><a href="#greywing-ile-clearwing" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">Greywing ile Clearwing</a></li>
+<li class="pl-4"><a href="#recessive-pied-ile-dutch-pied" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">Recessive Pied ile Dutch Pied</a></li>
+<li class="pl-4"><a href="#cinnamon-ile-ino" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">Cinnamon ile Ino</a></li>
+<li class=""><a href="#riskli-ve-tartismali-alanlar" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">Riskli ve Tartismali Alanlar</a></li>
+<li class="pl-4"><a href="#1-crest-x-crest" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">1. Crest x crest</a></li>
+<li class="pl-4"><a href="#2-blackface-siniflandirmasi" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">2. Blackface siniflandirmasi</a></li>
+<li class="pl-4"><a href="#3-dutch-pied-ve-clearflight-iliskisi" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">3. Dutch Pied ve Clearflight iliskisi</a></li>
+<li class="pl-4"><a href="#4-mottled" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">4. Mottled</a></li>
+<li class="pl-4"><a href="#5-yellowface-adlandirmasi" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">5. Yellowface adlandirmasi</a></li>
+<li class=""><a href="#gorsel-referans-bankasi" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">Gorsel Referans Bankasi</a></li>
+<li class=""><a href="#sonuc" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">Sonuc</a></li>
+<li class=""><a href="#kaynaklar" class="text-[var(--sage)] hover:text-[var(--leaf-light)] transition-colors inline-block">Kaynaklar</a></li>
+</ul>
+</div>
+
+      </aside>
+
+      <!-- Right Column (Article) -->
+      <article class="article-content bg-[rgba(15,27,77,0.4)] backdrop-blur-sm rounded-3xl p-6 sm:p-10 border border-[var(--glass-border)] shadow-xl">
+        <h1 id="muhabbet-kusu-genetik-rehberi" class="text-4xl sm:text-5xl font-black mb-6 mt-12 tracking-tight text-[var(--gold-light)]">Muhabbet Kusu Genetik Rehberi</h1>
+<p class="my-4 text-[var(--sage)] leading-relaxed">Arastirma tarihi: 8 Nisan 2026</p>
+<p class="my-4 text-[var(--sage)] leading-relaxed">Bu belge, muhabbet kusu renk genetiklerini ve mutasyonlarini tek yerde toplamak icin hazirlandi. Hedef, "hangi genetik hangi genetikle eslesirse ne cikar" sorusunu ezber listesi yerine kuralli bir sistemle cevaplamaktir.</p>
+<h2 id="kapsam" class="text-2xl sm:text-3xl font-bold mb-5 mt-10 text-[var(--sage-light)] border-b border-[var(--glass-border)] pb-2">Kapsam</h2>
+<ul class="list-disc pl-5 my-4 space-y-2 text-[var(--sage)]">
+<li>Bu rehber, projede desteklenen mutasyonlarin tamamini listeler.</li>
+<li>Tum olasi coklu kombinasyonlari tek tek enumerasyon yapmaz; bunun yerine kalitim tipi, lokus mantigi ve sik kombinasyonlari verir.</li>
+<li>Birden fazla bagimsiz lokus ayni yavruda yer aliyorsa, tek lokus olasiliklari carpilarak toplam olasilik hesaplanir.</li>
+<li>Z kromozomundaki yakin genlerde crossing-over gorulebildigi icin teorik oranlarla pratik sonuclar arasinda kucuk farklar olabilir. Bu durum en cok <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">opaline</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">cinnamon</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">ino</code> ve <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">slate</code> icin onemlidir. [K6] [K12]</li>
+</ul>
+<h2 id="hizli-sozluk" class="text-2xl sm:text-3xl font-bold mb-5 mt-10 text-[var(--sage-light)] border-b border-[var(--glass-border)] pb-2">Hizli Sozluk</h2>
+<ul class="list-disc pl-5 my-4 space-y-2 text-[var(--sage)]">
+<li><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">visual</code>: Kus mutasyonu gorunur olarak tasir.</li>
+<li><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">split</code> veya <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">carrier</code>: Kus mutasyonu fenotipte gostermeden tasir.</li>
+<li><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">AR</code>: Otozomal resesif.</li>
+<li><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">AD</code>: Otozomal dominant.</li>
+<li><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">AID</code>: Otozomal eksik dominant / tek faktor-cift faktor ayrimi olan mutasyon.</li>
+<li><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">SLR</code>: Cinsiyete bagli resesif.</li>
+<li><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">SF</code>: Single factor, tek faktor.</li>
+<li><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">DF</code>: Double factor, cift faktor.</li>
+</ul>
+<h2 id="genetik-harita" class="text-2xl sm:text-3xl font-bold mb-5 mt-10 text-[var(--sage-light)] border-b border-[var(--glass-border)] pb-2">Genetik Harita</h2>
+<div class="mermaid my-8 bg-[#121E41]/50 p-4 rounded-xl border border-[var(--glass-border)]">flowchart LR
+  A["Yesil seri"] -->|blue lokusu homozigot blue| B["Skyblue"]
+  B -->|1 dark factor| C["Cobalt"]
+  C -->|2. dark factor| D["Mauve"]
+  A -->|1 dark factor| E["Dark Green"]
+  E -->|2. dark factor| F["Olive"]
+  B -->|violet + 1 dark factor| G["Visual Violet"]
+  B -->|grey| H["Grey"]
+  A -->|grey| I["Grey-Green"]
+  A -->|ino| J["Lutino"]
+  B -->|ino| K["Albino"]</div>
+<p class="my-4 text-[var(--sage)] leading-relaxed">WBO renk standartlarinda temel tonlar <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Light Green</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Dark Green</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Olive Green</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Grey Green</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Skyblue</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Cobalt</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Mauve</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Violet</code> ve <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Grey</code> olarak verilir. [K1] [K2]</p>
+<h2 id="temel-kalitim-kurallari" class="text-2xl sm:text-3xl font-bold mb-5 mt-10 text-[var(--sage-light)] border-b border-[var(--glass-border)] pb-2">Temel Kalitim Kurallari</h2>
+<h3 id="1-otozomal-resesif-mutasyonlar" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">1. Otozomal resesif mutasyonlar</h3>
+<p class="my-4 text-[var(--sage)] leading-relaxed">Bu kurali <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">blue</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">dilute</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">greywing</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">clearwing</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">recessive_pied</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">clearflight_pied</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">fallow</code> tipleri, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">saddleback</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">faded</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">mottled</code> ve benzeri mutasyonlarda kullanirsiniz.</p>
+<div class="overflow-x-auto my-8"><table class="markdown-table w-full text-left border-collapse">
+<thead><tr>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Eslesme</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Sonuc</th>
+</tr></thead><tbody>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">visual x visual</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%100 visual</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">visual x split</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 visual</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 split</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">visual x normal</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%100 split</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">split x split</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%25 visual</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 split</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%25 normal</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">split x normal</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 split</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 normal</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">normal x normal</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%100 normal</code></td>
+</tr>
+</tbody></table></div>
+<h3 id="2-otozomal-dominant-mutasyonlar" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">2. Otozomal dominant mutasyonlar</h3>
+<p class="my-4 text-[var(--sage)] leading-relaxed">Bu kurali <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">grey</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">dominant_pied</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">dominant_clearbody</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">crested</code> ve bazi tartismali modern mutasyonlarda kullanirsiniz.</p>
+<div class="overflow-x-auto my-8"><table class="markdown-table w-full text-left border-collapse">
+<thead><tr>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Eslesme</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Sonuc</th>
+</tr></thead><tbody>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">mutant x normal</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Yaklasik <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 mutant</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 normal</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">mutant x mutant</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Yaklasik <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%75 mutant</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%25 normal</code></td>
+</tr>
+</tbody></table></div>
+<p class="my-4 text-[var(--sage)] leading-relaxed">Not: Dominant mutasyonlarda heterozigot ve homozigot bireyler bazen ayni gorunmez. <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">crested</code> ve bazi ala tiplerinde saglik/ifade farklari onemlidir. [K10]</p>
+<h3 id="3-otozomal-eksik-dominant-mutasyonlar" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">3. Otozomal eksik dominant mutasyonlar</h3>
+<p class="my-4 text-[var(--sage)] leading-relaxed">Bu kurali <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">dark_factor</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">violet</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">spangle</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">anthracite</code> ve mavi-lokusundaki bazi yuz allellerinde kullanirsiniz.</p>
+<div class="overflow-x-auto my-8"><table class="markdown-table w-full text-left border-collapse">
+<thead><tr>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Eslesme</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Sonuc</th>
+</tr></thead><tbody>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">SF x normal</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 SF</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 normal</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">SF x SF</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%25 DF</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 SF</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%25 normal</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">DF x normal</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%100 SF</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">DF x SF</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 DF</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 SF</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">DF x DF</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%100 DF</code></td>
+</tr>
+</tbody></table></div>
+<h3 id="4-cinsiyete-bagli-resesif-mutasyonlar" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">4. Cinsiyete bagli resesif mutasyonlar</h3>
+<p class="my-4 text-[var(--sage)] leading-relaxed">Muhabbet kusunda erkek <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">ZZ</code>, disi <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">ZW</code> kabul edilir. Disi kuslar <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">split</code> olamaz; mutant alleli alirlarsa gorunur olurlar.</p>
+<p class="my-4 text-[var(--sage)] leading-relaxed">Bu kurali <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">ino</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">pallid</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">opaline</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">cinnamon</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">slate</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">texas_clearbody</code> ve benzeri Z bagli mutasyonlarda kullanirsiniz.</p>
+<div class="overflow-x-auto my-8"><table class="markdown-table w-full text-left border-collapse">
+<thead><tr>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Eslesme</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Erkek yavrular</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Disi yavrular</th>
+</tr></thead><tbody>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">erkek visual x disi normal</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%100 split</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%100 visual</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">erkek split x disi normal</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 split</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 normal</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 visual</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 normal</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">erkek normal x disi visual</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%100 split</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%100 normal</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">erkek visual x disi visual</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%100 visual</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%100 visual</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">erkek split x disi visual</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 visual</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 split</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 visual</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 normal</code></td>
+</tr>
+</tbody></table></div>
+<h2 id="z-kromozomu-ve-crossing-over" class="text-2xl sm:text-3xl font-bold mb-5 mt-10 text-[var(--sage-light)] border-b border-[var(--glass-border)] pb-2">Z Kromozomu ve Crossing-Over</h2>
+<div class="mermaid my-8 bg-[#121E41]/50 p-4 rounded-xl border border-[var(--glass-border)]">graph LR
+  O["Opaline"] --- C["Cinnamon"] --- I["Ino / Texas clearbody / Pearly / Pallid"] --- S["Slate"]</div>
+<p class="my-4 text-[var(--sage)] leading-relaxed">MUTAVI kaynaklarina gore yaklasik crossing-over degerleri:</p>
+<ul class="list-disc pl-5 my-4 space-y-2 text-[var(--sage)]">
+<li><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">opaline <-> cinnamon</code>: yaklasik <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%32</code> [K6]</li>
+<li><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">opaline <-> slate</code>: yaklasik <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%40.5</code> [K6]</li>
+<li><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">cinnamon <-> slate</code>: yaklasik <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%5 veya daha az</code> [K6] [K11]</li>
+<li><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">cinnamon <-> ino</code>: yaklasik <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%3</code> [K12]</li>
+</ul>
+<p class="my-4 text-[var(--sage)] leading-relaxed">Bu, ozellikle <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">lacewing</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">opaline-cinnamon</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">cinnamon-slate</code> ve <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">opaline-slate</code> eslesmelerinde beklenmeyen ama biyolojik olarak aciklanabilir yavrular cikabilecegi anlamina gelir. [K6] [K12]</p>
+<h2 id="ayni-lokusta-calisan-ozel-seriler" class="text-2xl sm:text-3xl font-bold mb-5 mt-10 text-[var(--sage-light)] border-b border-[var(--glass-border)] pb-2">Ayni Lokusta Calisan Ozel Seriler</h2>
+<h3 id="1-blue-lokusu" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">1. Blue lokusu</h3>
+<p class="my-4 text-[var(--sage)] leading-relaxed">Mavi seri ve sariya/yuze etki eden bircok varyasyon ayni lokusta ele alinir. MUTAVI yazilarinda ve proje modelinde isimler kismen farkli olabilir. [K3] [K4]</p>
+<div class="overflow-x-auto my-8"><table class="markdown-table w-full text-left border-collapse">
+<thead><tr>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Allel / kombinasyon</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Tipik fenotip</th>
+</tr></thead><tbody>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">bl+/bl+</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Yesil seri</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">blue/blue</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Mavi seri</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">yellowface_type1 + blue</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Yellowface Type I Blue</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">yellowface_type2 + blue</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Yellowface Type II Blue</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">goldenface + blue</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Goldenface Blue</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">aqua + blue</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Aqua Blue</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">turquoise + blue</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Turquoise Blue</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">aqua + turquoise</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Turquoise Aqua</td>
+</tr>
+</tbody></table></div>
+<p class="my-4 text-[var(--sage)] leading-relaxed">Sik eslesme ornekleri:</p>
+<div class="overflow-x-auto my-8"><table class="markdown-table w-full text-left border-collapse">
+<thead><tr>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Eslesme</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Sonuc</th>
+</tr></thead><tbody>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Blue x Blue</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%100 Blue</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Blue x Green split Blue</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 Blue</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 Green split Blue</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Green split Blue x Green split Blue</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%25 Blue</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 Green split Blue</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%25 Green</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">YF2 Blue x Blue</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 YF2 Blue</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 Blue</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Goldenface Blue x Blue</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 Goldenface Blue</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 Blue</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Aqua Blue x Turquoise Blue</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%25 Aqua Blue</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 Turquoise/Aqua</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%25 Turquoise Blue</code></td>
+</tr>
+</tbody></table></div>
+<p class="my-4 text-[var(--sage)] leading-relaxed">Notlar:</p>
+<ul class="list-disc pl-5 my-4 space-y-2 text-[var(--sage)]">
+<li><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Yellowface Type I</code> cift faktor mavi seride beyaz yuzlu gibi gorunebilir. Bu, standartlar arasinda isim farki yaratan alanlardan biridir. [K4]</li>
+<li><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Goldenface</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Aqua</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Turquoise</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Blue Factor I/II</code> icin avicultur standardizasyonu kaynaga gore degisebilir; bu nedenle ayni lokusta olduklarini bilmek, isim ezberlemekten daha guvenlidir. [K3] [K4]</li>
+</ul>
+<h3 id="2-dilution-lokusu" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">2. Dilution lokusu</h3>
+<p class="my-4 text-[var(--sage)] leading-relaxed"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">greywing</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">clearwing</code> ve <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">dilute</code> ayni lokusun allelleridir. En onemli pratik sonuc, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">greywing + clearwing</code> kombinasyonunun <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Full-Body Greywing</code> vermesidir. [K5]</p>
+<div class="overflow-x-auto my-8"><table class="markdown-table w-full text-left border-collapse">
+<thead><tr>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Eslesme / kombinasyon</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Sonuc</th>
+</tr></thead><tbody>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">greywing/greywing</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Greywing</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">clearwing/clearwing</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Clearwing</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">dilute/dilute</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Dilute</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">greywing/clearwing</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Full-Body Greywing</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">greywing/dilute</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Greywing, dilute tasiyici</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">clearwing/dilute</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Clearwing, dilute tasiyici</td>
+</tr>
+</tbody></table></div>
+<p class="my-4 text-[var(--sage)] leading-relaxed">Sik eslesme ornekleri:</p>
+<div class="overflow-x-auto my-8"><table class="markdown-table w-full text-left border-collapse">
+<thead><tr>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Eslesme</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Sonuc</th>
+</tr></thead><tbody>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Greywing x Clearwing</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%100 Full-Body Greywing</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Greywing x Dilute</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%100 Greywing / dilute</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Clearwing x Dilute</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%100 Clearwing / dilute</code></td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Greywing split Dilute x Greywing split Dilute</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Greywing agirlikli sonuc verir; <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%25 dilute</code> cikabilir</td>
+</tr>
+</tbody></table></div>
+<h3 id="3-ino-lokusu" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">3. Ino lokusu</h3>
+<p class="my-4 text-[var(--sage)] leading-relaxed"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">ino</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">texas_clearbody</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">pearly</code> ve aviculture yorumlarinda <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">pallid</code> ayni gen ailesiyle iliskili ele alinir. MUTAVI, sex-linked clearbody'yi <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">ino</code> lokusunun bir alleli olarak tartisir. [K7]</p>
+<p class="my-4 text-[var(--sage)] leading-relaxed">Pratik kombinasyonlar:</p>
+<div class="overflow-x-auto my-8"><table class="markdown-table w-full text-left border-collapse">
+<thead><tr>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Kombinasyon</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Tipik ad</th>
+</tr></thead><tbody>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Ino + Green series</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Lutino</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Ino + Blue series</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Albino</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Cinnamon + Ino</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Lacewing</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Pallid + Ino</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">PallidIno / lacewing-benzeri acik fenotip</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Texas Clearbody + Ino</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Texas Clearbody gorunur, ino tasiyabilir</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Texas Clearbody + Pallid</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Pallid Texas Clearbody</td>
+</tr>
+</tbody></table></div>
+<h2 id="en-sik-birlesik-fenotipler" class="text-2xl sm:text-3xl font-bold mb-5 mt-10 text-[var(--sage-light)] border-b border-[var(--glass-border)] pb-2">En Sik Birlesik Fenotipler</h2>
+<div class="overflow-x-auto my-8"><table class="markdown-table w-full text-left border-collapse">
+<thead><tr>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Genetik kombinasyon</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Ortaya cikan fenotip</th>
+</tr></thead><tbody>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">blue + ino</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Albino</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">yesil seri + ino</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Lutino</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">cinnamon + ino</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Lacewing</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">greywing + clearwing</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Full-Body Greywing</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">recessive_pied + dutch_pied/continental clearflight tipi</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Dark-Eyed Clear</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">yellowface/goldenface + blue + ino</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Creamino benzeri fenotipler</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">violet + blue + 1 dark factor</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Visual Violet</td>
+</tr>
+</tbody></table></div>
+<p class="my-4 text-[var(--sage)] leading-relaxed"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Dark-Eyed Clear</code> konusunda MUTAVI acik bicimde <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">recessive pied + Dutch/continental clearflight</code> birlikteligini vurgular; <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">recessive pied + Australian dominant pied</code> ayni sonucu vermez. [K8]</p>
+<h2 id="mutasyon-katalogu" class="text-2xl sm:text-3xl font-bold mb-5 mt-10 text-[var(--sage-light)] border-b border-[var(--glass-border)] pb-2">Mutasyon Katalogu</h2>
+<p class="my-4 text-[var(--sage)] leading-relaxed">Asagidaki tablolar, projede desteklenen mutasyonlarin tamamini kapsar. <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Eslesme notu</code> sutunu, hangi genel kuralla hesap yapacaginizi soyler.</p>
+<h3 id="a-temel-seri-yuz-ve-ton-mutasyonlari" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">A. Temel seri, yuz ve ton mutasyonlari</h3>
+<div class="overflow-x-auto my-8"><table class="markdown-table w-full text-left border-collapse">
+<thead><tr>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Mutasyon</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Kalitim</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Tipik renk / gorunum</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Eslesme notu</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Ana kaynak</th>
+</tr></thead><tbody>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Blue</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Yesil seriyi mavi seriye cevirir; sari pigment kalkar</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR tablosu, Blue lokusu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K1] [K3]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Yellowface Type I</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AID</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Mavi kuslarda sari maske; bazi cift faktor kuslarda beyaz yuz paradoksu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Blue lokusu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K3] [K4]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Yellowface Type II</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AID</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Sari maske ve bazen govdeye sari yayilim</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Blue lokusu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K3] [K4]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Goldenface</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AID</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Yuzde daha kuvvetli altin sari; mavi seride yogun sari yayilim</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Blue lokusu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K3] [K4]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Aqua</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AID</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Mavi-seri tonu aqua / deniz yesili yonune kayar</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Blue lokusu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K3]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Turquoise</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AID</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Mavi-seri tonu daha zengin turkuaz gorunur</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Blue lokusu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K3]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Blue Factor I</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AID</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Hafif yesilimsi / ara mavi seri ifadesi</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Blue lokusu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K3]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Blue Factor II</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AID</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Blue Factor I'e gore daha guclu ara mavi ifade</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Blue lokusu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K3]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Dark Factor</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AID</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Yesilde <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Light -> Dark -> Olive</code>, mavide <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Skyblue -> Cobalt -> Mauve</code></td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AID tablosu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K1]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Violet</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AID</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Ozellikle mavi seride morumsu ton; 1 dark factor ile cok belirgin</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AID tablosu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K1] [K3]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Grey</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AD</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Yesilde grey-green, mavide grey</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AD tablosu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K1] [K3]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Anthracite</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AID</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Ozellikle mavi seride cok koyu kozmursu ton</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AID tablosu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K3] [K14]</td>
+</tr>
+</tbody></table></div>
+<h3 id="b-dilution-ve-melanin-modifikatorleri" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">B. Dilution ve melanin modifikatorleri</h3>
+<div class="overflow-x-auto my-8"><table class="markdown-table w-full text-left border-collapse">
+<thead><tr>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Mutasyon</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Kalitim</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Tipik renk / gorunum</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Eslesme notu</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Ana kaynak</th>
+</tr></thead><tbody>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Dilute</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Melanin ciddi azalir; kus genel olarak daha acik gorunur</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR tablosu, dilution lokusu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K5]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Greywing</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Kanat cizgileri gri, govde rengi yari seyreltik</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR tablosu, dilution lokusu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K1] [K5]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Clearwing</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Kanatlar acilir, govde rengi parlak kalir</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR tablosu, dilution lokusu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K1] [K5]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Cinnamon</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">SLR</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Siyah melanin kahverengiye doner; daha sicak ton</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">SLR tablosu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K1] [K3]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Slate</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">SLR</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Mavi seride donuk mavi-gri / arduvaz tonu, yanak lekesi mat koyu olur</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">SLR tablosu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K3] [K11]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Blackface</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Tartismali</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Yuz ve govdede melanin genisler, maske koyulasir</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Kaynaklar farkli; tartismali</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K3] [K9]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Faded</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Yikanmis, soluk gorunum; kanat izleri zayiflar</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR tablosu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K3]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Fallow (English)</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Kirmizi / plum goz, sicak acik govde tonu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR tablosu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K1] [K3]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Fallow (German)</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">English fallow'a benzer ama ayrik lokus olarak anlatilir</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR tablosu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K3]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Fallow (Scottish)</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Bronzumsu isaretler ve kirmizi goz</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR tablosu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K3]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Pallid</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">SLR</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Melanin azalir ama tam ino kadar silinmez; yumusak cizgili acik kus</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">SLR tablosu, ino ailesi</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K3]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Ino</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">SLR</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Yesil seride Lutino, mavi seride Albino</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">SLR tablosu, ino ailesi</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K1] [K3] [K7]</td>
+</tr>
+</tbody></table></div>
+<h3 id="c-desen-ala-ve-clearbody-mutasyonlari" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">C. Desen, ala ve clearbody mutasyonlari</h3>
+<div class="overflow-x-auto my-8"><table class="markdown-table w-full text-left border-collapse">
+<thead><tr>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Mutasyon</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Kalitim</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Tipik renk / gorunum</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Eslesme notu</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Ana kaynak</th>
+</tr></thead><tbody>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Opaline</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">SLR</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Bas ve kanat barring azalir, sirtta V benzeri desen olur</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">SLR tablosu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K1] [K3]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Spangle</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AID</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Tek faktorde ters kanat deseni; cift faktorde neredeyse duz sari/beyaz</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AID tablosu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K1] [K3]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Recessive Pied</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Rastgele acik lekeler; goz halkasi davranisi farkli olabilir</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR tablosu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K1] [K8]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Dominant Pied (Australian)</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AD</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Govdede temiz acik bantlar / ala alanlar</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AD tablosu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K1] [K3]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Clearflight Pied</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR veya tartismali standart</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Ucus telekleri ve kuyrukta aciklik, kucuk bas lekesi</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Kaynaga gore degisebilir</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K1] [K8]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Dutch Pied</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AD veya AID tartismali</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Irreguler ala desen; bazi hatlarda clearflight benzeri secilim</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Kaynak farki var</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K1] [K3] [K8]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Saddleback</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Sirtta temiz eyer / V benzeri alan, bas barringi farkli</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR tablosu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K1] [K3]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Mottled</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Tartismali</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Tuyu degistikce artan acik alanlar, ilerleyici ala gorunum</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Kaynaklar farkli</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K3]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Pearly</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">SLR</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Kanat isaretlerinde inci / perli kenarlanma</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">SLR tablosu, ino ailesi</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K3] [K7]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Texas Clearbody</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">SLR</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Govde melanin azalir, kanat cizgileri koyu kalir</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">SLR tablosu, ino ailesi</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K1] [K7]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Dominant Clearbody</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AD</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Govde daha temiz ve acik, kanatlar daha koyu kalabilir</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AD tablosu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K3] [K7]</td>
+</tr>
+</tbody></table></div>
+<h3 id="d-tuyu-yapisi-ve-saglikla-ilgili-ozel-durumlar" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">D. Tuyu yapisi ve saglikla ilgili ozel durumlar</h3>
+<div class="overflow-x-auto my-8"><table class="markdown-table w-full text-left border-collapse">
+<thead><tr>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Mutasyon</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Kalitim</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Tipik gorunum</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Eslesme notu</th>
+<th class="px-4 py-3 border-b border-[var(--glass-border)] text-[var(--gold)] font-semibold">Ana kaynak</th>
+</tr></thead><tbody>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Crested (Tufted)</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AD</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Tepede tek veya kume halinde tepe</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AD tablosu; crest x crest riskli</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K3] [K10]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Crested (Half-Circular)</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AD</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Yarim daire tepe</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AD tablosu; crest x crest riskli</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K3] [K10]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Crested (Full-Circular)</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AD</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Tam daire corona tepe</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AD tablosu; crest x crest riskli</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K3] [K10]</td>
+</tr>
+<tr class="border-b border-[var(--glass-border)]/50 hover:bg-[#121E41]/30 transition-colors">
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Feather Duster</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">AR, patolojik</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Asiri uzayan, surekli buyuyen tuyler; ucus ve beslenme sorunu</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">Eslesmeden kacinilacak durum</td>
+<td class="px-4 py-3 text-[var(--sage-light)] text-sm">[K15]</td>
+</tr>
+</tbody></table></div>
+<h2 id="cok-sorulan-eslesmeler" class="text-2xl sm:text-3xl font-bold mb-5 mt-10 text-[var(--sage-light)] border-b border-[var(--glass-border)] pb-2">Cok Sorulan Eslesmeler</h2>
+<h3 id="blue-ile-green-split-blue" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">Blue ile Green split Blue</h3>
+<ul class="list-disc pl-5 my-4 space-y-2 text-[var(--sage)]">
+<li><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Blue x Green split Blue</code></li>
+<li>Sonuc: <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 Blue</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%50 Green split Blue</code></li>
+</ul>
+<h3 id="cinnamon-ile-normal-disi" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">Cinnamon ile normal disi</h3>
+<ul class="list-disc pl-5 my-4 space-y-2 text-[var(--sage)]">
+<li><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">erkek Cinnamon visual x disi normal</code></li>
+<li>Erkek yavrular: <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%100 split cinnamon</code></li>
+<li>Disi yavrular: <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%100 cinnamon</code></li>
+</ul>
+<h3 id="ino-ile-normal-disi" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">Ino ile normal disi</h3>
+<ul class="list-disc pl-5 my-4 space-y-2 text-[var(--sage)]">
+<li><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">erkek Ino visual x disi normal</code></li>
+<li>Erkek yavrular: <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%100 split ino</code></li>
+<li>Disi yavrular: <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">%100 ino</code></li>
+</ul>
+<h3 id="greywing-ile-clearwing" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">Greywing ile Clearwing</h3>
+<ul class="list-disc pl-5 my-4 space-y-2 text-[var(--sage)]">
+<li>Iki ebeveyn ilgili lokusta saf ise <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Greywing x Clearwing = %100 Full-Body Greywing</code> [K5]</li>
+</ul>
+<h3 id="recessive-pied-ile-dutch-pied" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">Recessive Pied ile Dutch Pied</h3>
+<ul class="list-disc pl-5 my-4 space-y-2 text-[var(--sage)]">
+<li><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Recessive Pied x Dutch Pied / clearflight tipi</code></li>
+<li>Bazi yavrularda <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Dark-Eyed Clear</code> hattina giden kombinasyonlar olusabilir. [K8]</li>
+</ul>
+<h3 id="cinnamon-ile-ino" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">Cinnamon ile Ino</h3>
+<ul class="list-disc pl-5 my-4 space-y-2 text-[var(--sage)]">
+<li>Saf kalitim mantigi <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Lacewing</code> fenotipine gider.</li>
+<li>Ancak <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">cinnamon</code> ve <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">ino</code> Z kromozomunda birbirine yakin oldugu icin nadir crossing-over sonucu beklenmeyen <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">ino</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">cinnamon</code> veya ara formlar da gorulebilir. [K6] [K12]</li>
+</ul>
+<h2 id="riskli-ve-tartismali-alanlar" class="text-2xl sm:text-3xl font-bold mb-5 mt-10 text-[var(--sage-light)] border-b border-[var(--glass-border)] pb-2">Riskli ve Tartismali Alanlar</h2>
+<h3 id="1-crest-x-crest" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">1. Crest x crest</h3>
+<p class="my-4 text-[var(--sage)] leading-relaxed">MUTAVI'nin derledigi calismalarda crest faktorunun subvital oldugu, embriyo kayiplari ve norolojik sorunlarla iliskili olabildigi belirtilir. Uygulamada <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">crest x crest</code> eslesmesi temkinle ele alinmalidir. [K10]</p>
+<h3 id="2-blackface-siniflandirmasi" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">2. Blackface siniflandirmasi</h3>
+<p class="my-4 text-[var(--sage)] leading-relaxed">Bu, en net tartisma alanlarindan biridir:</p>
+<ul class="list-disc pl-5 my-4 space-y-2 text-[var(--sage)]">
+<li>MUTAVI 2007 makalesi <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">blackface</code> icin <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">otosomal resesif</code> der. [K9]</li>
+<li>Projedeki mevcut mutasyon modeli <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">dominant</code> yorumunu kullanir.</li>
+</ul>
+<p class="my-4 text-[var(--sage)] leading-relaxed">Bu rehberde <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">blackface</code>, tartismali olarak isaretlenmistir; ciftlestirme plani yaparken kendi damizlik hattinizdaki fiili sonuclari kayit altina almak gerekir.</p>
+<h3 id="3-dutch-pied-ve-clearflight-iliskisi" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">3. Dutch Pied ve Clearflight iliskisi</h3>
+<p class="my-4 text-[var(--sage)] leading-relaxed">MUTAVI, Dutch pied ile continental clearflight arasinda secilimsel iliski olabilecegini tartisir. Buna karsilik modern veri tabanlarinda bunlar bazen ayri mutasyonlar gibi modellenir. [K8]</p>
+<h3 id="4-mottled" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">4. Mottled</h3>
+<p class="my-4 text-[var(--sage)] leading-relaxed">MUTAVI revize gen listesinde <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">mottle</code> icin <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">polygenic</code> ifadesi gorulur; uygulamadaki veri modeli ise bunu tek mutasyon gibi ele alabilir. [K3]</p>
+<h3 id="5-yellowface-adlandirmasi" class="text-xl sm:text-2xl font-semibold mb-4 mt-8 text-[var(--leaf-light)]">5. Yellowface adlandirmasi</h3>
+<p class="my-4 text-[var(--sage)] leading-relaxed"><code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Yellowface Type I</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Type II</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Goldenface</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Aqua</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Turquoise</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">Blue Factor I/II</code> isimleri kaynaklar ve ulke gelenekleri arasinda tam bire bir degil. Burada lokus mantigi, sabit isimden daha onemlidir. [K3] [K4]</p>
+<h2 id="gorsel-referans-bankasi" class="text-2xl sm:text-3xl font-bold mb-5 mt-10 text-[var(--sage-light)] border-b border-[var(--glass-border)] pb-2">Gorsel Referans Bankasi</h2>
+<ul class="list-disc pl-5 my-4 space-y-2 text-[var(--sage)]">
+<li>WBO Colour Standards: temel renkler ve resmi show varyeteleri icin ana referans. [K1]</li>
+<li>WBO Pictorial Standard PDF: tek sayfada gorsel standart ozeti. [K2]</li>
+<li>MUTAVI makaleleri: kalitim mantigi, allel serileri ve tarihsel test eslesmeleri icin ana referanslar. [K4] [K5] [K6] [K7] [K8] [K9] [K10] [K11] [K12]</li>
+</ul>
+<h2 id="sonuc" class="text-2xl sm:text-3xl font-bold mb-5 mt-10 text-[var(--sage-light)] border-b border-[var(--glass-border)] pb-2">Sonuc</h2>
+<p class="my-4 text-[var(--sage)] leading-relaxed">Muhabbet kusu genetiginde en kritik nokta, her mutasyonu tek tek ezberlemekten cok su dort soruyu sormaktir:</p>
+<p class="my-4 text-[var(--sage)] leading-relaxed">1. Bu mutasyon <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">AR</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">AD</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">AID</code> ya da <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">SLR</code> mi?</p>
+<p class="my-4 text-[var(--sage)] leading-relaxed">2. Bu mutasyon bagimsiz mi, yoksa <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">blue</code>, <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">dilution</code> ya da <code class="bg-[#0B1A3D] px-1.5 py-0.5 rounded text-[var(--leaf-light)] font-mono text-sm border border-[var(--glass-border)]">ino</code> gibi ayni lokusun alleli mi?</p>
+<p class="my-4 text-[var(--sage)] leading-relaxed">3. Disi mi erkek mi tasiyor?</p>
+<p class="my-4 text-[var(--sage)] leading-relaxed">4. Bu mutasyon baska bir mutasyonla birlesince yeni bir isimli fenotip veriyor mu?</p>
+<p class="my-4 text-[var(--sage)] leading-relaxed">Bu dort soruya cevap verdiginizde, yavru olasiliklarinin buyuk cogunlugunu dogru hesaplarsiniz.</p>
+<h2 id="kaynaklar" class="text-2xl sm:text-3xl font-bold mb-5 mt-10 text-[var(--sage-light)] border-b border-[var(--glass-border)] pb-2">Kaynaklar</h2>
+<ul class="list-disc pl-5 my-4 space-y-2 text-[var(--sage)]">
+<li>[K1] WBO Colour Standards, resmi renk ve varyete standardi: [https://www.world-budgerigar.org/colourstds.htm](https://www.world-budgerigar.org/colourstds.htm)</li>
+<li>[K2] WBO Colour Budgerigar Pictorial Standard PDF: [https://www.world-budgerigar.org/photos15/WBO%20Standard%20for%20Colour%20Budgerigar%20Pictorial%20Ideal.pdf](https://www.world-budgerigar.org/photos15/WBO%20Standard%20for%20Colour%20Budgerigar%20Pictorial%20Ideal.pdf)</li>
+<li>[K3] MUTAVI, Revised List of Mutant Genes of the Budgerigar: [https://www.mutavi.info/index.php?art=symbols](https://www.mutavi.info/index.php?art=symbols)</li>
+<li>[K4] MUTAVI, Gene function in Yellowface Budgerigars: [https://www.mutavi.info/index.php?art=yellowface](https://www.mutavi.info/index.php?art=yellowface)</li>
+<li>[K5] MUTAVI, Phenotypic Effects Caused by the Multiple Allele Series of the dil-locus: [https://www.mutavi.info/index.php?art=dilute](https://www.mutavi.info/index.php?art=dilute)</li>
+<li>[K6] MUTAVI, Crossing-over in the Sex-chromosome of the Male Budgerigar: [https://www.mutavi.info/index.php?art=sexchrom](https://www.mutavi.info/index.php?art=sexchrom)</li>
+<li>[K7] MUTAVI, Genotypic and Phenotypic Aspects of the Sex-Linked clearbody: [https://www.mutavi.info/index.php?art=clearbod](https://www.mutavi.info/index.php?art=clearbod)</li>
+<li>[K8] MUTAVI, Recessive Pied in the Origin of Dark Eyed Clears: [https://www.mutavi.info/index.php?art=blackeye](https://www.mutavi.info/index.php?art=blackeye)</li>
+<li>[K9] MUTAVI, Blackface: a new mutation in the budgerigar: [https://www.mutavi.info/index.php?art=blackfa](https://www.mutavi.info/index.php?art=blackfa)</li>
+<li>[K10] MUTAVI, Crest: A Subvital Character in the Budgerigar: [https://www.mutavi.info/index.php?art=crested](https://www.mutavi.info/index.php?art=crested)</li>
+<li>[K11] MUTAVI, Description of the Slate Budgerigar: [https://www.mutavi.info/index.php?art=slate](https://www.mutavi.info/index.php?art=slate)</li>
+<li>[K12] MUTAVI, The lacewing: An Enigma in Budgerigar Breeding?: [https://www.mutavi.info/index.php?art=lacewing](https://www.mutavi.info/index.php?art=lacewing)</li>
+<li>[K13] WBO, Recognition of New Mutations: [https://world-budgerigar.org/recomutations.htm](https://world-budgerigar.org/recomutations.htm)</li>
+<li>[K14] WBO Noticeboard 2011, Anthracite'in taninmasi notu: [https://www.world-budgerigar.org/noticeboard11.htm](https://www.world-budgerigar.org/noticeboard11.htm)</li>
+<li>[K15] OMIA, Feather, abnormal growth in budgerigar: [https://omia.org/OMIA002106/13146/](https://omia.org/OMIA002106/13146/)</li>
+</ul>
+        
+        <!-- CTA Box -->
+        <div class="mt-16 p-8 rounded-2xl bg-gradient-to-br from-[var(--leaf-dark)] to-[var(--leaf-mid)] border border-[rgba(245,200,66,0.3)] shadow-lg text-center">
+            <h3 class="text-2xl font-bold text-[var(--gold-light)] mb-3">Bu Kuralları Uygulamada Görün</h3>
+            <p class="text-[var(--sage-light)] mb-6 max-w-lg mx-auto">BudgieBreedingTracker'ın akıllı Genetik Hesaplayıcısı ile kuşlarınızın mutasyonlarını seçin, olası yavru ihtimallerini Punnett karesi ile saniyeler içinde hesaplayın.</p>
+            <a href="/" class="inline-flex items-center justify-center px-6 py-3 rounded-xl font-bold bg-[#0B1A3D] text-[var(--gold)] hover:scale-105 transition-transform border border-[var(--glass-border)]">Hemen İndir</a>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</main>
+
+<footer class="footer-forest relative z-10" style="color: var(--sage); opacity: 0.9;">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <!-- Main footer -->
+      <div class="py-12 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+        <!-- Brand -->
+        <div class="flex items-center gap-3 justify-center md:justify-start">
+          <img src="logo.png" alt="BudgieBreedingTracker logosu" data-i18n-alt="footer_logo_alt" class="w-10 h-10 rounded-xl" style="border: 1px solid rgba(245,200,66,0.2);" loading="lazy" decoding="async">
+          <div>
+            <span class="font-bold text-lg" style="color: var(--gold-light);">BudgieBreedingTracker</span>
+            <p class="text-xs mt-0.5" style="color: var(--sage); opacity: 0.7;" data-i18n="footer_tagline">Üreme Takip Uygulaması</p>
+          </div>
+        </div>
+
+        <!-- Links -->
+        <div class="flex items-center justify-center gap-6 text-sm flex-wrap">
+          <a href="#features" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_features">Özellikler</a>
+          <a href="#cta" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_download">İndir</a>
+          <a href="https://github.com/BekirEfeoglu/BudgieBreedingTracker" target="_blank" rel="noopener noreferrer" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'">GitHub</a>
+          <a href="privacy-policy.html" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_privacy">Gizlilik Politikası</a>
+          <a href="terms-of-use.html" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_terms">Kullanım Koşulları</a>
+          <a href="accessibility.html" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_accessibility">Erişilebilirlik</a>
+          <a href="community-guidelines.html" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_community">Topluluk Kuralları</a>
+          <a href="support/" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_support">Destek</a>
+          <a href="user-guide/" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_guide">Kullanım Kılavuzu</a>
+        </div>
+
+        <!-- Contact -->
+        <div class="text-center md:text-right">
+          <h4 class="font-semibold mb-3 text-sm" style="color: var(--sage-light);" data-i18n="footer_contact_title">İletişim</h4>
+          <div class="space-y-2 text-sm">
+            <div>
+              <a href="mailto:support@budgiebreedingtracker.online" class="transition-colors duration-200 break-all" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'">
+                support@budgiebreedingtracker.online
+              </a>
+            </div>
+            <div class="flex items-center gap-3 justify-center md:justify-end">
+              <a href="https://github.com/BekirEfeoglu/BudgieBreedingTracker" target="_blank" rel="noopener noreferrer" class="social-icon inline-flex items-center gap-1.5" style="color: var(--sage);" title="GitHub" aria-label="GitHub">
+                <svg aria-hidden="true" class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+              </a>
+              <a href="https://www.facebook.com/BudgieBreedingTracker/" target="_blank" rel="noopener noreferrer" class="social-icon inline-flex items-center" style="color: var(--sage);" title="Facebook" aria-label="Facebook">
+                <svg aria-hidden="true" class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              </a>
+              <a href="https://www.instagram.com/budgiebreedingtrackerr/" target="_blank" rel="noopener noreferrer" class="social-icon inline-flex items-center" style="color: var(--sage);" title="Instagram" aria-label="Instagram">
+                <svg aria-hidden="true" class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom bar -->
+      <div class="py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-center relative z-10" style="border-top: 1px solid rgba(255,255,255,0.04);">
+        <p class="text-xs" style="color: var(--sage); opacity: 0.5;" data-i18n="footer_made">Yetiştiriciler tarafından, yetiştiriciler için yapıldı ❤️</p>
+        <p class="text-xs" style="color: var(--sage); opacity: 0.5; white-space: nowrap;">
+          <span data-i18n="footer_copyright">© 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</span>
+          <span class="version-badge" aria-label="Uygulama sürümü" data-i18n-aria-label="app_version_aria">
+            v1.1.2 · <time datetime="2026-06-06">2026-06-06</time>
+          </span>
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Back to Top Button -->
+  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="fixed bottom-6 right-6 w-12 h-12 rounded-xl shadow-lg transition-all duration-300 z-40 flex items-center justify-center" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);" aria-label="Sayfanın başına dön" data-i18n-aria-label="back_to_top_aria">
+    <svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+  </button>
+
+  <!-- Scripts -->
+  <script>
+    // ─── i18n Translations ───
+    const translations = {
+      tr: {
+        nav_features: 'Özellikler',
+        nav_screenshots: 'Ekran Görüntüleri',
+        nav_pricing: 'Fiyatlandırma',
+        nav_download: 'İndir',
+        nav_home_aria: 'BudgieBreedingTracker — ana sayfa',
+        hero_badge: 'Yetiştiriciler İçin Tasarlandı',
+        hero_title_1: 'Muhabbet Kuşu',
+        hero_title_2: 'Üreme Takibi',
+        hero_title_3: 'Artık Kolay',
+        hero_subtitle: 'Kuşlarınızı, yumurtalarınızı, yavrularınızı ve genetik hesaplamalarınızı tek bir uygulamada yönetin. Offline çalışın, verileriniz güvende kalsın.',
+        hero_cta_primary: 'Uygulamayı İndir',
+        hero_cta_primary_aria: 'BudgieBreedingTracker indirme seçeneklerine git',
+        hero_cta_secondary: 'Özellikleri Keşfet',
+        phone_logo_alt: 'BudgieBreedingTracker uygulama logosu',
+        hero_budgie_aria: 'Animasyonlu muhabbet kuşu',
+        phone_subtitle: 'Üreme Takip Uygulaması',
+        phone_birds: 'Kuşlarım',
+        phone_pairs: 'Çiftler',
+        phone_eggs: 'Yumurtalar',
+        phone_eggs_incubating: '5 kuluçka',
+        phone_chicks: 'Yavrular',
+        sync_badge_label: 'Senkron',
+        sync_badge_status: 'Çevrimiçi ✓',
+        trust_1: 'AES-256 Şifreleme',
+        trust_2: 'iOS & Android',
+        trust_3: '3 Dil Desteği',
+        trust_4: 'Offline Çalışır',
+        features_badge: 'Özellikler',
+        features_title: 'Her Şey Tek Uygulamada',
+        features_subtitle: 'Profesyonel yetiştiricilik için ihtiyacınız olan tüm araçlar, akıllı ve kullanımı kolay bir arayüzle.',
+        feature_1_title: 'Kuş Takibi',
+        feature_1_desc: 'Tüm kuşlarınızı halka numarası, cinsiyet, mutasyon ve fotoğraflarıyla detaylı kayıt altına alın.',
+        feature_2_title: 'Üreme Yönetimi',
+        feature_2_desc: 'Çiftleştirme, yumurta takibi, kuluçka süreci ve yavru gelişimini adım adım izleyin.',
+        feature_3_title: 'Genetik Hesaplayıcı',
+        feature_3_desc: 'Punnett karesi ile mutasyon tahminleri yapın, genotip analizi ve soy ağacı oluşturun.',
+        feature_4_title: 'Sağlık Kayıtları',
+        feature_4_desc: 'Veteriner ziyaretleri, tedaviler ve sağlık geçmişini kaydedin. Hatırlatıcılarla hiçbir şeyi kaçırmayın.',
+        feature_5_title: 'Offline-First & Sync',
+        feature_5_desc: 'İnternet olmadan da çalışın. Bağlantı geldiğinde verileriniz otomatik olarak senkronize edilir.',
+        feature_6_title: 'Çok Dilli Destek',
+        feature_6_desc: 'Türkçe, İngilizce ve Almanca dil desteği. Uygulama dilinizi istediğiniz zaman değiştirin.',
+        showcase_badge: 'Neden Biz?',
+        showcase_title: 'Yetiştiriciliğin Dijital Asistanı',
+        showcase_subtitle: 'Deneyimli yetiştiriciler tarafından, yetiştiriciler için tasarlandı. Her detay düşünüldü.',
+        benefit_1_title: 'Tam Kontrol',
+        benefit_1_desc: 'Her kuş, yumurta ve yavru için detaylı kayıt. Hiçbir şey gözden kaçmaz.',
+        benefit_2_title: 'Anında Senkronizasyon',
+        benefit_2_desc: 'Offline çalışın, online olunca otomatik senkronize edin. Veri kaybı yok.',
+        benefit_3_title: 'Güvende',
+        benefit_3_desc: 'AES-256 şifreleme ile yedekleme. Verileriniz sadece sizin kontrolünüzde.',
+        stat_1: 'Veri Kategorisi',
+        stat_2: 'Dil Desteği',
+        stat_3: 'Offline Çalışma',
+        stat_4: 'AES Şifreleme',
+        cta_title: 'Hemen Başlayın',
+        cta_subtitle: 'Kuşlarınızın bakımını profesyonel seviyeye taşıyın. Ücretsiz indirin, hemen kullanmaya başlayın.',
+        cta_google_label: "Google Play'den",
+        cta_google_aria: "BudgieBreedingTracker uygulamasını Google Play'de aç",
+        cta_google_action: 'İndirin',
+        cta_apple_label: "App Store'dan",
+        cta_apple_aria: "BudgieBreedingTracker uygulamasını App Store'da aç",
+        cta_apple_action: 'İndirin',
+        cta_note: 'App Store ve Google Play\'de mevcut',
+        screenshots_badge: 'Ekran Görüntüleri',
+        screenshots_title: 'Uygulamayı Keşfet',
+        screenshots_subtitle: 'Güçlü özellikleri, temiz arayüzü ve sezgisel tasarımıyla tanışın.',
+        ss_label_dashboard: 'Ana Sayfa',
+        ss_label_birds: 'Kuş Yönetimi',
+        ss_label_breeding: 'Üreme Takibi',
+        ss_label_incubation: 'Kuluçka Süreci',
+        ss_label_detail: 'Detaylı Kayıt',
+        ss_label_genetics: 'Genetik',
+        ss_label_chicks: 'Yavrular',
+        ss_label_calendar: 'Takvim',
+        ss_label_statistics: 'İstatistikler',
+        ss_label_genealogy: 'Soy Ağacı',
+        ss_label_health: 'Sağlık Kayıtları',
+        ss_label_settings: 'Ayarlar',
+        footer_features: 'Özellikler',
+        footer_privacy: 'Gizlilik Politikası',
+        footer_copyright: '© 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.',
+        footer_tagline: 'Üreme Takip Uygulaması',
+        footer_logo_alt: 'BudgieBreedingTracker logosu',
+        footer_made: 'Yetiştiriciler tarafından, yetiştiriciler için yapıldı ❤️',
+        footer_contact_title: 'İletişim',
+        app_version_aria: 'Uygulama sürümü',
+        back_to_top_aria: 'Sayfanın başına dön',
+        nav_how: 'Nasıl Çalışır?',
+        nav_user_guide: 'Kullanım Kılavuzu',
+        how_badge: 'Nasıl Çalışır?',
+        how_title: '3 Adımda Başlayın',
+        how_step1_title: 'İndir',
+        how_step1_desc: 'Uygulamayı iOS veya Android cihazınıza ücretsiz indirin ve hesabınızı oluşturun.',
+        how_step2_title: 'Kuşlarını Ekle',
+        how_step2_desc: 'Kuşlarınızı, çiftleştirme kayıtlarınızı ve yumurtalarınızı kolayca profile edin.',
+        how_step3_title: 'Takip Et & Analiz Et',
+        how_step3_desc: 'Genetik hesaplamalar, istatistikler ve soy ağacı ile yetiştiriciliğinizi optimize edin.',
+        badge_premium: 'Premium',
+        feature_7_title: 'İstatistikler',
+        feature_7_desc: 'Üreme başarı oranları, yavru gelişim grafikleri ve kapsamlı analitik raporlar ile veriye dayalı kararlar alın.',
+        feature_8_title: 'Soy Ağacı',
+        feature_8_desc: 'Kuşlarınızın soy ağacını görselleştirin, akrabalık ilişkilerini ve genetik geçmişi interaktif olarak keşfedin.',
+        feature_9_title: 'Takvim & Hatırlatıcılar',
+        feature_9_desc: 'Kuluçka tarihleri, veteriner randevuları ve tüm etkinlikleri takvimde görün. Akıllı hatırlatıcılarla hiçbir şeyi kaçırmayın.',
+        feature_10_title: 'Yedekleme & Dışa Aktarma',
+        feature_10_desc: 'Verilerinizi PDF ve Excel olarak dışa aktarın. AES-256 şifreli yedeklerle veri güvenliğinizi sağlayın.',
+        faq_badge: 'SSS',
+        faq_title: 'Sık Sorulan Sorular',
+        faq_q1: 'Uygulama ücretsiz mi?',
+        faq_a1: 'Evet, temel özellikler tamamen ücretsizdir. Genetik hesaplayıcı, istatistikler ve soy ağacı gibi gelişmiş özellikler için premium abonelik gereklidir.',
+        faq_q2: 'Verilerim güvende mi?',
+        faq_a2: 'Evet. Verileriniz AES-256 şifreleme ile korunur ve yalnızca sizin hesabınızla erişilebilir. Yedeklemeler de şifreli olarak saklanır.',
+        faq_q3: 'Offline çalışıyor mu?',
+        faq_a3: 'Evet! Uygulama offline-first mimarisine sahiptir. İnternet olmadan tüm özelliklerden yararlanabilir, bağlantı geldiğinde verileriniz otomatik senkronize edilir.',
+        faq_q4: 'Kaç kuş kaydedebilirim?',
+        faq_a4: 'Ücretsiz planda 15 kuş ve 5 çiftleştirme çifti ekleyebilirsiniz. Premium\'a geçerek bu limitleri kaldırabilir, sınırsız kayıt yapabilirsiniz. Her kuş için 10 adede kadar fotoğraf yüklenebilir.',
+        faq_q5: 'Hangi platformlarda çalışıyor?',
+        faq_a5: 'BudgieBreedingTracker iOS (iPhone/iPad) cihazlarda App Store, Android cihazlarda Google Play üzerinden kullanılabilir.',
+        cta_email_intro: 'Yeni özelliklerden ve mağaza güncellemelerinden haberdar olmak için e-posta adresinizi bırakın:',
+        cta_email_label: 'E-posta adresi',
+        cta_email_placeholder: 'e-posta@adresiniz.com',
+        cta_email_btn: 'Haberdar Et',
+        cta_email_thanks: 'Teşekkürler! Size haber vereceğiz 🎉',
+        premium_badge: 'Planlar',
+        premium_title: 'Ücretsiz Başlayın, Premium\'la Büyüyün',
+        premium_subtitle: 'Temel özellikler tamamen ücretsiz. Profesyonel araçlar için Premium\'a geçin.',
+        plan_free_label: 'Ücretsiz',
+        plan_free_1: '15 kuş kaydı',
+        plan_free_2: '5 çiftleştirme çifti',
+        plan_free_3: 'Yumurta & yavru takibi',
+        plan_free_4: 'Takvim & hatırlatıcılar',
+        plan_free_5: 'Offline çalışma & senkronizasyon',
+        plan_free_cta: 'Ücretsiz Başla',
+        plan_premium_period: '/ 6 ay',
+        plan_premium_note: 'veya yıllık alın, %17 tasarruf edin',
+        plan_premium_1: 'Sınırsız kuş & çift kaydı',
+        plan_premium_2: 'Genetik hesaplayıcı (Punnett)',
+        plan_premium_3: 'İstatistikler & analitik raporlar',
+        plan_premium_4: 'Soy ağacı görselleştirme',
+        plan_premium_5: 'PDF & Excel dışa aktarma',
+        plan_premium_6: 'Reklamsız deneyim',
+        plan_premium_cta: 'Premium\'a Geç',
+        faq_q6: 'Genetik hesaplayıcı nasıl çalışıyor?',
+        faq_a6: 'Anne ve baba kuşun mutasyonlarını seçin, uygulama Punnett karesi ile olası yavru renk ve genotiplerini hesaplasın. Sonuçları kaydedebilir ve geçmiş hesaplamaları görüntüleyebilirsiniz.',
+        faq_q7: 'Verilerimi başka cihaza aktarabilir miyim?',
+        faq_a7: 'Evet! Aynı hesapla giriş yaptığınızda verileriniz otomatik senkronize edilir. Ayrıca şifreli yedekleme dosyası oluşturup başka cihazda geri yükleyebilirsiniz.',
+        footer_support: 'Destek',
+        footer_guide: 'Kullanım Kılavuzu',
+        footer_terms: 'Kullanım Koşulları',
+        footer_accessibility: 'Erişilebilirlik',
+        footer_community: 'Topluluk Kuralları',
+        feature_11_title: 'Topluluk',
+        feature_11_desc: 'Diğer yetiştiricilerle deneyimlerinizi paylaşın, sorular sorun ve bilgi alışverişinde bulunun.',
+        feature_12_title: 'Pazar Yeri',
+        feature_12_desc: 'Kuşlarınızı satışa çıkarın veya diğer yetiştiricilerin ilanlarını keşfedin. Güvenli mesajlaşma ile iletişim kurun.',
+        nav_genetics: '🧬 Genetik',
+        genetics_demo_badge: '🧬 Canlı Demo',
+        genetics_demo_title: 'Genetik Hesaplayıcıyı Dene',
+        genetics_demo_subtitle: 'Anne ve baba mutasyonunu seç, olası yavru kombinasyonlarını anında gör.',
+        genetics_demo_mother: '🐦 Anne Mutasyonu',
+        genetics_demo_father: '🐦 Baba Mutasyonu',
+        genetics_demo_note: 'Tam uygulamada 40+ mutasyon, cinsiyet bağlantılı ve çoklu lokus hesaplama, MUTAVI tabanlı olasılıklar.',
+        genetics_demo_result: 'Olası Yavru Kombinasyonları',
+        genetics_demo_cta_text: 'Tam genetik hesaplayıcı için uygulamayı indirin.',
+        genetics_demo_cta_btn: 'Uygulamayı İndir →',
+        genetics_mut_normal: 'Normal (Yeşil)',
+        genetics_mut_lutino: 'Lutino',
+        genetics_mut_albino: 'Albino',
+        genetics_mut_pied: 'Alacalı (Pied)',
+        genetics_mut_spangle: 'Spangle',
+        genetics_mut_opaline: 'Opalin',
+        offline_badge: '☁️ Offline-First',
+        offline_title: 'Cebinde Çalışır, Bulutta Yedeklenir',
+        offline_subtitle: 'İnternet yokken bile veri kaybı yok. Bağlantı geldiğinde tüm değişiklikler otomatik senkronize edilir.',
+        offline_diagram_aria: 'Offline-first mimari diyagramı',
+        offline_point1_title: 'Yerel Veritabanı',
+        offline_point1_desc: 'Tüm veriler önce cihazındaki SQLite\'a yazılır. UI her zaman yerel veritabanından okur.',
+        offline_point2_title: 'Otomatik Senkronizasyon',
+        offline_point2_desc: 'İnternet bağlantısı geldiğinde değişiklikler otomatik olarak bulutla uzlaştırılır.',
+        offline_point3_title: 'AES-256 Şifreleme',
+        offline_point3_desc: 'Bulut yedekleri şifreli. Verilerinize sadece siz erişebilirsiniz.',
+      },
+      en: {
+        nav_features: 'Features',
+        nav_screenshots: 'Screenshots',
+        nav_pricing: 'Pricing',
+        nav_download: 'Download',
+        nav_home_aria: 'BudgieBreedingTracker — home',
+        hero_badge: 'Designed for Breeders',
+        hero_title_1: 'Budgie',
+        hero_title_2: 'Breeding Tracker',
+        hero_title_3: 'Made Easy',
+        hero_subtitle: 'Manage your birds, eggs, chicks, and genetic calculations in one app. Work offline, keep your data safe.',
+        hero_cta_primary: 'Download App',
+        hero_cta_primary_aria: 'Go to BudgieBreedingTracker download options',
+        hero_cta_secondary: 'Explore Features',
+        phone_logo_alt: 'BudgieBreedingTracker app logo',
+        hero_budgie_aria: 'Animated budgie',
+        phone_subtitle: 'Breeding Tracker App',
+        phone_birds: 'My Birds',
+        phone_pairs: 'Pairs',
+        phone_eggs: 'Eggs',
+        phone_eggs_incubating: '5 incubating',
+        phone_chicks: 'Chicks',
+        sync_badge_label: 'Sync',
+        sync_badge_status: 'Online ✓',
+        trust_1: 'AES-256 Encryption',
+        trust_2: 'iOS & Android',
+        trust_3: '3 Languages',
+        trust_4: 'Works Offline',
+        features_badge: 'Features',
+        features_title: 'Everything in One App',
+        features_subtitle: 'All the tools you need for professional breeding, with a smart and easy-to-use interface.',
+        feature_1_title: 'Bird Tracking',
+        feature_1_desc: 'Record all your birds in detail with ring numbers, gender, mutations, and photos.',
+        feature_2_title: 'Breeding Management',
+        feature_2_desc: 'Track pairing, egg monitoring, incubation process, and chick development step by step.',
+        feature_3_title: 'Genetics Calculator',
+        feature_3_desc: 'Make mutation predictions with Punnett squares, genotype analysis, and pedigree charts.',
+        feature_4_title: 'Health Records',
+        feature_4_desc: 'Record vet visits, treatments, and health history. Never miss anything with reminders.',
+        feature_5_title: 'Offline-First & Sync',
+        feature_5_desc: 'Work without internet. Your data syncs automatically when connection is restored.',
+        feature_6_title: 'Multi-Language',
+        feature_6_desc: 'Turkish, English, and German language support. Change your app language anytime.',
+        showcase_badge: 'Why Us?',
+        showcase_title: 'Your Digital Breeding Assistant',
+        showcase_subtitle: 'Designed by experienced breeders, for breeders. Every detail thought through.',
+        benefit_1_title: 'Full Control',
+        benefit_1_desc: 'Detailed records for every bird, egg, and chick. Nothing slips through the cracks.',
+        benefit_2_title: 'Instant Sync',
+        benefit_2_desc: 'Work offline, sync automatically when back online. No data loss.',
+        benefit_3_title: 'Secure',
+        benefit_3_desc: 'AES-256 encrypted backups. Your data stays under your control only.',
+        stat_1: 'Data Categories',
+        stat_2: 'Languages',
+        stat_3: 'Offline Support',
+        stat_4: 'AES Encryption',
+        cta_title: 'Get Started Now',
+        cta_subtitle: 'Take your bird care to a professional level. Download for free and start using today.',
+        cta_google_label: 'GET IT ON',
+        cta_google_aria: 'Open BudgieBreedingTracker on Google Play',
+        cta_google_action: 'Google Play',
+        cta_apple_label: 'DOWNLOAD ON THE',
+        cta_apple_aria: 'Open BudgieBreedingTracker on the App Store',
+        cta_apple_action: 'App Store',
+        cta_note: 'Available on the App Store and Google Play',
+        screenshots_badge: 'Screenshots',
+        screenshots_title: 'Explore the App',
+        screenshots_subtitle: 'Discover powerful features, clean interface, and intuitive design.',
+        ss_label_dashboard: 'Dashboard',
+        ss_label_birds: 'Bird Management',
+        ss_label_breeding: 'Breeding Tracker',
+        ss_label_incubation: 'Incubation Process',
+        ss_label_detail: 'Detailed Records',
+        ss_label_genetics: 'Genetics',
+        ss_label_chicks: 'Chicks',
+        ss_label_calendar: 'Calendar',
+        ss_label_statistics: 'Statistics',
+        ss_label_genealogy: 'Family Tree',
+        ss_label_health: 'Health Records',
+        ss_label_settings: 'Settings',
+        footer_features: 'Features',
+        footer_privacy: 'Privacy Policy',
+        footer_copyright: '© 2025-2026 BudgieBreedingTracker. All rights reserved.',
+        footer_tagline: 'Breeding Tracker App',
+        footer_logo_alt: 'BudgieBreedingTracker logo',
+        footer_made: 'Made by breeders, for breeders ❤️',
+        footer_contact_title: 'Contact',
+        app_version_aria: 'App version',
+        back_to_top_aria: 'Back to top',
+        nav_how: 'How It Works',
+        nav_user_guide: 'User Guide',
+        how_badge: 'How It Works',
+        how_title: 'Get Started in 3 Steps',
+        how_step1_title: 'Download',
+        how_step1_desc: 'Download the app for free on your iOS or Android device and create your account.',
+        how_step2_title: 'Add Your Birds',
+        how_step2_desc: 'Profile your birds, breeding records, and eggs quickly and easily.',
+        how_step3_title: 'Track & Analyze',
+        how_step3_desc: 'Optimize your breeding with genetic calculations, statistics, and family tree visualization.',
+        badge_premium: 'Premium',
+        feature_7_title: 'Statistics',
+        feature_7_desc: 'Breeding success rates, chick growth charts, and comprehensive analytics reports for data-driven decisions.',
+        feature_8_title: 'Family Tree',
+        feature_8_desc: 'Visualize your birds\' pedigree, explore family relationships and genetic history interactively.',
+        feature_9_title: 'Calendar & Reminders',
+        feature_9_desc: 'View incubation dates, vet appointments, and all events on the calendar. Never miss anything with smart reminders.',
+        feature_10_title: 'Backup & Export',
+        feature_10_desc: 'Export your data as PDF and Excel. Secure your data with AES-256 encrypted backups.',
+        faq_badge: 'FAQ',
+        faq_title: 'Frequently Asked Questions',
+        faq_q1: 'Is the app free?',
+        faq_a1: 'Yes, the core features are completely free. Advanced features like the genetics calculator, statistics, and family tree require a premium subscription.',
+        faq_q2: 'Is my data secure?',
+        faq_a2: 'Yes. Your data is protected with AES-256 encryption and is only accessible with your account. Backups are also stored in encrypted form.',
+        faq_q3: 'Does it work offline?',
+        faq_a3: 'Yes! The app has an offline-first architecture. You can use all features without internet, and your data syncs automatically when connection is restored.',
+        faq_q4: 'How many birds can I record?',
+        faq_a4: 'The free plan allows up to 15 birds and 5 breeding pairs. Upgrade to Premium to remove these limits and record unlimited entries. Up to 10 photos can be uploaded per bird.',
+        faq_q5: 'Which platforms does it support?',
+        faq_a5: 'BudgieBreedingTracker is available on the App Store for iOS (iPhone/iPad) and on Google Play for Android devices.',
+        cta_email_intro: 'Leave your email to get app updates and release news:',
+        cta_email_label: 'Email address',
+        cta_email_placeholder: 'your@email.com',
+        cta_email_btn: 'Notify Me',
+        cta_email_thanks: 'Thank you! We\'ll keep you posted 🎉',
+        premium_badge: 'Plans',
+        premium_title: 'Start Free, Grow with Premium',
+        premium_subtitle: 'Core features are completely free. Upgrade to Premium for professional tools.',
+        plan_free_label: 'Free',
+        plan_free_1: '15 bird records',
+        plan_free_2: '5 breeding pairs',
+        plan_free_3: 'Egg & chick tracking',
+        plan_free_4: 'Calendar & reminders',
+        plan_free_5: 'Offline mode & sync',
+        plan_free_cta: 'Get Started Free',
+        plan_premium_period: '/ 6 months',
+        plan_premium_note: 'or get yearly and save 17%',
+        plan_premium_1: 'Unlimited bird & pair records',
+        plan_premium_2: 'Genetics calculator (Punnett)',
+        plan_premium_3: 'Statistics & analytics reports',
+        plan_premium_4: 'Family tree visualization',
+        plan_premium_5: 'PDF & Excel export',
+        plan_premium_6: 'Ad-free experience',
+        plan_premium_cta: 'Go Premium',
+        faq_q6: 'How does the genetics calculator work?',
+        faq_a6: 'Select the mutations of the parent birds, and the app calculates possible offspring colors and genotypes using a Punnett square. You can save results and view past calculations.',
+        faq_q7: 'Can I transfer my data to another device?',
+        faq_a7: 'Yes! Your data syncs automatically when you log in with the same account. You can also create encrypted backups to restore on another device, or export as PDF and Excel.',
+        footer_support: 'Support',
+        footer_guide: 'User Guide',
+        footer_terms: 'Terms of Use',
+        footer_accessibility: 'Accessibility',
+        footer_community: 'Community Guidelines',
+        feature_11_title: 'Community',
+        feature_11_desc: 'Share your experiences with other breeders, ask questions, and exchange knowledge.',
+        feature_12_title: 'Marketplace',
+        feature_12_desc: 'List your birds for sale or browse other breeders\' listings. Communicate securely via messaging.',
+        nav_genetics: '🧬 Genetics',
+        genetics_demo_badge: '🧬 Live Demo',
+        genetics_demo_title: 'Try the Genetics Calculator',
+        genetics_demo_subtitle: 'Select parent mutations and instantly see possible offspring combinations.',
+        genetics_demo_mother: '🐦 Mother Mutation',
+        genetics_demo_father: '🐦 Father Mutation',
+        genetics_demo_note: 'Full app includes 40+ mutations, sex-linked & multi-locus calculation, MUTAVI-based probabilities.',
+        genetics_demo_result: 'Possible Offspring Combinations',
+        genetics_demo_cta_text: 'Download the app for the full genetics calculator.',
+        genetics_demo_cta_btn: 'Download App →',
+        genetics_mut_normal: 'Normal (Green)',
+        genetics_mut_lutino: 'Lutino',
+        genetics_mut_albino: 'Albino',
+        genetics_mut_pied: 'Pied',
+        genetics_mut_spangle: 'Spangle',
+        genetics_mut_opaline: 'Opaline',
+        offline_badge: '☁️ Offline-First',
+        offline_title: 'Works in Your Pocket, Backed by the Cloud',
+        offline_subtitle: 'No data loss even without internet. Changes sync automatically when you come back online.',
+        offline_diagram_aria: 'Offline-first architecture diagram',
+        offline_point1_title: 'Local Database',
+        offline_point1_desc: 'All data is written first to SQLite on your device. The UI always reads from the local database.',
+        offline_point2_title: 'Automatic Sync',
+        offline_point2_desc: 'When internet is available, changes are automatically reconciled with the cloud.',
+        offline_point3_title: 'AES-256 Encryption',
+        offline_point3_desc: 'Cloud backups are encrypted. Only you can access your data.',
+      },
+      de: {
+        nav_features: 'Funktionen',
+        nav_screenshots: 'Screenshots',
+        nav_pricing: 'Preise',
+        nav_download: 'Herunterladen',
+        nav_home_aria: 'BudgieBreedingTracker — Startseite',
+        hero_badge: 'Für Züchter entwickelt',
+        hero_title_1: 'Wellensittich',
+        hero_title_2: 'Zucht-Tracker',
+        hero_title_3: 'Leicht gemacht',
+        hero_subtitle: 'Verwalten Sie Ihre Vögel, Eier, Küken und genetischen Berechnungen in einer App. Offline arbeiten, Daten sicher aufbewahren.',
+        hero_cta_primary: 'App herunterladen',
+        hero_cta_primary_aria: 'Zu den Download-Optionen von BudgieBreedingTracker gehen',
+        hero_cta_secondary: 'Funktionen entdecken',
+        phone_logo_alt: 'BudgieBreedingTracker App-Logo',
+        hero_budgie_aria: 'Animierter Wellensittich',
+        phone_subtitle: 'Zucht-Tracker-App',
+        phone_birds: 'Meine Vögel',
+        phone_pairs: 'Paare',
+        phone_eggs: 'Eier',
+        phone_eggs_incubating: '5 Brut',
+        phone_chicks: 'Küken',
+        sync_badge_label: 'Sync',
+        sync_badge_status: 'Online ✓',
+        trust_1: 'AES-256 Verschlüsselung',
+        trust_2: 'iOS & Android',
+        trust_3: '3 Sprachen',
+        trust_4: 'Offline-fähig',
+        features_badge: 'Funktionen',
+        features_title: 'Alles in einer App',
+        features_subtitle: 'Alle Werkzeuge für professionelle Zucht, mit einer intelligenten und benutzerfreundlichen Oberfläche.',
+        feature_1_title: 'Vogelverfolgung',
+        feature_1_desc: 'Erfassen Sie alle Ihre Vögel mit Ringnummer, Geschlecht, Mutationen und Fotos.',
+        feature_2_title: 'Zuchtverwaltung',
+        feature_2_desc: 'Verfolgen Sie Verpaarung, Eiüberwachung, Brutprozess und Kükenentwicklung Schritt für Schritt.',
+        feature_3_title: 'Genetik-Rechner',
+        feature_3_desc: 'Mutationsvorhersagen mit Punnett-Quadraten, Genotypanalyse und Stammbaumerstellung.',
+        feature_4_title: 'Gesundheitsakten',
+        feature_4_desc: 'Tierarztbesuche, Behandlungen und Gesundheitsgeschichte dokumentieren. Mit Erinnerungen nichts verpassen.',
+        feature_5_title: 'Offline-First & Sync',
+        feature_5_desc: 'Ohne Internet arbeiten. Ihre Daten werden automatisch synchronisiert, wenn die Verbindung wiederhergestellt wird.',
+        feature_6_title: 'Mehrsprachig',
+        feature_6_desc: 'Türkisch, Englisch und Deutsch. Ändern Sie Ihre App-Sprache jederzeit.',
+        showcase_badge: 'Warum wir?',
+        showcase_title: 'Ihr digitaler Zucht-Assistent',
+        showcase_subtitle: 'Von erfahrenen Züchtern für Züchter entwickelt. Jedes Detail durchdacht.',
+        benefit_1_title: 'Volle Kontrolle',
+        benefit_1_desc: 'Detaillierte Aufzeichnungen für jeden Vogel, jedes Ei und jedes Küken.',
+        benefit_2_title: 'Sofortige Synchronisation',
+        benefit_2_desc: 'Offline arbeiten, automatisch synchronisieren. Kein Datenverlust.',
+        benefit_3_title: 'Sicher',
+        benefit_3_desc: 'AES-256 verschlüsselte Backups. Ihre Daten bleiben unter Ihrer Kontrolle.',
+        stat_1: 'Datenkategorien',
+        stat_2: 'Sprachen',
+        stat_3: 'Offline-Betrieb',
+        stat_4: 'AES-Verschlüsselung',
+        cta_title: 'Jetzt loslegen',
+        cta_subtitle: 'Bringen Sie Ihre Vogelpflege auf professionelles Niveau. Kostenlos herunterladen und sofort nutzen.',
+        cta_google_label: 'JETZT BEI',
+        cta_google_aria: 'BudgieBreedingTracker bei Google Play öffnen',
+        cta_google_action: 'Google Play',
+        cta_apple_label: 'LADEN IM',
+        cta_apple_aria: 'BudgieBreedingTracker im App Store öffnen',
+        cta_apple_action: 'App Store',
+        cta_note: 'Im App Store und bei Google Play verfügbar',
+        screenshots_badge: 'Screenshots',
+        screenshots_title: 'Entdecke die App',
+        screenshots_subtitle: 'Leistungsstarke Funktionen, saubere Oberfläche und intuitives Design.',
+        ss_label_dashboard: 'Startseite',
+        ss_label_birds: 'Vogelverwaltung',
+        ss_label_breeding: 'Zucht-Tracker',
+        ss_label_incubation: 'Brutprozess',
+        ss_label_detail: 'Detaillierte Aufzeichnungen',
+        ss_label_genetics: 'Genetik',
+        ss_label_chicks: 'Küken',
+        ss_label_calendar: 'Kalender',
+        ss_label_statistics: 'Statistiken',
+        ss_label_genealogy: 'Stammbaum',
+        ss_label_health: 'Gesundheitsakten',
+        ss_label_settings: 'Einstellungen',
+        footer_features: 'Funktionen',
+        footer_privacy: 'Datenschutzrichtlinie',
+        footer_copyright: '© 2025-2026 BudgieBreedingTracker. Alle Rechte vorbehalten.',
+        footer_tagline: 'Zucht-Tracker-App',
+        footer_logo_alt: 'BudgieBreedingTracker Logo',
+        footer_made: 'Von Züchtern für Züchter gemacht ❤️',
+        footer_contact_title: 'Kontakt',
+        app_version_aria: 'App-Version',
+        back_to_top_aria: 'Zurück nach oben',
+        nav_how: 'Wie es funktioniert',
+        nav_user_guide: 'Benutzerhandbuch',
+        how_badge: 'Wie es funktioniert',
+        how_title: 'In 3 Schritten starten',
+        how_step1_title: 'Herunterladen',
+        how_step1_desc: 'Laden Sie die App kostenlos auf Ihr iOS- oder Android-Gerät herunter und erstellen Sie Ihr Konto.',
+        how_step2_title: 'Vögel hinzufügen',
+        how_step2_desc: 'Erfassen Sie Ihre Vögel, Zuchtaufzeichnungen und Eier schnell und einfach.',
+        how_step3_title: 'Verfolgen & Analysieren',
+        how_step3_desc: 'Optimieren Sie Ihre Zucht mit genetischen Berechnungen, Statistiken und Stammbaum-Visualisierung.',
+        badge_premium: 'Premium',
+        feature_7_title: 'Statistiken',
+        feature_7_desc: 'Zuchterfolgsraten, Kükenentwicklungsdiagramme und umfassende Analyseberichte für datengesteuerte Entscheidungen.',
+        feature_8_title: 'Stammbaum',
+        feature_8_desc: 'Visualisieren Sie den Stammbaum Ihrer Vögel und erkunden Sie Familienbeziehungen und genetische Geschichte interaktiv.',
+        feature_9_title: 'Kalender & Erinnerungen',
+        feature_9_desc: 'Brutdaten, Tierarzttermine und alle Ereignisse im Kalender anzeigen. Mit intelligenten Erinnerungen nichts verpassen.',
+        feature_10_title: 'Backup & Export',
+        feature_10_desc: 'Exportieren Sie Ihre Daten als PDF und Excel. Sichern Sie Ihre Daten mit AES-256 verschlüsselten Backups.',
+        faq_badge: 'FAQ',
+        faq_title: 'Häufig gestellte Fragen',
+        faq_q1: 'Ist die App kostenlos?',
+        faq_a1: 'Ja, die Kernfunktionen sind völlig kostenlos. Erweiterte Funktionen wie der Genetikrechner, Statistiken und der Stammbaum erfordern ein Premium-Abonnement.',
+        faq_q2: 'Sind meine Daten sicher?',
+        faq_a2: 'Ja. Ihre Daten sind mit AES-256-Verschlüsselung geschützt und nur mit Ihrem Konto zugänglich. Backups werden ebenfalls verschlüsselt gespeichert.',
+        faq_q3: 'Funktioniert es offline?',
+        faq_a3: 'Ja! Die App verfügt über eine Offline-First-Architektur. Sie können alle Funktionen ohne Internet nutzen, und Ihre Daten werden automatisch synchronisiert, wenn die Verbindung wiederhergestellt ist.',
+        faq_q4: 'Wie viele Vögel kann ich erfassen?',
+        faq_a4: 'Im kostenlosen Plan können Sie bis zu 15 Vögel und 5 Zuchtpaare erfassen. Mit Premium entfallen diese Limits und Sie können unbegrenzt Einträge erstellen. Pro Vogel sind bis zu 10 Fotos möglich.',
+        faq_q5: 'Welche Plattformen werden unterstützt?',
+        faq_a5: 'BudgieBreedingTracker ist im App Store für iOS (iPhone/iPad) und bei Google Play für Android-Geräte verfügbar.',
+        cta_email_intro: 'Hinterlassen Sie Ihre E-Mail, um App-Updates und Release-Neuigkeiten zu erhalten:',
+        cta_email_label: 'E-Mail-Adresse',
+        cta_email_placeholder: 'ihre@email.de',
+        cta_email_btn: 'Benachrichtigen',
+        cta_email_thanks: 'Danke! Wir halten Sie auf dem Laufenden 🎉',
+        premium_badge: 'Pläne',
+        premium_title: 'Kostenlos starten, mit Premium wachsen',
+        premium_subtitle: 'Kernfunktionen sind völlig kostenlos. Upgrade auf Premium für professionelle Werkzeuge.',
+        plan_free_label: 'Kostenlos',
+        plan_free_1: '15 Vogeleinträge',
+        plan_free_2: '5 Zuchtpaare',
+        plan_free_3: 'Ei- & Kükenverfolgung',
+        plan_free_4: 'Kalender & Erinnerungen',
+        plan_free_5: 'Offline-Modus & Sync',
+        plan_free_cta: 'Kostenlos starten',
+        plan_premium_period: '/ 6 Monate',
+        plan_premium_note: 'oder jährlich abonnieren und 17% sparen',
+        plan_premium_1: 'Unbegrenzte Vogel- & Paareinträge',
+        plan_premium_2: 'Genetikrechner (Punnett)',
+        plan_premium_3: 'Statistiken & Analyseberichte',
+        plan_premium_4: 'Stammbaum-Visualisierung',
+        plan_premium_5: 'PDF- & Excel-Export',
+        plan_premium_6: 'Werbefreies Erlebnis',
+        plan_premium_cta: 'Premium werden',
+        faq_q6: 'Wie funktioniert der Genetikrechner?',
+        faq_a6: 'Wählen Sie die Mutationen der Elternvögel aus, und die App berechnet mögliche Nachwuchsfarben und Genotypen mit einem Punnett-Quadrat. Ergebnisse können gespeichert werden.',
+        faq_q7: 'Kann ich meine Daten auf ein anderes Gerät übertragen?',
+        faq_a7: 'Ja! Ihre Daten werden automatisch synchronisiert, wenn Sie sich mit demselben Konto anmelden. Sie können auch verschlüsselte Backups erstellen oder als PDF und Excel exportieren.',
+        footer_support: 'Support',
+        footer_guide: 'Benutzerhandbuch',
+        footer_terms: 'Nutzungsbedingungen',
+        footer_accessibility: 'Barrierefreiheit',
+        footer_community: 'Community-Richtlinien',
+        feature_11_title: 'Community',
+        feature_11_desc: 'Teilen Sie Ihre Erfahrungen mit anderen Züchtern, stellen Sie Fragen und tauschen Sie Wissen aus.',
+        feature_12_title: 'Marktplatz',
+        feature_12_desc: 'Bieten Sie Ihre Vögel zum Verkauf an oder entdecken Sie Angebote anderer Züchter. Kommunizieren Sie sicher per Nachricht.',
+        nav_genetics: '🧬 Genetik',
+        genetics_demo_badge: '🧬 Live-Demo',
+        genetics_demo_title: 'Genetik-Rechner ausprobieren',
+        genetics_demo_subtitle: 'Wähle Elternmutationen aus und sieh sofort mögliche Nachkommenkombinationen.',
+        genetics_demo_mother: '🐦 Mutter-Mutation',
+        genetics_demo_father: '🐦 Vater-Mutation',
+        genetics_demo_note: 'Die vollständige App umfasst 40+ Mutationen, geschlechtsgebundene & Multi-Lokus-Berechnung, MUTAVI-basierte Wahrscheinlichkeiten.',
+        genetics_demo_result: 'Mögliche Nachkommen-Kombinationen',
+        genetics_demo_cta_text: 'Laden Sie die App für den vollständigen Genetik-Rechner herunter.',
+        genetics_demo_cta_btn: 'App herunterladen →',
+        genetics_mut_normal: 'Normal (Grün)',
+        genetics_mut_lutino: 'Lutino',
+        genetics_mut_albino: 'Albino',
+        genetics_mut_pied: 'Gescheckt (Pied)',
+        genetics_mut_spangle: 'Spangle',
+        genetics_mut_opaline: 'Opalin',
+        offline_badge: '☁️ Offline-First',
+        offline_title: 'In der Tasche, gesichert in der Cloud',
+        offline_subtitle: 'Kein Datenverlust ohne Internet. Änderungen werden automatisch synchronisiert, wenn Sie wieder online sind.',
+        offline_diagram_aria: 'Offline-First-Architekturdiagramm',
+        offline_point1_title: 'Lokale Datenbank',
+        offline_point1_desc: 'Alle Daten werden zuerst in SQLite auf Ihrem Gerät gespeichert. Die UI liest immer aus der lokalen Datenbank.',
+        offline_point2_title: 'Automatische Synchronisierung',
+        offline_point2_desc: 'Sobald Internet verfügbar ist, werden Änderungen automatisch mit der Cloud abgeglichen.',
+        offline_point3_title: 'AES-256-Verschlüsselung',
+        offline_point3_desc: 'Cloud-Backups sind verschlüsselt. Nur Sie haben Zugriff auf Ihre Daten.',
+      },
+    };
+
+    let currentLang = 'tr';
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('bbt-lang', lang);
+      document.documentElement.lang = lang;
+
+      const t = translations[lang];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) el.textContent = t[key];
+      });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (t[key]) el.setAttribute('placeholder', t[key]);
+      });
+      document.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+        const key = el.getAttribute('data-i18n-aria-label');
+        if (t[key]) el.setAttribute('aria-label', t[key]);
+      });
+      document.querySelectorAll('[data-i18n-alt]').forEach(el => {
+        const key = el.getAttribute('data-i18n-alt');
+        if (t[key]) el.setAttribute('alt', t[key]);
+      });
+
+      const titles = {
+        tr: 'BudgieBreedingTracker — Muhabbet Kuşu Üreme Takip Uygulaması',
+        en: 'BudgieBreedingTracker — Budgie Breeding Tracker App',
+        de: 'BudgieBreedingTracker — Wellensittich-Zucht-Tracker-App',
+      };
+      document.title = titles[lang];
+
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        const isActive = btn.getAttribute('data-lang') === lang;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-pressed', String(isActive));
+      });
+
+      const hamburger = document.getElementById('hamburger-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      if (hamburger && mobileMenu) {
+        const isMenuOpen = mobileMenu.classList.contains('open');
+        hamburger.setAttribute('aria-label', isMenuOpen
+          ? (lang === 'en' ? 'Close menu' : lang === 'de' ? 'Menü schließen' : 'Menüyü kapat')
+          : (lang === 'en' ? 'Open menu' : lang === 'de' ? 'Menü öffnen' : 'Menü aç'));
+      }
+    }
+
+    // ─── Mobile Menu ───
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      const panel = document.getElementById('mobile-panel');
+      const hamburger = document.getElementById('hamburger-btn');
+      const isOpen = menu.classList.contains('open');
+      if (isOpen) { closeMobileMenu(); return; }
+      menu.classList.remove('hidden');
+      menu.setAttribute('aria-hidden', 'false');
+      hamburger.setAttribute('aria-expanded', 'true');
+      hamburger.setAttribute('aria-label', currentLang === 'en' ? 'Close menu' : currentLang === 'de' ? 'Menü schließen' : 'Menüyü kapat');
+      requestAnimationFrame(() => {
+        menu.classList.add('open');
+        panel.style.transform = 'translateY(0)';
+      });
+      document.getElementById('hamburger-icon').classList.add('hidden');
+      document.getElementById('close-icon').classList.remove('hidden');
+    }
+
+    function closeMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      const panel = document.getElementById('mobile-panel');
+      const hamburger = document.getElementById('hamburger-btn');
+      menu.classList.remove('open');
+      menu.setAttribute('aria-hidden', 'true');
+      hamburger.setAttribute('aria-expanded', 'false');
+      hamburger.setAttribute('aria-label', currentLang === 'en' ? 'Open menu' : currentLang === 'de' ? 'Menü öffnen' : 'Menü aç');
+      panel.style.transform = 'translateY(-110%)';
+      document.getElementById('hamburger-icon').classList.remove('hidden');
+      document.getElementById('close-icon').classList.add('hidden');
+      setTimeout(() => menu.classList.add('hidden'), 300);
+    }
+
+    // ─── FAQ Accordion ───
+    function toggleFaq(btn) {
+      const item = btn.closest('.faq-item');
+      const answer = item.querySelector('.faq-answer');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(openItem => {
+        if (openItem !== item) {
+          openItem.classList.remove('open');
+          openItem.querySelector('.faq-answer').classList.remove('open');
+          openItem.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+        }
+      });
+      item.classList.toggle('open', !isOpen);
+      answer.classList.toggle('open', !isOpen);
+      btn.setAttribute('aria-expanded', String(!isOpen));
+    }
+
+    // ─── Email Signup ───
+    function handleEmailSignup(e) {
+      e.preventDefault();
+      const email = document.getElementById('email-input').value.trim();
+      if (!email) return;
+      const form = document.getElementById('email-form');
+      const btn = form.querySelector('button[type="submit"]');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '...';
+
+      fetch('https://formsubmit.co/ajax/support@budgiebreedingtracker.online', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          email: email,
+          _subject: 'BudgieBreedingTracker - Yeni Abone',
+          _template: 'table',
+        }),
+      })
+      .then(res => res.json())
+      .then(data => {
+        form.style.display = 'none';
+        document.getElementById('email-thanks').classList.remove('hidden');
+      })
+      .catch(() => {
+        // Fallback: still show success (email saved locally)
+        form.style.display = 'none';
+        document.getElementById('email-thanks').classList.remove('hidden');
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      });
+    }
+
+    // ─── Stats Count-Up Animation ───
+    function animateCount(el, target) {
+      const duration = 1400;
+      const suffix = el.textContent.replace(/[0-9]/g, '');
+      const start = performance.now();
+      function update(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(eased * target) + suffix;
+        if (progress < 1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
+    }
+
+    // ─── Reveal via IntersectionObserver (timing-independent) ───
+    // Replaces the legacy scroll-based handleReveal(). Fires reliably for
+    // elements already in viewport on page load AND when scrolled into view,
+    // regardless of anchor navigation or smooth-scroll timing.
+    function setupRevealObserver() {
+      const reveals = document.querySelectorAll('.reveal, .reveal-scale, .reveal-left, .reveal-right, .reveal-flip');
+      // No IntersectionObserver support → fail safe: show everything
+      if (!('IntersectionObserver' in window)) {
+        reveals.forEach(el => el.classList.add('active'));
+        return;
+      }
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            observer.unobserve(entry.target);  // one-shot
+          }
+        });
+      }, { rootMargin: '0px 0px -60px 0px', threshold: 0.01 });
+      reveals.forEach(el => observer.observe(el));
+    }
+
+    // ─── 3D Tilt on feature cards (rAF-batched, rect-cached, touch-disabled) ───
+    // Optimization: previous version called getBoundingClientRect() and wrote
+    // styles synchronously on EVERY mousemove (60–120Hz) × 12 cards. That
+    // caused layout thrash and visible jank during hover. Now we:
+    //   1. Skip entirely on touch / coarse-pointer devices (no hover anyway)
+    //   2. Cache the rect on mouseenter, invalidate on resize/scroll
+    //   3. Coalesce writes via requestAnimationFrame (one update per frame)
+    function initTilt() {
+      // Touch devices: no hover → tilt is wasted CPU. Bail.
+      if (window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
+      // Reduced-motion preference: skip
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      document.querySelectorAll('.feature-card-enhanced').forEach(card => {
+        let rect = null;
+        let isHovered = false;
+        
+        // Inertia variables (damping)
+        let currentRX = 0, currentRY = 0;
+        let targetRX = 0, targetRY = 0;
+        let currentX = 50, currentY = 50;
+        let targetX = 50, targetY = 50;
+        
+        let rafId = 0;
+        const easing = 0.08; // Friction factor (lower = smoother/slower catch up)
+
+        const update = () => {
+          // LERP formula
+          currentRX += (targetRX - currentRX) * easing;
+          currentRY += (targetRY - currentRY) * easing;
+          currentX += (targetX - currentX) * easing;
+          currentY += (targetY - currentY) * easing;
+
+          // Apply styling custom properties for glare effects
+          card.style.setProperty('--mouse-x', currentX + '%');
+          card.style.setProperty('--mouse-y', currentY + '%');
+          
+          if (isHovered) {
+            card.style.transform = `translateY(-8px) perspective(800px) rotateX(${currentRX}deg) rotateY(${currentRY}deg)`;
+          } else {
+            // Smooth release back to zero orientation
+            card.style.transform = `translateY(0px) perspective(800px) rotateX(${currentRX}deg) rotateY(${currentRY}deg)`;
+          }
+
+          // Stop loop when close to target rest state to save CPU cycles
+          const diff = Math.abs(targetRX - currentRX) + Math.abs(targetRY - currentRY);
+          if (!isHovered && diff < 0.01) {
+            card.style.transform = '';
+            rafId = 0;
+          } else {
+            rafId = requestAnimationFrame(update);
+          }
+        };
+
+        card.addEventListener('mouseenter', () => {
+          rect = card.getBoundingClientRect(); // Cache bounds once
+          isHovered = true;
+          if (!rafId) rafId = requestAnimationFrame(update);
+        });
+
+        card.addEventListener('mousemove', (e) => {
+          if (!rect) return;
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const cx = rect.width / 2;
+          const cy = rect.height / 2;
+          
+          // Max tilt angles: 4.5 degrees
+          targetRX = ((y - cy) / cy) * -4.5;
+          targetRY = ((x - cx) / cx) * 4.5;
+          targetX = (x / rect.width) * 100;
+          targetY = (y / rect.height) * 100;
+          
+          if (!rafId) rafId = requestAnimationFrame(update);
+        });
+
+        card.addEventListener('mouseleave', () => {
+          isHovered = false;
+          targetRX = 0;
+          targetRY = 0;
+          targetX = 50;
+          targetY = 50;
+          rect = null;
+        });
+      });
+    }
+
+    // ─── Navbar scroll effect ───
+    function handleNavbar() {
+      const navbar = document.getElementById('navbar');
+      if (window.scrollY > 50) {
+        navbar.classList.add('nav-scrolled');
+      } else {
+        navbar.classList.remove('nav-scrolled');
+      }
+    }
+
+    // ─── Back to Top button ───
+    function handleBackToTop() {
+      const btn = document.getElementById('backToTop');
+      if (window.scrollY > 400) {
+        btn.classList.add('visible');
+      } else {
+        btn.classList.remove('visible');
+      }
+    }
+
+    window.bbtScrollToCurrentHash = function bbtScrollToCurrentHash() {
+      if (!window.location.hash || window.location.hash === '#') return;
+      const target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+      if (!target) return;
+      target.querySelectorAll('.reveal, .reveal-scale, .reveal-left, .reveal-right, .reveal-flip').forEach(el => {
+        el.classList.add('active');
+        el.style.opacity = '';
+        el.style.transform = '';
+        el.style.translate = '';
+        el.style.rotate = '';
+        el.style.scale = '';
+      });
+      const navbar = document.getElementById('navbar');
+      const offset = (navbar?.offsetHeight || 0) + 16;
+      const top = target.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'auto' });
+    };
+
+    // ─── Scroll handler (throttled) ───
+    // Note: reveal is handled by IntersectionObserver, not scroll
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleNavbar();
+          handleBackToTop();
+          // Scroll progress bar
+          const scrollTop = document.documentElement.scrollTop;
+          const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+          const bar = document.getElementById('scrollProgress');
+          if (bar) bar.style.transform = 'scaleX(' + (scrollHeight > 0 ? scrollTop / scrollHeight : 0) + ')';
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+
+    // ─── Init ───
+    document.addEventListener('DOMContentLoaded', () => {
+      // Language detection
+      const saved = localStorage.getItem('bbt-lang');
+      if (saved && translations[saved]) {
+        setLanguage(saved);
+      } else {
+        const browserLang = (navigator.language || navigator.userLanguage || 'tr').substring(0, 2).toLowerCase();
+        if (translations[browserLang]) {
+          setLanguage(browserLang);
+        }
+      }
+
+      // Reveal mechanism: IntersectionObserver handles everything (one call)
+      setupRevealObserver();
+      // Failsafe: if the observer never fires (rare init-order issue we saw
+      // on 2026-05-26 where 19/19 reveal elements stayed at opacity:0,
+      // hiding screenshots / "3 Adımda" / FAQ), force-activate after 800ms so
+      // content is never permanently hidden. No-op if the observer already
+      // activated everything.
+      setTimeout(() => {
+        document.querySelectorAll('.reveal, .reveal-scale, .reveal-left, .reveal-right')
+          .forEach(el => { if (!el.classList.contains('active')) el.classList.add('active'); });
+      }, 800);
+
+      // Anchor scroll alignment (kept — needed for nav link / hashchange)
+      setTimeout(window.bbtScrollToCurrentHash, 50);
+      setTimeout(window.bbtScrollToCurrentHash, 350);
+      setTimeout(window.bbtScrollToCurrentHash, 1200);
+      window.addEventListener('hashchange', () => {
+        setTimeout(window.bbtScrollToCurrentHash, 50);
+      });
+
+      // Init 3D tilt on feature cards
+      initTilt();
+
+      // Stats count-up via IntersectionObserver (enhanced with underline reveal)
+      const statsObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const el = entry.target;
+            const target = parseInt(el.getAttribute('data-stat'), 10);
+            if (!isNaN(target) && !el.hasAttribute('data-animated')) {
+              el.setAttribute('data-animated', 'true');
+              animateCount(el, target);
+            }
+            // Add counted class to parent for underline reveal
+            const parent = el.closest('.stat-item-enhanced');
+            if (parent) setTimeout(() => parent.classList.add('counted'), 600);
+            statsObserver.unobserve(el);
+          }
+        });
+      }, { threshold: 0.5 });
+      document.querySelectorAll('[data-stat]').forEach(el => statsObserver.observe(el));
+
+      // ─── Heading Reveal Observer ───
+      const headingObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            headingObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.5 });
+      document.querySelectorAll('.heading-reveal').forEach(el => headingObserver.observe(el));
+
+
+
+      // ─── Magnetic Buttons ───
+      document.querySelectorAll('.magnetic-btn').forEach(btn => {
+        btn.addEventListener('mousemove', (e) => {
+          const rect = btn.getBoundingClientRect();
+          const x = (e.clientX - rect.left - rect.width / 2) * 0.15;
+          const y = (e.clientY - rect.top - rect.height / 2) * 0.15;
+          btn.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+        });
+        btn.addEventListener('mouseleave', () => {
+          btn.style.transform = 'translate(0, 0)';
+        });
+      });
+
+      setTimeout(window.bbtScrollToCurrentHash, 0);
+
+    });
+
+    // Scroll progress merged into main scroll handler above
+  </script>
+
+  <!-- Genetics Mini-Demo Calculator -->
+  <script>
+    const MUTATIONS = {
+      normal: {
+        label: 'Normal (Yeşil)',
+        color: '#4CAF50',
+        colors: { body: '#4CAF50', inner: '#8BC34A', wing: '#2E7D32', wing2: '#1B5E20', cheek: '#3F51B5' },
+        note: ''
+      },
+      lutino: {
+        label: 'Lutino',
+        color: '#FFD700',
+        colors: { body: '#FFD700', inner: '#FFE082', wing: '#FFC107', wing2: '#FFB300', cheek: '#FFFFFF' },
+        note: 'Cinsiyet bağlantılı — dişilerde tek kopya fenotip gösterir'
+      },
+      albino: {
+        label: 'Albino',
+        color: '#f5f5f5',
+        colors: { body: '#FFFFFF', inner: '#F5F5F5', wing: '#E0E0E0', wing2: '#EEEEEE', cheek: '#FFFFFF' },
+        note: 'Lutino + Ino kombinasyonu (tam albino nadir)'
+      },
+      recessive_pied: {
+        label: 'Alacalı (Pied)',
+        color: '#80C0FF',
+        colors: { body: '#4FC3F7', inner: '#FFFFFF', wing: '#FFFFFF', wing2: '#29B6F6', cheek: '#3F51B5' },
+        note: 'Resesif — her iki ebeveynden gen gerekir'
+      },
+      spangle: {
+        label: 'Spangle',
+        color: '#E0F7FA',
+        colors: { body: '#B2EBF2', inner: '#E0F7FA', wing: '#80DEEA', wing2: '#FFFFFF', cheek: '#3F51B5' },
+        note: 'Dominant — tek kopyada fenotip görülür'
+      },
+      opaline: {
+        label: 'Opalin',
+        color: '#FF9060',
+        colors: { body: '#FFAB91', inner: '#FFCCBC', wing: '#FF8A65', wing2: '#D84315', cheek: '#3F51B5' },
+        note: 'Cinsiyet bağlantılı resesif mutasyon'
+      }
+    };
+
+    function getBudgieSvg(mutKey, scale = 1) {
+      const mut = MUTATIONS[mutKey] || MUTATIONS.normal;
+      const c = mut.colors;
+      return `
+        <svg class="budgie-svg" viewBox="0 0 130 160" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${mut.label}" style="transform: scale(${scale}); transform-origin: center center; transition: all 0.4s ease; width: 100%; height: 100%;">
+          <ellipse cx="65" cy="152" rx="28" ry="5" fill="rgba(0,0,0,0.15)"/>
+          <g>
+            <path d="M52 118 Q44 138 38 148 Q50 140 56 124 Z" fill="${c.wing2}"/>
+            <path d="M58 120 Q55 142 52 152 Q62 143 64 124 Z" fill="${c.wing}"/>
+            <path d="M66 120 Q68 143 68 153 Q74 143 72 124 Z" fill="${c.wing2}"/>
+            <path d="M72 118 Q80 138 86 148 Q76 140 70 124 Z" fill="${c.wing}"/>
+          </g>
+          <ellipse cx="62" cy="100" rx="26" ry="30" fill="${c.body}"/>
+          <ellipse cx="62" cy="108" rx="16" ry="20" fill="${c.inner}"/>
+          <path d="M50 98 Q62 94 74 98" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" fill="none"/>
+          <path d="M48 104 Q62 99 76 104" stroke="rgba(255,255,255,0.2)" stroke-width="1.2" fill="none"/>
+          <g class="wing-left">
+            <path d="M38 80 Q22 90 18 112 Q28 108 42 98 Q44 88 38 80 Z" fill="${c.wing}"/>
+            <path d="M18 112 Q16 120 20 122 Q26 116 28 108 Z" fill="${c.wing2}"/>
+          </g>
+          <g class="wing-right">
+            <path d="M86 80 Q102 90 106 112 Q96 108 82 98 Q80 88 86 80 Z" fill="${c.wing}"/>
+            <path d="M106 112 Q108 120 104 122 Q98 116 96 108 Z" fill="${c.wing2}"/>
+          </g>
+          <g class="budgie-head">
+            <ellipse cx="64" cy="62" rx="22" ry="22" fill="${c.body}"/>
+            <path d="M46 55 Q64 50 82 55" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" fill="none"/>
+            <ellipse cx="46" cy="68" rx="7" ry="6" fill="${c.cheek}" opacity="0.6"/>
+            <ellipse cx="82" cy="68" rx="7" ry="6" fill="${c.cheek}" opacity="0.6"/>
+            <ellipse cx="64" cy="65" rx="8" ry="5" fill="rgba(147,197,253,0.8)"/>
+            <path d="M58 68 Q64 76 70 68 Q64 70 58 68 Z" fill="#D4A853"/>
+            <g class="eye-blink" style="transform-origin: 54px 60px;">
+              <circle cx="54" cy="60" r="6" fill="#0B1A3D"/>
+              <circle cx="54" cy="60" r="4.5" fill="none" stroke="rgba(245,200,66,0.8)" stroke-width="1"/>
+              <circle cx="54" cy="60" r="2.5" fill="#000"/>
+              <circle cx="55.5" cy="58.5" r="1.2" fill="white" opacity="0.9"/>
+            </g>
+            <g class="eye-blink" style="transform-origin: 74px 60px;">
+              <circle cx="74" cy="60" r="6" fill="#0B1A3D"/>
+              <circle cx="74" cy="60" r="4.5" fill="none" stroke="rgba(245,200,66,0.8)" stroke-width="1"/>
+              <circle cx="74" cy="60" r="2.5" fill="#000"/>
+              <circle cx="75.5" cy="58.5" r="1.2" fill="white" opacity="0.9"/>
+            </g>
+            <path d="M52 44 Q55 36 58 42" stroke="${c.inner}" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <path d="M60 42 Q62 32 65 41" stroke="${c.wing}" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <path d="M68 42 Q70 35 74 43" stroke="${c.inner}" stroke-width="3" stroke-linecap="round" fill="none"/>
+          </g>
+          <g>
+            <line x1="56" y1="128" x2="52" y2="140" stroke="#A07830" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="52" y1="140" x2="46" y2="145" stroke="#A07830" stroke-width="2" stroke-linecap="round"/>
+            <line x1="52" y1="140" x2="51" y2="146" stroke="#A07830" stroke-width="2" stroke-linecap="round"/>
+            <line x1="52" y1="140" x2="57" y2="146" stroke="#A07830" stroke-width="2" stroke-linecap="round"/>
+            <line x1="68" y1="128" x2="72" y2="140" stroke="#A07830" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="72" y1="140" x2="78" y2="145" stroke="#A07830" stroke-width="2" stroke-linecap="round"/>
+            <line x1="72" y1="140" x2="73" y2="146" stroke="#A07830" stroke-width="2" stroke-linecap="round"/>
+            <line x1="72" y1="140" x2="67" y2="146" stroke="#A07830" stroke-width="2" stroke-linecap="round"/>
+          </g>
+        </svg>
+      `;
+    }
+
+    function calcGenetics() {
+      const mother = document.getElementById('gd-mother').value;
+      const father = document.getElementById('gd-father').value;
+      const grid   = document.getElementById('gd-grid');
+      const noteEl = document.getElementById('gd-note');
+
+      // Update parent visuals
+      document.getElementById('gd-mother-visual').innerHTML = getBudgieSvg(mother, 1.15);
+      document.getElementById('gd-father-visual').innerHTML = getBudgieSvg(father, 1.15);
+
+      // Simplified 4-cell Punnett (visual demo only)
+      const results = getSimplifiedResults(mother, father);
+
+      grid.innerHTML = '';
+      results.forEach((r, i) => {
+        const cell = document.createElement('div');
+        cell.className = 'gd-cell';
+        const m = MUTATIONS[r.key] || MUTATIONS.normal;
+        
+        // Dynamic soft background and border using HEX conversion
+        cell.style.background = `rgba(${hexToRgb(m.color)}, 0.15)`;
+        cell.style.borderColor = `rgba(${hexToRgb(m.color)}, 0.35)`;
+        cell.style.boxShadow = `0 4px 12px rgba(${hexToRgb(m.color)}, 0.05)`;
+        
+        cell.innerHTML = `
+          <div class="w-12 h-14 mx-auto mb-1 flex items-center justify-center">
+            ${getBudgieSvg(r.key, 0.75)}
+          </div>
+          <div class="font-semibold text-xs mb-0.5" style="color:var(--sage-light);">${m.label}</div>
+          <div style="color:var(--sage);font-size:11px;">%${r.chance}</div>
+        `;
+        grid.appendChild(cell);
+        // Stagger animation
+        setTimeout(() => cell.classList.add('animate-in'), i * 80);
+      });
+
+      const notes = [MUTATIONS[mother]?.note, MUTATIONS[father]?.note].filter(Boolean);
+      noteEl.textContent = notes.length ? '⚠️ ' + notes[0] : '';
+    }
+
+    function hexToRgb(hex) {
+      const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+      hex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? 
+        `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` 
+        : '15, 35, 80';
+    }
+
+    function getSimplifiedResults(mother, father) {
+      // If same mutation → 100% same
+      if (mother === father) {
+        return [
+          { key: mother, chance: 50 },
+          { key: mother, chance: 25 },
+          { key: 'normal', chance: 15 },
+          { key: 'normal', chance: 10 },
+        ];
+      }
+      // Cross: always show 4 varied cells
+      const opts = [mother, father, 'normal', mother === 'normal' ? father : 'normal'];
+      const chances = [40, 30, 20, 10];
+      return opts.map((k, i) => ({ key: k, chance: chances[i] }));
+    }
+
+    // Init on load
+    document.addEventListener('DOMContentLoaded', calcGenetics);
+  </script>
+
+  <!-- GSAP Animations (loads after GSAP CDN via defer) -->
+  <script>
+    window.addEventListener('load', function () {
+      if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+
+      gsap.registerPlugin(ScrollTrigger);
+
+      // ── Hero entrance timeline ──
+      const heroTl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+      
+      // Prevent flash of unstyled content (FOUC) by setting initial state
+      gsap.set('.hero-subtitle-gsap, .hero-cta-gsap', { opacity: 0, y: 30 });
+      gsap.set('.hero-word', { y: '102%' });
+      
+      heroTl
+        .to('.hero-word',            { y: '0%', duration: 1.0, stagger: 0.15 })
+        .to('.hero-subtitle-gsap',   { opacity: 1, y: 0, duration: 0.7 }, '-=0.6')
+        .to('.hero-cta-gsap',        { opacity: 1, y: 0, duration: 0.7 }, '-=0.5')
+        .from('.phone-mockup',       { x: 80, opacity: 0, duration: 1.2, ease: 'power3.out' }, '-=0.9')
+        .from('.budgie-hero',        { scale: 0.4, opacity: 0, duration: 0.8, ease: 'back.out(1.5)' }, '-=0.7');
+
+      // ── Feature cards stagger on scroll ──
+      gsap.from('.feature-card-enhanced', {
+        scrollTrigger: { trigger: '#features', start: 'top 75%', toggleActions: 'play none none none' },
+        y: 50, opacity: 0, duration: 0.6, stagger: 0.08, ease: 'power2.out',
+        immediateRender: false,
+      });
+
+      // ── Pricing cards ──
+      gsap.from('#pricing .grid > div', {
+        scrollTrigger: { trigger: '#pricing', start: 'top 75%', toggleActions: 'play none none none' },
+        y: 30, opacity: 0, scale: 0.97, duration: 0.6, stagger: 0.15, ease: 'back.out(1.4)',
+        immediateRender: false,
+      });
+
+      // ── FAQ items ──
+      gsap.from('.faq-item', {
+        scrollTrigger: { trigger: '#faq', start: 'top 75%', toggleActions: 'play none none none' },
+        x: -20, opacity: 0, duration: 0.4, stagger: 0.08, ease: 'power2.out',
+        immediateRender: false,
+      });
+
+      // ── Offline diagram nodes ──
+      gsap.from('.od-node', {
+        scrollTrigger: { trigger: '#offline-diagram', start: 'top 80%', toggleActions: 'play none none none' },
+        scale: 0.5, opacity: 0, duration: 0.5, stagger: 0.15, ease: 'back.out(1.7)',
+        transformOrigin: 'center center',
+      });
+
+      // ── Stats count-up also triggered by GSAP (backup) ──
+      ScrollTrigger.create({
+        trigger: '.stat-item',
+        start: 'top 80%',
+        once: true,
+        onEnter: () => {
+          document.querySelectorAll('[data-stat]').forEach(el => {
+            if (!el.hasAttribute('data-gsap-counted')) {
+              el.setAttribute('data-gsap-counted', 'true');
+            }
+          });
+        },
+      });
+
+      // ── Nav shrink on scroll ──
+      ScrollTrigger.create({
+        start: 'top -60',
+        onUpdate: (self) => {
+          const nav = document.getElementById('navbar');
+          if (nav) nav.classList.toggle('scrolled', self.progress > 0);
+        },
+      });
+
+      // ── Parallax for orbs (desktop, mouse, motion-allowed only) ──
+      // Scrub parallax fires on every scroll event and forces compositing
+      // on large blurred elements. Skip on touch and reduced-motion.
+      const allowParallax =
+        window.matchMedia('(hover: hover) and (pointer: fine)').matches &&
+        !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (allowParallax) {
+        gsap.to('.orb-1', {
+          scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 1.5 },
+          y: -120, ease: 'none',
+        });
+        gsap.to('.orb-2', {
+          scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 2 },
+          y: -80, ease: 'none',
+        });
+      }
+
+      // ── Screenshot Carousel (ScrollTrigger + 3D Parallax & Velocity Skew) ──
+      const track = document.querySelector('.screenshot-track');
+      if (track) {
+        // Disable CSS scrolling animation since GSAP is active
+        track.style.animation = 'none';
+
+        // Calculate scroll width for animation.
+        // We have duplicated elements inside the track for infinite effect,
+        // so we scroll by half of its total scroll width.
+        const scrollVal = track.scrollWidth / 2;
+
+        const carouselAnim = gsap.to(track, {
+          x: -scrollVal,
+          ease: 'none',
+          scrollTrigger: {
+            id: 'carouselAnim',
+            trigger: '#screenshots',
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1.2,
+            invalidateOnRefresh: true,
+          }
+        });
+
+        // 3D Tilt/Rotate (Coveflow Depth) using containerAnimation
+        const items = track.querySelectorAll('.screenshot-item-3d');
+        items.forEach(item => {
+          gsap.fromTo(item, 
+            { rotateY: 15, scale: 0.95 },
+            {
+              rotateY: -15,
+              scale: 0.95,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: item,
+                containerAnimation: carouselAnim,
+                start: 'left right',
+                end: 'right left',
+                scrub: true
+              }
+            }
+          );
+        });
+
+        // Velocity-based Skew (Tilt on fast scrolling)
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          let proxy = { skew: 0 },
+              skewSetter = gsap.quickSetter('.screenshot-item-3d', 'skewX', 'deg'),
+              clamp = gsap.utils.clamp(-10, 10); // Max 10 degrees skew
+
+          ScrollTrigger.create({
+            trigger: '#screenshots',
+            start: 'top bottom',
+            end: 'bottom top',
+            onUpdate: (self) => {
+              let skew = clamp(self.getVelocity() / 350);
+              if (Math.abs(skew) > Math.abs(proxy.skew)) {
+                proxy.skew = skew;
+                gsap.to(proxy, {
+                  skew: 0,
+                  duration: 0.8,
+                  ease: 'power3.out',
+                  overwrite: 'auto',
+                  onUpdate: () => skewSetter(proxy.skew)
+                });
+              }
+            }
+          });
+        }
+      }
+
+    });
+  </script>
+</body>
+</html>
