@@ -2054,3 +2054,65 @@ section {
     padding-bottom: 8rem;
   }
 }
+
+/* ========================================= */
+/* BUDGIEBREEDINGTRACKER BLOG PREMIUM UI     */
+/* ========================================= */
+
+.blog-grid-wrapper {
+  display: grid;
+  gap: 2rem;
+  container-type: inline-size;
+  container-name: bloggrid;
+}
+
+@container bloggrid (min-width: 600px) {
+  .blog-grid-wrapper {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@container bloggrid (min-width: 900px) {
+  .blog-grid-wrapper {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.filter-btn-premium {
+  background: rgba(15, 27, 77, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--sage);
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  backdrop-filter: blur(8px);
+}
+
+.filter-btn-premium:hover {
+  background: rgba(30, 70, 140, 0.5);
+  color: var(--sage-light);
+  transform: translateY(-2px);
+  border-color: rgba(245, 200, 66, 0.4);
+}
+
+.filter-btn-premium.active {
+  background: linear-gradient(135deg, var(--leaf-dark), var(--leaf-mid));
+  color: #fff;
+  border-color: rgba(245, 200, 66, 0.6);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.blog-search-premium {
+  background: rgba(15, 27, 77, 0.6) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  color: var(--sage-light) !important;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.2) !important;
+  transition: all 0.3s ease !important;
+}
+
+.blog-search-premium:focus {
+  border-color: rgba(245, 200, 66, 0.5) !important;
+  box-shadow: 0 0 20px rgba(80, 140, 220, 0.2), inset 0 2px 10px rgba(0,0,0,0.1) !important;
+}
