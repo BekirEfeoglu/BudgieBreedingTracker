@@ -561,6 +561,27 @@
       localStorage.setItem('bbt-lang', lang);
       document.documentElement.lang = lang;
 
+      // Handle blog redirect logic for multi-language SEO support
+      const path = window.location.pathname;
+      if (path.includes('/blog/')) {
+        const filename = path.split('/').pop() || '';
+        let newPath = '/blog/' + filename;
+        if (lang === 'en') newPath = '/en/blog/' + filename;
+        if (lang === 'de') newPath = '/de/blog/' + filename;
+        
+        // Ensure we don't redirect if we are already on the correct language path
+        if (!path.endsWith(newPath)) {
+            // For relative path handling in local file setups vs server
+            if (window.location.protocol === 'file:') {
+                // Not ideal for file:// but we fallback
+                console.warn('Redirecting in local file system may not work perfectly.');
+            } else {
+                window.location.href = newPath;
+                return;
+            }
+        }
+      }
+
       const t = translations[lang];
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
