@@ -260,6 +260,7 @@ supabase/functions/**/*.js.map
 *.swp
 *~
 .cache/
+.worktrees/
 node_modules/
 __pycache__/
 
