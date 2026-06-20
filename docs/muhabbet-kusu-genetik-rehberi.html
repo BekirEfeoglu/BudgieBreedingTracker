@@ -1454,12 +1454,11 @@
 
     // ─── Init ───
     document.addEventListener('DOMContentLoaded', () => {
- else {
-        const browserLang = (navigator.language || navigator.userLanguage || 'tr').substring(0, 2).toLowerCase();
+ const browserLang = (navigator.language || navigator.userLanguage || 'tr').substring(0, 2).toLowerCase();
         if (translations[browserLang]) {
           setLanguage(browserLang);
         }
-      }
+      
 
       // Reveal mechanism: IntersectionObserver handles everything (one call)
       setupRevealObserver();
