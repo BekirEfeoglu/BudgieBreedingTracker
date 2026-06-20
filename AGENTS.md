@@ -12,6 +12,7 @@ Stack: Flutter/Dart, Riverpod 3, GoRouter 17, Drift, Supabase, Freezed, easy_loc
 - Be direct and implementation-focused.
 - If the worktree is dirty, preserve existing changes and avoid unrelated rewrites.
 - Treat `AGENTS.md` as the compact agent contract. Use `CLAUDE.md` and `.claude/rules/*.md` as the detailed development rulebook when a task touches architecture, data, UI, security, CI, release flow, or domain-specific breeding/egg lifecycle behavior.
+- All information is available in the `obsidian-brain` directory. Consult the wiki files inside `obsidian-brain` for comprehensive context, architecture rules, features, data layer documentation, and overall synthesis.
 
 ## Development Hygiene
 
