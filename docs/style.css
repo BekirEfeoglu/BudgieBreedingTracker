@@ -1922,3 +1922,9 @@
 .markdown-table tr:last-child td {
   border-bottom-width: 0;
 }
+
+/* Blog Styles */
+.blog-card:hover {
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(245,200,66,0.1);
+  border-color: rgba(245,200,66,0.3) !important;
+}
