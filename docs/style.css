@@ -1928,3 +1928,22 @@
   box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(245,200,66,0.1);
   border-color: rgba(245,200,66,0.3) !important;
 }
+
+/* Blog Filters */
+.filter-btn {
+  background: rgba(15,27,77,0.4);
+  color: var(--sage);
+}
+.filter-btn:hover {
+  background: rgba(15,27,77,0.8);
+  color: var(--sage-light);
+}
+.filter-btn.active {
+  background: rgba(245,200,66,0.15);
+  color: var(--gold);
+  border-color: rgba(245,200,66,0.5);
+}
+
+.blog-card {
+  transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
