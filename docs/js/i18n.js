@@ -562,18 +562,22 @@
       document.documentElement.lang = lang;
 
       // Handle blog redirect logic for multi-language SEO support
-      const path = window.location.pathname;
-      if (path.includes('/blog/')) {
-        const filename = path.split('/').pop() || '';
-        let newPath = '/blog/' + filename;
-        if (lang === 'en') newPath = '/en/blog/' + filename;
-        if (lang === 'de') newPath = '/de/blog/' + filename;
+      let path = window.location.pathname;
+      if (path.includes('/blog')) {
+        // Strip out existing language prefix if any
+        let cleanPath = path.replace(/^\/(en|de)\//, '/');
         
-        // Ensure we don't redirect if we are already on the correct language path
-        if (!path.endsWith(newPath)) {
-            // For relative path handling in local file setups vs server
+        // If the path was exactly /en/blog or /de/blog without trailing slash
+        if (cleanPath === '/en/blog' || cleanPath === '/de/blog') {
+            cleanPath = '/blog';
+        }
+        
+        let newPath = cleanPath;
+        if (lang === 'en') newPath = '/en' + cleanPath;
+        if (lang === 'de') newPath = '/de' + cleanPath;
+        
+        if (window.location.pathname !== newPath) {
             if (window.location.protocol === 'file:') {
-                // Not ideal for file:// but we fallback
                 console.warn('Redirecting in local file system may not work perfectly.');
             } else {
                 window.location.href = newPath;
