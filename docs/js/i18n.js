@@ -563,6 +563,8 @@
 
       // Handle redirect logic for multi-language SEO support (folder-based routing)
       const i18nPaths = [
+        '/',
+        '/index.html',
         '/blog',
         '/muhabbet-kusu-genetik-rehberi.html',
         '/privacy-policy.html',
@@ -573,7 +575,7 @@
       ];
       
       let path = window.location.pathname;
-      const isI18nPath = i18nPaths.some(p => path.includes(p));
+      const isI18nPath = i18nPaths.some(p => path === p || (p !== '/' && path.includes(p)));
       
       if (isI18nPath) {
         // Strip out existing language prefix if any
@@ -584,9 +586,18 @@
             cleanPath = '/blog';
         }
         
+        // If the path is /en or /de exactly, treat as /
+        if (cleanPath === '/en' || cleanPath === '/de' || cleanPath === '/en/' || cleanPath === '/de/') {
+            cleanPath = '/';
+        }
+        
         let newPath = cleanPath;
-        if (lang === 'en') newPath = '/en' + cleanPath;
-        if (lang === 'de') newPath = '/de' + cleanPath;
+        if (lang === 'en') {
+            newPath = cleanPath === '/' ? '/en/' : '/en' + cleanPath;
+        }
+        if (lang === 'de') {
+            newPath = cleanPath === '/' ? '/de/' : '/de' + cleanPath;
+        }
         
         if (window.location.pathname !== newPath) {
             if (window.location.protocol === 'file:') {
