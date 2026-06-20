@@ -819,7 +819,7 @@
     }
 
     function calcGenetics() {
-      const mother = document.getElementById('gd-mother').value;
+      if (!document.getElementById('gd-mother')) return; const mother = document.getElementById('gd-mother').value;
       const father = document.getElementById('gd-father').value;
       const grid   = document.getElementById('gd-grid');
       const noteEl = document.getElementById('gd-note');

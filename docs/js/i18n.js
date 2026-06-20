@@ -632,7 +632,13 @@
         en: 'BudgieBreedingTracker — Budgie Breeding Tracker App',
         de: 'BudgieBreedingTracker — Wellensittich-Zucht-Tracker-App',
       };
-      document.title = titles[lang];
+      // Only translate the document <title> on the homepage (where the original
+      // title is one of the homepage titles). Sub-pages (blog, guides, legal)
+      // keep their own page-specific <title> for SEO — do not clobber them.
+      if (!window.__bbtBaseTitle) window.__bbtBaseTitle = document.title;
+      if (Object.values(titles).includes(window.__bbtBaseTitle)) {
+        document.title = titles[lang];
+      }
 
       document.querySelectorAll('.lang-btn').forEach(btn => {
         const isActive = btn.getAttribute('data-lang') === lang;
@@ -665,3 +671,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
+
+// ─── Screenshot carousel: eager-load once visible ───
+// The showcase track is a transform-animated marquee. Native loading="lazy"
+// keys off an element's *layout* position, not its animated transform, so
+// off-screen-by-layout marquee images never fetch and appear as blank gaps.
+// When the track scrolls into view (vertically), force its images to load.
+(function initCarouselLoading() {
+  function loadTrackImages() {
+    document.querySelectorAll('.screenshot-track img[loading="lazy"]').forEach(img => {
+      img.loading = 'eager';
+      if (!img.complete || img.naturalWidth === 0) {
+        const src = img.getAttribute('src');
+        if (src) { img.src = ''; img.src = src; } // re-trigger fetch
+      }
+    });
+  }
+  function setup() {
+    const track = document.querySelector('.screenshot-track');
+    if (!track) return; // no carousel on this page
+    if (!('IntersectionObserver' in window)) { loadTrackImages(); return; }
+    const io = new IntersectionObserver((entries, obs) => {
+      if (entries.some(e => e.isIntersecting)) {
+        loadTrackImages();
+        obs.disconnect();
+      }
+    }, { rootMargin: '200px' });
+    io.observe(track);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setup);
+  } else {
+    setup();
+  }
+})();

@@ -451,6 +451,11 @@
       color: var(--sage);
       cursor: pointer;
       letter-spacing: 0.03em;
+      /* Larger mobile tap target (WCAG 2.5.5) without changing visual weight */
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
     .lang-btn.active {
       background: rgba(245, 200, 66, 0.18);
@@ -1490,6 +1495,12 @@
     /* ─── FOOTER SOCIAL ICONS ─── */
     .social-icon {
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      /* 44x44 tap target (WCAG 2.5.8) — icon stays small, hit area grows */
+      min-width: 44px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
     .social-icon:hover {
       transform: translateY(-3px) scale(1.15);
