@@ -377,7 +377,13 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
                           label: Text(_genderLabel(g)),
                           avatar: selected
                               ? null
-                              : Icon(_genderIcon(g), size: 16),
+                              : switch (g) {
+                                  BirdGender.male =>
+                                    AppIcon(AppIcons.male, size: 16),
+                                  BirdGender.female =>
+                                    AppIcon(AppIcons.female, size: 16),
+                                  _ => const Icon(LucideIcons.helpCircle, size: 16),
+                                },
                           selected: selected,
                           onSelected: (_) => setState(() => _gender = g),
                         );
@@ -513,12 +519,6 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
     BirdGender.male => 'birds.male'.tr(),
     BirdGender.female => 'birds.female'.tr(),
     _ => 'marketplace.gender_unknown'.tr(),
-  };
-
-  IconData _genderIcon(BirdGender gender) => switch (gender) {
-    BirdGender.male => LucideIcons.arrowUpRight,
-    BirdGender.female => LucideIcons.arrowDownRight,
-    _ => LucideIcons.helpCircle,
   };
 
   String _typeLabel(MarketplaceListingType type) => switch (type) {

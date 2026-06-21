@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart';
 import 'package:budgie_breeding_tracker/data/repositories/marketplace_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
@@ -183,6 +184,17 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('marketplace.city_required'), findsOneWidget);
+    });
+
+    testWidgets('uses AppIcon for unselected male and female gender chips', (
+      tester,
+    ) async {
+      // Default gender is unknown (selected), so male + female chips are
+      // unselected and must show AppIcon (domain SVG), not Icon(LucideIcons.x).
+      await pumpLocalizedApp(tester, buildSubject());
+
+      // AppIcon is used for male + female chips (2 unselected gender chips).
+      expect(find.byType(AppIcon), findsWidgets);
     });
   });
 }
