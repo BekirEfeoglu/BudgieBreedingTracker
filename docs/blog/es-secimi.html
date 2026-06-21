@@ -318,7 +318,7 @@
 </a>
 </div>
 </div>
-<footer class="footer-forest relative z-10" style="color: var(--sage); opacity: 0.9;">
+<footer style="content-visibility: auto; contain-intrinsic-size: auto 300px;" class="footer-forest relative z-10" style="color: var(--sage); opacity: 0.9;">
 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 <!-- Main footer -->
 <div class="py-12 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
@@ -1138,13 +1138,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <script>
 // Reading Progress
-window.addEventListener('scroll', function() {
+window.addEventListener('scroll', function(e) {
+
     const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
     const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
     const scrolled = (winScroll / height) * 100;
     const bar = document.getElementById('reading-progress-bar');
     if(bar) bar.style.width = scrolled + '%';
-});
+}, { passive: true });
 </script>
 </body>
 </html>

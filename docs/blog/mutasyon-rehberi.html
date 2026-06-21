@@ -366,7 +366,7 @@
   <!-- Footer -->
 
 <!-- Related Posts -->
-<div id="related-posts" class="max-w-4xl mx-auto px-4 mt-20 mb-10 relative z-10">
+<div id="related-posts" style="content-visibility: auto; contain-intrinsic-size: auto 400px;" class="max-w-4xl mx-auto px-4 mt-20 mb-10 relative z-10">
 <h3 class="text-2xl font-bold mb-6" style="color: var(--sage-light); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">İlginizi Çekebilir</h3>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 <a class="group block rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);" href="uretime-hazirlik-ve-kizistirma.html">
@@ -460,13 +460,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <script>
 // Reading Progress
-window.addEventListener('scroll', function() {
+window.addEventListener('scroll', function(e) {
+
     const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
     const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
     const scrolled = (winScroll / height) * 100;
     const bar = document.getElementById('reading-progress-bar');
     if(bar) bar.style.width = scrolled + '%';
-});
+}, { passive: true });
 </script>
 </body>
 </html>
