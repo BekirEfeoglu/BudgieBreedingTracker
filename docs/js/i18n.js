@@ -557,6 +557,26 @@
     let currentLang = 'tr';
 
     function setLanguage(lang) {
+      // On initial page load the locale is authoritative from the URL path:
+      // /en/* -> en, /de/* -> de, otherwise tr. This prevents a stored or
+      // browser-language preference from (a) partially re-translating a static
+      // localized page or (b) redirecting an explicit /en/ or /de/ visitor back
+      // to Turkish (the inline browser-lang init on every page used to bounce
+      // inbound links). Language only switches freely after load via a user
+      // click on a .lang-btn, gated by window.__bbtUserReady. The bare site root
+      // still auto-localizes to the stored/browser preference.
+      const _path = window.location.pathname;
+      const _bareRoot = (_path === '/' || _path === '/index.html');
+      if (!window.__bbtUserReady) {
+        if (_bareRoot) {
+          const _saved = localStorage.getItem('bbt-lang');
+          const _bl = (navigator.language || navigator.userLanguage || 'tr').substring(0, 2).toLowerCase();
+          lang = (_saved && translations[_saved]) ? _saved : (translations[_bl] ? _bl : 'tr');
+        } else {
+          lang = /^\/en(\/|$)/.test(_path) ? 'en' : /^\/de(\/|$)/.test(_path) ? 'de' : 'tr';
+        }
+      }
+      const _allowRedirect = !!window.__bbtUserReady || _bareRoot;
       currentLang = lang;
       localStorage.setItem('bbt-lang', lang);
       document.documentElement.lang = lang;
@@ -576,8 +596,8 @@
       
       let path = window.location.pathname;
       const isI18nPath = i18nPaths.some(p => path === p || (p !== '/' && path.includes(p)));
-      
-      if (isI18nPath) {
+
+      if (_allowRedirect && isI18nPath) {
         // Strip out existing language prefix if any
         let cleanPath = path.replace(/^\/(en|de)\//, '/');
         
@@ -656,6 +676,12 @@
       }
     }
 
+
+// Language may switch freely (and trigger a folder redirect) only after the
+// page has fully loaded — i.e. in response to a real user click on .lang-btn.
+// Until then setLanguage() derives the locale from the URL and never redirects
+// away from an explicit /en/ or /de/ page.
+window.addEventListener('load', () => { window.__bbtUserReady = true; });
 
 // ─── Init Language ───
 document.addEventListener('DOMContentLoaded', () => {
