@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
@@ -92,7 +94,7 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner> {
   ) {
     if (status == SyncDisplayStatus.offline) {
       return _OfflineBannerModel(
-        icon: LucideIcons.wifiOff,
+        icon: const AppIcon(AppIcons.offline),
         titleKey: 'sync.offline_banner',
         subtitleKey: pendingCount > 0 ? 'sync.pending_changes_count' : null,
         subtitleArgs: pendingCount > 0 ? ['$pendingCount'] : null,
@@ -103,7 +105,7 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner> {
 
     if (status == SyncDisplayStatus.error) {
       return _OfflineBannerModel(
-        icon: LucideIcons.alertTriangle,
+        icon: const AppIcon(AppIcons.warning),
         titleKey: 'sync.error_banner',
         color: Theme.of(context).colorScheme.error,
         canRetry: true,
@@ -112,7 +114,7 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner> {
 
     if (pendingDeletionCount > 0) {
       return _OfflineBannerModel(
-        icon: LucideIcons.clock,
+        icon: const Icon(LucideIcons.clock),
         titleKey: 'sync.pending_deletion_warning',
         subtitleKey: 'sync.pending_changes_count',
         subtitleArgs: ['$pendingDeletionCount'],
@@ -123,7 +125,7 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner> {
 
     if (conflictCount > 0) {
       return _OfflineBannerModel(
-        icon: LucideIcons.alertCircle,
+        icon: const AppIcon(AppIcons.warning),
         titleKey: 'sync.conflict_banner_title',
         subtitleKey: 'sync.conflict_banner_subtitle',
         subtitleArgs: ['$conflictCount'],
@@ -134,7 +136,7 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner> {
 
     if (hasClockSkewWarning) {
       return _OfflineBannerModel(
-        icon: LucideIcons.clock,
+        icon: const Icon(LucideIcons.clock),
         titleKey: 'sync.clock_skew_warning',
         color: Theme.of(context).colorScheme.tertiary,
         canRetry: false,
@@ -191,7 +193,10 @@ class _SyncBanner extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(model.icon, color: textColor, size: 20),
+              IconTheme(
+                data: IconThemeData(color: textColor, size: 20),
+                child: model.icon,
+              ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
@@ -241,7 +246,7 @@ class _SyncBanner extends StatelessWidget {
 }
 
 class _OfflineBannerModel {
-  final IconData icon;
+  final Widget icon;
   final String titleKey;
   final String? subtitleKey;
   final List<String>? subtitleArgs;
