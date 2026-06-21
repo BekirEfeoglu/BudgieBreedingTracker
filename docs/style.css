@@ -1933,6 +1933,25 @@
 .markdown-table tr:last-child td {
   border-bottom-width: 0;
 }
+/* Wide content tables (genetics guide) must scroll horizontally on narrow
+   screens. style.css is a Tailwind utility subset that never defined
+   .overflow-x-auto, so the existing table wrappers did nothing and body's
+   overflow-x:hidden clipped the right columns. Define the utility + let the
+   table keep its natural width so the wrapper actually scrolls. */
+.overflow-x-auto {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.overflow-x-auto > .markdown-table {
+  min-width: max-content;
+}
+.overflow-x-auto::-webkit-scrollbar {
+  height: 6px;
+}
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 4px;
+}
 
 /* Blog Styles */
 .blog-card:hover {
