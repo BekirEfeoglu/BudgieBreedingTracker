@@ -238,6 +238,28 @@
       transform: scale(1.15) rotate(5deg);
     }
   </style>
+
+  <style>
+    /* Genetics Demo Enhancements */
+    @keyframes fadeInUpStagger {
+      0% { opacity: 0; transform: translateY(15px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .gd-result-card {
+      opacity: 0;
+      animation: fadeInUpStagger 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .gd-result-card:hover {
+      transform: scale(1.03) translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+      border-color: rgba(245, 200, 66, 0.4) !important;
+    }
+    .gd-select-focus:focus {
+      border-color: var(--gold) !important;
+      box-shadow: 0 0 0 2px rgba(245, 200, 66, 0.2);
+    }
+  </style>
 </head>
 <body>
 
@@ -790,7 +812,7 @@
           <!-- Right: Punnett Result -->
           <div>
             <div class="text-sm font-semibold mb-3" style="color: var(--sage);" data-i18n="genetics_demo_result">Olası Yavru Kombinasyonları</div>
-            <div id="gd-grid" class="grid grid-cols-2 gap-3 mb-4">
+            <div id="gd-grid" class="grid grid-cols-2 gap-3 mb-4" aria-live="polite">
               <!-- filled by JS -->
             </div>
             <div id="gd-note" class="text-xs leading-relaxed mt-2" style="color: var(--sage); opacity: 0.8;"></div>
