@@ -61,17 +61,29 @@ class AiWelcomeScreen extends StatelessWidget {
               alignment: WrapAlignment.center,
               children: [
                 _FeaturePill(
-                  icon: LucideIcons.dna,
+                  icon: AppIcon(
+                    AppIcons.dna,
+                    size: 14,
+                    color: theme.colorScheme.primary,
+                  ),
                   label: 'genetics.ai_tab_genetics'.tr(),
                   color: theme.colorScheme.primary,
                 ),
                 _FeaturePill(
-                  icon: LucideIcons.image,
+                  icon: const Icon(
+                    LucideIcons.image,
+                    size: 14,
+                    color: AppColors.aiFeatureMutation,
+                  ),
                   label: 'genetics.ai_tab_mutation'.tr(),
                   color: AppColors.aiFeatureMutation,
                 ),
                 _FeaturePill(
-                  icon: LucideIcons.search,
+                  icon: const Icon(
+                    LucideIcons.search,
+                    size: 14,
+                    color: AppColors.aiFeatureSex,
+                  ),
                   label: 'genetics.ai_tab_sex'.tr(),
                   color: AppColors.aiFeatureSex,
                 ),
@@ -107,7 +119,7 @@ class _FeaturePill extends StatelessWidget {
     required this.color,
   });
 
-  final IconData icon;
+  final Widget icon;
   final String label;
   final Color color;
 
@@ -126,7 +138,7 @@ class _FeaturePill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color),
+          icon,
           const SizedBox(width: AppSpacing.xs),
           Text(
             label,

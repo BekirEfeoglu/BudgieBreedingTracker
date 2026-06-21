@@ -4,6 +4,22 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-06-21] audit | App-tab sweep + 3 minor screen fixes
+
+Comprehensive read-only audit of all app tabs (5 bottom-nav screens + ~70
+sub-screens via the More hub). Quality gates clean (27-checker scan 0/0,
+analyze clean). Three low-severity fixes applied — no behavior or contract
+change, so feature pages unchanged:
+
+- genetics `AiWelcomeScreen`: `_FeaturePill` icon param `IconData` -> `Widget`;
+  dna pill now uses `AppIcon(AppIcons.dna)` to match the hero icon
+  (anti-pattern #24). Generic image/search pills stay on `LucideIcons`.
+- breeding `_PairRiskCard` + gamification `BadgesScreen` XP header: secondary
+  sections still hide on error, but now log via `AppLogger.error` instead of
+  swallowing silently (consistency with the HomeScreen pattern).
+
+---
+
 ## [2026-06-13] automation | platform/wiki lint
 
 - Removed unsupported Flutter web target files; GitHub Pages remains served from

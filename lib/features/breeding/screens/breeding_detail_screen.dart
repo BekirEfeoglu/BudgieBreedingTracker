@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
@@ -282,7 +283,12 @@ class _PairRiskCard extends ConsumerWidget {
         .when(
           data: (risks) => IncubationRiskCard(risks: risks, maxItems: 5),
           loading: () => const SizedBox.shrink(),
-          error: (_, __) => const SizedBox.shrink(),
+          error: (error, st) {
+            // Secondary section: hide on error rather than blocking the
+            // detail body, but still log so the failure is observable.
+            AppLogger.error('[BreedingDetail] PairRiskCard error', error, st);
+            return const SizedBox.shrink();
+          },
         );
   }
 }

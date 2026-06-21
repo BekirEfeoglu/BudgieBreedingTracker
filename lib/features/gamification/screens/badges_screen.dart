@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/logger.dart';
 import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart' as app;
@@ -52,7 +53,12 @@ class BadgesScreen extends ConsumerWidget {
               // XP/Level header
               userLevelAsync.when(
                 loading: () => const SizedBox(height: 100),
-                error: (_, __) => const SizedBox.shrink(),
+                error: (error, st) {
+                  // Optional header: hide on error so the badges grid still
+                  // renders, but log so the failure stays observable.
+                  AppLogger.error('[BadgesScreen] userLevel error', error, st);
+                  return const SizedBox.shrink();
+                },
                 data: (level) => level != null
                     ? Padding(
                         padding: AppSpacing.screenPadding,
