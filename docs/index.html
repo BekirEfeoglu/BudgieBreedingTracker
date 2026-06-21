@@ -260,6 +260,57 @@
       box-shadow: 0 0 0 2px rgba(245, 200, 66, 0.2);
     }
   </style>
+
+  <style>
+    /* Pricing Enhancements */
+    .pricing-card-enhanced {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .pricing-card-enhanced:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    }
+    .pricing-popular-enhanced:hover {
+      border-color: rgba(245, 200, 66, 0.6) !important;
+      box-shadow: 0 20px 40px rgba(245, 200, 66, 0.15);
+    }
+
+    /* Shimmer Button Effect */
+    .shimmer-btn {
+      position: relative;
+      overflow: hidden;
+    }
+    .shimmer-btn::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      transform: rotate(30deg);
+      animation: shimmer 3s infinite;
+    }
+    @keyframes shimmer {
+      0% { transform: translateX(-100%) rotate(30deg); }
+      20% { transform: translateX(100%) rotate(30deg); }
+      100% { transform: translateX(100%) rotate(30deg); }
+    }
+
+    /* Popular Badge Animation */
+    .popular-badge {
+      animation: gentle-bounce 3s ease-in-out infinite;
+    }
+    @keyframes gentle-bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+  </style>
 </head>
 <body>
 
@@ -1123,7 +1174,7 @@
 
       <div class="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto" style="transition-delay: 0.15s;">
         <!-- Free Plan -->
-        <div class="rounded-2xl p-8" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
+        <div class="rounded-2xl p-8 pricing-card-enhanced" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
           <h3 class="text-xl font-bold mb-1" style="color: var(--sage-light);" data-i18n="plan_free_label">Ücretsiz</h3>
           <div class="mb-6">
             <span class="text-4xl font-black" style="color: var(--sage-light);">$0</span>
@@ -1154,7 +1205,12 @@
         </div>
 
         <!-- Premium Plan -->
-        <div class="rounded-2xl p-8 pricing-popular" style="background: linear-gradient(135deg, rgba(25,55,120,0.5), rgba(245,200,66,0.08)); border: 1px solid rgba(245,200,66,0.25);">
+        <div class="rounded-2xl p-8 pricing-popular pricing-card-enhanced pricing-popular-enhanced relative transform scale-100 sm:scale-105" style="background: linear-gradient(135deg, rgba(25,55,120,0.5), rgba(245,200,66,0.08)); border: 1px solid rgba(245,200,66,0.4); z-index: 10;">
+          <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 popular-badge">
+            <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white text-[10px] sm:text-xs font-black uppercase tracking-widest py-1 px-4 rounded-full shadow-lg" style="box-shadow: 0 4px 15px rgba(245,200,66,0.3);">
+              ⭐ <span data-i18n="pricing_most_popular">En Popüler</span>
+            </div>
+          </div>
           <h3 class="text-xl font-bold mb-1" style="color: var(--gold-light);">Premium</h3>
           <div class="mb-1">
             <span class="text-4xl font-black" style="color: var(--gold-light);">$15</span>
@@ -1187,7 +1243,7 @@
               <span data-i18n="plan_premium_6">Reklamsız deneyim</span>
             </li>
           </ul>
-          <a href="#cta" class="block text-center py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-200" style="background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--forest-deep); border: none;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter=''" data-i18n="plan_premium_cta">Premium'a Geç</a>
+          <a href="#cta" class="shimmer-btn block text-center py-3 px-6 rounded-xl font-bold text-sm transition-all duration-300" style="background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--forest-deep); border: none; box-shadow: 0 8px 20px rgba(245,200,66,0.25);" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" data-i18n="plan_premium_cta">Premium'a Geç</a>
         </div>
       </div>
     </div>

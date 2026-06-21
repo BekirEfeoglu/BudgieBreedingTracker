@@ -144,6 +144,7 @@
         plan_premium_5: 'PDF & Excel dışa aktarma',
         plan_premium_6: 'Reklamsız deneyim',
         plan_premium_cta: 'Premium\'a Geç',
+        pricing_most_popular: 'En Popüler',
         faq_q6: 'Genetik hesaplayıcı nasıl çalışıyor?',
         faq_a6: 'Anne ve baba kuşun mutasyonlarını seçin, uygulama Punnett karesi ile olası yavru renk ve genotiplerini hesaplasın. Sonuçları kaydedebilir ve geçmiş hesaplamaları görüntüleyebilirsiniz.',
         faq_q7: 'Verilerimi başka cihaza aktarabilir miyim?',
