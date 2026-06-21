@@ -375,9 +375,7 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
                         final selected = _gender == g;
                         return ChoiceChip(
                           label: Text(_genderLabel(g)),
-                          avatar: selected
-                              ? null
-                              : Icon(_genderIcon(g), size: 16),
+                          avatar: selected ? null : _genderIcon(g),
                           selected: selected,
                           onSelected: (_) => setState(() => _gender = g),
                         );
@@ -515,10 +513,10 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
     _ => 'marketplace.gender_unknown'.tr(),
   };
 
-  IconData _genderIcon(BirdGender gender) => switch (gender) {
-    BirdGender.male => LucideIcons.arrowUpRight,
-    BirdGender.female => LucideIcons.arrowDownRight,
-    _ => LucideIcons.helpCircle,
+  Widget _genderIcon(BirdGender gender) => switch (gender) {
+    BirdGender.male => const AppIcon(AppIcons.male, size: 16),
+    BirdGender.female => const AppIcon(AppIcons.female, size: 16),
+    _ => const Icon(LucideIcons.helpCircle, size: 16),
   };
 
   String _typeLabel(MarketplaceListingType type) => switch (type) {
