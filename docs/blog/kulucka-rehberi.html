@@ -26,7 +26,7 @@
   <link rel="stylesheet" href="../style.css">
 
   <!-- Article JSON-LD -->
-  
+
 
   <style>
     body { background: var(--forest-deep); color: var(--sage-light); font-family: 'Inter', sans-serif; margin: 0; line-height: 1.7; }
@@ -204,6 +204,10 @@
 <link rel="apple-touch-icon" href="../logo.png">
 </head>
 <body>
+<!-- Reading Progress Bar -->
+<div id="reading-progress-container" class="fixed top-0 left-0 w-full h-1 z-50 bg-black bg-opacity-20">
+<div id="reading-progress-bar" class="h-full w-0" style="background: var(--gold); transition: width 0.1s ease-out;"></div>
+</div>
 
   <!-- Nav -->
   <nav class="art-nav">
@@ -372,7 +376,7 @@
       </div>
     </div>
 
-  
+
 <hr class="my-10 border-[var(--glass-border)]">
 
 <!-- Social Share -->
@@ -419,7 +423,22 @@
 
 </article>
 
-  <footer>
+
+<!-- Related Posts -->
+<div id="related-posts" class="max-w-4xl mx-auto px-4 mt-20 mb-10 relative z-10">
+<h3 class="text-2xl font-bold mb-6" style="color: var(--sage-light); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">İlginizi Çekebilir</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<a class="group block rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);" href="uretime-hazirlik-ve-kizistirma.html">
+<div class="text-xs font-bold uppercase mb-2" style="color: var(--gold);">Üretim</div>
+<h4 class="text-lg font-bold transition-colors group-hover:text-[var(--gold)]" style="color: var(--sage-light);">Üretime Hazırlık (Kızıştırma) Yöntemleri</h4>
+</a>
+<a class="group block rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);" href="yumurta-doluluk-kontrolu.html">
+<div class="text-xs font-bold uppercase mb-2" style="color: var(--gold);">Sağlık</div>
+<h4 class="text-lg font-bold transition-colors group-hover:text-[var(--gold)]" style="color: var(--sage-light);">Yumurta Doluluk Kontrolü Nasıl Yapılır?</h4>
+</a>
+</div>
+</div>
+<footer>
     <p style="margin:0 0 12px;">
       <a href="/blog/">Blog</a> &nbsp;·&nbsp;
       <a href="/">Ana Sayfa</a> &nbsp;·&nbsp;
@@ -499,5 +518,16 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 <!-- /BBT Share Script -->
+
+<script>
+// Reading Progress
+window.addEventListener('scroll', function() {
+    const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrolled = (winScroll / height) * 100;
+    const bar = document.getElementById('reading-progress-bar');
+    if(bar) bar.style.width = scrolled + '%';
+});
+</script>
 </body>
 </html>

@@ -625,6 +625,12 @@
 </div>
 </a>
 </div>
+
+<div class="flex justify-center mt-12 mb-8 relative z-10" id="pagination-container">
+<button id="load-more-btn" class="px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-lg" style="background: rgba(245,200,66,0.1); color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);">
+Daha Fazla Rehber Yükle
+</button>
+</div>
 <div class="mt-24 p-8 sm:p-12 rounded-3xl text-center relative overflow-hidden transition-transform duration-500 hover:scale-[1.01]" id="blog-cta" style="background: linear-gradient(135deg, rgba(30,70,140,0.8), rgba(15,27,77,0.9)); border: 1px solid rgba(245,200,66,0.3); box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
 <div class="absolute -top-32 -right-32 w-80 h-80 rounded-full mix-blend-screen opacity-20" style="background: radial-gradient(circle, var(--leaf-light) 0%, transparent 70%); filter: blur(40px);"></div>
 <div class="absolute -bottom-32 -left-32 w-80 h-80 rounded-full mix-blend-screen opacity-20" style="background: radial-gradient(circle, var(--gold) 0%, transparent 70%); filter: blur(40px);"></div>
@@ -1446,5 +1452,56 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+
+<script>
+// Pagination Logic
+function handlePagination() {
+  const cards = document.querySelectorAll('.blog-card');
+  const loadMoreBtn = document.getElementById('load-more-btn');
+  if(!loadMoreBtn) return;
+  let visibleCount = 6;
+
+  function updateVisibility() {
+    const activeFilterBtn = document.querySelector('.filter-btn.active');
+    const activeFilter = activeFilterBtn ? activeFilterBtn.getAttribute('data-filter') : 'all';
+    let currentVisible = 0;
+    cards.forEach(card => {
+        const category = card.getAttribute('data-category');
+        if (activeFilter === 'all' || activeFilter === category) {
+            currentVisible++;
+            if (currentVisible <= visibleCount) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    const totalMatching = Array.from(cards).filter(c => activeFilter === 'all' || c.getAttribute('data-category') === activeFilter).length;
+    if(visibleCount >= totalMatching) {
+        loadMoreBtn.style.display = 'none';
+    } else {
+        loadMoreBtn.style.display = 'inline-block';
+    }
+  }
+
+  updateVisibility();
+
+  loadMoreBtn.addEventListener('click', () => {
+     visibleCount += 6;
+     updateVisibility();
+  });
+
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+     btn.addEventListener('click', () => {
+         visibleCount = 6;
+         setTimeout(updateVisibility, 50);
+     });
+  });
+}
+document.addEventListener('DOMContentLoaded', handlePagination);
+</script>
 </body>
 </html>
