@@ -221,7 +221,35 @@
         grid-template-columns: 1fr;
       }
     }
-  </style>
+  
+/* Mobile touch targets (WCAG 2.5.8 AA): short secondary nav / footer / back
+   links were ~17-23px tall — give them >=24px tap height. */
+footer a:not(.social-icon),
+nav.nav a,
+.back-link {
+  display: inline-block;
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
+}
+/* Email / contact links: bigger tap area but keep them inline so long
+   addresses WRAP instead of forcing horizontal scroll. */
+.contact-link,
+.contact-value,
+.contact-value a,
+.section-email,
+a[href^="mailto:"] {
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 480px) {
+  /* Mobile header: wrap so logo + lang switcher + back link never overflow */
+  .header-inner { flex-wrap: wrap; height: auto; row-gap: 8px; padding-top: 8px; padding-bottom: 8px; }
+  .lang-btn { padding: 7px 10px; }
+}
+</style>
 
   <link rel="alternate" hreflang="tr" href="https://budgiebreedingtracker.online/accessibility.html" />
   <link rel="alternate" hreflang="en" href="https://budgiebreedingtracker.online/en/accessibility.html" />

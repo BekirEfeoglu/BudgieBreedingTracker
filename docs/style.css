@@ -402,6 +402,13 @@
     .footer-forest a:focus-visible {
       color: var(--gold-light);
     }
+    /* Footer text links were ~20px tall — below the WCAG 2.5.8 (AA) 24px
+       touch-target minimum on mobile. Add vertical padding so each link is a
+       comfortable tap target. Social icons keep their own (44px) sizing. */
+    .footer-forest a:not(.social-icon) {
+      padding-top: 0.35rem;
+      padding-bottom: 0.35rem;
+    }
 
     .hero-cta-secondary {
       background: rgba(20,50,100,0.35);
