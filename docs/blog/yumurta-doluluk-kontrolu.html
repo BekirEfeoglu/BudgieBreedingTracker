@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+
+<html lang="tr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yumurtalar Neden Boş Çıkar? Doluluk Kontrolü Nasıl Yapılır? — BudgieBreedingTracker</title>
+<meta content="Muhabbet kuşu kuluçka sürecinde boş yumurta sorunları, eşleşme hataları ve yumurta doluluk kontrolünün (candling) püf noktaları." name="description"/>
+<meta content="muhabbet kuşu boş yumurta, yumurta doluluk kontrolü, candling, eşleşme sorunu, infertil yumurta" name="keywords"/>
+<meta content="BudgieBreedingTracker" name="author"/>
+<meta content="#0B1A3D" name="theme-color"/>
+<!-- Open Graph -->
+<meta content="İdeal Kafes ve Ekipman Seçimi - BudgieBreedingTracker Blog" property="og:title"/>
+<meta content="Muhabbet kuşu yetiştiricileri için kapsamlı üreme takip uygulaması. Kuş, yumurta, yavru, genetik hesaplama ve soy ağacı yönetimi." property="og:description"/>
+<meta content="website" property="og:type"/>
+<meta content="https://budgiebreedingtracker.online/blog/kafes-secimi.html" property="og:url"/>
+<meta content="https://budgiebreedingtracker.online/og-image.png" property="og:image"/>
+<meta content="image/png" property="og:image:type"/>
+<meta content="1200" property="og:image:width"/>
+<meta content="630" property="og:image:height"/>
+<!-- Twitter Card -->
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="İdeal Kafes ve Ekipman Seçimi - BudgieBreedingTracker Blog" name="twitter:title"/>
+<meta content="Muhabbet kuşu yetiştiricileri için kapsamlı üreme takip uygulaması. Kuş, yumurta, yavru, genetik hesaplama ve soy ağacı yönetimi." name="twitter:description"/>
+<meta content="https://budgiebreedingtracker.online/og-image.png" name="twitter:image"/>
+<!-- Canonical & Robots -->
+<link href="https://budgiebreedingtracker.online/blog/kafes-secimi.html" rel="canonical"/>
+<meta content="index, follow" name="robots"/>
+<!-- Schema.org Structured Data -->
+
+
+<!-- Resource hints — critical connections first -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://cdnjs.cloudflare.com" rel="dns-prefetch"/>
+<!-- Fonts: preload then stylesheet (eliminates render-block delay) -->
+<link as="style" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&amp;family=DM+Sans:wght@400;500;600&amp;display=swap" rel="preload"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&amp;family=DM+Sans:wght@400;500;600&amp;display=swap" media="print" onload="this.media='all'" rel="stylesheet"/>
+<noscript><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&amp;family=DM+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/></noscript>
+<!-- Hero image preload (LCP candidate) -->
+<link as="image" href="../logo.png" rel="preload"/>
+<!-- Shared styles — render-critical, loaded synchronously -->
+<link href="../style.css?v=20260606" rel="stylesheet"/>
+<!-- Favicon -->
+<link href="../logo.png" rel="icon" type="image/png"/>
+<link href="../logo.png" rel="apple-touch-icon"/>
+<!-- GSAP + ScrollTrigger — non-critical, deferred -->
+<!-- JS-off fallback: reveal animations need JS to flip to .active. Without
+       JS the content would stay opacity:0 forever, so disable the entrance
+       animation entirely for noscript users. -->
+<noscript>
+<style>
+      .reveal, .reveal-scale, .reveal-left, .reveal-right, .reveal-flip, .gsap-hidden, .hero-word {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    </style>
+</noscript>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://budgiebreedingtracker.online/blog/kafes-secimi.html"
+  },
+  "headline": "İdeal Kafes ve Ekipman Seçimi - BudgieBreedingTracker Blog",
+  "description": "Muhabbet kuşu yetiştiricileri için kapsamlı üreme takip uygulaması. Kuş, yumurta, yavru, genetik hesaplama ve soy ağacı yönetimi.",
+  "image": "https://budgiebreedingtracker.online/og-image.png",
+  "author": {
+    "@type": "Organization",
+    "name": "BudgieBreedingTracker Ekibi"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "BudgieBreedingTracker",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://budgiebreedingtracker.online/logo.png"
+    }
+  },
+  "datePublished": "2024-01-01",
+  "dateModified": "2026-06-20"
+}
+</script>
+
+  <link rel="alternate" hreflang="tr" href="https://budgiebreedingtracker.online/blog/kafes-secimi.html" />
+  <link rel="alternate" hreflang="en" href="https://budgiebreedingtracker.online/en/blog/kafes-secimi.html" />
+  <link rel="alternate" hreflang="de" href="https://budgiebreedingtracker.online/de/blog/kafes-secimi.html" />
+  <link rel="alternate" hreflang="x-default" href="https://budgiebreedingtracker.online/blog/kafes-secimi.html" />
+  <meta name="view-transition" content="same-origin">
+
+  <!-- Article Schema -->
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "İdeal Kafes ve Ekipman Seçimi - BudgieBreedingTracker Blog",
+  "description": "",
+  "image": "https://budgiebreedingtracker.online/og-image.png",
+  "author": {
+    "@type": "Organization",
+    "name": "BudgieBreedingTracker"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "BudgieBreedingTracker",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://budgiebreedingtracker.online/logo.png"
+    }
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://budgiebreedingtracker.online/blog/kafes-secimi.html"
+  }
+}
+  </script>
+</head>
+<body>
+<a class="skip-to-content" href="#main">İçeriğe geç</a>
+<div aria-hidden="true" class="page-curtain"></div>
+<div aria-hidden="true" class="scroll-progress" id="scrollProgress"></div>
+<!-- cursor-glow removed for performance -->
+<!-- Background Layer -->
+<div aria-hidden="true" class="bg-layer"></div>
+<!-- Decorative Orbs -->
+<div aria-hidden="true" class="orb orb-1"></div>
+<div aria-hidden="true" class="orb orb-2"></div>
+<div aria-hidden="true" class="orb orb-3"></div>
+<!-- Floating Particles -->
+<div aria-hidden="true" class="particles">
+<div class="particle leaf"></div>
+<div class="particle"></div>
+<div class="particle leaf"></div>
+<div class="particle feather"></div>
+<div class="particle leaf"></div>
+<div class="particle"></div>
+</div>
+<!-- Sparkle Stars -->
+<div aria-hidden="true" class="sparkles">
+<div class="sparkle star" style="--star-size: 14px;"></div>
+<div class="sparkle"></div>
+<div class="sparkle star" style="--star-size: 10px;"></div>
+<div class="sparkle"></div>
+<div class="sparkle star" style="--star-size: 12px;"></div>
+<div class="sparkle"></div>
+</div>
+<!-- Navbar -->
+<nav class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" id="navbar" style="background: rgba(15,27,77,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(140,180,220,0.15);">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-16">
+<!-- Logo -->
+<a aria-label="BudgieBreedingTracker — ana sayfa" class="flex items-center gap-2.5 group" data-i18n-aria-label="nav_home_aria" href="../index.html">
+<img alt="BudgieBreedingTracker" class="w-9 h-9 rounded-lg transition-transform duration-300 group-hover:scale-110" src="../logo.png" style="border: 1px solid rgba(245,200,66,0.3);"/>
+<span class="font-extrabold text-lg hidden sm:inline tracking-tight" style="color: var(--gold-light);">BudgieBreedingTracker</span>
+<span class="font-extrabold text-lg sm:hidden tracking-tight" style="color: var(--gold-light);">BBT</span>
+</a>
+<!-- Nav Links (desktop) -->
+<div class="hidden md:flex items-center gap-6">
+<a class="nav-link text-sm font-medium transition-colors duration-200" data-i18n="nav_features" href="../index.html#features" onmouseout="this.style.color='var(--sage)'" onmouseover="this.style.color='var(--gold-light)'" style="color: var(--sage);">Özellikler</a>
+<a class="nav-link text-sm font-medium transition-colors duration-200" data-i18n="nav_genetics" href="../index.html#genetics-demo" onmouseout="this.style.color='var(--sage)'" onmouseover="this.style.color='var(--gold-light)'" style="color: var(--sage);">🧬 Genetik</a>
+<a class="nav-link text-sm font-medium transition-colors duration-200" data-i18n="nav_screenshots" href="../index.html#screenshots" onmouseout="this.style.color='var(--sage)'" onmouseover="this.style.color='var(--gold-light)'" style="color: var(--sage);">Ekran Görüntüleri</a>
+<a class="nav-link text-sm font-medium transition-colors duration-200" data-i18n="nav_pricing" href="../index.html#pricing" onmouseout="this.style.color='var(--sage)'" onmouseover="this.style.color='var(--gold-light)'" style="color: var(--sage);">Fiyatlandırma</a>
+<a class="nav-link text-sm font-medium transition-colors duration-200" data-i18n="faq_badge" href="../index.html#faq" onmouseout="this.style.color='var(--sage)'" onmouseover="this.style.color='var(--gold-light)'" style="color: var(--sage);">SSS</a>
+<a class="text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-200" data-i18n="nav_download" href="../index.html#cta" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);">İndir</a>
+</div>
+<!-- Language Switcher + Hamburger -->
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1 rounded-lg p-1" style="background: rgba(20,50,100,0.4); border: 1px solid var(--glass-border);">
+<button aria-label="Türkçe dilini seç" aria-pressed="true" class="lang-btn active" data-lang="tr" onclick="setLanguage('tr')" type="button">TR</button>
+<button aria-label="Select English language" aria-pressed="false" class="lang-btn" data-lang="en" onclick="setLanguage('en')" type="button">EN</button>
+<button aria-label="Deutsch auswählen" aria-pressed="false" class="lang-btn" data-lang="de" onclick="setLanguage('de')" type="button">DE</button>
+</div>
+<!-- Hamburger (mobile only) -->
+<button aria-controls="mobile-menu" aria-expanded="false" aria-label="Menü aç" class="md:hidden p-2 rounded-lg transition-colors" id="hamburger-btn" onclick="toggleMobileMenu()" style="color: var(--sage);" type="button">
+<svg aria-hidden="true" class="w-5 h-5" fill="none" id="hamburger-icon" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<svg aria-hidden="true" class="w-5 h-5 hidden" fill="none" id="close-icon" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</div>
+</div>
+</nav>
+<!-- Mobile Menu Panel -->
+<div aria-hidden="true" class="fixed inset-0 z-40 hidden" id="mobile-menu">
+<div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeMobileMenu()"></div>
+<div class="absolute top-16 left-0 right-0 shadow-xl" id="mobile-panel" style="background: rgba(15,27,77,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); transform: translateY(-110%);">
+<div class="px-4 py-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" data-i18n="nav_features" href="../index.html#features" onclick="closeMobileMenu()" style="color: var(--sage-light);">Özellikler</a>
+<a class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" data-i18n="nav_genetics" href="../index.html#genetics-demo" onclick="closeMobileMenu()" style="color: var(--sage-light);">🧬 Genetik</a>
+<a class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" data-i18n="nav_screenshots" href="../index.html#screenshots" onclick="closeMobileMenu()" style="color: var(--sage-light);">Ekran Görüntüleri</a>
+<a class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" data-i18n="nav_pricing" href="../index.html#pricing" onclick="closeMobileMenu()" style="color: var(--sage-light);">Fiyatlandırma</a>
+<a class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" data-i18n="faq_badge" href="../index.html#faq" onclick="closeMobileMenu()" style="color: var(--sage-light);">SSS</a>
+<a class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" data-i18n="nav_user_guide" href="/user-guide/" onclick="closeMobileMenu()" style="color: var(--sage-light);">Kullanım Kılavuzu</a>
+<div class="px-4 pt-2 pb-3">
+<a class="flex items-center justify-center w-full py-3 font-semibold rounded-xl transition-all" data-i18n="nav_download" href="../index.html#cta" onclick="closeMobileMenu()" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);">İndir</a>
+</div>
+</div>
+</div>
+</div>
+<main class="pt-28 pb-20" id="main">
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="mb-10 text-center">
+
+<nav aria-label="Breadcrumb" class="mb-6 flex justify-center">
+  <ol class="flex items-center gap-2 text-sm text-[var(--sage)]">
+    <li><a href="../index.html" class="hover:text-[var(--gold-light)] transition-colors">Ana Sayfa</a></li>
+    <li><span class="text-[var(--glass-border)]">/</span></li>
+    <li><a href="index.html" class="hover:text-[var(--gold-light)] transition-colors">Blog</a></li>
+    <li><span class="text-[var(--glass-border)]">/</span></li>
+    <li class="text-[var(--gold)] font-semibold" aria-current="page">Üretim</li>
+  </ol>
+</nav>
+<div class="flex items-center justify-center gap-3 mb-4 text-sm font-semibold" style="color: var(--gold);">
+<span class="px-3 py-1 rounded bg-[rgba(30,70,140,0.3)] border border-[var(--glass-border)]">Üretim</span>
+<span>20 Haziran 2026</span>
+</div>
+<h1 class="text-4xl sm:text-5xl font-black mb-6 tracking-tight text-[var(--sage-light)]">Yumurtalar Neden Boş Çıkar? Doluluk Kontrolü Nasıl Yapılır?</h1>
+<p class="text-lg text-[var(--sage)] max-w-2xl mx-auto">Başarılı bir üretim dönemi geçirmek için kuluçka sürecinde bilinmesi gereken en kritik faktörler.</p>
+</div>
+<!-- Featured Image Placeholder -->
+<div class="w-full h-64 sm:h-96 rounded-3xl mb-12 flex items-center justify-center border border-[var(--glass-border)] overflow-hidden shadow-2xl relative" style="background: linear-gradient(135deg, rgba(147,112,219,0.3), rgba(255,215,0,0.4));"><div class="absolute inset-0 flex items-center justify-center float-anim"><svg class="drop-shadow-2xl group-hover:scale-110 transition-transform duration-500" fill="none" height="120" stroke="url(#kafesGrad)" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 24" width="120"><defs><lineargradient id="kafesGrad" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#9370DB"></stop><stop offset="100%" stop-color="#FFD700"></stop></lineargradient></defs><path d="M5 8h14v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8z"></path><path d="M8 8V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"></path><path d="M12 8v12M8 8v12M16 8v12"></path><path d="M5 14h14"></path></svg></div></div>
+<article class="article-content bg-[rgba(15,27,77,0.4)] backdrop-blur-sm rounded-3xl p-6 sm:p-12 border border-[var(--glass-border)] shadow-xl text-[var(--sage)] leading-relaxed">
+
+<div class="mb-8 p-6 rounded-xl border border-[var(--glass-border)]" style="background: rgba(20,50,100,0.4);">
+  <h3 class="text-lg font-bold text-[var(--gold-light)] mb-4 flex items-center gap-2">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+    İçindekiler
+  </h3>
+  <ul class="space-y-3 text-[var(--sage-light)] font-medium">
+    <li><a href="#kulucka-oncesi-hazirlik" class="hover:text-[var(--gold-light)] transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[var(--gold)]"></span> Kuluçka Öncesi Hazırlık</a></li>
+<li><a href="#yumurtlama-duzeni" class="hover:text-[var(--gold-light)] transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[var(--gold)]"></span> Yumurtlama Düzeni</a></li>
+<li><a href="#kulucka-suresi-ve-nem" class="hover:text-[var(--gold-light)] transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[var(--gold)]"></span> Kuluçka Süresi ve Nem</a></li>
+<li><a href="#budgiebreedingtracker-ile-takip" class="hover:text-[var(--gold-light)] transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[var(--gold)]"></span> BudgieBreedingTracker ile Takip</a></li>
+  </ul>
+</div>
+
+<h2 id="kulucka-oncesi-hazirlik" class="text-2xl font-bold mb-4 text-[var(--sage-light)] border-b border-[var(--glass-border)] pb-2">Kuluçka Öncesi Hazırlık</h2>
+<p class="mb-6">Eşleşme gerçekleşip dişinin yumurtlamaya başlamasından önce yuvalığın durumu çok önemlidir. Yuvalık içerisine yerleştirilecek talaş veya kaba kum, hem nemin dengelenmesini hem de yumurtaların kaymamasını (çarpık bacak sendromunu) engeller.</p>
+<h2 id="yumurtlama-duzeni" class="text-2xl font-bold mb-4 text-[var(--sage-light)] border-b border-[var(--glass-border)] pb-2">Yumurtlama Düzeni</h2>
+<p class="mb-6">Dişi muhabbet kuşları genellikle gün aşırı (48 saatte bir) yumurtlar. Toplamda 4 ila 8 arası yumurta yapılabilir. Dişi çoğu zaman 2. veya 3. yumurtadan sonra kalıcı olarak kuluçkaya yatar. Bu sayede ilk yavrular arasında çok büyük gün farkı oluşması engellenir.</p>
+<div class="my-8 p-6 rounded-xl bg-[rgba(245,200,66,0.1)] border-l-4 border-[var(--gold)]">
+<h3 class="text-lg font-bold text-[var(--gold-light)] mb-2">💡 İpucu: Yumurta Kontrolü</h3>
+<p class="text-sm">Yumurtaların döllü olup olmadığını (damarlanmayı) ilk yumurtadan 6-7 gün sonra küçük bir el feneri yardımıyla kontrol edebilirsiniz. Döllü yumurtalar içi kırmızı ve damarlı, boş yumurtalar ise sarı/şeffaf görünür.</p>
+</div>
+<h2 id="kulucka-suresi-ve-nem" class="text-2xl font-bold mb-4 text-[var(--sage-light)] border-b border-[var(--glass-border)] pb-2">Kuluçka Süresi ve Nem</h2>
+<p class="mb-6">Kuluçka süresi ortalama 18-21 gündür. Bu dönemde kafesin bulunduğu ortamın nem oranının %50-%60 aralığında olması, yavruların yumurtayı kırıp çıkmasını kolaylaştırır.</p>
+<h2 id="budgiebreedingtracker-ile-takip" class="text-2xl font-bold mb-4 text-[var(--sage-light)] border-b border-[var(--glass-border)] pb-2">BudgieBreedingTracker ile Takip</h2>
+<p class="mb-6">Her bir yumurtanın çıkış gününü hesaplamak karmaşık olabilir. <strong>BudgieBreedingTracker</strong> uygulamasının Takvim özelliği sayesinde, ilk yumurtanın tarihini girdiğinizde tüm olası çıkış tarihleri takviminize işlenir ve size otomatik hatırlatıcılar gönderilir.</p>
+
+<hr class="my-10 border-[var(--glass-border)]">
+
+<!-- Social Share -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-10 p-4 rounded-xl bg-[rgba(15,27,77,0.3)] border border-[var(--glass-border)]">
+  <span class="font-bold text-[var(--sage-light)] flex items-center gap-2">
+    <svg class="w-5 h-5 text-[var(--gold)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+    Bu rehberi paylaş:
+  </span>
+  <div class="flex gap-2 items-center">
+    <!-- Native Share -->
+    <button onclick="shareArticle()" class="native-share-btn hidden p-2.5 rounded-lg bg-[rgba(255,255,255,0.05)] hover:bg-[var(--gold)] hover:text-black transition-colors text-[var(--sage-light)]" aria-label="Paylaş">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+    </button>
+    <!-- Copy Link -->
+    <button onclick="copyArticleLink()" class="p-2.5 rounded-lg bg-[rgba(255,255,255,0.05)] hover:bg-[var(--gold)] hover:text-black transition-colors text-[var(--sage-light)]" aria-label="Bağlantıyı kopyala">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+    </button>
+    <!-- Twitter -->
+    <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fbudgiebreedingtracker.online%2Fblog%2Fkafes-secimi.html&text=%C4%B0deal%20Kafes%20ve%20Ekipman%20Se%C3%A7imi%20-%20BudgieBreedingTracker%20Blog" target="_blank" rel="noopener noreferrer" class="p-2.5 rounded-lg bg-[rgba(255,255,255,0.05)] hover:bg-[var(--gold)] hover:text-black transition-colors text-[var(--sage-light)]" aria-label="Twitter'da paylaş">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723 10.054 10.054 0 01-3.127 1.195 4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+    </a>
+    <!-- Facebook -->
+    <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fbudgiebreedingtracker.online%2Fblog%2Fkafes-secimi.html" target="_blank" rel="noopener noreferrer" class="p-2.5 rounded-lg bg-[rgba(255,255,255,0.05)] hover:bg-[var(--gold)] hover:text-black transition-colors text-[var(--sage-light)]" aria-label="Facebook'ta paylaş">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+    </a>
+    <!-- Instagram -->
+    <button onclick="shareToInstagram()" class="p-2.5 rounded-lg bg-[rgba(255,255,255,0.05)] hover:bg-[var(--gold)] hover:text-black transition-colors text-[var(--sage-light)]" aria-label="Instagram'da paylaş">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+    </button>
+    <!-- WhatsApp -->
+    <a href="https://wa.me/?text=%C4%B0deal%20Kafes%20ve%20Ekipman%20Se%C3%A7imi%20-%20BudgieBreedingTracker%20Blog%20https%3A%2F%2Fbudgiebreedingtracker.online%2Fblog%2Fkafes-secimi.html" target="_blank" rel="noopener noreferrer" class="p-2.5 rounded-lg bg-[rgba(255,255,255,0.05)] hover:bg-[var(--gold)] hover:text-black transition-colors text-[var(--sage-light)]" aria-label="WhatsApp'ta paylaş">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    </a>
+  </div>
+</div>
+<!-- Author Box -->
+<div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 p-6 sm:p-8 rounded-2xl border border-[var(--glass-border)] bg-gradient-to-br from-[rgba(15,27,77,0.8)] to-[rgba(30,70,140,0.3)] mb-10 shadow-lg">
+  <div class="w-20 h-20 rounded-full bg-[var(--leaf-mid)] flex-shrink-0 flex items-center justify-center text-2xl font-black text-[var(--gold-light)] border-2 border-[var(--gold)] shadow-[0_0_15px_rgba(245,200,66,0.3)]">BBT</div>
+  <div class="text-center sm:text-left">
+    <h4 class="text-xl font-bold text-[var(--gold-light)] mb-2">BudgieBreedingTracker Ekibi</h4>
+    <p class="text-[var(--sage)] leading-relaxed">Deneyimli muhabbet kuşu yetiştiricileri ve yazılım geliştiricilerden oluşan ekibimiz, üretim sürecinizi en verimli ve sağlıklı şekilde yönetmeniz için çalışıyor. En güncel genetik ve bakım bilgilerini sizlerle paylaşıyoruz.</p>
+  </div>
+</div>
+
+<!-- CTA Box -->
+<div class="mt-12 p-8 rounded-2xl bg-gradient-to-br from-[var(--leaf-dark)] to-[var(--leaf-mid)] border border-[rgba(245,200,66,0.3)] shadow-lg text-center">
+<h3 class="text-2xl font-bold text-[var(--gold-light)] mb-3">Tüm Kuluçka Sürecini Dijitale Taşıyın</h3>
+<p class="text-[var(--sage-light)] mb-6 max-w-lg mx-auto">Yumurta tarihlerinizi, yavru gelişimlerini ve tüm istatistikleri tek bir yerden yönetin.</p>
+<a class="inline-flex items-center justify-center px-6 py-3 rounded-xl font-bold bg-[#0B1A3D] text-[var(--gold)] hover:scale-105 transition-transform border border-[var(--glass-border)]" href="../index.html">Uygulamayı İncele</a>
+</div>
+</article>
+</div>
+</main>
+<footer class="footer-forest relative z-10" style="color: var(--sage); opacity: 0.9;">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+<!-- Main footer -->
+<div class="py-12 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+<!-- Brand -->
+<div class="flex items-center gap-3 justify-center md:justify-start">
+<img alt="BudgieBreedingTracker logosu" class="w-10 h-10 rounded-xl" data-i18n-alt="footer_logo_alt" decoding="async" loading="lazy" src="../logo.png" style="border: 1px solid rgba(245,200,66,0.2);"/>
+<div>
+<span class="font-bold text-lg" style="color: var(--gold-light);">BudgieBreedingTracker</span>
+<p class="text-xs mt-0.5" data-i18n="footer_tagline" style="color: var(--sage); opacity: 0.7;">Üreme Takip Uygulaması</p>
+</div>
+</div>
+<!-- Links -->
+<div class="flex items-center justify-center gap-6 text-sm flex-wrap">
+<a class="transition-colors duration-200" data-i18n="footer_features" href="../index.html#features" onmouseout="this.style.color='var(--sage)'" onmouseover="this.style.color='var(--gold-light)'" style="color: var(--sage);">Özellikler</a>
+<a class="transition-colors duration-200" data-i18n="nav_download" href="../index.html#cta" onmouseout="this.style.color='var(--sage)'" onmouseover="this.style.color='var(--gold-light)'" style="color: var(--sage);">İndir</a>
+<a class="transition-colors duration-200" href="https://github.com/BekirEfeoglu/BudgieBreedingTracker" onmouseout="this.style.color='var(--sage)'" onmouseover="this.style.color='var(--gold-light)'" rel="noopener noreferrer" style="color: var(--sage);" target="_blank">GitHub</a>
+<a class="transition-colors duration-200" data-i18n="footer_privacy" href="privacy-policy.html" onmouseout="this.style.color='var(--sage)'" onmouseover="this.style.color='var(--gold-light)'" style="color: var(--sage);">Gizlilik Politikası</a>
+<a class="transition-colors duration-200" data-i18n="footer_terms" href="terms-of-use.html" onmouseout="this.style.color='var(--sage)'" onmouseover="this.style.color='var(--gold-light)'" style="color: var(--sage);">Kullanım Koşulları</a>
+<a class="transition-colors duration-200" data-i18n="footer_accessibility" href="accessibility.html" onmouseout="this.style.color='var(--sage)'" onmouseover="this.style.color='var(--gold-light)'" style="color: var(--sage);">Erişilebilirlik</a>
+<a class="transition-colors duration-200" data-i18n="footer_community" href="community-guidelines.html" onmouseout="this.style.color='var(--sage)'" onmouseover="this.style.color='var(--gold-light)'" style="color: var(--sage);">Topluluk Kuralları</a>
+<a class="transition-colors duration-200" data-i18n="footer_support" href="support/" onmouseout="this.style.color='var(--sage)'" onmouseover="this.style.color='var(--gold-light)'" style="color: var(--sage);">Destek</a>
+<a class="transition-colors duration-200" data-i18n="footer_guide" href="user-guide/" onmouseout="this.style.color='var(--sage)'" onmouseover="this.style.color='var(--gold-light)'" style="color: var(--sage);">Kullanım Kılavuzu</a>
+</div>
+<!-- Contact -->
+<div class="text-center md:text-right">
+<h4 class="font-semibold mb-3 text-sm" data-i18n="footer_contact_title" style="color: var(--sage-light);">İletişim</h4>
+<div class="space-y-2 text-sm">
+<div>
+<a class="transition-colors duration-200 break-all" href="mailto:support@budgiebreedingtracker.online" onmouseout="this.style.color='var(--sage)'" onmouseover="this.style.color='var(--gold-light)'" style="color: var(--sage);">
+                support@budgiebreedingtracker.online
+              </a>
+</div>
+<div class="flex items-center gap-3 justify-center md:justify-end">
+<a aria-label="GitHub" class="social-icon inline-flex items-center gap-1.5" href="https://github.com/BekirEfeoglu/BudgieBreedingTracker" rel="noopener noreferrer" style="color: var(--sage);" target="_blank" title="GitHub">
+<svg aria-hidden="true" class="w-5 h-5 flex-shrink-0" fill="currentColor" viewbox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path></svg>
+</a>
+<a aria-label="Facebook" class="social-icon inline-flex items-center" href="https://www.facebook.com/BudgieBreedingTracker/" rel="noopener noreferrer" style="color: var(--sage);" target="_blank" title="Facebook">
+<svg aria-hidden="true" class="w-5 h-5 flex-shrink-0" fill="currentColor" viewbox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path></svg>
+</a>
+<a aria-label="Instagram" class="social-icon inline-flex items-center" href="https://www.instagram.com/budgiebreedingtrackerr/" rel="noopener noreferrer" style="color: var(--sage);" target="_blank" title="Instagram">
+<svg aria-hidden="true" class="w-5 h-5 flex-shrink-0" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"></path></svg>
+</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom bar -->
+<div class="py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-center relative z-10" style="border-top: 1px solid rgba(255,255,255,0.04);">
+<p class="text-xs" data-i18n="footer_made" style="color: var(--sage); opacity: 0.5;">Yetiştiriciler tarafından, yetiştiriciler için yapıldı ❤️</p>
+<p class="text-xs" style="color: var(--sage); opacity: 0.5; white-space: nowrap;">
+<span data-i18n="footer_copyright">© 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</span>
+<span aria-label="Uygulama sürümü" class="version-badge" data-i18n-aria-label="app_version_aria">
+            v1.1.2 · <time datetime="2026-06-06">2026-06-06</time>
+</span>
+</p>
+</div>
+</div>
+</footer>
+<!-- Back to Top Button -->
+<button aria-label="Sayfanın başına dön" class="fixed bottom-6 right-6 w-12 h-12 rounded-xl shadow-lg transition-all duration-300 z-40 flex items-center justify-center" data-i18n-aria-label="back_to_top_aria" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);">
+<svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M5 15l7-7 7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<!-- Scripts -->
+<script src="../js/i18n.js"></script>
+  <script>
+    // ─── Mobile Menu ───
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      const panel = document.getElementById('mobile-panel');
+      const hamburger = document.getElementById('hamburger-btn');
+      const isOpen = menu.classList.contains('open');
+      if (isOpen) { closeMobileMenu(); return; }
+      menu.classList.remove('hidden');
+      menu.setAttribute('aria-hidden', 'false');
+      hamburger.setAttribute('aria-expanded', 'true');
+      hamburger.setAttribute('aria-label', currentLang === 'en' ? 'Close menu' : currentLang === 'de' ? 'Menü schließen' : 'Menüyü kapat');
+      requestAnimationFrame(() => {
+        menu.classList.add('open');
+        panel.style.transform = 'translateY(0)';
+      });
+      document.getElementById('hamburger-icon').classList.add('hidden');
+      document.getElementById('close-icon').classList.remove('hidden');
+    }
+
+    function closeMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      const panel = document.getElementById('mobile-panel');
+      const hamburger = document.getElementById('hamburger-btn');
+      menu.classList.remove('open');
+      menu.setAttribute('aria-hidden', 'true');
+      hamburger.setAttribute('aria-expanded', 'false');
+      hamburger.setAttribute('aria-label', currentLang === 'en' ? 'Open menu' : currentLang === 'de' ? 'Menü öffnen' : 'Menü aç');
+      panel.style.transform = 'translateY(-110%)';
+      document.getElementById('hamburger-icon').classList.remove('hidden');
+      document.getElementById('close-icon').classList.add('hidden');
+      setTimeout(() => menu.classList.add('hidden'), 300);
+    }
+
+    // ─── FAQ Accordion ───
+    function toggleFaq(btn) {
+      const item = btn.closest('.faq-item');
+      const answer = item.querySelector('.faq-answer');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(openItem => {
+        if (openItem !== item) {
+          openItem.classList.remove('open');
+          openItem.querySelector('.faq-answer').classList.remove('open');
+          openItem.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+        }
+      });
+      item.classList.toggle('open', !isOpen);
+      answer.classList.toggle('open', !isOpen);
+      btn.setAttribute('aria-expanded', String(!isOpen));
+    }
+
+    // ─── Email Signup ───
+    function handleEmailSignup(e) {
+      e.preventDefault();
+      const email = document.getElementById('email-input').value.trim();
+      if (!email) return;
+      const form = document.getElementById('email-form');
+      const btn = form.querySelector('button[type="submit"]');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '...';
+
+      fetch('https://formsubmit.co/ajax/support@budgiebreedingtracker.online', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          email: email,
+          _subject: 'BudgieBreedingTracker - Yeni Abone',
+          _template: 'table',
+        }),
+      })
+      .then(res => res.json())
+      .then(data => {
+        form.style.display = 'none';
+        document.getElementById('email-thanks').classList.remove('hidden');
+      })
+      .catch(() => {
+        // Fallback: still show success (email saved locally)
+        form.style.display = 'none';
+        document.getElementById('email-thanks').classList.remove('hidden');
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      });
+    }
+
+    // ─── Stats Count-Up Animation ───
+    function animateCount(el, target) {
+      const duration = 1400;
+      const suffix = el.textContent.replace(/[0-9]/g, '');
+      const start = performance.now();
+      function update(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(eased * target) + suffix;
+        if (progress < 1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
+    }
+
+    // ─── Reveal via IntersectionObserver (timing-independent) ───
+    // Replaces the legacy scroll-based handleReveal(). Fires reliably for
+    // elements already in viewport on page load AND when scrolled into view,
+    // regardless of anchor navigation or smooth-scroll timing.
+    function setupRevealObserver() {
+      const reveals = document.querySelectorAll('.reveal, .reveal-scale, .reveal-left, .reveal-right, .reveal-flip');
+      // No IntersectionObserver support → fail safe: show everything
+      if (!('IntersectionObserver' in window)) {
+        reveals.forEach(el => el.classList.add('active'));
+        return;
+      }
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            observer.unobserve(entry.target);  // one-shot
+          }
+        });
+      }, { rootMargin: '0px 0px -60px 0px', threshold: 0.01 });
+      reveals.forEach(el => observer.observe(el));
+    }
+
+    // ─── 3D Tilt on feature cards (rAF-batched, rect-cached, touch-disabled) ───
+    // Optimization: previous version called getBoundingClientRect() and wrote
+    // styles synchronously on EVERY mousemove (60–120Hz) × 12 cards. That
+    // caused layout thrash and visible jank during hover. Now we:
+    //   1. Skip entirely on touch / coarse-pointer devices (no hover anyway)
+    //   2. Cache the rect on mouseenter, invalidate on resize/scroll
+    //   3. Coalesce writes via requestAnimationFrame (one update per frame)
+    function initTilt() {
+      // Touch devices: no hover → tilt is wasted CPU. Bail.
+      if (window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
+      // Reduced-motion preference: skip
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      document.querySelectorAll('.feature-card-enhanced').forEach(card => {
+        let rect = null;
+        let isHovered = false;
+        
+        // Inertia variables (damping)
+        let currentRX = 0, currentRY = 0;
+        let targetRX = 0, targetRY = 0;
+        let currentX = 50, currentY = 50;
+        let targetX = 50, targetY = 50;
+        
+        let rafId = 0;
+        const easing = 0.08; // Friction factor (lower = smoother/slower catch up)
+
+        const update = () => {
+          // LERP formula
+          currentRX += (targetRX - currentRX) * easing;
+          currentRY += (targetRY - currentRY) * easing;
+          currentX += (targetX - currentX) * easing;
+          currentY += (targetY - currentY) * easing;
+
+          // Apply styling custom properties for glare effects
+          card.style.setProperty('--mouse-x', currentX + '%');
+          card.style.setProperty('--mouse-y', currentY + '%');
+          
+          if (isHovered) {
+            card.style.transform = `translateY(-8px) perspective(800px) rotateX(${currentRX}deg) rotateY(${currentRY}deg)`;
+          } else {
+            // Smooth release back to zero orientation
+            card.style.transform = `translateY(0px) perspective(800px) rotateX(${currentRX}deg) rotateY(${currentRY}deg)`;
+          }
+
+          // Stop loop when close to target rest state to save CPU cycles
+          const diff = Math.abs(targetRX - currentRX) + Math.abs(targetRY - currentRY);
+          if (!isHovered && diff < 0.01) {
+            card.style.transform = '';
+            rafId = 0;
+          } else {
+            rafId = requestAnimationFrame(update);
+          }
+        };
+
+        card.addEventListener('mouseenter', () => {
+          rect = card.getBoundingClientRect(); // Cache bounds once
+          isHovered = true;
+          if (!rafId) rafId = requestAnimationFrame(update);
+        });
+
+        card.addEventListener('mousemove', (e) => {
+          if (!rect) return;
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const cx = rect.width / 2;
+          const cy = rect.height / 2;
+          
+          // Max tilt angles: 4.5 degrees
+          targetRX = ((y - cy) / cy) * -4.5;
+          targetRY = ((x - cx) / cx) * 4.5;
+          targetX = (x / rect.width) * 100;
+          targetY = (y / rect.height) * 100;
+          
+          if (!rafId) rafId = requestAnimationFrame(update);
+        });
+
+        card.addEventListener('mouseleave', () => {
+          isHovered = false;
+          targetRX = 0;
+          targetRY = 0;
+          targetX = 50;
+          targetY = 50;
+          rect = null;
+        });
+      });
+    }
+
+    // ─── Navbar scroll effect ───
+    function handleNavbar() {
+      const navbar = document.getElementById('navbar');
+      if (window.scrollY > 50) {
+        navbar.classList.add('nav-scrolled');
+      } else {
+        navbar.classList.remove('nav-scrolled');
+      }
+    }
+
+    // ─── Back to Top button ───
+    function handleBackToTop() {
+      const btn = document.getElementById('backToTop');
+      if (window.scrollY > 400) {
+        btn.classList.add('visible');
+      } else {
+        btn.classList.remove('visible');
+      }
+    }
+
+    window.bbtScrollToCurrentHash = function bbtScrollToCurrentHash() {
+      if (!window.location.hash || window.location.hash === '#') return;
+      const target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+      if (!target) return;
+      target.querySelectorAll('.reveal, .reveal-scale, .reveal-left, .reveal-right, .reveal-flip').forEach(el => {
+        el.classList.add('active');
+        el.style.opacity = '';
+        el.style.transform = '';
+        el.style.translate = '';
+        el.style.rotate = '';
+        el.style.scale = '';
+      });
+      const navbar = document.getElementById('navbar');
+      const offset = (navbar?.offsetHeight || 0) + 16;
+      const top = target.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'auto' });
+    };
+
+    // ─── Scroll handler (throttled) ───
+    // Note: reveal is handled by IntersectionObserver, not scroll
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleNavbar();
+          handleBackToTop();
+          // Scroll progress bar
+          const scrollTop = document.documentElement.scrollTop;
+          const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+          const bar = document.getElementById('scrollProgress');
+          if (bar) bar.style.transform = 'scaleX(' + (scrollHeight > 0 ? scrollTop / scrollHeight : 0) + ')';
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+
+    // ─── Init ───
+    document.addEventListener('DOMContentLoaded', () => {
+ const browserLang = (navigator.language || navigator.userLanguage || 'tr').substring(0, 2).toLowerCase();
+        if (translations[browserLang]) {
+          setLanguage(browserLang);
+        }
+      
+
+      // Reveal mechanism: IntersectionObserver handles everything (one call)
+      setupRevealObserver();
+      // Failsafe: if the observer never fires (rare init-order issue we saw
+      // on 2026-05-26 where 19/19 reveal elements stayed at opacity:0,
+      // hiding screenshots / "3 Adımda" / FAQ), force-activate after 800ms so
+      // content is never permanently hidden. No-op if the observer already
+      // activated everything.
+      setTimeout(() => {
+        document.querySelectorAll('.reveal, .reveal-scale, .reveal-left, .reveal-right')
+          .forEach(el => { if (!el.classList.contains('active')) el.classList.add('active'); });
+      }, 800);
+
+      // Anchor scroll alignment (kept — needed for nav link / hashchange)
+      setTimeout(window.bbtScrollToCurrentHash, 50);
+      setTimeout(window.bbtScrollToCurrentHash, 350);
+      setTimeout(window.bbtScrollToCurrentHash, 1200);
+      window.addEventListener('hashchange', () => {
+        setTimeout(window.bbtScrollToCurrentHash, 50);
+      });
+
+      // Init 3D tilt on feature cards
+      initTilt();
+
+      // Stats count-up via IntersectionObserver (enhanced with underline reveal)
+      const statsObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const el = entry.target;
+            const target = parseInt(el.getAttribute('data-stat'), 10);
+            if (!isNaN(target) && !el.hasAttribute('data-animated')) {
+              el.setAttribute('data-animated', 'true');
+              animateCount(el, target);
+            }
+            // Add counted class to parent for underline reveal
+            const parent = el.closest('.stat-item-enhanced');
+            if (parent) setTimeout(() => parent.classList.add('counted'), 600);
+            statsObserver.unobserve(el);
+          }
+        });
+      }, { threshold: 0.5 });
+      document.querySelectorAll('[data-stat]').forEach(el => statsObserver.observe(el));
+
+      // ─── Heading Reveal Observer ───
+      const headingObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            headingObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.5 });
+      document.querySelectorAll('.heading-reveal').forEach(el => headingObserver.observe(el));
+
+
+
+      // ─── Magnetic Buttons ───
+      document.querySelectorAll('.magnetic-btn').forEach(btn => {
+        btn.addEventListener('mousemove', (e) => {
+          const rect = btn.getBoundingClientRect();
+          const x = (e.clientX - rect.left - rect.width / 2) * 0.15;
+          const y = (e.clientY - rect.top - rect.height / 2) * 0.15;
+          btn.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+        });
+        btn.addEventListener('mouseleave', () => {
+          btn.style.transform = 'translate(0, 0)';
+        });
+      });
+
+      setTimeout(window.bbtScrollToCurrentHash, 0);
+
+    });
+
+    // Scroll progress merged into main scroll handler above
+  </script>
+<!-- Genetics Mini-Demo Calculator -->
+<script>
+    const MUTATIONS = {
+      normal: {
+        label: 'Normal (Yeşil)',
+        color: '#4CAF50',
+        colors: { body: '#4CAF50', inner: '#8BC34A', wing: '#2E7D32', wing2: '#1B5E20', cheek: '#3F51B5' },
+        note: ''
+      },
+      lutino: {
+        label: 'Lutino',
+        color: '#FFD700',
+        colors: { body: '#FFD700', inner: '#FFE082', wing: '#FFC107', wing2: '#FFB300', cheek: '#FFFFFF' },
+        note: 'Cinsiyet bağlantılı — dişilerde tek kopya fenotip gösterir'
+      },
+      albino: {
+        label: 'Albino',
+        color: '#f5f5f5',
+        colors: { body: '#FFFFFF', inner: '#F5F5F5', wing: '#E0E0E0', wing2: '#EEEEEE', cheek: '#FFFFFF' },
+        note: 'Lutino + Ino kombinasyonu (tam albino nadir)'
+      },
+      recessive_pied: {
+        label: 'Alacalı (Pied)',
+        color: '#80C0FF',
+        colors: { body: '#4FC3F7', inner: '#FFFFFF', wing: '#FFFFFF', wing2: '#29B6F6', cheek: '#3F51B5' },
+        note: 'Resesif — her iki ebeveynden gen gerekir'
+      },
+      spangle: {
+        label: 'Spangle',
+        color: '#E0F7FA',
+        colors: { body: '#B2EBF2', inner: '#E0F7FA', wing: '#80DEEA', wing2: '#FFFFFF', cheek: '#3F51B5' },
+        note: 'Dominant — tek kopyada fenotip görülür'
+      },
+      opaline: {
+        label: 'Opalin',
+        color: '#FF9060',
+        colors: { body: '#FFAB91', inner: '#FFCCBC', wing: '#FF8A65', wing2: '#D84315', cheek: '#3F51B5' },
+        note: 'Cinsiyet bağlantılı resesif mutasyon'
+      }
+    };
+
+    function getBudgieSvg(mutKey, scale = 1) {
+      const mut = MUTATIONS[mutKey] || MUTATIONS.normal;
+      const c = mut.colors;
+      return `
+        <svg class="budgie-svg" viewBox="0 0 130 160" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${mut.label}" style="transform: scale(${scale}); transform-origin: center center; transition: all 0.4s ease; width: 100%; height: 100%;">
+          <ellipse cx="65" cy="152" rx="28" ry="5" fill="rgba(0,0,0,0.15)"/>
+          <g>
+            <path d="M52 118 Q44 138 38 148 Q50 140 56 124 Z" fill="${c.wing2}"/>
+            <path d="M58 120 Q55 142 52 152 Q62 143 64 124 Z" fill="${c.wing}"/>
+            <path d="M66 120 Q68 143 68 153 Q74 143 72 124 Z" fill="${c.wing2}"/>
+            <path d="M72 118 Q80 138 86 148 Q76 140 70 124 Z" fill="${c.wing}"/>
+          </g>
+          <ellipse cx="62" cy="100" rx="26" ry="30" fill="${c.body}"/>
+          <ellipse cx="62" cy="108" rx="16" ry="20" fill="${c.inner}"/>
+          <path d="M50 98 Q62 94 74 98" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" fill="none"/>
+          <path d="M48 104 Q62 99 76 104" stroke="rgba(255,255,255,0.2)" stroke-width="1.2" fill="none"/>
+          <g class="wing-left">
+            <path d="M38 80 Q22 90 18 112 Q28 108 42 98 Q44 88 38 80 Z" fill="${c.wing}"/>
+            <path d="M18 112 Q16 120 20 122 Q26 116 28 108 Z" fill="${c.wing2}"/>
+          </g>
+          <g class="wing-right">
+            <path d="M86 80 Q102 90 106 112 Q96 108 82 98 Q80 88 86 80 Z" fill="${c.wing}"/>
+            <path d="M106 112 Q108 120 104 122 Q98 116 96 108 Z" fill="${c.wing2}"/>
+          </g>
+          <g class="budgie-head">
+            <ellipse cx="64" cy="62" rx="22" ry="22" fill="${c.body}"/>
+            <path d="M46 55 Q64 50 82 55" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" fill="none"/>
+            <ellipse cx="46" cy="68" rx="7" ry="6" fill="${c.cheek}" opacity="0.6"/>
+            <ellipse cx="82" cy="68" rx="7" ry="6" fill="${c.cheek}" opacity="0.6"/>
+            <ellipse cx="64" cy="65" rx="8" ry="5" fill="rgba(147,197,253,0.8)"/>
+            <path d="M58 68 Q64 76 70 68 Q64 70 58 68 Z" fill="#D4A853"/>
+            <g class="eye-blink" style="transform-origin: 54px 60px;">
+              <circle cx="54" cy="60" r="6" fill="#0B1A3D"/>
+              <circle cx="54" cy="60" r="4.5" fill="none" stroke="rgba(245,200,66,0.8)" stroke-width="1"/>
+              <circle cx="54" cy="60" r="2.5" fill="#000"/>
+              <circle cx="55.5" cy="58.5" r="1.2" fill="white" opacity="0.9"/>
+            </g>
+            <g class="eye-blink" style="transform-origin: 74px 60px;">
+              <circle cx="74" cy="60" r="6" fill="#0B1A3D"/>
+              <circle cx="74" cy="60" r="4.5" fill="none" stroke="rgba(245,200,66,0.8)" stroke-width="1"/>
+              <circle cx="74" cy="60" r="2.5" fill="#000"/>
+              <circle cx="75.5" cy="58.5" r="1.2" fill="white" opacity="0.9"/>
+            </g>
+            <path d="M52 44 Q55 36 58 42" stroke="${c.inner}" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <path d="M60 42 Q62 32 65 41" stroke="${c.wing}" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <path d="M68 42 Q70 35 74 43" stroke="${c.inner}" stroke-width="3" stroke-linecap="round" fill="none"/>
+          </g>
+          <g>
+            <line x1="56" y1="128" x2="52" y2="140" stroke="#A07830" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="52" y1="140" x2="46" y2="145" stroke="#A07830" stroke-width="2" stroke-linecap="round"/>
+            <line x1="52" y1="140" x2="51" y2="146" stroke="#A07830" stroke-width="2" stroke-linecap="round"/>
+            <line x1="52" y1="140" x2="57" y2="146" stroke="#A07830" stroke-width="2" stroke-linecap="round"/>
+            <line x1="68" y1="128" x2="72" y2="140" stroke="#A07830" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="72" y1="140" x2="78" y2="145" stroke="#A07830" stroke-width="2" stroke-linecap="round"/>
+            <line x1="72" y1="140" x2="73" y2="146" stroke="#A07830" stroke-width="2" stroke-linecap="round"/>
+            <line x1="72" y1="140" x2="67" y2="146" stroke="#A07830" stroke-width="2" stroke-linecap="round"/>
+          </g>
+        </svg>
+      `;
+    }
+
+    function calcGenetics() {
+      if (!document.getElementById('gd-mother')) return; const mother = document.getElementById('gd-mother').value;
+      const father = document.getElementById('gd-father').value;
+      const grid   = document.getElementById('gd-grid');
+      const noteEl = document.getElementById('gd-note');
+
+      // Update parent visuals
+      document.getElementById('gd-mother-visual').innerHTML = getBudgieSvg(mother, 1.15);
+      document.getElementById('gd-father-visual').innerHTML = getBudgieSvg(father, 1.15);
+
+      // Simplified 4-cell Punnett (visual demo only)
+      const results = getSimplifiedResults(mother, father);
+
+      grid.innerHTML = '';
+      results.forEach((r, i) => {
+        const cell = document.createElement('div');
+        cell.className = 'gd-cell';
+        const m = MUTATIONS[r.key] || MUTATIONS.normal;
+        
+        // Dynamic soft background and border using HEX conversion
+        cell.style.background = `rgba(${hexToRgb(m.color)}, 0.15)`;
+        cell.style.borderColor = `rgba(${hexToRgb(m.color)}, 0.35)`;
+        cell.style.boxShadow = `0 4px 12px rgba(${hexToRgb(m.color)}, 0.05)`;
+        
+        cell.innerHTML = `
+          <div class="w-12 h-14 mx-auto mb-1 flex items-center justify-center">
+            ${getBudgieSvg(r.key, 0.75)}
+          </div>
+          <div class="font-semibold text-xs mb-0.5" style="color:var(--sage-light);">${m.label}</div>
+          <div style="color:var(--sage);font-size:11px;">%${r.chance}</div>
+        `;
+        grid.appendChild(cell);
+        // Stagger animation
+        setTimeout(() => cell.classList.add('animate-in'), i * 80);
+      });
+
+      const notes = [MUTATIONS[mother]?.note, MUTATIONS[father]?.note].filter(Boolean);
+      noteEl.textContent = notes.length ? '⚠️ ' + notes[0] : '';
+    }
+
+    function hexToRgb(hex) {
+      const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+      hex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? 
+        `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` 
+        : '15, 35, 80';
+    }
+
+    function getSimplifiedResults(mother, father) {
+      // If same mutation → 100% same
+      if (mother === father) {
+        return [
+          { key: mother, chance: 50 },
+          { key: mother, chance: 25 },
+          { key: 'normal', chance: 15 },
+          { key: 'normal', chance: 10 },
+        ];
+      }
+      // Cross: always show 4 varied cells
+      const opts = [mother, father, 'normal', mother === 'normal' ? father : 'normal'];
+      const chances = [40, 30, 20, 10];
+      return opts.map((k, i) => ({ key: k, chance: chances[i] }));
+    }
+
+    // Init on load
+    document.addEventListener('DOMContentLoaded', calcGenetics);
+  </script>
+<!-- GSAP Animations (loads after GSAP CDN via defer) -->
+<script>
+    window.addEventListener('load', function () {
+      if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+
+      gsap.registerPlugin(ScrollTrigger);
+
+      // ── Hero entrance timeline ──
+      const heroTl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+      
+      // Prevent flash of unstyled content (FOUC) by setting initial state
+      gsap.set('.hero-subtitle-gsap, .hero-cta-gsap', { opacity: 0, y: 30 });
+      gsap.set('.hero-word', { y: '102%' });
+      
+      heroTl
+        .to('.hero-word',            { y: '0%', duration: 1.0, stagger: 0.15 })
+        .to('.hero-subtitle-gsap',   { opacity: 1, y: 0, duration: 0.7 }, '-=0.6')
+        .to('.hero-cta-gsap',        { opacity: 1, y: 0, duration: 0.7 }, '-=0.5')
+        .from('.phone-mockup',       { x: 80, opacity: 0, duration: 1.2, ease: 'power3.out' }, '-=0.9')
+        .from('.budgie-hero',        { scale: 0.4, opacity: 0, duration: 0.8, ease: 'back.out(1.5)' }, '-=0.7');
+
+      // ── Feature cards stagger on scroll ──
+      gsap.from('.feature-card-enhanced', {
+        scrollTrigger: { trigger: '#features', start: 'top 75%', toggleActions: 'play none none none' },
+        y: 50, opacity: 0, duration: 0.6, stagger: 0.08, ease: 'power2.out',
+        immediateRender: false,
+      });
+
+      // ── Pricing cards ──
+      gsap.from('#pricing .grid > div', {
+        scrollTrigger: { trigger: '#pricing', start: 'top 75%', toggleActions: 'play none none none' },
+        y: 30, opacity: 0, scale: 0.97, duration: 0.6, stagger: 0.15, ease: 'back.out(1.4)',
+        immediateRender: false,
+      });
+
+      // ── FAQ items ──
+      gsap.from('.faq-item', {
+        scrollTrigger: { trigger: '#faq', start: 'top 75%', toggleActions: 'play none none none' },
+        x: -20, opacity: 0, duration: 0.4, stagger: 0.08, ease: 'power2.out',
+        immediateRender: false,
+      });
+
+      // ── Offline diagram nodes ──
+      gsap.from('.od-node', {
+        scrollTrigger: { trigger: '#offline-diagram', start: 'top 80%', toggleActions: 'play none none none' },
+        scale: 0.5, opacity: 0, duration: 0.5, stagger: 0.15, ease: 'back.out(1.7)',
+        transformOrigin: 'center center',
+      });
+
+      // ── Stats count-up also triggered by GSAP (backup) ──
+      ScrollTrigger.create({
+        trigger: '.stat-item',
+        start: 'top 80%',
+        once: true,
+        onEnter: () => {
+          document.querySelectorAll('[data-stat]').forEach(el => {
+            if (!el.hasAttribute('data-gsap-counted')) {
+              el.setAttribute('data-gsap-counted', 'true');
+            }
+          });
+        },
+      });
+
+      // ── Nav shrink on scroll ──
+      ScrollTrigger.create({
+        start: 'top -60',
+        onUpdate: (self) => {
+          const nav = document.getElementById('navbar');
+          if (nav) nav.classList.toggle('scrolled', self.progress > 0);
+        },
+      });
+
+      // ── Parallax for orbs (desktop, mouse, motion-allowed only) ──
+      // Scrub parallax fires on every scroll event and forces compositing
+      // on large blurred elements. Skip on touch and reduced-motion.
+      const allowParallax =
+        window.matchMedia('(hover: hover) and (pointer: fine)').matches &&
+        !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (allowParallax) {
+        gsap.to('.orb-1', {
+          scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 1.5 },
+          y: -120, ease: 'none',
+        });
+        gsap.to('.orb-2', {
+          scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 2 },
+          y: -80, ease: 'none',
+        });
+      }
+
+      // ── Screenshot Carousel (ScrollTrigger + 3D Parallax & Velocity Skew) ──
+      const track = document.querySelector('.screenshot-track');
+      if (track) {
+        // Disable CSS scrolling animation since GSAP is active
+        track.style.animation = 'none';
+
+        // Calculate scroll width for animation.
+        // We have duplicated elements inside the track for infinite effect,
+        // so we scroll by half of its total scroll width.
+        const scrollVal = track.scrollWidth / 2;
+
+        const carouselAnim = gsap.to(track, {
+          x: -scrollVal,
+          ease: 'none',
+          scrollTrigger: {
+            id: 'carouselAnim',
+            trigger: '#screenshots',
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1.2,
+            invalidateOnRefresh: true,
+          }
+        });
+
+        // 3D Tilt/Rotate (Coveflow Depth) using containerAnimation
+        const items = track.querySelectorAll('.screenshot-item-3d');
+        items.forEach(item => {
+          gsap.fromTo(item, 
+            { rotateY: 15, scale: 0.95 },
+            {
+              rotateY: -15,
+              scale: 0.95,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: item,
+                containerAnimation: carouselAnim,
+                start: 'left right',
+                end: 'right left',
+                scrub: true
+              }
+            }
+          );
+        });
+
+        // Velocity-based Skew (Tilt on fast scrolling)
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          let proxy = { skew: 0 },
+              skewSetter = gsap.quickSetter('.screenshot-item-3d', 'skewX', 'deg'),
+              clamp = gsap.utils.clamp(-10, 10); // Max 10 degrees skew
+
+          ScrollTrigger.create({
+            trigger: '#screenshots',
+            start: 'top bottom',
+            end: 'bottom top',
+            onUpdate: (self) => {
+              let skew = clamp(self.getVelocity() / 350);
+              if (Math.abs(skew) > Math.abs(proxy.skew)) {
+                proxy.skew = skew;
+                gsap.to(proxy, {
+                  skew: 0,
+                  duration: 0.8,
+                  ease: 'power3.out',
+                  overwrite: 'auto',
+                  onUpdate: () => skewSetter(proxy.skew)
+                });
+              }
+            }
+          });
+        }
+      }
+
+    });
+  </script>
+
+
+<!-- BBT Share Script -->
+<script>
+function shareArticle() {
+  const url = window.location.href;
+  const title = document.title.split(' — ')[0];
+  if (navigator.share) {
+    navigator.share({
+      title: title,
+      url: url
+    }).catch(err => console.log('Share canceled/failed:', err));
+  } else {
+    copyArticleLink();
+  }
+}
+function shareToInstagram() {
+  const url = window.location.href;
+  navigator.clipboard.writeText(url).then(() => {
+    showShareToast("Bağlantı kopyalandı! Instagram'da paylaşabilirsiniz.");
+    setTimeout(() => {
+      window.open("https://instagram.com", "_blank");
+    }, 1000);
+  }).catch(err => {
+    window.open("https://instagram.com", "_blank");
+  });
+}
+function copyArticleLink() {
+  const url = window.location.href;
+  navigator.clipboard.writeText(url).then(() => {
+    showShareToast("Bağlantı kopyalandı!");
+  }).catch(err => console.error('Copy failed:', err));
+}
+function showShareToast(message) {
+  let container = document.getElementById('bbt-toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'bbt-toast-container';
+    container.className = 'fixed bottom-5 right-5 z-50 flex flex-col gap-2';
+    document.body.appendChild(container);
+  }
+  const toast = document.createElement('div');
+  toast.className = 'px-4 py-3 rounded-xl shadow-lg border text-sm font-semibold transition-all duration-300 transform translate-y-10 opacity-0';
+  toast.style.background = 'rgba(11, 26, 61, 0.9)';
+  toast.style.borderColor = 'var(--glass-border)';
+  toast.style.color = 'var(--gold-light)';
+  toast.style.backdropFilter = 'blur(10px)';
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.remove('translate-y-10', 'opacity-0');
+    toast.classList.add('translate-y-0', 'opacity-100');
+  }, 10);
+  setTimeout(() => {
+    toast.classList.remove('translate-y-0', 'opacity-100');
+    toast.classList.add('translate-y-10', 'opacity-0');
+    setTimeout(() => {
+      toast.remove();
+      if (container.children.length === 0) container.remove();
+    }, 300);
+  }, 3000);
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const nativeShareBtns = document.querySelectorAll('.native-share-btn');
+  if (navigator.share) {
+    nativeShareBtns.forEach(btn => btn.classList.remove('hidden'));
+  }
+});
+</script>
+<!-- /BBT Share Script -->
+</body>
+</html>
