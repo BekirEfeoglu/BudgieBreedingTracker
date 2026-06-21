@@ -4,7 +4,9 @@
 
 ## Key Screens
 
-- Badge collection
+- Badge collection — `BadgesScreen`. The XP/level header (`XpProgressBar` from
+  `userLevelProvider`) is an optional header: it hides on error so the badges
+  grid still renders, but logs via `AppLogger.error` (no silent swallow).
 - Leaderboard (community-wide)
 - Achievement unlock celebration
 

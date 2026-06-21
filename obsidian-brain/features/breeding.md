@@ -55,6 +55,7 @@ Breeding creates the pair + incubation as one atomic operation. Pair/incubation 
 - Provider: `incubationRiskSummaryProvider.family(userId)` joins pair + incubation + egg + chick streams
 - Severity: `info` / `warning` / `critical`; widget caps to top 3 by severity rank
 - Purely derived (no DB writes); recomputes when any source stream emits
+- Detail-screen `_PairRiskCard` is a secondary section: on stream error it collapses to `SizedBox.shrink()` (keeps the detail body usable) but logs via `AppLogger.error` so the failure stays observable rather than silent
 
 ## Pair Form UX
 

@@ -44,6 +44,11 @@ Filterable by species, gender, price range, location radius (if user
 opts in to location), free-text search. Filter state is ephemeral
 (not persisted across launches) to avoid stale "saved searches" surprise.
 
+`MarketplaceFormScreen` gender `ChoiceChip` avatars use domain SVG icons
+(`AppIcon(AppIcons.male / .female)`, unknown falls back to a generic
+`LucideIcons.helpCircle`) — domain concepts must not use `LucideIcons`
+(anti-pattern #24).
+
 ## Messaging Bridge
 
 "Contact seller" CTA opens a DM thread via [[features/messaging]]

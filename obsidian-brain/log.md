@@ -4,12 +4,11 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
-## [2026-06-21] audit | App-tab sweep + 3 minor screen fixes
+## [2026-06-21] audit | App-tab sweep + anti-pattern #24 / error-logging fixes
 
 Comprehensive read-only audit of all app tabs (5 bottom-nav screens + ~70
 sub-screens via the More hub). Quality gates clean (27-checker scan 0/0,
-analyze clean). Three low-severity fixes applied — no behavior or contract
-change, so feature pages unchanged:
+analyze clean). Direct-to-main fixes (commit `651df06`):
 
 - genetics `AiWelcomeScreen`: `_FeaturePill` icon param `IconData` -> `Widget`;
   dna pill now uses `AppIcon(AppIcons.dna)` to match the hero icon
@@ -17,6 +16,17 @@ change, so feature pages unchanged:
 - breeding `_PairRiskCard` + gamification `BadgesScreen` XP header: secondary
   sections still hide on error, but now log via `AppLogger.error` instead of
   swallowing silently (consistency with the HomeScreen pattern).
+  See [[features/breeding]], [[features/gamification]].
+
+Same-day branch cleanup — merged the three open audit-routine PRs to main, then
+deleted all non-`main` remote branches (only `main` remains):
+
+- `#117` (`de62ab9`): `offline_banner` LucideIcons -> AppIcons. See
+  [[patterns/empty-loading-error-states]].
+- `#115` (`7b9cdca`): marketplace gender `ChoiceChip` avatars -> domain
+  `AppIcon` + regression test (+1 test, stats 11,096 -> 11,097). See
+  [[features/marketplace]].
+- `#116`: closed as a duplicate of `#115` (same marketplace fix, no test).
 
 ---
 
