@@ -196,6 +196,30 @@
   <link rel="alternate" hreflang="de" href="https://budgiebreedingtracker.online/de/" />
   <link rel="alternate" hreflang="x-default" href="https://budgiebreedingtracker.online/" />
   <meta name="view-transition" content="same-origin">
+
+  <style>
+    /* Premium FAQ Enhancements */
+    .faq-item-enhanced {
+      transition: background-color 0.3s ease;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+    .faq-item-enhanced:hover {
+      background: rgba(245,200,66,0.03);
+    }
+    .faq-item-enhanced.active {
+      background: rgba(245,200,66,0.06);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .faq-icon {
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s ease;
+    }
+    .faq-item-enhanced.active .faq-icon {
+      transform: rotate(180deg);
+      color: var(--gold) !important;
+    }
+  </style>
 </head>
 <body>
 
@@ -696,12 +720,12 @@
                   <!-- SVG Javascript ile dinamik doldurulacak -->
                 </div>
               </div>
-              
+
               <!-- Kalp İkonu -->
               <div class="flex flex-col items-center justify-center z-10">
                 <span class="text-2xl animate-pulse" style="animation-duration: 2s;">❤️</span>
               </div>
-              
+
               <!-- Baba Kuş -->
               <div class="flex flex-col items-center z-10 w-24">
                 <span class="text-[10px] uppercase tracking-wider font-semibold mb-1" style="color: var(--sage);">Baba</span>
@@ -709,7 +733,7 @@
                   <!-- SVG Javascript ile dinamik doldurulacak -->
                 </div>
               </div>
-              
+
               <!-- Arka plan süsü -->
               <div class="absolute inset-0 opacity-10 pointer-events-none" style="background: radial-gradient(circle, var(--gold) 0%, transparent 70%);"></div>
             </div>
@@ -1141,75 +1165,106 @@
 
       <div class="reveal" style="transition-delay: 0.1s; border-top: 1px solid var(--glass-border);">
         <div class="faq-item faq-item-enhanced py-5">
-          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false" aria-controls="faq-ans-1">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q1">Uygulama ücretsiz mi?</span>
             <svg aria-hidden="true" class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
-          <div class="faq-answer">
+          <div id="faq-ans-1" class="faq-answer">
             <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a1">Evet, temel özellikler tamamen ücretsizdir. Genetik hesaplayıcı, istatistikler ve soy ağacı gibi gelişmiş özellikler için premium abonelik gereklidir.</p>
           </div>
         </div>
 
         <div class="faq-item faq-item-enhanced py-5">
-          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false" aria-controls="faq-ans-2">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q2">Verilerim güvende mi?</span>
             <svg aria-hidden="true" class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
-          <div class="faq-answer">
+          <div id="faq-ans-2" class="faq-answer">
             <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a2">Evet. Verileriniz AES-256 şifreleme ile korunur ve yalnızca sizin hesabınızla erişilebilir. Yedeklemeler de şifreli olarak saklanır.</p>
           </div>
         </div>
 
         <div class="faq-item faq-item-enhanced py-5">
-          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false" aria-controls="faq-ans-3">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q3">Offline çalışıyor mu?</span>
             <svg aria-hidden="true" class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
-          <div class="faq-answer">
+          <div id="faq-ans-3" class="faq-answer">
             <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a3">Evet! Uygulama offline-first mimarisine sahiptir. İnternet olmadan tüm özelliklerden yararlanabilir, bağlantı geldiğinde verileriniz otomatik senkronize edilir.</p>
           </div>
         </div>
 
         <div class="faq-item faq-item-enhanced py-5">
-          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false" aria-controls="faq-ans-4">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q4">Kaç kuş kaydedebilirim?</span>
             <svg aria-hidden="true" class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
-          <div class="faq-answer">
+          <div id="faq-ans-4" class="faq-answer">
             <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a4">Ücretsiz planda 15 kuş ve 5 çiftleştirme çifti ekleyebilirsiniz. Premium'a geçerek bu limitleri kaldırabilir, sınırsız kayıt yapabilirsiniz. Her kuş için 10 adede kadar fotoğraf yüklenebilir.</p>
           </div>
         </div>
 
         <div class="faq-item faq-item-enhanced py-5">
-          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false" aria-controls="faq-ans-5">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q5">Hangi platformlarda çalışıyor?</span>
             <svg aria-hidden="true" class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
-          <div class="faq-answer">
+          <div id="faq-ans-5" class="faq-answer">
             <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a5">BudgieBreedingTracker iOS (iPhone/iPad) cihazlarda App Store, Android cihazlarda Google Play üzerinden kullanılabilir.</p>
           </div>
         </div>
 
         <div class="faq-item faq-item-enhanced py-5">
-          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false" aria-controls="faq-ans-6">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q6">Genetik hesaplayıcı nasıl çalışıyor?</span>
             <svg aria-hidden="true" class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
-          <div class="faq-answer">
+          <div id="faq-ans-6" class="faq-answer">
             <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a6">Anne ve baba kuşun mutasyonlarını seçin, uygulama Punnett karesi ile olası yavru renk ve genotiplerini hesaplasın. Sonuçları kaydedebilir ve geçmiş hesaplamaları görüntüleyebilirsiniz.</p>
           </div>
         </div>
 
-        <div class="faq-item py-5" style="border-bottom: none;">
-          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false">
+        <div class="faq-item faq-item-enhanced py-5">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false" aria-controls="faq-ans-7">
             <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q7">Verilerimi başka cihaza aktarabilir miyim?</span>
             <svg aria-hidden="true" class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
-          <div class="faq-answer">
+          <div id="faq-ans-7" class="faq-answer">
             <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a7">Evet! Aynı hesapla giriş yaptığınızda verileriniz otomatik senkronize edilir. Ayrıca şifreli yedekleme dosyası oluşturup başka cihazda geri yükleyebilirsiniz.</p>
           </div>
         </div>
+
+        <div class="faq-item faq-item-enhanced py-5">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false" aria-controls="faq-ans-8">
+            <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q8">Premium aboneliğimi istediğim zaman iptal edebilir miyim?</span>
+            <svg aria-hidden="true" class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="faq-ans-8" class="faq-answer">
+            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a8">Evet, premium aboneliğinizi dilediğiniz zaman App Store veya Google Play üzerinden hiçbir taahhüt olmadan iptal edebilirsiniz.</p>
+          </div>
+        </div>
+
+        <div class="faq-item faq-item-enhanced py-5">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false" aria-controls="faq-ans-9">
+            <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q9">Kuluçka ve Yumurta hatırlatıcıları nasıl çalışıyor?</span>
+            <svg aria-hidden="true" class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="faq-ans-9" class="faq-answer">
+            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a9">Yumurtlama tarihlerini girdiğinizde uygulama, tahmini çıkım günlerini hesaplar ve kuluçka kontrolü ile çıkım günlerinde size bildirim gönderir.</p>
+          </div>
+        </div>
+
+        <div class="faq-item py-5 faq-item-enhanced" style="border-bottom: none;">
+          <button type="button" class="faq-question flex items-center justify-between w-full text-left gap-4 py-1" onclick="toggleFaq(this)" aria-expanded="false" aria-controls="faq-ans-10">
+            <span class="font-semibold" style="color: var(--sage-light);" data-i18n="faq_q10">Uygulamayı bilgisayardan (Web) kullanabilir miyim?</span>
+            <svg aria-hidden="true" class="faq-icon w-5 h-5 flex-shrink-0" style="color: var(--sage);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="faq-ans-10" class="faq-answer">
+            <p class="pt-3 pb-1 text-sm leading-relaxed" style="color: var(--sage);" data-i18n="faq_a10">BudgieBreedingTracker şu an için yalnızca mobil cihazlarda (iOS ve Android) kullanılabilmektedir. Web sürümü için çalışmalarımız devam etmektedir.</p>
+          </div>
+        </div>
       </div>
+
     </div>
   </section>
 
@@ -1500,13 +1555,13 @@
       document.querySelectorAll('.feature-card-enhanced').forEach(card => {
         let rect = null;
         let isHovered = false;
-        
+
         // Inertia variables (damping)
         let currentRX = 0, currentRY = 0;
         let targetRX = 0, targetRY = 0;
         let currentX = 50, currentY = 50;
         let targetX = 50, targetY = 50;
-        
+
         let rafId = 0;
         const easing = 0.08; // Friction factor (lower = smoother/slower catch up)
 
@@ -1520,7 +1575,7 @@
           // Apply styling custom properties for glare effects
           card.style.setProperty('--mouse-x', currentX + '%');
           card.style.setProperty('--mouse-y', currentY + '%');
-          
+
           if (isHovered) {
             card.style.transform = `translateY(-8px) perspective(800px) rotateX(${currentRX}deg) rotateY(${currentRY}deg)`;
           } else {
@@ -1550,13 +1605,13 @@
           const y = e.clientY - rect.top;
           const cx = rect.width / 2;
           const cy = rect.height / 2;
-          
+
           // Max tilt angles: 4.5 degrees
           targetRX = ((y - cy) / cy) * -4.5;
           targetRY = ((x - cx) / cx) * 4.5;
           targetX = (x / rect.width) * 100;
           targetY = (y / rect.height) * 100;
-          
+
           if (!rafId) rafId = requestAnimationFrame(update);
         });
 
@@ -1634,7 +1689,7 @@
         if (translations[browserLang]) {
           setLanguage(browserLang);
         }
-      
+
 
       // Reveal mechanism: IntersectionObserver handles everything (one call)
       setupRevealObserver();
@@ -1831,12 +1886,12 @@
         const cell = document.createElement('div');
         cell.className = 'gd-cell';
         const m = MUTATIONS[r.key] || MUTATIONS.normal;
-        
+
         // Dynamic soft background and border using HEX conversion
         cell.style.background = `rgba(${hexToRgb(m.color)}, 0.15)`;
         cell.style.borderColor = `rgba(${hexToRgb(m.color)}, 0.35)`;
         cell.style.boxShadow = `0 4px 12px rgba(${hexToRgb(m.color)}, 0.05)`;
-        
+
         cell.innerHTML = `
           <div class="w-12 h-14 mx-auto mb-1 flex items-center justify-center">
             ${getBudgieSvg(r.key, 0.75)}
@@ -1857,8 +1912,8 @@
       const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
       hex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
       const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-      return result ? 
-        `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` 
+      return result ?
+        `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
         : '15, 35, 80';
     }
 
@@ -1891,11 +1946,11 @@
 
       // ── Hero entrance timeline ──
       const heroTl = gsap.timeline({ defaults: { ease: 'power4.out' } });
-      
+
       // Prevent flash of unstyled content (FOUC) by setting initial state
       gsap.set('.hero-subtitle-gsap, .hero-cta-gsap', { opacity: 0, y: 30 });
       gsap.set('.hero-word', { y: '102%' });
-      
+
       heroTl
         .to('.hero-word',            { y: '0%', duration: 1.0, stagger: 0.15 })
         .to('.hero-subtitle-gsap',   { opacity: 1, y: 0, duration: 0.7 }, '-=0.6')
@@ -1998,7 +2053,7 @@
         // 3D Tilt/Rotate (Coveflow Depth) using containerAnimation
         const items = track.querySelectorAll('.screenshot-item-3d');
         items.forEach(item => {
-          gsap.fromTo(item, 
+          gsap.fromTo(item,
             { rotateY: 15, scale: 0.95 },
             {
               rotateY: -15,
