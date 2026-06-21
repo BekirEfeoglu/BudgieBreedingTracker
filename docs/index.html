@@ -1172,7 +1172,8 @@
         <p class="text-lg max-w-2xl mx-auto leading-relaxed" style="color: var(--sage);" data-i18n="premium_subtitle">Temel özellikler tamamen ücretsiz. Profesyonel araçlar için Premium'a geçin.</p>
       </div>
 
-      <div class="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto" style="transition-delay: 0.15s;">
+      <div class="grid lg:grid-cols-3 md:grid-cols-2 gap-8 max-w-6xl mx-auto" style="transition-delay: 0.15s;">
+
         <!-- Free Plan -->
         <div class="rounded-2xl p-8 pricing-card-enhanced" style="background: var(--glass-bg); border: 1px solid var(--glass-border);">
           <h3 class="text-xl font-bold mb-1" style="color: var(--sage-light);" data-i18n="plan_free_label">Ücretsiz</h3>
@@ -1201,22 +1202,17 @@
               <span data-i18n="plan_free_5">Offline çalışma & senkronizasyon</span>
             </li>
           </ul>
-          <a href="#cta" class="block text-center py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-200" style="background: rgba(140,180,220,0.15); color: var(--sage-light); border: 1px solid var(--glass-border);" onmouseover="this.style.background='rgba(140,180,220,0.25)'" onmouseout="this.style.background='rgba(140,180,220,0.15)'" data-i18n="plan_free_cta">Ücretsiz Başla</a>
+          <a href="#cta" class="block text-center py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-200 mt-auto" style="background: rgba(140,180,220,0.15); color: var(--sage-light); border: 1px solid var(--glass-border);" onmouseover="this.style.background='rgba(140,180,220,0.25)'" onmouseout="this.style.background='rgba(140,180,220,0.15)'" data-i18n="plan_free_cta">Ücretsiz Başla</a>
         </div>
 
-        <!-- Premium Plan -->
-        <div class="rounded-2xl p-8 pricing-popular pricing-card-enhanced pricing-popular-enhanced relative transform scale-100 sm:scale-105" style="background: linear-gradient(135deg, rgba(25,55,120,0.5), rgba(245,200,66,0.08)); border: 1px solid rgba(245,200,66,0.4); z-index: 10;">
-          <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 popular-badge">
-            <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white text-[10px] sm:text-xs font-black uppercase tracking-widest py-1 px-4 rounded-full shadow-lg" style="box-shadow: 0 4px 15px rgba(245,200,66,0.3);">
-              ⭐ <span data-i18n="pricing_most_popular">En Popüler</span>
-            </div>
-          </div>
-          <h3 class="text-xl font-bold mb-1" style="color: var(--gold-light);">Premium</h3>
+        <!-- Premium 6 Months Plan -->
+        <div class="rounded-2xl p-8 pricing-card-enhanced flex flex-col" style="background: linear-gradient(135deg, rgba(25,55,120,0.3), rgba(245,200,66,0.02)); border: 1px solid rgba(140,180,220,0.2);">
+          <h3 class="text-xl font-bold mb-1" style="color: var(--sage-light);">Premium</h3>
           <div class="mb-1">
-            <span class="text-4xl font-black" style="color: var(--gold-light);">$15</span>
-            <span class="text-base font-medium" style="color: var(--sage);" data-i18n="plan_premium_period">/ 6 ay</span>
+            <span class="text-4xl font-black" style="color: var(--sage-light);">$15</span>
+            <span class="text-base font-medium" style="color: var(--sage);" data-i18n="plan_premium_6m_period">/ 6 ay</span>
           </div>
-          <p class="text-xs mb-6" style="color: var(--sage);" data-i18n="plan_premium_note">veya yıllık alın, %17 tasarruf edin</p>
+          <p class="text-xs mb-6" style="color: var(--sage);" data-i18n="plan_premium_6m_note">Kısa vadeli planlama için ideal</p>
           <ul class="space-y-3 mb-8">
             <li class="flex items-center gap-3 text-sm" style="color: var(--sage-light);">
               <svg aria-hidden="true" class="w-5 h-5 flex-shrink-0" style="color: var(--gold);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -1243,9 +1239,52 @@
               <span data-i18n="plan_premium_6">Reklamsız deneyim</span>
             </li>
           </ul>
-          <a href="#cta" class="shimmer-btn block text-center py-3 px-6 rounded-xl font-bold text-sm transition-all duration-300" style="background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--forest-deep); border: none; box-shadow: 0 8px 20px rgba(245,200,66,0.25);" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" data-i18n="plan_premium_cta">Premium'a Geç</a>
+          <a href="#cta" class="mt-auto block text-center py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-200" style="background: rgba(245,200,66,0.1); color: var(--gold); border: 1px solid rgba(245,200,66,0.3);" onmouseover="this.style.background='rgba(245,200,66,0.2)'" onmouseout="this.style.background='rgba(245,200,66,0.1)'" data-i18n="plan_premium_cta">Premium'a Geç</a>
         </div>
-      </div>
+
+        <!-- Premium Annual Plan (Most Popular) -->
+        <div class="rounded-2xl p-8 pricing-popular pricing-card-enhanced pricing-popular-enhanced relative transform scale-100 sm:scale-105 flex flex-col" style="background: linear-gradient(135deg, rgba(25,55,120,0.6), rgba(245,200,66,0.1)); border: 1px solid rgba(245,200,66,0.5); z-index: 10;">
+          <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 popular-badge w-full text-center">
+            <div class="inline-block bg-gradient-to-r from-yellow-400 to-yellow-600 text-white text-[10px] sm:text-xs font-black uppercase tracking-widest py-1.5 px-5 rounded-full shadow-lg" style="box-shadow: 0 4px 15px rgba(245,200,66,0.3);">
+              ⭐ <span data-i18n="pricing_most_popular">En Popüler</span>
+            </div>
+          </div>
+          <h3 class="text-xl font-bold mb-1" style="color: var(--gold-light);">Premium Pro</h3>
+          <div class="mb-1">
+            <span class="text-4xl font-black" style="color: var(--gold-light);">$25</span>
+            <span class="text-base font-medium" style="color: var(--sage);" data-i18n="plan_premium_12m_period">/ yıllık</span>
+          </div>
+          <p class="text-xs mb-6" style="color: var(--sage);" data-i18n="plan_premium_12m_note">%17 tasarruf edin (Aylık $2.08'e gelir)</p>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center gap-3 text-sm" style="color: var(--sage-light);">
+              <svg aria-hidden="true" class="w-5 h-5 flex-shrink-0" style="color: var(--gold);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span data-i18n="plan_premium_1">Sınırsız kuş & çift kaydı</span>
+            </li>
+            <li class="flex items-center gap-3 text-sm" style="color: var(--sage-light);">
+              <svg aria-hidden="true" class="w-5 h-5 flex-shrink-0" style="color: var(--gold);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span data-i18n="plan_premium_2">Genetik hesaplayıcı (Punnett)</span>
+            </li>
+            <li class="flex items-center gap-3 text-sm" style="color: var(--sage-light);">
+              <svg aria-hidden="true" class="w-5 h-5 flex-shrink-0" style="color: var(--gold);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span data-i18n="plan_premium_3">İstatistikler & analitik raporlar</span>
+            </li>
+            <li class="flex items-center gap-3 text-sm" style="color: var(--sage-light);">
+              <svg aria-hidden="true" class="w-5 h-5 flex-shrink-0" style="color: var(--gold);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span data-i18n="plan_premium_4">Soy ağacı görselleştirme</span>
+            </li>
+            <li class="flex items-center gap-3 text-sm" style="color: var(--sage-light);">
+              <svg aria-hidden="true" class="w-5 h-5 flex-shrink-0" style="color: var(--gold);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span data-i18n="plan_premium_5">PDF & Excel dışa aktarma</span>
+            </li>
+            <li class="flex items-center gap-3 text-sm" style="color: var(--sage-light);">
+              <svg aria-hidden="true" class="w-5 h-5 flex-shrink-0" style="color: var(--gold);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span data-i18n="plan_premium_6">Reklamsız deneyim</span>
+            </li>
+          </ul>
+          <a href="#cta" class="mt-auto shimmer-btn block text-center py-3 px-6 rounded-xl font-bold text-sm transition-all duration-300" style="background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--forest-deep); border: none; box-shadow: 0 8px 20px rgba(245,200,66,0.25);" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" data-i18n="plan_premium_12m_cta">Yıllık Plana Geç</a>
+        </div>
+
+</div>
     </div>
   </section>
 
