@@ -220,6 +220,24 @@
       color: var(--gold) !important;
     }
   </style>
+
+  <style>
+    /* Premium Feature Card Enhancements */
+    .feature-card-enhanced {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .feature-card-enhanced:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      border-color: rgba(245, 200, 66, 0.3); /* subtle gold border hint */
+    }
+    .feature-card-enhanced .feature-icon {
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .feature-card-enhanced:hover .feature-icon {
+      transform: scale(1.15) rotate(5deg);
+    }
+  </style>
 </head>
 <body>
 
@@ -500,24 +518,24 @@
       </div>
 
       <!-- Feature Cards Grid -->
-      <div class="feature-card-wrapper relative z-10">
+      <div class="feature-card-wrapper relative z-10" role="list">
 
         <!-- Feature 1 -->
-        <div class="feature-card-enhanced glass-panel stagger-1">
-          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);">🐦</div>
+        <div role="listitem" class="feature-card-enhanced glass-panel stagger-1">
+          <div class="feature-icon mb-5" style="background: rgba(30, 180, 200, 0.15);">🐦</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_1_title">Kuş Takibi</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_1_desc">Tüm kuşlarınızı halka numarası, cinsiyet, mutasyon ve fotoğraflarıyla detaylı kayıt altına alın.</p>
         </div>
 
         <!-- Feature 2 -->
-        <div class="feature-card-enhanced glass-panel stagger-2">
-          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);">💕</div>
+        <div role="listitem" class="feature-card-enhanced glass-panel stagger-2">
+          <div class="feature-icon mb-5" style="background: rgba(220, 100, 220, 0.15);">💕</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_2_title">Üreme Yönetimi</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_2_desc">Çiftleştirme, yumurta takibi, kuluçka süreci ve yavru gelişimini adım adım izleyin.</p>
         </div>
 
         <!-- Feature 3 -->
-        <div class="feature-card-enhanced glass-panel stagger-3 relative">
+        <div role="listitem" class="feature-card-enhanced glass-panel stagger-3 relative">
           <div class="premium-badge">⭐ <span data-i18n="badge_premium">Premium</span></div>
           <div class="feature-icon mb-5" style="background: rgba(245,200,66,0.15);">🧬</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_3_title">Genetik Hesaplayıcı</h3>
@@ -525,28 +543,28 @@
         </div>
 
         <!-- Feature 4 -->
-        <div class="feature-card-enhanced glass-panel stagger-4">
-          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);">❤️‍🩹</div>
+        <div role="listitem" class="feature-card-enhanced glass-panel stagger-4">
+          <div class="feature-icon mb-5" style="background: rgba(240, 80, 80, 0.15);">❤️‍🩹</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_4_title">Sağlık Kayıtları</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_4_desc">Veteriner ziyaretleri, tedaviler ve sağlık geçmişini kaydedin. Hatırlatıcılarla hiçbir şeyi kaçırmayın.</p>
         </div>
 
         <!-- Feature 5 -->
-        <div class="feature-card-enhanced glass-panel stagger-5">
-          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);">☁️</div>
+        <div role="listitem" class="feature-card-enhanced glass-panel stagger-5">
+          <div class="feature-icon mb-5" style="background: rgba(100, 180, 255, 0.15);">☁️</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_5_title">Offline-First & Sync</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_5_desc">İnternet olmadan da çalışın. Bağlantı geldiğinde verileriniz otomatik olarak senkronize edilir.</p>
         </div>
 
         <!-- Feature 6 -->
-        <div class="feature-card-enhanced glass-panel stagger-6">
-          <div class="feature-icon mb-5" style="background: rgba(245,200,66,0.15);">🌍</div>
+        <div role="listitem" class="feature-card-enhanced glass-panel stagger-6">
+          <div class="feature-icon mb-5" style="background: rgba(120, 100, 240, 0.15);">🌍</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_6_title">Çok Dilli Destek</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_6_desc">Türkçe, İngilizce ve Almanca dil desteği. Uygulama dilinizi istediğiniz zaman değiştirin.</p>
         </div>
 
         <!-- Feature 7 — Statistics (Premium) -->
-        <div class="feature-card-enhanced glass-panel stagger-7 relative">
+        <div role="listitem" class="feature-card-enhanced glass-panel stagger-7 relative">
           <div class="premium-badge">⭐ <span data-i18n="badge_premium">Premium</span></div>
           <div class="feature-icon mb-5" style="background: rgba(245,200,66,0.15);">📈</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_7_title">İstatistikler</h3>
@@ -554,7 +572,7 @@
         </div>
 
         <!-- Feature 8 — Genealogy (Premium) -->
-        <div class="feature-card-enhanced glass-panel stagger-8 relative">
+        <div role="listitem" class="feature-card-enhanced glass-panel stagger-8 relative">
           <div class="premium-badge">⭐ <span data-i18n="badge_premium">Premium</span></div>
           <div class="feature-icon mb-5" style="background: rgba(245,200,66,0.15);">🌳</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_8_title">Soy Ağacı</h3>
@@ -562,29 +580,29 @@
         </div>
 
         <!-- Feature 9 — Calendar & Reminders -->
-        <div class="feature-card-enhanced glass-panel stagger-9">
-          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);">📅</div>
+        <div role="listitem" class="feature-card-enhanced glass-panel stagger-9">
+          <div class="feature-icon mb-5" style="background: rgba(240, 150, 50, 0.15);">📅</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_9_title">Takvim & Hatırlatıcılar</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_9_desc">Kuluçka tarihleri, veteriner randevuları ve tüm etkinlikleri takvimde görün. Akıllı hatırlatıcılarla hiçbir şeyi kaçırmayın.</p>
         </div>
 
         <!-- Feature 10 — Backup & Export -->
-        <div class="feature-card-enhanced glass-panel stagger-10">
-          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);">💾</div>
+        <div role="listitem" class="feature-card-enhanced glass-panel stagger-10">
+          <div class="feature-icon mb-5" style="background: rgba(80, 200, 120, 0.15);">💾</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_10_title">Yedekleme & Dışa Aktarma</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_10_desc">Verilerinizi PDF ve Excel olarak dışa aktarın. AES-256 şifreli yedeklerle veri güvenliğinizi sağlayın.</p>
         </div>
 
         <!-- Feature 11 — Community -->
-        <div class="feature-card-enhanced glass-panel stagger-1">
-          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);">👥</div>
+        <div role="listitem" class="feature-card-enhanced glass-panel stagger-1">
+          <div class="feature-icon mb-5" style="background: rgba(46, 204, 113, 0.15);">👥</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_11_title">Topluluk</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_11_desc">Diğer yetiştiricilerle deneyimlerinizi paylaşın, sorular sorun ve bilgi alışverişinde bulunun.</p>
         </div>
 
         <!-- Feature 12 — Marketplace -->
-        <div class="feature-card-enhanced glass-panel stagger-2">
-          <div class="feature-icon mb-5" style="background: rgba(30,70,140,0.3);">🏪</div>
+        <div role="listitem" class="feature-card-enhanced glass-panel stagger-2">
+          <div class="feature-icon mb-5" style="background: rgba(255, 171, 0, 0.15);">🏪</div>
           <h3 class="text-lg font-bold mb-2" style="color: var(--sage-light);" data-i18n="feature_12_title">Pazar Yeri</h3>
           <p class="text-sm leading-relaxed" style="color: var(--sage);" data-i18n="feature_12_desc">Kuşlarınızı satışa çıkarın veya diğer yetiştiricilerin ilanlarını keşfedin. Güvenli mesajlaşma ile iletişim kurun.</p>
         </div>
