@@ -68,7 +68,7 @@ dependencies:
   encrypt: ^5.0.3
   shared_preferences: ^2.2.0
   logger: ^2.0.0
-  purchases_flutter: ^10.2.3
+  purchases_flutter: ^10.3.0
   crypto: ^3.0.3
   http: ^1.5.0
 
