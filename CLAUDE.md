@@ -99,7 +99,7 @@ scripts/test_check_obsidian_brain.py    # Tests for obsidian-brain wiki lint
 | Custom SVG icons | 89 constants, 89 files on disk |
 | Shared widgets | 29 (15 root + 4 buttons + 2 cards + 2 dialog + 1 bottom_sheet + 5 eggs) |
 | Enum files | 15 |
-| Supabase constants | 141 (tables + buckets + columns) |
+| Supabase constants | 142 (tables + buckets + columns) |
 | L10n keys | ~2,995 per language, 41 categories |
 | DB schema version | 25 |
 

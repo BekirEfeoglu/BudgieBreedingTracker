@@ -192,10 +192,13 @@ void main() {
       final result = await source.fetchBlockedUserIds('user-1');
 
       expect(result, ['u3', 'u4']);
-      expect(blockQuery.selectedColumns, 'user_id,blocked_user_id');
+      expect(
+        blockQuery.selectedColumns,
+        '${SupabaseConstants.colUserId},${SupabaseConstants.colBlockedUserId}',
+      );
       expect(
         blockSelect.orCalls.single,
-        'user_id.eq.user-1,blocked_user_id.eq.user-1',
+        '${SupabaseConstants.colUserId}.eq.user-1,${SupabaseConstants.colBlockedUserId}.eq.user-1',
       );
     });
 
@@ -209,9 +212,12 @@ void main() {
       await source.blockUser('user-1', 'bad-user');
 
       final payload = blockQuery.upsertPayload as Map<String, dynamic>;
-      expect(payload['user_id'], 'user-1');
-      expect(payload['blocked_user_id'], 'bad-user');
-      expect(blockQuery.upsertOnConflict, 'user_id,blocked_user_id');
+      expect(payload[SupabaseConstants.colUserId], 'user-1');
+      expect(payload[SupabaseConstants.colBlockedUserId], 'bad-user');
+      expect(
+        blockQuery.upsertOnConflict,
+        '${SupabaseConstants.colUserId},${SupabaseConstants.colBlockedUserId}',
+      );
       expect(blockQuery.upsertIgnoreDuplicates, isTrue);
     });
 
@@ -223,7 +229,10 @@ void main() {
           .toList();
       expect(
         eqKeys,
-        containsAll(['user_id:user-1', 'blocked_user_id:bad-user']),
+        containsAll([
+          '${SupabaseConstants.colUserId}:user-1',
+          '${SupabaseConstants.colBlockedUserId}:bad-user',
+        ]),
       );
     });
   });

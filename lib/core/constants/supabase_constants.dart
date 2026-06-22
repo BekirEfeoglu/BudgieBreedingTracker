@@ -108,6 +108,7 @@ abstract class SupabaseConstants {
   static const String colPlatform = 'platform';
 
   // Foreign-key columns (shared across multiple tables)
+  static const String colBlockedUserId = 'blocked_user_id';
   static const String colBirdId = 'bird_id';
   static const String colChickId = 'chick_id';
   static const String colClutchId = 'clutch_id';

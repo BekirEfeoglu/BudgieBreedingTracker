@@ -195,13 +195,17 @@ class CommunityEngagementRemoteSource {
     try {
       final result = await _client
           .from(SupabaseConstants.communityBlocksTable)
-          .select('user_id,blocked_user_id')
-          .or('user_id.eq.$userId,blocked_user_id.eq.$userId');
+          .select(
+            '${SupabaseConstants.colUserId},${SupabaseConstants.colBlockedUserId}',
+          )
+          .or(
+            '${SupabaseConstants.colUserId}.eq.$userId,${SupabaseConstants.colBlockedUserId}.eq.$userId',
+          );
 
       final hiddenIds = <String>{};
       for (final row in result as List) {
-        final blockerId = row['user_id']?.toString();
-        final blockedId = row['blocked_user_id']?.toString();
+        final blockerId = row[SupabaseConstants.colUserId]?.toString();
+        final blockedId = row[SupabaseConstants.colBlockedUserId]?.toString();
         if (blockerId == userId && blockedId != null) {
           hiddenIds.add(blockedId);
         } else if (blockedId == userId && blockerId != null) {
@@ -222,11 +226,12 @@ class CommunityEngagementRemoteSource {
           .from(SupabaseConstants.communityBlocksTable)
           .upsert(
             {
-              'id': const Uuid().v7(),
-              'user_id': userId,
-              'blocked_user_id': blockedUserId,
+              SupabaseConstants.colId: const Uuid().v7(),
+              SupabaseConstants.colUserId: userId,
+              SupabaseConstants.colBlockedUserId: blockedUserId,
             },
-            onConflict: 'user_id,blocked_user_id',
+            onConflict:
+                '${SupabaseConstants.colUserId},${SupabaseConstants.colBlockedUserId}',
             ignoreDuplicates: true,
           );
     } catch (e, st) {
@@ -244,8 +249,8 @@ class CommunityEngagementRemoteSource {
       await _client
           .from(SupabaseConstants.communityBlocksTable)
           .delete()
-          .eq('user_id', userId)
-          .eq('blocked_user_id', blockedUserId);
+          .eq(SupabaseConstants.colUserId, userId)
+          .eq(SupabaseConstants.colBlockedUserId, blockedUserId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
         'community_engagement.unblockUser',
