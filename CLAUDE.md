@@ -3,10 +3,11 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Start Here
-- **Quality gates** (run before every commit): `.claude/rules/ai-workflow.md`
+- **Knowledge base**: `obsidian-brain/` is the comprehensive wiki (architecture, features, data layer, domain services, patterns) — read the relevant page before touching a subsystem. `obsidian-brain/index.md` is the full catalog. `AGENTS.md` is the compact agent contract; this file + `.claude/rules/*.md` are the detailed rulebook.
+- **Quality gates** (run before every commit): `.claude/rules/ai-workflow.md` — canonical entry is `scripts/run_local_quality_gate.sh`
 - **New entity/feature steps**: `.claude/rules/new-feature-checklist.md`
 - **24 anti-patterns** (must avoid): see § Critical Anti-Patterns below
-- **Branch policy**: permanent remote branch is `main`; short-lived branches target `main` (see `.claude/rules/branch-workflow.md`)
+- **Branch policy**: permanent remote branch is `main`; short-lived branches target `main` (see `.claude/rules/branch-workflow.md`). Verify pushed commits with `python3 scripts/check_remote_status.py`
 
 ## Project
 Comprehensive Flutter breeding tracker app for budgie breeders.
