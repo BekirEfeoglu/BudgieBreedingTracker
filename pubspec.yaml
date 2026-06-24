@@ -20,7 +20,11 @@ dependencies:
   go_router: ^17.0.0
 
   # Backend
-  supabase_flutter: ^2.5.0
+  # Capped below 2.13.0: 2.13+ pulls the passkeys plugin chain (passkeys_doctor
+  # -> device_info_plus 12.4.0) whose iOS code uses the visionOS-only
+  # `isiOSAppOnVision` selector, which fails to compile on the CI macos-latest
+  # Xcode SDK. Revisit when CI Xcode is bumped or passkeys is actually needed.
+  supabase_flutter: '>=2.5.0 <2.13.0'
   firebase_core: ^4.1.1
   firebase_messaging: ^16.2.2
 
