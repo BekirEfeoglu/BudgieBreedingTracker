@@ -4,6 +4,38 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-06-24] audit | Full-scope review (pristine) + const fix, version bump, iOS pods cleanup
+
+Comprehensive multi-dimension audit (security, architecture, domain logic, data
+layer) on `main`. Baseline gates all green: analyze 0, code-quality 27/27, l10n
+synced, security 37/37, rules 24/24. Parallel-agent findings were adversarially
+verified — nearly all "critical/high" flags proved false positives: genetics
+normalize-then-filter is by-design; the chick-care scheduler hour is clamped and
+floor-derived (no overflow); `nest`/`notification` repos have no hard FK so need
+no `ValidatedSyncMixin`; `marketplace_listing_remote_source.dart` does exist;
+`egg_actions_notifier` is tested. See [[patterns/anti-patterns]],
+[[domain/genetics-engine]], [[data-layer/repositories]].
+
+Direct-to-main commits:
+
+- `4913abe` (in `207c812`): marketplace gender `ChoiceChip` avatars — added
+  `const` to the `AppIcon(AppIcons.male/female)` cases (the only `flutter
+  analyze` issue in the tree). `LucideIcons.helpCircle` for `BirdGender.unknown`
+  left as-is — app-wide convention (`bird_gender_icon`, bird/chick detail) and
+  the quality scanner accepts it (no domain SVG for unknown gender). See
+  [[features/marketplace]].
+- `bb1dcd8`: version bump `1.1.2+34` -> `1.1.3+50`.
+- `bc99b91`: iOS `project.pbxproj` — dropped redundant empty
+  `inputPaths`/`outputPaths` from the Pods copy-resources / embed-frameworks
+  build phases (xcfilelist paths retained). See [[infrastructure/release-ops]].
+- Root `CLAUDE.md` Start Here now points to this wiki + `AGENTS.md` +
+  `run_local_quality_gate.sh` / `check_remote_status.py`.
+
+`pubspec.lock` transitive test-package downgrades (meta/test/test_api/test_core)
+were intentionally NOT pushed — a local-env resolution artifact.
+
+---
+
 ## [2026-06-21] audit | App-tab sweep + anti-pattern #24 / error-logging fixes
 
 Comprehensive read-only audit of all app tabs (5 bottom-nav screens + ~70
