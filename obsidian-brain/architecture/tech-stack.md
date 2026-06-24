@@ -54,7 +54,7 @@ Source: `pubspec.yaml`, `.claude/rules/architecture.md`
 | intl ^0.20.0 | DateFormat, number formatting |
 | timezone ^0.11.0 | tz.TZDateTime for notifications |
 | flutter_timezone ^5.0.2 | Device timezone detection |
-| flutter_local_notifications ^21.0.0 | Scheduled device notifications |
+| flutter_local_notifications ^22.0.0 | Scheduled device notifications |
 
 ## Auth & Security
 
