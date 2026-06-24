@@ -379,9 +379,9 @@ class _MarketplaceFormScreenState extends ConsumerState<MarketplaceFormScreen> {
                               ? null
                               : switch (g) {
                                   BirdGender.male =>
-                                    AppIcon(AppIcons.male, size: 16),
+                                    const AppIcon(AppIcons.male, size: 16),
                                   BirdGender.female =>
-                                    AppIcon(AppIcons.female, size: 16),
+                                    const AppIcon(AppIcons.female, size: 16),
                                   _ => const Icon(LucideIcons.helpCircle, size: 16),
                                 },
                           selected: selected,
