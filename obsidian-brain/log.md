@@ -4,12 +4,13 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
-## [2026-06-25] update | Bump flutter_local_notifications ^22.0.0; defer share_plus 13 / package_info_plus 10
+## [2026-06-25] update | Major dep bumps: flutter_local_notifications ^22, google_mobile_ads ^9
 
 `flutter_local_notifications` 21 → ^22.0.0 (`cbcf297`); v22 adds web support, no
-breaking changes to APIs used. `share_plus` 13 + `package_info_plus` 10 deferred:
-both need `win32 ^6`, blocked by `file_picker 11.0.2` (`win32 ^5.9.0`), and offer
-no functional gain. See [[architecture/tech-stack]].
+breaking changes to APIs used. `google_mobile_ads` 8 → ^9.0.0 (iOS GMA SDK 13.3.0
++ UMP 3.1.0); no public API changes, ad API usage unchanged. `share_plus` 13 +
+`package_info_plus` 10 deferred: both need `win32 ^6`, blocked by `file_picker
+11.0.2` (`win32 ^5.9.0`), no functional gain. See [[architecture/tech-stack]].
 
 ## [2026-06-24] update | Dependency maintenance + iOS CI fix (cap supabase_flutter <2.13.0)
 

@@ -44,7 +44,7 @@ Source: `pubspec.yaml`, `.claude/rules/architecture.md`
 | photo_view ^0.15.0 | Zoomable image viewer |
 | image_picker ^1.0.0 | Camera + gallery picker |
 | fl_chart ^1.2.0 | Statistics charts |
-| google_mobile_ads ^8.0.0 | AdMob ads (free tier) |
+| google_mobile_ads ^9.0.0 | AdMob ads (free tier) — iOS GMA SDK 13.3.0 + UMP 3.1.0 |
 
 ## Localization & Time
 
