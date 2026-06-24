@@ -4,6 +4,21 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-06-24] update | Dependency maintenance + iOS CI fix (cap supabase_flutter <2.13.0)
+
+`flutter pub upgrade` (within-constraint) bumped sentry_flutter 9.22.0,
+firebase_messaging 16.4.1, firebase_core 4.11.0, go_router 17.3.0,
+purchases_flutter 10.3.0, sign_in_with_apple 8.1.0, supabase_flutter 2.15.0 —
+pubspec.yaml untouched, lockfiles + iOS Podfile.lock re-synced (commit
+`0e8cb1b`). That push went red on the **iOS Build** job: supabase_flutter 2.13+
+pulls the `passkeys` → `passkeys_doctor 1.4.1` → `device_info_plus 12.4.0`
+chain, whose iOS code calls the visionOS-only `NSProcessInfo isiOSAppOnVision`
+selector, failing to compile on the CI `macos-latest` Xcode SDK. Fixed in
+`c78aa2c` by capping `supabase_flutter: '>=2.5.0 <2.13.0'`, which drops the
+passkeys/device_info_plus chain entirely while keeping the other upgrades.
+Revisit the cap when CI Xcode is bumped or passkeys is actually needed. See
+[[architecture/tech-stack]].
+
 ## [2026-06-24] audit | Full-scope review (pristine) + const fix, version bump, iOS pods cleanup
 
 Comprehensive multi-dimension audit (security, architecture, domain logic, data

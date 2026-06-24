@@ -11,7 +11,7 @@ Source: `pubspec.yaml`, `.claude/rules/architecture.md`
 | State management | flutter_riverpod | ^3.3.1 |
 | Navigation | go_router | ^17.0.0 |
 | Local database | drift | ^2.31.0 |
-| Remote backend | supabase_flutter | ^2.5.0 |
+| Remote backend | supabase_flutter | >=2.5.0 <2.13.0 |
 
 ## Data & Serialization
 
@@ -27,10 +27,10 @@ Source: `pubspec.yaml`, `.claude/rules/architecture.md`
 
 | Package | Purpose |
 |---------|---------|
-| supabase_flutter ^2.5.0 | Postgres + Auth + Storage + Realtime |
+| supabase_flutter >=2.5.0 <2.13.0 | Postgres + Auth + Storage + Realtime (capped below 2.13.0 — 2.13+ pulls the passkeys → device_info_plus 12.4.0 chain whose visionOS `isiOSAppOnVision` selector fails to compile on CI macos-latest Xcode SDK) |
 | firebase_core ^4.1.1 | FCM prerequisite |
-| firebase_messaging ^16.0.1 | Push notifications (FCM) |
-| purchases_flutter ^10.0.2 | RevenueCat in-app purchases |
+| firebase_messaging ^16.2.2 | Push notifications (FCM) |
+| purchases_flutter ^10.2.3 | RevenueCat in-app purchases |
 | sentry_flutter ^9.0.0 | Error tracking + performance |
 
 ## UI & UX
