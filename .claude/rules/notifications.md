@@ -90,7 +90,7 @@ await flutterLocalNotifications.zonedSchedule(
 | `community` | Mention, reply | Default |
 | `system` | Bakım, güncelleme | Low |
 
-Channel'lar `lib/data/services/notification_service.dart` içinde initialize edilir.
+Channel'lar `lib/domain/services/notifications/notification_service.dart` içinde initialize edilir.
 
 ## Quiet Hours / Preferences
 - Kullanıcı kategori bazlı bildirim açma/kapama (`profile.notification_preferences`)

@@ -101,9 +101,9 @@ test('slate-ino linked pair produces correct ratios', () {
 ```
 
 ## Debug Fixture
-- `--dart-define=DEBUG_GENETICS_FIXTURE=slate_ino_pair` ile preset state inject
-- Fixture'lar `lib/features/genetics/debug_fixtures/` altında
-- Yalnızca debug build — production binary'de erişilmez
+- `--dart-define=DEBUG_GENETICS_FIXTURE=screenshot_2026_03_14` ile preset state inject
+- Fixture switch'i `lib/app.dart` içinde inline (`_applyDebugGeneticsFixtureIfNeeded`) — ayrı `debug_fixtures/` dizini yok
+- Yalnızca debug build — `kDebugMode` guard'lı, production binary'de erişilmez
 
 ## UI / UX
 - Olasılık gösterimi: yüzde + kesirsel (`25% (1:4)`) — kullanıcı tercihine göre toggle
@@ -122,4 +122,4 @@ test('slate-ino linked pair produces correct ratios', () {
 8. Test'te MUTAVI örnek tablolarını kullanmayıp custom fixture üretmek (rehberle drift)
 9. Genetics theme renklerini ColorScheme'den almaya zorlamak (phenotype rengi sabit)
 
-> **İlgili**: data-layer.md (calculationVersion persist), patterns/datetime-format.md (audit timestamp), local-ai.md (AI fenotip tahmini), reference [[muhabbet-kusu-genetik-rehberi.md]]
+> **İlgili**: data-layer.md (calculationVersion persist), datetime-format.md (audit timestamp), local-ai.md (AI fenotip tahmini), reference `docs/muhabbet-kusu-genetik-rehberi.md`

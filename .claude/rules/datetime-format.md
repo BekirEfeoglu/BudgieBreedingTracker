@@ -41,9 +41,9 @@ Text(DateFormat.Hm(locale).format(notification.createdAt))  // "14:30"
 
 ### Relative Time
 - `'now'`, `'5dk önce'`, `'dün'`, `'3 gün önce'`, `'14 Mayıs'`
-- Helper: `RelativeTimeFormatter` (`lib/core/utils/relative_time.dart`)
+- Merkezi util YOK — relative time formatlama feature bazında inline yapılır (`community`, `messaging`, `profile`, `admin`). Tekrar eden mantık ortaya çıkarsa `lib/core/utils/` altına ortak helper çıkar.
 - 1 hafta üstü tam tarih
-- L10n key'leri: `time.minutes_ago`, `time.hours_ago`, `time.days_ago`
+- L10n key'leri `common` kategorisinde: `common.minutes_ago`, `common.hours_ago`, `common.days_ago` (mesajlaşmada `messaging.yesterday`)
 
 ## Incubation Day Math
 Kuluçka gün sayımı KRİTİK — yanlış hesap kullanıcının kuluçka rejimini bozar.
@@ -139,14 +139,14 @@ final isToday = bird.createdAt.year == today.year &&
 - Kritik domain math'i (incubation) için: UTC midnight normalize
 
 ## L10n Keys
-| Pattern | Örnek |
-|---------|-------|
-| `time.now` | "Şimdi" |
-| `time.minutes_ago` (n) | "{n} dakika önce" |
-| `time.days_ago` (n) | "{n} gün önce" |
-| `time.tomorrow` | "Yarın" |
-| `incubation.day_n` (n) | "{n}. gün" |
-| `breeding.duration_days` (n) | "{n} gün sürdü" |
+Relative time anahtarları `common` kategorisinde (ayrı bir `time` kategorisi YOK):
+| Key | Değer |
+|-----|-------|
+| `common.just_now` | "Az önce" |
+| `common.minutes_ago` | "{} dakika önce" |
+| `common.hours_ago` | "{} saat önce" |
+| `common.days_ago` | "{} gün önce" |
+| `messaging.yesterday` | "Dün" |
 
 ## Testing
 ```dart

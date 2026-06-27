@@ -50,7 +50,7 @@
 - < 24 saat: "3 saat önce"
 - < 7 gün: "Dün" / "3 gün önce"
 - > 7 gün: "Geçen ay" / tarih
-- L10n: `time.last_seen_*` keys
+- L10n: relative time anahtarları `common.minutes_ago` / `common.hours_ago` / `common.days_ago` (ayrı `time` kategorisi yok)
 
 ## UI Indicators
 | Yer | Gösterim |

@@ -10,7 +10,7 @@ XP, level, badge, leaderboard, verified breeder sistemi. `GamificationService` (
 | XP constants | `xp_constants.dart` |
 | Feature | `lib/features/gamification/` |
 | Storage | Drift `user_progress` + Supabase sync |
-| Badge metadata | `lib/core/constants/badge_definitions.dart` |
+| Badge metadata | Server-driven (`GamificationRemoteSource.fetchBadges()`) + model `lib/data/models/badge_model.dart` |
 
 ## XP Award Mantığı
 Sabit XP miktarları `xp_constants.dart` içinde tanımlı. Her aksiyon trigger edildiğinde service tarafından yazılır:
@@ -34,7 +34,7 @@ Cooldown'lar farm/spam engellemek için. Server-side enforce (`gamification_even
 - Level-up notification: in-app banner + opsiyonel push (settings'te kapatılabilir)
 
 ## Badge Sistemi
-- Badge'ler `badge_definitions.dart` içinde immutable definition
+- Badge tanımları server'dan gelir (`GamificationRemoteSource.fetchBadges()`); local model `badge_model.dart`. Hardcoded definitions dosyası YOK
 - Achievement-based: tek seferlik unlock (örn. "İlk kuluçka")
 - Progress-based: kademeli (örn. "10 kuş", "50 kuş")
 - Skill-based: nadiren (örn. "Pure white spangle yetiştir")
