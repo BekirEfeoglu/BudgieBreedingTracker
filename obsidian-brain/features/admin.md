@@ -48,6 +48,17 @@ Roles (from `lib/data/providers/user_role_providers.dart`):
 the state for bulk actions (ban, unban, role change) and surfaces
 loading/error/success. UI uses `ref.listen()` to react with snackbar.
 
+`adminUserCountsProvider` (`FutureProvider<AdminUserCounts>` in
+`admin_users_providers.dart`) returns database-wide user counts
+(`total`, `active`, `inactive`, `online`) for the users summary bar —
+total/active via `profiles` head counts (`.count()`), online via the
+presence-sessions source (same threshold as `AdminUser.isOnline`, including
+the admin's own local presence). It exists because the list query is capped
+at `AdminConstants.usersPageSize` (50): deriving totals from the loaded page
+undercounts them. The screen shows these global counts when the list is
+unfiltered and falls back to the loaded set while filtered/searched. Counts
+are invalidated on refresh, retry, and user mutations (bulk + detail).
+
 ## Edge Function Hooks
 
 | Edge fn | Used in |

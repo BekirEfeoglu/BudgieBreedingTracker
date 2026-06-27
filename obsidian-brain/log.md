@@ -4,6 +4,17 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-06-25] fix | Admin users summary bar shows true DB-wide counts
+
+`adminUserCountsProvider` (`admin_users_providers.dart`) now feeds the users
+summary bar instead of deriving Toplam/Aktif/Pasif/Çevrimiçi from the loaded
+page (capped at `AdminConstants.usersPageSize` = 50, so totals appeared stuck
+at 50). Counts come from database-wide queries: total/active via `profiles`
+head counts, online via the presence-sessions source. The screen uses global
+counts when unfiltered, falls back to the loaded set when filtered/searched,
+and invalidates counts on refresh/retry/user mutations (commit `94d0c88`).
+See [[features/admin]].
+
 ## [2026-06-25] cleanup | Merge auto-audit branch + delete it (main-only policy)
 
 Folded the cloud smoke-audit branch `chore/auto-audit-20260626-1415` (CI-green,
