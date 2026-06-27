@@ -136,13 +136,46 @@ class _FakeTransformBuilder extends Fake
 }
 
 class _FakeQueryBuilder extends Fake implements SupabaseQueryBuilder {
-  _FakeQueryBuilder(this.filterBuilder);
+  _FakeQueryBuilder(
+    this.filterBuilder, {
+    this.totalCount = 0,
+    this.activeCount = 0,
+  });
   final _FakeFilterBuilder filterBuilder;
+  final int totalCount;
+  final int activeCount;
 
   @override
   PostgrestFilterBuilder<PostgrestList> select([String columns = '*']) {
     return filterBuilder;
   }
+
+  @override
+  PostgrestFilterBuilder<int> count([CountOption count = CountOption.exact]) {
+    return _FakeCountBuilder(totalCount: totalCount, activeCount: activeCount);
+  }
+}
+
+// ignore: must_be_immutable
+class _FakeCountBuilder extends Fake implements PostgrestFilterBuilder<int> {
+  _FakeCountBuilder({required this.totalCount, required this.activeCount});
+  final int totalCount;
+  final int activeCount;
+  bool _activeOnly = false;
+
+  @override
+  PostgrestFilterBuilder<int> eq(String column, Object value) {
+    if (column == 'is_active' && value == true) _activeOnly = true;
+    return this;
+  }
+
+  @override
+  Future<S> then<S>(
+    FutureOr<S> Function(int value) onValue, {
+    Function? onError,
+  }) => Future<int>.value(
+    _activeOnly ? activeCount : totalCount,
+  ).then(onValue, onError: onError);
 }
 
 class _FakeSupabaseClient extends Fake implements SupabaseClient {
@@ -152,6 +185,8 @@ class _FakeSupabaseClient extends Fake implements SupabaseClient {
     required this.sessionsListFilter,
     Map<String, _FakeFilterBuilder>? tableFilters,
     User? currentUser,
+    this.totalCount = 0,
+    this.activeCount = 0,
   }) : tableFilters = tableFilters ?? const {},
        _auth = _FakeGoTrueClient(currentUser: currentUser);
 
@@ -160,6 +195,8 @@ class _FakeSupabaseClient extends Fake implements SupabaseClient {
   final _FakeFilterBuilder sessionsListFilter;
   final Map<String, _FakeFilterBuilder> tableFilters;
   final _FakeGoTrueClient _auth;
+  final int totalCount;
+  final int activeCount;
   int _profilesCallCount = 0;
 
   @override
@@ -177,7 +214,11 @@ class _FakeSupabaseClient extends Fake implements SupabaseClient {
       if (_profilesCallCount == 1) {
         return _FakeQueryBuilder(adminCheckFilter);
       }
-      return _FakeQueryBuilder(usersListFilter);
+      return _FakeQueryBuilder(
+        usersListFilter,
+        totalCount: totalCount,
+        activeCount: activeCount,
+      );
     }
     if (table == SupabaseConstants.userSessionsTable) {
       return _FakeQueryBuilder(sessionsListFilter);
@@ -239,6 +280,8 @@ _FakeSupabaseClient _makeClient({
   List<Map<String, dynamic>> sessionsResult = const [],
   Map<String, _FakeFilterBuilder>? tableFilters,
   String adminRole = 'admin',
+  int totalCount = 0,
+  int activeCount = 0,
 }) {
   return _FakeSupabaseClient(
     adminCheckFilter: _FakeFilterBuilder(
@@ -250,6 +293,8 @@ _FakeSupabaseClient _makeClient({
     sessionsListFilter: _FakeFilterBuilder(result: sessionsResult),
     tableFilters: tableFilters,
     currentUser: _FakeUser(),
+    totalCount: totalCount,
+    activeCount: activeCount,
   );
 }
 
@@ -902,6 +947,40 @@ void main() {
       expect(content.photos.single.filePath, 'signed-thumb-url');
       expect(content.photos.single.isPrimary, isFalse);
       expect(resolver.seenUrls, contains(thumbUrl));
+    });
+  });
+
+  group('adminUserCountsProvider', () {
+    test('returns DB-wide counts, not the paginated page size', () async {
+      final client = _makeClient(
+        totalCount: 247,
+        activeCount: 245,
+        sessionsResult: [
+          _sessionRow(userId: 'u1'),
+          _sessionRow(userId: 'u2'),
+          _sessionRow(userId: 'u1'), // duplicate session -> counted once
+        ],
+      );
+      final container = _makeContainer(client);
+      addTearDown(container.dispose);
+
+      final counts = await container.read(adminUserCountsProvider.future);
+
+      expect(counts.total, 247);
+      expect(counts.active, 245);
+      expect(counts.inactive, 2);
+      expect(counts.online, 2);
+    });
+
+    test('clamps inactive to zero when active exceeds total', () async {
+      final client = _makeClient(totalCount: 5, activeCount: 8);
+      final container = _makeContainer(client);
+      addTearDown(container.dispose);
+
+      final counts = await container.read(adminUserCountsProvider.future);
+
+      expect(counts.inactive, 0);
+      expect(counts.online, 0);
     });
   });
 }

@@ -182,6 +182,56 @@ final adminUsersProvider = FutureProvider.family<List<AdminUser>, AdminUsersQuer
   return users.take(query.limit).toList();
 });
 
+/// Database-wide user counts for the admin users summary bar.
+typedef AdminUserCounts = ({int total, int active, int inactive, int online});
+
+/// Global user counts for the summary bar, independent of list pagination.
+///
+/// The list query is capped at [AdminConstants.usersPageSize], so deriving the
+/// "total" from the loaded list undercounts it (it appears stuck at the page
+/// size). These counts come from database-wide queries instead: total/active
+/// via head counts on `profiles`, online via the presence sessions source
+/// (same threshold as [AdminUser.isOnline], including the current admin's local
+/// presence).
+final adminUserCountsProvider = FutureProvider<AdminUserCounts>((ref) async {
+  await requireAdmin(ref);
+  final client = ref.watch(supabaseClientProvider);
+  final localPresence = ref.watch(adminLocalPresenceProvider);
+  final onlineSince = DateTime.now().toUtc().subtract(
+    UserPresenceConstants.onlineThreshold,
+  );
+
+  final Future<int> totalFuture = client
+      .from(SupabaseConstants.profilesTable)
+      .count();
+  final Future<int> activeFuture = client
+      .from(SupabaseConstants.profilesTable)
+      .count()
+      .eq('is_active', true);
+  final onlineActivityFuture = _loadUserActivitySince(
+    client,
+    onlineSince,
+    sinceColumn: SupabaseConstants.colLastActiveAt,
+    activeOnly: true,
+  );
+
+  final (total, active, onlineActivity) = await (
+    totalFuture,
+    activeFuture,
+    onlineActivityFuture,
+  ).wait;
+
+  _mergeLocalPresence(onlineActivity, localPresence, onlineSince);
+
+  final inactive = (total - active).clamp(0, total);
+  return (
+    total: total,
+    active: active,
+    inactive: inactive,
+    online: onlineActivity.length,
+  );
+});
+
 DateTime _utcDayStart(DateTime value) {
   final utc = value.toUtc();
   return DateTime.utc(utc.year, utc.month, utc.day);

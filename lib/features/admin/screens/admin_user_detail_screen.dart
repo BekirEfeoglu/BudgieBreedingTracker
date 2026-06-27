@@ -49,6 +49,7 @@ class _AdminUserDetailScreenState extends ConsumerState<AdminUserDetailScreen> {
         // the family roots so the users list and risk profile do not
         // show stale state when the admin navigates back.
         ref.invalidate(adminUsersProvider);
+        ref.invalidate(adminUserCountsProvider);
         ref.invalidate(adminUserContentProvider(widget.userId));
         ref.invalidate(adminUserRiskProfileProvider(widget.userId));
       }

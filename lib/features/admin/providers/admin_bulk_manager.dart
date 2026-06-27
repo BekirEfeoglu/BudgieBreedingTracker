@@ -81,6 +81,7 @@ class AdminBulkManager {
       }
       _updateState(isLoading: false, isSuccess: true);
       _ref.invalidate(adminUsersProvider);
+      _ref.invalidate(adminUserCountsProvider);
       return (succeeded: succeeded, skipped: skipped);
     } catch (e, st) {
       AppLogger.error('AdminBulkManager.bulkToggleActive', e, st);
@@ -114,6 +115,7 @@ class AdminBulkManager {
       }
       _updateState(isLoading: false, isSuccess: true);
       _ref.invalidate(adminUsersProvider);
+      _ref.invalidate(adminUserCountsProvider);
       return (succeeded: succeeded, skipped: skipped);
     } catch (e, st) {
       AppLogger.error('AdminBulkManager.bulkGrantPremium', e, st);
@@ -147,6 +149,7 @@ class AdminBulkManager {
       }
       _updateState(isLoading: false, isSuccess: true);
       _ref.invalidate(adminUsersProvider);
+      _ref.invalidate(adminUserCountsProvider);
       return (succeeded: succeeded, skipped: skipped);
     } catch (e, st) {
       AppLogger.error('AdminBulkManager.bulkRevokePremium', e, st);
@@ -241,6 +244,7 @@ class AdminBulkManager {
         details: {'user_count': userIds.length, 'succeeded': succeeded},
       );
       _ref.invalidate(adminUsersProvider);
+      _ref.invalidate(adminUserCountsProvider);
       return (succeeded: succeeded, skipped: skipped);
     } catch (e, st) {
       AppLogger.error('AdminBulkManager.bulkDeleteUserData', e, st);

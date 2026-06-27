@@ -154,6 +154,7 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
   Future<void> _refreshUsers() async {
     try {
       ref.invalidate(adminUsersProvider(_buildQuery));
+      ref.invalidate(adminUserCountsProvider);
       await ref.read(adminUsersProvider(_buildQuery).future);
     } catch (e, st) {
       AppLogger.error('AdminUsersScreen._refreshUsers', e, st);
@@ -275,6 +276,7 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
     final limit = ref.watch(adminUsersLimitProvider);
     final usersQuery = _buildQuery.copyWith(limit: limit);
     final usersAsync = ref.watch(adminUsersProvider(usersQuery));
+    final userCountsAsync = ref.watch(adminUserCountsProvider);
 
     ref.listen<AdminActionState>(adminActionsProvider, (_, state) {
       if (state.isSuccess) {
@@ -321,7 +323,10 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
               loading: () => const LoadingState(),
               error: (error, _) => ErrorState(
                 message: 'common.data_load_error'.tr(),
-                onRetry: () => ref.invalidate(adminUsersProvider(usersQuery)),
+                onRetry: () {
+                  ref.invalidate(adminUsersProvider(usersQuery));
+                  ref.invalidate(adminUserCountsProvider);
+                },
               ),
               data: (users) {
                 final activeUsers = users.where((user) => user.isActive).length;
@@ -330,6 +335,13 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                 final hasMore = users.length >= limit;
                 final hasFilter =
                     _query.isNotEmpty || _statusFilter != _UserStatusFilter.all;
+
+                // Summary shows true DB-wide counts when the list is unfiltered;
+                // a filtered/searched list falls back to the loaded set so the
+                // bar matches exactly what is shown.
+                final globalCounts = hasFilter
+                    ? null
+                    : userCountsAsync.asData?.value;
 
                 return Column(
                   children: [
@@ -365,11 +377,11 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                         ),
                       ),
                     _UsersSummaryBar(
-                      totalUsers: users.length,
+                      totalUsers: globalCounts?.total ?? users.length,
                       visibleUsers: users.length,
-                      activeUsers: activeUsers,
-                      inactiveUsers: inactiveUsers,
-                      onlineUsers: onlineUsers,
+                      activeUsers: globalCounts?.active ?? activeUsers,
+                      inactiveUsers: globalCounts?.inactive ?? inactiveUsers,
+                      onlineUsers: globalCounts?.online ?? onlineUsers,
                     ),
                     Expanded(
                       child: _UsersList(
