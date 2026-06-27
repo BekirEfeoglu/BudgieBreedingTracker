@@ -112,6 +112,7 @@ scripts/test_check_obsidian_brain.py    # Tests for obsidian-brain wiki lint
 | `analyze` | `flutter analyze --no-fatal-infos` |
 | `test` | Unit + widget tests, Codecov upload (excludes golden, e2e, community), timeout 25m |
 | `golden-test` | Visual regression on Linux baseline |
+| `edge-functions-test` | `deno test --allow-env --allow-net supabase/functions` (deploy gate) |
 | `e2e-community-test` | E2E + community tagged tests |
 | `scripts-test` | Python script tests (>=98% coverage) |
 | `l10n-sync` | Translation key parity (--strict-keys) |
@@ -119,7 +120,7 @@ scripts/test_check_obsidian_brain.py    # Tests for obsidian-brain wiki lint
 | `rules-sync` | CLAUDE.md stats verification (--strict) |
 | `security-audit` | Security posture verification (cert pinning, secrets) |
 | `auto-fix-stats` | Auto-PR for CLAUDE.md drift (main only) |
-| `deploy-edge-functions` | Supabase Edge Function deployment (main only, needs analyze+test) |
+| `deploy-edge-functions` | Supabase Edge Function deployment (main only, needs analyze+test+edge-functions-test) |
 | `android-build` | Debug APK build |
 | `ios-build` | iOS build (no code signing) |
 
@@ -192,7 +193,7 @@ Comprehensive rules in `.claude/rules/` (auto-loaded):
 | `coding-standards.md` | Naming, Freezed/enum, icon API, file organization, extensions, async/await |
 | `providers.md` | Riverpod provider types, ref usage, AsyncNotifier, race conditions, error handling, keepAlive |
 | `ui-patterns.md` | Widget types, AsyncValue, forms, GoRouter, shared widgets, lists, dialogs |
-| `localization.md` | easy_localization, key structure, 39 categories, arg patterns, testing l10n |
+| `localization.md` | easy_localization, key structure, 41 categories, arg patterns, testing l10n |
 | `testing.md` | Test patterns, mocking, golden tests, coverage, naming conventions |
 | `test-stability.md` | Pump strategy, 18 anti-patterns, async patterns, resource cleanup |
 | `error-handling.md` | Error hierarchy, Sentry, retry/backoff, user-facing messages, logging |

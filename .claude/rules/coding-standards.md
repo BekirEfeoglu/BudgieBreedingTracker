@@ -35,7 +35,7 @@ class Bird with _$Bird {
 - Max ~300 lines per file — split if growing beyond
 
 ## Icons
-- Domain icons: `AppIcon(AppIcons.x)` with SVG (84 constants in `app_icons.dart`)
+- Domain icons: `AppIcon(AppIcons.x)` with SVG (89 constants in `app_icons.dart`)
 - Generic UI icons: `LucideIcons.x` (settings, navigation, generic actions only)
 - Never use `Icon(Icons.x)` for domain concepts
 - Shared widgets accept `Widget icon` param, not `IconData`
