@@ -207,7 +207,7 @@ final adminUserCountsProvider = FutureProvider<AdminUserCounts>((ref) async {
   final Future<int> activeFuture = client
       .from(SupabaseConstants.profilesTable)
       .count()
-      .eq('is_active', true);
+      .eq(SupabaseConstants.colIsActive, true);
   final onlineActivityFuture = _loadUserActivitySince(
     client,
     onlineSince,
