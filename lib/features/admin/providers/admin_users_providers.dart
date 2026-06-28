@@ -97,7 +97,7 @@ final adminUsersProvider = FutureProvider.family<List<AdminUser>, AdminUsersQuer
   }
 
   if (query.isActiveFilter != null) {
-    request = request.eq('is_active', query.isActiveFilter!);
+    request = request.eq(SupabaseConstants.colIsActive, query.isActiveFilter!);
   }
 
   if (query.isPremiumFilter != null) {
@@ -207,7 +207,7 @@ final adminUserCountsProvider = FutureProvider<AdminUserCounts>((ref) async {
   final Future<int> activeFuture = client
       .from(SupabaseConstants.profilesTable)
       .count()
-      .eq('is_active', true);
+      .eq(SupabaseConstants.colIsActive, true);
   final onlineActivityFuture = _loadUserActivitySince(
     client,
     onlineSince,
@@ -270,7 +270,7 @@ Future<Map<String, DateTime>> _loadUserActivitySince(
         'user_id, ${SupabaseConstants.colLastActiveAt}, ${SupabaseConstants.colCreatedAt}',
       );
   if (activeOnly) {
-    request = request.eq('is_active', true);
+    request = request.eq(SupabaseConstants.colIsActive, true);
   }
 
   final rows = await request
@@ -292,7 +292,7 @@ Future<Map<String, DateTime>> _loadVisibleUserActivity(
   final rows = await client
       .from(SupabaseConstants.userSessionsTable)
       .select('user_id, ${SupabaseConstants.colLastActiveAt}')
-      .eq('is_active', true)
+      .eq(SupabaseConstants.colIsActive, true)
       .gte(SupabaseConstants.colLastActiveAt, onlineSince.toIso8601String())
       .inFilter('user_id', ids)
       .order(SupabaseConstants.colLastActiveAt, ascending: false);
