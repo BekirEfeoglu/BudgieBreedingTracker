@@ -21,11 +21,11 @@ final syncStatusSummaryProvider = FutureProvider<SyncStatusSummary>((
     final pendingResult = await client
         .from(SupabaseConstants.syncMetadataTable)
         .select('id, created_at')
-        .eq('status', 'pending');
+        .eq(SupabaseConstants.colStatus, 'pending');
     final errorResult = await client
         .from(SupabaseConstants.syncMetadataTable)
         .select('id')
-        .eq('status', 'error');
+        .eq(SupabaseConstants.colStatus, 'error');
 
     final pendingList = pendingResult as List;
     DateTime? oldestPending;
@@ -64,11 +64,11 @@ final softDeleteStatsProvider =
           final allDeleted = await client
               .from(table)
               .select('id')
-              .eq('is_deleted', true);
+              .eq(SupabaseConstants.colIsDeleted, true);
           final olderDeleted = await client
               .from(table)
               .select('id')
-              .eq('is_deleted', true)
+              .eq(SupabaseConstants.colIsDeleted, true)
               .lt('updated_at', cutoff.toUtc().toIso8601String());
 
           stats.add(

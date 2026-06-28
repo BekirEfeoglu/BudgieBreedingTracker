@@ -14,40 +14,40 @@ final adminUserContentProvider = FutureProvider.family<AdminUserContent, String>
       .select(
         'id, name, gender, status, species, ring_number, cage_number, photo_url, created_at',
       )
-      .eq('user_id', userId)
-      .eq('is_deleted', false)
+      .eq(SupabaseConstants.colUserId, userId)
+      .eq(SupabaseConstants.colIsDeleted, false)
       .order('created_at', ascending: false);
   final pairsFuture = client
       .from(SupabaseConstants.breedingPairsTable)
       .select(
         'id, status, male_id, female_id, cage_number, pairing_date, created_at',
       )
-      .eq('user_id', userId)
-      .eq('is_deleted', false)
+      .eq(SupabaseConstants.colUserId, userId)
+      .eq(SupabaseConstants.colIsDeleted, false)
       .order('created_at', ascending: false);
   final eggsFuture = client
       .from(SupabaseConstants.eggsTable)
       .select(
         'id, status, egg_number, clutch_id, lay_date, hatch_date, photo_url, created_at',
       )
-      .eq('user_id', userId)
-      .eq('is_deleted', false)
+      .eq(SupabaseConstants.colUserId, userId)
+      .eq(SupabaseConstants.colIsDeleted, false)
       .order('created_at', ascending: false);
   final chicksFuture = client
       .from(SupabaseConstants.chicksTable)
       .select(
         'id, name, gender, health_status, ring_number, hatch_date, photo_url, bird_id, created_at',
       )
-      .eq('user_id', userId)
-      .eq('is_deleted', false)
+      .eq(SupabaseConstants.colUserId, userId)
+      .eq(SupabaseConstants.colIsDeleted, false)
       .order('created_at', ascending: false);
   final photosFuture = client
       .from(SupabaseConstants.photosTable)
       .select(
         'id, entity_type, entity_id, url, thumbnail_url, is_primary, sort_order, file_size, mime_type, created_at',
       )
-      .eq('user_id', userId)
-      .eq('is_deleted', false)
+      .eq(SupabaseConstants.colUserId, userId)
+      .eq(SupabaseConstants.colIsDeleted, false)
       .order('created_at', ascending: false);
 
   final (

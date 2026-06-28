@@ -19,7 +19,7 @@ final adminSystemAlertsProvider = FutureProvider<List<SystemAlert>>((
   final result = await client
       .from(SupabaseConstants.systemAlertsTable)
       .select()
-      .eq('is_active', true)
+      .eq(SupabaseConstants.colIsActive, true)
       .eq('is_acknowledged', false)
       .order('created_at', ascending: false)
       .limit(AdminConstants.maxAlertsLimit);
@@ -37,14 +37,14 @@ final adminPendingReviewCountProvider = FutureProvider<int>((ref) async {
   final postsResult = await client
       .from(SupabaseConstants.communityPostsTable)
       .select('id')
-      .eq('is_deleted', false)
-      .eq('needs_review', true);
+      .eq(SupabaseConstants.colIsDeleted, false)
+      .eq(SupabaseConstants.colNeedsReview, true);
 
   final commentsResult = await client
       .from(SupabaseConstants.communityCommentsTable)
       .select('id')
-      .eq('is_deleted', false)
-      .eq('needs_review', true);
+      .eq(SupabaseConstants.colIsDeleted, false)
+      .eq(SupabaseConstants.colNeedsReview, true);
 
   return (postsResult as List).length + (commentsResult as List).length;
 });
@@ -156,15 +156,15 @@ final topUsersProvider = FutureProvider<List<TopUser>>((ref) async {
       client
           .from(SupabaseConstants.birdsTable)
           .select('user_id')
-          .eq('is_deleted', false),
+          .eq(SupabaseConstants.colIsDeleted, false),
       client
           .from(SupabaseConstants.breedingPairsTable)
           .select('user_id')
-          .eq('is_deleted', false),
+          .eq(SupabaseConstants.colIsDeleted, false),
       client
           .from(SupabaseConstants.profilesTable)
           .select('id, full_name')
-          .eq('is_active', true),
+          .eq(SupabaseConstants.colIsActive, true),
     ).wait;
 
     // Count entities per user
@@ -222,7 +222,7 @@ final recentUserActivityProvider = FutureProvider<List<UserActivity>>((
         .from(table)
         .select('user_id, created_at')
         .gte('created_at', since)
-        .eq('is_deleted', false);
+        .eq(SupabaseConstants.colIsDeleted, false);
     return (result as List).cast<Map<String, dynamic>>();
   }
 
