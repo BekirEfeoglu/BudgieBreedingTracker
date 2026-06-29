@@ -10,6 +10,8 @@ import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
@@ -87,6 +89,12 @@ void main() {
           persistedConflictCountProvider(
             'test-user',
           ).overrideWith((_) => Stream.value(0)),
+          // The embedded ActiveBreedingsSection resolves parent-bird names via
+          // this map provider; stub it so no real Drift stream opens (leaks a
+          // cleanup timer in tests).
+          birdsByUserIdMapProvider(
+            'test-user',
+          ).overrideWithValue(const <String, Bird>{}),
         ],
         child: MaterialApp.router(routerConfig: router),
       );

@@ -12,7 +12,10 @@ import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
+import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/breeding_detail_stream_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
@@ -85,6 +88,12 @@ void main() {
         ).overrideWith((_) => Stream.value([])),
         eggsStreamProvider('test-user').overrideWith((_) => Stream.value([])),
         chicksStreamProvider('test-user').overrideWith((_) => Stream.value([])),
+        // Stub bird lookups so neither the cards (birdByIdProvider) nor the
+        // screen-level name map open real Drift streams (which leak timers).
+        birdByIdProvider.overrideWith((ref, id) => Stream.value(null)),
+        birdsByUserIdMapProvider(
+          'test-user',
+        ).overrideWithValue(const <String, Bird>{}),
         adServiceProvider.overrideWithValue(_MockAdService()),
       ],
       child: MaterialApp.router(routerConfig: router),
@@ -164,7 +173,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text(l10n('breeding.title')), findsOneWidget);
+      // SliverAppBar.large renders the title in expanded + collapsed slots.
+      expect(find.text(l10n('breeding.title')), findsWidgets);
     });
 
     testWidgets('shows no results empty state when search has no matches', (
@@ -178,6 +188,9 @@ void main() {
 
       // Type a query that won't match anything
       await tester.enterText(find.byType(TextField), 'zzznomatch');
+      // The search bar debounces query updates by 300ms; advance past it so
+      // breedingSearchQueryProvider receives the value before asserting.
+      await tester.pump(const Duration(milliseconds: 350));
       await tester.pumpAndSettle();
 
       // Should show "no results" empty state

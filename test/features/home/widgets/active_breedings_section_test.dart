@@ -4,8 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
-import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/active_breedings_section.dart';
 
 import '../../../helpers/test_fixtures.dart';
@@ -36,8 +38,10 @@ void main() {
 
     return ProviderScope(
       overrides: [
-        birdByIdProvider('bird-1').overrideWith((_) => Stream.value(null)),
-        birdByIdProvider('bird-2').overrideWith((_) => Stream.value(null)),
+        // The section resolves parent-bird names via this map provider; override
+        // it (and the user id) so no real Drift stream opens during the test.
+        currentUserIdProvider.overrideWithValue('user-1'),
+        birdsByUserIdMapProvider('user-1').overrideWithValue(const <String, Bird>{}),
       ],
       child: MaterialApp.router(routerConfig: router),
     );

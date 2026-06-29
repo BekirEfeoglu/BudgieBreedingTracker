@@ -110,54 +110,49 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      expect(find.text(l10n('settings.title')), findsOneWidget);
+      // SliverAppBar.large renders the title in both its expanded and
+      // collapsed slots, so more than one match is expected.
+      expect(find.text(l10n('settings.title')), findsWidgets);
     });
 
     testWidgets('shows all setting sections', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      // Sections are const children of ListView; some may be off-screen.
-      // Scroll to force all lazy children to build and verify each section.
-      final listFinder = find.byType(ListView);
-      expect(listFinder, findsOneWidget);
+      // Sections are lazy SliverList children; some may be off-screen.
+      expect(find.byType(CustomScrollView), findsOneWidget);
 
       // Visible sections (top of list)
       expect(find.byType(DisplaySection), findsOneWidget);
       expect(find.byType(LanguageSection), findsOneWidget);
       expect(find.byType(AccessibilitySection), findsOneWidget);
 
-      // Scroll down to reveal remaining sections
-      await tester.drag(listFinder, const Offset(0, -600));
-      await tester.pump();
-
-      expect(find.byType(NotificationsSection), findsOneWidget);
-      expect(find.byType(DataStorageSection), findsOneWidget);
-
-      // Scroll further for bottom sections
-      await tester.drag(listFinder, const Offset(0, -600));
-      await tester.pump();
-
-      expect(find.byType(PrivacySecuritySection), findsOneWidget);
-
-      await tester.drag(listFinder, const Offset(0, -600));
-      await tester.pump();
-
-      expect(find.byType(AboutSection), findsOneWidget);
+      // Scroll each remaining section into view. `scrollUntilVisible` is
+      // robust to the SliverAppBar.large collapse consuming scroll extent.
+      final scrollable = find.byType(Scrollable).first;
+      for (final section in [
+        find.byType(NotificationsSection),
+        find.byType(DataStorageSection),
+        find.byType(PrivacySecuritySection),
+        find.byType(AboutSection),
+      ]) {
+        await tester.scrollUntilVisible(section, 300, scrollable: scrollable);
+        expect(section, findsOneWidget);
+      }
     });
 
-    testWidgets('renders as a ListView', (tester) async {
+    testWidgets('renders as a CustomScrollView', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      expect(find.byType(ListView), findsOneWidget);
+      expect(find.byType(CustomScrollView), findsOneWidget);
     });
 
     testWidgets('scrolls through all sections without error', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pump();
 
-      final listFinder = find.byType(ListView);
+      final listFinder = find.byType(CustomScrollView);
       await tester.fling(listFinder, const Offset(0, -2000), 3000);
       await tester.pumpAndSettle();
       await tester.fling(listFinder, const Offset(0, 2000), 3000);

@@ -43,7 +43,8 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text(l10n('premium.title')), findsOneWidget);
+      // SliverAppBar.large renders the title in expanded + collapsed slots.
+      expect(find.text(l10n('premium.title')), findsWidgets);
     });
 
     testWidgets('shows paywall body for non-premium user', (tester) async {
@@ -51,7 +52,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Paywall contains scrollable content
-      expect(find.byType(SingleChildScrollView), findsWidgets);
+      expect(find.byType(CustomScrollView), findsWidgets);
     });
 
     testWidgets('shows already_premium text for premium user', (tester) async {
@@ -66,7 +67,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Paywall body always renders PremiumFeatureListSection
-      expect(find.byType(SingleChildScrollView), findsWidgets);
+      expect(find.byType(CustomScrollView), findsWidgets);
     });
 
     testWidgets('guest paywall shows sign-in prompt and legal links', (

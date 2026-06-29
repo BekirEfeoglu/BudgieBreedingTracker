@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/features/home/providers/home_providers.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/main_shell.dart';
 
 Widget _createSubject({required Size size}) {
@@ -24,9 +25,15 @@ Widget _createSubject({required Size size}) {
       syncStatusProvider.overrideWithValue(SyncDisplayStatus.synced),
       periodicSyncProvider.overrideWith((_) {}),
       networkAwareSyncProvider.overrideWith((_) {}),
+      // Stub the profile sync side-effect so the shell does not kick off a
+      // real network sync (which leaves pumpAndSettle hanging).
+      profileSyncProvider('test-user').overrideWith((_) async {}),
     ],
     child: MediaQuery(
-      data: MediaQueryData(size: size),
+      // disableAnimations keeps the shimmer nav-icon animation static so
+      // pumpAndSettle settles (this MediaQueryData would otherwise default it
+      // to false, shadowing the global test config).
+      data: MediaQueryData(size: size, disableAnimations: true),
       child: MaterialApp.router(routerConfig: router),
     ),
   );
