@@ -111,11 +111,9 @@ void main() {
     testWidgets('register button text is hidden when loading', (tester) async {
       await pumpWidgetSimple(tester, buildSubject(isLoading: true));
 
-      // The register text should not be visible (replaced by progress indicator)
-      final filledButton = tester.widget<FilledButton>(
-        find.byType(FilledButton),
-      );
-      expect(filledButton.onPressed, isNull);
+      // The register text is replaced by a progress indicator while loading.
+      expect(find.text(l10n('auth.register')), findsNothing);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
     testWidgets('contains SocialLoginButtons widget', (tester) async {
@@ -306,13 +304,16 @@ void main() {
         expect(loginCalled, isTrue);
       });
 
-      testWidgets('disables register button when loading', (tester) async {
+      testWidgets('register button does not submit while loading', (
+        tester,
+      ) async {
         await pumpWidgetSimple(tester, buildSubject(isLoading: true));
 
-        final filledButton = tester.widget<FilledButton>(
-          find.byType(FilledButton),
-        );
-        expect(filledButton.onPressed, isNull);
+        // While loading the button keeps a non-null no-op handler (so it does
+        // not grey out) but tapping must not trigger onSubmit.
+        await tester.tap(find.byType(FilledButton));
+        await tester.pump();
+        expect(submitCalled, isFalse);
       });
 
       testWidgets('disables login link when loading', (tester) async {

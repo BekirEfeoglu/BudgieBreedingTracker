@@ -111,7 +111,8 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text(l10n('nav.more')), findsOneWidget);
+      // SliverAppBar.large renders the title in expanded + collapsed slots.
+      expect(find.text(l10n('nav.more')), findsWidgets);
     });
 
     testWidgets('shows core menu items', (tester) async {

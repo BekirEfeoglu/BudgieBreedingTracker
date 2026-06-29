@@ -269,11 +269,15 @@ void main() {
         buildSubject(loginState: LoginState.loading),
       );
 
-      // FilledButton is disabled in loading
-      final filledButton = tester.widget<FilledButton>(
-        find.byType(FilledButton),
+      // The submit FilledButton keeps a non-null no-op handler while loading
+      // (so it does not grey out) and shows a spinner instead of its label.
+      expect(
+        find.descendant(
+          of: find.byType(FilledButton),
+          matching: find.byType(CircularProgressIndicator),
+        ),
+        findsOneWidget,
       );
-      expect(filledButton.onPressed, isNull);
 
       // Guest button is disabled
       final guestButtons = tester.widgetList<TextButton>(

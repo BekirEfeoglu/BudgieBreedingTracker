@@ -89,7 +89,8 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      expect(find.text(l10n('statistics.title')), findsOneWidget);
+      // SliverAppBar.large renders the title in expanded + collapsed slots.
+      expect(find.text(l10n('statistics.title')), findsWidgets);
     });
 
     testWidgets('shows TabBar with three tabs', (tester) async {

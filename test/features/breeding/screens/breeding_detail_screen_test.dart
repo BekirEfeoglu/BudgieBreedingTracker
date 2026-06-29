@@ -161,8 +161,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(BreedingPairInfoSection), findsOneWidget);
-      // AppBar should show the detail title key
-      expect(find.text(l10n('breeding.detail')), findsOneWidget);
+      // AppBar should show the detail title key. SliverAppBar.large renders
+      // it in both expanded and collapsed slots.
+      expect(find.text(l10n('breeding.detail')), findsWidgets);
     });
 
     testWidgets('shows incubation progress when incubation exists', (

@@ -215,7 +215,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.byType(SingleChildScrollView), findsOneWidget);
+      // Detail content scrolls via a CustomScrollView (sliver-based layout).
+      expect(find.byType(CustomScrollView), findsOneWidget);
     });
 
     testWidgets(

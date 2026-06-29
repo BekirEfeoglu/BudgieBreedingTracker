@@ -104,6 +104,9 @@ void main() {
       await tester.tap(find.byType(NotificationBellButton));
       await tester.pumpAndSettle();
       expect(find.text('Notifications'), findsOneWidget);
+      // Tap schedules a 500ms Future.delayed to reset its navigating guard;
+      // drain it so it does not leak past the test as a pending timer.
+      await tester.pump(const Duration(milliseconds: 500));
     });
 
     testWidgets('shows badge when action feedback is added', (tester) async {

@@ -325,10 +325,15 @@ void main() {
     ) async {
       final completer = await triggerLoading(tester);
 
-      final filledButton = tester.widget<FilledButton>(
-        find.byType(FilledButton),
+      // While loading the submit button keeps a non-null no-op handler (so it
+      // does not grey out) and shows a spinner instead of its label.
+      expect(
+        find.descendant(
+          of: find.byType(FilledButton),
+          matching: find.byType(CircularProgressIndicator),
+        ),
+        findsOneWidget,
       );
-      expect(filledButton.onPressed, isNull);
 
       completer.completeError(
         const AuthException('test cancel', statusCode: '499'),

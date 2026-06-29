@@ -155,6 +155,8 @@ class _FakeBulkClient extends Fake implements SupabaseClient {
   final requestedTables = <String>[];
   int _profilesCallCount = 0;
 
+  final calledRpcs = <String>[];
+
   @override
   SupabaseQueryBuilder from(String table) {
     requestedTables.add(table);
@@ -170,6 +172,18 @@ class _FakeBulkClient extends Fake implements SupabaseClient {
         // For bulkDeleteUserData — all other tables use delete().eq()
         return _FakeDeleteQueryBuilder(deleteError: deleteError);
     }
+  }
+
+  @override
+  PostgrestFilterBuilder<T> rpc<T>(
+    String fn, {
+    Map<String, dynamic>? params,
+    dynamic get = false,
+  }) {
+    // bulkDeleteUserData now deletes via the reset_user_data RPC. Succeed
+    // unless deleteError is set (drives the skip-on-failure path).
+    calledRpcs.add(fn);
+    return _FakeMutationBuilder(error: deleteError) as PostgrestFilterBuilder<T>;
   }
 }
 

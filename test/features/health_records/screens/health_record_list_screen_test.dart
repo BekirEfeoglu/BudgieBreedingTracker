@@ -128,7 +128,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('health_records.title'), findsOneWidget);
+      // SliverAppBar.large renders the title in expanded + collapsed slots.
+      expect(find.text('health_records.title'), findsWidgets);
     });
 
     testWidgets('has search text field', (tester) async {

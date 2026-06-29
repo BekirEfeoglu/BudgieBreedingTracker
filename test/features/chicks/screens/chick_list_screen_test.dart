@@ -232,8 +232,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Type a query that matches nothing
+      // Type a query that matches nothing. The search field debounces query
+      // updates by 300ms, so advance past it before asserting.
       await tester.enterText(find.byType(TextField).first, 'ZZZNOTFOUND');
+      await tester.pump(const Duration(milliseconds: 350));
       await tester.pumpAndSettle();
 
       // Should show no results empty state

@@ -109,13 +109,15 @@ void main() {
       await tester.pumpWidget(createSubject(birdsStream: Stream.value(birds)));
       await tester.pumpAndSettle();
 
-      expect(find.byType(ListView), findsWidgets);
-      expect(find.byType(GridView), findsNothing);
+      // The screen uses CustomScrollView slivers: SliverList in list mode,
+      // SliverGrid in grid mode.
+      expect(find.byType(SliverList), findsWidgets);
+      expect(find.byType(SliverGrid), findsNothing);
 
       await tester.tap(find.byTooltip(l10n('birds.grid_view')));
       await tester.pumpAndSettle();
 
-      expect(find.byType(GridView), findsOneWidget);
+      expect(find.byType(SliverGrid), findsOneWidget);
       expect(find.text('Mavi'), findsAtLeastNWidgets(1));
       expect(find.text('Sari'), findsAtLeastNWidgets(1));
 
