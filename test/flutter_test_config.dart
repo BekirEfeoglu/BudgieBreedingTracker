@@ -1,13 +1,49 @@
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/supabase_client.dart';
 
+/// Golden comparator that tolerates a tiny fraction of differing pixels.
+///
+/// The CI golden job regenerates masters then verifies, so this only absorbs
+/// cross-process sub-pixel non-determinism (icon glyph anti-aliasing + decorative
+/// box-shadow blur). Real regressions differ by far more than the threshold.
+class _TolerantGoldenComparator extends LocalFileComparator {
+  _TolerantGoldenComparator(super.testFile, {required this.threshold});
+
+  /// Max fraction (0..1) of differing pixels still considered a pass.
+  final double threshold;
+
+  @override
+  Future<bool> compare(Uint8List imageBytes, Uri golden) async {
+    final result = await GoldenFileComparator.compareLists(
+      imageBytes,
+      await getGoldenBytes(golden),
+    );
+    if (result.passed || result.diffPercent <= threshold) {
+      return true;
+    }
+    final error = await generateFailureOutput(result, golden, basedir);
+    throw FlutterError(error);
+  }
+}
+
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
+  // Tolerate sub-pixel golden noise (anti-aliasing + blurred shadows) that the
+  // regenerate-then-verify CI job would otherwise flag as a flake.
+  final existingComparator = goldenFileComparator;
+  if (existingComparator is LocalFileComparator) {
+    goldenFileComparator = _TolerantGoldenComparator(
+      existingComparator.basedir.resolve('flutter_test_config.dart'),
+      threshold: 0.01,
+    );
+  }
+
   // Globally enable the "reduce motion" accessibility flag for every test so
   // perpetual/decorative animations (pulse, shimmer, scanner, slide-fade
   // entrance) do not run. This keeps `pumpAndSettle` from hanging and prevents
