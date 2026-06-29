@@ -90,7 +90,16 @@ void main() {
   });
 
   group('CertificatePinning.isTrustedFingerprint', () {
-    test('trusts the active Supabase leaf certificate', () {
+    test('trusts the current Supabase leaf certificate (rotated 2026-06-28)', () {
+      expect(
+        CertificatePinning.isTrustedFingerprint(
+          'E4:89:07:23:60:38:C7:FE:B0:5C:D8:62:E4:1C:D7:FC:57:28:F2:8D:A6:1B:95:E6:76:1D:9C:29:5C:5B:32:98',
+        ),
+        isTrue,
+      );
+    });
+
+    test('trusts the previous Supabase leaf certificate (rotation overlap)', () {
       expect(
         CertificatePinning.isTrustedFingerprint(
           'B9:B8:F4:CE:6C:86:1D:3D:D1:67:87:08:FA:4A:40:62:10:7E:E7:05:0B:52:82:0F:99:10:50:F1:2E:B2:91:00',
