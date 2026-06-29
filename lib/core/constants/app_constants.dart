@@ -2,7 +2,7 @@ import '../../bootstrap.dart';
 
 abstract class AppConstants {
   static const String appName = 'BudgieBreedingTracker';
-  static const String appVersion = '1.1.3';
+  static const String appVersion = '1.1.4';
   static const String privacyPolicyUrl =
       'https://budgiebreedingtracker.online/privacy-policy.html';
   static const String termsOfUseUrl =
