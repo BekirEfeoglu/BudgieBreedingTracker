@@ -49,9 +49,17 @@ binding.platformDispatcher.accessibilityFeaturesTestValue =
 
 This makes `MediaQuery.disableAnimations` true everywhere (helper-based *and*
 custom-`MaterialApp` tests), so reduce-motion-aware decorative animations
-(pulse/shimmer/scanner/slide-fade — see [[patterns/ui-patterns]]) stay static.
-Without it, perpetual `repeat()` animations hang `pumpAndSettle` and the
-slide-fade entrance leaves a pending `Future.delayed` timer.
+(pulse/shimmer/scanner/slide-fade/count-up — see [[patterns/ui-patterns]]) stay
+static. Without it, perpetual `repeat()` animations hang `pumpAndSettle`, the
+slide-fade entrance leaves a pending `Future.delayed` timer, and count-up keeps
+the card rebuilding mid-animation (golden flake).
+
+It also installs a **tolerant golden comparator** (`_TolerantGoldenComparator
+extends LocalFileComparator`) that passes when `result.diffPercent <= 0.01`
+(≤1% of pixels differ; `diffPercent` is a 0–1 fraction). The CI golden job
+regenerates masters then verifies, so this only absorbs cross-process sub-pixel
+noise (icon glyph anti-aliasing + decorative box-shadow blur — measured ~0.145%
+for `StatCard`). It can only loosen comparison, never turn a passing golden red.
 
 ## Pump Strategy
 
@@ -96,6 +104,11 @@ test('should throw NetworkException when offline', () { ... });
 
 - `test/golden/` — tagged `@Tags(['golden'])`
 - Linux baseline only
+- CI `golden-test` job **regenerates masters then verifies** — it checks render
+  *stability*, not regression against committed PNGs. Sub-pixel noise is absorbed
+  by the tolerant comparator (see Global Test Config above).
+- Transient mismatch images land in `test/golden/**/failures/` — gitignored,
+  never commit them.
 - Update: `flutter test --update-goldens test/golden/`
 - Multi-locale: test all 3 languages (tr/en/de) — catches German overflow bugs
 
