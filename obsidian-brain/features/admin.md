@@ -17,6 +17,39 @@ security overview, server-side config.
 | Security overview | `AppRoutes.adminSecurity` | `admin_security_screen.dart` |
 | Server settings / flags | `AppRoutes.adminSettings` | `admin_settings_screen.dart` |
 | Feedback triage | `AppRoutes.adminFeedback` | `admin_feedback_screen.dart` |
+| Moderation queue | `AppRoutes.adminModeration` | `admin_moderation_screen.dart` |
+
+## Moderation Queue
+
+`admin_moderation_screen.dart` + `admin_moderation_providers.dart` surface
+community content awaiting review:
+
+- `adminPendingPostsProvider` / `adminPendingCommentsProvider`
+  (`FutureProvider.autoDispose`) fetch rows where `is_deleted = false` and
+  `needs_review = true`, newest first. Both call `requireAdmin(ref)` first.
+- `AdminModerationNotifier` (`adminModerationProvider`,
+  `AsyncNotifierProvider<…, void>`) exposes `approvePost` / `deletePost` /
+  `approveComment` / `deleteComment`. Approve clears `needs_review`; delete
+  soft-deletes (`is_deleted = true`) and clears `needs_review`. Each guards
+  with `requireAdmin` and invalidates the relevant list provider.
+- Column names use `SupabaseConstants` (`colIsDeleted`, `colNeedsReview`,
+  `colId`, `colCreatedAt`) — the admin `client.from()` exception does NOT
+  waive the hardcoded-string rule.
+
+## Force Logout
+
+`AdminUserManager.forceLogout` (user detail → security section,
+`admin_user_detail_content_security.dart`) calls the `admin_force_logout`
+RPC, which (server-side, `is_admin()`-gated) `DELETE`s all `auth.sessions`
+rows for the target and stamps `profiles.session_revoked_at`. Refresh tokens
+are revoked immediately; the live access token remains valid until expiry
+(≤1h) — there is no custom access-token hook enforcing `session_revoked_at`.
+Protected roles (founder) are blocked client-side before the RPC.
+
+`admin_get_user_aggregate_detail(p_user_id)` RPC fetches the full user-detail
+payload (profile, subscription, entity counts, recent activity logs) in one
+round-trip. It is `SECURITY INVOKER` + `is_admin()`-gated and relies on the
+admin-inclusive RLS SELECT policies on every table it reads.
 
 ## Architectural Exception
 

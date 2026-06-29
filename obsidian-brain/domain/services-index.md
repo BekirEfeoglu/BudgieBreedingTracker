@@ -1,10 +1,11 @@
 # Domain Services Index
 
-22 service directories in `lib/domain/services/` (ads, app_update, auth, backup, breeding, calendar, eggs, encryption, export, gamification, genetics, home_widget, import, incubation, local_ai, moderation, notifications, payment, premium, presence, profile, sync).
+23 service directories in `lib/domain/services/` (ads, app_update, auth, backup, birds, breeding, calendar, eggs, encryption, export, gamification, genetics, home_widget, import, incubation, local_ai, moderation, notifications, payment, premium, presence, profile, sync).
 
 | Service | Page | Purpose | Network Required |
 |---------|------|---------|------------------|
 | Auth | [[domain/auth-service]] | Login, session refresh, MFA | Yes |
+| Bird lifecycle | (see [[features/birds]]) | Closes active pairs/incubations + cancels reminders when a bird is sold/gifted/dead/deleted | No |
 | Calendar | [[domain/calendar-service]] | Event scheduling, auto-milestones | No |
 | Data I/O | [[domain/data-io]] | JSON backup (+AES), Excel I/O, PDF export | Partial |
 | Eggs | [[domain/eggs-service]] | Egg actions notifier, chick auto-create | No |

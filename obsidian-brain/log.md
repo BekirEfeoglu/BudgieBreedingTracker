@@ -4,7 +4,39 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
-## [2026-06-25] fix | Admin users summary bar shows true DB-wide counts
+## [2026-06-29] feat | Admin moderation queue, force logout + aggregate-detail RPC
+
+New `admin_moderation_screen.dart` + `admin_moderation_providers.dart`:
+`adminPendingPostsProvider` / `adminPendingCommentsProvider` list community
+content with `needs_review = true`; `AdminModerationNotifier`
+(`adminModerationProvider`) approves (clear `needs_review`) or soft-deletes
+(`is_deleted = true`) posts/comments. Route `AppRoutes.adminModeration`
+(`/admin/moderation`). New `admin_users_filter_sheet.dart` (advanced
+status/plan/date filters) and `admin_user_detail_content_security.dart`
+(security + audit section with **force logout**). 4 Supabase migrations
+(`20260627132400`–`20260627134000`, all applied to prod): the
+`admin_get_user_aggregate_detail` RPC (one-round-trip user detail, switched
+`SECURITY DEFINER` → `INVOKER` to clear the linter warning — safe because all
+read tables have admin-inclusive RLS SELECT), SECURITY DEFINER exposure
+hardening (revoke PUBLIC/anon execute), and `admin_force_logout` (deletes
+`auth.sessions` + stamps `profiles.session_revoked_at`; refresh tokens revoked
+immediately, live access token valid ≤1h, no token hook). See [[features/admin]].
+
+## [2026-06-29] feat | BirdLifecycleService cancels reminders on bird exit
+
+New `lib/domain/services/birds/bird_lifecycle_service.dart`
+(`birdLifecycleServiceProvider`) — called from `bird_form_providers.dart` when
+a bird is sold / gifted / dead / deleted. Cancels active breeding pairs and
+their active incubations, and now also cancels the scheduled reminders
+(incubation milestones + per-egg turning, species-resolved) so no zombie
+notifications fire for a pair that no longer exists, then clears calendar
+events. Best-effort + non-rethrowing per `breeding-eggs.md`. Brings the domain
+service count to 23. Review fixes in the same pass: 13 missing admin/community
+l10n keys added (tr/en/de), `AppIconButton`/`AppIcon` + `mounted`/`LoadingState`
++ `SupabaseConstants` column fixes in the new admin files, stray `scratch.ts`
+removed. New tests: `bird_lifecycle_service_test.dart` (4),
+`admin_moderation_providers_test.dart` (4). See [[features/birds]],
+[[domain/services-index]].
 
 `adminUserCountsProvider` (`admin_users_providers.dart`) now feeds the users
 summary bar instead of deriving Toplam/Aktif/Pasif/Çevrimiçi from the loaded

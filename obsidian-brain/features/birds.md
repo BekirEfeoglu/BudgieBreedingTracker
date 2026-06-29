@@ -29,6 +29,24 @@
 - **Repository**: `lib/data/repositories/bird_repository.dart`
 - **Remote source**: `lib/data/remote/api/bird_remote_source.dart`
 
+## Lifecycle Side Effects
+
+`BirdLifecycleService` (`lib/domain/services/birds/bird_lifecycle_service.dart`,
+`birdLifecycleServiceProvider`) handles cross-domain cleanup when a bird leaves
+the user's inventory. `bird_form_providers.dart` calls
+`cancelActiveBreedingsForBird(id)` on the sold / gifted / dead / delete paths.
+For each **active** breeding pair the bird belongs to it:
+
+1. Cancels the pair (`BreedingStatus.cancelled` + `separationDate`)
+2. Cancels related active incubations (`IncubationStatus.cancelled`)
+3. Cancels scheduled reminders — incubation milestones **and** per-egg turning
+   reminders (species resolved per incubation, matching the breeding-cancel path)
+4. Removes calendar/events for the pair (`eventRepo.removeByBreedingPairIds`)
+
+Side effects are best-effort and never rethrow: a cleanup failure must not undo
+the primary bird mutation (per `breeding-eggs.md`). Errors are logged via
+`AppLogger.error`.
+
 ## Photo Upload
 
 - Max 10MB file size guard
