@@ -245,9 +245,19 @@ void main() {
     ).thenAnswer((_) async => 0);
   }
 
-  ProviderContainer createContainer({String userId = _userId}) {
+  ProviderContainer createContainer({
+    String userId = _userId,
+    Duration? networkPhaseTimeout,
+  }) {
     return ProviderContainer(
       overrides: [
+        if (networkPhaseTimeout != null)
+          syncOrchestratorProvider.overrideWith(
+            (ref) => SyncOrchestrator(
+              ref,
+              networkPhaseTimeout: networkPhaseTimeout,
+            ),
+          ),
         currentUserIdProvider.overrideWithValue(userId),
         birdRepositoryProvider.overrideWithValue(mockBirdRepository),
         eggRepositoryProvider.overrideWithValue(mockEggRepository),
@@ -508,6 +518,41 @@ void main() {
           prefs.getString('pref_last_synced_at'),
           previousSync.toIso8601String(),
         );
+      },
+    );
+
+    test(
+      'recovers (error + clears syncing) when a pull phase hangs past the '
+      'network timeout',
+      () async {
+        // Regression: a stalled Supabase request used to leave the awaited
+        // future pending forever, so the finally that clears isSyncingProvider
+        // never ran and the UI sync indicator was stuck on "syncing". The
+        // network phase timeout must convert the hang into a recoverable error.
+        final neverCompletes = Completer<void>();
+        addTearDown(() {
+          if (!neverCompletes.isCompleted) neverCompletes.complete();
+        });
+        when(
+          () => mockBirdRepository.pull(
+            _userId,
+            lastSyncedAt: any(named: 'lastSyncedAt'),
+          ),
+        ).thenAnswer((_) => neverCompletes.future);
+
+        final container = createContainer(
+          networkPhaseTimeout: const Duration(milliseconds: 50),
+        );
+        addTearDown(container.dispose);
+        final orchestrator = container.read(syncOrchestratorProvider);
+
+        final result = await orchestrator.fullSync();
+
+        expect(result, SyncResult.error);
+        expect(container.read(syncErrorProvider), isTrue);
+        // The key assertion: syncing state is cleared, not stuck forever.
+        expect(container.read(isSyncingProvider), isFalse);
+        expect(orchestrator.isSyncing, isFalse);
       },
     );
   });

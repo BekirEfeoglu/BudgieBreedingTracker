@@ -28,8 +28,10 @@ part 'sync_time_helpers.dart';
 /// - [SyncPullHandler] for pulling remote changes
 /// - [SyncErrorHandler] for retry and cleanup
 class SyncOrchestrator {
-  SyncOrchestrator(this._ref)
-    : _pushHandler = SyncPushHandler(_ref),
+  SyncOrchestrator(this._ref, {Duration? networkPhaseTimeout})
+    : _networkPhaseTimeout =
+          networkPhaseTimeout ?? _defaultNetworkPhaseTimeout,
+      _pushHandler = SyncPushHandler(_ref),
       _pullHandler = SyncPullHandler(_ref) {
     _errorHandler = SyncErrorHandler(_ref, _pushHandler);
   }
@@ -38,6 +40,10 @@ class SyncOrchestrator {
   final SyncPushHandler _pushHandler;
   final SyncPullHandler _pullHandler;
   late final SyncErrorHandler _errorHandler;
+
+  /// Upper bound for a single network sync phase (push / pull). Overridable
+  /// in tests; production uses [_defaultNetworkPhaseTimeout].
+  final Duration _networkPhaseTimeout;
 
   Future<SyncResult>? _activeSyncFuture;
   SharedPreferences? _prefs;
@@ -51,6 +57,17 @@ class SyncOrchestrator {
 
   /// Minimum interval between consecutive forceFullSync calls.
   static const _forceFullSyncCooldown = Duration(minutes: 2);
+
+  /// Default upper bound for a single network sync phase (push / pull).
+  ///
+  /// A normal online sync completes in ~3s (perf budget). The underlying
+  /// Supabase REST calls have no request timeout of their own, so a stalled
+  /// connection (flaky network, captive portal, server not responding) leaves
+  /// the awaited future pending forever. Without this bound the `finally` that
+  /// clears [isSyncingProvider] never runs and the UI sync indicator is stuck
+  /// on "Senkronize ediliyor…" indefinitely. On timeout the phase throws
+  /// [TimeoutException], which the catch converts to an error state + retry.
+  static const _defaultNetworkPhaseTimeout = Duration(seconds: 45);
 
   /// Performs a sync cycle: push local changes, then pull remote.
   ///
@@ -86,15 +103,16 @@ class SyncOrchestrator {
       final needsReconcile = await _isReconcileDue();
       final since = needsReconcile ? null : lastSync;
 
-      final pushSuccess = await _pushHandler.pushChanges(userId);
+      final pushSuccess = await _pushHandler
+          .pushChanges(userId)
+          .timeout(_networkPhaseTimeout);
 
       // If push had errors, skip full reconciliation to protect unsynced
       // local records. Fall back to incremental pull instead.
       final effectiveSince = pushSuccess ? since : (lastSync ?? since);
-      final pullSuccess = await _pullHandler.pullChanges(
-        userId,
-        since: effectiveSince,
-      );
+      final pullSuccess = await _pullHandler
+          .pullChanges(userId, since: effectiveSince)
+          .timeout(_networkPhaseTimeout);
       if (!pullSuccess) {
         _ref.read(syncErrorProvider.notifier).state = true;
         // Still proceed with cleanup and notification processing
@@ -197,16 +215,17 @@ class SyncOrchestrator {
         return SyncResult.error;
       }
 
-      final pushSuccess = await _pushHandler.pushChanges(userId);
+      final pushSuccess = await _pushHandler
+          .pushChanges(userId)
+          .timeout(_networkPhaseTimeout);
 
       // Only do full reconciliation if push succeeded. Otherwise use
       // incremental pull to avoid deleting unsynced local records.
       final lastSync = await _loadLastSyncTime();
       final effectiveSince = pushSuccess ? null : lastSync;
-      final pullSuccess = await _pullHandler.pullChanges(
-        userId,
-        since: effectiveSince,
-      );
+      final pullSuccess = await _pullHandler
+          .pullChanges(userId, since: effectiveSince)
+          .timeout(_networkPhaseTimeout);
       if (!pullSuccess) {
         _ref.read(syncErrorProvider.notifier).state = true;
         // Still proceed with cleanup and notification processing.
