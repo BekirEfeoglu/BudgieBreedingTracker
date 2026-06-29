@@ -34,7 +34,20 @@ jobs:
         run: flutter pub get
 
       - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs
+        run: |
+          # drift_dev 2.31 intermittently throws "Circular error when
+          # deserializing drift modules" (build-order dependent). Retry with a
+          # clean cache so a flaky codegen pass does not fail the whole job.
+          attempt=1
+          until dart run build_runner build --delete-conflicting-outputs; do
+            if [ "$attempt" -ge 3 ]; then
+              echo "build_runner failed after $attempt attempts"
+              exit 1
+            fi
+            echo "build_runner attempt $attempt failed; cleaning and retrying"
+            dart run build_runner clean || true
+            attempt=$((attempt + 1))
+          done
 
       - name: Analyze
         run: flutter analyze --no-fatal-infos
@@ -58,7 +71,20 @@ jobs:
         run: flutter pub get
 
       - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs
+        run: |
+          # drift_dev 2.31 intermittently throws "Circular error when
+          # deserializing drift modules" (build-order dependent). Retry with a
+          # clean cache so a flaky codegen pass does not fail the whole job.
+          attempt=1
+          until dart run build_runner build --delete-conflicting-outputs; do
+            if [ "$attempt" -ge 3 ]; then
+              echo "build_runner failed after $attempt attempts"
+              exit 1
+            fi
+            echo "build_runner attempt $attempt failed; cleaning and retrying"
+            dart run build_runner clean || true
+            attempt=$((attempt + 1))
+          done
 
       - name: Run tests
         # --concurrency=4: Run tests in parallel for faster execution.
@@ -104,7 +130,20 @@ jobs:
         run: flutter pub get
 
       - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs
+        run: |
+          # drift_dev 2.31 intermittently throws "Circular error when
+          # deserializing drift modules" (build-order dependent). Retry with a
+          # clean cache so a flaky codegen pass does not fail the whole job.
+          attempt=1
+          until dart run build_runner build --delete-conflicting-outputs; do
+            if [ "$attempt" -ge 3 ]; then
+              echo "build_runner failed after $attempt attempts"
+              exit 1
+            fi
+            echo "build_runner attempt $attempt failed; cleaning and retrying"
+            dart run build_runner clean || true
+            attempt=$((attempt + 1))
+          done
 
       - name: Regenerate golden masters for Linux
         run: |
@@ -168,7 +207,20 @@ jobs:
         run: flutter pub get
 
       - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs
+        run: |
+          # drift_dev 2.31 intermittently throws "Circular error when
+          # deserializing drift modules" (build-order dependent). Retry with a
+          # clean cache so a flaky codegen pass does not fail the whole job.
+          attempt=1
+          until dart run build_runner build --delete-conflicting-outputs; do
+            if [ "$attempt" -ge 3 ]; then
+              echo "build_runner failed after $attempt attempts"
+              exit 1
+            fi
+            echo "build_runner attempt $attempt failed; cleaning and retrying"
+            dart run build_runner clean || true
+            attempt=$((attempt + 1))
+          done
 
       - name: Run e2e and community tests
         run: |
@@ -386,7 +438,20 @@ jobs:
         run: flutter pub get
 
       - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs
+        run: |
+          # drift_dev 2.31 intermittently throws "Circular error when
+          # deserializing drift modules" (build-order dependent). Retry with a
+          # clean cache so a flaky codegen pass does not fail the whole job.
+          attempt=1
+          until dart run build_runner build --delete-conflicting-outputs; do
+            if [ "$attempt" -ge 3 ]; then
+              echo "build_runner failed after $attempt attempts"
+              exit 1
+            fi
+            echo "build_runner attempt $attempt failed; cleaning and retrying"
+            dart run build_runner clean || true
+            attempt=$((attempt + 1))
+          done
 
       - name: Build Android APK (debug)
         run: |
@@ -413,7 +478,20 @@ jobs:
         run: flutter pub get
 
       - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs
+        run: |
+          # drift_dev 2.31 intermittently throws "Circular error when
+          # deserializing drift modules" (build-order dependent). Retry with a
+          # clean cache so a flaky codegen pass does not fail the whole job.
+          attempt=1
+          until dart run build_runner build --delete-conflicting-outputs; do
+            if [ "$attempt" -ge 3 ]; then
+              echo "build_runner failed after $attempt attempts"
+              exit 1
+            fi
+            echo "build_runner attempt $attempt failed; cleaning and retrying"
+            dart run build_runner clean || true
+            attempt=$((attempt + 1))
+          done
 
       - name: Build iOS (no codesign)
         run: |
