@@ -39,7 +39,7 @@ MigrationStrategy(
 
 Format: `YYYYMMDDHHmmss_short_description.sql`
 
-174 migration files in `supabase/migrations/` — applied in lexicographic (chronological) order.
+179 migration files in `supabase/migrations/` — applied in lexicographic (chronological) order.
 
 ### Idempotency (Required)
 
@@ -66,6 +66,34 @@ CREATE POLICY "users select own notes"
 ```
 
 Verify after: `python3 scripts/verify_rls_staging.sql`
+
+### SECURITY DEFINER RPC Exposure (linter 0029)
+
+A `SECURITY DEFINER` function living in the exposed `public` API schema is callable
+by the `authenticated` role via `/rest/v1/rpc/<fn>` — the Supabase linter flags this
+(`0029_authenticated_security_definer_function_executable`) even when the body guards
+on `public.is_admin()`. Established hardening pattern (`20260501115000`, extended by
+`20260629120000` for `admin_force_logout`):
+
+1. Move the privileged `SECURITY DEFINER` implementation into the **`private`** schema
+   (not in `config.toml` exposed `schemas`, so unreachable via REST and invisible to
+   the linter).
+2. Keep a thin `public` `SECURITY INVOKER` wrapper that delegates to `private.<fn>()`
+   — preserves the public name + signature so client `rpc()` calls stay unchanged.
+3. `REVOKE ALL ... FROM PUBLIC, anon, authenticated` then
+   `GRANT EXECUTE ... TO authenticated, service_role` on both copies.
+
+```sql
+ALTER FUNCTION public.admin_force_logout(uuid) SET SCHEMA private;  -- privileged impl
+
+CREATE OR REPLACE FUNCTION public.admin_force_logout(target_user_id uuid)
+RETURNS boolean LANGUAGE sql SECURITY INVOKER SET search_path = ''
+AS $$ SELECT private.admin_force_logout(target_user_id); $$;        -- exposed wrapper
+```
+
+New admin/privileged RPCs must follow this from the start — `admin_force_logout`
+(`20260627134000`) was added directly in `public` as `SECURITY DEFINER` and had to be
+re-hardened.
 
 ### Backfill Pattern (large tables)
 
@@ -99,6 +127,7 @@ Never delete or rename migration files. If a mistake exists, create a new migrat
 6. Console-only edit (no audit trail)
 7. Migration file deletion (history broken)
 8. Supabase migration without corresponding Drift change
+9. New admin/privileged RPC added as `public` `SECURITY DEFINER` (linter 0029 — use the `private` impl + `public` `SECURITY INVOKER` wrapper pattern)
 
 ## See Also
 

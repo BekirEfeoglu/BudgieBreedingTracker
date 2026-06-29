@@ -4,6 +4,35 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-06-29] fix | Cert-pin rotation + unbounded sync timeout (sync stuck)
+
+Device logs showed all Supabase calls failing with
+`TlsException: Certificate pinning check failed` — Supabase rotated its leaf cert
+early (new `E4:89:…`, valid 2026-06-28→09-26, Google Trust Services WE1) ahead of
+the pinned `B9:B8:…` cert's 2026-07-29 expiry, so every request was rejected at TLS
+and nothing synced. Verified the new fingerprint independently via `openssl s_client`
+(not a MITM), added it to `certificate_pinning.dart` `_trustedFingerprints` keeping
+the previous leaf for rotation overlap (security.md procedure). Separately hardened
+`sync_orchestrator.dart`: push/pull phases had no timeout, so a stalled request left
+`isSyncingProvider` true forever (UI stuck on "Senkronize ediliyor…") — added a 45s
+network-phase timeout (injectable for tests) that converts a hang into a recoverable
+error. Regression tests added for both.
+
+## [2026-06-29] security | Harden admin_force_logout SECURITY DEFINER exposure
+
+Supabase linter `0029` flagged `public.admin_force_logout(uuid)` as an
+`authenticated`-callable `SECURITY DEFINER` RPC. Body already guards on
+`public.is_admin()` (no privilege escalation), but the function — added
+`20260627134000`, after the same-day linter-fix migrations — skipped the
+established `private`-schema hardening pattern from `20260501115000`. New
+migration `20260629120000_harden_admin_force_logout_exposure.sql` moves the
+privileged impl into `private`, keeps a `public` `SECURITY INVOKER` wrapper
+(public name + signature unchanged, so `admin_user_manager.dart` rpc call is
+untouched), and re-scopes grants to `authenticated, service_role`. Idempotent;
+not yet deployed (`supabase db push` pending). Migration count 178→179 across
+CLAUDE.md, data-layer.md, overview.md, supabase.md. Documented the SECURITY
+DEFINER RPC exposure pattern in [[data-layer/migrations]].
+
 ## [2026-06-29] test | Repair 44 UI-refresh widget-test failures
 
 Second pass after the reduce-motion fix. Root causes + fixes: stale provider
@@ -166,26 +195,4 @@ deleted all non-`main` remote branches (only `main` remains):
 
 ---
 
-## [2026-06-13] automation | platform/wiki lint
-
-- Removed unsupported Flutter web target files; GitHub Pages remains served from
-  `docs/`.
-- Added `check_platform_targets.py` and `check_obsidian_brain.py` to local and
-  CI quality gates.
-
----
-
-## [2026-06-13] sync | Rule metadata + wiki stat drift
-
-Synced wiki summaries with current `CLAUDE.md` and `.claude/rules/` after the
-rule metadata alignment commit.
-
-- UUID guidance updated from `Uuid().v4()` to `const Uuid().v7()` for new entity
-  creation paths in overview and sync/data-layer pages.
-- Stat drift updated: source 983->987, tests 901/11,048->903/11,095, l10n
-  2,992->2,995, migrations 160->174, Edge Functions 9->12, Supabase constants
-  137->138, code-quality checker wording 28->27 checker categories.
-- Edge Function inventory now includes `create-community-post`,
-  `create-community-comment`, and `upload-community-photo`.
-- Shared widget catalog corrected to 29 with 2 dialogs and 5 egg widgets.
-- Older entries are archived in [[log-archive-2026-05]].
+Older entries are archived in [[log-archive-2026-06]] and [[log-archive-2026-05]].

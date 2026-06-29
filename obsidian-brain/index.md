@@ -12,6 +12,7 @@ Full catalog of every page in the obsidian-brain wiki.
 | [[cheat-sheet]] | Task-oriented "how do I…" / "where is…" / "when does…" |
 | [[log]] | Chronological change log |
 | [[log-archive-2026-05]] | Archived May 2026 change log entries |
+| [[log-archive-2026-06]] | Archived June 2026 change log entries |
 | [[overview]] | High-level synthesis — what the app does, architecture diagram, key decisions |
 
 ## Architecture
