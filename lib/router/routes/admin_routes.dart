@@ -12,6 +12,7 @@ import '../../features/admin/screens/admin_audit_screen.dart';
 import '../../features/admin/screens/admin_security_screen.dart';
 import '../../features/admin/screens/admin_settings_screen.dart';
 import '../../features/admin/screens/admin_feedback_screen.dart';
+import '../../features/admin/screens/admin_moderation_screen.dart';
 import '../route_names.dart';
 import '../route_utils.dart';
 
@@ -89,6 +90,13 @@ ShellRoute buildAdminRoutes(GlobalKey<NavigatorState> navigatorKey) =>
           pageBuilder: (context, state) => NoTransitionPage(
             key: state.pageKey,
             child: const AdminFeedbackScreen(),
+          ),
+        ),
+        GoRoute(
+          path: AppRoutes.adminModeration,
+          pageBuilder: (context, state) => NoTransitionPage(
+            key: state.pageKey,
+            child: const AdminModerationScreen(),
           ),
         ),
       ],

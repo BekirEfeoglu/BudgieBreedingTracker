@@ -23,6 +23,16 @@ final birdsStreamProvider = StreamProvider.family<List<Bird>, String>((
   });
 });
 
+/// Bulk-fetches all birds as a map for O(1) list lookups.
+/// This prevents N+1 query problems in lists.
+final birdsByUserIdMapProvider = Provider.family<Map<String, Bird>, String>((
+  ref,
+  userId,
+) {
+  final birds = ref.watch(birdsStreamProvider(userId)).value ?? const [];
+  return {for (final bird in birds) bird.id: bird};
+});
+
 /// SQL-filtered stream of alive parent candidates for the parent-selector
 /// dropdown.
 ///

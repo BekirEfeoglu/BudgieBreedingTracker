@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/animations/shimmer_shine_animation.dart';
 
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
@@ -76,9 +77,14 @@ class MainShell extends ConsumerWidget {
               destinations: _navItems.map((item) {
                 return NavigationRailDestination(
                   icon: AppIcon(item.iconAsset),
-                  selectedIcon: AppIcon(
-                    item.iconAsset,
-                    color: Theme.of(context).colorScheme.primary,
+                  selectedIcon: ShimmerShineAnimation(
+                    isActive: true,
+                    duration: const Duration(milliseconds: 2000),
+                    shineColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.5),
+                    child: AppIcon(
+                      item.iconAsset,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
                   label: Text(item.label.tr()),
                 );
@@ -102,9 +108,14 @@ class MainShell extends ConsumerWidget {
         destinations: _navItems.map((item) {
           return NavigationDestination(
             icon: AppIcon(item.iconAsset),
-            selectedIcon: AppIcon(
-              item.iconAsset,
-              color: Theme.of(context).colorScheme.primary,
+            selectedIcon: ShimmerShineAnimation(
+              isActive: true,
+              duration: const Duration(milliseconds: 2000),
+              shineColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.5),
+              child: AppIcon(
+                item.iconAsset,
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
             label: item.label.tr(),
           );

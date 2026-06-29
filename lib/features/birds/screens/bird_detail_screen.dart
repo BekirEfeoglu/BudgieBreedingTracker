@@ -101,97 +101,100 @@ class _DetailContent extends ConsumerWidget {
     });
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(bird.name),
-        actions: [
-          if (isFounder)
-            AppIconButton(
-              icon: const Icon(LucideIcons.sparkles, size: 20),
-              tooltip: 'more.ai_predictions'.tr(),
-              semanticLabel: 'more.ai_predictions'.tr(),
-              onPressed: () => context.push(
-                '${AppRoutes.aiPredictions}?tab=mutation&birdId=${bird.id}',
-              ),
-            ),
-          AppIconButton(
-            icon: const AppIcon(AppIcons.edit),
-            tooltip: 'common.edit'.tr(),
-            semanticLabel: 'common.edit'.tr(),
-            onPressed: () => context.push('/birds/form?editId=${bird.id}'),
-          ),
-          PopupMenuButton<String>(
-            onSelected: (value) => _handleMenuAction(context, ref, value),
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'pedigree',
-                child: Text('genealogy.view_pedigree'.tr()),
-              ),
-              if (bird.status == BirdStatus.alive) ...[
-                PopupMenuItem(
-                  value: 'dead',
-                  child: Text('birds.mark_dead'.tr()),
-                ),
-                PopupMenuItem(value: 'sold', child: Text('birds.sold'.tr())),
-                PopupMenuItem(
-                  value: 'gifted',
-                  child: Text('birds.gifted'.tr()),
-                ),
-              ],
-              PopupMenuItem(value: 'delete', child: Text('common.delete'.tr())),
-            ],
-          ),
-        ],
-      ),
-      // A detail-owned status-change / delete action sets formState.isLoading.
-      // Instead of swapping the whole body for a spinner (which destroys the
-      // scroll position and flashes the screen), keep the content mounted and
-      // lay a non-destructive translucent overlay on top while the action runs.
       body: Stack(
         children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: AppSpacing.maxContentWidth,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    BirdDetailHeader(bird: bird),
-                    BirdDetailPhotos(bird: bird),
-                    const Divider(
-                      height: 1,
-                      indent: AppSpacing.lg,
-                      endIndent: AppSpacing.lg,
-                    ),
-                    BirdDetailInfo(bird: bird),
-                    BirdDetailTimelineSection(bird: bird),
-                    const Divider(
-                      height: 1,
-                      indent: AppSpacing.lg,
-                      endIndent: AppSpacing.lg,
-                    ),
-                    BirdDetailParents(bird: bird),
-                    BirdFamilyInfo(bird: bird),
-                    const Divider(
-                      height: 1,
-                      indent: AppSpacing.lg,
-                      endIndent: AppSpacing.lg,
-                    ),
-                    BirdDetailHealth(birdId: bird.id),
-                    if (bird.notes != null && bird.notes!.isNotEmpty) ...[
-                      const Divider(
-                        height: 1,
-                        indent: AppSpacing.lg,
-                        endIndent: AppSpacing.lg,
+          CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverAppBar.large(
+                title: Text(bird.name),
+                actions: [
+                  if (isFounder)
+                    AppIconButton(
+                      icon: const Icon(LucideIcons.sparkles, size: 20),
+                      tooltip: 'more.ai_predictions'.tr(),
+                      semanticLabel: 'more.ai_predictions'.tr(),
+                      onPressed: () => context.push(
+                        '${AppRoutes.aiPredictions}?tab=mutation&birdId=${bird.id}',
                       ),
-                      BirdDetailNotes(notes: bird.notes!),
+                    ),
+                  AppIconButton(
+                    icon: const AppIcon(AppIcons.edit),
+                    tooltip: 'common.edit'.tr(),
+                    semanticLabel: 'common.edit'.tr(),
+                    onPressed: () => context.push('/birds/form?editId=${bird.id}'),
+                  ),
+                  PopupMenuButton<String>(
+                    onSelected: (value) => _handleMenuAction(context, ref, value),
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'pedigree',
+                        child: Text('genealogy.view_pedigree'.tr()),
+                      ),
+                      if (bird.status == BirdStatus.alive) ...[
+                        PopupMenuItem(
+                          value: 'dead',
+                          child: Text('birds.mark_dead'.tr()),
+                        ),
+                        PopupMenuItem(value: 'sold', child: Text('birds.sold'.tr())),
+                        PopupMenuItem(
+                          value: 'gifted',
+                          child: Text('birds.gifted'.tr()),
+                        ),
+                      ],
+                      PopupMenuItem(value: 'delete', child: Text('common.delete'.tr())),
                     ],
-                  ],
+                  ),
+                ],
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
+                sliver: SliverToBoxAdapter(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: AppSpacing.maxContentWidth,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          BirdDetailHeader(bird: bird),
+                          BirdDetailPhotos(bird: bird),
+                          const Divider(
+                            height: 1,
+                            indent: AppSpacing.lg,
+                            endIndent: AppSpacing.lg,
+                          ),
+                          BirdDetailInfo(bird: bird),
+                          BirdDetailTimelineSection(bird: bird),
+                          const Divider(
+                            height: 1,
+                            indent: AppSpacing.lg,
+                            endIndent: AppSpacing.lg,
+                          ),
+                          BirdDetailParents(bird: bird),
+                          BirdFamilyInfo(bird: bird),
+                          const Divider(
+                            height: 1,
+                            indent: AppSpacing.lg,
+                            endIndent: AppSpacing.lg,
+                          ),
+                          BirdDetailHealth(birdId: bird.id),
+                          if (bird.notes != null && bird.notes!.isNotEmpty) ...[
+                            const Divider(
+                              height: 1,
+                              indent: AppSpacing.lg,
+                              endIndent: AppSpacing.lg,
+                            ),
+                            BirdDetailNotes(notes: bird.notes!),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
           if (formState.isLoading)
             Positioned.fill(

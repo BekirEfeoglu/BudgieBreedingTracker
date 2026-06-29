@@ -93,4 +93,5 @@ abstract class AppRoutes {
   static const adminSecurity = '/admin/security';
   static const adminSettings = '/admin/settings';
   static const adminFeedback = '/admin/feedback';
+  static const adminModeration = '/admin/moderation';
 }

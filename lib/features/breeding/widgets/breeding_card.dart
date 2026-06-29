@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
@@ -17,6 +18,7 @@ class BreedingCard extends StatelessWidget {
   final BreedingPair pair;
   final Incubation? incubation;
   final List<Egg> eggs;
+  final Map<String, Bird>? birdsMap;
   final VoidCallback? onTap;
 
   const BreedingCard({
@@ -24,6 +26,7 @@ class BreedingCard extends StatelessWidget {
     required this.pair,
     this.incubation,
     this.eggs = const [],
+    this.birdsMap,
     this.onTap,
   });
 
@@ -57,7 +60,7 @@ class BreedingCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                BreedingCardHeader(pair: pair),
+                BreedingCardHeader(pair: pair, birdsMap: birdsMap),
                 if (incubation != null) ...[
                   const SizedBox(height: AppSpacing.md),
                   BreedingCardProgress(incubation: incubation!),

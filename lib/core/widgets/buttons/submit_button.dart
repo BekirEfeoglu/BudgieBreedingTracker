@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 /// Passing `onPressed: null` disables the button. Use this instead of
 /// unconditionally-enabled buttons — users should see "can't submit yet"
 /// reflected in the button state, not discover it when they tap.
-class SubmitButton extends StatelessWidget {
+class SubmitButton extends StatefulWidget {
   const SubmitButton({
     super.key,
     required this.label,
@@ -20,23 +20,65 @@ class SubmitButton extends StatelessWidget {
   final Widget? icon;
 
   @override
+  State<SubmitButton> createState() => _SubmitButtonState();
+}
+
+class _SubmitButtonState extends State<SubmitButton> {
+  bool _isPressed = false;
+
+  void _handleTapDown(TapDownDetails details) {
+    if (widget.onPressed != null && !widget.isLoading && mounted) {
+      setState(() => _isPressed = true);
+    }
+  }
+
+  void _handleTapUp(TapUpDetails details) {
+    if (widget.onPressed != null && !widget.isLoading && mounted) {
+      setState(() => _isPressed = false);
+    }
+  }
+
+  void _handleTapCancel() {
+    if (widget.onPressed != null && !widget.isLoading && mounted) {
+      setState(() => _isPressed = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final child = isLoading
+    final child = widget.isLoading
         ? const SizedBox(
             height: 20,
             width: 20,
             child: CircularProgressIndicator(strokeWidth: 2),
           )
-        : Text(label);
+        : Text(widget.label);
 
-    if (icon != null && !isLoading) {
-      return FilledButton.icon(
-        onPressed: isLoading ? null : onPressed,
-        icon: icon!,
+    Widget button;
+    if (widget.icon != null && !widget.isLoading) {
+      button = FilledButton.icon(
+        onPressed: widget.isLoading ? null : widget.onPressed,
+        icon: widget.icon!,
         label: child,
+      );
+    } else {
+      button = FilledButton(
+        onPressed: widget.isLoading ? null : widget.onPressed,
+        child: child,
       );
     }
 
-    return FilledButton(onPressed: isLoading ? null : onPressed, child: child);
+    return GestureDetector(
+      onTapDown: _handleTapDown,
+      onTapUp: _handleTapUp,
+      onTapCancel: _handleTapCancel,
+      behavior: HitTestBehavior.deferToChild,
+      child: AnimatedScale(
+        scale: _isPressed ? 0.96 : 1.0,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOutCubic,
+        child: button,
+      ),
+    );
   }
 }

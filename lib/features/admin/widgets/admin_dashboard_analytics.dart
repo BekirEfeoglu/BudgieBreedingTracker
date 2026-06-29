@@ -20,6 +20,7 @@ class DashboardPremiumConversionCard extends StatelessWidget {
     final theme = Theme.of(context);
     final total = stats.totalUsers;
     final premium = stats.premiumCount;
+    final free = stats.freeCount;
     final rate = total > 0 ? (premium / total * 100) : 0.0;
 
     return Card(
@@ -36,28 +37,67 @@ class DashboardPremiumConversionCard extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Expanded(
-                  child: _MiniStat(
-                    label: 'admin.premium_users'.tr(),
-                    value: '$premium',
-                    color: AppColors.accent,
+                SizedBox(
+                  height: 120,
+                  width: 120,
+                  child: PieChart(
+                    PieChartData(
+                      sectionsSpace: 2,
+                      centerSpaceRadius: 30,
+                      sections: [
+                        PieChartSectionData(
+                          color: AppColors.accent,
+                          value: premium.toDouble(),
+                          title: '${rate.toStringAsFixed(0)}%',
+                          radius: 20,
+                          titleStyle: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        PieChartSectionData(
+                          color: AppColors.neutral400,
+                          value: free.toDouble(),
+                          title: '',
+                          radius: 15,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                const SizedBox(width: AppSpacing.md),
+                const SizedBox(width: AppSpacing.lg),
                 Expanded(
-                  child: _MiniStat(
-                    label: 'admin.free_users'.tr(),
-                    value: '${stats.freeCount}',
-                    color: AppColors.neutral400,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: _MiniStat(
-                    label: 'admin.conversion_rate'.tr(),
-                    value: '${rate.toStringAsFixed(1)}%',
-                    color: AppColors.success,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _MiniStat(
+                              label: 'admin.premium_users'.tr(),
+                              value: '$premium',
+                              color: AppColors.accent,
+                            ),
+                          ),
+                          Expanded(
+                            child: _MiniStat(
+                              label: 'admin.free_users'.tr(),
+                              value: '$free',
+                              color: AppColors.neutral400,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      _MiniStat(
+                        label: 'admin.conversion_rate'.tr(),
+                        value: '${rate.toStringAsFixed(1)}%',
+                        color: AppColors.success,
+                      ),
+                    ],
                   ),
                 ),
               ],

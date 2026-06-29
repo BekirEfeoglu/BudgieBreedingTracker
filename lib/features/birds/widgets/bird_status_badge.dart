@@ -6,6 +6,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/status_badge.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:budgie_breeding_tracker/core/widgets/animations/pulse_animation.dart';
 
 /// Status badge for a bird (alive, dead, sold, gifted).
 class BirdStatusBadge extends StatelessWidget {
@@ -15,7 +16,22 @@ class BirdStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StatusBadge(label: _label, color: _color, icon: _icon);
+    final badge = StatusBadge(label: _label, color: _color, icon: _icon);
+
+    // Alive and Unknown are standard states, no need for animation.
+    // Highlight special statuses with a subtle pulsing effect.
+    if (status == BirdStatus.dead ||
+        status == BirdStatus.sold ||
+        status == BirdStatus.gifted) {
+      return PulseAnimation(
+        lowerBound: 0.95,
+        upperBound: 1.05,
+        duration: const Duration(seconds: 2),
+        child: badge,
+      );
+    }
+
+    return badge;
   }
 
   String get _label => switch (status) {

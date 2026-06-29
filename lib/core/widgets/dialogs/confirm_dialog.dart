@@ -21,24 +21,30 @@ class ConfirmDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return AlertDialog(
-      title: Text(title),
-      content: Text(message),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24.0), // AppSpacing.radiusXl
+      ),
+      titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+      contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      title: Text(title, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
+      content: Text(message, style: theme.textTheme.bodyMedium),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: Text(cancelLabel ?? 'common.cancel'.tr()),
+          child: Text(cancelLabel ?? 'common.cancel'.tr(), style: const TextStyle(fontWeight: FontWeight.w500)),
         ),
         TextButton(
           onPressed: () {
             if (isDestructive) AppHaptics.heavyImpact();
             Navigator.of(context).pop(true);
           },
-          style: isDestructive
-              ? TextButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.error,
-                )
-              : null,
+          style: TextButton.styleFrom(
+            foregroundColor: isDestructive ? theme.colorScheme.error : theme.colorScheme.primary,
+            textStyle: const TextStyle(fontWeight: FontWeight.w600),
+          ),
           child: Text(confirmLabel ?? 'common.confirm'.tr()),
         ),
       ],

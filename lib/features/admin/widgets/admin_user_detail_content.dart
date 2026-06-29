@@ -8,10 +8,14 @@ import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
+import '../../../core/widgets/dialogs/confirm_dialog.dart';
+import '../../../core/widgets/loading_state.dart';
+import '../providers/admin_actions_provider.dart';
 import '../providers/admin_providers.dart';
 import 'admin_user_detail_sections.dart';
 
 part 'admin_user_detail_content_stats.dart';
+part 'admin_user_detail_content_security.dart';
 
 /// Main content body for the user detail screen.
 class UserDetailContent extends StatelessWidget {
@@ -51,6 +55,8 @@ class UserDetailContent extends StatelessWidget {
             const SizedBox(height: AppSpacing.lg),
             UserDetailRecordsSection(contentAsync: contentAsync!),
           ],
+          const SizedBox(height: AppSpacing.lg),
+          UserDetailSecuritySection(userId: detail.id),
           const SizedBox(height: AppSpacing.xxl),
           UserDetailActivityLogSection(logs: detail.activityLogs),
           const SizedBox(height: AppSpacing.xxxl),

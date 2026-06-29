@@ -125,7 +125,11 @@ class _CommunityUserTile extends StatelessWidget {
         ),
         leading: CircleAvatar(
           foregroundImage: user.avatarUrl != null
-              ? CachedNetworkImageProvider(user.avatarUrl!)
+              ? CachedNetworkImageProvider(
+                  user.avatarUrl!,
+                  maxWidth: 96,
+                  maxHeight: 96,
+                )
               : null,
           child: user.avatarUrl == null
               ? Text(

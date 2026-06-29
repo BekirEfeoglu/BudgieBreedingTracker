@@ -77,12 +77,18 @@ class _TypedConfirmDialogState extends State<TypedConfirmDialog> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return AlertDialog(
-      title: Text(widget.title),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+      ),
+      titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+      contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      title: Text(widget.title, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(widget.message),
+          Text(widget.message, style: theme.textTheme.bodyMedium),
           const SizedBox(height: AppSpacing.md),
           // Show the exact phrase the user must reproduce so the
           // dialog stays usable when the message text is long.
@@ -100,7 +106,9 @@ class _TypedConfirmDialogState extends State<TypedConfirmDialog> {
             autofocus: true,
             decoration: InputDecoration(
               hintText: widget.hintText ?? widget.requiredPhrase,
-              border: const OutlineInputBorder(),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              ),
               isDense: true,
             ),
             // Disable autocorrect so OS doesn't "fix" the typed phrase.
@@ -112,7 +120,7 @@ class _TypedConfirmDialogState extends State<TypedConfirmDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: Text(widget.cancelLabel ?? 'common.cancel'.tr()),
+          child: Text(widget.cancelLabel ?? 'common.cancel'.tr(), style: const TextStyle(fontWeight: FontWeight.w500)),
         ),
         TextButton(
           onPressed: _matches
@@ -121,7 +129,10 @@ class _TypedConfirmDialogState extends State<TypedConfirmDialog> {
                   Navigator.of(context).pop(true);
                 }
               : null,
-          style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
+          style: TextButton.styleFrom(
+            foregroundColor: theme.colorScheme.error,
+            textStyle: const TextStyle(fontWeight: FontWeight.w600),
+          ),
           child: Text(widget.confirmLabel ?? 'common.confirm'.tr()),
         ),
       ],

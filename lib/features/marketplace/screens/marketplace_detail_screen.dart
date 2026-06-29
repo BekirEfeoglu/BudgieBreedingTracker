@@ -115,14 +115,26 @@ class _MarketplaceDetailScreenState
                             ),
                           ),
                         ),
-                        child: CachedNetworkImage(
-                          imageUrl: listing.imageUrls[index],
-                          fit: BoxFit.cover,
-                          memCacheWidth: 960,
-                          placeholder: (context, url) => const LoadingState(),
-                          errorWidget: (context, url, error) =>
-                              const Icon(LucideIcons.imageOff),
-                        ),
+                        child: index == 0
+                            ? Hero(
+                                tag: 'marketplace_image_${listing.id}',
+                                child: CachedNetworkImage(
+                                  imageUrl: listing.imageUrls[index],
+                                  fit: BoxFit.cover,
+                                  memCacheWidth: 960,
+                                  placeholder: (context, url) => const LoadingState(),
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(LucideIcons.imageOff),
+                                ),
+                              )
+                            : CachedNetworkImage(
+                                imageUrl: listing.imageUrls[index],
+                                fit: BoxFit.cover,
+                                memCacheWidth: 960,
+                                placeholder: (context, url) => const LoadingState(),
+                                errorWidget: (context, url, error) =>
+                                    const Icon(LucideIcons.imageOff),
+                              ),
                       ),
                     ),
                   ),

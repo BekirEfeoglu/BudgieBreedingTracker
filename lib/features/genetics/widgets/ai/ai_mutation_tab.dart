@@ -60,6 +60,7 @@ class _AiMutationTabState extends ConsumerState<AiMutationTab>
               selectedImagePath: _selectedImagePath,
               onImageSelected: _onImageSelected,
               onImageCleared: _onImageCleared,
+              isAnalyzing: isLoading,
               tips: [
                 'genetics.ai_mutation_photo_tip_1'.tr(),
                 'genetics.ai_mutation_photo_tip_2'.tr(),

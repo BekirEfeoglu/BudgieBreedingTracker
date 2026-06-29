@@ -141,25 +141,51 @@ class _BulkActionBarState extends ConsumerState<_BulkActionBar> {
   });
 
   Future<void> _onExport() => _guard(() async {
-    final confirmed = await showConfirmDialog(
-      context,
-      title: 'admin.bulk_export'.tr(),
-      message: 'common.continue_confirm'.tr(),
+    final format = await showDialog<ExportFormat>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text('admin.bulk_export'.tr()),
+        children: [
+          SimpleDialogOption(
+            onPressed: () => Navigator.of(ctx).pop(ExportFormat.json),
+            child: const Text('JSON'),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.of(ctx).pop(ExportFormat.csv),
+            child: const Text('CSV'),
+          ),
+        ],
+      ),
     );
-    if (confirmed != true || !mounted) return;
+    if (format == null || !mounted) return;
+
     setState(() => _isLoading = true);
     try {
-      await ref
+      final exportString = await ref
           .read(adminActionsProvider.notifier)
-          .bulkExport(widget.selectedIds);
+          .bulkExport(widget.selectedIds, format: format);
+
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '${'admin.bulk_export'.tr()}: ${widget.selectedIds.length}',
-          ),
-        ),
-      );
+
+      if (exportString.isNotEmpty) {
+        final ext = format == ExportFormat.csv ? 'csv' : 'json';
+        final tempDir = await getTemporaryDirectory();
+        final file = File('${tempDir.path}/users_export_$ext');
+        await file.writeAsString(exportString);
+
+        if (mounted) {
+          final box = context.findRenderObject() as RenderBox?;
+          await SharePlus.instance.share(
+            ShareParams(
+              files: [XFile(file.path)],
+              subject: 'BudgieBreedingTracker Users Export',
+              sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+            ),
+          );
+        }
+      }
+
+      if (!mounted) return;
       widget.onClearSelection();
     } catch (e, st) {
       AppLogger.error('_BulkActionBar.export', e, st);

@@ -1,11 +1,15 @@
 import 'dart:async';
 
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../core/constants/app_icons.dart';
 import '../../../core/constants/supabase_constants.dart';
@@ -23,6 +27,7 @@ import '../../../router/route_names.dart';
 import '../providers/admin_actions_provider.dart';
 import '../providers/admin_providers.dart';
 import '../widgets/admin_notification_sheet.dart';
+import '../widgets/admin_users_filter_sheet.dart';
 
 part 'admin_users_screen_toolbar.dart';
 part 'admin_users_screen_list.dart';
@@ -123,6 +128,7 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
   String _query = '';
   late _UserStatusFilter _statusFilter;
   late _UserSortOption _sortOption;
+  AdminUsersQuery? _advancedQuery;
 
   @override
   void initState() {
@@ -139,17 +145,27 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
     super.dispose();
   }
 
-  AdminUsersQuery get _buildQuery => AdminUsersQuery(
-    searchTerm: _query,
-    isActiveFilter: _statusFilter.queryValue,
-    isPremiumFilter: _statusFilter.premiumValue,
-    activeTodayOnly: _statusFilter.activeTodayOnly,
-    createdTodayOnly: _statusFilter.createdTodayOnly,
-    onlineOnly: _statusFilter.onlineOnly,
-    sortField: _sortOption.sortField,
-    sortAscending: _sortOption.sortAscending,
-    limit: ref.read(adminUsersLimitProvider),
-  );
+  AdminUsersQuery get _buildQuery {
+    if (_advancedQuery != null) {
+      return _advancedQuery!.copyWith(
+        searchTerm: _query,
+        sortField: _sortOption.sortField,
+        sortAscending: _sortOption.sortAscending,
+        limit: ref.read(adminUsersLimitProvider),
+      );
+    }
+    return AdminUsersQuery(
+      searchTerm: _query,
+      isActiveFilter: _statusFilter.queryValue,
+      isPremiumFilter: _statusFilter.premiumValue,
+      activeTodayOnly: _statusFilter.activeTodayOnly,
+      createdTodayOnly: _statusFilter.createdTodayOnly,
+      onlineOnly: _statusFilter.onlineOnly,
+      sortField: _sortOption.sortField,
+      sortAscending: _sortOption.sortAscending,
+      limit: ref.read(adminUsersLimitProvider),
+    );
+  }
 
   Future<void> _refreshUsers() async {
     try {
@@ -187,10 +203,28 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
 
   void _clearFilters() {
     _clearSearch();
-    if (_statusFilter != _UserStatusFilter.all) {
-      setState(() => _statusFilter = _UserStatusFilter.all);
-      _resetPagination();
-    }
+    setState(() {
+      _statusFilter = _UserStatusFilter.all;
+      _advancedQuery = null;
+    });
+    _resetPagination();
+  }
+
+  void _openAdvancedFilters() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => AdminUsersFilterSheet(
+        initialQuery: _buildQuery,
+        onApply: (query) {
+          setState(() {
+            _advancedQuery = query;
+            _statusFilter = _UserStatusFilter.all; // Reset quick chips
+          });
+          _resetPagination();
+        },
+      ),
+    );
   }
 
   void _toggleSelection(String userId) {
@@ -303,9 +337,11 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
             sortOption: _sortOption,
             onSearchChanged: _onSearchChanged,
             onClearSearch: _clearSearch,
+            onOpenFilter: _openAdvancedFilters,
             onStatusFilterChanged: (value) {
               setState(() {
                 _statusFilter = value;
+                _advancedQuery = null; // Clear advanced query when a quick chip is tapped
                 _sortOption = _defaultSortForStatusFilter(
                   value,
                   current: _sortOption,
@@ -333,8 +369,9 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                 final inactiveUsers = users.length - activeUsers;
                 final onlineUsers = users.where((user) => user.isOnline).length;
                 final hasMore = users.length >= limit;
-                final hasFilter =
-                    _query.isNotEmpty || _statusFilter != _UserStatusFilter.all;
+                final hasFilter = _query.isNotEmpty ||
+                    _statusFilter != _UserStatusFilter.all ||
+                    _advancedQuery != null;
 
                 // Summary shows true DB-wide counts when the list is unfiltered;
                 // a filtered/searched list falls back to the loaded set so the

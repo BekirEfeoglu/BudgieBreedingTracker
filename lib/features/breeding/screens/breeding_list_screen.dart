@@ -17,6 +17,7 @@ import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/incubation_risk_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/egg_stream_providers.dart';
@@ -53,60 +54,67 @@ class BreedingListScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: AppScreenTitle(
-          title: 'breeding.title'.tr(),
-          iconAsset: AppIcons.breeding,
-        ),
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
-        actions: [
-          AppIconButton(
-            icon: const Icon(LucideIcons.arrowUpDown),
-            tooltip: 'common.sort'.tr(),
-            semanticLabel: 'common.sort'.tr(),
-            onPressed: () {
-              final currentSort = ref.read(breedingSortProvider);
-              showSortBottomSheet<BreedingSort>(
-                context: context,
-                values: BreedingSort.values,
-                current: currentSort,
-                labelOf: (s) => s.label,
-                onSelected: (s) =>
-                    ref.read(breedingSortProvider.notifier).state = s,
-              );
-            },
-          ),
-          const NotificationBellButton(),
-          const ProfileMenuButton(),
-        ],
-      ),
-      body: Column(
-        children: [
-          const BreedingSearchBar(),
-          const Divider(
-            height: 1,
-            indent: AppSpacing.lg,
-            endIndent: AppSpacing.lg,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          const BreedingFilterBar(),
-          const SizedBox(height: AppSpacing.sm),
-          Center(
-            child: AdBannerWidget(
-              isPremiumProvider: isPremiumProvider,
-              adBannerLoader: () => defaultAdBannerLoader(ref),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(breedingPairsStreamProvider(userId));
+          ref.invalidate(allIncubationsStreamProvider(userId));
+          ref.invalidate(eggsStreamProvider(userId));
+          ref.invalidate(chicksStreamProvider(userId));
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverAppBar.large(
+              title: AppScreenTitle(
+                title: 'breeding.title'.tr(),
+                iconAsset: AppIcons.breeding,
+              ),
+              actions: [
+                AppIconButton(
+                  icon: const Icon(LucideIcons.arrowUpDown),
+                  tooltip: 'common.sort'.tr(),
+                  semanticLabel: 'common.sort'.tr(),
+                  onPressed: () {
+                    final currentSort = ref.read(breedingSortProvider);
+                    showSortBottomSheet<BreedingSort>(
+                      context: context,
+                      values: BreedingSort.values,
+                      current: currentSort,
+                      labelOf: (s) => s.label,
+                      onSelected: (s) =>
+                          ref.read(breedingSortProvider.notifier).state = s,
+                    );
+                  },
+                ),
+                const NotificationBellButton(),
+                const ProfileMenuButton(),
+              ],
             ),
-          ),
-          Expanded(
-            // skipLoadingOnRefresh keeps the populated list on screen
-            // during pull-to-refresh / provider invalidation instead of
-            // collapsing back to the spinner (ui-patterns.md).
-            child: pairsAsync.when(
+            SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  const BreedingSearchBar(),
+                  const Divider(
+                    height: 1,
+                    indent: AppSpacing.lg,
+                    endIndent: AppSpacing.lg,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  const BreedingFilterBar(),
+                  const SizedBox(height: AppSpacing.sm),
+                  Center(
+                    child: AdBannerWidget(
+                      isPremiumProvider: isPremiumProvider,
+                      adBannerLoader: () => defaultAdBannerLoader(ref),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            pairsAsync.when(
               skipLoadingOnRefresh: true,
-              loading: () => const LoadingState(),
-              error: (error, _) => SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
+              loading: () => const SliverFillRemaining(child: LoadingState()),
+              error: (error, _) => SliverToBoxAdapter(
                 child: SizedBox(
                   height: MediaQuery.of(context).size.height * 0.5,
                   child: ErrorState(
@@ -122,28 +130,33 @@ class BreedingListScreen extends ConsumerWidget {
                 );
 
                 if (allPairs.isEmpty) {
-                  return EmptyState(
-                    icon: const AppIcon(AppIcons.breeding),
-                    title: 'breeding.no_breedings'.tr(),
-                    subtitle: 'breeding.no_breedings_hint'.tr(),
-                    actionLabel: 'breeding.add_breeding_label'.tr(),
-                    onAction: () => context.push(AppRoutes.breedingForm),
+                  return SliverFillRemaining(
+                    child: EmptyState(
+                      icon: const AppIcon(AppIcons.breeding),
+                      title: 'breeding.no_breedings'.tr(),
+                      subtitle: 'breeding.no_breedings_hint'.tr(),
+                      actionLabel: 'breeding.add_breeding_label'.tr(),
+                      onAction: () => context.push(AppRoutes.breedingForm),
+                    ),
                   );
                 }
 
                 if (pairs.isEmpty) {
-                  return EmptyState(
-                    icon: const Icon(LucideIcons.searchX),
-                    title: 'breeding.no_results'.tr(),
-                    subtitle: 'breeding.no_results_hint'.tr(),
+                  return SliverFillRemaining(
+                    child: EmptyState(
+                      icon: const Icon(LucideIcons.searchX),
+                      title: 'breeding.no_results'.tr(),
+                      subtitle: 'breeding.no_results_hint'.tr(),
+                    ),
                   );
                 }
 
-                // Bulk-fetch incubation and egg maps (single stream each)
+                // Bulk-fetch incubation, egg, and bird maps (single stream each)
                 final incubationMap = ref.watch(
                   incubationByPairMapProvider(userId),
                 );
                 final eggMap = ref.watch(eggsByIncubationMapProvider(userId));
+                final birdMap = ref.watch(birdsByUserIdMapProvider(userId));
 
                 // The risk summary derives from four streams + DateTime.now().
                 // It is rendered by a dedicated leaf widget (item 0) so that a
@@ -151,53 +164,49 @@ class BreedingListScreen extends ConsumerWidget {
                 // Item 0 is always present and collapses to zero height while
                 // the summary is loading / errored, so the index math stays
                 // simple (no hasRiskCard offset).
-                return Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 800),
-                    child: RefreshIndicator(
-                      onRefresh: () async {
-                        ref.invalidate(breedingPairsStreamProvider(userId));
-                        ref.invalidate(allIncubationsStreamProvider(userId));
-                        ref.invalidate(eggsStreamProvider(userId));
-                        ref.invalidate(chicksStreamProvider(userId));
-                      },
-                      child: ListView.builder(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.only(
-                          top: AppSpacing.sm,
-                          bottom: AppSpacing.lg,
-                        ),
-                        itemCount: pairs.length + 1,
-                        itemBuilder: (context, index) {
-                          if (index == 0) {
-                            return _RiskSummaryHeaderCard(userId: userId);
-                          }
-                          final pair = pairs[index - 1];
-                          final incubation = incubationMap[pair.id];
-                          final eggs = incubation != null
-                              ? eggMap[incubation.id] ?? const <Egg>[]
-                              : const <Egg>[];
-                          return BreedingCard(
-                            key: ValueKey(pair.id),
-                            pair: pair,
-                            incubation: incubation,
-                            eggs: eggs,
-                            onTap: () => navigateWithAd(
-                              AppRoutes.breedingDetail.replaceFirst(
-                                ':id',
-                                pair.id,
+                return SliverPadding(
+                  padding: const EdgeInsets.only(
+                    top: AppSpacing.sm,
+                    bottom: AppSpacing.lg,
+                  ),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        if (index == 0) {
+                          return _RiskSummaryHeaderCard(userId: userId);
+                        }
+                        final pair = pairs[index - 1];
+                        final incubation = incubationMap[pair.id];
+                        final eggs = incubation != null
+                            ? eggMap[incubation.id] ?? const <Egg>[]
+                            : const <Egg>[];
+                        return Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 800),
+                            child: BreedingCard(
+                              key: ValueKey(pair.id),
+                              pair: pair,
+                              incubation: incubation,
+                              eggs: eggs,
+                              birdsMap: birdMap,
+                              onTap: () => navigateWithAd(
+                                AppRoutes.breedingDetail.replaceFirst(
+                                  ':id',
+                                  pair.id,
+                                ),
                               ),
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      },
+                      childCount: pairs.length + 1,
                     ),
                   ),
                 );
               },
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       bottomNavigationBar: SafeArea(
         top: false,

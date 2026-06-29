@@ -110,112 +110,119 @@ class _DetailContent extends ConsumerWidget {
     });
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('breeding.detail'.tr()),
-        actions: [
-          AppIconButton(
-            icon: const AppIcon(AppIcons.edit),
-            tooltip: 'common.edit'.tr(),
-            semanticLabel: 'common.edit'.tr(),
-            onPressed: () =>
-                context.push('${AppRoutes.breedingForm}?editId=${pair.id}'),
-          ),
-          PopupMenuButton<String>(
-            tooltip: 'common.more'.tr(),
-            onSelected: (value) => _handleMenuAction(context, ref, value),
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'complete',
-                child: Text('breeding.complete'.tr()),
+      body: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverAppBar.large(
+            title: Text('breeding.detail'.tr()),
+            actions: [
+              AppIconButton(
+                icon: const AppIcon(AppIcons.edit),
+                tooltip: 'common.edit'.tr(),
+                semanticLabel: 'common.edit'.tr(),
+                onPressed: () =>
+                    context.push('${AppRoutes.breedingForm}?editId=${pair.id}'),
               ),
-              PopupMenuItem(
-                value: 'cancel',
-                child: Text('breeding.cancel_breeding'.tr()),
+              PopupMenuButton<String>(
+                tooltip: 'common.more'.tr(),
+                onSelected: (value) => _handleMenuAction(context, ref, value),
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'complete',
+                    child: Text('breeding.complete'.tr()),
+                  ),
+                  PopupMenuItem(
+                    value: 'cancel',
+                    child: Text('breeding.cancel_breeding'.tr()),
+                  ),
+                  PopupMenuItem(value: 'delete', child: Text('common.delete'.tr())),
+                ],
               ),
-              PopupMenuItem(value: 'delete', child: Text('common.delete'.tr())),
             ],
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: AppSpacing.maxContentWidth,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                BreedingPairInfoSection(pair: pair),
-                _PairRiskCard(pairId: pair.id),
-                const Divider(
-                  height: 1,
-                  indent: AppSpacing.lg,
-                  endIndent: AppSpacing.lg,
-                ),
-                incubationsAsync.when(
-                  loading: () => Padding(
-                    padding: AppSpacing.screenPadding,
-                    child: Semantics(
-                      label: 'common.loading'.tr(),
-                      child: const LinearProgressIndicator(),
-                    ),
+          SliverPadding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
+            sliver: SliverToBoxAdapter(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: AppSpacing.maxContentWidth,
                   ),
-                  error: (_, __) => ErrorState(
-                    message: 'common.data_load_error'.tr(),
-                    onRetry: () =>
-                        ref.invalidate(incubationsByPairProvider(pair.id)),
-                  ),
-                  data: (incubations) {
-                    final incubation = selectPrimaryIncubation(incubations);
-                    if (incubation == null) return const SizedBox.shrink();
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _IncubationSection(incubation: incubation),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      BreedingPairInfoSection(pair: pair),
+                      _PairRiskCard(pairId: pair.id),
+                      const Divider(
+                        height: 1,
+                        indent: AppSpacing.lg,
+                        endIndent: AppSpacing.lg,
+                      ),
+                      incubationsAsync.when(
+                        loading: () => Padding(
+                          padding: AppSpacing.screenPadding,
+                          child: Semantics(
+                            label: 'common.loading'.tr(),
+                            child: const LinearProgressIndicator(),
+                          ),
+                        ),
+                        error: (_, __) => ErrorState(
+                          message: 'common.data_load_error'.tr(),
+                          onRetry: () =>
+                              ref.invalidate(incubationsByPairProvider(pair.id)),
+                        ),
+                        data: (incubations) {
+                          final incubation = selectPrimaryIncubation(incubations);
+                          if (incubation == null) return const SizedBox.shrink();
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _IncubationSection(incubation: incubation),
+                              const Divider(
+                                height: 1,
+                                indent: AppSpacing.lg,
+                                endIndent: AppSpacing.lg,
+                              ),
+                              _SeasonSummarySection(incubationId: incubation.id),
+                              const Divider(
+                                height: 1,
+                                indent: AppSpacing.lg,
+                                endIndent: AppSpacing.lg,
+                              ),
+                              BreedingEggsSection(
+                                incubationId: incubation.id,
+                                pairId: pair.id,
+                              ),
+                              if (incubation.startDate != null) ...[
+                                const Divider(
+                                  height: 1,
+                                  indent: AppSpacing.lg,
+                                  endIndent: AppSpacing.lg,
+                                ),
+                                BreedingMilestoneSection(
+                                  startDate: incubation.startDate!,
+                                  totalDays: incubation.totalIncubationDays(),
+                                ),
+                              ],
+                            ],
+                          );
+                        },
+                      ),
+                      if (pair.notes != null && pair.notes!.isNotEmpty) ...[
                         const Divider(
                           height: 1,
                           indent: AppSpacing.lg,
                           endIndent: AppSpacing.lg,
                         ),
-                        _SeasonSummarySection(incubationId: incubation.id),
-                        const Divider(
-                          height: 1,
-                          indent: AppSpacing.lg,
-                          endIndent: AppSpacing.lg,
-                        ),
-                        BreedingEggsSection(
-                          incubationId: incubation.id,
-                          pairId: pair.id,
-                        ),
-                        if (incubation.startDate != null) ...[
-                          const Divider(
-                            height: 1,
-                            indent: AppSpacing.lg,
-                            endIndent: AppSpacing.lg,
-                          ),
-                          BreedingMilestoneSection(
-                            startDate: incubation.startDate!,
-                            totalDays: incubation.totalIncubationDays(),
-                          ),
-                        ],
+                        BreedingNotesSection(notes: pair.notes!),
                       ],
-                    );
-                  },
-                ),
-                if (pair.notes != null && pair.notes!.isNotEmpty) ...[
-                  const Divider(
-                    height: 1,
-                    indent: AppSpacing.lg,
-                    endIndent: AppSpacing.lg,
+                    ],
                   ),
-                  BreedingNotesSection(notes: pair.notes!),
-                ],
-              ],
+                ),
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

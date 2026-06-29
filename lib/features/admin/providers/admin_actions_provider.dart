@@ -88,6 +88,10 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
     await _userManager.revokePremium(targetUserId);
   }
 
+  Future<void> forceLogout(String targetUserId) async {
+    await _userManager.forceLogout(targetUserId);
+  }
+
   // ── Database Operations (delegated) ──────────────────
 
   Future<String?> exportTable(String tableName) =>

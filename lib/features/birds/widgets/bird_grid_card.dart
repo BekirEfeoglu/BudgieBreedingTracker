@@ -1,4 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -24,7 +26,7 @@ class BirdGridCard extends StatelessWidget {
     final theme = Theme.of(context);
     final age = bird.age;
 
-    return Card(
+    final cardWidget = Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap ?? () => context.push('/birds/${bird.id}'),
@@ -106,6 +108,32 @@ class BirdGridCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+
+    return CupertinoContextMenu(
+      actions: [
+        CupertinoContextMenuAction(
+          onPressed: () {
+            Navigator.pop(context);
+            if (onTap != null) {
+              onTap!();
+            } else {
+              context.push('/birds/${bird.id}');
+            }
+          },
+          trailingIcon: CupertinoIcons.eye,
+          child: Text('common.view'.tr()),
+        ),
+        CupertinoContextMenuAction(
+          onPressed: () {
+            Navigator.pop(context);
+            context.push('/birds/${bird.id}/edit');
+          },
+          trailingIcon: CupertinoIcons.pencil,
+          child: Text('common.edit'.tr()),
+        ),
+      ],
+      child: cardWidget,
     );
   }
 }

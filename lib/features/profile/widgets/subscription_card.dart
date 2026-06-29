@@ -13,6 +13,7 @@ import '../../../core/widgets/app_icon.dart';
 import '../../../data/models/profile_model.dart';
 import '../../../domain/services/premium/premium_providers.dart';
 import '../../../router/route_names.dart';
+import '../../../core/widgets/animations/shimmer_shine_animation.dart';
 
 /// Standalone subscription card — upsell for free users, status for premium.
 class SubscriptionCard extends ConsumerWidget {
@@ -162,9 +163,13 @@ class _UpsellCard extends StatelessWidget {
 
     return Semantics(
       label: 'profile.premium_membership'.tr(),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        decoration: BoxDecoration(
+      child: ShimmerShineAnimation(
+        isActive: true,
+        duration: const Duration(seconds: 4),
+        shineColor: AppColors.accent.withValues(alpha: 0.4),
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
           gradient: LinearGradient(
             colors: [
@@ -217,6 +222,7 @@ class _UpsellCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

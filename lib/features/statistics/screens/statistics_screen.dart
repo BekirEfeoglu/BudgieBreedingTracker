@@ -86,50 +86,57 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: AppScreenTitle(
-          title: 'statistics.title'.tr(),
-          iconAsset: AppIcons.statistics,
-        ),
-        actions: [
-          AppIconButton(
-            tooltip: 'statistics.share_report'.tr(),
-            semanticLabel: 'statistics.share_report'.tr(),
-            onPressed: _shareStatisticsReport,
-            icon: const AppIcon(AppIcons.pdf),
-          ),
-        ],
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
-        bottom: TabBar(
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            SliverAppBar.large(
+              title: AppScreenTitle(
+                title: 'statistics.title'.tr(),
+                iconAsset: AppIcons.statistics,
+              ),
+              actions: [
+                AppIconButton(
+                  tooltip: 'statistics.share_report'.tr(),
+                  semanticLabel: 'statistics.share_report'.tr(),
+                  onPressed: _shareStatisticsReport,
+                  icon: const AppIcon(AppIcons.pdf),
+                ),
+              ],
+            ),
+            const SliverToBoxAdapter(
+              child: StatsPeriodSelector(),
+            ),
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _TabBarDelegate(
+                TabBar(
+                  controller: _tabController,
+                  labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                  dividerColor: Colors.transparent,
+                  tabs: [
+                    Tab(
+                      icon: const AppIcon(AppIcons.statistics, size: 18),
+                      text: 'statistics.tab_overview'.tr(),
+                    ),
+                    Tab(
+                      icon: const AppIcon(AppIcons.breedingActive, size: 18),
+                      text: 'statistics.tab_breeding'.tr(),
+                    ),
+                    Tab(
+                      icon: const AppIcon(AppIcons.health, size: 18),
+                      text: 'statistics.tab_health'.tr(),
+                    ),
+                  ],
+                ),
+                Theme.of(context).scaffoldBackgroundColor,
+              ),
+            ),
+          ];
+        },
+        body: TabBarView(
           controller: _tabController,
-          labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-          tabs: [
-            Tab(
-              icon: const AppIcon(AppIcons.statistics, size: 18),
-              text: 'statistics.tab_overview'.tr(),
-            ),
-            Tab(
-              icon: const AppIcon(AppIcons.breedingActive, size: 18),
-              text: 'statistics.tab_breeding'.tr(),
-            ),
-            Tab(
-              icon: const AppIcon(AppIcons.health, size: 18),
-              text: 'statistics.tab_health'.tr(),
-            ),
-          ],
+          children: const [OverviewTab(), BreedingTab(), HealthTab()],
         ),
-      ),
-      body: Column(
-        children: [
-          const StatsPeriodSelector(),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: const [OverviewTab(), BreedingTab(), HealthTab()],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -175,5 +182,36 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
         SnackBar(content: Text('statistics.share_report_failed'.tr())),
       );
     }
+  }
+}
+
+class _TabBarDelegate extends SliverPersistentHeaderDelegate {
+  const _TabBarDelegate(this.tabBar, this.backgroundColor);
+
+  final TabBar tabBar;
+  final Color backgroundColor;
+
+  @override
+  double get minExtent => tabBar.preferredSize.height;
+
+  @override
+  double get maxExtent => tabBar.preferredSize.height;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(
+      color: backgroundColor,
+      child: tabBar,
+    );
+  }
+
+  @override
+  bool shouldRebuild(_TabBarDelegate oldDelegate) {
+    return tabBar != oldDelegate.tabBar ||
+        backgroundColor != oldDelegate.backgroundColor;
   }
 }

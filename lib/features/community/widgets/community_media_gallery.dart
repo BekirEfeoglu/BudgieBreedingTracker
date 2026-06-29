@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/animations/double_tap_like_animation.dart';
 
 /// Image carousel for community post media.
 class CommunityMediaGallery extends StatefulWidget {
@@ -22,52 +23,14 @@ class CommunityMediaGallery extends StatefulWidget {
   State<CommunityMediaGallery> createState() => _CommunityMediaGalleryState();
 }
 
-class _CommunityMediaGalleryState extends State<CommunityMediaGallery>
-    with SingleTickerProviderStateMixin {
+class _CommunityMediaGalleryState extends State<CommunityMediaGallery> {
   final _pageController = PageController();
   int _currentIndex = 0;
 
-  late final AnimationController _heartController;
-  late final Animation<double> _heartScale;
-  late final Animation<double> _heartOpacity;
-  bool _showHeart = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _heartController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-    _heartScale = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.2), weight: 30),
-      TweenSequenceItem(tween: Tween(begin: 1.2, end: 1.0), weight: 20),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.0), weight: 30),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 20),
-    ]).animate(_heartController);
-    _heartOpacity = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 20),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.0), weight: 50),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 30),
-    ]).animate(_heartController);
-    _heartController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        if (mounted) setState(() => _showHeart = false);
-      }
-    });
-  }
-
   @override
   void dispose() {
-    _heartController.dispose();
     _pageController.dispose();
     super.dispose();
-  }
-
-  void _handleDoubleTap() {
-    widget.onDoubleTap();
-    setState(() => _showHeart = true);
-    _heartController.forward(from: 0);
   }
 
   @override
@@ -82,41 +45,54 @@ class _CommunityMediaGalleryState extends State<CommunityMediaGallery>
         children: [
           SizedBox(
             height: 320,
-            child: GestureDetector(
-              onDoubleTap: _handleDoubleTap,
-              onTap: () => widget.onOpenImage(widget.imageUrls[_currentIndex]),
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: widget.imageUrls.length,
-                onPageChanged: (index) {
-                  setState(() => _currentIndex = index);
-                },
-                itemBuilder: (context, index) {
-                  return CachedNetworkImage(
-                    imageUrl: widget.imageUrls[index],
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    // Memory cache bounds for active rendering.
-                    memCacheWidth: 900,
-                    memCacheHeight: 1200,
-                    // Disk cache bounds — force downsampling at fetch time
-                    // so 2K+ originals don't balloon the local cache.
-                    maxWidthDiskCache: 900,
-                    maxHeightDiskCache: 1200,
-                    placeholder: (_, __) => ColoredBox(
-                      color: theme.colorScheme.surfaceContainerHighest,
-                      child: const SizedBox(
-                        height: 320,
-                        width: double.infinity,
-                        child: Center(child: Icon(LucideIcons.image, size: 32)),
+            child: DoubleTapLikeAnimation(
+              onLike: widget.onDoubleTap,
+              likeIcon: Icon(
+                Icons.favorite_rounded,
+                size: 80,
+                color: Colors.white.withValues(alpha: 0.9),
+                shadows: [
+                  Shadow(
+                    blurRadius: 24,
+                    color: theme.shadowColor.withValues(alpha: 0.38),
+                  ),
+                ],
+              ),
+              child: GestureDetector(
+                onTap: () =>
+                    widget.onOpenImage(widget.imageUrls[_currentIndex]),
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: widget.imageUrls.length,
+                  onPageChanged: (index) {
+                    setState(() => _currentIndex = index);
+                  },
+                  itemBuilder: (context, index) {
+                    return CachedNetworkImage(
+                      imageUrl: widget.imageUrls[index],
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      memCacheWidth: 900,
+                      memCacheHeight: 1200,
+                      maxWidthDiskCache: 900,
+                      maxHeightDiskCache: 1200,
+                      placeholder: (_, __) => ColoredBox(
+                        color: theme.colorScheme.surfaceContainerHighest,
+                        child: const SizedBox(
+                          height: 320,
+                          width: double.infinity,
+                          child: Center(
+                            child: Icon(LucideIcons.image, size: 32),
+                          ),
+                        ),
                       ),
-                    ),
-                    errorWidget: (_, __, ___) => Container(
-                      color: theme.colorScheme.surfaceContainerHighest,
-                      child: const Icon(LucideIcons.imageOff, size: 32),
-                    ),
-                  );
-                },
+                      errorWidget: (_, __, ___) => Container(
+                        color: theme.colorScheme.surfaceContainerHighest,
+                        child: const Icon(LucideIcons.imageOff, size: 32),
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ),
@@ -147,26 +123,6 @@ class _CommunityMediaGalleryState extends State<CommunityMediaGallery>
                     ),
                   ),
                 ),
-              ),
-            ),
-          // Heart animation overlay
-          if (_showHeart)
-            AnimatedBuilder(
-              animation: _heartController,
-              builder: (context, child) => Opacity(
-                opacity: _heartOpacity.value,
-                child: Transform.scale(scale: _heartScale.value, child: child),
-              ),
-              child: Icon(
-                Icons.favorite_rounded,
-                size: 80,
-                color: Colors.white.withValues(alpha: 0.9),
-                shadows: [
-                  Shadow(
-                    blurRadius: 24,
-                    color: theme.shadowColor.withValues(alpha: 0.38),
-                  ),
-                ],
               ),
             ),
         ],

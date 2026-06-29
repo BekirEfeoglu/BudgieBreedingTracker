@@ -70,12 +70,6 @@ class HomeScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const AppBrandTitle(size: AppBrandSize.small),
-        centerTitle: true,
-        scrolledUnderElevation: 0,
-        actions: const [NotificationBellButton(), ProfileMenuButton()],
-      ),
       body: RefreshIndicator(
         onRefresh: () async {
           // Capture ScaffoldMessenger before any async gap.
@@ -134,40 +128,51 @@ class HomeScreen extends ConsumerWidget {
               break;
           }
         },
-        child: SingleChildScrollView(
+        child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SyncStatusBar(),
-              const SizedBox(height: AppSpacing.lg),
-              const WelcomeHeader(),
-              const SizedBox(height: AppSpacing.md),
-              _UnweanedSection(userId: userId),
-              LimitApproachingBanner(userId: userId),
-              const GracePeriodBanner(),
-              const SizedBox(height: AppSpacing.sm),
-              _StatsSection(userId: userId),
-              const SizedBox(height: AppSpacing.lg),
-              const QuickActionsRow(),
-              const SizedBox(height: AppSpacing.lg),
-              _EggTurningSummarySection(userId: userId),
-              const SizedBox(height: AppSpacing.lg),
-              _IncubationSummarySection(userId: userId),
-              const SizedBox(height: AppSpacing.lg),
-              _ActiveBreedingsSection(userId: userId),
-              const SizedBox(height: AppSpacing.lg),
-              _RecentChicksSection(userId: userId),
-              const SizedBox(height: AppSpacing.lg),
-              Center(
-                child: AdBannerWidget(
-                  isPremiumProvider: isPremiumProvider,
-                  adBannerLoader: () => defaultAdBannerLoader(ref),
-                ),
+          slivers: [
+            const SliverAppBar(
+              floating: true,
+              snap: true,
+              title: AppBrandTitle(size: AppBrandSize.small),
+              centerTitle: true,
+              actions: [NotificationBellButton(), ProfileMenuButton()],
+            ),
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SyncStatusBar(),
+                  const SizedBox(height: AppSpacing.lg),
+                  const WelcomeHeader(),
+                  const SizedBox(height: AppSpacing.md),
+                  _UnweanedSection(userId: userId),
+                  LimitApproachingBanner(userId: userId),
+                  const GracePeriodBanner(),
+                  const SizedBox(height: AppSpacing.sm),
+                  _StatsSection(userId: userId),
+                  const SizedBox(height: AppSpacing.lg),
+                  const QuickActionsRow(),
+                  const SizedBox(height: AppSpacing.lg),
+                  _EggTurningSummarySection(userId: userId),
+                  const SizedBox(height: AppSpacing.lg),
+                  _IncubationSummarySection(userId: userId),
+                  const SizedBox(height: AppSpacing.lg),
+                  _ActiveBreedingsSection(userId: userId),
+                  const SizedBox(height: AppSpacing.lg),
+                  _RecentChicksSection(userId: userId),
+                  const SizedBox(height: AppSpacing.lg),
+                  Center(
+                    child: AdBannerWidget(
+                      isPremiumProvider: isPremiumProvider,
+                      adBannerLoader: () => defaultAdBannerLoader(ref),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xxxl * 2),
+                ],
               ),
-              const SizedBox(height: AppSpacing.xxxl * 2),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

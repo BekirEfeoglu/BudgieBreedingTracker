@@ -164,6 +164,7 @@ class _AiSexEstimationTabState extends ConsumerState<AiSexEstimationTab>
             // Image picker zone for cere photo
             AiImagePickerZone(
               selectedImagePath: _selectedSexImagePath,
+              isAnalyzing: isLoading,
               onImageSelected: (path) {
                 setState(() => _selectedSexImagePath = path);
                 ref.read(sexAiAnalysisProvider.notifier).clear();

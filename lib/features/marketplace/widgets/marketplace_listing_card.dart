@@ -159,31 +159,33 @@ class MarketplaceListingCard extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          if (listing.primaryImageUrl != null)
-            CachedNetworkImage(
-              imageUrl: listing.primaryImageUrl!,
-              fit: BoxFit.cover,
-              memCacheWidth: 640,
-              placeholder: (_, __) =>
-                  ColoredBox(color: theme.colorScheme.surfaceContainerHighest),
-              errorWidget: (_, _, _) => Container(
-                color: theme.colorScheme.surfaceContainerHighest,
-                child: Icon(
-                  LucideIcons.image,
-                  size: 48,
-                  color: theme.colorScheme.outline,
-                ),
-              ),
-            )
-          else
-            Container(
-              color: theme.colorScheme.surfaceContainerHighest,
-              child: AppIcon(
-                AppIcons.bird,
-                size: 48,
-                color: theme.colorScheme.outline,
-              ),
-            ),
+          Hero(
+            tag: 'marketplace_image_${listing.id}',
+            child: listing.primaryImageUrl != null
+                ? CachedNetworkImage(
+                    imageUrl: listing.primaryImageUrl!,
+                    fit: BoxFit.cover,
+                    memCacheWidth: 640,
+                    placeholder: (_, __) =>
+                        ColoredBox(color: theme.colorScheme.surfaceContainerHighest),
+                    errorWidget: (_, _, _) => Container(
+                      color: theme.colorScheme.surfaceContainerHighest,
+                      child: Icon(
+                        LucideIcons.image,
+                        size: 48,
+                        color: theme.colorScheme.outline,
+                      ),
+                    ),
+                  )
+                : Container(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    child: AppIcon(
+                      AppIcons.bird,
+                      size: 48,
+                      color: theme.colorScheme.outline,
+                    ),
+                  ),
+          ),
           // Photo count badge (top-left)
           if (listing.imageUrls.length > 1)
             Positioned(

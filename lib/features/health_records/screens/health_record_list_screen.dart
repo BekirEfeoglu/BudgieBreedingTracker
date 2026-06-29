@@ -52,137 +52,138 @@ class _HealthRecordListScreenState
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: AppScreenTitle(
-          title: 'health_records.title'.tr(),
-          iconAsset: AppIcons.health,
-        ),
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
-      ),
-      body: Column(
-        children: [
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.sm,
-            ),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'health_records.search_hint'.tr(),
-                prefixIcon: const Padding(
-                  padding: EdgeInsets.all(AppSpacing.md),
-                  child: AppIcon(AppIcons.search, size: 20),
-                ),
-                suffixIcon: query.isNotEmpty
-                    ? AppIconButton(
-                        icon: const Icon(LucideIcons.x),
-                        semanticLabel: 'common.clear'.tr(),
-                        onPressed: () {
-                          _searchController.clear();
-                          ref
-                                  .read(
-                                    healthRecordSearchQueryProvider.notifier,
-                                  )
-                                  .state =
-                              '';
-                        },
-                      )
-                    : null,
-                border: const OutlineInputBorder(),
-                isDense: true,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(healthRecordsStreamProvider(userId));
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverAppBar.large(
+              title: AppScreenTitle(
+                title: 'health_records.title'.tr(),
+                iconAsset: AppIcons.health,
               ),
-              onChanged: (value) {
-                ref.read(healthRecordSearchQueryProvider.notifier).state =
-                    value;
-              },
             ),
-          ),
-          // Filter bar
-          const Divider(
-            height: 1,
-            indent: AppSpacing.lg,
-            endIndent: AppSpacing.lg,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          const HealthRecordFilterBar(),
-          const SizedBox(height: AppSpacing.sm),
-          // List
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: () async {
-                ref.invalidate(healthRecordsStreamProvider(userId));
-              },
-              child: recordsAsync.when(
-                loading: () => const LoadingState(),
-                error: (error, _) => ErrorState(
+            SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  // Search bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.sm,
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        hintText: 'health_records.search_hint'.tr(),
+                        prefixIcon: const Padding(
+                          padding: EdgeInsets.all(AppSpacing.md),
+                          child: AppIcon(AppIcons.search, size: 20),
+                        ),
+                        suffixIcon: query.isNotEmpty
+                            ? AppIconButton(
+                                icon: const Icon(LucideIcons.x),
+                                semanticLabel: 'common.clear'.tr(),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  ref
+                                      .read(healthRecordSearchQueryProvider.notifier)
+                                      .state = '';
+                                },
+                              )
+                            : null,
+                        border: const OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                      onChanged: (value) {
+                        ref.read(healthRecordSearchQueryProvider.notifier).state = value;
+                      },
+                    ),
+                  ),
+                  // Filter bar
+                  const Divider(
+                    height: 1,
+                    indent: AppSpacing.lg,
+                    endIndent: AppSpacing.lg,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  const HealthRecordFilterBar(),
+                  const SizedBox(height: AppSpacing.sm),
+                ],
+              ),
+            ),
+            // List
+            recordsAsync.when(
+              skipLoadingOnRefresh: true,
+              loading: () => const SliverFillRemaining(
+                child: LoadingState(),
+              ),
+              error: (error, _) => SliverFillRemaining(
+                child: ErrorState(
                   message: 'common.data_load_error'.tr(),
-                  onRetry: () =>
-                      ref.invalidate(healthRecordsStreamProvider(userId)),
+                  onRetry: () => ref.invalidate(healthRecordsStreamProvider(userId)),
                 ),
-                data: (allRecords) {
-                  final records = ref.watch(
-                    searchedAndFilteredHealthRecordsProvider(allRecords),
-                  );
+              ),
+              data: (allRecords) {
+                final records = ref.watch(
+                  searchedAndFilteredHealthRecordsProvider(allRecords),
+                );
 
-                  if (allRecords.isEmpty) {
-                    return EmptyState(
+                if (allRecords.isEmpty) {
+                  return SliverFillRemaining(
+                    child: EmptyState(
                       icon: const AppIcon(AppIcons.health),
                       title: 'health_records.no_records'.tr(),
                       subtitle: 'health_records.no_records_hint'.tr(),
                       actionLabel: 'health_records.add_record'.tr(),
                       onAction: () => context.push('/health-records/form'),
-                    );
-                  }
+                    ),
+                  );
+                }
 
-                  if (records.isEmpty) {
-                    return EmptyState(
+                if (records.isEmpty) {
+                  return SliverFillRemaining(
+                    child: EmptyState(
                       icon: const Icon(LucideIcons.searchX),
                       title: 'common.no_results'.tr(),
                       subtitle: 'common.no_results_hint'.tr(),
-                    );
-                  }
-
-                  final animalCache = ref.watch(
-                    animalNameCacheProvider(userId),
-                  );
-
-                  return Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 800),
-                      child: ListView.builder(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.only(
-                          top: AppSpacing.sm,
-                          bottom: AppSpacing.xxxl * 2,
-                        ),
-                        itemCount: records.length,
-                        itemBuilder: (context, index) {
-                          final r = records[index];
-                          final animal = r.birdId != null
-                              ? animalCache[r.birdId!]
-                              : null;
-                          final displayName = animal != null
-                              ? (animal.ringNumber != null
-                                    ? '${animal.name} (${animal.ringNumber})'
-                                    : animal.name)
-                              : null;
-                          return HealthRecordCard(
-                            key: ValueKey(r.id),
-                            record: r,
-                            animalName: displayName,
-                          );
-                        },
-                      ),
                     ),
                   );
-                },
-              ),
+                }
+
+                final animalCache = ref.watch(animalNameCacheProvider(userId));
+
+                return SliverPadding(
+                  padding: const EdgeInsets.only(
+                    top: AppSpacing.sm,
+                    bottom: AppSpacing.xxxl * 2,
+                  ),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final r = records[index];
+                        final animal = r.birdId != null ? animalCache[r.birdId!] : null;
+                        final displayName = animal != null
+                            ? (animal.ringNumber != null
+                                ? '${animal.name} (${animal.ringNumber})'
+                                : animal.name)
+                            : null;
+                        return HealthRecordCard(
+                          key: ValueKey(r.id),
+                          record: r,
+                          animalName: displayName,
+                        );
+                      },
+                      childCount: records.length,
+                    ),
+                  ),
+                );
+              },
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       floatingActionButton: FabButton(
         icon: const AppIcon(AppIcons.add),

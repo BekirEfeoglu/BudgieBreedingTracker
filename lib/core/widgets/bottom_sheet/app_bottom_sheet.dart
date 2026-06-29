@@ -30,8 +30,10 @@ Future<T?> showAppBottomSheet<T>({
     isScrollControlled: isScrollControlled,
     isDismissible: isDismissible,
     enableDrag: enableDrag,
-    backgroundColor: backgroundColor,
-    shape: shape,
+    backgroundColor: backgroundColor ?? Theme.of(context).colorScheme.surface,
+    shape: shape ?? const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)), // AppSpacing.radiusXl
+    ),
     constraints: constraints,
     useRootNavigator: useRootNavigator,
     routeSettings: routeSettings,
@@ -42,7 +44,21 @@ Future<T?> showAppBottomSheet<T>({
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
       child: SafeArea(
         minimum: const EdgeInsets.only(bottom: 16),
-        child: builder(ctx),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Theme.of(ctx).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Flexible(child: builder(ctx)),
+          ],
+        ),
       ),
     ),
   );

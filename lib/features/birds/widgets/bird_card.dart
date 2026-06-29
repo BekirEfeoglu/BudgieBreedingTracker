@@ -1,4 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
@@ -24,10 +26,19 @@ class BirdCard extends StatelessWidget {
     final theme = Theme.of(context);
     final age = bird.age;
 
-    return Card(
+    final cardWidget = Card(
       margin: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
         vertical: AppSpacing.xs,
+      ),
+      elevation: 0,
+      color: theme.colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        side: BorderSide(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+          width: 1,
+        ),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -69,7 +80,6 @@ class BirdCard extends StatelessWidget {
                       style: theme.textTheme.titleMedium,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    // 2px gap: tight spacing between name and details row
                     const SizedBox(height: 2),
                     Row(
                       children: [
@@ -79,7 +89,6 @@ class BirdCard extends StatelessWidget {
                             size: 16,
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
-                          // 2px icon-to-text gap: tighter than xs(4) for compact info row
                           const SizedBox(width: 2),
                           Flexible(
                             child: Text(
@@ -107,7 +116,6 @@ class BirdCard extends StatelessWidget {
                       ],
                     ),
                     if (bird.species != Species.budgie) ...[
-                      // 2px gap: tight spacing between detail rows
                       const SizedBox(height: 2),
                       Row(
                         children: [
@@ -144,6 +152,32 @@ class BirdCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+
+    return CupertinoContextMenu(
+      actions: [
+        CupertinoContextMenuAction(
+          onPressed: () {
+            Navigator.pop(context);
+            if (onTap != null) {
+              onTap!();
+            } else {
+              context.push('/birds/${bird.id}');
+            }
+          },
+          trailingIcon: CupertinoIcons.eye,
+          child: Text('common.view'.tr()),
+        ),
+        CupertinoContextMenuAction(
+          onPressed: () {
+            Navigator.pop(context);
+            context.push('/birds/${bird.id}/edit');
+          },
+          trailingIcon: CupertinoIcons.pencil,
+          child: Text('common.edit'.tr()),
+        ),
+      ],
+      child: cardWidget,
     );
   }
 }

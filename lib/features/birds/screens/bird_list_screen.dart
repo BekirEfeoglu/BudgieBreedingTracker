@@ -243,144 +243,148 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
     final birdsAsync = ref.watch(birdsStreamProvider(userId));
     final currentSort = ref.watch(birdSortProvider);
     final viewMode = ref.watch(birdListViewModeProvider);
-    // A filter chip or a non-empty search narrows the visible list. When
-    // either is active the header count should reflect what is actually on
-    // screen, not the full flock total.
+
     final isFilterActive = ref.watch(birdFilterProvider) != BirdFilter.all;
     final isSearchActive = ref.watch(
       birdSearchQueryProvider.select((q) => q.trim().isNotEmpty),
     );
     final isNarrowed = isFilterActive || isSearchActive;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: _isSelectionMode
-            ? Text(
-                'common.selection_count'.tr(args: ['${_selectedIds.length}']),
-                style: Theme.of(context).textTheme.titleMedium,
-              )
-            : birdsAsync.whenOrNull(
-                    data: (allBirds) {
-                      final count = isNarrowed
-                          ? ref
-                                .watch(sortedAndFilteredBirdsProvider(allBirds))
-                                .length
-                          : allBirds.length;
-                      return AppScreenTitle(
-                        title: '${'birds.title'.tr()} ($count)',
-                        iconAsset: AppIcons.bird,
-                      );
-                    },
-                  ) ??
-                  AppScreenTitle(
-                    title: 'birds.title'.tr(),
+    final appBarTitle = _isSelectionMode
+        ? Text(
+            'common.selection_count'.tr(args: ['${_selectedIds.length}']),
+            style: Theme.of(context).textTheme.titleMedium,
+          )
+        : birdsAsync.whenOrNull(
+                data: (allBirds) {
+                  final count = isNarrowed
+                      ? ref
+                            .watch(sortedAndFilteredBirdsProvider(allBirds))
+                            .length
+                      : allBirds.length;
+                  return AppScreenTitle(
+                    title: '${'birds.title'.tr()} ($count)',
                     iconAsset: AppIcons.bird,
-                  ),
-        leading: _isSelectionMode
-            ? AppIconButton(
-                icon: const Icon(LucideIcons.x),
-                semanticLabel: 'common.cancel'.tr(),
-                onPressed: _clearSelection,
-              )
-            : null,
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
-        actions: _isSelectionMode
-            ? [
-                AppIconButton(
-                  icon: const AppIcon(AppIcons.delete),
-                  tooltip: 'common.delete'.tr(),
-                  semanticLabel: 'common.delete'.tr(),
-                  onPressed: _bulkDelete,
-                ),
-                PopupMenuButton<String>(
-                  onSelected: (action) {
-                    if (action == 'dead') _bulkMarkAsDead();
-                    if (action == 'sold') _bulkMarkAsSold();
-                    if (action == 'gifted') _bulkMarkAsGifted();
-                  },
-                  itemBuilder: (_) => _buildSelectionActionItems(),
-                ),
-              ]
-            : [
-                AppIconButton(
-                  icon: const AppIcon(AppIcons.nest),
-                  tooltip: 'birds.cage_ledger'.tr(),
-                  semanticLabel: 'birds.cage_ledger'.tr(),
-                  onPressed: () {
-                    final birds = birdsAsync.value ?? const <Bird>[];
-                    _showCageLedger(birds);
-                  },
-                ),
-                AppIconButton(
-                  icon: Icon(
-                    viewMode == BirdListViewMode.list
-                        ? LucideIcons.layoutGrid
-                        : LucideIcons.list,
-                  ),
-                  tooltip: viewMode == BirdListViewMode.list
-                      ? 'birds.grid_view'.tr()
-                      : 'birds.list_view'.tr(),
-                  semanticLabel: viewMode == BirdListViewMode.list
-                      ? 'birds.grid_view'.tr()
-                      : 'birds.list_view'.tr(),
-                  onPressed: () {
-                    final nextMode = viewMode == BirdListViewMode.list
-                        ? BirdListViewMode.grid
-                        : BirdListViewMode.list;
-                    ref
-                        .read(birdListViewModeProvider.notifier)
-                        .setMode(nextMode);
-                  },
-                ),
-                AppIconButton(
-                  icon: const Icon(LucideIcons.arrowUpDown),
-                  tooltip: 'common.sort'.tr(),
-                  semanticLabel: 'common.sort'.tr(),
-                  onPressed: () {
-                    showSortBottomSheet<BirdSort>(
-                      context: context,
-                      values: BirdSort.values,
-                      current: currentSort,
-                      labelOf: (sort) => sort.label,
-                      onSelected: (sort) =>
-                          ref.read(birdSortProvider.notifier).state = sort,
-                    );
-                  },
-                ),
-                const NotificationBellButton(),
-                const ProfileMenuButton(),
-              ],
-      ),
-      body: Column(
-        children: [
-          if (!_isSelectionMode) ...[
-            const BirdSearchBar(),
-            const Divider(
-              height: 1,
-              indent: AppSpacing.lg,
-              endIndent: AppSpacing.lg,
+                  );
+                },
+              ) ??
+              AppScreenTitle(
+                title: 'birds.title'.tr(),
+                iconAsset: AppIcons.bird,
+              );
+
+    return Scaffold(
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(birdsStreamProvider(userId));
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverAppBar.large(
+              title: appBarTitle,
+              leading: _isSelectionMode
+                  ? AppIconButton(
+                      icon: const Icon(LucideIcons.x),
+                      semanticLabel: 'common.cancel'.tr(),
+                      onPressed: _clearSelection,
+                    )
+                  : null,
+              actions: _isSelectionMode
+                  ? [
+                      AppIconButton(
+                        icon: const AppIcon(AppIcons.delete),
+                        tooltip: 'common.delete'.tr(),
+                        semanticLabel: 'common.delete'.tr(),
+                        onPressed: _bulkDelete,
+                      ),
+                      PopupMenuButton<String>(
+                        onSelected: (action) {
+                          if (action == 'dead') _bulkMarkAsDead();
+                          if (action == 'sold') _bulkMarkAsSold();
+                          if (action == 'gifted') _bulkMarkAsGifted();
+                        },
+                        itemBuilder: (_) => _buildSelectionActionItems(),
+                      ),
+                    ]
+                  : [
+                      AppIconButton(
+                        icon: const AppIcon(AppIcons.nest),
+                        tooltip: 'birds.cage_ledger'.tr(),
+                        semanticLabel: 'birds.cage_ledger'.tr(),
+                        onPressed: () {
+                          final birds = birdsAsync.value ?? const <Bird>[];
+                          _showCageLedger(birds);
+                        },
+                      ),
+                      AppIconButton(
+                        icon: Icon(
+                          viewMode == BirdListViewMode.list
+                              ? LucideIcons.layoutGrid
+                              : LucideIcons.list,
+                        ),
+                        tooltip: viewMode == BirdListViewMode.list
+                            ? 'birds.grid_view'.tr()
+                            : 'birds.list_view'.tr(),
+                        semanticLabel: viewMode == BirdListViewMode.list
+                            ? 'birds.grid_view'.tr()
+                            : 'birds.list_view'.tr(),
+                        onPressed: () {
+                          final nextMode = viewMode == BirdListViewMode.list
+                              ? BirdListViewMode.grid
+                              : BirdListViewMode.list;
+                          ref
+                              .read(birdListViewModeProvider.notifier)
+                              .setMode(nextMode);
+                        },
+                      ),
+                      AppIconButton(
+                        icon: const Icon(LucideIcons.arrowUpDown),
+                        tooltip: 'common.sort'.tr(),
+                        semanticLabel: 'common.sort'.tr(),
+                        onPressed: () {
+                          showSortBottomSheet<BirdSort>(
+                            context: context,
+                            values: BirdSort.values,
+                            current: currentSort,
+                            labelOf: (sort) => sort.label,
+                            onSelected: (sort) =>
+                                ref.read(birdSortProvider.notifier).state =
+                                    sort,
+                          );
+                        },
+                      ),
+                      const NotificationBellButton(),
+                      const ProfileMenuButton(),
+                    ],
             ),
-            const SizedBox(height: AppSpacing.xs),
-            const BirdFilterBar(),
-            const SizedBox(height: AppSpacing.sm),
-            Center(
-              child: AdBannerWidget(
-                isPremiumProvider: isPremiumProvider,
-                adBannerLoader: () => defaultAdBannerLoader(ref),
+            if (!_isSelectionMode)
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    const BirdSearchBar(),
+                    const Divider(
+                      height: 1,
+                      indent: AppSpacing.lg,
+                      endIndent: AppSpacing.lg,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    const BirdFilterBar(),
+                    const SizedBox(height: AppSpacing.sm),
+                    Center(
+                      child: AdBannerWidget(
+                        isPremiumProvider: isPremiumProvider,
+                        adBannerLoader: () => defaultAdBannerLoader(ref),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                  ],
+                ),
               ),
-            ),
-          ],
-          Expanded(
-            // skipLoadingOnRefresh: keep the previous list visible during
-            // pull-to-refresh / provider invalidation instead of flickering
-            // to LoadingState (ui-patterns.md). Only show the spinner on
-            // the very first emission for a userId.
-            child: birdsAsync.when(
+            birdsAsync.when(
               skipLoadingOnRefresh: true,
-              loading: () => const LoadingState(),
-              error: (error, _) => SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
+              loading: () => const SliverFillRemaining(child: LoadingState()),
+              error: (error, _) => SliverToBoxAdapter(
                 child: SizedBox(
                   height: MediaQuery.of(context).size.height * 0.5,
                   child: ErrorState(
@@ -395,107 +399,97 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
                 );
 
                 if (allBirds.isEmpty) {
-                  return EmptyState(
-                    icon: const AppIcon(AppIcons.bird),
-                    title: 'birds.no_birds'.tr(),
-                    subtitle: 'birds.no_birds_hint'.tr(),
-                    actionLabel: 'birds.add_bird'.tr(),
-                    onAction: () => context.push('${AppRoutes.birds}/form'),
+                  return SliverFillRemaining(
+                    child: EmptyState(
+                      icon: const AppIcon(AppIcons.bird),
+                      title: 'birds.no_birds'.tr(),
+                      subtitle: 'birds.no_birds_hint'.tr(),
+                      actionLabel: 'birds.add_bird'.tr(),
+                      onAction: () => context.push('${AppRoutes.birds}/form'),
+                    ),
                   );
                 }
 
                 if (birds.isEmpty) {
-                  return EmptyState(
-                    icon: const AppIcon(AppIcons.search),
-                    title: 'common.no_results'.tr(),
-                    subtitle: 'common.no_results_hint'.tr(),
+                  return SliverFillRemaining(
+                    child: EmptyState(
+                      icon: const AppIcon(AppIcons.search),
+                      title: 'common.no_results'.tr(),
+                      subtitle: 'common.no_results_hint'.tr(),
+                    ),
                   );
                 }
 
-                return Center(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: viewMode == BirdListViewMode.grid ? 1000 : 800,
-                    ),
-                    child: RefreshIndicator(
-                      onRefresh: () async {
-                        ref.invalidate(birdsStreamProvider(userId));
-                      },
-                      child: viewMode == BirdListViewMode.grid
-                          ? GridView.builder(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              padding: const EdgeInsets.fromLTRB(
-                                AppSpacing.lg,
-                                AppSpacing.sm,
-                                AppSpacing.lg,
-                                _listBottomInset,
+                return SliverPadding(
+                  padding: viewMode == BirdListViewMode.grid
+                      ? const EdgeInsets.fromLTRB(
+                          AppSpacing.lg,
+                          0,
+                          AppSpacing.lg,
+                          _listBottomInset,
+                        )
+                      : const EdgeInsets.only(bottom: _listBottomInset),
+                  sliver: viewMode == BirdListViewMode.grid
+                      ? SliverGrid(
+                          gridDelegate:
+                              const SliverGridDelegateWithMaxCrossAxisExtent(
+                                maxCrossAxisExtent: 180,
+                                mainAxisExtent: 230,
+                                mainAxisSpacing: AppSpacing.sm,
+                                crossAxisSpacing: AppSpacing.sm,
                               ),
-                              gridDelegate:
-                                  const SliverGridDelegateWithMaxCrossAxisExtent(
-                                    maxCrossAxisExtent: 180,
-                                    mainAxisExtent: 230,
-                                    mainAxisSpacing: AppSpacing.sm,
-                                    crossAxisSpacing: AppSpacing.sm,
-                                  ),
-                              itemCount: birds.length,
-                              itemBuilder: (context, index) {
-                                final bird = birds[index];
-                                final isSelected = _selectedIds.contains(
-                                  bird.id,
-                                );
-                                return _SelectableBirdGridCard(
-                                  key: ValueKey(bird.id),
-                                  bird: bird,
-                                  isSelected: isSelected,
-                                  isSelectionMode: _isSelectionMode,
-                                  onTap: _isSelectionMode
-                                      ? () => _toggleSelection(bird.id)
-                                      : () => _navigateWithAd(
-                                          '${AppRoutes.birds}/${bird.id}',
-                                        ),
-                                  onLongPress: () {
-                                    AppHaptics.mediumImpact();
-                                    _toggleSelection(bird.id);
-                                  },
-                                );
+                          delegate: SliverChildBuilderDelegate((
+                            context,
+                            index,
+                          ) {
+                            final bird = birds[index];
+                            final isSelected = _selectedIds.contains(bird.id);
+                            return _SelectableBirdGridCard(
+                              key: ValueKey(bird.id),
+                              bird: bird,
+                              isSelected: isSelected,
+                              isSelectionMode: _isSelectionMode,
+                              onTap: _isSelectionMode
+                                  ? () => _toggleSelection(bird.id)
+                                  : () => _navigateWithAd(
+                                      '${AppRoutes.birds}/${bird.id}',
+                                    ),
+                              onLongPress: () {
+                                AppHaptics.mediumImpact();
+                                _toggleSelection(bird.id);
                               },
-                            )
-                          : ListView.builder(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              padding: const EdgeInsets.only(
-                                top: AppSpacing.sm,
-                                bottom: _listBottomInset,
-                              ),
-                              itemCount: birds.length,
-                              itemBuilder: (context, index) {
-                                final bird = birds[index];
-                                final isSelected = _selectedIds.contains(
-                                  bird.id,
-                                );
-                                return _SelectableBirdCard(
-                                  key: ValueKey(bird.id),
-                                  bird: bird,
-                                  isSelected: isSelected,
-                                  isSelectionMode: _isSelectionMode,
-                                  onTap: _isSelectionMode
-                                      ? () => _toggleSelection(bird.id)
-                                      : () => _navigateWithAd(
-                                          '${AppRoutes.birds}/${bird.id}',
-                                        ),
-                                  onLongPress: () {
-                                    AppHaptics.mediumImpact();
-                                    _toggleSelection(bird.id);
-                                  },
-                                );
+                            );
+                          }, childCount: birds.length),
+                        )
+                      : SliverList(
+                          delegate: SliverChildBuilderDelegate((
+                            context,
+                            index,
+                          ) {
+                            final bird = birds[index];
+                            final isSelected = _selectedIds.contains(bird.id);
+                            return _SelectableBirdCard(
+                              key: ValueKey(bird.id),
+                              bird: bird,
+                              isSelected: isSelected,
+                              isSelectionMode: _isSelectionMode,
+                              onTap: _isSelectionMode
+                                  ? () => _toggleSelection(bird.id)
+                                  : () => _navigateWithAd(
+                                      '${AppRoutes.birds}/${bird.id}',
+                                    ),
+                              onLongPress: () {
+                                AppHaptics.mediumImpact();
+                                _toggleSelection(bird.id);
                               },
-                            ),
-                    ),
-                  ),
+                            );
+                          }, childCount: birds.length),
+                        ),
                 );
               },
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       floatingActionButton: _isSelectionMode
           ? null

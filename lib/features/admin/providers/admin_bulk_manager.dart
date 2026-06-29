@@ -199,38 +199,23 @@ class AdminBulkManager {
         '[admin] bulkDeleteUserData called for ${userIds.length} users',
       );
 
-      const deletionOrder = AdminConstants.userDataDeletionOrder;
-
       for (final userId in userIds) {
         try {
-          var userHadDeleteError = false;
-          for (final table in deletionOrder) {
-            try {
-              await client.from(table).delete().eq('user_id', userId);
-            } catch (e, st) {
-              userHadDeleteError = true;
-              AppLogger.warning(
-                'bulkDeleteUserData: table $table for ${AppLogger.obfuscate(userId)}: $e\n$st',
-              );
-              Sentry.addBreadcrumb(
-                Breadcrumb(
-                  message:
-                      'bulkDeleteUserData table delete failed for ${AppLogger.obfuscate(userId)}',
-                  category: 'admin.bulk_delete',
-                  level: SentryLevel.warning,
-                  data: {'table': table, 'error': e.toString()},
-                ),
-              );
-            }
-          }
-          if (userHadDeleteError) {
-            skipped++;
-          } else {
-            succeeded++;
-          }
+          // Use the server-side RPC to delete all data in a single transaction
+          // instead of looping over all tables client-side (N * tables queries).
+          await client.rpc('reset_user_data', params: {'target_user_id': userId});
+          succeeded++;
         } catch (e, st) {
           AppLogger.warning(
             'admin: bulkDeleteUserData failed for ${AppLogger.obfuscate(userId)}: $e\n$st',
+          );
+          Sentry.addBreadcrumb(
+            Breadcrumb(
+              message: 'bulkDeleteUserData RPC failed for ${AppLogger.obfuscate(userId)}',
+              category: 'admin.bulk_delete',
+              level: SentryLevel.warning,
+              data: {'error': e.toString()},
+            ),
           );
           skipped++;
         }

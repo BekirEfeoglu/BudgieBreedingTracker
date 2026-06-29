@@ -7,8 +7,10 @@ import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
+import '../../../router/route_names.dart';
 import '../providers/admin_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
+import 'package:go_router/go_router.dart';
 
 export 'admin_dashboard_operations_overview_section.dart';
 export 'admin_dashboard_live_health_panel.dart';
@@ -264,24 +266,32 @@ class DashboardContentReviewSection extends ConsumerWidget {
               );
             }
             return Card(
-              child: Padding(
-                padding: AppSpacing.cardPadding,
-                child: Row(
-                  children: [
-                    const Icon(
-                      LucideIcons.alertTriangle,
-                      color: AppColors.warning,
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: Text(
-                        'admin.pending_review_count'.tr(
-                          args: [count.toString()],
-                        ),
-                        style: theme.textTheme.bodyMedium,
+              child: InkWell(
+                onTap: () => context.push(AppRoutes.adminModeration),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                child: Padding(
+                  padding: AppSpacing.cardPadding,
+                  child: Row(
+                    children: [
+                      const Icon(
+                        LucideIcons.alertTriangle,
+                        color: AppColors.warning,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Text(
+                          'admin.pending_review_count'.tr(
+                            args: [count.toString()],
+                          ),
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                      ),
+                      const Icon(
+                        LucideIcons.chevronRight,
+                        color: AppColors.neutral400,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );

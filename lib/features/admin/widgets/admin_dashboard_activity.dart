@@ -341,7 +341,11 @@ class _UserAvatar extends StatelessWidget {
     if (avatarUrl != null && avatarUrl!.isNotEmpty) {
       return CircleAvatar(
         radius: 16,
-        backgroundImage: CachedNetworkImageProvider(avatarUrl!),
+        backgroundImage: CachedNetworkImageProvider(
+          avatarUrl!,
+          maxWidth: 64,
+          maxHeight: 64,
+        ),
       );
     }
     return CircleAvatar(

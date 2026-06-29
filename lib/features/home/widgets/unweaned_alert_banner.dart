@@ -5,6 +5,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/animations/pulse_animation.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 /// Alert banner shown when there are unweaned chicks.
@@ -19,33 +20,38 @@ class UnweanedAlertBanner extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: Container(
-        padding: AppSpacing.cardPadding,
-        decoration: BoxDecoration(
-          color: AppColors.warning.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          children: [
-            const AppIcon(AppIcons.info, color: AppColors.warning, size: 24),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Text(
-                'home.unweaned_alert'.tr(args: [count.toString()]),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.warning,
-                  fontWeight: FontWeight.w500,
+      child: PulseAnimation(
+        lowerBound: 0.98,
+        upperBound: 1.02,
+        duration: const Duration(milliseconds: 1500),
+        child: Container(
+          padding: AppSpacing.cardPadding,
+          decoration: BoxDecoration(
+            color: AppColors.warning.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            children: [
+              const AppIcon(AppIcons.info, color: AppColors.warning, size: 24),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  'home.unweaned_alert'.tr(args: [count.toString()]),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.warning,
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
               ),
-            ),
-            TextButton(
-              onPressed: () => context.push(AppRoutes.chicks),
-              // Specific label (not generic "View") so screen readers and
-              // sighted users know exactly what this action opens.
-              child: Text('home.view_unweaned'.tr()),
-            ),
-          ],
+              TextButton(
+                onPressed: () => context.push(AppRoutes.chicks),
+                // Specific label (not generic "View") so screen readers and
+                // sighted users know exactly what this action opens.
+                child: Text('home.view_unweaned'.tr()),
+              ),
+            ],
+          ),
         ),
       ),
     );

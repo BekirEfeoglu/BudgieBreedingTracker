@@ -67,13 +67,20 @@ class PremiumScreen extends ConsumerWidget {
     });
 
     return Scaffold(
-      appBar: AppBar(
-        title: AppScreenTitle(
-          title: 'premium.title'.tr(),
-          iconAsset: AppIcons.premium,
-        ),
+      body: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverAppBar.large(
+            title: AppScreenTitle(
+              title: 'premium.title'.tr(),
+              iconAsset: AppIcons.premium,
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: isPremium ? _ActivePremiumBody() : const _PaywallBody(),
+          ),
+        ],
       ),
-      body: isPremium ? _ActivePremiumBody() : const _PaywallBody(),
     );
   }
 }
@@ -92,11 +99,9 @@ class _ActivePremiumBody extends ConsumerWidget {
     final theme = Theme.of(context);
     final subscriptionInfoAsync = ref.watch(subscriptionInfoProvider);
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
-      child: Column(
-        children: [
-          const SizedBox(height: AppSpacing.xxl),
+    return Column(
+      children: [
+        const SizedBox(height: AppSpacing.xxl),
 
           // Premium active header
           Container(
@@ -208,9 +213,9 @@ class _ActivePremiumBody extends ConsumerWidget {
               ],
             ),
           ),
+          const SizedBox(height: AppSpacing.xxxl * 2),
         ],
-      ),
-    );
+      );
   }
 }
 
@@ -220,12 +225,10 @@ class _PaywallBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SingleChildScrollView(
-      padding: EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
-      child: Column(
-        children: [
-          PremiumHeaderSection(),
-          SizedBox(height: AppSpacing.xl),
+    return const Column(
+      children: [
+        PremiumHeaderSection(),
+        SizedBox(height: AppSpacing.xl),
           PremiumPricingSection(),
           SizedBox(height: AppSpacing.xxl),
           PremiumFeatureListSection(),
@@ -238,8 +241,8 @@ class _PaywallBody extends StatelessWidget {
           ),
           SizedBox(height: AppSpacing.xxl),
           PremiumRestoreSection(),
+          SizedBox(height: AppSpacing.xxxl * 2),
         ],
-      ),
-    );
+      );
   }
 }

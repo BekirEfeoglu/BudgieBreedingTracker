@@ -59,6 +59,7 @@ class ProfileHeader extends StatelessWidget {
                   imageUrl: profile?.avatarUrl,
                   radius: 48,
                   isUploading: isAvatarUploading,
+                  isPremium: profile?.hasPremium == true,
                 ),
                 Positioned(
                   bottom: 0,

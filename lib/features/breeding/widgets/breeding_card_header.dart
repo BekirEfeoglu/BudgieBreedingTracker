@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/status_badge.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_detail_providers.dart';
 import 'package:budgie_breeding_tracker/shared/widgets/sync_conflict_badge.dart';
@@ -15,24 +16,33 @@ import 'package:budgie_breeding_tracker/shared/widgets/sync_conflict_badge.dart'
 /// Card header showing male/female bird names, status badge, and cage number.
 class BreedingCardHeader extends ConsumerWidget {
   final BreedingPair pair;
+  final Map<String, Bird>? birdsMap;
 
-  const BreedingCardHeader({super.key, required this.pair});
+  const BreedingCardHeader({
+    super.key,
+    required this.pair,
+    this.birdsMap,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
 
-    final maleName = pair.maleId != null
-        ? ref
-              .watch(birdByIdProvider(pair.maleId!))
-              .whenOrNull(data: (bird) => bird?.name)
-        : null;
+    final maleName = birdsMap != null && pair.maleId != null
+        ? birdsMap![pair.maleId]?.name
+        : pair.maleId != null
+            ? ref
+                  .watch(birdByIdProvider(pair.maleId!))
+                  .whenOrNull(data: (bird) => bird?.name)
+            : null;
 
-    final femaleName = pair.femaleId != null
-        ? ref
-              .watch(birdByIdProvider(pair.femaleId!))
-              .whenOrNull(data: (bird) => bird?.name)
-        : null;
+    final femaleName = birdsMap != null && pair.femaleId != null
+        ? birdsMap![pair.femaleId]?.name
+        : pair.femaleId != null
+            ? ref
+                  .watch(birdByIdProvider(pair.femaleId!))
+                  .whenOrNull(data: (bird) => bird?.name)
+            : null;
 
     return Row(
       children: [

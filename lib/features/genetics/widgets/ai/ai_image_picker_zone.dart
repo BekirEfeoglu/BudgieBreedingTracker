@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/utils/image_picker_guard.dart';
+import 'package:budgie_breeding_tracker/core/widgets/animations/scanner_line_animation.dart';
 
 class AiImagePickerZone extends StatelessWidget {
   const AiImagePickerZone({
@@ -13,6 +14,7 @@ class AiImagePickerZone extends StatelessWidget {
     required this.onImageSelected,
     required this.onImageCleared,
     required this.selectedImagePath,
+    this.isAnalyzing = false,
     this.tips = const [],
     this.previewHeight = 140.0,
   });
@@ -20,6 +22,7 @@ class AiImagePickerZone extends StatelessWidget {
   final ValueChanged<String> onImageSelected;
   final VoidCallback onImageCleared;
   final String? selectedImagePath;
+  final bool isAnalyzing;
   final List<String> tips;
   final double previewHeight;
 
@@ -126,16 +129,20 @@ class AiImagePickerZone extends StatelessWidget {
             borderRadius: const BorderRadius.vertical(
               top: Radius.circular(AppSpacing.radiusLg),
             ),
-            child: Image.file(
-              File(selectedImagePath!),
-              height: previewHeight,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                height: previewHeight * 0.7,
-                color: theme.colorScheme.surfaceContainerHighest,
-                alignment: Alignment.center,
-                child: Text('common.error'.tr()),
+            child: ScannerLineAnimation(
+              isScanning: isAnalyzing,
+              scannerColor: theme.colorScheme.primary,
+              child: Image.file(
+                File(selectedImagePath!),
+                height: previewHeight,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  height: previewHeight * 0.7,
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  alignment: Alignment.center,
+                  child: Text('common.error'.tr()),
+                ),
               ),
             ),
           ),

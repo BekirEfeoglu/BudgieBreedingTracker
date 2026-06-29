@@ -220,6 +220,44 @@ class AdminUserManager {
     }
   }
 
+  /// Force logout a user from all devices.
+  Future<AdminUserOperationResult> forceLogout(String targetUserId) async {
+    _updateState(isLoading: true, error: null, isSuccess: false);
+    try {
+      await requireAdmin(_ref);
+      final client = _ref.read(supabaseClientProvider);
+      final role = await _fetchTargetUserRole(client, targetUserId);
+      if (_isProtectedRole(role)) throw ProtectedRoleError(role!);
+
+      await client.rpc('admin_force_logout', params: {
+        'target_user_id': targetUserId,
+      });
+
+      await logAdminAction(
+        client,
+        _ref.read(currentUserIdProvider),
+        'force_logout',
+        targetUserId: targetUserId,
+        details: {'message': 'User forcefully logged out of all devices'},
+      );
+
+      _updateState(
+        isLoading: false,
+        isSuccess: true,
+        successMessage: 'admin.force_logout_success'.tr(),
+      );
+      return AdminUserOperationResult.success;
+    } on ProtectedRoleError catch (e) {
+      AppLogger.info('AdminUserManager.forceLogout blocked for role: ${e.role}');
+      _updateState(isLoading: false, error: 'admin.protected_user_error'.tr());
+      return AdminUserOperationResult.protected;
+    } catch (e, st) {
+      AppLogger.error('AdminUserManager.forceLogout', e, st);
+      _updateState(isLoading: false, error: 'admin.action_error'.tr());
+      return AdminUserOperationResult.failed;
+    }
+  }
+
   // ── Private helpers ──────────────────────────────────
 
   bool _isProtectedRole(String? role) {

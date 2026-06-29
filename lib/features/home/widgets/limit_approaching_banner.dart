@@ -9,6 +9,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/data/providers/entity_count_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
+import 'package:budgie_breeding_tracker/core/widgets/animations/pulse_animation.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 class LimitApproachingBanner extends ConsumerWidget {
@@ -39,9 +40,13 @@ class LimitApproachingBanner extends ConsumerWidget {
         ? AppColors.error
         : AppColors.warning;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
+    return PulseAnimation(
+      lowerBound: 0.99,
+      upperBound: 1.01,
+      duration: const Duration(milliseconds: 1200),
+      child: Container(
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
         vertical: AppSpacing.sm,
       ),
       padding: AppSpacing.cardPadding,
@@ -82,6 +87,6 @@ class LimitApproachingBanner extends ConsumerWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }

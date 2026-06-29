@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
+import '../../../core/widgets/animations/shimmer_shine_animation.dart';
 import '../screens/budgie_login_screen.dart' show LoginState;
 import 'auth_form_field.dart';
 import 'budgie_login_colors.dart';
@@ -178,36 +179,44 @@ class BudgieLoginCard extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
 
-            // Giris butonu
             Semantics(
               button: true,
               label: 'auth.login'.tr(),
-              child: FilledButton(
-                onPressed: _isLoading ? null : onSubmit,
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size(
-                    double.infinity,
-                    AppSpacing.touchTargetMd,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                  ),
-                ),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 250),
-                  child: switch (loginState) {
-                    LoginState.loading => const SizedBox(
-                      key: ValueKey('loading'),
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+              child: ShimmerShineAnimation(
+                isActive: _isLoading,
+                duration: const Duration(milliseconds: 1200),
+                shineColor: theme.colorScheme.onPrimary.withValues(alpha: 0.5),
+                child: FilledButton(
+                  // Butonun grileşmesini engellemek için isLoading durumunda boş lambda veriyoruz
+                  onPressed: _isLoading ? () {} : onSubmit,
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(
+                      double.infinity,
+                      AppSpacing.touchTargetMd,
                     ),
-                    LoginState.success => const Icon(
-                      key: ValueKey('success'),
-                      LucideIcons.check,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                     ),
-                    _ => Text(key: const ValueKey('label'), 'auth.login'.tr()),
-                  },
+                  ),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    child: switch (loginState) {
+                      LoginState.loading => SizedBox(
+                        key: const ValueKey('loading'),
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: theme.colorScheme.onPrimary,
+                        ),
+                      ),
+                      LoginState.success => const Icon(
+                        key: ValueKey('success'),
+                        LucideIcons.check,
+                      ),
+                      _ => Text(key: const ValueKey('label'), 'auth.login'.tr()),
+                    },
+                  ),
                 ),
               ),
             ),

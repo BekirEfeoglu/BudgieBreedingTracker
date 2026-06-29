@@ -238,6 +238,8 @@ abstract class AdminUsersQuery with _$AdminUsersQuery {
     @Default(false) bool activeTodayOnly,
     @Default(false) bool createdTodayOnly,
     @Default(false) bool onlineOnly,
+    DateTime? dateRangeStart,
+    DateTime? dateRangeEnd,
     @Default('created_at') String sortField,
     @Default(false) bool sortAscending,
     @Default(50) int limit,

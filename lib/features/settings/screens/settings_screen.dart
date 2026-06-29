@@ -19,22 +19,29 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: AppScreenTitle(
-          title: 'settings.title'.tr(),
-          iconAsset: AppIcons.settings,
-        ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
-        children: const [
-          DisplaySection(),
-          LanguageSection(),
-          AccessibilitySection(),
-          NotificationsSection(),
-          DataStorageSection(),
-          PrivacySecuritySection(),
-          AboutSection(),
+      body: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverAppBar.large(
+            title: AppScreenTitle(
+              title: 'settings.title'.tr(),
+              iconAsset: AppIcons.settings,
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate(const [
+                DisplaySection(),
+                LanguageSection(),
+                AccessibilitySection(),
+                NotificationsSection(),
+                DataStorageSection(),
+                PrivacySecuritySection(),
+                AboutSection(),
+              ]),
+            ),
+          ),
         ],
       ),
     );

@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
+import '../../../core/widgets/animations/shimmer_shine_animation.dart';
 import '../../../domain/services/auth/password_policy.dart';
 import 'auth_form_field.dart';
 import 'legal_links_text.dart';
@@ -52,7 +53,7 @@ class RegisterFormBody extends StatelessWidget {
         const SizedBox(height: AppSpacing.lg),
         _buildConsentCheckboxes(context),
         const SizedBox(height: AppSpacing.lg),
-        _buildSubmitSection(),
+        _buildSubmitSection(context),
       ],
     );
   }
@@ -220,22 +221,31 @@ class RegisterFormBody extends StatelessWidget {
     );
   }
 
-  Widget _buildSubmitSection() {
+  Widget _buildSubmitSection(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        FilledButton(
-          onPressed: isLoading ? null : onSubmit,
-          style: FilledButton.styleFrom(
-            minimumSize: const Size(double.infinity, AppSpacing.touchTargetMd),
+        ShimmerShineAnimation(
+          isActive: isLoading,
+          duration: const Duration(milliseconds: 1200),
+          shineColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.5),
+          child: FilledButton(
+            // Butonun grileşmesini engellemek için isLoading durumunda boş lambda veriyoruz
+            onPressed: isLoading ? () {} : onSubmit,
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(double.infinity, AppSpacing.touchTargetMd),
+            ),
+            child: isLoading
+                ? SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                  )
+                : Text('auth.register'.tr()),
           ),
-          child: isLoading
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Text('auth.register'.tr()),
         ),
         const SizedBox(height: AppSpacing.lg),
         SocialLoginButtons(

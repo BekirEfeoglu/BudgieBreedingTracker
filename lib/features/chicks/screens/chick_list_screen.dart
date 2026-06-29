@@ -178,106 +178,112 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
     final parentsByEggAsync = ref.watch(chickParentsByEggProvider(userId));
 
     return Scaffold(
-      appBar: AppBar(
-        leading: _isSelectionMode
-            ? AppIconButton(
-                icon: const Icon(LucideIcons.x),
-                semanticLabel: 'common.cancel'.tr(),
-                onPressed: _clearSelection,
-              )
-            : AppIconButton(
-                icon: const Icon(LucideIcons.arrowLeft),
-                tooltip: 'common.back'.tr(),
-                semanticLabel: 'common.back'.tr(),
-                onPressed: _handleBack,
-              ),
-        title: _isSelectionMode
-            ? Text(
-                'common.selection_count'.tr(args: ['${_selectedIds.length}']),
-                style: Theme.of(context).textTheme.titleMedium,
-              )
-            : AppScreenTitle(
-                title: 'chicks.title'.tr(),
-                iconAsset: AppIcons.chick,
-              ),
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
-        actions: _isSelectionMode
-            ? [
-                AppIconButton(
-                  icon: const AppIcon(AppIcons.delete),
-                  tooltip: 'common.delete'.tr(),
-                  semanticLabel: 'common.delete'.tr(),
-                  onPressed: _bulkDelete,
-                ),
-                PopupMenuButton<String>(
-                  tooltip: 'common.more'.tr(),
-                  onSelected: (action) {
-                    if (action == 'deceased') _bulkMarkAsDeceased();
-                  },
-                  itemBuilder: (_) => [
-                    PopupMenuItem(
-                      value: 'deceased',
-                      child: Text('chicks.mark_dead'.tr()),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(chicksStreamProvider(userId));
+          ref.invalidate(chickParentsByEggProvider(userId));
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverAppBar.large(
+              leading: _isSelectionMode
+                  ? AppIconButton(
+                      icon: const Icon(LucideIcons.x),
+                      semanticLabel: 'common.cancel'.tr(),
+                      onPressed: _clearSelection,
+                    )
+                  : AppIconButton(
+                      icon: const Icon(LucideIcons.arrowLeft),
+                      tooltip: 'common.back'.tr(),
+                      semanticLabel: 'common.back'.tr(),
+                      onPressed: _handleBack,
+                    ),
+              title: _isSelectionMode
+                  ? Text(
+                      'common.selection_count'.tr(args: ['${_selectedIds.length}']),
+                      style: Theme.of(context).textTheme.titleMedium,
+                    )
+                  : AppScreenTitle(
+                      title: 'chicks.title'.tr(),
+                      iconAsset: AppIcons.chick,
+                    ),
+              actions: _isSelectionMode
+                  ? [
+                      AppIconButton(
+                        icon: const AppIcon(AppIcons.delete),
+                        tooltip: 'common.delete'.tr(),
+                        semanticLabel: 'common.delete'.tr(),
+                        onPressed: _bulkDelete,
+                      ),
+                      PopupMenuButton<String>(
+                        tooltip: 'common.more'.tr(),
+                        onSelected: (action) {
+                          if (action == 'deceased') _bulkMarkAsDeceased();
+                        },
+                        itemBuilder: (_) => [
+                          PopupMenuItem(
+                            value: 'deceased',
+                            child: Text('chicks.mark_dead'.tr()),
+                          ),
+                        ],
+                      ),
+                    ]
+                  : [
+                      AppIconButton(
+                        icon: const Icon(LucideIcons.arrowUpDown),
+                        tooltip: 'common.sort'.tr(),
+                        semanticLabel: 'common.sort'.tr(),
+                        onPressed: () {
+                          final currentSort = ref.read(chickSortProvider);
+                          showSortBottomSheet<ChickSort>(
+                            context: context,
+                            values: ChickSort.values,
+                            current: currentSort,
+                            labelOf: (s) => s.label,
+                            onSelected: (s) =>
+                                ref.read(chickSortProvider.notifier).setSort(s),
+                          );
+                        },
+                      ),
+                      const NotificationBellButton(),
+                      const ProfileMenuButton(),
+                    ],
+            ),
+            if (!_isSelectionMode)
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    const ChickSearchBar(),
+                    const Divider(
+                      height: 1,
+                      indent: AppSpacing.lg,
+                      endIndent: AppSpacing.lg,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    const ChickFilterBar(),
+                    const SizedBox(height: AppSpacing.sm),
+                    Center(
+                      child: AdBannerWidget(
+                        isPremiumProvider: isPremiumProvider,
+                        adBannerLoader: () => defaultAdBannerLoader(ref),
+                      ),
                     ),
                   ],
                 ),
-              ]
-            : [
-                AppIconButton(
-                  icon: const Icon(LucideIcons.arrowUpDown),
-                  tooltip: 'common.sort'.tr(),
-                  semanticLabel: 'common.sort'.tr(),
-                  onPressed: () {
-                    final currentSort = ref.read(chickSortProvider);
-                    showSortBottomSheet<ChickSort>(
-                      context: context,
-                      values: ChickSort.values,
-                      current: currentSort,
-                      labelOf: (s) => s.label,
-                      onSelected: (s) =>
-                          ref.read(chickSortProvider.notifier).setSort(s),
-                    );
-                  },
-                ),
-                const NotificationBellButton(),
-                const ProfileMenuButton(),
-              ],
-      ),
-      body: Column(
-        children: [
-          if (!_isSelectionMode) ...[
-            const ChickSearchBar(),
-            const Divider(
-              height: 1,
-              indent: AppSpacing.lg,
-              endIndent: AppSpacing.lg,
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            const ChickFilterBar(),
-            const SizedBox(height: AppSpacing.sm),
-            Center(
-              child: AdBannerWidget(
-                isPremiumProvider: isPremiumProvider,
-                adBannerLoader: () => defaultAdBannerLoader(ref),
               ),
-            ),
-          ],
-          Expanded(
-            child: chicksAsync.when(
+            chicksAsync.when(
               skipLoadingOnRefresh: true,
-              loading: () => const LoadingState(),
-              error: (error, _) => SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.5,
-                  child: ErrorState(
-                    message: 'common.data_load_error'.tr(),
-                    onRetry: () {
-                      ref.invalidate(chicksStreamProvider(userId));
-                      ref.invalidate(chickParentsByEggProvider(userId));
-                    },
-                  ),
+              loading: () => const SliverFillRemaining(
+                child: LoadingState(),
+              ),
+              error: (error, _) => SliverFillRemaining(
+                child: ErrorState(
+                  message: 'common.data_load_error'.tr(),
+                  onRetry: () {
+                    ref.invalidate(chicksStreamProvider(userId));
+                    ref.invalidate(chickParentsByEggProvider(userId));
+                  },
                 ),
               ),
               data: (allChicks) {
@@ -290,68 +296,69 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
                 };
 
                 if (allChicks.isEmpty) {
-                  return EmptyState(
-                    icon: const AppIcon(AppIcons.chick),
-                    title: 'chicks.no_chicks'.tr(),
-                    subtitle: 'chicks.no_chicks_hint'.tr(),
-                    actionLabel: 'chicks.add_chick'.tr(),
-                    onAction: () => context.push(AppRoutes.chickForm),
+                  return SliverFillRemaining(
+                    child: EmptyState(
+                      icon: const AppIcon(AppIcons.chick),
+                      title: 'chicks.no_chicks'.tr(),
+                      subtitle: 'chicks.no_chicks_hint'.tr(),
+                      actionLabel: 'chicks.add_chick'.tr(),
+                      onAction: () => context.push(AppRoutes.chickForm),
+                    ),
                   );
                 }
 
                 if (chicks.isEmpty) {
-                  return EmptyState(
-                    icon: const Icon(LucideIcons.searchX),
-                    title: 'common.no_results'.tr(),
-                    subtitle: 'common.no_results_hint'.tr(),
+                  return SliverFillRemaining(
+                    child: EmptyState(
+                      icon: const Icon(LucideIcons.searchX),
+                      title: 'common.no_results'.tr(),
+                      subtitle: 'common.no_results_hint'.tr(),
+                    ),
                   );
                 }
 
-                return Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 800),
-                    child: RefreshIndicator(
-                      onRefresh: () async {
-                        ref.invalidate(chicksStreamProvider(userId));
-                        ref.invalidate(chickParentsByEggProvider(userId));
+                return SliverPadding(
+                  padding: const EdgeInsets.only(
+                    top: AppSpacing.sm,
+                    bottom: AppSpacing.xxxl * 2,
+                  ),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final chick = chicks[index];
+                        final isSelected = _selectedIds.contains(chick.id);
+                        return Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 800),
+                            child: _SelectableChickCard(
+                              key: ValueKey(chick.id),
+                              chick: chick,
+                              parents: chick.eggId == null
+                                  ? null
+                                  : parentsByEgg[chick.eggId!],
+                              isSelected: isSelected,
+                              isSelectionMode: _isSelectionMode,
+                              onTap: _isSelectionMode
+                                  ? () => _toggleSelection(chick.id)
+                                  : () => _navigateWithAd(
+                                      '${AppRoutes.chicks}/${chick.id}',
+                                    ),
+                              onLongPress: () {
+                                AppHaptics.mediumImpact();
+                                _toggleSelection(chick.id);
+                              },
+                            ),
+                          ),
+                        );
                       },
-                      child: ListView.builder(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.only(
-                          top: AppSpacing.sm,
-                          bottom: AppSpacing.xxxl * 2,
-                        ),
-                        itemCount: chicks.length,
-                        itemBuilder: (context, index) {
-                          final chick = chicks[index];
-                          final isSelected = _selectedIds.contains(chick.id);
-                          return _SelectableChickCard(
-                            key: ValueKey(chick.id),
-                            chick: chick,
-                            parents: chick.eggId == null
-                                ? null
-                                : parentsByEgg[chick.eggId!],
-                            isSelected: isSelected,
-                            isSelectionMode: _isSelectionMode,
-                            onTap: _isSelectionMode
-                                ? () => _toggleSelection(chick.id)
-                                : () => _navigateWithAd(
-                                    '${AppRoutes.chicks}/${chick.id}',
-                                  ),
-                            onLongPress: () {
-                              AppHaptics.mediumImpact();
-                              _toggleSelection(chick.id);
-                            },
-                          );
-                        },
-                      ),
+                      childCount: chicks.length,
                     ),
                   ),
                 );
               },
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       floatingActionButton: _isSelectionMode
           ? null

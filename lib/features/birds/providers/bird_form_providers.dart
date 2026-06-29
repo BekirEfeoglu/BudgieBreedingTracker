@@ -13,6 +13,7 @@ import 'package:budgie_breeding_tracker/core/utils/sentry_error_filter.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
+import 'package:budgie_breeding_tracker/domain/services/birds/bird_lifecycle_service.dart';
 
 part 'bird_form_actions.dart';
 
@@ -86,6 +87,12 @@ class BirdFormNotifier extends Notifier<BirdFormState>
     try {
       final repo = ref.read(birdRepositoryProvider);
       await repo.remove(id);
+
+      // Destructive parent rule: close active incubations when bird is deleted
+      await ref
+          .read(birdLifecycleServiceProvider)
+          .cancelActiveBreedingsForBird(id);
+
       state = state.copyWith(
         isLoading: false,
         isSuccess: true,
@@ -122,6 +129,11 @@ class BirdFormNotifier extends Notifier<BirdFormState>
             updatedAt: DateTime.now().toUtc(),
           ),
         );
+
+        // Destructive parent rule: close active incubations when bird is dead
+        await ref
+            .read(birdLifecycleServiceProvider)
+            .cancelActiveBreedingsForBird(id);
       } else {
         state = state.copyWith(isLoading: false, error: 'birds.not_found'.tr());
         return;
@@ -162,6 +174,11 @@ class BirdFormNotifier extends Notifier<BirdFormState>
             updatedAt: DateTime.now().toUtc(),
           ),
         );
+
+        // Destructive parent rule: close active incubations when bird is sold
+        await ref
+            .read(birdLifecycleServiceProvider)
+            .cancelActiveBreedingsForBird(id);
       } else {
         state = state.copyWith(isLoading: false, error: 'birds.not_found'.tr());
         return;
@@ -202,6 +219,11 @@ class BirdFormNotifier extends Notifier<BirdFormState>
             updatedAt: DateTime.now().toUtc(),
           ),
         );
+
+        // Destructive parent rule: close active incubations when bird is gifted
+        await ref
+            .read(birdLifecycleServiceProvider)
+            .cancelActiveBreedingsForBird(id);
       } else {
         state = state.copyWith(isLoading: false, error: 'birds.not_found'.tr());
         return;

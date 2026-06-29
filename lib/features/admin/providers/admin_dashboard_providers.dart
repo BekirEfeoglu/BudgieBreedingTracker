@@ -126,7 +126,7 @@ final userGrowthDataProvider = FutureProvider<List<DailyDataPoint>>((
 });
 
 /// Top users by entity count.
-/// Uses RPC for efficiency; falls back to client-side if RPC unavailable.
+/// Uses RPC for efficiency; throws an error if RPC fails to prevent OOM on large datasets.
 final topUsersProvider = FutureProvider<List<TopUser>>((ref) async {
   await requireAdmin(ref);
   final client = ref.watch(supabaseClientProvider);
@@ -149,60 +149,10 @@ final topUsersProvider = FutureProvider<List<TopUser>>((ref) async {
         )
         .toList();
   } catch (e, st) {
-    AppLogger.error('topUsersProvider RPC failed, using fallback', e, st);
-    // Fallback: fetch all birds and pairs, group by user_id client-side
-    // Avoids N+1 by fetching two flat lists instead of per-user queries
-    final (birdsResult, pairsResult, profilesResult) = await (
-      client
-          .from(SupabaseConstants.birdsTable)
-          .select('user_id')
-          .eq('is_deleted', false),
-      client
-          .from(SupabaseConstants.breedingPairsTable)
-          .select('user_id')
-          .eq('is_deleted', false),
-      client
-          .from(SupabaseConstants.profilesTable)
-          .select('id, full_name')
-          .eq('is_active', true),
-    ).wait;
-
-    // Count entities per user
-    final birdCounts = <String, int>{};
-    for (final row in (birdsResult as List)) {
-      final uid = row['user_id'] as String;
-      birdCounts[uid] = (birdCounts[uid] ?? 0) + 1;
-    }
-    final pairCounts = <String, int>{};
-    for (final row in (pairsResult as List)) {
-      final uid = row['user_id'] as String;
-      pairCounts[uid] = (pairCounts[uid] ?? 0) + 1;
-    }
-
-    // Build profile lookup
-    final profileMap = <String, String>{};
-    for (final p in (profilesResult as List)) {
-      profileMap[p['id'] as String] = p['full_name'] as String? ?? '';
-    }
-
-    // Merge user IDs from both tables
-    final allUserIds = {...birdCounts.keys, ...pairCounts.keys};
-    final List<TopUser> users = [];
-    for (final userId in allUserIds) {
-      final bc = birdCounts[userId] ?? 0;
-      final pc = pairCounts[userId] ?? 0;
-      users.add(
-        TopUser(
-          userId: userId,
-          fullName: profileMap[userId] ?? '',
-          birdsCount: bc,
-          pairsCount: pc,
-          totalEntities: bc + pc,
-        ),
-      );
-    }
-    users.sort((a, b) => b.totalEntities.compareTo(a.totalEntities));
-    return users.take(AdminConstants.topUsersLimit).toList();
+    AppLogger.error('topUsersProvider RPC failed', e, st);
+    // Fallback has been removed: fetching all birds/pairs client-side causes OOM
+    // on large datasets. Throw exception to display the error state in UI instead.
+    throw Exception('Failed to load top users. Database RPC error.');
   }
 });
 

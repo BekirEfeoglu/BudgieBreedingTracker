@@ -9,6 +9,7 @@ class _UsersToolbar extends StatelessWidget {
   final VoidCallback onClearSearch;
   final ValueChanged<_UserStatusFilter> onStatusFilterChanged;
   final ValueChanged<_UserSortOption> onSortChanged;
+  final VoidCallback onOpenFilter;
 
   const _UsersToolbar({
     required this.searchController,
@@ -19,6 +20,7 @@ class _UsersToolbar extends StatelessWidget {
     required this.onClearSearch,
     required this.onStatusFilterChanged,
     required this.onSortChanged,
+    required this.onOpenFilter,
   });
 
   @override
@@ -64,6 +66,13 @@ class _UsersToolbar extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
+                      AppIconButton(
+                        icon: const Icon(LucideIcons.filter),
+                        semanticLabel: 'admin.advanced_filters'.tr(),
+                        tooltip: 'admin.advanced_filters'.tr(),
+                        onPressed: onOpenFilter,
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
                       _StatusChip(
                         label: 'common.all'.tr(),
                         selected: statusFilter == _UserStatusFilter.all,
