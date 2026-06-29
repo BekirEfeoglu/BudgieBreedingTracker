@@ -4,6 +4,20 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-06-29] fix | Decorative animations honour reduce-motion (test-safe)
+
+The UI-refresh animation widgets (`PulseAnimation`, `ShimmerShineAnimation`,
+`ScannerLineAnimation` — perpetual `repeat()`; `SlideFadeAnimation` — entrance
+`Future.delayed`) ran unconditionally, hanging `pumpAndSettle` and leaking
+timers across ~40 widget tests. They now read
+`MediaQuery.disableAnimations` in `didChangeDependencies` and render the static
+end state when reduce-motion is on (a11y win + test-safe). `test/
+flutter_test_config.dart` sets `disableAnimations: true` globally via
+`FakeAccessibilityFeatures` so every test (helper or custom MaterialApp) is
+covered. `progress_bar_test` updated for the new Container-based bar (the
+refresh replaced `LinearProgressIndicator`). See [[patterns/ui-patterns]],
+[[patterns/testing]].
+
 ## [2026-06-29] feat | Admin moderation queue, force logout + aggregate-detail RPC
 
 New `admin_moderation_screen.dart` + `admin_moderation_providers.dart`:

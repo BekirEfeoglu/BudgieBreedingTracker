@@ -66,7 +66,7 @@ class _MyFormState extends ConsumerState<MyFormScreen> {
 - Alpha: `.withValues(alpha: 0.5)` — never `.withOpacity()`
 - Exceptions: genetics phenotype colors, budgie painter
 
-## Shared Widgets (29)
+## Shared Widgets (35)
 
 `lib/core/widgets/` — all accept `Widget icon` param, NOT `IconData`:
 
@@ -76,6 +76,19 @@ class _MyFormState extends ConsumerState<MyFormScreen> {
 - `dialogs/` (2): `ConfirmDialog`, `TypedConfirmDialog`
 - `bottom_sheet/` (1)
 - `eggs/` (5)
+- `animations/` (6): `CountUpAnimation`, `PulseAnimation`, `ScannerLineAnimation`, `ShimmerShineAnimation`, `SlideFadeAnimation`, `DoubleTapLikeAnimation`
+
+### Reduce-motion contract
+
+Perpetual / entrance animations MUST honour the platform "reduce motion"
+accessibility flag. `PulseAnimation`, `ShimmerShineAnimation`,
+`ScannerLineAnimation` (which call `_controller.repeat()`) and
+`SlideFadeAnimation` (entrance `Future.delayed` timer) read
+`MediaQuery.maybeOf(context)?.disableAnimations` in `didChangeDependencies`:
+when true they render the static end state and never start the controller/timer.
+This is both an a11y feature and what keeps widget tests from hanging in
+`pumpAndSettle` — every test runs with `disableAnimations: true` (see
+[[patterns/testing]]).
 
 ## List Patterns
 

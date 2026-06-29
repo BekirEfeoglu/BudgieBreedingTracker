@@ -36,6 +36,23 @@ pumpWidgetSimple(tester, widget)
 
 Located in `test/helpers/pump_helpers.dart`.
 
+## Global Test Config (`test/flutter_test_config.dart`)
+
+A `flutter_test_config.dart` wraps every test (Flutter auto-discovers it).
+Besides l10n/date bootstrap, it sets the platform **reduce-motion** flag for
+all tests via `setUp`/`tearDown`:
+
+```dart
+binding.platformDispatcher.accessibilityFeaturesTestValue =
+    const FakeAccessibilityFeatures(disableAnimations: true);
+```
+
+This makes `MediaQuery.disableAnimations` true everywhere (helper-based *and*
+custom-`MaterialApp` tests), so reduce-motion-aware decorative animations
+(pulse/shimmer/scanner/slide-fade — see [[patterns/ui-patterns]]) stay static.
+Without it, perpetual `repeat()` animations hang `pumpAndSettle` and the
+slide-fade entrance leaves a pending `Future.delayed` timer.
+
 ## Pump Strategy
 
 | Method | When |
