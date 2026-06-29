@@ -25,6 +25,10 @@ class CountUpAnimation extends StatefulWidget {
 class _CountUpAnimationState extends State<CountUpAnimation> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  bool _started = false;
+
+  bool get _reduceMotion =>
+      MediaQuery.maybeOf(context)?.disableAnimations ?? false;
 
   @override
   void initState() {
@@ -33,7 +37,21 @@ class _CountUpAnimationState extends State<CountUpAnimation> with SingleTickerPr
     _animation = Tween<double>(begin: widget.begin, end: widget.end).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
-    _controller.forward();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    // Honour "reduce motion": jump straight to the final value with no running
+    // controller. Tests enable this globally so golden captures are stable and
+    // pumpAndSettle never depends on count-up timing.
+    if (_reduceMotion) {
+      _controller.value = 1.0;
+    } else {
+      _controller.forward();
+    }
   }
 
   @override
@@ -43,7 +61,11 @@ class _CountUpAnimationState extends State<CountUpAnimation> with SingleTickerPr
       _animation = Tween<double>(begin: _animation.value, end: widget.end).animate(
         CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
       );
-      _controller.forward(from: 0);
+      if (_reduceMotion) {
+        _controller.value = 1.0;
+      } else {
+        _controller.forward(from: 0);
+      }
     }
   }
 
