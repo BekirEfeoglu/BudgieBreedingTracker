@@ -23,6 +23,9 @@ class ScannerLineAnimation extends StatefulWidget {
 class _ScannerLineAnimationState extends State<ScannerLineAnimation>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
+  bool _reduceMotion = false;
+
+  bool get _shouldAnimate => widget.isScanning && !_reduceMotion;
 
   @override
   void initState() {
@@ -31,20 +34,30 @@ class _ScannerLineAnimationState extends State<ScannerLineAnimation>
       vsync: this,
       duration: widget.duration,
     );
-    if (widget.isScanning) {
-      _controller.repeat(reverse: true);
-    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Honour "reduce motion"; tests enable it via the shared pump helpers so
+    // `pumpAndSettle` never hangs on this perpetual animation.
+    _reduceMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    _syncAnimation();
   }
 
   @override
   void didUpdateWidget(covariant ScannerLineAnimation oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isScanning != oldWidget.isScanning) {
-      if (widget.isScanning) {
-        _controller.repeat(reverse: true);
-      } else {
-        _controller.stop();
-      }
+      _syncAnimation();
+    }
+  }
+
+  void _syncAnimation() {
+    if (_shouldAnimate) {
+      if (!_controller.isAnimating) _controller.repeat(reverse: true);
+    } else {
+      _controller.stop();
     }
   }
 
@@ -56,8 +69,9 @@ class _ScannerLineAnimationState extends State<ScannerLineAnimation>
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.isScanning) return widget.child;
-    
+    if (!_shouldAnimate) return widget.child;
+
+
     final theme = Theme.of(context);
     final effectiveColor = widget.scannerColor ?? theme.colorScheme.primary;
 

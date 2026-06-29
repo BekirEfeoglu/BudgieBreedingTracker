@@ -1,12 +1,27 @@
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/supabase_client.dart';
 
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
+  // Globally enable the "reduce motion" accessibility flag for every test so
+  // perpetual/decorative animations (pulse, shimmer, scanner, slide-fade
+  // entrance) do not run. This keeps `pumpAndSettle` from hanging and prevents
+  // entrance-delay timers from leaking, regardless of whether a test uses the
+  // shared pump helpers or builds its own MaterialApp.
+  final binding = TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(() {
+    binding.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+  });
+  tearDown(() {
+    binding.platformDispatcher.clearAccessibilityFeaturesTestValue();
+  });
+
   // Keep test output readable by silencing Easy Localization logs.
   EasyLocalization.logger.enableBuildModes = [];
   AppLogger.silenceConsole = true;

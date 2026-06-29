@@ -23,6 +23,9 @@ class ShimmerShineAnimation extends StatefulWidget {
 class _ShimmerShineAnimationState extends State<ShimmerShineAnimation>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
+  bool _reduceMotion = false;
+
+  bool get _shouldAnimate => widget.isActive && !_reduceMotion;
 
   @override
   void initState() {
@@ -31,20 +34,30 @@ class _ShimmerShineAnimationState extends State<ShimmerShineAnimation>
       vsync: this,
       duration: widget.duration,
     );
-    if (widget.isActive) {
-      _controller.repeat();
-    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Honour "reduce motion"; tests enable it via the shared pump helpers so
+    // `pumpAndSettle` never hangs on this perpetual animation.
+    _reduceMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    _syncAnimation();
   }
 
   @override
   void didUpdateWidget(covariant ShimmerShineAnimation oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
-      if (widget.isActive) {
-        _controller.repeat();
-      } else {
-        _controller.stop();
-      }
+      _syncAnimation();
+    }
+  }
+
+  void _syncAnimation() {
+    if (_shouldAnimate) {
+      if (!_controller.isAnimating) _controller.repeat();
+    } else {
+      _controller.stop();
     }
   }
 
@@ -56,7 +69,7 @@ class _ShimmerShineAnimationState extends State<ShimmerShineAnimation>
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.isActive) return widget.child;
+    if (!_shouldAnimate) return widget.child;
 
     final theme = Theme.of(context);
     final effectiveColor = widget.shineColor ?? theme.colorScheme.onPrimary.withValues(alpha: 0.3);

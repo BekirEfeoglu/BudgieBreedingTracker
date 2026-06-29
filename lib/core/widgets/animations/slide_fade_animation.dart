@@ -22,12 +22,13 @@ class _SlideFadeAnimationState extends State<SlideFadeAnimation> with SingleTick
   late final AnimationController _controller;
   late final Animation<Offset> _slideAnimation;
   late final Animation<double> _fadeAnimation;
+  bool _started = false;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(vsync: this, duration: widget.duration);
-    
+
     _slideAnimation = Tween<Offset>(begin: widget.startOffset, end: Offset.zero).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
@@ -35,8 +36,21 @@ class _SlideFadeAnimationState extends State<SlideFadeAnimation> with SingleTick
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
+  }
 
-    if (widget.delay == Duration.zero) {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+
+    // Honour "reduce motion": jump straight to the resolved state and skip the
+    // entrance (and its delay timer). Tests enable this via the shared pump
+    // helpers so no `Future.delayed` timer leaks past the test.
+    final reduceMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    if (reduceMotion) {
+      _controller.value = 1.0;
+    } else if (widget.delay == Duration.zero) {
       _controller.forward();
     } else {
       Future.delayed(widget.delay, () {

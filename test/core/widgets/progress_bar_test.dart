@@ -35,20 +35,21 @@ void main() {
       await pumpWidgetSimple(tester, const AppProgressBar(value: 1.8));
       await tester.pumpAndSettle();
 
-      final indicator = tester.widget<LinearProgressIndicator>(
-        find.byType(LinearProgressIndicator),
-      );
-      expect(indicator.value, 1.0);
+      // Filled bar width saturates at the full track width (value 1.0).
+      final trackWidth = tester.getSize(find.byType(AppProgressBar)).width;
+      final fillWidth = tester.getSize(_fillFinder).width;
+      expect(fillWidth, moreOrLessEquals(trackWidth, epsilon: 0.5));
     });
 
     testWidgets('clamps indicator value to lower bound', (tester) async {
       await pumpWidgetSimple(tester, const AppProgressBar(value: -0.4));
       await tester.pumpAndSettle();
 
-      final indicator = tester.widget<LinearProgressIndicator>(
-        find.byType(LinearProgressIndicator),
+      // Filled bar width collapses to zero (value 0.0).
+      expect(
+        tester.getSize(_fillFinder).width,
+        moreOrLessEquals(0.0, epsilon: 0.5),
       );
-      expect(indicator.value, 0.0);
     });
 
     testWidgets('uses provided background color', (tester) async {
@@ -60,10 +61,23 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final indicator = tester.widget<LinearProgressIndicator>(
-        find.byType(LinearProgressIndicator),
+      final track = tester.widget<Container>(
+        find.byWidgetPredicate(
+          (w) =>
+              w is Container &&
+              w.decoration is BoxDecoration &&
+              (w.decoration as BoxDecoration).color == backgroundColor,
+        ),
       );
-      expect(indicator.backgroundColor, backgroundColor);
+      expect((track.decoration as BoxDecoration).color, backgroundColor);
     });
   });
 }
+
+/// The filled portion is the only [Container] carrying a drop shadow.
+final Finder _fillFinder = find.byWidgetPredicate(
+  (w) =>
+      w is Container &&
+      w.decoration is BoxDecoration &&
+      (w.decoration as BoxDecoration).boxShadow != null,
+);
