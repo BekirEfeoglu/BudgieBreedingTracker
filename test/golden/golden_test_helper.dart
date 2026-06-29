@@ -18,7 +18,11 @@ Widget buildGoldenWidget(
 
   if (surfaceSize != null) {
     return MediaQuery(
-      data: MediaQueryData(size: surfaceSize),
+      // disableAnimations keeps reduce-motion-aware decorative animations
+      // (pulse/shimmer/scanner/slide-fade) static. This explicit MediaQueryData
+      // would otherwise default it to false, shadowing the global test config
+      // and hanging pumpAndSettle on perpetual animations.
+      data: MediaQueryData(size: surfaceSize, disableAnimations: true),
       child: SizedBox(
         width: surfaceSize.width,
         height: surfaceSize.height,
