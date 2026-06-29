@@ -1748,6 +1748,18 @@
     "reverse_calculation_error": "An error occurred during reverse calculation. Please try again."
   },
   "admin": {
+    "force_logout_success": "User session terminated",
+    "no_pending_reports": "No pending reports",
+    "view_user": "View user",
+    "advanced_filters": "Advanced filters",
+    "security_and_audit": "Security & audit",
+    "force_logout": "Force logout",
+    "confirm_force_logout": "Force logout?",
+    "confirm_force_logout_desc": "All sessions for this user will be closed and they will need to sign in again.",
+    "user_status": "User status",
+    "subscription_plan": "Subscription plan",
+    "registration_date": "Registration date",
+    "select_date_range": "Select date range",
     "panel_title": "Admin Panel",
     "dashboard": "Dashboard",
     "users": "Users",
@@ -2610,6 +2622,7 @@
     "reward_duration_session": "Valid for this session"
   },
   "community": {
+    "posts": "Posts",
     "title": "Community",
     "coming_soon": "Coming Soon",
     "coming_soon_hint": "Community features are being prepared",

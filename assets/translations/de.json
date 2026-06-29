@@ -1748,6 +1748,18 @@
     "reverse_calculation_error": "Bei der Rückberechnung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
   },
   "admin": {
+    "force_logout_success": "Benutzersitzung beendet",
+    "no_pending_reports": "Keine ausstehenden Meldungen",
+    "view_user": "Benutzer anzeigen",
+    "advanced_filters": "Erweiterte Filter",
+    "security_and_audit": "Sicherheit & Audit",
+    "force_logout": "Abmeldung erzwingen",
+    "confirm_force_logout": "Abmeldung erzwingen?",
+    "confirm_force_logout_desc": "Alle Sitzungen dieses Benutzers werden geschlossen und er muss sich erneut anmelden.",
+    "user_status": "Benutzerstatus",
+    "subscription_plan": "Abonnement-Tarif",
+    "registration_date": "Registrierungsdatum",
+    "select_date_range": "Datumsbereich auswählen",
     "panel_title": "Admin-Panel",
     "dashboard": "Kontrollpanel",
     "users": "Benutzer",
@@ -2610,6 +2622,7 @@
     "reward_duration_session": "Für diese Sitzung gültig"
   },
   "community": {
+    "posts": "Beiträge",
     "title": "Community",
     "coming_soon": "Demnächst",
     "coming_soon_hint": "Community-Funktionen werden vorbereitet",

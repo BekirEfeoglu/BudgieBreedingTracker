@@ -1748,6 +1748,18 @@
     "reverse_calculation_error": "Ters hesaplama sırasında bir hata oluştu. Lütfen tekrar deneyin."
   },
   "admin": {
+    "force_logout_success": "Kullanıcı oturumu sonlandırıldı",
+    "no_pending_reports": "Bekleyen rapor yok",
+    "view_user": "Kullanıcıyı görüntüle",
+    "advanced_filters": "Gelişmiş filtreler",
+    "security_and_audit": "Güvenlik ve denetim",
+    "force_logout": "Oturumu sonlandır",
+    "confirm_force_logout": "Oturumu sonlandır?",
+    "confirm_force_logout_desc": "Bu kullanıcının tüm oturumları kapatılacak ve yeniden giriş yapması gerekecek.",
+    "user_status": "Kullanıcı durumu",
+    "subscription_plan": "Abonelik planı",
+    "registration_date": "Kayıt tarihi",
+    "select_date_range": "Tarih aralığı seç",
     "panel_title": "Admin Paneli",
     "dashboard": "Kontrol Paneli",
     "users": "Kullanıcılar",
@@ -2610,6 +2622,7 @@
     "reward_duration_session": "Bu oturum için geçerli"
   },
   "community": {
+    "posts": "Gönderiler",
     "title": "Topluluk",
     "coming_soon": "Yakında",
     "coming_soon_hint": "Topluluk özellikleri hazırlanıyor",
