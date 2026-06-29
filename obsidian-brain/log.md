@@ -4,6 +4,20 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-06-29] test | Repair 44 UI-refresh widget-test failures
+
+Second pass after the reduce-motion fix. Root causes + fixes: stale provider
+overrides opened real Drift streams (cleanup-timer leaks) — home/breeding/
+active-breedings/main-shell now stub `birdByIdProvider` /
+`birdsByUserIdMapProvider` / `profileSyncProvider`; `SliverAppBar.large` renders
+the title twice so title finders moved to `findsWidgets`; scroll structure
+changed `ListView`/`SingleChildScrollView` → `CustomScrollView`/`SliverList`/
+`SliverGrid`; the 300ms search debounce must be advanced before asserting
+no-results; loading buttons keep a non-null no-op handler (assert spinner / no
+submit, not `onPressed == null`); a custom `MediaQueryData` shadowed the global
+`disableAnimations`; pending `Future.delayed`/RPC timers drained or stubbed
+(`reset_user_data`). See [[patterns/testing]].
+
 ## [2026-06-29] fix | Decorative animations honour reduce-motion (test-safe)
 
 The UI-refresh animation widgets (`PulseAnimation`, `ShimmerShineAnimation`,
