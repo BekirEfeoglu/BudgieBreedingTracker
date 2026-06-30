@@ -24,10 +24,10 @@ class ClutchRemoteSource extends BaseRemoteSource<Clutch> {
   Future<List<Clutch>> fetchByBreeding(String userId, String breedingId) async {
     final response = await table
         .select()
-        .eq('user_id', userId)
-        .eq('breeding_pair_id', breedingId)
-        .eq('is_deleted', false)
-        .order('created_at');
+        .eq(SupabaseConstants.colUserId, userId)
+        .eq(SupabaseConstants.colBreedingPairId, breedingId)
+        .eq(SupabaseConstants.colIsDeleted, false)
+        .order(SupabaseConstants.colCreatedAt);
     return response.map((json) => fromJson(json)).toList();
   }
 }

@@ -34,6 +34,10 @@ class _TestBreedingFormNotifier extends BreedingFormNotifier {
   void emitError(String message) {
     state = state.copyWith(isLoading: false, error: message);
   }
+
+  void emitLoading() {
+    state = state.copyWith(isLoading: true);
+  }
 }
 
 void main() {
@@ -324,5 +328,65 @@ void main() {
       // Should have navigated away from detail screen
       expect(didNavigateAway, isTrue);
     });
+
+    testWidgets(
+      'disables the popup menu while a complete/cancel/delete action is in flight',
+      (tester) async {
+        final formNotifier = _TestBreedingFormNotifier();
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              currentUserIdProvider.overrideWithValue('test-user'),
+              currentUserProvider.overrideWith((_) => null),
+              userProfileProvider.overrideWith((_) => Stream.value(null)),
+              unreadNotificationsProvider(
+                'test-user',
+              ).overrideWith((_) => Stream.value([])),
+              breedingPairByIdProvider(
+                'pair-1',
+              ).overrideWith((_) => Stream.value(testPair)),
+              breedingPairsStreamProvider(
+                'test-user',
+              ).overrideWith((_) => Stream.value([testPair])),
+              allIncubationsStreamProvider(
+                'test-user',
+              ).overrideWith((_) => Stream.value([])),
+              eggsStreamProvider(
+                'test-user',
+              ).overrideWith((_) => Stream.value([])),
+              chicksStreamProvider(
+                'test-user',
+              ).overrideWith((_) => Stream.value([])),
+              incubationsByPairProvider(
+                'pair-1',
+              ).overrideWith((_) => Stream.value(<Incubation>[])),
+              eggsByIncubationProvider(
+                'inc-1',
+              ).overrideWith((_) => Stream.value([])),
+              eggActionsProvider.overrideWith(() => EggActionsNotifier()),
+              birdByIdProvider('').overrideWith((_) => Stream.value(null)),
+              breedingFormStateProvider.overrideWith(() => formNotifier),
+            ],
+            child: MaterialApp.router(routerConfig: router),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        var menu = tester.widget<PopupMenuButton<String>>(
+          find.byType(PopupMenuButton<String>),
+        );
+        expect(menu.enabled, isTrue);
+
+        formNotifier.emitLoading();
+        await tester.pump();
+
+        menu = tester.widget<PopupMenuButton<String>>(
+          find.byType(PopupMenuButton<String>),
+        );
+        expect(menu.enabled, isFalse);
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      },
+    );
   });
 }

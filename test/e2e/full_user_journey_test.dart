@@ -157,6 +157,13 @@ void main() {
           final id = invocation.positionalArguments.first as String;
           return eggs.where((egg) => egg.incubationId == id).toList();
         });
+        when(() => mockEggRepository.getById(any())).thenAnswer((
+          invocation,
+        ) async {
+          final id = invocation.positionalArguments.first as String;
+          final matches = eggs.where((egg) => egg.id == id);
+          return matches.isEmpty ? null : matches.first;
+        });
         when(
           () => mockChickRepository.getByEggId(any()),
         ).thenAnswer((_) async => null);

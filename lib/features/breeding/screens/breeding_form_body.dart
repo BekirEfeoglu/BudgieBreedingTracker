@@ -121,7 +121,7 @@ extension _BreedingFormBody on _BreedingFormScreenState {
                 const SizedBox(height: AppSpacing.xxl),
                 PrimaryButton(
                   label: _isEdit ? 'common.update'.tr() : 'common.save'.tr(),
-                  isLoading: formState.isLoading,
+                  isLoading: formState.isLoading || _submitting,
                   onPressed: _submit,
                 ),
               ],
@@ -133,14 +133,17 @@ extension _BreedingFormBody on _BreedingFormScreenState {
   }
 
   Future<void> _submit() async {
+    if (_submitting) return;
     FocusScope.of(context).unfocus();
     if (!(_formKey.currentState?.validate() ?? false)) return;
     AppHaptics.lightImpact();
+    setState(() => _submitting = true);
 
     final userId = ref.read(currentUserIdProvider);
     final notifier = ref.read(breedingFormStateProvider.notifier);
 
     if (!await _confirmInbreedingIfNeeded(userId)) {
+      if (mounted) setState(() => _submitting = false);
       return;
     }
     if (!mounted) return;
@@ -148,17 +151,22 @@ extension _BreedingFormBody on _BreedingFormScreenState {
     if (_isEdit && widget.editPairId != null) {
       final existingPair = _existingPair;
       if (existingPair == null) {
+        setState(() => _submitting = false);
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('common.data_load_error'.tr())));
         return;
       }
       if (_maleId == null || _femaleId == null) {
+        setState(() => _submitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('breeding.select_birds_required'.tr())),
         );
         return;
       }
+      // From here on, `formState.isLoading` (driven by the notifier) takes
+      // over as the in-flight signal, so it's safe to drop our own flag.
+      setState(() => _submitting = false);
       notifier.updateBreeding(
         existingPair.copyWith(
           maleId: _maleId,
@@ -172,11 +180,13 @@ extension _BreedingFormBody on _BreedingFormScreenState {
       );
     } else {
       if (_maleId == null || _femaleId == null) {
+        setState(() => _submitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('breeding.select_birds_required'.tr())),
         );
         return;
       }
+      setState(() => _submitting = false);
       notifier.createBreeding(
         userId: userId,
         maleId: _maleId!,

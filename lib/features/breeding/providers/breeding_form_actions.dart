@@ -3,11 +3,12 @@ part of 'breeding_form_providers.dart';
 extension BreedingFormActions on BreedingFormNotifier {
   Future<void> cancelBreeding(String id) async {
     if (state.isLoading) return;
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, error: null, warning: null);
     try {
       final repo = ref.read(breedingPairRepositoryProvider);
       final pair = await repo.getById(id);
       final now = DateTime.now();
+      bool sideEffectsOk;
       if (pair != null) {
         await repo.save(
           pair.copyWith(
@@ -22,7 +23,10 @@ extension BreedingFormActions on BreedingFormNotifier {
           status: IncubationStatus.cancelled,
           closedAt: now,
         );
-        await _helper.cancelBreedingNotifications(id, incubations: incubations);
+        sideEffectsOk = await _helper.cancelBreedingNotifications(
+          id,
+          incubations: incubations,
+        );
       } else {
         state = state.copyWith(
           isLoading: false,
@@ -30,7 +34,11 @@ extension BreedingFormActions on BreedingFormNotifier {
         );
         return;
       }
-      state = state.copyWith(isLoading: false, isSuccess: true);
+      state = state.copyWith(
+        isLoading: false,
+        isSuccess: true,
+        warning: sideEffectsOk ? null : 'errors.background_tasks_partial'.tr(),
+      );
     } catch (e, st) {
       AppLogger.error('BreedingFormNotifier', e, st);
       reportIfUnexpected(e, st);
@@ -40,11 +48,12 @@ extension BreedingFormActions on BreedingFormNotifier {
 
   Future<void> completeBreeding(String id) async {
     if (state.isLoading) return;
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, error: null, warning: null);
     try {
       final repo = ref.read(breedingPairRepositoryProvider);
       final pair = await repo.getById(id);
       final now = DateTime.now();
+      bool sideEffectsOk;
       if (pair != null) {
         await repo.save(
           pair.copyWith(
@@ -59,7 +68,10 @@ extension BreedingFormActions on BreedingFormNotifier {
           status: IncubationStatus.completed,
           closedAt: now,
         );
-        await _helper.cancelBreedingNotifications(id, incubations: incubations);
+        sideEffectsOk = await _helper.cancelBreedingNotifications(
+          id,
+          incubations: incubations,
+        );
       } else {
         state = state.copyWith(
           isLoading: false,
@@ -67,7 +79,11 @@ extension BreedingFormActions on BreedingFormNotifier {
         );
         return;
       }
-      state = state.copyWith(isLoading: false, isSuccess: true);
+      state = state.copyWith(
+        isLoading: false,
+        isSuccess: true,
+        warning: sideEffectsOk ? null : 'errors.background_tasks_partial'.tr(),
+      );
     } catch (e, st) {
       AppLogger.error('BreedingFormNotifier', e, st);
       reportIfUnexpected(e, st);
@@ -77,7 +93,12 @@ extension BreedingFormActions on BreedingFormNotifier {
 
   Future<void> deleteBreeding(String id) async {
     if (state.isLoading) return;
-    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      warning: null,
+      isSuccess: false,
+    );
     try {
       final pairRepo = ref.read(breedingPairRepositoryProvider);
       final incubationRepo = ref.read(incubationRepositoryProvider);
@@ -204,15 +225,31 @@ extension BreedingFormActions on BreedingFormNotifier {
         return;
       }
 
+      // Clutches are children of the pair (and may reference eggs already
+      // removed above). The in-app UI doesn't create clutches today, but
+      // legacy/cross-device data can still have rows here — remove them now
+      // that the cascade is confirmed to proceed, same best-effort pattern
+      // as eggs/incubations above.
+      final clutchRepo = ref.read(clutchRepositoryProvider);
+      final clutches = await clutchRepo.getByBreeding(id);
+      partial =
+          await _removeAllResilient(
+            entities: clutches,
+            label: 'clutch',
+            remove: (clutch) => clutchRepo.remove(clutch.id),
+          ) ||
+          partial;
+
       // Children are confirmed removed and the cascade is proceeding, so it
       // is now safe to cancel notifications & calendar reminders. Best-effort:
       // a failure here won't block the primary delete — leftovers get cleaned
       // up on a later sync.
-      await _helper.cancelBreedingNotifications(
+      final notificationsCancelled = await _helper.cancelBreedingNotifications(
         id,
         incubations: incubations,
         eggs: eggs,
       );
+      if (!notificationsCancelled) partial = true;
 
       try {
         await pairRepo.remove(id);

@@ -138,7 +138,7 @@ final clutchRepositoryProvider = Provider<ClutchRepository>((ref) {
     localDao: ref.watch(clutchesDaoProvider),
     remoteSource: ref.watch(clutchRemoteSourceProvider),
     syncDao: ref.watch(syncMetadataDaoProvider),
-    incubationsDao: ref.watch(incubationsDaoProvider),
+    breedingPairsDao: ref.watch(breedingPairsDaoProvider),
     birdsDao: ref.watch(birdsDaoProvider),
     nestsDao: ref.watch(nestsDaoProvider),
   );

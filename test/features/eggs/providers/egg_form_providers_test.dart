@@ -121,6 +121,14 @@ void main() {
         ),
       ],
     );
+    // updateEggStatus re-fetches by id to guard against writing over a
+    // concurrently soft-deleted egg (see egg_actions_notifier.dart). Default
+    // to "still exists" so existing status-transition tests are unaffected;
+    // override with `(_) async => null` in tests that simulate the race.
+    when(() => eggRepo.getById(any())).thenAnswer(
+      (_) async =>
+          Egg(id: 'existing', userId: 'test-user', layDate: DateTime(2024)),
+    );
     when(() => breedingPairRepo.getById(any())).thenAnswer(
       (_) async => const BreedingPair(
         id: 'pair-1',

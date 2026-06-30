@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
+import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/clutch_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/clutch_remote_source.dart';
@@ -18,7 +19,7 @@ void main() {
   late MockClutchesDao localDao;
   late MockClutchRemoteSource remoteSource;
   late MockSyncMetadataDao syncDao;
-  late MockIncubationsDao incubationsDao;
+  late MockBreedingPairsDao breedingPairsDao;
   late MockBirdsDao birdsDao;
   late MockNestsDao nestsDao;
   late ClutchRepository repository;
@@ -35,7 +36,7 @@ void main() {
     localDao = MockClutchesDao();
     remoteSource = MockClutchRemoteSource();
     syncDao = MockSyncMetadataDao();
-    incubationsDao = MockIncubationsDao();
+    breedingPairsDao = MockBreedingPairsDao();
     birdsDao = MockBirdsDao();
     nestsDao = MockNestsDao();
 
@@ -43,7 +44,7 @@ void main() {
       localDao: localDao,
       remoteSource: remoteSource,
       syncDao: syncDao,
-      incubationsDao: incubationsDao,
+      breedingPairsDao: breedingPairsDao,
       birdsDao: birdsDao,
       nestsDao: nestsDao,
     );
@@ -86,7 +87,12 @@ void main() {
     ).thenAnswer((_) async => []);
     when(() => syncDao.hardDelete(any())).thenAnswer((_) async {});
 
-    when(() => incubationsDao.getById(any())).thenAnswer((_) async => null);
+    // sampleClutch() defaults breedingId to 'pair-1' (non-null), so default
+    // to a valid, synced pair — tests that need an orphan/dangling reference
+    // override this per-case.
+    when(() => breedingPairsDao.getByIdIncludingDeleted(any())).thenAnswer(
+      (_) async => const BreedingPair(id: 'pair-1', userId: 'user-1'),
+    );
     when(
       () => birdsDao.getByIdIncludingDeleted(any()),
     ).thenAnswer((_) async => null);
@@ -389,5 +395,107 @@ void main() {
       expect(result, expected);
       verify(() => localDao.getByBreeding('pair-1')).called(1);
     });
+  });
+
+  group('ClutchRepository.validateForeignKeys', () {
+    test('returns null when breedingId is null', () async {
+      final clutch = TestFixtures.sampleClutch(breedingId: null);
+      expect(await repository.validateForeignKeys(clutch), isNull);
+      verifyNever(() => breedingPairsDao.getByIdIncludingDeleted(any()));
+    });
+
+    test(
+      'returns null when the referenced breeding pair exists and is synced',
+      () async {
+        final clutch = TestFixtures.sampleClutch(breedingId: 'pair-1');
+        when(
+          () => breedingPairsDao.getByIdIncludingDeleted('pair-1'),
+        ).thenAnswer(
+          (_) async => const BreedingPair(id: 'pair-1', userId: 'user-1'),
+        );
+        when(
+          () => syncDao.getByRecord(
+            SupabaseConstants.breedingPairsTable,
+            'pair-1',
+          ),
+        ).thenAnswer((_) async => null);
+
+        expect(await repository.validateForeignKeys(clutch), isNull);
+      },
+    );
+
+    test(
+      'flags a dangling breedingId as a true orphan (not found locally)',
+      () async {
+        final clutch = TestFixtures.sampleClutch(breedingId: 'missing-pair');
+        when(
+          () => breedingPairsDao.getByIdIncludingDeleted('missing-pair'),
+        ).thenAnswer((_) async => null);
+
+        final reason = await repository.validateForeignKeys(clutch);
+        expect(reason, contains('not found locally'));
+      },
+    );
+
+    test(
+      'blocks push while the referenced breeding pair is a soft-deleted tombstone',
+      () async {
+        final clutch = TestFixtures.sampleClutch(breedingId: 'pair-1');
+        when(
+          () => breedingPairsDao.getByIdIncludingDeleted('pair-1'),
+        ).thenAnswer(
+          (_) async => const BreedingPair(
+            id: 'pair-1',
+            userId: 'user-1',
+            isDeleted: true,
+          ),
+        );
+
+        final reason = await repository.validateForeignKeys(clutch);
+        expect(reason, contains('pending tombstone sync'));
+      },
+    );
+
+    test(
+      'blocks push while the referenced breeding pair has not synced yet',
+      () async {
+        final clutch = TestFixtures.sampleClutch(breedingId: 'pair-1');
+        when(
+          () => breedingPairsDao.getByIdIncludingDeleted('pair-1'),
+        ).thenAnswer(
+          (_) async => const BreedingPair(id: 'pair-1', userId: 'user-1'),
+        );
+        when(
+          () => syncDao.getByRecord(
+            SupabaseConstants.breedingPairsTable,
+            'pair-1',
+          ),
+        ).thenAnswer(
+          (_) async => TestFixtures.sampleSyncMetadata(
+            table: SupabaseConstants.breedingPairsTable,
+            recordId: 'pair-1',
+            status: SyncStatus.pending,
+          ),
+        );
+
+        final reason = await repository.validateForeignKeys(clutch);
+        expect(reason, contains('not yet synced to server'));
+      },
+    );
+
+    test(
+      'never blocks on incubationId — it is stripped before every remote write',
+      () async {
+        // A dangling/unsynced incubationId must not gate the push: toSupabase()
+        // always removes incubation_id, so the server never sees it and there
+        // is no FK constraint risk to guard against.
+        final clutch = TestFixtures.sampleClutch(
+          breedingId: null,
+          incubationId: 'some-incubation-that-does-not-exist-locally',
+        );
+
+        expect(await repository.validateForeignKeys(clutch), isNull);
+      },
+    );
   });
 }

@@ -71,6 +71,13 @@ class _DetailContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final incubationsAsync = ref.watch(incubationsByPairProvider(pair.id));
+    // Disables the popup menu while a complete/cancel/delete action from
+    // this notifier is in flight — otherwise re-opening the menu mid-action
+    // silently no-ops (the notifier's own isLoading guard) with no visual
+    // feedback that anything is happening.
+    final actionInFlight = ref.watch(
+      breedingFormStateProvider.select((s) => s.isLoading),
+    );
 
     // Side effects: success after complete/cancel/delete → pop + snackbar.
     // Partial-cascade warning shown ahead of the success pop so the user
@@ -125,6 +132,17 @@ class _DetailContent extends ConsumerWidget {
               ),
               PopupMenuButton<String>(
                 tooltip: 'common.more'.tr(),
+                enabled: !actionInFlight,
+                icon: actionInFlight
+                    ? const Padding(
+                        padding: EdgeInsets.all(AppSpacing.sm),
+                        child: SizedBox(
+                          width: AppSpacing.lg,
+                          height: AppSpacing.lg,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : null,
                 onSelected: (value) => _handleMenuAction(context, ref, value),
                 itemBuilder: (context) => [
                   PopupMenuItem(

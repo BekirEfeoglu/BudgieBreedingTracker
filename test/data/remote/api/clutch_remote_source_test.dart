@@ -66,5 +66,38 @@ void main() {
 
       expect(() => source.fetchAll('user-1'), throwsA(isA<NetworkException>()));
     });
+
+    test(
+      'fetchByBreeding filters by user, breeding pair, and not-deleted',
+      () async {
+        selectBuilder.result = [
+          {
+            'id': 'clutch-1',
+            'user_id': 'user-1',
+            'breeding_pair_id': 'pair-1',
+            'is_deleted': false,
+          },
+        ];
+
+        final result = await source.fetchByBreeding('user-1', 'pair-1');
+
+        expect(client.requestedTable, SupabaseConstants.clutchesTable);
+        expect(result, hasLength(1));
+        expect(result.single.id, 'clutch-1');
+        expect(result.single.breedingId, 'pair-1');
+        final eqKeys = selectBuilder.eqCalls
+            .map((entry) => '${entry.key}:${entry.value}')
+            .toList();
+        expect(
+          eqKeys,
+          containsAll([
+            'user_id:user-1',
+            'breeding_pair_id:pair-1',
+            'is_deleted:false',
+          ]),
+        );
+        expect(selectBuilder.orderCalls, contains('created_at'));
+      },
+    );
   });
 }

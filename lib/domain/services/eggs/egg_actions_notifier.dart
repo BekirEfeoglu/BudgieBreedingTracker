@@ -232,6 +232,22 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
     try {
       final repo = ref.read(eggRepositoryProvider);
 
+      // Verify the egg still exists before writing: `egg` may be a stale
+      // snapshot held across an async UI gap (status sheet, confirmation
+      // dialog). If it was deleted concurrently — e.g. its breeding pair was
+      // removed while this call was in flight — `getById` returns null
+      // because it filters `isDeleted`. Blindly writing the stale copy would
+      // resurrect a soft-deleted row (and could re-trigger chick auto-create
+      // against an already-removed incubation chain). Bail out instead.
+      final stillExists = await repo.getById(egg.id) != null;
+      if (!stillExists) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'eggs.egg_not_found'.tr(),
+        );
+        return;
+      }
+
       // Only stamp event dates when the status actually changes. Without
       // this guard, re-saving an already-hatched egg would reset its
       // hatchDate to today and the chick age math would silently drift.
@@ -555,6 +571,11 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
     try {
       final repo = ref.read(eggRepositoryProvider);
 
+      // Captured before the delete purely to know which incubation to
+      // re-evaluate below — _completeIncubationIfAllEggsTerminal re-fetches
+      // the (now-current) sibling list itself, it only needs the incubationId.
+      final egg = await repo.getById(id);
+
       await repo.remove(id);
 
       // Cancel scheduled turning reminders so they don't keep firing on
@@ -576,6 +597,22 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
         await ref.read(eventRepositoryProvider).removeByEggIds([id]);
       } catch (e) {
         AppLogger.warning('Failed to delete calendar events for egg $id: $e');
+      }
+
+      // Deleting the last non-terminal egg can make "every remaining egg is
+      // terminal" newly true (e.g. 2 hatched + 1 incubating egg, the
+      // incubating one gets deleted). updateEggStatus already re-evaluates
+      // this; deleteEgg must too, or the incubation — and its parent pair —
+      // stay stuck `active` forever and keep counting against the free-tier
+      // limit even though nothing is left to track.
+      if (egg != null) {
+        try {
+          await _completeIncubationIfAllEggsTerminal(egg);
+        } catch (e) {
+          AppLogger.warning(
+            'Failed to auto-complete incubation after deleting egg $id: $e',
+          );
+        }
       }
 
       state = state.copyWith(isLoading: false, isSuccess: true);

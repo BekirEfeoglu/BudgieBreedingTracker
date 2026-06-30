@@ -2,8 +2,8 @@ import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/breeding_pairs_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/clutches_dao.dart';
-import 'package:budgie_breeding_tracker/data/local/database/daos/incubations_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/nests_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/clutch_model.dart';
@@ -14,16 +14,22 @@ import 'package:uuid/uuid.dart';
 
 /// Repository for [Clutch] entities with offline-first sync support.
 ///
-/// Uses [ValidatedSyncMixin] to validate FK references (incubation, male
+/// Uses [ValidatedSyncMixin] to validate FK references (breeding pair, male
 /// bird, female bird, nest) before pushing to Supabase. Without this,
 /// orphan child pushes would 23503 on the server, get marked as sync
 /// errors, and accumulate forever without monitoring visibility.
+///
+/// `incubationId` is intentionally NOT validated here: [ClutchSupabase]
+/// strips it from every outgoing payload (the remote `clutches` table has no
+/// `incubation_id` column), so a broken local incubation reference can never
+/// cause a remote FK violation — validating it would only block pushes of
+/// otherwise-valid clutches on an irrelevant field.
 class ClutchRepository extends BaseRepository<Clutch>
     with SyncableRepository<Clutch>, ValidatedSyncMixin<Clutch> {
   final ClutchesDao _localDao;
   final ClutchRemoteSource _remoteSource;
   final SyncMetadataDao _syncDao;
-  final IncubationsDao _incubationsDao;
+  final BreedingPairsDao _breedingPairsDao;
   final BirdsDao _birdsDao;
   final NestsDao _nestsDao;
 
@@ -33,13 +39,13 @@ class ClutchRepository extends BaseRepository<Clutch>
     required ClutchesDao localDao,
     required ClutchRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
-    required IncubationsDao incubationsDao,
+    required BreedingPairsDao breedingPairsDao,
     required BirdsDao birdsDao,
     required NestsDao nestsDao,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
        _syncDao = syncDao,
-       _incubationsDao = incubationsDao,
+       _breedingPairsDao = breedingPairsDao,
        _birdsDao = birdsDao,
        _nestsDao = nestsDao;
 
@@ -76,20 +82,28 @@ class ClutchRepository extends BaseRepository<Clutch>
 
   @override
   Future<String?> validateForeignKeys(Clutch clutch) async {
-    if (clutch.incubationId != null) {
-      // Incubation hard-deletes — no isDeleted check needed.
-      final incubation = await _incubationsDao.getById(clutch.incubationId!);
-      if (incubation == null) {
-        return 'Referenced incubation ${clutch.incubationId} not found locally';
+    if (clutch.breedingId != null) {
+      // `breedingId` maps to the remote `breeding_pair_id` column (see
+      // ClutchSupabase.toSupabase) and is the only FK on this table with a
+      // real Postgres constraint — a dangling reference here WILL 23503 on
+      // push, so it must be checked like bird/nest below.
+      final pair = await _breedingPairsDao.getByIdIncludingDeleted(
+        clutch.breedingId!,
+      );
+      if (pair == null) {
+        return 'Referenced breeding pair ${clutch.breedingId} not found locally';
+      }
+      if (pair.isDeleted) {
+        return 'Referenced breeding pair ${clutch.breedingId} pending tombstone sync';
       }
       final syncMeta = await _syncDao.getByRecord(
-        SupabaseConstants.incubationsTable,
-        clutch.incubationId!,
+        SupabaseConstants.breedingPairsTable,
+        clutch.breedingId!,
       );
       if (syncMeta != null &&
           (syncMeta.status == SyncStatus.pending ||
               syncMeta.status == SyncStatus.pendingDelete)) {
-        return 'Incubation ${clutch.incubationId} not yet synced to server';
+        return 'Breeding pair ${clutch.breedingId} not yet synced to server';
       }
     }
     if (clutch.maleBirdId != null) {

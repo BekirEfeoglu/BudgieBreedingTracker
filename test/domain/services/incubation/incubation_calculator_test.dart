@@ -414,14 +414,36 @@ void main() {
           IncubationCalculator.getValidStatusTransitions(EggStatus.infertile),
           isEmpty,
         );
-      });
-
-      test('unknown status has no transitions', () {
         expect(
-          IncubationCalculator.getValidStatusTransitions(EggStatus.unknown),
+          IncubationCalculator.getValidStatusTransitions(EggStatus.empty),
           isEmpty,
         );
       });
+
+      test(
+        'unknown status (non-terminal parse fallback) offers the same '
+        'recovery transitions as laid, not a dead end',
+        () {
+          final transitions = IncubationCalculator.getValidStatusTransitions(
+            EggStatus.unknown,
+          );
+          // EggStatus.unknown.isTerminal is false (see egg_enums.dart), so
+          // an empty transition list here would strand the egg: the rest of
+          // the app treats it as still-active (blocks incubation
+          // auto-completion) while the status-update sheet offers no way to
+          // fix it.
+          expect(
+            transitions,
+            containsAll([
+              EggStatus.fertile,
+              EggStatus.infertile,
+              EggStatus.damaged,
+              EggStatus.discarded,
+            ]),
+          );
+          expect(transitions, hasLength(4));
+        },
+      );
     });
   });
 }

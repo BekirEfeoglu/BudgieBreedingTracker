@@ -55,6 +55,11 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
   bool _isLoadingExistingPair = false;
   BreedingPair? _existingPair;
   bool _savedSuccessfully = false;
+  // Covers the gap between tapping Save and the notifier call actually
+  // firing (notably the awaited inbreeding-confirmation dialog) — without
+  // it, `formState.isLoading` alone leaves the button tappable while that
+  // dialog is pending, allowing a double-submit / stacked dialogs.
+  bool _submitting = false;
 
   bool get _isDirty {
     if (_savedSuccessfully) return false;

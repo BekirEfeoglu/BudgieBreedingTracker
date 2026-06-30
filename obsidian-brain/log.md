@@ -4,6 +4,39 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-01] fix | Breeding tab audit remediation (race condition, FK gap, warning surfacing)
+
+Multi-agent audit of `lib/features/breeding/` + `lib/domain/services/eggs/`
+(providers/services, data layer, UI) found 10 issues; fixed in priority order.
+Highlights: (1) `EggActionsNotifier.updateEggStatus` re-fetches by id before
+writing — a stale `Egg` snapshot held across an async UI gap (status sheet)
+could otherwise resurrect a soft-deleted egg if its breeding pair was removed
+concurrently, including re-triggering chick auto-create against an
+already-deleted incubation chain. (2) `ClutchRepository.validateForeignKeys`
+never checked `breedingId`, the one FK with a real Postgres constraint — added
+the check, removed the `incubationId` check (that field is unconditionally
+stripped by `toSupabase()`, so validating it only blocked otherwise-valid
+pushes). (3) `deleteEgg` never re-triggered `_completeIncubationIfAllEggsTerminal`
+(only `updateEggStatus` did) — deleting the last non-terminal egg left the
+incubation stuck `active` forever, stranding a free-tier slot. (4)
+`BreedingFormNotifier`'s `warning` surfacing was inconsistent: `deleteBreeding`
+correctly showed `errors.background_tasks_partial` on side-effect failure,
+but `createBreeding`/`cancelBreeding`/`completeBreeding`/the species-change
+path in `updateBreeding` silently swallowed the same class of failure —
+`BreedingNotificationHelper`'s three methods now return `bool` instead of
+`void` so callers can tell. (5) `deleteBreeding`'s cascade never cleaned up
+legacy `Clutch` rows (the in-app UI doesn't create them, but cross-device/old
+data can have them). (6)-(10): double-submit window in the breeding form
+during the awaited inbreeding-confirmation dialog (`_submitting` flag added);
+`EggStatus.unknown` produced zero valid transitions in
+`getValidStatusTransitions` despite being non-terminal (dead end recoverable
+only via delete+recreate — now offers the same transitions as `laid`, and the
+switch is exhaustive instead of wildcard-`_` so a future enum addition can't
+silently fall through again); hardcoded Supabase strings in
+`ClutchRemoteSource.fetchByBreeding`; no busy indicator on the breeding detail
+popup menu during complete/cancel/delete. All fixes covered by new/updated
+unit + widget tests; full project `flutter analyze` and quality gate clean.
+
 ## [2026-06-30] fix | Birds tab audit remediation (lifecycle warning, decrypt safety, a11y)
 
 Multi-agent audit of `lib/features/birds/` (data/provider/screen/widget layers)

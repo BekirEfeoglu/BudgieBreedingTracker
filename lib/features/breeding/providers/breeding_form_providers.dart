@@ -252,7 +252,12 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
     return null;
   }
 
-  Future<void> _updateIncubationSpeciesForPair({
+  /// Returns `true` if every incubation's reminders were cancelled/rescheduled
+  /// cleanly, `false` if at least one side-effect step failed — the caller
+  /// surfaces a non-blocking warning in that case. The species/date save
+  /// itself is never part of this signal: a save failure propagates as a
+  /// real (uncaught) error, not a side-effect warning.
+  Future<bool> _updateIncubationSpeciesForPair({
     required String pairId,
     required Species species,
   }) async {
@@ -261,6 +266,7 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
     final scheduler = ref.read(notificationSchedulerProvider);
     final settings = ref.read(notificationToggleSettingsProvider);
     final incubations = await incubationRepo.getByBreedingPair(pairId);
+    var sideEffectsOk = true;
     for (final incubation in incubations) {
       if (incubation.species == species) continue;
       final previousSpecies = incubation.species;
@@ -295,6 +301,7 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
           e,
           st,
         );
+        sideEffectsOk = false;
       }
 
       await incubationRepo.save(
@@ -306,7 +313,7 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
       );
 
       // Reschedule under the new species. Failures shouldn't undo the
-      // save — surface as a warning in the calling flow if needed.
+      // save — surfaced as a warning by the caller.
       try {
         if (startDate != null) {
           await scheduler.scheduleIncubationMilestones(
@@ -335,8 +342,10 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
           e,
           st,
         );
+        sideEffectsOk = false;
       }
     }
+    return sideEffectsOk;
   }
 
   /// Creates a new breeding pair and its associated incubation atomically.
@@ -349,7 +358,12 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
     String? notes,
   }) async {
     if (state.isLoading) return;
-    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      warning: null,
+      isSuccess: false,
+    );
     try {
       final pairRepo = ref.read(breedingPairRepositoryProvider);
       final incubationRepo = ref.read(incubationRepositoryProvider);
@@ -452,9 +466,9 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
 
       // Side effects: schedule notifications + generate calendar milestones.
       // Failures must not undo the successful primary mutation — the
-      // helpers swallow exceptions and log warnings internally, so we
-      // safely await both in parallel.
-      await Future.wait([
+      // helpers swallow exceptions internally and report success/failure via
+      // their bool return so we can surface a non-blocking warning below.
+      final sideEffectResults = await Future.wait([
         _helper.scheduleBreedingNotifications(
           pairId,
           incubationId,
@@ -469,8 +483,15 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
           incubationId: incubationId,
         ),
       ]);
+      final hadSideEffectFailure = sideEffectResults.contains(false);
 
-      state = state.copyWith(isLoading: false, isSuccess: true);
+      state = state.copyWith(
+        isLoading: false,
+        isSuccess: true,
+        warning: hadSideEffectFailure
+            ? 'errors.background_tasks_partial'.tr()
+            : null,
+      );
     } catch (e, st) {
       AppLogger.error('BreedingFormNotifier', e, st);
       reportIfUnexpected(e, st);
@@ -484,7 +505,12 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
   /// Updates an existing breeding pair.
   Future<void> updateBreeding(BreedingPair pair) async {
     if (state.isLoading) return;
-    state = state.copyWith(isLoading: true, error: null, isSuccess: false);
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      warning: null,
+      isSuccess: false,
+    );
     try {
       final repo = ref.read(breedingPairRepositoryProvider);
       Species? validatedSpecies;
@@ -506,13 +532,18 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
               pairingDate: date_utils.DateUtils.utcMidnight(pair.pairingDate!),
             );
       await repo.save(normalized.copyWith(updatedAt: DateTime.now()));
+      var sideEffectsOk = true;
       if (validatedSpecies != null) {
-        await _updateIncubationSpeciesForPair(
+        sideEffectsOk = await _updateIncubationSpeciesForPair(
           pairId: pair.id,
           species: validatedSpecies,
         );
       }
-      state = state.copyWith(isLoading: false, isSuccess: true);
+      state = state.copyWith(
+        isLoading: false,
+        isSuccess: true,
+        warning: sideEffectsOk ? null : 'errors.background_tasks_partial'.tr(),
+      );
     } catch (e, st) {
       AppLogger.error('BreedingFormNotifier', e, st);
       reportIfUnexpected(e, st);

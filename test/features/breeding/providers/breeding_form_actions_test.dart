@@ -6,6 +6,7 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
+import 'package:budgie_breeding_tracker/data/models/clutch_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
@@ -55,6 +56,10 @@ Egg _egg({String id = 'egg-1', String? incubationId = 'inc-1'}) {
   );
 }
 
+Clutch _clutch({String id = 'clutch-1', String breedingId = 'pair-1'}) {
+  return Clutch(id: id, userId: 'user-1', breedingId: breedingId);
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -63,6 +68,7 @@ void main() {
   late MockEggRepository mockEggRepo;
   late MockBirdRepository mockBirdRepo;
   late MockChickRepository mockChickRepo;
+  late MockClutchRepository mockClutchRepo;
   late MockNotificationScheduler mockScheduler;
 
   setUp(() {
@@ -72,6 +78,7 @@ void main() {
     mockEggRepo = MockEggRepository();
     mockBirdRepo = MockBirdRepository();
     mockChickRepo = MockChickRepository();
+    mockClutchRepo = MockClutchRepository();
     mockScheduler = MockNotificationScheduler();
 
     registerFallbackValue(_pair());
@@ -92,6 +99,8 @@ void main() {
     ).thenAnswer((_) async {});
     // Default: no chicks linked to any egg
     when(() => mockChickRepo.getByEggIds(any())).thenAnswer((_) async => []);
+    // Default: no legacy clutch rows for the pair being deleted
+    when(() => mockClutchRepo.getByBreeding(any())).thenAnswer((_) async => []);
   });
 
   ProviderContainer createContainer() {
@@ -102,6 +111,7 @@ void main() {
         eggRepositoryProvider.overrideWithValue(mockEggRepo),
         birdRepositoryProvider.overrideWithValue(mockBirdRepo),
         chickRepositoryProvider.overrideWithValue(mockChickRepo),
+        clutchRepositoryProvider.overrideWithValue(mockClutchRepo),
         notificationSchedulerProvider.overrideWithValue(mockScheduler),
         isPremiumProvider.overrideWithValue(false),
         effectivePremiumProvider.overrideWithValue(false),
@@ -267,6 +277,36 @@ void main() {
       // saveAll should not be called when no active incubations are filtered
       verifyNever(() => mockIncubationRepo.saveAll(any()));
     });
+
+    test(
+      'sets warning (not error) when reminder cancellation fails',
+      () async {
+        final activeInc = _incubation(status: IncubationStatus.active);
+        when(
+          () => mockPairRepo.getById('pair-1'),
+        ).thenAnswer((_) async => _pair());
+        when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
+        stubHelperDeps(incubations: [activeInc]);
+        when(
+          () => mockScheduler.cancelIncubationMilestones(any()),
+        ).thenThrow(Exception('scheduler unavailable'));
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(breedingFormStateProvider.notifier)
+            .cancelBreeding('pair-1');
+
+        final state = container.read(breedingFormStateProvider);
+        // The primary mutation (pair cancelled) still succeeds — a
+        // best-effort reminder-cleanup failure must surface as a warning,
+        // not block success or read back as a hard error.
+        expect(state.isSuccess, isTrue);
+        expect(state.error, isNull);
+        expect(state.warning, isNotNull);
+      },
+    );
   });
 
   // ─── completeBreeding ───────────────────────────────────────────
@@ -392,6 +432,33 @@ void main() {
       expect(states, contains(true));
       expect(states.last, isFalse);
     });
+
+    test(
+      'sets warning (not error) when reminder cancellation fails',
+      () async {
+        final activeInc = _incubation(status: IncubationStatus.active);
+        when(
+          () => mockPairRepo.getById('pair-1'),
+        ).thenAnswer((_) async => _pair());
+        when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
+        stubHelperDeps(incubations: [activeInc]);
+        when(
+          () => mockScheduler.cancelIncubationMilestones(any()),
+        ).thenThrow(Exception('scheduler unavailable'));
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(breedingFormStateProvider.notifier)
+            .completeBreeding('pair-1');
+
+        final state = container.read(breedingFormStateProvider);
+        expect(state.isSuccess, isTrue);
+        expect(state.error, isNull);
+        expect(state.warning, isNotNull);
+      },
+    );
   });
 
   // ─── deleteBreeding ─────────────────────────────────────────────
@@ -446,6 +513,59 @@ void main() {
       verify(() => mockEggRepo.remove('egg-1')).called(1);
       verify(() => mockEggRepo.remove('egg-2')).called(1);
     });
+
+    test(
+      'removes legacy clutch rows tied to the pair before removing it',
+      () async {
+        stubHelperDeps();
+        when(
+          () => mockClutchRepo.getByBreeding('pair-1'),
+        ).thenAnswer((_) async => [_clutch(), _clutch(id: 'clutch-2')]);
+        when(() => mockClutchRepo.remove(any())).thenAnswer((_) async {});
+        when(() => mockPairRepo.remove(any())).thenAnswer((_) async {});
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(breedingFormStateProvider.notifier)
+            .deleteBreeding('pair-1');
+
+        verify(() => mockClutchRepo.remove('clutch-1')).called(1);
+        verify(() => mockClutchRepo.remove('clutch-2')).called(1);
+        final state = container.read(breedingFormStateProvider);
+        expect(state.isSuccess, isTrue);
+      },
+    );
+
+    test(
+      'a failed clutch removal surfaces a warning but does not block the delete',
+      () async {
+        stubHelperDeps();
+        when(
+          () => mockClutchRepo.getByBreeding('pair-1'),
+        ).thenAnswer((_) async => [_clutch()]);
+        // Use an async-throwing stub (not `thenThrow`) so the failure
+        // surfaces as a rejected Future, matching how the real `async`
+        // repository method would actually fail.
+        when(
+          () => mockClutchRepo.remove('clutch-1'),
+        ).thenAnswer((_) async => throw Exception('local DB error'));
+        when(() => mockPairRepo.remove(any())).thenAnswer((_) async {});
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(breedingFormStateProvider.notifier)
+            .deleteBreeding('pair-1');
+
+        final state = container.read(breedingFormStateProvider);
+        expect(state.isSuccess, isTrue);
+        verify(() => mockPairRepo.remove('pair-1')).called(1);
+        expect(state.warning, isNotNull);
+      },
+    );
 
     test('removes related incubations before removing pair', () async {
       final incubations = [_incubation()];

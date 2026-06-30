@@ -438,6 +438,7 @@
     "status_empty": "Boş",
     "status_unknown": "Bilinmiyor",
     "incubation_not_found": "Kuluçka bulunamadı",
+    "egg_not_found": "Yumurta bulunamadı, başka bir cihazda veya işlemde silinmiş olabilir",
     "no_eggs": "Henüz yumurta yok",
     "no_eggs_hint": "Yeni yumurta eklemek için + butonuna dokunun",
     "summary_no_eggs": "Henüz yumurta eklenmedi",

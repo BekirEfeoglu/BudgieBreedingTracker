@@ -438,6 +438,7 @@
     "status_empty": "Leer",
     "status_unknown": "Unbekannt",
     "incubation_not_found": "Brut nicht gefunden",
+    "egg_not_found": "Ei nicht gefunden — es wurde möglicherweise auf einem anderen Gerät gelöscht",
     "no_eggs": "Noch keine Eier",
     "no_eggs_hint": "Tippen Sie auf +, um ein neues Ei hinzuzufügen",
     "summary_no_eggs": "Noch keine Eier hinzugefügt",

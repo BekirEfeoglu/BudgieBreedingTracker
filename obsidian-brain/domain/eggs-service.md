@@ -38,6 +38,9 @@ addEgg(incubationId, layDate, eggNumber)
   └── generate calendar event (best-effort)
 
 updateEggStatus(egg, newStatus)
+  ├── re-fetch by id; abort with `eggs.egg_not_found` if it no longer exists
+  │    (guards against writing a stale snapshot over an egg whose parent
+  │    pair was deleted concurrently — June 2026 breeding-tab audit)
   ├── set status + status-specific date (hatchDate / fertileCheckDate / discardDate)
   ├── if newStatus == hatched → _createChickFromHatchedEgg (idempotent per eggId)
   ├── reschedule reminders for the egg

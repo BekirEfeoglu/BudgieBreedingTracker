@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
@@ -226,5 +227,72 @@ void main() {
       // by date strings like "25.05.YYYY" that would also contain "25.0".
       expect(find.textContaining('25.0%'), findsOneWidget);
     });
+
+    testWidgets(
+      'disables Save while the inbreeding confirmation dialog is pending',
+      (tester) async {
+        final father = createTestBird(
+          id: 'father',
+          userId: 'test-user',
+          name: 'Baba',
+          gender: BirdGender.male,
+        );
+        final daughter = createTestBird(
+          id: 'daughter',
+          userId: 'test-user',
+          name: 'Yavru',
+          gender: BirdGender.female,
+          fatherId: father.id,
+        );
+        final birds = [father, daughter];
+
+        await tester.pumpWidget(
+          createSubject(
+            birdsStream: Stream.value(birds),
+            maleBirds: [father],
+            femaleBirds: [daughter],
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byType(DropdownButtonFormField<String>).first);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Baba').last);
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byType(DropdownButtonFormField<String>).last);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Yavru').last);
+        await tester.pumpAndSettle();
+
+        await tester.tap(
+          find.widgetWithText(PrimaryButton, l10n('common.save')),
+        );
+        // One frame: enough for _submit() to run synchronously up to the
+        // awaited inbreeding-confirmation dialog, but not enough to resolve
+        // it — this is exactly the window the double-submit guard covers.
+        await tester.pump();
+
+        expect(
+          find.text(l10n('breeding.inbreeding_confirm_title')),
+          findsOneWidget,
+        );
+        // isLoading swaps the button's child for a spinner, so the label
+        // text is gone — find by type instead (the Save button is the only
+        // PrimaryButton on this screen).
+        final button = tester.widget<PrimaryButton>(find.byType(PrimaryButton));
+        expect(button.isLoading, isTrue);
+
+        // Resolve the dialog via Cancel so the test doesn't proceed into
+        // notifier.createBreeding (no repository overrides in this subject).
+        await tester.tap(find.text(l10n('common.cancel')).last);
+        await tester.pumpAndSettle();
+
+        final resetButton = tester.widget<PrimaryButton>(
+          find.byType(PrimaryButton),
+        );
+        expect(resetButton.isLoading, isFalse);
+      },
+    );
   });
 }

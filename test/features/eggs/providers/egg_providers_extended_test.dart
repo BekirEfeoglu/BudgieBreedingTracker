@@ -38,6 +38,12 @@ void main() {
 
   setUp(() {
     repo = MockEggRepository();
+    // deleteEgg re-fetches by id (to find the parent incubation for
+    // auto-completion re-evaluation) before removing. Default to "not
+    // found" so the auto-complete branch no-ops and stays scoped to the
+    // overridden eggRepositoryProvider only — this file does not override
+    // incubationRepositoryProvider/breedingPairRepositoryProvider.
+    when(() => repo.getById(any())).thenAnswer((_) async => null);
   });
 
   ProviderContainer makeContainer({List<dynamic> overrides = const []}) {

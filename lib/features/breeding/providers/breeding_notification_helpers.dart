@@ -31,7 +31,11 @@ class BreedingNotificationHelper {
   /// `Species.unknown` would target a different ID range than the one
   /// originally scheduled (non-budgie species leak reminders). Resolve the
   /// real species per incubation/egg before cancelling.
-  Future<void> cancelBreedingNotifications(
+  ///
+  /// Never throws — returns `false` (instead of rethrowing) so the caller
+  /// can surface a non-blocking warning without the side-effect failure
+  /// undoing the already-successful primary mutation.
+  Future<bool> cancelBreedingNotifications(
     String breedingPairId, {
     List<Incubation>? incubations,
     List<Egg>? eggs,
@@ -42,7 +46,7 @@ class BreedingNotificationHelper {
           await _ref.read(incubationRepositoryProvider).getByBreedingPairIds([
             breedingPairId,
           ]);
-      if (loadedIncubations.isEmpty) return;
+      if (loadedIncubations.isEmpty) return true;
 
       final loadedEggs = eggs ?? await getEggsForIncubations(loadedIncubations);
 
@@ -75,6 +79,7 @@ class BreedingNotificationHelper {
           ),
         ),
       );
+      return true;
     } catch (e, st) {
       // Best-effort cleanup — the breeding op itself already succeeded by
       // the time we reach this point. Capture stack trace so Sentry can
@@ -84,6 +89,7 @@ class BreedingNotificationHelper {
         e,
         st,
       );
+      return false;
     }
   }
 
@@ -139,10 +145,10 @@ class BreedingNotificationHelper {
   /// before any egg is laid would surface "turn egg" notifications every
   /// 4 hours for the full incubation window with no egg to actually turn.
   ///
-  /// Returns a [Future] so callers can await side-effect completion. Failure
-  /// is logged but never rethrown — schedulers are best-effort and must not
-  /// undo a successful primary mutation.
-  Future<void> scheduleBreedingNotifications(
+  /// Returns `true` on success / `false` on failure so callers can surface a
+  /// non-blocking warning. Never rethrows — schedulers are best-effort and
+  /// must not undo a successful primary mutation.
+  Future<bool> scheduleBreedingNotifications(
     String pairId,
     String incubationId,
     DateTime pairingDate,
@@ -160,17 +166,23 @@ class BreedingNotificationHelper {
         species: species,
         settings: settings,
       );
+      return true;
     } catch (e, st) {
       AppLogger.warning('Failed to schedule notifications: $e');
       AppLogger.error('BreedingNotificationHelper.schedule', e, st);
+      return false;
     }
   }
 
   /// Auto-generates calendar events for incubation milestones.
   ///
-  /// Returns a [Future] so callers can await side-effect completion. Failure
-  /// is logged but never rethrown — calendar generation is best-effort.
-  Future<void> generateCalendarEvents(
+  /// Returns `true` on success / `false` on failure so callers can surface a
+  /// non-blocking warning. Never rethrows — calendar generation is
+  /// best-effort. A "Supabase not initialized" failure is treated as an
+  /// expected, non-alarming condition (e.g. offline/debug contexts) and
+  /// still reports success — only genuinely unexpected failures return
+  /// `false`.
+  Future<bool> generateCalendarEvents(
     String userId,
     String pairId,
     DateTime pairingDate,
@@ -187,14 +199,17 @@ class BreedingNotificationHelper {
         species: species,
         incubationId: incubationId,
       );
+      return true;
     } catch (e, st) {
       if (isSupabaseUnavailableError(e)) {
         AppLogger.info(
           'Skipping calendar event generation: Supabase is not initialized',
         );
+        return true;
       } else {
         AppLogger.warning('Failed to generate calendar events: $e');
         AppLogger.error('BreedingNotificationHelper.calendar', e, st);
+        return false;
       }
     }
   }

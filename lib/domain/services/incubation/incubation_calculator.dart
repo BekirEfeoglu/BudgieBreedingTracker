@@ -205,8 +205,21 @@ abstract class IncubationCalculator {
   }
 
   /// Returns valid status transitions for a given [EggStatus].
+  ///
+  /// Exhaustive (no wildcard arm) so adding a new [EggStatus] value forces a
+  /// decision here too — see the "must remain in sync" contract on
+  /// [EggStatus.isTerminal].
+  ///
+  /// [EggStatus.unknown] (a forward-compat parse fallback — see
+  /// `@JsonKey(unknownEnumValue:)` on the egg model) is non-terminal per
+  /// [EggStatus.isTerminal], so it must offer a way out: without one, an egg
+  /// that synced down an unrecognized status is stuck "active" forever (it
+  /// silently blocks the parent incubation's free-tier auto-completion) with
+  /// no way to fix it from the status-update sheet. Treat it like [laid] —
+  /// the user picks the real status from scratch.
   static List<EggStatus> getValidStatusTransitions(EggStatus current) {
     return switch (current) {
+      EggStatus.unknown ||
       EggStatus.laid => [
         EggStatus.fertile,
         EggStatus.infertile,
@@ -226,8 +239,8 @@ abstract class IncubationCalculator {
       EggStatus.hatched ||
       EggStatus.damaged ||
       EggStatus.discarded ||
-      EggStatus.infertile => [],
-      _ => [],
+      EggStatus.infertile ||
+      EggStatus.empty => [],
     };
   }
 }

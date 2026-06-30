@@ -13,13 +13,22 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/calendar/calendar_event_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/species_incubation_config.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_settings_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/inbreeding_calculator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../helpers/mocks.dart';
 import '../../../helpers/test_fixtures.dart';
+
+class _TestNotificationToggleSettingsNotifier
+    extends NotificationToggleSettingsNotifier {
+  @override
+  NotificationToggleSettings build() => const NotificationToggleSettings();
+}
 
 BreedingPair _pair({
   String id = 'pair-1',
@@ -60,6 +69,9 @@ void main() {
   late MockIncubationRepository mockIncubationRepo;
   late MockEggRepository mockEggRepo;
   late MockBirdRepository mockBirdRepo;
+  late MockClutchRepository mockClutchRepo;
+  late MockNotificationScheduler mockScheduler;
+  late MockCalendarEventGenerator mockCalendarGen;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -67,10 +79,17 @@ void main() {
     mockIncubationRepo = MockIncubationRepository();
     mockEggRepo = MockEggRepository();
     mockBirdRepo = MockBirdRepository();
+    mockClutchRepo = MockClutchRepository();
+    mockScheduler = MockNotificationScheduler();
+    mockCalendarGen = MockCalendarEventGenerator();
     registerFallbackValue(_pair());
     registerFallbackValue(
       const Incubation(id: 'fallback', userId: 'fallback-user'),
     );
+    registerFallbackValue(Species.budgie);
+    // deleteBreeding looks up legacy clutch rows for the pair; default to
+    // none so existing delete tests are unaffected.
+    when(() => mockClutchRepo.getByBreeding(any())).thenAnswer((_) async => []);
     when(() => mockBirdRepo.getById('male-1')).thenAnswer(
       (_) async => const Bird(
         id: 'male-1',
@@ -89,6 +108,45 @@ void main() {
         species: Species.budgie,
       ),
     );
+    // Default: side effects succeed — tests that exercise the warning path
+    // override these per-case.
+    when(
+      () => mockScheduler.scheduleIncubationMilestones(
+        incubationId: any(named: 'incubationId'),
+        startDate: any(named: 'startDate'),
+        label: any(named: 'label'),
+        species: any(named: 'species'),
+        settings: any(named: 'settings'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockScheduler.cancelIncubationMilestones(any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockScheduler.cancelEggTurningReminders(
+        any(),
+        species: any(named: 'species'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockScheduler.scheduleEggTurningReminders(
+        eggId: any(named: 'eggId'),
+        startDate: any(named: 'startDate'),
+        eggLabel: any(named: 'eggLabel'),
+        species: any(named: 'species'),
+        settings: any(named: 'settings'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockCalendarGen.generateIncubationEvents(
+        userId: any(named: 'userId'),
+        breedingPairId: any(named: 'breedingPairId'),
+        incubationId: any(named: 'incubationId'),
+        startDate: any(named: 'startDate'),
+        pairLabel: any(named: 'pairLabel'),
+        species: any(named: 'species'),
+      ),
+    ).thenAnswer((_) async {});
   });
 
   ProviderContainer createContainer({bool isPremium = false}) {
@@ -98,6 +156,12 @@ void main() {
         incubationRepositoryProvider.overrideWithValue(mockIncubationRepo),
         eggRepositoryProvider.overrideWithValue(mockEggRepo),
         birdRepositoryProvider.overrideWithValue(mockBirdRepo),
+        clutchRepositoryProvider.overrideWithValue(mockClutchRepo),
+        notificationSchedulerProvider.overrideWithValue(mockScheduler),
+        notificationToggleSettingsProvider.overrideWith(
+          _TestNotificationToggleSettingsNotifier.new,
+        ),
+        calendarEventGeneratorProvider.overrideWithValue(mockCalendarGen),
         isPremiumProvider.overrideWithValue(isPremium),
         effectivePremiumProvider.overrideWithValue(isPremium),
       ],
@@ -516,6 +580,65 @@ void main() {
       expect(state.error, 'breeding.birds_must_be_alive');
       verifyNever(() => mockPairRepo.save(any()));
     });
+
+    test('does not set a warning when side effects succeed', () async {
+      stubUnderLimits();
+      when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
+      when(() => mockIncubationRepo.save(any())).thenAnswer((_) async {});
+
+      final container = createContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(breedingFormStateProvider.notifier)
+          .createBreeding(
+            userId: 'user-1',
+            maleId: 'male-1',
+            femaleId: 'female-1',
+            pairingDate: DateTime(2025, 1, 1),
+          );
+
+      final state = container.read(breedingFormStateProvider);
+      expect(state.isSuccess, isTrue);
+      expect(state.warning, isNull);
+    });
+
+    test(
+      'sets warning (not error) when notification scheduling fails',
+      () async {
+        stubUnderLimits();
+        when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
+        when(() => mockIncubationRepo.save(any())).thenAnswer((_) async {});
+        when(
+          () => mockScheduler.scheduleIncubationMilestones(
+            incubationId: any(named: 'incubationId'),
+            startDate: any(named: 'startDate'),
+            label: any(named: 'label'),
+            species: any(named: 'species'),
+            settings: any(named: 'settings'),
+          ),
+        ).thenThrow(Exception('scheduler unavailable'));
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(breedingFormStateProvider.notifier)
+            .createBreeding(
+              userId: 'user-1',
+              maleId: 'male-1',
+              femaleId: 'female-1',
+              pairingDate: DateTime(2025, 1, 1),
+            );
+
+        final state = container.read(breedingFormStateProvider);
+        // The pair + incubation were already saved successfully — a failed
+        // reminder schedule must not read back as a blocking error.
+        expect(state.isSuccess, isTrue);
+        expect(state.error, isNull);
+        expect(state.warning, isNotNull);
+      },
+    );
   });
 
   group('BreedingFormNotifier.updateBreeding', () {
@@ -618,6 +741,63 @@ void main() {
             Duration(days: incubationDaysForSpecies(Species.canary)),
           ),
         );
+      },
+    );
+
+    test(
+      'sets warning when reminder reschedule fails after species change',
+      () async {
+        final startDate = DateTime(2025, 1, 1);
+        when(() => mockBirdRepo.getById('male-1')).thenAnswer(
+          (_) async => const Bird(
+            id: 'male-1',
+            userId: 'user-1',
+            name: 'Male',
+            gender: BirdGender.male,
+            species: Species.canary,
+          ),
+        );
+        when(() => mockBirdRepo.getById('female-1')).thenAnswer(
+          (_) async => const Bird(
+            id: 'female-1',
+            userId: 'user-1',
+            name: 'Female',
+            gender: BirdGender.female,
+            species: Species.canary,
+          ),
+        );
+        when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
+        when(() => mockIncubationRepo.getByBreedingPair('pair-1')).thenAnswer(
+          (_) async => [
+            _incubation(species: Species.budgie, startDate: startDate),
+          ],
+        );
+        when(() => mockIncubationRepo.save(any())).thenAnswer((_) async {});
+        when(
+          () => mockScheduler.scheduleIncubationMilestones(
+            incubationId: any(named: 'incubationId'),
+            startDate: any(named: 'startDate'),
+            label: any(named: 'label'),
+            species: any(named: 'species'),
+            settings: any(named: 'settings'),
+          ),
+        ).thenThrow(Exception('scheduler unavailable'));
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(breedingFormStateProvider.notifier)
+            .updateBreeding(_pair());
+
+        // The species change itself still saved successfully — only the
+        // reminder reschedule failed, so this must surface as a warning,
+        // not block isSuccess or read back as an error.
+        verify(() => mockIncubationRepo.save(any())).called(1);
+        final state = container.read(breedingFormStateProvider);
+        expect(state.isSuccess, isTrue);
+        expect(state.error, isNull);
+        expect(state.warning, isNotNull);
       },
     );
   });

@@ -6,6 +6,7 @@ import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
@@ -41,6 +42,9 @@ void main() {
     registerFallbackValue(Species.budgie);
     registerFallbackValue(
       const Incubation(id: 'fallback', userId: 'fallback-user'),
+    );
+    registerFallbackValue(
+      const BreedingPair(id: 'fallback', userId: 'fallback-user'),
     );
   });
 
@@ -152,6 +156,14 @@ void main() {
           layDate: DateTime(2024, 1, 9),
         ),
       ],
+    );
+    // updateEggStatus re-fetches by id to guard against writing over a
+    // concurrently soft-deleted egg (see egg_actions_notifier.dart). Default
+    // to "still exists" so existing status-transition tests are unaffected;
+    // override with `(_) async => null` in tests that simulate the race.
+    when(() => eggRepo.getById(any())).thenAnswer(
+      (_) async =>
+          Egg(id: 'existing', userId: 'test-user', layDate: DateTime(2024)),
     );
     when(() => breedingPairRepo.getById(any())).thenAnswer(
       (_) async => const BreedingPair(
@@ -284,6 +296,69 @@ void main() {
       expect(state.isSuccess, isTrue);
       expect(state.chickCreated, isFalse);
     });
+
+    test(
+      'auto-completes the incubation when deleting the last non-terminal egg',
+      () async {
+        // inc-1 has a hatched sibling and the incubating egg-2 being deleted.
+        // Once egg-2 is gone, every *remaining* egg is terminal, so the
+        // incubation (and its parent pair, which has no other active
+        // incubation) must flip out of `active` — otherwise it stays stuck
+        // counting against the free-tier active-incubation limit forever.
+        when(() => eggRepo.getById('egg-2')).thenAnswer(
+          (_) async => Egg(
+            id: 'egg-2',
+            userId: 'test-user',
+            incubationId: 'inc-1',
+            layDate: DateTime(2024, 1, 10),
+            status: EggStatus.incubating,
+          ),
+        );
+        when(() => eggRepo.remove('egg-2')).thenAnswer((_) async {});
+        when(() => eggRepo.getByIncubation('inc-1')).thenAnswer(
+          (_) async => [
+            Egg(
+              id: 'egg-1',
+              userId: 'test-user',
+              incubationId: 'inc-1',
+              layDate: DateTime(2024, 1, 1),
+              status: EggStatus.hatched,
+            ),
+          ],
+        );
+        when(() => incubationRepo.save(any())).thenAnswer((_) async {});
+        when(
+          () => incubationRepo.getByBreedingPairIds(['pair-1']),
+        ).thenAnswer((_) async => []);
+        when(() => breedingPairRepo.getById('pair-1')).thenAnswer(
+          (_) async => const BreedingPair(
+            id: 'pair-1',
+            userId: 'test-user',
+            maleId: 'male-1',
+            femaleId: 'female-1',
+            status: BreedingStatus.active,
+          ),
+        );
+        when(() => breedingPairRepo.save(any())).thenAnswer((_) async {});
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+
+        await container.read(eggActionsProvider.notifier).deleteEgg('egg-2');
+
+        final savedIncubation =
+            verify(() => incubationRepo.save(captureAny())).captured.single
+                as Incubation;
+        expect(savedIncubation.status, IncubationStatus.completed);
+
+        final savedPair =
+            verify(() => breedingPairRepo.save(captureAny())).captured.single
+                as BreedingPair;
+        expect(savedPair.status, BreedingStatus.completed);
+
+        expect(container.read(eggActionsProvider).isSuccess, isTrue);
+      },
+    );
   });
 
   group('EggActionsNotifier - updateEggStatus with hatching', () {
@@ -331,6 +406,32 @@ void main() {
 
         saveCompleter.complete();
         await Future.wait([first, second]);
+      },
+    );
+
+    test(
+      'refuses to resurrect an egg that was deleted concurrently',
+      () async {
+        // Simulates the race: the caller is still holding a stale Egg
+        // snapshot (e.g. from a status-update bottom sheet) when the egg's
+        // breeding pair gets deleted elsewhere. getById now returns null
+        // because the row is soft-deleted.
+        when(() => eggRepo.getById('egg-1')).thenAnswer((_) async => null);
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(eggActionsProvider.notifier)
+            .updateEggStatus(testEgg(), EggStatus.hatched);
+
+        verifyNever(() => eggRepo.save(any()));
+        verifyNever(() => chickRepo.save(any()));
+
+        final state = container.read(eggActionsProvider);
+        expect(state.isSuccess, isFalse);
+        expect(state.error, isNotNull);
+        expect(state.chickCreated, isFalse);
       },
     );
 

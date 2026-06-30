@@ -438,6 +438,7 @@
     "status_empty": "Empty",
     "status_unknown": "Unknown",
     "incubation_not_found": "Incubation not found",
+    "egg_not_found": "Egg not found — it may have been deleted on another device or action",
     "no_eggs": "No eggs yet",
     "no_eggs_hint": "Tap the + button to add a new egg",
     "summary_no_eggs": "No eggs added yet",

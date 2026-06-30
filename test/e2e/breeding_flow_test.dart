@@ -335,6 +335,16 @@ void main() {
         final mockChickRepository = MockChickRepository();
 
         when(() => mockEggRepository.save(any())).thenAnswer((_) async {});
+        when(() => mockEggRepository.getById('egg-1')).thenAnswer(
+          (_) async => Egg(
+            id: 'egg-1',
+            userId: 'test-user',
+            incubationId: 'inc-1',
+            layDate: DateTime.now().subtract(const Duration(days: 1)),
+            eggNumber: 1,
+            status: EggStatus.incubating,
+          ),
+        );
         when(
           () => mockChickRepository.getByEggId('egg-1'),
         ).thenAnswer((_) async => null);
