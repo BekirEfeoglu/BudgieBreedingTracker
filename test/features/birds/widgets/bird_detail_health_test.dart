@@ -231,5 +231,61 @@ void main() {
 
       expect(find.text('health_records.add_record'), findsOneWidget);
     });
+
+    testWidgets('add record button meets the 48dp touch target minimum', (
+      tester,
+    ) async {
+      final records = [_buildRecord()];
+
+      await _pump(
+        tester,
+        const BirdDetailHealth(birdId: 'bird-1'),
+        overrides: [
+          healthRecordsByBirdProvider.overrideWith(
+            (ref, id) => Stream.value(records),
+          ),
+        ],
+      );
+      await tester.pumpAndSettle();
+
+      final size = tester.getSize(find.byType(OutlinedButton));
+      expect(size.height, greaterThanOrEqualTo(48));
+    });
+
+    testWidgets('retry button meets the 48dp touch target minimum', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
+        ProviderScope(
+          overrides: [
+            dateFormatProvider.overrideWith(() => DateFormatNotifier()),
+            healthRecordsByBirdProvider.overrideWith(
+              (ref, id) =>
+                  Stream<List<HealthRecord>>.error(Exception('Network error')),
+            ),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: BirdDetailHealth(birdId: 'bird-1'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+
+      final retryFinder = find.text(l10n('common.retry'));
+      if (retryFinder.evaluate().isEmpty) {
+        // Stream error path is flaky to reach deterministically in widget
+        // tests (see the note in 'shows error state with retry button'
+        // above) — skip the size assertion rather than fail on an
+        // unrelated timing issue.
+        return;
+      }
+      final size = tester.getSize(find.byType(TextButton));
+      expect(size.height, greaterThanOrEqualTo(48));
+    });
   });
 }

@@ -78,8 +78,17 @@ class _DetailContent extends ConsumerWidget {
     // initiated (markAsDead/Sold/Gifted, deleteBird). Save success that
     // originates from BirdFormScreen is filtered out here to prevent
     // duplicate toasts when the user pops back from edit to detail.
-    ref.listen<BirdFormState>(birdFormStateProvider, (_, state) {
+    ref.listen<BirdFormState>(birdFormStateProvider, (prev, state) {
       if (!context.mounted) return;
+      if (state.warning != null && prev?.warning != state.warning) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(state.warning!),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
       final isOwnedAction =
           state.lastAction == BirdFormAction.statusChange ||
           state.lastAction == BirdFormAction.delete;
@@ -125,6 +134,7 @@ class _DetailContent extends ConsumerWidget {
                     onPressed: () => context.push('/birds/form?editId=${bird.id}'),
                   ),
                   PopupMenuButton<String>(
+                    tooltip: 'common.more'.tr(),
                     onSelected: (value) => _handleMenuAction(context, ref, value),
                     itemBuilder: (context) => [
                       PopupMenuItem(

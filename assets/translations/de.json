@@ -250,6 +250,7 @@
     "photo_source_gallery": "Aus Galerie wählen",
     "photo_source_camera": "Foto aufnehmen",
     "photo_upload_error": "Fehler beim Hochladen des Fotos",
+    "photo_gallery_save_partial": "Vogel gespeichert, aber das Foto konnte nicht zur Galerie hinzugefügt werden",
     "photos_load_error": "Fotos konnten nicht geladen werden",
     "uploading_photo": "Wird hochgeladen...",
     "delete_photo": "Foto löschen",

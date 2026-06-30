@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/birds/bird_lifecycle_service.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 
@@ -14,9 +15,11 @@ import '../../../helpers/mocks.dart';
 
 void main() {
   late MockBirdRepository repo;
+  late MockBirdLifecycleService lifecycleService;
 
   setUp(() {
     repo = MockBirdRepository();
+    lifecycleService = MockBirdLifecycleService();
     registerFallbackValue(
       const Bird(
         id: 'fallback-id',
@@ -30,12 +33,18 @@ void main() {
           repo.hasRingNumber(any(), any(), excludeId: any(named: 'excludeId')),
     ).thenAnswer((_) async => false);
     when(() => repo.getById(any())).thenAnswer((_) async => null);
+    // Default: lifecycle cleanup succeeds, so existing tests that don't
+    // care about it keep their original "no warning" behavior.
+    when(
+      () => lifecycleService.cancelActiveBreedingsForBird(any()),
+    ).thenAnswer((_) async => true);
   });
 
   ProviderContainer makeContainer({bool isPremium = false}) {
     return ProviderContainer(
       overrides: [
         birdRepositoryProvider.overrideWithValue(repo),
+        birdLifecycleServiceProvider.overrideWithValue(lifecycleService),
         isPremiumProvider.overrideWithValue(isPremium),
         effectivePremiumProvider.overrideWithValue(isPremium),
       ],
@@ -83,6 +92,29 @@ void main() {
       const state = BirdFormState();
       final updated = state.copyWith(isSuccess: true);
       expect(updated.isSuccess, isTrue);
+    });
+
+    test('warning defaults to null', () {
+      const state = BirdFormState();
+      expect(state.warning, isNull);
+    });
+
+    test('copyWith preserves warning when the param is omitted', () {
+      final withWarning = const BirdFormState().copyWith(warning: 'careful');
+      final updated = withWarning.copyWith(isLoading: true);
+      expect(updated.warning, 'careful');
+    });
+
+    test('copyWith clears warning when passed null explicitly', () {
+      final withWarning = const BirdFormState().copyWith(warning: 'careful');
+      final cleared = withWarning.copyWith(warning: null);
+      expect(cleared.warning, isNull);
+    });
+
+    test('copyWith preserves error when the param is omitted', () {
+      final withError = const BirdFormState().copyWith(error: 'boom');
+      final updated = withError.copyWith(isLoading: true);
+      expect(updated.error, 'boom');
     });
   });
 
@@ -385,7 +417,32 @@ void main() {
       await container.read(birdFormStateProvider.notifier).deleteBird('b1');
 
       expect(container.read(birdFormStateProvider).isSuccess, isTrue);
+      verify(
+        () => lifecycleService.cancelActiveBreedingsForBird('b1'),
+      ).called(1);
+      expect(container.read(birdFormStateProvider).warning, isNull);
     });
+
+    test(
+      'deleteBird surfaces a warning when lifecycle cleanup fails',
+      () async {
+        when(() => repo.remove(any())).thenAnswer((_) async {});
+        when(
+          () => lifecycleService.cancelActiveBreedingsForBird(any()),
+        ).thenAnswer((_) async => false);
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+
+        await container.read(birdFormStateProvider.notifier).deleteBird('b1');
+
+        final state = container.read(birdFormStateProvider);
+        // The primary mutation must still succeed — cleanup failure is
+        // non-blocking, see breeding-eggs.md § Side Effects.
+        expect(state.isSuccess, isTrue);
+        expect(state.warning, 'errors.background_tasks_partial');
+      },
+    );
 
     test('markAsDead updates bird status', () async {
       const bird = Bird(
@@ -404,10 +461,38 @@ void main() {
       await container.read(birdFormStateProvider.notifier).markAsDead('b1');
 
       expect(container.read(birdFormStateProvider).isSuccess, isTrue);
+      expect(container.read(birdFormStateProvider).warning, isNull);
       final captured =
           verify(() => repo.save(captureAny())).captured.single as Bird;
       expect(captured.status, BirdStatus.dead);
     });
+
+    test(
+      'markAsDead surfaces a warning when lifecycle cleanup fails',
+      () async {
+        const bird = Bird(
+          id: 'b1',
+          name: 'Test',
+          gender: BirdGender.male,
+          userId: 'user-1',
+          status: BirdStatus.alive,
+        );
+        when(() => repo.getById('b1')).thenAnswer((_) async => bird);
+        when(() => repo.save(any())).thenAnswer((_) async {});
+        when(
+          () => lifecycleService.cancelActiveBreedingsForBird(any()),
+        ).thenAnswer((_) async => false);
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+
+        await container.read(birdFormStateProvider.notifier).markAsDead('b1');
+
+        final state = container.read(birdFormStateProvider);
+        expect(state.isSuccess, isTrue);
+        expect(state.warning, 'errors.background_tasks_partial');
+      },
+    );
 
     test('markAsSold updates bird status', () async {
       const bird = Bird(
@@ -429,6 +514,83 @@ void main() {
           verify(() => repo.save(captureAny())).captured.single as Bird;
       expect(captured.status, BirdStatus.sold);
     });
+
+    test(
+      'markAsGifted surfaces a warning when lifecycle cleanup fails',
+      () async {
+        const bird = Bird(
+          id: 'b1',
+          name: 'Test',
+          gender: BirdGender.male,
+          userId: 'user-1',
+          status: BirdStatus.alive,
+        );
+        when(() => repo.getById('b1')).thenAnswer((_) async => bird);
+        when(() => repo.save(any())).thenAnswer((_) async {});
+        when(
+          () => lifecycleService.cancelActiveBreedingsForBird(any()),
+        ).thenAnswer((_) async => false);
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(birdFormStateProvider.notifier)
+            .markAsGifted('b1');
+
+        final state = container.read(birdFormStateProvider);
+        expect(state.isSuccess, isTrue);
+        expect(state.warning, 'errors.background_tasks_partial');
+      },
+    );
+
+    test(
+      'updateBird resets isBirdLimitReached from a previous failed createBird',
+      () async {
+        // Reproduces the bulk-amplifier-style staleness this guards against:
+        // hit the free tier limit once, then edit an existing bird without
+        // an intervening notifier.reset() call.
+        when(
+          () => repo.hasRingNumber(
+            any(),
+            any(),
+            excludeId: any(named: 'excludeId'),
+          ),
+        ).thenAnswer((_) async => false);
+        when(() => repo.getCount(any())).thenAnswer(
+          (_) async => AppConstants.freeTierMaxBirds,
+        );
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+        final notifier = container.read(birdFormStateProvider.notifier);
+
+        await notifier.createBird(
+          userId: 'user-1',
+          name: 'Overflow',
+          gender: BirdGender.male,
+        );
+        expect(
+          container.read(birdFormStateProvider).isBirdLimitReached,
+          isTrue,
+        );
+
+        when(() => repo.save(any())).thenAnswer((_) async {});
+        await notifier.updateBird(
+          const Bird(
+            id: 'b1',
+            name: 'Existing',
+            gender: BirdGender.male,
+            userId: 'user-1',
+          ),
+        );
+
+        expect(
+          container.read(birdFormStateProvider).isBirdLimitReached,
+          isFalse,
+        );
+      },
+    );
 
     test('reset clears state', () async {
       stubUnderLimit();

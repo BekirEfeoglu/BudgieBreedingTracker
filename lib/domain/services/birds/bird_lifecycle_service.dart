@@ -25,8 +25,10 @@ class BirdLifecycleService {
   ///
   /// Side effects (event/calendar cleanup, notification cancellation) are
   /// best-effort: a failure there must not undo the primary bird mutation,
-  /// per `breeding-eggs.md`. Errors are swallowed and logged.
-  Future<void> cancelActiveBreedingsForBird(String birdId) async {
+  /// per `breeding-eggs.md`. Errors are swallowed and logged; the return
+  /// value tells the caller whether to surface a non-blocking warning
+  /// (`errors.background_tasks_partial`) rather than silently dropping it.
+  Future<bool> cancelActiveBreedingsForBird(String birdId) async {
     try {
       final pairRepo = _ref.read(breedingPairRepositoryProvider);
       final incubationRepo = _ref.read(incubationRepositoryProvider);
@@ -74,6 +76,7 @@ class BirdLifecycleService {
         // 4. Clean up events/calendar notifications related to this pair
         await eventRepo.removeByBreedingPairIds([pair.id]);
       }
+      return true;
     } catch (e, st) {
       AppLogger.error(
         'BirdLifecycleService.cancelActiveBreedingsForBird',
@@ -83,6 +86,7 @@ class BirdLifecycleService {
       // Not rethrowing so the primary bird mutation (sold/dead/deleted)
       // still completes. Cleanup will retry implicitly if the user triggers
       // another lifecycle event or manual cleanup later.
+      return false;
     }
   }
 

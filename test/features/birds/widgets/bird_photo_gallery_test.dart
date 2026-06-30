@@ -63,6 +63,26 @@ void main() {
       expect(find.byType(GestureDetector), findsNWidgets(2));
     });
 
+    testWidgets('delete button meets the 48dp touch target minimum', (
+      tester,
+    ) async {
+      const urls = ['https://example.com/photo1.jpg'];
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: BirdPhotoGallery(photoUrls: urls, onDeletePhoto: (_) {}),
+          ),
+        ),
+      );
+
+      final size = tester.getSize(
+        find.bySemanticsLabel(l10n('birds.delete_photo')),
+      );
+      expect(size.width, greaterThanOrEqualTo(48));
+      expect(size.height, greaterThanOrEqualTo(48));
+    });
+
     testWidgets('is a StatelessWidget', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(

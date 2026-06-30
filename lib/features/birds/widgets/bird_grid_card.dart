@@ -154,6 +154,9 @@ class _GridPhoto extends StatelessWidget {
         memCacheWidth: 360,
         memCacheHeight: 360,
         fit: BoxFit.cover,
+        placeholder: (_, __) => Container(
+          color: theme.colorScheme.surfaceContainerHighest,
+        ),
         errorWidget: (_, __, ___) => _GridFallback(bird: bird),
       );
     }

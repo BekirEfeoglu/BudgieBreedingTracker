@@ -146,6 +146,16 @@ void main() {
       expect(find.byType(PopupMenuButton<String>), findsOneWidget);
     });
 
+    testWidgets('overflow menu has a localized tooltip', (tester) async {
+      await tester.pumpWidget(
+        createSubject(birdStream: Stream.value(testBird)),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.byTooltip(l10n('common.more')), findsOneWidget);
+    });
+
     testWidgets('hides AI action for non-founder users', (tester) async {
       await tester.pumpWidget(
         createSubject(birdStream: Stream.value(testBird)),

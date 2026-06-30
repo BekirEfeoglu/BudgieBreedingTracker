@@ -70,9 +70,17 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
     setState(() => _selectedIds.clear());
   }
 
+  bool _isNavigatingWithAd = false;
+
+  /// Guards against a fast double-tap firing two interstitial ad requests
+  /// (and potentially pushing the destination route twice), the same class
+  /// of re-entrancy [_isBulkRunning] guards for bulk actions.
   void _navigateWithAd(String route) {
+    if (_isNavigatingWithAd) return;
+    _isNavigatingWithAd = true;
     final isPremium = ref.read(isPremiumProvider);
     if (isPremium) {
+      _isNavigatingWithAd = false;
       context.push(route);
       return;
     }
@@ -80,6 +88,7 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
         .read(adServiceProvider)
         .showInterstitialAd(
           onAdClosed: () {
+            _isNavigatingWithAd = false;
             if (mounted) context.push(route);
           },
         );
@@ -299,6 +308,7 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
                         onPressed: _bulkDelete,
                       ),
                       PopupMenuButton<String>(
+                        tooltip: 'common.more'.tr(),
                         onSelected: (action) {
                           if (action == 'dead') _bulkMarkAsDead();
                           if (action == 'sold') _bulkMarkAsSold();

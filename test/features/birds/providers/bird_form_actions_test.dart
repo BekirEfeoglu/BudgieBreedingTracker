@@ -1,12 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/photo_enums.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/data/models/photo_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/birds/bird_lifecycle_service.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 
@@ -14,9 +18,13 @@ import '../../../helpers/mocks.dart';
 
 void main() {
   late MockBirdRepository repo;
+  late MockPhotoRepository photoRepo;
+  late MockBirdLifecycleService lifecycleService;
 
   setUp(() {
     repo = MockBirdRepository();
+    photoRepo = MockPhotoRepository();
+    lifecycleService = MockBirdLifecycleService();
     registerFallbackValue(
       const Bird(
         id: 'fallback-id',
@@ -25,17 +33,32 @@ void main() {
         userId: 'fallback-user',
       ),
     );
+    registerFallbackValue(
+      const Photo(
+        id: 'fallback-photo-id',
+        userId: 'fallback-user',
+        entityType: PhotoEntityType.bird,
+        entityId: 'fallback-bird-id',
+        fileName: 'fallback.jpg',
+      ),
+    );
+    registerFallbackValue(XFile('fallback.jpg'));
     when(
       () =>
           repo.hasRingNumber(any(), any(), excludeId: any(named: 'excludeId')),
     ).thenAnswer((_) async => false);
     when(() => repo.getById(any())).thenAnswer((_) async => null);
+    when(
+      () => lifecycleService.cancelActiveBreedingsForBird(any()),
+    ).thenAnswer((_) async => true);
   });
 
   ProviderContainer makeContainer({bool isPremium = false}) {
     return ProviderContainer(
       overrides: [
         birdRepositoryProvider.overrideWithValue(repo),
+        photoRepositoryProvider.overrideWithValue(photoRepo),
+        birdLifecycleServiceProvider.overrideWithValue(lifecycleService),
         isPremiumProvider.overrideWithValue(isPremium),
         effectivePremiumProvider.overrideWithValue(isPremium),
       ],
@@ -60,6 +83,120 @@ void main() {
   // ── createBird ──
 
   group('createBird', () {
+    test(
+      'reports success (not failure) when the bird saves but the photo '
+      'gallery row save fails, and does not delete the just-uploaded photo',
+      () async {
+        stubUnderLimit();
+        when(() => repo.save(any())).thenAnswer((_) async {});
+        when(
+          () => photoRepo.uploadBirdPhoto(
+            userId: any(named: 'userId'),
+            birdId: any(named: 'birdId'),
+            file: any(named: 'file'),
+          ),
+        ).thenAnswer((_) async => 'https://storage.example/bird-photos/x.jpg');
+        when(
+          () => photoRepo.save(any()),
+        ).thenThrow(Exception('photo row save failed'));
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(birdFormStateProvider.notifier)
+            .createBird(
+              userId: 'user-1',
+              name: 'Alpha',
+              gender: BirdGender.male,
+              photoFile: XFile('photo.jpg'),
+            );
+
+        final state = container.read(birdFormStateProvider);
+        // The bird row was already persisted — reporting failure here would
+        // invite the user to retry and create a duplicate bird.
+        expect(state.isSuccess, isTrue);
+        expect(state.error, isNull);
+        expect(state.warning, 'birds.photo_gallery_save_partial');
+        verify(() => repo.save(any())).called(1);
+        // bird.photoUrl already points at the uploaded object — deleting it
+        // here would leave a dangling reference on the now-persisted bird.
+        verifyNever(() => photoRepo.deleteStorageForPhoto(any()));
+      },
+    );
+
+    test(
+      'still deletes the uploaded photo when the bird row save itself '
+      'fails (no bird was ever persisted)',
+      () async {
+        stubUnderLimit();
+        when(() => repo.save(any())).thenThrow(Exception('db write failed'));
+        when(
+          () => photoRepo.uploadBirdPhoto(
+            userId: any(named: 'userId'),
+            birdId: any(named: 'birdId'),
+            file: any(named: 'file'),
+          ),
+        ).thenAnswer((_) async => 'https://storage.example/bird-photos/x.jpg');
+        when(
+          () => photoRepo.deleteStorageForPhoto(any()),
+        ).thenAnswer((_) async {});
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(birdFormStateProvider.notifier)
+            .createBird(
+              userId: 'user-1',
+              name: 'Alpha',
+              gender: BirdGender.male,
+              photoFile: XFile('photo.jpg'),
+            );
+
+        final state = container.read(birdFormStateProvider);
+        expect(state.isSuccess, isFalse);
+        expect(state.error, isNotNull);
+        verify(() => photoRepo.deleteStorageForPhoto(any())).called(1);
+      },
+    );
+
+    test(
+      'resets isBirdLimitReached and remainingBirds left over from a '
+      'previous attempt',
+      () async {
+        when(() => repo.getCount(any())).thenAnswer(
+          (_) async => AppConstants.freeTierMaxBirds,
+        );
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+        final notifier = container.read(birdFormStateProvider.notifier);
+
+        await notifier.createBird(
+          userId: 'user-1',
+          name: 'Overflow',
+          gender: BirdGender.male,
+        );
+        expect(
+          container.read(birdFormStateProvider).isBirdLimitReached,
+          isTrue,
+        );
+
+        stubUnderLimit(count: 1);
+        when(() => repo.save(any())).thenAnswer((_) async {});
+        await notifier.createBird(
+          userId: 'user-1',
+          name: 'Second try',
+          gender: BirdGender.male,
+        );
+
+        final state = container.read(birdFormStateProvider);
+        expect(state.isSuccess, isTrue);
+        expect(state.isBirdLimitReached, isFalse);
+      },
+    );
+
     test('sets isLoading true during execution', () async {
       stubUnderLimit();
       final states = <BirdFormState>[];

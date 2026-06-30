@@ -60,7 +60,6 @@ class _SelectableBirdGridCard extends StatelessWidget {
                   child: Checkbox(
                     value: isSelected,
                     onChanged: (_) => onTap(),
-                    visualDensity: VisualDensity.compact,
                   ),
                 ),
               ),
@@ -116,7 +115,6 @@ class _SelectableBirdCard extends StatelessWidget {
                   child: Checkbox(
                     value: isSelected,
                     onChanged: (_) => onTap(),
-                    visualDensity: VisualDensity.compact,
                   ),
                 ),
               ),

@@ -4,6 +4,34 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-06-30] fix | Birds tab audit remediation (lifecycle warning, decrypt safety, a11y)
+
+Multi-agent audit of `lib/features/birds/` (data/provider/screen/widget layers)
+found ~30 issues; fixed in priority order. Highlights: (1) `BirdFormState` gained
+a `warning` field — `cancelActiveBreedingsForBird` now returns `bool` so
+delete/markAsDead/markAsSold/markAsGifted surface `errors.background_tasks_partial`
+on cleanup failure instead of dropping it silently (breeding/egg notifiers already
+did this; birds didn't). (2) `BirdsDao._decryptSensitive` no longer returns raw
+ciphertext as plaintext on decrypt failure — logs + blanks the field
+(`encryption.md` violation). (3) `createBird`: bird-row-persisted-but-photo-row-failed
+no longer reports total failure (duplicate-bird-on-retry risk) or deletes the
+storage object the saved bird's `photoUrl` references (dangling-ref bug) — both
+traced via exact code-flow reading, not just the audit's surface description.
+(4) Bulk-select `Checkbox` and two `OutlinedButton`s were below the 48dp WCAG
+floor (`VisualDensity.compact` / `AppSpacing.touchTargetMin` misuse). (5) Added
+missing test coverage for `BirdGridCard` and `BirdDetailTimeline` (zero tests
+before this pass). Several audit-suggested fixes were investigated and declined
+with reasoning (not applied): gender-icon consolidation into `BirdGenderIcon`
+would change icon *color* at 3 call sites (unintended visual side effect);
+`updateItem`/`fetchByGender` "dead code" both have dedicated passing unit
+tests (deliberate API surface, not accidental cruft); `resolveAll()` provides
+no real batching over `birdsStreamProvider`'s existing `Future.wait` pattern
+(traced the implementation — it's the same `Future.wait(urls.map(resolve))`);
+`RefreshIndicator` not awaiting fresh data is a codebase-wide pattern shared
+with `breeding_list_screen.dart`/`chick_list_screen.dart`, not bird-specific.
+27 files changed (17 lib + 8 test modified + 2 test created), full quality gate
+green (`flutter analyze`, 27/27 anti-pattern checkers, l10n sync, `verify_rules.py --strict`).
+
 ## [2026-06-29] fix | Cert-pin rotation + unbounded sync timeout (sync stuck)
 
 Device logs showed all Supabase calls failing with

@@ -159,11 +159,16 @@ List<BirdTimelineEvent> buildBirdTimelineEvents({
       .map((incubation) => incubation.id)
       .toSet();
 
+  final eggsByIncubationId = <String, List<Egg>>{};
+  for (final egg in eggs) {
+    final incubationId = egg.incubationId;
+    if (incubationId == null) continue;
+    (eggsByIncubationId[incubationId] ??= []).add(egg);
+  }
+
   for (final incubationId in relevantIncubationIds) {
-    final incubationEggs = eggs
-        .where((egg) => egg.incubationId == incubationId)
-        .toList();
-    if (incubationEggs.isEmpty) continue;
+    final incubationEggs = eggsByIncubationId[incubationId];
+    if (incubationEggs == null || incubationEggs.isEmpty) continue;
     incubationEggs.sort((a, b) => a.layDate.compareTo(b.layDate));
     events.add(
       BirdTimelineEvent(

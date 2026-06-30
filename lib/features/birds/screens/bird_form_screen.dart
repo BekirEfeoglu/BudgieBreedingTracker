@@ -160,8 +160,17 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
     // Form screen only reacts to save actions it initiated. Status-change /
     // delete success from BirdDetailScreen is filtered out so a stale state
     // doesn't fire the form's success handler (which pops the route).
-    ref.listen<BirdFormState>(birdFormStateProvider, (_, state) {
+    ref.listen<BirdFormState>(birdFormStateProvider, (prev, state) {
       if (!mounted) return;
+      if (state.warning != null && prev?.warning != state.warning) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(state.warning!),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
       final notifier = ref.read(birdFormStateProvider.notifier);
       final isOwnedAction = state.lastAction == BirdFormAction.save;
       if (state.isSuccess && isOwnedAction) {
@@ -265,8 +274,11 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
   }
 
   void _submit() {
-    FocusScope.of(context).unfocus();
+    // Validate before dismissing the keyboard: if validation fails, keep
+    // the keyboard open so the field needing correction stays focused and
+    // visible instead of forcing an extra tap to reopen it.
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    FocusScope.of(context).unfocus();
     AppHaptics.lightImpact();
     submitBirdForm(
       notifier: ref.read(birdFormStateProvider.notifier),

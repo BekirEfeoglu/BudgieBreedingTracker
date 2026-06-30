@@ -250,6 +250,7 @@
     "photo_source_gallery": "Galeriden Seç",
     "photo_source_camera": "Kameradan Çek",
     "photo_upload_error": "Fotoğraf yüklenirken hata oluştu",
+    "photo_gallery_save_partial": "Kuş kaydedildi ancak fotoğraf galeriye eklenemedi",
     "photos_load_error": "Fotoğraflar yüklenemedi",
     "uploading_photo": "Yükleniyor...",
     "delete_photo": "Fotoğrafı Sil",

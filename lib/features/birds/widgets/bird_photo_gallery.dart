@@ -140,8 +140,8 @@ class _PhotoThumbnail extends StatelessWidget {
                   button: true,
                   label: 'birds.delete_photo'.tr(),
                   child: SizedBox(
-                    width: AppSpacing.touchTargetMin,
-                    height: AppSpacing.touchTargetMin,
+                    width: AppSpacing.touchTargetMd,
+                    height: AppSpacing.touchTargetMd,
                     child: GestureDetector(
                       onTap: onDelete,
                       behavior: HitTestBehavior.opaque,

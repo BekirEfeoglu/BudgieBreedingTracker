@@ -250,6 +250,7 @@
     "photo_source_gallery": "Choose from Gallery",
     "photo_source_camera": "Take a Photo",
     "photo_upload_error": "Failed to upload photo",
+    "photo_gallery_save_partial": "Bird saved, but the photo could not be added to the gallery",
     "photos_load_error": "Failed to load photos",
     "uploading_photo": "Uploading...",
     "delete_photo": "Delete Photo",

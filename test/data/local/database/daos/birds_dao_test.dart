@@ -480,6 +480,36 @@ void main() {
       expect(result.genotypeInfo, {'blue': 'visual'});
     });
 
+    test(
+      'blanks a field instead of returning corrupted ciphertext as '
+      'plaintext when decryption fails',
+      () async {
+        await encryptedDao.insertItem(
+          makeBird(id: 'bird-corrupt', ringNumber: 'TR-001'),
+        );
+
+        // Overwrite the encrypted column with garbage that still satisfies
+        // looksLikeEncrypted's heuristic (valid base64, >=17 bytes) but
+        // isn't real ciphertext — simulates corruption/tampering/wrong key.
+        final garbage = base64Encode(List<int>.generate(32, (i) => i));
+        await db.customUpdate(
+          'UPDATE birds SET ring_number = ? WHERE id = ?',
+          variables: [
+            Variable.withString(garbage),
+            Variable.withString('bird-corrupt'),
+          ],
+        );
+
+        final result = await encryptedDao.getById('bird-corrupt');
+
+        expect(result, isNotNull);
+        // Must never surface the raw ciphertext as if it were the value —
+        // see encryption.md: "asla bozuk plaintext döndürme".
+        expect(result!.ringNumber, isNot(garbage));
+        expect(result.ringNumber, isNull);
+      },
+    );
+
     test('matches ring number uniqueness against encrypted values', () async {
       await encryptedDao.insertItem(
         makeBird(id: 'bird-secret', ringNumber: 'TR-2026-002'),

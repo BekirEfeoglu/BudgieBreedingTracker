@@ -98,10 +98,14 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
     state = state.copyWith(
       isLoading: true,
       error: null,
+      warning: null,
       isSuccess: false,
+      isBirdLimitReached: false,
+      remainingBirds: null,
       lastAction: BirdFormAction.save,
     );
     String? uploadedPhotoUrl;
+    var birdPersisted = false;
     try {
       final repo = ref.read(birdRepositoryProvider);
       final normalizedRingNumber = _normalizeOptionalText(ringNumber);
@@ -149,9 +153,10 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
           photoUrl = await ref
               .read(photoRepositoryProvider)
               .uploadBirdPhoto(userId: userId, birdId: birdId, file: photoFile);
-          // Track the uploaded object so we can compensate (delete it) if a
-          // later step — the bird row save or the Photo row save — fails.
-          // Otherwise the object leaks in storage with no DB row pointing to it.
+          // Track the uploaded object so we can compensate (delete it) if the
+          // bird row save itself fails. Once the bird row is persisted with
+          // photoUrl pointing at this object, it must NOT be deleted — see
+          // birdPersisted below.
           uploadedPhotoUrl = photoUrl;
         } catch (e, st) {
           AppLogger.error('BirdFormNotifier photo upload', e, st);
@@ -184,45 +189,72 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
         updatedAt: DateTime.now().toUtc(),
       );
       await repo.save(bird);
+      // Past this point the bird row exists and owns `photoUrl` — any later
+      // failure must be reported as a non-blocking warning, not a hard
+      // error, so the user never retries into a duplicate bird, and the
+      // compensating cleanup below must not delete the storage object the
+      // now-persisted bird references.
+      birdPersisted = true;
+
+      String? warning;
       if (photoUrl != null && photoFile != null) {
-        await ref
-            .read(photoRepositoryProvider)
-            .save(
-              Photo(
-                id: const Uuid().v7(),
-                userId: userId,
-                entityType: PhotoEntityType.bird,
-                entityId: birdId,
-                fileName: photoFile.name,
-                filePath: photoUrl,
-                isPrimary: true,
-                createdAt: DateTime.now().toUtc(),
-                updatedAt: DateTime.now().toUtc(),
-              ),
-            );
+        try {
+          await ref
+              .read(photoRepositoryProvider)
+              .save(
+                Photo(
+                  id: const Uuid().v7(),
+                  userId: userId,
+                  entityType: PhotoEntityType.bird,
+                  entityId: birdId,
+                  fileName: photoFile.name,
+                  filePath: photoUrl,
+                  isPrimary: true,
+                  createdAt: DateTime.now().toUtc(),
+                  updatedAt: DateTime.now().toUtc(),
+                ),
+              );
+        } catch (e, st) {
+          AppLogger.error(
+            'BirdFormNotifier photo gallery row save (bird already persisted)',
+            e,
+            st,
+          );
+          warning = 'birds.photo_gallery_save_partial'.tr();
+        }
       }
 
-      // Calculate remaining birds for soft upsell
+      // Calculate remaining birds for soft upsell — non-critical, must not
+      // fail a bird creation that already succeeded.
       int? remaining;
       if (!isPremium) {
-        final afterCount = await repo.getCount(userId);
-        remaining = AppConstants.freeTierMaxBirds - afterCount;
+        try {
+          final afterCount = await repo.getCount(userId);
+          remaining = AppConstants.freeTierMaxBirds - afterCount;
+        } catch (e, st) {
+          AppLogger.error(
+            'BirdFormNotifier remaining-count calc (non-critical)',
+            e,
+            st,
+          );
+        }
       }
 
       state = state.copyWith(
         isLoading: false,
         isSuccess: true,
+        warning: warning,
         remainingBirds: remaining,
         lastAction: BirdFormAction.save,
       );
     } catch (e, st) {
       AppLogger.error('BirdFormNotifier', e, st);
       reportIfUnexpected(e, st);
-      // Compensating cleanup: if persistence failed after the photo was
-      // already uploaded, delete the orphaned storage object so it doesn't
-      // leak. Best-effort — a cleanup failure must not mask the original
-      // error shown to the user.
-      if (uploadedPhotoUrl != null) {
+      // Compensating cleanup: only delete the uploaded storage object if the
+      // bird row was never persisted. Once persisted, bird.photoUrl owns
+      // that object — deleting it here would leave a dangling reference on
+      // a bird the user doesn't know exists (they were told this failed).
+      if (!birdPersisted && uploadedPhotoUrl != null) {
         try {
           await ref
               .read(photoRepositoryProvider)
@@ -256,7 +288,10 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
     state = state.copyWith(
       isLoading: true,
       error: null,
+      warning: null,
       isSuccess: false,
+      isBirdLimitReached: false,
+      remainingBirds: null,
       lastAction: BirdFormAction.save,
     );
     try {

@@ -1,5 +1,7 @@
 import 'package:drift/drift.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
 import 'package:budgie_breeding_tracker/data/local/database/tables/birds_table.dart';
 import 'package:budgie_breeding_tracker/data/local/database/mappers/bird_mapper.dart';
@@ -343,9 +345,13 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
 
     return row
         .copyWith(
-          ringNumber: Value(await _decryptSensitive(row.ringNumber)),
-          notes: Value(await _decryptSensitive(row.notes)),
-          genotypeInfo: Value(await _decryptSensitive(row.genotypeInfo)),
+          ringNumber: Value(
+            await _decryptSensitive(row.ringNumber, field: 'ringNumber'),
+          ),
+          notes: Value(await _decryptSensitive(row.notes, field: 'notes')),
+          genotypeInfo: Value(
+            await _decryptSensitive(row.genotypeInfo, field: 'genotypeInfo'),
+          ),
         )
         .toModel();
   }
@@ -385,14 +391,25 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
     return _encryptionService!.encrypt(value);
   }
 
-  Future<String?> _decryptSensitive(String? value) async {
+  /// Decrypts [value], or returns `null` and reports the failure if it
+  /// can't be decrypted (wrong/rotated key, tampering, corruption).
+  ///
+  /// Never falls back to returning the raw ciphertext as if it were
+  /// plaintext — that would silently show the user a base64 blob in place
+  /// of their data with no trace of what happened, per `encryption.md`.
+  /// [field] identifies which sensitive column failed, for diagnosis only —
+  /// never log the value itself.
+  Future<String?> _decryptSensitive(String? value, {String? field}) async {
     if (value == null || value.isEmpty || !looksLikeEncrypted(value)) {
       return value;
     }
     try {
       return await _encryptionService!.decrypt(value);
-    } catch (_) {
-      return value;
+    } catch (e, st) {
+      final label = field == null ? 'BirdsDao decrypt' : 'BirdsDao decrypt ($field)';
+      AppLogger.error('$label failed — blanking field instead of exposing ciphertext', e, st);
+      Sentry.captureException(e, stackTrace: st);
+      return null;
     }
   }
 }

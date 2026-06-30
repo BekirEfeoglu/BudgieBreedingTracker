@@ -59,7 +59,7 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
                 OutlinedButton.icon(
                   onPressed: () =>
                       ref.invalidate(birdPhotosProvider(widget.bird.id)),
-                  icon: const Icon(LucideIcons.refreshCw, size: 18),
+                  icon: const AppIcon(AppIcons.sync, size: 18),
                   label: Text('common.retry'.tr()),
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -106,11 +106,10 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
                 Flexible(
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(0, AppSpacing.touchTargetMin),
+                      minimumSize: const Size(0, AppSpacing.touchTargetMd),
                       padding: const EdgeInsets.symmetric(
                         horizontal: AppSpacing.lg,
                       ),
-                      visualDensity: VisualDensity.compact,
                     ),
                     onPressed: _isUploading
                         ? null

@@ -39,6 +39,7 @@ import 'package:budgie_breeding_tracker/data/repositories/sync_metadata_reposito
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/auth/two_factor_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_service.dart';
+import 'package:budgie_breeding_tracker/domain/services/birds/bird_lifecycle_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/calendar/calendar_event_generator.dart';
 import 'package:budgie_breeding_tracker/domain/services/export/excel_export_service.dart';
@@ -132,6 +133,8 @@ class MockConflictHistoryDao extends Mock implements ConflictHistoryDao {}
 class MockAuthActions extends Mock implements AuthActions {}
 
 class MockTwoFactorService extends Mock implements TwoFactorService {}
+
+class MockBirdLifecycleService extends Mock implements BirdLifecycleService {}
 
 class MockAdService extends Mock implements AdService {
   @override

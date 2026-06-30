@@ -72,6 +72,26 @@ void main() {
       expect(find.byType(BirdPhotoGallery), findsNothing);
     });
 
+    testWidgets('add photo button meets the 48dp touch target minimum', (
+      tester,
+    ) async {
+      final bird = createTestBird();
+
+      await _pump(
+        tester,
+        BirdDetailPhotos(bird: bird),
+        overrides: [
+          birdPhotosProvider.overrideWith(
+            (ref, id) => Stream.value(<String>[]),
+          ),
+        ],
+      );
+      await tester.pumpAndSettle();
+
+      final size = tester.getSize(find.byType(OutlinedButton));
+      expect(size.height, greaterThanOrEqualTo(48));
+    });
+
     testWidgets('shows photo gallery when urls exist', (tester) async {
       final bird = createTestBird();
 

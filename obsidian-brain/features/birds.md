@@ -45,14 +45,32 @@ For each **active** breeding pair the bird belongs to it:
 
 Side effects are best-effort and never rethrow: a cleanup failure must not undo
 the primary bird mutation (per `breeding-eggs.md`). Errors are logged via
-`AppLogger.error`.
+`AppLogger.error`. `cancelActiveBreedingsForBird` returns `bool` (success/failure);
+`BirdFormState.warning` surfaces `errors.background_tasks_partial` to the user on
+failure instead of dropping it silently — matches the breeding/egg notifier pattern.
 
 ## Photo Upload
 
 - Max 10MB file size guard
-- `scan-image-safety` Edge Function for NSFW/malware check
+- `scan-image-safety` Edge Function for NSFW/malware check (wired through
+  `StorageService.uploadBirdPhoto` → `_uploadFile` → `_uploadBinary` →
+  `_readValidatedUpload`, scan defaults on for `birdPhotosBucket`)
 - Stored in `bird-photos` bucket (private, user-scoped RLS)
 - Displayed with `CachedNetworkImage`
+- `createBird`: once the bird row itself is persisted, a later failure (photo
+  gallery row save, free-tier count calc) is reported as a non-blocking
+  `warning` (`birds.photo_gallery_save_partial`), not a hard error — avoids a
+  confused user retrying into a duplicate bird, and the compensating storage
+  cleanup only fires when the bird row was never persisted (so it never
+  deletes a photo object a saved bird's `photoUrl` still references)
+
+## Sensitive Field Encryption
+
+`BirdsDao` encrypts `ringNumber`, `notes`, and `genotypeInfo` at rest (see
+`encryption.md`). On decrypt failure (wrong/rotated key, corruption,
+tampering), `_decryptSensitive` logs via `AppLogger.error` + `Sentry.captureException`
+and returns `null` for that field — it never returns the raw ciphertext as if
+it were plaintext.
 
 ## Filter Bar
 

@@ -30,8 +30,11 @@ enum BirdFormAction { none, save, statusChange, delete }
 
 /// State for the bird form.
 class BirdFormState {
+  static const Object _unset = Object();
+
   final bool isLoading;
   final String? error;
+  final String? warning;
   final bool isSuccess;
   final bool isBirdLimitReached;
   final int? remainingBirds;
@@ -40,26 +43,36 @@ class BirdFormState {
   const BirdFormState({
     this.isLoading = false,
     this.error,
+    this.warning,
     this.isSuccess = false,
     this.isBirdLimitReached = false,
     this.remainingBirds,
     this.lastAction = BirdFormAction.none,
   });
 
+  // error/warning/remainingBirds use an _unset sentinel so an intermediate
+  // copyWith (e.g. isLoading: true) can't silently null out a value the
+  // caller didn't intend to touch, and so passing an explicit `null` can
+  // actually clear it (a plain `?? this.x` fallback can never do that) —
+  // see egg_actions_notifier.dart for the same pattern.
   BirdFormState copyWith({
     bool? isLoading,
-    String? error,
+    Object? error = _unset,
+    Object? warning = _unset,
     bool? isSuccess,
     bool? isBirdLimitReached,
-    int? remainingBirds,
+    Object? remainingBirds = _unset,
     BirdFormAction? lastAction,
   }) {
     return BirdFormState(
       isLoading: isLoading ?? this.isLoading,
-      error: error,
+      error: identical(error, _unset) ? this.error : error as String?,
+      warning: identical(warning, _unset) ? this.warning : warning as String?,
       isSuccess: isSuccess ?? this.isSuccess,
       isBirdLimitReached: isBirdLimitReached ?? this.isBirdLimitReached,
-      remainingBirds: remainingBirds ?? this.remainingBirds,
+      remainingBirds: identical(remainingBirds, _unset)
+          ? this.remainingBirds
+          : remainingBirds as int?,
       lastAction: lastAction ?? this.lastAction,
     );
   }
@@ -81,21 +94,24 @@ class BirdFormNotifier extends Notifier<BirdFormState>
     state = state.copyWith(
       isLoading: true,
       error: null,
+      warning: null,
       isSuccess: false,
       isBirdLimitReached: false,
+      remainingBirds: null,
     );
     try {
       final repo = ref.read(birdRepositoryProvider);
       await repo.remove(id);
 
       // Destructive parent rule: close active incubations when bird is deleted
-      await ref
+      final cleanupOk = await ref
           .read(birdLifecycleServiceProvider)
           .cancelActiveBreedingsForBird(id);
 
       state = state.copyWith(
         isLoading: false,
         isSuccess: true,
+        warning: cleanupOk ? null : 'errors.background_tasks_partial'.tr(),
         lastAction: BirdFormAction.delete,
       );
     } catch (e, st) {
@@ -115,12 +131,15 @@ class BirdFormNotifier extends Notifier<BirdFormState>
     state = state.copyWith(
       isLoading: true,
       error: null,
+      warning: null,
       isSuccess: false,
       isBirdLimitReached: false,
+      remainingBirds: null,
     );
     try {
       final repo = ref.read(birdRepositoryProvider);
       final bird = await repo.getById(id);
+      var cleanupOk = true;
       if (bird != null) {
         await repo.save(
           bird.copyWith(
@@ -131,7 +150,7 @@ class BirdFormNotifier extends Notifier<BirdFormState>
         );
 
         // Destructive parent rule: close active incubations when bird is dead
-        await ref
+        cleanupOk = await ref
             .read(birdLifecycleServiceProvider)
             .cancelActiveBreedingsForBird(id);
       } else {
@@ -141,6 +160,7 @@ class BirdFormNotifier extends Notifier<BirdFormState>
       state = state.copyWith(
         isLoading: false,
         isSuccess: true,
+        warning: cleanupOk ? null : 'errors.background_tasks_partial'.tr(),
         lastAction: BirdFormAction.statusChange,
       );
     } catch (e, st) {
@@ -160,12 +180,15 @@ class BirdFormNotifier extends Notifier<BirdFormState>
     state = state.copyWith(
       isLoading: true,
       error: null,
+      warning: null,
       isSuccess: false,
       isBirdLimitReached: false,
+      remainingBirds: null,
     );
     try {
       final repo = ref.read(birdRepositoryProvider);
       final bird = await repo.getById(id);
+      var cleanupOk = true;
       if (bird != null) {
         await repo.save(
           bird.copyWith(
@@ -176,7 +199,7 @@ class BirdFormNotifier extends Notifier<BirdFormState>
         );
 
         // Destructive parent rule: close active incubations when bird is sold
-        await ref
+        cleanupOk = await ref
             .read(birdLifecycleServiceProvider)
             .cancelActiveBreedingsForBird(id);
       } else {
@@ -186,6 +209,7 @@ class BirdFormNotifier extends Notifier<BirdFormState>
       state = state.copyWith(
         isLoading: false,
         isSuccess: true,
+        warning: cleanupOk ? null : 'errors.background_tasks_partial'.tr(),
         lastAction: BirdFormAction.statusChange,
       );
     } catch (e, st) {
@@ -205,12 +229,15 @@ class BirdFormNotifier extends Notifier<BirdFormState>
     state = state.copyWith(
       isLoading: true,
       error: null,
+      warning: null,
       isSuccess: false,
       isBirdLimitReached: false,
+      remainingBirds: null,
     );
     try {
       final repo = ref.read(birdRepositoryProvider);
       final bird = await repo.getById(id);
+      var cleanupOk = true;
       if (bird != null) {
         await repo.save(
           bird.copyWith(
@@ -221,7 +248,7 @@ class BirdFormNotifier extends Notifier<BirdFormState>
         );
 
         // Destructive parent rule: close active incubations when bird is gifted
-        await ref
+        cleanupOk = await ref
             .read(birdLifecycleServiceProvider)
             .cancelActiveBreedingsForBird(id);
       } else {
@@ -231,6 +258,7 @@ class BirdFormNotifier extends Notifier<BirdFormState>
       state = state.copyWith(
         isLoading: false,
         isSuccess: true,
+        warning: cleanupOk ? null : 'errors.background_tasks_partial'.tr(),
         lastAction: BirdFormAction.statusChange,
       );
     } catch (e, st) {

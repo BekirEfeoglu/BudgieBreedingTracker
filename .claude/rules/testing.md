@@ -14,7 +14,7 @@ test/
 ```
 
 ## Stats
-- 905 test files, 11,109+ individual tests
+- 907 test files, 11,137+ individual tests
 - CI excludes golden tests: `--exclude-tags golden`
 - CI timeout: 25 minutes
 
