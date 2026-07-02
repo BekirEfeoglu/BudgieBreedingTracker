@@ -31,6 +31,17 @@ void main() {
         userId: '',
       ),
     );
+    // updateRecord/deleteRecord re-fetch by id to detect followUpDate/birdId
+    // changes and cancel stale reminders. Default to "no prior record found"
+    // so existing save/remove-focused tests (which use birdId-less fixtures)
+    // are unaffected; override per-test for the cancel/reschedule scenarios.
+    when(() => repo.getById(any())).thenAnswer((_) async => null);
+    when(
+      () => scheduler.cancelHealthCheckReminders(
+        any(),
+        recordId: any(named: 'recordId'),
+      ),
+    ).thenAnswer((_) async {});
   });
 
   ProviderContainer makeContainer() => ProviderContainer(
@@ -264,6 +275,129 @@ void main() {
                 as HealthRecord;
         expect(r.updatedAt, isNotNull);
       });
+
+      test(
+        'cancels and reschedules reminders when followUpDate changes',
+        () async {
+          final previous = HealthRecord(
+            id: 'hr-1',
+            date: date,
+            type: HealthRecordType.illness,
+            title: 'Flu',
+            userId: 'u1',
+            birdId: 'bird-1',
+            followUpDate: DateTime(2024, 6, 5),
+          );
+          final updated = previous.copyWith(followUpDate: DateTime(2024, 6, 10));
+          when(() => repo.getById('hr-1')).thenAnswer((_) async => previous);
+          when(() => repo.save(any())).thenAnswer((_) async {});
+          stubScheduler();
+
+          final c = makeContainer();
+          addTearDown(c.dispose);
+          await c
+              .read(healthRecordFormStateProvider.notifier)
+              .updateRecord(updated);
+
+          verify(
+            () => scheduler.cancelHealthCheckReminders(
+              'bird-1',
+              recordId: 'hr-1',
+            ),
+          ).called(1);
+          verify(
+            () => scheduler.scheduleHealthCheckReminder(
+              recordId: 'hr-1',
+              birdId: 'bird-1',
+              birdName: any(named: 'birdName'),
+              hour: any(named: 'hour'),
+              durationDays: any(named: 'durationDays'),
+              settings: any(named: 'settings'),
+            ),
+          ).called(1);
+          expect(c.read(healthRecordFormStateProvider).isSuccess, isTrue);
+        },
+      );
+
+      test(
+        'cancels reminders without rescheduling when the bird is removed '
+        'from the record',
+        () async {
+          final previous = HealthRecord(
+            id: 'hr-1',
+            date: date,
+            type: HealthRecordType.illness,
+            title: 'Flu',
+            userId: 'u1',
+            birdId: 'bird-1',
+            followUpDate: DateTime(2024, 6, 5),
+          );
+          final updated = HealthRecord(
+            id: 'hr-1',
+            date: date,
+            type: HealthRecordType.illness,
+            title: 'Flu',
+            userId: 'u1',
+            followUpDate: DateTime(2024, 6, 5),
+          );
+          when(() => repo.getById('hr-1')).thenAnswer((_) async => previous);
+          when(() => repo.save(any())).thenAnswer((_) async {});
+
+          final c = makeContainer();
+          addTearDown(c.dispose);
+          await c
+              .read(healthRecordFormStateProvider.notifier)
+              .updateRecord(updated);
+
+          verify(
+            () => scheduler.cancelHealthCheckReminders(
+              'bird-1',
+              recordId: 'hr-1',
+            ),
+          ).called(1);
+          verifyNever(
+            () => scheduler.scheduleHealthCheckReminder(
+              recordId: any(named: 'recordId'),
+              birdId: any(named: 'birdId'),
+              birdName: any(named: 'birdName'),
+              hour: any(named: 'hour'),
+              durationDays: any(named: 'durationDays'),
+              settings: any(named: 'settings'),
+            ),
+          );
+        },
+      );
+
+      test(
+        'does not touch reminders when neither followUpDate nor birdId '
+        'changed',
+        () async {
+          final previous = HealthRecord(
+            id: 'hr-1',
+            date: date,
+            type: HealthRecordType.illness,
+            title: 'Flu',
+            userId: 'u1',
+            birdId: 'bird-1',
+            followUpDate: DateTime(2024, 6, 5),
+          );
+          when(() => repo.getById('hr-1')).thenAnswer((_) async => previous);
+          when(() => repo.save(any())).thenAnswer((_) async {});
+
+          final c = makeContainer();
+          addTearDown(c.dispose);
+          await c
+              .read(healthRecordFormStateProvider.notifier)
+              .updateRecord(previous.copyWith(notes: 'unrelated edit'));
+
+          verifyNever(
+            () => scheduler.cancelHealthCheckReminders(
+              any(),
+              recordId: any(named: 'recordId'),
+            ),
+          );
+        },
+      );
     });
 
     group('deleteRecord', () {
@@ -295,6 +429,50 @@ void main() {
             .deleteRecord('hr-42');
         verify(() => repo.remove('hr-42')).called(1);
       });
+
+      test('cancels health check reminders for the deleted record', () async {
+        final existing = HealthRecord(
+          id: 'hr-1',
+          date: date,
+          type: HealthRecordType.illness,
+          title: 'Flu',
+          userId: 'u1',
+          birdId: 'bird-1',
+        );
+        when(() => repo.getById('hr-1')).thenAnswer((_) async => existing);
+        when(() => repo.remove(any())).thenAnswer((_) async {});
+
+        final c = makeContainer();
+        addTearDown(c.dispose);
+        await c
+            .read(healthRecordFormStateProvider.notifier)
+            .deleteRecord('hr-1');
+
+        verify(
+          () => scheduler.cancelHealthCheckReminders(
+            'bird-1',
+            recordId: 'hr-1',
+          ),
+        ).called(1);
+      });
+
+      test(
+        'does not attempt reminder cancellation when the record had no bird',
+        () async {
+          when(() => repo.remove(any())).thenAnswer((_) async {});
+          final c = makeContainer();
+          addTearDown(c.dispose);
+          await c
+              .read(healthRecordFormStateProvider.notifier)
+              .deleteRecord('hr-1');
+          verifyNever(
+            () => scheduler.cancelHealthCheckReminders(
+              any(),
+              recordId: any(named: 'recordId'),
+            ),
+          );
+        },
+      );
     });
 
     group('reset', () {

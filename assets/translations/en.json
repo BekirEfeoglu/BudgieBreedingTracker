@@ -2412,6 +2412,7 @@
   },
   "errors": {
     "unknown": "An unexpected error occurred.",
+    "network_unavailable": "No internet connection. Please try again.",
     "cannot_open_url": "Could not open the link. No suitable app found on your device.",
     "save_failed": "Save operation failed.",
     "delete_failed": "Delete operation failed.",

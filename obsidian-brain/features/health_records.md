@@ -24,6 +24,16 @@ No photo/document upload exists for health records — the model has no attachme
 
 Creating a record with a `birdId` schedules health-check reminders via `NotificationScheduler` (daily until `followUpDate`, or 7 days by default). See `.claude/rules/notifications.md`.
 
+Reminders are keyed by `recordId` (not bare `birdId`) so multiple records
+for the same bird don't collide — `scheduleHealthCheckReminder`'s
+`entityKey = recordId ?? birdId`. `updateRecord`/`deleteRecord` re-fetch the
+prior row (best-effort — a fetch failure logs a warning but does not block
+the save/delete) and cancel+reschedule via `cancelHealthCheckReminders(birdId,
+recordId: ...)` whenever `followUpDate` or `birdId` changed; `deleteRecord`
+always cancels. Before 2026-07-02 this cancellation path did not exist —
+editing or deleting a record with a follow-up date left the old reminders
+firing (zombie notifications).
+
 ## Rules
 
 - `.claude/rules/data-layer.md` — ValidatedSyncMixin required for FK to bird

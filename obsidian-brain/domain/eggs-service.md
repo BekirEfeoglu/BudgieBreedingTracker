@@ -41,6 +41,10 @@ updateEggStatus(egg, newStatus)
   ├── re-fetch by id; abort with `eggs.egg_not_found` if it no longer exists
   │    (guards against writing a stale snapshot over an egg whose parent
   │    pair was deleted concurrently — June 2026 breeding-tab audit)
+  ├── rebase the write onto that freshly-fetched row, not the `egg` argument
+  │    (the argument may be a stale snapshot held across an async UI gap;
+  │    rebasing avoids silently reverting a concurrent edit to other fields
+  │    like notes/eggNumber/clutchId — 2026-07-02 audit)
   ├── set status + status-specific date (hatchDate / fertileCheckDate / discardDate)
   ├── if newStatus == hatched → _createChickFromHatchedEgg (idempotent per eggId)
   ├── reschedule reminders for the egg

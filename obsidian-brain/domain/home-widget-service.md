@@ -23,7 +23,9 @@ sync complete).
 
 ## Snapshot Schema
 
-`HomeWidgetDashboardSnapshot` (Freezed model) carries:
+`HomeWidgetDashboardSnapshot` (plain `@immutable` class with hand-written
+`==`/`hashCode` — **not** a Freezed model, no `@freezed` annotation or
+generated part files) carries:
 
 | Key | Type | Meaning |
 |-----|------|---------|
@@ -36,6 +38,17 @@ sync complete).
 
 Keys are constants in `AppHomeWidgetConstants` — adding a key requires
 updating the iOS Swift widget and Android XML provider together.
+
+`==`/`hashCode` deliberately **exclude** `last_updated_label`/
+`last_updated_at` (display-only, change on every recompute even when the
+dashboard content is unchanged) — only `egg_turning_count`/
+`active_breedings_count`/`next_turning_label` participate in equality. This
+is what keeps `home_screen.dart`'s `ref.listen` dedup guard
+(`if (!next.hasValue || next.value == previous?.value) return;`) effective;
+before 2026-07-02 the timestamp fields were included in equality, so the
+guard almost never short-circuited and the native widget re-synced on every
+unrelated Drift table invalidation, burning into iOS WidgetKit's ~40/day
+timeline budget (anti-pattern #1 in `.claude/rules/home-widget.md`).
 
 ## Gateway Abstraction
 

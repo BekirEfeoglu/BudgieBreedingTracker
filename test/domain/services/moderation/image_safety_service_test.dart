@@ -171,7 +171,7 @@ void main() {
   });
 
   group('ImageSafetyService - null fields in response', () {
-    test('returns safe when safe field is null in response', () async {
+    test('rejects when safe field is missing from response (fail-closed)', () async {
       final fakeClient = _FakeEdgeFunctionClient(
         fixedResult: const EdgeFunctionResult(
           success: true,
@@ -185,9 +185,9 @@ void main() {
         mimeType: testMimeType,
       );
 
-      // safe field missing → defaults to true via ?? true
-      expect(result.isSafe, isTrue);
-      expect(result.rejectionReason, isNull);
+      // safe field missing → fail-closed via ?? false, not treated as safe
+      expect(result.isSafe, isFalse);
+      expect(result.rejectionReason, 'image_flagged');
     });
 
     test('uses default reason when reason field is null', () async {
@@ -209,7 +209,7 @@ void main() {
       expect(result.rejectionReason, 'image_flagged');
     });
 
-    test('returns safe when data is null in response', () async {
+    test('rejects when data is null in response (fail-closed)', () async {
       final fakeClient = _FakeEdgeFunctionClient(
         fixedResult: const EdgeFunctionResult(success: true, data: null),
       );
@@ -220,8 +220,8 @@ void main() {
         mimeType: testMimeType,
       );
 
-      // data is null → safe field lookup returns null → defaults to true
-      expect(result.isSafe, isTrue);
+      // data is null → safe field lookup returns null → fail-closed
+      expect(result.isSafe, isFalse);
     });
   });
 

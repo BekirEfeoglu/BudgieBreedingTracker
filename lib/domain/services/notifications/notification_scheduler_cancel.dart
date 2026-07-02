@@ -54,23 +54,32 @@ mixin NotificationSchedulerCancel {
   }
 
   /// Cancels health check reminders for a specific bird.
+  ///
+  /// [recordId], when provided, must match the `recordId` passed to
+  /// `scheduleHealthCheckReminder` at schedule time — that method uses
+  /// `recordId ?? birdId` as the notification-ID entity key to avoid
+  /// cross-record collisions when a bird has multiple health records, so
+  /// cancelling by bare [birdId] alone would target the wrong ID space and
+  /// silently no-op if the reminder was scheduled with a recordId.
   Future<void> cancelHealthCheckReminders(
     String birdId, {
+    String? recordId,
     int maxDays = 365,
   }) async {
+    final entityKey = recordId ?? birdId;
     final safeMaxDays = maxDays.clamp(0, NotificationIds.idsPerEntitySlot);
     final futures = <Future<void>>[];
     for (var day = 0; day < safeMaxDays; day++) {
       final id = NotificationIds.generate(
         NotificationIds.healthCheckBaseId,
-        birdId,
+        entityKey,
         day,
       );
       futures.add(notificationService.cancel(id));
     }
     await Future.wait(futures);
     AppLogger.info(
-      '[NotificationScheduler] Health check reminders cancelled for $birdId',
+      '[NotificationScheduler] Health check reminders cancelled for $entityKey',
     );
   }
 

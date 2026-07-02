@@ -106,6 +106,42 @@ void main() {
         expect(id, lessThan(NotificationIds.healthCheckBaseId + 100000));
       }
     });
+
+    test(
+      'when recordId is provided, cancels the IDs keyed by recordId — not '
+      'the bare birdId — matching scheduleHealthCheckReminder\'s entity key',
+      () async {
+        final cancelledIds = <int>[];
+        when(() => mockService.cancel(any())).thenAnswer((inv) async {
+          cancelledIds.add(inv.positionalArguments[0] as int);
+        });
+
+        await scheduler.cancelHealthCheckReminders(
+          'bird-1',
+          recordId: 'record-1',
+          maxDays: 3,
+        );
+
+        final expectedIds = List.generate(
+          3,
+          (day) => NotificationIds.generate(
+            NotificationIds.healthCheckBaseId,
+            'record-1',
+            day,
+          ),
+        );
+        expect(cancelledIds, expectedIds);
+
+        // The bare-birdId ID space must NOT be touched — a bird can have
+        // multiple health records, each with its own reminder schedule.
+        final birdOnlyId = NotificationIds.generate(
+          NotificationIds.healthCheckBaseId,
+          'bird-1',
+          0,
+        );
+        expect(cancelledIds, isNot(contains(birdOnlyId)));
+      },
+    );
   });
 
   group('cancelChickCareReminders', () {

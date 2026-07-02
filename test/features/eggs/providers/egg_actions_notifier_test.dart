@@ -168,14 +168,26 @@ void main() {
         ),
       ],
     );
-    // updateEggStatus re-fetches by id to guard against writing over a
-    // concurrently soft-deleted egg (see egg_actions_notifier.dart). Default
-    // to "still exists" so existing status-transition tests are unaffected;
-    // override with `(_) async => null` in tests that simulate the race.
-    when(() => eggRepo.getById(any())).thenAnswer(
-      (_) async =>
-          Egg(id: 'existing', userId: 'test-user', layDate: DateTime(2024)),
-    );
+    // updateEggStatus re-fetches by id and rebases its write on the result
+    // (guards against both a concurrently soft-deleted egg AND silently
+    // reverting a concurrent edit to other fields — see
+    // egg_actions_notifier.dart). Default echoes back an egg matching
+    // testEgg()'s own defaults so plain `testEgg()` call sites are
+    // unaffected; override with a specific id + custom fields when a test
+    // needs the "current" row to differ from the caller's snapshot, or with
+    // `(_) async => null` to simulate a concurrent delete.
+    when(() => eggRepo.getById(any())).thenAnswer((invocation) async {
+      final id = invocation.positionalArguments[0] as String;
+      return Egg(
+        id: id,
+        userId: 'test-user',
+        incubationId: 'inc-1',
+        layDate: DateTime(2024, 1, 10),
+        eggNumber: 1,
+        createdAt: DateTime(2024, 1, 10),
+        updatedAt: DateTime(2024, 1, 10),
+      );
+    });
     when(() => breedingPairRepo.getById(any())).thenAnswer(
       (_) async => const BreedingPair(
         id: 'pair-1',
@@ -595,6 +607,14 @@ void main() {
         when(() => eggRepo.save(any())).thenAnswer((_) async {});
         when(() => chickRepo.getByEggId('egg-1')).thenAnswer((_) async => null);
         when(() => chickRepo.save(any())).thenAnswer((_) async {});
+        // updateEggStatus rebases its write on a fresh getById fetch, not the
+        // caller's snapshot — stub the "current" row with the customized
+        // fields this test asserts on (eggNumber/clutchId), matching what a
+        // real fetch would return for this id.
+        when(() => eggRepo.getById('egg-1')).thenAnswer(
+          (_) async =>
+              testEgg(eggNumber: 7).copyWith(clutchId: 'clutch-1'),
+        );
 
         final container = makeContainer();
         addTearDown(container.dispose);

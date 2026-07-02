@@ -1,6 +1,8 @@
 # Messaging
 
-1-1 direkt mesajlaşma. **Online-first** (`*Repository` exemption — architecture.md § Online-First Exemption). Realtime multi-party stream, local mirror gerçek-zaman gereksinimine ters.
+Direkt mesajlaşma. **Online-first** (`*Repository` exemption — architecture.md § Online-First Exemption). Realtime multi-party stream, local mirror gerçek-zaman gereksinimine ters.
+
+**Doküman düzeltmesi (2026-07-02 audit):** Bu dosya önceden "1-1 only, deterministik ID" bir tasarım belgeliyordu, ama gerçek şema ve kod tabanı **grup sohbetini de destekliyor** — `conversations`/`conversation_participants` join table (rastgele UUIDv7 conversation ID + lookup-then-create-with-retry dedup, `participant_a`/`participant_b` deterministik ID şeması DEĞİL), `group_form_screen.dart` ile grup oluşturma, `messages_screen.dart`'ta "Yeni Grup" menü öğesi, ve kendi test coverage'ı (`group_form_screen_test.dart`) mevcut ve shipped. Aşağıdaki bölümler artık gerçek şemayı yansıtıyor; "1-1 only" kısıtlaması resmi olarak kaldırıldı.
 
 ## Stack
 | Katman | Bileşen |
@@ -9,7 +11,7 @@
 | Repository | `MessagingRepository` (online-first, no Drift table) |
 | Realtime | Supabase realtime channels per conversation |
 | Presence | `presence.md` ile online/typing indikator |
-| Storage | `chat-attachments` bucket (conversation-scoped RLS) |
+| Storage | `SupabaseConstants.messagePhotosBucket` (`message-photos`) tanımlı ama henüz hiçbir call site'ta kullanılmıyor — bkz. § Attachments |
 | Moderation | `moderate-content` (DM permissive threshold) |
 
 ## Online-First Contract
@@ -24,13 +26,15 @@
 
 ## Conversation Model
 ```
-conversations: (id, participant_a, participant_b, last_message_at, last_message_preview)
-messages: (id, conversation_id, sender_id, body, attachments, sent_at, delivered_at, read_at)
+conversations: (id, type ['direct'|'group'], last_message_at, ...)
+conversation_participants: (conversation_id, user_id, role ['owner'|'admin'|'member'], is_left, ...)
+messages: (id, conversation_id, sender_id, body, sent_at, ...)
 ```
 
-- Conversation deterministik ID: `min(uid_a, uid_b)_max(uid_a, uid_b)` — duplicate engeli
-- `participant_*` UUID sıralı (alphabetical) — query consistency
-- Group chat YOK (1-1 only)
+- Conversation ID: rastgele `Uuid().v7()` (participant çiftinden deterministik türetilmiyor)
+- 1-1 conversation duplicate engeli: lookup-then-create-with-retry (mevcut conversation var mı önce sorgula, yoksa oluştur)
+- Grup: `role` alanı owner/admin/member ayrımı yapar; katılımcı ekleme/çıkarma `conversation_participants` üzerinden
+- `messages` tablosunda `attachments`/`delivered_at`/`read_at` KOLONLARI YOK — bkz. § Delivery Status ve § Attachments (aşağıda, henüz implement edilmedi)
 
 ## Send Flow
 ```
@@ -48,19 +52,11 @@ User types -> Send button
 - Failure'da local kuyruğa koy, connectivity dönünce auto-retry (max 3)
 
 ## Delivery Status
-| Status | Anlam | UI |
-|--------|-------|----|
-| sending | Client'tan henüz gitmedi | Saat ikonu |
-| sent | Server kabul etti | Tek tik |
-| delivered | Receiver cihaza ulaştı | Çift tik |
-| read | Receiver okudu | Çift mavi tik |
-| failed | Retry edilebilir | Kırmızı ünlem + retry |
+**Henüz implement edilmedi (2026-07-02 audit):** `Message` modelinde delivery-status alanı (sending/sent/delivered/failed) YOK. `message_input_bar.dart` gönderim çağrısını doğrudan `await` eder, öncesinde optimistic append YAPMAZ; başarısızlıkta thread'de hiçbir şey render edilmez ve snackbar gösterilmez — başarısız gönderim sessizce kaybolur. Bu bölüm gelecek tasarım hedefidir; retry UI'lı bir client-side sending/failed state eklenmeli.
 
 ## Read Receipts
-- Privacy ayarı: kullanıcı kapatabilir (Settings → Messaging)
-- Kapalıysa: receiver'ın "read" timestamp'i server'a yazılmaz, "delivered"da kalır
-- Karşılıklı: sender de read tik göremez
-- Compliance: kullanıcı verisi, opt-in default DEĞİL — UX testi gerekiyor
+- Gerçek şema: `messages.read_by` (JSONB kullanıcı ID dizisi) + `conversation_participants.last_read_at`
+- **Privacy toggle henüz implement edilmedi (2026-07-02 audit):** her okuma koşulsuz kaydedilir — kullanıcının bunu kapatabileceği bir ayar (`Settings → Messaging`) kod tabanında YOK. Bu bölüm gelecek tasarım hedefidir.
 
 ## Realtime Subscription
 - Aktif conversation: Supabase realtime channel `conversation_<id>`
@@ -76,11 +72,8 @@ User types -> Send button
 - Presence service ile entegre (presence.md)
 
 ## Attachments
-- Image (10MB max, scan-image-safety pipeline)
-- Audio (1MB max, voice note 60s)
-- Storage path: `chat-attachments/<conversation_id>/<message_id>/<file>`
-- Bucket RLS: sadece conversation participant'ları read/write
-- Signed URL TTL: 1 saat (paranoid — hassas içerik)
+- `messages.message_type` şeması `image`/`birdCard`/`listingCard`'ı destekler (`image_url` kolonu mevcut)
+- **Genel dosya/fotoğraf ekleme akışı henüz implement edilmedi (2026-07-02 audit):** `message_input_bar.dart`'taki "ekle" butonu tam olarak stub'lanmış (`onTap: Navigator.pop`) — kullanıcı galeri/kamera'dan serbest bir dosya ekleyemiyor. Bu bölümdeki 10MB image / 1MB audio / `chat-attachments` bucket path tasarımı henüz koda bağlanmadı; gelecek tasarım hedefidir.
 
 ## Pagination
 - Initial load: son 30 mesaj
@@ -89,8 +82,9 @@ User types -> Send button
 - Long conversation: virtualized list (ListView.builder), memory budget
 
 ## Block & Report
-- Block (community.md ile sync): conversation_blocked flag
-- Blocked user mesaj gönderemez (server-side enforce, RLS)
+- Block: `community_blocks` tablosu (community.md ile paylaşılan, `conversation_blocked` diye ayrı bir flag YOK)
+- Client-side: `blockedUsersProvider` yeni DM başlatmayı engeller ve UI'da bloklu kullanıcıyı gizler
+- Server-side RLS (`messages_insert`, `participants_insert` policy'leri, migration `20260702174304_block_messages_from_blocked_users.sql`): gönderen ile conversation'daki herhangi bir aktif katılımcı arasında (iki yönde) block ilişkisi varsa insert reddedilir. **2026-07-02'de production'a deploy edildi** (Supabase MCP `apply_migration`, `security` advisor 0 yeni bulgu).
 - Block sonrası geçmiş mesaj görünür (delete edilmez)
 - Report: tek mesaj → `community_reports` (contextType: 'message')
 
@@ -122,13 +116,14 @@ User types -> Send button
 ## Anti-Patterns
 1. `MessagingRepository`'ye Drift table eklemek (online-first contract)
 2. Realtime subscription dispose etmemek (battery + concurrent socket limit)
-3. Read receipt'i mandatory yapmak (privacy ihlali)
-4. Group chat eklemeye çalışmak (1-1 only — scope creep)
+3. Read receipt'i mandatory yapmak (privacy ihlali — şu an zaten opt-out yok, bkz. § Read Receipts gap)
+4. Grup conversation'larda block/moderation kontrolünü 1-1'e göre gevşetmek (participant sayısı arttıkça spam/abuse yüzeyi büyür)
 5. Moderation atlamak DM diye (anti-pattern: moderation.md spam riski)
 6. Optimistic insert failure'da kullanıcıya bildirmeden silmek (gaslighting)
 7. Attachment URL'i public bucket (mesaj content public olur)
 8. Typing indicator'ı DB'ye yazmak (realtime ephemeral olmalı)
-9. Conversation ID'yi (UID_A, UID_B) ile sıralamadan üretmek (duplicate row)
+9. Yeni 1-1 conversation oluştururken duplicate-check atlamak (aynı iki kullanıcı için birden fazla conversation row'u)
 10. Block'lu user'ın geçmiş mesajlarını silmek (kullanıcı kendi history'sine erişemez)
+11. RLS block-check migration'ını deploy etmeden "blocking server-side enforce ediliyor" varsaymak (bkz. § Block & Report deploy notu)
 
 > **İlgili**: architecture.md § Online-First Exemption, presence.md (typing + online), community.md (block sync, profile lookup), notifications.md (push), moderation.md (DM threshold), assets-images.md (attachment)

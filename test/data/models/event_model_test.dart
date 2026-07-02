@@ -100,7 +100,8 @@ void main() {
         expect(event.isDeleted, isFalse);
       });
 
-      test('falls back to custom type and active status', () {
+      test('falls back to the dedicated unknown sentinel for both type and '
+          'status, not a real interactive value', () {
         final event = Event.fromJson({
           'id': 'event-1',
           'title': 'Invalid event',
@@ -110,8 +111,12 @@ void main() {
           'user_id': 'user-1',
         });
 
-        expect(event.type, EventType.custom);
-        expect(event.status, EventStatus.active);
+        // A malformed/future server-side value must land on the dedicated
+        // `unknown` sentinel — not `EventType.custom`/`EventStatus.active`,
+        // which would otherwise mask bad data as a real, fully-interactive
+        // event (see event_card.dart / events_dao.dart status filters).
+        expect(event.type, EventType.unknown);
+        expect(event.status, EventStatus.unknown);
       });
     });
 

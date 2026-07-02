@@ -2412,6 +2412,7 @@
   },
   "errors": {
     "unknown": "Ein unerwarteter Fehler ist aufgetreten.",
+    "network_unavailable": "Keine Internetverbindung. Bitte versuchen Sie es erneut.",
     "cannot_open_url": "Der Link konnte nicht geöffnet werden. Keine geeignete App auf Ihrem Gerät gefunden.",
     "save_failed": "Speichervorgang fehlgeschlagen.",
     "delete_failed": "Löschvorgang fehlgeschlagen.",

@@ -232,15 +232,16 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
     try {
       final repo = ref.read(eggRepositoryProvider);
 
-      // Verify the egg still exists before writing: `egg` may be a stale
-      // snapshot held across an async UI gap (status sheet, confirmation
-      // dialog). If it was deleted concurrently — e.g. its breeding pair was
-      // removed while this call was in flight — `getById` returns null
-      // because it filters `isDeleted`. Blindly writing the stale copy would
-      // resurrect a soft-deleted row (and could re-trigger chick auto-create
-      // against an already-removed incubation chain). Bail out instead.
-      final stillExists = await repo.getById(egg.id) != null;
-      if (!stillExists) {
+      // Re-fetch the current row instead of trusting the `egg` argument:
+      // `egg` may be a stale snapshot held across an async UI gap (status
+      // sheet, confirmation dialog). Besides catching a concurrent delete
+      // (`getById` returns null for a soft-deleted row — writing the stale
+      // copy would resurrect it and could re-trigger chick auto-create
+      // against an already-removed incubation chain), rebasing on `current`
+      // avoids silently reverting other fields (notes, eggNumber, clutchId,
+      // ...) that synced in from another device during the gap.
+      final current = await repo.getById(egg.id);
+      if (current == null) {
         state = state.copyWith(
           isLoading: false,
           error: 'eggs.egg_not_found'.tr(),
@@ -251,9 +252,9 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       // Only stamp event dates when the status actually changes. Without
       // this guard, re-saving an already-hatched egg would reset its
       // hatchDate to today and the chick age math would silently drift.
-      var updated = egg.copyWith(status: newStatus, updatedAt: DateTime.now());
+      var updated = current.copyWith(status: newStatus, updatedAt: DateTime.now());
 
-      if (newStatus != egg.status) {
+      if (newStatus != current.status) {
         if (newStatus == EggStatus.hatched) {
           updated = updated.copyWith(hatchDate: DateTime.now());
         } else if (newStatus == EggStatus.fertile) {
@@ -277,7 +278,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       // by eggId (stable) and offsets stay well under the per-entity slot
       // size, so the union of all species ranges safely covers whatever
       // range was used at schedule time. Duplicate cancels are idempotent.
-      if (newStatus.isTerminal && !egg.status.isTerminal) {
+      if (newStatus.isTerminal && !current.status.isTerminal) {
         await _cancelEggTurningRemindersAllSpecies(egg.id);
       }
 

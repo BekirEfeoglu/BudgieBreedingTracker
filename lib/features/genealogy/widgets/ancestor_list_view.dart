@@ -67,15 +67,25 @@ class AncestorListView extends StatelessWidget {
   void _collectByGeneration(
     Bird? bird,
     int depth,
-    Map<int, List<Bird>> generations,
-  ) {
+    Map<int, List<Bird>> generations, [
+    Set<String> pathVisited = const {},
+  ]) {
     if (bird == null || depth > maxDepth) return;
+    // Path-scoped (not tree-wide) cycle guard — a corrupted pedigree can
+    // list a bird as its own ancestor. A legitimate common ancestor
+    // reached via both the father and mother line is NOT on the same
+    // recursion path and is intentionally left un-deduped here (each
+    // occurrence still lists the generation it was reached at); only a
+    // true cycle (same id twice on one path) is skipped.
+    if (pathVisited.contains(bird.id)) return;
+
     generations.putIfAbsent(depth, () => []).add(bird);
 
     final father = bird.fatherId != null ? ancestors[bird.fatherId] : null;
     final mother = bird.motherId != null ? ancestors[bird.motherId] : null;
-    _collectByGeneration(father, depth + 1, generations);
-    _collectByGeneration(mother, depth + 1, generations);
+    final nextVisited = {...pathVisited, bird.id};
+    _collectByGeneration(father, depth + 1, generations, nextVisited);
+    _collectByGeneration(mother, depth + 1, generations, nextVisited);
   }
 
   String _generationLabel(int gen) => switch (gen) {

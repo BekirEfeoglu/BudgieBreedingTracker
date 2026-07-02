@@ -1,9 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart' as app;
 import '../providers/gamification_providers.dart';
@@ -26,13 +27,13 @@ class LeaderboardScreen extends ConsumerWidget {
         child: leaderboardAsync.when(
           loading: () => const LoadingState(),
           error: (error, _) => app.ErrorState(
-            message: '${'leaderboard.load_error'.tr()}: $error',
+            message: 'leaderboard.load_error'.tr(),
             onRetry: () => ref.invalidate(leaderboardProvider),
           ),
           data: (entries) {
             if (entries.isEmpty) {
               return EmptyState(
-                icon: const Icon(LucideIcons.trophy),
+                icon: const AppIcon(AppIcons.leaderboard),
                 title: 'leaderboard.no_data'.tr(),
                 subtitle: 'leaderboard.no_data_hint'.tr(),
               );

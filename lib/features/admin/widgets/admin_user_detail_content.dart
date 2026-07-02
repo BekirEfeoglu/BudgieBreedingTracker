@@ -9,6 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
+import '../../../core/widgets/dialogs/typed_confirm_dialog.dart';
 import '../../../core/widgets/loading_state.dart';
 import '../providers/admin_actions_provider.dart';
 import '../providers/admin_providers.dart';

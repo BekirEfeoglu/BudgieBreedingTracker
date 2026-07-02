@@ -4,10 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:budgie_breeding_tracker/data/local/database/database_provider.dart';
 import 'package:budgie_breeding_tracker/data/providers/storage_service_provider.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/account_deletion_dialog.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 
@@ -33,11 +35,13 @@ void main() {
   late MockStorageService mockStorage;
   late MockAuthActions mockAuth;
   late MockAppDatabase mockDb;
+  late MockTwoFactorService mockTwoFactor;
 
   setUp(() {
     mockStorage = MockStorageService();
     mockAuth = MockAuthActions();
     mockDb = MockAppDatabase();
+    mockTwoFactor = MockTwoFactorService();
     SharedPreferences.setMockInitialValues({});
   });
 
@@ -48,6 +52,12 @@ void main() {
       () => mockAuth.verifyCurrentPassword(
         currentPassword: any(named: 'currentPassword'),
       ),
+    ).thenAnswer((_) async {});
+    // Default: session already satisfies AAL2 (no MFA enrolled, or already
+    // verified this session) — the MFA-challenge retry path has its own
+    // dedicated tests.
+    when(
+      () => mockAuth.requireAal2ForDestructiveAction(),
     ).thenAnswer((_) async {});
     when(
       () => mockAuth.requestAccountDeletionForVerifiedSession(),
@@ -74,6 +84,7 @@ void main() {
         storageServiceProvider.overrideWithValue(mockStorage),
         authActionsProvider.overrideWithValue(mockAuth),
         appDatabaseProvider.overrideWithValue(mockDb),
+        twoFactorServiceProvider.overrideWithValue(mockTwoFactor),
       ],
       child: MaterialApp.router(routerConfig: router),
     );
@@ -110,6 +121,7 @@ void main() {
 
       verifyInOrder([
         () => mockAuth.verifyCurrentPassword(currentPassword: 'test-password'),
+        () => mockAuth.requireAal2ForDestructiveAction(),
         () => mockStorage.deleteAllUserFiles('test-user-id'),
         () => mockAuth.revokeOAuthToken(),
         () => mockAuth.requestAccountDeletionForVerifiedSession(),
@@ -267,5 +279,140 @@ void main() {
       expect(find.text('settings.delete_account_error'), findsOneWidget);
       expect(find.text('login-screen'), findsNothing);
     });
+  });
+
+  group('performAccountDeletion — MFA-enrolled session reset to AAL1', () {
+    final verifiedFactor = Factor(
+      id: 'factor-1',
+      friendlyName: 'Authenticator',
+      factorType: FactorType.totp,
+      status: FactorStatus.verified,
+      createdAt: DateTime(2026, 1, 1),
+      updatedAt: DateTime(2026, 1, 1),
+    );
+
+    Future<void> enterOtpCode(WidgetTester tester, String code) async {
+      final fields = find.byType(TextFormField);
+      for (var i = 0; i < code.length; i++) {
+        await tester.enterText(fields.at(i), code[i]);
+        await tester.pump();
+      }
+    }
+
+    testWidgets(
+      'shows MFA challenge instead of destroying data when AAL2 is required',
+      (tester) async {
+        stubAllSuccess();
+        when(
+          () => mockAuth.requireAal2ForDestructiveAction(),
+        ).thenThrow(const MfaAssuranceRequiredException());
+        when(
+          () => mockTwoFactor.getFactors(),
+        ).thenAnswer((_) async => [verifiedFactor]);
+
+        await pumpLocalizedApp(tester, buildSubject());
+        await tester.tap(find.text('trigger-delete'));
+        await tester.pumpAndSettle();
+
+        // Storage must NOT be touched before the MFA challenge is verified.
+        verifyNever(() => mockStorage.deleteAllUserFiles(any()));
+        expect(find.text('auth.2fa_verify_title'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'completes deletion after a successful MFA challenge, without '
+      're-verifying the password',
+      (tester) async {
+        stubAllSuccess();
+        when(
+          () => mockAuth.requireAal2ForDestructiveAction(),
+        ).thenThrow(const MfaAssuranceRequiredException());
+        when(
+          () => mockTwoFactor.getFactors(),
+        ).thenAnswer((_) async => [verifiedFactor]);
+        when(
+          () => mockTwoFactor.challengeAndVerify(
+            factorId: 'factor-1',
+            code: '123456',
+          ),
+        ).thenAnswer((_) async => true);
+
+        await pumpLocalizedApp(tester, buildSubject());
+        await tester.tap(find.text('trigger-delete'));
+        await tester.pumpAndSettle();
+
+        await enterOtpCode(tester, '123456');
+        await tester.pumpAndSettle();
+
+        verify(
+          () => mockAuth.verifyCurrentPassword(
+            currentPassword: 'test-password',
+          ),
+        ).called(1);
+        verify(() => mockStorage.deleteAllUserFiles('test-user-id')).called(1);
+        verify(
+          () => mockAuth.requestAccountDeletionForVerifiedSession(),
+        ).called(1);
+        verify(() => mockDb.clearAllUserData('test-user-id')).called(1);
+        expect(find.text('login-screen'), findsOneWidget);
+        expect(find.text('settings.delete_account_requested'), findsOneWidget);
+      },
+    );
+
+    testWidgets('does not delete anything when the user cancels the challenge', (
+      tester,
+    ) async {
+      stubAllSuccess();
+      when(
+        () => mockAuth.requireAal2ForDestructiveAction(),
+      ).thenThrow(const MfaAssuranceRequiredException());
+      when(
+        () => mockTwoFactor.getFactors(),
+      ).thenAnswer((_) async => [verifiedFactor]);
+
+      await pumpLocalizedApp(tester, buildSubject());
+      await tester.tap(find.text('trigger-delete'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('common.cancel'));
+      await tester.pumpAndSettle();
+
+      verifyNever(() => mockStorage.deleteAllUserFiles(any()));
+      verifyNever(() => mockAuth.requestAccountDeletionForVerifiedSession());
+      verifyNever(() => mockDb.clearAllUserData(any()));
+      expect(find.text('login-screen'), findsNothing);
+    });
+
+    testWidgets(
+      'shows an invalid-code error and does not delete when the challenge '
+      'code is wrong',
+      (tester) async {
+        stubAllSuccess();
+        when(
+          () => mockAuth.requireAal2ForDestructiveAction(),
+        ).thenThrow(const MfaAssuranceRequiredException());
+        when(
+          () => mockTwoFactor.getFactors(),
+        ).thenAnswer((_) async => [verifiedFactor]);
+        when(
+          () => mockTwoFactor.challengeAndVerify(
+            factorId: 'factor-1',
+            code: '000000',
+          ),
+        ).thenAnswer((_) async => false);
+
+        await pumpLocalizedApp(tester, buildSubject());
+        await tester.tap(find.text('trigger-delete'));
+        await tester.pumpAndSettle();
+
+        await enterOtpCode(tester, '000000');
+        await tester.pumpAndSettle();
+
+        expect(find.text('auth.2fa_invalid_code'), findsOneWidget);
+        verifyNever(() => mockStorage.deleteAllUserFiles(any()));
+        verifyNever(() => mockAuth.requestAccountDeletionForVerifiedSession());
+      },
+    );
   });
 }

@@ -46,6 +46,12 @@ are revoked immediately; the live access token remains valid until expiry
 (≤1h) — there is no custom access-token hook enforcing `session_revoked_at`.
 Protected roles (founder) are blocked client-side before the RPC.
 
+UI confirmation is two-step (confirm dialog → typed user-ID confirm via
+`showTypedConfirmDialog`), matching every other destructive admin action
+per `.claude/rules/admin.md`. Before 2026-07-02 this action only had the
+first step (single confirm dialog, no typed confirm) — the only destructive
+admin action missing the second step.
+
 `admin_get_user_aggregate_detail(p_user_id)` RPC fetches the full user-detail
 payload (profile, subscription, entity counts, recent activity logs) in one
 round-trip. It is `SECURITY INVOKER` + `is_admin()`-gated and relies on the

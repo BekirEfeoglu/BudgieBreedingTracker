@@ -11,10 +11,10 @@ abstract class Event with _$Event {
     required String id,
     required String title,
     required DateTime eventDate,
-    @JsonKey(unknownEnumValue: EventType.custom) required EventType type,
+    @JsonKey(unknownEnumValue: EventType.unknown) required EventType type,
     required String userId,
     @Default(EventStatus.active)
-    @JsonKey(unknownEnumValue: EventStatus.active)
+    @JsonKey(unknownEnumValue: EventStatus.unknown)
     EventStatus status,
     String? description,
     String? birdId,

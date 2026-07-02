@@ -2412,6 +2412,7 @@
   },
   "errors": {
     "unknown": "Beklenmeyen bir hata oluştu.",
+    "network_unavailable": "İnternet bağlantısı yok. Lütfen tekrar deneyin.",
     "cannot_open_url": "Bağlantı açılamadı. Sisteminizde uygun bir uygulama bulunamadı.",
     "save_failed": "Kaydetme işlemi başarısız oldu.",
     "delete_failed": "Silme işlemi başarısız oldu.",

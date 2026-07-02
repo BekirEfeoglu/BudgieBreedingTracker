@@ -45,7 +45,12 @@ mixin _AuthAccountMixin {
   /// Only invalidates other sessions after confirmed password update.
   /// Throws [AuthException] if current password is invalid.
   /// Throws [MfaAssuranceRequiredException] if MFA is enrolled but the
-  /// session is not AAL2 — callers must trigger a TOTP challenge first.
+  /// session is not AAL2 — the password reauth below always resets an
+  /// MFA-enrolled session back to AAL1, so this always throws for MFA
+  /// users. Callers must catch it, escort the user through a TOTP
+  /// challenge (see `showMfaChallengeDialog`), then call
+  /// [changePasswordForVerifiedSession] to finish — NOT retry this method,
+  /// which would just reset AAL2 again via another password reauth.
   Future<void> changePassword({
     required String currentPassword,
     required String newPassword,
@@ -64,6 +69,20 @@ mixin _AuthAccountMixin {
     // signInWithPassword resets the assurance level. Re-check before the
     // destructive UPDATE so a session that downgraded back to AAL1
     // doesn't slip through.
+    await _requireAal2IfEnrolled();
+
+    await changePasswordForVerifiedSession(newPassword: newPassword);
+  }
+
+  /// Completes a password change for a session that already satisfies
+  /// AAL2 — either because MFA isn't enrolled, or because the caller just
+  /// escorted the user through a TOTP challenge after [changePassword]
+  /// threw [MfaAssuranceRequiredException]. Does NOT re-authenticate with
+  /// a password (that would reset AAL2 back to AAL1); only call this once
+  /// identity has already been verified in this flow.
+  Future<void> changePasswordForVerifiedSession({
+    required String newPassword,
+  }) async {
     await _requireAal2IfEnrolled();
 
     // Update to new password — must succeed before session invalidation
@@ -94,6 +113,15 @@ mixin _AuthAccountMixin {
   Future<void> signOutAllSessions() async {
     await _client.auth.signOut(scope: SignOutScope.global);
   }
+
+  /// Verifies the current session satisfies AAL2 when MFA is enrolled;
+  /// throws [MfaAssuranceRequiredException] otherwise.
+  ///
+  /// Exposed publicly so callers that chain a *sequence* of destructive
+  /// steps around a single verified-session RPC (e.g. deleting remote
+  /// storage files before calling [requestAccountDeletionForVerifiedSession])
+  /// can fail before starting that sequence, not partway through it.
+  Future<void> requireAal2ForDestructiveAction() => _requireAal2IfEnrolled();
 
   /// Re-authenticates with the user's current password.
   Future<void> verifyCurrentPassword({required String currentPassword}) async {

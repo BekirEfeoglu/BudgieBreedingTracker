@@ -69,6 +69,9 @@ bool isAnonymousAllowedRoute(String location) =>
     location == AppRoutes.maintenance ||
     location == AppRoutes.premium ||
     location == AppRoutes.userGuide ||
+    // Topic detail sub-route (`/user-guide/:topicIndex`) — guests browsing
+    // the guide list must also be able to open a topic, not just the index.
+    location.startsWith('${AppRoutes.userGuide}/') ||
     location == AppRoutes.privacyPolicy ||
     location == AppRoutes.termsOfService ||
     location == AppRoutes.communityGuidelines;

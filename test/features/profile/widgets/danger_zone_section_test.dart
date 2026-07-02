@@ -102,5 +102,23 @@ void main() {
 
       expect(find.byType(Divider), findsOneWidget);
     });
+
+    testWidgets(
+      'still navigates to login when signOut throws, instead of stranding '
+      'the user',
+      (tester) async {
+        final mockActions = MockAuthActions();
+        when(() => mockActions.signOut()).thenThrow(Exception('network'));
+        await _pump(tester, authActions: mockActions);
+
+        await tester.tap(find.text(l10n('auth.logout')).first);
+        await tester.pump();
+        await tester.tap(find.text(l10n('auth.logout')).last);
+        await tester.pumpAndSettle();
+
+        verify(() => mockActions.signOut()).called(1);
+        expect(find.byType(DangerZoneSection), findsNothing);
+      },
+    );
   });
 }

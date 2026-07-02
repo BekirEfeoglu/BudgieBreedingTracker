@@ -78,7 +78,9 @@ class ImageSafetyService {
         return const ImageSafetyResult.unsafe('safety_scan_unavailable');
       }
 
-      final isSafe = result.data?['safe'] as bool? ?? true;
+      // Fail-closed: a missing/non-bool `safe` field (malformed response,
+      // proxy truncation, future schema drift) must not be treated as safe.
+      final isSafe = result.data?['safe'] as bool? ?? false;
       if (!isSafe) {
         final reason = result.data?['reason'] as String? ?? 'image_flagged';
         AppLogger.info('$_tag Image flagged: $reason');

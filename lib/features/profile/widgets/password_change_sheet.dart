@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/auth.dart';
 import '../providers/profile_providers.dart';
 import 'password_change_form.dart';
 import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
@@ -31,20 +32,32 @@ class _PasswordChangeSheetContent extends ConsumerWidget {
     final theme = Theme.of(context);
     final state = ref.watch(passwordChangeStateProvider);
 
-    ref.listen<PasswordChangeState>(passwordChangeStateProvider, (_, s) {
+    ref.listen<PasswordChangeState>(passwordChangeStateProvider, (_, s) async {
       if (!context.mounted) return;
       if (s.isSuccess) {
         ref.read(passwordChangeStateProvider.notifier).reset();
         Navigator.of(context).pop();
         ActionFeedbackService.show('profile.password_changed'.tr());
+        return;
+      }
+      if (s.mfaFactorId != null) {
+        final verified = await showMfaChallengeDialog(
+          context,
+          factorId: s.mfaFactorId!,
+        );
+        if (!context.mounted) return;
+        final notifier = ref.read(passwordChangeStateProvider.notifier);
+        if (verified) {
+          notifier.completeAfterMfaChallenge();
+        } else {
+          notifier.cancelMfaChallenge();
+        }
+        return;
       }
       if (s.error != null) {
-        final errorKey = s.error == 'password_incorrect'
-            ? 'profile.password_incorrect'
-            : 'profile.password_change_error';
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(errorKey.tr())));
+        ).showSnackBar(SnackBar(content: Text(s.error!.tr())));
       }
     });
 

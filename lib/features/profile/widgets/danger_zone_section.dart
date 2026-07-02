@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/logger.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../router/route_names.dart';
 import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
@@ -68,7 +70,19 @@ class DangerZoneSection extends ConsumerWidget {
     );
 
     if (confirmed == true) {
-      await ref.read(authActionsProvider).signOut();
+      try {
+        await ref.read(authActionsProvider).signOut();
+      } catch (e, st) {
+        // Logout failures are security-relevant so we surface them to
+        // telemetry rather than letting the throw propagate uncaught and
+        // strand the user on this screen with no feedback or navigation.
+        AppLogger.error('[DangerZoneSection] Sign out failed', e, st);
+        await Sentry.captureException(
+          e,
+          stackTrace: st,
+          withScope: (scope) => scope.setTag('feature', 'auth.logout'),
+        );
+      }
       if (context.mounted) context.go(AppRoutes.login);
     }
   }

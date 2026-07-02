@@ -18,11 +18,33 @@ class AccountDeletionController {
   final Ref _ref;
 
   Future<void> deleteAccount({required String password}) async {
-    final userId = _ref.read(currentUserIdProvider);
     final authActions = _ref.read(authActionsProvider);
 
     // Validate the current password before any destructive cleanup.
     await authActions.verifyCurrentPassword(currentPassword: password);
+
+    // Re-check AAL2 immediately — verifyCurrentPassword resets an
+    // MFA-enrolled session back to AAL1 — and BEFORE any destructive step
+    // below runs. Storage/local-data cleanup is irreversible, so an MFA
+    // session that can't yet complete the deletion RPC must not be allowed
+    // to start deleting files first. Throws MfaAssuranceRequiredException
+    // here; callers must escort the user through a TOTP challenge (see
+    // `showMfaChallengeDialog`) and retry via [completeAfterMfaChallenge] —
+    // not by calling [deleteAccount] again, which would just reset AAL2.
+    await authActions.requireAal2ForDestructiveAction();
+
+    await _performDestructiveCleanup();
+  }
+
+  /// Completes account deletion for a session that just satisfied AAL2 via
+  /// a TOTP challenge, after [deleteAccount] threw
+  /// [MfaAssuranceRequiredException]. Skips password re-verification —
+  /// that already succeeded in the [deleteAccount] call that threw.
+  Future<void> completeAfterMfaChallenge() => _performDestructiveCleanup();
+
+  Future<void> _performDestructiveCleanup() async {
+    final userId = _ref.read(currentUserIdProvider);
+    final authActions = _ref.read(authActionsProvider);
 
     // Delete remote storage files before deleting auth.users server-side.
     await _ref.read(accountStorageCleanupProvider).deleteAllUserFiles(userId);

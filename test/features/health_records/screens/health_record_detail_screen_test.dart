@@ -211,6 +211,12 @@ void main() {
       (tester) async {
         final mockRepo = MockHealthRecordRepository();
         when(() => mockRepo.save(any())).thenAnswer((_) async {});
+        // updateRecord re-fetches by id to detect followUpDate/birdId
+        // changes and cancel stale reminders (see
+        // health_record_form_providers.dart).
+        when(
+          () => mockRepo.getById('record-1'),
+        ).thenAnswer((_) async => testRecord);
 
         final editRouter = GoRouter(
           initialLocation: '/health-records',

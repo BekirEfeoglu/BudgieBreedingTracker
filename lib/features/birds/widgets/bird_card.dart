@@ -171,7 +171,7 @@ class BirdCard extends StatelessWidget {
         CupertinoContextMenuAction(
           onPressed: () {
             Navigator.pop(context);
-            context.push('/birds/${bird.id}/edit');
+            context.push('/birds/form?editId=${bird.id}');
           },
           trailingIcon: CupertinoIcons.pencil,
           child: Text('common.edit'.tr()),

@@ -127,12 +127,63 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
     }
   }
 
+  /// Cancels previously-scheduled health check reminders for [record].
+  ///
+  /// Best-effort: a reminder-scheduling side effect failing must not undo
+  /// the primary mutation (save/delete), which has already succeeded by
+  /// the time this runs.
+  Future<void> _cancelHealthCheckReminders(HealthRecord record) async {
+    final birdId = record.birdId;
+    if (birdId == null) return;
+    try {
+      final scheduler = ref.read(notificationSchedulerProvider);
+      await scheduler.cancelHealthCheckReminders(
+        birdId,
+        recordId: record.id,
+      );
+    } catch (e) {
+      AppLogger.warning('Failed to cancel health check reminders: $e');
+    }
+  }
+
   Future<void> updateRecord(HealthRecord record) async {
     if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(healthRecordRepositoryProvider);
+      // Best-effort: this pre-fetch only informs the reminder cancel/
+      // reschedule decision below. A failure here must not abort the
+      // primary save — the same "side effect must not undo a successful
+      // mutation" contract as _cancelHealthCheckReminders itself.
+      HealthRecord? previous;
+      try {
+        previous = await repo.getById(record.id);
+      } catch (e) {
+        AppLogger.warning(
+          'Failed to fetch previous health record for reminder diff: $e',
+        );
+      }
       await repo.save(record.copyWith(updatedAt: DateTime.now().toUtc()));
+
+      // Reminders are scheduled off followUpDate/birdId — if either
+      // changed, the previously-scheduled notifications now point at a
+      // stale date or a bird that's no longer associated with this
+      // record. Cancel and reschedule rather than leaving zombie
+      // reminders firing on the old date (or none at all on the new one).
+      final followUpChanged = previous?.followUpDate != record.followUpDate;
+      final birdChanged = previous?.birdId != record.birdId;
+      if (previous != null && (followUpChanged || birdChanged)) {
+        await _cancelHealthCheckReminders(previous);
+        if (record.birdId != null) {
+          await _scheduleHealthCheckReminders(
+            recordId: record.id,
+            birdId: record.birdId!,
+            birdName: record.title,
+            followUpDate: record.followUpDate,
+          );
+        }
+      }
+
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('HealthRecordFormNotifier', e, st);
@@ -146,7 +197,21 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(healthRecordRepositoryProvider);
+      // Best-effort: only needed to know which reminders to cancel. A
+      // failure here must not abort the primary delete.
+      HealthRecord? existing;
+      try {
+        existing = await repo.getById(id);
+      } catch (e) {
+        AppLogger.warning(
+          'Failed to fetch health record before delete for reminder '
+          'cancellation: $e',
+        );
+      }
       await repo.remove(id);
+      if (existing != null) {
+        await _cancelHealthCheckReminders(existing);
+      }
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('HealthRecordFormNotifier', e, st);

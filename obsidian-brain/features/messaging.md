@@ -51,17 +51,32 @@ See [[domain/notification-service]].
 
 ## Attachments
 
-- Bucket: `chat-attachments` (conversation-scoped RLS)
-- 10 MB guard
-- `scan-image-safety` (fail-closed)
-- Compress → JPEG q85
-
-Multi-attachment messages bundle into one row with attachment URL array.
+**Not wired up yet (2026-07-02 audit):** `message_input_bar.dart`'s attach
+button is fully stubbed (`onTap: Navigator.pop`) — there is no working
+gallery/camera attachment flow. `SupabaseConstants.messagePhotosBucket`
+(`message-photos`) is defined but has zero call sites. `messages.image_url`
++ `message_type` (`image`/`birdCard`/`listingCard`) schema support exists,
+so a future attachment flow has somewhere to write to, but the 10MB guard /
+`scan-image-safety` / compress pipeline described in `.claude/rules/messaging.md`
+is a design target, not shipped behavior.
 
 ## Read Receipts
 
-Realtime + Drift mirror (last-seen per-conversation, not per-message
-fidelity). User can opt out via privacy settings.
+Tracked via `messages.read_by` (JSONB array of user IDs) +
+`conversation_participants.last_read_at` — **not** a Drift mirror (this
+repository has no local table, see § Online-First Exception). **No opt-out
+exists yet (2026-07-02 audit):** every read is recorded unconditionally;
+there is no privacy setting to disable it.
+
+## Block Enforcement
+
+Client-side (`blockedUsersProvider`) hides blocked users and blocks
+*starting* a new DM. Server-side RLS enforcement for `messages_insert` /
+`participants_insert` (blocking an already-participating blocked user from
+continuing to send) was added in migration
+`20260702174304_block_messages_from_blocked_users.sql` — deployed to
+production 2026-07-02 (via Supabase MCP `apply_migration`; `security`
+advisor showed 0 new findings after applying).
 
 ## Group Chats
 

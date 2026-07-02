@@ -2,11 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show AuthException, Factor, FactorStatus, FactorType;
 
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
+import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_form_providers.dart';
 
 import '../../../helpers/mocks.dart';
@@ -17,6 +19,7 @@ Profile _profile({String? avatarUrl}) =>
 void main() {
   late MockProfileRepository mockProfileRepo;
   late MockAuthActions mockAuthActions;
+  late MockTwoFactorService mockTwoFactor;
 
   setUpAll(() {
     registerFallbackValue(XFile('test.jpg'));
@@ -26,6 +29,7 @@ void main() {
   setUp(() {
     mockProfileRepo = MockProfileRepository();
     mockAuthActions = MockAuthActions();
+    mockTwoFactor = MockTwoFactorService();
   });
 
   ProviderContainer createContainer() {
@@ -34,6 +38,7 @@ void main() {
         currentUserIdProvider.overrideWithValue('user-1'),
         profileRepositoryProvider.overrideWithValue(mockProfileRepo),
         authActionsProvider.overrideWithValue(mockAuthActions),
+        twoFactorServiceProvider.overrideWithValue(mockTwoFactor),
       ],
     );
     addTearDown(container.dispose);
@@ -267,6 +272,187 @@ void main() {
       expect(state.isLoading, isFalse);
       expect(state.error, isNull);
       expect(state.isSuccess, isFalse);
+    });
+
+    group('MFA-enrolled session reset to AAL1', () {
+      final verifiedFactor = Factor(
+        id: 'factor-1',
+        friendlyName: 'Authenticator',
+        factorType: FactorType.totp,
+        status: FactorStatus.verified,
+        createdAt: DateTime(2026, 1, 1),
+        updatedAt: DateTime(2026, 1, 1),
+      );
+
+      test(
+        'changePassword sets mfaFactorId instead of failing when AAL2 is '
+        'required, without touching the password yet',
+        () async {
+          when(
+            () => mockAuthActions.changePassword(
+              currentPassword: any(named: 'currentPassword'),
+              newPassword: any(named: 'newPassword'),
+            ),
+          ).thenThrow(const MfaAssuranceRequiredException());
+          when(
+            () => mockTwoFactor.getFactors(),
+          ).thenAnswer((_) async => [verifiedFactor]);
+
+          final container = createContainer();
+          final notifier = container.read(
+            passwordChangeStateProvider.notifier,
+          );
+
+          await notifier.changePassword(
+            currentPassword: 'old123',
+            newPassword: 'new456',
+          );
+
+          final state = container.read(passwordChangeStateProvider);
+          expect(state.isLoading, isFalse);
+          expect(state.isSuccess, isFalse);
+          expect(state.error, isNull);
+          expect(state.mfaFactorId, 'factor-1');
+          verifyNever(
+            () => mockAuthActions.changePasswordForVerifiedSession(
+              newPassword: any(named: 'newPassword'),
+            ),
+          );
+        },
+      );
+
+      test(
+        'changePassword surfaces an error when MFA is required but no '
+        'verified factor can be found',
+        () async {
+          when(
+            () => mockAuthActions.changePassword(
+              currentPassword: any(named: 'currentPassword'),
+              newPassword: any(named: 'newPassword'),
+            ),
+          ).thenThrow(const MfaAssuranceRequiredException());
+          when(() => mockTwoFactor.getFactors()).thenAnswer((_) async => []);
+
+          final container = createContainer();
+          final notifier = container.read(
+            passwordChangeStateProvider.notifier,
+          );
+
+          await notifier.changePassword(
+            currentPassword: 'old123',
+            newPassword: 'new456',
+          );
+
+          final state = container.read(passwordChangeStateProvider);
+          expect(state.mfaFactorId, isNull);
+          expect(state.error, equals('profile.password_change_error'));
+        },
+      );
+
+      test(
+        'completeAfterMfaChallenge finishes the change without '
+        're-verifying the password',
+        () async {
+          when(
+            () => mockAuthActions.changePassword(
+              currentPassword: any(named: 'currentPassword'),
+              newPassword: any(named: 'newPassword'),
+            ),
+          ).thenThrow(const MfaAssuranceRequiredException());
+          when(
+            () => mockTwoFactor.getFactors(),
+          ).thenAnswer((_) async => [verifiedFactor]);
+          when(
+            () => mockAuthActions.changePasswordForVerifiedSession(
+              newPassword: any(named: 'newPassword'),
+            ),
+          ).thenAnswer((_) async {});
+
+          final container = createContainer();
+          final notifier = container.read(
+            passwordChangeStateProvider.notifier,
+          );
+
+          await notifier.changePassword(
+            currentPassword: 'old123',
+            newPassword: 'new456',
+          );
+          await notifier.completeAfterMfaChallenge();
+
+          final state = container.read(passwordChangeStateProvider);
+          expect(state.isSuccess, isTrue);
+          expect(state.error, isNull);
+          verify(
+            () => mockAuthActions.changePasswordForVerifiedSession(
+              newPassword: 'new456',
+            ),
+          ).called(1);
+          // changePassword was called exactly once — to enter the
+          // MFA-required state above — and not retried by
+          // completeAfterMfaChallenge (which uses the "for verified
+          // session" method instead, since retrying changePassword would
+          // just reset AAL2 again via another password reauth).
+          verify(
+            () => mockAuthActions.changePassword(
+              currentPassword: any(named: 'currentPassword'),
+              newPassword: any(named: 'newPassword'),
+            ),
+          ).called(1);
+        },
+      );
+
+      test('completeAfterMfaChallenge is a no-op with no pending challenge', (
+      ) async {
+        final container = createContainer();
+        final notifier = container.read(passwordChangeStateProvider.notifier);
+
+        await notifier.completeAfterMfaChallenge();
+
+        final state = container.read(passwordChangeStateProvider);
+        expect(state.isLoading, isFalse);
+        expect(state.isSuccess, isFalse);
+        verifyNever(
+          () => mockAuthActions.changePasswordForVerifiedSession(
+            newPassword: any(named: 'newPassword'),
+          ),
+        );
+      });
+
+      test('cancelMfaChallenge clears mfaFactorId without completing', () async {
+        when(
+          () => mockAuthActions.changePassword(
+            currentPassword: any(named: 'currentPassword'),
+            newPassword: any(named: 'newPassword'),
+          ),
+        ).thenThrow(const MfaAssuranceRequiredException());
+        when(
+          () => mockTwoFactor.getFactors(),
+        ).thenAnswer((_) async => [verifiedFactor]);
+
+        final container = createContainer();
+        final notifier = container.read(passwordChangeStateProvider.notifier);
+
+        await notifier.changePassword(
+          currentPassword: 'old123',
+          newPassword: 'new456',
+        );
+        expect(
+          container.read(passwordChangeStateProvider).mfaFactorId,
+          isNotNull,
+        );
+
+        notifier.cancelMfaChallenge();
+        expect(container.read(passwordChangeStateProvider).mfaFactorId, isNull);
+
+        // A subsequent completion attempt must not act on the cancelled
+        // password since _pendingNewPassword was cleared too.
+        await notifier.completeAfterMfaChallenge();
+        verifyNever(
+          () => mockAuthActions.changePasswordForVerifiedSession(
+            newPassword: any(named: 'newPassword'),
+          ),
+        );
+      });
     });
   });
 }

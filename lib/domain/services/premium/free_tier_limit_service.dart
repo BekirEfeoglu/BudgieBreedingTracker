@@ -80,6 +80,19 @@ class FreeTierLimitService {
     await _validateServerSide('incubations');
   }
 
+  /// Validates marketplace listing creation against the free tier limit.
+  ///
+  /// Unlike [guardBirdLimit]/[guardBreedingPairLimit]/[guardIncubationLimit],
+  /// there is no client-side repository count here — listing creation already
+  /// gates on the local active-listing count via `canCreateListingProvider`
+  /// (lib/features/marketplace/providers/marketplace_providers.dart). This
+  /// method adds the authoritative server-side check so that count can't be
+  /// bypassed by calling the repository directly (rooted device, stale local
+  /// count), matching the two-layer contract documented above.
+  Future<void> guardMarketplaceListingLimit() async {
+    await _validateServerSide('marketplace_listings');
+  }
+
   /// Server-side validation via `validate-free-tier-limit` Edge Function.
   ///
   /// Fail policy:
@@ -89,7 +102,12 @@ class FreeTierLimitService {
   /// - Server explicitly rejected (4xx other than 404, or 5xx) → fail-closed.
   ///   Bu, rooted device + simulated network failure gibi senaryolarda
   ///   client-side guard'ın atlanmasını engeller.
-  static const _validTables = {'birds', 'breeding_pairs', 'incubations'};
+  static const _validTables = {
+    'birds',
+    'breeding_pairs',
+    'incubations',
+    'marketplace_listings',
+  };
 
   Future<void> _validateServerSide(String table) async {
     if (_edgeFunctionClient == null) return;

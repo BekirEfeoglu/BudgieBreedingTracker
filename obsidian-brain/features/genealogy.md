@@ -25,6 +25,20 @@
 
 Inbreeding coefficient calculated in genetics engine. High coefficient triggers UI warning. See [[domain/genetics-engine]].
 
+## Corrupted Pedigree Handling
+
+A sync conflict or manual import can list a bird as its own ancestor
+(`fatherId`/`motherId` cycle). `_buildAncestorTree` (`family_tree_view.dart`)
+and `_collectByGeneration` (`ancestor_list_view.dart`) both guard against
+this with a **path-scoped** visited set — fresh per branch, not shared
+across the whole tree — so re-encountering an id already on the *current*
+walk stops that branch, while a legitimate common ancestor reached via both
+the father and mother line (a real diamond, not a cycle) still renders in
+both positions (2026-07-02 audit). `genealogy_calculation_providers.dart`'s
+`calculateAncestorStats`/inbreeding math already had an equivalent
+(tree-wide) guard from an earlier audit; the two rendering widgets did not
+until this fix.
+
 ## See Also
 
 - [[features/birds]]

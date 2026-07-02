@@ -106,6 +106,7 @@ class FamilyTreeViewState extends State<FamilyTreeView> {
                         0,
                         siblingCounts,
                         theme,
+                        const {},
                       ),
                     ],
                   ),
@@ -196,7 +197,25 @@ class FamilyTreeViewState extends State<FamilyTreeView> {
     int depth,
     Map<String, int> siblingCounts,
     ThemeData theme,
+    Set<String> pathVisited,
   ) {
+    // A corrupted pedigree (sync conflict, manual import) can list a bird
+    // as its own ancestor via a cycle in fatherId/motherId — without this
+    // guard the same node would keep expanding down to maxDepth, rendering
+    // a visually wrong, looping tree. This must be PATH-scoped (a fresh
+    // set per branch, not shared across the whole tree): a legitimate
+    // common ancestor reached via both the father and mother line is not
+    // a cycle and must still render in both positions — see
+    // commonAncestorIds/isCommonAncestor below, which exist precisely to
+    // highlight that valid case.
+    if (bird != null && pathVisited.contains(bird.id)) {
+      return PedigreeNode(
+        bird: null,
+        placeholder: 'genealogy.unknown_parent'.tr(),
+        depth: depth,
+      );
+    }
+
     if (depth > widget.maxDepth || bird == null) {
       return PedigreeNode(
         bird: bird,
@@ -234,6 +253,8 @@ class FamilyTreeViewState extends State<FamilyTreeView> {
       );
     }
 
+    final nextVisited = {...pathVisited, bird.id};
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
@@ -259,6 +280,7 @@ class FamilyTreeViewState extends State<FamilyTreeView> {
               depth + 1,
               siblingCounts,
               theme,
+              nextVisited,
             ),
             const SizedBox(height: AppSpacing.lg),
             _buildAncestorTree(
@@ -267,6 +289,7 @@ class FamilyTreeViewState extends State<FamilyTreeView> {
               depth + 1,
               siblingCounts,
               theme,
+              nextVisited,
             ),
             // Generation label for mother line
             if (depth == 0)

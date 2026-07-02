@@ -120,14 +120,26 @@ class UserDetailSecuritySection extends ConsumerWidget {
   }
 
   Future<void> _handleForceLogout(BuildContext context, WidgetRef ref) async {
+    // Two-step destructive confirmation, matching every other destructive
+    // admin action (deactivate, revoke premium) per admin.md — a single
+    // tap on a force-logout button is too easy to trigger by accident.
     final confirmed = await showConfirmDialog(
       context,
       title: 'admin.confirm_force_logout'.tr(),
       message: 'admin.confirm_force_logout_desc'.tr(),
       isDestructive: true,
     );
-    if (confirmed != true) return;
-    
+    if (confirmed != true || !context.mounted) return;
+
+    final typedConfirmed = await showTypedConfirmDialog(
+      context,
+      title: 'admin.confirm_force_logout'.tr(),
+      message: 'admin.typed_confirm_user_id'.tr(args: [userId]),
+      requiredPhrase: userId,
+      hintText: userId,
+    );
+    if (!typedConfirmed) return;
+
     // Await execution
     await ref.read(adminActionsProvider.notifier).forceLogout(userId);
   }

@@ -12,6 +12,9 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/account_deletion_providers.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
+import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show FactorStatus;
 
 part 'account_deletion_dialog_widget.dart';
 
@@ -64,14 +67,12 @@ Future<void> performAccountDeletion(
     await ref
         .read(accountDeletionControllerProvider)
         .deleteAccount(password: password);
-
-    if (context.mounted) {
-      Navigator.of(context).pop(); // close loading dialog
-      messenger.showSnackBar(
-        SnackBar(content: Text('settings.delete_account_requested'.tr())),
-      );
-      context.go(AppRoutes.login);
-    }
+    if (!context.mounted) return;
+    _onDeletionSucceeded(context, messenger);
+  } on MfaAssuranceRequiredException {
+    if (!context.mounted) return;
+    Navigator.of(context).pop(); // close loading dialog
+    await _retryWithMfaChallenge(context, ref, messenger);
   } catch (e, st) {
     AppLogger.error('[AccountDeletion] Account deletion failed', e, st);
     Sentry.captureException(e, stackTrace: st);
@@ -82,4 +83,85 @@ Future<void> performAccountDeletion(
       SnackBar(content: Text('settings.delete_account_error'.tr())),
     );
   }
+}
+
+/// Escorts the user through a TOTP challenge after [performAccountDeletion]
+/// caught [MfaAssuranceRequiredException] — the password reauth in
+/// [AccountDeletionController.deleteAccount] resets an MFA-enrolled session
+/// back to AAL1, so the second factor must be re-verified before the
+/// deletion can proceed. Storage files have NOT been touched yet at this
+/// point (see the ordering in [AccountDeletionController.deleteAccount]).
+Future<void> _retryWithMfaChallenge(
+  BuildContext context,
+  WidgetRef ref,
+  ScaffoldMessengerState messenger,
+) async {
+  final factors = await ref.read(twoFactorServiceProvider).getFactors();
+  String? factorId;
+  for (final factor in factors) {
+    if (factor.status == FactorStatus.verified) {
+      factorId = factor.id;
+      break;
+    }
+  }
+  if (factorId == null || !context.mounted) {
+    messenger.showSnackBar(
+      SnackBar(content: Text('settings.delete_account_error'.tr())),
+    );
+    return;
+  }
+
+  final verified = await showMfaChallengeDialog(context, factorId: factorId);
+  if (!context.mounted) return;
+  if (!verified) return;
+
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => PopScope(
+      canPop: false,
+      child: AlertDialog(
+        content: Row(
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(width: AppSpacing.lg),
+            Expanded(child: Text('settings.delete_account_loading'.tr())),
+          ],
+        ),
+      ),
+    ),
+  );
+
+  try {
+    await ref
+        .read(accountDeletionControllerProvider)
+        .completeAfterMfaChallenge();
+    if (!context.mounted) return;
+    _onDeletionSucceeded(context, messenger);
+  } catch (e, st) {
+    AppLogger.error(
+      '[AccountDeletion] Account deletion failed after MFA challenge',
+      e,
+      st,
+    );
+    Sentry.captureException(e, stackTrace: st);
+    if (context.mounted) {
+      Navigator.of(context).pop(); // close loading dialog
+    }
+    messenger.showSnackBar(
+      SnackBar(content: Text('settings.delete_account_error'.tr())),
+    );
+  }
+}
+
+void _onDeletionSucceeded(
+  BuildContext context,
+  ScaffoldMessengerState messenger,
+) {
+  if (!context.mounted) return;
+  Navigator.of(context).pop(); // close loading dialog
+  messenger.showSnackBar(
+    SnackBar(content: Text('settings.delete_account_requested'.tr())),
+  );
+  context.go(AppRoutes.login);
 }

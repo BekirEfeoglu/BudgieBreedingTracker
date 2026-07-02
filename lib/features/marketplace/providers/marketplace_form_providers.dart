@@ -3,11 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/enums/bird_enums.dart';
+import '../../../core/errors/app_exception.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/shared/providers/breeding.dart';
 import '../../../domain/services/moderation/moderation_providers.dart';
 import '../../../domain/services/moderation/content_moderation_service.dart';
+import '../../../domain/services/premium/free_tier_limit_providers.dart';
+import '../../../domain/services/premium/premium_providers.dart';
 import 'marketplace_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 
@@ -92,6 +95,17 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
         return;
       }
 
+      // Client-side gate lives in canCreateListingProvider (local active-
+      // listing count). This is the authoritative server-side check via the
+      // validate-free-tier-limit Edge Function — without it a stale local
+      // count or a direct repository call could bypass the limit entirely.
+      final isPremium = ref.read(effectivePremiumProvider);
+      if (!isPremium) {
+        await ref
+            .read(freeTierLimitServiceProvider)
+            .guardMarketplaceListingLimit();
+      }
+
       final repo = ref.read(marketplaceRepositoryProvider);
       final listingId = const Uuid().v7();
 
@@ -104,7 +118,6 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
         );
       }
 
-      // Free tier limit enforced server-side via validate-free-tier-limit Edge Function
       await repo.create({
         'id': listingId,
         'user_id': userId,
@@ -125,6 +138,13 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
       ref.invalidate(marketplaceListingsProvider(userId));
       ref.invalidate(myMarketplaceListingsProvider(userId));
       state = state.copyWith(isLoading: false, isSuccess: true);
+    } on FreeTierLimitException {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'marketplace.free_tier_limit'.tr(
+          args: ['$marketplaceFreeTierMaxListings'],
+        ),
+      );
     } catch (e, st) {
       AppLogger.error('marketplace', e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
