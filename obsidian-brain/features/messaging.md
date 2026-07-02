@@ -31,7 +31,13 @@ scoped to the user's memberships. Updates flow:
 remote insert → realtime event → invalidate provider → UI re-renders → mark read receipt
 ```
 
-Pull-to-refresh is a fallback; primary path is realtime push.
+Pull-to-refresh is a fallback; primary path is realtime push. On send the
+sender optimistically appends the persisted message to
+`messagingRealtimeProvider` (`addLocalMessage`) so it shows immediately even
+when realtime is gated off by rollout flags; the merge dedupes by id against
+the eventual echo (`sendMessage` returns the `Message`, and the input bar
+clears only on that non-null return — wired 2026-07-02, previously the text
+stayed and users double-posted).
 
 ## Push Notifications
 
@@ -71,7 +77,11 @@ there is no privacy setting to disable it.
 ## Block Enforcement
 
 Client-side (`blockedUsersProvider`) hides blocked users and blocks
-*starting* a new DM. Server-side RLS enforcement for `messages_insert` /
+*starting* a new DM; both the fetched page (`messagesProvider`) and
+realtime-delivered messages honor it (the realtime merge in
+`message_detail_screen.dart` gained the filter 2026-07-02 — it previously
+bypassed it, so a mid-session block could still flash an in-flight realtime
+message). Server-side RLS enforcement for `messages_insert` /
 `participants_insert` (blocking an already-participating blocked user from
 continuing to send) was added in migration
 `20260702174304_block_messages_from_blocked_users.sql` — deployed to

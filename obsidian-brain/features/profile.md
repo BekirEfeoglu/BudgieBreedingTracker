@@ -36,6 +36,12 @@ Pipeline (full details in [[patterns/assets-images]]):
 5. Upload to `bird-photos` Supabase Storage bucket (RLS user-scoped)
 6. `CachedNetworkImage` cache invalidated on URL change
 
+The picker sheet captures the root `ScaffoldMessenger` **before** popping
+itself. The old code kept the sheet's own context and re-checked `.mounted`
+after the async pick — always false post-pop — so steps 2–5 were skipped and
+a validly-picked avatar was never uploaded (and picker errors were swallowed);
+fixed 2026-07-02 via `ImagePickerGuard.ensureWithinSizeLimitVia`.
+
 ## Security Score
 
 `SecurityScore` is the sum of per-factor scores:

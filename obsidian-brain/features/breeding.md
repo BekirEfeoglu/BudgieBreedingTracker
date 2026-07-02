@@ -29,7 +29,7 @@ Breeding creates the pair + incubation as one atomic operation. Pair/incubation 
 - Validate pair birds: both exist, belong to user, alive, correct genders, same species
 - Incubation species comes from pair species (never hardcoded)
 - Hatch dates from `species_incubation_config.dart`, not literal day counts
-- Species change on pair → linked incubations updated
+- Species change on pair → linked incubations updated (expected-hatch recomputed), old-species reminders cancelled + rescheduled, AND stale calendar `Event` rows cleaned + regenerated under the new species (`_updateIncubationSpeciesForPair`; calendar regen added 2026-07-02 — notifications were already handled but the calendar events kept the old species' milestone/hatch dates)
 - Pair cancel/complete → close active incubations + cancel reminders
 - Pair delete cascade order: detach chicks (null `eggId`/`clutchId`) → remove eggs → remove incubations → remove legacy `Clutch` rows (`ClutchRepository.getByBreeding`) → remove pair → **cancel notifications/calendar last**. Reminders are cancelled only AFTER the cascade is confirmed to proceed; if a child is still live the delete blocks with a warning and reminders keep firing — cancelling up-front would strand a still-alive pair with its reminders already gone (May 2026 5-tab audit). Chicks survive as standalone records since they are live entities with their own lifecycle. Clutch cleanup is best-effort (legacy/cross-device data only — the in-app UI doesn't create clutches) and never blocks pair removal. (`breeding_form_actions.dart` `deleteBreeding`, June 2026 breeding-tab audit)
 

@@ -31,7 +31,11 @@ community content awaiting review:
   `AsyncNotifierProvider<…, void>`) exposes `approvePost` / `deletePost` /
   `approveComment` / `deleteComment`. Approve clears `needs_review`; delete
   soft-deletes (`is_deleted = true`) and clears `needs_review`. Each guards
-  with `requireAdmin` and invalidates the relevant list provider.
+  with `requireAdmin`, writes an `admin_logs` audit entry via `logAdminAction`
+  (`community_post_approved` / `community_post_deleted` / `…comment…` — added
+  2026-07-02; these decisions previously left no audit trail), and
+  invalidates the relevant list provider. Queue thumbnails use
+  `CachedNetworkImage` (was raw `Image.network`).
 - Column names use `SupabaseConstants` (`colIsDeleted`, `colNeedsReview`,
   `colId`, `colCreatedAt`) — the admin `client.from()` exception does NOT
   waive the hardcoded-string rule.

@@ -74,7 +74,10 @@ See [[domain/data-io]] for the underlying services.
 
 - MFA enable/disable (TOTP)
 - Recovery code generation (one-time view)
-- Change password
+- Change password → delegates to the shared MFA-aware `showPasswordChangeSheet`
+  (the password re-auth resets AAL2, so 2FA users are re-challenged rather
+  than silently failed; the Settings-local dialog that swallowed that
+  exception for every 2FA user was removed 2026-07-02)
 - Active OAuth providers (Google / Apple) — link/unlink
 - "Delete account" CTA → multi-step confirm + grace period
 
