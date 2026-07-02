@@ -68,8 +68,19 @@ yok). Eklenirse bu bölüm gerçek implementasyonla güncellenmelidir.
 
 ## Sync Strategy
 - `GamificationRepository` online-first — local Drift mirror YOK, server XP/badge ledger'ı source of truth
-- Her aksiyon server'a direkt yazılır (`xp_transactions` tablosu, unique constraint ile cooldown/spam engeli)
+- Her aksiyon server'a direkt yazılır (`xp_transactions` tablosu)
 - ValidatedSyncMixin bu repo'da kullanılmaz (offline-first değil, exemption listesine dahil — architecture.md § Online-First Exemption)
+
+### Server-Side Write Enforcement (2026-07-02'de eklendi)
+`xp_transactions`/`user_levels`/`user_badges`/`profiles` (level/xp_title/is_verified_breeder alanları) yazma işlemleri authenticated client'tan doğrudan yapılır (RPC değil) — bu yüzden RLS `WITH CHECK` kısıtlamaları TEK savunma hattıdır:
+- `xp_transactions.amount` → `private.xp_action_amount(action)` (veya `unlockBadge` için `badges.xp_reward`) ile eşleşmeli
+- `user_levels.total_xp` → gerçek `SUM(xp_transactions.amount)` ile eşleşmeli; `level`/`current_level_xp`/`next_level_xp`/`title` → `private.xp_calculate_level()`/`private.xp_title_for_level()` (Dart `LevelCalculator` mantığının SQL karşılığı) ile yeniden türetilmeli
+- `user_badges.is_unlocked = true` → `progress >= badges.requirement`; `verified_breeder` rozeti için ayrıca `private.meets_verified_breeder_criteria(user_id)` gerekir (generic progress sayacı bu rozet için kullanılmaz)
+- `profiles.level`/`xp_title` → kullanıcının kendi `user_levels` satırıyla eşleşmeli; `is_verified_breeder = true` → `private.meets_verified_breeder_criteria()` gerekir
+
+Migration'lar: `20260702175125_gamification_server_side_helpers.sql`, `20260702175232_gamification_lock_down_self_grant.sql`. Canlıda `SET LOCAL ROLE authenticated` + sahte JWT ile rollback'li saldırı simülasyonuyla doğrulandı (doğrudan self-grant, keyfi XP miktarı, keyfi seviye üzerine yazma, sahte satırdan seviye uydurma, `verified_breeder` rozetini progress-eşitleme ile açma — hepsi reddedildi; meşru akış hâlâ çalışıyor).
+
+**Hâlâ açık (audit K12, bu fix'in kapsamı dışında):** günlük limit/cooldown (`XpConstants.dailyLimits`) sadece client-side kontrol edilir — WITH CHECK per-row olduğu için aggregate/count bazlı günlük limiti burada uygulayamaz. Bir kullanıcı `dailyLogin`/`completeProfile`/`sendMessage` için GEÇERLİ miktarda ama GÜNDE BİRDEN FAZLA `xp_transactions` satırı ekleyebilir (spam, cheat DEĞİL — her satır kendi başına geçerli). Kalıcı çözüm: `(user_id, action, date_trunc('day', created_at))` üzerinde unique constraint veya cooldown'u da doğrulayan bir trigger/RPC.
 
 ## Performance
 - XP award < 50ms (local Drift write)
@@ -110,8 +121,8 @@ test('badge unlock fires on threshold', () async {
 ## Anti-Patterns
 1. XP satın almak / premium hızlandırıcı (pay-to-win, gambling policy)
 2. Random reward / loot box (Apple policy ihlali)
-3. Client-side XP hesabı authoritative (cheat trivial — server enforce)
-4. Cooldown'sız spam-able XP source (topluluk post farm)
+3. Client-side XP hesabı authoritative saymak (2026-07-02'de RLS WITH CHECK ile server-enforce edildi — bkz. § Server-Side Write Enforcement; günlük limit/cooldown hâlâ client-only, ayrı bilinen boşluk)
+4. Cooldown'sız spam-able XP source (topluluk post farm — günlük limit boşluğu nedeniyle hâlâ geçerli, § Server-Side Write Enforcement'taki not)
 5. Leaderboard'a opt-out koymamak (privacy)
 6. Badge unlock'ı her widget rebuild'de check (perf — trigger-time only)
 7. Level up push'unu zorunlu yapmak (anti-pattern: notification fatigue)
