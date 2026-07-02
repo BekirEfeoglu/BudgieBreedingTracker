@@ -128,6 +128,36 @@ silently fall through again); hardcoded Supabase strings in
 popup menu during complete/cancel/delete. All fixes covered by new/updated
 unit + widget tests; full project `flutter analyze` and quality gate clean.
 
+## [2026-07-01] audit | Statistics tab comprehensive review (read-only, no fixes applied)
+
+Comprehensive read-only audit of `lib/features/statistics/` (8 providers, 4
+screens, 20 widgets, 2 models) via 4 parallel deep-review passes + direct
+verification. Quality gates clean (analyze 0, 27-checker scan 0/0, l10n
+132/132/132 synced, `flutter test` 297/297 green, including the in-flight
+`chickSurvivalProvider` SQL-aggregation refactor). Findings reported to user,
+no fixes applied pending prioritization:
+
+- Data bug in the in-flight `chickSurvivalProvider` refactor: new SQL total
+  includes `ChickHealthStatus.unknown` counts but the healthy/sick/deceased
+  split silently drops them. See [[features/statistics]], [[features/chicks]].
+- Premium-gating doc/code drift: `/statistics` route is gated
+  (`effectivePremiumProvider` OR a rewarded-ad exemption,
+  `isStatisticsRewardActiveProvider`), but the documented free-tier partial
+  view (3 charts, 30-day cap, gated export) doesn't exist — it's all-or-
+  nothing, and reward-unlocked users get full PDF export identical to paying
+  subscribers.
+- 10 of ~20 providers still aggregate in Dart instead of SQL — the same
+  anti-pattern `chickSurvivalProvider` was just fixed for.
+- All 10 chart widgets use non-adaptive `AppColors.*` instead of
+  `Theme.of(context).colorScheme` — dark mode unverified.
+- 4 charts show raw unlocalized month numbers; 6 format numbers without
+  `NumberFormat`; `gender_pie_chart`/`chick_survival_chart` render a
+  misleading 100% single-slice pie for single-data-point accounts.
+- Updated [[features/statistics]] with the SQL-aggregation status and a
+  Known Issues section; full itemized findings (~120 dated observations
+  across 34 files) were delivered in-session only, not persisted — re-audit
+  if this entry goes stale.
+
 ## [2026-06-30] fix | Birds tab audit remediation (lifecycle warning, decrypt safety, a11y)
 
 Multi-agent audit of `lib/features/birds/` (data/provider/screen/widget layers)

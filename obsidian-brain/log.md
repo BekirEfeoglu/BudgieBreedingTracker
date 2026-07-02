@@ -4,6 +4,37 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-02] docs | Rules + wiki factual-drift audit (54 files)
+
+User asked to "improve and develop" `CLAUDE.md`, `.claude/rules/`, and this
+wiki. `CLAUDE.md`'s stats table and this wiki's structure/links were already
+100% verified by `verify_rules.py --strict`/`check_obsidian_brain.py`, so the
+real gap was prose accuracy — neither script checks whether rule/wiki text
+still matches the actual code. Dispatched 8 parallel agents, one per domain
+cluster, each cross-checking its `.claude/rules/*.md` files and paired wiki
+pages against real `lib/`/`supabase/` code. Fixed 23 rule files + 30 wiki
+pages (54 total, commit `34ebbf4`). Highlights: `premium-revenuecat.md` had
+6 fabricated APIs (`PremiumGuard` signature, `GracePeriodStatus.none`,
+`premiumStatusProvider`, `PremiumPlanConfig`, `PremiumService`,
+`RevenueCatPaywall`) that never existed; `gamification.md`'s level formula
+was quadratic instead of the real linear one and its entire "streak" system
+plus verified-breeder criteria were invented; `admin.md` claimed a single
+RBAC tier when 3 (`member`/`admin`/`founder`) already ship; `calendar.md`/
+`notifications.md` referenced `CalendarService`/`IncubationReminderService`
+classes that don't exist (real: `CalendarEventGenerator`/
+`NotificationScheduler`); `local-ai.md` described a "perceptual hash" cache
+key while the code does the exact byte-hash anti-pattern the same doc warns
+against; `AppLogger.debug/info(tag, message)`'s signature was wrong in 4
+files (real API takes one `message` string); `architecture.md`'s
+online-first exemption list was missing 4 of 6 real exempt repositories,
+which is why `marketplace.md`'s `*Repository`-naming prohibition now
+contradicts the shipped `MarketplaceRepository`. Also picked up ~15 stale
+counts not covered by `verify_rules.py` (icon/widget/remote-source/route/
+mock counts, schema version, CI timeout) and one rules/wiki desync
+(`observability.md` was missing `RealtimeErrorLogThrottle`, which the wiki
+already had from the prior session). All verified: `check_obsidian_brain.py`
+OK, `verify_rules.py --strict` 24/24, `verify_code_quality.py` 0/0.
+
 ## [2026-07-02] fix | Realtime error-log throttle (Sentry breadcrumb budget)
 
 User shared a real iOS Simulator debug-run log while testing the earlier
@@ -150,35 +181,5 @@ regression tests, cyclic-pedigree guard. calculationVersion bumped v3→v4
 (full-dominant `(double)` tagging splits crested × crested into a distinct DF
 result, changing the offspring set — so stored v3 crested calcs are now flagged
 stale). Version table + wiki updated accordingly.
-
-## [2026-07-01] audit | Statistics tab comprehensive review (read-only, no fixes applied)
-
-Comprehensive read-only audit of `lib/features/statistics/` (8 providers, 4
-screens, 20 widgets, 2 models) via 4 parallel deep-review passes + direct
-verification. Quality gates clean (analyze 0, 27-checker scan 0/0, l10n
-132/132/132 synced, `flutter test` 297/297 green, including the in-flight
-`chickSurvivalProvider` SQL-aggregation refactor). Findings reported to user,
-no fixes applied pending prioritization:
-
-- Data bug in the in-flight `chickSurvivalProvider` refactor: new SQL total
-  includes `ChickHealthStatus.unknown` counts but the healthy/sick/deceased
-  split silently drops them. See [[features/statistics]], [[features/chicks]].
-- Premium-gating doc/code drift: `/statistics` route is gated
-  (`effectivePremiumProvider` OR a rewarded-ad exemption,
-  `isStatisticsRewardActiveProvider`), but the documented free-tier partial
-  view (3 charts, 30-day cap, gated export) doesn't exist — it's all-or-
-  nothing, and reward-unlocked users get full PDF export identical to paying
-  subscribers.
-- 10 of ~20 providers still aggregate in Dart instead of SQL — the same
-  anti-pattern `chickSurvivalProvider` was just fixed for.
-- All 10 chart widgets use non-adaptive `AppColors.*` instead of
-  `Theme.of(context).colorScheme` — dark mode unverified.
-- 4 charts show raw unlocalized month numbers; 6 format numbers without
-  `NumberFormat`; `gender_pie_chart`/`chick_survival_chart` render a
-  misleading 100% single-slice pie for single-data-point accounts.
-- Updated [[features/statistics]] with the SQL-aggregation status and a
-  Known Issues section; full itemized findings (~120 dated observations
-  across 34 files) were delivered in-session only, not persisted — re-audit
-  if this entry goes stale.
 
 Older entries are archived in [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
