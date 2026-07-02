@@ -56,7 +56,15 @@ class AdminModerationNotifier extends AsyncNotifier<void> {
           .from(SupabaseConstants.communityPostsTable)
           .update({SupabaseConstants.colNeedsReview: false})
           .eq(SupabaseConstants.colId, postId);
-      
+      // Record the moderation decision in admin_logs (admin.md §Moderation
+      // Queue — "Decision audit log'a düşer"). Approve/delete were the only
+      // admin mutations leaving no audit record.
+      await logAdminAction(
+        client,
+        ref.read(currentUserIdProvider),
+        'community_post_approved',
+        details: {'post_id': postId},
+      );
       ref.invalidate(adminPendingPostsProvider);
     });
   }
@@ -73,7 +81,12 @@ class AdminModerationNotifier extends AsyncNotifier<void> {
             SupabaseConstants.colNeedsReview: false,
           })
           .eq(SupabaseConstants.colId, postId);
-      
+      await logAdminAction(
+        client,
+        ref.read(currentUserIdProvider),
+        'community_post_deleted',
+        details: {'post_id': postId},
+      );
       ref.invalidate(adminPendingPostsProvider);
     });
   }
@@ -87,7 +100,12 @@ class AdminModerationNotifier extends AsyncNotifier<void> {
           .from(SupabaseConstants.communityCommentsTable)
           .update({SupabaseConstants.colNeedsReview: false})
           .eq(SupabaseConstants.colId, commentId);
-      
+      await logAdminAction(
+        client,
+        ref.read(currentUserIdProvider),
+        'community_comment_approved',
+        details: {'comment_id': commentId},
+      );
       ref.invalidate(adminPendingCommentsProvider);
     });
   }
@@ -104,7 +122,12 @@ class AdminModerationNotifier extends AsyncNotifier<void> {
             SupabaseConstants.colNeedsReview: false,
           })
           .eq(SupabaseConstants.colId, commentId);
-      
+      await logAdminAction(
+        client,
+        ref.read(currentUserIdProvider),
+        'community_comment_deleted',
+        details: {'comment_id': commentId},
+      );
       ref.invalidate(adminPendingCommentsProvider);
     });
   }

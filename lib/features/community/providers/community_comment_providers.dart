@@ -168,12 +168,18 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
   static const Duration _commentCooldown = Duration(seconds: 3);
   DateTime? _lastSubmitAt;
 
-  Future<void> addComment({
+  /// Returns `true` only when the comment was accepted and persisted, so the
+  /// input widget can clear its field solely on success. Returning the result
+  /// (instead of the widget re-reading `state` after the await) avoids a race:
+  /// the post-detail screen listens for `isSuccess` and immediately `reset()`s
+  /// the shared form state, so a post-await `state.isSuccess` read could be
+  /// `false` by the time the widget checks it.
+  Future<bool> addComment({
     required String postId,
     required String content,
   }) async {
     // Guard against double-submit while the previous call is in flight.
-    if (state.isLoading) return;
+    if (state.isLoading) return false;
 
     // Per-user cooldown between comments.
     final last = _lastSubmitAt;
@@ -186,7 +192,7 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
         // when this cooldown rejection fires.
         isSuccess: false,
       );
-      return;
+      return false;
     }
 
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
@@ -198,7 +204,7 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
           isLoading: false,
           error: 'community.not_authenticated'.tr(),
         );
-        return;
+        return false;
       }
 
       // Content length validation
@@ -208,7 +214,7 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
           isLoading: false,
           error: 'community.content_too_long'.tr(),
         );
-        return;
+        return false;
       }
 
       // Content moderation check (Apple Guideline 1.2)
@@ -221,7 +227,7 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
             modResult.rejectionReason,
           ),
         );
-        return;
+        return false;
       }
 
       final repo = ref.read(communityCommentRepositoryProvider);
@@ -232,10 +238,12 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
 
       _lastSubmitAt = DateTime.now();
       state = state.copyWith(isLoading: false, isSuccess: true);
+      return true;
     } catch (e, st) {
       AppLogger.error('CommentFormNotifier', e, st);
       Sentry.captureException(e, stackTrace: st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
+      return false;
     }
   }
 

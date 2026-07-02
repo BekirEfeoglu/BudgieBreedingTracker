@@ -85,6 +85,16 @@ class AdminSettingsActionNotifier extends Notifier<AdminSettingsActionState> {
         'updated_by': client.auth.currentUser?.id,
         'updated_at': DateTime.now().toUtc().toIso8601String(),
       }, onConflict: 'key');
+      // Record in admin_logs for the audit trail. Toggling a kill-switch
+      // (registration, premium, community, maintenance) is a config action
+      // that admin.md §Audit Logs requires be logged; system_settings only
+      // keeps a mutable updated_by that the next change overwrites.
+      await logAdminAction(
+        client,
+        ref.read(currentUserIdProvider),
+        'system_setting_changed',
+        details: {'key': key, 'value': value},
+      );
       // Invalidate AND await the next fetch before returning success.
       // Without the await, the caller clears its `_updatingKey`
       // spinner immediately and the Switch re-reads from the *stale*
@@ -123,6 +133,12 @@ class AdminSettingsActionNotifier extends Notifier<AdminSettingsActionState> {
             'updated_at': now,
           }, onConflict: 'key'),
         ),
+      );
+      await logAdminAction(
+        client,
+        ref.read(currentUserIdProvider),
+        'settings_reset_to_defaults',
+        details: {'keys': settingDefaults.keys.toList()},
       );
       ref.invalidate(adminSystemSettingsProvider);
       state = state.copyWith(isLoading: false, isSuccess: true);

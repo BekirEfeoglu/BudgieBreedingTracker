@@ -37,14 +37,19 @@ class _CommunityCommentInputState extends ConsumerState<CommunityCommentInput> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
 
     HapticFeedback.mediumImpact();
-    ref
+    // Clear the field only after the comment is accepted. Clearing eagerly
+    // (before this fire-and-forget call resolved) wiped the user's draft when
+    // the submit was rejected async — moderation, cooldown, or network — and
+    // they had to retype it. Mirrors the messaging input-bar fix.
+    final accepted = await ref
         .read(commentFormProvider.notifier)
         .addComment(postId: widget.postId, content: text);
+    if (!mounted || !accepted) return;
     _controller.clear();
   }
 

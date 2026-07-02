@@ -35,6 +35,26 @@ abstract final class ImagePickerGuard {
     return false;
   }
 
+  /// Variant that reports via a pre-captured [messenger] instead of a
+  /// [BuildContext]. Use from flows that pop their own route before the async
+  /// pick resolves (e.g. a bottom-sheet picker): by then the widget's own
+  /// context is unmounted, so a context-based guard silently no-ops. The
+  /// caller must capture `ScaffoldMessenger.of(context)` before popping.
+  static Future<bool> ensureWithinSizeLimitVia(
+    ScaffoldMessengerState messenger,
+    XFile file, {
+    int maxBytes = AppConstants.maxUploadSizeBytes,
+  }) async {
+    final bytes = await file.length();
+    if (bytes <= maxBytes) return true;
+
+    final mb = maxBytes ~/ (1024 * 1024);
+    messenger.showSnackBar(
+      SnackBar(content: Text('errors.image_too_large'.tr(args: ['$mb']))),
+    );
+    return false;
+  }
+
   /// Filters [files] to only those within the size limit. Shows a single
   /// snackbar via [context] when any file is rejected. Returns the surviving
   /// files in their original order.

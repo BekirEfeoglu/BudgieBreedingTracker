@@ -110,7 +110,12 @@ class _AvatarPickerContent extends StatelessWidget {
 
   Future<void> _pickImage(BuildContext context, ImageSource source) async {
     final navigator = Navigator.of(context);
-    final messengerContext = context;
+    // Capture the root messenger BEFORE popping the sheet. After the pop this
+    // widget's context is unmounted, so the old code (which kept `context`
+    // and re-checked `.mounted`) silently swallowed the permission-error
+    // snackbar and — worse — bailed at the mounted-guard before the upload,
+    // so a successfully picked avatar was never uploaded.
+    final messenger = ScaffoldMessenger.of(context);
     navigator.pop();
 
     final picker = ImagePicker();
@@ -128,25 +133,22 @@ class _AvatarPickerContent extends StatelessWidget {
       // the Flutter framework handler with no UI feedback.
       AppLogger.warning('[AvatarPicker] image_picker failed: ${e.code}');
       AppLogger.error('[AvatarPicker.pickImage]', e, st);
-      if (messengerContext.mounted) {
-        ScaffoldMessenger.of(messengerContext).showSnackBar(
-          SnackBar(
-            content: Text(
-              e.code == 'camera_access_denied' ||
-                      e.code == 'photo_access_denied'
-                  ? 'profile.avatar_permission_denied'.tr()
-                  : 'profile.avatar_pick_failed'.tr(),
-            ),
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            e.code == 'camera_access_denied' ||
+                    e.code == 'photo_access_denied'
+                ? 'profile.avatar_permission_denied'.tr()
+                : 'profile.avatar_pick_failed'.tr(),
           ),
-        );
-      }
+        ),
+      );
       return;
     }
 
     if (file == null) return;
-    if (!messengerContext.mounted) return;
-    final ok = await ImagePickerGuard.ensureWithinSizeLimit(
-      messengerContext,
+    final ok = await ImagePickerGuard.ensureWithinSizeLimitVia(
+      messenger,
       file,
       maxBytes: AppConstants.maxAvatarUploadSizeBytes,
     );

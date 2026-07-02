@@ -304,6 +304,15 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
         sideEffectsOk = false;
       }
 
+      // Remove stale calendar events tied to this incubation: they encode the
+      // OLD species' milestone-day offsets and expected-hatch date, so leaving
+      // them would show candling/hatch dates that contradict the rescheduled
+      // notifications and the updated incubation record (the notification
+      // reschedule above handled reminders but not the calendar Event rows).
+      if (!await _helper.cleanupIncubationCalendarEvents([incubation])) {
+        sideEffectsOk = false;
+      }
+
       await incubationRepo.save(
         incubation.copyWith(
           species: species,
@@ -334,6 +343,19 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
               species: species,
               settings: settings,
             );
+          }
+          // Regenerate calendar milestone events under the new species so the
+          // calendar matches the rescheduled reminders and the updated
+          // incubation. Best-effort and offline-tolerant (the helper treats an
+          // uninitialised Supabase as success).
+          if (!await _helper.generateCalendarEvents(
+            incubation.userId,
+            pairId,
+            startDate,
+            species,
+            incubationId: incubation.id,
+          )) {
+            sideEffectsOk = false;
           }
         }
       } catch (e, st) {

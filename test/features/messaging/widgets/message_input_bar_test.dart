@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/core/enums/messaging_enums.dart';
+import 'package:budgie_breeding_tracker/data/models/message_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/profile_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/messaging/providers/messaging_form_providers.dart';
@@ -166,7 +167,7 @@ class _FakeMessagingFormNotifier extends MessagingFormNotifier {
   MessagingFormState build() => const MessagingFormState();
 
   @override
-  Future<void> sendMessage({
+  Future<Message?> sendMessage({
     required String conversationId,
     required String senderId,
     required String senderName,
@@ -177,9 +178,17 @@ class _FakeMessagingFormNotifier extends MessagingFormNotifier {
     String? referenceId,
     Map<String, dynamic>? referenceData,
   }) async {
-    // The input bar now clears the controller only when state.isSuccess
-    // flips to true; the fake notifier must mirror that contract.
+    // The input bar clears the controller (and optimistically appends) only
+    // when sendMessage returns a non-null persisted message; the fake mirrors
+    // that success contract.
     state = state.copyWith(isLoading: false, isSuccess: true, error: null);
+    return Message(
+      id: 'fake-msg',
+      conversationId: conversationId,
+      senderId: senderId,
+      senderName: senderName,
+      content: content,
+    );
   }
 
   @override

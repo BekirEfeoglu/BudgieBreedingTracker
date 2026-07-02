@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -170,11 +171,27 @@ class _PendingPostCard extends ConsumerWidget {
                   itemCount: post.allImageUrls.length,
                   separatorBuilder: (context, index) => const SizedBox(width: AppSpacing.sm),
                   itemBuilder: (context, index) {
-                    return Image.network(
-                      post.allImageUrls[index],
+                    return CachedNetworkImage(
+                      imageUrl: post.allImageUrls[index],
                       width: 100,
                       height: 100,
                       fit: BoxFit.cover,
+                      // Thumbnails render at 100dp; cap decode at 2x.
+                      memCacheWidth: 200,
+                      placeholder: (_, __) => Container(
+                        width: 100,
+                        height: 100,
+                        color: theme.colorScheme.surfaceContainerHighest,
+                      ),
+                      errorWidget: (_, __, ___) => Container(
+                        width: 100,
+                        height: 100,
+                        color: theme.colorScheme.surfaceContainerHighest,
+                        child: Icon(
+                          LucideIcons.imageOff,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                     );
                   },
                 ),

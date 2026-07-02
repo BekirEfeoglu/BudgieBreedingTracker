@@ -70,6 +70,10 @@ final enrichedOffspringResultsProvider = Provider<List<OffspringResult>?>((
       compoundPhenotype: result.compoundPhenotype,
       carriedMutations: result.carriedMutations,
       maskedMutations: result.maskedMutations,
+      // Preserve double-factor tagging when re-building the result; omitting
+      // it reset the set to empty, silently dropping DF state that a future
+      // consumer (e.g. re-running viability on the enriched list) would need.
+      doubleFactorIds: result.doubleFactorIds,
       lethalCombinationIds: comboIds,
     );
   }).toList();

@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/enums/messaging_enums.dart';
 import '../../../core/utils/logger.dart';
+import '../../../data/models/message_model.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/services/moderation/moderation_providers.dart';
 import '../../../domain/services/moderation/content_moderation_service.dart';
@@ -46,7 +47,7 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
   static const _sendCooldown = Duration(seconds: 2);
   DateTime? _lastSentAt;
 
-  Future<void> sendMessage({
+  Future<Message?> sendMessage({
     required String conversationId,
     required String senderId,
     required String senderName,
@@ -62,14 +63,14 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
       final now = DateTime.now();
       if (_lastSentAt != null && now.difference(_lastSentAt!) < _sendCooldown) {
         state = state.copyWith(error: 'messaging.send_cooldown'.tr());
-        return;
+        return null;
       }
 
       // Content length validation
       final trimmedContent = content?.trim();
       if (trimmedContent != null && trimmedContent.length > _maxContentLength) {
         state = state.copyWith(error: 'community.content_too_long'.tr());
-        return;
+        return null;
       }
 
       // Content moderation check (Apple Guideline 1.2)
@@ -82,12 +83,12 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
               modResult.rejectionReason,
             ),
           );
-          return;
+          return null;
         }
       }
 
       final repo = ref.read(messagingRepositoryProvider);
-      await repo.sendMessage({
+      final sent = await repo.sendMessage({
         'id': const Uuid().v7(),
         'conversation_id': conversationId,
         'sender_id': senderId,
@@ -101,9 +102,19 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
         'read_by': [senderId],
       });
       _lastSentAt = DateTime.now();
+      // Signal success so the input bar clears the field. Without this the
+      // `isSuccess` flag stayed at its `false` default on the send path
+      // (only conversation-creation methods set it), so the sent text was
+      // never cleared and the user re-typed / double-posted.
+      state = state.copyWith(isSuccess: true, error: null);
+      // Return the persisted message so the input bar can optimistically
+      // append it — the sender sees it immediately even when realtime is
+      // gated off by rollout flags. The detail-screen merge dedupes by id.
+      return sent;
     } catch (e, st) {
       AppLogger.error('messaging', e, st);
       state = state.copyWith(error: 'errors.unknown'.tr());
+      return null;
     }
   }
 

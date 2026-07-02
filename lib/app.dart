@@ -102,7 +102,11 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
   /// Clears the cached encryption key from memory when the app is
   /// backgrounded to reduce the exposure window if the device is compromised.
   void _onAppHidden() {
-    _inactivityGuard.stop();
+    // Do NOT stop the inactivity guard here. It has its own lifecycle
+    // observer that records the background timestamp and locks the session
+    // on resume if the timeout elapsed. Calling stop() cleared that
+    // timestamp and reset _isRunning, so a phone left backgrounded overnight
+    // was never locked — start()/stop() is driven by auth state instead.
     unawaited(ref.read(realtimeSyncServiceProvider).unsubscribe());
     unawaited(ref.read(userPresenceControllerProvider.notifier).markInactive());
     ref.read(encryptionServiceProvider).dispose();
@@ -134,8 +138,10 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
     unawaited(
       ref.read(userPresenceControllerProvider.notifier).markActive(userId),
     );
-    // Restart inactivity guard when app comes back to foreground
-    _inactivityGuard.start();
+    // The inactivity guard handles its own resume via didChangeAppLifecycleState
+    // (locks if the background elapsed >= timeout, else restarts with the
+    // remaining time). Restarting it here would reset a fresh full timeout and
+    // defeat the background lock, so it is intentionally not touched.
     ref.read(localPremiumProvider.notifier).refresh();
     unawaited(ref.read(realtimeSyncServiceProvider).subscribeIfAllowed());
     unawaited(_recoverPendingNotifications());

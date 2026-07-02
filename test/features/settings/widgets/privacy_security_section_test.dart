@@ -10,6 +10,8 @@ import 'package:budgie_breeding_tracker/data/remote/supabase/supabase_client.dar
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/widgets/privacy_security_section.dart';
 import 'package:budgie_breeding_tracker/features/settings/widgets/settings_section_header.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/profile_account.dart'
+    show PasswordChangeForm;
 
 import '../../../helpers/test_localization.dart';
 
@@ -69,14 +71,19 @@ void main() {
       expect(find.byType(ListTile), findsAtLeastNWidgets(5));
     });
 
-    testWidgets('sifre degistir tile tiklama dialog acar', (tester) async {
+    testWidgets('sifre degistir tile tiklama sifre degistirme sayfasi acar', (
+      tester,
+    ) async {
       await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
       // Birinci ListTile sifre degistir
       await tester.tap(find.byType(ListTile).first);
       await tester.pumpAndSettle();
 
-      expect(find.byType(Dialog), findsOneWidget);
+      // Delegates to the shared MFA-aware password-change sheet, which renders
+      // a PasswordChangeForm (previously a bespoke Dialog that swallowed the
+      // MFA re-auth exception for 2FA users).
+      expect(find.byType(PasswordChangeForm), findsOneWidget);
     });
 
     testWidgets('veri disa aktar tile tiklama dialog acar', (tester) async {

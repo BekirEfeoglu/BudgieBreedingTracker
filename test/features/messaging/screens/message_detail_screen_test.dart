@@ -236,7 +236,7 @@ class _FakeMessagingFormNotifier extends MessagingFormNotifier {
   MessagingFormState build() => const MessagingFormState();
 
   @override
-  Future<void> sendMessage({
+  Future<Message?> sendMessage({
     required String conversationId,
     required String senderId,
     required String senderName,
@@ -246,7 +246,7 @@ class _FakeMessagingFormNotifier extends MessagingFormNotifier {
     String? imageUrl,
     String? referenceId,
     Map<String, dynamic>? referenceData,
-  }) async {}
+  }) async => null;
 
   @override
   void reset() {}

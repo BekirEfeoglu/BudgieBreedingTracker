@@ -6,7 +6,6 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/constants/app_icons.dart';
-import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../router/route_names.dart';
@@ -47,7 +46,12 @@ class PrivacySecuritySection extends ConsumerWidget {
         SettingsNavigationTile(
           title: 'settings.change_password'.tr(),
           icon: const AppIcon(AppIcons.password),
-          onTap: () => _showPasswordChangeDialog(context, ref),
+          // Delegate to the shared MFA-aware sheet. The old bespoke dialog
+          // called `changePassword` directly with only a generic catch, so
+          // for any 2FA-enrolled user the mandatory `MfaAssuranceRequired`
+          // re-auth exception was swallowed as an error (and reported to
+          // Sentry) — password change was impossible from Settings.
+          onTap: () => showPasswordChangeSheet(context, ref: ref),
         ),
         SettingsNavigationTile(
           title: 'settings.two_factor_auth'.tr(),
@@ -118,51 +122,6 @@ class PrivacySecuritySection extends ConsumerWidget {
       await Sentry.captureException(e, stackTrace: st);
       ActionFeedbackService.show('errors.unknown'.tr());
     }
-  }
-
-  void _showPasswordChangeDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (dialogCtx) => Dialog(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: PasswordChangeForm(
-            onSubmit:
-                ({
-                  required String currentPassword,
-                  required String newPassword,
-                }) async {
-                  try {
-                    await ref
-                        .read(authActionsProvider)
-                        .changePassword(
-                          currentPassword: currentPassword,
-                          newPassword: newPassword,
-                        );
-                    // Pop the dialog's own route: popping a captured outer
-                    // navigator could remove the settings screen if the
-                    // dialog was barrier-dismissed during the request.
-                    if (dialogCtx.mounted) Navigator.of(dialogCtx).pop();
-                    ActionFeedbackService.show(
-                      'settings.password_changed'.tr(),
-                    );
-                  } catch (e, st) {
-                    AppLogger.error(
-                      '[PrivacySecurity] Password change failed',
-                      e,
-                      st,
-                    );
-                    await Sentry.captureException(e, stackTrace: st);
-                    ActionFeedbackService.show(
-                      'settings.password_change_error'.tr(),
-                      type: ActionFeedbackType.error,
-                    );
-                  }
-                },
-          ),
-        ),
-      ),
-    );
   }
 
   void _showActiveSessionsDialog(BuildContext context, WidgetRef ref) {

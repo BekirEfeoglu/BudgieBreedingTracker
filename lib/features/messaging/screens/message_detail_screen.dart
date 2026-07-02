@@ -11,6 +11,7 @@ import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import '../providers/messaging_providers.dart';
 import '../providers/messaging_realtime_providers.dart';
+import '../../../shared/providers/community.dart' show blockedUsersProvider;
 import '../widgets/message_bubble.dart';
 import '../widgets/message_input_bar.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
@@ -106,6 +107,11 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
     final messagesAsync = ref.watch(messagesProvider(widget.conversationId));
     final realtimeMessages = ref.watch(messagingRealtimeProvider);
     final typingUsers = ref.watch(typingIndicatorProvider);
+    // messagesProvider already strips blocked senders from the fetched page,
+    // but realtime-delivered messages are merged in raw below — apply the
+    // same filter so a block taking effect mid-session hides in-flight
+    // realtime messages too.
+    final blockedSenders = ref.watch(blockedUsersProvider).toSet();
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -165,6 +171,7 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
               data: (fetchedMessages) {
                 final allMessages = <String, Message>{};
                 for (final msg in realtimeMessages) {
+                  if (blockedSenders.contains(msg.senderId)) continue;
                   allMessages[msg.id] = msg;
                 }
                 for (final msg in fetchedMessages) {

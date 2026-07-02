@@ -155,8 +155,8 @@ class _FakeCommentFormNotifier extends CommentFormNotifier {
   CommentFormState build() => const CommentFormState();
 
   @override
-  Future<void> addComment({
+  Future<bool> addComment({
     required String postId,
     required String content,
-  }) async {}
+  }) async => false;
 }

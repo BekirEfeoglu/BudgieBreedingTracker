@@ -14,6 +14,7 @@ import 'package:budgie_breeding_tracker/data/providers/profile_stream_providers.
 import '../providers/messaging_form_providers.dart';
 import '../providers/messaging_providers.dart'
     show messageAttachmentsEnabledProvider;
+import '../providers/messaging_realtime_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 
 class MessageInputBar extends ConsumerStatefulWidget {
@@ -130,18 +131,20 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
     // Don't clear the input until we know the send succeeded. If the
     // call is rejected (cooldown, length cap, content moderation), the
     // user keeps their text instead of losing it and having to retype.
-    await notifier.sendMessage(
+    final sent = await notifier.sendMessage(
       conversationId: widget.conversationId,
       senderId: userId,
       senderName: senderName,
       content: text,
       messageType: MessageType.text,
     );
-    if (!mounted) return;
-    final state = ref.read(messagingFormStateProvider);
-    if (state.error == null && state.isSuccess) {
-      _controller.clear();
-    }
+    if (!mounted || sent == null) return;
+    _controller.clear();
+    // Optimistically surface the just-sent message so the sender sees it
+    // immediately even when realtime delivery is gated off by rollout flags.
+    // The detail-screen merge dedupes by id, so the realtime echo (same
+    // server id) won't duplicate it.
+    ref.read(messagingRealtimeProvider.notifier).addLocalMessage(sent);
   }
 
   void _showAttachmentOptions() {
