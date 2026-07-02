@@ -39,7 +39,11 @@ MigrationStrategy(
 
 Format: `YYYYMMDDHHmmss_short_description.sql`
 
-179 migration files in `supabase/migrations/` — applied in lexicographic (chronological) order.
+182 migration files in `supabase/migrations/` — applied in lexicographic
+(chronological) order. Verified 1:1 against production (zero drift,
+2026-07-02). `supabase/migrations/README.md` maps the full history by
+date-range/theme for orientation — additive only, no file was moved,
+renamed, or deleted.
 
 ### Idempotency (Required)
 
