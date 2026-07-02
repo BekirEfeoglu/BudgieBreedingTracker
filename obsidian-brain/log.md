@@ -4,6 +4,28 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-02] fix | Realtime error-log throttle (Sentry breadcrumb budget)
+
+User shared a real iOS Simulator debug-run log while testing the earlier
+session's `pod install` fix. App boot/sync/presence all healthy, but
+`⚠️ Realtime status: channelError` for `events:<userId>` and
+`community-posts-feed` channels repeated dozens of times (root cause:
+`errno 49`/`EADDRNOTAVAIL`, an iOS Simulator network quirk, not app code).
+Investigating the repeat pattern surfaced a real, separate code gap:
+`EventRemoteSource.subscribeToEvents` and
+`CommunityPostRemoteSource.subscribeToPostChanges` called
+`AppLogger.warning` on every single reconnect attempt with no cap — unlike
+`RealtimeSyncService`, which already solved this exact problem with
+`maxReconnectFailures = 5`. Since the Supabase realtime client retries
+indefinitely on its own and `AppLogger.warning` always attaches a Sentry
+breadcrumb (~100-breadcrumb buffer), a persistent connectivity issue on a
+real user's device could fully displace useful context before a real crash
+is captured. New `RealtimeErrorLogThrottle`
+(`lib/core/utils/realtime_error_log_throttle.dart`, TDD, matches
+`navigation_throttle.dart`'s style) caps consecutive warnings per
+subscription instance, then drops to `.debug`; wired into both call sites.
+See [[patterns/observability]].
+
 ## [2026-07-02] fix | Statistics 2026-07-01 audit follow-up + test regression
 
 Worked through the remaining `features/statistics.md` Known Issues from the

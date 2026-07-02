@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/utils/realtime_error_log_throttle.dart';
 import '../supabase/edge_function_client.dart';
 import 'base_remote_source.dart';
 import 'community_profile_cache.dart';
@@ -281,6 +282,7 @@ class CommunityPostRemoteSource {
     required void Function(String postId) onRemove,
   }) {
     final channel = _client.channel('community-posts-feed');
+    final errorLog = RealtimeErrorLogThrottle();
     channel
         .onPostgresChanges(
           event: PostgresChangeEvent.insert,
@@ -320,11 +322,13 @@ class CommunityPostRemoteSource {
           },
         )
         .subscribe((status, error) {
-          if (error != null) {
-            AppLogger.warning(
-              '[community-posts-feed] Realtime status: $status, error: $error',
-            );
+          if (error == null) {
+            errorLog.reset();
+            return;
           }
+          errorLog.logError(
+            '[community-posts-feed] Realtime status: $status, error: $error',
+          );
         });
     return channel;
   }

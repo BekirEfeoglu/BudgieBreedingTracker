@@ -2,6 +2,7 @@ import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 import 'package:budgie_breeding_tracker/data/models/supabase_extensions.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/core/utils/realtime_error_log_throttle.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/base_remote_source.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'
     show
@@ -67,6 +68,7 @@ class EventRemoteSource extends BaseRemoteSource<Event> {
     void Function(String deletedId) onDelete,
   ) {
     final channel = client.channel('events:$userId');
+    final errorLog = RealtimeErrorLogThrottle();
     channel
         .onPostgresChanges(
           event: PostgresChangeEvent.insert,
@@ -121,11 +123,13 @@ class EventRemoteSource extends BaseRemoteSource<Event> {
           },
         )
         .subscribe((status, error) {
-          if (error != null) {
-            AppLogger.warning(
-              '[events:$userId] Realtime status: $status, error: $error',
-            );
+          if (error == null) {
+            errorLog.reset();
+            return;
           }
+          errorLog.logError(
+            '[events:$userId] Realtime status: $status, error: $error',
+          );
         });
     return channel;
   }

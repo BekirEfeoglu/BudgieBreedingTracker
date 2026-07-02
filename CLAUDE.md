@@ -88,8 +88,8 @@ scripts/test_check_obsidian_brain.py    # Tests for obsidian-brain wiki lint
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 999 Dart files |
-| Test files (test/) | 909 test files, 11,281+ individual tests |
+| Source files (lib/) | 1000 Dart files |
+| Test files (test/) | 910 test files, 11,285+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |

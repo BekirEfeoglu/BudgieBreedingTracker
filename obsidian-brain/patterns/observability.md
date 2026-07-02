@@ -75,6 +75,21 @@ Sentry.configureScope((s) => s.setUser(null));
 
 Event names: snake_case dictionary (`sync_started`, `sync_completed`, `auth_login`, `mfa_lockout`)
 
+## Breadcrumb Budget Protection
+
+`AppLogger.warning` always attaches a Sentry breadcrumb, even in release
+builds (unlike `debug`, which only does in non-release). Sentry keeps ~100
+breadcrumbs — a loop that logs `.warning` on every retry (e.g. a realtime
+subscription the underlying SDK reconnects indefinitely with no cap from
+caller code) can fully displace useful context before a real crash is
+captured. `RealtimeErrorLogThrottle`
+(`lib/core/utils/realtime_error_log_throttle.dart`) caps consecutive
+`.warning` calls (default 5, matching `RealtimeSyncService.maxReconnectFailures`)
+then drops to `.debug` — one instance per subscription, `reset()` on
+success. Used by `EventRemoteSource.subscribeToEvents` and
+`CommunityPostRemoteSource.subscribeToPostChanges` (2026-07-02, iOS
+Simulator `EADDRNOTAVAIL` reconnect-storm finding).
+
 ## Anti-Patterns
 
 1. `print()` (anti-pattern #10)
@@ -83,6 +98,7 @@ Event names: snake_case dictionary (`sync_started`, `sync_completed`, `auth_logi
 4. Validation errors to Sentry (noise)
 5. `AppLogger.error` without `stackTrace` parameter
 6. Not clearing Sentry user scope on logout
+7. Unthrottled `.warning` in a retry loop (breadcrumb budget exhaustion)
 
 ## See Also
 
