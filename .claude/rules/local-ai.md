@@ -38,13 +38,13 @@ Future<AnalysisResult> analyzeBirdPhoto(File image) async {
 ```
 
 ## Caching
-- In-memory `LruCache` (max 50 entry, 1h TTL)
-- Cache key: prompt hash + image hash (perceptual hash kullan, byte hash değil)
+- In-memory `LocalAiCache` (max **8** entry, **10 dakika** TTL — `lib/domain/services/local_ai/local_ai_service.dart`)
+- Cache key: SHA-1 byte hash of image bytes (`_imageCacheToken`) — perceptual hash DEĞİL; küçük bir edit aynı fotoğrafı cache miss yapar (bkz. Anti-Patterns #5, bu bilinen bir sınırlama)
 - Persist edilmez — app restart cache'i temizler
 - Premium kullanıcı için server-side cache değerlendirilebilir (out of scope)
 
 ```dart
-final cacheKey = '${prompt.hashCode}_${await image.perceptualHash()}';
+final cacheKey = _sha1Hex(imageBytes);
 if (_cache.containsKey(cacheKey)) return _cache[cacheKey]!;
 final result = await _backend.analyze(...);
 _cache[cacheKey] = result;

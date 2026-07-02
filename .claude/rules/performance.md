@@ -50,7 +50,7 @@
 // Query timing
 final sw = Stopwatch()..start();
 final birds = await dao.getAllBirds();
-AppLogger.debug('perf', 'getAllBirds: ${sw.elapsed}');
+AppLogger.debug('perf getAllBirds: ${sw.elapsed}');
 
 // Frame timing (debug mode)
 // Use Flutter DevTools Performance overlay
@@ -77,9 +77,9 @@ Budget aşıldığında: profile et, optimize et, gerekirse feature scope kıs. 
 final sw = Stopwatch()..start();
 final result = await operation();
 final ms = sw.elapsedMilliseconds;
-AppLogger.debug('perf', 'operationName: ${ms}ms');
+AppLogger.debug('perf operationName: ${ms}ms');
 if (ms > budgetMs) {
-  AppLogger.warning('perf', 'operationName exceeded budget: ${ms}ms > ${budgetMs}ms');
+  AppLogger.warning('perf operationName exceeded budget: ${ms}ms > ${budgetMs}ms');
 }
 ```
 

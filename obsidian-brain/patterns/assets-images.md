@@ -83,13 +83,16 @@ Run in isolate with `compute()` — never block UI thread.
 
 ## Storage Buckets
 
+Real buckets (`lib/core/constants/supabase_constants.dart`): `bird-photos`, `egg-photos`, `chick-photos`, `avatars`, `backups`, `community-photos`, `photos` (marketplace, constant `marketplacePhotosBucket`), `message-photos`. There is no separate `health-records` or `chat-attachments` bucket — health record photos live in `bird-photos`; `message-photos` is defined but has zero call sites (DM attachment upload isn't wired to Storage yet).
+
 | Bucket | Access | Content |
 |--------|--------|---------|
-| `bird-photos` | Private (user RLS) | Bird photos |
-| `community-posts` | Public read, auth write | Community images |
-| `marketplace-listings` | Public read, auth write | Listing photos |
-| `health-records` | Private | Health documents |
-| `chat-attachments` | Conversation-scoped RLS | DM attachments |
+| `bird-photos` | Private (user RLS) | Bird photos + health record photos |
+| `egg-photos` / `chick-photos` | Private (user RLS) | Egg/chick photos |
+| `community-photos` | Server upload, signed URL read | Community images |
+| `photos` (marketplace) | Public read, auth write | Listing photos |
+| `avatars` / `backups` | Private | Profile photo / user backups |
+| `message-photos` | Defined, unused | DM attachment wiring not implemented |
 
 - Private: signed URL (1h TTL)
 - Public: CDN URL + cache header

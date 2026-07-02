@@ -5,19 +5,26 @@ WCAG 2.1 AA — kullanıcılarımızın bir kısmı yaşlı kuşbazlar, ekran ok
 
 ## Touch Target (Dokunma Hedefi)
 - Minimum **48x48 dp** her interaktif öğe için (WCAG 2.5.5)
-- `IconButton` varsayılan boyutu yetersiz — `constraints: BoxConstraints(minWidth: 48, minHeight: 48)` zorunlu
+- `IconButton` varsayılan boyutu (dense context'te ~40x40 olabilir) yetersiz — `AppIconButton` (`lib/core/widgets/buttons/app_icon_button.dart`) kullan, 48dp + zorunlu `semanticLabel` garanti eder
 - `verify_code_quality.py` → `check_iconbutton_constraints` bu kuralı tarar
 - İkonlar arası min **8 dp** boşluk (yanlış basma riskini düşür)
 
 ```dart
-// CORRECT
+// CORRECT — AppIconButton (tercih edilen)
+AppIconButton(
+  icon: AppIcon(AppIcons.edit),
+  onPressed: _onEdit,
+  semanticLabel: 'birds.edit_bird'.tr(),
+)
+
+// CORRECT — raw IconButton (AppIconButton uygun değilse)
 IconButton(
   icon: AppIcon(AppIcons.edit),
   onPressed: _onEdit,
   constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
 )
 
-// WRONG - default 32x32 if dense
+// WRONG - constraints olmadan 48dp altına düşebilir
 IconButton(
   icon: AppIcon(AppIcons.edit),
   onPressed: _onEdit,
@@ -77,13 +84,16 @@ Semantics(
 - Icon yönü: `Icons.arrow_back` RTL'de otomatik flip ETMEZ — `Directionality.of(context)` ile manuel kontrol
 
 ### Locale Text Overflow Test
+`pumpWidgetWithLocale` diye bir helper YOK — gerçek pattern locale'i döngüyle gezip `resolvedL10n(key, locale:)` ile string'i önceden çözüp `buildGoldenWidget(...)` + `tester.pumpWidget` kullanır (bkz. `test/golden/widgets/multi_locale_empty_state_golden_test.dart`):
 ```dart
-testWidgets('button label fits in German locale', (tester) async {
-  // Almanca compound kelime testi
-  await pumpWidgetWithLocale(tester, MyButton(label: 'birds.add_breeding_pair'.tr()), 'de');
-  final overflow = tester.takeException();
-  expect(overflow, isNull);
-});
+for (final locale in ['tr', 'en', 'de']) {
+  testWidgets('button label fits in $locale locale', (tester) async {
+    final label = resolvedL10n('birds.add_breeding_pair', locale: locale);
+    await tester.pumpWidget(buildGoldenWidget(MyButton(label: label), locale: locale));
+    final overflow = tester.takeException();
+    expect(overflow, isNull);
+  });
+}
 ```
 
 ## Screen Reader Test

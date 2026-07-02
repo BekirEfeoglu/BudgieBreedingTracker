@@ -65,7 +65,11 @@ Exempt classes MUST declare the exemption in the first doc block:
 
 Currently exempt:
 - `CommunityPostRepository` — cross-user public feed, chronological
+- `CommunityCommentRepository` — cross-user comment stream on public posts
+- `CommunitySocialRepository` — likes/follows/blocks on public social graph
 - `MessagingRepository` — realtime multi-party conversations
+- `MarketplaceRepository` — cross-user public listings (wraps `MarketplaceListingRemoteSource` + `MarketplaceFavoriteRemoteSource`)
+- `GamificationRepository` — server-authoritative XP/badge ledger, anti-cheat by design
 
 Online-only classes that are NOT cross-user/multi-party streams (e.g. a single-user remote-only resource) MUST use `*RemoteService` or `*OnlineSource` naming instead of `*Repository`.
 

@@ -70,7 +70,7 @@ Current webhook receivers: `revenuecat-webhook` (shared secret via `REVENUECAT_W
 - Dart-side test of HTTP wrapper ≠ edge function test — both required
 
 ## Deployment
-- Function names must match exactly across: workflow, function folder, Dart `EdgeFunctionName` constants
+- Function names must match exactly across: workflow, function folder, and raw string literal call sites in `lib/data/remote/supabase/edge_function_client.dart` (no `EdgeFunctionName` constants class exists)
 - New function checklist:
   1. Create `supabase/functions/<name>/index.ts`
   2. Add Deno tests: `supabase/functions/<name>/*_test.ts`

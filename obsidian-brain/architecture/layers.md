@@ -53,7 +53,7 @@ When feature A needs something from feature B:
 - `security/` — secure storage wrappers
 - `theme/` — `AppTheme`, `AppColors`
 - `utils/` — `AppLogger`, `RelativeTimeFormatter`, helpers
-- `widgets/` — 29 shared widgets (15 root + buttons/4 + cards/2 + dialogs/2 + bottom_sheet/1 + eggs/5)
+- `widgets/` — 35 shared widgets (15 root + buttons/4 + cards/2 + dialogs/2 + bottom_sheet/1 + eggs/5)
 - `providers/` — cross-feature providers (auth state, connectivity, etc.)
 
 ## data/ Contents
@@ -61,7 +61,7 @@ When feature A needs something from feature B:
 - `models/` — 29 Freezed model files (+ statistics_models, supabase_extensions)
 - `local/database/` — Drift tables (20), DAOs (20), mappers (20), converters, `app_database.dart`
 - `local/preferences/` — `AppPreferences` (SharedPreferences wrapper)
-- `remote/api/` — 26 remote source classes
+- `remote/api/` — 27 remote source classes + base + 2 caches + providers
 - `remote/storage/` — `StorageService`
 - `remote/supabase/` — Edge function invokers
 - `repositories/` — 23 entity repos + base + sync_metadata + `repository_providers.dart`

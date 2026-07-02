@@ -71,7 +71,7 @@ Source: `pubspec.yaml`, `.claude/rules/architecture.md`
 |---------|---------|
 | uuid ^4.3.0 | Client-side UUID generation |
 | connectivity_plus ">=7.0.0 <7.1.0" | Network state (pinned — iOS 26 SDK compat) |
-| path_provider ^2.1.0 | File system paths (pinned 2.5.1 — FFI bug) |
+| path_provider ^2.1.6 | File system paths |
 | share_plus ^12.0.0 | OS share sheet |
 | file_picker ^11.0.2 | File import |
 | url_launcher ^6.2.0 | Open URLs |

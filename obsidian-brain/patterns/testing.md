@@ -4,8 +4,8 @@ Source: `.claude/rules/testing.md`, `.claude/rules/test-stability.md`
 
 ## Stats
 
-- 905 test files, 11,107+ individual tests
-- CI timeout: 25 minutes
+- 910 test files, 11,285+ individual tests
+- CI timeout: 30 minutes (job-level 40 minutes)
 - Golden tests excluded from main CI (`--exclude-tags golden`)
 
 ## Structure
@@ -88,7 +88,7 @@ addTearDown(controller.close);
 ## Mocking
 
 - Package: `mocktail`
-- ~49 mock classes in `test/helpers/mocks.dart`
+- ~55 mock classes in `test/helpers/mocks.dart`
 - Pattern: `class MockBirdRepository extends Mock implements BirdRepository {}`
 - `registerFallbackValue()` for custom types in `setUpAll`
 

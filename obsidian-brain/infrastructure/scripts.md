@@ -29,6 +29,10 @@ Or the combined script:
 scripts/run_local_quality_gate.sh
 ```
 
+## Other Scripts (not in the quality-gate list above)
+
+`scripts/verify_security.py` (backs the `security-audit` CI job), `scripts/test_app_store_config.py`, `scripts/install_git_hooks.sh`, `scripts/run_breeding_egg_regression.sh` also exist on disk.
+
 ## Test Scripts (CI: scripts-test job, ≥98% coverage)
 
 | Script | Tests |
@@ -40,6 +44,7 @@ scripts/run_local_quality_gate.sh
 | `test_verify_rules.py` | Tests for verify_rules.py |
 | `test_check_platform_targets.py` | Tests for platform target policy |
 | `test_check_obsidian_brain.py` | Tests for wiki lint |
+| `test_verify_security.py` | Tests for verify_security.py |
 
 ## Internal Modules
 

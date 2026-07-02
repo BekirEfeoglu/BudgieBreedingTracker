@@ -31,12 +31,11 @@ Kullanıcı tercih ayarları + dev/debug toggle'ları:
 class AppPreferences {
   Future<bool> getAnalyticsEnabled();
   Future<void> setAnalyticsEnabled(bool value);
-  Future<bool> getExperimentalGenetics();
 }
 ```
 - `analytics_enabled` — kullanıcı opt-in
 - `notification_quiet_hours` — bildirim sessiz saatleri
-- `experimental_*` — gizli geliştirici menüsünden açılır
+- `experimental_*` — gizli geliştirici menüsünden açılır (bkz. § Experimental Features — henüz implement edilmedi, `getExperimentalGenetics()` de dahil)
 
 Production'da kullanıcı bu flag'leri Settings ekranından kontrol eder.
 
@@ -61,13 +60,19 @@ deterministik user bucket'ı rollout yüzdesinin altındaysa başlar. Ramp plan�
 veya conflict oranı artarsa kill switch önce kapatılır, sonra fix deploy edilir.
 
 ## Server-Side Kill Switch
-Bozuk bir feature production'da hemen kapatılmalı:
+**Henüz implement edilmedi (2026-07-02 audit):** `app_config` Supabase
+tablosu, `remoteConfigProvider`, `RemoteConfig` sınıfı ve
+`isCommunityDisabled` kod tabanında YOKTUR — bu bölüm gelecek tasarım
+hedefidir (Sync bölümündeki gerçek `syncRealtimeServerKillSwitchProvider`
+ile karıştırma, o zaten var ve çalışıyor). Eklenirse aşağıdaki tasarım
+kullanılabilir; bu bölüm gerçek implementasyonla güncellenmelidir:
 - Supabase `app_config` tablosu kill-switch flag'leri tutar
 - App startup + her foreground'da pull
 - Cache: 1 saat TTL, network'e bağımlı değil (cache hit her zaman tercih)
 - Default: open (config gelmezse feature açık) — fail-open mu fail-closed mu seçimi feature'a göre
 
 ```dart
+// Tasarım hedefi — henüz yok
 final config = ref.watch(remoteConfigProvider);
 if (config.isCommunityDisabled) {
   return const FeatureDisabledScreen();
@@ -114,7 +119,6 @@ Flag'ler kalıcı olmamalı — `experimental_*` flag'leri 90 günden uzun yaşa
 - Feature flag'i testte explicit override:
 ```dart
 final container = ProviderContainer(overrides: [
-  remoteConfigProvider.overrideWithValue(RemoteConfig(isCommunityDisabled: true)),
   syncOfflineBannerEnabledProvider.overrideWithValue(false),
 ]);
 addTearDown(container.dispose);

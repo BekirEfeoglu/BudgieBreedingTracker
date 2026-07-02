@@ -1,6 +1,6 @@
 # Encryption
 
-`EncryptionService` (`lib/domain/services/encryption/`) hassas alanları (ring_number, pedigree_info, genetic_info) AES-256-CBC + HMAC-SHA256 ile şifreler. Anahtar `flutter_secure_storage` üzerinde platform keychain/keystore'da tutulur.
+`EncryptionService` (`lib/domain/services/encryption/`) hassas alanları (ring_number, genotypeInfo, notes) AES-256-CBC + HMAC-SHA256 ile şifreler. Şu an sadece `birds_dao.dart` `EncryptionService` kullanır. Anahtar `flutter_secure_storage` üzerinde platform keychain/keystore'da tutulur.
 
 ## Algoritma
 | Bileşen | Spesifikasyon |
@@ -29,8 +29,8 @@ const _storage = FlutterSecureStorage(
 
 ## Sub-Key Derivation
 Master key tek başına hem encrypt hem MAC için kullanılmaz — sub-key'ler türetilir:
-- Encryption sub-key: HMAC-SHA256(master, "enc")
-- MAC sub-key: HMAC-SHA256(master, "mac")
+- Encryption sub-key: HMAC-SHA256(master, "BBTENC")
+- MAC sub-key: HMAC-SHA256(master, "BBTMAC")
 
 Sub-key hesabı her encrypt/decrypt'te tekrar edilmez — bir kere hesaplanıp `_cachedMasterKeyHash` ve `_cachedEncKey`/`_cachedMacKey` alanlarında cache'lenir. App restart'ta yeniden hesaplanır.
 
@@ -46,9 +46,9 @@ Sub-key hesabı her encrypt/decrypt'te tekrar edilmez — bir kere hesaplanıp `
 ```
 [magic (8B)] [version (1B)] [iv (16B)] [ciphertext (N)] [mac (32B)]
 ```
-- Magic mismatch → `InvalidPayloadException` (yanlış formata karşı koruma)
+- Magic mismatch → `FormatException` (yanlış formata karşı koruma)
 - Version mismatch → key archive'dan eski key ile decrypt attempt
-- MAC verify fail → `IntegrityException` + Sentry (tampering şüphesi)
+- MAC verify fail → `FormatException` ("Invalid ciphertext: integrity check failed") + Sentry (tampering şüphesi)
 - IV random per encrypt (asla reuse)
 
 ## Sentry & Logging
@@ -61,10 +61,10 @@ Sub-key hesabı her encrypt/decrypt'te tekrar edilmez — bir kere hesaplanıp `
 | Alan | Şifrele |
 |------|---------|
 | ring_number | EVET (kuş ID hırsızlık riski) |
-| pedigree_info | EVET (kişisel + ticari değer) |
-| genetic_info | EVET (premium içerik) |
+| genotypeInfo | EVET (premium içerik) |
+| notes | EVET (`birds_dao.dart` üzerinden şifrelenir) |
 | photoUrl | HAYIR (zaten signed URL + RLS) |
-| name / notes | HAYIR (kullanıcı zaten görüyor) |
+| name | HAYIR (kullanıcı zaten görüyor) |
 | timestamps | HAYIR (operational data) |
 
 Kural: PII + ticari değer + RLS yetmiyor = şifrele. UX yardımcı veri = düz.
@@ -88,7 +88,7 @@ Kural: PII + ticari değer + RLS yetmiyor = şifrele. UX yardımcı veri = düz.
 
 ## Testing
 - Round-trip: encrypt → decrypt eşitlik (1000 random payload)
-- Tamper detection: ciphertext'in 1 byte'ını değiştir, decrypt MUST throw `IntegrityException`
+- Tamper detection: ciphertext'in 1 byte'ını değiştir, decrypt MUST throw `FormatException`
 - Wrong key: farklı key ile decrypt → throw, asla bozuk plaintext döndürme
 - Key rotation: eski key ile yazılmış payload yeni key sonrası decrypt edilebilmeli (archive'dan)
 - Performance: encrypt 1000 field < 5sn (cache aktif)
@@ -101,7 +101,7 @@ test('detects ciphertext tampering', () async {
   final tampered = base64.encode(bytes);
   await expectLater(
     service.decrypt(tampered),
-    throwsA(isA<IntegrityException>()),
+    throwsA(isA<FormatException>()),
   );
 });
 ```

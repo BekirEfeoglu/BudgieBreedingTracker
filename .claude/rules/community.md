@@ -40,7 +40,7 @@ Compose -> Client moderation -> Edge create-community-post
 ```
 
 - Optimistic insert: client UUID, server timestamp authoritative
-- Edit window: 5 dakika (sonrası lock, MUTAVI-tarzı bilgilendirme)
+- **Post edit henüz implement edilmedi (2026-07-02 audit):** `CommunityPostRepository` `create`/`delete`/`getFeed`/`getById`/`getByUser`/`getBookmarked`/`search` metodlarını expose eder — `update`/edit metodu YOK. "5 dakika edit window" bu bölüm gelecek tasarım hedefidir.
 - Delete: soft delete (`deleted_at`), feed query filter
 
 ## Comment
@@ -94,7 +94,7 @@ Compose -> Client moderation -> Edge create-community-post
 
 ## Block / Mute
 - Block: karşılıklı feed gizleme, DM engelleme
-- Mute: tek yönlü, feed'de görünmez ama DM engellenmez
+- **Mute henüz implement edilmedi (2026-07-02 audit):** `community_social_repository.dart`/`community_social_remote_source.dart` içinde mute için hiçbir kod yok — bu bölüm gelecek tasarım hedefidir
 - Block list cache: 5dk TTL, mutation sonrası invalidate
 - Engellenen kullanıcının postları feed query'sinde filter
 

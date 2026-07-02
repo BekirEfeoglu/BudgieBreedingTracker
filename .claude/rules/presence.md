@@ -8,7 +8,7 @@
 | Service | `UserPresenceService` |
 | Providers | `user_presence_providers.dart` |
 | Constants | `user_presence_constants.dart` (TTL, heartbeat interval) |
-| Storage | Supabase realtime channels + `user_presence` table |
+| Storage | Supabase realtime channels + `user_sessions` table |
 | Integration | messaging (typing), community (online badge), profile (last-seen) |
 
 ## Presence Model
@@ -20,8 +20,9 @@
 | `invisible` | Privacy: online'ken offline gibi görün |
 
 ## Heartbeat
+- Gerçek API session-tabanlı: `startSession(userId)` → periyodik `heartbeat(...)` → `endSession(...)` (`user_presence_service.dart`)
 - Interval: 30 saniye (foreground)
-- Mekanizma: Supabase realtime `track` payload + `user_presence` table upsert
+- Mekanizma: Supabase realtime `track` payload + `user_sessions` table upsert
 - App background → heartbeat dur, `away` state'e geç
 - App foreground → heartbeat resume + immediate update
 - Network kopukluğunda: 90s TTL içinde `offline`

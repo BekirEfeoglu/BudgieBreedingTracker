@@ -72,24 +72,24 @@ Enforced by `scripts/verify_code_quality.py` (27 checker categories — 19/24 CL
 - ~2,995 keys per language, 41 categories
 - See [[patterns/l10n]]
 
-## Codebase Stats (as of 2026-06-13)
+## Codebase Stats (as of 2026-07-02, kept in sync via `verify_rules.py --strict`)
 
 | Metric | Value |
 |--------|-------|
-| Source files (lib/) | 987 Dart files |
-| Test files | 903 files, 11,095+ tests |
+| Source files (lib/) | 1000 Dart files |
+| Test files | 910 files, 11,285+ tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
-| Remote sources | 26 entity + base + 2 caches + providers |
+| Remote sources | 27 entity + base + 2 caches + providers |
 | Freezed models | 29 model files + statistics_models + supabase_extensions |
-| Domain services | 22 directories |
-| Routes | 73 |
-| Custom SVG icons | 89 constants, 89 files |
-| Shared widgets | 29 |
+| Domain services | 23 directories |
+| Routes | 74 |
+| Custom SVG icons | 93 constants, 93 files |
+| Shared widgets | 35 |
 | Enum files | 15 |
-| Supabase constants | 138 |
-| L10n keys | ~2,995 per language, 41 categories |
+| Supabase constants | 142 |
+| L10n keys | ~3,014 per language, 41 categories |
 | DB schema version | 25 |
 | Supabase migrations | 179 SQL files |
 | Edge Functions | 12 |

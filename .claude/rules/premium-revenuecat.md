@@ -8,15 +8,15 @@ Premium abonelik akışı RevenueCat üzerinden yönetilir, ama yetkilendirme **
 | Store | App Store + Google Play |
 | Aggregator | RevenueCat (`purchases_flutter ^10.0.2`) |
 | Server verify | Supabase Edge Function `sync-premium-status` |
-| Client state | `premiumStatusProvider` (Riverpod) |
-| Route guard | `PremiumGuard` (`lib/router/guards/`) |
+| Client state | `isPremiumProvider` / `premiumGracePeriodProvider` / `effectivePremiumProvider` (`lib/domain/services/premium/premium_providers.dart`) |
+| Route guard | `PremiumGuard` (`lib/router/guards/premium_guard.dart`) |
 
 ## Entitlement Flow
 ```
 User purchases (RevenueCat) -> RevenueCat webhook -> sync-premium-status edge fn
   -> Server validates with REVENUECAT_SECRET_API_KEY
   -> Updates user.is_premium + entitlement metadata in Supabase
-  -> Client refreshes premiumStatusProvider on app resume / push
+  -> Client refreshes premium providers on app resume / push
 ```
 
 İstemci RevenueCat SDK'sını **sadece purchase UX'i için** kullanır. Premium gate kararı her zaman sunucu kaynaklı (`profiles.is_premium`) okumadan verilir.
@@ -58,22 +58,21 @@ try {
 ```
 
 ## PremiumGuard
+Gerçek imza `bool` alır — provider okuma çağıran route builder'da yapılır, guard içinde değil (`lib/router/guards/premium_guard.dart`):
 ```dart
 class PremiumGuard {
-  static FutureOr<String?> redirect(BuildContext context, GoRouterState state) {
-    final container = ProviderScope.containerOf(context);
-    final status = container.read(premiumGracePeriodProvider);
-    return switch (status) {
-      GracePeriodStatus.active || GracePeriodStatus.gracePeriod => null,
-      GracePeriodStatus.expired || GracePeriodStatus.none => AppRoutes.premiumUpsell,
-    };
+  static String? redirect(bool hasEffectiveAccess) {
+    return hasEffectiveAccess ? null : AppRoutes.premium;
   }
 }
 ```
+`GracePeriodStatus` enum değerleri: `active`, `gracePeriod`, `expired`, `free`, `unknown` (`lib/core/enums/subscription_enums.dart`) — `none` diye bir değer YOK.
+
+`PremiumGuard.redirect` şu an sadece `/genealogy` route'unda kullanılıyor. `/statistics` ve `/genetics` gibi diğer premium route'lar `effectivePremiumProvider` **VEYA** geçici rewarded-ad erişimi (`isStatisticsRewardActiveProvider`, `isGeneticsRewardActiveProvider`) ile ayrı ayrı gate'lenir (`app_router.dart` içinde inline) — bkz. statistics.md § Premium Features.
 
 ## Subscription Plan Restrictions
 - Sadece **iki** premium plan aktif (314c274 commit, 2026-05-14)
-- Yeni plan eklemek: hem RevenueCat dashboard hem `PremiumPlanConfig` Dart sabiti güncellenmeli
+- Yeni plan eklemek: hem RevenueCat dashboard hem `lib/domain/services/premium/premium_plan_utilities.dart` güncellenmeli
 - Trial period: sadece App Store free trial — Android tarafında "intro pricing" kullan
 - Eski plan'a sahip kullanıcılar entitlement süresi dolana kadar korunur, kod path silinmez
 
@@ -90,10 +89,10 @@ class PremiumGuard {
 - Restore akışında loading + success/failure feedback ver (l10n: `premium.restore_success`, `premium.restore_failed`)
 
 ## Testing
-- Unit: `PremiumService` mock'lanır, gerçek RevenueCat çağrısı YOK
+- Unit: RevenueCat `Purchases` çağrıları mock'lanır, gerçek çağrı YOK
 - Integration: edge function test'i `sync-premium-status/test.ts` içinde
 - Manual QA: TestFlight sandbox + Play internal testing track
-- `RevenueCatPaywall` golden test edilebilir
+- Paywall ekranı golden test edilebilir
 
 ## Anti-Patterns
 1. İstemci-only premium check (`isPremium` flag'i kandırılabilir — server doğrulama zorunlu)

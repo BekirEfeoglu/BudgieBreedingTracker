@@ -8,14 +8,15 @@ Source: `.claude/rules/architecture.md`, `CLAUDE.md` § Key File Locations
 lib/
 ├── core/
 │   ├── constants/
-│   │   ├── app_icons.dart         84 SVG icon path constants
+│   │   ├── app_icons.dart         93 SVG icon path constants
+│   │   ├── supabase_constants.dart  SupabaseConstants (142 table/column/bucket constants)
 │   │   └── app_spacing.dart       AppSpacing.xs/sm/md/lg/xl/xxl/xxxl
 │   ├── enums/                     15 enum files
 │   ├── errors/                    AppException hierarchy
 │   ├── providers/                 Cross-feature providers (auth, connectivity)
 │   ├── security/                  FlutterSecureStorage wrappers
 │   ├── theme/                     AppTheme, AppColors
-│   └── widgets/                   29 shared widgets
+│   └── widgets/                   35 shared widgets (15 root + buttons/cards/dialogs/bottom_sheet/eggs below)
 │       ├── buttons/               4 button widgets
 │       ├── cards/                 2 card widgets
 │       ├── dialogs/               2 dialog widgets
@@ -33,14 +34,14 @@ lib/
 │   │   │   └── app_database.dart  schemaVersion=25, DriftDatabase class
 │   │   └── preferences/           AppPreferences (SharedPreferences wrapper)
 │   ├── remote/
-│   │   ├── api/                   26 remote source classes
+│   │   ├── api/                   27 remote source classes + base + 2 caches + providers
 │   │   ├── storage/               storage_service.dart
-│   │   └── supabase/              Edge function invokers, SupabaseConstants
+│   │   └── supabase/              edge_function_client.dart, supabase_client.dart
 │   └── repositories/              23 entity repos + base + sync_metadata
 │       └── repository_providers.dart
 │
 ├── domain/
-│   └── services/                  22 directories of business logic
+│   └── services/                  23 directories of business logic
 │       ├── genetics/
 │       ├── sync/
 │       ├── incubation/
@@ -55,7 +56,7 @@ lib/
 │
 ├── router/
 │   ├── app_router.dart
-│   ├── route_names.dart           AppRoutes constants (73 routes)
+│   ├── route_names.dart           AppRoutes constants (74 routes)
 │   ├── guards/
 │   │   ├── admin_guard.dart
 │   │   └── premium_guard.dart
@@ -74,7 +75,7 @@ lib/
 ```
 assets/
 ├── translations/
-│   ├── tr.json    Master (~2,995 keys, 41 categories)
+│   ├── tr.json    Master (~3,014 keys, 41 categories)
 │   ├── en.json
 │   └── de.json
 ├── images/

@@ -9,14 +9,17 @@ Runs on PRs and main pushes.
 | Job | Purpose | Blocker |
 |-----|---------|---------|
 | `analyze` | `flutter analyze --no-fatal-infos` | PR merge |
-| `test` | Unit + widget tests (timeout 25m) | PR merge |
+| `test` | Unit + widget tests (step timeout 30m, job-level 40m) | PR merge |
 | `golden-test` | Visual regression (Linux baseline) | PR merge |
+| `edge-functions-test` | `deno test` on `supabase/functions` | PR merge + Edge deploy gate |
+| `e2e-community-test` | E2E + community tagged tests | `workflow_dispatch`/`schedule` |
 | `scripts-test` | Python script tests (≥98% coverage) | PR merge |
 | `l10n-sync` | Translation key parity (--strict-keys) | PR merge |
 | `code-quality` | Anti-pattern scan + platform target policy + wiki lint | PR merge |
 | `rules-sync` | CLAUDE.md stats verification | PR merge |
+| `security-audit` | `python scripts/verify_security.py` — cert pinning, secrets | PR merge |
 | `auto-fix-stats` | Auto-PR for CLAUDE.md drift | main only |
-| `deploy-edge-functions` | Supabase Edge Function deploy | main only, needs analyze+test |
+| `deploy-edge-functions` | Supabase Edge Function deploy | main only, needs analyze+test+edge-functions-test |
 | `android-build` | Debug APK smoke gate | main |
 | `android-release` | Signed AAB (`release-ready.yml`) | manual trigger only |
 | `ios-build` | iOS build (no code signing) | main |

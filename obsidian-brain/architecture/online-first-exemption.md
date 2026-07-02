@@ -11,7 +11,11 @@ A class named `*Repository` **MUST** be offline-first (Drift table + DAO + SyncM
 | Class | Reason |
 |-------|--------|
 | `CommunityPostRepository` | Cross-user public feed, chronological ordering, local mirror would not improve UX |
+| `CommunityCommentRepository` | Cross-user comment stream on public posts |
+| `CommunitySocialRepository` | Likes/follows/blocks on public social graph |
 | `MessagingRepository` | Realtime multi-party conversations, server state is authoritative |
+| `MarketplaceRepository` | Cross-user public listings (wraps `MarketplaceListingRemoteSource` + `MarketplaceFavoriteRemoteSource`) |
+| `GamificationRepository` | Server-authoritative XP/badge ledger, anti-cheat by design |
 
 Exempt classes **must** declare their exemption in the first doc block:
 

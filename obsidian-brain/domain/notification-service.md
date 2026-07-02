@@ -22,7 +22,7 @@ Domain event (egg hatching, marketplace sale)
 
 ## Token Management
 
-- Tokens stored in Supabase `user_fcm_tokens` table (multi-device)
+- Tokens stored in Supabase `fcm_tokens` table (multi-device)
 - Token refresh: delete old, register new
 - Logout: delete all device tokens
 
@@ -42,10 +42,11 @@ Domain event (egg hatching, marketplace sale)
 
 Validate type before navigating. Unknown type → `AppLogger.warning` + home fallback.
 
-## Local Scheduling (IncubationReminderService)
+## Local Scheduling (NotificationScheduler)
 
+- `lib/domain/services/notifications/notification_scheduler.dart` — there is no class literally named `IncubationReminderService`
 - `tz.TZDateTime` — mandatory (not naive `DateTime`)
-- Deterministic IDs: `'egg_${eggId}_day_${day}'.hashCode`
+- Deterministic IDs via `NotificationIds.generate()` — FNV-1a hash into a partitioned ID space, NOT raw `.hashCode`
 - Cancel + reschedule on insert/update
 
 ## Channels / Categories

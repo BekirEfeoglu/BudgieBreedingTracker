@@ -77,7 +77,7 @@ test('handles loading and error states', () async {
 
 ## Mocking
 - Package: `mocktail`
-- ~49 mock classes in `test/helpers/mocks.dart`
+- ~55 mock classes in `test/helpers/mocks.dart`
 - Pattern: `class MockBirdRepository extends Mock implements BirdRepository {}`
 - Fixtures: test data builders with named parameters
 - Use `registerFallbackValue()` for custom types in `setUpAll`

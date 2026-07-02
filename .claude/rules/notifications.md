@@ -26,7 +26,7 @@ Domain event (egg hatching, marketplace sale)
 - Permission denied state'i provider'da takip et (`notificationPermissionProvider`)
 
 ## FCM Token Management
-- Token Supabase'de `user_fcm_tokens` tablosuna kaydedilir (multi-device)
+- Token Supabase'de `fcm_tokens` tablosuna kaydedilir (multi-device)
 - Token refresh'te eski token'ı sil, yeniyi ekle
 - Logout'ta tüm cihaz token'larını sil (cross-device security)
 - iOS APNs token + FCM token eşleştirmesi otomatik
@@ -64,8 +64,8 @@ Push payload `data` field'ı standart şema:
 
 ## Local Notifications (Scheduling)
 - Kuluçka hatırlatması, etkinlik reminder vb.
-- `IncubationReminderService` schedule yönetir
-- Notification ID'leri deterministik (`'egg_${eggId}_day_${day}'.hashCode`)
+- `NotificationScheduler` (`lib/domain/services/notifications/notification_scheduler.dart`) schedule yönetir
+- Notification ID'leri deterministik, `NotificationIds.generate()` ile — raw `.hashCode` DEĞİL, FNV-1a hash + partition'lanmış ID alanı (bkz. calendar.md § ID Stability)
 - Cancel + reschedule pattern: insert/update'te eski ID'leri iptal et, yenilerini ekle
 - Timezone-aware: `tz.TZDateTime` kullan, naive `DateTime` değil
 
@@ -93,9 +93,8 @@ await flutterLocalNotifications.zonedSchedule(
 Channel'lar `lib/domain/services/notifications/notification_service.dart` içinde initialize edilir.
 
 ## Quiet Hours / Preferences
-- Kullanıcı kategori bazlı bildirim açma/kapama (`profile.notification_preferences`)
-- Sunucu tarafı `send-push` çağrı öncesi tercihi kontrol eder
-- Cihaz Do Not Disturb'a ek olarak app-level quiet hours desteği (gece bildirim yok)
+**Kısmen implement edilmedi (2026-07-02 audit):** client tarafında `notification_settings_dnd.dart` ekranı var, ama sunucu tarafı `send-push` (`supabase/functions/send-push/push_core.ts`) şu an quiet-hours/DND kontrolü YAPMIYOR — kod tabanında `quiet_hours`/`doNotDisturb` için sıfır eşleşme. Bu bölüm gelecek tasarım hedefidir; server-side enforcement eklenene kadar kullanıcı DND ayarı sadece cihaz seviyesinde (OS Do Not Disturb) etkili olur.
+- Kullanıcı kategori bazlı bildirim açma/kapama (`profile.notification_preferences`) — client-side UI var
 
 ## Testing
 - Unit: `NotificationService` mock'lanır

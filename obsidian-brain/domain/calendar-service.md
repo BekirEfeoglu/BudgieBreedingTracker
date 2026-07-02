@@ -1,6 +1,6 @@
 # Calendar Service
 
-**Location**: `lib/domain/services/` (calendar-related)
+**Location**: `CalendarEventGenerator` (`lib/domain/services/calendar/calendar_event_generator.dart`) — there is no class literally named `CalendarService`.
 
 ## Responsibility
 
@@ -23,7 +23,7 @@ Calendar generation is a **side effect** after local persistence succeeds. A Sup
 
 ## Integration with Notifications
 
-Calendar events trigger local notifications via [[domain/notification-service]] (`IncubationReminderService`).
+Calendar events trigger local notifications via [[domain/notification-service]] (`NotificationScheduler`, `lib/domain/services/notifications/notification_scheduler.dart` — there is no class literally named `IncubationReminderService`).
 
 ## See Also
 

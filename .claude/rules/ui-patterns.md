@@ -52,8 +52,9 @@ GoRoute(
 ```
 
 ## Shared Widgets (35)
-`lib/core/widgets/`: 15 root widgets plus `buttons/` (4), `cards/` (2), `dialogs/` (2), `bottom_sheet/` (1), and `eggs/` (5)
+`lib/core/widgets/`: 15 root widgets plus `buttons/` (4), `cards/` (2), `dialogs/` (2), `bottom_sheet/` (1), and `eggs/` (5). `OfflineBanner` is NOT in this set — it lives at `lib/shared/widgets/offline_banner.dart`.
 - Accept `Widget icon` param, not `IconData`
+- Icon-only buttons: use `AppIconButton` (`buttons/app_icon_button.dart`) — guarantees the 48dp touch target and requires `semanticLabel`, instead of hand-rolling `IconButton(constraints: ...)` (accessibility.md)
 - Use existing shared widgets before creating new ones
 
 ## Form Pattern

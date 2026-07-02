@@ -4,25 +4,24 @@ Source: `.claude/rules/empty-loading-error-states.md`
 
 **Rule**: Never show a white screen. Every async state needs a UI.
 
-## Shared Widget Catalog (`lib/core/widgets/`)
+## Shared Widget Catalog (`lib/core/widgets/`, `OfflineBanner` in `lib/shared/widgets/`)
 
-| Widget | Usage |
-|--------|-------|
-| `EmptyState` | No results, no error (empty list, filter mismatch) |
-| `LoadingState` | Initial fetch, manual refresh |
-| `SkeletonLoader` | List item placeholder (matches real layout) |
-| `ErrorState` | Network/server error + retry CTA |
-| `OfflineBanner` | App-wide offline indicator |
+| Widget | Usage | Real constructor |
+|--------|-------|-------------------|
+| `EmptyState` | No results, no error (empty list, filter mismatch) | `{icon: Widget, title, message, actionLabel: String?, onAction: VoidCallback?}` |
+| `LoadingState` | Initial fetch, manual refresh | `{message}` |
+| `SkeletonLoader` | Single shimmer placeholder box | `{width, height, borderRadius}` — no `count`/`itemBuilder` |
+| `ErrorState` | Network/server error + retry CTA | `{message, onRetry: VoidCallback?}` — no `icon` param |
+| `OfflineBanner` | App-wide offline indicator | `lib/shared/widgets/offline_banner.dart` |
 
-All accept `Widget icon` param, never `IconData`.
+Only `EmptyState` accepts a `Widget icon` param — `LoadingState`/`ErrorState`/`SkeletonLoader` don't have one.
 
 ## AsyncValue Mapping
 
 ```dart
 asyncValue.when(
-  loading: () => const SkeletonLoader(count: 5),
+  loading: () => const SkeletonLoader(width: double.infinity, height: 80),
   error: (e, st) => ErrorState(
-    icon: AppIcon(AppIcons.errorCloud),
     message: _errorMessage(e).tr(),
     onRetry: () => ref.invalidate(myProvider),
   ),
@@ -31,10 +30,8 @@ asyncValue.when(
           icon: AppIcon(AppIcons.bird),
           title: 'birds.no_birds_title'.tr(),
           message: 'birds.no_birds_hint'.tr(),
-          cta: PrimaryButton(
-            label: 'birds.add_first'.tr(),
-            onPressed: () => context.push(AppRoutes.birdForm),
-          ),
+          actionLabel: 'birds.add_first'.tr(),
+          onAction: () => context.push(AppRoutes.birdForm),
         )
       : BirdList(items),
 )

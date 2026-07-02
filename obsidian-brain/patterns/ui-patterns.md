@@ -68,10 +68,10 @@ class _MyFormState extends ConsumerState<MyFormScreen> {
 
 ## Shared Widgets (35)
 
-`lib/core/widgets/` — all accept `Widget icon` param, NOT `IconData`:
+`lib/core/widgets/` — the ones with an icon parameter accept `Widget icon`, NOT `IconData`:
 
-- Root (15): `EmptyState`, `LoadingState`, `ErrorState`, `SkeletonLoader`, `OfflineBanner`, etc.
-- `buttons/` (4)
+- Root (15): `EmptyState`, `LoadingState`, `ErrorState`, `SkeletonLoader`, etc. (`OfflineBanner` is NOT here — it lives at `lib/shared/widgets/offline_banner.dart`; only `EmptyState` actually has an `icon: Widget` param, `LoadingState`/`ErrorState`/`SkeletonLoader` don't take one)
+- `buttons/` (4): includes `AppIconButton` — the canonical icon-only button, guarantees 48dp + requires `semanticLabel`
 - `cards/` (2)
 - `dialogs/` (2): `ConfirmDialog`, `TypedConfirmDialog`
 - `bottom_sheet/` (1)

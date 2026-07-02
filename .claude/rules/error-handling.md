@@ -27,15 +27,16 @@ Service throws AppException -> Repository propagates -> Provider catches via Asy
 - UI uses `asyncValue.when(error: ...)` or `ref.listen()` for side-effect errors
 
 ## Logging
+All methods take a single `message` string — there is no separate `tag` parameter (`lib/core/utils/logger.dart`):
 | Method | Usage |
 |--------|-------|
-| `AppLogger.debug(tag, message)` | Development info, temporary tracing |
-| `AppLogger.info(tag, message)` | General operational info |
+| `AppLogger.debug(message)` | Development info, temporary tracing |
+| `AppLogger.info(message)` | General operational info |
 | `AppLogger.warning(message)` | Potential issues, degraded state |
 | `AppLogger.error(message, error, stackTrace)` | Errors (auto-adds Sentry breadcrumb) |
 
 - NEVER use `print()` — always `AppLogger`
-- Tag should identify the source: `'BirdRepository'`, `'SyncService'`, `'AuthProvider'`
+- Embed the source inline as a `[Bracket]` prefix: `AppLogger.warning('[BirdRepository] fetch failed')` — not a separate argument
 
 ## Sentry
 - `Sentry.captureException(error, stackTrace: st)` for critical/unexpected errors

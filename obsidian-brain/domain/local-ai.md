@@ -26,8 +26,8 @@ LLM-based analysis for budgerigar photos (gender/mutation prediction) and text h
 
 ## Caching
 
-- `LruCache` (in-memory, max 50 entries, 1h TTL)
-- Cache key: prompt hash + perceptual image hash (not byte hash)
+- `LocalAiCache` (in-memory, max **8** entries, **10-minute** TTL — `lib/domain/services/local_ai/local_ai_service.dart`)
+- Cache key: SHA-1 byte hash of image bytes (`_imageCacheToken`) — NOT a perceptual hash; a small edit to the same photo is a cache miss (known limitation, see rules `local-ai.md` § Anti-Patterns #5)
 - App restart clears cache
 
 ## Confidence Thresholds

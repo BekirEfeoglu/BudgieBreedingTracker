@@ -6,30 +6,30 @@ Source: `.claude/rules/data-layer.md`, `CLAUDE.md`
 
 ## Tables
 
+Verified against `ls lib/data/local/database/tables/` (2026-07-02):
+
 | Table File | Entity | FK Parents |
 |-----------|--------|-----------|
-| `birds_table.dart` | Bird | — (root entity) |
+| `birds_table.dart` | Bird | — (root entity; self-referential `father_id`/`mother_id`) |
 | `breeding_pairs_table.dart` | BreedingPair | Bird × 2 (male + female) |
 | `incubations_table.dart` | Incubation | BreedingPair |
-| `clutches_table.dart` | Clutch | Incubation |
-| `eggs_table.dart` | Egg | Clutch |
-| `chicks_table.dart` | Chick | Egg |
+| `clutches_table.dart` | Clutch | Incubation, BreedingPair, Nest |
+| `eggs_table.dart` | Egg | Incubation, Clutch |
+| `chicks_table.dart` | Chick | Bird, Egg, Clutch |
+| `nests_table.dart` | Nest | — (root entity) |
 | `health_records_table.dart` | HealthRecord | Bird |
-| `event_reminders_table.dart` | EventReminder | Incubation |
+| `events_table.dart` | Event | Bird, BreedingPair, Chick |
+| `event_reminders_table.dart` | EventReminder | Event |
+| `growth_measurements_table.dart` | GrowthMeasurement | Chick |
+| `genetics_history_table.dart` | GeneticsHistory | Bird × 2 (father_id, mother_id) |
 | `sync_metadata_table.dart` | SyncMetadata | — |
-| `user_profiles_table.dart` | UserProfile | — |
-| `genetics_results_table.dart` | GeneticsResult | Bird × 2 |
-| `calendar_events_table.dart` | CalendarEvent | various |
-| `notifications_table.dart` | NotificationRecord | — |
-| `community_profiles_table.dart` | CommunityProfile | — (cache) |
-| `marketplace_listings_table.dart` | MarketplaceListing | Bird |
-| `gamification_badges_table.dart` | Badge | — |
-| `user_badges_table.dart` | UserBadge | Badge, UserProfile |
-| `genealogy_table.dart` | GenealogyEntry | Bird |
-| `feedback_table.dart` | FeedbackEntry | — |
-| `app_config_table.dart` | AppConfig | — |
-
-*Note: exact table names derived from patterns in rules files; verify against actual table files in `lib/data/local/database/tables/`.*
+| `conflict_history_table.dart` | ConflictHistory | — |
+| `notifications_table.dart` | Notification | — |
+| `notification_schedules_table.dart` | NotificationSchedule | — |
+| `notification_settings_table.dart` | NotificationSettings | — |
+| `photos_table.dart` | Photo | various (entity-scoped, user-scoped) |
+| `profiles_table.dart` | Profile | — |
+| `user_preferences_table.dart` | UserPreferences | — |
 
 ## Common Patterns
 
@@ -43,11 +43,11 @@ All tables:
 ## ValidatedSyncMixin Repos
 
 The following repos require `ValidatedSyncMixin` due to FK parents:
-- `egg_repository` (parent: breeding_pair)
+- `egg_repository` (parents: incubation, clutch — injects `IncubationsDao` + `ClutchesDao`)
 - `chick_repository` (parent: egg)
 - `health_record_repository` (parent: bird)
 - `breeding_pair_repository` (parent: bird)
-- `event_reminder_repository` (parent: incubation)
+- `event_reminder_repository` (parent: event — injects `EventsDao`)
 
 ## Local FK Graph
 

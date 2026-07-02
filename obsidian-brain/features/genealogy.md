@@ -15,7 +15,11 @@
 
 ## Key Providers
 
-- `genealogyTreeProvider(birdId)` — async tree structure
+- `ancestorsProvider(birdId)` / `chickAncestorsProvider(chickId)` — family providers for ancestor tree
+- `selectedEntityForTreeProvider`, `treeViewModeProvider` — UI state
+- `pedigreeDepthProvider` — user-adjustable 3-8 generation depth (persisted to `SharedPreferences`)
+- `offspringProvider`, `inbreedingDataProvider`, `ancestorStatsProvider`
+- (`genealogyTreeProvider` does not exist — no single combined async-tree provider; the tree is composed client-side from the above)
 
 ## Inbreeding Detection
 

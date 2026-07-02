@@ -37,11 +37,11 @@ class EggRepository extends BaseRepository<Egg>
 ```
 
 **Repos that require ValidatedSyncMixin:**
-- `egg_repository.dart` (parent: breeding_pair)
+- `egg_repository.dart` (parents: incubation, clutch)
 - `chick_repository.dart` (parent: egg)
 - `health_record_repository.dart` (parent: bird)
 - `breeding_pair_repository.dart` (parent: bird × 2)
-- `event_reminder_repository.dart` (parent: incubation)
+- `event_reminder_repository.dart` (parent: event)
 
 Bird is a root entity — no ValidatedSyncMixin needed.
 

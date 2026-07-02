@@ -11,8 +11,8 @@ Source: `.claude/rules/premium-revenuecat.md`
 | Store | App Store + Google Play |
 | Aggregator | RevenueCat (`purchases_flutter ^10.0.2`) |
 | Server verify | `sync-premium-status` Edge Function |
-| Client state | `premiumStatusProvider` |
-| Route guard | `PremiumGuard` |
+| Client state | `isPremiumProvider` / `premiumGracePeriodProvider` / `effectivePremiumProvider` (`lib/domain/services/premium/premium_providers.dart`) |
+| Route guard | `PremiumGuard` (`lib/router/guards/premium_guard.dart`, `static String? redirect(bool hasEffectiveAccess)`) |
 
 ## Premium Entitlement Flow
 
@@ -22,15 +22,16 @@ User purchases (RevenueCat SDK)
   → sync-premium-status Edge Function
   → Server validates with REVENUECAT_SECRET_API_KEY
   → Updates profiles.is_premium in Supabase
-  → Client refreshes premiumStatusProvider
+  → Client refreshes premium providers
 ```
 
 ## Key Providers
 
-- `premiumStatusProvider` — server-sourced premium flag
-- `premiumGracePeriodProvider` — `GracePeriodStatus` (active/gracePeriod/expired/none)
-- `effectivePremiumProvider` — final gate for feature access
+- `isPremiumProvider`, `premiumGracePeriodProvider`, `effectivePremiumProvider` (`premiumStatusProvider` does not exist)
+- `GracePeriodStatus` values: `active`, `gracePeriod`, `expired`, `free`, `unknown` (`lib/core/enums/subscription_enums.dart` — NOT `none`)
 - `freeTierUsageProvider` — current entity counts
+- `isStatisticsRewardActiveProvider` / `isGeneticsRewardActiveProvider` — temporary rewarded-ad exemption from the premium gate for those two routes
+- `PremiumGuard.redirect` is currently only wired to the `/genealogy` route; `/statistics` and `/genetics` gate inline in `app_router.dart` via `effectivePremiumProvider` OR the reward providers above
 
 ## Grace Period
 

@@ -20,6 +20,7 @@
 | `l10n-sync` | Translation key parity | PR merge |
 | `code-quality` | Anti-pattern scan + platform target policy + obsidian-brain lint | PR merge |
 | `rules-sync` | CLAUDE.md stats verification | PR merge |
+| `security-audit` | `python scripts/verify_security.py` — cert pinning, secrets posture | PR merge |
 | `auto-fix-stats` | Auto-PR for stats drift | main only |
 | `deploy-edge-functions` | Supabase Edge Function deploy | main only, needs analyze+test+edge-functions-test |
 

@@ -96,7 +96,7 @@ Each function needs integration tests for:
 
 ## CI Deploy
 
-`deploy-edge-functions` job (main only, needs analyze+test). Function names must match exactly across workflow, function folder, and Dart `EdgeFunctionName` constants.
+`deploy-edge-functions` job (main only, needs analyze+test+edge-functions-test). Function names are passed as raw string literals at call sites in `lib/data/remote/supabase/edge_function_client.dart` — there is no `EdgeFunctionName` constants class; names must still match exactly across workflow, function folder, and call sites.
 
 ## Anti-Patterns
 

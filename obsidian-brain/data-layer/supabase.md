@@ -5,10 +5,10 @@ Source: `.claude/rules/data-layer.md`, `.claude/rules/security.md`
 ## Overview
 
 - **Package**: supabase_flutter ^2.5.0
-- **Remote sources**: 26 (entity + base + 2 caches + providers)
+- **Remote sources**: 27 (entity + base + 2 caches + providers)
 - **Migrations**: 179 SQL files in `supabase/migrations/`
 - **Edge Functions**: 12 (see [[infrastructure/edge-functions]])
-- **Supabase constants**: 138 (tables + buckets + columns)
+- **Supabase constants**: 142 (tables + buckets + columns)
 
 ## SupabaseConstants
 
@@ -25,7 +25,7 @@ await client
 await client.from('birds').select().eq('user_id', userId);
 ```
 
-`lib/data/remote/supabase/` contains `SupabaseConstants` class.
+`lib/core/constants/supabase_constants.dart` contains `SupabaseConstants` class (NOT `lib/data/remote/supabase/`, which holds `edge_function_client.dart` and `supabase_client.dart`).
 
 ## .toSupabase() Extension
 

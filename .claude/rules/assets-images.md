@@ -97,13 +97,17 @@ final compressed = await FlutterImageCompress.compressWithFile(
   - Private/signed: kullanıcı kuş fotoğrafları, sağlık kayıt fotoğrafları, community post fotoğrafları
 - Public bucket için CDN URL, private için signed URL (TTL 1h)
 
+Gerçek bucket'lar (`lib/core/constants/supabase_constants.dart`): `bird-photos`, `egg-photos`, `chick-photos`, `avatars`, `backups`, `community-photos`, `photos` (marketplace, sabit adı `marketplacePhotosBucket`), `message-photos`. `health-records` ve `chat-attachments` diye ayrı bucket'lar YOK — sağlık kayıt fotoğrafı `bird-photos` altında saklanır; `message-photos` sabiti tanımlı ama şu an hiçbir call site'ta kullanılmıyor (DM attachment upload'ı Storage'a henüz bağlanmamış).
+
 | Bucket | Erişim | İçerik |
 |--------|--------|--------|
-| `bird-photos` | Private (user-scoped RLS) | Kullanıcı kuşları |
+| `bird-photos` | Private (user-scoped RLS) | Kullanıcı kuşları + sağlık kayıt fotoğrafları |
+| `egg-photos` / `chick-photos` | Private (user-scoped RLS) | Yumurta/yavru fotoğrafları |
+| `avatars` | Private | Profil fotoğrafı |
 | `community-photos` | Server upload, signed URL read | Topluluk paylaşımları |
-| `marketplace-listings` | Public read, auth write | İlan fotoğrafları |
-| `health-records` | Private | Sağlık belgeleri |
-| `chat-attachments` | Conversation-scoped RLS | Mesajlaşma medyası |
+| `photos` (marketplace) | Public read, auth write | İlan fotoğrafları |
+| `backups` | Private | Kullanıcı yedekleri |
+| `message-photos` | Tanımlı, henüz kullanılmıyor | (DM attachment — wiring eksik) |
 
 ## Signed URL TTL
 - Default: 1 saat

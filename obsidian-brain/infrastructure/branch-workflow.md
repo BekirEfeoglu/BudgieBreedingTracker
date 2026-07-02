@@ -16,10 +16,10 @@ Source: `.claude/rules/branch-workflow.md`, `.claude/rules/git-rules.md`
 
 ## Quality Gates Before Push
 
+Canonical source: `.claude/rules/ai-workflow.md` § Quality Gates — don't duplicate the list here, it drifts. Summary:
 ```bash
+scripts/run_local_quality_gate.sh   # diff check, rules-sync, code-quality, conditional l10n/script tests
 flutter analyze --no-fatal-infos
-python3 scripts/verify_code_quality.py
-python3 scripts/check_l10n_sync.py
 flutter test
 ```
 

@@ -11,14 +11,15 @@ Logging, error tracking, breadcrumbs ve analytics tek yerden yönetilir. Her hat
 | Edge fn log | Supabase Dashboard | Sunucu tarafı edge function trace |
 
 ## AppLogger API
+Tüm metodlar tek `String message` parametresi alır — `tag` diye ayrı bir parametre YOK (`lib/core/utils/logger.dart`):
 ```dart
-AppLogger.debug(tag, message);                  // Geliştirme — production'da gizli
-AppLogger.info(tag, message);                   // Operasyonel
-AppLogger.warning(message);                     // Bozulmuş durum, retry edilebilir
+AppLogger.debug(message);                       // Geliştirme — production'da gizli
+AppLogger.info(message);                        // Operasyonel
+AppLogger.warning(message);                      // Bozulmuş durum, retry edilebilir
 AppLogger.error(message, error, stackTrace);    // Otomatik Sentry breadcrumb
 ```
 
-`tag` kuralı: kaynağı kimliklendir — `'BirdRepository'`, `'SyncService'`, `'AuthProvider'`, `'GeneticsEngine'`. Aynı tag boyunca filtreleme kolaylaşır.
+Kaynak tanımlama kuralı: `[Bracket]` prefix'i mesajın İÇİNE göm — `AppLogger.warning('[SyncService] retry attempt failed')`. Ayrı bir `tag` argümanı geçirme (derleme hatası verir).
 
 ## Hangi Seviye Ne Zaman?
 | Senaryo | Seviye |
@@ -79,8 +80,11 @@ Kuralı: Hata ne kullanıcı bilgisi gerektirir ne de tasarımla beklenen — Se
 - `network`: `online` / `offline`
 - `auth_method`: `email` / `google` / `apple`
 
+## Breadcrumb Budget Protection
+`AppLogger.warning` her zaman Sentry breadcrumb ekler (release build'de bile) — `debug` sadece non-release'de ekler. Sentry ~100 breadcrumb tutar; caller kodunda cap olmayan bir retry loop (örn. Supabase realtime subscription, SDK sonsuz reconnect dener) her denemede `.warning` loglarsa gerçek crash context'i tükenmeden silinebilir. `RealtimeErrorLogThrottle` (`lib/core/utils/realtime_error_log_throttle.dart`) subscription başına ardışık `.warning` çağrısını sınırlar (varsayılan 5, `RealtimeSyncService.maxReconnectFailures` ile eşleşir), sonra `.debug`'a düşer; `reset()` başarılı reconnect'te budget'i geri yükler. `EventRemoteSource.subscribeToEvents` ve `CommunityPostRemoteSource.subscribeToPostChanges` içinde kullanılıyor.
+
 ## Performance İzleri
-- Drift query timing: `Stopwatch()..start()` + `AppLogger.debug('perf', 'queryName: ${sw.elapsed}')`
+- Drift query timing: `Stopwatch()..start()` + `AppLogger.debug('perf queryName: ${sw.elapsed}')`
 - Sentry performance monitoring şu an pasif (cost) — sadece kritik akışlar
 - Startup time: `lib/main.dart` içinde phase log'la (splash → home arası)
 
@@ -149,6 +153,7 @@ Edge function `console.log` JSON formatında:
 6. Tag yerine free-form string ile log filtrelemeyi imkansız kılma
 7. Sentry scope'ta `userId` set ettikten sonra logout'ta clear etmemek
 8. Edge function'da `console.log(req.body)` — full request body sızar
+9. Cap'siz retry loop'ta `.warning` loglamak (breadcrumb bütçesi tükenir — `RealtimeErrorLogThrottle` kullan)
 
 ## Test
 ```dart

@@ -4,7 +4,8 @@ Admin yetkili kullanıcıların moderasyon, sistem sağlığı, kullanıcı yön
 
 ## Erişim Kontrolü
 - Route guard: `AdminGuard` (`lib/router/guards/admin_guard.dart`)
-- Server-side: `profiles.is_admin` flag (RLS bypass DEĞİL — admin için ayrı policy)
+- Server-side: `profiles.role` text kolonu (`'member'` / `'admin'` / `'founder'`) — RLS bypass DEĞİL, admin için ayrı policy
+- `isAdminProvider`/`isFounderProvider` (`lib/data/providers/user_role_providers.dart`) rol kontrolü yapar
 - `AdminGuard.redirect` → admin değilse `AppRoutes.home`
 - Client cache: admin durumu app start'ta + login sonrası refresh
 - Asla `--dart-define` veya runtime flag ile admin enable etme (security.md)
@@ -16,7 +17,7 @@ Admin yetkili kullanıcıların moderasyon, sistem sağlığı, kullanıcı yön
 - `.toSupabase()` extension her zaman kullanılır
 
 ## Audit Logs
-- Her destructive admin işlemi `admin_audit_logs` tablosuna kaydedilir
+- Her destructive admin işlemi `audit_logs` tablosuna kaydedilir
 - Schema: `(id, admin_user_id, action, target_type, target_id, payload, performed_at)`
 - Server-side trigger ile yazılır (admin client trust etme)
 - Audit log SİLİNEMEZ — sadece append
@@ -39,9 +40,9 @@ EXECUTE FUNCTION audit_admin_action('ban_user');
 - `admin_get_stats` ve benzeri read-only RPC'ler bu guard'lara tabi değil
 
 ## RBAC (Role-Based)
-- `is_admin` bool tek tier (super admin yok, henüz)
-- İleride genişlerse: `admin_role` enum (`moderator`, `support`, `super`)
-- Bu rule güncel implementation'a göre yazılır — multi-role yoksa eklenmez
+- `profiles.role` üç tier: `member`, `admin`, `founder` — founder-specific RLS guard'ları migration'larda mevcut (örn. `20260404110000_fix_is_admin_include_founder.sql`, `20260309_guard_founder_admin_premium_mutations.sql`)
+- Founder'a özel premium mutation koruması var (DB-level trigger, premium alanları değiştirilemez)
+- `moderator`/`support` gibi ek granüler rol YOK — mevcut 3 tier bu rule'un kapsamı
 
 ## Monitoring Dashboard
 | Bölüm | Veri kaynağı | Refresh |
@@ -72,7 +73,7 @@ EXECUTE FUNCTION audit_admin_action('ban_user');
 - Admin **kullanıcı şifresi, MFA secret, encrypted field plaintext** görmez (zero-knowledge)
 - Sentry'ye admin işlem detayı GİTMEZ (PII risk)
 - Audit log'a action + target ID yazılır, payload sadece non-PII
-- Admin'in kendi yaptığı işlemi `admin_audit_logs`'tan silmesi engellenir (RLS policy)
+- Admin'in kendi yaptığı işlemi `audit_logs`'tan silmesi engellenir (RLS policy)
 
 ## Realtime Updates
 - Yeni rapor geldiğinde realtime channel `admin_reports` event

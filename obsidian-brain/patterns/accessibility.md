@@ -9,14 +9,21 @@ Source: `.claude/rules/accessibility.md`
 Minimum **48×48 dp** for every interactive element:
 
 ```dart
-// CORRECT
+// PREFERRED — AppIconButton guarantees 48dp + requires semanticLabel
+AppIconButton(
+  icon: AppIcon(AppIcons.edit),
+  onPressed: _onEdit,
+  semanticLabel: 'birds.edit_bird'.tr(),
+)
+
+// Also correct — raw IconButton with explicit constraints
 IconButton(
   icon: AppIcon(AppIcons.edit),
   onPressed: _onEdit,
   constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
 )
 
-// WRONG — default 32×32
+// WRONG — default may be smaller than 48dp in dense contexts
 IconButton(icon: AppIcon(AppIcons.edit), onPressed: _onEdit)
 ```
 
@@ -58,13 +65,16 @@ For future RTL language support:
 
 ## Locale Overflow Testing
 
-German compound words overflow — always test:
+German compound words overflow — always test. There is no `pumpWidgetWithLocale` helper; the real pattern resolves the string via `resolvedL10n(key, locale:)` and pumps with `buildGoldenWidget` (see `test/golden/widgets/multi_locale_empty_state_golden_test.dart`):
 ```dart
-testWidgets('button label fits in German locale', (tester) async {
-  await pumpWidgetWithLocale(tester, MyButton(label: 'birds.add_breeding_pair'.tr()), 'de');
-  final overflow = tester.takeException();
-  expect(overflow, isNull);
-});
+for (final locale in ['tr', 'en', 'de']) {
+  testWidgets('button label fits in $locale locale', (tester) async {
+    final label = resolvedL10n('birds.add_breeding_pair', locale: locale);
+    await tester.pumpWidget(buildGoldenWidget(MyButton(label: label), locale: locale));
+    final overflow = tester.takeException();
+    expect(overflow, isNull);
+  });
+}
 ```
 
 ## Marketing Site Semantics

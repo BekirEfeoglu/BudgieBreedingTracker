@@ -10,9 +10,8 @@
 
 ## Key Providers
 
-- `premiumStatusProvider` — server-validated premium state
-- `premiumGracePeriodProvider` — `GracePeriodStatus` (active/gracePeriod/expired/none)
-- `effectivePremiumProvider` — final gate for feature access
+- `isPremiumProvider`, `premiumGracePeriodProvider`, `effectivePremiumProvider` (`premiumStatusProvider` does not exist)
+- `GracePeriodStatus` values: `active`/`gracePeriod`/`expired`/`free`/`unknown` (NOT `none`)
 - `freeTierUsageProvider` — entity counts for UX display
 
 ## Premium Flow
@@ -22,7 +21,7 @@ User purchases (RevenueCat SDK)
   → RevenueCat webhook → sync-premium-status Edge Function
   → Server validates with REVENUECAT_SECRET_API_KEY
   → Updates profiles.is_premium in Supabase
-  → Client refreshes premiumStatusProvider on app resume
+  → Client refreshes premium providers on app resume
 ```
 
 ## Grace Period
@@ -31,11 +30,11 @@ Guards must accept `GracePeriodStatus.gracePeriod` as passing — not just `isPr
 
 ## Two Plans Only
 
-Only two active premium plans (as of 2026-05-14). Adding a plan requires both RevenueCat dashboard and `PremiumPlanConfig` Dart constant updates.
+Only two active premium plans (as of 2026-05-14). Adding a plan requires both RevenueCat dashboard and `lib/domain/services/premium/premium_plan_utilities.dart` updates.
 
 ## Route Guard
 
-`PremiumGuard` in `lib/router/guards/` redirects non-premium users to upsell screen.
+`PremiumGuard.redirect(bool hasEffectiveAccess)` (`lib/router/guards/premium_guard.dart`) redirects to `AppRoutes.premium` when access is false — currently only wired to `/genealogy`. `/statistics` and `/genetics` gate inline in `app_router.dart` via `effectivePremiumProvider` OR a temporary rewarded-ad exemption (`isStatisticsRewardActiveProvider`/`isGeneticsRewardActiveProvider`).
 
 ## Free Tier Limits
 

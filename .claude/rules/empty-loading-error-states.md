@@ -3,23 +3,22 @@
 Veri olmayan üç durum hep var: **boş**, **yükleniyor**, **hata**. UX kalitesi bu üç state'in ne kadar iyi handle edildiğinde belli olur. Beyaz ekran asla acceptable değil.
 
 ## Shared Widget Catalog
-`lib/core/widgets/` altında:
-| Widget | Kullanım |
-|--------|----------|
-| `EmptyState` | Sonuç yok ama hata da yok (boş liste, filtre eşleşmedi) |
-| `LoadingState` | Initial fetch, manuel refresh — spinner + label |
-| `SkeletonLoader` | List item placeholder — gerçek layout'a benzer |
-| `ErrorState` | Network/server hatası + retry CTA |
-| `OfflineBanner` | Connectivity yok, ama eski veri görünüyor |
+`lib/core/widgets/` altında (`OfflineBanner` istisna — `lib/shared/widgets/`):
+| Widget | Kullanım | Gerçek constructor |
+|--------|----------|---------------------|
+| `EmptyState` | Sonuç yok ama hata da yok (boş liste, filtre eşleşmedi) | `{icon: Widget, title, message, actionLabel: String?, onAction: VoidCallback?}` |
+| `LoadingState` | Initial fetch, manuel refresh — spinner + label | `{message}` |
+| `SkeletonLoader` | Tek shimmer placeholder kutusu | `{width, height, borderRadius}` — liste için tek tek örneklenir, `count`/`itemBuilder` parametresi YOK |
+| `ErrorState` | Network/server hatası + retry CTA | `{message, onRetry: VoidCallback?}` — `icon` parametresi YOK (ikon dahili sabit) |
+| `OfflineBanner` | Connectivity yok, ama eski veri görünüyor | `lib/shared/widgets/offline_banner.dart` |
 
-Tümü `Widget icon` parametre alır, asla `IconData` (anti-pattern #14).
+Sadece `EmptyState` `Widget icon` parametresi alır; `LoadingState`/`ErrorState`/`SkeletonLoader` almaz (anti-pattern #14 sadece `EmptyState`, `InfoCard`, `StatCard` gibi gerçekten `icon` parametresi olan widget'lar için geçerli).
 
 ## AsyncValue Mapping
 ```dart
 asyncValue.when(
-  loading: () => const SkeletonLoader(count: 5),
+  loading: () => const SkeletonLoader(width: double.infinity, height: 80),
   error: (e, st) => ErrorState(
-    icon: AppIcon(AppIcons.errorCloud),
     message: _errorMessage(e).tr(),
     onRetry: () => ref.invalidate(myProvider),
   ),
@@ -28,10 +27,8 @@ asyncValue.when(
           icon: AppIcon(AppIcons.bird),
           title: 'birds.no_birds_title'.tr(),
           message: 'birds.no_birds_hint'.tr(),
-          cta: PrimaryButton(
-            label: 'birds.add_first'.tr(),
-            onPressed: () => context.push(AppRoutes.birdForm),
-          ),
+          actionLabel: 'birds.add_first'.tr(),
+          onAction: () => context.push(AppRoutes.birdForm),
         )
       : BirdList(items),
 )
@@ -50,8 +47,8 @@ asyncValue.when(
 ```dart
 asyncValue.when(
   skipLoadingOnRefresh: true,  // Eski veri görünür kalır
-  loading: () => const SkeletonLoader(count: 5),
-  error: (e, _) => ErrorState(/* ... */),
+  loading: () => const SkeletonLoader(width: double.infinity, height: 80),
+  error: (e, _) => ErrorState(message: _errorMessage(e).tr()),
   data: (items) => BirdList(items),
 )
 ```
@@ -68,11 +65,8 @@ EmptyState(
   icon: AppIcon(AppIcons.bird, size: 64),
   title: 'birds.no_birds_title'.tr(),
   message: 'birds.no_birds_hint'.tr(),
-  cta: PrimaryButton(
-    label: 'birds.add_first'.tr(),
-    icon: AppIcon(AppIcons.add),
-    onPressed: () => context.push(AppRoutes.birdForm),
-  ),
+  actionLabel: 'birds.add_first'.tr(),
+  onAction: () => context.push(AppRoutes.birdForm),
 )
 ```
 
@@ -98,15 +92,13 @@ Boş listeden farklı: kullanıcının veri var ama filtre eşleşmiyor.
 | `FreeTierLimitException` | "Ücretsiz limit doldu" | Premium upgrade |
 
 ## Skeleton Loader
-- Gerçek layout'a benzer placeholder
+- `SkeletonLoader` tek bir shimmer kutusu (`width`/`height`/`borderRadius`) — liste görünümü için birden fazla örnek elle diz (bkz. `lib/features/statistics/widgets/chart_skeletons.dart`)
 - Shimmer animasyonu (built-in `LinearGradient` ile)
-- Item sayısı: typical list (5-8)
 - ListView item template ile aynı boyut/padding (jank-free transition)
 
 ```dart
-SkeletonLoader(
-  itemCount: 5,
-  itemBuilder: (_, __) => const _BirdCardSkeleton(),  // BirdCard ile aynı geometri
+Column(
+  children: List.generate(5, (_) => const SkeletonLoader(width: double.infinity, height: 72)),
 )
 ```
 

@@ -110,7 +110,7 @@ scripts/test_check_obsidian_brain.py    # Tests for obsidian-brain wiki lint
 | Job | Purpose |
 | --- | --- |
 | `analyze` | `flutter analyze --no-fatal-infos` |
-| `test` | Unit + widget tests, Codecov upload (excludes golden, e2e, community), timeout 25m |
+| `test` | Unit + widget tests, Codecov upload (excludes golden, e2e, community), timeout 30m (job-level 40m) |
 | `golden-test` | Visual regression on Linux baseline |
 | `edge-functions-test` | `deno test --allow-env --allow-net supabase/functions` (deploy gate) |
 | `e2e-community-test` | E2E + community tagged tests |
@@ -306,7 +306,7 @@ flutter analyze --no-fatal-infos          # Static analysis
 flutter test test/path/to/file_test.dart  # Run specific test
 dart run build_runner build --delete-conflicting-outputs  # Regenerate if .g.dart stale
 ```
-- Drift query timing: `Stopwatch()..start()` + `AppLogger.debug('perf', 'query: ${sw.elapsed}')`
+- Drift query timing: `Stopwatch()..start()` + `AppLogger.debug('perf query: ${sw.elapsed}')`
 - Debug route: `--dart-define=DEBUG_START_ROUTE=/birds` to skip splash
 
 ### Pre-commit quality check

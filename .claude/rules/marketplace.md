@@ -6,15 +6,15 @@ Kullanıcılar kuş satılık ilanları yayınlar, iletişim kurar, premium ile 
 | Katman | Bileşen |
 |--------|---------|
 | Feature | `lib/features/marketplace/` |
-| Remote source | `marketplace_listing_remote_source.dart` (NOT Repository — online-only) |
+| Repository | `MarketplaceRepository` (`lib/data/repositories/marketplace_repository.dart`) — online-first, wraps `MarketplaceListingRemoteSource` + `MarketplaceFavoriteRemoteSource` |
 | Storage | `marketplace-listings` bucket (public read) |
 | Moderation | `moderate-content` strict + `scan-image-safety` |
 | Premium gates | `PremiumGuard` belirli aksiyonlarda |
 | Ads | `AdService` free user'a inline banner |
 
 ## Naming Convention
-- `MarketplaceListingRemoteSource` — `*RemoteSource` (online-only, ama feed exemption değil çünkü her kullanıcı kendi listing'lerini yönetir, multi-party stream değil)
-- `*Repository` adı YANLIŞ olur burada (architecture.md § Online-First Exemption tek-user remote için `*RemoteService`/`*RemoteSource`)
+- `MarketplaceRepository` — cross-user public listing feed olduğu için architecture.md § Online-First Exemption'a dahil (`*Repository` adı burada DOĞRU — doc-block'ta "Online-first: cross-user public listings. No local Drift mirror by design." zorunlu)
+- Alt katmandaki `MarketplaceListingRemoteSource`/`MarketplaceFavoriteRemoteSource` implementasyon detayı — feature/provider katmanı doğrudan bunları değil `MarketplaceRepository`'yi kullanır
 - Listing'leri Drift'e mirror etme ihtiyacı yok (offline browsing UX faydası düşük, fresh data önemli)
 
 ## Listing Lifecycle

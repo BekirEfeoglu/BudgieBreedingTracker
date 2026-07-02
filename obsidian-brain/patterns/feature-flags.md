@@ -41,12 +41,17 @@ Realtime starts only when local flag is on, server kill switch is off, and user 
 
 ### Server-Side Kill Switch
 
-`app_config` Supabase table:
+**Not implemented** (verified 2026-07-02): `app_config` Supabase table,
+`remoteConfigProvider`, `RemoteConfig` class, and `isCommunityDisabled` do
+not exist in the codebase — future design goal only. Don't confuse with the
+real, working sync kill switch above (`syncRealtimeServerKillSwitchProvider`).
+Design intent if implemented:
 - Pulled on app start + each foreground
 - Cache: 1h TTL
 - Default: **fail-open** (feature ON if config unavailable)
 
 ```dart
+// Design goal — not yet real
 final config = ref.watch(remoteConfigProvider);
 if (config.isCommunityDisabled) return const FeatureDisabledScreen();
 ```
@@ -82,7 +87,7 @@ Add (default false, local dev)
 ```dart
 // Use provider override, never setFlag
 final container = ProviderContainer(overrides: [
-  remoteConfigProvider.overrideWithValue(RemoteConfig(isCommunityDisabled: true)),
+  syncOfflineBannerEnabledProvider.overrideWithValue(false),
 ]);
 addTearDown(container.dispose);
 ```

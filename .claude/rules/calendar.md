@@ -1,13 +1,13 @@
 # Calendar & Reminders
 
-Etkinlik takvimi: kuluçka milestone'ları, yumurta çevirme hatırlatması, breeding ramping, custom user event'ler. `CalendarService` (`lib/domain/services/calendar/`) ve `lib/features/calendar/`.
+Etkinlik takvimi: kuluçka milestone'ları, yumurta çevirme hatırlatması, breeding ramping, custom user event'ler. `CalendarEventGenerator` (`lib/domain/services/calendar/`) ve `lib/features/calendar/`.
 
 ## Stack
 | Bileşen | Yer |
 |---------|-----|
-| Service | `CalendarService` (`lib/domain/services/calendar/`) |
+| Service | `CalendarEventGenerator` (`lib/domain/services/calendar/calendar_event_generator.dart`) |
 | Feature | `lib/features/calendar/` |
-| Reminder service | `IncubationReminderService` |
+| Reminder service | `NotificationScheduler` (`lib/domain/services/notifications/notification_scheduler.dart`) |
 | Local notification | `flutter_local_notifications` (notifications.md) |
 | Storage | Drift `events` + `event_reminders` tables |
 | Sync | ValidatedSyncMixin ile parent FK kontrol |
@@ -46,9 +46,7 @@ Otomatik kuluçka/yumurta-çevirme hatırlatmaları ayrı bir sistemdir
 Stability). Quiet hours (notifications.md) her iki sistemde de honored.
 
 ## ID Stability
-Notification ID deterministik:
-- `egg_turn`: `'egg_turn_${eggId}_${dayIndex}_${slotIndex}'.hashCode`
-- `incubation_milestone`: `'milestone_${incubationId}_${type}'.hashCode`
+Notification ID deterministik, `NotificationIds.generate()` (`lib/domain/services/notifications/notification_ids.dart`) ile üretilir — raw `.hashCode` DEĞİL, FNV-1a hash ile kategori başına 100.000 ID'lik, entity başına 100 ID'lik partition'lanmış bir alana dağıtılır (daha iyi collision dağılımı için).
 - Aynı event re-schedule'da eski ID cancel + yeni ID add
 
 Re-generation pattern:
