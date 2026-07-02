@@ -42,8 +42,7 @@ class OffspringPrediction extends StatefulWidget {
   State<OffspringPrediction> createState() => _OffspringPredictionState();
 }
 
-class _OffspringPredictionState extends State<OffspringPrediction>
-    with SingleTickerProviderStateMixin {
+class _OffspringPredictionState extends State<OffspringPrediction> {
   bool _expanded = false;
 
   bool get _hasExpandableContent =>

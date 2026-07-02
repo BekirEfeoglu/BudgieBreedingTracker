@@ -38,10 +38,41 @@ class DatePickerField extends StatefulWidget {
 class _DatePickerFieldState extends State<DatePickerField> {
   late final TextEditingController _controller;
 
+  String _formattedValue(DateTime? value) {
+    final formatter = widget.dateFormatter ?? DateFormat(_defaultDatePattern);
+    return value != null ? formatter.format(value) : '';
+  }
+
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController();
+    _controller = TextEditingController(text: _formattedValue(widget.value));
+  }
+
+  @override
+  void didUpdateWidget(DatePickerField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value == widget.value &&
+        oldWidget.dateFormatter == widget.dateFormatter) {
+      return;
+    }
+    // Deferred to a post-frame callback: updating the controller's value
+    // notifies the wrapping FormFieldState, which asks the ancestor Form to
+    // rebuild. The ancestor Form has already finished building earlier in
+    // this same top-down pass (parents build before children), so re-dirtying
+    // it synchronously here — even from didUpdateWidget, still mid-pass for
+    // this frame — throws "setState() or markNeedsBuild() called during
+    // build". Running it after the frame completes avoids that entirely.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final formattedValue = _formattedValue(widget.value);
+      if (_controller.text != formattedValue) {
+        _controller.value = TextEditingValue(
+          text: formattedValue,
+          selection: TextSelection.collapsed(offset: formattedValue.length),
+        );
+      }
+    });
   }
 
   @override
@@ -52,17 +83,6 @@ class _DatePickerFieldState extends State<DatePickerField> {
 
   @override
   Widget build(BuildContext context) {
-    final formatter = widget.dateFormatter ?? DateFormat(_defaultDatePattern);
-    final formattedValue = widget.value != null
-        ? formatter.format(widget.value!)
-        : '';
-    if (_controller.text != formattedValue) {
-      _controller.value = TextEditingValue(
-        text: formattedValue,
-        selection: TextSelection.collapsed(offset: formattedValue.length),
-      );
-    }
-
     return TextFormField(
       controller: _controller,
       readOnly: true,

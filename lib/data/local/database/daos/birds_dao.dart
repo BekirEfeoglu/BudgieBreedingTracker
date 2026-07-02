@@ -284,6 +284,52 @@ class BirdsDao extends DatabaseAccessor<AppDatabase> with _$BirdsDaoMixin {
     });
   }
 
+  /// Watches species distribution for statistics (SQL aggregate — no row
+  /// mapping). Merges additively since `Species.fromJson` maps legacy DB
+  /// aliases (e.g. 'muhabbet' -> budgie) onto the same enum value, so two
+  /// raw groups can resolve to one key.
+  Stream<Map<Species, int>> watchSpeciesDistribution(String userId) {
+    final query = customSelect(
+      'SELECT species, COUNT(*) AS cnt '
+      'FROM birds WHERE user_id = ? AND is_deleted = 0 '
+      'GROUP BY species',
+      variables: [Variable.withString(userId)],
+      readsFrom: {birdsTable},
+    );
+    return query.watch().map((rows) {
+      final result = <Species, int>{};
+      for (final row in rows) {
+        final species = Species.fromJson(row.read<String>('species'));
+        final c = row.read<int>('cnt');
+        result[species] = (result[species] ?? 0) + c;
+      }
+      return result;
+    });
+  }
+
+  /// Watches color-mutation distribution for statistics (SQL aggregate).
+  /// Birds without a color mutation set are excluded — matches the previous
+  /// Dart-side `if (color == null) continue;` behavior.
+  Stream<Map<BirdColor, int>> watchColorMutationDistribution(String userId) {
+    final query = customSelect(
+      'SELECT color_mutation, COUNT(*) AS cnt '
+      'FROM birds '
+      'WHERE user_id = ? AND is_deleted = 0 AND color_mutation IS NOT NULL '
+      'GROUP BY color_mutation',
+      variables: [Variable.withString(userId)],
+      readsFrom: {birdsTable},
+    );
+    return query.watch().map((rows) {
+      final result = <BirdColor, int>{};
+      for (final row in rows) {
+        final color = BirdColor.fromJson(row.read<String>('color_mutation'));
+        final c = row.read<int>('cnt');
+        result[color] = (result[color] ?? 0) + c;
+      }
+      return result;
+    });
+  }
+
   /// Checks if a ring number already exists for a given user.
   ///
   /// When [excludeId] is provided the bird with that id is skipped

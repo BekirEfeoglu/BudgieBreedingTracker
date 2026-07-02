@@ -38,10 +38,12 @@ Event create
   -> Server timestamp UTC, display local (datetime-format.md)
 ```
 
-Reminder timing kullanıcı ayarlanabilir:
-- "1 saat önce", "1 gün önce", "exact time"
-- Default: incubation = günde 2 kez, milestone = 1 saat önce
-- Quiet hours (notifications.md) honored
+Manuel takvim event'lerinde (`EventFormNotifier.createEvent`) hatırlatma
+şu an **sabit 30 dakika önce**dir (`_kDefaultReminderMinutesBefore`) — kullanıcı
+ayarlanabilir "1 saat önce / 1 gün önce / exact time" seçimi henüz UI'da yok.
+Otomatik kuluçka/yumurta-çevirme hatırlatmaları ayrı bir sistemdir
+(`NotificationScheduler`, `event_reminders` tablosunu kullanmaz — bkz. ID
+Stability). Quiet hours (notifications.md) her iki sistemde de honored.
 
 ## ID Stability
 Notification ID deterministik:
@@ -75,7 +77,7 @@ Notification tap → app open + route:
 Validation zorunlu (notifications.md): unknown type → warning + home fallback.
 
 ## Calendar View
-- Month view: `TableCalendar` widget (paket: `table_calendar`)
+- Month view: `CalendarGrid` (custom `lib/features/calendar/widgets/calendar_grid.dart`, 7-column grid — NOT the `table_calendar` package, not a dependency)
 - Day detail: o gün eventlerinin listesi (chronological)
 - Filter: event type checkbox (multi-select)
 - Color coding: event type'a göre theme color

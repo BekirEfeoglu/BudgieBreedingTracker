@@ -153,4 +153,69 @@ class HealthRecordsDao extends DatabaseAccessor<AppDatabase>
       return result;
     });
   }
+
+  /// Busiest month by health record count (statistics.md SQL aggregation).
+  /// UTC-based month bucketing (matches `record.date.year`/`.month` on the
+  /// UTC-normalized `DateTime` loaded from the DB) — deliberately NOT
+  /// `'localtime'`, to stay faithful to the previous Dart-side behavior.
+  /// Ties broken by the smaller month key, mirroring the previous Dart
+  /// `_maxEntry` helper's ascending-key tiebreak.
+  Stream<({String month, int count})?> watchBusiestMonth(String userId) {
+    final query = customSelect(
+      "SELECT strftime('%Y-%m', date) AS month, COUNT(*) AS cnt "
+      'FROM health_records '
+      'WHERE user_id = ? AND is_deleted = 0 '
+      'GROUP BY month '
+      'ORDER BY cnt DESC, month ASC '
+      'LIMIT 1',
+      variables: [Variable.withString(userId)],
+      readsFrom: {healthRecordsTable},
+    );
+    return query.watch().map((rows) {
+      if (rows.isEmpty) return null;
+      final row = rows.single;
+      return (month: row.read<String>('month'), count: row.read<int>('cnt'));
+    });
+  }
+
+  /// Most-visited bird by health record count. Ties broken by the smaller
+  /// bird id, mirroring the previous Dart `_maxEntry` helper.
+  Stream<({String birdId, int count})?> watchBusiestBird(String userId) {
+    final query = customSelect(
+      'SELECT bird_id, COUNT(*) AS cnt '
+      'FROM health_records '
+      'WHERE user_id = ? AND is_deleted = 0 AND bird_id IS NOT NULL '
+      'GROUP BY bird_id '
+      'ORDER BY cnt DESC, bird_id ASC '
+      'LIMIT 1',
+      variables: [Variable.withString(userId)],
+      readsFrom: {healthRecordsTable},
+    );
+    return query.watch().map((rows) {
+      if (rows.isEmpty) return null;
+      final row = rows.single;
+      return (
+        birdId: row.read<String>('bird_id'),
+        count: row.read<int>('cnt'),
+      );
+    });
+  }
+
+  /// Average treatment/follow-up duration in days, across records with a
+  /// follow-up date not before the record date. Uses UTC-midnight-normalized
+  /// day counting (`julianday(date(x))`), matching
+  /// `date_utils.DateUtils.dayDiff`. Returns `null` when no record qualifies
+  /// (SQL `AVG` over zero rows is `NULL`).
+  Stream<double?> watchAverageTreatmentDays(String userId) {
+    final query = customSelect(
+      'SELECT AVG(julianday(date(follow_up_date)) - julianday(date(date))) '
+      'AS avg_days '
+      'FROM health_records '
+      'WHERE user_id = ? AND is_deleted = 0 '
+      'AND follow_up_date IS NOT NULL AND follow_up_date >= date',
+      variables: [Variable.withString(userId)],
+      readsFrom: {healthRecordsTable},
+    );
+    return query.watch().map((rows) => rows.single.read<double?>('avg_days'));
+  }
 }

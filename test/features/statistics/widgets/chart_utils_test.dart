@@ -1,7 +1,90 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_utils.dart';
 
+import '../../../helpers/test_localization.dart';
+
 void main() {
+  group('monthAbbreviation', () {
+    testWidgets('renders localized short month name in Turkish', (
+      tester,
+    ) async {
+      late String result;
+      await pumpTranslatedWidget(
+        tester,
+        Builder(
+          builder: (context) {
+            result = monthAbbreviation(context, '2026-01');
+            return const SizedBox.shrink();
+          },
+        ),
+        locale: const Locale('tr'),
+      );
+
+      expect(result, isNot('01'));
+      expect(result.toLowerCase(), contains('oca'));
+    });
+
+    testWidgets('renders localized short month name in English', (
+      tester,
+    ) async {
+      late String result;
+      await pumpTranslatedWidget(
+        tester,
+        Builder(
+          builder: (context) {
+            result = monthAbbreviation(context, '2026-12');
+            return const SizedBox.shrink();
+          },
+        ),
+        locale: const Locale('en'),
+      );
+
+      expect(result, isNot('12'));
+      expect(result.toLowerCase(), contains('dec'));
+    });
+
+    testWidgets('never renders the raw zero-padded month digits', (
+      tester,
+    ) async {
+      late String result;
+      await pumpTranslatedWidget(
+        tester,
+        Builder(
+          builder: (context) {
+            result = monthAbbreviation(context, '2026-03');
+            return const SizedBox.shrink();
+          },
+        ),
+      );
+
+      expect(result, isNot('03'));
+    });
+
+    testWidgets(
+      'does not throw when there is no EasyLocalization ancestor',
+      (tester) async {
+        // Most widget tests in this repo mount a plain MaterialApp without
+        // EasyLocalization (test_support/l10n_lookup.dart) — this helper
+        // must degrade gracefully instead of null-check-crashing on
+        // `context.locale`, or every screen test that renders one of these
+        // charts breaks.
+        late String result;
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Builder(
+              builder: (context) {
+                result = monthAbbreviation(context, '2026-05');
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+        );
+
+        expect(result, isNotEmpty);
+      },
+    );
+  });
   group('calcChartInterval', () {
     test('returns 1 for values <= 5', () {
       expect(calcChartInterval(0), 1);

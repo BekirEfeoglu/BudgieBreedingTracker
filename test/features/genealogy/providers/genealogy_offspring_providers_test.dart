@@ -213,6 +213,28 @@ void main() {
       expect(result.chicks, isEmpty);
     });
 
+    test(
+      'shares the underlying bird fetch with ancestorsProvider (no duplicate getAll)',
+      () async {
+        when(
+          () => mockBirdRepo.getAll('user-1'),
+        ).thenAnswer((_) async => [createTestBird(id: 'bird-1')]);
+        when(
+          () => mockPairRepo.getByBirdId('bird-1'),
+        ).thenAnswer((_) async => []);
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+
+        await container.read(ancestorsProvider('bird-1').future);
+        await container.read(offspringProvider('bird-1').future);
+
+        // Both providers need the same flat bird list; it must be fetched
+        // (and per-row decrypted) once, not once per consumer.
+        verify(() => mockBirdRepo.getAll('user-1')).called(1);
+      },
+    );
+
     test('handles chick resolution failure gracefully', () async {
       when(() => mockBirdRepo.getAll('user-1')).thenAnswer((_) async => []);
       when(

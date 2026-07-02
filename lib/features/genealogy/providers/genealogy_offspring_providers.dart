@@ -9,11 +9,8 @@ final offspringProvider =
       ref,
       birdId,
     ) async {
-      final userId = ref.watch(currentUserIdProvider);
-      final birdRepo = ref.read(birdRepositoryProvider);
-
-      // 1. Get all birds and find direct offspring (parent filter)
-      final allBirds = await birdRepo.getAll(userId);
+      // 1. Get all birds (shared fetch) and find direct offspring (parent filter)
+      final allBirds = await ref.watch(_allUserBirdsProvider.future);
       final offspringBirds = allBirds
           .where((b) => b.fatherId == birdId || b.motherId == birdId)
           .toList();
@@ -55,12 +52,10 @@ final offspringProvider =
 /// Resolves a chick's ancestor tree via egg → incubation → breeding pair chain.
 final chickAncestorsProvider = FutureProvider.family<Map<String, Bird>, String>(
   (ref, chickId) async {
-    final userId = ref.watch(currentUserIdProvider);
     final chickRepo = ref.read(chickRepositoryProvider);
     final eggRepo = ref.read(eggRepositoryProvider);
     final incubationRepo = ref.read(incubationRepositoryProvider);
     final pairRepo = ref.read(breedingPairRepositoryProvider);
-    final birdRepo = ref.read(birdRepositoryProvider);
     final maxDepth = ref.watch(pedigreeDepthProvider);
 
     final chick = await chickRepo.getById(chickId);
@@ -103,8 +98,8 @@ final chickAncestorsProvider = FutureProvider.family<Map<String, Bird>, String>(
           : BirdStatus.alive,
     );
 
-    // Build ancestor map using single getAll + local traversal
-    final allBirds = await birdRepo.getAll(userId);
+    // Build ancestor map using the shared bird list + local traversal
+    final allBirds = await ref.watch(_allUserBirdsProvider.future);
     final birdMap = {for (final b in allBirds) b.id: b};
 
     final ancestors = <String, Bird>{chick.id: pseudoBird};

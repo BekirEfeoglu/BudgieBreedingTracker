@@ -119,7 +119,7 @@ class _AiSexEstimationTabState extends ConsumerState<AiSexEstimationTab>
       padding: const EdgeInsets.all(AppSpacing.md),
       child: AiSectionCard(
         title: 'genetics.sex_ai_title'.tr(),
-        icon: LucideIcons.search,
+        icon: const Icon(LucideIcons.search),
         subtitle: 'genetics.sex_ai_subtitle'.tr(),
         infoText: 'genetics.sex_ai_info'.tr(),
         child: Column(

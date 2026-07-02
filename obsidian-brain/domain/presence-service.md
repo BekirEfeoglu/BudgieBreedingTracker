@@ -15,9 +15,15 @@ background events and a heartbeat timer.
 
 | File | Purpose |
 |------|---------|
-| `user_presence_service.dart` | Session CRUD via Supabase (`startSession`, `heartbeat`, `endSession`) |
+| `user_presence_service.dart` | Session lifecycle + auth-match guard (`startSession`, `heartbeat`, `endSession`) — depends on `UserPresenceRemoteSource`, never touches `SupabaseClient` directly |
 | `user_presence_constants.dart` | `sessionTtl`, heartbeat interval, platform tag |
 | `user_presence_providers.dart` | Riverpod controller + lifecycle bridge |
+
+`data/remote/api/user_presence_remote_source.dart` holds the actual
+`client.from(SupabaseConstants.userSessionsTable)` calls (architecture.md
+Import Rules boundary — a domain service must not call `client.from()`
+directly). Not a `BaseRemoteSource<T>` subclass: presence rows are transient
+key-value writes with no Freezed model, offline mirror, or sync lifecycle.
 
 ## Session Lifecycle
 
@@ -25,8 +31,8 @@ background events and a heartbeat timer.
 App foreground / login
   ├── startSession(userId)
   │   ├── auth user match guard (RLS preflight)
-  │   ├── INSERT user_sessions row (UUID v7, platform, is_active=true, expires_at=now+TTL)
-  │   └── returns sessionId — null on auth mismatch or insert failure
+  │   ├── UPSERT user_sessions row (UUID v7, platform, is_active=true, expires_at=now+TTL)
+  │   └── returns sessionId — null on auth mismatch or write failure
 
 Periodic (heartbeat interval)
   └── heartbeat(userId, sessionId)
@@ -36,6 +42,11 @@ App background / logout
   └── endSession(userId, sessionId)
       └── UPDATE is_active=false
 ```
+
+`startSession` upserts (not inserts): `sessionId` is a fresh client-generated
+`v7()` UUID per call, so `id` never collides across calls today, but upsert
+matches data-layer.md's blanket Write Safety rule and protects a future
+caller-level retry that reuses the same `sessionId`.
 
 UTC `toIso8601String()` everywhere — naive local timestamps would break
 TTL math across timezones (see [[patterns/datetime-format]]).

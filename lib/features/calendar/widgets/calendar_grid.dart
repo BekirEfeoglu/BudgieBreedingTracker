@@ -175,12 +175,11 @@ class _DayCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Localized accessible label: "Pazartesi, 14, 3 etkinlik". Screen
-    // readers announce the day number alone otherwise.
-    final eventCount = events.length;
-    final semanticLabel = isSelected
-        ? 'calendar.day_selected'.tr(args: ['$day', '$eventCount'])
-        : 'calendar.day_with_events'.tr(args: ['$day', '$eventCount']);
+    final semanticLabel = daySemanticLabel(
+      dayNumber: day,
+      isSelected: isSelected,
+      events: events,
+    );
 
     return Semantics(
       label: semanticLabel,

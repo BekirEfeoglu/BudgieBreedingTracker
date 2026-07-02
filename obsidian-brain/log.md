@@ -4,165 +4,159 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
-## [2026-07-01] fix | Breeding tab audit remediation (race condition, FK gap, warning surfacing)
+## [2026-07-02] fix | Statistics 2026-07-01 audit follow-up + test regression
 
-Multi-agent audit of `lib/features/breeding/` + `lib/domain/services/eggs/`
-(providers/services, data layer, UI) found 10 issues; fixed in priority order.
-Highlights: (1) `EggActionsNotifier.updateEggStatus` re-fetches by id before
-writing — a stale `Egg` snapshot held across an async UI gap (status sheet)
-could otherwise resurrect a soft-deleted egg if its breeding pair was removed
-concurrently, including re-triggering chick auto-create against an
-already-deleted incubation chain. (2) `ClutchRepository.validateForeignKeys`
-never checked `breedingId`, the one FK with a real Postgres constraint — added
-the check, removed the `incubationId` check (that field is unconditionally
-stripped by `toSupabase()`, so validating it only blocked otherwise-valid
-pushes). (3) `deleteEgg` never re-triggered `_completeIncubationIfAllEggsTerminal`
-(only `updateEggStatus` did) — deleting the last non-terminal egg left the
-incubation stuck `active` forever, stranding a free-tier slot. (4)
-`BreedingFormNotifier`'s `warning` surfacing was inconsistent: `deleteBreeding`
-correctly showed `errors.background_tasks_partial` on side-effect failure,
-but `createBreeding`/`cancelBreeding`/`completeBreeding`/the species-change
-path in `updateBreeding` silently swallowed the same class of failure —
-`BreedingNotificationHelper`'s three methods now return `bool` instead of
-`void` so callers can tell. (5) `deleteBreeding`'s cascade never cleaned up
-legacy `Clutch` rows (the in-app UI doesn't create them, but cross-device/old
-data can have them). (6)-(10): double-submit window in the breeding form
-during the awaited inbreeding-confirmation dialog (`_submitting` flag added);
-`EggStatus.unknown` produced zero valid transitions in
-`getValidStatusTransitions` despite being non-terminal (dead end recoverable
-only via delete+recreate — now offers the same transitions as `laid`, and the
-switch is exhaustive instead of wildcard-`_` so a future enum addition can't
-silently fall through again); hardcoded Supabase strings in
-`ClutchRemoteSource.fetchByBreeding`; no busy indicator on the breeding detail
-popup menu during complete/cancel/delete. All fixes covered by new/updated
-unit + widget tests; full project `flutter analyze` and quality gate clean.
+Worked through the remaining `features/statistics.md` Known Issues from the
+prior day's audit. Fixed: 4 charts (`breeding_success_chart`,
+`fertility_trend_chart`, `egg_production_chart`, `monthly_trend_chart`)
+rendered the raw zero-padded month digits instead of a localized name — new
+`monthAbbreviation(context, key)` helper in `chart_utils.dart`
+(`DateFormat.MMM(locale)`). Investigated but deliberately left open (not
+mechanical bug fixes, need design/product input): chart series colors
+(`AppColors.success/warning/info`) computed WCAG 1.4.11 contrast against the
+actual theme surfaces — 3 of 4 fail the 3:1 non-text minimum against the
+**light**-theme surface (~2.0-2.3:1), not dark as the prior audit's
+"unverified" framing implied; fixing means picking new app-wide semantic
+color values, not a chart-local change. `gender_pie_chart`/
+`chick_survival_chart` don't implement `.claude/rules/statistics.md`'s
+documented `< 3` insufficient-data → table threshold — confirmed no chart in
+the feature does; building that fallback is a new UI, not a fix. See
+[[features/statistics]] for full detail on both.
 
-## [2026-06-30] fix | Birds tab audit remediation (lifecycle warning, decrypt safety, a11y)
+Caught own regression before it shipped: `monthAbbreviation` called
+`context.locale`, which force-unwraps `EasyLocalization.of(context)` and
+throws when absent. Most widget tests in this repo intentionally mount a
+plain `MaterialApp` without `EasyLocalization` (`test_support/l10n_lookup.dart`
+— returns raw keys instead of translating), a pattern `.tr()` degrades
+gracefully for but `context.locale` does not. First full-suite run after the
+month-label fix: 14 failures, all in `statistics/screens/breeding_tab_test.dart`
+and `health_tab_test.dart` (screen tests compose the 4 charts). Root-caused
+via `Null check operator used on a null value` in the exception log, wrote a
+regression test that reproduces it (`MaterialApp` with no `EasyLocalization`
+ancestor), then made the helper degrade to `tr` via
+`EasyLocalization.of(context)?.locale` instead of the throwing extension.
+Second full run: 11,880/11,880 green.
 
-Multi-agent audit of `lib/features/birds/` (data/provider/screen/widget layers)
-found ~30 issues; fixed in priority order. Highlights: (1) `BirdFormState` gained
-a `warning` field — `cancelActiveBreedingsForBird` now returns `bool` so
-delete/markAsDead/markAsSold/markAsGifted surface `errors.background_tasks_partial`
-on cleanup failure instead of dropping it silently (breeding/egg notifiers already
-did this; birds didn't). (2) `BirdsDao._decryptSensitive` no longer returns raw
-ciphertext as plaintext on decrypt failure — logs + blanks the field
-(`encryption.md` violation). (3) `createBird`: bird-row-persisted-but-photo-row-failed
-no longer reports total failure (duplicate-bird-on-retry risk) or deletes the
-storage object the saved bird's `photoUrl` references (dangling-ref bug) — both
-traced via exact code-flow reading, not just the audit's surface description.
-(4) Bulk-select `Checkbox` and two `OutlinedButton`s were below the 48dp WCAG
-floor (`VisualDensity.compact` / `AppSpacing.touchTargetMin` misuse). (5) Added
-missing test coverage for `BirdGridCard` and `BirdDetailTimeline` (zero tests
-before this pass). Several audit-suggested fixes were investigated and declined
-with reasoning (not applied): gender-icon consolidation into `BirdGenderIcon`
-would change icon *color* at 3 call sites (unintended visual side effect);
-`updateItem`/`fetchByGender` "dead code" both have dedicated passing unit
-tests (deliberate API surface, not accidental cruft); `resolveAll()` provides
-no real batching over `birdsStreamProvider`'s existing `Future.wait` pattern
-(traced the implementation — it's the same `Future.wait(urls.map(resolve))`);
-`RefreshIndicator` not awaiting fresh data is a codebase-wide pattern shared
-with `breeding_list_screen.dart`/`chick_list_screen.dart`, not bird-specific.
-27 files changed (17 lib + 8 test modified + 2 test created), full quality gate
-green (`flutter analyze`, 27/27 anti-pattern checkers, l10n sync, `verify_rules.py --strict`).
+## [2026-07-02] fix | Comprehensive app review + remediation (10 findings)
 
-## [2026-06-29] fix | Cert-pin rotation + unbounded sync timeout (sync stuck)
+Full-app review (quality gates, a specialized security/architecture audit
+agent, then a 3-angle code-review workflow: line-by-line diff scan,
+removed-behavior + cross-file tracer, cleanup/conventions), followed by
+test-first remediation (TDD red→green) of every confirmed finding.
+Correctness/security (5): breeding-pair hard-delete threw `FOREIGN KEY
+constraint failed` on `events.incubation_id` because the pre-clean step
+soft-deleted referencing events instead of hard-deleting them — new
+`EventRepository.hardRemoveByIncubationIds` (+
+`EventsDao.getByIncubationIdsIncludingDeleted`, to also catch rows already
+soft-deleted by an earlier incubation-close flow) used only by
+`deleteBreeding`'s cascade; `cancelBreeding`/`completeBreeding` keep the
+existing soft-delete `removeByIncubationIds`. `chickSurvivalProvider`'s total
+had drifted to exclude `unknown`-status chicks, diverging from
+`summaryStatsProvider` — reverted, see [[features/statistics]].
+`local_ai_transport.dart` logged the full HTTP error body on non-2xx
+responses via `AppLogger.warning` (always attaches to a Sentry breadcrumb) —
+provider error bodies can echo prompt content — now truncated to 200 chars.
+`UserPresenceService.startSession` used `.insert()` instead of `.upsert()`
+(data-layer.md Write Safety rule); hardened, though not currently
+exploitable since `sessionId` is a fresh v7 UUID per call. Follow-up: the
+security agent also flagged `UserPresenceService` as the only `client.from()`
+usage outside `data/remote/`/`features/admin/` — extracted a new
+`UserPresenceRemoteSource` (`data/remote/api/`, not a `BaseRemoteSource<T>`
+subclass since presence rows have no Freezed model or sync lifecycle) and
+the service now depends on it instead of `SupabaseClient` directly, see
+[[domain/presence-service]]. Separately verified (no fix needed): `/premium`
+is reachable while unauthenticated, but `purchaseServiceReadyProvider`
+(`premium_providers.dart`) resolves `false` when `currentUserIdProvider ==
+'anonymous'`, so `purchasePlan()` returns early before RevenueCat is ever
+initialized — no orphaned-purchase risk.
+`watchTopPairByChickCount` was missing a `clutches.is_deleted = 0` filter,
+counting chicks under soft-deleted clutches toward the "most productive
+pair" record. Cleanup (5): `chickHealthCountsProvider` deduped into one
+shared provider instead of two separate Drift subscriptions to the same
+query; `daySemanticLabel()` extracted to `event_card_helpers.dart`, removing
+the a11y-label duplication between `calendar_grid.dart`/
+`calendar_week_view.dart`; `chicks_dao.dart`/`eggs_dao.dart` raw SQL/Dart
+string literals (`'deceased'`, `'fertile'` etc.) now bind
+`ChickHealthStatus`/`EggStatus` `.name` instead of hardcoding the serialized
+value; `sync_detail_sheet.dart`'s `_keepRemote` now calls the shared
+`clearConflictHistory` helper instead of duplicating its body;
+`local_ai_service.dart`'s duplicate `sha1.convert(bytes).toString()` calls
+consolidated into `_sha1Hex`. Quality gates: analyze 0, 27-checker scan 0/0,
+`flutter test` 11,870/11,870, l10n 3014/3014/3014 synced, rules 24/24,
+security 37/37. Nothing committed — worktree already had a large unrelated
+uncommitted diff (genetics v4, statistics SQL migration, settings audit)
+predating this session.
 
-Device logs showed all Supabase calls failing with
-`TlsException: Certificate pinning check failed` — Supabase rotated its leaf cert
-early (new `E4:89:…`, valid 2026-06-28→09-26, Google Trust Services WE1) ahead of
-the pinned `B9:B8:…` cert's 2026-07-29 expiry, so every request was rejected at TLS
-and nothing synced. Verified the new fingerprint independently via `openssl s_client`
-(not a MITM), added it to `certificate_pinning.dart` `_trustedFingerprints` keeping
-the previous leaf for rotation overlap (security.md procedure). Separately hardened
-`sync_orchestrator.dart`: push/pull phases had no timeout, so a stalled request left
-`isSyncingProvider` true forever (UI stuck on "Senkronize ediliyor…") — added a 45s
-network-phase timeout (injectable for tests) that converts a hang into a recoverable
-error. Regression tests added for both.
+## [2026-07-02] fix | Settings tab comprehensive audit + remediation
 
-## [2026-06-29] security | Harden admin_force_logout SECURITY DEFINER exposure
+Four-pass audit (providers, screens, widgets, tests+l10n) of `lib/features/settings/`,
+then all findings fixed. High: "Export personal data" was a no-op with fake success
+snackbar → now runs the real Excel export (not premium-gated, data-ownership);
+`ExportActions` swallowed all errors (reward-ad use burned + success snackbar on
+failed exports) → methods now return bool, rethrow on failure, in-flight guard added.
+Medium: import consumes reward only after rows imported; sync-detail-sheet actions got
+busy-guard + error handling + confirm-before-clear (DAO delete now awaited everywhere,
+`clearConflictHistory` helper shared with the dialog); cache clear got a confirmation;
+fake "active sessions" list replaced with honest info text; dialog pops use the dialog's
+own context; AsyncValue error no longer renders as green "all healthy" (new
+`_LoadErrorState`/`_LoadingState`); 9 pref notifiers moved to new
+`PrefNotifier`/`PrefBoolNotifier` base (`lib/data/local/preferences/pref_notifier.dart`)
+with disposed/user-modified race guards + error logging (incl. `DateFormatNotifier`);
+sync sheet touch targets 44→48dp (`touchTargetMd`). Low: formatBytes GB tier, version
+tile copies to clipboard, rate-app/support launch error handling, guidelines chips
+→AppIcon, DB filename → `AppDatabase.dbFileName` const, l10n cleanup (5 new keys, dead
+`export_data_started` + duplicate `common.unknown` removed). Tests: 8 hard waits →
+`pumpEventQueue`, new race-guard/legacy-migration/ExportActions/backup-reward-flow
+tests. Doc drift: nonexistent "5-tap dev menu" marked not-implemented here and in
+`.claude/rules/feature-flags.md`.
 
-Supabase linter `0029` flagged `public.admin_force_logout(uuid)` as an
-`authenticated`-callable `SECURITY DEFINER` RPC. Body already guards on
-`public.is_admin()` (no privilege escalation), but the function — added
-`20260627134000`, after the same-day linter-fix migrations — skipped the
-established `private`-schema hardening pattern from `20260501115000`. New
-migration `20260629120000_harden_admin_force_logout_exposure.sql` moves the
-privileged impl into `private`, keeps a `public` `SECURITY INVOKER` wrapper
-(public name + signature unchanged, so `admin_user_manager.dart` rpc call is
-untouched), and re-scopes grants to `authenticated, service_role`. Idempotent;
-not yet deployed (`supabase db push` pending). Migration count 178→179 across
-CLAUDE.md, data-layer.md, overview.md, supabase.md. Documented the SECURITY
-DEFINER RPC exposure pattern in [[data-layer/migrations]].
+## [2026-07-02] fix | Genetics calculator comprehensive audit + remediation
 
-## [2026-06-29] test | Repair 44 UI-refresh widget-test failures
+Full audit of the Genetics Calculator (3 parallel deep passes: domain engine,
+UI/feature, tests) followed by remediation of all findings. Engine fixes:
+Crested lethal over-attribution corrected (`parentAnyVisual` → `offspringHomozygous`
+via new `_RawResult.doubleFactorIds` structural double-factor tagging; full-dominant
+homozygotes now tagged `(double)`); discovered + fixed a latent bug where recessive
+DF-lethals (feather duster) never triggered `offspringHomozygous`. UI fixes: l10n
+gaps in `dihybrid_punnett_section`/`mutation_detail_sheet`/`mutation_linkage_data`,
+silent error swallow in `genetics_results_step` (→ ErrorState + AppLogger + Sentry),
+`AiSectionCard` IconData→Widget, lethal/inbreeding warning icons →AppIcon,
+`local_ai_service` cache key path+mtime→content hash, removed dead `inheritance_simple.dart`
++ unused mixin. Test coverage added: calculationVersion/isStale, 4 missing repulsion
+linkage pairs, df_feather_duster/df_dominant_pied engine tests, 7 blue-series
+regression tests, cyclic-pedigree guard. calculationVersion bumped v3→v4
+(full-dominant `(double)` tagging splits crested × crested into a distinct DF
+result, changing the offspring set — so stored v3 crested calcs are now flagged
+stale). Version table + wiki updated accordingly.
 
-Second pass after the reduce-motion fix. Root causes + fixes: stale provider
-overrides opened real Drift streams (cleanup-timer leaks) — home/breeding/
-active-breedings/main-shell now stub `birdByIdProvider` /
-`birdsByUserIdMapProvider` / `profileSyncProvider`; `SliverAppBar.large` renders
-the title twice so title finders moved to `findsWidgets`; scroll structure
-changed `ListView`/`SingleChildScrollView` → `CustomScrollView`/`SliverList`/
-`SliverGrid`; the 300ms search debounce must be advanced before asserting
-no-results; loading buttons keep a non-null no-op handler (assert spinner / no
-submit, not `onPressed == null`); a custom `MediaQueryData` shadowed the global
-`disableAnimations`; pending `Future.delayed`/RPC timers drained or stubbed
-(`reset_user_data`). See [[patterns/testing]].
+## [2026-07-01] audit | Statistics tab comprehensive review (read-only, no fixes applied)
 
-## [2026-06-29] fix | Decorative animations honour reduce-motion (test-safe)
+Comprehensive read-only audit of `lib/features/statistics/` (8 providers, 4
+screens, 20 widgets, 2 models) via 4 parallel deep-review passes + direct
+verification. Quality gates clean (analyze 0, 27-checker scan 0/0, l10n
+132/132/132 synced, `flutter test` 297/297 green, including the in-flight
+`chickSurvivalProvider` SQL-aggregation refactor). Findings reported to user,
+no fixes applied pending prioritization:
 
-The UI-refresh animation widgets (`PulseAnimation`, `ShimmerShineAnimation`,
-`ScannerLineAnimation` — perpetual `repeat()`; `SlideFadeAnimation` — entrance
-`Future.delayed`) ran unconditionally, hanging `pumpAndSettle` and leaking
-timers across ~40 widget tests. They now read
-`MediaQuery.disableAnimations` in `didChangeDependencies` and render the static
-end state when reduce-motion is on (a11y win + test-safe). `test/
-flutter_test_config.dart` sets `disableAnimations: true` globally via
-`FakeAccessibilityFeatures` so every test (helper or custom MaterialApp) is
-covered. `progress_bar_test` updated for the new Container-based bar (the
-refresh replaced `LinearProgressIndicator`). See [[patterns/ui-patterns]],
-[[patterns/testing]].
+- Data bug in the in-flight `chickSurvivalProvider` refactor: new SQL total
+  includes `ChickHealthStatus.unknown` counts but the healthy/sick/deceased
+  split silently drops them. See [[features/statistics]], [[features/chicks]].
+- Premium-gating doc/code drift: `/statistics` route is gated
+  (`effectivePremiumProvider` OR a rewarded-ad exemption,
+  `isStatisticsRewardActiveProvider`), but the documented free-tier partial
+  view (3 charts, 30-day cap, gated export) doesn't exist — it's all-or-
+  nothing, and reward-unlocked users get full PDF export identical to paying
+  subscribers.
+- 10 of ~20 providers still aggregate in Dart instead of SQL — the same
+  anti-pattern `chickSurvivalProvider` was just fixed for.
+- All 10 chart widgets use non-adaptive `AppColors.*` instead of
+  `Theme.of(context).colorScheme` — dark mode unverified.
+- 4 charts show raw unlocalized month numbers; 6 format numbers without
+  `NumberFormat`; `gender_pie_chart`/`chick_survival_chart` render a
+  misleading 100% single-slice pie for single-data-point accounts.
+- Updated [[features/statistics]] with the SQL-aggregation status and a
+  Known Issues section; full itemized findings (~120 dated observations
+  across 34 files) were delivered in-session only, not persisted — re-audit
+  if this entry goes stale.
 
-## [2026-06-29] feat | Admin moderation queue, force logout + aggregate-detail RPC
-
-New `admin_moderation_screen.dart` + `admin_moderation_providers.dart`:
-`adminPendingPostsProvider` / `adminPendingCommentsProvider` list community
-content with `needs_review = true`; `AdminModerationNotifier`
-(`adminModerationProvider`) approves (clear `needs_review`) or soft-deletes
-(`is_deleted = true`) posts/comments. Route `AppRoutes.adminModeration`
-(`/admin/moderation`). New `admin_users_filter_sheet.dart` (advanced
-status/plan/date filters) and `admin_user_detail_content_security.dart`
-(security + audit section with **force logout**). 4 Supabase migrations
-(`20260627132400`–`20260627134000`, all applied to prod): the
-`admin_get_user_aggregate_detail` RPC (one-round-trip user detail, switched
-`SECURITY DEFINER` → `INVOKER` to clear the linter warning — safe because all
-read tables have admin-inclusive RLS SELECT), SECURITY DEFINER exposure
-hardening (revoke PUBLIC/anon execute), and `admin_force_logout` (deletes
-`auth.sessions` + stamps `profiles.session_revoked_at`; refresh tokens revoked
-immediately, live access token valid ≤1h, no token hook). See [[features/admin]].
-
-## [2026-06-29] feat | BirdLifecycleService cancels reminders on bird exit
-
-New `lib/domain/services/birds/bird_lifecycle_service.dart`
-(`birdLifecycleServiceProvider`) — called from `bird_form_providers.dart` when
-a bird is sold / gifted / dead / deleted. Cancels active breeding pairs and
-their active incubations, and now also cancels the scheduled reminders
-(incubation milestones + per-egg turning, species-resolved) so no zombie
-notifications fire for a pair that no longer exists, then clears calendar
-events. Best-effort + non-rethrowing per `breeding-eggs.md`. Brings the domain
-service count to 23. Review fixes in the same pass: 13 missing admin/community
-l10n keys added (tr/en/de), `AppIconButton`/`AppIcon` + `mounted`/`LoadingState`
-+ `SupabaseConstants` column fixes in the new admin files, stray `scratch.ts`
-removed. New tests: `bird_lifecycle_service_test.dart` (4),
-`admin_moderation_providers_test.dart` (4). See [[features/birds]],
-[[domain/services-index]].
-
-`adminUserCountsProvider` (`admin_users_providers.dart`) now feeds the users
-summary bar instead of deriving Toplam/Aktif/Pasif/Çevrimiçi from the loaded
-page (capped at `AdminConstants.usersPageSize` = 50, so totals appeared stuck
-at 50). Counts come from database-wide queries: total/active via `profiles`
-head counts, online via the presence-sessions source. The screen uses global
-counts when unfiltered, falls back to the loaded set when filtered/searched,
-and invalidates counts on refresh/retry/user mutations (commit `94d0c88`).
-See [[features/admin]].
-
-Older entries are archived in [[log-archive-2026-06]] and [[log-archive-2026-05]].
+Older entries are archived in [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

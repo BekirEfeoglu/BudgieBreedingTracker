@@ -3,30 +3,37 @@ import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
-import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_providers.dart';
 
 /// Chick survival statistics.
+///
+/// Backed by `ChicksDao.watchHealthStatusCounts` via the shared
+/// `chickHealthCountsProvider` (statistics.md SQL aggregation requirement
+/// — mirrors `healthRecordTypeDistributionProvider` below); previously this
+/// provider pulled the full chick list via `chicksStreamProvider`
+/// (including per-chick photo URL resolution) and counted
+/// healthy/sick/deceased in Dart on every emission.
 final chickSurvivalProvider =
     Provider.family<AsyncValue<ChickSurvivalData>, String>((ref, userId) {
-      final chicksAsync = ref.watch(chicksStreamProvider(userId));
+      final countsAsync = ref.watch(chickHealthCountsProvider(userId));
 
-      return chicksAsync.whenData((chicks) {
-        final total = chicks.length;
+      return countsAsync.whenData((counts) {
+        final healthy = counts[ChickHealthStatus.healthy.name] ?? 0;
+        final sick = counts[ChickHealthStatus.sick.name] ?? 0;
+        final deceased = counts[ChickHealthStatus.deceased.name] ?? 0;
+        // total is the raw map sum (every status, including `unknown`) —
+        // matches the pre-SQL-migration `chicks.length` headcount and
+        // `summaryStatsProvider`'s `_summaryChickCountsStreamProvider`.
+        // An unknown-status chick has no slice of its own in the 3-category
+        // pie chart, but it must still count toward the denominator, or the
+        // summary card and this health tab show two different survival
+        // rates for the same underlying data.
+        final total = counts.values.fold(0, (sum, c) => sum + c);
         if (total == 0) {
           return const ChickSurvivalData();
         }
 
-        final healthy = chicks
-            .where((c) => c.healthStatus == ChickHealthStatus.healthy)
-            .length;
-        final sick = chicks
-            .where((c) => c.healthStatus == ChickHealthStatus.sick)
-            .length;
-        final deceased = chicks
-            .where((c) => c.healthStatus == ChickHealthStatus.deceased)
-            .length;
-        final survivalRate = total > 0 ? (total - deceased) / total : 0.0;
+        final survivalRate = (total - deceased) / total;
 
         return ChickSurvivalData(
           healthy: healthy,

@@ -1,8 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/lethal_combination_database.dart';
 
 /// Displays a warning banner when lethal allele combinations are detected
@@ -101,22 +102,28 @@ class LethalWarning extends StatelessWidget {
     );
   }
 
+  // Domain warning iconography via AppIcon (SVG). Only `warning` and `info`
+  // domain icons exist; severity is further distinguished by color and the
+  // severity badge text, so information is never conveyed by icon shape alone.
   Widget _severityIcon(LethalSeverity severity, Color color) =>
       switch (severity) {
-        LethalSeverity.lethal => Icon(
-          LucideIcons.skull,
+        LethalSeverity.lethal => AppIcon(
+          AppIcons.warning,
           size: 20,
           color: color,
+          semanticsLabel: 'genetics.lethal_severity_lethal'.tr(),
         ),
-        LethalSeverity.semiLethal => Icon(
-          LucideIcons.alertOctagon,
+        LethalSeverity.semiLethal => AppIcon(
+          AppIcons.warning,
           size: 20,
           color: color,
+          semanticsLabel: 'genetics.lethal_severity_semi_lethal'.tr(),
         ),
-        LethalSeverity.subVital => Icon(
-          LucideIcons.alertTriangle,
+        LethalSeverity.subVital => AppIcon(
+          AppIcons.info,
           size: 20,
           color: color,
+          semanticsLabel: 'genetics.lethal_severity_sub_vital'.tr(),
         ),
       };
 

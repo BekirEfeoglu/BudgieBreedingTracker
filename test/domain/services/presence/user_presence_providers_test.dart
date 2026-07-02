@@ -1,13 +1,13 @@
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/remote/api/user_presence_remote_source.dart';
 import 'package:budgie_breeding_tracker/domain/services/presence/user_presence_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/presence/user_presence_service.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class _FakePresenceService extends UserPresenceService {
-  _FakePresenceService() : super(_FakeSupabaseClient());
+  _FakePresenceService() : super(_FakeRemoteSource());
 
   final startedUsers = <String>[];
   final endedSessions = <String>[];
@@ -33,7 +33,7 @@ class _FakePresenceService extends UserPresenceService {
   }
 }
 
-class _FakeSupabaseClient extends Fake implements SupabaseClient {}
+class _FakeRemoteSource extends Fake implements UserPresenceRemoteSource {}
 
 void main() {
   testWidgets(

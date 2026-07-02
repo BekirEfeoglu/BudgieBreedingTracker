@@ -23,10 +23,14 @@ extension BreedingFormActions on BreedingFormNotifier {
           status: IncubationStatus.cancelled,
           closedAt: now,
         );
-        sideEffectsOk = await _helper.cancelBreedingNotifications(
+        final notificationsOk = await _helper.cancelBreedingNotifications(
           id,
           incubations: incubations,
         );
+        final calendarOk = await _helper.cleanupIncubationCalendarEvents(
+          incubations,
+        );
+        sideEffectsOk = notificationsOk && calendarOk;
       } else {
         state = state.copyWith(
           isLoading: false,
@@ -68,10 +72,14 @@ extension BreedingFormActions on BreedingFormNotifier {
           status: IncubationStatus.completed,
           closedAt: now,
         );
-        sideEffectsOk = await _helper.cancelBreedingNotifications(
+        final notificationsOk = await _helper.cancelBreedingNotifications(
           id,
           incubations: incubations,
         );
+        final calendarOk = await _helper.cleanupIncubationCalendarEvents(
+          incubations,
+        );
+        sideEffectsOk = notificationsOk && calendarOk;
       } else {
         state = state.copyWith(
           isLoading: false,
@@ -201,6 +209,36 @@ extension BreedingFormActions on BreedingFormNotifier {
             remove: (egg) => eggRepo.remove(egg.id),
           ) ||
           partial;
+
+      // Incubations are HARD-deleted below (unlike eggs/pairs/chicks, which
+      // soft-delete). events.incubation_id is a real local FK with
+      // `PRAGMA foreign_keys = ON` and no ON DELETE clause, so any event
+      // still pointing at an incubation (milestones, egg-laying, expected
+      // hatch — generated for essentially every incubation) would make the
+      // hard-delete below throw a foreign key constraint error. Clear the
+      // referencing events FIRST so the delete can actually succeed instead
+      // of failing silently into `_removeAllResilient`'s catch every time.
+      // Must be the hard-delete variant: a soft-deleted event row keeps its
+      // incubationId column populated and still blocks the FK.
+      if (incubationsToRemove.isNotEmpty) {
+        try {
+          await ref
+              .read(eventRepositoryProvider)
+              .hardRemoveByIncubationIds(
+                incubationsToRemove.map((inc) => inc.id).toList(),
+              );
+        } catch (e, st) {
+          AppLogger.warning(
+            'Failed to pre-clean calendar events for pair $id incubations: $e',
+          );
+          AppLogger.error(
+            'BreedingFormNotifier.deleteBreeding.calendarPreclean',
+            e,
+            st,
+          );
+          partial = true;
+        }
+      }
       partial =
           await _removeAllResilient(
             entities: incubationsToRemove,

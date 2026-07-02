@@ -70,6 +70,7 @@ void main() {
   late MockChickRepository mockChickRepo;
   late MockClutchRepository mockClutchRepo;
   late MockNotificationScheduler mockScheduler;
+  late MockEventRepository mockEventRepo;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -80,6 +81,7 @@ void main() {
     mockChickRepo = MockChickRepository();
     mockClutchRepo = MockClutchRepository();
     mockScheduler = MockNotificationScheduler();
+    mockEventRepo = MockEventRepository();
 
     registerFallbackValue(_pair());
     registerFallbackValue(
@@ -101,6 +103,19 @@ void main() {
     when(() => mockChickRepo.getByEggIds(any())).thenAnswer((_) async => []);
     // Default: no legacy clutch rows for the pair being deleted
     when(() => mockClutchRepo.getByBreeding(any())).thenAnswer((_) async => []);
+    // Default: calendar cleanup succeeds (a closed incubation's milestone/
+    // egg-laying/hatch events are removed without error). cancelBreeding/
+    // completeBreeding soft-delete (incubation row survives); deleteBreeding
+    // hard-deletes (incubation row is about to be hard-removed too).
+    when(
+      () => mockEventRepo.removeByIncubationIds(any()),
+    ).thenAnswer((_) async => 0);
+    when(
+      () => mockEventRepo.hardRemoveByIncubationIds(any()),
+    ).thenAnswer((_) async => 0);
+    when(
+      () => mockEventRepo.removeByBreedingPairIds(any()),
+    ).thenAnswer((_) async => 0);
   });
 
   ProviderContainer createContainer() {
@@ -113,6 +128,7 @@ void main() {
         chickRepositoryProvider.overrideWithValue(mockChickRepo),
         clutchRepositoryProvider.overrideWithValue(mockClutchRepo),
         notificationSchedulerProvider.overrideWithValue(mockScheduler),
+        eventRepositoryProvider.overrideWithValue(mockEventRepo),
         isPremiumProvider.overrideWithValue(false),
         effectivePremiumProvider.overrideWithValue(false),
       ],
@@ -198,6 +214,59 @@ void main() {
       expect(captured.length, 1);
       expect(captured.first.status, IncubationStatus.cancelled);
     });
+
+    test(
+      'removes calendar events for the closed incubation so the calendar '
+      'stops showing its milestones',
+      () async {
+        final activeInc = _incubation(status: IncubationStatus.active);
+        when(
+          () => mockPairRepo.getById('pair-1'),
+        ).thenAnswer((_) async => _pair());
+        when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
+        stubHelperDeps(incubations: [activeInc]);
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(breedingFormStateProvider.notifier)
+            .cancelBreeding('pair-1');
+
+        verify(
+          () => mockEventRepo.removeByIncubationIds(['inc-1']),
+        ).called(1);
+        final state = container.read(breedingFormStateProvider);
+        expect(state.warning, isNull);
+      },
+    );
+
+    test(
+      'surfaces a warning (not an error) when calendar cleanup fails',
+      () async {
+        final activeInc = _incubation(status: IncubationStatus.active);
+        when(
+          () => mockPairRepo.getById('pair-1'),
+        ).thenAnswer((_) async => _pair());
+        when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
+        stubHelperDeps(incubations: [activeInc]);
+        when(
+          () => mockEventRepo.removeByIncubationIds(any()),
+        ).thenThrow(Exception('db unavailable'));
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(breedingFormStateProvider.notifier)
+            .cancelBreeding('pair-1');
+
+        final state = container.read(breedingFormStateProvider);
+        expect(state.isSuccess, isTrue);
+        expect(state.error, isNull);
+        expect(state.warning, isNotNull);
+      },
+    );
 
     test('sets error when pair not found', () async {
       when(() => mockPairRepo.getById('pair-1')).thenAnswer((_) async => null);
@@ -374,6 +443,32 @@ void main() {
       expect(captured.length, 1);
       expect(captured.first.status, IncubationStatus.completed);
     });
+
+    test(
+      'removes calendar events for the closed incubation so the calendar '
+      'stops showing its milestones',
+      () async {
+        final activeInc = _incubation(status: IncubationStatus.active);
+        when(
+          () => mockPairRepo.getById('pair-1'),
+        ).thenAnswer((_) async => _pair());
+        when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
+        stubHelperDeps(incubations: [activeInc]);
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(breedingFormStateProvider.notifier)
+            .completeBreeding('pair-1');
+
+        verify(
+          () => mockEventRepo.removeByIncubationIds(['inc-1']),
+        ).called(1);
+        final state = container.read(breedingFormStateProvider);
+        expect(state.warning, isNull);
+      },
+    );
 
     test('sets error when pair not found', () async {
       when(() => mockPairRepo.getById('pair-1')).thenAnswer((_) async => null);
@@ -583,6 +678,44 @@ void main() {
 
       verify(() => mockIncubationRepo.remove('inc-1')).called(1);
     });
+
+    test(
+      'removes calendar events referencing the incubation before hard-'
+      'deleting it, so the FK constraint on events.incubation_id never '
+      'blocks the delete',
+      () async {
+        final incubations = [_incubation()];
+        stubHelperDeps(incubations: incubations);
+        when(() => mockEggRepo.remove(any())).thenAnswer((_) async {});
+        when(() => mockPairRepo.remove(any())).thenAnswer((_) async {});
+
+        final callOrder = <String>[];
+        when(
+          () => mockEventRepo.hardRemoveByIncubationIds(any()),
+        ).thenAnswer((_) async {
+          callOrder.add('hardRemoveByIncubationIds');
+          return 0;
+        });
+        when(() => mockIncubationRepo.remove(any())).thenAnswer((_) async {
+          callOrder.add('incubationRepo.remove');
+        });
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(breedingFormStateProvider.notifier)
+            .deleteBreeding('pair-1');
+
+        verify(
+          () => mockEventRepo.hardRemoveByIncubationIds(['inc-1']),
+        ).called(1);
+        expect(
+          callOrder,
+          ['hardRemoveByIncubationIds', 'incubationRepo.remove'],
+        );
+      },
+    );
 
     test(
       'cancels incubation and egg notifications for related records',

@@ -25,7 +25,7 @@ if (debugRoute.isNotEmpty) return GoRouter(initialLocation: debugRoute);
 
 - `analytics_enabled` — user opt-in
 - `notification_quiet_hours` — quiet hours setting
-- `experimental_*` — developer menu toggles
+- `experimental_*` — developer menu toggles (planned — not yet implemented)
 
 ### Sync Rollout Flags (operational, not security)
 
@@ -60,12 +60,10 @@ See [[patterns/security]] and [[domain/premium-service]]. Summary:
 
 ## Experimental Features (Dev Menu)
 
-Hidden by 5-tap on Settings header:
-- `experimental_local_ai` — LocalAiService preview
-- `experimental_genetics_v3` — new calculator version
-- `debug_show_provider_logs` — provider rebuild logs
-
-Production users cannot access. Founders/testers can.
+**Not implemented** (verified 2026-07-02): the "5-tap on Settings header"
+developer menu and the `experimental_*` flags do not exist in the codebase —
+future design goal only. The sole debug-gated route today is
+`geneticsColorAudit` (`user_routes.dart`, wrapped in `kDebugMode`).
 
 ## Flag Lifecycle
 

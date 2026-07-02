@@ -115,22 +115,24 @@ void main() {
     });
 
     test(
-      'detects crested pairing risk when both parents carry crested alleles',
+      'flags only the double-factor crested offspring, not the single factor',
       () {
         final analysis = analyzer.analyze(
           fatherMutations: const {'crested_tufted'},
           motherMutations: const {'crested_full_circular'},
           offspringResults: [
-            _offspring(phenotype: 'DF Crested', probability: 0.25),
+            _offspring(
+              phenotype: 'DF Crested',
+              probability: 0.25,
+              visualMutations: const ['crested_tufted'],
+              doubleFactorIds: const {'crested_tufted', 'crested_full_circular'},
+            ),
             _offspring(phenotype: 'Crested', probability: 0.75),
           ],
         );
 
-        expect(analysis.warnings, hasLength(2));
-        expect(
-          analysis.warnings.every((w) => w.combination.id == 'df_crested'),
-          isTrue,
-        );
+        expect(analysis.warnings, hasLength(1));
+        expect(analysis.warnings.single.combination.id, 'df_crested');
         expect(analysis.highestSeverity, LethalSeverity.lethal);
         expect(analysis.totalAffectedProbability, closeTo(0.25, 0.0001));
       },
@@ -178,14 +180,21 @@ void main() {
           fatherMutations: const {'crested_tufted', 'ino'},
           motherMutations: const {'crested_half_circular', 'ino'},
           offspringResults: [
-            _offspring(phenotype: 'DF Crested', probability: 0.25),
+            _offspring(
+              phenotype: 'DF Crested',
+              probability: 0.25,
+              visualMutations: const ['crested_tufted', 'ino'],
+              doubleFactorIds: const {'crested_tufted', 'crested_half_circular'},
+            ),
             _offspring(phenotype: 'Ino', probability: 0.75),
           ],
         );
 
+        // Only the DF crested offspring triggers df_crested; ino_x_ino is a
+        // parent-level check so it flags every offspring.
         expect(
           analysis.warnings.where((w) => w.combination.id == 'df_crested'),
-          hasLength(2),
+          hasLength(1),
         );
         expect(
           analysis.warnings.where((w) => w.combination.id == 'ino_x_ino'),

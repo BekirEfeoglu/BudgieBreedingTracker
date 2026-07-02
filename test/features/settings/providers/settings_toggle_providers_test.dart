@@ -5,21 +5,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
 import 'package:budgie_breeding_tracker/features/settings/providers/settings_toggle_providers.dart';
 
-// Build() içinde fire-and-forget _loadFromPrefs() çağrısı yapıldığından,
-// provider'ın ilk değerini okumadan önce async yüklemenin tamamlanmasını
-// beklemek gerekir. Helpers addTearDown ile otomatik dispose eder.
+// Build() içinde fire-and-forget yükleme yapıldığından, provider'ın ilk
+// değerini okumadan önce async yüklemenin tamamlanmasını beklemek gerekir.
+// pumpEventQueue mock SharedPreferences future'larını deterministik boşaltır
+// (test-stability.md: hard wait yasak). Helpers addTearDown ile dispose eder.
 
-/// Empty prefs ile container oluşturur. Caller must be inside a test.
-// ignore: unused_element
-Future<ProviderContainer> _makeContainer() async {
-  SharedPreferences.setMockInitialValues({});
-  await SharedPreferences.getInstance();
-  final container = ProviderContainer();
-  addTearDown(container.dispose);
-  return container;
-}
-
-/// Container'ı oluşturur, provider'ı tetikler ve _loadFromPrefs() bitmesini bekler.
+/// Container'ı oluşturur, provider'ı tetikler ve yüklemenin bitmesini bekler.
 Future<ProviderContainer> _makeContainerAndWarm(
   NotifierProvider provider, {
   Map<String, Object> values = const {},
@@ -29,7 +20,7 @@ Future<ProviderContainer> _makeContainerAndWarm(
   final container = ProviderContainer();
   addTearDown(container.dispose);
   container.read(provider);
-  await Future<void>.delayed(const Duration(milliseconds: 150));
+  await pumpEventQueue();
   return container;
 }
 
@@ -72,7 +63,7 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
       container.read(notificationsMasterProvider);
-      await Future<void>.delayed(const Duration(milliseconds: 150));
+      await pumpEventQueue();
 
       await container.read(notificationsMasterProvider.notifier).toggle();
 
@@ -87,6 +78,33 @@ void main() {
 
       expect(container.read(notificationsMasterProvider), isFalse);
     });
+  });
+
+  group('load/toggle race guard', () {
+    test(
+      'toggle during in-flight load wins over the persisted value',
+      () async {
+        // Persisted value says false (default) — the user toggles to true while
+        // the fire-and-forget load is still running. The stale disk value must
+        // NOT clobber the fresh user choice when the load completes.
+        SharedPreferences.setMockInitialValues({
+          AppPreferences.keyCompactView: false,
+        });
+        await SharedPreferences.getInstance();
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+
+        final toggleFuture = container
+            .read(compactViewProvider.notifier)
+            .toggle();
+        await pumpEventQueue();
+        await toggleFuture;
+
+        expect(container.read(compactViewProvider), isTrue);
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getBool(AppPreferences.keyCompactView), isTrue);
+      },
+    );
   });
 
   group('compactViewProvider', () {
@@ -144,7 +162,7 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
       container.read(hapticFeedbackProvider);
-      await Future<void>.delayed(const Duration(milliseconds: 150));
+      await pumpEventQueue();
 
       await container.read(hapticFeedbackProvider.notifier).toggle();
 
@@ -216,7 +234,7 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
       container.read(eggTurningReminderProvider);
-      await Future<void>.delayed(const Duration(milliseconds: 150));
+      await pumpEventQueue();
 
       await container.read(eggTurningReminderProvider.notifier).toggle();
 
@@ -254,7 +272,7 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
       container.read(temperatureAlertProvider);
-      await Future<void>.delayed(const Duration(milliseconds: 150));
+      await pumpEventQueue();
 
       await container.read(temperatureAlertProvider.notifier).toggle();
 

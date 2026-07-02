@@ -161,22 +161,41 @@ class BandingActionNotifier extends Notifier<AsyncValue<void>> {
         chick.copyWith(bandingDate: DateTime.now(), updatedAt: DateTime.now()),
       );
 
-      // 2. Complete banding event (filtered at DB level)
-      final bandingEvents = await eventRepo.getActiveByChickAndType(
-        chickId,
-        EventType.banding,
-      );
-      for (final event in bandingEvents) {
-        await eventRepo.save(
-          event.copyWith(
-            status: EventStatus.completed,
-            updatedAt: DateTime.now(),
-          ),
+      // Steps 2-3 are best-effort side effects, isolated in their own
+      // try/catch — mirrors every other chick action in this feature
+      // (updateChick, deleteChick, markAsWeaned, markAsDeceased,
+      // promoteToBird). Without this, a transient failure completing the
+      // calendar event or cancelling the reminder would report AsyncError
+      // even though bandingDate was already durably saved, telling the
+      // user "failed" for an action that actually succeeded.
+      try {
+        // 2. Complete banding event (filtered at DB level)
+        final bandingEvents = await eventRepo.getActiveByChickAndType(
+          chickId,
+          EventType.banding,
+        );
+        for (final event in bandingEvents) {
+          await eventRepo.save(
+            event.copyWith(
+              status: EventStatus.completed,
+              updatedAt: DateTime.now(),
+            ),
+          );
+        }
+      } catch (e, st) {
+        AppLogger.warning(
+          'Failed to complete banding event for chick $chickId: $e\n$st',
         );
       }
 
-      // 3. Cancel remaining banding notifications
-      await scheduler.cancelBandingReminders(chickId);
+      try {
+        // 3. Cancel remaining banding notifications
+        await scheduler.cancelBandingReminders(chickId);
+      } catch (e, st) {
+        AppLogger.warning(
+          'Failed to cancel banding reminders for chick $chickId: $e\n$st',
+        );
+      }
 
       state = const AsyncData(null);
     } on AppException catch (e, st) {

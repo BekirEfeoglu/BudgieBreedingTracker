@@ -291,4 +291,81 @@ void main() {
       }
     });
   });
+
+  group('InbreedingCalculator cyclic / corrupt pedigree guard', () {
+    test('terminates without hang when a bird is its own ancestor', () {
+      // Corrupt data: subject → father → subject (a parent points back to the
+      // subject). The pathVisited guard must break the cycle rather than
+      // recursing forever.
+      final ancestors = {
+        'subject': createTestBird(
+          id: 'subject',
+          fatherId: 'father',
+          motherId: 'mother',
+        ),
+        'father': createTestBird(
+          id: 'father',
+          gender: BirdGender.male,
+          fatherId: 'subject', // cycle back to subject
+          motherId: 'mother',
+        ),
+        'mother': createTestBird(id: 'mother', gender: BirdGender.female),
+      };
+
+      // Must return a finite value in bounded time (no StackOverflow / hang).
+      final f = calculator.calculate(birdId: 'subject', ancestors: ancestors);
+      expect(f, inInclusiveRange(0.0, 0.5));
+    });
+
+    test('terminates on a two-node parent cycle (father ↔ mother)', () {
+      final ancestors = {
+        'subject': createTestBird(
+          id: 'subject',
+          fatherId: 'father',
+          motherId: 'mother',
+        ),
+        'father': createTestBird(
+          id: 'father',
+          gender: BirdGender.male,
+          fatherId: 'mother',
+          motherId: 'father', // self + sibling cycle
+        ),
+        'mother': createTestBird(
+          id: 'mother',
+          gender: BirdGender.female,
+          fatherId: 'father',
+          motherId: 'mother',
+        ),
+      };
+
+      final detail = calculator.calculateDetailed(
+        birdId: 'subject',
+        ancestors: ancestors,
+      );
+      expect(detail.coefficient, inInclusiveRange(0.0, 0.5));
+    });
+
+    test('flags depthLimited on a very deep linear pedigree chain', () {
+      // Build a chain deeper than maxAncestorDepth so the depth guard fires.
+      final ancestors = <String, Bird>{};
+      const chainLength = 15; // > maxAncestorDepth (10)
+      for (var i = 0; i < chainLength; i++) {
+        ancestors['b$i'] = createTestBird(
+          id: 'b$i',
+          gender: i.isEven ? BirdGender.male : BirdGender.female,
+          fatherId: 'b${i + 1}',
+          motherId: 'shared', // shared common ancestor forces traversal
+        );
+      }
+      ancestors['b$chainLength'] = createTestBird(id: 'b$chainLength');
+      ancestors['shared'] = createTestBird(id: 'shared');
+
+      final detail = calculator.calculateDetailed(
+        birdId: 'b0',
+        ancestors: ancestors,
+      );
+      expect(detail.depthLimited, isTrue);
+      expect(detail.coefficient, inInclusiveRange(0.0, 0.5));
+    });
+  });
 }

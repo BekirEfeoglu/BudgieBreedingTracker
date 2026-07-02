@@ -90,12 +90,11 @@ Premium feature kontrolü `premium-revenuecat.md` rule'unda. Özet:
 - `premiumGracePeriodProvider` UI level kontrol
 
 ## Experimental Features (Dev Menu)
-Geliştirici menüsü (5x tap on Settings header), production'da gizli:
-- `experimental_local_ai` — LocalAiService preview
-- `experimental_genetics_v3` — yeni calculator versiyonu
-- `debug_show_provider_logs` — provider rebuild log'ları
-
-Public release'de kullanıcılar göremez ama testers + founders aktive edebilir.
+**Henüz implement edilmedi (2026-07-02 audit):** "5x tap on Settings header"
+geliştirici menüsü ve `experimental_*` flag'leri kod tabanında YOKTUR — bu
+bölüm gelecek tasarım hedefidir. Eklenirse `kDebugMode` guard zorunlu ve bu
+bölüm gerçek flag listesiyle güncellenmelidir. Bugün tek debug-gated rota
+`geneticsColorAudit`'tir (`user_routes.dart`, `kDebugMode` ile sarılı).
 
 ## Flag Lifecycle
 1. **Add**: feature start'ta flag default `false`, geliştirme local

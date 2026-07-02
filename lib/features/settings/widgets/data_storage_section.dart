@@ -225,6 +225,27 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
   }
 
   Future<void> _clearCache() async {
+    // Destructive: wipes the whole temp directory, which other in-flight
+    // flows (export share sheet, image compression) may be using — confirm.
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: Text('settings.clear_cache'.tr()),
+        content: Text('settings.clear_cache_confirm'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(false),
+            child: Text('common.cancel'.tr()),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(true),
+            child: Text('settings.clear_cache'.tr()),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
     setState(() => _isClearingCache = true);
     try {
       final tempDir = await getTemporaryDirectory();
@@ -239,8 +260,12 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
             } else if (entity is Directory) {
               await entity.delete(recursive: true);
             }
-          } catch (_) {
-            // Skip files that can't be deleted
+          } catch (e) {
+            // Locked/in-use entries are skipped by design, but log them so
+            // "cache never shrinks" reports stay diagnosable.
+            AppLogger.debug(
+              '[DataStorageSection] cache entry skipped: ${entity.path} ($e)',
+            );
           }
         }
       }

@@ -1,5 +1,22 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+
+/// Localized short month abbreviation for a monthly-series key's month part
+/// (`'YYYY-MM'`, e.g. `'2026-01'` -> `'Oca'` tr / `'Jan'` en), never the raw
+/// zero-padded digits (datetime-format.md: locale-aware `DateFormat`, not a
+/// literal number).
+///
+/// Falls back to `tr` (master language, localization.md) when there is no
+/// `EasyLocalization` ancestor: `context.locale` force-unwraps
+/// `EasyLocalization.of(context)` and throws otherwise, but most widget
+/// tests in this repo intentionally mount a plain `MaterialApp` without it
+/// (test_support/l10n_lookup.dart) — this must degrade, not crash.
+String monthAbbreviation(BuildContext context, String monthKey) {
+  final month = int.tryParse(monthKey.split('-').last) ?? 1;
+  final locale = EasyLocalization.of(context)?.locale.toString() ?? 'tr';
+  return DateFormat.MMM(locale).format(DateTime(2024, month));
+}
 
 /// Returns true when a numeric series has at least one meaningful value.
 bool hasPositiveValues(Iterable<num> values) =>

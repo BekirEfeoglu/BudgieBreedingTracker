@@ -2,12 +2,45 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/logger.dart';
 import '../../../core/widgets/app_icon.dart';
+import '../../../data/local/database/dao_providers.dart';
+import '../../../data/providers/auth_state_providers.dart';
 import '../../../domain/services/sync/sync_providers.dart';
 import '../providers/settings_providers.dart';
+
+/// Asks the user to confirm clearing the persisted conflict history.
+Future<bool?> confirmClearConflictHistory(BuildContext context) {
+  return showDialog<bool>(
+    context: context,
+    builder: (dialogCtx) => AlertDialog(
+      title: Text('sync.clear_conflict_history'.tr()),
+      content: Text('sync.clear_conflict_history_confirm'.tr()),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogCtx).pop(false),
+          child: Text('common.cancel'.tr()),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(dialogCtx).pop(true),
+          child: Text('common.delete'.tr()),
+        ),
+      ],
+    ),
+  );
+}
+
+/// Clears conflict history from both the database and the in-memory
+/// provider. Awaiting the DAO delete first keeps the two stores consistent —
+/// clearing only the provider resurrects the history on next launch.
+Future<void> clearConflictHistory(WidgetRef ref, String userId) async {
+  await ref.read(conflictHistoryDaoProvider).deleteAll(userId);
+  ref.read(conflictHistoryProvider.notifier).clear();
+}
 
 /// Shows the conflict history dialog.
 void showConflictHistoryDialog(
@@ -18,7 +51,7 @@ void showConflictHistoryDialog(
   final theme = Theme.of(context);
   showDialog(
     context: context,
-    builder: (_) => AlertDialog(
+    builder: (dialogCtx) => AlertDialog(
       title: Text('sync.conflict_history'.tr()),
       content: SizedBox(
         width: double.maxFinite,
@@ -38,7 +71,7 @@ void showConflictHistoryDialog(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(c.description, style: theme.textTheme.bodySmall),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: AppSpacing.xxs),
                         Text(
                           '${c.table} — ${formatTimeSince(c.detectedAt)}',
                           style: theme.textTheme.labelSmall?.copyWith(
@@ -53,14 +86,22 @@ void showConflictHistoryDialog(
       ),
       actions: [
         TextButton(
-          onPressed: () {
-            ref.read(conflictHistoryProvider.notifier).clear();
-            Navigator.of(context).pop();
+          onPressed: () async {
+            final confirmed = await confirmClearConflictHistory(dialogCtx);
+            if (confirmed != true) return;
+            try {
+              final userId = ref.read(currentUserIdProvider);
+              await clearConflictHistory(ref, userId);
+            } catch (e, st) {
+              AppLogger.error('[ConflictHistoryDialog] clear failed', e, st);
+              await Sentry.captureException(e, stackTrace: st);
+            }
+            if (dialogCtx.mounted) Navigator.of(dialogCtx).pop();
           },
-          child: Text('common.delete'.tr()),
+          child: Text('sync.clear_conflict_history'.tr()),
         ),
         FilledButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.of(dialogCtx).pop(),
           child: Text('common.close'.tr()),
         ),
       ],
@@ -186,7 +227,10 @@ class StorageInfoRow extends StatelessWidget {
 String formatBytes(int bytes) {
   if (bytes < 1024) return '$bytes B';
   if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-  return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  if (bytes < 1024 * 1024 * 1024) {
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
+  return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
 }
 
 /// Formats time difference as a localized relative string.

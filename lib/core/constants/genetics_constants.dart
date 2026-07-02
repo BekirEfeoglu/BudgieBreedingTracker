@@ -132,7 +132,13 @@ abstract final class GeneticsConstants {
   /// (pallid, pearly, texas_clearbody) with cinnamon/slate/opaline so that
   /// biologically linked sex-linked crosses return correct recombinant
   /// probabilities instead of treating them as independent loci.
-  static const int calculationVersion = 3;
+  ///
+  /// v4 (2026-07-02): full-dominant allelic-series homozygotes are tagged
+  /// "(double)" so the double-factor subset is a distinct offspring result
+  /// instead of merging with single-factor birds. This splits e.g. crested ×
+  /// crested into a separate ~25% DF result (correctly flagged as DF-lethal),
+  /// changing the offspring set for crested crosses.
+  static const int calculationVersion = 4;
 
   // ── ReverseCalculator limits ──
   /// Maximum parent genotype options evaluated per locus in reverse calculation.

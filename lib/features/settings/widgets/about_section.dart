@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -8,7 +9,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_icons.dart';
+import '../../../core/providers/action_feedback_providers.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/logger.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../router/route_names.dart';
 import '../providers/settings_providers.dart';
@@ -40,7 +43,10 @@ class AboutSection extends ConsumerWidget {
           title: 'settings.version'.tr(),
           subtitle: versionText,
           icon: const AppIcon(AppIcons.info),
-          onTap: () {},
+          onTap: () async {
+            await Clipboard.setData(ClipboardData(text: versionText));
+            ActionFeedbackService.show('settings.version_copied'.tr());
+          },
         ),
         SettingsNavigationTile(
           title: 'settings.whats_new'.tr(),
@@ -57,8 +63,22 @@ class AboutSection extends ConsumerWidget {
                 ? AppConstants.appStoreUrl
                 : AppConstants.playStoreUrl;
             final uri = Uri.parse(storeUrl);
-            if (await canLaunchUrl(uri)) {
-              await launchUrl(uri, mode: LaunchMode.externalApplication);
+            try {
+              final launched =
+                  await canLaunchUrl(uri) &&
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+              if (!launched) {
+                ActionFeedbackService.show(
+                  'errors.unknown'.tr(),
+                  type: ActionFeedbackType.error,
+                );
+              }
+            } catch (e, st) {
+              AppLogger.error('[AboutSection] store launch failed', e, st);
+              ActionFeedbackService.show(
+                'errors.unknown'.tr(),
+                type: ActionFeedbackType.error,
+              );
             }
           },
         ),
@@ -92,8 +112,12 @@ class AboutSection extends ConsumerWidget {
                   mode: LaunchMode.externalApplication,
                 );
                 if (launched) return;
-              } catch (_) {
-                // Fallback to in-app feedback if URL launch fails.
+              } catch (e) {
+                // Fallback to in-app feedback below; log so a permanently
+                // broken support URL still surfaces in telemetry.
+                AppLogger.warning(
+                  '[AboutSection] support URL launch failed: $e',
+                );
               }
             }
             if (context.mounted) {

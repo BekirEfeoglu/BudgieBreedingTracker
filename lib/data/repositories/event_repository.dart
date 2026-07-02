@@ -4,7 +4,9 @@ import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/breeding_pairs_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/chicks_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/events_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/incubations_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
@@ -17,9 +19,9 @@ import 'package:uuid/uuid.dart';
 /// Repository for [Event] entities with offline-first sync support.
 ///
 /// Uses [ValidatedSyncMixin] to validate FK references (bird, breeding
-/// pair, chick) before pushing to Supabase. Without this, orphan child
-/// pushes would 23503 on the server and accumulate as sync errors with
-/// no monitoring visibility.
+/// pair, chick, egg, incubation) before pushing to Supabase. Without this,
+/// orphan child pushes would 23503 on the server and accumulate as sync
+/// errors with no monitoring visibility.
 class EventRepository extends BaseRepository<Event>
     with SyncableRepository<Event>, ValidatedSyncMixin<Event> {
   final EventsDao _localDao;
@@ -28,6 +30,8 @@ class EventRepository extends BaseRepository<Event>
   final BirdsDao _birdsDao;
   final BreedingPairsDao _breedingPairsDao;
   final ChicksDao _chicksDao;
+  final EggsDao _eggsDao;
+  final IncubationsDao _incubationsDao;
 
   static const _uuid = Uuid();
 
@@ -38,12 +42,16 @@ class EventRepository extends BaseRepository<Event>
     required BirdsDao birdsDao,
     required BreedingPairsDao breedingPairsDao,
     required ChicksDao chicksDao,
+    required EggsDao eggsDao,
+    required IncubationsDao incubationsDao,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
        _syncDao = syncDao,
        _birdsDao = birdsDao,
        _breedingPairsDao = breedingPairsDao,
-       _chicksDao = chicksDao;
+       _chicksDao = chicksDao,
+       _eggsDao = eggsDao,
+       _incubationsDao = incubationsDao;
 
   static const _table = SupabaseConstants.eventsTable;
 
@@ -106,6 +114,30 @@ class EventRepository extends BaseRepository<Event>
         isDeleted: (chick) => chick.isDeleted,
         label: 'chick',
         syncTable: SupabaseConstants.chicksTable,
+      );
+      if (reason != null) return reason;
+    }
+    if (event.eggId != null) {
+      final reason = await _validateParent(
+        recordId: event.eggId!,
+        parentLookup: () => _eggsDao.getByIdIncludingDeleted(event.eggId!),
+        isDeleted: (egg) => egg.isDeleted,
+        label: 'egg',
+        syncTable: SupabaseConstants.eggsTable,
+      );
+      if (reason != null) return reason;
+    }
+    if (event.incubationId != null) {
+      // Incubations are hard-deleted (no isDeleted flag) rather than
+      // soft-deleted, so a missing row is fully captured by the null
+      // check in _validateParent — there's no "soft-deleted but present"
+      // state to additionally detect here.
+      final reason = await _validateParent(
+        recordId: event.incubationId!,
+        parentLookup: () => _incubationsDao.getById(event.incubationId!),
+        isDeleted: (_) => false,
+        label: 'incubation',
+        syncTable: SupabaseConstants.incubationsTable,
       );
       if (reason != null) return reason;
     }
@@ -214,11 +246,38 @@ class EventRepository extends BaseRepository<Event>
   }
 
   /// Soft-deletes every event linked to any of [incubationIds] and queues
-  /// each for sync. Used by incubation completion/cancellation flows.
+  /// each for sync. Used by incubation completion/cancellation flows, where
+  /// the incubation row itself survives.
   Future<int> removeByIncubationIds(List<String> incubationIds) async {
     if (incubationIds.isEmpty) return 0;
     final events = await _localDao.getByIncubationIds(incubationIds);
     await Future.wait(events.map((e) => remove(e.id)));
+    return events.length;
+  }
+
+  /// Hard-deletes every event linked to any of [incubationIds] and queues
+  /// each for sync, purging the local row instead of soft-deleting it.
+  ///
+  /// Required before hard-deleting the parent incubation itself (breeding
+  /// pair delete cascade): `events.incubationId` is a real FK with no ON
+  /// DELETE clause, and `PRAGMA foreign_keys = ON` is active on every
+  /// connection. A soft-deleted event row still has its `incubationId`
+  /// column populated, so it still blocks the incubation's hard-delete —
+  /// only removing the local row (as [IncubationRepository.remove] already
+  /// does for the incubation itself) clears the reference.
+  Future<int> hardRemoveByIncubationIds(List<String> incubationIds) async {
+    if (incubationIds.isEmpty) return 0;
+    // Includes already soft-deleted rows (e.g. an incubation that was
+    // auto-completed, then later hard-deleted via pair delete) — those
+    // still hold a live incubationId FK reference that must be cleared too.
+    final events = await _localDao.getByIncubationIdsIncludingDeleted(
+      incubationIds,
+    );
+    for (final event in events) {
+      await markPending(event.id, event.userId);
+      await tryImmediatePush(event.copyWith(isDeleted: true, updatedAt: DateTime.now()));
+      await _localDao.hardDelete(event.id);
+    }
     return events.length;
   }
 

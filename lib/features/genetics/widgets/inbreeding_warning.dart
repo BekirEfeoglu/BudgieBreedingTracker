@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
@@ -95,10 +94,11 @@ class InbreedingWarning extends StatelessWidget {
             const SizedBox(height: AppSpacing.xs),
             Row(
               children: [
-                Icon(
-                  LucideIcons.info,
+                AppIcon(
+                  AppIcons.info,
                   size: 14,
                   color: colors.text.withValues(alpha: 0.6),
+                  semanticsLabel: 'genetics.inbreeding_depth_limited'.tr(),
                 ),
                 const SizedBox(width: AppSpacing.xs),
                 Expanded(
@@ -119,10 +119,11 @@ class InbreedingWarning extends StatelessWidget {
   }
 
   Widget _riskIconWidget(InbreedingRisk risk, Color color) => switch (risk) {
-    InbreedingRisk.none => Icon(
-      LucideIcons.checkCircle,
+    InbreedingRisk.none => AppIcon(
+      AppIcons.info,
       size: 20,
       color: color,
+      semanticsLabel: 'genetics.risk_none'.tr(),
     ),
     InbreedingRisk.minimal => AppIcon(
       AppIcons.info,
@@ -148,10 +149,11 @@ class InbreedingWarning extends StatelessWidget {
       color: color,
       semanticsLabel: 'genetics.risk_high'.tr(),
     ),
-    InbreedingRisk.critical => Icon(
-      LucideIcons.alertOctagon,
+    InbreedingRisk.critical => AppIcon(
+      AppIcons.warning,
       size: 20,
       color: color,
+      semanticsLabel: 'genetics.risk_critical'.tr(),
     ),
   };
 

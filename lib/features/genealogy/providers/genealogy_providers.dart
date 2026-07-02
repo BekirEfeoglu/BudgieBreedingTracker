@@ -56,18 +56,25 @@ Future<void> setPedigreeDepth(WidgetRef ref, int depth) async {
   await prefs.setInt(AppPreferences.keyPedigreeDepth, clamped);
 }
 
-/// Fetches ancestor birds using a single getAll() + local map traversal.
-/// Much faster than N individual getById() calls.
+/// Shared full bird list for the current user. `ancestorsProvider`,
+/// `offspringProvider`, and `chickAncestorsProvider` all need the same flat
+/// list — watching this one instead of calling `repo.getAll(userId)`
+/// individually avoids re-fetching (and re-decrypting per-row sensitive
+/// fields for) the same rows multiple times per tree view.
+final _allUserBirdsProvider = FutureProvider<List<Bird>>((ref) {
+  final userId = ref.watch(currentUserIdProvider);
+  final repo = ref.read(birdRepositoryProvider);
+  return repo.getAll(userId);
+});
+
+/// Fetches ancestor birds using a single shared bird list + local map
+/// traversal. Much faster than N individual getById() calls.
 final ancestorsProvider = FutureProvider.family<Map<String, Bird>, String>((
   ref,
   birdId,
 ) async {
-  final userId = ref.watch(currentUserIdProvider);
-  final repo = ref.read(birdRepositoryProvider);
   final maxDepth = ref.watch(pedigreeDepthProvider);
-
-  // Single query: get all birds for this user and build a lookup map
-  final allBirds = await repo.getAll(userId);
+  final allBirds = await ref.watch(_allUserBirdsProvider.future);
   final birdMap = {for (final b in allBirds) b.id: b};
 
   final ancestors = <String, Bird>{};

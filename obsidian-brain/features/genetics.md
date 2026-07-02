@@ -19,8 +19,8 @@
 - Epistasis handling (multiple loci interactions)
 - MUTAVI-sourced mutation rates (authoritative reference: `docs/muhabbet-kusu-genetik-rehberi.md`)
 - Inbreeding coefficient calculation
-- Calculation version: v2 (dominant allelic series bug fixed 2026-04-08)
-- 62+ genetics-specific tests
+- Calculation version: v4 (full-dominant homozygotes tagged "(double)", 2026-07-02; v3 extended Z-linkage to all ino_locus alleles, 2026-04-19)
+- 930+ genetics-specific domain tests
 
 ## `calculationVersion`
 

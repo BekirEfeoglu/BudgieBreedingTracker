@@ -1,5 +1,14 @@
 part of 'local_ai_service.dart';
 
+/// Truncates a provider response body before it reaches `AppLogger.warning`
+/// (which always attaches its full message to a Sentry breadcrumb —
+/// local-ai.md: no AI prompt content to Sentry). Error bodies from a
+/// content-policy rejection routinely echo request fragments, so the full
+/// body must never be logged — only enough to identify the failure shape.
+String _truncateForLog(String body, {int maxLength = 200}) {
+  return body.length <= maxLength ? body : '${body.substring(0, maxLength)}…';
+}
+
 class _LocalAiTransport {
   _LocalAiTransport({required http.Client client}) : _client = client;
 
@@ -234,7 +243,8 @@ class _LocalAiTransport {
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       AppLogger.warning(
-        '[LocalAiService] Ollama status ${response.statusCode}: ${response.body}',
+        '[LocalAiService] Ollama status ${response.statusCode}: '
+        '${_truncateForLog(response.body)}',
       );
       throw NetworkException(
         '${_kErrorPrefix}generate_ollama_http\x00${response.statusCode}',
@@ -326,7 +336,8 @@ class _LocalAiTransport {
     }
     if (response.statusCode < 200 || response.statusCode >= 300) {
       AppLogger.warning(
-        '[LocalAiService] OpenRouter status ${response.statusCode}: ${response.body}',
+        '[LocalAiService] OpenRouter status ${response.statusCode}: '
+        '${_truncateForLog(response.body)}',
       );
       throw NetworkException(
         '${_kErrorPrefix}generate_openrouter_http\x00${response.statusCode}',

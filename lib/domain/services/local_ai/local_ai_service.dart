@@ -95,8 +95,9 @@ class LocalAiService {
       if (stat.size > AppConstants.maxLocalAiImageBytes) {
         throw const ValidationException('${_kErrorPrefix}image_too_large');
       }
-      imageToken = _imageCacheToken(path: imagePath, stat: stat);
-      images = [base64Encode(await file.readAsBytes())];
+      final bytes = await file.readAsBytes();
+      imageToken = _imageCacheToken(bytes);
+      images = [base64Encode(bytes)];
     }
 
     final system = imagePath != null
@@ -133,18 +134,19 @@ class LocalAiService {
       throw const ValidationException('${_kErrorPrefix}image_too_large');
     }
 
+    final bytes = await file.readAsBytes();
     const prompt = 'Analyze this budgerigar photo.';
     final payload = await _generateCached(
       config: config,
       system: LocalAiPrompts.systemMutationImage,
       prompt: prompt,
-      images: [base64Encode(await file.readAsBytes())],
+      images: [base64Encode(bytes)],
       numPredict: 350,
       cacheKey: _buildCacheKey(
         config: config,
         kind: 'mutation_image',
         prompt: prompt,
-        imageToken: _imageCacheToken(path: imagePath, stat: stat),
+        imageToken: _imageCacheToken(bytes),
       ),
     );
     return LocalAiMutationInsight.fromJson(payload);
@@ -266,12 +268,20 @@ class LocalAiService {
         imageToken ?? '',
       ].join('\u0001'),
     );
-    return sha1.convert(bytes).toString();
+    return _sha1Hex(bytes);
   }
 
-  String _imageCacheToken({required String path, required FileStat stat}) {
-    return '$path|${stat.size}|${stat.modified.millisecondsSinceEpoch}';
-  }
+  /// Content-based cache token derived from the image bytes, so the same photo
+  /// re-imported at a different path or with a refreshed mtime still hits the
+  /// cache (the old path+size+mtime token missed those cases).
+  ///
+  /// NOTE: this is a content hash, not a perceptual hash — a re-compressed or
+  /// lightly-edited variant of the same photo still misses. A true perceptual
+  /// hash would need pixel decoding (an image-decoding dependency) and is left
+  /// as a future improvement.
+  String _imageCacheToken(List<int> bytes) => _sha1Hex(bytes);
+
+  String _sha1Hex(List<int> bytes) => sha1.convert(bytes).toString();
 
   Future<Map<String, dynamic>> _generate({
     required LocalAiConfig config,

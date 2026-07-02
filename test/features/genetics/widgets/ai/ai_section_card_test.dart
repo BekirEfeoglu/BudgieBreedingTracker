@@ -12,7 +12,7 @@ void main() {
         tester,
         const AiSectionCard(
           title: 'Card Title',
-          icon: LucideIcons.image,
+          icon: Icon(LucideIcons.image),
           subtitle: 'Card Subtitle',
           infoText: 'Info dialog text',
           child: Text('Child content'),
@@ -30,7 +30,7 @@ void main() {
         tester,
         const AiSectionCard(
           title: 'Title',
-          icon: LucideIcons.search,
+          icon: Icon(LucideIcons.search),
           subtitle: 'Subtitle',
           infoText: 'Info',
           child: SizedBox.shrink(),
@@ -46,7 +46,7 @@ void main() {
         tester,
         const AiSectionCard(
           title: 'Title',
-          icon: LucideIcons.image,
+          icon: Icon(LucideIcons.image),
           subtitle: 'Subtitle',
           infoText: 'Info dialog content',
           child: SizedBox.shrink(),
@@ -62,7 +62,7 @@ void main() {
         tester,
         const AiSectionCard(
           title: 'Dialog Title',
-          icon: LucideIcons.image,
+          icon: Icon(LucideIcons.image),
           subtitle: 'Subtitle',
           infoText: 'Dialog content text',
           child: SizedBox.shrink(),
@@ -82,7 +82,7 @@ void main() {
         tester,
         const AiSectionCard(
           title: 'Title',
-          icon: LucideIcons.image,
+          icon: Icon(LucideIcons.image),
           subtitle: 'Subtitle',
           infoText: 'Info',
           child: SizedBox.shrink(),
@@ -99,7 +99,7 @@ void main() {
         tester,
         const AiSectionCard(
           title: 'Title',
-          icon: LucideIcons.image,
+          icon: Icon(LucideIcons.image),
           subtitle: 'Subtitle',
           infoText: 'Info',
           child: TextField(),

@@ -5,13 +5,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
+import 'package:budgie_breeding_tracker/data/repositories/chick_repository.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/screens/chick_list_screen.dart';
@@ -20,6 +24,9 @@ import 'package:budgie_breeding_tracker/features/chicks/widgets/chick_filter_bar
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_list_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
+
+import '../../../helpers/mocks.dart';
 
 /// Stub [AdService] that never calls Google Mobile Ads.
 class _FakeAdService extends AdService {
@@ -53,9 +60,17 @@ Chick _createTestChick({
 void main() {
   group('ChickListScreen', () {
     late GoRouter router;
+    late MockNotificationScheduler mockScheduler;
 
     setUp(() {
       SharedPreferences.setMockInitialValues({});
+      mockScheduler = MockNotificationScheduler();
+      when(
+        () => mockScheduler.cancelChickCareReminders(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockScheduler.cancelBandingReminders(any()),
+      ).thenAnswer((_) async {});
       router = GoRouter(
         initialLocation: '/chicks',
         routes: [
@@ -86,6 +101,7 @@ void main() {
     Widget createSubject({
       required Stream<List<Chick>> chicksStream,
       ChickParentsInfo? fallbackParents,
+      ChickRepository? chickRepository,
     }) {
       return ProviderScope(
         overrides: [
@@ -102,6 +118,9 @@ void main() {
           chickParentsProvider.overrideWith((_, _) async => fallbackParents),
           adServiceProvider.overrideWithValue(_FakeAdService()),
           isPremiumProvider.overrideWithValue(true),
+          notificationSchedulerProvider.overrideWithValue(mockScheduler),
+          if (chickRepository != null)
+            chickRepositoryProvider.overrideWithValue(chickRepository),
         ],
         child: MaterialApp.router(routerConfig: router),
       );
@@ -241,5 +260,72 @@ void main() {
       // Should show no results empty state
       expect(find.byType(EmptyState), findsAtLeastNWidgets(1));
     });
+
+    testWidgets(
+      'bulk mark-as-deceased surfaces partial failure and keeps the '
+      'failed chick selected instead of reporting a blanket success',
+      (tester) async {
+        final okChick = _createTestChick(id: 'c-ok', name: 'Ok Chick');
+        final failChick = _createTestChick(id: 'c-fail', name: 'Fail Chick');
+        final chickRepo = MockChickRepository();
+        registerFallbackValue(okChick);
+        when(() => chickRepo.getById('c-ok')).thenAnswer((_) async => okChick);
+        when(() => chickRepo.getById('c-fail')).thenThrow(Exception('boom'));
+        when(() => chickRepo.save(any())).thenAnswer((_) async {});
+
+        await tester.pumpWidget(
+          createSubject(
+            chicksStream: Stream.value([okChick, failChick]),
+            chickRepository: chickRepo,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Long-press enters selection mode and selects the first card; a
+        // plain tap on the second card selects it too while already in
+        // selection mode (mirrors _SelectableChickCard/_toggleSelection).
+        await tester.longPress(find.byKey(const ValueKey('c-ok')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('c-fail')));
+        await tester.pumpAndSettle();
+        // SliverAppBar.large renders its title in both the pinned and
+        // expanded layout simultaneously, so this can legitimately match
+        // more than one Text widget — assert presence, not an exact count.
+        expect(
+          find.text(l10n('common.selection_count')),
+          findsAtLeastNWidgets(1),
+        );
+
+        await tester.tap(find.byType(PopupMenuButton<String>));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(l10n('chicks.mark_dead')));
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.widgetWithText(TextButton, l10n('common.confirm')),
+        );
+        await tester.pumpAndSettle();
+
+        // ChickFormNotifier.markAsDeceased catches its own exceptions and
+        // reports failure via state.error instead of throwing, so before the
+        // fix _runBulkAction's try/catch never saw the 'c-fail' failure and
+        // always reported chicks.bulk_action_success for both items.
+        expect(
+          find.text(l10n('chicks.bulk_action_partial')),
+          findsOneWidget,
+        );
+        expect(find.text(l10n('chicks.bulk_action_success')), findsNothing);
+
+        // The succeeded chick drops out of the selection; the failed one
+        // stays selected so the user can retry it.
+        // SliverAppBar.large renders its title in both the pinned and
+        // expanded layout simultaneously, so this can legitimately match
+        // more than one Text widget — assert presence, not an exact count.
+        expect(
+          find.text(l10n('common.selection_count')),
+          findsAtLeastNWidgets(1),
+        );
+        verify(() => chickRepo.save(any())).called(1);
+      },
+    );
   });
 }

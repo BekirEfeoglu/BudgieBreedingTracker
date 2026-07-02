@@ -82,7 +82,11 @@ class _TreeContentState extends ConsumerState<TreeContent> {
             );
         final inbreedingData =
             inbreedingAsync.value ??
-            calculateInbreedingForBird(widget.entityId, ancestors);
+            calculateInbreedingForBird(
+              widget.entityId,
+              ancestors,
+              maxDepth: maxDepth,
+            );
         final screenSize = MediaQuery.of(context).size;
         final isLandscape = screenSize.width > screenSize.height;
         final viewMode = ref.watch(treeViewModeProvider);

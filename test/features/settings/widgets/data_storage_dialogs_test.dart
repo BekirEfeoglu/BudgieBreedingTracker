@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
+import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_conflict_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/widgets/data_storage_dialogs.dart';
 import 'package:budgie_breeding_tracker/features/settings/providers/settings_providers.dart';
+
+import '../../../helpers/mocks.dart';
 
 void main() {
   group('formatBytes', () {
@@ -21,6 +25,11 @@ void main() {
     test('formats bytes in MB range', () {
       expect(formatBytes(1024 * 1024), '1.0 MB');
       expect(formatBytes(1024 * 1024 * 5 + 1024 * 512), '5.5 MB');
+    });
+
+    test('formats bytes in GB range', () {
+      expect(formatBytes(1024 * 1024 * 1024), '1.0 GB');
+      expect(formatBytes(1024 * 1024 * 1024 * 3 + 1024 * 1024 * 512), '3.5 GB');
     });
 
     test('handles zero bytes', () {
@@ -254,15 +263,66 @@ void main() {
       expect(find.text('Conflict on egg record'), findsOneWidget);
     });
 
-    testWidgets('delete button clears conflicts and closes dialog', (
+    testWidgets(
+      'clear history asks for confirmation, deletes from DAO and closes',
+      (tester) async {
+        final mockDao = MockConflictHistoryDao();
+        when(() => mockDao.deleteAll(any())).thenAnswer((_) async => 0);
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              conflictHistoryProvider.overrideWith(
+                () => _TestConflictHistoryNotifier([]),
+              ),
+              conflictHistoryDaoProvider.overrideWithValue(mockDao),
+            ],
+            child: MaterialApp(
+              home: Consumer(
+                builder: (context, ref, _) {
+                  return ElevatedButton(
+                    onPressed: () {
+                      showConflictHistoryDialog(context, ref, []);
+                    },
+                    child: const Text('Open'),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+
+        await tester.tap(find.text('Open'));
+        await tester.pumpAndSettle();
+
+        // Tapping the clear action opens a confirmation dialog first.
+        await tester.tap(find.text(l10n('sync.clear_conflict_history')).last);
+        await tester.pumpAndSettle();
+        expect(
+          find.text(l10n('sync.clear_conflict_history_confirm')),
+          findsOneWidget,
+        );
+
+        await tester.tap(find.text(l10n('common.delete')));
+        await tester.pumpAndSettle();
+
+        verify(() => mockDao.deleteAll(any())).called(1);
+        expect(find.byType(AlertDialog), findsNothing);
+      },
+    );
+
+    testWidgets('cancelling the confirmation leaves history intact', (
       tester,
     ) async {
+      final mockDao = MockConflictHistoryDao();
+
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             conflictHistoryProvider.overrideWith(
               () => _TestConflictHistoryNotifier([]),
             ),
+            conflictHistoryDaoProvider.overrideWithValue(mockDao),
           ],
           child: MaterialApp(
             home: Consumer(
@@ -282,10 +342,15 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(l10n('common.delete')));
+      await tester.tap(find.text(l10n('sync.clear_conflict_history')).last);
       await tester.pumpAndSettle();
 
-      expect(find.byType(AlertDialog), findsNothing);
+      await tester.tap(find.text(l10n('common.cancel')));
+      await tester.pumpAndSettle();
+
+      verifyNever(() => mockDao.deleteAll(any()));
+      // History dialog itself is still open.
+      expect(find.byType(AlertDialog), findsOneWidget);
     });
 
     testWidgets('close button dismisses conflict dialog', (tester) async {

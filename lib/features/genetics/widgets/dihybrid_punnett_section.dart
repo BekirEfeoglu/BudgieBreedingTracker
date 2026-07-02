@@ -139,7 +139,7 @@ class PunnettLocusSelector extends ConsumerWidget {
               return DropdownMenuItem(
                 value: id,
                 child: Text(
-                  record?.name ?? localizeLocusId(id),
+                  record?.localizationKey.tr() ?? localizeLocusId(id),
                   style: theme.textTheme.bodySmall,
                 ),
               );

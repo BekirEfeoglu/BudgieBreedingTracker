@@ -97,6 +97,27 @@ void main() {
       expect(hasCircle, isTrue);
     });
 
+    testWidgets(
+      'day-with-events semantic label names the event type, not just the '
+      'count, so color-blind/screen-reader users get the same info the '
+      'color-coded dots convey visually',
+      (tester) async {
+        final eventsMap = {
+          DateTime(2024, 3, 20): [makeEvent('e1')],
+        };
+        await pumpWidgetSimple(tester, buildGrid(eventsMap: eventsMap));
+
+        // pumpWidgetSimple doesn't mount EasyLocalization, so `.tr()` falls
+        // back to the raw key (no arg interpolation) — assert on the key
+        // itself, which is what other tests in this suite already rely on.
+        final semantics = tester.getSemantics(find.text('20'));
+        expect(semantics.label, contains('calendar.day_with_events'));
+        // EventType.custom -> 'calendar.general' per eventTypeLabel; its
+        // presence proves the type name was appended, not just the count.
+        expect(semantics.label, contains('calendar.general'));
+      },
+    );
+
     testWidgets('renders 7 GestureDetectors per week row', (tester) async {
       await pumpWidgetSimple(tester, buildGrid());
       // March 2024 has 5 weeks + partial rows → at least 28 GestureDetectors

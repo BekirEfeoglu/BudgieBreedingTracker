@@ -61,78 +61,91 @@ class CalendarWeekView extends StatelessWidget {
           final isSelected = dateKey == selected;
           final events = eventsMap[dateKey] ?? [];
 
+          final semanticLabel = daySemanticLabel(
+            dayNumber: day.day,
+            isSelected: isSelected,
+            events: events,
+          );
+
           return Expanded(
-            child: GestureDetector(
-              onTap: () => onDateSelected(day),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                      : null,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      weekdays[index].length > 3
-                          ? weekdays[index].substring(0, 3)
-                          : weekdays[index],
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: isSelected
-                            ? theme.colorScheme.primary
-                            : isToday
-                            ? theme.colorScheme.primary.withValues(alpha: 0.15)
-                            : null,
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '${day.day}',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontWeight: isToday || isSelected
-                              ? FontWeight.w700
-                              : null,
-                          color: isSelected
-                              ? theme.colorScheme.onPrimary
-                              : isToday
-                              ? theme.colorScheme.primary
-                              : null,
+            child: Semantics(
+              label: semanticLabel,
+              button: true,
+              selected: isSelected,
+              child: GestureDetector(
+                onTap: () => onDateSelected(day),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? theme.colorScheme.primary.withValues(alpha: 0.1)
+                        : null,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        weekdays[index].length > 3
+                            ? weekdays[index].substring(0, 3)
+                            : weekdays[index],
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    if (events.isNotEmpty)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(
-                          events.length.clamp(0, 3),
-                          (i) => Container(
-                            width: 5,
-                            height: 5,
-                            margin: const EdgeInsets.symmetric(horizontal: 1),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              // Preserve per-event-type color even on a
-                              // selected day so the type distinction isn't
-                              // lost.
-                              color: eventTypeColor(events[i].type),
-                            ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isSelected
+                              ? theme.colorScheme.primary
+                              : isToday
+                              ? theme.colorScheme.primary.withValues(
+                                  alpha: 0.15,
+                                )
+                              : null,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          '${day.day}',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: isToday || isSelected
+                                ? FontWeight.w700
+                                : null,
+                            color: isSelected
+                                ? theme.colorScheme.onPrimary
+                                : isToday
+                                ? theme.colorScheme.primary
+                                : null,
                           ),
                         ),
-                      )
-                    else
-                      const SizedBox(height: 5),
-                  ],
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      if (events.isNotEmpty)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(
+                            events.length.clamp(0, 3),
+                            (i) => Container(
+                              width: 5,
+                              height: 5,
+                              margin: const EdgeInsets.symmetric(horizontal: 1),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                // Preserve per-event-type color even on a
+                                // selected day so the type distinction isn't
+                                // lost.
+                                color: eventTypeColor(events[i].type),
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        const SizedBox(height: 5),
+                    ],
+                  ),
                 ),
               ),
             ),

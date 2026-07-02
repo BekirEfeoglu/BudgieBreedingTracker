@@ -16,6 +16,7 @@ void main() {
     String user = userId,
     ChickHealthStatus healthStatus = ChickHealthStatus.healthy,
     String? birdId,
+    String? clutchId,
     DateTime? hatchDate,
     bool isDeleted = false,
   }) {
@@ -24,6 +25,7 @@ void main() {
       userId: user,
       healthStatus: healthStatus,
       birdId: birdId,
+      clutchId: clutchId,
       hatchDate: hatchDate,
       isDeleted: isDeleted,
       createdAt: DateTime(2024, 1, 1),
@@ -36,6 +38,33 @@ void main() {
     await db.customStatement(
       'INSERT OR IGNORE INTO birds (id, name, gender, user_id, status, species, is_deleted) '
       "VALUES ('$id', 'Test', 'male', 'user-1', 'alive', 'budgie', 0)",
+    );
+  }
+
+  /// Insert a minimal breeding pair row for the top-pair JOIN tests.
+  Future<void> insertBreedingPair(
+    String id, {
+    String user = userId,
+    bool isDeleted = false,
+  }) async {
+    await db.customStatement(
+      'INSERT OR IGNORE INTO breeding_pairs (id, user_id, status, is_deleted) '
+      "VALUES ('$id', '$user', 'active', ${isDeleted ? 1 : 0})",
+    );
+  }
+
+  /// Insert a minimal clutch row referencing [breedingId] for the
+  /// top-pair JOIN tests.
+  Future<void> insertClutch(
+    String id,
+    String? breedingId, {
+    String user = userId,
+    bool isDeleted = false,
+  }) async {
+    final breedingIdSql = breedingId == null ? 'NULL' : "'$breedingId'";
+    await db.customStatement(
+      'INSERT OR IGNORE INTO clutches (id, user_id, breeding_id, status, is_deleted) '
+      "VALUES ('$id', '$user', $breedingIdSql, 'active', ${isDeleted ? 1 : 0})",
     );
   }
 
@@ -178,6 +207,257 @@ void main() {
     test('returns 0 when no unweaned chicks exist', () async {
       final count = await dao.watchUnweanedCount(userId).first;
       expect(count, equals(0));
+    });
+  });
+
+  group('watchMostProductiveSeason', () {
+    // Explicit UTC dates: mappers normalize DateTime to UTC on write/read,
+    // so an ambiguous local DateTime crossing midnight can round-trip into
+    // a different calendar year than the literal suggests.
+    test('returns the year with the most hatched chicks', () async {
+      await dao.insertItem(
+        makeChick(id: 'c1', hatchDate: DateTime.utc(2025, 3, 1)),
+      );
+      await dao.insertItem(
+        makeChick(id: 'c2', hatchDate: DateTime.utc(2025, 4, 1)),
+      );
+      await dao.insertItem(
+        makeChick(id: 'c3', hatchDate: DateTime.utc(2024, 1, 1)),
+      );
+
+      final result = await dao.watchMostProductiveSeason(userId).first;
+
+      expect(result?.year, equals(2025));
+      expect(result?.count, equals(2));
+    });
+
+    test('breaks ties by the smaller year', () async {
+      await dao.insertItem(
+        makeChick(id: 'c1', hatchDate: DateTime.utc(2024, 1, 1)),
+      );
+      await dao.insertItem(
+        makeChick(id: 'c2', hatchDate: DateTime.utc(2025, 1, 1)),
+      );
+
+      final result = await dao.watchMostProductiveSeason(userId).first;
+
+      expect(result?.year, equals(2024));
+    });
+
+    test(
+      'excludes chicks without a hatch date and soft-deleted chicks',
+      () async {
+        await dao.insertItem(
+          makeChick(id: 'c1', hatchDate: DateTime.utc(2025, 1, 1)),
+        );
+        await dao.insertItem(makeChick(id: 'c2', hatchDate: null));
+        await dao.insertItem(
+          makeChick(
+            id: 'c3',
+            hatchDate: DateTime.utc(2025, 1, 1),
+            isDeleted: true,
+          ),
+        );
+
+        final result = await dao.watchMostProductiveSeason(userId).first;
+
+        expect(result?.year, equals(2025));
+        expect(result?.count, equals(1));
+      },
+    );
+
+    test('returns null when there are no chicks', () async {
+      final result = await dao.watchMostProductiveSeason(userId).first;
+      expect(result, isNull);
+    });
+  });
+
+  group('watchTopPairByChickCount', () {
+    test('returns the breeding pair with the most chicks', () async {
+      await insertBreedingPair('pair-1');
+      await insertBreedingPair('pair-2');
+      await insertClutch('clutch-1', 'pair-1');
+      await insertClutch('clutch-2', 'pair-2');
+      await dao.insertItem(makeChick(id: 'c1', clutchId: 'clutch-1'));
+      await dao.insertItem(makeChick(id: 'c2', clutchId: 'clutch-1'));
+      await dao.insertItem(makeChick(id: 'c3', clutchId: 'clutch-2'));
+
+      final result = await dao.watchTopPairByChickCount(userId).first;
+
+      expect(result?.pairId, equals('pair-1'));
+      expect(result?.count, equals(2));
+    });
+
+    test('excludes chicks linked to a soft-deleted breeding pair', () async {
+      await insertBreedingPair('pair-1', isDeleted: true);
+      await insertClutch('clutch-1', 'pair-1');
+      await dao.insertItem(makeChick(id: 'c1', clutchId: 'clutch-1'));
+
+      final result = await dao.watchTopPairByChickCount(userId).first;
+
+      expect(result, isNull);
+    });
+
+    test(
+      'excludes chicks linked to a soft-deleted clutch even when the '
+      'breeding pair is still live',
+      () async {
+        // A clutch can be soft-deleted (e.g. merged/corrected) while its
+        // chicks and the breeding pair both stay live — those chicks must
+        // not count toward the pair's "most productive pair" record.
+        await insertBreedingPair('pair-1');
+        await insertClutch('clutch-1', 'pair-1', isDeleted: true);
+        await dao.insertItem(makeChick(id: 'c1', clutchId: 'clutch-1'));
+        await dao.insertItem(makeChick(id: 'c2', clutchId: 'clutch-1'));
+
+        final result = await dao.watchTopPairByChickCount(userId).first;
+
+        expect(result, isNull);
+      },
+    );
+
+    test('excludes chicks with no clutch or an unlinked clutch', () async {
+      await insertClutch('clutch-1', null);
+      await dao.insertItem(makeChick(id: 'c1', clutchId: 'clutch-1'));
+      await dao.insertItem(makeChick(id: 'c2'));
+
+      final result = await dao.watchTopPairByChickCount(userId).first;
+
+      expect(result, isNull);
+    });
+
+    test('returns null when there are no chicks', () async {
+      final result = await dao.watchTopPairByChickCount(userId).first;
+      expect(result, isNull);
+    });
+  });
+
+  group('watchDistinctHatchYears', () {
+    test('returns the set of years present in hatch_date', () async {
+      await dao.insertItem(
+        makeChick(id: 'c1', hatchDate: DateTime.utc(2024, 3, 1)),
+      );
+      await dao.insertItem(
+        makeChick(id: 'c2', hatchDate: DateTime.utc(2024, 6, 1)),
+      );
+      await dao.insertItem(
+        makeChick(id: 'c3', hatchDate: DateTime.utc(2025, 1, 1)),
+      );
+      await dao.insertItem(makeChick(id: 'c4', hatchDate: null));
+
+      final result = await dao.watchDistinctHatchYears(userId).first;
+
+      expect(result, equals({2024, 2025}));
+    });
+
+    test('excludes soft-deleted chicks', () async {
+      await dao.insertItem(
+        makeChick(id: 'c1', hatchDate: DateTime.utc(2024, 1, 1)),
+      );
+      await dao.insertItem(
+        makeChick(
+          id: 'c2',
+          hatchDate: DateTime.utc(2025, 1, 1),
+          isDeleted: true,
+        ),
+      );
+
+      final result = await dao.watchDistinctHatchYears(userId).first;
+
+      expect(result, equals({2024}));
+    });
+
+    test('returns an empty set when there are no chicks', () async {
+      final result = await dao.watchDistinctHatchYears(userId).first;
+      expect(result, isEmpty);
+    });
+  });
+
+  group('watchSeasonChickStats', () {
+    test('returns total and live counts for the given year', () async {
+      await dao.insertItem(
+        makeChick(
+          id: 'c1',
+          hatchDate: DateTime.utc(2024, 3, 1),
+          healthStatus: ChickHealthStatus.healthy,
+        ),
+      );
+      await dao.insertItem(
+        makeChick(
+          id: 'c2',
+          hatchDate: DateTime.utc(2024, 4, 1),
+          healthStatus: ChickHealthStatus.deceased,
+        ),
+      );
+      await dao.insertItem(
+        makeChick(
+          id: 'c3',
+          hatchDate: DateTime.utc(2025, 1, 1),
+          healthStatus: ChickHealthStatus.healthy,
+        ),
+      );
+
+      final result = await dao.watchSeasonChickStats(userId, 2024).first;
+
+      expect(result.total, equals(2));
+      expect(result.live, equals(1));
+    });
+
+    test('returns zero counts when no chicks match the year', () async {
+      final result = await dao.watchSeasonChickStats(userId, 2024).first;
+      expect(result.total, equals(0));
+      expect(result.live, equals(0));
+    });
+  });
+
+  group('watchPeriodChickStats', () {
+    test('returns total, deceased within the [from, to) window', () async {
+      await dao.insertItem(
+        makeChick(
+          id: 'c1',
+          hatchDate: DateTime.utc(2025, 3, 5),
+          healthStatus: ChickHealthStatus.healthy,
+        ),
+      );
+      await dao.insertItem(
+        makeChick(
+          id: 'c2',
+          hatchDate: DateTime.utc(2025, 3, 10),
+          healthStatus: ChickHealthStatus.deceased,
+        ),
+      );
+      // Exactly at the exclusive upper bound — must be excluded.
+      await dao.insertItem(
+        makeChick(id: 'c3', hatchDate: DateTime.utc(2025, 4, 1)),
+      );
+      // Before the window — must be excluded.
+      await dao.insertItem(
+        makeChick(id: 'c4', hatchDate: DateTime.utc(2025, 2, 28)),
+      );
+
+      final result = await dao
+          .watchPeriodChickStats(
+            userId,
+            DateTime.utc(2025, 3, 1),
+            DateTime.utc(2025, 4, 1),
+          )
+          .first;
+
+      expect(result.total, equals(2));
+      expect(result.deceased, equals(1));
+    });
+
+    test('returns zero counts when nothing falls in the window', () async {
+      final result = await dao
+          .watchPeriodChickStats(
+            userId,
+            DateTime.utc(2025, 3, 1),
+            DateTime.utc(2025, 4, 1),
+          )
+          .first;
+
+      expect(result.total, equals(0));
+      expect(result.deceased, equals(0));
     });
   });
 }

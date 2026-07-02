@@ -1,42 +1,54 @@
+import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
+import 'package:budgie_breeding_tracker/features/genetics/utils/phenotype_localizer.dart';
+
 /// Z-chromosome linkage rates for sex-linked mutations.
 /// Gene order: Opaline — Cinnamon — Ino — Slate.
-typedef MutationLinkageEntry = ({String label, int centiMorgans});
+typedef MutationLinkageEntry = ({String id, int centiMorgans});
 
 const mutationLinkageMap = <String, List<MutationLinkageEntry>>{
   'opaline': [
-    (label: 'Ino', centiMorgans: 30),
-    (label: 'Cinnamon', centiMorgans: 34),
-    (label: 'Slate', centiMorgans: 40),
+    (id: 'ino', centiMorgans: 30),
+    (id: 'cinnamon', centiMorgans: 34),
+    (id: 'slate', centiMorgans: 40),
   ],
   'cinnamon': [
-    (label: 'Ino', centiMorgans: 3),
-    (label: 'Slate', centiMorgans: 5),
-    (label: 'Opaline', centiMorgans: 34),
+    (id: 'ino', centiMorgans: 3),
+    (id: 'slate', centiMorgans: 5),
+    (id: 'opaline', centiMorgans: 34),
   ],
   'ino': [
-    (label: 'Slate', centiMorgans: 2),
-    (label: 'Cinnamon', centiMorgans: 3),
-    (label: 'Opaline', centiMorgans: 30),
+    (id: 'slate', centiMorgans: 2),
+    (id: 'cinnamon', centiMorgans: 3),
+    (id: 'opaline', centiMorgans: 30),
   ],
   'slate': [
-    (label: 'Ino', centiMorgans: 2),
-    (label: 'Cinnamon', centiMorgans: 5),
-    (label: 'Opaline', centiMorgans: 40),
+    (id: 'ino', centiMorgans: 2),
+    (id: 'cinnamon', centiMorgans: 5),
+    (id: 'opaline', centiMorgans: 40),
   ],
   // Pearly, Pallid & Texas Clearbody share the ino locus position.
   'pearly': [
-    (label: 'Slate', centiMorgans: 2),
-    (label: 'Cinnamon', centiMorgans: 3),
-    (label: 'Opaline', centiMorgans: 30),
+    (id: 'slate', centiMorgans: 2),
+    (id: 'cinnamon', centiMorgans: 3),
+    (id: 'opaline', centiMorgans: 30),
   ],
   'pallid': [
-    (label: 'Slate', centiMorgans: 2),
-    (label: 'Cinnamon', centiMorgans: 3),
-    (label: 'Opaline', centiMorgans: 30),
+    (id: 'slate', centiMorgans: 2),
+    (id: 'cinnamon', centiMorgans: 3),
+    (id: 'opaline', centiMorgans: 30),
   ],
   'texas_clearbody': [
-    (label: 'Slate', centiMorgans: 2),
-    (label: 'Cinnamon', centiMorgans: 3),
-    (label: 'Opaline', centiMorgans: 30),
+    (id: 'slate', centiMorgans: 2),
+    (id: 'cinnamon', centiMorgans: 3),
+    (id: 'opaline', centiMorgans: 30),
   ],
 };
+
+/// Localized display name for a linked mutation [id] (e.g. `'ino'`) via
+/// [MutationDatabase] + [PhenotypeLocalizer]. Falls back to the raw id if the
+/// mutation isn't found.
+String linkageMutationName(String id) {
+  final record = MutationDatabase.getById(id);
+  if (record == null) return id;
+  return PhenotypeLocalizer.localizePhenotype(record.name);
+}

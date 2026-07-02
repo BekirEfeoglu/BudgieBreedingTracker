@@ -90,5 +90,22 @@ void main() {
 
       expect(find.byType(Chip), findsOneWidget);
     });
+
+    testWidgets('meets 48dp minimum touch target for accessibility', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
+        MaterialApp(
+          home: Scaffold(
+            appBar: AppBar(actions: [DepthChip(depth: 5, onChanged: (_) {})]),
+          ),
+        ),
+      );
+
+      final size = tester.getSize(find.byType(PopupMenuButton<int>));
+      expect(size.width, greaterThanOrEqualTo(48));
+      expect(size.height, greaterThanOrEqualTo(48));
+    });
   });
 }

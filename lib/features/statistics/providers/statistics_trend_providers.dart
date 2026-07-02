@@ -1,16 +1,39 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
-import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
-import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
+import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/breeding_stream_providers.dart';
-import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
-import 'package:budgie_breeding_tracker/data/providers/egg_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/entity_count_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_providers.dart';
 
 part 'statistics_trend_insights.dart';
+
+/// Raw SQL-aggregated egg/chick period stats (statistics.md SQL aggregation
+/// requirement) — reused by trendStatsProvider (current+previous) and
+/// quickInsightsProvider (current only). Birds/pairs stay Dart-side: those
+/// lists are naturally bounded per user (unlike eggs/chicks, which grow
+/// unbounded over years).
+final _periodEggStatsStreamProvider =
+    StreamProvider.family<
+      ({int total, int fertile, int infertile}),
+      ({String userId, DateTime from, DateTime to})
+    >((ref, args) {
+      return ref
+          .watch(eggsDaoProvider)
+          .watchPeriodEggStats(args.userId, args.from, args.to);
+    });
+
+final _periodChickStatsStreamProvider =
+    StreamProvider.family<
+      ({int total, int deceased}),
+      ({String userId, DateTime from, DateTime to})
+    >((ref, args) {
+      return ref
+          .watch(chicksDaoProvider)
+          .watchPeriodChickStats(args.userId, args.from, args.to);
+    });
 
 /// Computes trend percentages by comparing current period vs previous period.
 final trendStatsProvider = Provider.family<AsyncValue<TrendStats>, String>((
@@ -18,13 +41,48 @@ final trendStatsProvider = Provider.family<AsyncValue<TrendStats>, String>((
   userId,
 ) {
   final period = ref.watch(statsPeriodProvider);
+  final range = buildStatsDateRange(period);
+
   final birdsAsync = ref.watch(birdsStreamProvider(userId));
   final pairsAsync = ref.watch(breedingPairsStreamProvider(userId));
-  final eggsAsync = ref.watch(eggsStreamProvider(userId));
-  final chicksAsync = ref.watch(chicksStreamProvider(userId));
+  final currentEggAsync = ref.watch(
+    _periodEggStatsStreamProvider((
+      userId: userId,
+      from: range.currentStart,
+      to: range.currentEnd,
+    )),
+  );
+  final previousEggAsync = ref.watch(
+    _periodEggStatsStreamProvider((
+      userId: userId,
+      from: range.previousStart,
+      to: range.previousEnd,
+    )),
+  );
+  final currentChickAsync = ref.watch(
+    _periodChickStatsStreamProvider((
+      userId: userId,
+      from: range.currentStart,
+      to: range.currentEnd,
+    )),
+  );
+  final previousChickAsync = ref.watch(
+    _periodChickStatsStreamProvider((
+      userId: userId,
+      from: range.previousStart,
+      to: range.previousEnd,
+    )),
+  );
 
   // Fast-fail on any error
-  for (final a in [birdsAsync, pairsAsync, eggsAsync, chicksAsync]) {
+  for (final a in [
+    birdsAsync,
+    pairsAsync,
+    currentEggAsync,
+    previousEggAsync,
+    currentChickAsync,
+    previousChickAsync,
+  ]) {
     if (a.hasError) {
       return AsyncError(a.error!, a.stackTrace ?? StackTrace.empty);
     }
@@ -32,16 +90,15 @@ final trendStatsProvider = Provider.family<AsyncValue<TrendStats>, String>((
   // Loading if any stream hasn't resolved
   if (birdsAsync.isLoading ||
       pairsAsync.isLoading ||
-      eggsAsync.isLoading ||
-      chicksAsync.isLoading) {
+      currentEggAsync.isLoading ||
+      previousEggAsync.isLoading ||
+      currentChickAsync.isLoading ||
+      previousChickAsync.isLoading) {
     return const AsyncLoading();
   }
 
   final birds = birdsAsync.requireValue;
   final pairs = pairsAsync.requireValue;
-  final eggs = eggsAsync.requireValue;
-  final chicks = chicksAsync.requireValue;
-  final range = buildStatsDateRange(period);
 
   // Birds created in current vs previous period
   final currentBirds = birds
@@ -71,69 +128,31 @@ final trendStatsProvider = Provider.family<AsyncValue<TrendStats>, String>((
       )
       .length;
 
-  // Eggs in current vs previous period
-  final currentEggs = eggs.where((e) => range.isInCurrent(e.layDate)).length;
-  final previousEggs = eggs.where((e) => range.isInPrevious(e.layDate)).length;
-
-  // Fertility rate in current vs previous
-  final currentFertile = eggs
-      .where(
-        (e) =>
-            range.isInCurrent(e.layDate) &&
-            (e.status == EggStatus.fertile || e.status == EggStatus.hatched),
-      )
-      .length;
-  final currentInfertile = eggs
-      .where(
-        (e) => range.isInCurrent(e.layDate) && e.status == EggStatus.infertile,
-      )
-      .length;
-  final currentChecked = currentFertile + currentInfertile;
+  final currentEgg = currentEggAsync.requireValue;
+  final previousEgg = previousEggAsync.requireValue;
+  final currentChecked = currentEgg.fertile + currentEgg.infertile;
   final currentFertilityRate = currentChecked > 0
-      ? currentFertile / currentChecked
+      ? currentEgg.fertile / currentChecked
+      : 0.0;
+  final prevChecked = previousEgg.fertile + previousEgg.infertile;
+  final prevFertilityRate = prevChecked > 0
+      ? previousEgg.fertile / prevChecked
       : 0.0;
 
-  final prevFertile = eggs
-      .where(
-        (e) =>
-            range.isInPrevious(e.layDate) &&
-            (e.status == EggStatus.fertile || e.status == EggStatus.hatched),
-      )
-      .length;
-  final prevInfertile = eggs
-      .where(
-        (e) => range.isInPrevious(e.layDate) && e.status == EggStatus.infertile,
-      )
-      .length;
-  final prevChecked = prevFertile + prevInfertile;
-  final prevFertilityRate = prevChecked > 0 ? prevFertile / prevChecked : 0.0;
-
-  // Survival rate in current vs previous
-  final currentChicks = chicks
-      .where((c) => c.hatchDate != null && range.isInCurrent(c.hatchDate!))
-      .toList();
-  final currentDeceased = currentChicks
-      .where((c) => c.healthStatus == ChickHealthStatus.deceased)
-      .length;
-  final currentSurvival = currentChicks.isNotEmpty
-      ? (currentChicks.length - currentDeceased) / currentChicks.length
+  final currentChick = currentChickAsync.requireValue;
+  final previousChick = previousChickAsync.requireValue;
+  final currentSurvival = currentChick.total > 0
+      ? (currentChick.total - currentChick.deceased) / currentChick.total
       : 0.0;
-
-  final prevChicks = chicks
-      .where((c) => c.hatchDate != null && range.isInPrevious(c.hatchDate!))
-      .toList();
-  final prevDeceased = prevChicks
-      .where((c) => c.healthStatus == ChickHealthStatus.deceased)
-      .length;
-  final prevSurvival = prevChicks.isNotEmpty
-      ? (prevChicks.length - prevDeceased) / prevChicks.length
+  final prevSurvival = previousChick.total > 0
+      ? (previousChick.total - previousChick.deceased) / previousChick.total
       : 0.0;
 
   return AsyncData(
     TrendStats(
       birdsTrend: _calcTrend(currentBirds, previousBirds),
       breedingsTrend: _calcTrend(currentBreedings, previousBreedings),
-      eggsTrend: _calcTrend(currentEggs, previousEggs),
+      eggsTrend: _calcTrend(currentEgg.total, previousEgg.total),
       fertilityTrend: (currentFertilityRate - prevFertilityRate) * 100,
       survivalTrend: (currentSurvival - prevSurvival) * 100,
     ),

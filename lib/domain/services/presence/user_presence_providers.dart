@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/remote/api/user_presence_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/supabase_client.dart';
 import 'package:budgie_breeding_tracker/domain/services/presence/user_presence_constants.dart';
 import 'package:budgie_breeding_tracker/domain/services/presence/user_presence_service.dart';
@@ -21,8 +22,14 @@ class UserPresenceState {
   final bool isActive;
 }
 
+final userPresenceRemoteSourceProvider = Provider<UserPresenceRemoteSource>((
+  ref,
+) {
+  return UserPresenceRemoteSource(ref.watch(supabaseClientProvider));
+});
+
 final userPresenceServiceProvider = Provider<UserPresenceService>((ref) {
-  return UserPresenceService(ref.watch(supabaseClientProvider));
+  return UserPresenceService(ref.watch(userPresenceRemoteSourceProvider));
 });
 
 final userPresenceControllerProvider =

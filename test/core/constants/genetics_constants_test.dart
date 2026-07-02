@@ -199,5 +199,17 @@ void main() {
         }
       });
     });
+
+    group('calculationVersion', () {
+      test('is the current engine version (bump when engine logic changes)', () {
+        // Guards against an accidental revert/drift of the version constant,
+        // which GeneticsHistory.isStale relies on to flag stale saved results.
+        expect(GeneticsConstants.calculationVersion, 4);
+      });
+
+      test('is a positive integer', () {
+        expect(GeneticsConstants.calculationVersion, greaterThan(0));
+      });
+    });
   });
 }

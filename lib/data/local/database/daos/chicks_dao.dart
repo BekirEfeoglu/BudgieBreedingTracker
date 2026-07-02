@@ -1,13 +1,17 @@
 import 'package:drift/drift.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
+import 'package:budgie_breeding_tracker/data/local/database/tables/breeding_pairs_table.dart';
 import 'package:budgie_breeding_tracker/data/local/database/tables/chicks_table.dart';
+import 'package:budgie_breeding_tracker/data/local/database/tables/clutches_table.dart';
 import 'package:budgie_breeding_tracker/data/local/database/mappers/chick_mapper.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 
 part 'chicks_dao.g.dart';
 
-@DriftAccessor(tables: [ChicksTable])
+@DriftAccessor(
+  tables: [ChicksTable, ClutchesTable, BreedingPairsTable],
+)
 class ChicksDao extends DatabaseAccessor<AppDatabase> with _$ChicksDaoMixin {
   ChicksDao(super.db);
 
@@ -155,6 +159,160 @@ class ChicksDao extends DatabaseAccessor<AppDatabase> with _$ChicksDaoMixin {
       final result = <String, int>{};
       for (final row in rows) {
         result[row.read<String>('month')] = row.read<int>('cnt');
+      }
+      return result;
+    });
+  }
+
+  /// Most productive hatch year (chicks grouped by hatch year), for the
+  /// personal-records highlight card. Ties broken by smallest year, mirroring
+  /// the previous Dart `_maxEntry` helper's ascending-key tiebreak.
+  Stream<({int year, int count})?> watchMostProductiveSeason(String userId) {
+    final query = customSelect(
+      "SELECT CAST(strftime('%Y', hatch_date) AS INTEGER) AS year, "
+      'COUNT(*) AS cnt '
+      'FROM chicks '
+      'WHERE user_id = ? AND hatch_date IS NOT NULL AND is_deleted = 0 '
+      'GROUP BY year '
+      'ORDER BY cnt DESC, year ASC '
+      'LIMIT 1',
+      variables: [Variable.withString(userId)],
+      readsFrom: {chicksTable},
+    );
+    return query.watch().map((rows) {
+      if (rows.isEmpty) return null;
+      final row = rows.single;
+      return (year: row.read<int>('year'), count: row.read<int>('cnt'));
+    });
+  }
+
+  /// Breeding pair with the most hatched chicks (joined via clutch ->
+  /// breeding pair), restricted to non-deleted pairs — mirrors the previous
+  /// Dart-side `validPairIds.contains(pairId)` guard. Ties broken by
+  /// smallest pair id, mirroring `_maxEntry`'s ascending-key tiebreak.
+  Stream<({String pairId, int count})?> watchTopPairByChickCount(
+    String userId,
+  ) {
+    final query = customSelect(
+      'SELECT cl.breeding_id AS pair_id, COUNT(*) AS cnt '
+      'FROM chicks c '
+      'INNER JOIN clutches cl ON c.clutch_id = cl.id '
+      'INNER JOIN breeding_pairs bp ON cl.breeding_id = bp.id '
+      'WHERE c.user_id = ? AND c.is_deleted = 0 '
+      'AND cl.breeding_id IS NOT NULL AND cl.is_deleted = 0 '
+      'AND bp.is_deleted = 0 '
+      'GROUP BY cl.breeding_id '
+      'ORDER BY cnt DESC, pair_id ASC '
+      'LIMIT 1',
+      variables: [Variable.withString(userId)],
+      readsFrom: {chicksTable, clutchesTable, breedingPairsTable},
+    );
+    return query.watch().map((rows) {
+      if (rows.isEmpty) return null;
+      final row = rows.single;
+      return (
+        pairId: row.read<String>('pair_id'),
+        count: row.read<int>('cnt'),
+      );
+    });
+  }
+
+  /// Distinct calendar years present in `hatch_date`, for the season-
+  /// comparison highlight card (statistics.md SQL aggregation requirement).
+  /// UTC-based (matches `chick.hatchDate.year` on the UTC-normalized
+  /// DateTime).
+  Stream<Set<int>> watchDistinctHatchYears(String userId) {
+    final query = customSelect(
+      "SELECT DISTINCT CAST(strftime('%Y', hatch_date) AS INTEGER) AS year "
+      'FROM chicks '
+      'WHERE user_id = ? AND is_deleted = 0 AND hatch_date IS NOT NULL',
+      variables: [Variable.withString(userId)],
+      readsFrom: {chicksTable},
+    );
+    return query.watch().map(
+      (rows) => rows.map((row) => row.read<int>('year')).toSet(),
+    );
+  }
+
+  /// Chick totals within a `[from, to)` hatch-date window (total hatched,
+  /// deceased) — for period-aware trend/insight providers (statistics.md
+  /// SQL aggregation requirement). `to` is an exclusive upper bound,
+  /// matching `StatsDateRange.isInCurrent`/`isInPrevious` semantics.
+  Stream<({int total, int deceased})> watchPeriodChickStats(
+    String userId,
+    DateTime from,
+    DateTime to,
+  ) {
+    final query = customSelect(
+      'SELECT COUNT(*) AS total, '
+      'SUM(CASE WHEN health_status = ? THEN 1 ELSE 0 END) AS deceased_count '
+      'FROM chicks '
+      'WHERE user_id = ? AND is_deleted = 0 '
+      'AND hatch_date >= ? AND hatch_date < ?',
+      variables: [
+        Variable.withString(ChickHealthStatus.deceased.name),
+        Variable.withString(userId),
+        Variable.withDateTime(from),
+        Variable.withDateTime(to),
+      ],
+      readsFrom: {chicksTable},
+    );
+    return query.watch().map((rows) {
+      final row = rows.single;
+      return (
+        total: row.read<int>('total'),
+        deceased: row.read<int?>('deceased_count') ?? 0,
+      );
+    });
+  }
+
+  /// Chick totals for a single calendar hatch [year] (total hatched, live —
+  /// not deceased), for the season-comparison highlight card.
+  Stream<({int total, int live})> watchSeasonChickStats(
+    String userId,
+    int year,
+  ) {
+    final query = customSelect(
+      'SELECT COUNT(*) AS total, '
+      'SUM(CASE WHEN health_status != ? THEN 1 ELSE 0 END) AS live_count '
+      'FROM chicks '
+      "WHERE user_id = ? AND is_deleted = 0 AND strftime('%Y', hatch_date) = ?",
+      variables: [
+        Variable.withString(ChickHealthStatus.deceased.name),
+        Variable.withString(userId),
+        Variable.withString(year.toString()),
+      ],
+      readsFrom: {chicksTable},
+    );
+    return query.watch().map((rows) {
+      final row = rows.single;
+      return (
+        total: row.read<int>('total'),
+        live: row.read<int?>('live_count') ?? 0,
+      );
+    });
+  }
+
+  /// Watches chick counts grouped by health status: enum name → count.
+  ///
+  /// statistics.md mandates SQL-side aggregation; `chickSurvivalProvider`
+  /// previously pulled the full chick list via `chicksStreamProvider` (with
+  /// per-chick photo URL resolution) and counted healthy/sick/deceased in
+  /// Dart on every emission — the same anti-pattern already fixed here for
+  /// `watchMonthlyHatched`.
+  Stream<Map<String, int>> watchHealthStatusCounts(String userId) {
+    final query = customSelect(
+      'SELECT health_status, COUNT(*) AS cnt '
+      'FROM chicks '
+      'WHERE user_id = ? AND is_deleted = 0 '
+      'GROUP BY health_status',
+      variables: [Variable.withString(userId)],
+      readsFrom: {chicksTable},
+    );
+    return query.watch().map((rows) {
+      final result = <String, int>{};
+      for (final row in rows) {
+        result[row.read<String>('health_status')] = row.read<int>('cnt');
       }
       return result;
     });

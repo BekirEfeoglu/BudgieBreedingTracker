@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../data/local/preferences/app_preferences.dart';
+import '../../../data/local/preferences/pref_notifier.dart';
 
 // Legacy keys for one-time migration (pre-unification values).
 const _legacyThemeModeKey = 'theme_mode';
@@ -19,42 +20,36 @@ final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(
 );
 
 /// Manages [ThemeMode] state and persists it locally.
-class ThemeModeNotifier extends Notifier<ThemeMode> {
+class ThemeModeNotifier extends PrefNotifier<ThemeMode> {
   @override
-  ThemeMode build() {
-    _loadFromPrefs();
-    return ThemeMode.system;
-  }
+  ThemeMode get defaultValue => ThemeMode.system;
 
-  Future<void> _loadFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-
+  @override
+  Future<ThemeMode?> readFromPrefs(SharedPreferences prefs) async {
     // Migrate from legacy int-based key ('theme_mode') to unified string key.
     final legacyIndex = prefs.getInt(_legacyThemeModeKey);
     if (legacyIndex != null) {
-      final migrated = legacyIndex < ThemeMode.values.length
+      final migrated = legacyIndex >= 0 && legacyIndex < ThemeMode.values.length
           ? ThemeMode.values[legacyIndex]
           : ThemeMode.system;
       await prefs.setString(AppPreferences.keyThemeMode, migrated.name);
       await prefs.remove(_legacyThemeModeKey);
-      state = migrated;
-      return;
+      return migrated;
     }
 
     final value = prefs.getString(AppPreferences.keyThemeMode);
-    if (value != null) {
-      state = ThemeMode.values.firstWhere(
-        (e) => e.name == value,
-        orElse: () => ThemeMode.system,
-      );
-    }
+    if (value == null) return null;
+    return ThemeMode.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => ThemeMode.system,
+    );
   }
 
-  Future<void> setThemeMode(ThemeMode mode) async {
-    state = mode;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(AppPreferences.keyThemeMode, mode.name);
-  }
+  @override
+  Future<void> writeToPrefs(SharedPreferences prefs, ThemeMode value) =>
+      prefs.setString(AppPreferences.keyThemeMode, value.name);
+
+  Future<void> setThemeMode(ThemeMode mode) => set(mode);
 }
 
 // ---------------------------------------------------------------------------
@@ -116,44 +111,36 @@ final appLocaleProvider = NotifierProvider<AppLocaleNotifier, AppLocale>(
 ///
 /// The [setLocale] method also calls `context.setLocale()` so that
 /// easy_localization is kept in sync.
-class AppLocaleNotifier extends Notifier<AppLocale> {
+class AppLocaleNotifier extends PrefNotifier<AppLocale> {
   @override
-  AppLocale build() {
-    _loadFromPrefs();
-    return AppLocale.turkish;
-  }
+  AppLocale get defaultValue => AppLocale.turkish;
 
-  /// Loads the persisted locale on startup.
-  Future<void> _loadFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-
+  @override
+  Future<AppLocale?> readFromPrefs(SharedPreferences prefs) async {
     // Migrate from legacy key ('app_locale') to unified key.
     final legacyCode = prefs.getString(_legacyLocaleKey);
     if (legacyCode != null) {
       await prefs.setString(AppPreferences.keyLanguage, legacyCode);
       await prefs.remove(_legacyLocaleKey);
-      state = AppLocale.fromCode(legacyCode);
-      return;
+      return AppLocale.fromCode(legacyCode);
     }
 
     final code = prefs.getString(AppPreferences.keyLanguage);
-    if (code != null) {
-      state = AppLocale.fromCode(code);
-    }
+    if (code == null) return null;
+    return AppLocale.fromCode(code);
   }
+
+  @override
+  Future<void> writeToPrefs(SharedPreferences prefs, AppLocale value) =>
+      prefs.setString(AppPreferences.keyLanguage, value.locale.languageCode);
 
   /// Sets the app locale, persists it, and syncs easy_localization.
   ///
   /// [context] is required to call `context.setLocale()` from
-  /// easy_localization.
-  Future<void> setLocale(AppLocale locale, BuildContext context) async {
-    state = locale;
+  /// easy_localization; it is used synchronously, before any await.
+  Future<void> setLocale(AppLocale locale, BuildContext context) {
     context.setLocale(locale.locale);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      AppPreferences.keyLanguage,
-      locale.locale.languageCode,
-    );
+    return set(locale);
   }
 
   /// Initializes the provider state from the current easy_localization locale.
@@ -195,27 +182,23 @@ final fontScaleProvider = NotifierProvider<FontScaleNotifier, AppFontScale>(
   FontScaleNotifier.new,
 );
 
-class FontScaleNotifier extends Notifier<AppFontScale> {
+class FontScaleNotifier extends PrefNotifier<AppFontScale> {
   @override
-  AppFontScale build() {
-    _loadFromPrefs();
-    return AppFontScale.normal;
-  }
+  AppFontScale get defaultValue => AppFontScale.normal;
 
-  Future<void> _loadFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
+  @override
+  Future<AppFontScale?> readFromPrefs(SharedPreferences prefs) async {
     final value = prefs.getString(AppPreferences.keyFontScale);
-    if (value != null) {
-      state = AppFontScale.values.firstWhere(
-        (e) => e.name == value,
-        orElse: () => AppFontScale.normal,
-      );
-    }
+    if (value == null) return null;
+    return AppFontScale.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => AppFontScale.normal,
+    );
   }
 
-  Future<void> setScale(AppFontScale scale) async {
-    state = scale;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(AppPreferences.keyFontScale, scale.name);
-  }
+  @override
+  Future<void> writeToPrefs(SharedPreferences prefs, AppFontScale value) =>
+      prefs.setString(AppPreferences.keyFontScale, value.name);
+
+  Future<void> setScale(AppFontScale scale) => set(scale);
 }

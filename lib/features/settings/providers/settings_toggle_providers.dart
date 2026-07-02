@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/utils/app_haptics.dart';
 import '../../../data/local/preferences/app_preferences.dart';
+import '../../../data/local/preferences/pref_notifier.dart';
 
 // Re-export sync settings from domain layer so existing feature imports work.
 export 'package:budgie_breeding_tracker/domain/services/sync/sync_settings_providers.dart';
@@ -16,23 +16,9 @@ final notificationsMasterProvider =
       NotificationsMasterNotifier.new,
     );
 
-class NotificationsMasterNotifier extends Notifier<bool> {
-  @override
-  bool build() {
-    _loadFromPrefs();
-    return true;
-  }
-
-  Future<void> _loadFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    state = prefs.getBool(AppPreferences.keyNotificationsEnabled) ?? true;
-  }
-
-  Future<void> toggle() async {
-    state = !state;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(AppPreferences.keyNotificationsEnabled, state);
-  }
+class NotificationsMasterNotifier extends PrefBoolNotifier {
+  NotificationsMasterNotifier()
+    : super(AppPreferences.keyNotificationsEnabled, defaultValue: true);
 }
 
 // ---------------------------------------------------------------------------
@@ -43,23 +29,9 @@ final compactViewProvider = NotifierProvider<CompactViewNotifier, bool>(
   CompactViewNotifier.new,
 );
 
-class CompactViewNotifier extends Notifier<bool> {
-  @override
-  bool build() {
-    _loadFromPrefs();
-    return false;
-  }
-
-  Future<void> _loadFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    state = prefs.getBool(AppPreferences.keyCompactView) ?? false;
-  }
-
-  Future<void> toggle() async {
-    state = !state;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(AppPreferences.keyCompactView, state);
-  }
+class CompactViewNotifier extends PrefBoolNotifier {
+  CompactViewNotifier()
+    : super(AppPreferences.keyCompactView, defaultValue: false);
 }
 
 // ---------------------------------------------------------------------------
@@ -70,25 +42,12 @@ final hapticFeedbackProvider = NotifierProvider<HapticFeedbackNotifier, bool>(
   HapticFeedbackNotifier.new,
 );
 
-class HapticFeedbackNotifier extends Notifier<bool> {
+class HapticFeedbackNotifier extends PrefBoolNotifier {
+  HapticFeedbackNotifier()
+    : super(AppPreferences.keyHapticFeedback, defaultValue: true);
+
   @override
-  bool build() {
-    _loadFromPrefs();
-    return true;
-  }
-
-  Future<void> _loadFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    state = prefs.getBool(AppPreferences.keyHapticFeedback) ?? true;
-    AppHaptics.setEnabled(state);
-  }
-
-  Future<void> toggle() async {
-    state = !state;
-    AppHaptics.setEnabled(state);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(AppPreferences.keyHapticFeedback, state);
-  }
+  void onValue(bool value) => AppHaptics.setEnabled(value);
 }
 
 // ---------------------------------------------------------------------------
@@ -100,23 +59,9 @@ final reduceAnimationsProvider =
       ReduceAnimationsNotifier.new,
     );
 
-class ReduceAnimationsNotifier extends Notifier<bool> {
-  @override
-  bool build() {
-    _loadFromPrefs();
-    return false;
-  }
-
-  Future<void> _loadFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    state = prefs.getBool(AppPreferences.keyReduceAnimations) ?? false;
-  }
-
-  Future<void> toggle() async {
-    state = !state;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(AppPreferences.keyReduceAnimations, state);
-  }
+class ReduceAnimationsNotifier extends PrefBoolNotifier {
+  ReduceAnimationsNotifier()
+    : super(AppPreferences.keyReduceAnimations, defaultValue: false);
 }
 
 // ---------------------------------------------------------------------------
@@ -128,23 +73,9 @@ final eggTurningReminderProvider =
       EggTurningReminderNotifier.new,
     );
 
-class EggTurningReminderNotifier extends Notifier<bool> {
-  @override
-  bool build() {
-    _loadFromPrefs();
-    return true;
-  }
-
-  Future<void> _loadFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    state = prefs.getBool(AppPreferences.keyEggTurningReminder) ?? true;
-  }
-
-  Future<void> toggle() async {
-    state = !state;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(AppPreferences.keyEggTurningReminder, state);
-  }
+class EggTurningReminderNotifier extends PrefBoolNotifier {
+  EggTurningReminderNotifier()
+    : super(AppPreferences.keyEggTurningReminder, defaultValue: true);
 }
 
 // ---------------------------------------------------------------------------
@@ -156,21 +87,7 @@ final temperatureAlertProvider =
       TemperatureAlertNotifier.new,
     );
 
-class TemperatureAlertNotifier extends Notifier<bool> {
-  @override
-  bool build() {
-    _loadFromPrefs();
-    return true;
-  }
-
-  Future<void> _loadFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    state = prefs.getBool(AppPreferences.keyTemperatureAlert) ?? true;
-  }
-
-  Future<void> toggle() async {
-    state = !state;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(AppPreferences.keyTemperatureAlert, state);
-  }
+class TemperatureAlertNotifier extends PrefBoolNotifier {
+  TemperatureAlertNotifier()
+    : super(AppPreferences.keyTemperatureAlert, defaultValue: true);
 }

@@ -83,8 +83,10 @@ class EggProductionChart extends StatelessWidget {
                     if (index < 0 || index >= keys.length) {
                       return const SizedBox.shrink();
                     }
-                    final parts = keys[index].split('-');
-                    return Text(parts[1], style: theme.textTheme.labelSmall);
+                    return Text(
+                      monthAbbreviation(context, keys[index]),
+                      style: theme.textTheme.labelSmall,
+                    );
                   },
                 ),
               ),

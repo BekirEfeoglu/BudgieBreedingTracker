@@ -116,7 +116,7 @@ class BackupScreen extends ConsumerWidget {
           FilledButton(
             onPressed: () {
               Navigator.of(ctx).pop();
-              context.push(AppRoutes.premium);
+              if (context.mounted) context.push(AppRoutes.premium);
             },
             child: Text('premium.upgrade_to_unlock'.tr()),
           ),
@@ -126,6 +126,9 @@ class BackupScreen extends ConsumerWidget {
   }
 
   Future<void> _handleImport(BuildContext context, WidgetRef ref) async {
+    // In-flight guard: an export/import is already running.
+    if (ref.read(exportLoadingProvider)) return;
+
     final isPremium = ref.read(effectivePremiumProvider);
     final hasExportReward = ref.read(isExportRewardActiveProvider);
     if (!isPremium && !hasExportReward) {
@@ -148,12 +151,7 @@ class BackupScreen extends ConsumerWidget {
       return;
     }
 
-    // Consume reward use only when the user proceeds with an actual file.
-    if (!isPremium && hasExportReward) {
-      ref.read(isExportRewardActiveProvider.notifier).consume();
-    }
-
-    ref.read(exportLoadingProvider.notifier).state = true;
+    ref.read(exportLoadingProvider.notifier).set(true);
     try {
       final importService = ref.read(dataImportServiceProvider);
       final userId = ref.read(currentUserIdProvider);
@@ -185,6 +183,12 @@ class BackupScreen extends ConsumerWidget {
         maxTotalBirds: isPremium ? null : AppConstants.freeTierMaxBirds,
       );
 
+      // Consume the reward-ad use only after rows were actually imported —
+      // a failed or fully-rejected import must not burn the user's reward.
+      if (!isPremium && hasExportReward && importResult.importedCount > 0) {
+        ref.read(isExportRewardActiveProvider.notifier).consume();
+      }
+
       if (context.mounted) {
         if (importResult.importedCount == 0 && importResult.errors.isNotEmpty) {
           context.showSnackBar(importResult.errors.first, isError: true);
@@ -206,7 +210,7 @@ class BackupScreen extends ConsumerWidget {
         context.showSnackBar('backup.import_error'.tr(), isError: true);
       }
     } finally {
-      ref.read(exportLoadingProvider.notifier).state = false;
+      ref.read(exportLoadingProvider.notifier).set(false);
     }
   }
 
@@ -223,14 +227,14 @@ class BackupScreen extends ConsumerWidget {
     }
     final actions = ref.read(exportActionsProvider);
     try {
-      switch (type) {
-        case 'pdf':
-          await actions.exportPdf();
-        case 'excel':
-          await actions.exportExcel();
-        case 'birds_pdf':
-          await actions.exportBirdsPdf();
-      }
+      final exported = switch (type) {
+        'pdf' => await actions.exportPdf(),
+        'excel' => await actions.exportExcel(),
+        'birds_pdf' => await actions.exportBirdsPdf(),
+        _ => false,
+      };
+      // Skipped because another export/import is still running.
+      if (!exported) return;
 
       // Consume reward only after a successful export.
       if (!isPremium && hasExportReward) {

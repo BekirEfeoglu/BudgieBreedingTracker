@@ -124,16 +124,20 @@ abstract class LethalCombinationDatabase {
   /// All known lethal/semi-lethal combinations.
   static const List<LethalCombination> allCombinations = [
     // ── Crested × Crested (Embryonic Lethal for DF) ──
-    // Classical genetics: homozygous crested (DF) is embryonic lethal.
-    // 25% of Crested × Crested offspring die in shell.
+    // Classical genetics: a double dose of crested (DF — two crest-locus
+    // alleles, whether the same or a compound of two crest alleles) is
+    // embryonic lethal. Only the ~25% of offspring that actually inherit two
+    // crest alleles die in shell, so this uses offspring-level homozygous
+    // scope (affectedRate 1.0 applied to that DF subset) rather than flagging
+    // every offspring of a crested pairing.
     LethalCombination(
       id: 'df_crested',
       nameKey: 'genetics.lethal_df_crested_name',
       descriptionKey: 'genetics.lethal_df_crested_desc',
       severity: LethalSeverity.lethal,
-      affectedRate: 0.25,
+      affectedRate: 1.0,
       requiredMutationIds: GeneticsConstants.crestedAlleleIds,
-      scope: LethalScope.parentAnyVisual,
+      scope: LethalScope.offspringHomozygous,
     ),
 
     // ── Double Factor Spangle (Sub-vital) ──

@@ -1,9 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_providers.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/genetic_charts.dart';
@@ -27,11 +30,28 @@ class GeneticsResultsStep extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Handle async loading/error state from isolate-backed calculation
     final rawResultsAsync = ref.watch(offspringResultsProvider);
+    ref.listen(offspringResultsProvider, (previous, next) {
+      if (next.hasError && !next.isLoading) {
+        Sentry.captureException(
+          next.error,
+          stackTrace: next.stackTrace,
+          withScope: (scope) => scope.setTag('feature', 'genetics'),
+        );
+      }
+    });
     if (rawResultsAsync.isLoading) {
       return const LoadingState();
     }
     if (rawResultsAsync.hasError) {
-      return Center(child: Text('errors.unknown_error'.tr()));
+      AppLogger.error(
+        '[GeneticsResultsStep] offspringResultsProvider failed',
+        rawResultsAsync.error,
+        rawResultsAsync.stackTrace,
+      );
+      return ErrorState(
+        message: 'errors.unknown_error'.tr(),
+        onRetry: () => ref.invalidate(offspringResultsProvider),
+      );
     }
     final rawResults = rawResultsAsync.value;
     final results = ref.watch(enrichedOffspringResultsProvider);

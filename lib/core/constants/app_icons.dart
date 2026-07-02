@@ -1,5 +1,5 @@
 /// Custom SVG icon asset paths for the budgie breeding tracker app.
-/// 84 icons organized by category, matching assets/icons/ directory structure.
+/// 93 icons organized by category, matching assets/icons/ directory structure.
 abstract final class AppIcons {
   // ── Navigation ──
   static const home = 'assets/icons/navigation/home.svg';
@@ -109,4 +109,8 @@ abstract final class AppIcons {
   static const heartOff = 'assets/icons/general/heart_off.svg';
   static const heartPulse = 'assets/icons/general/heart_pulse.svg';
   static const heartHandshake = 'assets/icons/general/heart_handshake.svg';
+  static const stethoscope = 'assets/icons/general/stethoscope.svg';
+  static const thermometer = 'assets/icons/general/thermometer.svg';
+  static const syringe = 'assets/icons/general/syringe.svg';
+  static const pill = 'assets/icons/general/pill.svg';
 }

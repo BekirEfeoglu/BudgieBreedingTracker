@@ -10,14 +10,14 @@ Source: `.claude/rules/genetics.md` (primary), `.claude/rules/local-ai.md` (AI i
 - **Epistasis** — multi-locus gene interaction (e.g., opaline + clearwing)
 - **MUTAVI rates** — authoritative mutation frequency data (see `docs/muhabbet-kusu-genetik-rehberi.md`)
 - **Inbreeding coefficient** — F coefficient calculation from pedigree
-- **Dominant allelic series** — bug fixed 2026-04-08 (v2 calculation)
-- 62+ genetics-specific tests
+- **Dominant allelic series** — bug fixed 2026-04-09 (v2 calculation)
+- 930+ genetics-specific domain tests
 
 ## `calculationVersion`
 
 Every result stores the algorithm version. When the engine is updated, old results can be flagged stale.
 
-- Current version: `v2`
+- Current version: `v4`
 
 ## Confidence Thresholds (AI-assisted)
 

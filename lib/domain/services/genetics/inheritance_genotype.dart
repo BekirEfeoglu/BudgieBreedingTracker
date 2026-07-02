@@ -55,13 +55,16 @@ List<_RawResult> _autosomalRecessiveGenotype(
     final prob = entry.value;
 
     if (geno == 'aa') {
-      // Visual
+      // Visual — a recessive visual is homozygous (aa) by definition, i.e. a
+      // double dose. Tag it so double-factor-lethal recessives (e.g. feather
+      // duster) are detected by ViabilityAnalyzer's offspringHomozygous scope.
       results.add(
         _RawResult(
           phenotype: name,
           probability: prob,
           genotype: '$sym/$sym',
           expressedMutationIds: [record.id],
+          doubleFactorIds: {record.id},
         ),
       );
     } else if (geno == 'Aa') {

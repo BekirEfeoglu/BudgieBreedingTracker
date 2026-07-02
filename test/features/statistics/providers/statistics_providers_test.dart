@@ -22,6 +22,7 @@ import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.da
 import 'package:budgie_breeding_tracker/features/health_records/providers/health_record_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_breeding_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_health_providers.dart';
+import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_highlights_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_summary_providers.dart';
 
@@ -152,6 +153,94 @@ Map<String, ({int fertile, int total})> _eggsToFertility(List<Egg> eggs) {
   return result;
 }
 
+/// Mirrors `EggsDao.watchFertilityCount` semantics: fertile+hatched vs
+/// infertile, all-time (no period window) — used by `summaryStatsProvider`.
+({int fertile, int infertile}) _eggsToFertilityCount(List<Egg> eggs) {
+  final fertile = eggs
+      .where(
+        (e) => e.status == EggStatus.fertile || e.status == EggStatus.hatched,
+      )
+      .length;
+  final infertile = eggs.where((e) => e.status == EggStatus.infertile).length;
+  return (fertile: fertile, infertile: infertile);
+}
+
+Map<String, int> _chickHealthCounts(List<Chick> chicks) {
+  final result = <String, int>{};
+  for (final chick in chicks) {
+    final key = chick.healthStatus.name;
+    result[key] = (result[key] ?? 0) + 1;
+  }
+  return result;
+}
+
+/// Mirrors `EggsDao.watchDistinctLayYears`/`watchSeasonEggStats` semantics,
+/// for `seasonComparisonProvider` tests.
+Set<int> _eggYears(List<Egg> eggs) => eggs.map((e) => e.layDate.year).toSet();
+
+({int total, int fertile}) _eggStatsForYear(List<Egg> eggs, int year) {
+  final seasonEggs = eggs.where((e) => e.layDate.year == year);
+  final fertile = seasonEggs
+      .where(
+        (e) => e.status == EggStatus.fertile || e.status == EggStatus.hatched,
+      )
+      .length;
+  return (total: seasonEggs.length, fertile: fertile);
+}
+
+/// Mirrors `ChicksDao.watchDistinctHatchYears`/`watchSeasonChickStats`
+/// semantics, for `seasonComparisonProvider` tests.
+Set<int> _chickHatchYears(List<Chick> chicks) => chicks
+    .where((c) => c.hatchDate != null)
+    .map((c) => c.hatchDate!.year)
+    .toSet();
+
+({int total, int live}) _chickStatsForYear(List<Chick> chicks, int year) {
+  final seasonChicks = chicks.where((c) => c.hatchDate?.year == year);
+  final live = seasonChicks
+      .where((c) => c.healthStatus != ChickHealthStatus.deceased)
+      .length;
+  return (total: seasonChicks.length, live: live);
+}
+
+/// Mirrors `EggsDao.watchPeriodEggStats` semantics, for
+/// `trendStatsProvider`/`quickInsightsProvider` tests.
+({int total, int fertile, int infertile}) _eggPeriodStats(
+  List<Egg> eggs,
+  DateTime from,
+  DateTime to,
+) {
+  final inRange = eggs.where(
+    (e) => !e.layDate.isBefore(from) && e.layDate.isBefore(to),
+  );
+  final fertile = inRange
+      .where(
+        (e) => e.status == EggStatus.fertile || e.status == EggStatus.hatched,
+      )
+      .length;
+  final infertile = inRange.where((e) => e.status == EggStatus.infertile).length;
+  return (total: inRange.length, fertile: fertile, infertile: infertile);
+}
+
+/// Mirrors `ChicksDao.watchPeriodChickStats` semantics, for
+/// `trendStatsProvider`/`quickInsightsProvider` tests.
+({int total, int deceased}) _chickPeriodStats(
+  List<Chick> chicks,
+  DateTime from,
+  DateTime to,
+) {
+  final inRange = chicks.where(
+    (c) =>
+        c.hatchDate != null &&
+        !c.hatchDate!.isBefore(from) &&
+        c.hatchDate!.isBefore(to),
+  );
+  final deceased = inRange
+      .where((c) => c.healthStatus == ChickHealthStatus.deceased)
+      .length;
+  return (total: inRange.length, deceased: deceased);
+}
+
 ProviderContainer _container({
   required List<Bird> birds,
   required List<BreedingPair> pairs,
@@ -177,6 +266,35 @@ ProviderContainer _container({
     () => eggsDao.watchMonthlyFertility(any(), species: any(named: 'species')),
   ).thenAnswer((_) => Stream.value(fertilityCounts));
 
+  // `summaryStatsProvider` now reads `eggsDaoProvider.watchFertilityCount`
+  // (all-time, not monthly) instead of looping the full eggs list.
+  when(
+    () => eggsDao.watchFertilityCount(any()),
+  ).thenAnswer((_) => Stream.value(_eggsToFertilityCount(eggs)));
+
+  // `seasonComparisonProvider` now reads `eggsDaoProvider.watchDistinctLayYears`
+  // / `watchSeasonEggStats` instead of looping the full eggs list.
+  when(
+    () => eggsDao.watchDistinctLayYears(any()),
+  ).thenAnswer((_) => Stream.value(_eggYears(eggs)));
+  when(() => eggsDao.watchSeasonEggStats(any(), any())).thenAnswer((
+    invocation,
+  ) {
+    final year = invocation.positionalArguments[1] as int;
+    return Stream.value(_eggStatsForYear(eggs, year));
+  });
+
+  // `trendStatsProvider`/`quickInsightsProvider` now read
+  // `eggsDaoProvider.watchPeriodEggStats` instead of looping the full
+  // eggs list per period.
+  when(
+    () => eggsDao.watchPeriodEggStats(any(), any(), any()),
+  ).thenAnswer((invocation) {
+    final from = invocation.positionalArguments[1] as DateTime;
+    final to = invocation.positionalArguments[2] as DateTime;
+    return Stream.value(_eggPeriodStats(eggs, from, to));
+  });
+
   // `healthRecordTypeDistributionProvider` now reads
   // `healthRecordsDaoProvider.watchCountsByTypeInRange`. Mock it so the
   // existing test fixtures continue to drive the same observable behavior.
@@ -191,6 +309,39 @@ ProviderContainer _container({
     final from = invocation.namedArguments[const Symbol('from')] as DateTime;
     final to = invocation.namedArguments[const Symbol('to')] as DateTime;
     return Stream.value(_healthCountsInRange(healthRecords, from, to));
+  });
+
+  // `chickSurvivalProvider` now reads `chicksDaoProvider.watchHealthStatusCounts`.
+  // Mock it so the existing `chicks` fixtures continue to drive the same
+  // observable healthy/sick/deceased/survivalRate behavior.
+  final chicksDao = MockChicksDao();
+  final chickHealthCounts = _chickHealthCounts(chicks);
+  when(
+    () => chicksDao.watchHealthStatusCounts(any()),
+  ).thenAnswer((_) => Stream.value(chickHealthCounts));
+
+  // `seasonComparisonProvider` now reads
+  // `chicksDaoProvider.watchDistinctHatchYears` / `watchSeasonChickStats`
+  // instead of looping the full chicks list.
+  when(
+    () => chicksDao.watchDistinctHatchYears(any()),
+  ).thenAnswer((_) => Stream.value(_chickHatchYears(chicks)));
+  when(() => chicksDao.watchSeasonChickStats(any(), any())).thenAnswer((
+    invocation,
+  ) {
+    final year = invocation.positionalArguments[1] as int;
+    return Stream.value(_chickStatsForYear(chicks, year));
+  });
+
+  // `trendStatsProvider`/`quickInsightsProvider` now read
+  // `chicksDaoProvider.watchPeriodChickStats` instead of looping the full
+  // chicks list per period.
+  when(
+    () => chicksDao.watchPeriodChickStats(any(), any(), any()),
+  ).thenAnswer((invocation) {
+    final from = invocation.positionalArguments[1] as DateTime;
+    final to = invocation.positionalArguments[2] as DateTime;
+    return Stream.value(_chickPeriodStats(chicks, from, to));
   });
 
   return ProviderContainer(
@@ -209,6 +360,7 @@ ProviderContainer _container({
       ).overrideWith((_) => Stream.value(healthRecords)),
       eggsDaoProvider.overrideWithValue(eggsDao),
       healthRecordsDaoProvider.overrideWithValue(healthDao),
+      chicksDaoProvider.overrideWithValue(chicksDao),
       // COUNT providers used by summaryStatsProvider (bypass SQL DAO calls)
       birdCountProvider(
         'user-1',
@@ -219,6 +371,13 @@ ProviderContainer _container({
       healthRecordCountProvider(
         'user-1',
       ).overrideWith((_) => Stream.value(healthRecords.length)),
+      // `summaryStatsProvider` now reads `incubatingEggCountProvider`
+      // instead of filtering the full eggs list in Dart.
+      incubatingEggCountProvider('user-1').overrideWith(
+        (_) => Stream.value(
+          eggs.where((e) => e.isActiveIncubationEgg).length,
+        ),
+      ),
     ],
   );
 }
@@ -283,23 +442,24 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-      container.listen(birdsStreamProvider(userId), (_, __) {});
-      await container.read(birdsStreamProvider(userId).future);
-      container.listen(breedingPairsStreamProvider(userId), (_, __) {});
-      await container.read(breedingPairsStreamProvider(userId).future);
-      container.listen(eggsStreamProvider(userId), (_, __) {});
-      await container.read(eggsStreamProvider(userId).future);
-      container.listen(chicksStreamProvider(userId), (_, __) {});
-      await container.read(chicksStreamProvider(userId).future);
-      container.listen(healthRecordsStreamProvider(userId), (_, __) {});
-      await container.read(healthRecordsStreamProvider(userId).future);
-      // Await COUNT providers (SQL-backed StreamProviders overridden in _container)
+      // Await COUNT providers (SQL-backed StreamProviders overridden in _container).
+      // summaryStatsProvider no longer reads the full birds/pairs/eggs/chicks/
+      // healthRecords streams directly — it's fully SQL-aggregate-backed now.
       container.listen(birdCountProvider(userId), (_, __) {});
       await container.read(birdCountProvider(userId).future);
       container.listen(activeBreedingCountProvider(userId), (_, __) {});
       await container.read(activeBreedingCountProvider(userId).future);
       container.listen(healthRecordCountProvider(userId), (_, __) {});
       await container.read(healthRecordCountProvider(userId).future);
+      container.listen(incubatingEggCountProvider(userId), (_, __) {});
+      await container.read(incubatingEggCountProvider(userId).future);
+      // Two private SQL-aggregate StreamProviders (fertility count, chick
+      // health counts) aren't individually awaitable — settle them by
+      // listening to the public provider and flushing microtask turns
+      // (mirrors chickSurvivalProvider's warm-up elsewhere in this file).
+      container.listen(summaryStatsProvider(userId), (_, __) {});
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
 
       final value = container.read(summaryStatsProvider(userId));
       expect(value.hasValue, isTrue);
@@ -364,8 +524,13 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-      container.listen(chicksStreamProvider(userId), (_, __) {});
-      await container.read(chicksStreamProvider(userId).future);
+      // Provider now reads `chicksDaoProvider.watchHealthStatusCounts` —
+      // subscribe to make the inner StreamProvider attach to the mock and
+      // yield so Stream.value emits (mirrors
+      // healthRecordTypeDistributionProvider's warm-up below).
+      container.listen(chickSurvivalProvider(userId), (_, __) {});
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
 
       final value = container.read(chickSurvivalProvider(userId));
       expect(value.hasValue, isTrue);
@@ -375,6 +540,150 @@ void main() {
       expect(data.deceased, 1);
       expect(data.survivalRate, closeTo(2 / 3, 0.0001));
     });
+
+    test(
+      'chickSurvivalProvider includes unknown-status chicks in the '
+      "survival rate denominator, matching summaryStatsProvider's "
+      'chicks.length headcount semantics',
+      () async {
+        final container = _container(
+          birds: const [],
+          pairs: const [],
+          eggs: const [],
+          healthRecords: const [],
+          chicks: [
+            _chick(id: 'c1', health: ChickHealthStatus.healthy),
+            _chick(id: 'c2', health: ChickHealthStatus.deceased),
+            _chick(id: 'c3', health: ChickHealthStatus.unknown),
+          ],
+        );
+        addTearDown(container.dispose);
+        container.listen(chickSurvivalProvider(userId), (_, __) {});
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+
+        final value = container.read(chickSurvivalProvider(userId));
+        final data = value.requireValue;
+        // The 3 pie slices only ever show healthy/sick/deceased (the chart
+        // computes its own total from these fields), but survivalRate's
+        // denominator must count every chick, including unknown-status
+        // ones, or the same data yields two different "survival rate"
+        // percentages between the summary card and this health tab chart.
+        expect(data.healthy, 1);
+        expect(data.sick, 0);
+        expect(data.deceased, 1);
+        expect(data.survivalRate, closeTo(2 / 3, 0.0001));
+      },
+    );
+
+    test(
+      'chickSurvivalProvider returns zero-value default when there are no chicks',
+      () async {
+        final container = _container(
+          birds: const [],
+          pairs: const [],
+          eggs: const [],
+          healthRecords: const [],
+          chicks: const [],
+        );
+        addTearDown(container.dispose);
+        container.listen(chickSurvivalProvider(userId), (_, __) {});
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+
+        final value = container.read(chickSurvivalProvider(userId));
+        final data = value.requireValue;
+        expect(data.healthy, 0);
+        expect(data.sick, 0);
+        expect(data.deceased, 0);
+        expect(data.survivalRate, 0.0);
+      },
+    );
+
+    test(
+      'seasonComparisonProvider compares the two latest seasons',
+      () async {
+        final container = _container(
+          birds: const [],
+          pairs: const [],
+          healthRecords: const [],
+          eggs: [
+            _egg(
+              id: 'e1',
+              layDate: DateTime.utc(2024, 3, 1),
+              status: EggStatus.infertile,
+            ),
+            _egg(
+              id: 'e2',
+              layDate: DateTime.utc(2024, 3, 2),
+              status: EggStatus.fertile,
+            ),
+            _egg(
+              id: 'e3',
+              layDate: DateTime.utc(2025, 3, 1),
+              status: EggStatus.hatched,
+            ),
+            _egg(
+              id: 'e4',
+              layDate: DateTime.utc(2025, 3, 2),
+              status: EggStatus.fertile,
+            ),
+          ],
+          chicks: [
+            _chick(
+              id: 'c1',
+              health: ChickHealthStatus.deceased,
+              hatchDate: DateTime.utc(2024, 4, 1),
+            ),
+            _chick(
+              id: 'c2',
+              health: ChickHealthStatus.healthy,
+              hatchDate: DateTime.utc(2025, 4, 1),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+        // Deeper reactive chain than most providers here: years resolve
+        // first (2 DAO streams), then per-year stats resolve (4 more DAO
+        // streams across the 2 compared years) — flush a few extra
+        // microtask turns for everything to settle.
+        container.listen(seasonComparisonProvider(userId), (_, __) {});
+        for (var i = 0; i < 5; i++) {
+          await Future<void>.delayed(Duration.zero);
+        }
+
+        final value = container.read(seasonComparisonProvider(userId));
+        expect(value.hasValue, isTrue);
+        final comparison = value.requireValue;
+        expect(comparison?.previous.year, 2024);
+        expect(comparison?.current.year, 2025);
+        expect(comparison?.previous.fertilityRate, closeTo(0.5, 0.0001));
+        expect(comparison?.current.fertilityRate, closeTo(1.0, 0.0001));
+        expect(comparison?.current.liveChicks, 1);
+      },
+    );
+
+    test(
+      'seasonComparisonProvider returns null with fewer than 2 seasons',
+      () async {
+        final container = _container(
+          birds: const [],
+          pairs: const [],
+          healthRecords: const [],
+          eggs: [_egg(id: 'e1', layDate: DateTime.utc(2025, 3, 1))],
+          chicks: const [],
+        );
+        addTearDown(container.dispose);
+        container.listen(seasonComparisonProvider(userId), (_, __) {});
+        for (var i = 0; i < 5; i++) {
+          await Future<void>.delayed(Duration.zero);
+        }
+
+        final value = container.read(seasonComparisonProvider(userId));
+        expect(value.hasValue, isTrue);
+        expect(value.requireValue, isNull);
+      },
+    );
 
     test(
       'healthRecordTypeDistributionProvider uses month-aligned current period',
@@ -435,31 +744,40 @@ void main() {
     test(
       'quickInsightsProvider keeps egg insight neutral when trend is loading',
       () async {
-        final now = DateTime.now();
+        // `quickInsightsProvider` now reads DAO-aggregated period stats
+        // directly, not the full eggs/chicks streams — the DAO mocks return
+        // the already-filtered result a real SQL query would produce (date
+        // filtering itself is covered by
+        // test/data/local/database/daos/eggs_dao_test.dart and
+        // chicks_dao_test.dart).
+        final eggsDao = MockEggsDao();
+        when(() => eggsDao.watchPeriodEggStats(any(), any(), any())).thenAnswer(
+          (_) => Stream.value((total: 1, fertile: 1, infertile: 0)),
+        );
+        final chicksDao = MockChicksDao();
+        when(
+          () => chicksDao.watchPeriodChickStats(any(), any(), any()),
+        ).thenAnswer((_) => Stream.value((total: 0, deceased: 0)));
+
         final container = ProviderContainer(
           overrides: [
-            eggsStreamProvider(userId).overrideWith(
-              (_) => Stream.value([
-                _egg(id: 'e1', layDate: now, status: EggStatus.fertile),
-              ]),
-            ),
-            chicksStreamProvider(
+            eggsDaoProvider.overrideWithValue(eggsDao),
+            chicksDaoProvider.overrideWithValue(chicksDao),
+            activeBreedingCountProvider(
               userId,
-            ).overrideWith((_) => Stream.value(<Chick>[])),
-            breedingPairsStreamProvider(
-              userId,
-            ).overrideWith((_) => Stream.value(<BreedingPair>[])),
+            ).overrideWith((_) => Stream.value(0)),
             trendStatsProvider(userId).overrideWithValue(const AsyncLoading()),
           ],
         );
         addTearDown(container.dispose);
 
-        container.listen(eggsStreamProvider(userId), (_, __) {});
-        await container.read(eggsStreamProvider(userId).future);
-        container.listen(chicksStreamProvider(userId), (_, __) {});
-        await container.read(chicksStreamProvider(userId).future);
-        container.listen(breedingPairsStreamProvider(userId), (_, __) {});
-        await container.read(breedingPairsStreamProvider(userId).future);
+        container.listen(quickInsightsProvider(userId), (_, __) {});
+        // 3 independent Stream.value-backed providers (eggStats, chickStats,
+        // activeBreedingCount) need to settle — more microtask turns than a
+        // single-dependency provider needs.
+        for (var i = 0; i < 5; i++) {
+          await Future<void>.delayed(Duration.zero);
+        }
 
         final value = container.read(quickInsightsProvider(userId));
         expect(value.hasValue, isTrue);
@@ -471,130 +789,113 @@ void main() {
   });
 
   group('quickInsightsProvider period-aware', () {
-    test('only includes eggs from current period', () async {
-      final now = DateTime.now();
-      final inPeriod = DateTime(now.year, now.month - 1, 15);
-      final outOfPeriod = DateTime(now.year, now.month - 5, 15);
+    // `quickInsightsProvider` now reads DAO-aggregated period stats
+    // directly (`eggsDaoProvider.watchPeriodEggStats` /
+    // `chicksDaoProvider.watchPeriodChickStats`), not the full entity
+    // streams — the mocks below return the already-filtered result a real
+    // SQL query would produce for the requested period. Actual date-range
+    // filtering is covered by the DAO-level tests
+    // (eggs_dao_test.dart / chicks_dao_test.dart); these tests verify the
+    // insight-selection logic given those stats.
+    ProviderContainer makeInsightsContainer({
+      required ({int total, int fertile, int infertile}) eggStats,
+      required ({int total, int deceased}) chickStats,
+      int activeBreedings = 0,
+      StatsPeriod period = StatsPeriod.threeMonths,
+    }) {
+      final eggsDao = MockEggsDao();
+      when(
+        () => eggsDao.watchPeriodEggStats(any(), any(), any()),
+      ).thenAnswer((_) => Stream.value(eggStats));
+      final chicksDao = MockChicksDao();
+      when(
+        () => chicksDao.watchPeriodChickStats(any(), any(), any()),
+      ).thenAnswer((_) => Stream.value(chickStats));
 
       final container = ProviderContainer(
         overrides: [
-          eggsStreamProvider(userId).overrideWith(
-            (_) => Stream.value([
-              _egg(id: 'in', layDate: inPeriod, status: EggStatus.fertile),
-              _egg(id: 'out', layDate: outOfPeriod, status: EggStatus.fertile),
-            ]),
-          ),
-          chicksStreamProvider(
+          eggsDaoProvider.overrideWithValue(eggsDao),
+          chicksDaoProvider.overrideWithValue(chicksDao),
+          activeBreedingCountProvider(
             userId,
-          ).overrideWith((_) => Stream.value(<Chick>[])),
-          breedingPairsStreamProvider(
-            userId,
-          ).overrideWith((_) => Stream.value(<BreedingPair>[])),
+          ).overrideWith((_) => Stream.value(activeBreedings)),
           trendStatsProvider(userId).overrideWithValue(const AsyncLoading()),
         ],
       );
-      addTearDown(container.dispose);
-      container.read(statsPeriodProvider.notifier).state =
-          StatsPeriod.threeMonths;
+      container.read(statsPeriodProvider.notifier).state = period;
+      return container;
+    }
 
-      container.listen(eggsStreamProvider(userId), (_, __) {});
-      await container.read(eggsStreamProvider(userId).future);
-      container.listen(chicksStreamProvider(userId), (_, __) {});
-      await container.read(chicksStreamProvider(userId).future);
-      container.listen(breedingPairsStreamProvider(userId), (_, __) {});
-      await container.read(breedingPairsStreamProvider(userId).future);
+    test('only includes eggs from current period', () async {
+      // Mock represents the SQL-filtered result: 1 fertile egg in-window,
+      // the out-of-window egg already excluded by the DAO query.
+      final container = makeInsightsContainer(
+        eggStats: (total: 1, fertile: 1, infertile: 0),
+        chickStats: (total: 0, deceased: 0),
+      );
+      addTearDown(container.dispose);
+
+      container.listen(quickInsightsProvider(userId), (_, __) {});
+      for (var i = 0; i < 5; i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
 
       final value = container.read(quickInsightsProvider(userId));
       expect(value.hasValue, isTrue);
       final insights = value.requireValue;
-      // 1 fertile egg in 3-month window → egg insight + fertility insight
-      // Out-of-period egg should NOT be counted
+      // 1 fertile egg → egg insight (fertility insight needs an infertile
+      // count too, so just egg production insight fires here)
       expect(insights.length, greaterThanOrEqualTo(1));
       expect(insights.length, lessThanOrEqualTo(2));
     });
 
     test('12-month period produces more insights than 3-month', () async {
-      final now = DateTime.now();
-      final recent = DateTime(now.year, now.month - 1, 15);
-      final older = DateTime(now.year, now.month - 5, 15);
-
-      ProviderContainer makeContainer(StatsPeriod period) {
-        final c = ProviderContainer(
-          overrides: [
-            eggsStreamProvider(userId).overrideWith(
-              (_) => Stream.value([
-                _egg(id: 'recent', layDate: recent, status: EggStatus.fertile),
-                _egg(id: 'older', layDate: older, status: EggStatus.infertile),
-              ]),
-            ),
-            chicksStreamProvider(
-              userId,
-            ).overrideWith((_) => Stream.value(<Chick>[])),
-            breedingPairsStreamProvider(
-              userId,
-            ).overrideWith((_) => Stream.value(<BreedingPair>[])),
-            trendStatsProvider(userId).overrideWithValue(const AsyncLoading()),
-          ],
-        );
-        addTearDown(c.dispose);
-        c.read(statsPeriodProvider.notifier).state = period;
-        return c;
-      }
-
-      // 3-month window → only recent egg (fertile) → egg insight only
-      final container3m = makeContainer(StatsPeriod.threeMonths);
+      // 3-month window: only the fertile egg is in range (no infertile
+      // counterpart yet) → egg insight only, no fertility-rate insight.
+      final container3m = makeInsightsContainer(
+        eggStats: (total: 1, fertile: 1, infertile: 0),
+        chickStats: (total: 0, deceased: 0),
+        period: StatsPeriod.threeMonths,
+      );
       addTearDown(container3m.dispose);
-      container3m.listen(eggsStreamProvider(userId), (_, __) {});
-      await container3m.read(eggsStreamProvider(userId).future);
-      container3m.listen(chicksStreamProvider(userId), (_, __) {});
-      await container3m.read(chicksStreamProvider(userId).future);
-      container3m.listen(breedingPairsStreamProvider(userId), (_, __) {});
-      await container3m.read(breedingPairsStreamProvider(userId).future);
-
+      container3m.listen(quickInsightsProvider(userId), (_, __) {});
+      for (var i = 0; i < 5; i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
       final insights3m = container3m
           .read(quickInsightsProvider(userId))
           .requireValue;
 
-      // 12-month window → both eggs → egg insight + fertility insight
-      final container12m = makeContainer(StatsPeriod.twelveMonths);
+      // 12-month window: both eggs in range → egg insight + fertility
+      // insight (fertile + infertile = checked > 0).
+      final container12m = makeInsightsContainer(
+        eggStats: (total: 2, fertile: 1, infertile: 1),
+        chickStats: (total: 0, deceased: 0),
+        period: StatsPeriod.twelveMonths,
+      );
       addTearDown(container12m.dispose);
-      container12m.listen(eggsStreamProvider(userId), (_, __) {});
-      await container12m.read(eggsStreamProvider(userId).future);
-      container12m.listen(chicksStreamProvider(userId), (_, __) {});
-      await container12m.read(chicksStreamProvider(userId).future);
-      container12m.listen(breedingPairsStreamProvider(userId), (_, __) {});
-      await container12m.read(breedingPairsStreamProvider(userId).future);
-
+      container12m.listen(quickInsightsProvider(userId), (_, __) {});
+      for (var i = 0; i < 5; i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
       final insights12m = container12m
           .read(quickInsightsProvider(userId))
           .requireValue;
 
-      // 12m should have more insights because both eggs are in range,
-      // giving a fertility rate insight (fertile + infertile = checked)
       expect(insights12m.length, greaterThanOrEqualTo(insights3m.length));
     });
 
     test('shows no-data fallback when no entities in period', () async {
-      final container = ProviderContainer(
-        overrides: [
-          eggsStreamProvider(userId).overrideWith((_) => Stream.value(<Egg>[])),
-          chicksStreamProvider(
-            userId,
-          ).overrideWith((_) => Stream.value(<Chick>[])),
-          breedingPairsStreamProvider(
-            userId,
-          ).overrideWith((_) => Stream.value(<BreedingPair>[])),
-          trendStatsProvider(userId).overrideWithValue(const AsyncLoading()),
-        ],
+      final container = makeInsightsContainer(
+        eggStats: (total: 0, fertile: 0, infertile: 0),
+        chickStats: (total: 0, deceased: 0),
       );
       addTearDown(container.dispose);
 
-      container.listen(eggsStreamProvider(userId), (_, __) {});
-      await container.read(eggsStreamProvider(userId).future);
-      container.listen(chicksStreamProvider(userId), (_, __) {});
-      await container.read(chicksStreamProvider(userId).future);
-      container.listen(breedingPairsStreamProvider(userId), (_, __) {});
-      await container.read(breedingPairsStreamProvider(userId).future);
+      container.listen(quickInsightsProvider(userId), (_, __) {});
+      for (var i = 0; i < 5; i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
 
       final value = container.read(quickInsightsProvider(userId));
       expect(value.hasValue, isTrue);
@@ -604,45 +905,22 @@ void main() {
     });
 
     test('chick survival insight uses period filter', () async {
-      final now = DateTime.now();
-      final inPeriod = DateTime(now.year, now.month - 1, 10);
-      final outOfPeriod = DateTime(now.year, now.month - 8, 10);
-
-      final container = ProviderContainer(
-        overrides: [
-          eggsStreamProvider(userId).overrideWith((_) => Stream.value(<Egg>[])),
-          chicksStreamProvider(userId).overrideWith(
-            (_) => Stream.value([
-              _chick(id: 'c-in', hatchDate: inPeriod),
-              _chick(
-                id: 'c-out',
-                hatchDate: outOfPeriod,
-                health: ChickHealthStatus.deceased,
-              ),
-            ]),
-          ),
-          breedingPairsStreamProvider(
-            userId,
-          ).overrideWith((_) => Stream.value(<BreedingPair>[])),
-          trendStatsProvider(userId).overrideWithValue(const AsyncLoading()),
-        ],
+      // Mock represents the SQL-filtered result: 1 healthy chick in-window;
+      // the out-of-window deceased chick already excluded by the DAO query.
+      final container = makeInsightsContainer(
+        eggStats: (total: 0, fertile: 0, infertile: 0),
+        chickStats: (total: 1, deceased: 0),
       );
       addTearDown(container.dispose);
-      container.read(statsPeriodProvider.notifier).state =
-          StatsPeriod.threeMonths;
 
-      container.listen(eggsStreamProvider(userId), (_, __) {});
-      await container.read(eggsStreamProvider(userId).future);
-      container.listen(chicksStreamProvider(userId), (_, __) {});
-      await container.read(chicksStreamProvider(userId).future);
-      container.listen(breedingPairsStreamProvider(userId), (_, __) {});
-      await container.read(breedingPairsStreamProvider(userId).future);
+      container.listen(quickInsightsProvider(userId), (_, __) {});
+      for (var i = 0; i < 5; i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
 
       final value = container.read(quickInsightsProvider(userId));
       expect(value.hasValue, isTrue);
       final insights = value.requireValue;
-      // Only in-period healthy chick → positive sentiment for chick insight
-      // Deceased chick is out of period and should not affect the result
       final hasPositiveInsight = insights.any(
         (i) => i.sentiment == InsightSentiment.positive,
       );
@@ -716,10 +994,13 @@ void main() {
       await container.read(birdsStreamProvider(userId).future);
       container.listen(breedingPairsStreamProvider(userId), (_, __) {});
       await container.read(breedingPairsStreamProvider(userId).future);
-      container.listen(eggsStreamProvider(userId), (_, __) {});
-      await container.read(eggsStreamProvider(userId).future);
-      container.listen(chicksStreamProvider(userId), (_, __) {});
-      await container.read(chicksStreamProvider(userId).future);
+      // eggs/chicks period stats are now DAO-aggregated private
+      // StreamProviders, not individually awaitable — settle them via the
+      // public provider.
+      container.listen(trendStatsProvider(userId), (_, __) {});
+      for (var i = 0; i < 5; i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
 
       final value = container.read(trendStatsProvider(userId));
       expect(value.hasValue, isTrue);
@@ -759,12 +1040,15 @@ void main() {
             StatsPeriod.threeMonths;
         container.listen(breedingPairsStreamProvider(userId), (_, __) {});
         await container.read(breedingPairsStreamProvider(userId).future);
-        container.listen(eggsStreamProvider(userId), (_, __) {});
-        await container.read(eggsStreamProvider(userId).future);
-        container.listen(chicksStreamProvider(userId), (_, __) {});
-        await container.read(chicksStreamProvider(userId).future);
         container.listen(birdsStreamProvider(userId), (_, __) {});
         await container.read(birdsStreamProvider(userId).future);
+        // eggs/chicks period stats are now DAO-aggregated private
+        // StreamProviders, not individually awaitable — settle them via
+        // the public provider.
+        container.listen(trendStatsProvider(userId), (_, __) {});
+        for (var i = 0; i < 5; i++) {
+          await Future<void>.delayed(Duration.zero);
+        }
 
         final value = container.read(trendStatsProvider(userId));
         expect(value.hasValue, isTrue);

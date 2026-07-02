@@ -1,19 +1,25 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
+import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/chicks_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
-import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
-import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
-import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/entity_count_providers.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_trend_providers.dart';
 
 const _userId = 'user-1';
+
+class _MockEggsDao extends Mock implements EggsDao {}
+
+class _MockChicksDao extends Mock implements ChicksDao {}
 
 Egg _egg({
   required String id,
@@ -60,20 +66,60 @@ BreedingPair _pair({
   );
 }
 
-/// Creates a container with overridden stream providers and a loading trend.
+/// Creates a container with DAO-mocked period stats and a (possibly
+/// loading) trend override. `quickInsightsProvider` now reads
+/// `eggsDaoProvider.watchPeriodEggStats` / `chicksDaoProvider
+/// .watchPeriodChickStats` / `activeBreedingCountProvider` directly
+/// (SQL-aggregate) instead of the full eggs/chicks/pairs streams — the
+/// mocks below compute the same aggregate a real SQL query would produce
+/// for these fixtures (all dated "now", so always within any default
+/// period window; period-boundary filtering itself is covered by
+/// test/data/local/database/daos/eggs_dao_test.dart and
+/// chicks_dao_test.dart).
 ProviderContainer _container({
   List<Egg> eggs = const [],
   List<Chick> chicks = const [],
   List<BreedingPair> pairs = const [],
   AsyncValue<TrendStats>? trendOverride,
 }) {
+  final eggsDao = _MockEggsDao();
+  final fertile = eggs
+      .where(
+        (e) => e.status == EggStatus.fertile || e.status == EggStatus.hatched,
+      )
+      .length;
+  final infertile = eggs.where((e) => e.status == EggStatus.infertile).length;
+  when(() => eggsDao.watchPeriodEggStats(any(), any(), any())).thenAnswer(
+    (_) => Stream.value((
+      total: eggs.length,
+      fertile: fertile,
+      infertile: infertile,
+    )),
+  );
+
+  final chicksDao = _MockChicksDao();
+  final deceased = chicks
+      .where((c) => c.healthStatus == ChickHealthStatus.deceased)
+      .length;
+  when(
+    () => chicksDao.watchPeriodChickStats(any(), any(), any()),
+  ).thenAnswer((_) => Stream.value((total: chicks.length, deceased: deceased)));
+
+  final activePairCount = pairs
+      .where(
+        (p) =>
+            p.status == BreedingStatus.active ||
+            p.status == BreedingStatus.ongoing,
+      )
+      .length;
+
   return ProviderContainer(
     overrides: [
-      eggsStreamProvider(_userId).overrideWith((_) => Stream.value(eggs)),
-      chicksStreamProvider(_userId).overrideWith((_) => Stream.value(chicks)),
-      breedingPairsStreamProvider(
+      eggsDaoProvider.overrideWithValue(eggsDao),
+      chicksDaoProvider.overrideWithValue(chicksDao),
+      activeBreedingCountProvider(
         _userId,
-      ).overrideWith((_) => Stream.value(pairs)),
+      ).overrideWith((_) => Stream.value(activePairCount)),
       trendStatsProvider(
         _userId,
       ).overrideWithValue(trendOverride ?? const AsyncLoading()),
@@ -81,13 +127,13 @@ ProviderContainer _container({
   );
 }
 
-Future<void> _awaitStreams(ProviderContainer container) async {
-  container.listen(eggsStreamProvider(_userId), (_, __) {});
-  await container.read(eggsStreamProvider(_userId).future);
-  container.listen(chicksStreamProvider(_userId), (_, __) {});
-  await container.read(chicksStreamProvider(_userId).future);
-  container.listen(breedingPairsStreamProvider(_userId), (_, __) {});
-  await container.read(breedingPairsStreamProvider(_userId).future);
+Future<void> _awaitInsights(ProviderContainer container) async {
+  container.listen(quickInsightsProvider(_userId), (_, __) {});
+  // 3 independent Stream.value-backed providers (eggStats, chickStats,
+  // activeBreedingCount) need to settle.
+  for (var i = 0; i < 5; i++) {
+    await Future<void>.delayed(Duration.zero);
+  }
 }
 
 void main() {
@@ -102,7 +148,7 @@ void main() {
         trendOverride: const AsyncData(TrendStats(eggsTrend: 25)),
       );
       addTearDown(container.dispose);
-      await _awaitStreams(container);
+      await _awaitInsights(container);
 
       final value = container.read(quickInsightsProvider(_userId));
       expect(value.hasValue, isTrue);
@@ -120,7 +166,7 @@ void main() {
         trendOverride: const AsyncData(TrendStats(eggsTrend: -30)),
       );
       addTearDown(container.dispose);
-      await _awaitStreams(container);
+      await _awaitInsights(container);
 
       final value = container.read(quickInsightsProvider(_userId));
       final insights = value.requireValue;
@@ -136,7 +182,7 @@ void main() {
         eggs: [_egg(id: 'e1', layDate: now, status: EggStatus.laid)],
       );
       addTearDown(container.dispose);
-      await _awaitStreams(container);
+      await _awaitInsights(container);
 
       final value = container.read(quickInsightsProvider(_userId));
       final insights = value.requireValue;
@@ -153,7 +199,7 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-      await _awaitStreams(container);
+      await _awaitInsights(container);
 
       final value = container.read(quickInsightsProvider(_userId));
       final insights = value.requireValue;
@@ -174,7 +220,7 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-      await _awaitStreams(container);
+      await _awaitInsights(container);
 
       final value = container.read(quickInsightsProvider(_userId));
       final insights = value.requireValue;
@@ -196,7 +242,7 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-      await _awaitStreams(container);
+      await _awaitInsights(container);
 
       final value = container.read(quickInsightsProvider(_userId));
       final insights = value.requireValue;
@@ -217,7 +263,7 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-      await _awaitStreams(container);
+      await _awaitInsights(container);
 
       final value = container.read(quickInsightsProvider(_userId));
       final insights = value.requireValue;
@@ -236,7 +282,7 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-      await _awaitStreams(container);
+      await _awaitInsights(container);
 
       final value = container.read(quickInsightsProvider(_userId));
       final insights = value.requireValue;
@@ -248,7 +294,7 @@ void main() {
     test('no data fallback when all empty', () async {
       final container = _container();
       addTearDown(container.dispose);
-      await _awaitStreams(container);
+      await _awaitInsights(container);
 
       final value = container.read(quickInsightsProvider(_userId));
       expect(value.hasValue, isTrue);
@@ -257,46 +303,60 @@ void main() {
       expect(insights.first.sentiment, InsightSentiment.neutral);
     });
 
-    test('returns loading when streams are loading', () {
+    test('returns loading when streams are loading', () async {
+      final eggsDao = _MockEggsDao();
+      // Never emits — stays loading.
+      when(
+        () => eggsDao.watchPeriodEggStats(any(), any(), any()),
+      ).thenAnswer((_) => const Stream.empty());
+      final chicksDao = _MockChicksDao();
+      when(
+        () => chicksDao.watchPeriodChickStats(any(), any(), any()),
+      ).thenAnswer((_) => Stream.value((total: 0, deceased: 0)));
+
       final container = ProviderContainer(
         overrides: [
-          eggsStreamProvider(_userId).overrideWith((_) => const Stream.empty()),
-          chicksStreamProvider(
+          eggsDaoProvider.overrideWithValue(eggsDao),
+          chicksDaoProvider.overrideWithValue(chicksDao),
+          activeBreedingCountProvider(
             _userId,
-          ).overrideWith((_) => Stream.value(<Chick>[])),
-          breedingPairsStreamProvider(
-            _userId,
-          ).overrideWith((_) => Stream.value(<BreedingPair>[])),
+          ).overrideWith((_) => Stream.value(0)),
           trendStatsProvider(_userId).overrideWithValue(const AsyncLoading()),
         ],
       );
       addTearDown(container.dispose);
-      // eggs stream never emits so stays loading
-      container.listen(eggsStreamProvider(_userId), (_, __) {});
+      container.listen(quickInsightsProvider(_userId), (_, __) {});
+      await Future<void>.delayed(Duration.zero);
 
       final value = container.read(quickInsightsProvider(_userId));
       expect(value.isLoading, isTrue);
     });
 
     test('returns error when a stream has error', () async {
+      final eggsDao = _MockEggsDao();
+      when(
+        () => eggsDao.watchPeriodEggStats(any(), any(), any()),
+      ).thenAnswer((_) => Stream.error('egg error'));
+      final chicksDao = _MockChicksDao();
+      when(
+        () => chicksDao.watchPeriodChickStats(any(), any(), any()),
+      ).thenAnswer((_) => Stream.value((total: 0, deceased: 0)));
+
       final container = ProviderContainer(
         overrides: [
-          eggsStreamProvider(
+          eggsDaoProvider.overrideWithValue(eggsDao),
+          chicksDaoProvider.overrideWithValue(chicksDao),
+          activeBreedingCountProvider(
             _userId,
-          ).overrideWith((_) => Stream.error('egg error')),
-          chicksStreamProvider(
-            _userId,
-          ).overrideWith((_) => Stream.value(<Chick>[])),
-          breedingPairsStreamProvider(
-            _userId,
-          ).overrideWith((_) => Stream.value(<BreedingPair>[])),
+          ).overrideWith((_) => Stream.value(0)),
           trendStatsProvider(_userId).overrideWithValue(const AsyncLoading()),
         ],
       );
       addTearDown(container.dispose);
-      container.listen(eggsStreamProvider(_userId), (_, __) {});
-      // Allow the error stream to emit
-      await Future<void>.delayed(Duration.zero);
+      container.listen(quickInsightsProvider(_userId), (_, __) {});
+      for (var i = 0; i < 5; i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
 
       final value = container.read(quickInsightsProvider(_userId));
       expect(value.hasError, isTrue);
@@ -310,7 +370,7 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-      await _awaitStreams(container);
+      await _awaitInsights(container);
 
       final value = container.read(quickInsightsProvider(_userId));
       final insights = value.requireValue;

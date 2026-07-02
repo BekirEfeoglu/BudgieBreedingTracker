@@ -14,7 +14,11 @@ Tüm hesap çıktıları kalıcı kaydedildiğinde `calculationVersion` alanı i
 | Versiyon | Tarih | Değişiklik |
 |----------|-------|-----------|
 | v1 | initial | İlk public Punnett |
-| v2 | 2026-04-08 | Dominant allelic series fix, MUTAVI rate güncellemesi |
+| v2 | 2026-04-09 | Dominant allelic series fix, MUTAVI rate güncellemesi |
+| v3 | 2026-04-19 | Z-kromozom linkage tüm ino_locus allellerine genişletildi (pallid, pearly, texas_clearbody) |
+| v4 | 2026-07-02 | Tam-dominant allelic homozigotlar `(double)` ile etiketlendi; crested × crested artık ayrı ~%25 DF sonucu üretir (DF-lethal doğru işaretlenir) |
+
+Güncel değer: `GeneticsConstants.calculationVersion = 4`. `GeneticsHistory.isStale` bu sabite göre eski kayıtları işaretler; sabit değiştiğinde `genetics_constants_test.dart` literal assertion'ı ve `genetics_history_model_test.dart` isStale testleri güncellenmeli.
 
 Eski kayıtlar göründüğünde UI rozetle uyarır ("hesap eski sürüm, yeniden çalıştır"). Migration ile zorla yeniden hesaplama YOK — kullanıcı veri bütünlüğü için manuel yeniden hesap tetikler.
 
@@ -27,7 +31,12 @@ Eski kayıtlar göründüğünde UI rozetle uyarır ("hesap eski sürüm, yenide
 ## Allelic Series
 - Aynı locus üzerinde 2+ alel: dominans hiyerarşisi `MutationDatabase` `dominanceRank` ile belirlenir
 - Heterozigot kombinasyon: yüksek rank dominant fenotipte görünür, düşük rank carrier
-- 2026-04-08 audit'inde dominant allelic series bug'ı düzeltildi — yeni hesap path'i regression test gerektirir
+- 2026-04-09 audit'inde dominant allelic series bug'ı düzeltildi — yeni hesap path'i regression test gerektirir
+- Tam-dominant (`autosomalDominant`) allelic mutasyonların çift dozu `(double)` ile
+  etiketlenir (SF ile aynı fenotip adını paylaştıkları için gruplamada çökmesinler);
+  bu, crested gibi DF-lethal allellerin `offspringHomozygous` scope ile doğru
+  yakalanmasını sağlar. Incomplete-dominant blue-series allelleri hariçtir (kendi
+  compound naming'leri var). `_RawResult.doubleFactorIds` bu çift dozu taşır.
 
 ## Sex-Linked Linkage (Z Chromosome)
 Z kromozomu üzerinde gen sırası: **O — C — I — Slate**
@@ -44,30 +53,57 @@ Z kromozomu üzerinde gen sırası: **O — C — I — Slate**
 - Baba iki linked mutasyonu heterozigot taşıyorsa `inheritance_linked_pair.dart` ile linked pair hesabı çalışır
 - Tightest linkage öncelik kazanır (en küçük cM)
 - Coupling (carrier): iki mutasyon aynı kromozomda; Repulsion (split): farklı kromozomlarda
-- Kullanıcıya phase seçimi sunulur (UI'da explicit checkbox)
+- Phase, mutasyon başına 3-durumlu allele state toggle'ından **örtük** çıkarılır:
+  her iki linked mutasyon `split` durumundaysa repulsion, aksi halde coupling
+  (`inheritance_linked_pair.dart`). **Ayrı/explicit bir "faz seç" UI kontrolü
+  YOKTUR** — bilinen bir UX boşluğu (bkz. Anti-Patterns #6). İki linked mutasyon
+  seçildiğinde faz seçimi netleştiren bir kontrol/tooltip eklemek açık iş.
 
 ## Lethal Combinations
-- `lethal_combination_database.dart` çakışan kombinasyonları işaretler (örn. dominant pied + spangle çift dozda fatal)
-- Engine bu kombinasyonları çıktıda `isLethal: true` ile etiketler — UI uyarı banner gösterir
-- Lethal kombinasyon olasılığı toplam içinde gösterilir AMA "canlı yavru" yüzdesinden ayrılır
+- `lethal_combination_database.dart` bilinen lethal/semi-lethal/sub-vital
+  kombinasyonları tanımlar; her biri bir `LethalScope` ile hangi katmanın
+  tetiklediğini belirtir:
+  - `parentBothVisual`: her iki ebeveyn de tek gerekli mutasyonu görsel taşır
+    (örn. Ino × Ino) → tüm yavrular etkilenmiş sayılır
+  - `offspringHomozygous`: yavru çift doz taşır (`doubleFactorIds` üzerinden) —
+    DF Spangle, DF Dominant Pied, Feather Duster, **Crested** (2026-07-02'de
+    `parentAnyVisual`'dan bu scope'a taşındı; artık yalnızca gerçek DF ~%25
+    alt kümesi işaretlenir, tüm crested yavruları değil)
+  - `offspringVisual`: yavru tüm gerekli mutasyonları görsel taşır
+- Tespit `ViabilityAnalyzer` (`viability_analyzer.dart`) tarafından fenotipler
+  üretildikten SONRA çalışır — engine'de `isLethal` bool'u YOKTUR. Sonuç
+  `LethalAnalysisResult{warnings, highestSeverity, totalAffectedProbability}`.
+- `totalAffectedProbability` etkilenen yavru olasılığını ayrı gösterir; toplam
+  olasılıkla karıştırılmaz (her yavru en yüksek etkiyle bir kez sayılır).
+- UI zenginleştirmesi `enrichedOffspringResultsProvider` ile yapılır
+  (`OffspringResult.lethalCombinationIds` badge için doldurulur).
 
 ```dart
-// UI'da lethal göstermenin doğru yolu
-final viable = results.where((r) => !r.isLethal).toList();
-final viablePercent = viable.fold(0.0, (sum, r) => sum + r.probability);
-final lethalPercent = 1.0 - viablePercent;
+// Lethal analizi ViabilityAnalyzer ile yapılır (isLethal bool'u yok):
+final analysis = const ViabilityAnalyzer().analyze(
+  fatherMutations: fatherVisualIds,
+  motherMutations: motherVisualIds,
+  offspringResults: results,
+);
+if (analysis.hasWarnings) {
+  // analysis.totalAffectedProbability → etkilenen % (canlı yavru yüzdesinden ayrı)
+}
 ```
 
 ## Inbreeding Coefficient
 - `inbreeding_calculator.dart` Wright's coefficient F hesabı
-- Pedigree depth: max 5 nesil (performans + veri yokluğu)
+- Pedigree depth: genealogy ekranında kullanıcı ayarlanabilir 3-8 nesil (varsayılan 5, `pedigreeDepthProvider`, `SharedPreferences`'a persist edilir); breeding çiftleştirme kontrolü (`breeding_form_providers.dart`) tüm kuş listesini geçer, tek sınır `InbreedingCalculator`'ın kendi iç güvenlik sabiti `GeneticsConstants.maxAncestorDepth` (10 nesil)
 - `F > 0.0625` (first cousin equivalent) UI uyarı eşiği
 - `F > 0.25` (sibling) blocking warning + premium kullanıcı override
 
 ## Reverse Calculator
 - `reverse_calculator.dart` istenen fenotipten ebeveyn kombinasyonu önerir
-- Genetik mantık aynı, ters yönlü çalışır
-- Çıktı sıralaması: olasılık + ebeveyn sayısı (az ebeveyn tercih)
+- Genetik mantık aynı, ters yönlü: her aday kombinasyon gerçek
+  `MendelianCalculator.calculateFromGenotypes` ile doğrulanır (heuristic skor YOK)
+- Çıktı sıralaması: `maxProbability` azalan; ebeveyn-sayısı tie-break henüz
+  implement edilmemiştir
+- Sonuç sınırı: `GeneticsConstants.reverseMaxDisplayResults` (25), calculator
+  katmanında uygulanır (sadece UI'da değil)
 
 ## Epistasis Engine
 - `epistasis_engine.dart` mutasyon etkileşimlerini handle eder (modifier, interaction, compound)
@@ -81,9 +117,10 @@ final lethalPercent = 1.0 - viablePercent;
 - Çıktı caching YOK — engine pure function, deterministik
 
 ## Testing
-- Unit: her inheritance pattern (`inheritance_simple`, `allelic_series`, `linked_pair`, `sex_linked`) ayrı test dosyası
-- Regression: 62+ test 2026-04-08 audit sonrası — dominant series fix için baseline
-- MUTAVI rehberindeki örnekler ground truth (örnek: "Slate Hen × Normal Cock" → beklenen olasılık tablosu)
+- Unit: her inheritance pattern (`allelic_series`, `linked_pair`, `sex_linked`, `genotype`) ayrı test dosyası
+- Regression: `test/domain/services/genetics/` altında 930+ test (2026-07-02 itibarıyla) — dominant series fix, linkage phase, lethal DF ve double-factor tagging için baseline
+- Linkage: 6 çiftin tamamı için coupling + repulsion `closeTo` assertion'ları (`genetics_linkage_test.dart`)
+- Lethal: her lethal pair için explicit test; DF-detection `genetics_integration_test.dart` içinde gerçek motor üzerinden doğrulanır
 - Lethal kombinasyon: her bilinen lethal pair için explicit test
 - Reverse calculator: bilinen fenotip→ebeveyn senaryolarıyla
 
@@ -109,7 +146,7 @@ test('slate-ino linked pair produces correct ratios', () {
 - Olasılık gösterimi: yüzde + kesirsel (`25% (1:4)`) — kullanıcı tercihine göre toggle
 - Fenotip rengi: phenotype palette istisna (theme dışı, biyolojik doğruluk önceliği)
 - Inbreeding uyarısı: confidence threshold gibi — kullanıcı kararı için bilgilendirme, gate değil
-- Reverse calculator önerileri max 10 sonuç (UI scroll budget)
+- Reverse calculator önerileri `GeneticsConstants.reverseMaxDisplayResults` (25) ile sınırlı
 
 ## Anti-Patterns
 1. MUTAVI rehberini override eden hardcoded rate (rehber tek kaynak)

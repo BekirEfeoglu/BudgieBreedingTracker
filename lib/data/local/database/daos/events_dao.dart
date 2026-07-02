@@ -188,4 +188,18 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
             .get();
     return rows.map((r) => r.toModel()).toList();
   }
+
+  /// Returns events linked to any of the given incubation ids, including
+  /// already soft-deleted rows. Used before a hard-delete of the parent
+  /// incubation: a soft-deleted event still has its `incubationId` FK
+  /// column populated and would otherwise block the incubation delete.
+  Future<List<Event>> getByIncubationIdsIncludingDeleted(
+    List<String> incubationIds,
+  ) async {
+    if (incubationIds.isEmpty) return const <Event>[];
+    final rows = await (select(
+      eventsTable,
+    )..where((t) => t.incubationId.isIn(incubationIds))).get();
+    return rows.map((r) => r.toModel()).toList();
+  }
 }

@@ -14,7 +14,6 @@ part 'inheritance_allelic_series.dart';
 part 'inheritance_linked_pair.dart';
 part 'inheritance_genotype.dart';
 part 'inheritance_genotype_sex_linked.dart';
-part 'inheritance_simple.dart';
 part 'inheritance_combiner.dart';
 part 'inheritance_combiner_helpers.dart';
 part 'mendelian_calculator_punnett.dart';

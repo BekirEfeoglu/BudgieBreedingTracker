@@ -271,8 +271,12 @@ class _WeightCostRow extends StatelessWidget {
             textInputAction: TextInputAction.next,
             validator: (value) {
               if (value != null && value.isNotEmpty) {
-                if (double.tryParse(value.trim()) == null) {
+                final parsed = double.tryParse(value.trim());
+                if (parsed == null) {
                   return 'chicks.invalid_number'.tr();
+                }
+                if (parsed < 0) {
+                  return 'validation.invalid_price'.tr();
                 }
               }
               return null;

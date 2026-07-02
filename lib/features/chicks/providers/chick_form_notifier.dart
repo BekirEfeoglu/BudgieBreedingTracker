@@ -133,7 +133,18 @@ class ChickFormNotifier extends Notifier<ChickFormState>
     );
     try {
       final repo = ref.read(chickRepositoryProvider);
-      await repo.save(chick.copyWith(updatedAt: DateTime.now()));
+      // Reviving a chick (health status edited away from `deceased`) must
+      // clear deathDate too. The health-status selector only blocks picking
+      // `deceased` inline — it does not stop leaving it — so without this,
+      // a chick edited back to healthy/sick/unknown keeps a stale deathDate
+      // and ends up in a contradictory "alive but has a death date" state.
+      final revived =
+          previous?.healthStatus == ChickHealthStatus.deceased &&
+          chick.healthStatus != ChickHealthStatus.deceased;
+      final toSave = revived
+          ? chick.copyWith(deathDate: null, updatedAt: DateTime.now())
+          : chick.copyWith(updatedAt: DateTime.now());
+      await repo.save(toSave);
       var sideEffectError = false;
 
       // Reschedule banding reminders if bandingDay changed

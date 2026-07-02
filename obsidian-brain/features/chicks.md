@@ -29,8 +29,23 @@ Manual chick creation is also supported.
 
 ## Detail UX
 
-- Detail shows weight tracking from existing growth measurements.
+- Detail shows weight tracking from existing growth measurements (read-only —
+  there is currently no UI to add a new measurement anywhere in the app).
 - Weaning prompts to save the chick as a Bird through the existing promotion flow.
+- `healthStatus == deceased` and `deathDate` must stay in sync: editing a
+  deceased chick's status back to healthy/sick/unknown via the form clears
+  `deathDate` (`ChickFormNotifier.updateChick`) — otherwise the row ends up
+  "alive but has a death date".
+- `promoteToBird` resolves species transitively via `eggId -> incubation ->
+  breeding pair`; a manually-created chick (no `eggId`) has no species
+  anywhere on `Chick`, so it always promotes to `Species.unknown`.
+
+## Statistics
+
+`chickSurvivalProvider` (healthy/sick/deceased pie chart) is backed by
+`ChicksDao.watchHealthStatusCounts` (SQL `GROUP BY health_status`), not a
+Dart-side walk of the chick list — same SQL-aggregation pattern as
+`watchMonthlyHatched` and `watchUnweanedCount`.
 
 ## Rules
 

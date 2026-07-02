@@ -56,7 +56,6 @@
     "death": "Tod",
     "sale": "Verkauf",
     "continue_confirm": "Möchten Sie fortfahren?",
-    "unknown": "Unbekannt",
     "none": "Keine",
     "view_all": "Alle anzeigen",
     "view": "Anzeigen",
@@ -715,7 +714,6 @@
     "export_personal_data": "Persönliche Daten exportieren",
     "export_personal_data_desc": "Laden Sie Ihre Daten gemäß DSGVO herunter",
     "export_personal_data_confirm": "Alle Ihre persönlichen Daten werden als Datei vorbereitet. Dieser Vorgang kann einige Minuten dauern.",
-    "export_data_started": "Datenexport gestartet",
     "export_data_button": "Exportieren",
     "delete_account": "Konto löschen",
     "delete_account_desc": "Ihr Konto und alle Daten dauerhaft löschen",
@@ -758,7 +756,10 @@
     "just_now": "Gerade eben",
     "minutes_ago": "Vor {} Minuten",
     "hours_ago": "Vor {} Stunden",
-    "days_ago": "Vor {} Tagen"
+    "days_ago": "Vor {} Tagen",
+    "active_sessions_info": "Ihre Sitzung ist auf diesem Gerät aktiv. Aus Sicherheitsgründen können Sie auf anderen Geräten offene Sitzungen beenden, indem Sie sich überall abmelden.",
+    "clear_cache_confirm": "Cache leeren? Temporäre Dateien werden gelöscht; Ihre Daten sind nicht betroffen.",
+    "version_copied": "Versionsinfo kopiert"
   },
   "backup": {
     "title": "Datenexport",
@@ -2405,7 +2406,9 @@
     "retry_local_action": "Lokale Änderung erneut senden",
     "clear_conflict_history": "Verlauf löschen",
     "no_errors": "Alle Daten synchronisiert",
-    "sync_now_action": "Jetzt synchronisieren"
+    "sync_now_action": "Jetzt synchronisieren",
+    "clear_conflict_history_confirm": "Konfliktverlauf endgültig löschen? Dies kann nicht rückgängig gemacht werden.",
+    "detail_load_error": "Sync-Details konnten nicht geladen werden. Bitte erneut versuchen."
   },
   "errors": {
     "unknown": "Ein unerwarteter Fehler ist aufgetreten.",

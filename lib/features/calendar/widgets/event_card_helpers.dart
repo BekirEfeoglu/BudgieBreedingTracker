@@ -41,6 +41,34 @@ Widget eventTypeIconWidget(EventType type, {double size = 20, Color? color}) {
   }
 }
 
+/// Builds the accessible semantic label for a calendar day cell, e.g.
+/// "Pazartesi, 14, 3 etkinlik: kuluçka, yumurta". Screen readers announce
+/// the day number alone otherwise. Shared by the month grid and week view
+/// day cells.
+///
+/// The compact event dots below the day number convey type by color alone,
+/// which a color-blind or screen-reader user can't perceive — the
+/// (deduplicated) event type names are appended so that information isn't
+/// lost.
+String daySemanticLabel({
+  required int dayNumber,
+  required bool isSelected,
+  required List<Event> events,
+}) {
+  var label = isSelected
+      ? 'calendar.day_selected'.tr(args: ['$dayNumber', '${events.length}'])
+      : 'calendar.day_with_events'.tr(
+          args: ['$dayNumber', '${events.length}'],
+        );
+  if (events.isNotEmpty) {
+    final typeNames = events.map((e) => eventTypeLabel(e.type)).toSet().join(
+      ', ',
+    );
+    label = '$label: $typeNames';
+  }
+  return label;
+}
+
 /// Returns a display label for an [EventType].
 String eventTypeLabel(EventType type) {
   return switch (type) {

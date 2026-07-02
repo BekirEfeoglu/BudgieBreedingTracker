@@ -16,6 +16,8 @@ import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/chicks_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/health_records_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
@@ -31,6 +33,10 @@ import 'package:budgie_breeding_tracker/features/statistics/providers/statistics
 import '../helpers/e2e_test_harness.dart';
 
 class _MockHealthRecordsDao extends Mock implements HealthRecordsDao {}
+
+class _MockChicksDao extends Mock implements ChicksDao {}
+
+class _MockEggsDao extends Mock implements EggsDao {}
 
 Future<T> _awaitData<T>(ProviderContainer container, dynamic provider) async {
   final completer = Completer<T>();
@@ -129,6 +135,23 @@ void main() {
     test(
       'GIVEN statistics summary tab WHEN data exists THEN total birds, active breeding, egg counts and fertility ratio are correct',
       () async {
+        // `summaryStatsProvider` now reads `eggsDaoProvider.watchFertilityCount`
+        // / `.watchIncubatingCount` and `chicksDaoProvider.watchHealthStatusCounts`
+        // directly (SQL-aggregate), not the full eggs/chicks streams — mock the
+        // DAOs so the fixture data drives the same observable behavior.
+        final eggsDao = _MockEggsDao();
+        when(
+          () => eggsDao.watchFertilityCount(any()),
+        ).thenAnswer((_) => Stream.value((fertile: 2, infertile: 0)));
+        when(
+          () => eggsDao.watchIncubatingCount(any()),
+        ).thenAnswer((_) => Stream.value(0));
+
+        final chicksDao = _MockChicksDao();
+        when(() => chicksDao.watchHealthStatusCounts(any())).thenAnswer(
+          (_) => Stream.value({ChickHealthStatus.healthy.name: 1}),
+        );
+
         final container = createTestContainer(
           defaultBirdCount: birds.length,
           defaultActiveBreedingCount: 1,
@@ -143,6 +166,8 @@ void main() {
             healthRecordsStreamProvider.overrideWith(
               (_, __) => Stream.value(health),
             ),
+            eggsDaoProvider.overrideWithValue(eggsDao),
+            chicksDaoProvider.overrideWithValue(chicksDao),
           ],
         );
         addTearDown(container.dispose);
@@ -217,6 +242,19 @@ void main() {
           return Stream.value(counts);
         });
 
+        // `chickSurvivalProvider` now consumes
+        // `chicksDaoProvider.watchHealthStatusCounts` instead of
+        // `chicksStreamProvider` — mock the DAO the same way, grouping the
+        // fixture list by health status name.
+        final chicksDao = _MockChicksDao();
+        when(() => chicksDao.watchHealthStatusCounts(any())).thenAnswer((_) {
+          final counts = <String, int>{};
+          for (final c in chicks) {
+            counts[c.healthStatus.name] = (counts[c.healthStatus.name] ?? 0) + 1;
+          }
+          return Stream.value(counts);
+        });
+
         final container = createTestContainer(
           overrides: [
             healthRecordsStreamProvider.overrideWith(
@@ -224,6 +262,7 @@ void main() {
             ),
             chicksStreamProvider.overrideWith((_, __) => Stream.value(chicks)),
             healthRecordsDaoProvider.overrideWithValue(healthDao),
+            chicksDaoProvider.overrideWithValue(chicksDao),
           ],
         );
         addTearDown(container.dispose);
@@ -247,7 +286,64 @@ void main() {
     test(
       'GIVEN trend tab WHEN 6 month data is loaded THEN trend and quick insight providers return non-empty analysis',
       () async {
+        // `trendStatsProvider`/`quickInsightsProvider` now read
+        // `eggsDaoProvider.watchPeriodEggStats` /
+        // `chicksDaoProvider.watchPeriodChickStats` and
+        // `activeBreedingCountProvider` directly (SQL-aggregate), not the
+        // full eggs/chicks/pairs streams — mock the DAOs so the fixture
+        // data drives the same observable current/previous-period behavior.
+        final eggsDao = _MockEggsDao();
+        when(
+          () => eggsDao.watchPeriodEggStats(any(), any(), any()),
+        ).thenAnswer((invocation) {
+          final from = invocation.positionalArguments[1] as DateTime;
+          final to = invocation.positionalArguments[2] as DateTime;
+          final inRange = eggs.where(
+            (e) => !e.layDate.isBefore(from) && e.layDate.isBefore(to),
+          );
+          final fertile = inRange
+              .where(
+                (e) =>
+                    e.status == EggStatus.fertile ||
+                    e.status == EggStatus.hatched,
+              )
+              .length;
+          final infertile = inRange
+              .where((e) => e.status == EggStatus.infertile)
+              .length;
+          return Stream.value((
+            total: inRange.length,
+            fertile: fertile,
+            infertile: infertile,
+          ));
+        });
+
+        final chicksDao = _MockChicksDao();
+        when(
+          () => chicksDao.watchPeriodChickStats(any(), any(), any()),
+        ).thenAnswer((invocation) {
+          final from = invocation.positionalArguments[1] as DateTime;
+          final to = invocation.positionalArguments[2] as DateTime;
+          final inRange = chicks.where(
+            (c) =>
+                c.hatchDate != null &&
+                !c.hatchDate!.isBefore(from) &&
+                c.hatchDate!.isBefore(to),
+          );
+          final deceased = inRange
+              .where((c) => c.healthStatus == ChickHealthStatus.deceased)
+              .length;
+          return Stream.value((total: inRange.length, deceased: deceased));
+        });
+
         final container = createTestContainer(
+          defaultActiveBreedingCount: pairs
+              .where(
+                (p) =>
+                    p.status == BreedingStatus.active ||
+                    p.status == BreedingStatus.ongoing,
+              )
+              .length,
           overrides: [
             birdsStreamProvider.overrideWith((_, __) => Stream.value(birds)),
             breedingPairsStreamProvider.overrideWith(
@@ -255,6 +351,8 @@ void main() {
             ),
             eggsStreamProvider.overrideWith((_, __) => Stream.value(eggs)),
             chicksStreamProvider.overrideWith((_, __) => Stream.value(chicks)),
+            eggsDaoProvider.overrideWithValue(eggsDao),
+            chicksDaoProvider.overrideWithValue(chicksDao),
           ],
         );
         addTearDown(container.dispose);

@@ -68,22 +68,6 @@ class _DetailContent extends ConsumerWidget {
     // forced day-first regardless of locale convention.
     final dateFormat = DateFormat.yMMMd(context.locale.languageCode);
 
-    ref.listen<HealthRecordFormState>(healthRecordFormStateProvider, (
-      _,
-      state,
-    ) {
-      if (!context.mounted) return;
-      if (state.isSuccess) {
-        ref.read(healthRecordFormStateProvider.notifier).reset();
-        context.pop();
-      }
-      if (state.error != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(state.error!)));
-      }
-    });
-
     return Scaffold(
       appBar: AppBar(
         title: Text(record.title),
@@ -219,8 +203,25 @@ class _DetailContent extends ConsumerWidget {
       confirmLabel: 'common.delete'.tr(),
       isDestructive: true,
     );
-    if (confirmed == true && context.mounted) {
-      ref.read(healthRecordFormStateProvider.notifier).deleteRecord(record.id);
+    if (confirmed != true || !context.mounted) return;
+
+    // Delete is awaited directly (rather than via ref.listen) because this
+    // screen and the pushed form screen both use the same unscoped
+    // healthRecordFormStateProvider — a listen-based pop here would also
+    // fire (and double-pop) when the form screen's own edit-success listener
+    // reacts to the same state transition while both screens are mounted.
+    final notifier = ref.read(healthRecordFormStateProvider.notifier);
+    await notifier.deleteRecord(record.id);
+    if (!context.mounted) return;
+
+    final result = ref.read(healthRecordFormStateProvider);
+    if (result.error != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(result.error!)));
+      return;
     }
+    notifier.reset();
+    context.pop();
   }
 }

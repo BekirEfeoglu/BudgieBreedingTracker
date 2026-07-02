@@ -16,6 +16,7 @@ import 'package:budgie_breeding_tracker/data/repositories/repository_providers.d
 import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/shared/widgets/profile_account.dart';
+import '../providers/export_providers.dart';
 import 'settings_action_tile.dart';
 import 'settings_navigation_tile.dart';
 import 'settings_section_header.dart';
@@ -64,7 +65,7 @@ class PrivacySecuritySection extends ConsumerWidget {
           title: 'settings.export_personal_data'.tr(),
           subtitle: 'settings.export_personal_data_desc'.tr(),
           icon: const AppIcon(AppIcons.export),
-          onTap: () => _showExportDataDialog(context),
+          onTap: () => _showExportDataDialog(context, ref),
         ),
         SettingsNavigationTile(
           title: 'settings.privacy_policy'.tr(),
@@ -122,7 +123,7 @@ class PrivacySecuritySection extends ConsumerWidget {
   void _showPasswordChangeDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (_) => Dialog(
+      builder: (dialogCtx) => Dialog(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: PasswordChangeForm(
@@ -131,8 +132,6 @@ class PrivacySecuritySection extends ConsumerWidget {
                   required String currentPassword,
                   required String newPassword,
                 }) async {
-                  final messenger = ScaffoldMessenger.of(context);
-                  final navigator = Navigator.of(context);
                   try {
                     await ref
                         .read(authActionsProvider)
@@ -140,7 +139,10 @@ class PrivacySecuritySection extends ConsumerWidget {
                           currentPassword: currentPassword,
                           newPassword: newPassword,
                         );
-                    navigator.pop();
+                    // Pop the dialog's own route: popping a captured outer
+                    // navigator could remove the settings screen if the
+                    // dialog was barrier-dismissed during the request.
+                    if (dialogCtx.mounted) Navigator.of(dialogCtx).pop();
                     ActionFeedbackService.show(
                       'settings.password_changed'.tr(),
                     );
@@ -151,10 +153,9 @@ class PrivacySecuritySection extends ConsumerWidget {
                       st,
                     );
                     await Sentry.captureException(e, stackTrace: st);
-                    messenger.showSnackBar(
-                      SnackBar(
-                        content: Text('settings.password_change_error'.tr()),
-                      ),
+                    ActionFeedbackService.show(
+                      'settings.password_change_error'.tr(),
+                      type: ActionFeedbackType.error,
                     );
                   }
                 },
@@ -165,56 +166,31 @@ class PrivacySecuritySection extends ConsumerWidget {
   }
 
   void _showActiveSessionsDialog(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    showDialog(
+    // No per-session listing is available from the backend yet, so the dialog
+    // explains the action honestly instead of rendering a fake device list.
+    showDialog<void>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         title: Text('settings.active_sessions'.tr()),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(LucideIcons.smartphone),
-              title: Text('settings.current_device'.tr()),
-              subtitle: Text('settings.this_device'.tr()),
-              trailing: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: AppSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                ),
-                child: Text(
-                  'settings.active'.tr(),
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onPrimaryContainer,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+        content: Text('settings.active_sessions_info'.tr()),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogCtx).pop(),
             child: Text('common.cancel'.tr()),
           ),
           FilledButton.tonal(
             onPressed: () async {
-              final messenger = ScaffoldMessenger.of(context);
-              final navigator = Navigator.of(context);
               try {
                 await ref.read(authActionsProvider).signOutAllSessions();
-                navigator.pop();
+                if (dialogCtx.mounted) Navigator.of(dialogCtx).pop();
                 ActionFeedbackService.show('settings.sessions_signed_out'.tr());
               } catch (e, st) {
                 AppLogger.error('[PrivacySecurity] Sign out all failed', e, st);
                 await Sentry.captureException(e, stackTrace: st);
-                navigator.pop();
-                messenger.showSnackBar(
-                  SnackBar(content: Text('errors.unknown'.tr())),
+                if (dialogCtx.mounted) Navigator.of(dialogCtx).pop();
+                ActionFeedbackService.show(
+                  'errors.unknown'.tr(),
+                  type: ActionFeedbackType.error,
                 );
               }
             },
@@ -225,29 +201,44 @@ class PrivacySecuritySection extends ConsumerWidget {
     );
   }
 
-  void _showExportDataDialog(BuildContext context) {
-    showDialog(
+  Future<void> _showExportDataDialog(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         title: Text('settings.export_personal_data'.tr()),
         content: Text('settings.export_personal_data_confirm'.tr()),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogCtx).pop(false),
             child: Text('common.cancel'.tr()),
           ),
           FilledButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('settings.export_data_started'.tr())),
-              );
-            },
+            onPressed: () => Navigator.of(dialogCtx).pop(true),
             child: Text('settings.export_data_button'.tr()),
           ),
         ],
       ),
     );
+    if (confirmed != true) return;
+
+    try {
+      // Data-ownership (GDPR) export: deliberately not premium-gated, unlike
+      // the report exports on the backup screen. Returns false when another
+      // export/import is already in flight.
+      final exported = await ref.read(exportActionsProvider).exportExcel();
+      if (!exported) return;
+      ActionFeedbackService.show('backup.export_success'.tr());
+    } catch (e, st) {
+      AppLogger.error('[PrivacySecurity] Personal data export failed', e, st);
+      await Sentry.captureException(e, stackTrace: st);
+      ActionFeedbackService.show(
+        'backup.export_error'.tr(),
+        type: ActionFeedbackType.error,
+      );
+    }
   }
 
   Future<void> _showDeleteAccountDialog(BuildContext context, WidgetRef ref) =>

@@ -40,11 +40,24 @@ List<_RawResult> _calculateAllelicSeriesLocus(
         genotype: resolved.genotype,
         expressedMutationIds: resolved.expressedIds,
         carriedMutationIds: resolved.carriedIds,
+        doubleFactorIds: _doubleFactorAlleles(allele1, allele2),
       ),
     );
   }
 
   return results;
+}
+
+/// Returns the set of mutant alleles when BOTH alleles at a locus are mutant
+/// (homozygous or compound heterozygote) — i.e. a double dose at that locus.
+/// Wild-type and the W chromosome are never mutant, so a single mutant allele
+/// paired with either returns an empty set (single factor).
+Set<String> _doubleFactorAlleles(String allele1, String allele2) {
+  bool isMutant(String a) => a != _kWildtype && a != _kWChromosome;
+  if (isMutant(allele1) && isMutant(allele2)) {
+    return {allele1, allele2};
+  }
+  return const {};
 }
 
 /// Calculates offspring for a sex-linked allelic series locus.
@@ -129,6 +142,7 @@ List<_RawResult> _calculateSexLinkedAllelicSeriesLocus(
           genotype: 'Z$sym1/Z$sym2',
           expressedMutationIds: resolved.expressedIds,
           carriedMutationIds: resolved.carriedIds,
+          doubleFactorIds: _doubleFactorAlleles(fatherAllele, motherAllele),
         ),
       );
     }

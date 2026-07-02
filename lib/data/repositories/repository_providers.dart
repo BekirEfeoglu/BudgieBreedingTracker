@@ -108,6 +108,8 @@ final eventRepositoryProvider = Provider<EventRepository>((ref) {
     birdsDao: ref.watch(birdsDaoProvider),
     breedingPairsDao: ref.watch(breedingPairsDaoProvider),
     chicksDao: ref.watch(chicksDaoProvider),
+    eggsDao: ref.watch(eggsDaoProvider),
+    incubationsDao: ref.watch(incubationsDaoProvider),
   );
 });
 

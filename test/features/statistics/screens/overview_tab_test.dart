@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/chicks_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
 import 'package:budgie_breeding_tracker/data/providers/entity_count_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
@@ -23,6 +24,8 @@ class _MockBirdsDao extends Mock implements BirdsDao {}
 
 class _MockEggsDao extends Mock implements EggsDao {}
 
+class _MockChicksDao extends Mock implements ChicksDao {}
+
 Widget _createSubject() {
   final mockBirdsDao = _MockBirdsDao();
   when(
@@ -31,10 +34,27 @@ Widget _createSubject() {
   when(
     () => mockBirdsDao.watchStatusDistribution(any()),
   ).thenAnswer((_) => Stream.value(<BirdStatus, int>{}));
+  when(
+    () => mockBirdsDao.watchSpeciesDistribution(any()),
+  ).thenAnswer((_) => Stream.value(<Species, int>{}));
+  when(
+    () => mockBirdsDao.watchColorMutationDistribution(any()),
+  ).thenAnswer((_) => Stream.value(<BirdColor, int>{}));
 
   final mockEggsDao = _MockEggsDao();
   when(
     () => mockEggsDao.watchMonthlyProduction(any()),
+  ).thenAnswer((_) => Stream.value(<String, int>{}));
+  when(
+    () => mockEggsDao.watchFertilityCount(any()),
+  ).thenAnswer((_) => Stream.value((fertile: 0, infertile: 0)));
+  when(
+    () => mockEggsDao.watchIncubatingCount(any()),
+  ).thenAnswer((_) => Stream.value(0));
+
+  final mockChicksDao = _MockChicksDao();
+  when(
+    () => mockChicksDao.watchHealthStatusCounts(any()),
   ).thenAnswer((_) => Stream.value(<String, int>{}));
 
   return ProviderScope(
@@ -42,6 +62,7 @@ Widget _createSubject() {
       // Override DAO providers for SQL aggregate statistics providers.
       birdsDaoProvider.overrideWithValue(mockBirdsDao),
       eggsDaoProvider.overrideWithValue(mockEggsDao),
+      chicksDaoProvider.overrideWithValue(mockChicksDao),
       // Override underlying stream providers with empty data so all
       // computed statistics providers resolve to AsyncData immediately.
       birdsStreamProvider('anonymous').overrideWith((_) => Stream.value([])),

@@ -1,15 +1,15 @@
 import 'package:flutter/foundation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/data/remote/api/user_presence_remote_source.dart';
 import 'package:budgie_breeding_tracker/domain/services/presence/user_presence_constants.dart';
 
 class UserPresenceService {
-  const UserPresenceService(this._client);
+  const UserPresenceService(this._remoteSource);
 
-  final SupabaseClient _client;
+  final UserPresenceRemoteSource _remoteSource;
   static const _uuid = Uuid();
 
   Future<String?> startSession(String userId) async {
@@ -18,7 +18,7 @@ class UserPresenceService {
     final now = DateTime.now().toUtc();
     final sessionId = _uuid.v7();
     try {
-      await _client.from(SupabaseConstants.userSessionsTable).insert({
+      await _remoteSource.upsertSession({
         SupabaseConstants.colId: sessionId,
         SupabaseConstants.colUserId: userId,
         SupabaseConstants.colPlatform: _platformName(),
@@ -47,17 +47,17 @@ class UserPresenceService {
 
     final now = DateTime.now().toUtc();
     try {
-      await _client
-          .from(SupabaseConstants.userSessionsTable)
-          .update({
-            SupabaseConstants.colIsActive: true,
-            SupabaseConstants.colLastActiveAt: now.toIso8601String(),
-            SupabaseConstants.colExpiresAt: now
-                .add(UserPresenceConstants.sessionTtl)
-                .toIso8601String(),
-          })
-          .eq(SupabaseConstants.colId, sessionId)
-          .eq(SupabaseConstants.colUserId, userId);
+      await _remoteSource.updateSession(
+        sessionId: sessionId,
+        userId: userId,
+        payload: {
+          SupabaseConstants.colIsActive: true,
+          SupabaseConstants.colLastActiveAt: now.toIso8601String(),
+          SupabaseConstants.colExpiresAt: now
+              .add(UserPresenceConstants.sessionTtl)
+              .toIso8601String(),
+        },
+      );
     } catch (e, st) {
       AppLogger.warning('[UserPresence] heartbeat failed: $e');
       AppLogger.error('[UserPresence] heartbeat stack', e, st);
@@ -71,16 +71,16 @@ class UserPresenceService {
     if (!_hasMatchingAuthUser(userId)) return;
 
     try {
-      await _client
-          .from(SupabaseConstants.userSessionsTable)
-          .update({
-            SupabaseConstants.colIsActive: false,
-            SupabaseConstants.colLastActiveAt: DateTime.now()
-                .toUtc()
-                .toIso8601String(),
-          })
-          .eq(SupabaseConstants.colId, sessionId)
-          .eq(SupabaseConstants.colUserId, userId);
+      await _remoteSource.updateSession(
+        sessionId: sessionId,
+        userId: userId,
+        payload: {
+          SupabaseConstants.colIsActive: false,
+          SupabaseConstants.colLastActiveAt: DateTime.now()
+              .toUtc()
+              .toIso8601String(),
+        },
+      );
     } catch (e, st) {
       AppLogger.warning('[UserPresence] endSession failed: $e');
       AppLogger.error('[UserPresence] endSession stack', e, st);
@@ -88,7 +88,7 @@ class UserPresenceService {
   }
 
   bool _hasMatchingAuthUser(String userId) {
-    final authUserId = _client.auth.currentUser?.id;
+    final authUserId = _remoteSource.currentAuthUserId;
     if (authUserId == userId) return true;
     AppLogger.warning(
       '[UserPresence] Skipped ownership mismatch for '

@@ -265,4 +265,58 @@ void main() {
       expect(total, closeTo(1.0, 0.0001));
     });
   });
+
+  // -----------------------------------------------------------------------
+  // Dominant allelic-series regression (2026-04-09 fix)
+  //
+  // Before the fix, a single-factor heterozygote of a dominant / incomplete-
+  // dominant mutation sharing an allelic-series locus was incorrectly collapsed
+  // to "Normal (carrier)" in the wild-type × mutant path — i.e. the dominant
+  // allele was silently treated as recessive. Crossing a carrier against a TRUE
+  // wild-type parent routes through exactly that branch, so these lock in that
+  // the SF heterozygote is VISUALLY expressed (not hidden as a carrier).
+  // -----------------------------------------------------------------------
+  group('Blue-series incomplete-dominant SF visibility (regression)', () {
+    for (final mutationId in const [
+      'yellowface_type1',
+      'yellowface_type2',
+      'goldenface',
+      'aqua',
+      'turquoise',
+      'bluefactor_1',
+      'bluefactor_2',
+    ]) {
+      test('$mutationId carrier x wild-type expresses SF visually (~50%)', () {
+        final r = _cross(
+          {mutationId: AlleleState.carrier},
+          const {},
+        );
+
+        // The single-factor heterozygote must be VISUALLY expressed, not
+        // collapsed into a carrier-only "Normal" result.
+        final visual = r.where(
+          (x) => x.visualMutations.contains(mutationId),
+        );
+        expect(
+          visual,
+          isNotEmpty,
+          reason: '$mutationId SF should be visually expressed, not a carrier',
+        );
+
+        final visualProb = visual.fold<double>(0, (s, x) => s + x.probability);
+        expect(
+          visualProb,
+          closeTo(0.5, 0.02),
+          reason: '$mutationId SF should appear in ~50% of offspring',
+        );
+
+        // Guard against the old bug: the cross must NOT resolve to entirely
+        // normal/carrier offspring.
+        final allNormalOrCarrier = r.every(
+          (x) => !x.visualMutations.contains(mutationId),
+        );
+        expect(allNormalOrCarrier, isFalse);
+      });
+    }
+  });
 }

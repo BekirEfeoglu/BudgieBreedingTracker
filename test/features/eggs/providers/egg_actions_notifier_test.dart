@@ -37,6 +37,7 @@ void main() {
   late MockBirdRepository birdRepo;
   late MockNotificationScheduler mockScheduler;
   late MockCalendarEventGenerator mockCalendarGen;
+  late MockEventRepository mockEventRepo;
 
   setUpAll(() {
     registerFallbackValue(Species.budgie);
@@ -56,6 +57,7 @@ void main() {
     birdRepo = MockBirdRepository();
     mockScheduler = MockNotificationScheduler();
     mockCalendarGen = MockCalendarEventGenerator();
+    mockEventRepo = MockEventRepository();
 
     registerFallbackValue(
       Egg(id: 'fallback', userId: 'u', layDate: DateTime(2024)),
@@ -137,6 +139,15 @@ void main() {
         bandingDay: any(named: 'bandingDay'),
       ),
     ).thenAnswer((_) async {});
+    when(
+      () => mockScheduler.cancelIncubationMilestones(any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockEventRepo.removeByEggIds(any()),
+    ).thenAnswer((_) async => 0);
+    when(
+      () => mockEventRepo.removeByIncubationIds(any()),
+    ).thenAnswer((_) async => 0);
 
     // Wave 1 audit (K11) added ownership validation: incubation.userId
     // must match currentUserId. The override below sets 'test-user'.
@@ -198,6 +209,7 @@ void main() {
           _TestNotificationToggleSettingsNotifier.new,
         ),
         calendarEventGeneratorProvider.overrideWithValue(mockCalendarGen),
+        eventRepositoryProvider.overrideWithValue(mockEventRepo),
       ],
     );
   }
@@ -356,6 +368,121 @@ void main() {
                 as BreedingPair;
         expect(savedPair.status, BreedingStatus.completed);
 
+        expect(container.read(eggActionsProvider).isSuccess, isTrue);
+      },
+    );
+
+    test(
+      'cancels milestone notifications and removes calendar events when '
+      'an incubation auto-completes — this is the common closing path and, '
+      'unlike the explicit cancel/complete breeding buttons, previously did '
+      'neither',
+      () async {
+        when(() => eggRepo.getById('egg-2')).thenAnswer(
+          (_) async => Egg(
+            id: 'egg-2',
+            userId: 'test-user',
+            incubationId: 'inc-1',
+            layDate: DateTime(2024, 1, 10),
+            status: EggStatus.incubating,
+          ),
+        );
+        when(() => eggRepo.remove('egg-2')).thenAnswer((_) async {});
+        when(() => eggRepo.getByIncubation('inc-1')).thenAnswer(
+          (_) async => [
+            Egg(
+              id: 'egg-1',
+              userId: 'test-user',
+              incubationId: 'inc-1',
+              layDate: DateTime(2024, 1, 1),
+              status: EggStatus.hatched,
+            ),
+          ],
+        );
+        when(() => incubationRepo.save(any())).thenAnswer((_) async {});
+        when(
+          () => incubationRepo.getByBreedingPairIds(['pair-1']),
+        ).thenAnswer((_) async => []);
+        when(() => breedingPairRepo.getById('pair-1')).thenAnswer(
+          (_) async => const BreedingPair(
+            id: 'pair-1',
+            userId: 'test-user',
+            maleId: 'male-1',
+            femaleId: 'female-1',
+            status: BreedingStatus.active,
+          ),
+        );
+        when(() => breedingPairRepo.save(any())).thenAnswer((_) async {});
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+
+        await container.read(eggActionsProvider.notifier).deleteEgg('egg-2');
+
+        verify(
+          () => mockScheduler.cancelIncubationMilestones('inc-1'),
+        ).called(1);
+        verify(
+          () => mockEventRepo.removeByIncubationIds(['inc-1']),
+        ).called(1);
+      },
+    );
+
+    test(
+      'auto-completion still succeeds when notification/calendar cleanup '
+      'fails — best-effort side effects must not undo the status change',
+      () async {
+        when(() => eggRepo.getById('egg-2')).thenAnswer(
+          (_) async => Egg(
+            id: 'egg-2',
+            userId: 'test-user',
+            incubationId: 'inc-1',
+            layDate: DateTime(2024, 1, 10),
+            status: EggStatus.incubating,
+          ),
+        );
+        when(() => eggRepo.remove('egg-2')).thenAnswer((_) async {});
+        when(() => eggRepo.getByIncubation('inc-1')).thenAnswer(
+          (_) async => [
+            Egg(
+              id: 'egg-1',
+              userId: 'test-user',
+              incubationId: 'inc-1',
+              layDate: DateTime(2024, 1, 1),
+              status: EggStatus.hatched,
+            ),
+          ],
+        );
+        when(() => incubationRepo.save(any())).thenAnswer((_) async {});
+        when(
+          () => incubationRepo.getByBreedingPairIds(['pair-1']),
+        ).thenAnswer((_) async => []);
+        when(() => breedingPairRepo.getById('pair-1')).thenAnswer(
+          (_) async => const BreedingPair(
+            id: 'pair-1',
+            userId: 'test-user',
+            maleId: 'male-1',
+            femaleId: 'female-1',
+            status: BreedingStatus.active,
+          ),
+        );
+        when(() => breedingPairRepo.save(any())).thenAnswer((_) async {});
+        when(
+          () => mockScheduler.cancelIncubationMilestones(any()),
+        ).thenThrow(Exception('scheduler unavailable'));
+        when(
+          () => mockEventRepo.removeByIncubationIds(any()),
+        ).thenThrow(Exception('db unavailable'));
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+
+        await container.read(eggActionsProvider.notifier).deleteEgg('egg-2');
+
+        final savedIncubation =
+            verify(() => incubationRepo.save(captureAny())).captured.single
+                as Incubation;
+        expect(savedIncubation.status, IncubationStatus.completed);
         expect(container.read(eggActionsProvider).isSuccess, isTrue);
       },
     );

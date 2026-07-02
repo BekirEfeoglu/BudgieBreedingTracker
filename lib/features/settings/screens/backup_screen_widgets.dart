@@ -127,7 +127,7 @@ class _ExportTile extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: AppSpacing.xxs),
                     Text(
                       subtitle,
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -138,10 +138,13 @@ class _ExportTile extends StatelessWidget {
                 ),
               ),
               if (isLoading)
-                const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                Semantics(
+                  label: 'common.loading'.tr(),
+                  child: const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 )
               else
                 AppIcon(

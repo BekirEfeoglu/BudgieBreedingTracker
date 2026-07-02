@@ -74,13 +74,13 @@ void main() {
       tester,
     ) async {
       final controller = StreamController<List<Event>>();
+      addTearDown(controller.close);
 
       await tester.pumpWidget(createSubject(eventsStream: controller.stream));
       await tester.pump();
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-      controller.close();
     });
 
     testWidgets('shows error state on stream error', (tester) async {
@@ -95,37 +95,37 @@ void main() {
 
     testWidgets('shows AppBar with calendar title', (tester) async {
       final controller = StreamController<List<Event>>();
+      addTearDown(controller.close);
 
       await tester.pumpWidget(createSubject(eventsStream: controller.stream));
       await tester.pump();
 
       expect(find.text(l10n('calendar.title')), findsOneWidget);
 
-      controller.close();
     });
 
     testWidgets('shows view mode segmented button in AppBar', (tester) async {
       final controller = StreamController<List<Event>>();
+      addTearDown(controller.close);
 
       await tester.pumpWidget(createSubject(eventsStream: controller.stream));
       await tester.pump();
 
       expect(find.byType(SegmentedButton<CalendarViewMode>), findsOneWidget);
 
-      controller.close();
     });
 
     testWidgets('shows event filter segmented button in AppBar', (
       tester,
     ) async {
       final controller = StreamController<List<Event>>();
+      addTearDown(controller.close);
 
       await tester.pumpWidget(createSubject(eventsStream: controller.stream));
       await tester.pump();
 
       expect(find.byType(SegmentedButton<CalendarEventFilter>), findsOneWidget);
 
-      controller.close();
     });
 
     testWidgets('shows FAB when events load', (tester) async {
@@ -149,6 +149,7 @@ void main() {
 
     testWidgets('shows today button in AppBar actions', (tester) async {
       final controller = StreamController<List<Event>>();
+      addTearDown(controller.close);
 
       await tester.pumpWidget(createSubject(eventsStream: controller.stream));
       await tester.pump();
@@ -156,7 +157,6 @@ void main() {
       // Today button (calendarCheck icon) is an IconButton in AppBar
       expect(find.byType(IconButton), findsAtLeastNWidgets(1));
 
-      controller.close();
     });
 
     testWidgets('has RefreshIndicator wrapping content', (tester) async {

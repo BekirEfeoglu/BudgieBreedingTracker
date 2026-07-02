@@ -4,6 +4,7 @@ import 'package:intl/intl.dart' show DateFormat;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../local/preferences/app_preferences.dart';
+import '../local/preferences/pref_notifier.dart';
 
 // ---------------------------------------------------------------------------
 // Date Format
@@ -36,27 +37,23 @@ final dateFormatProvider = NotifierProvider<DateFormatNotifier, AppDateFormat>(
   DateFormatNotifier.new,
 );
 
-class DateFormatNotifier extends Notifier<AppDateFormat> {
+class DateFormatNotifier extends PrefNotifier<AppDateFormat> {
   @override
-  AppDateFormat build() {
-    _loadFromPrefs();
-    return AppDateFormat.dmy;
-  }
+  AppDateFormat get defaultValue => AppDateFormat.dmy;
 
-  Future<void> _loadFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
+  @override
+  Future<AppDateFormat?> readFromPrefs(SharedPreferences prefs) async {
     final value = prefs.getString(AppPreferences.keyDateFormat);
-    if (value != null) {
-      state = AppDateFormat.values.firstWhere(
-        (e) => e.name == value,
-        orElse: () => AppDateFormat.dmy,
-      );
-    }
+    if (value == null) return null;
+    return AppDateFormat.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => AppDateFormat.dmy,
+    );
   }
 
-  Future<void> setFormat(AppDateFormat format) async {
-    state = format;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(AppPreferences.keyDateFormat, format.name);
-  }
+  @override
+  Future<void> writeToPrefs(SharedPreferences prefs, AppDateFormat value) =>
+      prefs.setString(AppPreferences.keyDateFormat, value.name);
+
+  Future<void> setFormat(AppDateFormat format) => set(format);
 }

@@ -3,36 +3,46 @@ import 'package:budgie_breeding_tracker/core/utils/date_utils.dart'
     as date_utils;
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
-import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
-import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
+import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
-import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
-import 'package:budgie_breeding_tracker/data/providers/egg_stream_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/entity_count_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/health_record_stream_providers.dart';
+import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_providers.dart';
 
-/// Summary statistics combining COUNT providers and filtered streams.
-/// Uses SQL COUNT for totalBirds, activeBreedings, totalHealthRecords
-/// to avoid loading full entity lists. Keeps eggs/chicks streams for
-/// ratio calculations that require per-record status filtering.
+/// Raw SQL-aggregated all-time fertile/infertile egg counts (statistics.md
+/// SQL aggregation requirement).
+final _fertilityCountStreamProvider =
+    StreamProvider.family<({int fertile, int infertile}), String>((
+      ref,
+      userId,
+    ) {
+      return ref.watch(eggsDaoProvider).watchFertilityCount(userId);
+    });
+
+/// Summary statistics combining SQL COUNT/aggregate providers.
+/// Uses SQL COUNT/GROUP BY for totalBirds, activeBreedings,
+/// totalHealthRecords, incubatingEggs, fertility, and chick survival —
+/// avoids loading full entity lists into Dart.
 final summaryStatsProvider = Provider.family<AsyncValue<SummaryStats>, String>((
   ref,
   userId,
 ) {
   final birdCount = ref.watch(birdCountProvider(userId));
   final activeBreedingCount = ref.watch(activeBreedingCountProvider(userId));
-  final eggsAsync = ref.watch(eggsStreamProvider(userId));
-  final chicksAsync = ref.watch(chicksStreamProvider(userId));
+  final incubatingEggCount = ref.watch(incubatingEggCountProvider(userId));
+  final fertilityCountAsync = ref.watch(_fertilityCountStreamProvider(userId));
+  final chickCountsAsync = ref.watch(chickHealthCountsProvider(userId));
   final healthCount = ref.watch(healthRecordCountProvider(userId));
 
   // Fast-fail on any error
   for (final a in [
     birdCount,
     activeBreedingCount,
+    incubatingEggCount,
     healthCount,
-    eggsAsync,
-    chicksAsync,
+    fertilityCountAsync,
+    chickCountsAsync,
   ]) {
     if (a.hasError) {
       return AsyncError(a.error!, a.stackTrace ?? StackTrace.empty);
@@ -42,32 +52,23 @@ final summaryStatsProvider = Provider.family<AsyncValue<SummaryStats>, String>((
   // Loading if any provider hasn't resolved
   if (birdCount.isLoading ||
       activeBreedingCount.isLoading ||
+      incubatingEggCount.isLoading ||
       healthCount.isLoading ||
-      eggsAsync.isLoading ||
-      chicksAsync.isLoading) {
+      fertilityCountAsync.isLoading ||
+      chickCountsAsync.isLoading) {
     return const AsyncLoading();
   }
 
-  final eggs = eggsAsync.requireValue;
-  final chicks = chicksAsync.requireValue;
+  final fertilityCount = fertilityCountAsync.requireValue;
+  final chickCounts = chickCountsAsync.requireValue;
 
-  final incubatingEggs = eggs.where((e) => e.isActiveIncubationEgg).length;
-
-  final fertile = eggs
-      .where(
-        (e) => e.status == EggStatus.fertile || e.status == EggStatus.hatched,
-      )
-      .length;
-  final infertile = eggs.where((e) => e.status == EggStatus.infertile).length;
-  final checked = fertile + infertile;
+  final checked = fertilityCount.fertile + fertilityCount.infertile;
   // fertilityRate is a 0.0-1.0 ratio (not a percentage).
   // UI widgets multiply by 100 for display where needed.
-  final fertilityRate = checked > 0 ? fertile / checked : 0.0;
+  final fertilityRate = checked > 0 ? fertilityCount.fertile / checked : 0.0;
 
-  final totalChicks = chicks.length;
-  final deceased = chicks
-      .where((c) => c.healthStatus == ChickHealthStatus.deceased)
-      .length;
+  final totalChicks = chickCounts.values.fold(0, (sum, c) => sum + c);
+  final deceased = chickCounts[ChickHealthStatus.deceased.name] ?? 0;
   // chickSurvivalRate is a 0.0-1.0 ratio (not a percentage).
   // UI widgets multiply by 100 for display where needed.
   final survivalRate = totalChicks > 0
@@ -78,7 +79,7 @@ final summaryStatsProvider = Provider.family<AsyncValue<SummaryStats>, String>((
     SummaryStats(
       totalBirds: birdCount.value ?? 0,
       activeBreedings: activeBreedingCount.value ?? 0,
-      incubatingEggs: incubatingEggs,
+      incubatingEggs: incubatingEggCount.value ?? 0,
       fertilityRate: fertilityRate,
       chickSurvivalRate: survivalRate,
       totalHealthRecords: healthCount.value ?? 0,
@@ -86,20 +87,19 @@ final summaryStatsProvider = Provider.family<AsyncValue<SummaryStats>, String>((
   );
 });
 
+/// Raw SQL-aggregated color-mutation counts (statistics.md SQL aggregation
+/// requirement).
+final _colorMutationDistStreamProvider =
+    StreamProvider.family<Map<BirdColor, int>, String>((ref, userId) {
+      return ref
+          .watch(birdsDaoProvider)
+          .watchColorMutationDistribution(userId);
+    });
+
 /// Color mutation distribution from bird data.
 final colorMutationDistributionProvider =
     Provider.family<AsyncValue<Map<BirdColor, int>>, String>((ref, userId) {
-      final birdsAsync = ref.watch(birdsStreamProvider(userId));
-
-      return birdsAsync.whenData((birds) {
-        final counts = <BirdColor, int>{};
-        for (final bird in birds) {
-          final color = bird.colorMutation;
-          if (color == null) continue;
-          counts[color] = (counts[color] ?? 0) + 1;
-        }
-        return counts;
-      });
+      return ref.watch(_colorMutationDistStreamProvider(userId));
     });
 
 /// Canonical age bracket keys shared with [AgeDistributionChart].

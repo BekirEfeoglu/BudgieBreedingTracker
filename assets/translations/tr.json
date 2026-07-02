@@ -56,7 +56,6 @@
     "death": "Vefat",
     "sale": "Satış",
     "continue_confirm": "Devam etmek istiyor musunuz?",
-    "unknown": "Bilinmiyor",
     "none": "Yok",
     "view_all": "Tümünü Gör",
     "view": "Görüntüle",
@@ -715,7 +714,6 @@
     "export_personal_data": "Kişisel Verileri Dışa Aktar",
     "export_personal_data_desc": "KVKK kapsamında verilerinizi indirin",
     "export_personal_data_confirm": "Tüm kişisel verileriniz bir dosya olarak hazırlanacaktır. Bu işlem birkaç dakika sürebilir.",
-    "export_data_started": "Veri dışa aktarımı başlatıldı",
     "export_data_button": "Dışa Aktar",
     "delete_account": "Hesabı Sil",
     "delete_account_desc": "Hesabınızı ve tüm verilerinizi kalıcı olarak silin",
@@ -758,7 +756,10 @@
     "just_now": "Az önce",
     "minutes_ago": "{} dakika önce",
     "hours_ago": "{} saat önce",
-    "days_ago": "{} gün önce"
+    "days_ago": "{} gün önce",
+    "active_sessions_info": "Oturumunuz bu cihazda aktif. Diğer cihazlarda açık kalan oturumları güvenlik için tümünü kapatarak sonlandırabilirsiniz.",
+    "clear_cache_confirm": "Önbellek temizlensin mi? Geçici dosyalar silinir; verileriniz etkilenmez.",
+    "version_copied": "Sürüm bilgisi kopyalandı"
   },
   "backup": {
     "title": "Veri Aktarımı",
@@ -2405,7 +2406,9 @@
     "retry_local_action": "Yerel değişikliği tekrar gönder",
     "clear_conflict_history": "Geçmişi Temizle",
     "no_errors": "Tüm veriler senkronize",
-    "sync_now_action": "Şimdi Senkronize Et"
+    "sync_now_action": "Şimdi Senkronize Et",
+    "clear_conflict_history_confirm": "Çakışma geçmişi kalıcı olarak silinsin mi? Bu işlem geri alınamaz.",
+    "detail_load_error": "Senkronizasyon detayları yüklenemedi. Lütfen tekrar deneyin."
   },
   "errors": {
     "unknown": "Beklenmeyen bir hata oluştu.",

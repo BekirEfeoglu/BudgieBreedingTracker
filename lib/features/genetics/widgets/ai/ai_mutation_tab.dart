@@ -50,7 +50,7 @@ class _AiMutationTabState extends ConsumerState<AiMutationTab>
       padding: const EdgeInsets.all(AppSpacing.md),
       child: AiSectionCard(
         title: 'genetics.image_ai_title'.tr(),
-        icon: LucideIcons.image,
+        icon: const Icon(LucideIcons.image),
         subtitle: 'genetics.image_ai_subtitle'.tr(),
         infoText: 'genetics.image_ai_desc'.tr(),
         child: Column(

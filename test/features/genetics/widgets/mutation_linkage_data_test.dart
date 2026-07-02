@@ -42,42 +42,42 @@ void main() {
 
     test('opaline-cinnamon linkage is 34 cM', () {
       final entry = mutationLinkageMap['opaline']!.firstWhere(
-        (e) => e.label == 'Cinnamon',
+        (e) => e.id == 'cinnamon',
       );
       expect(entry.centiMorgans, equals(34));
     });
 
     test('opaline-ino linkage is 30 cM', () {
       final entry = mutationLinkageMap['opaline']!.firstWhere(
-        (e) => e.label == 'Ino',
+        (e) => e.id == 'ino',
       );
       expect(entry.centiMorgans, equals(30));
     });
 
     test('opaline-slate linkage is 40 cM', () {
       final entry = mutationLinkageMap['opaline']!.firstWhere(
-        (e) => e.label == 'Slate',
+        (e) => e.id == 'slate',
       );
       expect(entry.centiMorgans, equals(40));
     });
 
     test('cinnamon-ino linkage is 3 cM', () {
       final entry = mutationLinkageMap['cinnamon']!.firstWhere(
-        (e) => e.label == 'Ino',
+        (e) => e.id == 'ino',
       );
       expect(entry.centiMorgans, equals(3));
     });
 
     test('ino-slate linkage is 2 cM', () {
       final entry = mutationLinkageMap['ino']!.firstWhere(
-        (e) => e.label == 'Slate',
+        (e) => e.id == 'slate',
       );
       expect(entry.centiMorgans, equals(2));
     });
 
     test('cinnamon-slate linkage is 5 cM', () {
       final entry = mutationLinkageMap['cinnamon']!.firstWhere(
-        (e) => e.label == 'Slate',
+        (e) => e.id == 'slate',
       );
       expect(entry.centiMorgans, equals(5));
     });
@@ -87,7 +87,7 @@ void main() {
       final inoEntries = mutationLinkageMap['ino']!;
 
       for (var i = 0; i < pearlyEntries.length; i++) {
-        expect(pearlyEntries[i].label, equals(inoEntries[i].label));
+        expect(pearlyEntries[i].id, equals(inoEntries[i].id));
         expect(
           pearlyEntries[i].centiMorgans,
           equals(inoEntries[i].centiMorgans),
@@ -100,7 +100,7 @@ void main() {
       final inoEntries = mutationLinkageMap['ino']!;
 
       for (var i = 0; i < pallidEntries.length; i++) {
-        expect(pallidEntries[i].label, equals(inoEntries[i].label));
+        expect(pallidEntries[i].id, equals(inoEntries[i].id));
         expect(
           pallidEntries[i].centiMorgans,
           equals(inoEntries[i].centiMorgans),
@@ -113,17 +113,17 @@ void main() {
       final inoEntries = mutationLinkageMap['ino']!;
 
       for (var i = 0; i < tcbEntries.length; i++) {
-        expect(tcbEntries[i].label, equals(inoEntries[i].label));
+        expect(tcbEntries[i].id, equals(inoEntries[i].id));
         expect(tcbEntries[i].centiMorgans, equals(inoEntries[i].centiMorgans));
       }
     });
 
     test('linkage distances are symmetric between opaline and cinnamon', () {
       final opalineToCinnamon = mutationLinkageMap['opaline']!
-          .firstWhere((e) => e.label == 'Cinnamon')
+          .firstWhere((e) => e.id == 'cinnamon')
           .centiMorgans;
       final cinnamonToOpaline = mutationLinkageMap['cinnamon']!
-          .firstWhere((e) => e.label == 'Opaline')
+          .firstWhere((e) => e.id == 'opaline')
           .centiMorgans;
 
       expect(opalineToCinnamon, equals(cinnamonToOpaline));
@@ -131,10 +131,10 @@ void main() {
 
     test('linkage distances are symmetric between ino and slate', () {
       final inoToSlate = mutationLinkageMap['ino']!
-          .firstWhere((e) => e.label == 'Slate')
+          .firstWhere((e) => e.id == 'slate')
           .centiMorgans;
       final slateToIno = mutationLinkageMap['slate']!
-          .firstWhere((e) => e.label == 'Ino')
+          .firstWhere((e) => e.id == 'ino')
           .centiMorgans;
 
       expect(inoToSlate, equals(slateToIno));
@@ -146,6 +146,19 @@ void main() {
           expect(entry.centiMorgans, greaterThan(0));
         }
       }
+    });
+  });
+
+  group('linkageMutationName', () {
+    test('returns localized name for a known mutation id', () {
+      // 'ino' resolves via MutationDatabase + PhenotypeLocalizer rather than
+      // a raw hardcoded label.
+      expect(linkageMutationName('ino'), isNotEmpty);
+      expect(linkageMutationName('ino'), isNot(equals('ino')));
+    });
+
+    test('falls back to the raw id for an unknown mutation', () {
+      expect(linkageMutationName('not_a_real_mutation'), 'not_a_real_mutation');
     });
   });
 }

@@ -33,6 +33,7 @@ List<OffspringResult> _combineResults(List<_RawResult> rawResults) {
           ...existing.carriedMutationIds,
           ...r.carriedMutationIds,
         }.toList(),
+        doubleFactorIds: {...existing.doubleFactorIds, ...r.doubleFactorIds},
       );
     } else {
       grouped[key] = r;
@@ -52,8 +53,9 @@ List<OffspringResult> _combineResults(List<_RawResult> rawResults) {
   return sorted.where((r) => r.probability * normalizer > 0.001).map((r) {
     final visualIds = r.expressedMutationIds.toSet();
 
-    // Derive doubleFactorIds from raw result phenotype markers
-    final dfIds = <String>{};
+    // Derive doubleFactorIds from structural allelic-series tagging plus the
+    // legacy phenotype-string markers for independent-locus results.
+    final dfIds = <String>{...r.doubleFactorIds};
     if (r.phenotype.contains('(double)') ||
         r.phenotype.contains('(homozygous)')) {
       dfIds.addAll(r.expressedMutationIds);
@@ -114,6 +116,7 @@ List<_MultiLocusResult> _crossAllLoci(
           ],
           genotypes: r.genotype != null ? [r.genotype!] : [],
           expressedMutationIds: [...r.expressedMutationIds],
+          doubleFactorIds: {...r.doubleFactorIds},
         ),
       )
       .toList();
@@ -161,6 +164,10 @@ List<_MultiLocusResult> _crossAllLoci(
             carriedMutations: carried,
             genotypes: genotypes,
             expressedMutationIds: expressedIds,
+            doubleFactorIds: {
+              ...existing.doubleFactorIds,
+              ...locusResult.doubleFactorIds,
+            },
           ),
         );
       }

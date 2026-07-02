@@ -169,6 +169,31 @@ void main() {
       container.read(pedigreeDepthProvider.notifier).state = 8;
       expect(container.read(pedigreeDepthProvider), 8);
     });
+
+    // The tests above set `.state` directly, bypassing setDepth()'s own
+    // clamp(3, 8) logic entirely. These exercise setDepth() itself.
+    test('setDepth clamps values above maximum down to 8', () {
+      container.read(pedigreeDepthProvider.notifier).setDepth(100);
+      expect(container.read(pedigreeDepthProvider), 8);
+    });
+
+    test('setDepth clamps values below minimum up to 3', () {
+      container.read(pedigreeDepthProvider.notifier).setDepth(-5);
+      expect(container.read(pedigreeDepthProvider), 3);
+    });
+
+    test('setDepth leaves in-range values unchanged', () {
+      container.read(pedigreeDepthProvider.notifier).setDepth(6);
+      expect(container.read(pedigreeDepthProvider), 6);
+    });
+
+    test('setDepth leaves boundary values 3 and 8 unchanged', () {
+      container.read(pedigreeDepthProvider.notifier).setDepth(3);
+      expect(container.read(pedigreeDepthProvider), 3);
+
+      container.read(pedigreeDepthProvider.notifier).setDepth(8);
+      expect(container.read(pedigreeDepthProvider), 8);
+    });
   });
 
   group('ancestorsProvider', () {
@@ -203,7 +228,10 @@ void main() {
       );
       expect(depth2Ancestors.containsKey('grandfather'), isTrue);
 
-      verify(() => mockBirdRepo.getAll('user-1')).called(2);
+      // The underlying bird list is shared across both depth reads (see
+      // _allUserBirdsProvider), so it's fetched once even though
+      // ancestorsProvider itself recomputes per depth change.
+      verify(() => mockBirdRepo.getAll('user-1')).called(1);
     });
   });
 }

@@ -94,11 +94,11 @@ class _CommunityHeroCard extends StatelessWidget {
                 text: 'legal.cg_chip_respect'.tr(),
               ),
               _HeroChip(
-                icon: const Icon(LucideIcons.shieldCheck),
+                icon: const AppIcon(AppIcons.security),
                 text: 'legal.cg_chip_safety'.tr(),
               ),
               _HeroChip(
-                icon: const Icon(LucideIcons.messagesSquare),
+                icon: const AppIcon(AppIcons.comment),
                 text: 'legal.cg_chip_participation'.tr(),
               ),
             ],

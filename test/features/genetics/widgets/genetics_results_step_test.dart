@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
+import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/lethal_combination_database.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_providers.dart';
@@ -205,5 +206,36 @@ void main() {
       await tester.pump();
       expect(find.byType(EpistasisInteractionsCard), findsOneWidget);
     });
+
+    testWidgets(
+      'shows ErrorState with retry button when offspringResultsProvider errors',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            overrides: [
+              offspringResultsProvider.overrideWithValue(
+                AsyncValue.error(Exception('isolate crashed'), StackTrace.empty),
+              ),
+              enrichedOffspringResultsProvider.overrideWithValue(null),
+              punnettSquareProvider.overrideWithValue(null),
+              offspringChartDataProvider.overrideWithValue(const []),
+              showSexSpecificProvider.overrideWith(ShowSexSpecificNotifier.new),
+              showGenotypeProvider.overrideWith(ShowGenotypeNotifier.new),
+              availablePunnettLociProvider.overrideWithValue(const []),
+              lethalAnalysisProvider.overrideWithValue(null),
+            ],
+          ),
+        );
+        await tester.pump();
+
+        expect(find.byType(ErrorState), findsOneWidget);
+        expect(find.text(l10n('errors.unknown_error')), findsOneWidget);
+        expect(find.text(l10n('common.retry')), findsOneWidget);
+
+        // Tapping retry must not throw (invalidates offspringResultsProvider).
+        await tester.tap(find.text(l10n('common.retry')));
+        await tester.pump();
+      },
+    );
   });
 }

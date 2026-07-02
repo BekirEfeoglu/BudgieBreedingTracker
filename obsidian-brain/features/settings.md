@@ -33,6 +33,13 @@ floor while letting users opt into larger scales than the OS provides
 | `notificationsMasterProvider` | `NotificationsMasterNotifier` (global push on/off) |
 | `compactViewProvider` | `CompactViewNotifier` (list density) |
 
+All preference notifiers (theme/locale/font + bool toggles + date format)
+extend `PrefNotifier`/`PrefBoolNotifier`
+(`lib/data/local/preferences/pref_notifier.dart`), which guards the
+fire-and-forget load in `build()`: a disk value never overwrites a change the
+user made while the load was in flight, nothing writes state after dispose,
+and storage failures are logged instead of escaping as unhandled errors.
+
 ## Storage / Diagnostics
 
 | Provider | Purpose |
@@ -73,8 +80,9 @@ See [[domain/data-io]] for the underlying services.
 
 ## Developer Menu
 
-5-tap on the settings header title reveals experimental flags. Hidden in
-production builds via feature-flag gate (see [[patterns/feature-flags]]).
+**Not implemented** — the "5-tap on settings header" experimental-flags menu
+described in [[patterns/feature-flags]] does not exist in the codebase
+(verified 2026-07-02). Documented as a future design goal only.
 
 ## See Also
 

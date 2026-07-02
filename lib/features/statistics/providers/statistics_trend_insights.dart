@@ -1,46 +1,64 @@
 part of 'statistics_trend_providers.dart';
 
 /// Produces 3-4 human-readable insights about the current period.
+/// Egg/chick stats are SQL-aggregated (reuses trendStatsProvider's period
+/// stats providers); active-breeding count reuses `activeBreedingCountProvider`
+/// (all-time, not period-scoped — matches the original `pairs.where(...)`
+/// semantics, which never filtered by period either).
 final quickInsightsProvider =
     Provider.family<AsyncValue<List<QuickInsight>>, String>((ref, userId) {
       final period = ref.watch(statsPeriodProvider);
-      final eggsAsync = ref.watch(eggsStreamProvider(userId));
-      final chicksAsync = ref.watch(chicksStreamProvider(userId));
-      final pairsAsync = ref.watch(breedingPairsStreamProvider(userId));
+      final range = buildStatsDateRange(period);
+
+      final eggStatsAsync = ref.watch(
+        _periodEggStatsStreamProvider((
+          userId: userId,
+          from: range.currentStart,
+          to: range.currentEnd,
+        )),
+      );
+      final chickStatsAsync = ref.watch(
+        _periodChickStatsStreamProvider((
+          userId: userId,
+          from: range.currentStart,
+          to: range.currentEnd,
+        )),
+      );
+      final activeBreedingsAsync = ref.watch(
+        activeBreedingCountProvider(userId),
+      );
       final trendAsync = ref.watch(trendStatsProvider(userId));
 
       // Fast-fail on any error
-      for (final a in [eggsAsync, chicksAsync, pairsAsync, trendAsync]) {
+      for (final a in [eggStatsAsync, chickStatsAsync, activeBreedingsAsync]) {
         if (a.hasError) {
           return AsyncError(a.error!, a.stackTrace ?? StackTrace.empty);
         }
       }
       // Loading if any data stream hasn't resolved (trend loading is handled
       // below via trendAsync.value returning null → neutral sentiment)
-      if (eggsAsync.isLoading ||
-          chicksAsync.isLoading ||
-          pairsAsync.isLoading) {
+      if (eggStatsAsync.isLoading ||
+          chickStatsAsync.isLoading ||
+          activeBreedingsAsync.isLoading) {
         return const AsyncLoading();
       }
 
-      final eggs = eggsAsync.requireValue;
-      final chicks = chicksAsync.requireValue;
-      final pairs = pairsAsync.requireValue;
-      final range = buildStatsDateRange(period);
+      final eggStats = eggStatsAsync.requireValue;
+      final chickStats = chickStatsAsync.requireValue;
+      final activeBreedings = activeBreedingsAsync.requireValue;
 
       final insights = <QuickInsight>[];
       final trends = trendAsync.value;
 
       // Egg production insight
-      final periodEggs = eggs.where((e) => range.isInCurrent(e.layDate)).length;
-      if (periodEggs > 0) {
+      if (eggStats.total > 0) {
         final trendText = trends != null && trends.eggsTrend.abs() > 0
             ? ' (${trends.eggsTrend > 0 ? "+" : ""}${trends.eggsTrend.toStringAsFixed(0)}%)'
             : '';
         insights.add(
           QuickInsight(
             text: 'statistics.insight_egg_production'.tr(
-              args: ['$periodEggs$trendText'],
+              args: ['${eggStats.total}$trendText'],
             ),
             sentiment: trends == null
                 ? InsightSentiment.neutral
@@ -52,27 +70,13 @@ final quickInsightsProvider =
       }
 
       // Fertility rate insight
-      final fertile = eggs
-          .where(
-            (e) =>
-                range.isInCurrent(e.layDate) &&
-                (e.status == EggStatus.fertile ||
-                    e.status == EggStatus.hatched),
-          )
-          .length;
-      final infertile = eggs
-          .where(
-            (e) =>
-                range.isInCurrent(e.layDate) && e.status == EggStatus.infertile,
-          )
-          .length;
-      final checked = fertile + infertile;
+      final checked = eggStats.fertile + eggStats.infertile;
       if (checked > 0) {
-        final rate = (fertile / checked * 100).toStringAsFixed(0);
+        final rate = (eggStats.fertile / checked * 100).toStringAsFixed(0);
         insights.add(
           QuickInsight(
             text: 'statistics.insight_fertility'.tr(args: [rate]),
-            sentiment: (fertile / checked) >= 0.5
+            sentiment: (eggStats.fertile / checked) >= 0.5
                 ? InsightSentiment.positive
                 : InsightSentiment.negative,
           ),
@@ -80,19 +84,14 @@ final quickInsightsProvider =
       }
 
       // Chick survival insight
-      final periodChicks = chicks
-          .where((c) => c.hatchDate != null && range.isInCurrent(c.hatchDate!))
-          .toList();
-      final survivedChicks = periodChicks
-          .where((c) => c.healthStatus != ChickHealthStatus.deceased)
-          .length;
-      if (periodChicks.isNotEmpty) {
+      if (chickStats.total > 0) {
+        final survivedChicks = chickStats.total - chickStats.deceased;
         insights.add(
           QuickInsight(
             text: 'statistics.insight_chick_survival'.tr(
               args: ['$survivedChicks'],
             ),
-            sentiment: survivedChicks >= periodChicks.length * 0.7
+            sentiment: survivedChicks >= chickStats.total * 0.7
                 ? InsightSentiment.positive
                 : InsightSentiment.negative,
           ),
@@ -100,13 +99,6 @@ final quickInsightsProvider =
       }
 
       // Active breeding insight
-      final activeBreedings = pairs
-          .where(
-            (p) =>
-                p.status == BreedingStatus.active ||
-                p.status == BreedingStatus.ongoing,
-          )
-          .length;
       if (activeBreedings > 0) {
         insights.add(
           QuickInsight(

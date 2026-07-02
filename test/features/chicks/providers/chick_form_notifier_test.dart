@@ -188,6 +188,59 @@ void main() {
         // (side-effect errors are caught internally)
       },
     );
+
+    test(
+      'clears deathDate when health status moves away from deceased',
+      () async {
+        when(() => mockChickRepo.save(any())).thenAnswer((_) async {});
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+
+        final deceasedDate = DateTime(2025, 4, 1);
+        final previous = _chick().copyWith(
+          healthStatus: ChickHealthStatus.deceased,
+          deathDate: deceasedDate,
+        );
+        final revived = previous.copyWith(
+          healthStatus: ChickHealthStatus.healthy,
+        );
+
+        await container
+            .read(chickFormStateProvider.notifier)
+            .updateChick(revived, previous: previous);
+
+        final captured =
+            verify(() => mockChickRepo.save(captureAny())).captured;
+        final saved = captured.first as Chick;
+        expect(saved.healthStatus, ChickHealthStatus.healthy);
+        expect(saved.deathDate, isNull);
+      },
+    );
+
+    test('keeps deathDate when health status stays deceased', () async {
+      when(() => mockChickRepo.save(any())).thenAnswer((_) async {});
+
+      final container = createContainer();
+      addTearDown(container.dispose);
+
+      final deceasedDate = DateTime(2025, 4, 1);
+      final previous = _chick().copyWith(
+        healthStatus: ChickHealthStatus.deceased,
+        deathDate: deceasedDate,
+      );
+      // Only the ring number changes; status stays deceased.
+      final updated = previous.copyWith(ringNumber: 'R-99');
+
+      await container
+          .read(chickFormStateProvider.notifier)
+          .updateChick(updated, previous: previous);
+
+      final captured = verify(() => mockChickRepo.save(captureAny())).captured;
+      final saved = captured.first as Chick;
+      expect(saved.healthStatus, ChickHealthStatus.deceased);
+      expect(saved.deathDate, deceasedDate);
+    });
   });
 
   group('ChickFormNotifier - deleteChick', () {

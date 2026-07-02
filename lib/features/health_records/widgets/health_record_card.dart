@@ -146,19 +146,20 @@ class HealthRecordCard extends ConsumerWidget {
 }
 
 /// Returns the icon for a health record type as a [Widget].
-/// Heart variants use [AppIcon] (domain SVG); others use [Icon] with [LucideIcons].
+/// All known types use [AppIcon] (domain SVG); [HealthRecordType.unknown]
+/// falls back to a generic [Icon] with [LucideIcons].
 Widget healthRecordTypeIcon(
   HealthRecordType type, {
   double? size,
   Color? color,
 }) => switch (type) {
-  HealthRecordType.checkup => Icon(
-    LucideIcons.stethoscope,
+  HealthRecordType.checkup => AppIcon(
+    AppIcons.stethoscope,
     size: size,
     color: color,
   ),
-  HealthRecordType.illness => Icon(
-    LucideIcons.thermometer,
+  HealthRecordType.illness => AppIcon(
+    AppIcons.thermometer,
     size: size,
     color: color,
   ),
@@ -167,13 +168,13 @@ Widget healthRecordTypeIcon(
     size: size,
     color: color,
   ),
-  HealthRecordType.vaccination => Icon(
-    LucideIcons.syringe,
+  HealthRecordType.vaccination => AppIcon(
+    AppIcons.syringe,
     size: size,
     color: color,
   ),
-  HealthRecordType.medication => Icon(
-    LucideIcons.pill,
+  HealthRecordType.medication => AppIcon(
+    AppIcons.pill,
     size: size,
     color: color,
   ),

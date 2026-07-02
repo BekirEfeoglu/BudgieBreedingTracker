@@ -123,7 +123,7 @@ class _ConflictSection extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: AppSpacing.xxs),
                       Text(
                         '${_localizeTable(conflict.table)}'
                         ' — ${formatTimeSince(conflict.detectedAt)}',
@@ -165,6 +165,55 @@ class _ConflictTypeBadge extends StatelessWidget {
         'sync.conflict_server_wins'.tr(),
         style: theme.textTheme.labelSmall?.copyWith(
           color: AppColors.warningText,
+        ),
+      ),
+    );
+  }
+}
+
+class _LoadingState extends StatelessWidget {
+  const _LoadingState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxxl),
+      child: Center(
+        child: Semantics(
+          label: 'common.loading'.tr(),
+          child: const CircularProgressIndicator(),
+        ),
+      ),
+    );
+  }
+}
+
+class _LoadErrorState extends StatelessWidget {
+  const _LoadErrorState({required this.theme});
+
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxxl),
+      child: Center(
+        child: Column(
+          children: [
+            const Icon(
+              LucideIcons.alertTriangle,
+              size: 48,
+              color: AppColors.error,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'sync.detail_load_error'.tr(),
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );

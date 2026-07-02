@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:budgie_breeding_tracker/domain/services/ads/ad_reward_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/providers/export_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/screens/backup_screen.dart';
 
@@ -122,6 +125,90 @@ void main() {
       expect(find.byType(BackupScreen), findsOneWidget);
     });
   });
+
+  group('BackupScreen export reward flow', () {
+    late MockExportActions mockActions;
+    late _FakeExportRewardNotifier rewardNotifier;
+
+    setUp(() {
+      mockActions = MockExportActions();
+      rewardNotifier = _FakeExportRewardNotifier();
+    });
+
+    Widget createRewardSubject() {
+      return ProviderScope(
+        overrides: [
+          exportLoadingProvider.overrideWith(() => ExportLoadingNotifier()),
+          lastExportDateProvider.overrideWith(() => LastExportDateNotifier()),
+          effectivePremiumProvider.overrideWithValue(false),
+          isExportRewardActiveProvider.overrideWith(() => rewardNotifier),
+          exportActionsProvider.overrideWithValue(mockActions),
+        ],
+        child: MaterialApp.router(routerConfig: router),
+      );
+    }
+
+    testWidgets('successful export consumes reward and shows success', (
+      tester,
+    ) async {
+      when(() => mockActions.exportPdf()).thenAnswer((_) async => true);
+
+      await tester.pumpWidget(createRewardSubject());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(l10n('backup.export_pdf')));
+      await tester.pumpAndSettle();
+
+      expect(rewardNotifier.consumeCalls, 1);
+      expect(find.text(l10n('backup.export_success')), findsOneWidget);
+    });
+
+    testWidgets('failed export shows error, keeps reward, reports no success', (
+      tester,
+    ) async {
+      when(() => mockActions.exportPdf()).thenThrow(Exception('disk full'));
+
+      await tester.pumpWidget(createRewardSubject());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(l10n('backup.export_pdf')));
+      await tester.pumpAndSettle();
+
+      expect(rewardNotifier.consumeCalls, 0);
+      expect(find.text(l10n('backup.export_success')), findsNothing);
+      expect(find.text(l10n('backup.export_error')), findsOneWidget);
+    });
+
+    testWidgets('skipped export (already running) consumes nothing', (
+      tester,
+    ) async {
+      when(() => mockActions.exportPdf()).thenAnswer((_) async => false);
+
+      await tester.pumpWidget(createRewardSubject());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(l10n('backup.export_pdf')));
+      await tester.pumpAndSettle();
+
+      expect(rewardNotifier.consumeCalls, 0);
+      expect(find.text(l10n('backup.export_success')), findsNothing);
+      expect(find.text(l10n('backup.export_error')), findsNothing);
+    });
+  });
+}
+
+class MockExportActions extends Mock implements ExportActions {}
+
+class _FakeExportRewardNotifier extends ExportRewardNotifier {
+  int consumeCalls = 0;
+
+  @override
+  bool build() => true;
+
+  @override
+  Future<void> consume() async {
+    consumeCalls++;
+  }
 }
 
 class _FakeLastExportDateNotifier extends LastExportDateNotifier {

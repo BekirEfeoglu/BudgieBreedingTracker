@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:budgie_breeding_tracker/core/constants/genetics_constants.dart';
 import 'package:budgie_breeding_tracker/data/models/genetics_history_model.dart';
 
 void main() {
@@ -116,6 +117,45 @@ void main() {
 
       expect(restored.fatherGenotype, isEmpty);
       expect(restored.motherGenotype, isEmpty);
+    });
+
+    test('calculationVersion survives JSON round-trip', () {
+      final history = sampleHistory.copyWith(
+        calculationVersion: GeneticsConstants.calculationVersion,
+      );
+
+      final restored = GeneticsHistory.fromJson(history.toJson());
+
+      expect(restored.calculationVersion, GeneticsConstants.calculationVersion);
+    });
+  });
+
+  group('GeneticsHistory.isStale', () {
+    GeneticsHistory historyWithVersion(int? version) => GeneticsHistory(
+      id: 'hist-stale',
+      userId: 'user-1',
+      fatherGenotype: const {},
+      motherGenotype: const {},
+      resultsJson: '[]',
+      calculationVersion: version,
+    );
+
+    test('is stale when calculationVersion is null (pre-versioning entry)', () {
+      expect(historyWithVersion(null).isStale, isTrue);
+    });
+
+    test('is stale when calculationVersion is older than the current engine', () {
+      expect(
+        historyWithVersion(GeneticsConstants.calculationVersion - 1).isStale,
+        isTrue,
+      );
+    });
+
+    test('is not stale when calculationVersion matches the current engine', () {
+      expect(
+        historyWithVersion(GeneticsConstants.calculationVersion).isStale,
+        isFalse,
+      );
     });
   });
 }

@@ -317,4 +317,161 @@ void main() {
       expect(result, isEmpty);
     });
   });
+
+  // UTC-explicit dates: mappers normalize DateTime to UTC on write/read, so
+  // an ambiguous local DateTime crossing midnight can round-trip into a
+  // different calendar year than the literal suggests.
+  group('watchDistinctLayYears', () {
+    test('returns the set of years present in lay_date', () async {
+      await dao.insertItem(
+        makeEgg(id: 'e1', layDate: DateTime.utc(2024, 3, 1), incubationId: null),
+      );
+      await dao.insertItem(
+        makeEgg(id: 'e2', layDate: DateTime.utc(2024, 6, 1), incubationId: null),
+      );
+      await dao.insertItem(
+        makeEgg(id: 'e3', layDate: DateTime.utc(2025, 1, 1), incubationId: null),
+      );
+
+      final result = await dao.watchDistinctLayYears(userId).first;
+
+      expect(result, equals({2024, 2025}));
+    });
+
+    test('excludes soft-deleted eggs', () async {
+      await dao.insertItem(
+        makeEgg(id: 'e1', layDate: DateTime.utc(2024, 1, 1), incubationId: null),
+      );
+      await dao.insertItem(
+        makeEgg(
+          id: 'e2',
+          layDate: DateTime.utc(2025, 1, 1),
+          incubationId: null,
+          isDeleted: true,
+        ),
+      );
+
+      final result = await dao.watchDistinctLayYears(userId).first;
+
+      expect(result, equals({2024}));
+    });
+
+    test('returns an empty set when there are no eggs', () async {
+      final result = await dao.watchDistinctLayYears(userId).first;
+      expect(result, isEmpty);
+    });
+  });
+
+  group('watchSeasonEggStats', () {
+    test('returns total and fertile counts for the given year', () async {
+      await dao.insertItem(
+        makeEgg(
+          id: 'e1',
+          layDate: DateTime.utc(2024, 3, 1),
+          status: EggStatus.fertile,
+          incubationId: null,
+        ),
+      );
+      await dao.insertItem(
+        makeEgg(
+          id: 'e2',
+          layDate: DateTime.utc(2024, 4, 1),
+          status: EggStatus.hatched,
+          incubationId: null,
+        ),
+      );
+      await dao.insertItem(
+        makeEgg(
+          id: 'e3',
+          layDate: DateTime.utc(2024, 5, 1),
+          status: EggStatus.infertile,
+          incubationId: null,
+        ),
+      );
+      await dao.insertItem(
+        makeEgg(
+          id: 'e4',
+          layDate: DateTime.utc(2025, 1, 1),
+          status: EggStatus.fertile,
+          incubationId: null,
+        ),
+      );
+
+      final result = await dao.watchSeasonEggStats(userId, 2024).first;
+
+      expect(result.total, equals(3));
+      expect(result.fertile, equals(2));
+    });
+
+    test('returns zero counts when no eggs match the year', () async {
+      final result = await dao.watchSeasonEggStats(userId, 2024).first;
+      expect(result.total, equals(0));
+      expect(result.fertile, equals(0));
+    });
+  });
+
+  group('watchPeriodEggStats', () {
+    test('returns total, fertile, infertile within the [from, to) window', () async {
+      await dao.insertItem(
+        makeEgg(
+          id: 'e1',
+          layDate: DateTime.utc(2025, 3, 5),
+          status: EggStatus.fertile,
+          incubationId: null,
+        ),
+      );
+      await dao.insertItem(
+        makeEgg(
+          id: 'e2',
+          layDate: DateTime.utc(2025, 3, 10),
+          status: EggStatus.infertile,
+          incubationId: null,
+        ),
+      );
+      // Exactly at the exclusive upper bound — must be excluded.
+      await dao.insertItem(
+        makeEgg(
+          id: 'e3',
+          layDate: DateTime.utc(2025, 4, 1),
+          status: EggStatus.fertile,
+          incubationId: null,
+        ),
+      );
+      // Before the window — must be excluded.
+      await dao.insertItem(
+        makeEgg(
+          id: 'e4',
+          layDate: DateTime.utc(2025, 2, 28),
+          status: EggStatus.fertile,
+          incubationId: null,
+        ),
+      );
+
+      final result = await dao
+          .watchPeriodEggStats(
+            userId,
+            DateTime.utc(2025, 3, 1),
+            DateTime.utc(2025, 4, 1),
+          )
+          .first;
+
+      expect(result.total, equals(2));
+      expect(result.fertile, equals(1));
+      expect(result.infertile, equals(1));
+    });
+
+    test('returns zero counts when nothing falls in the window', () async {
+      final result = await dao
+          .watchPeriodEggStats(
+            userId,
+            DateTime.utc(2025, 3, 1),
+            DateTime.utc(2025, 4, 1),
+          )
+          .first;
+
+      expect(result.total, equals(0));
+      expect(result.fertile, equals(0));
+      expect(result.infertile, equals(0));
+    });
+  });
 }

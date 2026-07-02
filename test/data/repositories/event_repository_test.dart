@@ -3,6 +3,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
+import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
+import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/event_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/repositories/event_repository.dart';
 
@@ -28,6 +30,8 @@ void main() {
   late MockBirdsDao birdsDao;
   late MockBreedingPairsDao breedingPairsDao;
   late MockChicksDao chicksDao;
+  late MockEggsDao eggsDao;
+  late MockIncubationsDao incubationsDao;
   late EventRepository repository;
 
   const userId = 'user-1';
@@ -45,6 +49,8 @@ void main() {
     birdsDao = MockBirdsDao();
     breedingPairsDao = MockBreedingPairsDao();
     chicksDao = MockChicksDao();
+    eggsDao = MockEggsDao();
+    incubationsDao = MockIncubationsDao();
 
     repository = EventRepository(
       localDao: localDao,
@@ -53,6 +59,8 @@ void main() {
       birdsDao: birdsDao,
       breedingPairsDao: breedingPairsDao,
       chicksDao: chicksDao,
+      eggsDao: eggsDao,
+      incubationsDao: incubationsDao,
     );
 
     when(() => localDao.insertItem(any())).thenAnswer((_) async {});
@@ -96,6 +104,10 @@ void main() {
     when(
       () => chicksDao.getByIdIncludingDeleted(any()),
     ).thenAnswer((_) async => null);
+    when(
+      () => eggsDao.getByIdIncludingDeleted(any()),
+    ).thenAnswer((_) async => null);
+    when(() => incubationsDao.getById(any())).thenAnswer((_) async => null);
   });
 
   group('EventRepository', () {
@@ -133,6 +145,151 @@ void main() {
               syncDao.getPendingByTable(userId, SupabaseConstants.eventsTable),
         ).thenAnswer((_) async => [pending]);
         when(() => localDao.getById(event.id)).thenAnswer((_) async => event);
+
+        await repository.pushAll(userId);
+
+        verify(() => remoteSource.upsert(event)).called(1);
+      },
+    );
+  });
+
+  group('validateForeignKeys via pushAll — egg/incubation', () {
+    Event eventWithEgg({String eggId = 'egg-1', String? incubationId}) =>
+        _sampleEvent(
+          id: 'event-1',
+          userId: userId,
+        ).copyWith(eggId: eggId, incubationId: incubationId);
+
+    Event eventWithIncubation({String incubationId = 'inc-1'}) =>
+        _sampleEvent(id: 'event-1', userId: userId).copyWith(
+          incubationId: incubationId,
+        );
+
+    Future<void> stubPending(Event event) async {
+      final pending = TestFixtures.sampleSyncMetadata(
+        table: SupabaseConstants.eventsTable,
+        userId: userId,
+        recordId: event.id,
+      );
+      when(
+        () => syncDao.getPendingByTable(userId, SupabaseConstants.eventsTable),
+      ).thenAnswer((_) async => [pending]);
+      when(() => localDao.getById(event.id)).thenAnswer((_) async => event);
+      when(
+        () => localDao.getByIdIncludingDeleted(event.id),
+      ).thenAnswer((_) async => event);
+    }
+
+    test(
+      'skips push and marks error when referenced egg does not exist locally',
+      () async {
+        final event = eventWithEgg();
+        await stubPending(event);
+        when(
+          () => eggsDao.getByIdIncludingDeleted('egg-1'),
+        ).thenAnswer((_) async => null);
+
+        await repository.pushAll(userId);
+
+        verifyNever(() => remoteSource.upsert(event));
+        verify(() => syncDao.insertItem(any())).called(1);
+      },
+    );
+
+    test(
+      'skips push without marking error when referenced egg is a pending tombstone',
+      () async {
+        final event = eventWithEgg();
+        await stubPending(event);
+        final deletedEgg = TestFixtures.sampleEgg(
+          id: 'egg-1',
+        ).copyWith(isDeleted: true);
+        when(
+          () => eggsDao.getByIdIncludingDeleted('egg-1'),
+        ).thenAnswer((_) async => deletedEgg);
+
+        await repository.pushAll(userId);
+
+        verifyNever(() => remoteSource.upsert(event));
+      },
+    );
+
+    test(
+      'skips push without marking error when referenced egg is not yet synced',
+      () async {
+        final event = eventWithEgg();
+        await stubPending(event);
+        final egg = TestFixtures.sampleEgg(id: 'egg-1');
+        when(
+          () => eggsDao.getByIdIncludingDeleted('egg-1'),
+        ).thenAnswer((_) async => egg);
+        when(
+          () => syncDao.getByRecord(SupabaseConstants.eggsTable, 'egg-1'),
+        ).thenAnswer(
+          (_) async => TestFixtures.sampleSyncMetadata(
+            table: SupabaseConstants.eggsTable,
+            userId: userId,
+            recordId: 'egg-1',
+            status: SyncStatus.pending,
+          ),
+        );
+
+        await repository.pushAll(userId);
+
+        verifyNever(() => remoteSource.upsert(event));
+      },
+    );
+
+    test('pushes when referenced egg exists and is already synced', () async {
+      final event = eventWithEgg();
+      await stubPending(event);
+      final egg = TestFixtures.sampleEgg(id: 'egg-1');
+      when(
+        () => eggsDao.getByIdIncludingDeleted('egg-1'),
+      ).thenAnswer((_) async => egg);
+      when(
+        () => syncDao.getByRecord(SupabaseConstants.eggsTable, 'egg-1'),
+      ).thenAnswer((_) async => null);
+
+      await repository.pushAll(userId);
+
+      verify(() => remoteSource.upsert(event)).called(1);
+    });
+
+    test(
+      'skips push and marks error when referenced incubation does not exist locally',
+      () async {
+        final event = eventWithIncubation();
+        await stubPending(event);
+        when(
+          () => incubationsDao.getById('inc-1'),
+        ).thenAnswer((_) async => null);
+
+        await repository.pushAll(userId);
+
+        verifyNever(() => remoteSource.upsert(event));
+        verify(() => syncDao.insertItem(any())).called(1);
+      },
+    );
+
+    test(
+      'pushes when referenced incubation exists and is already synced',
+      () async {
+        final event = eventWithIncubation();
+        await stubPending(event);
+        final incubation = Incubation(
+          id: 'inc-1',
+          userId: userId,
+          breedingPairId: 'pair-1',
+          startDate: DateTime(2024, 1, 1),
+          expectedHatchDate: DateTime(2024, 1, 19),
+        );
+        when(
+          () => incubationsDao.getById('inc-1'),
+        ).thenAnswer((_) async => incubation);
+        when(
+          () => syncDao.getByRecord(SupabaseConstants.incubationsTable, 'inc-1'),
+        ).thenAnswer((_) async => null);
 
         await repository.pushAll(userId);
 

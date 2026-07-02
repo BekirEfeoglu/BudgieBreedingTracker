@@ -38,6 +38,55 @@ Uses `fl_chart ^1.2.0`. Chart types: line, bar, pie.
 
 Aggregates from multiple Drift DAOs (birds, eggs, chicks, breeding pairs). Heavy Drift queries should be profiled with `Stopwatch` + `AppLogger.debug('perf', ...)`.
 
+SQL-side aggregation is partial, not universal. `chickSurvivalProvider` is
+backed by `ChicksDao.watchHealthStatusCounts` (SQL `GROUP BY health_status`,
+see [[features/chicks]]) and `healthRecordTypeDistributionProvider` uses
+`HealthRecordsDao.watchCountsByTypeInRange` (see [[features/health_records]]).
+A 2026-07-01 audit found 10 other providers still materialize full entity
+streams and aggregate in Dart instead: `speciesDistributionProvider`,
+`colorMutationDistributionProvider`, `ageDistributionProvider`,
+`summaryStatsProvider` (partially), `trendStatsProvider`,
+`quickInsightsProvider`, `incubationDurationProvider`,
+`personalRecordsProvider`, `seasonComparisonProvider`,
+`healthTrendSummaryProvider` — not yet fixed.
+
+## Known Issues (2026-07-01 audit)
+
+Comprehensive read-only audit — findings reported, most still open:
+
+- Fixed 2026-07-02: `chickSurvivalProvider`'s `total` had drifted to
+  `healthy+sick+deceased` (excluding `unknown`), diverging from
+  `summaryStatsProvider`'s `chicks.length`-style total (which always included
+  `unknown`) — same underlying data showed two different survival-rate
+  percentages. Reverted to include `unknown` in both, and the two providers
+  now share one `chickHealthCountsProvider` (`statistics_providers.dart`)
+  instead of each opening its own `watchHealthStatusCounts` subscription.
+- Fixed 2026-07-02: 4 charts (`breeding_success_chart`, `fertility_trend_chart`,
+  `egg_production_chart`, `monthly_trend_chart`) rendered the raw
+  zero-padded month digits (`keys[index].split('-')[1]` -> `"01"`..`"12"`)
+  instead of a localized month name. New `monthAbbreviation(context, key)`
+  helper in `chart_utils.dart` (`DateFormat.MMM(locale)`) used by all 4.
+- Verified 2026-07-02, not auto-fixed (needs design input, not a mechanical
+  bug fix): chart series colors (`AppColors.success/warning/info` etc.) are
+  fixed constants, not `Theme.of(context).colorScheme`-derived — but this is
+  the same established pattern used for badges/status colors app-wide, not
+  statistics-specific. Computed actual WCAG 1.4.11 contrast (not just
+  "unverified" as the prior audit left it): against the light-theme surface
+  (`neutral50` `#F8FAFC`) `success`/`warning`/`info` land at ~2.0-2.3:1,
+  under the 3:1 non-text minimum — the opposite of the "dark mode" framing,
+  it's a **light-theme** contrast gap. `error` passes both themes (3.6:1
+  light, 4.7:1 dark). Fixing this app-wide means picking new semantic color
+  values (a design decision affecting every `AppColors.success/warning/info`
+  consumer, not just charts) — left open pending design review.
+- Verified 2026-07-02, not auto-fixed (feature gap, not a bug): 
+  `gender_pie_chart`/`chick_survival_chart` only guard `total == 0`, not
+  `.claude/rules/statistics.md`'s documented `< 3` insufficient-data
+  threshold ("chart yerine table göster") — confirmed no chart in the
+  feature implements that threshold today. Implementing the table fallback
+  is a new UI, not a mechanical fix — left open.
+- 6 charts format numbers/percentages without `NumberFormat` — not
+  reverified this pass.
+
 ## Rules
 
 - `.claude/rules/statistics.md` — fl_chart patterns, Drift-side aggregation, premium gating (export, custom filter, AI insight), accessibility (color-blind palette + tabular alt view)
@@ -47,4 +96,6 @@ Aggregates from multiple Drift DAOs (birds, eggs, chicks, breeding pairs). Heavy
 ## See Also
 
 - [[features/home]]
+- [[features/chicks]]
+- [[features/health_records]]
 - [[features/_features-index]]

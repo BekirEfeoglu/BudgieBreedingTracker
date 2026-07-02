@@ -501,11 +501,54 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       ),
     );
 
+    await _cleanupClosedIncubationSideEffects(incubationId);
+
     await _flipPairIfNoActiveIncubations(
       breedingPairId: incubation.breedingPairId,
       anyHatched: anyHatched,
       now: now,
     );
+  }
+
+  /// Cancels pending milestone notifications and removes calendar entries
+  /// for an incubation that just auto-completed/cancelled.
+  ///
+  /// This is the most common way an incubation closes (last egg reaches a
+  /// terminal status), so without this cleanup — unlike the explicit
+  /// "cancel/complete breeding" buttons, which only cancel notifications —
+  /// future-dated milestone push notifications keep firing and the calendar
+  /// keeps showing "expected hatch"/"late hatch alert" entries for a clutch
+  /// that's already fully resolved. Best-effort: never throws, so a failure
+  /// here doesn't undo the already-successful incubation status change.
+  Future<void> _cleanupClosedIncubationSideEffects(String incubationId) async {
+    try {
+      await ref
+          .read(notificationSchedulerProvider)
+          .cancelIncubationMilestones(incubationId);
+    } catch (e, st) {
+      AppLogger.warning(
+        'Failed to cancel incubation milestones for $incubationId: $e',
+      );
+      AppLogger.error(
+        'EggActionsNotifier._cleanupClosedIncubationSideEffects.notifications',
+        e,
+        st,
+      );
+    }
+    try {
+      await ref.read(eventRepositoryProvider).removeByIncubationIds([
+        incubationId,
+      ]);
+    } catch (e, st) {
+      AppLogger.warning(
+        'Failed to remove calendar events for incubation $incubationId: $e',
+      );
+      AppLogger.error(
+        'EggActionsNotifier._cleanupClosedIncubationSideEffects.calendar',
+        e,
+        st,
+      );
+    }
   }
 
   /// Flips the parent pair to `completed`/`cancelled` once all of its

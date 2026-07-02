@@ -125,5 +125,42 @@ void main() {
         findsOneWidget,
       );
     });
+
+    testWidgets(
+      'day-with-events semantic label names the event type, not just the '
+      'count, so color-blind/screen-reader users get the same info the '
+      'color-coded dots convey visually',
+      (tester) async {
+        final mondayOfWeek = selectedDate.subtract(
+          Duration(days: selectedDate.weekday - 1),
+        );
+        final dateKey = DateTime(
+          mondayOfWeek.year,
+          mondayOfWeek.month,
+          mondayOfWeek.day,
+        );
+        final eventsMap = {
+          dateKey: [makeEvent(dateKey)],
+        };
+
+        await pumpWidgetSimple(
+          tester,
+          CalendarWeekView(
+            selectedDate: selectedDate,
+            eventsMap: eventsMap,
+            onDateSelected: (_) {},
+          ),
+        );
+
+        // pumpWidgetSimple doesn't mount EasyLocalization, so `.tr()` falls
+        // back to the raw key (no arg interpolation) — assert on the key
+        // itself, which is what other tests in this suite already rely on.
+        final semantics = tester.getSemantics(find.text('${dateKey.day}'));
+        expect(semantics.label, contains('calendar.day_with_events'));
+        // EventType.custom -> 'calendar.general' per eventTypeLabel; its
+        // presence proves the type name was appended, not just the count.
+        expect(semantics.label, contains('calendar.general'));
+      },
+    );
   });
 }

@@ -6,9 +6,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
 import 'package:budgie_breeding_tracker/features/settings/providers/settings_theme_providers.dart';
 
-// Build() içinde fire-and-forget _loadFromPrefs() çağrısı yapıldığından,
-// provider'ın ilk değerini okumadan önce async yüklemenin tamamlanmasını
-// beklemek gerekir. Her test manuel dispose kullanır.
+// Build() içinde fire-and-forget yükleme yapıldığından, provider'ın ilk
+// değerini okumadan önce async yüklemenin tamamlanmasını beklemek gerekir.
+// pumpEventQueue mock SharedPreferences future'larını deterministik boşaltır
+// (test-stability.md: hard wait yasak).
 
 Future<ProviderContainer> _makeContainerAndWarm(
   NotifierProvider provider, {
@@ -19,7 +20,7 @@ Future<ProviderContainer> _makeContainerAndWarm(
   final container = ProviderContainer();
   addTearDown(container.dispose);
   container.read(provider);
-  await Future<void>.delayed(const Duration(milliseconds: 150));
+  await pumpEventQueue();
   return container;
 }
 
@@ -59,7 +60,7 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
       container.read(themeModeProvider);
-      await Future<void>.delayed(const Duration(milliseconds: 150));
+      await pumpEventQueue();
 
       await container
           .read(themeModeProvider.notifier)
@@ -93,6 +94,27 @@ void main() {
       );
 
       expect(container.read(themeModeProvider), ThemeMode.system);
+    });
+
+    test('legacy int migration handles out-of-range indices', () async {
+      final container = await _makeContainerAndWarm(
+        themeModeProvider,
+        values: {'theme_mode': -1},
+      );
+
+      expect(container.read(themeModeProvider), ThemeMode.system);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getInt('theme_mode'), isNull);
+      expect(prefs.getString(AppPreferences.keyThemeMode), 'system');
+    });
+
+    test('legacy int migration maps valid index', () async {
+      final container = await _makeContainerAndWarm(
+        themeModeProvider,
+        values: {'theme_mode': ThemeMode.dark.index},
+      );
+
+      expect(container.read(themeModeProvider), ThemeMode.dark);
     });
   });
 
@@ -195,7 +217,7 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
       container.read(fontScaleProvider);
-      await Future<void>.delayed(const Duration(milliseconds: 150));
+      await pumpEventQueue();
 
       await container
           .read(fontScaleProvider.notifier)

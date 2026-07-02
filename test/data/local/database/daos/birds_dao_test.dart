@@ -36,6 +36,7 @@ void main() {
     BirdGender gender = BirdGender.male,
     BirdStatus status = BirdStatus.alive,
     Species species = Species.budgie,
+    BirdColor? colorMutation,
     String? ringNumber,
     String? fatherId,
     String? motherId,
@@ -54,6 +55,7 @@ void main() {
       gender: gender,
       status: status,
       species: species,
+      colorMutation: colorMutation,
       ringNumber: ringNumber,
       fatherId: fatherId,
       motherId: motherId,
@@ -343,6 +345,60 @@ void main() {
 
       final males = await dao.getByGender(userId, BirdGender.male);
       expect(males, isEmpty);
+    });
+  });
+
+  group('watchSpeciesDistribution', () {
+    test('groups counts by species, scoped by userId', () async {
+      await dao.insertItem(makeBird(id: 'b1', species: Species.budgie));
+      await dao.insertItem(makeBird(id: 'b2', species: Species.budgie));
+      await dao.insertItem(makeBird(id: 'b3', species: Species.canary));
+      await dao.insertItem(
+        makeBird(id: 'b4', user: otherId, species: Species.finch),
+      );
+
+      final result = await dao.watchSpeciesDistribution(userId).first;
+
+      expect(result[Species.budgie], equals(2));
+      expect(result[Species.canary], equals(1));
+      expect(result.containsKey(Species.finch), isFalse);
+    });
+
+    test('excludes soft-deleted birds', () async {
+      await dao.insertItem(makeBird(id: 'b1', species: Species.budgie));
+      await dao.insertItem(
+        makeBird(id: 'b2', species: Species.budgie, isDeleted: true),
+      );
+
+      final result = await dao.watchSpeciesDistribution(userId).first;
+
+      expect(result[Species.budgie], equals(1));
+    });
+  });
+
+  group('watchColorMutationDistribution', () {
+    test('groups counts by color mutation, excluding unset birds', () async {
+      await dao.insertItem(makeBird(id: 'b1', colorMutation: BirdColor.blue));
+      await dao.insertItem(makeBird(id: 'b2', colorMutation: BirdColor.blue));
+      await dao.insertItem(makeBird(id: 'b3', colorMutation: BirdColor.green));
+      await dao.insertItem(makeBird(id: 'b4'));
+
+      final result = await dao.watchColorMutationDistribution(userId).first;
+
+      expect(result[BirdColor.blue], equals(2));
+      expect(result[BirdColor.green], equals(1));
+      expect(result.length, equals(2));
+    });
+
+    test('excludes soft-deleted birds', () async {
+      await dao.insertItem(makeBird(id: 'b1', colorMutation: BirdColor.blue));
+      await dao.insertItem(
+        makeBird(id: 'b2', colorMutation: BirdColor.blue, isDeleted: true),
+      );
+
+      final result = await dao.watchColorMutationDistribution(userId).first;
+
+      expect(result[BirdColor.blue], equals(1));
     });
   });
 

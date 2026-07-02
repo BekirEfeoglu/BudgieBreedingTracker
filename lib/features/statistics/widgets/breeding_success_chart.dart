@@ -81,9 +81,8 @@ class BreedingSuccessChart extends StatelessWidget {
                         if (index < 0 || index >= keys.length) {
                           return const SizedBox.shrink();
                         }
-                        final parts = keys[index].split('-');
                         return Text(
-                          parts[1],
+                          monthAbbreviation(context, keys[index]),
                           style: theme.textTheme.labelSmall,
                         );
                       },

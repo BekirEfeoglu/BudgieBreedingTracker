@@ -54,10 +54,10 @@ Future<HatchSuccessByMonth> hatchSuccessByMonth(Ref ref) async {
 100+ data point'li chart → downsample (LTTB algorithm) UI'da. Chart limit: 50 görünür point ideal, daha fazla data zoom-required.
 
 ## Filtre & Zaman Aralığı
-- Default: son 30 gün
-- Preset: 7 gün, 30 gün, 90 gün, 1 yıl, tümü
-- Custom range: date picker (her iki uç)
-- Filter state: `Notifier` provider (offline persist YOK — session-only)
+- Default: son 6 ay (`StatsPeriod.sixMonths`)
+- Preset: 3/6/12 ay (`StatsPeriod.threeMonths/sixMonths/twelveMonths`) — gün bazlı preset veya custom range YOK
+- Species filter: opsiyonel, `null` = tüm türler
+- Filter state: `Notifier` provider, SharedPreferences'a persist edilir (`AppPreferences.keyStatsPeriod`/`keyStatsSpeciesFilter`) — session-only DEĞİL, oturumlar arası korunur
 
 ## Empty / Insufficient Data
 - Yeni kullanıcı: "İstatistikler için en az 1 kuluçka tamamlayın" + CTA
@@ -65,9 +65,9 @@ Future<HatchSuccessByMonth> hatchSuccessByMonth(Ref ref) async {
 - Insufficient (< 3 data point): chart yerine table göster (chart yanıltıcı olur)
 
 ## Export (Premium)
-- PDF export: `lib/domain/services/export/pdf_export_service.dart`
-- Excel export: chart data → spreadsheet (chart image embed YOK, raw data)
-- Free user: preview only (export CTA → premium upsell)
+- PDF export: `lib/domain/services/export/pdf_export_service.dart`, `StatisticsScreen` app bar aksiyonu
+- Excel export YOK — sadece PDF (personal records + season comparison + health trend summary)
+- Export'un kendi ayrı gate'i YOK — `/statistics` rotasına giren herkes (premium abone VEYA aktif reward) export'a erişir; free preview modu YOK (bkz. Premium Features)
 
 ## Realtime Update
 - Statistics realtime YOK (pull model)
@@ -75,14 +75,20 @@ Future<HatchSuccessByMonth> hatchSuccessByMonth(Ref ref) async {
 - Background sync sonrası batch invalidate
 
 ## Premium Features
-| Özellik | Free | Premium |
-|---------|------|---------|
-| Görünür chart | 3 (genel) | Tümü |
-| Zaman aralığı | Son 30 gün | Sınırsız |
-| Custom filter | YOK | Var |
-| PDF/Excel export | YOK | Var |
-| Compare period | YOK | Var |
-| AI insight | YOK | Var (local-ai.md) |
+`/statistics` rotası all-or-nothing gate'lidir — kısmi free preview YOK:
+
+- Route guard (`app_router.dart`): `effectivePremiumProvider` **VEYA** aktif
+  `isStatisticsRewardActiveProvider` (ödüllü reklam ile geçici erişim)
+  gerekir; ikisi de yoksa `AppRoutes.premium`'a redirect.
+- Reward ile geçici giren kullanıcı ekran içinde premium abone ile **aynı**
+  erişime sahiptir — PDF export, season comparison (compare period), 3/6/12
+  ay preset'lerinin hepsi reward süresi boyunca kısıtlamasız çalışır.
+- Custom date range, "AI insight" ve chart-sayısı bazlı free/premium ayrımı
+  (örn. "3 chart free") **implement edilmemiştir** — bu tablo önceki bir
+  tasarım hedefiydi, gerçek kodla eşleşmiyordu (2026-07-01 audit).
+- Reward-tier ile paid-premium arasında ekran içi ayrım isteniyorsa (örn.
+  export'u sadece paid-premium'a kısıtlamak) bu ayrı bir ürün kararı ve ayrı
+  bir gate gerektirir — henüz yok.
 
 ## L10n Considerations
 - Sayı formatı locale-aware (`NumberFormat.decimalPercentPattern(locale: 'tr')`)

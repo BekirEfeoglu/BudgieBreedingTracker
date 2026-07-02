@@ -40,16 +40,24 @@ class DepthChip extends StatelessWidget {
         );
       }),
       onSelected: onChanged,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xs,
-        ),
-        child: Chip(
-          avatar: const Icon(LucideIcons.layers, size: 16),
-          label: Text('$depth', style: theme.textTheme.labelMedium),
-          visualDensity: VisualDensity.compact,
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      // ConstrainedBox keeps the tap target (what PopupMenuButton sizes its
+      // InkWell to) at the 48dp a11y minimum while the Chip itself stays
+      // visually compact for the AppBar.
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: AppSpacing.xs,
+            ),
+            child: Chip(
+              avatar: const Icon(LucideIcons.layers, size: 16),
+              label: Text('$depth', style: theme.textTheme.labelMedium),
+              visualDensity: VisualDensity.compact,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
         ),
       ),
     );

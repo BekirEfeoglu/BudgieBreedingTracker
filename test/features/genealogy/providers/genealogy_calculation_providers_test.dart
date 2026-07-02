@@ -48,6 +48,90 @@ void main() {
       expect(result.coefficient, greaterThanOrEqualTo(0.0));
       expect(result.coefficient, lessThanOrEqualTo(0.5));
     });
+
+    group('depthLimited', () {
+      test('is false when the lineage genuinely ends before maxDepth', () {
+        final father = createTestBird(id: 'father');
+        final mother = createTestBird(id: 'mother');
+        final subject = createTestBird(
+          id: 'subject',
+          fatherId: 'father',
+          motherId: 'mother',
+        );
+        final result = calculateInbreedingForBird('subject', {
+          'subject': subject,
+          'father': father,
+          'mother': mother,
+        }, maxDepth: 5);
+
+        expect(result.depthLimited, isFalse);
+      });
+
+      test('is false when a boundary ancestor has no further parents', () {
+        final father = createTestBird(id: 'father');
+        final mother = createTestBird(id: 'mother');
+        final subject = createTestBird(
+          id: 'subject',
+          fatherId: 'father',
+          motherId: 'mother',
+        );
+        // maxDepth=1 stops right at father/mother, who have no further
+        // parents recorded — nothing was cut off.
+        final result = calculateInbreedingForBird('subject', {
+          'subject': subject,
+          'father': father,
+          'mother': mother,
+        }, maxDepth: 1);
+
+        expect(result.depthLimited, isFalse);
+      });
+
+      test(
+        'is true when a boundary ancestor still has an unresolved parent link',
+        () {
+          // father points to a grandfather that is deliberately NOT included
+          // in the map, mirroring how ancestorsProvider truncates at maxDepth.
+          final father = createTestBird(id: 'father', fatherId: 'grandfather');
+          final mother = createTestBird(id: 'mother');
+          final subject = createTestBird(
+            id: 'subject',
+            fatherId: 'father',
+            motherId: 'mother',
+          );
+          final result = calculateInbreedingForBird('subject', {
+            'subject': subject,
+            'father': father,
+            'mother': mother,
+          }, maxDepth: 1);
+
+          expect(result.depthLimited, isTrue);
+        },
+      );
+
+      test('reflects the shallowest configurable depth (3 generations)', () {
+        final ggf = createTestBird(id: 'ggf');
+        final gf = createTestBird(id: 'gf', fatherId: 'ggf');
+        final father = createTestBird(id: 'father', fatherId: 'gf');
+        final mother = createTestBird(id: 'mother');
+        final subject = createTestBird(
+          id: 'subject',
+          fatherId: 'father',
+          motherId: 'mother',
+        );
+        // maxDepth=3 keeps subject(0)/father(1)/gf(2)/ggf(3); ggf's own
+        // (unrecorded) parents would sit at depth 4, beyond the boundary,
+        // but ggf itself has no fatherId/motherId here, so nothing is cut.
+        final result = calculateInbreedingForBird('subject', {
+          'subject': subject,
+          'father': father,
+          'gf': gf,
+          'ggf': ggf,
+          'mother': mother,
+        }, maxDepth: 3);
+
+        expect(result.depthLimited, isFalse);
+      });
+    });
   });
 
   group('calculateAncestorStats', () {

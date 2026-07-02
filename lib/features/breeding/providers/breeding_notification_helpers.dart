@@ -93,6 +93,34 @@ class BreedingNotificationHelper {
     }
   }
 
+  /// Removes calendar entries (milestones, egg-laying, expected-hatch) that
+  /// reference any of the given incubations.
+  ///
+  /// Mirrors [cancelBreedingNotifications]: best-effort and never throws, so
+  /// a failure here surfaces as a non-blocking warning instead of undoing
+  /// the already-successful primary mutation (incubation status change).
+  /// Without this, calendar entries for a cancelled/completed incubation
+  /// keep showing on the calendar indefinitely — the FK back-pointer
+  /// (`incubationId`) exists specifically so this cleanup can happen, but
+  /// closing an incubation without calling it left the events orphaned.
+  Future<bool> cleanupIncubationCalendarEvents(
+    List<Incubation> incubations,
+  ) async {
+    if (incubations.isEmpty) return true;
+    try {
+      final ids = incubations.map((inc) => inc.id).toList();
+      await _ref.read(eventRepositoryProvider).removeByIncubationIds(ids);
+      return true;
+    } catch (e, st) {
+      AppLogger.error(
+        '[BreedingNotificationHelpers] cleanup calendar events failed',
+        e,
+        st,
+      );
+      return false;
+    }
+  }
+
   /// Retrieves eggs belonging to the given incubations.
   Future<List<Egg>> getEggsForIncubations(List<Incubation> incubations) async {
     final incubationIds = incubations.map((i) => i.id).toList();

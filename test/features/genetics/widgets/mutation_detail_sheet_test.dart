@@ -146,10 +146,17 @@ void main() {
       expect(find.text(l10n('genetics.z_linkage')), findsOneWidget);
       // Gene order should appear
       expect(find.text(l10n('genetics.z_gene_order')), findsOneWidget);
-      // Linkage partners should appear (Ino, Slate, Opaline)
-      expect(find.text('Ino'), findsAtLeastNWidgets(1));
-      expect(find.text('Slate'), findsAtLeastNWidgets(1));
-      expect(find.text('Opaline'), findsAtLeastNWidgets(1));
+      // Linkage partners should appear (Ino, Slate, Opaline) — rendered as
+      // raw l10n keys here since pumpLocalizedApp uses an empty TestAssetLoader.
+      expect(find.text(l10n('genetics.mutation_ino')), findsAtLeastNWidgets(1));
+      expect(
+        find.text(l10n('genetics.mutation_slate')),
+        findsAtLeastNWidgets(1),
+      );
+      expect(
+        find.text(l10n('genetics.mutation_opaline')),
+        findsAtLeastNWidgets(1),
+      );
     });
 
     testWidgets('does not show linkage section for autosomal mutation', (
@@ -189,7 +196,10 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.text(l10n('genetics.z_linkage')), findsOneWidget);
-      expect(find.text('Cinnamon'), findsAtLeastNWidgets(1));
+      expect(
+        find.text(l10n('genetics.mutation_cinnamon')),
+        findsAtLeastNWidgets(1),
+      );
     });
   });
 

@@ -131,6 +131,15 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
       if (!mounted) return;
       try {
         await action(notifier, id);
+        // ChickFormNotifier actions (deleteChick, markAsDeceased, ...) catch
+        // their own exceptions internally and report failure via
+        // state.error instead of rethrowing, so the catch clause below
+        // never fires for that class of failure — the per-item outcome
+        // must be read from state, which each action resets to null at its
+        // own start and leaves null on its success path.
+        if (ref.read(chickFormStateProvider).error != null) {
+          failures.add(id);
+        }
       } catch (e, st) {
         // Broad catch is intentional: per-item resilience so one failing
         // chick doesn't abort the whole bulk operation. The failure is

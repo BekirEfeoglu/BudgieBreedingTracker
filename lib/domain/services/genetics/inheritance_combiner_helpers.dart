@@ -70,7 +70,9 @@ OffspringSex _mergeSex(OffspringSex a, OffspringSex b) {
 
   // Prefer expressedMutationIds from allelic series results
   final visualMutIds = <String>{...c.expressedMutationIds};
-  final doubleFactorIds = <String>{};
+  // Structural double-factor tagging from allelic-series loci (homozygous or
+  // compound heterozygote) — populated before the legacy string fallback.
+  final doubleFactorIds = <String>{...c.doubleFactorIds};
 
   // Fallback: name→ID lookup for legacy independent locus results
   for (final name in visualNames) {

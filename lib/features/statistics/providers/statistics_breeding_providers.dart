@@ -83,7 +83,17 @@ final monthlyFertilityRateProvider =
     });
 
 /// Incubation duration data for completed incubations.
-/// Returns actual days vs species-aware expected days for the last 10 incubations.
+/// Returns actual days vs species-aware expected days for the last 10
+/// incubations.
+///
+/// Deliberately kept Dart-side (not SQL-aggregated): incubations are
+/// naturally bounded per user (a handful per breeding season, unlike
+/// eggs/chicks/health records which grow unbounded over years), the
+/// `.take(10)` already caps real cost, and the per-item day-diff math
+/// plus species-aware `totalIncubationDays()` would be delicate/risky to
+/// replicate in raw SQL for negligible benefit (see ageDistributionProvider
+/// and personalRecordsProvider's findLongestLivedBird for the same
+/// bounded-list judgment call, statistics_highlights_providers.dart).
 final incubationDurationProvider =
     Provider.family<AsyncValue<List<IncubationDurationData>>, String>((
       ref,

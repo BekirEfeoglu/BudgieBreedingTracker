@@ -15,6 +15,7 @@ void main() {
     String id = 'hr-1',
     String user = userId,
     DateTime? date,
+    DateTime? followUpDate,
     HealthRecordType type = HealthRecordType.checkup,
     String title = 'Annual Check',
     String? birdId = 'bird-1',
@@ -23,6 +24,7 @@ void main() {
     return HealthRecord(
       id: id,
       date: date ?? DateTime(2024, 2, 1),
+      followUpDate: followUpDate,
       type: type,
       title: title,
       userId: user,
@@ -459,6 +461,137 @@ void main() {
     test('returns empty list when bird has no records', () async {
       final results = await dao.getLatest('bird-99');
       expect(results, isEmpty);
+    });
+  });
+
+  // UTC-explicit dates: mappers normalize DateTime to UTC on write/read, so
+  // an ambiguous local DateTime crossing midnight can round-trip into a
+  // different calendar month/day than the literal suggests.
+  group('watchBusiestMonth', () {
+    test('returns the month with the most records', () async {
+      await dao.insertItem(
+        makeEntry(id: 'h1', date: DateTime.utc(2025, 1, 5)),
+      );
+      await dao.insertItem(
+        makeEntry(id: 'h2', date: DateTime.utc(2025, 1, 20)),
+      );
+      await dao.insertItem(
+        makeEntry(id: 'h3', date: DateTime.utc(2025, 2, 1)),
+      );
+
+      final result = await dao.watchBusiestMonth(userId).first;
+
+      expect(result?.month, equals('2025-01'));
+      expect(result?.count, equals(2));
+    });
+
+    test('breaks ties by the smaller month', () async {
+      await dao.insertItem(
+        makeEntry(id: 'h1', date: DateTime.utc(2025, 1, 1)),
+      );
+      await dao.insertItem(
+        makeEntry(id: 'h2', date: DateTime.utc(2025, 2, 1)),
+      );
+
+      final result = await dao.watchBusiestMonth(userId).first;
+
+      expect(result?.month, equals('2025-01'));
+    });
+
+    test('excludes soft-deleted records', () async {
+      await dao.insertItem(
+        makeEntry(id: 'h1', date: DateTime.utc(2025, 1, 1)),
+      );
+      await dao.insertItem(
+        makeEntry(id: 'h2', date: DateTime.utc(2025, 1, 1), isDeleted: true),
+      );
+
+      final result = await dao.watchBusiestMonth(userId).first;
+
+      expect(result?.count, equals(1));
+    });
+
+    test('returns null when there are no records', () async {
+      final result = await dao.watchBusiestMonth(userId).first;
+      expect(result, isNull);
+    });
+  });
+
+  group('watchBusiestBird', () {
+    test('returns the bird with the most records', () async {
+      await dao.insertItem(makeEntry(id: 'h1', birdId: 'bird-1'));
+      await dao.insertItem(makeEntry(id: 'h2', birdId: 'bird-1'));
+      await dao.insertItem(makeEntry(id: 'h3', birdId: 'bird-2'));
+
+      final result = await dao.watchBusiestBird(userId).first;
+
+      expect(result?.birdId, equals('bird-1'));
+      expect(result?.count, equals(2));
+    });
+
+    test('excludes records without a birdId', () async {
+      await dao.insertItem(makeEntry(id: 'h1', birdId: null));
+
+      final result = await dao.watchBusiestBird(userId).first;
+
+      expect(result, isNull);
+    });
+
+    test('returns null when there are no records', () async {
+      final result = await dao.watchBusiestBird(userId).first;
+      expect(result, isNull);
+    });
+  });
+
+  group('watchAverageTreatmentDays', () {
+    test('averages day-diff across records with a valid follow-up', () async {
+      await dao.insertItem(
+        makeEntry(
+          id: 'h1',
+          date: DateTime.utc(2025, 1, 1),
+          followUpDate: DateTime.utc(2025, 1, 6), // 5 days
+        ),
+      );
+      await dao.insertItem(
+        makeEntry(
+          id: 'h2',
+          date: DateTime.utc(2025, 1, 10),
+          followUpDate: DateTime.utc(2025, 1, 12), // 2 days
+        ),
+      );
+
+      final result = await dao.watchAverageTreatmentDays(userId).first;
+
+      expect(result, closeTo(3.5, 0.0001));
+    });
+
+    test('excludes records with no follow-up date', () async {
+      await dao.insertItem(
+        makeEntry(id: 'h1', date: DateTime.utc(2025, 1, 1)),
+      );
+
+      final result = await dao.watchAverageTreatmentDays(userId).first;
+
+      expect(result, isNull);
+    });
+
+    test('excludes a follow-up date before the record date', () async {
+      await dao.insertItem(
+        makeEntry(
+          id: 'h1',
+          date: DateTime.utc(2025, 1, 10),
+          followUpDate: DateTime.utc(2025, 1, 5),
+        ),
+      );
+
+      final result = await dao.watchAverageTreatmentDays(userId).first;
+
+      expect(result, isNull);
+    });
+
+    test('returns null when there are no records', () async {
+      final result = await dao.watchAverageTreatmentDays(userId).first;
+      expect(result, isNull);
     });
   });
 }

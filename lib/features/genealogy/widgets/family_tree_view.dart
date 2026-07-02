@@ -114,11 +114,13 @@ class FamilyTreeViewState extends State<FamilyTreeView> {
             ),
           ),
         ),
-        // Reset zoom button (bottom-right)
+        // Reset zoom button (bottom-right).
+        // Regular (non-mini) FAB: `.small()` is 40x40dp, under the 48dp a11y
+        // touch-target minimum (accessibility.md).
         Positioned(
           right: AppSpacing.md,
           bottom: AppSpacing.md,
-          child: FloatingActionButton.small(
+          child: FloatingActionButton(
             heroTag: 'zoom_reset',
             onPressed: _resetView,
             tooltip: 'genealogy.zoom_to_fit'.tr(),

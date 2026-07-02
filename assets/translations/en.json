@@ -56,7 +56,6 @@
     "death": "Death",
     "sale": "Sale",
     "continue_confirm": "Do you want to continue?",
-    "unknown": "Unknown",
     "none": "None",
     "view_all": "View All",
     "view": "View",
@@ -715,7 +714,6 @@
     "export_personal_data": "Export Personal Data",
     "export_personal_data_desc": "Download your data under GDPR",
     "export_personal_data_confirm": "All your personal data will be prepared as a file. This process may take a few minutes.",
-    "export_data_started": "Data export started",
     "export_data_button": "Export",
     "delete_account": "Delete Account",
     "delete_account_desc": "Permanently delete your account and all data",
@@ -758,7 +756,10 @@
     "just_now": "Just now",
     "minutes_ago": "{} minutes ago",
     "hours_ago": "{} hours ago",
-    "days_ago": "{} days ago"
+    "days_ago": "{} days ago",
+    "active_sessions_info": "Your session is active on this device. For security, you can end sessions left open on other devices by signing out of all of them.",
+    "clear_cache_confirm": "Clear the cache? Temporary files will be deleted; your data is not affected.",
+    "version_copied": "Version info copied"
   },
   "backup": {
     "title": "Data Export",
@@ -2405,7 +2406,9 @@
     "retry_local_action": "Retry local change",
     "clear_conflict_history": "Clear History",
     "no_errors": "All data synced",
-    "sync_now_action": "Sync Now"
+    "sync_now_action": "Sync Now",
+    "clear_conflict_history_confirm": "Permanently delete the conflict history? This cannot be undone.",
+    "detail_load_error": "Sync details could not be loaded. Please try again."
   },
   "errors": {
     "unknown": "An unexpected error occurred.",

@@ -141,6 +141,24 @@ void main() {
       expect(find.byType(FloatingActionButton), findsOneWidget);
     });
 
+    testWidgets('zoom reset button meets 48dp minimum touch target', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          const FamilyTreeView(
+            rootBird: _rootBird,
+            ancestors: {'root-1': _rootBird},
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final size = tester.getSize(find.byType(FloatingActionButton));
+      expect(size.width, greaterThanOrEqualTo(48));
+      expect(size.height, greaterThanOrEqualTo(48));
+    });
+
     testWidgets(
       'renders AncestorConnectorPainter CustomPaint when ancestors exist',
       (tester) async {

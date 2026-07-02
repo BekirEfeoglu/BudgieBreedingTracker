@@ -5,6 +5,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../../../data/local/database/app_database.dart';
+
 export 'settings_theme_providers.dart';
 export 'settings_toggle_providers.dart';
 
@@ -22,7 +24,7 @@ final cacheSizeProvider = FutureProvider<int>((ref) async {
 
 final databaseSizeProvider = FutureProvider<int>((ref) async {
   final appDir = await getApplicationDocumentsDirectory();
-  final dbFile = File(p.join(appDir.path, 'budgie_tracker.sqlite'));
+  final dbFile = File(p.join(appDir.path, AppDatabase.dbFileName));
   if (!await dbFile.exists()) return 0;
   return dbFile.length();
 });

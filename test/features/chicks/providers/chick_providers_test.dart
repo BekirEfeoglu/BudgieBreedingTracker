@@ -7,14 +7,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/clutch_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
+import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/growth_measurement_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 
@@ -442,5 +445,124 @@ void main() {
           verify(() => birdRepo.save(captureAny())).captured.single as Bird;
       expect(savedBird.species, Species.canary);
     });
+  });
+
+  group('BandingActionNotifier', () {
+    late MockEventRepository eventRepo;
+    late MockNotificationScheduler scheduler;
+
+    ProviderContainer makeBandingContainer() {
+      return ProviderContainer(
+        overrides: [
+          chickRepositoryProvider.overrideWithValue(chickRepo),
+          eventRepositoryProvider.overrideWithValue(eventRepo),
+          notificationSchedulerProvider.overrideWithValue(scheduler),
+        ],
+      );
+    }
+
+    setUp(() {
+      eventRepo = MockEventRepository();
+      scheduler = MockNotificationScheduler();
+      registerFallbackValue(
+        Event(
+          id: 'fallback-event',
+          title: 'fallback',
+          eventDate: DateTime(2024, 1, 1),
+          type: EventType.banding,
+          userId: 'user-1',
+        ),
+      );
+    });
+
+    test(
+      'saves bandingDate, completes event and cancels reminders on success',
+      () async {
+        final chick = _chick(id: 'c1');
+        when(() => chickRepo.getById('c1')).thenAnswer((_) async => chick);
+        final event = Event(
+          id: 'e1',
+          title: 'Banding',
+          eventDate: DateTime(2024, 1, 10),
+          type: EventType.banding,
+          userId: 'user-1',
+          chickId: 'c1',
+        );
+        when(
+          () => eventRepo.getActiveByChickAndType('c1', EventType.banding),
+        ).thenAnswer((_) async => [event]);
+        when(() => eventRepo.save(any())).thenAnswer((_) async {});
+        when(
+          () => scheduler.cancelBandingReminders('c1'),
+        ).thenAnswer((_) async {});
+
+        final container = makeBandingContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(bandingActionProvider.notifier)
+            .markBandingComplete('c1');
+
+        expect(
+          container.read(bandingActionProvider),
+          isA<AsyncData<void>>(),
+        );
+        final savedChick =
+            verify(() => chickRepo.save(captureAny())).captured.single
+                as Chick;
+        expect(savedChick.bandingDate, isNotNull);
+        final savedEvent =
+            verify(() => eventRepo.save(captureAny())).captured.single
+                as Event;
+        expect(savedEvent.status, EventStatus.completed);
+        verify(() => scheduler.cancelBandingReminders('c1')).called(1);
+      },
+    );
+
+    test('reports an error when the chick does not exist', () async {
+      when(() => chickRepo.getById('missing')).thenAnswer((_) async => null);
+
+      final container = makeBandingContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(bandingActionProvider.notifier)
+          .markBandingComplete('missing');
+
+      expect(container.read(bandingActionProvider).hasError, isTrue);
+      verifyNever(() => chickRepo.save(any()));
+    });
+
+    test(
+      'still resolves to success when the banding event/reminder side '
+      'effects fail after bandingDate was already saved',
+      () async {
+        final chick = _chick(id: 'c1');
+        when(() => chickRepo.getById('c1')).thenAnswer((_) async => chick);
+        when(
+          () => eventRepo.getActiveByChickAndType('c1', EventType.banding),
+        ).thenThrow(Exception('event lookup failed'));
+        when(
+          () => scheduler.cancelBandingReminders('c1'),
+        ).thenThrow(Exception('scheduler unavailable'));
+
+        final container = makeBandingContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(bandingActionProvider.notifier)
+            .markBandingComplete('c1');
+
+        // bandingDate was already durably saved before the side effects ran
+        // — a transient failure completing the calendar event or cancelling
+        // the reminder must not turn a successful save into a reported
+        // failure.
+        expect(
+          container.read(bandingActionProvider),
+          isA<AsyncData<void>>(),
+        );
+        verify(() => chickRepo.save(any())).called(1);
+      },
+    );
   });
 }

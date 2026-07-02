@@ -158,12 +158,46 @@ void main() {
       expect(inoWarnings, isEmpty);
     });
 
-    test('crested x crested flags all offspring', () {
+    test('crested x crested flags only the double-factor offspring', () {
+      // A compound double-factor crest (two crest-locus alleles) is lethal;
+      // the single-factor crest and normal offspring are not.
       final result = analyzer.analyze(
         fatherMutations: {'crested_tufted'},
         motherMutations: {'crested_full_circular'},
         offspringResults: [
-          _offspring(phenotype: 'Crested', probability: 0.5),
+          _offspring(
+            phenotype: 'Crested',
+            probability: 0.25,
+            visualMutations: ['crested_tufted'],
+            doubleFactorIds: {'crested_tufted', 'crested_full_circular'},
+          ),
+          _offspring(
+            phenotype: 'Crested',
+            probability: 0.5,
+            visualMutations: ['crested_tufted'],
+          ),
+          _offspring(phenotype: 'Normal', probability: 0.25),
+        ],
+      );
+
+      final crestedWarnings = result.warnings.where(
+        (w) => w.combination.id == 'df_crested',
+      );
+      // Only the double-factor offspring is flagged, not every offspring.
+      expect(crestedWarnings, hasLength(1));
+      expect(crestedWarnings.first.offspring.probability, closeTo(0.25, 1e-9));
+    });
+
+    test('crested x crested does not flag when no offspring is double factor', () {
+      final result = analyzer.analyze(
+        fatherMutations: {'crested_tufted'},
+        motherMutations: {'crested_full_circular'},
+        offspringResults: [
+          _offspring(
+            phenotype: 'Crested',
+            probability: 0.5,
+            visualMutations: ['crested_tufted'],
+          ),
           _offspring(phenotype: 'Normal', probability: 0.5),
         ],
       );
@@ -171,7 +205,7 @@ void main() {
       final crestedWarnings = result.warnings.where(
         (w) => w.combination.id == 'df_crested',
       );
-      expect(crestedWarnings, hasLength(2));
+      expect(crestedWarnings, isEmpty);
     });
   });
 
@@ -181,7 +215,12 @@ void main() {
         fatherMutations: {'crested_tufted', 'ino'},
         motherMutations: {'crested_half_circular', 'ino'},
         offspringResults: [
-          _offspring(phenotype: 'Ino Crested', probability: 1.0),
+          _offspring(
+            phenotype: 'Ino Crested',
+            probability: 1.0,
+            visualMutations: ['crested_tufted', 'ino'],
+            doubleFactorIds: {'crested_tufted', 'crested_half_circular'},
+          ),
         ],
       );
 
@@ -189,11 +228,18 @@ void main() {
       expect(result.highestSeverity, LethalSeverity.lethal);
     });
 
-    test('severity is lethal when only crested pairing is detected', () {
+    test('severity is lethal when a double-factor crested offspring exists', () {
       final result = analyzer.analyze(
         fatherMutations: {'crested_tufted'},
         motherMutations: {'crested_half_circular'},
-        offspringResults: [_offspring(phenotype: 'Crested', probability: 1.0)],
+        offspringResults: [
+          _offspring(
+            phenotype: 'Crested',
+            probability: 1.0,
+            visualMutations: ['crested_tufted'],
+            doubleFactorIds: {'crested_tufted', 'crested_half_circular'},
+          ),
+        ],
       );
 
       expect(result.highestSeverity, LethalSeverity.lethal);
@@ -222,12 +268,19 @@ void main() {
     });
 
     test('clamps total affected probability to 1.0', () {
-      // ino x ino (rate=1.0) + crested x crested (rate=0.25) on same offspring
+      // ino x ino (parentBothVisual, rate=1.0) flags every offspring, so the
+      // aggregate already reaches 1.0; the double-factor crested offspring adds
+      // no extra since impact is capped per offspring at its probability.
       final result = analyzer.analyze(
         fatherMutations: {'ino', 'crested_tufted'},
         motherMutations: {'ino', 'crested_half_circular'},
         offspringResults: [
-          _offspring(phenotype: 'Ino Crested', probability: 0.5),
+          _offspring(
+            phenotype: 'Ino Crested',
+            probability: 0.5,
+            visualMutations: ['ino', 'crested_tufted'],
+            doubleFactorIds: {'crested_tufted', 'crested_half_circular'},
+          ),
           _offspring(phenotype: 'Ino Normal', probability: 0.5),
         ],
       );

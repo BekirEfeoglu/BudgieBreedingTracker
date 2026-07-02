@@ -7,6 +7,7 @@ import 'package:http/testing.dart';
 import 'package:path/path.dart' as p;
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 import 'package:budgie_breeding_tracker/domain/services/local_ai/local_ai_models.dart';
 import 'package:budgie_breeding_tracker/domain/services/local_ai/local_ai_service.dart';
@@ -310,6 +311,42 @@ Thanks.
         throwsA(isA<ValidationException>()),
       );
     });
+
+    test(
+      'does not log the full provider error body on a non-2xx response',
+      () async {
+        AppLogger.clearRecentLogs();
+        // Simulates a provider (e.g. content-policy) rejection that echoes
+        // request content back in its error body — this must never reach
+        // Sentry in full (local-ai.md: no AI prompt content to Sentry).
+        final leakedSecret = 'BUDGIE_PROMPT_LEAK_${'x' * 500}';
+        final service = LocalAiService(
+          client: MockClient(
+            (_) async => http.Response(leakedSecret, 500),
+          ),
+        );
+
+        await expectLater(
+          () => service.analyzeGenetics(
+            config: LocalAiConfig.defaults,
+            father: const ParentGenotype.empty(gender: BirdGender.male),
+            mother: const ParentGenotype.empty(gender: BirdGender.female),
+          ),
+          throwsA(isA<NetworkException>()),
+        );
+
+        final leaked = AppLogger.recentLogs.any(
+          (entry) => entry.message.contains(leakedSecret),
+        );
+        expect(
+          leaked,
+          isFalse,
+          reason:
+              'full HTTP error body must not be logged — it can echo '
+              'prompt content into a Sentry breadcrumb',
+        );
+      },
+    );
   });
 
   group('LocalAiService.analyzeSex', () {

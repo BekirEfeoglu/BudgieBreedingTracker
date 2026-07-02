@@ -17,7 +17,10 @@ class AiSectionCard extends StatelessWidget {
   });
 
   final String title;
-  final IconData icon;
+
+  /// Leading icon widget (use `Icon(...)` or `AppIcon(...)`), so callers can
+  /// pass a domain SVG icon rather than being restricted to [IconData].
+  final Widget icon;
   final String subtitle;
   final String infoText;
   final Widget child;
@@ -58,7 +61,13 @@ class AiSectionCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(icon, size: 16, color: theme.colorScheme.primary),
+                        IconTheme.merge(
+                          data: IconThemeData(
+                            size: 16,
+                            color: theme.colorScheme.primary,
+                          ),
+                          child: icon,
+                        ),
                         const SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: Text(

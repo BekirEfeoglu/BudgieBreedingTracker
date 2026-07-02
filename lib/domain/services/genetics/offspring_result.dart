@@ -76,6 +76,12 @@ class _RawResult {
   /// Mutation IDs carried but not visually expressed.
   final List<String> carriedMutationIds;
 
+  /// Mutation IDs present in a double dose (two mutant alleles at one locus —
+  /// homozygous or compound heterozygote). Used by [ViabilityAnalyzer] to flag
+  /// double-factor lethal combinations for allelic-series mutations that don't
+  /// carry a `(double)` phenotype string marker.
+  final Set<String> doubleFactorIds;
+
   const _RawResult({
     required this.phenotype,
     required this.probability,
@@ -84,6 +90,7 @@ class _RawResult {
     this.genotype,
     this.expressedMutationIds = const [],
     this.carriedMutationIds = const [],
+    this.doubleFactorIds = const {},
   });
 }
 
@@ -96,6 +103,9 @@ class _MultiLocusResult {
   final List<String> genotypes;
   final List<String> expressedMutationIds;
 
+  /// Mutation IDs present in a double dose across the combined loci.
+  final Set<String> doubleFactorIds;
+
   const _MultiLocusResult({
     required this.phenotypes,
     required this.probability,
@@ -103,6 +113,7 @@ class _MultiLocusResult {
     required this.carriedMutations,
     required this.genotypes,
     this.expressedMutationIds = const [],
+    this.doubleFactorIds = const {},
   });
 }
 

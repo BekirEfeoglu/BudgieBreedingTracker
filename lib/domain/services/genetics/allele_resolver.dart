@@ -79,6 +79,17 @@ String _sortAllelicPair(String a, String b) {
   return '$b|$a';
 }
 
+/// True for a fully-dominant allele whose single- and double-factor birds share
+/// the SAME phenotype name (e.g. crested). Such a double dose must be tagged
+/// "(double)" so it does not merge with the single-factor birds — critical for
+/// DF-lethal alleles. Incomplete-dominant alleles (e.g. blue-series) are
+/// excluded: their SF/DF forms already carry distinct names via dedicated
+/// compound resolvers, so tagging would double-label and break those results.
+bool _isDominantExpressed(BudgieMutationRecord? record) {
+  if (record == null) return false;
+  return record.inheritanceType == InheritanceType.autosomalDominant;
+}
+
 /// Resolves the phenotype from two alleles at an allelic series locus.
 _AllelicPhenotypeResult _resolveAllelicPhenotype(
   String locusId,
@@ -130,8 +141,13 @@ _AllelicPhenotypeResult _resolveAllelicPhenotype(
     final record = MutationDatabase.getById(allele1);
     final name = record?.name ?? allele1;
     final sym = record?.alleleSymbol ?? allele1;
+    // For dominant / incomplete-dominant alleles the single-factor heterozygote
+    // is ALSO visually expressed under the same name, so a bare name would
+    // merge the double-factor homozygote with the single-factor birds. Tag the
+    // double dose distinctly (mirrors independent-locus "(double)") so the DF
+    // subset stays its own result — critical for DF-lethal alleles like crested.
     return _AllelicPhenotypeResult(
-      phenotype: name,
+      phenotype: _isDominantExpressed(record) ? '$name (double)' : name,
       genotype: '$sym/$sym',
       expressedIds: [allele1],
       carriedIds: const [],
@@ -177,18 +193,25 @@ _AllelicPhenotypeResult _resolveCompoundHeterozygote(
     return _resolveInoCompound(allele1, allele2, sym1, sym2, rank1, rank2);
   }
 
-  // Generic: higher rank dominates
+  // Generic: higher rank dominates. When both alleles are dominant/incomplete-
+  // dominant (e.g. two different crested alleles) the offspring carries a double
+  // dose, so tag it "(double)" to keep it distinct from single-factor birds
+  // sharing the dominant allele's name.
+  final bothDominant =
+      _isDominantExpressed(record1) && _isDominantExpressed(record2);
   if (rank1 > rank2) {
+    final name = record1?.name ?? allele1;
     return _AllelicPhenotypeResult(
-      phenotype: record1?.name ?? allele1,
+      phenotype: bothDominant ? '$name (double)' : name,
       genotype: '$sym1/$sym2',
       expressedIds: [allele1],
       carriedIds: [allele2],
     );
   }
   if (rank2 > rank1) {
+    final name = record2?.name ?? allele2;
     return _AllelicPhenotypeResult(
-      phenotype: record2?.name ?? allele2,
+      phenotype: bothDominant ? '$name (double)' : name,
       genotype: '$sym2/$sym1',
       expressedIds: [allele2],
       carriedIds: [allele1],

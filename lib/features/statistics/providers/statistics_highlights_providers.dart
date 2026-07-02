@@ -1,20 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
-import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/date_utils.dart'
     as date_utils;
+import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
-import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
-import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/clutch_model.dart';
-import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
-import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_highlight_models.dart';
 import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
-import 'package:budgie_breeding_tracker/data/providers/breeding_stream_providers.dart';
-import 'package:budgie_breeding_tracker/data/providers/chick_stream_providers.dart';
-import 'package:budgie_breeding_tracker/data/providers/egg_stream_providers.dart';
-import 'package:budgie_breeding_tracker/data/providers/health_record_stream_providers.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 
 export 'package:budgie_breeding_tracker/data/models/statistics_highlight_models.dart';
@@ -26,120 +17,289 @@ final clutchesStreamProvider = StreamProvider.family<List<Clutch>, String>((
   return ref.watch(clutchRepositoryProvider).watchAll(userId);
 });
 
+/// Raw SQL-aggregated most-productive hatch year (statistics.md SQL
+/// aggregation requirement) — `ChicksDao.watchMostProductiveSeason`.
+final _mostProductiveSeasonStreamProvider =
+    StreamProvider.family<({int year, int count})?, String>((ref, userId) {
+      return ref.watch(chicksDaoProvider).watchMostProductiveSeason(userId);
+    });
+
+/// Raw SQL-aggregated top breeding pair by chick count —
+/// `ChicksDao.watchTopPairByChickCount`.
+final _topPairStreamProvider =
+    StreamProvider.family<({String pairId, int count})?, String>((
+      ref,
+      userId,
+    ) {
+      return ref.watch(chicksDaoProvider).watchTopPairByChickCount(userId);
+    });
+
+/// Personal records: most productive season and top pair are SQL-aggregated
+/// (see above); longest-lived bird stays Dart-side over the birds list —
+/// birds are naturally bounded per user (unlike eggs/chicks/health records,
+/// which grow unbounded over years), and the "now"-relative day-diff math
+/// is delicate enough (datetime-format.md DST/UTC boundary rules) that a
+/// raw-SQL `julianday()` conversion isn't worth the risk for a small list.
 final personalRecordsProvider =
     Provider.family<AsyncValue<PersonalRecords>, String>((ref, userId) {
       final birdsAsync = ref.watch(birdsStreamProvider(userId));
-      final pairsAsync = ref.watch(breedingPairsStreamProvider(userId));
-      final clutchesAsync = ref.watch(clutchesStreamProvider(userId));
-      final chicksAsync = ref.watch(chicksStreamProvider(userId));
+      final seasonAsync = ref.watch(
+        _mostProductiveSeasonStreamProvider(userId),
+      );
+      final topPairAsync = ref.watch(_topPairStreamProvider(userId));
 
-      for (final async in [
-        birdsAsync,
-        pairsAsync,
-        clutchesAsync,
-        chicksAsync,
-      ]) {
+      for (final async in [birdsAsync, seasonAsync, topPairAsync]) {
         if (async.hasError) {
           return AsyncError(async.error!, async.stackTrace ?? StackTrace.empty);
         }
       }
       if (birdsAsync.isLoading ||
-          pairsAsync.isLoading ||
-          clutchesAsync.isLoading ||
-          chicksAsync.isLoading) {
+          seasonAsync.isLoading ||
+          topPairAsync.isLoading) {
         return const AsyncLoading();
       }
 
+      final season = seasonAsync.requireValue;
+      final topPair = topPairAsync.requireValue;
+
       return AsyncData(
-        buildPersonalRecords(
-          birds: birdsAsync.requireValue,
-          pairs: pairsAsync.requireValue,
-          clutches: clutchesAsync.requireValue,
-          chicks: chicksAsync.requireValue,
+        PersonalRecords(
+          mostProductiveSeason: season == null
+              ? null
+              : SeasonRecord(year: season.year, chickCount: season.count),
+          topPair: topPair == null
+              ? null
+              : TopPairRecord(
+                  pairId: topPair.pairId,
+                  chickCount: topPair.count,
+                ),
+          longestLivedBird: findLongestLivedBird(birdsAsync.requireValue),
         ),
       );
     });
 
+/// Raw SQL-aggregated distinct years present in eggs.lay_date /
+/// chicks.hatch_date (statistics.md SQL aggregation requirement) — the
+/// union of both determines which 2 seasons get compared.
+final _eggYearsStreamProvider = StreamProvider.family<Set<int>, String>((
+  ref,
+  userId,
+) {
+  return ref.watch(eggsDaoProvider).watchDistinctLayYears(userId);
+});
+
+final _chickYearsStreamProvider = StreamProvider.family<Set<int>, String>((
+  ref,
+  userId,
+) {
+  return ref.watch(chicksDaoProvider).watchDistinctHatchYears(userId);
+});
+
+/// Sorted, deduplicated years across eggs + chicks. `null` means fewer than
+/// 2 seasons exist yet (matches the previous `years.length < 2` guard).
+final _seasonYearsProvider = Provider.family<AsyncValue<List<int>?>, String>((
+  ref,
+  userId,
+) {
+  final eggYearsAsync = ref.watch(_eggYearsStreamProvider(userId));
+  final chickYearsAsync = ref.watch(_chickYearsStreamProvider(userId));
+
+  for (final async in [eggYearsAsync, chickYearsAsync]) {
+    if (async.hasError) {
+      return AsyncError(async.error!, async.stackTrace ?? StackTrace.empty);
+    }
+  }
+  if (eggYearsAsync.isLoading || chickYearsAsync.isLoading) {
+    return const AsyncLoading();
+  }
+
+  final years = {...eggYearsAsync.requireValue, ...chickYearsAsync.requireValue};
+  if (years.length < 2) return const AsyncData(null);
+  return AsyncData(years.toList()..sort());
+});
+
+/// Per-year season stats (eggs + chicks), for the season-comparison card.
+final _seasonStatsProvider =
+    Provider.family<AsyncValue<SeasonStats>, ({String userId, int year})>((
+      ref,
+      args,
+    ) {
+      final eggStatsAsync = ref.watch(
+        _seasonEggStatsStreamProvider(args),
+      );
+      final chickStatsAsync = ref.watch(
+        _seasonChickStatsStreamProvider(args),
+      );
+
+      for (final async in [eggStatsAsync, chickStatsAsync]) {
+        if (async.hasError) {
+          return AsyncError(async.error!, async.stackTrace ?? StackTrace.empty);
+        }
+      }
+      if (eggStatsAsync.isLoading || chickStatsAsync.isLoading) {
+        return const AsyncLoading();
+      }
+
+      final eggStats = eggStatsAsync.requireValue;
+      final chickStats = chickStatsAsync.requireValue;
+
+      return AsyncData(
+        SeasonStats(
+          year: args.year,
+          totalEggs: eggStats.total,
+          fertileEggs: eggStats.fertile,
+          hatchedChicks: chickStats.total,
+          liveChicks: chickStats.live,
+        ),
+      );
+    });
+
+final _seasonEggStatsStreamProvider =
+    StreamProvider.family<({int total, int fertile}), ({String userId, int year})>((
+      ref,
+      args,
+    ) {
+      return ref
+          .watch(eggsDaoProvider)
+          .watchSeasonEggStats(args.userId, args.year);
+    });
+
+final _seasonChickStatsStreamProvider =
+    StreamProvider.family<({int total, int live}), ({String userId, int year})>((
+      ref,
+      args,
+    ) {
+      return ref
+          .watch(chicksDaoProvider)
+          .watchSeasonChickStats(args.userId, args.year);
+    });
+
+/// Compares the two most recent breeding seasons (by year). Returns `null`
+/// when fewer than 2 seasons of data exist yet.
 final seasonComparisonProvider =
     Provider.family<AsyncValue<SeasonComparison?>, String>((ref, userId) {
-      final eggsAsync = ref.watch(eggsStreamProvider(userId));
-      final chicksAsync = ref.watch(chicksStreamProvider(userId));
+      final yearsAsync = ref.watch(_seasonYearsProvider(userId));
 
-      for (final async in [eggsAsync, chicksAsync]) {
+      if (yearsAsync.hasError) {
+        return AsyncError(
+          yearsAsync.error!,
+          yearsAsync.stackTrace ?? StackTrace.empty,
+        );
+      }
+      if (yearsAsync.isLoading) {
+        return const AsyncLoading();
+      }
+
+      final years = yearsAsync.requireValue;
+      if (years == null) return const AsyncData(null);
+
+      final previousYear = years[years.length - 2];
+      final currentYear = years.last;
+      final previousAsync = ref.watch(
+        _seasonStatsProvider((userId: userId, year: previousYear)),
+      );
+      final currentAsync = ref.watch(
+        _seasonStatsProvider((userId: userId, year: currentYear)),
+      );
+
+      for (final async in [previousAsync, currentAsync]) {
         if (async.hasError) {
           return AsyncError(async.error!, async.stackTrace ?? StackTrace.empty);
         }
       }
-      if (eggsAsync.isLoading || chicksAsync.isLoading) {
+      if (previousAsync.isLoading || currentAsync.isLoading) {
         return const AsyncLoading();
       }
 
       return AsyncData(
-        buildSeasonComparison(
-          eggs: eggsAsync.requireValue,
-          chicks: chicksAsync.requireValue,
+        SeasonComparison(
+          previous: previousAsync.requireValue,
+          current: currentAsync.requireValue,
         ),
       );
     });
 
+/// Raw SQL-aggregated busiest month/bird/avg-treatment-days (statistics.md
+/// SQL aggregation requirement) — see `HealthRecordsDao.watchBusiestMonth` /
+/// `watchBusiestBird` / `watchAverageTreatmentDays`.
+final _busiestMonthStreamProvider =
+    StreamProvider.family<({String month, int count})?, String>((
+      ref,
+      userId,
+    ) {
+      return ref.watch(healthRecordsDaoProvider).watchBusiestMonth(userId);
+    });
+
+final _busiestBirdStreamProvider =
+    StreamProvider.family<({String birdId, int count})?, String>((
+      ref,
+      userId,
+    ) {
+      return ref.watch(healthRecordsDaoProvider).watchBusiestBird(userId);
+    });
+
+final _averageTreatmentDaysStreamProvider = StreamProvider.family<double?, String>(
+  (ref, userId) {
+    return ref
+        .watch(healthRecordsDaoProvider)
+        .watchAverageTreatmentDays(userId);
+  },
+);
+
+/// Health trend summary. `mostVisitedBirdName` still needs the bird's name,
+/// so `birdsStreamProvider` stays watched for that lookup only — birds
+/// lists are naturally small per user (unlike health records, which grow
+/// unbounded over years and are now fully SQL-aggregated above).
 final healthTrendSummaryProvider =
     Provider.family<AsyncValue<HealthTrendSummary>, String>((ref, userId) {
-      final recordsAsync = ref.watch(healthRecordsStreamProvider(userId));
+      final busiestMonthAsync = ref.watch(_busiestMonthStreamProvider(userId));
+      final busiestBirdAsync = ref.watch(_busiestBirdStreamProvider(userId));
+      final avgTreatmentAsync = ref.watch(
+        _averageTreatmentDaysStreamProvider(userId),
+      );
       final birdsAsync = ref.watch(birdsStreamProvider(userId));
 
-      for (final async in [recordsAsync, birdsAsync]) {
+      for (final async in [
+        busiestMonthAsync,
+        busiestBirdAsync,
+        avgTreatmentAsync,
+        birdsAsync,
+      ]) {
         if (async.hasError) {
           return AsyncError(async.error!, async.stackTrace ?? StackTrace.empty);
         }
       }
-      if (recordsAsync.isLoading || birdsAsync.isLoading) {
+      if (busiestMonthAsync.isLoading ||
+          busiestBirdAsync.isLoading ||
+          avgTreatmentAsync.isLoading ||
+          birdsAsync.isLoading) {
         return const AsyncLoading();
       }
 
+      final busiestMonth = busiestMonthAsync.requireValue;
+      final busiestBird = busiestBirdAsync.requireValue;
+      final birdsById = {
+        for (final bird in birdsAsync.requireValue) bird.id: bird,
+      };
+
       return AsyncData(
-        buildHealthTrend(
-          records: recordsAsync.requireValue,
-          birds: birdsAsync.requireValue,
+        HealthTrendSummary(
+          busiestMonthKey: busiestMonth?.month,
+          busiestMonthRecordCount: busiestMonth?.count ?? 0,
+          mostVisitedBirdId: busiestBird?.birdId,
+          mostVisitedBirdName: busiestBird == null
+              ? null
+              : birdsById[busiestBird.birdId]?.name ?? busiestBird.birdId,
+          mostVisitedBirdRecordCount: busiestBird?.count ?? 0,
+          averageTreatmentDays: avgTreatmentAsync.requireValue,
         ),
       );
     });
 
-PersonalRecords buildPersonalRecords({
-  required List<Bird> birds,
-  required List<BreedingPair> pairs,
-  required List<Clutch> clutches,
-  required List<Chick> chicks,
-  DateTime? now,
-}) {
-  final chicksByYear = <int, int>{};
-  for (final chick in chicks) {
-    final hatchDate = chick.hatchDate;
-    if (hatchDate == null) continue;
-    chicksByYear[hatchDate.year] = (chicksByYear[hatchDate.year] ?? 0) + 1;
-  }
-
-  final mostProductiveSeason = _maxEntry(chicksByYear) == null
-      ? null
-      : SeasonRecord(
-          year: _maxEntry(chicksByYear)!.key,
-          chickCount: _maxEntry(chicksByYear)!.value,
-        );
-
-  final clutchToPair = {
-    for (final clutch in clutches)
-      if (clutch.breedingId != null) clutch.id: clutch.breedingId!,
-  };
-  final validPairIds = pairs.map((pair) => pair.id).toSet();
-  final chicksByPair = <String, int>{};
-  for (final chick in chicks) {
-    final clutchId = chick.clutchId;
-    if (clutchId == null) continue;
-    final pairId = clutchToPair[chick.clutchId];
-    if (pairId == null || !validPairIds.contains(pairId)) continue;
-    chicksByPair[pairId] = (chicksByPair[pairId] ?? 0) + 1;
-  }
-  final topPairEntry = _maxEntry(chicksByPair);
-
+/// Finds the bird with the longest lifespan (birthDate to deathDate, or to
+/// [now] if still alive). Ties are not explicitly broken (first max found
+/// wins, matching the original iteration-order behavior).
+LongevityRecord? findLongestLivedBird(List<Bird> birds, {DateTime? now}) {
   LongevityRecord? longestLivedBird;
   final reference = now ?? DateTime.now();
   for (final bird in birds) {
@@ -156,117 +316,6 @@ PersonalRecords buildPersonalRecords({
       );
     }
   }
-
-  return PersonalRecords(
-    mostProductiveSeason: mostProductiveSeason,
-    topPair: topPairEntry == null
-        ? null
-        : TopPairRecord(
-            pairId: topPairEntry.key,
-            chickCount: topPairEntry.value,
-          ),
-    longestLivedBird: longestLivedBird,
-  );
+  return longestLivedBird;
 }
 
-SeasonComparison? buildSeasonComparison({
-  required List<Egg> eggs,
-  required List<Chick> chicks,
-}) {
-  final years = <int>{};
-  for (final egg in eggs) {
-    years.add(egg.layDate.year);
-  }
-  for (final chick in chicks) {
-    final hatchDate = chick.hatchDate;
-    if (hatchDate != null) years.add(hatchDate.year);
-  }
-  if (years.length < 2) return null;
-
-  final sortedYears = years.toList()..sort();
-  final previousYear = sortedYears[sortedYears.length - 2];
-  final currentYear = sortedYears.last;
-
-  return SeasonComparison(
-    previous: _buildSeasonStats(previousYear, eggs, chicks),
-    current: _buildSeasonStats(currentYear, eggs, chicks),
-  );
-}
-
-HealthTrendSummary buildHealthTrend({
-  required List<HealthRecord> records,
-  required List<Bird> birds,
-}) {
-  if (records.isEmpty) return const HealthTrendSummary();
-
-  final byMonth = <String, int>{};
-  final byBird = <String, int>{};
-  final treatmentDurations = <int>[];
-  for (final record in records) {
-    final monthKey =
-        '${record.date.year}-${record.date.month.toString().padLeft(2, '0')}';
-    byMonth[monthKey] = (byMonth[monthKey] ?? 0) + 1;
-
-    final birdId = record.birdId;
-    if (birdId != null) byBird[birdId] = (byBird[birdId] ?? 0) + 1;
-
-    final followUpDate = record.followUpDate;
-    if (followUpDate != null && !followUpDate.isBefore(record.date)) {
-      treatmentDurations.add(
-        date_utils.DateUtils.dayDiff(record.date, followUpDate),
-      );
-    }
-  }
-
-  final busiestMonth = _maxEntry(byMonth);
-  final busiestBird = _maxEntry(byBird);
-  final birdsById = {for (final bird in birds) bird.id: bird};
-  final averageTreatmentDays = treatmentDurations.isEmpty
-      ? null
-      : treatmentDurations.reduce((a, b) => a + b) / treatmentDurations.length;
-
-  return HealthTrendSummary(
-    busiestMonthKey: busiestMonth?.key,
-    busiestMonthRecordCount: busiestMonth?.value ?? 0,
-    mostVisitedBirdId: busiestBird?.key,
-    mostVisitedBirdName: busiestBird == null
-        ? null
-        : birdsById[busiestBird.key]?.name ?? busiestBird.key,
-    mostVisitedBirdRecordCount: busiestBird?.value ?? 0,
-    averageTreatmentDays: averageTreatmentDays,
-  );
-}
-
-SeasonStats _buildSeasonStats(int year, List<Egg> eggs, List<Chick> chicks) {
-  final seasonEggs = eggs.where((egg) => egg.layDate.year == year).toList();
-  final fertileEggs = seasonEggs
-      .where(
-        (egg) =>
-            egg.status == EggStatus.fertile || egg.status == EggStatus.hatched,
-      )
-      .length;
-  final seasonChicks = chicks
-      .where((chick) => chick.hatchDate?.year == year)
-      .toList();
-
-  return SeasonStats(
-    year: year,
-    totalEggs: seasonEggs.length,
-    fertileEggs: fertileEggs,
-    hatchedChicks: seasonChicks.length,
-    liveChicks: seasonChicks
-        .where((chick) => chick.healthStatus != ChickHealthStatus.deceased)
-        .length,
-  );
-}
-
-MapEntry<K, int>? _maxEntry<K>(Map<K, int> values) {
-  if (values.isEmpty) return null;
-  final entries = values.entries.toList()
-    ..sort((a, b) {
-      final valueCompare = b.value.compareTo(a.value);
-      if (valueCompare != 0) return valueCompare;
-      return a.key.toString().compareTo(b.key.toString());
-    });
-  return entries.first;
-}

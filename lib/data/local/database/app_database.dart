@@ -120,6 +120,10 @@ part 'app_database_indexes.dart';
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
+  /// SQLite file name on disk — shared with `databaseSizeProvider` so the
+  /// settings screen never drifts from the real database location.
+  static const dbFileName = 'budgie_tracker.sqlite';
+
   /// Constructor for testing with a custom query executor.
   AppDatabase.forTesting(super.e);
 
@@ -287,7 +291,7 @@ class AppDatabase extends _$AppDatabase {
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'budgie_tracker.sqlite'));
+    final file = File(p.join(dbFolder.path, AppDatabase.dbFileName));
     return NativeDatabase.createInBackground(file);
   });
 }

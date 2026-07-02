@@ -4,9 +4,19 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/local/preferences/app_preferences.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
-import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
 
 part 'statistics_chart_providers.dart';
+
+/// Raw SQL-aggregated chick health-status counts (key = enum name).
+///
+/// Shared by `chickSurvivalProvider` (statistics_health_providers.dart) and
+/// `summaryStatsProvider` (statistics_summary_providers.dart) — both watch
+/// this single provider instance instead of each opening their own
+/// `ChicksDao.watchHealthStatusCounts` Drift stream subscription.
+final chickHealthCountsProvider =
+    StreamProvider.family<Map<String, int>, String>((ref, userId) {
+      return ref.watch(chicksDaoProvider).watchHealthStatusCounts(userId);
+    });
 
 /// Period options for statistics date range filtering.
 enum StatsPeriod {
@@ -232,17 +242,20 @@ final genderDistributionProvider =
       );
     });
 
-/// Species distribution statistics from bird data.
+/// Raw SQL-aggregated species counts (statistics.md SQL aggregation
+/// requirement — mirrors _genderDistStreamProvider/_statusDistStreamProvider).
+final _speciesDistStreamProvider =
+    StreamProvider.family<Map<Species, int>, String>((ref, userId) {
+      return ref.watch(birdsDaoProvider).watchSpeciesDistribution(userId);
+    });
+
+/// Species distribution statistics, sorted by count descending (ties broken
+/// alphabetically by enum name).
 final speciesDistributionProvider =
     Provider.family<AsyncValue<Map<Species, int>>, String>((ref, userId) {
-      final birdsAsync = ref.watch(birdsStreamProvider(userId));
+      final countsAsync = ref.watch(_speciesDistStreamProvider(userId));
 
-      return birdsAsync.whenData((birds) {
-        final counts = <Species, int>{};
-        for (final bird in birds) {
-          counts[bird.species] = (counts[bird.species] ?? 0) + 1;
-        }
-
+      return countsAsync.whenData((counts) {
         final entries = counts.entries.toList()
           ..sort((a, b) {
             final countCompare = b.value.compareTo(a.value);

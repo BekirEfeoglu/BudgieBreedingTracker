@@ -114,6 +114,115 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
         .map((row) => row.read(count) ?? 0);
   }
 
+  /// All-time fertile vs infertile egg counts for the statistics summary
+  /// card (not period-scoped — statistics.md SQL aggregation requirement).
+  /// `fertile` includes both `fertile` and `hatched` status (an egg that
+  /// hatched was fertile).
+  Stream<({int fertile, int infertile})> watchFertilityCount(String userId) {
+    final query = customSelect(
+      'SELECT '
+      'SUM(CASE WHEN status IN (?, ?) THEN 1 ELSE 0 END) AS fertile_count, '
+      'SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS infertile_count '
+      'FROM eggs '
+      'WHERE user_id = ? AND is_deleted = 0',
+      variables: [
+        Variable.withString(EggStatus.fertile.name),
+        Variable.withString(EggStatus.hatched.name),
+        Variable.withString(EggStatus.infertile.name),
+        Variable.withString(userId),
+      ],
+      readsFrom: {eggsTable},
+    );
+    return query.watch().map((rows) {
+      final row = rows.single;
+      return (
+        fertile: row.read<int?>('fertile_count') ?? 0,
+        infertile: row.read<int?>('infertile_count') ?? 0,
+      );
+    });
+  }
+
+  /// Distinct calendar years present in `lay_date`, for the season-
+  /// comparison highlight card (statistics.md SQL aggregation requirement).
+  /// UTC-based (matches `egg.layDate.year` on the UTC-normalized DateTime).
+  Stream<Set<int>> watchDistinctLayYears(String userId) {
+    final query = customSelect(
+      "SELECT DISTINCT CAST(strftime('%Y', lay_date) AS INTEGER) AS year "
+      'FROM eggs '
+      'WHERE user_id = ? AND is_deleted = 0',
+      variables: [Variable.withString(userId)],
+      readsFrom: {eggsTable},
+    );
+    return query.watch().map(
+      (rows) => rows.map((row) => row.read<int>('year')).toSet(),
+    );
+  }
+
+  /// Egg totals within a `[from, to)` date window (total laid, fertile,
+  /// infertile) — for period-aware trend/insight providers (statistics.md
+  /// SQL aggregation requirement). `to` is an exclusive upper bound,
+  /// matching `StatsDateRange.isInCurrent`/`isInPrevious` semantics.
+  Stream<({int total, int fertile, int infertile})> watchPeriodEggStats(
+    String userId,
+    DateTime from,
+    DateTime to,
+  ) {
+    final query = customSelect(
+      'SELECT COUNT(*) AS total, '
+      'SUM(CASE WHEN status IN (?, ?) THEN 1 ELSE 0 END) AS fertile_count, '
+      'SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS infertile_count '
+      'FROM eggs '
+      'WHERE user_id = ? AND is_deleted = 0 '
+      'AND lay_date >= ? AND lay_date < ?',
+      variables: [
+        Variable.withString(EggStatus.fertile.name),
+        Variable.withString(EggStatus.hatched.name),
+        Variable.withString(EggStatus.infertile.name),
+        Variable.withString(userId),
+        Variable.withDateTime(from),
+        Variable.withDateTime(to),
+      ],
+      readsFrom: {eggsTable},
+    );
+    return query.watch().map((rows) {
+      final row = rows.single;
+      return (
+        total: row.read<int>('total'),
+        fertile: row.read<int?>('fertile_count') ?? 0,
+        infertile: row.read<int?>('infertile_count') ?? 0,
+      );
+    });
+  }
+
+  /// Egg totals for a single calendar [year] (total laid, fertile —
+  /// counting `fertile`+`hatched` as fertile), for the season-comparison
+  /// highlight card.
+  Stream<({int total, int fertile})> watchSeasonEggStats(
+    String userId,
+    int year,
+  ) {
+    final query = customSelect(
+      'SELECT COUNT(*) AS total, '
+      'SUM(CASE WHEN status IN (?, ?) THEN 1 ELSE 0 END) AS fertile_count '
+      'FROM eggs '
+      "WHERE user_id = ? AND is_deleted = 0 AND strftime('%Y', lay_date) = ?",
+      variables: [
+        Variable.withString(EggStatus.fertile.name),
+        Variable.withString(EggStatus.hatched.name),
+        Variable.withString(userId),
+        Variable.withString(year.toString()),
+      ],
+      readsFrom: {eggsTable},
+    );
+    return query.watch().map((rows) {
+      final row = rows.single;
+      return (
+        total: row.read<int>('total'),
+        fertile: row.read<int?>('fertile_count') ?? 0,
+      );
+    });
+  }
+
   /// Watches monthly egg production for statistics (SQL aggregate).
   ///
   /// Returns a map of `'YYYY-MM'` → count. Only non-deleted eggs are counted.
@@ -190,12 +299,15 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
       'FROM eggs e '
       '$speciesJoin'
       'WHERE e.user_id = ? AND e.is_deleted = 0 '
-      "AND e.status IN ('fertile', 'hatched', 'infertile') "
+      'AND e.status IN (?, ?, ?) '
       '$speciesFilter'
       'GROUP BY month, e.status '
       'ORDER BY month',
       variables: [
         Variable.withString(userId),
+        Variable.withString(EggStatus.fertile.name),
+        Variable.withString(EggStatus.hatched.name),
+        Variable.withString(EggStatus.infertile.name),
         if (species != null) Variable.withString(species),
       ],
       readsFrom: tables,
@@ -209,7 +321,9 @@ class EggsDao extends DatabaseAccessor<AppDatabase> with _$EggsDaoMixin {
         final count = row.read<int>('cnt');
         final current = result[month] ?? (fertile: 0, total: 0);
         // fertile + hatched both count as fertile; all three add to total.
-        final isFertile = status == 'fertile' || status == 'hatched';
+        final isFertile =
+            status == EggStatus.fertile.name ||
+            status == EggStatus.hatched.name;
         result[month] = (
           fertile: current.fertile + (isFertile ? count : 0),
           total: current.total + count,

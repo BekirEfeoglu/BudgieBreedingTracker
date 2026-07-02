@@ -11,10 +11,20 @@ typedef InbreedingData = ({
 });
 
 /// Calculates inbreeding coefficient and common ancestor IDs for a bird.
+///
+/// [maxDepth] is the generation depth used to build [ancestors] (see
+/// `ancestorsProvider`/`chickAncestorsProvider`). Since that map is already
+/// truncated to the user's chosen pedigree depth (3-8) before it reaches
+/// [InbreedingCalculator] — whose own internal depth cap is a much deeper,
+/// fixed safety net unrelated to that setting — `detail.depthLimited` alone
+/// can never reflect a truncation caused by [maxDepth]. [_isLineageTruncated]
+/// checks the actual boundary so the UI can warn the coefficient may be an
+/// underestimate.
 InbreedingData calculateInbreedingForBird(
   String birdId,
-  Map<String, Bird> ancestors,
-) {
+  Map<String, Bird> ancestors, {
+  int maxDepth = 5,
+}) {
   const calculator = InbreedingCalculator();
   final detail = calculator.calculateDetailed(
     birdId: birdId,
@@ -29,8 +39,36 @@ InbreedingData calculateInbreedingForBird(
     coefficient: detail.coefficient,
     risk: risk,
     commonAncestorIds: commonIds,
-    depthLimited: detail.depthLimited,
+    depthLimited:
+        detail.depthLimited || _isLineageTruncated(birdId, ancestors, maxDepth),
   );
+}
+
+/// Whether ancestor collection stopped at [maxDepth] while a real parent
+/// link still existed beyond it — i.e. the map was truncated by the
+/// pedigree-depth setting, not because the lineage genuinely ends there.
+bool _isLineageTruncated(
+  String rootId,
+  Map<String, Bird> ancestors,
+  int maxDepth,
+) {
+  final visited = <String>{};
+  bool truncated = false;
+
+  void walk(String? id, int depth) {
+    if (id == null || truncated || !visited.add(id)) return;
+    final bird = ancestors[id];
+    if (bird == null) return;
+    if (depth >= maxDepth) {
+      if (bird.fatherId != null || bird.motherId != null) truncated = true;
+      return;
+    }
+    walk(bird.fatherId, depth + 1);
+    walk(bird.motherId, depth + 1);
+  }
+
+  walk(rootId, 0);
+  return truncated;
 }
 
 /// Memoized inbreeding data provider — recomputes only when ancestors change.
@@ -42,7 +80,12 @@ final inbreedingDataProvider =
       final ancestors = params.isChick
           ? await ref.watch(chickAncestorsProvider(params.entityId).future)
           : await ref.watch(ancestorsProvider(params.entityId).future);
-      return calculateInbreedingForBird(params.entityId, ancestors);
+      final maxDepth = ref.watch(pedigreeDepthProvider);
+      return calculateInbreedingForBird(
+        params.entityId,
+        ancestors,
+        maxDepth: maxDepth,
+      );
     });
 
 typedef AncestorStats = ({

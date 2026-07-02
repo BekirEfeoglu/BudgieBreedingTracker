@@ -235,13 +235,16 @@ class _ZLinkageSection extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 2),
                   child: Row(
                     children: [
-                      Text(
-                        l.label,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
+                      Expanded(
+                        child: Text(
+                          linkageMutationName(l.id),
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const Spacer(),
+                      const SizedBox(width: AppSpacing.sm),
                       Text(
                         'genetics.z_linkage_rate'.tr(
                           args: [l.centiMorgans.toString()],
