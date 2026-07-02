@@ -80,7 +80,7 @@ yok). Eklenirse bu bölüm gerçek implementasyonla güncellenmelidir.
 
 Migration'lar: `20260702175125_gamification_server_side_helpers.sql`, `20260702175232_gamification_lock_down_self_grant.sql`. Canlıda `SET LOCAL ROLE authenticated` + sahte JWT ile rollback'li saldırı simülasyonuyla doğrulandı (doğrudan self-grant, keyfi XP miktarı, keyfi seviye üzerine yazma, sahte satırdan seviye uydurma, `verified_breeder` rozetini progress-eşitleme ile açma — hepsi reddedildi; meşru akış hâlâ çalışıyor).
 
-**Hâlâ açık (audit K12, bu fix'in kapsamı dışında):** günlük limit/cooldown (`XpConstants.dailyLimits`) sadece client-side kontrol edilir — WITH CHECK per-row olduğu için aggregate/count bazlı günlük limiti burada uygulayamaz. Bir kullanıcı `dailyLogin`/`completeProfile`/`sendMessage` için GEÇERLİ miktarda ama GÜNDE BİRDEN FAZLA `xp_transactions` satırı ekleyebilir (spam, cheat DEĞİL — her satır kendi başına geçerli). Kalıcı çözüm: `(user_id, action, date_trunc('day', created_at))` üzerinde unique constraint veya cooldown'u da doğrulayan bir trigger/RPC.
+**Günlük limit (audit K12) — 2026-07-03'te kapatıldı:** `XpConstants.dailyLimits` artık server-side de zorlanıyor. WITH CHECK per-row olduğu için aggregate/count bazlı günlük limiti uygulayamaz; bu yüzden ayrı bir `BEFORE INSERT` trigger (`private.enforce_xp_daily_limit`, SECURITY DEFINER + `search_path=''`) UTC-günü içindeki aynı-action satır sayısını sayar ve limiti aşan insert'i `check_violation` ile reddeder. Limitler `private.xp_daily_limit()` ile mirror'lanır (`dailyLogin: 1`, `completeProfile: 1`, `sendMessage: 5`; diğerleri capsiz = NULL). Reddedilen insert client'ta `GamificationService.recordAction`'ın try/catch'iyle yutulur (XP opsiyonel yan etki) — happy path zaten client-side ön-kontrolle erken döndüğü için trigger yalnızca doğrudan-API kötüye kullanımında veya nadir race'te ateşler. Migration: `20260702234529_xp_daily_limit_enforcement.sql`. Canlıda rollback'li transaction ile doğrulandı (5 `sendMessage` kabul, 6. reddedildi, capsiz `addBird` kabul; test satırları rollback edildi, `security` advisor yeni bulgu 0).
 
 ## Performance
 - XP award < 50ms (local Drift write)
@@ -121,8 +121,8 @@ test('badge unlock fires on threshold', () async {
 ## Anti-Patterns
 1. XP satın almak / premium hızlandırıcı (pay-to-win, gambling policy)
 2. Random reward / loot box (Apple policy ihlali)
-3. Client-side XP hesabı authoritative saymak (2026-07-02'de RLS WITH CHECK ile server-enforce edildi — bkz. § Server-Side Write Enforcement; günlük limit/cooldown hâlâ client-only, ayrı bilinen boşluk)
-4. Cooldown'sız spam-able XP source (topluluk post farm — günlük limit boşluğu nedeniyle hâlâ geçerli, § Server-Side Write Enforcement'taki not)
+3. Client-side XP hesabı authoritative saymak (2026-07-02'de RLS WITH CHECK ile miktar/seviye/rozet server-enforce edildi; 2026-07-03'te günlük limit de `BEFORE INSERT` trigger ile kapatıldı — bkz. § Server-Side Write Enforcement + § Günlük limit)
+4. Cooldown'sız spam-able XP source: günlük limitli action'lar (`dailyLogin`/`completeProfile`/`sendMessage`) artık server-side capped; capsiz action'lar (örn. `sharePost`, `addComment`) hâlâ yalnızca içerik-moderation/rate-limit ile sınırlı — XP tarafında kasıtlı capsiz
 5. Leaderboard'a opt-out koymamak (privacy)
 6. Badge unlock'ı her widget rebuild'de check (perf — trigger-time only)
 7. Level up push'unu zorunlu yapmak (anti-pattern: notification fatigue)

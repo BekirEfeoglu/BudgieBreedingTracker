@@ -4,6 +4,18 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-03] fix | Gamification daily XP cap enforced server-side (K12 closed)
+
+IMPROVEMENT_PLAN.md § 4.1. The client-only daily XP cap
+(`XpConstants.dailyLimits`) is now also server-enforced: a `BEFORE INSERT`
+trigger `private.enforce_xp_daily_limit` (SECURITY DEFINER, `search_path=''`)
+counts same-day same-action rows and rejects over-limit inserts;
+`recordAction`'s try/catch swallows the rejection (XP is optional), so the
+happy path is unaffected. Deployed via MCP
+(`20260702234529_xp_daily_limit_enforcement.sql`); verified with a rolled-back
+live tx (5 ok, 6th rejected, uncapped `addBird` ok). See
+[[domain/gamification-service]].
+
 ## [2026-07-02] docs | Sync feature wiki pages to second-pass audit fixes
 
 Updated `features/{messaging,admin,breeding,settings,profile}.md` to reflect

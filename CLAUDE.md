@@ -180,7 +180,7 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 | `validate-free-tier-limit` | Free tier entity limit enforcement |
 
 ### Migrations
-182 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
+183 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
 
 ## Rules
 
@@ -339,7 +339,7 @@ Security:      lib/core/security/
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
-Migrations:    supabase/migrations/ (182 files)
+Migrations:    supabase/migrations/ (183 files)
 Scripts:       scripts/
 CI:            .github/workflows/ + codemagic.yaml
 ```

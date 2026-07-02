@@ -30,10 +30,13 @@ recordAction(userId, action)
 ```
 
 The isolate-local lock is **best-effort** — two devices or two background
-isolates can still double-award. Audit K12 tracks the authoritative fix:
-either a Postgres unique constraint on
-`(user_id, action, date_trunc('day', created_at))` or a server RPC that
-counts + inserts atomically.
+isolates can still double-award in a tight concurrent race. As of
+2026-07-03 the daily cap itself is server-enforced by the
+`private.enforce_xp_daily_limit` `BEFORE INSERT` trigger (see § Daily Caps),
+which closes the direct-API bypass; the residual is only the narrow window
+where two transactions both count 0 before either commits (a true unique
+constraint on `(user_id, action, utc-day)` would close that too, but the
+count trigger + client lock cover the realistic vectors).
 
 ## Verified Breeder
 
@@ -63,21 +66,26 @@ validate every write against them. Writes remain client-initiated (no RPC
 migration was needed) but are now server-validated. Full detail:
 `.claude/rules/gamification.md` § Server-Side Write Enforcement.
 
-**Still open**: the per-row `WITH CHECK` approach cannot enforce the daily
-cap (see below) — that needs an aggregate/count-based check (unique
-constraint or RPC), tracked as the same audit K12 follow-up as the
-double-award race.
+**K12 closed 2026-07-03**: the per-row `WITH CHECK` cannot count same-day
+rows, so a separate aggregate-count trigger now enforces the daily cap (see
+§ Daily Caps).
 
 ## Daily Caps
 
 Each action has a daily XP cap in `xp_constants.dart` to prevent farming
-(e.g. add-then-delete loops). Caps are checked **client-side only** — there
-is no Edge Function or database-level enforcement of the daily cap. A user
-could insert multiple individually-valid-amount `xp_transactions` rows for
-the same capped action in one day (server now guarantees each row's
-*amount* is correct, not that only one was allowed today). Real fix is the
-same audit K12 item referenced above (unique constraint on
-`(user_id, action, date_trunc('day', created_at))` or a counting RPC).
+(e.g. add-then-delete loops). Caps are enforced on **both** sides:
+client-side `GamificationService.recordAction` pre-checks and returns early
+(happy path), and — as of 2026-07-03 — the `private.enforce_xp_daily_limit`
+`BEFORE INSERT` trigger (SECURITY DEFINER, `search_path=''`) counts the
+user's same-action rows since UTC midnight and rejects any insert past the
+cap with `check_violation`. Limits mirror `XpConstants.dailyLimits` via
+`private.xp_daily_limit()` (`dailyLogin: 1`, `completeProfile: 1`,
+`sendMessage: 5`; all other actions uncapped = NULL). Rejections are caught
+by `recordAction`'s try/catch (XP is an optional side effect), so the
+trigger never breaks a user-facing write. Migration
+`20260702234529_xp_daily_limit_enforcement.sql`; verified live with a
+rolled-back transaction (5 `sendMessage` allowed, 6th rejected, uncapped
+`addBird` allowed).
 
 ## Level Curve
 
