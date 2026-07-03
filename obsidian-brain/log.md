@@ -4,6 +4,21 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-03] feat (branch) | community post edit hardening migration
+
+Branch `feature/community-tab-faz1` (NOT yet merged/applied to prod). Migration
+`20260703120000_community_post_edit_hardening.sql` (committed `3cdf483`): adds
+`community_posts.edited_at timestamptz`, narrows the `authenticated` UPDATE grant
+to `(is_deleted, needs_review, reviewed_by)` so post **content** can no longer be
+edited directly by clients (edits must go through the moderated
+`create-community-post` edge fn `mode: 'update'`, being wired in the same branch),
+and recreates `fetch_community_feed` (DROP+CREATE — RETURNS TABLE shape changed) to
+return `edited_at`. Inventory confirmed all 4 authenticated-role UPDATE call-sites
+(`softDelete`, `clearReviewFlag`, admin `approvePost`/`deletePost`) write only
+within the grant, so the narrowing breaks nothing shipped. Client edit UI +
+`edited` badge land in later tasks of the same branch. Design:
+`docs/superpowers/specs/2026-07-03-community-tab-design.md`.
+
 ## [2026-07-03] feat | send-push server-side quiet hours — opt-in, fail-open (§5.2)
 
 `send-push` can now honor a recipient's quiet-hours window (previously

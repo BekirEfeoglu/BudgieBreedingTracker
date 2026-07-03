@@ -30,6 +30,17 @@ See [[architecture/online-first-exemption]]
 - Threshold-based auto-flag + human review queue
 - Photos scanned by `scan-image-safety` Edge Function before upload
 
+## Post Edit (in progress — branch `feature/community-tab-faz1`)
+
+Content-only edit within a **5-minute window**, enforced server-side. Migration
+`20260703120000_community_post_edit_hardening.sql` adds `community_posts.edited_at`
+and narrows the `authenticated` UPDATE grant to `(is_deleted, needs_review,
+reviewed_by)` — post content can no longer be edited via a direct client `.update()`;
+edits go through `create-community-post` edge fn `mode: 'update'` (moderation re-runs,
+fail-closed). UI shows an `edited` badge; the edit action appears only on the author's
+own post inside the window. Not yet merged/applied to prod. See
+`docs/superpowers/specs/2026-07-03-community-tab-design.md`.
+
 ## Cache
 
 `community_profile_cache`, `community_post_cache` in `lib/data/remote/api/`
