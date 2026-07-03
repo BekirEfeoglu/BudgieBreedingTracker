@@ -4,17 +4,22 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
-## [2026-07-03] perf (branch) | Startup: defer FCM + metadata off splash
+## [2026-07-03] perf (branch) | Startup + resume path
 
-Branch `perf/performance-improvements`, task 8 (commit `d80360f`,
-review-approved, 0 findings). `appInitializationProvider` no longer awaits FCM
-token registration (`pushNotificationService.init`, a network call) or
-`_syncAuthMetadataToProfile` before `InitStep.ready` — both move to a deferred
-fire-and-forget microtask. LOCAL notification channels + `rateLimiterReadyProvider`
-stay awaited (a reminder must not fire before DND/rate-limit prefs load), and
-`processPendingPayloads` stays right after `ready`. `_rescheduleNotifications`/
-`_recoverPendingNotifications` remain separate microtasks (unchanged). Cold-start
-timing + push-delivery are manual device-QA (not run). See [[features/auth]].
+Branch `perf/performance-improvements`, tasks 8-9 (commits `d80360f`/`d46d8f3`,
+review-approved, 0 findings). **Splash (T8):** `appInitializationProvider` no
+longer awaits FCM token registration (`pushNotificationService.init`, a network
+call) or `_syncAuthMetadataToProfile` before `InitStep.ready` — both move to a
+deferred fire-and-forget microtask. LOCAL notification channels +
+`rateLimiterReadyProvider` stay awaited (a reminder must not fire before
+DND/rate-limit prefs load), and `processPendingPayloads` stays right after
+`ready`. `_rescheduleNotifications`/`_recoverPendingNotifications` remain
+separate microtasks. **Resume (T9):** new `ResumeThrottle`
+(`lib/core/utils/resume_throttle.dart`, in-memory per-key, injectable clock)
+gates `_onAppResumed`'s in-app-update check (6h) and RevenueCat premium refresh
+(5m) so rapid foreground/background flips don't re-fire them; presence/realtime/
+notification-recovery/pushChanges stay unthrottled; `reset()` fires on logout.
+Cold-start timing + push-delivery are manual device-QA (not run). See [[features/auth]].
 
 ## [2026-07-03] perf (branch) | Sync/cascade/import batching
 
