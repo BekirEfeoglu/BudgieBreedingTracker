@@ -26,7 +26,7 @@ import 'package:budgie/data/local/database/tables/birds_table.dart';
 - Test migration with fresh DB and upgrade-from-previous scenarios
 
 ## Supabase (Remote)
-- **Remote sources**: `lib/data/remote/api/` (26 entity + base + 2 caches + providers)
+- **Remote sources**: `lib/data/remote/api/` (27 entity + base + 2 caches + providers)
 - **Storage**: `lib/data/remote/storage/storage_service.dart`
 - **Constants**: `SupabaseConstants` class (143 table/column constants)
 - **Edge Functions**: 12 in `supabase/functions/`

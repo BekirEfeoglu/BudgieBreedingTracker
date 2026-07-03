@@ -23,10 +23,11 @@ Source: `.claude/rules/performance.md`
 final sw = Stopwatch()..start();
 final result = await operation();
 final ms = sw.elapsedMilliseconds;
-AppLogger.debug('perf', 'operationName: ${ms}ms');
+AppLogger.debug('perf operationName: ${ms}ms');
 if (ms > budgetMs) {
-  AppLogger.warning('perf', 'operationName exceeded budget: ${ms}ms > ${budgetMs}ms');
+  AppLogger.warning('perf operationName exceeded budget: ${ms}ms > ${budgetMs}ms');
 }
+// AppLogger takes a SINGLE message (no tag arg) — see [[patterns/observability]]
 ```
 
 ## Drift Queries
@@ -63,7 +64,7 @@ final name = ref.watch(birdProvider.select((b) => b.value?.name));
 ## Network & Sync
 
 - Offline-first: never wait for network to show UI
-- Debounce sync operations (500ms)
+- Push is batched: `pushPendingBatched` chunks of 100 → one `upsertAll` per chunk (see [[data-layer/sync-strategy]] § Batched Push); `save()` does a best-effort immediate push, NO client-side debounce
 - Exponential backoff on failures
 
 ## Startup

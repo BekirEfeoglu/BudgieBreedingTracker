@@ -82,6 +82,7 @@ Validation zorunlu (notifications.md): unknown type → warning + home fallback.
 - Month view: `CalendarGrid` (custom `lib/features/calendar/widgets/calendar_grid.dart`, 7-column grid — NOT the `table_calendar` package, not a dependency)
 - Day detail: o gün eventlerinin listesi (chronological)
 - Filter: event type checkbox (multi-select)
+- Filtre TEK geçiş: month/week/day provider'ları `filteredCalendarEventsProvider`'dan türetilir (`calendar_providers.dart`) — `filterCalendarEvents` (stream, filtre) değişimi başına BİR kez koşar; view provider'larına yeniden inline filtreleme EKLEME
 - Color coding: event type'a göre theme color
 
 ## Empty / Error State

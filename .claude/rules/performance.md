@@ -5,7 +5,7 @@
 - Use `.watch()` streams for reactive UI — avoid polling with timers
 - Batch inserts/updates in transactions for bulk operations
 - Avoid `SELECT *` on large tables — select only needed columns
-- Profile slow queries: `Stopwatch()..start()` + `AppLogger.debug('perf', 'query: ${sw.elapsed}')`
+- Profile slow queries: `Stopwatch()..start()` + `AppLogger.debug('perf query: ${sw.elapsed}')` (AppLogger takes a SINGLE message — no tag arg, see observability.md)
 
 ## Riverpod Providers
 - `ref.watch()` scope: watch specific fields, not entire models
@@ -35,14 +35,16 @@
 ## Network & Sync
 - Offline-first: UI reads from local Drift DB, never waits for network
 - Background sync: push changes when connectivity available
-- Batch sync operations to minimize network requests
+- Push path IS batched: `pushAll` → `SyncableRepository.pushPendingBatched` — pending rows go in chunks of 100 (one `upsertAll` + one metadata cleanup per chunk, poison-row per-item fallback). See background-sync.md § Batch & Batched Push
+- `save()` does a best-effort `tryImmediatePush` — there is NO client-side debounce; a failed push simply leaves the row pending for the next batched cycle
 - Exponential backoff on transient failures (see error-handling.md)
-- Don't sync on every change — debounce or batch
 
 ## Startup Performance
 - Lazy-initialize heavy services (genetics engine, sync service)
 - Use `FutureProvider` for one-shot initialization
 - Defer non-critical work (analytics, remote config) after first frame
+- Splash critical path awaits ONLY profile pull + local notification channels + rate limiter; FCM registration, auth-metadata backfill and full data sync run as deferred microtasks after `InitStep.ready` (`appInitializationProvider`)
+- Resume: in-app-update check (6h) and premium refresh (5m) are throttled via `ResumeThrottle` (`lib/core/utils/resume_throttle.dart`); presence/realtime/pushChanges stay unthrottled
 - Debug startup route: `--dart-define=DEBUG_START_ROUTE=/birds` to skip splash
 
 ## Measurement

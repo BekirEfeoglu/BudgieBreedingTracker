@@ -65,6 +65,8 @@ birdSheet.appendRow([
 - Schema validation: header isimleri tr/en/de kabul (i18n input)
 - Row başına validation: required field, enum value, date format
 - Hata satırı: skip + report (kullanıcıya "5/100 row failed" özet)
+- Persist BATCH: geçerli satırlar tek `repo.saveAll` ile yazılır (satır başına HTTP push YOK); FK doğrulaması tek `getAll` haritasından yapılır (satır başına `getById` yok, aynı dosyadaki önce-gelen ebeveyn satırları haritaya eklenir)
+- Sheet başına all-or-nothing: `saveAll` tek Drift transaction'dır — ortada patlarsa kısmi import KALMAZ; `ImportResult` `importedCount: 0` + sheet-level hata döner
 - Duplicate check: ring_number unique → conflict resolution
 - Max file size: 10MB (assets-images.md limit consistency)
 - Background isolate: 1000+ row parse UI bloklar

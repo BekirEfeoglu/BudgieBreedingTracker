@@ -97,6 +97,8 @@ Kuralı: Hata ne kullanıcı bilgisi gerektirir ne de tasarımla beklenen — Se
 
 Production'da kritik hata her zaman gider (`errorSampleRate = 1.0`), sadece performance trace sample'lanır. Replay özelliği kapalı — privacy + cost. `SENTRY_ENVIRONMENT` dart-define'a göre runtime select edilir.
 
+Enforcement: `bootstrap.dart` içindeki `sentryTracesSampleRateFor(_resolvedSentryEnv)` bu tabloyu uygular (bilinmeyen env → 0.1 fail-safe; test: `test/core/sentry_sample_rate_test.dart`). `tracesSampleRate`'i sabit değerle hardcode etme — oran değişikliği bu fonksiyon + bu tablo birlikte güncellenir.
+
 ## Structured Log Schema
 Edge function `console.log` JSON formatında:
 ```json

@@ -30,6 +30,7 @@ Domain event (egg hatching, marketplace sale)
 - Token refresh'te eski token'ı sil, yeniyi ekle
 - Logout'ta tüm cihaz token'larını sil (cross-device security)
 - iOS APNs token + FCM token eşleştirmesi otomatik
+- FCM kaydı splash'i BLOKLAMAZ: `appInitializationProvider` local kanal init + rate limiter'ı await eder, `pushNotificationService.init` (token fetch/register, ağ) `InitStep.ready` sonrası deferred microtask'te koşar — kalıcı `onTokenRefresh` dinleyicisi geç kaydı telafi eder. Bu init'i kritik yola geri TAŞIMA
 
 ```dart
 // Token registration

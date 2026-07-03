@@ -16,7 +16,7 @@ Premium abonelik akışı RevenueCat üzerinden yönetilir, ama yetkilendirme **
 User purchases (RevenueCat) -> RevenueCat webhook -> sync-premium-status edge fn
   -> Server validates with REVENUECAT_SECRET_API_KEY
   -> Updates user.is_premium + entitlement metadata in Supabase
-  -> Client refreshes premium providers on app resume / push
+  -> Client refreshes premium providers on app resume (ResumeThrottle: max 1/5dk) / push
 ```
 
 İstemci RevenueCat SDK'sını **sadece purchase UX'i için** kullanır. Premium gate kararı her zaman sunucu kaynaklı (`profiles.is_premium`) okumadan verilir.

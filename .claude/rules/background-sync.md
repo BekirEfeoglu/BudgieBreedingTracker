@@ -110,9 +110,12 @@ child: AppUpdatePrompt(
 )
 ```
 
-## Batch & Debounce
-- Aynı saniyede 5 bird ekleme: tek batch upsert (Supabase batch endpoint)
-- Debounce: dirty entity 500ms bekle, sonra push (rapid edit'leri grupla)
+## Batch & Batched Push
+- `save()` → local yazma + `markPending` + **best-effort** `tryImmediatePush`. Debounce YOK — push başarısız olursa satır pending kalır, sonraki batched push toplar (offline-safe)
+- `pushAll` → `SyncableRepository.pushPendingBatched` (`base_repository.dart`): bekleyenler 100'lük chunk'larla gider — chunk başına tek `upsertAll` + tek `SyncMetadataDao.deleteByRecords`. Chunk `AppException` fırlatırsa per-item `push()` fallback (poison-row izolasyonu; hata başına `markError`). 13 syncable reponun tamamı bu yoldan geçer (mixin hook'ları `upsertChunkForSync`/`deleteRemoteForSync` veya inline)
+- Batch metadata yardımcıları: `SyncMetadataDao.getByRecords` / `deleteByRecords` / `markPendingByRecords` — pending işaretleme tek statement
+- Cascade delete'ler de batch: `EventRepository.removeBy*` → tek `softDeleteByIds` + tek `markPendingByRecords` + tek best-effort `pushAll`; `GrowthMeasurementRepository.removeByChickIds` → tek `hardDeleteByIds` + batch `pendingDelete` tombstone + tek `deleteByIds` (remote hata → tombstone'lar sonraki sync'e kalır)
+- `PushStats.pushed` yalnız GERÇEK başarıyı sayar; telemetri amaçlıdır (log satırları) — kontrol akışında KULLANMA
 - Drift `batch()` ile toplu local write — tek transaction
 
 ## Sync UI Indicators

@@ -13,13 +13,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Comprehensive Flutter breeding tracker app for budgie breeders.
 Flutter 3.41+ / Dart >=3.8.0 <4.0.0 / Riverpod 3 / GoRouter 17+ / Supabase / Drift 2.31+ / Freezed 3
 
-Key deps: `supabase_flutter ^2.5.0` · `sentry_flutter ^9.0.0` · `fl_chart ^1.2.0` · `purchases_flutter ^10.0.2`
+Key deps: `supabase_flutter >=2.5.0 <2.13.0` (iOS CI cap — do NOT lift, see pubspec comment) · `sentry_flutter ^9.0.0` · `fl_chart ^1.2.0` · `purchases_flutter ^10.2.3`
 
 ## Build & Development Commands
 
 ```bash
 # Install dependencies
 flutter pub get
+
+# iOS pods sync — REQUIRED after ANY pubspec dependency change, or Xcode fails
+# with "sandbox is not in sync with the Podfile.lock" (architecture.md § iOS Pods Sync)
+cd ios && LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 pod install
 
 # Code generation (Freezed, Drift, JSON Serializable, Riverpod)
 dart run build_runner build --delete-conflicting-outputs
@@ -28,6 +32,7 @@ dart run build_runner build --delete-conflicting-outputs
 dart run build_runner clean
 
 # Run app (requires Supabase credentials)
+flutter run --dart-define-from-file=.env          # local default (.env not committed)
 flutter run --dart-define=SUPABASE_URL=<url> --dart-define=SUPABASE_ANON_KEY=<key>
 
 # Static analysis
@@ -299,6 +304,13 @@ See `new-feature-checklist.md` for detailed steps.
 2. Add constant to `lib/core/constants/app_icons.dart`
 3. Use: `AppIcon(AppIcons.newIcon)` — NOT `Icon(Icons.x)`
 4. Shared widgets accept `Widget icon` param (not `IconData`)
+
+### Adding or bumping a dependency
+1. Edit `pubspec.yaml` (caret constraint; NEVER lift documented caps — `supabase_flutter`, `connectivity_plus`, `sqlite3_flutter_libs`, `path_provider_foundation` are pinned for iOS build compatibility)
+2. `flutter pub get`
+3. `cd ios && LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 pod install` (architecture.md § iOS Pods Sync)
+4. Commit `pubspec.yaml` + `pubspec.lock` (+ `ios/Podfile.lock` if it changed) in the SAME commit
+5. After push, watch `ios-build` on the exact SHA — dependency drift breaks iOS CI first
 
 ### Quick debug checklist
 ```bash
