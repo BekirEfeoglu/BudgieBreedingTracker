@@ -9,9 +9,13 @@ import {
   BODY_MAX,
   clampText,
   clampTokens,
+  isSuppressedByQuietHours,
+  isWithinQuietHours,
+  localHourInZone,
   MAX_TOKENS,
   MAX_USER_IDS,
   normalizeData,
+  type QuietHours,
   resultStatus,
   TITLE_MAX,
   validateUserIdsCount,
@@ -198,4 +202,93 @@ Deno.test("authorizePushTargets: empty target set is allowed (no-op)", () => {
     authorizePushTargets({}, CALLER, false),
     null,
   );
+});
+
+// ---------------------------------------------------------------------------
+// Quiet hours (§5.2)
+// ---------------------------------------------------------------------------
+
+Deno.test("isWithinQuietHours: same-day window is [start, end)", () => {
+  // 01:00-06:00
+  assertEquals(isWithinQuietHours(0, 1, 6), false);
+  assertEquals(isWithinQuietHours(1, 1, 6), true); // start inclusive
+  assertEquals(isWithinQuietHours(5, 1, 6), true);
+  assertEquals(isWithinQuietHours(6, 1, 6), false); // end exclusive
+  assertEquals(isWithinQuietHours(7, 1, 6), false);
+});
+
+Deno.test("isWithinQuietHours: overnight window wraps midnight", () => {
+  // 22:00-07:00
+  assertEquals(isWithinQuietHours(22, 22, 7), true);
+  assertEquals(isWithinQuietHours(23, 22, 7), true);
+  assertEquals(isWithinQuietHours(0, 22, 7), true);
+  assertEquals(isWithinQuietHours(6, 22, 7), true);
+  assertEquals(isWithinQuietHours(7, 22, 7), false); // end exclusive
+  assertEquals(isWithinQuietHours(12, 22, 7), false);
+});
+
+Deno.test("isWithinQuietHours: start == end is an empty window (off)", () => {
+  for (let h = 0; h < 24; h++) {
+    assertEquals(isWithinQuietHours(h, 3, 3), false);
+  }
+});
+
+Deno.test("localHourInZone: converts UTC to the recipient's local hour", () => {
+  // Turkey is a fixed UTC+3 (no DST since 2016), so this is deterministic.
+  const utc = new Date("2026-07-03T22:30:00Z");
+  assertEquals(localHourInZone(utc, "Europe/Istanbul"), 1); // 01:30 local
+  assertEquals(localHourInZone(utc, "UTC"), 22);
+});
+
+Deno.test("localHourInZone: invalid timezone returns null (fail open)", () => {
+  assertEquals(localHourInZone(new Date("2026-07-03T22:30:00Z"), "Not/AZone"), null);
+});
+
+Deno.test("isSuppressedByQuietHours: fails open on missing/disabled/invalid", () => {
+  const now = new Date("2026-07-03T22:30:00Z"); // 01:30 in Istanbul
+  assertEquals(isSuppressedByQuietHours(null, now), false);
+  assertEquals(isSuppressedByQuietHours(undefined, now), false);
+  assertEquals(
+    isSuppressedByQuietHours(
+      { enabled: false, startHour: 0, endHour: 6, timeZone: "Europe/Istanbul" },
+      now,
+    ),
+    false,
+  );
+  // Invalid hours -> deliver.
+  assertEquals(
+    isSuppressedByQuietHours(
+      { enabled: true, startHour: -1, endHour: 6, timeZone: "Europe/Istanbul" },
+      now,
+    ),
+    false,
+  );
+  // Invalid timezone -> deliver.
+  assertEquals(
+    isSuppressedByQuietHours(
+      { enabled: true, startHour: 0, endHour: 6, timeZone: "Not/AZone" },
+      now,
+    ),
+    false,
+  );
+});
+
+Deno.test("isSuppressedByQuietHours: suppresses only inside an enabled window", () => {
+  const now = new Date("2026-07-03T22:30:00Z"); // 01:30 in Istanbul
+  const inside: QuietHours = {
+    enabled: true,
+    startHour: 0,
+    endHour: 6,
+    timeZone: "Europe/Istanbul",
+  };
+  assertEquals(isSuppressedByQuietHours(inside, now), true);
+
+  const outside: QuietHours = {
+    enabled: true,
+    startHour: 2,
+    endHour: 6,
+    timeZone: "Europe/Istanbul",
+  };
+  // 01:30 local is before the 02:00 start -> deliver.
+  assertEquals(isSuppressedByQuietHours(outside, now), false);
 });

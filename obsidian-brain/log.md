@@ -4,6 +4,23 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-03] feat | send-push server-side quiet hours — opt-in, fail-open (§5.2)
+
+`send-push` can now honor a recipient's quiet-hours window (previously
+device-only; push bypassed it). Pure helpers in `push_core.ts`
+(`isWithinQuietHours` mirrors the client `NotificationRateLimiter` wraparound,
+`localHourInZone` via IANA tz, `isSuppressedByQuietHours` fail-open) + `index.ts`
+reads `profiles.quiet_hours` (JSONB, migration `20260703044437`, applied to
+prod via MCP) and drops suppressed recipients before token resolution.
+Safe-by-construction: suppression is **opt-in** (`respectQuietHours: true`), so
+with no caller opting in yet it is a strict no-op — critical/incubation
+notifications are never held back — and any missing/invalid config delivers.
+Caught a real bug via live schema check: `profiles` has no `user_id` column
+(PK is `id` = auth.uid()), so the recipient lookup selects on `id`. 7 Deno
+tests (30 total green); `deno check` clean. Remaining activation (client DND
+sync + caller opt-in taxonomy) noted in `.claude/rules/notifications.md`. See
+[[domain/notification-service]].
+
 ## [2026-07-03] fix | Messaging surfaces send failures with a retry action (§4.3)
 
 Continuing plan execution. A failed message send set `messagingFormStateProvider.error`

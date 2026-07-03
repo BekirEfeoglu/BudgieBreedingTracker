@@ -15,6 +15,12 @@ export interface PushRequest {
   payload?: string;
   data?: Record<string, string | number | boolean>;
   dryRun?: boolean;
+  /**
+   * Opt-in: when true, recipients currently inside their quiet-hours window are
+   * dropped from delivery (§5.2). Omitted/false = always deliver, so critical
+   * notifications simply leave it unset. Fail-open on any missing config.
+   */
+  respectQuietHours?: boolean;
 }
 
 export function normalizeData(
@@ -86,4 +92,84 @@ export function batch<T>(items: T[], size: number = BATCH_SIZE): T[][] {
     out.push(items.slice(i, i + size));
   }
   return out;
+}
+
+// ---------------------------------------------------------------------------
+// Quiet hours (server-side do-not-disturb) — §5.2
+//
+// A recipient's quiet-hours window lives in THEIR local time. The client
+// (NotificationRateLimiter) already suppresses *local* notifications inside
+// this window, but push arrives from FCM and bypasses that check. These pure
+// helpers let send-push hold back opt-in ("respectQuietHours") notifications
+// for recipients currently inside their window. Everything here FAILS OPEN:
+// any missing/disabled/invalid config means "deliver". Critical notifications
+// never reach this code — the caller decides suppressibility.
+// ---------------------------------------------------------------------------
+
+/** A recipient's quiet-hours window (stored in `profiles.quiet_hours`). */
+export interface QuietHours {
+  enabled: boolean;
+  startHour: number; // 0-23, recipient local time
+  endHour: number; // 0-23, recipient local time
+  timeZone: string; // IANA name, e.g. "Europe/Istanbul"
+}
+
+/**
+ * Whether `localHour` (0-23) falls inside the quiet window. Mirrors the client
+ * `NotificationRateLimiter.isDoNotDisturbActive` wraparound logic exactly:
+ *  - start < end   -> [start, end)             same-day window
+ *  - start > end   -> [start, 24) ∪ [0, end)   overnight window
+ *  - start == end  -> empty (DND effectively off)
+ */
+export function isWithinQuietHours(
+  localHour: number,
+  startHour: number,
+  endHour: number,
+): boolean {
+  if (startHour === endHour) return false;
+  if (startHour > endHour) return localHour >= startHour || localHour < endHour;
+  return localHour >= startHour && localHour < endHour;
+}
+
+/**
+ * The recipient's local hour (0-23) for `nowUtc` in `timeZone`, or null when
+ * the timezone is invalid (caller then fails open = deliver).
+ */
+export function localHourInZone(nowUtc: Date, timeZone: string): number | null {
+  try {
+    const value = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      hour: "2-digit",
+      hour12: false,
+    })
+      .formatToParts(nowUtc)
+      .find((p) => p.type === "hour")?.value;
+    if (value === undefined) return null;
+    const hour = Number(value);
+    if (!Number.isFinite(hour)) return null;
+    return hour % 24; // some ICU builds emit "24" at local midnight
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Whether a push to a recipient should be held back right now because they are
+ * inside their quiet-hours window. FAIL-OPEN on any missing/disabled/invalid
+ * config.
+ */
+export function isSuppressedByQuietHours(
+  quiet: QuietHours | null | undefined,
+  nowUtc: Date,
+): boolean {
+  if (!quiet || quiet.enabled !== true) return false;
+  const { startHour, endHour, timeZone } = quiet;
+  if (!Number.isInteger(startHour) || !Number.isInteger(endHour)) return false;
+  if (startHour < 0 || startHour > 23 || endHour < 0 || endHour > 23) {
+    return false;
+  }
+  if (typeof timeZone !== "string" || timeZone.length === 0) return false;
+  const localHour = localHourInZone(nowUtc, timeZone);
+  if (localHour === null) return false;
+  return isWithinQuietHours(localHour, startHour, endHour);
 }

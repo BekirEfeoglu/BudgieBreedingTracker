@@ -20,6 +20,21 @@ Domain event (egg hatching, marketplace sale)
   → App handles foreground/background/terminated
 ```
 
+## Quiet Hours (server-side, §5.2)
+
+`send-push` can hold back a recipient's push while they are inside their
+quiet-hours window. Pure logic lives in `push_core.ts`
+(`isWithinQuietHours` mirrors the client `NotificationRateLimiter`
+wraparound; `localHourInZone` resolves the recipient's local hour from their
+IANA timezone; `isSuppressedByQuietHours` is **fail-open**). `index.ts` reads
+`profiles.quiet_hours` (JSONB `{enabled,startHour,endHour,timeZone}`) and drops
+suppressed recipients before token resolution. Suppression is **opt-in**: only
+requests with `respectQuietHours: true` are affected, so critical/incubation
+notifications (which omit it) are never held back, and any missing/invalid
+config delivers. Added 2026-07-03; activation still needs the client to sync
+its DND window and callers to opt non-critical notifications in
+(`.claude/rules/notifications.md` § Quiet Hours).
+
 ## Token Management
 
 - Tokens stored in Supabase `fcm_tokens` table (multi-device)

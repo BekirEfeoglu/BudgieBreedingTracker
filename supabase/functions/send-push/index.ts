@@ -19,9 +19,11 @@ import {
   BODY_MAX,
   clampText,
   clampTokens,
+  isSuppressedByQuietHours,
   MAX_TOKENS,
   normalizeData,
   type PushRequest,
+  type QuietHours,
   resultStatus,
   TITLE_MAX,
   validateUserIdsCount,
@@ -165,6 +167,7 @@ Deno.serve(async (req: Request) => {
       payload: z.string().optional(),
       data: z.record(z.union([z.string(), z.number(), z.boolean()])).optional(),
       dryRun: z.boolean().optional(),
+      respectQuietHours: z.boolean().optional(),
     });
 
     const parsed = await parseRequestBody(req, pushSchema, headers);
@@ -208,7 +211,61 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const tokens = await resolveTokens(request);
+    // Quiet hours (§5.2): for opt-in notifications, drop recipients currently
+    // inside their configured quiet-hours window. Fail-open — any missing/
+    // invalid config or lookup error still delivers. Raw-token pushes aren't
+    // filtered (no user to look up); critical notifications simply omit
+    // `respectQuietHours`, so they are never held back here.
+    let deliveryRequest = request;
+    if (request.respectQuietHours === true && (request.tokens?.length ?? 0) === 0) {
+      const ids = request.userIds ?? (request.userId ? [request.userId] : []);
+      if (ids.length > 0) {
+        const supabase = createSupabaseAdmin();
+        // `profiles.id` IS the auth user id (no separate user_id column), and
+        // push targets are auth user ids (fcm_tokens.user_id -> auth.users.id).
+        const { data: rows, error } = await supabase
+          .from("profiles")
+          .select("id, quiet_hours")
+          .in("id", ids);
+        if (error) {
+          console.error(
+            `[send-push] quiet-hours lookup failed (delivering all): ${error.message}`,
+          );
+        } else {
+          const now = new Date();
+          const suppressed = new Set(
+            (rows ?? [])
+              .filter((row: { id: string; quiet_hours: unknown }) =>
+                isSuppressedByQuietHours(
+                  row.quiet_hours as QuietHours | null,
+                  now,
+                )
+              )
+              .map((row: { id: string }) => row.id),
+          );
+          if (suppressed.size > 0) {
+            const delivered = ids.filter((id) => !suppressed.has(id));
+            console.info(
+              `[send-push] quiet_hours suppressed=${suppressed.size} ` +
+                `delivered=${delivered.length}`,
+            );
+            deliveryRequest = { ...request, userId: undefined, userIds: delivered };
+            if (delivered.length === 0) {
+              return new Response(
+                JSON.stringify({
+                  success: 0,
+                  failure: 0,
+                  suppressed: suppressed.size,
+                }),
+                { status: 200, headers },
+              );
+            }
+          }
+        }
+      }
+    }
+
+    const tokens = await resolveTokens(deliveryRequest);
     if (tokens.length === 0) {
       return new Response(
         JSON.stringify({ success: 0, failure: 0 }),

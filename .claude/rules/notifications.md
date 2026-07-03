@@ -93,7 +93,26 @@ await flutterLocalNotifications.zonedSchedule(
 Channel'lar `lib/domain/services/notifications/notification_service.dart` içinde initialize edilir.
 
 ## Quiet Hours / Preferences
-**Kısmen implement edilmedi (2026-07-02 audit):** client tarafında `notification_settings_dnd.dart` ekranı var, ama sunucu tarafı `send-push` (`supabase/functions/send-push/push_core.ts`) şu an quiet-hours/DND kontrolü YAPMIYOR — kod tabanında `quiet_hours`/`doNotDisturb` için sıfır eşleşme. Bu bölüm gelecek tasarım hedefidir; server-side enforcement eklenene kadar kullanıcı DND ayarı sadece cihaz seviyesinde (OS Do Not Disturb) etkili olur.
+**Server-side enforcement eklendi (2026-07-03, §5.2):** `send-push` artık alıcının
+quiet-hours penceresini honor edebiliyor. Saf mantık `push_core.ts`'te
+(`isWithinQuietHours` — client `NotificationRateLimiter.isDoNotDisturbActive`
+wraparound'unu birebir yansıtır; `localHourInZone` alıcının IANA timezone'unda
+yerel saati hesaplar; `isSuppressedByQuietHours` **fail-open**). `index.ts`
+alıcının `profiles.quiet_hours` (JSONB `{enabled,startHour,endHour,timeZone}`,
+migration `20260703044437`) penceresini okuyup, quiet penceresi içindeki
+alıcıları teslimattan düşürür.
+
+Emniyet by-construction: bastırma **opt-in** — sadece push isteği
+`respectQuietHours: true` gönderirse çalışır. Hiçbir mevcut caller bunu
+göndermediği için şu an davranış değişmez (kritik/incubation bildirimleri asla
+bastırılamaz). Ayrıca herhangi bir eksik/geçersiz config (NULL pref, geçersiz
+saat/tz, lookup hatası) → teslim et.
+
+**Aktivasyon için kalan (product kararı):** (a) client'ın DND penceresini
+`profiles.quiet_hours`'a sync etmesi (yerel DND şu an sadece cihazda), (b)
+non-kritik bildirim caller'larının `respectQuietHours: true` set etmesi — hangi
+notification tiplerinin quiet-hours'a saygı göstereceği bilinçli bir taksonomi
+kararı, `send-push` çağıran her trigger tek tek işaretlenmeli.
 - Kullanıcı kategori bazlı bildirim açma/kapama (`profile.notification_preferences`) — client-side UI var
 
 ## Testing
