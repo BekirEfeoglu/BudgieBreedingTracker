@@ -202,4 +202,13 @@ Future<void> _createPerformanceIndexes(AppDatabase db) async {
     'CREATE UNIQUE INDEX IF NOT EXISTS idx_sync_metadata_table_record_unique '
     'ON sync_metadata (table_name, record_id)',
   );
+
+  // --- Composite (user_id, table_name, record_id) for conflict_history
+  // record-existence lookups (watchExistsForRecord/existsForRecord). The
+  // pre-existing idx_conflict_history_user_created index only covers
+  // (user_id, created_at) and doesn't help these filters.
+  await db.customStatement(
+    'CREATE INDEX IF NOT EXISTS idx_conflict_history_user_table_record '
+    'ON conflict_history (user_id, table_name, record_id)',
+  );
 }

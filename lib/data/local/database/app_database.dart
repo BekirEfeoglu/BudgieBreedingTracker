@@ -128,7 +128,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 25;
+  int get schemaVersion => 26;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -188,6 +188,8 @@ class AppDatabase extends _$AppDatabase {
             await _migrateV23ToV24(this, m);
           case 25:
             await _migrateV24ToV25(this, m);
+          case 26:
+            await _migrateV25ToV26(this, m);
         }
       }
     },

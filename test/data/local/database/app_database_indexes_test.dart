@@ -31,6 +31,7 @@ void main() {
         'idx_notifications_user_read',
         'idx_photos_entity_user',
         'idx_growth_measurements_chick_date',
+        'idx_conflict_history_user_table_record',
       }),
     );
   });

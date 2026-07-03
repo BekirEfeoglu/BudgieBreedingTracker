@@ -426,6 +426,14 @@ Future<void> _migrateV24ToV25(AppDatabase db, Migrator m) async {
   }
 }
 
+/// Migration v25 -> v26: composite index for conflict_history record
+/// lookups (watchExistsForRecord/existsForRecord filter on
+/// user_id + table_name + record_id; the old index only covered
+/// user_id + created_at).
+Future<void> _migrateV25ToV26(AppDatabase db, Migrator m) async {
+  await _createPerformanceIndexes(db);
+}
+
 /// Checks whether [tableName] has a column named [columnName] via PRAGMA.
 ///
 /// Internal migration helper only — [tableName] and [columnName] must be
