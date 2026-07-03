@@ -41,6 +41,12 @@ fail-closed). UI shows an `edited` badge; the edit action appears only on the au
 own post inside the window. Not yet merged/applied to prod. See
 `docs/superpowers/specs/2026-07-03-community-tab-design.md`.
 
+**Client data contract** (commit `68d6a57`): `CommunityPost.editedAt` (`DateTime?`) +
+`CommunityPostX.isEdited`; edit flows `CommunityPostRepository.update({postId, content})`
+→ `CommunityPostRemoteSource.updateContent` → `EdgeFunctionClient.updateCommunityPost`
+(`mode: 'update'`). `_parsePost` reads `edited_at`; `update` invalidates the post cache.
+UI wiring (sheet, menu action, badge) lands in a later task of the same branch.
+
 ## Cache
 
 `community_profile_cache`, `community_post_cache` in `lib/data/remote/api/`
