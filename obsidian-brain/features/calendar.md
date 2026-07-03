@@ -31,9 +31,14 @@ Filter stored in `calendarEventFilterProvider`.
 | Provider | Type | Purpose |
 |----------|------|---------|
 | `eventsStreamProvider(userId)` | `StreamProvider.family` | Drift stream over events table |
-| `eventsForSelectedDateProvider` | `Provider` | Filtered view (uses `selectedDateProvider` + filter) |
-| `eventsForMonthProvider(month)` | `Provider.family` | Grouped by date for grid view |
-| `eventsForWeekProvider` | `Provider` | Week-grouped view |
+| `filteredCalendarEventsProvider` | `Provider` | Single source of truth for the filter pass — runs `filterCalendarEvents` once per (stream, filter) change |
+| `eventsForSelectedDateProvider` | `Provider` | Day view — derives from `filteredCalendarEventsProvider` + `selectedDateProvider` |
+| `eventsForMonthProvider(month)` | `Provider.family` | Month grid — derives from `filteredCalendarEventsProvider`, grouped by date |
+| `eventsForWeekProvider` | `Provider` | Week view — derives from `filteredCalendarEventsProvider` |
+
+The three view providers no longer each re-run `filterCalendarEvents`; they
+share `filteredCalendarEventsProvider` so the O(n) filter pass runs once per
+filter/stream change instead of three times.
 | `selectedDateProvider` | `NotifierProvider<…, DateTime>` | Selected day |
 | `displayedMonthProvider` | `NotifierProvider<…, DateTime>` | Visible month (pager) |
 | `eventRealtimeSyncProvider(userId)` | `Provider.family<void, …>` | Subscribes to Supabase realtime |
