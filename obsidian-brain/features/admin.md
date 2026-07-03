@@ -28,14 +28,19 @@ community content awaiting review:
   (`FutureProvider.autoDispose`) fetch rows where `is_deleted = false` and
   `needs_review = true`, newest first. Both call `requireAdmin(ref)` first.
 - `AdminModerationNotifier` (`adminModerationProvider`,
-  `AsyncNotifierProvider<…, void>`) exposes `approvePost` / `deletePost` /
+  `NotifierProvider<…, Set<String>>`) exposes `approvePost` / `deletePost` /
   `approveComment` / `deleteComment`. Approve clears `needs_review`; delete
   soft-deletes (`is_deleted = true`) and clears `needs_review`. Each guards
   with `requireAdmin`, writes an `admin_logs` audit entry via `logAdminAction`
   (`community_post_approved` / `community_post_deleted` / `…comment…` — added
   2026-07-02; these decisions previously left no audit trail), and
   invalidates the relevant list provider. Queue thumbnails use
-  `CachedNetworkImage` (was raw `Image.network`).
+  `CachedNetworkImage` (was raw `Image.network`). State is the set of
+  in-flight entity ids (2026-07-03, was a single global `AsyncNotifier<void>`
+  loading flag): each card watches only its own id via
+  `.select((s) => s.contains(id))`, so one action locks just its card instead
+  of freezing the whole queue, and a double-tap on an in-flight item is
+  ignored.
 - Column names use `SupabaseConstants` (`colIsDeleted`, `colNeedsReview`,
   `colId`, `colCreatedAt`) — the admin `client.from()` exception does NOT
   waive the hardcoded-string rule.

@@ -47,6 +47,14 @@ Filter stored in `calendarEventFilterProvider`.
 
 `Event` model owns the union; UI distinguishes by `EventType` enum.
 
+For a new manual event, the form offers a reminder-offset dropdown
+(`kReminderOffsetOptions` in `calendar_form_providers.dart`: no reminder / at
+time / 30 min / 1 hour / 1 day before). `EventFormNotifier.createEvent`'s
+`reminderMinutesBefore` param drives it — default `kDefaultReminderMinutesBefore`
+(30, the historic behavior), `null` skips the reminder. Shown only when
+creating (editing does not manage reminders). Added 2026-07-03; before that
+every event got a fixed 30-minute reminder.
+
 ## Widgets
 
 - `CalendarGrid` — month view (square date cells with event dots)
