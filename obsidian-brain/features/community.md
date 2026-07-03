@@ -41,7 +41,10 @@ content can no longer be edited via a direct client `.update()`; edits go throug
 `community_posts` — dropped; `clearReviewFlag`'s write to it is a pre-existing latent
 bug, IMPROVEMENT_PLAN §6.14.) UI shows an `edited` badge; the edit action appears only
 on the author's own post inside the window. Applied to prod + merged to main
-2026-07-03 (advisors 0 new). See
+2026-07-03 (advisors 0 new). Follow-up polish (`fix/community-followups`): edit
+sheet uses shared `showAppBottomSheet` (safe-area), the specific `edit_window_expired`
+message surfaces, and the comment empty-state fires on `visibleComments.isEmpty`
+(fully-muted thread no longer blank). See
 `docs/superpowers/specs/2026-07-03-community-tab-design.md`.
 
 **Client data contract** (commit `68d6a57`): `CommunityPost.editedAt` (`DateTime?`) +

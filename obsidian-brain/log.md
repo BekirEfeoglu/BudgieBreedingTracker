@@ -4,6 +4,19 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-03] fix (branch) | community post-edit + admin follow-ups
+
+Branch `fix/community-followups` (commit `b9e4f77`, review-approved). 7 deferred
+fixes: (1) admin `clearReviewFlag` wrote a non-existent `reviewed_by` column →
+removed (that admin action was broken in prod; IMPROVEMENT_PLAN §6.14 closed);
+(2) edit sheet now uses the shared `showAppBottomSheet` (SafeArea bottom inset on
+notched devices); (3) comment empty-state fires on `visibleComments.isEmpty` so a
+fully-muted thread no longer renders blank; (4) `_maxLength` cross-refs the edge
+schema; (5) `PostEditNotifier.editPost` → `Future<String?>` so the specific
+`edit_window_expired` message surfaces (previously an unused l10n key); (6) dropped
+a redundant `invalidateAll()` in `update()`; (7) added a real edit-menu tap-through
+widget test. 470/470 community+remote-source tests green (§6.13 + §6.14 closed).
+
 ## [2026-07-03] feat (branch) | community mute client (feed + comment filter)
 
 Branch `feature/community-tab-faz1` (commit `40013c0`). Client for `community_mutes`:
