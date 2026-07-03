@@ -45,7 +45,12 @@ own post inside the window. Not yet merged/applied to prod. See
 `CommunityPostX.isEdited`; edit flows `CommunityPostRepository.update({postId, content})`
 → `CommunityPostRemoteSource.updateContent` → `EdgeFunctionClient.updateCommunityPost`
 (`mode: 'update'`). `_parsePost` reads `edited_at`; `update` invalidates the post cache.
-UI wiring (sheet, menu action, badge) lands in a later task of the same branch.
+
+**UI** (commit `d31eef5`): `community_post_edit_sheet.dart` (content-only edit sheet),
+`postEditProvider` (`editPost → bool`; success calls `CommunityFeedNotifier.applyPostEdit`
++ invalidates `communityPostByIdProvider`, failure logs+Sentry and leaves feed intact),
+an author-only "Edit" menu item gated by `canEditPost` (UTC 5-min window), and an
+`edited` badge on the post header. 6 l10n keys (tr/en/de).
 
 ## Cache
 

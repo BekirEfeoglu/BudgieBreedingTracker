@@ -4,6 +4,16 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-03] feat (branch) | community post edit UI (sheet, menu, badge)
+
+Branch `feature/community-tab-faz1` (commit `d31eef5`). User-facing edit: content-only
+bottom sheet (`community_post_edit_sheet.dart`), `postEditProvider` (`editPost → bool`;
+success → `applyPostEdit` + `communityPostByIdProvider` invalidate, failure →
+`AppLogger.error` + Sentry, feed left intact), author-only "Edit" menu item gated by
+`canEditPost` (UTC now−createdAt < 5 min), `edited` badge on the header, 6 l10n keys
+(tr/en/de). 436/436 community tests, analyze/l10n/quality clean. Completes the
+post-edit vertical (migration → edge fn → data path → UI) on the branch.
+
 ## [2026-07-03] feat (branch) | community post edit client data path
 
 Branch `feature/community-tab-faz1` (commit `68d6a57`). Client wiring for the
