@@ -1,6 +1,11 @@
     // ─── i18n Translations ───
     const translations = {
       tr: {
+        offline_svg_phone: '📱 Uygulama',
+        offline_svg_always: 'her zaman',
+        offline_svg_online: 'online\'da',
+        offline_svg_badge: '✓ Senkronize',
+        offline_svg_offline: '⚡ Offline Çalışır',
         nav_features: 'Özellikler',
         nav_screenshots: 'Ekran Görüntüleri',
         nav_pricing: 'Fiyatlandırma',
@@ -197,6 +202,11 @@
         offline_point3_desc: 'Bulut yedekleri şifreli. Verilerinize sadece siz erişebilirsiniz.',
       },
       en: {
+        offline_svg_phone: '📱 App',
+        offline_svg_always: 'always',
+        offline_svg_online: 'when online',
+        offline_svg_badge: '✓ Synced',
+        offline_svg_offline: '⚡ Works Offline',
         nav_features: 'Features',
         nav_screenshots: 'Screenshots',
         nav_pricing: 'Pricing',
@@ -340,10 +350,22 @@
         plan_premium_5: 'PDF & Excel export',
         plan_premium_6: 'Ad-free experience',
         plan_premium_cta: 'Go Premium',
+        pricing_most_popular: 'Most Popular',
+        plan_premium_6m_period: '/ 6 months',
+        plan_premium_6m_note: 'Ideal for short-term planning',
+        plan_premium_12m_period: '/ year',
+        plan_premium_12m_note: 'Save 17% (works out to $2.08/mo)',
+        plan_premium_12m_cta: 'Get Annual Plan',
         faq_q6: 'How does the genetics calculator work?',
         faq_a6: 'Select the mutations of the parent birds, and the app calculates possible offspring colors and genotypes using a Punnett square. You can save results and view past calculations.',
         faq_q7: 'Can I transfer my data to another device?',
         faq_a7: 'Yes! Your data syncs automatically when you log in with the same account. You can also create encrypted backups to restore on another device, or export as PDF and Excel.',
+        faq_q8: 'Can I cancel my premium subscription anytime?',
+        faq_a8: 'Yes, you can cancel your premium subscription anytime through the App Store or Google Play with no commitment.',
+        faq_q9: 'How do incubation and egg reminders work?',
+        faq_a9: 'When you enter laying dates, the app calculates estimated hatch days and notifies you for candling checks and hatch days.',
+        faq_q10: 'Can I use the app on desktop (Web)?',
+        faq_a10: 'BudgieBreedingTracker is currently available only on mobile devices (iOS and Android). A web version is in progress.',
         footer_support: 'Support',
         footer_guide: 'User Guide',
         footer_terms: 'Terms of Use',
@@ -381,6 +403,11 @@
         offline_point3_desc: 'Cloud backups are encrypted. Only you can access your data.',
       },
       de: {
+        offline_svg_phone: '📱 App',
+        offline_svg_always: 'immer',
+        offline_svg_online: 'wenn online',
+        offline_svg_badge: '✓ Synchronisiert',
+        offline_svg_offline: '⚡ Offline nutzbar',
         nav_features: 'Funktionen',
         nav_screenshots: 'Screenshots',
         nav_pricing: 'Preise',
@@ -524,10 +551,22 @@
         plan_premium_5: 'PDF- & Excel-Export',
         plan_premium_6: 'Werbefreies Erlebnis',
         plan_premium_cta: 'Premium werden',
+        pricing_most_popular: 'Am beliebtesten',
+        plan_premium_6m_period: '/ 6 Monate',
+        plan_premium_6m_note: 'Ideal für kurzfristige Planung',
+        plan_premium_12m_period: '/ Jahr',
+        plan_premium_12m_note: 'Sparen Sie 17% (entspricht $2,08/Monat)',
+        plan_premium_12m_cta: 'Jahresplan wählen',
         faq_q6: 'Wie funktioniert der Genetikrechner?',
         faq_a6: 'Wählen Sie die Mutationen der Elternvögel aus, und die App berechnet mögliche Nachwuchsfarben und Genotypen mit einem Punnett-Quadrat. Ergebnisse können gespeichert werden.',
         faq_q7: 'Kann ich meine Daten auf ein anderes Gerät übertragen?',
         faq_a7: 'Ja! Ihre Daten werden automatisch synchronisiert, wenn Sie sich mit demselben Konto anmelden. Sie können auch verschlüsselte Backups erstellen oder als PDF und Excel exportieren.',
+        faq_q8: 'Kann ich mein Premium-Abo jederzeit kündigen?',
+        faq_a8: 'Ja, Sie können Ihr Premium-Abo jederzeit über den App Store oder Google Play ohne Verpflichtung kündigen.',
+        faq_q9: 'Wie funktionieren Brut- und Eier-Erinnerungen?',
+        faq_a9: 'Wenn Sie die Legedaten eingeben, berechnet die App die voraussichtlichen Schlupftage und sendet Ihnen Benachrichtigungen zum Schieren und zu den Schlupftagen.',
+        faq_q10: 'Kann ich die App auf dem Computer (Web) nutzen?',
+        faq_a10: 'BudgieBreedingTracker ist derzeit nur auf Mobilgeräten (iOS und Android) verfügbar. An einer Web-Version wird gearbeitet.',
         footer_support: 'Support',
         footer_guide: 'Benutzerhandbuch',
         footer_terms: 'Nutzungsbedingungen',
@@ -657,6 +696,10 @@
       document.querySelectorAll('[data-i18n-alt]').forEach(el => {
         const key = el.getAttribute('data-i18n-alt');
         if (t[key]) el.setAttribute('alt', t[key]);
+      });
+      document.querySelectorAll('[data-i18n-svg]').forEach(el => {
+        const key = el.getAttribute('data-i18n-svg');
+        if (t[key]) el.textContent = t[key];
       });
 
       const titles = {
