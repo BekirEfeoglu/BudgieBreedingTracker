@@ -22,12 +22,21 @@ Final HEAD `00dc383`, CI tamamen yeşil (17 success + 1 bilinçli E2E skip).
 - **§5.2 (kısmi)** Server-side quiet-hours **mekanizması** — `send-push` opt-in + fail-open, migration + prod deploy. `00dc383`
 - **§5.1** Zaten yapılmış (attachment stub'ı `FeatureFlags.messageAttachmentsEnabled=false` arkasında).
 
+**🌿 Branch'te tamamlandı — checkpoint bekliyor (`feature/community-tab-faz1`, 2026-07-03):**
+Topluluk sekmesi sıfırdan planlandı (spec + plan: `docs/superpowers/`) ve Faz 0+1
+subagent-driven olarak uygulandı: sekme rename, dormant tablo notları, **§5.3 post
+edit** (5 dk window — migration `20260703120000` + edge fn `mode:'update'` + client data
+path + edit UI/badge), **§6.1 mute** (ayrı `community_mutes` tablosu `20260703121000` —
+messaging block-RLS'ine dokunmadan, owner-only SELECT + feed/yorum görünürlük filtresi).
+Her task iki-aşamalı review'dan geçti (0 Critical/Important). **Kalan checkpoint adımları
+(kullanıcı kararıyla bilinçli ertelendi):** iki migration'ın prod'a `apply_migration` +
+`get_advisors`, `main`'e merge/push, remote CI doğrulaması. Kod+test dalda hazır ve yeşil.
+
 **⏸️ Kalan (bilinçli ertelendi — gerekçeler ilgili bölümlerde):**
 - **§5.2 aktivasyonu** — client DND→`profiles.quiet_hours` sync + hangi bildirim tiplerinin
   `respectQuietHours: true` göndereceği taksonomisi (ürün kararı; ikisi birlikte yapılmalı).
-- **§5.3** Community post edit — büyük + prod-etkili (RLS + edge fn + moderation), taze oturum.
 - **§4.2** OAuth Phase 2 — %100 işlemsel (dashboard/secrets), ajan yapamaz; sonraki imzalı release öncesi.
-- **§7 / §6 P3** — bağımlılık/Flutter yükseltmeleri (iOS CI gerekli) + P3 özellikler (mute, streak, kill-switch, faz seçici).
+- **§7 / §6 P3** — bağımlılık/Flutter yükseltmeleri (iOS CI gerekli) + P3 özellikler (streak, kill-switch, faz seçici; mute ✅ yukarıda).
 
 **Ortam notu:** Yerel Flutter SDK gece 3.41.4→3.44.4'e kaymıştı; CI paritesi için 3.41.4'e geri sabitlendi.
 
@@ -315,6 +324,8 @@ dokümante boşluk).
 | 6.9 | **Deprecated feedback alias'ları** | `FeedbackRepository` typedef + eski provider alias'ı (`repository_providers.dart:228`). Çağrı kalmadıysa 2 release kuralına göre sil. |
 | 6.10 | **>500 satır dosyalar (4 adet)** | `egg_actions_notifier.dart` (695), `breeding_form_providers.dart` (590), `marketplace_form_screen.dart` (560), `bird_list_screen.dart` (513). Dokunulduğunda sorumluluk bazlı böl (~300 satır hedefi) — drive-by refactor yapma. |
 | 6.11 | **Eski plandan devreden** | Sync-conflict banner'ının 2 cihazlı manuel QA senaryosu; performans budget'larının CI assert'e bağlanması; local-ai üretim telemetrisi (token/latency rollup); multi-locale golden kapsamını hot-path widget'lara genişletme; RTL `EdgeInsetsDirectional` migration'ı. |
+| 6.12 | **`community_posts` needs_review self-clear hardening** | Yazar kendi `needs_review`'ünü temizleyebiliyor (eski davranış; `feature/community-tab-faz1` post-edit hardening'inde bilinçli kapsam dışı — report auto-flag `SECURITY DEFINER` akışı audit edilmeden trigger/WITH CHECK eklenmemeli). Grant artık `(is_deleted, needs_review, reviewed_by)` ile sınırlı ama needs_review'in *değerini* kısıtlamıyor. |
+| 6.13 | **Community edit sheet → `showAppBottomSheet` + tam-mute empty-state** | Task 6 review'undan: edit sheet plain `showModalBottomSheet` kullanıyor (`showAppBottomSheet`'in SafeArea alt-inset'i yok — notch'lu cihazda buton alta yapışabilir); Task 8 review'undan: tümü mute'lu yorum thread'i boş görünür (empty-state fire etmez, `commentState.comments` boş değil). İkisi de dar UX; dokunulduğunda düzelt. |
 
 ## 7. Bağımlılık Yükseltme Yol Haritası (fazlı, her faz ayrı commit)
 

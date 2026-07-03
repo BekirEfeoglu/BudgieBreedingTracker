@@ -40,7 +40,7 @@ Compose -> Client moderation -> Edge create-community-post
 ```
 
 - Optimistic insert: client UUID, server timestamp authoritative
-- **Post edit henüz implement edilmedi (2026-07-02 audit):** `CommunityPostRepository` `create`/`delete`/`getFeed`/`getById`/`getByUser`/`getBookmarked`/`search` metodlarını expose eder — `update`/edit metodu YOK. "5 dakika edit window" bu bölüm gelecek tasarım hedefidir.
+- **Post edit — implement edildi (`feature/community-tab-faz1`, 2026-07-03; merge + prod migration apply bekliyor):** İçerik-yalnızca düzenleme 5 dk pencerede. `CommunityPostRepository.update({postId, content})` → `CommunityPostRemoteSource.updateContent` → `create-community-post` edge fn `mode:'update'` (moderation yeniden çalışır, fail-closed). Pencere edge fn'de (`EDIT_WINDOW_MS`) + `community_posts` authenticated UPDATE grant'i `(is_deleted, needs_review, reviewed_by)` kolonlarına daraltılarak (migration `20260703120000`) enforce edilir — content doğrudan client `.update()` ile değişemez. `edited_at` kolonu + UI'da `edited` rozeti; "Düzenle" yalnız kendi postunda + pencere içinde. (Yazarın kendi `needs_review`'ünü temizleyebilmesi bilinçli kapsam dışı — bkz. IMPROVEMENT_PLAN P3.)
 - Delete: soft delete (`deleted_at`), feed query filter
 
 ## Comment
@@ -94,7 +94,7 @@ Compose -> Client moderation -> Edge create-community-post
 
 ## Block / Mute
 - Block: karşılıklı feed gizleme, DM engelleme
-- **Mute henüz implement edilmedi (2026-07-02 audit):** `community_social_repository.dart`/`community_social_remote_source.dart` içinde mute için hiçbir kod yok — bu bölüm gelecek tasarım hedefidir
+- **Mute — implement edildi (`feature/community-tab-faz1`, 2026-07-03; merge + prod migration apply bekliyor):** Tek yönlü, görünürlük-yalnızca yumuşak block. **Ayrı** `community_mutes` tablosu (migration `20260703121000`) — `community_blocks`'a kolon EKLENMEDİ, çünkü messaging block-RLS'i (`20260702174304`) `community_blocks` okur; mute DM'i etkilememeli. RLS SELECT **owner-only** (`auth.uid() = user_id`) — mute'lanan kişi öğrenemez (block'un iki-yönlü SELECT'inden farklı). Client: `CommunitySocialRepository.{muteUser,unmuteUser,fetchMutedUserIds}` + `mutedUsersProvider` (block stack'inin aynası, optimistic+rollback). Feed filtresi muted'ı blocked'dan sonra tüm tab'lerde uygular; `visibleCommentsProvider` yorumları da filtreler. Light action (confirm yok, toast) — community-only, messaging'e wire EDİLMEDİ.
 - Block list cache: 5dk TTL, mutation sonrası invalidate
 - Engellenen kullanıcının postları feed query'sinde filter
 
