@@ -3,6 +3,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/models/clutch_model.dart';
+import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/egg_remote_source.dart';
@@ -338,11 +339,112 @@ void main() {
       when(
         () => syncDao.getByRecord(SupabaseConstants.clutchesTable, 'clutch-1'),
       ).thenAnswer((_) async => null);
+      when(() => remoteSource.upsertAll(any())).thenAnswer((_) async {});
+      when(
+        () => syncDao.deleteByRecords(any(), any()),
+      ).thenAnswer((_) async {});
 
       await repository.pushAll(userId);
 
-      verify(() => remoteSource.upsert(egg)).called(1);
+      final captured =
+          verify(() => remoteSource.upsertAll(captureAny())).captured;
+      expect((captured.single as List), [egg]);
     });
+
+    test(
+      'should batch valid items into single upsertAll and skip FK-orphans',
+      () async {
+        final e1 = TestFixtures.sampleEgg(id: 'e1', userId: userId);
+        final e2 = TestFixtures.sampleEgg(id: 'e2', userId: userId);
+        // e3's parent incubation was deleted — validateForeignKeys rejects it.
+        final e3 = TestFixtures.sampleEgg(
+          id: 'e3',
+          userId: userId,
+          incubationId: 'missing-inc',
+        );
+        when(
+          () => syncDao.getPendingByTable(userId, SupabaseConstants.eggsTable),
+        ).thenAnswer(
+          (_) async => [
+            TestFixtures.sampleSyncMetadata(recordId: 'e1'),
+            TestFixtures.sampleSyncMetadata(recordId: 'e2'),
+            TestFixtures.sampleSyncMetadata(recordId: 'e3'),
+          ],
+        );
+        when(() => localDao.getById('e1')).thenAnswer((_) async => e1);
+        when(() => localDao.getById('e2')).thenAnswer((_) async => e2);
+        when(() => localDao.getById('e3')).thenAnswer((_) async => e3);
+        when(
+          () => incubationsDao.getById('missing-inc'),
+        ).thenAnswer((_) async => null);
+        when(() => remoteSource.upsertAll(any())).thenAnswer((_) async {});
+        when(
+          () => syncDao.deleteByRecords(any(), any()),
+        ).thenAnswer((_) async {});
+
+        final stats = await repository.pushAll(userId);
+
+        final captured =
+            verify(() => remoteSource.upsertAll(captureAny())).captured;
+        expect((captured.single as List).map((e) => (e as Egg).id), [
+          'e1',
+          'e2',
+        ]);
+        expect(stats.pushed, 2);
+        // e3 is a true FK orphan ("not found locally") — marked as sync
+        // error, not silently skipped without a trace.
+        expect(stats.orphansCleaned, 1);
+      },
+    );
+
+    test(
+      'chunks upsertAll calls when pending count exceeds chunkSize',
+      () async {
+        // Exercises the multi-chunk loop in pushPendingBatched (base_repository.dart)
+        // which currently has zero coverage: 3 valid pending rows with chunkSize=2
+        // must produce TWO upsertAll calls — [2 items] then [1 item] — not one.
+        final e1 = TestFixtures.sampleEgg(id: 'e1', userId: userId);
+        final e2 = TestFixtures.sampleEgg(id: 'e2', userId: userId);
+        final e3 = TestFixtures.sampleEgg(id: 'e3', userId: userId);
+        when(
+          () => syncDao.getPendingByTable(userId, SupabaseConstants.eggsTable),
+        ).thenAnswer(
+          (_) async => [
+            TestFixtures.sampleSyncMetadata(recordId: 'e1'),
+            TestFixtures.sampleSyncMetadata(recordId: 'e2'),
+            TestFixtures.sampleSyncMetadata(recordId: 'e3'),
+          ],
+        );
+        when(() => localDao.getById('e1')).thenAnswer((_) async => e1);
+        when(() => localDao.getById('e2')).thenAnswer((_) async => e2);
+        when(() => localDao.getById('e3')).thenAnswer((_) async => e3);
+        when(() => remoteSource.upsertAll(any())).thenAnswer((_) async {});
+        when(
+          () => syncDao.deleteByRecords(any(), any()),
+        ).thenAnswer((_) async {});
+
+        // Drive pushPendingBatched directly (mixin method, accessible on
+        // the concrete repository) with a forced chunkSize=2 to prove the
+        // sublist-loop in base_repository.dart actually splits into
+        // multiple upsertAll calls instead of one big batch.
+        final pushed = await repository.pushPendingBatched(
+          userId: userId,
+          resolveItem: (recordId) => repository.getLocalByIdForSync(recordId),
+          upsertChunk: repository.upsertChunkForSync,
+          deleteRemote: (recordId) =>
+              repository.deleteRemoteForSync(recordId, userId),
+          idOf: repository.getEntityId,
+          chunkSize: 2,
+        );
+
+        expect(pushed, 3);
+        final captured =
+            verify(() => remoteSource.upsertAll(captureAny())).captured;
+        expect(captured, hasLength(2));
+        expect((captured[0] as List).map((e) => (e as Egg).id), ['e1', 'e2']);
+        expect((captured[1] as List).map((e) => (e as Egg).id), ['e3']);
+      },
+    );
   });
 
   group('validateForeignKeys', () {

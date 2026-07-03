@@ -353,6 +353,16 @@ class EventRepository extends BaseRepository<Event>
     }
   }
 
+  // pushAll() is provided by ValidatedSyncMixin
+
+  @override
+  Future<void> upsertChunkForSync(List<Event> chunk) =>
+      _remoteSource.upsertAll(chunk);
+
+  @override
+  Future<void> deleteRemoteForSync(String recordId, String userId) =>
+      _remoteSource.deleteById(recordId, userId: userId);
+
   // ── Realtime helpers ─────────────────────────────────────────────────
   // These bypass sync metadata so events received from Supabase realtime
   // are persisted locally without being re-pushed back to the server.

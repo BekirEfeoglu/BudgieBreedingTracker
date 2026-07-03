@@ -81,6 +81,7 @@ void main() {
     when(() => localDao.getUnweaned(any())).thenAnswer((_) async => []);
 
     when(() => remoteSource.upsert(any())).thenAnswer((_) async {});
+    when(() => remoteSource.upsertAll(any())).thenAnswer((_) async {});
     when(() => remoteSource.fetchAll(any())).thenAnswer((_) async => []);
     when(
       () => remoteSource.fetchUpdatedSince(any(), any()),
@@ -89,6 +90,9 @@ void main() {
     when(() => syncDao.insertItem(any())).thenAnswer((_) async {});
     when(() => syncDao.insertAll(any())).thenAnswer((_) async {});
     when(() => syncDao.deleteByRecord(any(), any())).thenAnswer((_) async {});
+    when(
+      () => syncDao.deleteByRecords(any(), any()),
+    ).thenAnswer((_) async {});
     when(() => syncDao.updateItem(any())).thenAnswer((_) async {});
     when(() => syncDao.hardDelete(any())).thenAnswer((_) async {});
     when(() => syncDao.getByRecord(any(), any())).thenAnswer((_) async => null);
@@ -268,7 +272,9 @@ void main() {
 
       await repository.pushAll(userId);
 
-      verify(() => remoteSource.upsert(chick)).called(1);
+      final captured =
+          verify(() => remoteSource.upsertAll(captureAny())).captured;
+      expect((captured.single as List), [chick]);
     });
   });
 

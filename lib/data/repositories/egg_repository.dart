@@ -243,6 +243,14 @@ class EggRepository extends BaseRepository<Egg>
 
   // pushAll() is provided by ValidatedSyncMixin
 
+  @override
+  Future<void> upsertChunkForSync(List<Egg> chunk) =>
+      _remoteSource.upsertAll(chunk);
+
+  @override
+  Future<void> deleteRemoteForSync(String recordId, String userId) =>
+      _remoteSource.deleteById(recordId, userId: userId);
+
   // ── Domain-specific queries ───────────────────────────────────────────
 
   /// Eggs by clutch (live stream).

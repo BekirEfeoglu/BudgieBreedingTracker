@@ -15,9 +15,9 @@ import 'package:uuid/uuid.dart';
 ///
 /// Incubation has no `isDeleted` field, so [remove] performs a hard delete.
 /// Uses [ValidatedSyncMixin] for stale-error cleanup + FK validation. The
-/// mixin's default `pushAll` would treat hard-deleted tombstones as
-/// orphans because [getLocalByIdForSync] returns null, so [pushAll] is
-/// overridden to handle [SyncStatus.pendingDelete] explicitly first.
+/// mixin's `pushAll` batches valid pending items into chunked upserts via
+/// [deleteRemoteForSync]/[upsertChunkForSync] and handles
+/// [SyncStatus.pendingDelete] tombstones through the same hooks.
 class IncubationRepository extends BaseRepository<Incubation>
     with SyncableRepository<Incubation>, ValidatedSyncMixin<Incubation> {
   final IncubationsDao _localDao;
@@ -260,64 +260,18 @@ class IncubationRepository extends BaseRepository<Incubation>
     return null;
   }
 
-  /// Hard-delete pushAll: handles [SyncStatus.pendingDelete] explicitly,
-  /// then delegates the normal path to the mixin's FK-validated loop.
-  /// Without the explicit branch, the mixin would treat hard-deleted
-  /// tombstones as orphans (because `getLocalById` returns null) and
-  /// silently clean them up — the remote row would never be deleted.
+  // pushAll() is provided by ValidatedSyncMixin — handles pendingDelete
+  // tombstones via [deleteRemoteForSync] (hard-delete entity, no local row
+  // to resolve) and runs FK validation on regular pending items via
+  // [validateForeignKeys] before batching the upsert.
+
   @override
-  Future<PushStats> pushAll(String userId) async {
-    int pushed = 0;
-    int orphansCleaned = 0;
-    await clearStaleErrors(userId);
+  Future<void> upsertChunkForSync(List<Incubation> chunk) =>
+      _remoteSource.upsertAll(chunk);
 
-    final tablePending = await _syncDao.getPendingByTable(userId, _table);
-    for (final meta in tablePending) {
-      final recordId = meta.recordId ?? '';
-      if (recordId.isEmpty) {
-        await _syncDao.deleteByRecord(_table, recordId);
-        orphansCleaned++;
-        continue;
-      }
-
-      if (meta.status == SyncStatus.pendingDelete) {
-        try {
-          await _remoteSource.deleteById(recordId, userId: userId);
-          await _syncDao.deleteByRecord(_table, recordId);
-          pushed++;
-        } on AppException catch (e) {
-          await markError(recordId, userId, e.message);
-        }
-        continue;
-      }
-
-      final item = await _localDao.getById(recordId);
-      if (item == null) {
-        AppLogger.warning(
-          '[$syncLogTag] Orphan sync_metadata cleaned: $recordId',
-        );
-        await _syncDao.deleteByRecord(_table, recordId);
-        orphansCleaned++;
-        continue;
-      }
-
-      final orphanReason = await validateForeignKeys(item);
-      if (orphanReason != null) {
-        if (orphanReason.contains('not found locally')) {
-          AppLogger.warning(
-            '[$syncLogTag] True orphan ${item.id}: $orphanReason',
-          );
-          await markSyncError(item.id, item.userId, orphanReason);
-          orphansCleaned++;
-        }
-        continue;
-      }
-
-      await push(item);
-      pushed++;
-    }
-    return (pushed: pushed, orphansCleaned: orphansCleaned);
-  }
+  @override
+  Future<void> deleteRemoteForSync(String recordId, String userId) =>
+      _remoteSource.deleteById(recordId, userId: userId);
 
   /// Active incubations (live stream).
   Stream<List<Incubation>> watchActive(String userId) =>

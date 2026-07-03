@@ -277,6 +277,16 @@ class ClutchRepository extends BaseRepository<Clutch>
     }
   }
 
+  // pushAll() is provided by ValidatedSyncMixin
+
+  @override
+  Future<void> upsertChunkForSync(List<Clutch> chunk) =>
+      _remoteSource.upsertAll(chunk);
+
+  @override
+  Future<void> deleteRemoteForSync(String recordId, String userId) =>
+      _remoteSource.deleteById(recordId, userId: userId);
+
   Future<List<Clutch>> getByBreeding(String breedingId) =>
       _localDao.getByBreeding(breedingId);
 }

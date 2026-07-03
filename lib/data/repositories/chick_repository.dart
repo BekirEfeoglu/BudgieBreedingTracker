@@ -275,6 +275,14 @@ class ChickRepository extends BaseRepository<Chick>
 
   // pushAll() is provided by ValidatedSyncMixin
 
+  @override
+  Future<void> upsertChunkForSync(List<Chick> chunk) =>
+      _remoteSource.upsertAll(chunk);
+
+  @override
+  Future<void> deleteRemoteForSync(String recordId, String userId) =>
+      _remoteSource.deleteById(recordId, userId: userId);
+
   // ── Domain-specific queries ───────────────────────────────────────────
 
   /// Chicks by clutch (live stream).

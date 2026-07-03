@@ -221,6 +221,14 @@ class HealthRecordRepository extends BaseRepository<HealthRecord>
     }
   }
 
+  @override
+  Future<void> upsertChunkForSync(List<HealthRecord> chunk) =>
+      _remoteSource.upsertAll(chunk);
+
+  @override
+  Future<void> deleteRemoteForSync(String recordId, String userId) =>
+      _remoteSource.deleteById(recordId, userId: userId);
+
   // pushAll() is provided by ValidatedSyncMixin — validates birdId FK
   // before pushing and cleans up orphaned sync metadata.
 

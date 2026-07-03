@@ -186,32 +186,24 @@ class NotificationScheduleRepository
 
   @override
   Future<PushStats> pushAll(String userId) async {
-    int pushed = 0;
-    int orphansCleaned = 0;
-    final tablePending = await _syncDao.getPendingByTable(userId, _table);
-    for (final meta in tablePending) {
-      if (meta.status == SyncStatus.pendingDelete) {
-        try {
-          await _remoteSource.deleteById(meta.recordId ?? '', userId: userId);
-          await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
-          pushed++;
-        } on AppException catch (e) {
-          await markError(meta.recordId ?? '', userId, e.message);
-        }
-      } else {
-        final item = await _localDao.getById(meta.recordId ?? '');
+    var orphansCleaned = 0;
+    final pushed = await pushPendingBatched(
+      userId: userId,
+      resolveItem: (id) async {
+        final item = await _localDao.getById(id);
         if (item == null) {
           AppLogger.warning(
-            '[NotificationScheduleRepo] Orphan sync_metadata cleaned: ${meta.recordId}',
+            '[NotificationScheduleRepo] Orphan sync_metadata cleaned: $id',
           );
-          await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
+          await _syncDao.deleteByRecord(_table, id);
           orphansCleaned++;
-          continue;
         }
-        await push(item);
-        pushed++;
-      }
-    }
+        return item;
+      },
+      upsertChunk: _remoteSource.upsertAll,
+      deleteRemote: (id) => _remoteSource.deleteById(id, userId: userId),
+      idOf: (schedule) => schedule.id,
+    );
     return (pushed: pushed, orphansCleaned: orphansCleaned);
   }
 }

@@ -232,6 +232,14 @@ class BreedingPairRepository extends BaseRepository<BreedingPair>
 
   // pushAll() is provided by ValidatedSyncMixin
 
+  @override
+  Future<void> upsertChunkForSync(List<BreedingPair> chunk) =>
+      _remoteSource.upsertAll(chunk);
+
+  @override
+  Future<void> deleteRemoteForSync(String recordId, String userId) =>
+      _remoteSource.deleteById(recordId, userId: userId);
+
   /// Active breeding pairs (live stream).
   Stream<List<BreedingPair>> watchActive(String userId) =>
       _localDao.watchActive(userId);

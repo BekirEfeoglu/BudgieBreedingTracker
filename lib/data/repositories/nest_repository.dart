@@ -161,22 +161,22 @@ class NestRepository extends BaseRepository<Nest>
 
   @override
   Future<PushStats> pushAll(String userId) async {
-    int pushed = 0;
-    int orphansCleaned = 0;
-    final tablePending = await _syncDao.getPendingByTable(userId, _table);
-    for (final meta in tablePending) {
-      final item = await _localDao.getByIdIncludingDeleted(meta.recordId ?? '');
-      if (item == null) {
-        AppLogger.warning(
-          '[NestRepo] Orphan sync_metadata cleaned: ${meta.recordId}',
-        );
-        await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
-        orphansCleaned++;
-        continue;
-      }
-      await push(item);
-      pushed++;
-    }
+    var orphansCleaned = 0;
+    final pushed = await pushPendingBatched(
+      userId: userId,
+      resolveItem: (id) async {
+        final item = await _localDao.getByIdIncludingDeleted(id);
+        if (item == null) {
+          AppLogger.warning('[NestRepo] Orphan sync_metadata cleaned: $id');
+          await _syncDao.deleteByRecord(_table, id);
+          orphansCleaned++;
+        }
+        return item;
+      },
+      upsertChunk: _remoteSource.upsertAll,
+      deleteRemote: (id) => _remoteSource.deleteById(id, userId: userId),
+      idOf: (nest) => nest.id,
+    );
     return (pushed: pushed, orphansCleaned: orphansCleaned);
   }
 

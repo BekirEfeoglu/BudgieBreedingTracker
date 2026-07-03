@@ -215,6 +215,14 @@ class EventReminderRepository extends BaseRepository<EventReminder>
 
   // pushAll() is provided by ValidatedSyncMixin
 
+  @override
+  Future<void> upsertChunkForSync(List<EventReminder> chunk) =>
+      _remoteSource.upsertAll(chunk);
+
+  @override
+  Future<void> deleteRemoteForSync(String recordId, String userId) =>
+      _remoteSource.deleteById(recordId, userId: userId);
+
   // ── Domain-specific queries ───────────────────────────────────────────
 
   /// Watch reminders for a specific event.

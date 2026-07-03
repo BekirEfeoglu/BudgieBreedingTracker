@@ -124,6 +124,9 @@ void main() {
         when(
           () => syncDao.deleteByRecord(any(), any()),
         ).thenAnswer((_) async {});
+        when(
+          () => syncDao.deleteByRecords(any(), any()),
+        ).thenAnswer((_) async {});
 
         await repo.save(bird);
         final createdMeta =
@@ -132,12 +135,16 @@ void main() {
         expect(createdMeta.status, SyncStatus.pending);
 
         clearInteractions(remote);
-        when(() => remote.upsert(any())).thenAnswer((_) async {});
+        when(() => remote.upsertAll(any())).thenAnswer((_) async {});
         await repo.pushAll(userId);
 
-        verify(() => remote.upsert(bird)).called(1);
+        final captured =
+            verify(() => remote.upsertAll(captureAny())).captured;
+        expect((captured.single as List), [bird]);
         verify(
-          () => syncDao.deleteByRecord(SupabaseConstants.birdsTable, bird.id),
+          () => syncDao.deleteByRecords(SupabaseConstants.birdsTable, [
+            bird.id,
+          ]),
         ).called(1);
       },
     );
@@ -452,12 +459,13 @@ void main() {
       await repo.remove(egg.id);
 
       clearInteractions(remote);
-      when(() => remote.upsert(any())).thenAnswer((_) async {});
+      when(() => remote.upsertAll(any())).thenAnswer((_) async {});
 
       await repo.pushAll(userId);
 
-      final pushed =
-          verify(() => remote.upsert(captureAny())).captured.single as Egg;
+      final captured =
+          verify(() => remote.upsertAll(captureAny())).captured;
+      final pushed = (captured.single as List).single as Egg;
       expect(pushed.id, egg.id);
       expect(pushed.isDeleted, isTrue);
       expect(

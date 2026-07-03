@@ -89,6 +89,7 @@ void main() {
       () => remoteSource.fetchUpdatedSince(any(), any()),
     ).thenAnswer((_) async => []);
     when(() => remoteSource.upsert(any())).thenAnswer((_) async {});
+    when(() => remoteSource.upsertAll(any())).thenAnswer((_) async {});
     when(
       () => remoteSource.deleteById(any(), userId: any(named: 'userId')),
     ).thenAnswer((_) async {});
@@ -96,6 +97,9 @@ void main() {
     when(() => syncDao.insertItem(any())).thenAnswer((_) async {});
     when(() => syncDao.insertAll(any())).thenAnswer((_) async {});
     when(() => syncDao.deleteByRecord(any(), any())).thenAnswer((_) async {});
+    when(
+      () => syncDao.deleteByRecords(any(), any()),
+    ).thenAnswer((_) async {});
     when(() => syncDao.updateItem(any())).thenAnswer((_) async {});
     when(() => syncDao.getByRecord(any(), any())).thenAnswer((_) async => null);
     when(
@@ -391,7 +395,9 @@ void main() {
 
         await repository.pushAll(userId);
 
-        verify(() => remoteSource.upsert(inc1)).called(1);
+        final captured =
+            verify(() => remoteSource.upsertAll(captureAny())).captured;
+        expect((captured.single as List), [inc1]);
       },
     );
 

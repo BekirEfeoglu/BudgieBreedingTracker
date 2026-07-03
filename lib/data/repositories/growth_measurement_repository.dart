@@ -220,57 +220,17 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
     }
   }
 
-  /// Hard-delete pushAll: handles [SyncStatus.pendingDelete] explicitly and
-  /// runs FK validation on regular pending items via the mixin.
+  // pushAll() is provided by ValidatedSyncMixin — handles pendingDelete
+  // tombstones via [deleteRemoteForSync] and runs FK validation on regular
+  // pending items via [validateForeignKeys] before batching the upsert.
+
   @override
-  Future<PushStats> pushAll(String userId) async {
-    int pushed = 0;
-    int orphansCleaned = 0;
-    await clearStaleErrors(userId);
-    final tablePending = await _syncDao.getPendingByTable(userId, _table);
-    for (final meta in tablePending) {
-      if (meta.status == SyncStatus.pendingDelete) {
-        try {
-          await _remoteSource.deleteById(meta.recordId ?? '', userId: userId);
-          await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
-          pushed++;
-        } on AppException catch (e) {
-          await markError(meta.recordId ?? '', userId, e.message);
-        }
-        continue;
-      }
+  Future<void> upsertChunkForSync(List<GrowthMeasurement> chunk) =>
+      _remoteSource.upsertAll(chunk);
 
-      final item = await _localDao.getById(meta.recordId ?? '');
-      if (item == null) {
-        AppLogger.warning(
-          '[$syncLogTag] Orphan sync_metadata cleaned: ${meta.recordId}',
-        );
-        await _syncDao.deleteByRecord(_table, meta.recordId ?? '');
-        orphansCleaned++;
-        continue;
-      }
-
-      final orphanReason = await validateForeignKeys(item);
-      if (orphanReason != null) {
-        if (orphanReason.contains('not found locally')) {
-          AppLogger.warning(
-            '[$syncLogTag] True orphan ${getEntityId(item)}: $orphanReason',
-          );
-          await markError(
-            getEntityId(item),
-            getEntityUserId(item),
-            orphanReason,
-          );
-          orphansCleaned++;
-        }
-        continue;
-      }
-
-      await push(item);
-      pushed++;
-    }
-    return (pushed: pushed, orphansCleaned: orphansCleaned);
-  }
+  @override
+  Future<void> deleteRemoteForSync(String recordId, String userId) =>
+      _remoteSource.deleteById(recordId, userId: userId);
 
   /// Growth measurements for a specific chick (live stream).
   Stream<List<GrowthMeasurement>> watchByChick(String chickId) =>

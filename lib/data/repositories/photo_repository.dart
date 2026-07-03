@@ -177,12 +177,26 @@ class PhotoRepository {
     }
   }
 
+  /// Push chunk size for batched upserts — mirrors
+  /// [SyncableRepository.pushChunkSize] since [PhotoRepository] doesn't mix
+  /// in [SyncableRepository] (custom hard-delete sync model, see class doc).
+  static const int _pushChunkSize = 100;
+
   /// Pushes all pending photo records for a user to Supabase.
+  ///
+  /// Same batching contract as [SyncableRepository.pushPendingBatched]:
+  /// pendingDelete tombstones go through [_remoteSource.deleteById] one by
+  /// one (rare, can't batch deletes into an upsert payload), true orphans
+  /// (no local row / empty recordId) are cleaned without a remote call, and
+  /// everything else is chunked into [_remoteSource.upsertAll] with a
+  /// per-item [push] fallback on chunk-level [AppException] so one poison
+  /// row can't mask the rest.
   Future<PushStats> pushAll(String userId) async {
-    int pushed = 0;
-    int orphansCleaned = 0;
+    var pushed = 0;
+    var orphansCleaned = 0;
     final tablePending = await _syncDao.getPendingByTable(userId, _table);
 
+    final toUpsert = <Photo>[];
     for (final meta in tablePending) {
       final recordId = meta.recordId ?? '';
       if (recordId.isEmpty) {
@@ -212,8 +226,33 @@ class PhotoRepository {
         orphansCleaned++;
         continue;
       }
-      await push(item);
-      pushed++;
+      toUpsert.add(item);
+    }
+
+    for (var i = 0; i < toUpsert.length; i += _pushChunkSize) {
+      final chunk = toUpsert.sublist(
+        i,
+        i + _pushChunkSize > toUpsert.length
+            ? toUpsert.length
+            : i + _pushChunkSize,
+      );
+      try {
+        await _remoteSource.upsertAll(chunk);
+        await _syncDao.deleteByRecords(
+          _table,
+          chunk.map((photo) => photo.id).toList(),
+        );
+        pushed += chunk.length;
+      } on AppException {
+        // Poison-row isolation: retry the chunk item-by-item via the legacy
+        // path; push() marks per-item errors, successes clean their metadata.
+        for (final item in chunk) {
+          final before = await _syncDao.getByRecord(_table, item.id);
+          await push(item);
+          final after = await _syncDao.getByRecord(_table, item.id);
+          if (before != null && after == null) pushed++;
+        }
+      }
     }
     return (pushed: pushed, orphansCleaned: orphansCleaned);
   }

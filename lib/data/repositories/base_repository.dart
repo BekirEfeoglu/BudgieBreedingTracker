@@ -256,48 +256,57 @@ mixin ValidatedSyncMixin<T> on BaseRepository<T>, SyncableRepository<T> {
   static const int maxSyncRetries = 10;
 
   /// Pushes all pending items with orphan cleanup and FK validation.
+  /// Valid items are batched into chunked upserts (see [pushPendingBatched]);
+  /// FK validation stays per-item and local.
   @override
   Future<PushStats> pushAll(String userId) async {
-    int pushed = 0;
-    int orphansCleaned = 0;
     await clearStaleErrors(userId);
+    var orphansCleaned = 0;
 
-    final tablePending = await syncDao.getPendingByTable(userId, syncTableName);
-
-    for (final meta in tablePending) {
-      final item = await getLocalByIdForSync(meta.recordId ?? '');
-      if (item == null) {
-        AppLogger.warning(
-          '[$syncLogTag] Orphan sync_metadata cleaned: ${meta.recordId}',
-        );
-        await syncDao.deleteByRecord(syncTableName, meta.recordId ?? '');
-        orphansCleaned++;
-        continue;
-      }
-
-      final orphanReason = shouldValidateForeignKeys(item)
-          ? await validateForeignKeys(item)
-          : null;
-      if (orphanReason != null) {
-        if (orphanReason.contains('not found locally')) {
+    final pushed = await pushPendingBatched(
+      userId: userId,
+      resolveItem: (recordId) async {
+        final item = await getLocalByIdForSync(recordId);
+        if (item == null) {
           AppLogger.warning(
-            '[$syncLogTag] True orphan ${getEntityId(item)}: $orphanReason',
+            '[$syncLogTag] Orphan sync_metadata cleaned: $recordId',
           );
-          await markSyncError(
-            getEntityId(item),
-            getEntityUserId(item),
-            orphanReason,
-          );
+          await syncDao.deleteByRecord(syncTableName, recordId);
           orphansCleaned++;
+          return null;
         }
-        continue;
-      }
-
-      await push(item);
-      pushed++;
-    }
+        final orphanReason = shouldValidateForeignKeys(item)
+            ? await validateForeignKeys(item)
+            : null;
+        if (orphanReason != null) {
+          if (orphanReason.contains('not found locally')) {
+            AppLogger.warning(
+              '[$syncLogTag] True orphan ${getEntityId(item)}: $orphanReason',
+            );
+            await markSyncError(
+              getEntityId(item),
+              getEntityUserId(item),
+              orphanReason,
+            );
+            orphansCleaned++;
+          }
+          return null; // FK bekleyen: bu turda pushlanmaz (mevcut davranış)
+        }
+        return item;
+      },
+      upsertChunk: upsertChunkForSync,
+      deleteRemote: (recordId) => deleteRemoteForSync(recordId, userId),
+      idOf: getEntityId,
+    );
     return (pushed: pushed, orphansCleaned: orphansCleaned);
   }
+
+  /// Chunked upsert hook — implemented by each repo with its remote source.
+  Future<void> upsertChunkForSync(List<T> chunk);
+
+  /// Remote delete hook for pendingDelete tombstones. [userId] comes from
+  /// the pushAll call because tombstones have no local row to read it from.
+  Future<void> deleteRemoteForSync(String recordId, String userId);
 
   /// Clears error sync records that have exceeded max retries.
   ///

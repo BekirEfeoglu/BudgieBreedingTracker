@@ -68,6 +68,16 @@ class _TestValidatedRepository extends BaseRepository<_TestEntity>
   }
 
   @override
+  Future<void> upsertChunkForSync(List<_TestEntity> chunk) async {
+    for (final item in chunk) {
+      await push(item);
+    }
+  }
+
+  @override
+  Future<void> deleteRemoteForSync(String recordId, String userId) async {}
+
+  @override
   Future<List<_TestEntity>> getAll(String userId) async => const [];
 
   @override
@@ -135,6 +145,9 @@ void main() {
     when(() => mockSyncDao.hardDelete(any())).thenAnswer((_) async {});
     when(
       () => mockSyncDao.deleteByRecord(any(), any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockSyncDao.deleteByRecords(any(), any()),
     ).thenAnswer((_) async {});
     when(
       () => mockSyncDao.getByRecord(any(), any()),
