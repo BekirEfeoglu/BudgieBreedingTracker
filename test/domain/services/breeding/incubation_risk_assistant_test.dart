@@ -294,6 +294,112 @@ void main() {
       );
     });
 
+    test(
+      'risksForPair returns the identical cached list instance on repeat calls',
+      () {
+        final summary = const IncubationRiskAssistant().assess(
+          now: now,
+          pairs: [_pair('pair-1')],
+          incubations: [
+            _incubation(
+              'inc-1',
+              pairId: 'pair-1',
+              species: Species.budgie,
+              startDate: DateTime(2026, 4, 20),
+            ),
+          ],
+          eggs: [
+            _egg(
+              'egg-1',
+              incubationId: 'inc-1',
+              layDate: DateTime(2026, 4, 20),
+              eggNumber: 1,
+            ),
+          ],
+          chicks: const [],
+        );
+
+        expect(
+          identical(
+            summary.risksForPair('pair-1'),
+            summary.risksForPair('pair-1'),
+          ),
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'risksForPair returns the same empty instance for an unknown pair id',
+      () {
+        final summary = const IncubationRiskAssistant().assess(
+          now: now,
+          pairs: [_pair('pair-1')],
+          incubations: [_incubation('inc-1', pairId: 'pair-1')],
+          eggs: const [],
+          chicks: const [],
+        );
+
+        final first = summary.risksForPair('no-risk');
+        final second = summary.risksForPair('no-risk');
+        expect(identical(first, second), isTrue);
+        expect(first, isEmpty);
+      },
+    );
+
+    test(
+      'risksForIncubation returns the identical cached list instance on repeat calls',
+      () {
+        final summary = const IncubationRiskAssistant().assess(
+          now: now,
+          pairs: [_pair('pair-1')],
+          incubations: [
+            _incubation(
+              'inc-1',
+              pairId: 'pair-1',
+              species: Species.budgie,
+              startDate: DateTime(2026, 4, 20),
+            ),
+          ],
+          eggs: [
+            _egg(
+              'egg-1',
+              incubationId: 'inc-1',
+              layDate: DateTime(2026, 4, 20),
+              eggNumber: 1,
+            ),
+          ],
+          chicks: const [],
+        );
+
+        expect(
+          identical(
+            summary.risksForIncubation('inc-1'),
+            summary.risksForIncubation('inc-1'),
+          ),
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'risksForIncubation returns the same empty instance for an unknown incubation id',
+      () {
+        final summary = const IncubationRiskAssistant().assess(
+          now: now,
+          pairs: [_pair('pair-1')],
+          incubations: [_incubation('inc-1', pairId: 'pair-1')],
+          eggs: const [],
+          chicks: const [],
+        );
+
+        final first = summary.risksForIncubation('no-risk');
+        final second = summary.risksForIncubation('no-risk');
+        expect(identical(first, second), isTrue);
+        expect(first, isEmpty);
+      },
+    );
+
     test('flags chick health loss for the incubation', () {
       final summary = const IncubationRiskAssistant().assess(
         now: now,

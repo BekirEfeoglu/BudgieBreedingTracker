@@ -317,4 +317,180 @@ void main() {
       expect(result.map((event) => event.id), ['breeding', 'egg']);
     });
   });
+
+  group('filteredCalendarEventsProvider', () {
+    late MockEventRepository mockEventRepo;
+
+    setUp(() {
+      mockEventRepo = MockEventRepository();
+    });
+
+    test('returns all events under CalendarEventFilter.all', () async {
+      final breeding = _event(
+        id: 'breeding',
+        eventDate: DateTime(2025, 6, 15),
+        type: EventType.breeding,
+      );
+      final custom = _event(
+        id: 'custom',
+        eventDate: DateTime(2025, 6, 16),
+        type: EventType.custom,
+      );
+
+      when(
+        () => mockEventRepo.watchAll('user-1'),
+      ).thenAnswer((_) => Stream.value([breeding, custom]));
+
+      final container = ProviderContainer(
+        overrides: [
+          currentUserIdProvider.overrideWithValue('user-1'),
+          eventRepositoryProvider.overrideWithValue(mockEventRepo),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.listen(eventsStreamProvider('user-1'), (_, __) {});
+      await container.read(eventsStreamProvider('user-1').future);
+      await Future<void>.microtask(() {});
+
+      final result = container.read(filteredCalendarEventsProvider);
+      expect(result.map((event) => event.id), ['breeding', 'custom']);
+    });
+
+    test(
+      'returns only incubation events after switching to CalendarEventFilter.incubation',
+      () async {
+        final breeding = _event(
+          id: 'breeding',
+          eventDate: DateTime(2025, 6, 15),
+          type: EventType.breeding,
+        );
+        final custom = _event(
+          id: 'custom',
+          eventDate: DateTime(2025, 6, 16),
+          type: EventType.custom,
+        );
+
+        when(
+          () => mockEventRepo.watchAll('user-1'),
+        ).thenAnswer((_) => Stream.value([breeding, custom]));
+
+        final container = ProviderContainer(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('user-1'),
+            eventRepositoryProvider.overrideWithValue(mockEventRepo),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        container.listen(eventsStreamProvider('user-1'), (_, __) {});
+        await container.read(eventsStreamProvider('user-1').future);
+        await Future<void>.microtask(() {});
+
+        container
+            .read(calendarEventFilterProvider.notifier)
+            .setFilter(CalendarEventFilter.incubation);
+
+        final result = container.read(filteredCalendarEventsProvider);
+        expect(result.map((event) => event.id), ['breeding']);
+      },
+    );
+
+    test(
+      'eventsForMonthProvider derives from the shared filtered source',
+      () async {
+        final month = DateTime(2025, 6);
+        final breeding = _event(
+          id: 'breeding',
+          eventDate: DateTime(2025, 6, 15),
+          type: EventType.breeding,
+        );
+        final custom = _event(
+          id: 'custom',
+          eventDate: DateTime(2025, 6, 16),
+          type: EventType.custom,
+        );
+
+        when(
+          () => mockEventRepo.watchAll('user-1'),
+        ).thenAnswer((_) => Stream.value([breeding, custom]));
+
+        final container = ProviderContainer(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('user-1'),
+            eventRepositoryProvider.overrideWithValue(mockEventRepo),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        container.listen(eventsStreamProvider('user-1'), (_, __) {});
+        await container.read(eventsStreamProvider('user-1').future);
+        await Future<void>.microtask(() {});
+
+        // Unfiltered: both events show up grouped by day.
+        final unfiltered = container.read(eventsForMonthProvider(month));
+        expect(
+          unfiltered.values.expand((events) => events).map((e) => e.id).toSet(),
+          {'breeding', 'custom'},
+        );
+
+        // After switching the shared filter, the month provider must reflect
+        // it too — proving it reads from filteredCalendarEventsProvider
+        // instead of re-filtering its own copy of the stream.
+        container
+            .read(calendarEventFilterProvider.notifier)
+            .setFilter(CalendarEventFilter.incubation);
+
+        final filtered = container.read(eventsForMonthProvider(month));
+        expect(
+          filtered.values.expand((events) => events).map((e) => e.id).toSet(),
+          {'breeding'},
+        );
+      },
+    );
+
+    test(
+      'eventsForSelectedDateProvider derives from the shared filtered source',
+      () async {
+        final targetDate = DateTime(2025, 6, 15);
+        final breeding = _event(
+          id: 'breeding',
+          eventDate: targetDate,
+          type: EventType.breeding,
+        );
+        final custom = _event(
+          id: 'custom',
+          eventDate: targetDate,
+          type: EventType.custom,
+        );
+
+        when(
+          () => mockEventRepo.watchAll('user-1'),
+        ).thenAnswer((_) => Stream.value([breeding, custom]));
+
+        final container = ProviderContainer(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('user-1'),
+            eventRepositoryProvider.overrideWithValue(mockEventRepo),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        container.read(selectedDateProvider.notifier).set(targetDate);
+        container.listen(eventsStreamProvider('user-1'), (_, __) {});
+        await container.read(eventsStreamProvider('user-1').future);
+        await Future<void>.microtask(() {});
+
+        final unfiltered = container.read(eventsForSelectedDateProvider);
+        expect(unfiltered.map((e) => e.id).toSet(), {'breeding', 'custom'});
+
+        container
+            .read(calendarEventFilterProvider.notifier)
+            .setFilter(CalendarEventFilter.incubation);
+
+        final filtered = container.read(eventsForSelectedDateProvider);
+        expect(filtered.map((e) => e.id).toSet(), {'breeding'});
+      },
+    );
+  });
 }

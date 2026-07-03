@@ -43,7 +43,7 @@ class IncubationRisk {
 }
 
 class IncubationRiskSummary {
-  const IncubationRiskSummary(this.risks);
+  IncubationRiskSummary(this.risks);
 
   final List<IncubationRisk> risks;
 
@@ -63,15 +63,38 @@ class IncubationRiskSummary {
     return sorted.take(limit).toList(growable: false);
   }
 
-  List<IncubationRisk> risksForPair(String pairId) {
-    return risks.where((risk) => risk.pairId == pairId).toList(growable: false);
+  static const List<IncubationRisk> _empty = [];
+
+  /// Cached pairId -> risks grouping. `late final` computes this once, on
+  /// first access, so repeated `risksForPair` calls for the same pair return
+  /// the identical [List] instance instead of re-filtering [risks] and
+  /// allocating a new list every call — this keeps Riverpod consumers
+  /// (`pairIncubationRisksProvider`) from rebuilding when the underlying
+  /// risks for that pair haven't actually changed.
+  late final Map<String, List<IncubationRisk>> _byPair = _groupBy(
+    (risk) => risk.pairId,
+  );
+
+  /// Same caching contract as [_byPair], keyed by incubationId instead.
+  late final Map<String, List<IncubationRisk>> _byIncubation = _groupBy(
+    (risk) => risk.incubationId,
+  );
+
+  Map<String, List<IncubationRisk>> _groupBy(
+    String? Function(IncubationRisk) key,
+  ) {
+    final map = <String, List<IncubationRisk>>{};
+    for (final risk in risks) {
+      final k = key(risk);
+      if (k != null) map.putIfAbsent(k, () => []).add(risk);
+    }
+    return map;
   }
 
-  List<IncubationRisk> risksForIncubation(String incubationId) {
-    return risks
-        .where((risk) => risk.incubationId == incubationId)
-        .toList(growable: false);
-  }
+  List<IncubationRisk> risksForPair(String pairId) => _byPair[pairId] ?? _empty;
+
+  List<IncubationRisk> risksForIncubation(String incubationId) =>
+      _byIncubation[incubationId] ?? _empty;
 }
 
 class IncubationRiskAssistant {

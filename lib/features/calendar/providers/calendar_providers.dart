@@ -111,30 +111,32 @@ DateTime _localDateOnly(DateTime value) {
   return DateTime(local.year, local.month, local.day);
 }
 
-/// Events for the selected date.
-final eventsForSelectedDateProvider = Provider<List<Event>>((ref) {
+/// Single source of truth for filter application — month/week/day views all
+/// derive from this so the O(n) filter pass runs once per (stream, filter)
+/// change instead of once per view provider.
+final filteredCalendarEventsProvider = Provider<List<Event>>((ref) {
   final userId = ref.watch(currentUserIdProvider);
   final eventsAsync = ref.watch(eventsStreamProvider(userId));
-  final selectedDate = ref.watch(selectedDateProvider);
   final filter = ref.watch(calendarEventFilterProvider);
+  return filterCalendarEvents(eventsAsync.value ?? [], filter);
+});
+
+/// Events for the selected date.
+final eventsForSelectedDateProvider = Provider<List<Event>>((ref) {
+  final events = ref.watch(filteredCalendarEventsProvider);
+  final selectedDate = ref.watch(selectedDateProvider);
 
   final selectedDay = _localDateOnly(selectedDate);
-  return eventsAsync.whenData((events) {
-        return filterCalendarEvents(events, filter).where((e) {
-          return _localDateOnly(e.eventDate) == selectedDay;
-        }).toList();
-      }).value ??
-      [];
+  return events.where((e) {
+    return _localDateOnly(e.eventDate) == selectedDay;
+  }).toList();
 });
 
 /// Events grouped by day for a specific month (for calendar dots).
 final eventsForMonthProvider =
     Provider.family<Map<DateTime, List<Event>>, DateTime>((ref, month) {
-      final userId = ref.watch(currentUserIdProvider);
-      final eventsAsync = ref.watch(eventsStreamProvider(userId));
-      final filter = ref.watch(calendarEventFilterProvider);
+      final events = ref.watch(filteredCalendarEventsProvider);
 
-      final events = filterCalendarEvents(eventsAsync.value ?? [], filter);
       final map = <DateTime, List<Event>>{};
       for (final event in events) {
         final local = event.eventDate.toLocal();
@@ -181,12 +183,8 @@ final _weekStartProvider = Provider<DateTime>((ref) {
 
 /// Events for the week containing the selected date.
 final eventsForWeekProvider = Provider<Map<DateTime, List<Event>>>((ref) {
-  final userId = ref.watch(currentUserIdProvider);
-  final eventsAsync = ref.watch(eventsStreamProvider(userId));
-  final filter = ref.watch(calendarEventFilterProvider);
+  final events = ref.watch(filteredCalendarEventsProvider);
   final monday = ref.watch(_weekStartProvider);
-
-  final events = filterCalendarEvents(eventsAsync.value ?? [], filter);
 
   final map = <DateTime, List<Event>>{};
   for (var i = 0; i < 7; i++) {
