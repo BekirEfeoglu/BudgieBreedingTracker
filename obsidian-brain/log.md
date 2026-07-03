@@ -4,6 +4,19 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-04] docs | Rule: iOS Pods sync after dependency changes
+
+New `.claude/rules/architecture.md` § "iOS Pods Sync" (mirrored in
+[[architecture/tech-stack]] § Changing Dependencies), from a real incident:
+after T12 added `flutter_displaymode`, `flutter pub get` refreshed the plugin
+registrant but the local CocoaPods sandbox stayed stale → Xcode failed with
+"The sandbox is not in sync with the Podfile.lock". Rule: every pubspec
+dependency change is followed by `cd ios && LANG=en_US.UTF-8
+LC_ALL=en_US.UTF-8 pod install` (UTF-8 prefix avoids the CocoaPods
+`Unicode Normalization` crash); commit `ios/Podfile.lock` together with
+pubspec files when it changes; an unchanged lock is normal for stub iOS
+podspecs — the run still regenerates `Pods/Manifest.lock`.
+
 ## [2026-07-04] perf (branch) | Rebuild hygiene: calendar filter + risk identity
 
 Branch `perf/performance-improvements`, tasks 10-11 (commits `115f58bc`,
@@ -182,17 +195,5 @@ events get a user-selectable reminder offset (default 30 min, `null` = none).
 Local Flutter had drifted 3.41.4→3.44.4 overnight; restored to CI's pinned
 3.41.4 first. See [[domain/gamification-service]], [[features/admin]],
 [[features/calendar]].
-
-## [2026-07-02] docs | Sync feature wiki pages to second-pass audit fixes
-
-Updated `features/{messaging,admin,breeding,settings,profile}.md` to reflect
-the behavioral/contract changes from the fix entry below (commit `1c22d95`):
-messaging optimistic-append + clear-on-success send and realtime
-blocked-filter; admin moderation audit-log entries + `CachedNetworkImage`
-queue thumbnails; breeding species-change calendar-event regeneration;
-settings MFA-aware change-password sheet; profile avatar-picker messenger
-capture. `community`/`genetics` pages left unchanged — those fixes
-(input-clear timing, a provider field-copy) are below the wiki's
-architectural granularity. Commit `8fd2ce5`.
 
 Older entries are archived in [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

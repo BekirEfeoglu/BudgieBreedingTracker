@@ -100,4 +100,14 @@ admin, app_update, auth, birds, breeding, calendar, chicks, community, eggs, fee
 - Run `flutter pub upgrade --major-versions` cautiously, one package at a time
 - Lock file (`pubspec.lock`) committed to repo
 
+### iOS Pods Sync (after ANY pubspec dependency change)
+- `flutter pub get` alone is NOT enough: it refreshes the iOS plugin registrant but leaves the local CocoaPods sandbox stale, and the next Xcode/simulator build fails with "The sandbox is not in sync with the Podfile.lock". After adding/removing/bumping any package, ALSO run:
+  ```bash
+  cd ios && LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 pod install
+  ```
+  (The UTF-8 prefix matters: CocoaPods crashes with `Unicode Normalization not appropriate for ASCII-8BIT` when the shell locale is unset.)
+- If `pod install` changes `ios/Podfile.lock`, commit it in the SAME commit as `pubspec.yaml` + `pubspec.lock` (CI/Xcode Cloud regenerate Pods from it on clean clones — see ci-actions.md).
+- `pod install` may legitimately leave `Podfile.lock` unchanged (some plugins ship a stub iOS podspec, e.g. `flutter_displaymode` is functionally Android-only). The run is still required: it (re)generates the gitignored `ios/Pods/Manifest.lock`, which is exactly what Xcode's "Check Pods Manifest.lock" build phase compares.
+- Seeing "sandbox is not in sync" later (fresh checkout, `flutter clean`, branch switch)? The fix is always the same `pod install` command above — never hand-edit lock files.
+
 > **Related**: data-layer.md (Drift/Supabase details), providers.md (Riverpod patterns), security.md (security rules)

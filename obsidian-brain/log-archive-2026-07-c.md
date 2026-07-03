@@ -2,6 +2,18 @@
 
 Back to [[log]].
 
+## [2026-07-02] docs | Sync feature wiki pages to second-pass audit fixes
+
+Updated `features/{messaging,admin,breeding,settings,profile}.md` to reflect
+the behavioral/contract changes from the fix entry below (commit `1c22d95`):
+messaging optimistic-append + clear-on-success send and realtime
+blocked-filter; admin moderation audit-log entries + `CachedNetworkImage`
+queue thumbnails; breeding species-change calendar-event regeneration;
+settings MFA-aware change-password sheet; profile avatar-picker messenger
+capture. `community`/`genetics` pages left unchanged — those fixes
+(input-clear timing, a provider field-copy) are below the wiki's
+architectural granularity. Commit `8fd2ce5`.
+
 ## [2026-07-02] fix | Second-pass all-tabs audit — 12 sibling-path/latent fixes
 
 User again asked to comprehensively examine all tabs. Since the earlier

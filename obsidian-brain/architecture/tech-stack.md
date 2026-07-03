@@ -96,6 +96,18 @@ Source: `pubspec.yaml`, `.claude/rules/architecture.md`
 | fake_async ^1.3.0 | Fake timer in tests |
 | flutter_lints ^6.0.0 | Lint rules |
 
+## Changing Dependencies
+
+After ANY `pubspec.yaml` dependency change, `flutter pub get` alone leaves the
+local iOS CocoaPods sandbox stale (Xcode: "The sandbox is not in sync with the
+Podfile.lock"). Always follow with
+`cd ios && LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 pod install` — the UTF-8 prefix
+avoids a CocoaPods `Unicode Normalization` crash. If `ios/Podfile.lock`
+changes, commit it with `pubspec.yaml`/`pubspec.lock`; an unchanged lock is
+also normal (stub iOS podspecs) — the run still regenerates the gitignored
+`Pods/Manifest.lock` that Xcode's sandbox check compares.
+Source: `.claude/rules/architecture.md` § iOS Pods Sync.
+
 ## See Also
 
 - [[architecture/layers]] — how these packages fit into the layer structure
