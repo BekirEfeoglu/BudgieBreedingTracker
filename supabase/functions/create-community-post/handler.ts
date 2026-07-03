@@ -40,7 +40,10 @@ const postSchema = z.object({
     tags: z.array(z.string().trim().min(1).max(40)).max(10).optional(),
     image_urls: z.array(z.string().url()).max(6).optional(),
   }),
+  mode: z.enum(["create", "update"]).optional(),
 });
+
+const EDIT_WINDOW_MS = 5 * 60 * 1000;
 
 type GuardResult = { allowed?: boolean; reason?: string } | null;
 type SupabaseRpcClient = any;
@@ -62,8 +65,16 @@ type TypedSupabaseRpcClient = {
 type TypedSupabaseAdminClient = {
   from(table: string): {
     insert(row: Record<string, unknown>): {
-      select(columns: string): {
-        single(): Promise<InsertResponse>;
+      select(columns: string): { single(): Promise<InsertResponse> };
+    };
+    select(columns: string): {
+      eq(column: string, value: unknown): {
+        maybeSingle(): Promise<InsertResponse>;
+      };
+    };
+    update(row: Record<string, unknown>): {
+      eq(column: string, value: unknown): {
+        select(columns: string): { single(): Promise<InsertResponse> };
       };
     };
   };
@@ -159,6 +170,66 @@ export function createCommunityPostHandler(
           }),
           { status: 400, headers },
         );
+      }
+
+      if (parsed.data.mode === "update") {
+        if (!input.id) {
+          return new Response(JSON.stringify({ error: "post_id_required" }), {
+            status: 400,
+            headers,
+          });
+        }
+        const admin = deps.createAdminClient() as TypedSupabaseAdminClient;
+        const { data: existing, error: fetchError } = await admin
+          .from("community_posts")
+          .select("id,user_id,content,created_at,is_deleted")
+          .eq("id", input.id)
+          .maybeSingle();
+
+        if (fetchError || !existing || existing.is_deleted === true) {
+          return new Response(JSON.stringify({ error: "post_not_found" }), {
+            status: 400,
+            headers,
+          });
+        }
+        if (existing.user_id !== userId) {
+          return new Response(JSON.stringify({ error: "not_post_author" }), {
+            status: 403,
+            headers,
+          });
+        }
+        const createdAtMs = Date.parse(String(existing.created_at));
+        if (
+          !Number.isFinite(createdAtMs) ||
+          Date.now() - createdAtMs > EDIT_WINDOW_MS
+        ) {
+          return new Response(
+            JSON.stringify({ error: "edit_window_expired" }),
+            { status: 400, headers },
+          );
+        }
+
+        const newHash = await sha256Hex(content);
+        const { data: updated, error: updateError } = await admin
+          .from("community_posts")
+          .update({
+            content,
+            content_hash: newHash,
+            edited_at: new Date().toISOString(),
+          })
+          .eq("id", input.id)
+          .select(
+            "id,user_id,content,title,post_type,image_urls,tags,created_at,edited_at",
+          )
+          .single();
+
+        if (updateError) {
+          return new Response(JSON.stringify({ error: "update_failed" }), {
+            status: 400,
+            headers,
+          });
+        }
+        return new Response(JSON.stringify({ post: updated }), { headers });
       }
 
       const imageUrls = input.image_urls ?? [];
