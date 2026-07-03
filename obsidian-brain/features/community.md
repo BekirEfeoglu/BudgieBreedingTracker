@@ -52,6 +52,16 @@ own post inside the window. Not yet merged/applied to prod. See
 an author-only "Edit" menu item gated by `canEditPost` (UTC 5-min window), and an
 `edited` badge on the post header. 6 l10n keys (tr/en/de).
 
+## Mute (in progress — branch `feature/community-tab-faz1`)
+
+One-directional, visibility-only "soft block". Migration `20260703121000_community_mutes.sql`
+adds a **separate** `public.community_mutes` table (NOT a column on `community_blocks` —
+messaging block-RLS reads `community_blocks` for DM rejection, so mute must not affect DMs).
+RLS SELECT is **owner-only** (`auth.uid() = user_id`) so the muted user can't learn who
+muted them (unlike `community_blocks`' two-sided SELECT). Client wiring (repo/provider,
+feed + comment visibility filter, menu action) lands in a later branch task; mute hides
+both posts and comments, DMs unaffected. Not yet merged/applied to prod.
+
 ## Cache
 
 `community_profile_cache`, `community_post_cache` in `lib/data/remote/api/`

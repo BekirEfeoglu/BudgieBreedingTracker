@@ -2,6 +2,48 @@
 
 Back to [[log]].
 
+## [2026-07-02] fix | Gamification self-grant deployed + expanded to full table chain
+
+Follow-up to the all-tabs audit's one deferred item (verified-breeder
+self-grant on `profiles`). Investigating the real fix revealed the hole was
+much bigger: `xp_transactions`/`user_levels`/`user_badges` had **no**
+`WITH CHECK` at all (`user_levels`/`user_badges` UPDATE policies had
+`with_check: null`) — a user could overwrite their own level/total_xp to
+anything, insert arbitrary-amount XP transactions, or unlock any badge
+including `verified_breeder` (whose `requirement` is a trivially-matchable
+1). Fixing only `profiles` would have been security theater since
+`user_levels.level` (readable by anyone downstream) was itself
+unprotected. New SQL functions mirror `xp_constants.dart`/
+`level_calculator.dart`/`checkVerifiedBreeder`'s criteria exactly
+(`private.xp_action_amount`, `private.xp_calculate_level`,
+`private.xp_title_for_level`, `private.meets_verified_breeder_criteria`),
+and `WITH CHECK` clauses on all four tables validate every write against
+them — kept client-initiated (matching the existing architecture, no RPC
+migration needed) but now server-validated. Deployed same session via
+Supabase MCP (`20260702175125_gamification_server_side_helpers.sql`,
+`20260702175232_gamification_lock_down_self_grant.sql`) and verified with
+a rolled-back live transaction simulating a non-admin authenticated user
+(`SET LOCAL ROLE authenticated` + fake JWT claims): direct profile
+self-grant, arbitrary XP amount, `user_levels` overwrite (both on an
+existing row and fabricating a fresh one), and `verified_breeder`
+self-unlock were all rejected with "new row violates row-level security
+policy"; the legitimate self-service path (internally-consistent values)
+still succeeded. `get_advisors` (security + performance) showed zero new
+findings. One known gap remains out of scope: daily XP cooldown
+(`XpConstants.dailyLimits`) is still client-only — a per-row `WITH CHECK`
+can't do aggregate/count validation, tracked as the pre-existing audit K12
+item. See [[domain/gamification-service]], [[features/marketplace]] §
+Verification Badge, `.claude/rules/gamification.md` § Server-Side Write
+Enforcement.
+
+The same session also deployed the all-tabs audit's other pending
+migration (`20260702174304_block_messages_from_blocked_users.sql`, blocked
+users could still message an existing conversation) once the Supabase CLI's
+direct-DB connection issue (IPv6/SSL negotiation failure, then a stale
+CLI-login token after upgrading 2.90.0→2.109.0) was worked around via the
+Supabase MCP server instead, which connects over the management API rather
+than raw Postgres.
+
 ## [2026-07-02] fix | All-tabs comprehensive audit + remediation
 
 User asked to comprehensively examine all 5 main tabs (Home, Birds, Breeding,
