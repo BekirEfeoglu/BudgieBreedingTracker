@@ -8,6 +8,9 @@ export 'package:budgie_breeding_tracker/core/enums/community_enums.dart';
 /// Whether the community feature is enabled.
 /// Content moderation (Apple Guideline 1.2) enforced via
 /// [ContentModerationService] in create/comment providers.
+/// Hardcoded true bugün; Faz 2'de server-side kill switch'e bağlanacak
+/// (`app_config` tablosu + remoteConfigProvider, fail-open — spec § 4.4).
+/// `_ComingSoonBody` bu yüzden bilinçli tutuluyor, silme.
 final isCommunityEnabledProvider = Provider<bool>((ref) => true);
 
 /// Tab enum for the community screen.

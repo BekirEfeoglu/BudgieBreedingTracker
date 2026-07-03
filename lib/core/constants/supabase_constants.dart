@@ -39,6 +39,12 @@ abstract class SupabaseConstants {
   static const String communityFollowsTable = 'community_follows';
   static const String communityReportsTable = 'community_reports';
   static const String communityBlocksTable = 'community_blocks';
+  // DORMANT: aşağıdaki 7 community tablosu DB'de mevcut ama client'ta hiçbir
+  // call site yok. Aktivasyon kararları için bkz.
+  // docs/superpowers/specs/2026-07-03-community-tab-design.md § 7 (polls/events
+  // Faz 3 metrik kapısına bağlı; stories bilinçli olarak wire edilmeyecek —
+  // story şeridi son 24 saatin postlarından türetiliyor). Forward-only migration
+  // felsefesi gereği tablolar DROP edilmez.
   static const String communityEventsTable = 'community_events';
   static const String communityEventAttendeesTable =
       'community_event_attendees';
