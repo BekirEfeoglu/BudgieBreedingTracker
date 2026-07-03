@@ -88,8 +88,8 @@ scripts/test_check_obsidian_brain.py    # Tests for obsidian-brain wiki lint
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 1001 Dart files |
-| Test files (test/) | 912 test files, 11,321+ individual tests |
+| Source files (lib/) | 1003 Dart files |
+| Test files (test/) | 915 test files, 11,352+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -100,8 +100,8 @@ scripts/test_check_obsidian_brain.py    # Tests for obsidian-brain wiki lint
 | Custom SVG icons | 93 constants, 93 files on disk |
 | Shared widgets | 35 (15 root + 4 buttons + 2 cards + 2 dialog + 1 bottom_sheet + 5 eggs) |
 | Enum files | 15 |
-| Supabase constants | 142 (tables + buckets + columns) |
-| L10n keys | ~3,021 per language, 41 categories |
+| Supabase constants | 143 (tables + buckets + columns) |
+| L10n keys | ~3,030 per language, 41 categories |
 | DB schema version | 25 |
 
 ## CI/CD Pipeline
@@ -180,7 +180,7 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 | `validate-free-tier-limit` | Free tier entity limit enforcement |
 
 ### Migrations
-184 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
+186 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
 
 ## Rules
 
@@ -339,7 +339,7 @@ Security:      lib/core/security/
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
-Migrations:    supabase/migrations/ (184 files)
+Migrations:    supabase/migrations/ (186 files)
 Scripts:       scripts/
 CI:            .github/workflows/ + codemagic.yaml
 ```
