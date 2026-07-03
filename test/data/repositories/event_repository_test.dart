@@ -157,6 +157,46 @@ void main() {
         expect((captured.single as List), [event]);
       },
     );
+
+    test(
+      'should soft-delete linked events with 2 statements when pair removed',
+      () async {
+        final events = [
+          _sampleEvent(id: 'event-1', userId: userId),
+          _sampleEvent(id: 'event-2', userId: userId),
+          _sampleEvent(id: 'event-3', userId: userId),
+        ];
+        when(
+          () => localDao.getByBreedingPairIds(['pair-1']),
+        ).thenAnswer((_) async => events);
+        when(
+          () => localDao.softDeleteByIds(any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => syncDao.markPendingByRecords(any(), any()),
+        ).thenAnswer((_) async {});
+        // Best-effort pushAll flush should be a harmless no-op here.
+        when(
+          () => syncDao.getPendingByTable(any(), any()),
+        ).thenAnswer((_) async => []);
+
+        final count = await repository.removeByBreedingPairIds(['pair-1']);
+
+        expect(count, 3);
+        // Batch DAO call: a single softDeleteByIds, no per-item softDelete.
+        verify(
+          () => localDao.softDeleteByIds(any(that: hasLength(3))),
+        ).called(1);
+        verifyNever(() => localDao.softDelete(any()));
+        // Batch sync marker: a single markPendingByRecords call.
+        verify(
+          () => syncDao.markPendingByRecords(
+            SupabaseConstants.eventsTable,
+            any(),
+          ),
+        ).called(1);
+      },
+    );
   });
 
   group('validateForeignKeys via pushAll — egg/incubation', () {

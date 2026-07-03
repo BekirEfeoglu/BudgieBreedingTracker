@@ -82,6 +82,18 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
     );
   }
 
+  /// Soft-deletes every event in [ids] with a single UPDATE statement.
+  /// Batch counterpart of [softDelete] for cascade flows.
+  Future<void> softDeleteByIds(List<String> ids) {
+    if (ids.isEmpty) return Future.value();
+    return (update(eventsTable)..where((t) => t.id.isIn(ids))).write(
+      EventsTableCompanion(
+        isDeleted: const Value(true),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
   /// Permanently deletes an event.
   Future<int> hardDelete(String id) {
     return (delete(eventsTable)..where((t) => t.id.equals(id))).go();

@@ -217,42 +217,55 @@ class EventRepository extends BaseRepository<Event>
     }
   }
 
+  /// Batch core for the four cascade removeBy* methods: one UPDATE for the
+  /// soft-deletes, one batch for the sync markers, one best-effort batched
+  /// push instead of N per-event HTTP attempts.
+  Future<int> _removeAllBatch(List<Event> events) async {
+    if (events.isEmpty) return 0;
+    await _localDao.softDeleteByIds(events.map((e) => e.id).toList());
+    await _syncDao.markPendingByRecords(_table, {
+      for (final e in events) e.id: e.userId,
+    });
+    // Best-effort immediate propagation (parity with tryImmediatePush):
+    // batched pushAll flushes the tombstones in a single chunked upsert.
+    try {
+      await pushAll(events.first.userId);
+    } catch (e) {
+      AppLogger.debug('[EventRepository] Cascade push deferred: $e');
+    }
+    return events.length;
+  }
+
   /// Soft-deletes every event linked to any of [breedingPairIds] and
-  /// queues each for sync. Used by the breeding-deletion flow to keep
-  /// calendar entries in step with their parent pair.
+  /// queues all for sync in one batch. Used by the breeding-deletion flow
+  /// to keep calendar entries in step with their parent pair.
   Future<int> removeByBreedingPairIds(List<String> breedingPairIds) async {
     if (breedingPairIds.isEmpty) return 0;
-    final events = await _localDao.getByBreedingPairIds(breedingPairIds);
-    await Future.wait(events.map((e) => remove(e.id)));
-    return events.length;
+    return _removeAllBatch(
+      await _localDao.getByBreedingPairIds(breedingPairIds),
+    );
   }
 
-  /// Soft-deletes every event linked to any of [chickIds] and queues each
-  /// for sync. Used by the chick-deletion flow.
+  /// Soft-deletes every event linked to any of [chickIds] and queues all
+  /// for sync in one batch. Used by the chick-deletion flow.
   Future<int> removeByChickIds(List<String> chickIds) async {
     if (chickIds.isEmpty) return 0;
-    final events = await _localDao.getByChickIds(chickIds);
-    await Future.wait(events.map((e) => remove(e.id)));
-    return events.length;
+    return _removeAllBatch(await _localDao.getByChickIds(chickIds));
   }
 
-  /// Soft-deletes every event linked to any of [eggIds] and queues each
-  /// for sync. Used by the egg-deletion flow.
+  /// Soft-deletes every event linked to any of [eggIds] and queues all for
+  /// sync in one batch. Used by the egg-deletion flow.
   Future<int> removeByEggIds(List<String> eggIds) async {
     if (eggIds.isEmpty) return 0;
-    final events = await _localDao.getByEggIds(eggIds);
-    await Future.wait(events.map((e) => remove(e.id)));
-    return events.length;
+    return _removeAllBatch(await _localDao.getByEggIds(eggIds));
   }
 
   /// Soft-deletes every event linked to any of [incubationIds] and queues
-  /// each for sync. Used by incubation completion/cancellation flows, where
-  /// the incubation row itself survives.
+  /// all for sync in one batch. Used by incubation completion/cancellation
+  /// flows, where the incubation row itself survives.
   Future<int> removeByIncubationIds(List<String> incubationIds) async {
     if (incubationIds.isEmpty) return 0;
-    final events = await _localDao.getByIncubationIds(incubationIds);
-    await Future.wait(events.map((e) => remove(e.id)));
-    return events.length;
+    return _removeAllBatch(await _localDao.getByIncubationIds(incubationIds));
   }
 
   /// Hard-deletes every event linked to any of [incubationIds] and queues
