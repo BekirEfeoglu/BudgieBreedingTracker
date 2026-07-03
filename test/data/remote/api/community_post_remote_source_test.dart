@@ -200,6 +200,47 @@ void main() {
     });
   });
 
+  group('updateContent', () {
+    test('edits post through Edge Function update mode', () async {
+      when(
+        () => edgeClient.updateCommunityPost(
+          postId: 'p1',
+          content: 'edited content',
+        ),
+      ).thenAnswer((_) async => const EdgeFunctionResult(success: true));
+
+      await source.updateContent('p1', 'edited content');
+
+      verify(
+        () => edgeClient.updateCommunityPost(
+          postId: 'p1',
+          content: 'edited content',
+        ),
+      ).called(1);
+      expect(postsQuery.upsertPayload, isNull);
+      expect(client.requestedTables, isNot(contains('community_posts')));
+    });
+
+    test('throws when post Edge Function rejects the edit', () async {
+      when(
+        () => edgeClient.updateCommunityPost(
+          postId: 'p1',
+          content: 'edited content',
+        ),
+      ).thenAnswer(
+        (_) async => const EdgeFunctionResult(
+          success: false,
+          error: 'edit_window_expired',
+        ),
+      );
+
+      await expectLater(
+        () => source.updateContent('p1', 'edited content'),
+        throwsException,
+      );
+    });
+  });
+
   group('softDelete', () {
     test('updates is_deleted for matching post and user', () async {
       await source.softDelete('p1', 'u1');

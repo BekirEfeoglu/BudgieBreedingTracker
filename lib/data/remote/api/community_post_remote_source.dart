@@ -29,7 +29,7 @@ class CommunityPostRemoteSource {
   static const _feedColumns =
       'id, user_id, content, title, post_type, '
       'image_urls, tags, like_count, comment_count, view_count, '
-      'is_pinned, visibility, created_at, updated_at, is_deleted';
+      'is_pinned, visibility, created_at, updated_at, edited_at, is_deleted';
 
   Future<List<Map<String, dynamic>>> fetchFeed({
     required String currentUserId,
@@ -120,6 +120,24 @@ class CommunityPostRemoteSource {
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
         'CommunityPostRemoteSource.insert',
+        e,
+        st,
+      );
+    }
+  }
+
+  Future<void> updateContent(String postId, String content) async {
+    try {
+      final result = await _edgeFunctionClient.updateCommunityPost(
+        postId: postId,
+        content: content,
+      );
+      if (!result.success) {
+        throw Exception(result.error ?? 'update_community_post_failed');
+      }
+    } catch (e, st) {
+      throw BaseRemoteSource.handleErrorForTag(
+        'CommunityPostRemoteSource.updateContent',
         e,
         st,
       );

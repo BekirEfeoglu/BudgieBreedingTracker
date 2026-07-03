@@ -143,6 +143,13 @@ class CommunityPostRepository {
     _cache?.invalidateAll();
   }
 
+  /// Content-only edit within the server-enforced 5-minute window.
+  Future<void> update({required String postId, required String content}) async {
+    await _postSource.updateContent(postId, content);
+    _cache?.invalidatePost(postId);
+    _cache?.invalidateAll();
+  }
+
   Future<Map<String, dynamic>> checkPostAllowed(String contentHash) {
     return _postSource.checkPostAllowed(contentHash);
   }
@@ -296,6 +303,7 @@ class CommunityPostRepository {
       isLikedByMe: likedIds.contains(id),
       isBookmarkedByMe: bookmarkedIds.contains(id),
       isFollowingAuthor: _asBool(row['is_following_author']) ?? false,
+      editedAt: _asDateTime(row['edited_at']),
       createdAt: _asDateTime(row['created_at']),
       updatedAt: _asDateTime(row['updated_at']),
     );

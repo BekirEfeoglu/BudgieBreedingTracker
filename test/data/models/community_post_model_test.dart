@@ -29,6 +29,7 @@ void main() {
           commentCount: 3,
           isDeleted: false,
           needsReview: true,
+          editedAt: now,
           createdAt: now,
           updatedAt: now,
         );
@@ -53,6 +54,7 @@ void main() {
         expect(restored.commentCount, post.commentCount);
         expect(restored.isDeleted, post.isDeleted);
         expect(restored.needsReview, post.needsReview);
+        expect(restored.editedAt, post.editedAt);
         expect(restored.createdAt, post.createdAt);
         expect(restored.updatedAt, post.updatedAt);
       });
@@ -72,6 +74,7 @@ void main() {
         expect(restored.imageUrl, isNull);
         expect(restored.birdId, isNull);
         expect(restored.birdName, isNull);
+        expect(restored.editedAt, isNull);
         expect(restored.createdAt, isNull);
         expect(restored.updatedAt, isNull);
       });
@@ -133,6 +136,7 @@ void main() {
         expect(json.containsKey('comment_count'), isTrue);
         expect(json.containsKey('is_deleted'), isTrue);
         expect(json.containsKey('needs_review'), isTrue);
+        expect(json.containsKey('edited_at'), isTrue);
         expect(json.containsKey('created_at'), isTrue);
         expect(json.containsKey('updated_at'), isTrue);
       });
@@ -157,6 +161,7 @@ void main() {
           'user_id': 'u1',
           'created_at': '2026-03-15T10:00:00.000Z',
           'updated_at': '2026-03-16T12:00:00.000Z',
+          'edited_at': '2026-07-03T10:00:00.000Z',
         });
 
         expect(post.createdAt, isNotNull);
@@ -164,6 +169,9 @@ void main() {
         expect(post.updatedAt, isNotNull);
         expect(post.updatedAt!.month, 3);
         expect(post.updatedAt!.day, 16);
+        expect(post.editedAt, isNotNull);
+        expect(post.editedAt!.month, 7);
+        expect(post.editedAt!.day, 3);
       });
 
       test('fromJson handles list fields', () {
@@ -311,6 +319,25 @@ void main() {
         );
 
         expect(post.primaryImageUrl, 'https://example.com/first.png');
+      });
+    });
+
+    group('isEdited', () {
+      test('is false when editedAt is null', () {
+        const post = CommunityPost(id: 'p1', userId: 'u1');
+
+        expect(post.editedAt, isNull);
+        expect(post.isEdited, isFalse);
+      });
+
+      test('is true when editedAt is set', () {
+        final post = CommunityPost(
+          id: 'p1',
+          userId: 'u1',
+          editedAt: DateTime.utc(2026, 7, 3, 10),
+        );
+
+        expect(post.isEdited, isTrue);
       });
     });
   });

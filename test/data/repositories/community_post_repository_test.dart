@@ -4,6 +4,7 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:budgie_breeding_tracker/data/models/community_post_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/community_post_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/community_profile_cache.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/community_social_remote_source.dart';
@@ -29,6 +30,7 @@ Map<String, dynamic> _makePostRow({
   int commentCount = 0,
   String postType = 'general',
   String? title,
+  String? editedAt,
 }) => {
   'id': id,
   'user_id': userId,
@@ -41,6 +43,7 @@ Map<String, dynamic> _makePostRow({
   'is_deleted': false,
   'created_at': '2026-03-15T10:00:00Z',
   if (title != null) 'title': title,
+  if (editedAt != null) 'edited_at': editedAt,
 };
 
 void main() {
@@ -232,6 +235,19 @@ void main() {
 
       expect(post, isNull);
     });
+
+    test('parses edited_at into editedAt and isEdited', () async {
+      when(() => postSource.fetchById('p1')).thenAnswer(
+        (_) async => _makePostRow(id: 'p1', editedAt: '2026-07-03T10:00:00Z'),
+      );
+      stubSocialEmpty();
+
+      final post = await repository.getById(postId: 'p1', currentUserId: 'u1');
+
+      expect(post, isNotNull);
+      expect(post!.editedAt, isNotNull);
+      expect(post.isEdited, isTrue);
+    });
   });
 
   group('getByUser', () {
@@ -407,6 +423,29 @@ void main() {
 
       expect(result['allowed'], isTrue);
       verify(() => postSource.checkPostAllowed('hash')).called(1);
+    });
+  });
+
+  group('update', () {
+    test('delegates to remote source and invalidates caches', () async {
+      when(
+        () => postSource.updateContent(any(), any()),
+      ).thenAnswer((_) async {});
+
+      await repository.update(postId: 'post-1', content: 'yeni icerik');
+
+      verify(() => postSource.updateContent('post-1', 'yeni icerik')).called(1);
+    });
+
+    test('propagates remote failure', () async {
+      when(
+        () => postSource.updateContent(any(), any()),
+      ).thenThrow(Exception('edit_window_expired'));
+
+      await expectLater(
+        repository.update(postId: 'post-1', content: 'x'),
+        throwsA(isA<Exception>()),
+      );
     });
   });
 

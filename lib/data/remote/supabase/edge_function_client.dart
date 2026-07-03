@@ -274,6 +274,21 @@ class EdgeFunctionClient {
     return invoke('create-community-post', body: {'post': sanitized});
   }
 
+  /// Edit a community post's content through the moderated server-side
+  /// write path (5-minute window enforced in the edge function).
+  Future<EdgeFunctionResult> updateCommunityPost({
+    required String postId,
+    required String content,
+  }) {
+    return invoke(
+      'create-community-post',
+      body: {
+        'post': {'id': postId, 'content': content},
+        'mode': 'update',
+      },
+    );
+  }
+
   /// Create a community comment through the moderated server-side write path.
   Future<EdgeFunctionResult> createCommunityComment({
     required String postId,

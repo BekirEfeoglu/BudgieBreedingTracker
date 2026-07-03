@@ -33,6 +33,7 @@ abstract class CommunityPost with _$CommunityPost {
     @JsonKey(includeFromJson: false) @Default(false) bool isFollowingAuthor,
     @Default(false) bool isDeleted,
     @Default(false) bool needsReview,
+    DateTime? editedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _CommunityPost;
@@ -49,4 +50,6 @@ extension CommunityPostX on CommunityPost {
 
   String? get primaryImageUrl =>
       allImageUrls.isNotEmpty ? allImageUrls.first : null;
+
+  bool get isEdited => editedAt != null;
 }

@@ -305,6 +305,34 @@ void main() {
       },
     );
 
+    test('updateCommunityPost sends id, content and update mode', () async {
+      Map<String, dynamic>? capturedBody;
+      when(
+        () => mockFunctions.invoke(
+          'create-community-post',
+          body: any(named: 'body'),
+          headers: _authHeader,
+        ),
+      ).thenAnswer((invocation) async {
+        capturedBody = Map<String, dynamic>.from(
+          invocation.namedArguments[#body] as Map,
+        );
+        return FunctionResponse(status: 200, data: {'id': 'post-1'});
+      });
+
+      final result = await client.updateCommunityPost(
+        postId: 'post-1',
+        content: 'edited content',
+      );
+
+      expect(result.success, isTrue);
+      expect(capturedBody?['mode'], 'update');
+      expect(capturedBody?['post'], {
+        'id': 'post-1',
+        'content': 'edited content',
+      });
+    });
+
     test('createCommunityComment sends post id and content only', () async {
       Map<String, dynamic>? capturedBody;
       when(
