@@ -9,6 +9,30 @@ aktif checker'larla doğrulandı (bkz. § 9). Bu belge onun yerini alır.
 
 ---
 
+## 0. Yürütme Durumu (2026-07-03, otonom oturum)
+
+Bu bölüm planın hangi maddelerinin uygulandığını izler; sonraki oturum buradan devam etmeli.
+Final HEAD `00dc383`, CI tamamen yeşil (17 success + 1 bilinçli E2E skip).
+
+**✅ Tamamlandı (test + push + CI yeşil):**
+- **§4.1** Günlük XP limiti server-side (K12) — trigger, prod'a MCP ile deploy + canlı doğrulama. `b90d7c9`
+- **§5.4** Admin moderation per-card loading — `Notifier<Set<String>>`, kart-bazında `.select`. `421b9fc`
+- **§5.5** Takvim hatırlatma offset seçimi — dropdown + `reminderMinutesBefore`. `f63ecc4`
+- **§4.3** Mesaj gönderim hatası SnackBar + retry — `MessageInputBar` `ref.listen` + `clearError`. `86e302e`
+- **§5.2 (kısmi)** Server-side quiet-hours **mekanizması** — `send-push` opt-in + fail-open, migration + prod deploy. `00dc383`
+- **§5.1** Zaten yapılmış (attachment stub'ı `FeatureFlags.messageAttachmentsEnabled=false` arkasında).
+
+**⏸️ Kalan (bilinçli ertelendi — gerekçeler ilgili bölümlerde):**
+- **§5.2 aktivasyonu** — client DND→`profiles.quiet_hours` sync + hangi bildirim tiplerinin
+  `respectQuietHours: true` göndereceği taksonomisi (ürün kararı; ikisi birlikte yapılmalı).
+- **§5.3** Community post edit — büyük + prod-etkili (RLS + edge fn + moderation), taze oturum.
+- **§4.2** OAuth Phase 2 — %100 işlemsel (dashboard/secrets), ajan yapamaz; sonraki imzalı release öncesi.
+- **§7 / §6 P3** — bağımlılık/Flutter yükseltmeleri (iOS CI gerekli) + P3 özellikler (mute, streak, kill-switch, faz seçici).
+
+**Ortam notu:** Yerel Flutter SDK gece 3.41.4→3.44.4'e kaymıştı; CI paritesi için 3.41.4'e geri sabitlendi.
+
+---
+
 ## 1. Yönetici Özeti
 
 Uygulama **olağanüstü sağlıklı durumda**. 2026-07-02'deki iki tam kapsamlı audit'in
