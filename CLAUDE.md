@@ -89,7 +89,7 @@ scripts/test_check_obsidian_brain.py    # Tests for obsidian-brain wiki lint
 | Metric | Value |
 | --- | --- |
 | Source files (lib/) | 1001 Dart files |
-| Test files (test/) | 912 test files, 11,313+ individual tests |
+| Test files (test/) | 912 test files, 11,319+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -101,7 +101,7 @@ scripts/test_check_obsidian_brain.py    # Tests for obsidian-brain wiki lint
 | Shared widgets | 35 (15 root + 4 buttons + 2 cards + 2 dialog + 1 bottom_sheet + 5 eggs) |
 | Enum files | 15 |
 | Supabase constants | 142 (tables + buckets + columns) |
-| L10n keys | ~3,015 per language, 41 categories |
+| L10n keys | ~3,021 per language, 41 categories |
 | DB schema version | 25 |
 
 ## CI/CD Pipeline

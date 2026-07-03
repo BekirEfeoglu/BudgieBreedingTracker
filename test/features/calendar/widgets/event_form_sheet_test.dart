@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/calendar/providers/calendar_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/calendar/widgets/event_form_sheet.dart';
@@ -60,7 +61,18 @@ void main() {
       await tester.tap(find.text('Open Form'));
       await tester.pump();
       expect(
-        find.byWidgetPredicate((w) => w is DropdownButtonFormField),
+        find.byWidgetPredicate((w) => w is DropdownButtonFormField<EventType>),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('shows reminder offset dropdown for a new event',
+        (tester) async {
+      await tester.pumpWidget(buildWithModal());
+      await tester.tap(find.text('Open Form'));
+      await tester.pump();
+      expect(
+        find.byWidgetPredicate((w) => w is DropdownButtonFormField<int>),
         findsOneWidget,
       );
     });

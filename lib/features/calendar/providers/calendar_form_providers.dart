@@ -13,7 +13,18 @@ import 'package:budgie_breeding_tracker/domain/services/notifications/notificati
 import 'package:uuid/uuid.dart';
 
 /// Default reminder window for calendar events (minutes before).
-const int _kDefaultReminderMinutesBefore = 30;
+const int kDefaultReminderMinutesBefore = 30;
+
+/// Reminder offsets the event form offers, in minutes before the event.
+/// `null` means "no reminder". Kept here so the provider and the form widget
+/// agree on the exact set (and the default).
+const List<int?> kReminderOffsetOptions = <int?>[
+  null, // no reminder
+  0, // at time of event
+  30, // 30 minutes before (default)
+  60, // 1 hour before
+  1440, // 1 day before
+];
 
 /// State for the event form.
 @immutable
@@ -56,6 +67,10 @@ class EventFormNotifier extends Notifier<EventFormState>
   EventFormState build() => const EventFormState();
 
   /// Creates a new event.
+  ///
+  /// [reminderMinutesBefore] controls the reminder offset: the default
+  /// ([kDefaultReminderMinutesBefore]) preserves the historic 30-minutes-before
+  /// behavior, `0` fires at the event time, and `null` creates no reminder.
   Future<void> createEvent({
     required String userId,
     required String title,
@@ -65,6 +80,7 @@ class EventFormNotifier extends Notifier<EventFormState>
     String? notes,
     String? birdId,
     String? breedingPairId,
+    int? reminderMinutesBefore = kDefaultReminderMinutesBefore,
   }) async {
     if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
@@ -84,9 +100,12 @@ class EventFormNotifier extends Notifier<EventFormState>
         updatedAt: DateTime.now().toUtc(),
       );
       await repo.save(event);
-      // Schedule a default reminder. notification_processor picks up unsent
-      // reminders on its next tick and schedules an OS notification.
-      await _createDefaultReminder(event);
+      // Schedule the reminder (unless the user chose "no reminder").
+      // notification_processor picks up unsent reminders on its next tick and
+      // schedules an OS notification.
+      if (reminderMinutesBefore != null) {
+        await _createReminder(event, reminderMinutesBefore);
+      }
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('EventFormNotifier', e, st);
@@ -148,10 +167,10 @@ class EventFormNotifier extends Notifier<EventFormState>
     }
   }
 
-  /// Persists a default 30-minute reminder for newly created events. Failure
-  /// is logged but does not block event creation (degraded notification UX
-  /// beats lost data).
-  Future<void> _createDefaultReminder(Event event) async {
+  /// Persists a reminder [minutesBefore] the event for newly created events.
+  /// Failure is logged but does not block event creation (degraded
+  /// notification UX beats lost data).
+  Future<void> _createReminder(Event event, int minutesBefore) async {
     try {
       final reminderRepo = ref.read(eventReminderRepositoryProvider);
       final now = DateTime.now();
@@ -160,7 +179,7 @@ class EventFormNotifier extends Notifier<EventFormState>
           id: const Uuid().v7(),
           userId: event.userId,
           eventId: event.id,
-          minutesBefore: _kDefaultReminderMinutesBefore,
+          minutesBefore: minutesBefore,
           type: ReminderType.notification,
           createdAt: now,
           updatedAt: now,

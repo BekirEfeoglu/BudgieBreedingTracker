@@ -58,7 +58,31 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
   late TimeOfDay _eventTime;
   late EventType _eventType;
 
+  /// Dropdown value for the reminder offset. `DropdownButtonFormField` mishandles
+  /// a null item value (it shows the hint instead of the item), so "no reminder"
+  /// is carried as this sentinel and converted back to `null` at submit time.
+  static const int _noReminderSentinel = -1;
+  int _reminderChoice = kDefaultReminderMinutesBefore;
+
   bool get _isEditing => widget.existingEvent != null;
+
+  /// Localized label for a reminder offset (minutes before; `null` = none).
+  String _reminderOptionLabel(int? minutes) {
+    switch (minutes) {
+      case null:
+        return 'calendar.reminder_none'.tr();
+      case 0:
+        return 'calendar.reminder_at_time'.tr();
+      case 60:
+        return 'calendar.reminder_1_hour'.tr();
+      case 1440:
+        return 'calendar.reminder_1_day'.tr();
+      default:
+        return 'calendar.reminder_minutes_before'.tr(
+          namedArgs: {'minutes': '$minutes'},
+        );
+    }
+  }
 
   @override
   void initState() {
@@ -223,6 +247,36 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
               _TimePickerField(eventTime: _eventTime, onTap: _pickTime),
               const SizedBox(height: AppSpacing.lg),
 
+              // Reminder offset — only for new events. Editing an event does
+              // not create/modify reminders (they were persisted at creation),
+              // so showing the control there would be misleading.
+              if (!_isEditing) ...[
+                DropdownButtonFormField<int>(
+                  initialValue: _reminderChoice,
+                  // Fill the field width and ellipsize long localized labels
+                  // instead of overflowing the row (e.g. German "Zum
+                  // Ereigniszeitpunkt").
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    labelText: 'calendar.reminder_label'.tr(),
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(LucideIcons.bell),
+                  ),
+                  items: [
+                    for (final minutes in kReminderOffsetOptions)
+                      DropdownMenuItem<int>(
+                        value: minutes ?? _noReminderSentinel,
+                        child: Text(_reminderOptionLabel(minutes)),
+                      ),
+                  ],
+                  onChanged: (value) => setState(
+                    () => _reminderChoice =
+                        value ?? kDefaultReminderMinutesBefore,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+              ],
+
               // Notes field
               // IMPROVED: add maxLength to prevent excessive input
               TextFormField(
@@ -324,6 +378,8 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
         notes: _notesController.text.trim().isEmpty
             ? null
             : _notesController.text.trim(),
+        reminderMinutesBefore:
+            _reminderChoice == _noReminderSentinel ? null : _reminderChoice,
       );
     }
   }

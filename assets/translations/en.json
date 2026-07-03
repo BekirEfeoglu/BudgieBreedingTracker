@@ -629,7 +629,13 @@
     "status_cancelled": "Cancelled",
     "status_pending": "Pending",
     "mark_completed": "Mark as Completed",
-    "mark_cancelled": "Cancel Event"
+    "mark_cancelled": "Cancel Event",
+    "reminder_label": "Reminder",
+    "reminder_none": "No reminder",
+    "reminder_at_time": "At time of event",
+    "reminder_1_hour": "1 hour before",
+    "reminder_1_day": "1 day before",
+    "reminder_minutes_before": "{minutes} minutes before"
   },
   "settings": {
     "title": "Settings",

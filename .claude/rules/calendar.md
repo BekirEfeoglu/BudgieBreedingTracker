@@ -39,9 +39,13 @@ Event create
 ```
 
 Manuel takvim event'lerinde (`EventFormNotifier.createEvent`) hatırlatma
-şu an **sabit 30 dakika önce**dir (`_kDefaultReminderMinutesBefore`) — kullanıcı
-ayarlanabilir "1 saat önce / 1 gün önce / exact time" seçimi henüz UI'da yok.
-Otomatik kuluçka/yumurta-çevirme hatırlatmaları ayrı bir sistemdir
+offset'i **kullanıcı seçimlidir** (2026-07-03): event formundaki dropdown
+`kReminderOffsetOptions` (`calendar_form_providers.dart`) üzerinden
+_hatırlatma yok / etkinlik anında (0) / 30 dk / 1 saat / 1 gün önce_
+seçtirir; varsayılan `kDefaultReminderMinutesBefore` (30 dk, eski davranış).
+`createEvent`'in `reminderMinutesBefore` parametresi `null` ise hiç reminder
+oluşturulmaz. Dropdown yalnızca yeni event'te gösterilir (edit reminder'ları
+yönetmez). Otomatik kuluçka/yumurta-çevirme hatırlatmaları ayrı bir sistemdir
 (`NotificationScheduler`, `event_reminders` tablosunu kullanmaz — bkz. ID
 Stability). Quiet hours (notifications.md) her iki sistemde de honored.
 

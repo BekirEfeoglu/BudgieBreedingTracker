@@ -97,6 +97,62 @@ void main() {
       expect(container.read(eventFormStateProvider).isSuccess, isTrue);
     });
 
+    test('createEvent uses the 30-minute default reminder when unspecified',
+        () async {
+      when(() => repo.save(any())).thenAnswer((_) async {});
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container.read(eventFormStateProvider.notifier).createEvent(
+            userId: 'u1',
+            title: 'Health check',
+            eventDate: DateTime(2024, 6, 1),
+            type: EventType.healthCheck,
+          );
+
+      final saved = verify(() => reminderRepo.save(captureAny())).captured.single
+          as EventReminder;
+      expect(saved.minutesBefore, kDefaultReminderMinutesBefore);
+    });
+
+    test('createEvent honors a custom reminder offset', () async {
+      when(() => repo.save(any())).thenAnswer((_) async {});
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container.read(eventFormStateProvider.notifier).createEvent(
+            userId: 'u1',
+            title: 'Health check',
+            eventDate: DateTime(2024, 6, 1),
+            type: EventType.healthCheck,
+            reminderMinutesBefore: 60,
+          );
+
+      final saved = verify(() => reminderRepo.save(captureAny())).captured.single
+          as EventReminder;
+      expect(saved.minutesBefore, 60);
+    });
+
+    test('createEvent creates no reminder when offset is null', () async {
+      when(() => repo.save(any())).thenAnswer((_) async {});
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container.read(eventFormStateProvider.notifier).createEvent(
+            userId: 'u1',
+            title: 'Health check',
+            eventDate: DateTime(2024, 6, 1),
+            type: EventType.healthCheck,
+            reminderMinutesBefore: null,
+          );
+
+      expect(container.read(eventFormStateProvider).isSuccess, isTrue);
+      verifyNever(() => reminderRepo.save(any()));
+    });
+
     test('createEvent sets error on failure', () async {
       when(() => repo.save(any())).thenThrow(Exception('fail'));
 

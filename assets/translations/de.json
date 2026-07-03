@@ -629,7 +629,13 @@
     "status_cancelled": "Abgebrochen",
     "status_pending": "Ausstehend",
     "mark_completed": "Als erledigt markieren",
-    "mark_cancelled": "Ereignis abbrechen"
+    "mark_cancelled": "Ereignis abbrechen",
+    "reminder_label": "Erinnerung",
+    "reminder_none": "Keine Erinnerung",
+    "reminder_at_time": "Zum Ereigniszeitpunkt",
+    "reminder_1_hour": "1 Stunde vorher",
+    "reminder_1_day": "1 Tag vorher",
+    "reminder_minutes_before": "{minutes} Minuten vorher"
   },
   "settings": {
     "title": "Einstellungen",

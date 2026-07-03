@@ -629,7 +629,13 @@
     "status_cancelled": "İptal Edildi",
     "status_pending": "Beklemede",
     "mark_completed": "Tamamlandı İşaretle",
-    "mark_cancelled": "İptal Et"
+    "mark_cancelled": "İptal Et",
+    "reminder_label": "Hatırlatma",
+    "reminder_none": "Hatırlatma yok",
+    "reminder_at_time": "Etkinlik anında",
+    "reminder_1_hour": "1 saat önce",
+    "reminder_1_day": "1 gün önce",
+    "reminder_minutes_before": "{minutes} dakika önce"
   },
   "settings": {
     "title": "Ayarlar",
