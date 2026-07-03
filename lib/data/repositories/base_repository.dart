@@ -290,7 +290,7 @@ mixin ValidatedSyncMixin<T> on BaseRepository<T>, SyncableRepository<T> {
             );
             orphansCleaned++;
           }
-          return null; // FK bekleyen: bu turda pushlanmaz (mevcut davranış)
+          return null; // FK not yet synced: skip this round (existing behavior)
         }
         return item;
       },
