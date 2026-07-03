@@ -28,7 +28,7 @@ void main() {
         allPosts.where((p) => p.isFollowingAuthor).toList(),
       CommunityFeedTab.guides =>
         allPosts.where((p) => p.postType == CommunityPostType.guide).toList(),
-      CommunityFeedTab.questions =>
+      CommunityFeedTab.marketplace =>
         allPosts
             .where((p) => p.postType == CommunityPostType.question)
             .toList(),
@@ -383,7 +383,7 @@ void main() {
       await tester.pumpWidget(
         createSubject(
           feedState: FeedState(posts: posts, isLoading: false, hasMore: false),
-          tab: CommunityFeedTab.questions,
+          tab: CommunityFeedTab.marketplace,
         ),
       );
       await tester.pumpAndSettle();

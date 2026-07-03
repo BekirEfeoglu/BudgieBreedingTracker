@@ -39,7 +39,7 @@ void main() {
       expect(find.text(l10n('community.tab_explore')), findsOneWidget);
       expect(find.text(l10n('community.tab_following')), findsOneWidget);
       expect(find.text(l10n('community.tab_guides')), findsOneWidget);
-      expect(find.text(l10n('community.tab_questions')), findsOneWidget);
+      expect(find.text(l10n('community.tab_marketplace')), findsOneWidget);
     });
 
     testWidgets('renders tab icons', (tester) async {
@@ -54,7 +54,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.byIcon(LucideIcons.helpCircle), findsOneWidget);
+      expect(find.byIcon(LucideIcons.store), findsOneWidget);
     });
 
     testWidgets('tapping a tab updates the active tab provider', (

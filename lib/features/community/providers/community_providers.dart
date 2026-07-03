@@ -15,13 +15,13 @@ enum CommunityFeedTab {
   explore,
   following,
   guides,
-  questions;
+  marketplace;
 
   String get label => switch (this) {
     CommunityFeedTab.explore => 'community.tab_explore'.tr(),
     CommunityFeedTab.following => 'community.tab_following'.tr(),
     CommunityFeedTab.guides => 'community.tab_guides'.tr(),
-    CommunityFeedTab.questions => 'community.tab_questions'.tr(),
+    CommunityFeedTab.marketplace => 'community.tab_marketplace'.tr(),
   };
 }
 

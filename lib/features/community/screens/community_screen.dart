@@ -32,7 +32,7 @@ class CommunityScreen extends ConsumerWidget {
       appBar: const CommunityAppBar(),
       floatingActionButton:
           isEnabled &&
-              activeTab != CommunityFeedTab.questions &&
+              activeTab != CommunityFeedTab.marketplace &&
               (activeTab != CommunityFeedTab.guides ||
                   ref.watch(isFounderProvider).value == true)
           ? FloatingActionButton.extended(
@@ -81,8 +81,8 @@ class CommunityScreen extends ConsumerWidget {
   Widget _buildBody(BuildContext context, CommunityFeedTab activeTab) {
     final theme = Theme.of(context);
 
-    // questions tab is repurposed as marketplace tab in UI
-    final tabBody = activeTab == CommunityFeedTab.questions
+    // marketplace tab renders the embedded marketplace content
+    final tabBody = activeTab == CommunityFeedTab.marketplace
         ? Container(
             decoration: BoxDecoration(
               color: theme.colorScheme.surface,

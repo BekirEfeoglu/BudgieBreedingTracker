@@ -29,7 +29,10 @@ final communityVisiblePostsProvider =
           unblocked
               .where((p) => p.postType == CommunityPostType.guide)
               .toList(),
-        CommunityFeedTab.questions =>
+        // Unreachable via CommunityScreen (marketplace tab embeds
+        // MarketplaceTabContent); kept for exhaustiveness. Question posts
+        // surface in the explore tab.
+        CommunityFeedTab.marketplace =>
           unblocked
               .where((p) => p.postType == CommunityPostType.question)
               .toList(),

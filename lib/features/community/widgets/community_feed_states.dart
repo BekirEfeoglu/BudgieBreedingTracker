@@ -212,7 +212,7 @@ class FilteredFeedEmptyState extends StatelessWidget {
       CommunityFeedTab.explore => 'community.empty_filtered_title',
       CommunityFeedTab.following => 'community.empty_following_title',
       CommunityFeedTab.guides => 'community.empty_guides_title',
-      CommunityFeedTab.questions => 'community.empty_questions_title',
+      CommunityFeedTab.marketplace => 'community.empty_questions_title',
     };
     final hintKey = switch (tab) {
       CommunityFeedTab.explore => 'community.empty_filtered_hint',
@@ -221,7 +221,7 @@ class FilteredFeedEmptyState extends StatelessWidget {
         onReset == null
             ? 'community.guides_coming_soon'
             : 'community.empty_guides_hint',
-      CommunityFeedTab.questions => 'community.empty_questions_hint',
+      CommunityFeedTab.marketplace => 'community.empty_questions_hint',
     };
 
     final Widget? ctaButton = switch (tab) {

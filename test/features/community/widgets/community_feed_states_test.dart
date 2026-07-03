@@ -126,7 +126,7 @@ void main() {
       await tester.pumpWidget(
         wrap(
           const FilteredFeedEmptyState(
-            tab: CommunityFeedTab.questions,
+            tab: CommunityFeedTab.marketplace,
             onReset: null,
           ),
         ),
@@ -275,7 +275,7 @@ void main() {
       await tester.pumpWidget(
         wrap(
           const FilteredFeedEmptyState(
-            tab: CommunityFeedTab.questions,
+            tab: CommunityFeedTab.marketplace,
             onReset: null,
           ),
         ),

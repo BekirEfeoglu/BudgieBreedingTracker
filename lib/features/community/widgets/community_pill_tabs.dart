@@ -182,8 +182,8 @@ class _PillTab extends StatelessWidget {
         size: 16,
         color: color,
       ),
-      CommunityFeedTab.questions => Icon(
-        LucideIcons.helpCircle,
+      CommunityFeedTab.marketplace => Icon(
+        LucideIcons.store,
         size: 16,
         color: color,
       ),

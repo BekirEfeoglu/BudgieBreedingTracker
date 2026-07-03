@@ -28,7 +28,7 @@ class CommunitySectionBar extends StatelessWidget {
       CommunityFeedTab.explore => 'community.tab_explore',
       CommunityFeedTab.following => 'community.tab_following',
       CommunityFeedTab.guides => 'community.tab_guides',
-      CommunityFeedTab.questions => 'community.tab_questions',
+      CommunityFeedTab.marketplace => 'community.tab_marketplace',
     };
 
     if (tab == CommunityFeedTab.guides) {
@@ -213,7 +213,7 @@ class CommunitySectionBar extends StatelessWidget {
     CommunityFeedTab.explore => 'community.section_explore_hint',
     CommunityFeedTab.following => 'community.section_following_hint',
     CommunityFeedTab.guides => 'community.section_guides_hint',
-    CommunityFeedTab.questions => 'community.section_market_hint',
+    CommunityFeedTab.marketplace => 'community.section_market_hint',
   };
 }
 

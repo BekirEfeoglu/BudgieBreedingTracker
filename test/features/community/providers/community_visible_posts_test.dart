@@ -175,7 +175,7 @@ void main() {
         container.read(communityFeedProvider);
 
         final visible = container.read(
-          communityVisiblePostsProvider(CommunityFeedTab.questions),
+          communityVisiblePostsProvider(CommunityFeedTab.marketplace),
         );
         expect(visible.length, 1);
         expect(visible.first.postType, CommunityPostType.question);
