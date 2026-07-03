@@ -60,7 +60,8 @@ void main() {
     chickRepo = MockChickRepository();
     healthRepo = MockHealthRecordRepository();
 
-    when(() => birdRepo.save(any())).thenAnswer((_) async {});
+    when(() => birdRepo.saveAll(any())).thenAnswer((_) async {});
+    when(() => birdRepo.getAll(any())).thenAnswer((_) async => []);
   });
 
   test('dataImportServiceProvider uses overridden repositories', () async {
@@ -82,6 +83,6 @@ void main() {
     );
 
     expect(result.importedCount, 1);
-    verify(() => birdRepo.save(any())).called(1);
+    verify(() => birdRepo.saveAll(any())).called(1);
   });
 }

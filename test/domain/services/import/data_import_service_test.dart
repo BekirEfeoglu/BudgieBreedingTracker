@@ -76,14 +76,14 @@ void main() {
     chickRepo = MockChickRepository();
     healthRepo = MockHealthRecordRepository();
 
-    when(() => birdRepo.save(any())).thenAnswer((_) async {});
+    when(() => birdRepo.saveAll(any())).thenAnswer((_) async {});
     when(() => birdRepo.getAll(any())).thenAnswer((_) async => []);
     when(() => birdRepo.getById(any())).thenAnswer((_) async => null);
-    when(() => breedingRepo.save(any())).thenAnswer((_) async {});
+    when(() => breedingRepo.saveAll(any())).thenAnswer((_) async {});
     when(() => breedingRepo.getAll(any())).thenAnswer((_) async => []);
-    when(() => eggRepo.save(any())).thenAnswer((_) async {});
-    when(() => chickRepo.save(any())).thenAnswer((_) async {});
-    when(() => healthRepo.save(any())).thenAnswer((_) async {});
+    when(() => eggRepo.saveAll(any())).thenAnswer((_) async {});
+    when(() => chickRepo.saveAll(any())).thenAnswer((_) async {});
+    when(() => healthRepo.saveAll(any())).thenAnswer((_) async {});
 
     service = DataImportService(
       birdRepo,
@@ -134,30 +134,33 @@ void main() {
         expect(result.totalRows, 2);
         expect(result.importedCount, 1);
         expect(result.skippedCount, 1);
-        verify(() => birdRepo.save(any())).called(1);
+        final captured =
+            verify(() => birdRepo.saveAll(captureAny())).captured.single
+                as List;
+        expect(captured, hasLength(1));
       },
     );
 
     test(
       'importBirdsFromExcel reads parent ids from exported columns',
       () async {
-        when(() => birdRepo.getById('father-1')).thenAnswer(
-          (_) async => const Bird(
-            id: 'father-1',
-            name: 'Father',
-            gender: BirdGender.male,
-            userId: 'user-1',
-            species: Species.budgie,
-          ),
-        );
-        when(() => birdRepo.getById('mother-1')).thenAnswer(
-          (_) async => const Bird(
-            id: 'mother-1',
-            name: 'Mother',
-            gender: BirdGender.female,
-            userId: 'user-1',
-            species: Species.budgie,
-          ),
+        when(() => birdRepo.getAll('user-1')).thenAnswer(
+          (_) async => const [
+            Bird(
+              id: 'father-1',
+              name: 'Father',
+              gender: BirdGender.male,
+              userId: 'user-1',
+              species: Species.budgie,
+            ),
+            Bird(
+              id: 'mother-1',
+              name: 'Mother',
+              gender: BirdGender.female,
+              userId: 'user-1',
+              species: Species.budgie,
+            ),
+          ],
         );
 
         final bytes = _buildWorkbook({
@@ -199,8 +202,10 @@ void main() {
         );
 
         expect(result.importedCount, 1);
-        final captured =
-            verify(() => birdRepo.save(captureAny())).captured.single as Bird;
+        final capturedList =
+            verify(() => birdRepo.saveAll(captureAny())).captured.single
+                as List<Bird>;
+        final captured = capturedList.single;
         expect(captured.fatherId, 'father-1');
         expect(captured.motherId, 'mother-1');
         expect(captured.notes, 'family-linked');
@@ -208,14 +213,16 @@ void main() {
     );
 
     test('importBirdsFromExcel rejects parent species mismatch', () async {
-      when(() => birdRepo.getById('father-1')).thenAnswer(
-        (_) async => const Bird(
-          id: 'father-1',
-          name: 'Father',
-          gender: BirdGender.male,
-          userId: 'user-1',
-          species: Species.canary,
-        ),
+      when(() => birdRepo.getAll('user-1')).thenAnswer(
+        (_) async => const [
+          Bird(
+            id: 'father-1',
+            name: 'Father',
+            gender: BirdGender.male,
+            userId: 'user-1',
+            species: Species.canary,
+          ),
+        ],
       );
 
       final bytes = _buildWorkbook({
@@ -259,7 +266,7 @@ void main() {
       expect(result.importedCount, 0);
       expect(result.skippedCount, 1);
       expect(result.errors, contains(l10n('birds.parent_species_mismatch')));
-      verifyNever(() => birdRepo.save(any()));
+      verifyNever(() => birdRepo.saveAll(any()));
     });
 
     test(
@@ -305,7 +312,7 @@ void main() {
         expect(result.totalRows, 1);
         expect(result.importedCount, 0);
         expect(result.skippedCount, 1);
-        verifyNever(() => birdRepo.save(any()));
+        verifyNever(() => birdRepo.saveAll(any()));
       },
     );
 
@@ -333,29 +340,29 @@ void main() {
       expect(result.totalRows, 1);
       expect(result.importedCount, 0);
       expect(result.skippedCount, 1);
-      verifyNever(() => eggRepo.save(any()));
+      verifyNever(() => eggRepo.saveAll(any()));
     });
 
     test(
       'importBreedingPairsFromExcel rejects different-species pair',
       () async {
-        when(() => birdRepo.getById('male-1')).thenAnswer(
-          (_) async => const Bird(
-            id: 'male-1',
-            name: 'Male',
-            gender: BirdGender.male,
-            userId: 'user-1',
-            species: Species.budgie,
-          ),
-        );
-        when(() => birdRepo.getById('female-1')).thenAnswer(
-          (_) async => const Bird(
-            id: 'female-1',
-            name: 'Female',
-            gender: BirdGender.female,
-            userId: 'user-1',
-            species: Species.canary,
-          ),
+        when(() => birdRepo.getAll('user-1')).thenAnswer(
+          (_) async => const [
+            Bird(
+              id: 'male-1',
+              name: 'Male',
+              gender: BirdGender.male,
+              userId: 'user-1',
+              species: Species.budgie,
+            ),
+            Bird(
+              id: 'female-1',
+              name: 'Female',
+              gender: BirdGender.female,
+              userId: 'user-1',
+              species: Species.canary,
+            ),
+          ],
         );
 
         final bytes = _buildWorkbook({
@@ -381,7 +388,7 @@ void main() {
         expect(result.importedCount, 0);
         expect(result.skippedCount, 1);
         expect(result.errors, contains(l10n('breeding.same_species_required')));
-        verifyNever(() => breedingRepo.save(any()));
+        verifyNever(() => breedingRepo.saveAll(any()));
       },
     );
 
@@ -429,7 +436,234 @@ void main() {
         ]),
       );
       expect(results['birds']!.importedCount, 1);
-      verify(() => birdRepo.save(any())).called(1);
+      verify(() => birdRepo.saveAll(any())).called(1);
+    });
+
+    test('importBirdsFromExcel saves imported rows with a single saveAll '
+        'instead of per-row save', () async {
+      final bytes = _buildWorkbook({
+        'Kuslar': [
+          [
+            'Ad',
+            'Halka No',
+            'Cinsiyet',
+            'Tur',
+            'Durum',
+            'Dogum Tarihi',
+            'Renk',
+            'Kafes',
+            'Notlar',
+          ],
+          for (var i = 0; i < 5; i++)
+            [
+              'Kus $i',
+              'TR-$i',
+              'Erkek',
+              'Budgie',
+              'Alive',
+              '01.01.2025',
+              '',
+              'A1',
+              '',
+            ],
+        ],
+      });
+
+      final result = await service.importBirdsFromExcel(
+        bytes: bytes,
+        userId: 'user-1',
+      );
+
+      expect(result.importedCount, 5);
+      final captured = verify(() => birdRepo.saveAll(captureAny())).captured;
+      expect(captured, hasLength(1));
+      expect(captured.single as List, hasLength(5));
+      // Per-row save path is fully retired.
+      verifyNever(() => birdRepo.save(any()));
+    });
+
+    test('importBirdsFromExcel resolves a parent bird whose id is only known '
+        'from a previously-validated import, without a per-row getById '
+        'lookup', () async {
+      // ExcelRowParsers.parseBirdRow assigns each bird a fresh
+      // Uuid().v7() id that is never derived from any Excel column, so
+      // no fixture can hardcode ahead of time the id a same-call row
+      // will receive — a byte-level, single-call, both-rows-fresh
+      // "row 3 references row 2's not-yet-known id" fixture cannot be
+      // constructed (there is no id-injection seam in Uuid or the
+      // parser). Instead, this test proves the shared birdsById map
+      // (existing DB birds + rows validated so far in the current
+      // call, data_import_service.dart's importBirdsFromExcel) resolves
+      // a real, non-fabricated id with a single getAll and zero
+      // getById calls: phase 1 imports the parent alone and captures
+      // its true generated id from the saveAll(captureAny()) argument;
+      // phase 2 imports a child file whose "Baba ID" cell is that real
+      // id, with getAll seeded to return the phase-1 parent (its id is
+      // otherwise unknowable at fixture-authoring time).
+      when(() => birdRepo.getAll('user-1')).thenAnswer((_) async => []);
+
+      final parentBytes = _buildWorkbook({
+        'Kuslar': [
+          [
+            'Ad',
+            'Halka No',
+            'Cinsiyet',
+            'Tur',
+            'Durum',
+            'Dogum Tarihi',
+            'Renk',
+            'Kafes',
+            'Notlar',
+          ],
+          [
+            'Baba',
+            'TR-1',
+            'Erkek',
+            'Budgie',
+            'Alive',
+            '01.01.2025',
+            '',
+            'A1',
+            '',
+          ],
+        ],
+      });
+      final parentResult = await service.importBirdsFromExcel(
+        bytes: parentBytes,
+        userId: 'user-1',
+      );
+      expect(parentResult.importedCount, 1);
+      final parentCaptured =
+          verify(() => birdRepo.saveAll(captureAny())).captured.single
+              as List<Bird>;
+      final parent = parentCaptured.single;
+      final parentId = parent.id;
+
+      // The parent's real id is only knowable after phase 1 ran, so it
+      // cannot be embedded in a pre-existing test fixture — seed it here.
+      when(() => birdRepo.getAll('user-1')).thenAnswer((_) async => [parent]);
+
+      final childBytes = _buildWorkbook({
+        'Kuslar': [
+          [
+            'Ad',
+            'Halka No',
+            'Cinsiyet',
+            'Tur',
+            'Durum',
+            'Dogum Tarihi',
+            'Renk',
+            'Kafes',
+            'Legacy Notlar',
+            'Baba ID',
+            'Anne ID',
+            'Notlar',
+          ],
+          [
+            'Yavru',
+            'TR-2',
+            'Erkek',
+            'Budgie',
+            'Alive',
+            '01.02.2025',
+            '',
+            'A1',
+            '',
+            parentId,
+            // No trailing "Anne ID"/"Notlar" cells: cellToString(row, 10)
+            // must see index >= row.length (returns null), not an
+            // empty-string cell (which would fail bird.motherId != null
+            // and throw birds.not_found for an unrelated reason).
+          ],
+        ],
+      });
+      final childResult = await service.importBirdsFromExcel(
+        bytes: childBytes,
+        userId: 'user-1',
+      );
+
+      expect(childResult.importedCount, 1);
+      expect(childResult.errors, isEmpty);
+      verifyNever(() => birdRepo.getById(any()));
+    });
+
+    test('importBirdsFromExcel validates parents from a single preloaded map '
+        'without per-row getById calls', () async {
+      when(() => birdRepo.getAll('user-1')).thenAnswer(
+        (_) async => const [
+          Bird(
+            id: 'father-1',
+            name: 'Father',
+            gender: BirdGender.male,
+            userId: 'user-1',
+            species: Species.budgie,
+          ),
+          Bird(
+            id: 'mother-1',
+            name: 'Mother',
+            gender: BirdGender.female,
+            userId: 'user-1',
+            species: Species.budgie,
+          ),
+        ],
+      );
+
+      final bytes = _buildWorkbook({
+        'Kuslar': [
+          [
+            'Ad',
+            'Halka No',
+            'Cinsiyet',
+            'Tur',
+            'Durum',
+            'Dogum Tarihi',
+            'Renk',
+            'Kafes',
+            'Legacy Notlar',
+            'Baba ID',
+            'Anne ID',
+            'Notlar',
+          ],
+          [
+            'Mavi',
+            'TR-1',
+            'Erkek',
+            'Budgie',
+            'Alive',
+            '01.01.2025',
+            '',
+            'A1',
+            '',
+            'father-1',
+            'mother-1',
+            '',
+          ],
+          [
+            'Sari',
+            'TR-2',
+            'Dişi',
+            'Budgie',
+            'Alive',
+            '01.01.2025',
+            '',
+            'A2',
+            '',
+            'father-1',
+            'mother-1',
+            '',
+          ],
+        ],
+      });
+
+      final result = await service.importBirdsFromExcel(
+        bytes: bytes,
+        userId: 'user-1',
+      );
+
+      expect(result.importedCount, 2);
+      // Bird map is loaded once for the whole sheet, not per row.
+      verify(() => birdRepo.getAll('user-1')).called(1);
+      verifyNever(() => birdRepo.getById(any()));
     });
   });
 }

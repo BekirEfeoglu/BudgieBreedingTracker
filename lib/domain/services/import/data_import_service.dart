@@ -37,9 +37,9 @@ class DataImportService {
   final ChickRepository _chickRepo;
   final HealthRecordRepository _healthRecordRepo;
 
-  Future<void> _validateBirdParents(Bird bird) async {
+  void _validateBirdParents(Bird bird, Map<String, Bird> birdsById) {
     if (bird.fatherId != null) {
-      final father = await _birdRepo.getById(bird.fatherId!);
+      final father = birdsById[bird.fatherId!];
       if (father == null || father.userId != bird.userId) {
         throw const _ImportValidationException('birds.not_found');
       }
@@ -52,7 +52,7 @@ class DataImportService {
     }
 
     if (bird.motherId != null) {
-      final mother = await _birdRepo.getById(bird.motherId!);
+      final mother = birdsById[bird.motherId!];
       if (mother == null || mother.userId != bird.userId) {
         throw const _ImportValidationException('birds.not_found');
       }
@@ -65,11 +65,14 @@ class DataImportService {
     }
   }
 
-  Future<void> _validateBreedingPairBirds(BreedingPair pair) async {
+  void _validateBreedingPairBirds(
+    BreedingPair pair,
+    Map<String, Bird> birdsById,
+  ) {
     if (pair.maleId == null || pair.femaleId == null) return;
 
-    final maleBird = await _birdRepo.getById(pair.maleId!);
-    final femaleBird = await _birdRepo.getById(pair.femaleId!);
+    final maleBird = birdsById[pair.maleId!];
+    final femaleBird = birdsById[pair.femaleId!];
     if (maleBird == null ||
         femaleBird == null ||
         maleBird.userId != pair.userId ||
@@ -98,11 +101,14 @@ class DataImportService {
     required String userId,
     int? maxTotalBirds,
   }) async {
-    var existingBirdCount = 0;
+    // Single bulk load: existing birds plus, as the sheet is walked, every
+    // row validated so far are kept in the same map — this retires
+    // per-row getById and still lets a later row reference an earlier
+    // row's bird as its parent (the old sequential-save behavior).
+    final existing = await _birdRepo.getAll(userId);
+    final birdsById = {for (final b in existing) b.id: b};
+    final existingBirdCount = existing.length;
     var importedBirds = 0;
-    if (maxTotalBirds != null) {
-      existingBirdCount = (await _birdRepo.getAll(userId)).length;
-    }
 
     return _importSheet(
       bytes: bytes,
@@ -121,15 +127,16 @@ class DataImportService {
         }
         return 'import.row_error'.tr(args: ['$rowIndex', '$error']);
       },
-      save: (bird) async {
+      validate: (bird) async {
         if (maxTotalBirds != null &&
             existingBirdCount + importedBirds >= maxTotalBirds) {
           throw _BirdLimitExceededException(maxTotalBirds);
         }
-        await _validateBirdParents(bird);
-        await _birdRepo.save(bird);
+        _validateBirdParents(bird, birdsById);
+        birdsById[bird.id] = bird; // same-file forward references
         importedBirds++;
       },
+      saveAll: _birdRepo.saveAll,
     );
   }
 
@@ -142,6 +149,11 @@ class DataImportService {
     required String userId,
     int? maxActivePairs,
   }) async {
+    // Single bulk load of birds for FK validation (needed regardless of
+    // the limit, same as importBirdsFromExcel).
+    final birds = await _birdRepo.getAll(userId);
+    final birdsById = {for (final b in birds) b.id: b};
+
     var existingActivePairs = 0;
     var importedActivePairs = 0;
     if (maxActivePairs != null) {
@@ -168,17 +180,17 @@ class DataImportService {
         }
         return 'import.row_error'.tr(args: ['$rowIndex', '$error']);
       },
-      save: (pair) async {
+      validate: (pair) async {
         final isActive = pair.status == BreedingStatus.active;
         if (maxActivePairs != null &&
             isActive &&
             existingActivePairs + importedActivePairs >= maxActivePairs) {
           throw _BreedingPairLimitExceededException(maxActivePairs);
         }
-        await _validateBreedingPairBirds(pair);
-        await _breedingPairRepo.save(pair);
+        _validateBreedingPairBirds(pair, birdsById);
         if (isActive) importedActivePairs++;
       },
+      saveAll: _breedingPairRepo.saveAll,
     );
   }
 
@@ -198,7 +210,8 @@ class DataImportService {
       parseRow: (row, uid) => ExcelRowParsers.parseEggRow(row, uid),
       onSkip: (_, rowIndex) =>
           'import.row_date_required'.tr(args: ['$rowIndex']),
-      save: (egg) => _eggRepo.save(egg),
+      validate: (_) async {},
+      saveAll: _eggRepo.saveAll,
     );
   }
 
@@ -216,7 +229,8 @@ class DataImportService {
       sheetNames: const ['Yavrular', 'Chicks', 'Sheet4'],
       label: 'Chicks',
       parseRow: (row, uid) => ExcelRowParsers.parseChickRow(row, uid),
-      save: (chick) => _chickRepo.save(chick),
+      validate: (_) async {},
+      saveAll: _chickRepo.saveAll,
     );
   }
 
@@ -241,7 +255,8 @@ class DataImportService {
         }
         return 'import.row_date_required'.tr(args: ['$rowIndex']);
       },
-      save: (record) => _healthRecordRepo.save(record),
+      validate: (_) async {},
+      saveAll: _healthRecordRepo.saveAll,
     );
   }
 

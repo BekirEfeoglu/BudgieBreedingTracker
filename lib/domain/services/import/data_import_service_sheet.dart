@@ -19,7 +19,8 @@ Future<ImportResult> _importSheet<T>({
   required List<String> sheetNames,
   required String label,
   required T? Function(List<Data?> row, String userId) parseRow,
-  required Future<void> Function(T item) save,
+  required Future<void> Function(T item) validate,
+  required Future<void> Function(List<T> items) saveAll,
   String Function(List<Data?> row, int rowIndex)? onSkip,
   String Function(Object error, int rowIndex)? onError,
   String? sheetNotFoundError,
@@ -61,6 +62,7 @@ Future<ImportResult> _importSheet<T>({
   var imported = 0;
   var skipped = 0;
   var totalRows = 0;
+  final validItems = <T>[];
 
   for (var i = 1; i < rows.length; i++) {
     totalRows++;
@@ -73,7 +75,8 @@ Future<ImportResult> _importSheet<T>({
         }
         continue;
       }
-      await save(item);
+      await validate(item);
+      validItems.add(item);
       imported++;
     } catch (e) {
       AppLogger.warning('[DataImportService] Row ${i + 1}: $e');
@@ -82,6 +85,25 @@ Future<ImportResult> _importSheet<T>({
         onError != null
             ? onError(e, i + 1)
             : 'import.row_error'.tr(args: ['${i + 1}', '$e']),
+      );
+    }
+  }
+
+  if (validItems.isNotEmpty) {
+    try {
+      await saveAll(validItems);
+    } catch (e, st) {
+      // Batch persist failed as a whole (transactional insertAll) — report
+      // a sheet-level error instead of pretending rows were imported.
+      AppLogger.error('[DataImportService] $label batch save failed', e, st);
+      return ImportResult(
+        totalRows: totalRows,
+        importedCount: 0,
+        skippedCount: skipped,
+        errors: [
+          ...errors,
+          'import.row_error'.tr(args: ['-', '$e']),
+        ],
       );
     }
   }
