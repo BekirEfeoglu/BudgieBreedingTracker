@@ -315,12 +315,152 @@ void main() {
         ).thenAnswer((_) async => pending);
         when(() => localDao.getById('bird-1')).thenAnswer((_) async => bird1);
         when(() => localDao.getById('missing')).thenAnswer((_) async => null);
+        when(() => remoteSource.upsertAll(any())).thenAnswer((_) async {});
+        when(
+          () => syncDao.deleteByRecords(any(), any()),
+        ).thenAnswer((_) async {});
 
         await repository.pushAll(userId);
 
-        verify(() => remoteSource.upsert(bird1)).called(1);
+        // Batched path: the one valid bird is pushed via upsertAll (transport
+        // verb changed; the "valid pending row is pushed" behavior is identical).
+        final captured =
+            verify(() => remoteSource.upsertAll(captureAny())).captured;
+        expect(captured, hasLength(1));
+        expect((captured.single as List), [bird1]);
       },
     );
+
+    group('pushAll batching', () {
+      test(
+        'should upsert all pending in one remote call when pushAll succeeds',
+        () async {
+          final birds = [
+            TestFixtures.sampleBird(id: 'b1'),
+            TestFixtures.sampleBird(id: 'b2'),
+            TestFixtures.sampleBird(id: 'b3'),
+          ];
+          when(
+            () => syncDao.getPendingByTable(userId, SupabaseConstants.birdsTable),
+          ).thenAnswer(
+            (_) async => [
+              for (final b in birds)
+                TestFixtures.sampleSyncMetadata(recordId: b.id),
+            ],
+          );
+          for (final b in birds) {
+            when(
+              () => localDao.getByIdIncludingDeleted(b.id),
+            ).thenAnswer((_) async => b);
+          }
+          when(() => remoteSource.upsertAll(any())).thenAnswer((_) async {});
+          when(
+            () => syncDao.deleteByRecords(any(), any()),
+          ).thenAnswer((_) async {});
+
+          final stats = await repository.pushAll(userId);
+
+          expect(stats.pushed, 3);
+          final captured =
+              verify(() => remoteSource.upsertAll(captureAny())).captured;
+          expect(captured, hasLength(1)); // 3 records = 1 HTTP call
+          expect((captured.single as List).length, 3);
+          verify(
+            () => syncDao.deleteByRecords(SupabaseConstants.birdsTable, [
+              'b1',
+              'b2',
+              'b3',
+            ]),
+          ).called(1);
+          verifyNever(
+            () => remoteSource.upsert(any()),
+          ); // per-item path never used
+        },
+      );
+
+      test(
+        'should fall back to per-item push when chunk upsert throws AppException',
+        () async {
+          final birds = [
+            TestFixtures.sampleBird(id: 'b1'),
+            TestFixtures.sampleBird(id: 'b2'),
+          ];
+          when(
+            () => syncDao.getPendingByTable(userId, SupabaseConstants.birdsTable),
+          ).thenAnswer(
+            (_) async => [
+              for (final b in birds)
+                TestFixtures.sampleSyncMetadata(recordId: b.id),
+            ],
+          );
+          for (final b in birds) {
+            when(
+              () => localDao.getByIdIncludingDeleted(b.id),
+            ).thenAnswer((_) async => b);
+          }
+          when(
+            () => remoteSource.upsertAll(any()),
+          ).thenThrow(const NetworkException('errors.network_unavailable'));
+          // Fallback path: b1 succeeds, b2 fails.
+          when(
+            () => remoteSource.upsert(any(that: predicate<Bird>((b) => b.id == 'b1'))),
+          ).thenAnswer((_) async {});
+          when(
+            () => remoteSource.upsert(any(that: predicate<Bird>((b) => b.id == 'b2'))),
+          ).thenThrow(const NetworkException('errors.network_unavailable'));
+          when(
+            () => syncDao.deleteByRecord(any(), any()),
+          ).thenAnswer((_) async {});
+          // Fallback counting is via before/after metadata lookup:
+          // b1: meta present before push, absent after (deleteByRecord) → counted.
+          var b1Lookups = 0;
+          when(
+            () => syncDao.getByRecord(SupabaseConstants.birdsTable, 'b1'),
+          ).thenAnswer(
+            (_) async => ++b1Lookups == 1
+                ? TestFixtures.sampleSyncMetadata(recordId: 'b1')
+                : null,
+          );
+          // b2: push fails → markError updates meta, does not delete → not counted.
+          when(
+            () => syncDao.getByRecord(SupabaseConstants.birdsTable, 'b2'),
+          ).thenAnswer(
+            (_) async => TestFixtures.sampleSyncMetadata(recordId: 'b2'),
+          );
+          when(() => syncDao.updateItem(any())).thenAnswer((_) async {});
+          when(() => syncDao.insertItem(any())).thenAnswer((_) async {});
+
+          final stats = await repository.pushAll(userId);
+
+          verify(
+            () => remoteSource.upsert(any()),
+          ).called(2); // per-item fallback ran
+          expect(stats.pushed, 1); // only b1 counted
+        },
+      );
+
+      test(
+        'should clean orphan metadata without remote call when local row missing',
+        () async {
+          when(
+            () => syncDao.getPendingByTable(userId, SupabaseConstants.birdsTable),
+          ).thenAnswer(
+            (_) async => [TestFixtures.sampleSyncMetadata(recordId: 'ghost')],
+          );
+          when(
+            () => localDao.getByIdIncludingDeleted('ghost'),
+          ).thenAnswer((_) async => null);
+          when(
+            () => syncDao.deleteByRecord(any(), any()),
+          ).thenAnswer((_) async {});
+
+          final stats = await repository.pushAll(userId);
+
+          expect(stats.orphansCleaned, 1);
+          verifyNever(() => remoteSource.upsertAll(any()));
+        },
+      );
+    });
 
     test('getByGender delegates to DAO', () async {
       final birds = [

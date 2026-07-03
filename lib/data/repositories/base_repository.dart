@@ -1,4 +1,5 @@
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
@@ -131,6 +132,79 @@ mixin SyncableRepository<T> on BaseRepository<T> {
     } catch (e) {
       AppLogger.debug('[SyncableRepository] Immediate push deferred: $e');
     }
+  }
+
+  /// Push chunk size: Supabase upsert accepts a JSON array; 100 rows keeps
+  /// each request well under payload limits while cutting round-trips 100x.
+  static const int pushChunkSize = 100;
+
+  /// Batched replacement for the per-row pushAll loop.
+  ///
+  /// Behavior contract (matches the legacy loop exactly):
+  /// - orphan metadata (no local row / empty recordId) → cleaned + counted
+  /// - [SyncStatus.pendingDelete] tombstones → [deleteRemote] one by one
+  ///   (rare path; deletes cannot be batched into upsert payloads)
+  /// - everything else → [upsertChunk] per [pushChunkSize]; on chunk-level
+  ///   [AppException] falls back to per-item [push] so one poison row cannot
+  ///   mask the rest (push() already does markError per item).
+  ///
+  /// Returns the count of successfully pushed records. Orphan cleanup and
+  /// counting are the CALLER's job inside [resolveItem] (repos differ: some
+  /// clean+count orphans, some markError FK orphans). A null return from
+  /// [resolveItem] simply means "skip this record this round".
+  Future<int> pushPendingBatched({
+    required String userId,
+    required Future<T?> Function(String recordId) resolveItem,
+    required Future<void> Function(List<T> chunk) upsertChunk,
+    required Future<void> Function(String recordId) deleteRemote,
+    required String Function(T item) idOf,
+    int chunkSize = pushChunkSize,
+  }) async {
+    var pushed = 0;
+    final tablePending = await syncDao.getPendingByTable(userId, syncTableName);
+
+    final toUpsert = <T>[];
+    for (final meta in tablePending) {
+      final recordId = meta.recordId ?? '';
+      if (meta.status == SyncStatus.pendingDelete && recordId.isNotEmpty) {
+        try {
+          await deleteRemote(recordId);
+          await syncDao.deleteByRecord(syncTableName, recordId);
+          pushed++;
+        } on AppException catch (e) {
+          await markError(recordId, userId, e.message);
+        }
+        continue;
+      }
+      // Orphan detection/cleanup/counting is the CALLER's job inside
+      // resolveItem (repos differ: clean+count vs markError for FK orphans).
+      // A null return simply means "skip this record this round".
+      final item = await resolveItem(recordId);
+      if (item == null) continue;
+      toUpsert.add(item);
+    }
+
+    for (var i = 0; i < toUpsert.length; i += chunkSize) {
+      final chunk = toUpsert.sublist(
+        i,
+        i + chunkSize > toUpsert.length ? toUpsert.length : i + chunkSize,
+      );
+      try {
+        await upsertChunk(chunk);
+        await syncDao.deleteByRecords(syncTableName, chunk.map(idOf).toList());
+        pushed += chunk.length;
+      } on AppException {
+        // Poison-row isolation: retry the chunk item-by-item via the legacy
+        // path; push() marks per-item errors, successes clean their metadata.
+        for (final item in chunk) {
+          final before = await syncDao.getByRecord(syncTableName, idOf(item));
+          await push(item);
+          final after = await syncDao.getByRecord(syncTableName, idOf(item));
+          if (before != null && after == null) pushed++;
+        }
+      }
+    }
+    return pushed;
   }
 }
 
