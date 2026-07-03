@@ -45,6 +45,23 @@ class EggRepository extends BaseRepository<Egg>
 
 Bird is a root entity — no ValidatedSyncMixin needed.
 
+## Batch Push & Cascade Deletes
+
+`pushAll` routes through `SyncableRepository.pushPendingBatched` — pending rows
+push in chunks of 100 (`upsertAll` + `SyncMetadataDao.deleteByRecords` per
+chunk) instead of one HTTP round-trip per row; a chunk failure falls back to
+per-item `push()` for poison-row isolation. Every syncable repo uses it (mixin
+repos via the `upsertChunkForSync`/`deleteRemoteForSync` hooks; the
+`*RemoteSource`-only repos and `PhotoRepository` inline the same contract).
+See [[data-layer/sync-strategy]] § Batched Push.
+
+Cascade deletes batch the same way. `EventRepository.removeBy*` does one
+`softDeleteByIds` UPDATE + one `markPendingByRecords` + one best-effort batched
+`pushAll` (was N× getById+softDelete+push). `GrowthMeasurementRepository.removeByChickIds`
+(hard-delete — no `isDeleted` column) does one `hardDeleteByIds` + one batch
+`pendingDelete` metadata insert + one best-effort `BaseRemoteSource.deleteByIds`;
+on remote failure the tombstones survive for the next sync.
+
 ## Offline-First Contract
 
 A class named `*Repository` MUST:

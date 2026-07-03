@@ -4,10 +4,10 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
-## [2026-07-03] perf (branch) | Sync push/metadata batching
+## [2026-07-03] perf (branch) | Sync/cascade/import batching
 
-Branch `perf/performance-improvements`, tasks 1-3 (commits `bcd13c7`,
-`b7d18d7`, `ffb4a49`; each subagent-reviewed clean). The per-row `pushAll`
+Branch `perf/performance-improvements`, tasks 1-6 (each subagent-reviewed
+clean). **Push (T1-3, `bcd13c7`/`b7d18d7`/`ffb4a49`):** the per-row `pushAll`
 loop (one HTTP upsert per pending row) is replaced by
 `SyncableRepository.pushPendingBatched` — chunks of 100 → one `upsertAll` +
 one `SyncMetadataDao.deleteByRecords` per chunk. New batch metadata helpers
@@ -15,7 +15,14 @@ one `SyncMetadataDao.deleteByRecords` per chunk. New batch metadata helpers
 bookkeeping in one statement each. Chunk failure falls back to per-item
 `push()` (poison-row isolation); `PushStats.pushed` counts only real successes
 (telemetry-only). All 13 syncable repos routed through it (mixin hooks + 4
-inline). See [[data-layer/sync-strategy]], [[data-layer/repositories]].
+inline). **Cascade deletes (T4-5, `108c0885`/`d6b016c`):** `EventRepository.removeBy*`
+→ one `softDeleteByIds` + one `markPendingByRecords` + one best-effort batched
+`pushAll`; `GrowthMeasurementRepository.removeByChickIds` → one `hardDeleteByIds`
++ one batch `pendingDelete` metadata + one `BaseRemoteSource.deleteByIds`
+(tombstones survive on remote failure). **Import (T6, `5ca9536`):** Excel import
+persists via one `repo.saveAll` (no per-row push) + map-based FK validation
+(one `getAll`, zero per-row `getById`); batch is all-or-nothing.
+See [[data-layer/sync-strategy]], [[data-layer/repositories]], [[domain/data-io]].
 
 ## [2026-07-03] fix (branch) | community post-edit + admin follow-ups
 

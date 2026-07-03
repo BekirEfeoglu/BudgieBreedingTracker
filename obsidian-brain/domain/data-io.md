@@ -43,6 +43,16 @@ Supported sheets: birds, breeding pairs, eggs, chicks, health records.
 Sheet columns are Turkish-labeled (master locale) — column order is fixed,
 not name-based, to survive translation drift.
 
+**Batch persistence:** `_importSheet` parses+validates every row, then persists
+the valid ones with a single `repo.saveAll(validItems)` (one batched local
+insert + one batched sync-mark) instead of a per-row `repo.save()` that would
+fire an HTTP push per row. FK validation is map-based — the importer loads the
+existing rows once into a `Map<id, entity>` and looks parents up in memory
+(no per-row `getById`); newly validated rows are added to the map so later
+rows in the same sheet resolve against them. `saveAll` is all-or-nothing (Drift
+`insertAll` is one transaction): a mid-batch failure returns
+`importedCount: 0` rather than leaving a partial import behind.
+
 ## Export (Excel + PDF)
 
 | Service | Output |
