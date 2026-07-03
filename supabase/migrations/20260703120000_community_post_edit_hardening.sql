@@ -2,12 +2,16 @@
 -- Community post edit (5-minute window) hardening
 -- =============================================================================
 -- 1. edited_at column for the "edited" badge.
--- 2. Narrow authenticated UPDATE to (is_deleted, needs_review, reviewed_by):
+-- 2. Narrow authenticated UPDATE to (is_deleted, needs_review):
 --    content edits must go through the moderated create-community-post edge
 --    function (mode: 'update', service_role). Closes the pre-existing
 --    direct-content-update moderation bypass.
 --    Client UPDATE call sites preserved: softDelete (is_deleted),
---    clearReviewFlag (needs_review, reviewed_by).
+--    admin approvePost/deletePost (needs_review, is_deleted).
+--    NOTE: clearReviewFlag also writes `reviewed_by`, but that column does
+--    NOT exist on community_posts (never added by any migration) — that write
+--    is a pre-existing latent bug (fails on missing column) independent of
+--    this grant; reviewed_by is intentionally NOT granted here.
 -- 3. fetch_community_feed returns edited_at.
 -- =============================================================================
 
@@ -18,7 +22,7 @@ COMMENT ON COLUMN public.community_posts.edited_at IS
   'Set by create-community-post edge fn (mode=update) within the 5-minute edit window';
 
 REVOKE UPDATE ON TABLE public.community_posts FROM authenticated;
-GRANT UPDATE (is_deleted, needs_review, reviewed_by)
+GRANT UPDATE (is_deleted, needs_review)
   ON TABLE public.community_posts TO authenticated;
 
 -- RETURNS TABLE kolon listesi değiştiği için CREATE OR REPLACE yetmez:

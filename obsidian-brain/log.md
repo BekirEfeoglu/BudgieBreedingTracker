@@ -52,13 +52,16 @@ Online-first exemption doc-blocks untouched; generated Freezed files gitignored
 Branch `feature/community-tab-faz1` (NOT yet merged/applied to prod). Migration
 `20260703120000_community_post_edit_hardening.sql` (committed `3cdf483`): adds
 `community_posts.edited_at timestamptz`, narrows the `authenticated` UPDATE grant
-to `(is_deleted, needs_review, reviewed_by)` so post **content** can no longer be
+to `(is_deleted, needs_review)` so post **content** can no longer be
 edited directly by clients (edits must go through the moderated
 `create-community-post` edge fn `mode: 'update'`, being wired in the same branch),
 and recreates `fetch_community_feed` (DROP+CREATE — RETURNS TABLE shape changed) to
-return `edited_at`. Inventory confirmed all 4 authenticated-role UPDATE call-sites
-(`softDelete`, `clearReviewFlag`, admin `approvePost`/`deletePost`) write only
-within the grant, so the narrowing breaks nothing shipped. Client edit UI +
+return `edited_at`. Applied to prod 2026-07-03 (MCP; advisors 0 new). At apply time
+the original grant listed `reviewed_by` too, but that column does NOT exist on
+`community_posts` (never added by any migration) — dropped from the grant; the
+`clearReviewFlag` write to it is a pre-existing latent bug (IMPROVEMENT_PLAN §6.14).
+The other 3 authenticated UPDATE call-sites (`softDelete`, admin
+`approvePost`/`deletePost`) write only within the grant. Client edit UI +
 `edited` badge land in later tasks of the same branch. Design:
 `docs/superpowers/specs/2026-07-03-community-tab-design.md`.
 
