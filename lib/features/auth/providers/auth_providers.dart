@@ -142,8 +142,8 @@ final appInitializationProvider = FutureProvider<void>((ref) async {
     Sentry.captureException(e, stackTrace: st);
   }
 
-  // Sync auth metadata (display_name/full_name) to profiles table if missing
-  await _syncAuthMetadataToProfile(ref, userId);
+  // Sync auth metadata (display_name/full_name) — deferred below; a late
+  // backfill has no guard/premium dependency. (was: awaited here)
 
   // Check if existing session needs 2FA verification (e.g., app restart with AAL1)
   await _checkPendingMfa(ref);
@@ -151,9 +151,9 @@ final appInitializationProvider = FutureProvider<void>((ref) async {
   // Step 2: RevenueCat init (non-blocking — runs in background)
   unawaited(_initRevenueCat(ref, userId));
 
-  // Step 3: Notification init (relatively fast, needed for scheduled reminders)
+  // Step 3: LOCAL notification init only (fast) — FCM is deferred below.
   ref.read(initStepProvider.notifier).state = InitStep.services;
-  await _initNotifications(ref, userId);
+  await _initLocalNotifications(ref);
 
   ref.read(initStepProvider.notifier).state = InitStep.ready;
 
@@ -164,6 +164,14 @@ final appInitializationProvider = FutureProvider<void>((ref) async {
   // Deferred to avoid blocking splash — runs in background
   Future.microtask(() => _rescheduleNotifications(ref, userId));
   Future.microtask(() => _recoverPendingNotifications(ref));
+
+  // Deferred: metadata backfill + FCM registration (network). Neither has a
+  // guard/premium dependency, so a late completion is safe off the splash
+  // critical path.
+  Future.microtask(() async {
+    await _syncAuthMetadataToProfile(ref, userId);
+    await _initPushNotifications(ref, userId);
+  });
 
   // Step 3: Defer full data sync to background — don't block splash
   // This runs AFTER the splash resolves and home screen renders.
@@ -290,15 +298,19 @@ Future<void> _syncAuthMetadataToProfile(Ref ref, String userId) async {
   }
 }
 
-/// Initializes local notification services and rate limiter.
+/// Initializes LOCAL notification channels and the rate limiter.
+///
+/// Both are required before [InitStep.ready] because [processPendingPayloads]
+/// and reminder scheduling depend on them. Fast, no network — FCM token
+/// registration is handled separately by [_initPushNotifications] and
+/// deferred off the splash critical path.
 ///
 /// Defers permission/exact-alarm/battery prompts to contextual UI flows such as
 /// [deferredNotificationPermissionProvider] and notification settings.
-Future<void> _initNotifications(Ref ref, String userId) async {
+Future<void> _initLocalNotifications(Ref ref) async {
   try {
     final notifService = ref.read(notificationServiceProvider);
     await notifService.init();
-    await ref.read(pushNotificationServiceProvider).init(userId: userId);
   } catch (e, st) {
     AppLogger.warning('[AppInit] Local notification init failed: $e');
     Sentry.captureException(e, stackTrace: st);
@@ -308,6 +320,19 @@ Future<void> _initNotifications(Ref ref, String userId) async {
     await ref.read(rateLimiterReadyProvider.future);
   } catch (e, st) {
     AppLogger.error('[AppInit] Rate limiter prefs load failed: $e', e, st);
+  }
+}
+
+/// Registers the FCM push token for [userId] (network call).
+///
+/// Deferred off the splash critical path — a ~1s late registration does not
+/// affect push delivery because the onTokenRefresh listener is permanent.
+Future<void> _initPushNotifications(Ref ref, String userId) async {
+  try {
+    await ref.read(pushNotificationServiceProvider).init(userId: userId);
+  } catch (e, st) {
+    AppLogger.warning('[AppInit] Push notification init failed: $e');
+    Sentry.captureException(e, stackTrace: st);
   }
 }
 

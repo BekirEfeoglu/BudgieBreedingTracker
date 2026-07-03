@@ -441,6 +441,85 @@ void main() {
       },
     );
 
+    test(
+      'reaches ready without awaiting push init when push init is slow',
+      () async {
+        when(() => mockAuth.currentUser).thenReturn(null);
+        final pushCompleter = Completer<void>();
+        when(
+          () => mockPushNotificationService.init(userId: any(named: 'userId')),
+        ).thenAnswer((_) => pushCompleter.future);
+
+        final container = ProviderContainer(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('user-1'),
+            profileRepositoryProvider.overrideWithValue(mockProfileRepository),
+            notificationServiceProvider.overrideWithValue(
+              mockNotificationService,
+            ),
+            notificationProcessorProvider.overrideWithValue(
+              mockNotificationProcessor,
+            ),
+            notificationReschedulerProvider.overrideWithValue(
+              mockNotificationRescheduler,
+            ),
+            pushNotificationServiceProvider.overrideWithValue(
+              mockPushNotificationService,
+            ),
+            rateLimiterReadyProvider.overrideWith((_) async {}),
+            supabaseClientProvider.overrideWithValue(mockClient),
+            supabaseInitializedProvider.overrideWithValue(true),
+            twoFactorServiceProvider.overrideWithValue(mockTwoFactorService),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        // Must complete even though push init's Completer never resolves —
+        // proves push registration is no longer on the awaited critical path.
+        await container.read(appInitializationProvider.future);
+
+        expect(container.read(initStepProvider), InitStep.ready);
+      },
+    );
+
+    test(
+      'still initializes push in background after ready',
+      () async {
+        when(() => mockAuth.currentUser).thenReturn(null);
+
+        final container = ProviderContainer(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('user-1'),
+            profileRepositoryProvider.overrideWithValue(mockProfileRepository),
+            notificationServiceProvider.overrideWithValue(
+              mockNotificationService,
+            ),
+            notificationProcessorProvider.overrideWithValue(
+              mockNotificationProcessor,
+            ),
+            notificationReschedulerProvider.overrideWithValue(
+              mockNotificationRescheduler,
+            ),
+            pushNotificationServiceProvider.overrideWithValue(
+              mockPushNotificationService,
+            ),
+            rateLimiterReadyProvider.overrideWith((_) async {}),
+            supabaseClientProvider.overrideWithValue(mockClient),
+            supabaseInitializedProvider.overrideWithValue(true),
+            twoFactorServiceProvider.overrideWithValue(mockTwoFactorService),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container.read(appInitializationProvider.future);
+        await Future<void>.delayed(Duration.zero);
+
+        verify(
+          () => mockPushNotificationService.init(userId: 'user-1'),
+        ).called(1);
+      },
+    );
+
     test('stops initialization when MFA verification check fails', () async {
       when(
         () => mockTwoFactorService.needsVerification(),
