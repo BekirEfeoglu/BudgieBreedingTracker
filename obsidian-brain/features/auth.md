@@ -31,6 +31,22 @@
 - Refresh fail → `AuthException` → login redirect
 - Logout: revoke OAuth tokens (`revoke-oauth-token` edge fn) + clear session + invalidate providers
 
+## Startup Init (`appInitializationProvider`)
+
+Gates the splash screen. To keep the splash→home path short, only work a
+first render truly needs is awaited before `InitStep.ready`:
+
+- **Awaited (critical path):** MFA check → profile pull (5s timeout, cached
+  fallback) → `_initLocalNotifications` (local notification channels + the
+  `rateLimiterReadyProvider` DND/rate-limit prefs — a scheduled reminder must
+  not fire before these load). Then `ready` + `processPendingPayloads`.
+- **Deferred (after `ready`, fire-and-forget microtasks):** FCM token
+  registration (`_initPushNotifications` — a ~1s-late token is fine; the
+  onTokenRefresh listener is permanent), `_syncAuthMetadataToProfile`
+  (display-name backfill, no guard/premium dependency), notification
+  reschedule/recovery, and the full data sync. Each self-contains its errors,
+  so a deferred failure can't crash startup.
+
 ## MFA Lockout Policy
 
 - 5 failed TOTP attempts → lockout

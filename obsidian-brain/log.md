@@ -4,6 +4,18 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-03] perf (branch) | Startup: defer FCM + metadata off splash
+
+Branch `perf/performance-improvements`, task 8 (commit `d80360f`,
+review-approved, 0 findings). `appInitializationProvider` no longer awaits FCM
+token registration (`pushNotificationService.init`, a network call) or
+`_syncAuthMetadataToProfile` before `InitStep.ready` — both move to a deferred
+fire-and-forget microtask. LOCAL notification channels + `rateLimiterReadyProvider`
+stay awaited (a reminder must not fire before DND/rate-limit prefs load), and
+`processPendingPayloads` stays right after `ready`. `_rescheduleNotifications`/
+`_recoverPendingNotifications` remain separate microtasks (unchanged). Cold-start
+timing + push-delivery are manual device-QA (not run). See [[features/auth]].
+
 ## [2026-07-03] perf (branch) | Sync/cascade/import batching
 
 Branch `perf/performance-improvements`, tasks 1-6 (each subagent-reviewed
