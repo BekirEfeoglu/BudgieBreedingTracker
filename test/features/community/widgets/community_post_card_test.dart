@@ -26,6 +26,7 @@ CommunityPost _testPost({
   int likeCount = 5,
   int commentCount = 2,
   DateTime? createdAt,
+  DateTime? editedAt,
 }) {
   return CommunityPost(
     id: id,
@@ -39,6 +40,7 @@ CommunityPost _testPost({
     likeCount: likeCount,
     commentCount: commentCount,
     createdAt: createdAt ?? DateTime.now().subtract(const Duration(hours: 2)),
+    editedAt: editedAt,
   );
 }
 
@@ -275,6 +277,45 @@ void main() {
       await tester.pump();
 
       expect(find.text(l10n('community.my_post')), findsNothing);
+    });
+
+    testWidgets('own fresh post shows edit menu item', (tester) async {
+      final post = _testPost(
+        userId: 'me',
+        createdAt: DateTime.now().toUtc().subtract(const Duration(minutes: 1)),
+      );
+      await tester.pumpWidget(createSubject(post, currentUserId: 'me'));
+      await tester.pump();
+
+      await tester.tap(find.byType(PopupMenuButton<String>));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('community.edit_post')), findsOneWidget);
+    });
+
+    testWidgets('own stale post hides edit menu item', (tester) async {
+      final post = _testPost(
+        userId: 'me',
+        createdAt: DateTime.now().toUtc().subtract(const Duration(minutes: 6)),
+      );
+      await tester.pumpWidget(createSubject(post, currentUserId: 'me'));
+      await tester.pump();
+
+      await tester.tap(find.byType(PopupMenuButton<String>));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('community.edit_post')), findsNothing);
+    });
+
+    testWidgets('edited post shows edited badge', (tester) async {
+      final post = _testPost(editedAt: DateTime.utc(2026, 7, 3));
+      await tester.pumpWidget(createSubject(post));
+      await tester.pump();
+
+      expect(
+        find.textContaining(l10n('community.edited_badge')),
+        findsOneWidget,
+      );
     });
   });
 }

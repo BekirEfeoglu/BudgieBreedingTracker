@@ -208,6 +208,14 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
     state = state.copyWith(posts: updated);
   }
 
+  void applyPostEdit(String postId, String content, DateTime editedAt) {
+    final updated = state.posts.map((p) {
+      if (p.id != postId) return p;
+      return p.copyWith(content: content, editedAt: editedAt);
+    }).toList();
+    state = state.copyWith(posts: updated);
+  }
+
   bool _isSupabaseUnavailableError(Object error) {
     final message = error.toString();
     return message.contains('You must initialize the supabase instance') ||

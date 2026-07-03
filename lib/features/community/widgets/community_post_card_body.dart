@@ -23,6 +23,7 @@ class CommunityPostCardBody extends StatelessWidget {
     required this.showFullContent,
     required this.maxContentLines,
     required this.isOwnPost,
+    required this.onEdit,
     required this.onDelete,
     required this.onReport,
     required this.onBlock,
@@ -36,6 +37,7 @@ class CommunityPostCardBody extends StatelessWidget {
   final bool showFullContent;
   final int maxContentLines;
   final bool isOwnPost;
+  final VoidCallback? onEdit;
   final VoidCallback? onDelete;
   final VoidCallback? onReport;
   final VoidCallback? onBlock;
@@ -71,6 +73,8 @@ class CommunityPostCardBody extends StatelessWidget {
                 createdAt: post.createdAt ?? DateTime.now(),
                 isOwnPost: isOwnPost,
                 isFollowing: post.isFollowingAuthor,
+                isEdited: post.isEdited,
+                onEdit: onEdit,
                 onDelete: onDelete,
                 onReport: onReport,
                 onBlock: onBlock,

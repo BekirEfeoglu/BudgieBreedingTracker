@@ -18,6 +18,8 @@ class CommunityUserHeader extends StatelessWidget {
   final DateTime createdAt;
   final bool isOwnPost;
   final bool isFollowing;
+  final bool isEdited;
+  final VoidCallback? onEdit;
   final VoidCallback? onDelete;
   final VoidCallback? onReport;
   final VoidCallback? onBlock;
@@ -33,6 +35,8 @@ class CommunityUserHeader extends StatelessWidget {
     required this.createdAt,
     this.isOwnPost = false,
     this.isFollowing = false,
+    this.isEdited = false,
+    this.onEdit,
     this.onDelete,
     this.onReport,
     this.onBlock,
@@ -99,7 +103,9 @@ class CommunityUserHeader extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    formatCommunityDate(createdAt),
+                    isEdited
+                        ? '${formatCommunityDate(createdAt)} · ${'community.edited_badge'.tr()}'
+                        : formatCommunityDate(createdAt),
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -203,6 +209,7 @@ class CommunityUserHeader extends StatelessWidget {
               onSendMessage != null)
             PopupMenuButton<String>(
               onSelected: (value) {
+                if (value == 'edit') onEdit?.call();
                 if (value == 'delete') {
                   AppHaptics.heavyImpact();
                   onDelete?.call();
@@ -216,6 +223,11 @@ class CommunityUserHeader extends StatelessWidget {
                   PopupMenuItem(
                     value: 'message',
                     child: Text('messaging.direct_message'.tr()),
+                  ),
+                if (isOwnPost && onEdit != null)
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Text('community.edit_post'.tr()),
                   ),
                 if (isOwnPost)
                   PopupMenuItem(

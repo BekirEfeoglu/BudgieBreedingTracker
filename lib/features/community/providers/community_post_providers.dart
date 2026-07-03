@@ -126,6 +126,37 @@ final postDeleteProvider = NotifierProvider<PostDeleteNotifier, void>(
 );
 
 // ---------------------------------------------------------------------------
+// Post edit
+// ---------------------------------------------------------------------------
+
+class PostEditNotifier extends Notifier<void> {
+  @override
+  void build() {}
+
+  /// Content-only edit. Returns true on success; on failure logs, reports
+  /// to Sentry and returns false (UI shows a localized error).
+  Future<bool> editPost(String postId, String content) async {
+    try {
+      final repo = ref.read(communityPostRepositoryProvider);
+      await repo.update(postId: postId, content: content);
+      ref
+          .read(communityFeedProvider.notifier)
+          .applyPostEdit(postId, content, DateTime.now().toUtc());
+      ref.invalidate(communityPostByIdProvider(postId));
+      return true;
+    } catch (e, st) {
+      AppLogger.error('PostEditNotifier.editPost', e, st);
+      await Sentry.captureException(e, stackTrace: st);
+      return false;
+    }
+  }
+}
+
+final postEditProvider = NotifierProvider<PostEditNotifier, void>(
+  PostEditNotifier.new,
+);
+
+// ---------------------------------------------------------------------------
 // Follow toggle
 // ---------------------------------------------------------------------------
 

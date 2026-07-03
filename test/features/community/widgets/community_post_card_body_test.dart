@@ -39,6 +39,7 @@ void main() {
           maxContentLines: 3,
           isOwnPost: false,
 
+          onEdit: null,
           onDelete: null,
           onReport: () {},
           onBlock: () {},
@@ -60,6 +61,7 @@ void main() {
           maxContentLines: 3,
           isOwnPost: false,
 
+          onEdit: null,
           onDelete: null,
           onReport: () {},
           onBlock: () {},

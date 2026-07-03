@@ -19,6 +19,7 @@ import '../providers/community_feed_providers.dart';
 import '../providers/community_post_providers.dart';
 import 'community_image_viewer.dart';
 import 'community_post_card_body.dart';
+import 'community_post_edit_sheet.dart';
 import 'community_report_sheet.dart';
 
 /// Card widget displaying a single community post with full interaction.
@@ -54,12 +55,19 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
     final currentUserId = ref.watch(currentUserIdProvider);
     final isOwnPost = post.userId == currentUserId;
     final isGuide = post.postType == CommunityPostType.guide;
+    final createdAt = post.createdAt;
+    final canEditPost =
+        isOwnPost &&
+        createdAt != null &&
+        DateTime.now().toUtc().difference(createdAt.toUtc()) <
+            const Duration(minutes: 5);
 
     final cardChild = CommunityPostCardBody(
       post: post,
       showFullContent: widget.showFullContent,
       maxContentLines: CommunityPostCard._maxContentLines,
       isOwnPost: isOwnPost,
+      onEdit: canEditPost ? _handleEdit : null,
       onDelete: isOwnPost ? _handleDelete : null,
       onReport: isOwnPost ? null : _handleReport,
       onBlock: isOwnPost ? null : _handleBlock,
@@ -116,6 +124,22 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
     );
     if (confirmed != true || !mounted) return;
     ref.read(postDeleteProvider.notifier).deletePost(post.id);
+  }
+
+  Future<void> _handleEdit() async {
+    final newContent = await showCommunityPostEditSheet(context, post);
+    if (newContent == null || !mounted) return;
+    final ok = await ref
+        .read(postEditProvider.notifier)
+        .editPost(post.id, newContent);
+    if (!mounted) return;
+    if (ok) {
+      ActionFeedbackService.show('community.edit_saved'.tr());
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('community.edit_error'.tr())));
+    }
   }
 
   Future<void> _handleReport() async {
