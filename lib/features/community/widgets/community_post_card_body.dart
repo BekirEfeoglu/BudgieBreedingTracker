@@ -27,6 +27,8 @@ class CommunityPostCardBody extends StatelessWidget {
     required this.onDelete,
     required this.onReport,
     required this.onBlock,
+    this.onMuteToggle,
+    this.isMutedAuthor = false,
     required this.onSendMessage,
     required this.onFollowToggle,
     required this.onDoubleTapMedia,
@@ -41,6 +43,8 @@ class CommunityPostCardBody extends StatelessWidget {
   final VoidCallback? onDelete;
   final VoidCallback? onReport;
   final VoidCallback? onBlock;
+  final VoidCallback? onMuteToggle;
+  final bool isMutedAuthor;
   final VoidCallback? onSendMessage;
   final VoidCallback? onFollowToggle;
   final VoidCallback onDoubleTapMedia;
@@ -78,6 +82,8 @@ class CommunityPostCardBody extends StatelessWidget {
                 onDelete: onDelete,
                 onReport: onReport,
                 onBlock: onBlock,
+                onMuteToggle: onMuteToggle,
+                isMutedAuthor: isMutedAuthor,
                 onSendMessage: onSendMessage,
                 onFollowToggle: onFollowToggle,
                 postType: post.postType,

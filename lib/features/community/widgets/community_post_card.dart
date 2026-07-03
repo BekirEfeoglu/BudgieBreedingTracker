@@ -55,6 +55,8 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
     final currentUserId = ref.watch(currentUserIdProvider);
     final isOwnPost = post.userId == currentUserId;
     final isGuide = post.postType == CommunityPostType.guide;
+    final mutedUserIds = ref.watch(mutedUsersProvider);
+    final isMutedAuthor = mutedUserIds.contains(post.userId);
     final createdAt = post.createdAt;
     final canEditPost =
         isOwnPost &&
@@ -71,6 +73,8 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
       onDelete: isOwnPost ? _handleDelete : null,
       onReport: isOwnPost ? null : _handleReport,
       onBlock: isOwnPost ? null : _handleBlock,
+      onMuteToggle: isOwnPost ? null : _handleMuteToggle,
+      isMutedAuthor: isMutedAuthor,
       onSendMessage: (!isOwnPost && currentUserId != 'anonymous')
           ? _handleSendMessage
           : null,
@@ -184,6 +188,18 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
     await ref.read(blockedUsersProvider.notifier).block(post.userId);
     if (mounted) {
       ActionFeedbackService.show('community.user_blocked'.tr());
+    }
+  }
+
+  Future<void> _handleMuteToggle() async {
+    final muted = ref.read(mutedUsersProvider);
+    final notifier = ref.read(mutedUsersProvider.notifier);
+    if (muted.contains(post.userId)) {
+      await notifier.unmute(post.userId);
+      if (mounted) ActionFeedbackService.show('community.user_unmuted'.tr());
+    } else {
+      await notifier.mute(post.userId);
+      if (mounted) ActionFeedbackService.show('community.user_muted'.tr());
     }
   }
 

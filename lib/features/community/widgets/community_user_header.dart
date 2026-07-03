@@ -23,6 +23,8 @@ class CommunityUserHeader extends StatelessWidget {
   final VoidCallback? onDelete;
   final VoidCallback? onReport;
   final VoidCallback? onBlock;
+  final VoidCallback? onMuteToggle;
+  final bool isMutedAuthor;
   final VoidCallback? onFollowToggle;
   final VoidCallback? onSendMessage;
   final CommunityPostType? postType;
@@ -40,6 +42,8 @@ class CommunityUserHeader extends StatelessWidget {
     this.onDelete,
     this.onReport,
     this.onBlock,
+    this.onMuteToggle,
+    this.isMutedAuthor = false,
     this.onFollowToggle,
     this.onSendMessage,
     this.postType,
@@ -206,6 +210,7 @@ class CommunityUserHeader extends StatelessWidget {
           if (isOwnPost ||
               onReport != null ||
               onBlock != null ||
+              onMuteToggle != null ||
               onSendMessage != null)
             PopupMenuButton<String>(
               onSelected: (value) {
@@ -216,6 +221,7 @@ class CommunityUserHeader extends StatelessWidget {
                 }
                 if (value == 'message') onSendMessage?.call();
                 if (value == 'report') onReport?.call();
+                if (value == 'mute') onMuteToggle?.call();
                 if (value == 'block') onBlock?.call();
               },
               itemBuilder: (context) => [
@@ -238,6 +244,15 @@ class CommunityUserHeader extends StatelessWidget {
                   PopupMenuItem(
                     value: 'report',
                     child: Text('community.report_post'.tr()),
+                  ),
+                if (!isOwnPost && onMuteToggle != null)
+                  PopupMenuItem(
+                    value: 'mute',
+                    child: Text(
+                      isMutedAuthor
+                          ? 'community.unmute_user'.tr()
+                          : 'community.mute_user'.tr(),
+                    ),
                   ),
                 if (!isOwnPost && onBlock != null)
                   PopupMenuItem(

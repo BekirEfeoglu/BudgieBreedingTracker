@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/data/models/community_comment_model.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_comment_providers.dart';
+import 'package:budgie_breeding_tracker/features/community/providers/community_feed_providers.dart';
 
 CommunityComment _comment({String id = 'c1', DateTime? createdAt}) =>
     CommunityComment(
@@ -112,4 +113,111 @@ void main() {
       expect(state.hasMore, isFalse);
     });
   });
+
+  group('visibleCommentsProvider', () {
+    final comments = [
+      _comment(id: 'c1'),
+      CommunityComment(
+        id: 'c2',
+        postId: 'p1',
+        userId: 'blocked-user',
+        content: 'Blocked comment',
+        createdAt: DateTime(2026, 4, 14),
+      ),
+      CommunityComment(
+        id: 'c3',
+        postId: 'p1',
+        userId: 'muted-user',
+        content: 'Muted comment',
+        createdAt: DateTime(2026, 4, 14),
+      ),
+    ];
+
+    ProviderContainer createContainer({
+      List<String> blocked = const [],
+      List<String> muted = const [],
+    }) {
+      return ProviderContainer(
+        overrides: [
+          commentListProvider(
+            'p1',
+          ).overrideWith(() => _FakeCommentListNotifier(comments)),
+          blockedUsersProvider.overrideWith(
+            () => _FakeBlockedUsersNotifier(blocked),
+          ),
+          mutedUsersProvider.overrideWith(
+            () => _FakeMutedUsersNotifier(muted),
+          ),
+        ],
+      );
+    }
+
+    test('returns all comments when nothing is blocked or muted', () {
+      final container = createContainer();
+      addTearDown(container.dispose);
+
+      final visible = container.read(visibleCommentsProvider('p1'));
+      expect(visible.map((c) => c.id), ['c1', 'c2', 'c3']);
+    });
+
+    test('filters out blocked authors', () {
+      final container = createContainer(blocked: ['blocked-user']);
+      addTearDown(container.dispose);
+
+      final visible = container.read(visibleCommentsProvider('p1'));
+      expect(visible.map((c) => c.id), ['c1', 'c3']);
+    });
+
+    test('filters out muted authors', () {
+      final container = createContainer(muted: ['muted-user']);
+      addTearDown(container.dispose);
+
+      final visible = container.read(visibleCommentsProvider('p1'));
+      expect(visible.map((c) => c.id), ['c1', 'c2']);
+    });
+
+    test('filters out both blocked and muted authors', () {
+      final container = createContainer(
+        blocked: ['blocked-user'],
+        muted: ['muted-user'],
+      );
+      addTearDown(container.dispose);
+
+      final visible = container.read(visibleCommentsProvider('p1'));
+      expect(visible.map((c) => c.id), ['c1']);
+    });
+  });
+}
+
+class _FakeCommentListNotifier extends CommentListNotifier {
+  _FakeCommentListNotifier(this._comments) : super('p1');
+
+  final List<CommunityComment> _comments;
+
+  @override
+  CommentListState build() => CommentListState(comments: _comments);
+
+  @override
+  Future<void> fetchInitial() async {}
+
+  @override
+  Future<void> fetchMore() async {}
+}
+
+class _FakeBlockedUsersNotifier extends BlockedUsersNotifier {
+  _FakeBlockedUsersNotifier(this._ids);
+
+  final List<String> _ids;
+
+  @override
+  List<String> build() => _ids;
+}
+
+class _FakeMutedUsersNotifier extends MutedUsersNotifier {
+  _FakeMutedUsersNotifier(this._ids);
+
+  final List<String> _ids;
+
+  @override
+  List<String> build() => _ids;
 }

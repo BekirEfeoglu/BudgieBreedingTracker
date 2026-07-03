@@ -261,6 +261,66 @@ class CommunityEngagementRemoteSource {
   }
 
   // ---------------------------------------------------------------------------
+  // Mutes (one-directional, visibility-only — see community_mutes migration)
+  // ---------------------------------------------------------------------------
+
+  Future<List<String>> fetchMutedUserIds(String userId) async {
+    if (userId == 'anonymous') return [];
+    try {
+      final result = await _client
+          .from(SupabaseConstants.communityMutesTable)
+          .select('muted_user_id')
+          .eq('user_id', userId);
+
+      return (result as List)
+          .map((r) => r['muted_user_id']?.toString())
+          .whereType<String>()
+          .toList();
+    } catch (e) {
+      AppLogger.warning('Failed to fetch muted user IDs: $e');
+      return [];
+    }
+  }
+
+  Future<void> muteUser(String userId, String mutedUserId) async {
+    try {
+      await _client
+          .from(SupabaseConstants.communityMutesTable)
+          .upsert(
+            {
+              'id': const Uuid().v7(),
+              'user_id': userId,
+              'muted_user_id': mutedUserId,
+            },
+            onConflict: 'user_id,muted_user_id',
+            ignoreDuplicates: true,
+          );
+    } catch (e, st) {
+      throw BaseRemoteSource.handleErrorForTag(
+        'community_engagement.muteUser',
+        e,
+        st,
+      );
+    }
+  }
+
+  Future<void> unmuteUser(String userId, String mutedUserId) async {
+    try {
+      await _client
+          .from(SupabaseConstants.communityMutesTable)
+          .delete()
+          .eq('user_id', userId)
+          .eq('muted_user_id', mutedUserId);
+    } catch (e, st) {
+      throw BaseRemoteSource.handleErrorForTag(
+        'community_engagement.unmuteUser',
+        e,
+        st,
+      );
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Reports
   // ---------------------------------------------------------------------------
 

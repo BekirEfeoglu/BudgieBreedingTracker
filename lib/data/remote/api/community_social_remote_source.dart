@@ -259,6 +259,19 @@ class CommunitySocialRemoteSource {
       _engagement.unblockUser(userId, blockedUserId);
 
   // ---------------------------------------------------------------------------
+  // Delegated: Mutes
+  // ---------------------------------------------------------------------------
+
+  Future<List<String>> fetchMutedUserIds(String userId) =>
+      _engagement.fetchMutedUserIds(userId);
+
+  Future<void> muteUser(String userId, String mutedUserId) =>
+      _engagement.muteUser(userId, mutedUserId);
+
+  Future<void> unmuteUser(String userId, String mutedUserId) =>
+      _engagement.unmuteUser(userId, mutedUserId);
+
+  // ---------------------------------------------------------------------------
   // Delegated: Reports
   // ---------------------------------------------------------------------------
 

@@ -78,6 +78,19 @@ class CommunitySocialRepository {
     required String blockedUserId,
   }) => _source.unblockUser(userId, blockedUserId);
 
+  Future<List<String>> fetchMutedUserIds(String userId) =>
+      _source.fetchMutedUserIds(userId);
+
+  Future<void> muteUser({
+    required String userId,
+    required String mutedUserId,
+  }) => _source.muteUser(userId, mutedUserId);
+
+  Future<void> unmuteUser({
+    required String userId,
+    required String mutedUserId,
+  }) => _source.unmuteUser(userId, mutedUserId);
+
   Future<void> reportContent({
     required String userId,
     required String targetId,

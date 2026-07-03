@@ -15,25 +15,34 @@ final communityVisiblePostsProvider =
           ? posts
           : posts.where((p) => !blockedUserIds.contains(p.userId)).toList();
 
+      final mutedUserIds = ref.watch(mutedUsersProvider);
+
+      // Filter out muted users' posts (one-directional, visibility-only)
+      final visible = mutedUserIds.isEmpty
+          ? unblocked
+          : unblocked
+              .where((p) => !mutedUserIds.contains(p.userId))
+              .toList();
+
       // Filter by tab
       final filtered = switch (tab) {
         CommunityFeedTab.explore =>
-          unblocked
+          visible
               .where((p) => p.postType != CommunityPostType.guide)
               .toList(),
         CommunityFeedTab.following =>
-          unblocked
+          visible
               .where((p) => p.isFollowingAuthor && p.userId != currentUserId)
               .toList(),
         CommunityFeedTab.guides =>
-          unblocked
+          visible
               .where((p) => p.postType == CommunityPostType.guide)
               .toList(),
         // Unreachable via CommunityScreen (marketplace tab embeds
         // MarketplaceTabContent); kept for exhaustiveness. Question posts
         // surface in the explore tab.
         CommunityFeedTab.marketplace =>
-          unblocked
+          visible
               .where((p) => p.postType == CommunityPostType.question)
               .toList(),
       };

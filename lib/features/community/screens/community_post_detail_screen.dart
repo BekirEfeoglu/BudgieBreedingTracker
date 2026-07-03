@@ -51,6 +51,7 @@ class _CommunityPostDetailScreenState
     final postId = widget.postId;
     final postAsync = ref.watch(communityPostByIdProvider(postId));
     final commentState = ref.watch(commentListProvider(postId));
+    final visibleComments = ref.watch(visibleCommentsProvider(postId));
 
     ref.listen<CommentFormState>(commentFormProvider, (_, state) {
       if (!context.mounted) return;
@@ -206,7 +207,7 @@ class _CommunityPostDetailScreenState
                   else
                     SliverList(
                       delegate: SliverChildBuilderDelegate((context, index) {
-                        final comments = commentState.comments;
+                        final comments = visibleComments;
                         if (index < comments.length) {
                           return CommunityCommentTile(
                             key: ValueKey(comments[index].id),
@@ -238,7 +239,7 @@ class _CommunityPostDetailScreenState
                           );
                         }
                         return const SizedBox.shrink();
-                      }, childCount: commentState.comments.length + 1),
+                      }, childCount: visibleComments.length + 1),
                     ),
 
                   const SliverPadding(

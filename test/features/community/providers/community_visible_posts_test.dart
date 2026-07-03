@@ -65,6 +65,7 @@ void main() {
         ),
         currentUserIdProvider.overrideWithValue(currentUserId),
         blockedUsersProvider.overrideWith(_FakeBlockedUsersNotifier.new),
+        mutedUsersProvider.overrideWith(_FakeMutedUsersNotifier.new),
       ],
     );
   }
@@ -203,12 +204,47 @@ void main() {
       );
       expect(visible, isEmpty);
     });
+
+    test('filters out muted users posts', () {
+      final container = ProviderContainer(
+        overrides: [
+          communityFeedProvider.overrideWith(
+            () => _FakeFeedNotifier(posts: testPosts),
+          ),
+          currentUserIdProvider.overrideWithValue('me'),
+          blockedUsersProvider.overrideWith(_FakeBlockedUsersNotifier.new),
+          mutedUsersProvider.overrideWith(
+            () => _FakeMutedUsersNotifier(ids: ['u1']),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.read(communityFeedProvider);
+
+      final visible = container.read(
+        communityVisiblePostsProvider(CommunityFeedTab.explore),
+      );
+      // p1 and p3 belong to muted user u1 and must not be in the list.
+      // p2 is excluded from explore regardless (guide post type).
+      expect(visible.any((p) => p.userId == 'u1'), isFalse);
+      expect(visible.any((p) => p.id == 'p4'), isTrue);
+      expect(visible.length, 1);
+    });
   });
 }
 
 class _FakeBlockedUsersNotifier extends BlockedUsersNotifier {
   @override
   List<String> build() => [];
+}
+
+class _FakeMutedUsersNotifier extends MutedUsersNotifier {
+  _FakeMutedUsersNotifier({List<String>? ids}) : _ids = ids ?? const [];
+
+  final List<String> _ids;
+
+  @override
+  List<String> build() => _ids;
 }
 
 class _FakeFeedNotifier extends CommunityFeedNotifier {

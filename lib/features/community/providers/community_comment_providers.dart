@@ -326,3 +326,26 @@ final commentLikeToggleProvider =
     NotifierProvider<CommentLikeToggleNotifier, void>(
       CommentLikeToggleNotifier.new,
     );
+
+// ---------------------------------------------------------------------------
+// Visible comments (blocked + muted author filter)
+// ---------------------------------------------------------------------------
+
+/// Comments visible to the current user: filters out blocked AND muted
+/// authors client-side (block server-side'da yalnız feed RPC'de filtreli;
+/// yorumlar için tek filtre noktası burası).
+final visibleCommentsProvider =
+    Provider.family<List<CommunityComment>, String>((ref, postId) {
+      final comments = ref.watch(
+        commentListProvider(postId).select((s) => s.comments),
+      );
+      final blocked = ref.watch(blockedUsersProvider);
+      final muted = ref.watch(mutedUsersProvider);
+      if (blocked.isEmpty && muted.isEmpty) return comments;
+      return comments
+          .where(
+            (c) =>
+                !blocked.contains(c.userId) && !muted.contains(c.userId),
+          )
+          .toList();
+    });

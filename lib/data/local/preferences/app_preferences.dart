@@ -46,6 +46,7 @@ class AppPreferences {
   static const keyRewardGeneticsUses = 'pref_reward_genetics_uses';
   static const keyRewardExportUses = 'pref_reward_export_uses';
   static const keyBlockedUserIds = 'pref_blocked_user_ids';
+  static const keyMutedUserIds = 'pref_muted_user_ids';
   static const keyStatsPeriod = 'pref_stats_period';
   static const keyStatsSpeciesFilter = 'pref_stats_species_filter';
   static const keyBatteryWarningDismissed = 'pref_battery_warning_dismissed';

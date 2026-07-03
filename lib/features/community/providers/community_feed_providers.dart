@@ -11,6 +11,7 @@ import '../../../data/repositories/repository_providers.dart';
 import 'community_providers.dart';
 
 part 'community_feed_providers_blocked.dart';
+part 'community_feed_providers_muted.dart';
 part 'community_feed_providers_filters.dart';
 
 // ---------------------------------------------------------------------------
