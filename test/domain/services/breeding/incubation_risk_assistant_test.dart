@@ -400,6 +400,41 @@ void main() {
       },
     );
 
+    test(
+      'risksForPair returns an unmodifiable list that throws on mutation',
+      () {
+        // The cached bucket is shared across every call for this pair; if it
+        // were still a plain growable list, a caller mutating it (e.g. .add)
+        // would silently corrupt the cache for all other callers. Freezing
+        // the bucket makes such a mutation fail loudly instead.
+        final summary = IncubationRiskSummary([
+          const IncubationRisk(
+            type: IncubationRiskType.overdueEgg,
+            severity: IncubationRiskSeverity.warning,
+            titleKey: 'breeding.risk_overdue_egg_title',
+            descriptionKey: 'breeding.risk_overdue_egg_desc',
+            pairId: 'p1',
+            incubationId: 'inc-1',
+            eggId: 'egg-1',
+          ),
+        ]);
+
+        final risks = summary.risksForPair('p1');
+        expect(risks, hasLength(1));
+        expect(
+          () => risks.add(
+            const IncubationRisk(
+              type: IncubationRiskType.staleTracking,
+              severity: IncubationRiskSeverity.warning,
+              titleKey: 'breeding.risk_stale_tracking_title',
+              descriptionKey: 'breeding.risk_stale_tracking_desc',
+            ),
+          ),
+          throwsA(isA<UnsupportedError>()),
+        );
+      },
+    );
+
     test('flags chick health loss for the incubation', () {
       final summary = const IncubationRiskAssistant().assess(
         now: now,

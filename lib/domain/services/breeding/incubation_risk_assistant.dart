@@ -88,11 +88,20 @@ class IncubationRiskSummary {
       final k = key(risk);
       if (k != null) map.putIfAbsent(k, () => []).add(risk);
     }
-    return map;
+    // Store unmodifiable buckets: risksForPair/risksForIncubation hand out the
+    // cached instance directly, so freezing prevents a caller mutation from
+    // corrupting the shared cache while preserving list identity across calls.
+    return {for (final e in map.entries) e.key: List.unmodifiable(e.value)};
   }
 
+  /// Returns the cached, shared risk list for [pairId]. The returned list is
+  /// unmodifiable — it is the same instance returned to every caller for
+  /// this pair, so it must not be mutated (e.g. `.add`, `.sort`).
   List<IncubationRisk> risksForPair(String pairId) => _byPair[pairId] ?? _empty;
 
+  /// Returns the cached, shared risk list for [incubationId]. The returned
+  /// list is unmodifiable — it is the same instance returned to every caller
+  /// for this incubation, so it must not be mutated (e.g. `.add`, `.sort`).
   List<IncubationRisk> risksForIncubation(String incubationId) =>
       _byIncubation[incubationId] ?? _empty;
 }
