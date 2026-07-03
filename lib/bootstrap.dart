@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -14,6 +15,14 @@ part 'bootstrap_helpers.dart';
 
 bool get _profileStartup =>
     kDebugMode || const bool.fromEnvironment('PROFILE_STARTUP');
+
+/// Trace sampling budget per observability.md §Sentry Sample Rate Budget.
+/// Unknown environments fall back to the production (cheapest) rate.
+double sentryTracesSampleRateFor(String environment) => switch (environment) {
+  'development' => 1.0,
+  'staging' => 0.5,
+  _ => 0.1,
+};
 
 /// Compile-time environment values (from --dart-define or --dart-define-from-file).
 const _compileTimeSupabaseUrl = String.fromEnvironment('SUPABASE_URL');
@@ -108,6 +117,16 @@ Future<void> bootstrapPreInit() async {
     ]);
     final orientationMs = orientationSw.elapsedMilliseconds;
 
+    // Request the panel's highest refresh rate on Android — Flutter defaults
+    // to 60Hz on many 90/120Hz devices otherwise. No-op on iOS/unsupported.
+    if (!kIsWeb && Platform.isAndroid) {
+      try {
+        await FlutterDisplayMode.setHighRefreshRate();
+      } catch (e) {
+        AppLogger.debug('[bootstrap] High refresh rate unavailable: $e');
+      }
+    }
+
     // Install certificate pinning before any network calls.
     CertificatePinning.install();
 
@@ -165,7 +184,9 @@ Future<void> bootstrapRun(
     await SentryFlutter.init(
       (options) {
         options.dsn = _resolvedSentryDsn;
-        options.tracesSampleRate = 0.3;
+        options.tracesSampleRate = sentryTracesSampleRateFor(
+          _resolvedSentryEnv,
+        );
         options.environment = _resolvedSentryEnv;
         options.sendDefaultPii = false;
       },
