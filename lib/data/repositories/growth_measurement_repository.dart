@@ -240,17 +240,37 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
   Future<GrowthMeasurement?> getLatest(String chickId) =>
       _localDao.getLatest(chickId);
 
-  /// Cascade-removes every measurement linked to any of [chickIds].
-  /// Used by the chick-deletion flow: growth_measurements has no
-  /// isDeleted column so soft-delete isn't an option, and leaving the
-  /// rows behind would surface them as permanent sync errors via
-  /// ValidatedSyncMixin once the parent chick is tombstoned.
+  /// Cascade-removes every measurement linked to any of [chickIds] with
+  /// batch statements: one local DELETE, one metadata batch, one remote
+  /// DELETE. growth_measurements has no isDeleted column so soft-delete
+  /// isn't an option (see class docs).
   Future<int> removeByChickIds(List<String> chickIds) async {
     if (chickIds.isEmpty) return 0;
     final measurements = await _localDao.getByChickIds(chickIds);
-    for (final measurement in measurements) {
-      await remove(measurement.id);
+    if (measurements.isEmpty) return 0;
+    final ids = measurements.map((m) => m.id).toList();
+    final userId = measurements.first.userId;
+
+    await _localDao.hardDeleteByIds(ids);
+    await _syncDao.insertAll([
+      for (final m in measurements)
+        SyncMetadata(
+          id: _uuid.v7(),
+          table: _table,
+          userId: m.userId,
+          status: SyncStatus.pendingDelete,
+          recordId: m.id,
+        ),
+    ]);
+    // Best-effort immediate remote cleanup — one request for all rows.
+    try {
+      await _remoteSource.deleteByIds(ids, userId: userId);
+      await _syncDao.deleteByRecords(_table, ids);
+    } catch (e) {
+      AppLogger.debug(
+        '[GrowthMeasurementRepo] Batch remote delete failed, will retry on next sync: $e',
+      );
     }
-    return measurements.length;
+    return ids.length;
   }
 }

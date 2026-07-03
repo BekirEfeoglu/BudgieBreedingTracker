@@ -49,6 +49,7 @@ void main() {
     registerFallbackValue(DateTime(2024, 1, 1));
     registerFallbackValue(_makeMeasurement());
     registerFallbackValue(TestFixtures.sampleSyncMetadata());
+    registerFallbackValue(<String>[]);
   });
 
   setUp(() {
@@ -512,5 +513,61 @@ void main() {
       final result = await repository.getLatest('chick-1');
       expect(result, isNull);
     });
+
+    test(
+      'should cascade-delete measurements with batch statements when chick removed',
+      () async {
+        final g1 = _makeMeasurement(id: 'g1', userId: userId);
+        final g2 = _makeMeasurement(id: 'g2', userId: userId);
+        when(
+          () => localDao.getByChickIds(['c1']),
+        ).thenAnswer((_) async => [g1, g2]);
+        when(() => localDao.hardDeleteByIds(any())).thenAnswer((_) async {});
+        when(() => syncDao.insertAll(any())).thenAnswer((_) async {});
+        when(
+          () => remoteSource.deleteByIds(any(), userId: any(named: 'userId')),
+        ).thenAnswer((_) async {});
+        when(
+          () => syncDao.deleteByRecords(any(), any()),
+        ).thenAnswer((_) async {});
+
+        final count = await repository.removeByChickIds(['c1']);
+
+        expect(count, 2);
+        verify(() => localDao.hardDeleteByIds(['g1', 'g2'])).called(1);
+        verify(
+          () => remoteSource.deleteByIds(['g1', 'g2'], userId: userId),
+        ).called(1);
+        verify(
+          () => syncDao.deleteByRecords(
+            SupabaseConstants.growthMeasurementsTable,
+            ['g1', 'g2'],
+          ),
+        ).called(1);
+        verifyNever(
+          () => remoteSource.deleteById(any(), userId: any(named: 'userId')),
+        );
+      },
+    );
+
+    test(
+      'should keep pendingDelete tombstones when remote batch delete fails',
+      () async {
+        final g1 = _makeMeasurement(id: 'g1', userId: userId);
+        when(
+          () => localDao.getByChickIds(['c1']),
+        ).thenAnswer((_) async => [g1]);
+        when(() => localDao.hardDeleteByIds(any())).thenAnswer((_) async {});
+        when(() => syncDao.insertAll(any())).thenAnswer((_) async {});
+        when(
+          () => remoteSource.deleteByIds(any(), userId: any(named: 'userId')),
+        ).thenThrow(const NetworkException('errors.network_unavailable'));
+
+        final count = await repository.removeByChickIds(['c1']);
+
+        expect(count, 1); // local delete succeeded
+        verifyNever(() => syncDao.deleteByRecords(any(), any()));
+      },
+    );
   });
 }

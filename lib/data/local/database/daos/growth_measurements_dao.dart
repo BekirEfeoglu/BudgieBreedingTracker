@@ -63,6 +63,12 @@ class GrowthMeasurementsDao extends DatabaseAccessor<AppDatabase>
     )..where((t) => t.id.equals(id))).go();
   }
 
+  /// Hard-deletes every measurement in [ids] with a single DELETE statement.
+  Future<void> hardDeleteByIds(List<String> ids) {
+    if (ids.isEmpty) return Future.value();
+    return (delete(growthMeasurementsTable)..where((t) => t.id.isIn(ids))).go();
+  }
+
   Stream<List<GrowthMeasurement>> watchByChick(String chickId) {
     return (select(growthMeasurementsTable)
           ..where((t) => t.chickId.equals(chickId))

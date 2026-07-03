@@ -243,6 +243,22 @@ abstract class BaseRemoteSource<T> {
     }
   }
 
+  /// Permanently deletes multiple records with a single request.
+  /// Batch counterpart of [deleteById] for cascade flows.
+  Future<void> deleteByIds(List<String> ids, {required String userId}) async {
+    if (ids.isEmpty) return;
+    try {
+      await _timed('deleteByIds(${ids.length})', () async {
+        await table
+            .delete()
+            .inFilter('id', ids)
+            .eq(SupabaseConstants.colUserId, userId);
+      });
+    } catch (e, st) {
+      throw handleError(e, st);
+    }
+  }
+
   /// Sanitizes database error messages to prevent leaking internal details
   /// (SQL syntax, RLS policy names, table structure) to the UI layer.
   ///
