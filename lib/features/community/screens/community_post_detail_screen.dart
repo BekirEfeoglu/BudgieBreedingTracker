@@ -187,7 +187,7 @@ class _CommunityPostDetailScreenState
                         ),
                       ),
                     )
-                  else if (commentState.comments.isEmpty)
+                  else if (visibleComments.isEmpty)
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.all(AppSpacing.lg),

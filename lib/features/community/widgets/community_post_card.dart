@@ -133,16 +133,16 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
   Future<void> _handleEdit() async {
     final newContent = await showCommunityPostEditSheet(context, post);
     if (newContent == null || !mounted) return;
-    final ok = await ref
+    final errorKey = await ref
         .read(postEditProvider.notifier)
         .editPost(post.id, newContent);
     if (!mounted) return;
-    if (ok) {
+    if (errorKey == null) {
       ActionFeedbackService.show('community.edit_saved'.tr());
     } else {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('community.edit_error'.tr())));
+      ).showSnackBar(SnackBar(content: Text(errorKey.tr())));
     }
   }
 

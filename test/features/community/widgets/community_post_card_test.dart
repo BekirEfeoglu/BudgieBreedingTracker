@@ -4,15 +4,19 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/community_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/community_post_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_feed_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_post_card.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_post_card_parts.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_user_header.dart';
+
+import '../../../helpers/mocks.dart';
 
 CommunityPost _testPost({
   String id = 'post-1',
@@ -316,6 +320,52 @@ void main() {
         find.textContaining(l10n('community.edited_badge')),
         findsOneWidget,
       );
+    });
+
+    testWidgets('tapping Edit in the popup menu opens the edit sheet', (
+      tester,
+    ) async {
+      // Self-contained: builds its own ProviderScope (with a
+      // communityPostRepositoryProvider mock override) instead of reusing
+      // createSubject, since none of the other 25 tests in this file need
+      // a repository override.
+      final mockRepo = MockCommunityPostRepository();
+      when(
+        () => mockRepo.update(
+          postId: any(named: 'postId'),
+          content: any(named: 'content'),
+        ),
+      ).thenAnswer((_) async {});
+
+      final post = _testPost(
+        userId: 'me',
+        createdAt: DateTime.now().toUtc().subtract(const Duration(minutes: 1)),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('me'),
+            communityPostRepositoryProvider.overrideWithValue(mockRepo),
+            communityFeedProvider.overrideWith(() => _FakeFeedNotifier()),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(child: CommunityPostCard(post: post)),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.byType(PopupMenuButton<String>));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(l10n('community.edit_post')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BottomSheet), findsOneWidget);
+      expect(find.text(l10n('community.edit_post_title')), findsOneWidget);
     });
   });
 }

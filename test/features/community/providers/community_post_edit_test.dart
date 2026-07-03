@@ -20,7 +20,7 @@ void main() {
   });
 
   group('PostEditNotifier', () {
-    test('editPost updates feed state and returns true on success', () async {
+    test('editPost updates feed state and returns null on success', () async {
       when(
         () => mockRepo.update(
           postId: any(named: 'postId'),
@@ -38,11 +38,11 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final ok = await container
+      final errorKey = await container
           .read(postEditProvider.notifier)
           .editPost('post-1', 'yeni icerik');
 
-      expect(ok, isTrue);
+      expect(errorKey, isNull);
       verify(
         () => mockRepo.update(postId: 'post-1', content: 'yeni icerik'),
       ).called(1);
@@ -55,37 +55,75 @@ void main() {
       expect(updated.isEdited, isTrue);
     });
 
-    test('editPost returns false and leaves feed intact on failure', () async {
-      when(
-        () => mockRepo.update(
-          postId: any(named: 'postId'),
-          content: any(named: 'content'),
-        ),
-      ).thenThrow(Exception('edit_window_expired'));
-
-      final container = ProviderContainer(
-        overrides: [
-          communityPostRepositoryProvider.overrideWithValue(mockRepo),
-          communityFeedProvider.overrideWith(
-            () => _TestFeedNotifier([_makePost('post-1', content: 'eski')]),
+    test(
+      'editPost returns generic error key and leaves feed intact on failure',
+      () async {
+        when(
+          () => mockRepo.update(
+            postId: any(named: 'postId'),
+            content: any(named: 'content'),
           ),
-        ],
-      );
-      addTearDown(container.dispose);
+        ).thenThrow(Exception('some other failure'));
 
-      final ok = await container
-          .read(postEditProvider.notifier)
-          .editPost('post-1', 'x');
+        final container = ProviderContainer(
+          overrides: [
+            communityPostRepositoryProvider.overrideWithValue(mockRepo),
+            communityFeedProvider.overrideWith(
+              () => _TestFeedNotifier([_makePost('post-1', content: 'eski')]),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      expect(ok, isFalse);
+        final errorKey = await container
+            .read(postEditProvider.notifier)
+            .editPost('post-1', 'x');
 
-      final unchanged = container
-          .read(communityFeedProvider)
-          .posts
-          .firstWhere((p) => p.id == 'post-1');
-      expect(unchanged.content, 'eski');
-      expect(unchanged.isEdited, isFalse);
-    });
+        expect(errorKey, 'community.edit_error');
+
+        final unchanged = container
+            .read(communityFeedProvider)
+            .posts
+            .firstWhere((p) => p.id == 'post-1');
+        expect(unchanged.content, 'eski');
+        expect(unchanged.isEdited, isFalse);
+      },
+    );
+
+    test(
+      'editPost returns edit_window_expired key when repo throws that error',
+      () async {
+        when(
+          () => mockRepo.update(
+            postId: any(named: 'postId'),
+            content: any(named: 'content'),
+          ),
+        ).thenThrow(Exception('edit_window_expired'));
+
+        final container = ProviderContainer(
+          overrides: [
+            communityPostRepositoryProvider.overrideWithValue(mockRepo),
+            communityFeedProvider.overrideWith(
+              () => _TestFeedNotifier([_makePost('post-1', content: 'eski')]),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        final errorKey = await container
+            .read(postEditProvider.notifier)
+            .editPost('post-1', 'x');
+
+        expect(errorKey, 'community.edit_window_expired');
+
+        final unchanged = container
+            .read(communityFeedProvider)
+            .posts
+            .firstWhere((p) => p.id == 'post-1');
+        expect(unchanged.content, 'eski');
+        expect(unchanged.isEdited, isFalse);
+      },
+    );
   });
 
   group('CommunityFeedNotifier.applyPostEdit', () {

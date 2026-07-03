@@ -133,9 +133,11 @@ class PostEditNotifier extends Notifier<void> {
   @override
   void build() {}
 
-  /// Content-only edit. Returns true on success; on failure logs, reports
-  /// to Sentry and returns false (UI shows a localized error).
-  Future<bool> editPost(String postId, String content) async {
+  /// Content-only edit. Returns `null` on success; on failure logs, reports
+  /// to Sentry and returns a localized error key for the UI to display
+  /// (`community.edit_window_expired` when the server-enforced 5-minute
+  /// window has passed, `community.edit_error` otherwise).
+  Future<String?> editPost(String postId, String content) async {
     try {
       final repo = ref.read(communityPostRepositoryProvider);
       await repo.update(postId: postId, content: content);
@@ -143,11 +145,13 @@ class PostEditNotifier extends Notifier<void> {
           .read(communityFeedProvider.notifier)
           .applyPostEdit(postId, content, DateTime.now().toUtc());
       ref.invalidate(communityPostByIdProvider(postId));
-      return true;
+      return null;
     } catch (e, st) {
       AppLogger.error('PostEditNotifier.editPost', e, st);
       await Sentry.captureException(e, stackTrace: st);
-      return false;
+      return e.toString().contains('edit_window_expired')
+          ? 'community.edit_window_expired'
+          : 'community.edit_error';
     }
   }
 }

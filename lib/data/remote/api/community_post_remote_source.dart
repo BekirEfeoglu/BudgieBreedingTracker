@@ -259,10 +259,7 @@ class CommunityPostRemoteSource {
     try {
       await _client
           .from(SupabaseConstants.communityPostsTable)
-          .update({
-            SupabaseConstants.colNeedsReview: false,
-            'reviewed_by': currentUserId,
-          })
+          .update({SupabaseConstants.colNeedsReview: false})
           .eq(SupabaseConstants.colId, postId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(

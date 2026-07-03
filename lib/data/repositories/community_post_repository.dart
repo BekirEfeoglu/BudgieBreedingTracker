@@ -147,7 +147,6 @@ class CommunityPostRepository {
   Future<void> update({required String postId, required String content}) async {
     await _postSource.updateContent(postId, content);
     _cache?.invalidatePost(postId);
-    _cache?.invalidateAll();
   }
 
   Future<Map<String, dynamic>> checkPostAllowed(String contentHash) {

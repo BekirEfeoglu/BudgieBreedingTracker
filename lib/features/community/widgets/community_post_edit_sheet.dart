@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/bottom_sheet/app_bottom_sheet.dart';
 import '../../../data/models/community_post_model.dart';
 
 /// Bottom sheet for content-only post editing (5-minute window).
@@ -10,9 +11,8 @@ Future<String?> showCommunityPostEditSheet(
   BuildContext context,
   CommunityPost post,
 ) {
-  return showModalBottomSheet<String>(
+  return showAppBottomSheet<String>(
     context: context,
-    isScrollControlled: true,
     builder: (_) => _PostEditSheet(initialContent: post.content),
   );
 }
@@ -27,6 +27,7 @@ class _PostEditSheet extends StatefulWidget {
 }
 
 class _PostEditSheetState extends State<_PostEditSheet> {
+  // Mirrors create-community-post edge fn's z.string().max(5000) — keep in sync.
   static const _maxLength = 5000;
   late final TextEditingController _controller = TextEditingController(
     text: widget.initialContent,
@@ -51,12 +52,7 @@ class _PostEditSheetState extends State<_PostEditSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: EdgeInsets.only(
-        left: AppSpacing.lg,
-        right: AppSpacing.lg,
-        top: AppSpacing.lg,
-        bottom: MediaQuery.viewInsetsOf(context).bottom + AppSpacing.lg,
-      ),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
