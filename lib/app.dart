@@ -13,6 +13,7 @@ import 'core/enums/bird_enums.dart';
 import 'core/security/inactivity_guard.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/logger.dart';
+import 'core/utils/resume_throttle.dart';
 import 'domain/services/app_update/app_update_providers.dart';
 import 'domain/services/app_update/in_app_update_service.dart';
 import 'domain/services/encryption/encryption_providers.dart';
@@ -47,6 +48,9 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
   ProviderSubscription<bool>? _realtimeSyncSubscription;
   bool _didApplyDebugStartupRoute = false;
   bool _didApplyDebugGeneticsFixture = false;
+  final _resumeThrottle = ResumeThrottle();
+  static const _premiumRefreshInterval = Duration(minutes: 5);
+  static const _updateCheckInterval = Duration(hours: 6);
 
   @override
   void initState() {
@@ -129,9 +133,11 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
   }
 
   void _onAppResumed() {
-    ref.invalidate(appUpdateStatusProvider);
-    if (Platform.isAndroid) {
-      unawaited(ref.read(inAppUpdateServiceProvider).checkAndStart());
+    if (_resumeThrottle.shouldRun('app_update', _updateCheckInterval)) {
+      ref.invalidate(appUpdateStatusProvider);
+      if (Platform.isAndroid) {
+        unawaited(ref.read(inAppUpdateServiceProvider).checkAndStart());
+      }
     }
     final userId = ref.read(currentUserIdProvider);
     if (userId == 'anonymous') return;
@@ -142,7 +148,9 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
     // (locks if the background elapsed >= timeout, else restarts with the
     // remaining time). Restarting it here would reset a fresh full timeout and
     // defeat the background lock, so it is intentionally not touched.
-    ref.read(localPremiumProvider.notifier).refresh();
+    if (_resumeThrottle.shouldRun('premium_refresh', _premiumRefreshInterval)) {
+      ref.read(localPremiumProvider.notifier).refresh();
+    }
     unawaited(ref.read(realtimeSyncServiceProvider).subscribeIfAllowed());
     unawaited(_recoverPendingNotifications());
     // Re-check exact alarm permission — user may have granted it via Settings
@@ -267,6 +275,9 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
       if (next == 'anonymous') {
         unawaited(purchaseService.logout());
         unawaited(ref.read(localPremiumProvider.notifier).setPremium(false));
+        // Fresh login (next resume) should always re-check premium/update
+        // state instead of inheriting the previous user's throttle stamps.
+        _resumeThrottle.reset();
         return;
       }
 
