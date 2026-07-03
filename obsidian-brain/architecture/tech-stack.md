@@ -42,6 +42,7 @@ Source: `pubspec.yaml`, `.claude/rules/architecture.md`
 | shimmer ^3.0.0 | Skeleton loading |
 | cached_network_image ^3.3.0 | Network image + cache |
 | photo_view ^0.15.0 | Zoomable image viewer |
+| flutter_displaymode ^0.6.0 | Request Android panel high refresh rate (90/120Hz) at startup |
 | image_picker ^1.0.0 | Camera + gallery picker |
 | fl_chart ^1.2.0 | Statistics charts |
 | google_mobile_ads ^9.0.0 | AdMob ads (free tier) — iOS GMA SDK 13.3.0 + UMP 3.1.0 |

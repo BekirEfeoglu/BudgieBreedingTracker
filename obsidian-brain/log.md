@@ -17,7 +17,11 @@ providers derive from it instead of each re-filtering. **Risk lists (T11):**
 `IncubationRiskSummary.risksForPair`/`risksForIncubation` now return cached,
 identity-stable, `List.unmodifiable` buckets (shared `const []` for no-risk
 ids) so risk cards skip rebuilds when unchanged; a follow-up fix froze the
-lists to prevent shared-cache mutation. See [[features/calendar]], [[features/breeding]].
+lists to prevent shared-cache mutation. **Platform (T12, `e2691aa`):** added
+`flutter_displaymode` to request the Android panel's high refresh rate at
+startup (guarded, fail-silent); Sentry `tracesSampleRate` now budgeted by env
+(`sentryTracesSampleRateFor`: dev 1.0 / staging 0.5 / prod 0.1) per
+observability.md instead of a flat 0.3. See [[features/calendar]], [[features/breeding]], [[architecture/tech-stack]].
 
 ## [2026-07-03] perf (branch) | Startup + resume path
 
