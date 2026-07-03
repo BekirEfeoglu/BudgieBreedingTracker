@@ -4,6 +4,19 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-03] perf (branch) | Sync push/metadata batching
+
+Branch `perf/performance-improvements`, tasks 1-3 (commits `bcd13c7`,
+`b7d18d7`, `ffb4a49`; each subagent-reviewed clean). The per-row `pushAll`
+loop (one HTTP upsert per pending row) is replaced by
+`SyncableRepository.pushPendingBatched` — chunks of 100 → one `upsertAll` +
+one `SyncMetadataDao.deleteByRecords` per chunk. New batch metadata helpers
+(`getByRecords`/`deleteByRecords`/`markPendingByRecords`) do the pending-marker
+bookkeeping in one statement each. Chunk failure falls back to per-item
+`push()` (poison-row isolation); `PushStats.pushed` counts only real successes
+(telemetry-only). All 13 syncable repos routed through it (mixin hooks + 4
+inline). See [[data-layer/sync-strategy]], [[data-layer/repositories]].
+
 ## [2026-07-03] fix (branch) | community post-edit + admin follow-ups
 
 Branch `fix/community-followups` (commit `b9e4f77`, review-approved). 7 deferred
@@ -174,22 +187,5 @@ blocked-sender filter; admin moderation queue uses `CachedNetworkImage`. See
 [[features/messaging]], [[features/settings]], [[features/community]],
 [[features/admin]], [[features/breeding]], [[features/profile]],
 [[patterns/anti-patterns]].
-
-## [2026-07-02] docs | Migration directory audit — no drift, added era index
-
-User asked to clean up "too many" migrations and organize the folder.
-Verified all 182 local files 1:1 against production (`list_migrations` MCP,
-zero drift, zero orphans, zero duplicate timestamps, zero empty files) — there
-was nothing unnecessary to delete. Declined to squash/reorganize into
-subfolders: `.claude/rules/migrations.md` explicitly forbids deleting/renaming
-migration files (breaks forward-replay history), and Supabase's tooling keys
-applied migrations by flat-directory filename, so subfolders would break
-`db push`/`migration list`. Asked the user to confirm scope via
-AskUserQuestion; they chose the non-destructive option. Added
-`supabase/migrations/README.md`, a date-range/theme era map (not a frozen
-per-file manifest, to avoid rotting) plus practical `grep`/`ls` recipes.
-Fixed a stale "179 migration files" count in
-[[data-layer/migrations]] (actual: 182) while there — this number isn't
-covered by `verify_rules.py`, so it had drifted silently.
 
 Older entries are archived in [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

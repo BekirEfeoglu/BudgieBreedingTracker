@@ -2,6 +2,23 @@
 
 Back to [[log]].
 
+## [2026-07-02] docs | Migration directory audit — no drift, added era index
+
+User asked to clean up "too many" migrations and organize the folder.
+Verified all 182 local files 1:1 against production (`list_migrations` MCP,
+zero drift, zero orphans, zero duplicate timestamps, zero empty files) — there
+was nothing unnecessary to delete. Declined to squash/reorganize into
+subfolders: `.claude/rules/migrations.md` explicitly forbids deleting/renaming
+migration files (breaks forward-replay history), and Supabase's tooling keys
+applied migrations by flat-directory filename, so subfolders would break
+`db push`/`migration list`. Asked the user to confirm scope via
+AskUserQuestion; they chose the non-destructive option. Added
+`supabase/migrations/README.md`, a date-range/theme era map (not a frozen
+per-file manifest, to avoid rotting) plus practical `grep`/`ls` recipes.
+Fixed a stale "179 migration files" count in
+[[data-layer/migrations]] (actual: 182) while there — this number isn't
+covered by `verify_rules.py`, so it had drifted silently.
+
 ## [2026-07-02] fix | Gamification self-grant deployed + expanded to full table chain
 
 Follow-up to the all-tabs audit's one deferred item (verified-breeder

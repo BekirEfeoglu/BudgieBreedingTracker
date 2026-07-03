@@ -72,9 +72,18 @@ class SyncMetadata {
 
 ## Batch & Debounce
 
-- Multiple rapid writes: 500ms debounce before push
-- Drift batch transaction for bulk local writes
-- Remote batch upsert (Supabase supports arrays)
+- Single save: local write + `markPending` + best-effort `tryImmediatePush` (offline-safe; failure leaves the row pending)
+- Drift batch transaction for bulk local writes (`saveAll`)
+- Remote batch upsert (Supabase accepts JSON arrays via `BaseRemoteSource.upsertAll`)
+
+### Batched Push (`pushPendingBatched`)
+
+`SyncableRepository.pushPendingBatched` (`lib/data/repositories/base_repository.dart`) replaces the legacy one-HTTP-per-row `pushAll` loop. Every syncable repository routes through it (mixin repos via the rewritten `ValidatedSyncMixin.pushAll` + `upsertChunkForSync`/`deleteRemoteForSync` hooks; the four `*RemoteSource`-only repos and `Photo` inline the same contract). For N pending rows: chunks of `pushChunkSize` (100) → one `upsertAll` per chunk → one `SyncMetadataDao.deleteByRecords` per chunk, instead of N round-trips.
+
+- **Batch metadata cleanup:** `SyncMetadataDao.getByRecords` / `deleteByRecords` / `markPendingByRecords` do the pending-marker bookkeeping in one statement each (single-writer SQLite; `markPendingByRecords` preserves existing PKs so no duplicate `(table_name, record_id)` under the UNIQUE constraint).
+- **Poison-row isolation:** if a chunk `upsertAll` throws `AppException`, the chunk falls back to per-item `push()` (which `markError`s each failure) so one bad row can't fail the whole batch. A pushed row is counted only when its metadata went non-null→null (real success); `PushStats.pushed` is telemetry-only.
+- **Orphan/FK counting** stays the caller's job in the `resolveItem` closure (true orphans cleaned + counted; FK-orphans `markSyncError`'d) — the helper returns just the pushed count.
+- **Cascade deletes** (`EventRepository.removeBy*`) batch the same way: one `softDeleteByIds` UPDATE + one `markPendingByRecords` + one best-effort batched `pushAll`.
 
 ## Background Sync
 
