@@ -58,9 +58,15 @@ One-directional, visibility-only "soft block". Migration `20260703121000_communi
 adds a **separate** `public.community_mutes` table (NOT a column on `community_blocks` —
 messaging block-RLS reads `community_blocks` for DM rejection, so mute must not affect DMs).
 RLS SELECT is **owner-only** (`auth.uid() = user_id`) so the muted user can't learn who
-muted them (unlike `community_blocks`' two-sided SELECT). Client wiring (repo/provider,
-feed + comment visibility filter, menu action) lands in a later branch task; mute hides
-both posts and comments, DMs unaffected. Not yet merged/applied to prod.
+muted them (unlike `community_blocks`' two-sided SELECT).
+
+**Client** (commit `40013c0`): `CommunityEngagementRemoteSource.{fetchMutedUserIds,muteUser,
+unmuteUser}` → `CommunitySocialRepository` → `mutedUsersProvider` (`MutedUsersNotifier`,
+SharedPreferences `keyMutedUserIds` + server sync, optimistic+rollback — mirrors
+`blockedUsersProvider`). Feed filter applies muted after blocked across all tab arms;
+`visibleCommentsProvider` filters muted+blocked comment authors. Mute is a light action
+(no confirm dialog, toast only) and **community-only** — NOT wired into messaging (mute
+never affects DMs; that's block's job). 4 l10n keys (tr/en/de). Not yet applied to prod.
 
 ## Cache
 

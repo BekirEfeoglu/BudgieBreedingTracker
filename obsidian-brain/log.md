@@ -4,6 +4,18 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-03] feat (branch) | community mute client (feed + comment filter)
+
+Branch `feature/community-tab-faz1` (commit `40013c0`). Client for `community_mutes`:
+remote (`CommunityEngagementRemoteSource` mute methods, `.upsert` idempotent) → repo →
+`mutedUsersProvider` (`MutedUsersNotifier`, SharedPreferences + server sync,
+optimistic+rollback — mirrors the block stack). Feed filter applies muted after blocked
+across all four tab arms; new `visibleCommentsProvider` filters muted+blocked comment
+authors and the detail screen renders from it. Light action (no confirm, toast only),
+community-only (never touches messaging — mute doesn't affect DMs). 27/27 new tests,
+2171 community+data suite green, analyze/l10n/quality clean. Last impl task of the
+post-edit + mute branch; migrations (edit hardening, mutes) await the checkpoint apply.
+
 ## [2026-07-03] feat (branch) | community_mutes table (soft block, owner-only RLS)
 
 Branch `feature/community-tab-faz1` (commit `74c7ad1`). Migration
