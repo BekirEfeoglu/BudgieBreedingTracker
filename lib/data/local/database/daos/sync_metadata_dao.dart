@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:uuid/uuid.dart';
 import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
 import 'package:budgie_breeding_tracker/data/local/database/tables/sync_metadata_table.dart';
 import 'package:budgie_breeding_tracker/data/local/database/mappers/sync_metadata_mapper.dart';
@@ -217,6 +218,67 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
           (t) => t.tableName_.equals(tableName) & t.recordId.equals(recordId),
         ))
         .go();
+  }
+
+  /// Batch equivalent of [getByRecord]: all metadata rows for the given
+  /// (tableName, recordIds). Empty input returns an empty list without
+  /// touching the database.
+  Future<List<SyncMetadata>> getByRecords(
+    String tableName,
+    List<String> recordIds,
+  ) async {
+    if (recordIds.isEmpty) return const <SyncMetadata>[];
+    final rows =
+        await (select(syncMetadataTable)..where(
+              (t) =>
+                  t.tableName_.equals(tableName) & t.recordId.isIn(recordIds),
+            ))
+            .get();
+    return rows.map((r) => r.toModel()).toList();
+  }
+
+  /// Batch equivalent of [deleteByRecord] — single DELETE with IN clause.
+  Future<void> deleteByRecords(String tableName, List<String> recordIds) {
+    if (recordIds.isEmpty) return Future.value();
+    return (delete(syncMetadataTable)..where(
+          (t) => t.tableName_.equals(tableName) & t.recordId.isIn(recordIds),
+        ))
+        .go();
+  }
+
+  /// Batch equivalent of the repository-level markPending upsert dance:
+  /// existing (tableName, recordId) rows keep their primary key and are
+  /// reset to pending; missing ones are inserted. Runs as one batch so a
+  /// 100-row cascade marks sync state with 2 statements instead of 200.
+  Future<void> markPendingByRecords(
+    String tableName,
+    Map<String, String> recordIdToUserId,
+  ) async {
+    if (recordIdToUserId.isEmpty) return;
+    const uuid = Uuid();
+    final existing = await getByRecords(
+      tableName,
+      recordIdToUserId.keys.toList(),
+    );
+    final existingByRecordId = {for (final m in existing) m.recordId: m};
+    final entries = recordIdToUserId.entries.map((e) {
+      final current = existingByRecordId[e.key];
+      if (current != null) {
+        return current.copyWith(
+          status: SyncStatus.pending,
+          errorMessage: null,
+          retryCount: 0,
+        );
+      }
+      return SyncMetadata(
+        id: uuid.v7(),
+        table: tableName,
+        userId: e.value,
+        status: SyncStatus.pending,
+        recordId: e.key,
+      );
+    }).toList();
+    await insertAll(entries);
   }
 
   Stream<int> watchPendingCount(String userId) {

@@ -362,4 +362,78 @@ void main() {
       expect(remaining.first.id, equals('sync-2'));
     });
   });
+
+  group('SyncMetadataDao batch helpers', () {
+    test(
+      'should return only matching records when getByRecords called',
+      () async {
+        await dao.insertItem(
+          makeEntry(id: 'm1', table: 'birds', recordId: 'r1'),
+        );
+        await dao.insertItem(
+          makeEntry(id: 'm2', table: 'birds', recordId: 'r2'),
+        );
+        await dao.insertItem(
+          makeEntry(id: 'm3', table: 'eggs', recordId: 'r1'),
+        );
+
+        final rows = await dao.getByRecords('birds', ['r1', 'r2', 'r9']);
+
+        expect(rows.map((r) => r.id), unorderedEquals(['m1', 'm2']));
+      },
+    );
+
+    test(
+      'should delete only matching records when deleteByRecords called',
+      () async {
+        await dao.insertItem(
+          makeEntry(id: 'm1', table: 'birds', recordId: 'r1'),
+        );
+        await dao.insertItem(
+          makeEntry(id: 'm2', table: 'birds', recordId: 'r2'),
+        );
+
+        await dao.deleteByRecords('birds', ['r1']);
+
+        expect(
+          (await dao.getByRecords('birds', ['r1', 'r2'])).map((r) => r.id),
+          ['m2'],
+        );
+      },
+    );
+
+    test(
+      'should reset existing and create missing when markPendingByRecords called',
+      () async {
+        await dao.insertItem(
+          makeEntry(
+            id: 'm1',
+            table: 'birds',
+            recordId: 'r1',
+            status: SyncStatus.error,
+            retryCount: 3,
+            errorMessage: 'boom',
+          ),
+        );
+
+        await dao.markPendingByRecords('birds', {'r1': 'u1', 'r2': 'u1'});
+
+        final rows = await dao.getByRecords('birds', ['r1', 'r2']);
+        expect(rows, hasLength(2));
+        final r1 = rows.singleWhere((r) => r.recordId == 'r1');
+        expect(r1.id, 'm1'); // mevcut satır korunur, duplicate yok
+        expect(r1.status, SyncStatus.pending);
+        expect(r1.retryCount, 0);
+        expect(r1.errorMessage, isNull);
+      },
+    );
+
+    test(
+      'should be noop when markPendingByRecords called with empty map',
+      () async {
+        await dao.markPendingByRecords('birds', const {});
+        expect(await dao.getAll('u1'), isEmpty);
+      },
+    );
+  });
 }
