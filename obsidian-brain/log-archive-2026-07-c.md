@@ -2,6 +2,45 @@
 
 Back to [[log]].
 
+## [2026-07-02] fix | Second-pass all-tabs audit — 12 sibling-path/latent fixes
+
+User again asked to comprehensively examine all tabs. Since the earlier
+same-day all-tabs pass already remediated ~50 findings, dispatched 9 fresh
+per-tab audit agents (one per feature cluster), each briefed with that
+skip-list and hunting only NEW verified bugs. 13 findings across 8 areas;
+5 areas came back genuinely clean (birds/eggs/chicks, statistics/home,
+marketplace/premium/gamification, genealogy/notifications/misc, most of
+genetics). 12 fixed, 1 deferred (admin moderation queue's global-vs-per-card
+loading flag — UX-only). Commit `1c22d95`; all local gates green + touched
+suites (4474 tests).
+
+The high-value catches were three **sibling paths** the earlier pass missed
+while fixing their twins: (1) Settings' Change Password ran a bespoke dialog
+calling `changePassword` directly with a generic catch, so every 2FA user
+hit the mandatory `MfaAssuranceRequired` re-auth as a swallowed error + Sentry
+noise — now delegates to the shared MFA-aware sheet (the profile sheet was
+already fixed). (2) The community comment input cleared its field before the
+fire-and-forget submit could fail, losing the draft on moderation/cooldown/
+network reject — the messaging send path had been hardened the same way but
+the comment twin was not (`addComment` now returns a bool; clear only on
+accept). (3) The messaging send path never set `isSuccess`, so the input
+bar's clear-on-success never fired (stranded text, double-posts) — fixed by
+returning the persisted `Message` + optimistic append (dedup by id).
+
+Others: auth inactivity guard's `_onAppHidden` called `stop()`, wiping its
+own background-elapsed tracking so an overnight-backgrounded session never
+locked (guard self-manages via its lifecycle observer; start/stop is driven
+by auth state); admin `system_settings` mutations + moderation approve/delete
+now write `admin_logs` audit entries; profile avatar picker captured the
+popped sheet context so valid avatars never uploaded (captures the root
+messenger before pop now); breeding pair species-change left stale calendar
+events (now cleans + regenerates); genetics `enrichedOffspringResultsProvider`
+dropped `doubleFactorIds`; messaging realtime messages now pass the
+blocked-sender filter; admin moderation queue uses `CachedNetworkImage`. See
+[[features/messaging]], [[features/settings]], [[features/community]],
+[[features/admin]], [[features/breeding]], [[features/profile]],
+[[patterns/anti-patterns]].
+
 ## [2026-07-02] docs | Migration directory audit — no drift, added era index
 
 User asked to clean up "too many" migrations and organize the folder.

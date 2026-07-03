@@ -21,8 +21,11 @@ inline). **Cascade deletes (T4-5, `108c0885`/`d6b016c`):** `EventRepository.remo
 + one batch `pendingDelete` metadata + one `BaseRemoteSource.deleteByIds`
 (tombstones survive on remote failure). **Import (T6, `5ca9536`):** Excel import
 persists via one `repo.saveAll` (no per-row push) + map-based FK validation
-(one `getAll`, zero per-row `getById`); batch is all-or-nothing.
-See [[data-layer/sync-strategy]], [[data-layer/repositories]], [[domain/data-io]].
+(one `getAll`, zero per-row `getById`); batch is all-or-nothing. **Index (T7,
+`f9babe0`):** schema v25→v26 adds `idx_conflict_history_user_table_record`
+`(user_id, table_name, record_id)` so `ConflictHistoryDao` exists-checks seek
+instead of full-scan. See [[data-layer/sync-strategy]], [[data-layer/repositories]],
+[[domain/data-io]], [[data-layer/migrations]].
 
 ## [2026-07-03] fix (branch) | community post-edit + admin follow-ups
 
@@ -155,44 +158,5 @@ settings MFA-aware change-password sheet; profile avatar-picker messenger
 capture. `community`/`genetics` pages left unchanged — those fixes
 (input-clear timing, a provider field-copy) are below the wiki's
 architectural granularity. Commit `8fd2ce5`.
-
-## [2026-07-02] fix | Second-pass all-tabs audit — 12 sibling-path/latent fixes
-
-User again asked to comprehensively examine all tabs. Since the earlier
-same-day all-tabs pass already remediated ~50 findings, dispatched 9 fresh
-per-tab audit agents (one per feature cluster), each briefed with that
-skip-list and hunting only NEW verified bugs. 13 findings across 8 areas;
-5 areas came back genuinely clean (birds/eggs/chicks, statistics/home,
-marketplace/premium/gamification, genealogy/notifications/misc, most of
-genetics). 12 fixed, 1 deferred (admin moderation queue's global-vs-per-card
-loading flag — UX-only). Commit `1c22d95`; all local gates green + touched
-suites (4474 tests).
-
-The high-value catches were three **sibling paths** the earlier pass missed
-while fixing their twins: (1) Settings' Change Password ran a bespoke dialog
-calling `changePassword` directly with a generic catch, so every 2FA user
-hit the mandatory `MfaAssuranceRequired` re-auth as a swallowed error + Sentry
-noise — now delegates to the shared MFA-aware sheet (the profile sheet was
-already fixed). (2) The community comment input cleared its field before the
-fire-and-forget submit could fail, losing the draft on moderation/cooldown/
-network reject — the messaging send path had been hardened the same way but
-the comment twin was not (`addComment` now returns a bool; clear only on
-accept). (3) The messaging send path never set `isSuccess`, so the input
-bar's clear-on-success never fired (stranded text, double-posts) — fixed by
-returning the persisted `Message` + optimistic append (dedup by id).
-
-Others: auth inactivity guard's `_onAppHidden` called `stop()`, wiping its
-own background-elapsed tracking so an overnight-backgrounded session never
-locked (guard self-manages via its lifecycle observer; start/stop is driven
-by auth state); admin `system_settings` mutations + moderation approve/delete
-now write `admin_logs` audit entries; profile avatar picker captured the
-popped sheet context so valid avatars never uploaded (captures the root
-messenger before pop now); breeding pair species-change left stale calendar
-events (now cleans + regenerates); genetics `enrichedOffspringResultsProvider`
-dropped `doubleFactorIds`; messaging realtime messages now pass the
-blocked-sender filter; admin moderation queue uses `CachedNetworkImage`. See
-[[features/messaging]], [[features/settings]], [[features/community]],
-[[features/admin]], [[features/breeding]], [[features/profile]],
-[[patterns/anti-patterns]].
 
 Older entries are archived in [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

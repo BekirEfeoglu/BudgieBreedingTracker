@@ -8,7 +8,7 @@ Two parallel migration systems: **Drift** (local SQLite) and **Supabase SQL** (r
 
 ### Schema Version
 
-`schemaVersion = 25` in `app_database.dart`. Must be incremented sequentially — no skipping. (v25 added `profiles.show_in_leaderboard` via `_migrateV24ToV25`.)
+`schemaVersion = 26` in `app_database.dart`. Must be incremented sequentially — no skipping. (v25 added `profiles.show_in_leaderboard` via `_migrateV24ToV25`; v26 added the `idx_conflict_history_user_table_record` composite index via `_migrateV25ToV26`, which re-runs the idempotent `_createPerformanceIndexes`.)
 
 ### Pattern
 
