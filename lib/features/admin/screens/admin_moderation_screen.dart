@@ -106,7 +106,11 @@ class _PendingPostCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final isDeleting = ref.watch(adminModerationProvider).isLoading;
+    // Watch only this post's membership so one card's action doesn't rebuild
+    // or freeze every other card in the queue.
+    final isProcessing = ref.watch(
+      adminModerationProvider.select((s) => s.contains(post.id)),
+    );
 
     return Card(
       child: Padding(
@@ -205,7 +209,7 @@ class _PendingPostCard extends ConsumerWidget {
                   icon: const Icon(LucideIcons.check),
                   label: const Text('admin.approve_content').tr(),
                   style: TextButton.styleFrom(foregroundColor: AppColors.success),
-                  onPressed: isDeleting
+                  onPressed: isProcessing
                       ? null
                       : () => ref.read(adminModerationProvider.notifier).approvePost(post.id),
                 ),
@@ -216,7 +220,7 @@ class _PendingPostCard extends ConsumerWidget {
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.error,
                   ),
-                  onPressed: isDeleting
+                  onPressed: isProcessing
                       ? null
                       : () => ref.read(adminModerationProvider.notifier).deletePost(post.id),
                 ),
@@ -274,7 +278,10 @@ class _PendingCommentCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final isDeleting = ref.watch(adminModerationProvider).isLoading;
+    // Watch only this comment's membership (see _PendingPostCard).
+    final isProcessing = ref.watch(
+      adminModerationProvider.select((s) => s.contains(comment.id)),
+    );
 
     return Card(
       child: Padding(
@@ -329,7 +336,7 @@ class _PendingCommentCard extends ConsumerWidget {
                   icon: const Icon(LucideIcons.check),
                   label: const Text('admin.approve_content').tr(),
                   style: TextButton.styleFrom(foregroundColor: AppColors.success),
-                  onPressed: isDeleting
+                  onPressed: isProcessing
                       ? null
                       : () => ref.read(adminModerationProvider.notifier).approveComment(comment.id),
                 ),
@@ -340,7 +347,7 @@ class _PendingCommentCard extends ConsumerWidget {
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.error,
                   ),
-                  onPressed: isDeleting
+                  onPressed: isProcessing
                       ? null
                       : () => ref.read(adminModerationProvider.notifier).deleteComment(comment.id),
                 ),

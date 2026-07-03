@@ -33,9 +33,13 @@ class _FakeMaybeSingle extends Fake
 
 // ignore: must_be_immutable
 class _FakeFilter extends Fake implements PostgrestFilterBuilder<PostgrestList> {
-  _FakeFilter(this.result, {this.onEq});
+  _FakeFilter(this.result, {this.onEq, this.gate});
   PostgrestList result;
   final void Function(String column, Object value)? onEq;
+
+  /// When set (only on update filters), resolution waits on this future so a
+  /// test can observe the in-flight processing state.
+  final Future<void>? gate;
 
   @override
   PostgrestFilterBuilder<PostgrestList> eq(String column, Object value) {
@@ -60,8 +64,12 @@ class _FakeFilter extends Fake implements PostgrestFilterBuilder<PostgrestList> 
   Future<S> then<S>(
     FutureOr<S> Function(PostgrestList value) onValue, {
     Function? onError,
-  }) =>
-      Future<PostgrestList>.value(result).then(onValue, onError: onError);
+  }) {
+    final base = gate == null
+        ? Future<PostgrestList>.value(result)
+        : gate!.then((_) => result);
+    return base.then(onValue, onError: onError);
+  }
 }
 
 class _FakeQuery extends Fake implements SupabaseQueryBuilder {
@@ -81,14 +89,22 @@ class _FakeQuery extends Fake implements SupabaseQueryBuilder {
   PostgrestFilterBuilder<PostgrestList> update(Map values) {
     final call = _UpdateCall(table, Map<String, dynamic>.from(values));
     store.updates.add(call);
-    return _FakeFilter(const [], onEq: (c, v) => call.eqCalls.add(MapEntry(c, v)));
+    return _FakeFilter(
+      const [],
+      onEq: (c, v) => call.eqCalls.add(MapEntry(c, v)),
+      gate: store.updateGate?.future,
+    );
   }
 }
 
 class _Store {
-  _Store({required this.adminRow, this.posts = const []});
+  _Store({required this.adminRow, this.posts = const [], this.updateGate});
   final PostgrestList adminRow;
   final PostgrestList posts;
+
+  /// When set, update calls block on this completer so a test can inspect the
+  /// notifier's in-flight processing set.
+  final Completer<void>? updateGate;
   final updates = <_UpdateCall>[];
 
   PostgrestList rowsFor(String table) {
@@ -187,6 +203,48 @@ void main() {
       expect(call.values[SupabaseConstants.colIsDeleted], true);
       expect(call.eqCalls.single.key, SupabaseConstants.colId);
       expect(call.eqCalls.single.value, 'comment-1');
+    });
+
+    test('marks only the acting item as processing, then clears it', () async {
+      final gate = Completer<void>();
+      final store = _Store(adminRow: _adminRow(), updateGate: gate);
+      final container = _container(store);
+
+      expect(container.read(adminModerationProvider), isEmpty);
+
+      // Don't await: the synchronous prefix of _run adds the id before the
+      // first await, so the in-flight state is observable immediately.
+      final future =
+          container.read(adminModerationProvider.notifier).approvePost('post-1');
+
+      expect(container.read(adminModerationProvider), contains('post-1'));
+      expect(
+        container.read(adminModerationProvider).contains('post-2'),
+        isFalse,
+        reason: 'a different card must not be locked by post-1 processing',
+      );
+
+      gate.complete();
+      await future;
+
+      expect(container.read(adminModerationProvider), isEmpty);
+    });
+
+    test('ignores a double-tap on an already-processing item', () async {
+      final gate = Completer<void>();
+      final store = _Store(adminRow: _adminRow(), updateGate: gate);
+      final container = _container(store);
+      final notifier = container.read(adminModerationProvider.notifier);
+
+      final first = notifier.deletePost('post-1');
+      final second = notifier.deletePost('post-1'); // ignored while in flight
+
+      gate.complete();
+      await Future.wait([first, second]);
+
+      // Only the first call issued an update.
+      expect(store.updates, hasLength(1));
+      expect(container.read(adminModerationProvider), isEmpty);
     });
   });
 }
