@@ -121,6 +121,34 @@ void main() {
       expect(textField.controller?.text, isEmpty);
     });
 
+    testWidgets('surfaces the error and preserves text when a send fails', (
+      tester,
+    ) async {
+      final failing = _FailingMessagingFormNotifier();
+      await pumpLocalizedApp(
+        tester,
+        buildSubject(notifierFactory: () => failing),
+      );
+
+      await tester.enterText(find.byType(TextField), 'Hello');
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithIcon(IconButton, LucideIcons.send));
+      await tester.pumpAndSettle();
+
+      // The failure reason is shown with a retry action.
+      expect(find.text('send failed'), findsOneWidget);
+      expect(find.text(l10n('common.retry')), findsOneWidget);
+      // The typed text is preserved so it can be retried.
+      final textField = tester.widget<TextField>(find.byType(TextField));
+      expect(textField.controller?.text, 'Hello');
+      expect(failing.sendCount, 1);
+
+      // Tapping retry re-sends the preserved text.
+      await tester.tap(find.text(l10n('common.retry')));
+      await tester.pumpAndSettle();
+      expect(failing.sendCount, 2);
+    });
+
     testWidgets(
       'attachment button opens bottom sheet when attachments flag is enabled',
       (tester) async {
@@ -189,6 +217,35 @@ class _FakeMessagingFormNotifier extends MessagingFormNotifier {
       senderName: senderName,
       content: content,
     );
+  }
+
+  @override
+  void reset() {}
+}
+
+/// Always fails: returns null and sets a fixed error, so the input bar keeps
+/// the typed text and surfaces the failure via SnackBar.
+class _FailingMessagingFormNotifier extends MessagingFormNotifier {
+  int sendCount = 0;
+
+  @override
+  MessagingFormState build() => const MessagingFormState();
+
+  @override
+  Future<Message?> sendMessage({
+    required String conversationId,
+    required String senderId,
+    required String senderName,
+    String? senderAvatarUrl,
+    String? content,
+    MessageType messageType = MessageType.text,
+    String? imageUrl,
+    String? referenceId,
+    Map<String, dynamic>? referenceData,
+  }) async {
+    sendCount++;
+    state = state.copyWith(error: 'send failed', isSuccess: false);
+    return null;
   }
 
   @override

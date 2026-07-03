@@ -245,4 +245,18 @@ void main() {
     expect(state.isSuccess, false);
     expect(state.resultConversationId, isNull);
   });
+
+  test('clearError clears only the error field', () async {
+    // Over-length content sets an error before any repo/moderation call.
+    await container.read(messagingFormStateProvider.notifier).sendMessage(
+          conversationId: 'c1',
+          senderId: 's1',
+          senderName: 'S',
+          content: 'x' * 2001,
+        );
+    expect(container.read(messagingFormStateProvider).error, isNotNull);
+
+    container.read(messagingFormStateProvider.notifier).clearError();
+    expect(container.read(messagingFormStateProvider).error, isNull);
+  });
 }

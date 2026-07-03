@@ -220,6 +220,14 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
   }
 
   void reset() => state = const MessagingFormState();
+
+  /// Clears just the error field so the UI (which surfaces send failures via a
+  /// SnackBar) doesn't replay the same message when the listener re-fires for
+  /// an unrelated state change.
+  void clearError() {
+    if (state.error == null) return;
+    state = state.copyWith(error: null);
+  }
 }
 
 final messagingFormStateProvider =

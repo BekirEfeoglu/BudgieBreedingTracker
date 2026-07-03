@@ -4,6 +4,20 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-03] fix | Messaging surfaces send failures with a retry action (§4.3)
+
+Continuing plan execution. A failed message send set `messagingFormStateProvider.error`
+but nothing displayed it — the user saw the text stay in the input with no
+reason. `MessageInputBar` now `ref.listen`s the form state and shows the error
+(cooldown / moderation / length / network) in a SnackBar with a `common.retry`
+action that re-sends the preserved text, then `clearError()`s. Chose this over
+the full in-thread sending/failed status bubble (a `Message` delivery-status
+field + build_runner + turning `messagingRealtimeProvider` into an id-keyed
+upsert) because that touches heavily-tested realtime list management and is a
+larger supervised refactor — noted in [[features/messaging]] /
+`.claude/rules/messaging.md` § Delivery Status. Provider + widget tests added;
+103 messaging tests green.
+
 ## [2026-07-03] fix | IMPROVEMENT_PLAN.md execution — XP cap, admin queue, reminders
 
 Autonomous plan execution. (1) §4.1 (audit K12): the client-only daily XP cap

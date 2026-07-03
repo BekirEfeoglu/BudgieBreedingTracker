@@ -52,6 +52,27 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
     final theme = Theme.of(context);
     final attachmentsEnabled = ref.watch(messageAttachmentsEnabledProvider);
 
+    // Surface send failures (cooldown, moderation, length cap, network). The
+    // form provider set `error` but nothing displayed it, so a failed send was
+    // silent apart from the input keeping its text. Show the reason with a
+    // retry action that re-sends the preserved text.
+    ref.listen<MessagingFormState>(messagingFormStateProvider, (prev, next) {
+      final error = next.error;
+      if (error == null || error == prev?.error || !mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(error),
+            action: SnackBarAction(
+              label: 'common.retry'.tr(),
+              onPressed: _sendMessage,
+            ),
+          ),
+        );
+      ref.read(messagingFormStateProvider.notifier).clearError();
+    });
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,

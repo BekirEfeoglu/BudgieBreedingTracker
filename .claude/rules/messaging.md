@@ -52,7 +52,9 @@ User types -> Send button
 - Failure'da local kuyruğa koy, connectivity dönünce auto-retry (max 3)
 
 ## Delivery Status
-**Henüz implement edilmedi (2026-07-02 audit):** `Message` modelinde delivery-status alanı (sending/sent/delivered/failed) YOK. `message_input_bar.dart` gönderim çağrısını doğrudan `await` eder, öncesinde optimistic append YAPMAZ; başarısızlıkta thread'de hiçbir şey render edilmez ve snackbar gösterilmez — başarısız gönderim sessizce kaybolur. Bu bölüm gelecek tasarım hedefidir; retry UI'lı bir client-side sending/failed state eklenmeli.
+**Kısmi (2026-07-03):** Başarı yolunda `MessageInputBar._sendMessage` gönderim başarılı olunca input'u temizler ve dönen `Message`'ı `messagingRealtimeProvider.addLocalMessage` ile optimistic append eder (detail-screen merge id'ye göre dedup eder). Başarısızlıkta metin **korunur** ve hata artık **yüzeye çıkar**: `MessageInputBar` `messagingFormStateProvider`'ı `ref.listen` ile dinler, `state.error` set olunca sebebi (cooldown/moderation/uzunluk/ağ) `common.retry` aksiyonlu bir SnackBar ile gösterir, sonra `clearError()` çağırır; retry korunan metni yeniden gönderir.
+
+**Hâlâ yok (gelecek tasarım hedefi):** `Message` modelinde client-side delivery-status alanı (sending/sent/failed) YOK, dolayısıyla thread içinde balon-üstü "gönderiliyor/başarısız" göstergesi de yok. Bunu eklemek `messagingRealtimeProvider`'ın liste yönetimini id-bazlı upsert'e çevirmeyi gerektirir (şu an prepend eder; realtime echo ile optimistic mesaj map-merge sayesinde dedup oluyor ama liste seviyesinde değil) — yoğun test edilmiş çekirdek davranış olduğu için ayrı, denetimli bir refactor.
 
 ## Read Receipts
 - Gerçek şema: `messages.read_by` (JSONB kullanıcı ID dizisi) + `conversation_participants.last_read_at`

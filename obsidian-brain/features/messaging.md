@@ -39,6 +39,15 @@ the eventual echo (`sendMessage` returns the `Message`, and the input bar
 clears only on that non-null return — wired 2026-07-02, previously the text
 stayed and users double-posted).
 
+On failure the text is preserved and, as of 2026-07-03, the reason is
+surfaced: `MessageInputBar` `ref.listen`s `messagingFormStateProvider` and
+shows `state.error` (cooldown / moderation / length / network) in a SnackBar
+with a `common.retry` action that re-sends the preserved text, then calls
+`clearError()`. There is still no client-side delivery-status field on
+`Message`, so there is no in-thread "sending/failed" bubble — that would need
+`messagingRealtimeProvider` to upsert its list by id (see
+`.claude/rules/messaging.md` § Delivery Status).
+
 ## Push Notifications
 
 Out-of-app delivery via `send-push` Edge Function. Payload schema:
