@@ -30,15 +30,18 @@ See [[architecture/online-first-exemption]]
 - Threshold-based auto-flag + human review queue
 - Photos scanned by `scan-image-safety` Edge Function before upload
 
-## Post Edit (in progress — branch `feature/community-tab-faz1`)
+## Post Edit (5-minute window)
 
 Content-only edit within a **5-minute window**, enforced server-side. Migration
 `20260703120000_community_post_edit_hardening.sql` adds `community_posts.edited_at`
-and narrows the `authenticated` UPDATE grant to `(is_deleted, needs_review,
-reviewed_by)` — post content can no longer be edited via a direct client `.update()`;
-edits go through `create-community-post` edge fn `mode: 'update'` (moderation re-runs,
-fail-closed). UI shows an `edited` badge; the edit action appears only on the author's
-own post inside the window. Not yet merged/applied to prod. See
+and narrows the `authenticated` UPDATE grant to `(is_deleted, needs_review)` — post
+content can no longer be edited via a direct client `.update()`; edits go through
+`create-community-post` edge fn `mode: 'update'` (moderation re-runs, fail-closed).
+(`reviewed_by` was in the planned grant but that column does NOT exist on
+`community_posts` — dropped; `clearReviewFlag`'s write to it is a pre-existing latent
+bug, IMPROVEMENT_PLAN §6.14.) UI shows an `edited` badge; the edit action appears only
+on the author's own post inside the window. Applied to prod + merged to main
+2026-07-03 (advisors 0 new). See
 `docs/superpowers/specs/2026-07-03-community-tab-design.md`.
 
 **Client data contract** (commit `68d6a57`): `CommunityPost.editedAt` (`DateTime?`) +
@@ -52,7 +55,7 @@ own post inside the window. Not yet merged/applied to prod. See
 an author-only "Edit" menu item gated by `canEditPost` (UTC 5-min window), and an
 `edited` badge on the post header. 6 l10n keys (tr/en/de).
 
-## Mute (in progress — branch `feature/community-tab-faz1`)
+## Mute (soft block)
 
 One-directional, visibility-only "soft block". Migration `20260703121000_community_mutes.sql`
 adds a **separate** `public.community_mutes` table (NOT a column on `community_blocks` —
@@ -66,7 +69,9 @@ SharedPreferences `keyMutedUserIds` + server sync, optimistic+rollback — mirro
 `blockedUsersProvider`). Feed filter applies muted after blocked across all tab arms;
 `visibleCommentsProvider` filters muted+blocked comment authors. Mute is a light action
 (no confirm dialog, toast only) and **community-only** — NOT wired into messaging (mute
-never affects DMs; that's block's job). 4 l10n keys (tr/en/de). Not yet applied to prod.
+never affects DMs; that's block's job). 4 l10n keys (tr/en/de). Migration
+`20260703121000_community_mutes.sql` applied to prod + merged to main 2026-07-03
+(advisors 0 new; FORCE RLS + owner-only SELECT verified).
 
 ## Cache
 
