@@ -4,6 +4,20 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-04] fix | Sync stale-error cleanup moved out of the push phase
+
+Deferred audit item, now requested. `ValidatedSyncMixin.pushAll` ran
+`clearStaleErrors` first — in the PUSH phase, before the reconcile pull. Deleting
+an error `sync_metadata` row there strips reconcile protection
+(`getPendingRecordIds` = pending+error), so the following full pull could
+hardDelete an unsynced local-only record → data loss. Removed the push-phase call
+(the orchestrator's `cleanupUnrecoverableErrors` already runs it globally POST-pull,
+the safe time), and set `createdAt` in `markPending`'s insert branch so the (now
+sole, post-pull) cleanup + Sentry monitoring stop being inert on the common
+`pending→error` path (createdAt was null → zombie error rows forever). Converted the
+two push-phase-cleanup tests into "pushAll does NOT clean" regression guards; 510
+repo+sync green. See [[data-layer/sync-strategy]].
+
 ## [2026-07-04] fix | Comprehensive audit sweep — 8 findings fixed, 2 deferred
 
 Full multi-subsystem bug hunt (8 parallel audit agents), each fix verified.

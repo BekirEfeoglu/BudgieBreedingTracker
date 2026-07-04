@@ -48,7 +48,7 @@ maxRetries = 7
 - No retry on: `AuthException`, `ValidationException` (permanent)
 - After max retries: error persists in `SyncMetadata`, surfaced via global `OfflineBanner` retry CTA
 - `pendingDeletionSyncErrorsProvider` pre-warns at 20h+ before the 24h stale cleanup runs
-- Both stale-error cleanup paths agree (unified 2026-07-04): `SyncErrorHandler.cleanupUnrecoverableErrors` (orchestrator, per cycle) and `ValidatedSyncMixin.clearStaleErrors` (per FK-repo `pushAll`) both delete on `retryCount >= RetryScheduler.maxRetries` (7) AND `createdAt` older than 24h. Previously `clearStaleErrors` used a divergent `>= 10` with no age guard — unreachable dead code, since retries cap at 7.
+- Stale-error cleanup runs **only post-pull**, via `SyncErrorHandler.cleanupUnrecoverableErrors` (orchestrator, after the reconcile pull), deleting on `retryCount >= RetryScheduler.maxRetries` (7) AND `createdAt` older than 24h. `ValidatedSyncMixin.clearStaleErrors` still exists (unit-tested) but is **no longer called from `pushAll`** (fixed 2026-07-04): running it in the push phase deleted an error row before the reconcile pull, stripping the pending+error protection (`getPendingRecordIds`) so the pull could hardDelete an unsynced local record → data loss. `markPending` now stamps `createdAt` on insert so the (post-pull) cleanup + Sentry monitoring actually act on aged rows — previously the common `pending→error` path left `createdAt` null and both were inert (zombie error rows forever).
 
 ## Conflict Resolution
 
