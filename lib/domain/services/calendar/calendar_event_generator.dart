@@ -44,14 +44,21 @@ class CalendarEventGenerator {
         milestonesForSpecies.lateHatchDay: 'calendar.milestone_late_hatch'.tr(),
       };
 
-      // Normalize start to UTC midnight so adding day offsets is DST-safe.
-      // Raw `add(Duration(days: N))` adds N×24h wall-clock and lands on the
-      // wrong calendar day across DST boundaries; UTC midnight + days math
-      // sidesteps that.
-      final base = DateTime.utc(startDate.year, startDate.month, startDate.day);
+      // Build each milestone as a LOCAL wall-clock date via field addition
+      // (day + N), NOT DateTime.utc(...).add(Duration(days: N)). Field addition
+      // is DST-safe (Dart normalizes the day overflow), and — unlike a
+      // UTC-midnight instant, whose .toLocal() shifts to the previous day in
+      // UTC-negative timezones and mis-buckets the calendar cell — it lands on
+      // the same local calendar day the notification scheduler fires on (both
+      // use incubationMilestonesForSpecies + local field addition), keeping the
+      // calendar and the reminders in agreement in every timezone.
       final events = <Event>[];
       for (final entry in milestones.entries) {
-        final eventDate = base.add(Duration(days: entry.key));
+        final eventDate = DateTime(
+          startDate.year,
+          startDate.month,
+          startDate.day + entry.key,
+        );
         if (eventDate.isBefore(DateTime.now())) continue;
 
         events.add(
@@ -117,10 +124,14 @@ class CalendarEventGenerator {
       );
       await _eventRepo.save(layEvent);
 
-      // 2. Expected hatch date event (UTC-normalized for DST safety).
-      final layBase = DateTime.utc(layDate.year, layDate.month, layDate.day);
-      final hatchDate = layBase.add(
-        Duration(days: incubationDaysForSpecies(species)),
+      // 2. Expected hatch date event. Local field addition (see
+      // generateIncubationEvents) so the calendar cell matches the scheduled
+      // reminder's day in every timezone, not a UTC-midnight instant that
+      // .toLocal() would shift a day earlier in the Americas.
+      final hatchDate = DateTime(
+        layDate.year,
+        layDate.month,
+        layDate.day + incubationDaysForSpecies(species),
       );
       if (!hatchDate.isBefore(DateTime.now())) {
         final hatchEvent = Event(
@@ -171,11 +182,16 @@ class CalendarEventGenerator {
         35: ('calendar.milestone_weaning'.tr(), EventType.chick, null),
       };
 
-      // UTC-normalized base so day-offset math is DST-safe.
-      final base = DateTime.utc(hatchDate.year, hatchDate.month, hatchDate.day);
+      // Local field addition (see generateIncubationEvents) keeps each chick
+      // milestone on the same local calendar day as its scheduled reminder in
+      // every timezone.
       final events = <Event>[];
       for (final entry in milestones.entries) {
-        final eventDate = base.add(Duration(days: entry.key));
+        final eventDate = DateTime(
+          hatchDate.year,
+          hatchDate.month,
+          hatchDate.day + entry.key,
+        );
         if (eventDate.isBefore(DateTime.now())) continue;
 
         final (label, type, eventChickId) = entry.value;

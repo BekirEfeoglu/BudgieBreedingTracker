@@ -67,16 +67,17 @@ void main() {
     );
 
     test(
-      'generateIncubationEvents normalizes to UTC midnight before adding '
-      'day offsets, so a start time near local midnight/DST-transition '
-      'hours never drifts the milestone onto the wrong calendar day',
+      'generateIncubationEvents builds milestones via local field addition, so '
+      'each event lands on the same local calendar day as its reminder even for '
+      'a start time near local midnight / a DST-transition boundary',
       () async {
         // A start "moment" late in the local day (23:50) is the case where
         // naive `startDate.add(Duration(days: N))` wall-clock math is most
-        // likely to disagree with UTC-midnight-normalized math — DST
-        // transitions and UTC offset conversions both pivot around day
-        // boundaries. Anchored relative to `now` so this test never goes
-        // stale.
+        // likely to drift onto the wrong calendar day. Field addition
+        // (day + N) is DST-safe AND — unlike a UTC-midnight instant, which
+        // .toLocal() shifts a day earlier in UTC-negative zones — keeps the
+        // event on the local day the notification scheduler fires on. Anchored
+        // relative to `now` so this test never goes stale.
         final anchor = DateTime.now().add(const Duration(days: 10));
         final startDate = DateTime(
           anchor.year,
@@ -86,18 +87,15 @@ void main() {
           50,
         );
         final milestones = incubationMilestonesForSpecies(Species.unknown);
-        final base = DateTime.utc(
-          startDate.year,
-          startDate.month,
-          startDate.day,
-        );
+        DateTime milestoneDate(int day) =>
+            DateTime(startDate.year, startDate.month, startDate.day + day);
         final futureDays = [
           milestones.candlingDay,
           milestones.secondCheckDay,
           milestones.sensitivePeriodDay,
           milestones.expectedHatchDay,
           milestones.lateHatchDay,
-        ].where((day) => !base.add(Duration(days: day)).isBefore(DateTime.now()));
+        ].where((day) => !milestoneDate(day).isBefore(DateTime.now()));
 
         await generator.generateIncubationEvents(
           userId: 'user-1',
@@ -109,9 +107,7 @@ void main() {
         final captured =
             verify(() => mockRepo.saveAll(captureAny())).captured.single
                 as List<Event>;
-        final expectedDates = futureDays
-            .map((day) => base.add(Duration(days: day)))
-            .toSet();
+        final expectedDates = futureDays.map(milestoneDate).toSet();
         final actualDates = captured.map((e) => e.eventDate).toSet();
         expect(actualDates, expectedDates);
       },
@@ -152,14 +148,15 @@ void main() {
     );
 
     test(
-      'generateEggEvents computes the expected-hatch date via UTC-midnight '
-      'normalization, not local wall-clock math near a day boundary',
+      'generateEggEvents computes the expected-hatch date via local field '
+      'addition, keeping the calendar cell on the reminder day near a boundary',
       () async {
         // Lay "moment" late in the local day (23:50), anchored relative to
-        // `now` so the test never goes stale. If the production code ever
-        // regressed to `layDate.add(Duration(days: N))` on the raw
-        // (non-UTC-normalized) layDate, this time-of-day would risk landing
-        // the hatch date a day off around a DST transition.
+        // `now` so the test never goes stale. Field addition (day + N) is
+        // DST-safe and lands on the same local day as the reminder; a raw
+        // `layDate.add(Duration(days: N))` would risk a day-off around a DST
+        // transition, and a UTC-midnight instant would mis-bucket a day earlier
+        // in UTC-negative zones.
         final anchor = DateTime.now().add(const Duration(days: 10));
         final layDate = DateTime(
           anchor.year,
@@ -168,11 +165,11 @@ void main() {
           23,
           50,
         );
-        final expectedHatch = DateTime.utc(
+        final expectedHatch = DateTime(
           layDate.year,
           layDate.month,
-          layDate.day,
-        ).add(Duration(days: incubationDaysForSpecies(Species.budgie)));
+          layDate.day + incubationDaysForSpecies(Species.budgie),
+        );
 
         await generator.generateEggEvents(
           userId: 'user-1',
