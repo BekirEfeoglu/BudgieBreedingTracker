@@ -69,6 +69,26 @@ DateUtils.dayDiff(...)
 
 Mixing both `DateUtils` classes in one file: prefix the local one, leave Flutter's unprefixed (see `calendar_providers.dart`).
 
+## Forward Date Offsets — Field Addition (DST-safe)
+
+Milestone / banding / hatch-prediction dates are computed with **field
+addition**, never `Duration` add (fix 07638b5, 2026-07-04):
+
+```dart
+// CORRECT — Dart normalizes overflow (Jan 32 → Feb 1), lands on the right
+// calendar day across DST
+DateTime dateFor(int day) =>
+    DateTime(startDate.year, startDate.month, startDate.day + day);
+
+// WRONG — adds N×24h absolute time; across a DST transition the date drifts
+// one calendar day off the calendar events (which UTC-normalize)
+startDate.add(Duration(days: N))
+```
+
+Applied in `incubation_calculator.getMilestones`, `notification_scheduler`
+milestone notifications, `chick_model.plannedBandingDate`. Never reproduces in
+Turkey (no DST) or CI (UTC) — local success is not evidence.
+
 ## Notification Scheduling
 
 ```dart
@@ -91,6 +111,7 @@ Naive `DateTime` for scheduling → timezone bug. **Always `tz.TZDateTime`.**
 5. `DateUtils` imported without prefix (collides with Flutter material — `as date_utils` required)
 6. UTC `DateTime` displayed directly (user expects local timezone)
 7. `.toIso8601String()` without `.toUtc()` first
+8. Forward date offset via `.add(Duration(days: N))` (drifts a day across DST — use field addition `DateTime(y, m, d + N)`)
 
 ## See Also
 

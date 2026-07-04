@@ -4,6 +4,13 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-04] docs | DST field-addition pattern synced to rule + wiki pages
+
+Follow-up doc sync for `07638b5`: `.claude/rules/datetime-format.md` § Hatch
+Date Prediction rewritten (Duration-add was still blessed as "acceptable" —
+now field addition is mandatory, new anti-pattern #10) and the pattern
+documented in [[patterns/datetime-format]] + [[domain/incubation-service]].
+
 ## [2026-07-04] fix | Two correctness bugs from a live-code bug hunt
 
 Four adversarial bug-hunt agents swept the live high-risk subsystems

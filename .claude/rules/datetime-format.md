@@ -59,10 +59,11 @@ int incubationDay(DateTime layDate, DateTime today) {
 
 Saat dilimi sınırında yanlış sonuç vermesin diye `DateTime.utc(...)` ile sadece YIL-AY-GÜN kullan. `inDays` saat farkı 23:59 olduğunda 0 dönebilir — bu yüzden UTC midnight'a normalize et.
 
-### Hatch Date Prediction
+### Hatch Date Prediction & Forward Date Offsets (field addition ZORUNLU)
 - Budgie: 18 gün (varsayılan)
-- Hesap: `layDate.add(Duration(days: 18))` — local timezone'a duyarsız çünkü `.add(Duration(days:))` 24h ekler
-- DST sınırı: yıl boyu bir kez, %0.1'den az kullanıcıyı etkiler — kabul edilir
+- İleri tarih hesabı (milestone, banding, hatch tahmini) **field addition** ile: `DateTime(start.year, start.month, start.day + N)` — Dart taşmayı normalize eder (32 Ocak → 1 Şubat)
+- `start.add(Duration(days: N))` KULLANMA: N×24h mutlak süre ekler, DST geçişinde yanlış takvim gününe düşer — bildirimler takvim event'lerinden (UTC-normalize) bir gün kayar. 2026-07-04 fix'i (07638b5) `incubation_calculator.getMilestones`, `notification_scheduler` milestone bildirimleri ve `chick_model.plannedBandingDate`'i bu pattern'e taşıdı
+- Türkiye'de (DST yok) ve CI'da (UTC) reproduce OLMAZ — DST'li timezone'larda kullanıcıyı etkiler; "lokalde çalışıyor" kanıt değil
 
 ## Notification Schedule
 - `flutter_local_notifications` için `tz.TZDateTime` ZORUNLU
@@ -156,9 +157,9 @@ test('incubation day handles DST boundary', () {
   expect(incubationDay(layDate, today), 6);
 });
 
-test('hatch prediction adds 18 days regardless of DST', () {
+test('hatch prediction lands on correct calendar day across DST', () {
   final layDate = DateTime(2026, 3, 25);
-  final hatch = layDate.add(const Duration(days: 18));
+  final hatch = DateTime(layDate.year, layDate.month, layDate.day + 18);
   expect(hatch.day, 12);
   expect(hatch.month, 4);
 });
@@ -180,5 +181,6 @@ test('storage uses UTC ISO string', () {
 7. Profil'de manuel timezone alanı (over-engineering)
 8. `.toIso8601String()` kullanıp `.toUtc()` atlamak
 9. Incubation math'i floating-point veya saat-bazlı yapmak (sadece tarih kısmı)
+10. İleri tarih offset'ini `.add(Duration(days: N))` ile hesaplamak (DST'de gün kayar — field addition `DateTime(y, m, d + N)` zorunlu)
 
 > **İlgili**: data-layer.md (.toSupabase), notifications.md (tz.TZDateTime schedule), localization.md (DateFormat locale), edge-functions.md (UTC wire)

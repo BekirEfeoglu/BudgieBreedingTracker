@@ -33,6 +33,14 @@ import 'package:budgie_breeding_tracker/core/utils/date_utils.dart' as date_util
 final day = date_utils.DateUtils.dayDiff(layDate, DateTime.now());
 ```
 
+**Forward offsets** (milestone dates, banding date) use field addition, not
+`Duration` add (fix 07638b5, 2026-07-04): `DateTime(start.year, start.month,
+start.day + N)`. `startDate.add(Duration(days: N))` adds N×24h and drifts one
+calendar day across a DST transition, desyncing milestone notifications from
+the (UTC-normalized) calendar events. Applied in
+`incubation_calculator.getMilestones`, `notification_scheduler`, and
+`chick_model.plannedBandingDate` — see [[patterns/datetime-format]].
+
 ## Milestone Resolution
 
 ```
