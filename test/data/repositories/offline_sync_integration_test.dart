@@ -360,7 +360,12 @@ void main() {
       },
     );
 
-    test('validated sync clears stale errors above max retries', () async {
+    test('validated sync does NOT clear stale errors during the push phase', () async {
+      // Stale-error cleanup moved to the orchestrator's POST-PULL step:
+      // deleting an error row in the push phase strips the reconcile protection
+      // (getPendingRecordIds = pending+error) and lets the following pull
+      // hardDelete an unsynced local record. pushAll must leave error rows
+      // untouched — the next test asserts the pull-side half of this invariant.
       final localDao = MockEggsDao();
       final remote = MockEggRemoteSource();
       final syncDao = MockSyncMetadataDao();
@@ -375,26 +380,13 @@ void main() {
       );
 
       when(
-        () => syncDao.getErrorsByTable(userId, SupabaseConstants.eggsTable),
-      ).thenAnswer(
-        (_) async => [
-          _meta(
-            id: 'stale-1',
-            table: SupabaseConstants.eggsTable,
-            recordId: 'egg-1',
-            status: SyncStatus.error,
-            retryCount: 10,
-          ),
-        ],
-      );
-      when(() => syncDao.hardDelete('stale-1')).thenAnswer((_) async {});
-      when(
         () => syncDao.getPendingByTable(userId, SupabaseConstants.eggsTable),
       ).thenAnswer((_) async => []);
 
       await repo.pushAll(userId);
 
-      verify(() => syncDao.hardDelete('stale-1')).called(1);
+      verifyNever(() => syncDao.hardDelete(any()));
+      verifyNever(() => syncDao.getErrorsByTable(any(), any()));
     });
 
     test(

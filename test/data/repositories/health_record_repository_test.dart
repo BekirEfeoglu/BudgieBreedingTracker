@@ -87,7 +87,9 @@ void main() {
     when(() => syncDao.getPendingRecordIds(any())).thenAnswer((_) async => {});
     when(() => syncDao.getByRecord(any(), any())).thenAnswer((_) async => null);
     when(() => syncDao.updateItem(any())).thenAnswer((_) async {});
-    // ValidatedSyncMixin calls clearStaleErrors before pushAll.
+    // Legacy defensive stubs: pushAll no longer runs clearStaleErrors in the
+    // push phase (cleanup moved to the orchestrator's post-pull step), so these
+    // are no longer exercised — kept harmless so setUp stays behavior-agnostic.
     when(
       () => syncDao.getErrorsByTable(any(), any()),
     ).thenAnswer((_) async => []);

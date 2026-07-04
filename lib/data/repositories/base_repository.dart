@@ -116,6 +116,15 @@ mixin SyncableRepository<T> on BaseRepository<T> {
           userId: userId,
           status: SyncStatus.pending,
           recordId: recordId,
+          // Stamp creation time so the post-pull unrecoverable-error cleanup
+          // (retryCount exhausted AND createdAt aged > 24h) can actually act on
+          // a row that later transitions to error — markError's UPDATE branch
+          // preserves this timestamp. Without it every common-path error row
+          // had a null createdAt, so the cleanup + Sentry monitoring were inert
+          // and permanently-failing rows lingered as zombies forever. Safe now
+          // that cleanup only runs post-pull (see pushAll note), never in the
+          // push phase where it could strip reconcile protection.
+          createdAt: DateTime.now(),
         ),
       );
     }
@@ -291,7 +300,14 @@ mixin ValidatedSyncMixin<T> on BaseRepository<T>, SyncableRepository<T> {
   /// FK validation stays per-item and local.
   @override
   Future<PushStats> pushAll(String userId) async {
-    await clearStaleErrors(userId);
+    // Stale-error cleanup is deliberately NOT run here. It must happen AFTER
+    // the pull/reconcile phase — SyncOrchestrator.cleanupUnrecoverableErrors
+    // runs post-pull for exactly this reason. Deleting an error row during the
+    // push phase drops the reconcile protection (getPendingRecordIds =
+    // pending+error) for a record that only ever existed on-device, so the
+    // subsequent full-reconcile pull would hardDelete it → permanent local data
+    // loss. The orchestrator's post-pull cleanup is global (all tables), so the
+    // per-table [clearStaleErrors] here is redundant as well as mistimed.
     var orphansCleaned = 0;
 
     final pushed = await pushPendingBatched(

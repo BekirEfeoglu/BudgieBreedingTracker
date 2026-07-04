@@ -7,7 +7,6 @@ import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/egg_remote_source.dart';
-import 'package:budgie_breeding_tracker/data/repositories/base_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/egg_repository.dart';
 
 import '../../helpers/mocks.dart';
@@ -175,44 +174,28 @@ void main() {
   });
 
   group('ValidatedSyncMixin pushAll', () {
-    test('calls clearStaleErrors before processing pending records', () async {
-      when(
-        () => syncDao.getErrorsByTable(userId, SupabaseConstants.eggsTable),
-      ).thenAnswer((_) async => []);
-      when(
-        () => syncDao.getPendingByTable(userId, SupabaseConstants.eggsTable),
-      ).thenAnswer((_) async => []);
+    test(
+      'pushAll does NOT run stale-error cleanup in the push phase (that is the '
+      'orchestrator post-pull job, guarding the reconcile-protection invariant)',
+      () async {
+        when(
+          () => syncDao.getPendingByTable(userId, SupabaseConstants.eggsTable),
+        ).thenAnswer((_) async => []);
 
-      await repository.pushAll(userId);
+        await repository.pushAll(userId);
 
-      verify(
-        () => syncDao.getErrorsByTable(userId, SupabaseConstants.eggsTable),
-      ).called(1);
-      verify(
-        () => syncDao.getPendingByTable(userId, SupabaseConstants.eggsTable),
-      ).called(1);
-    });
-
-    test('cleans stale errors above max retry threshold', () async {
-      final stale = TestFixtures.sampleSyncMetadata(
-        id: 'stale',
-        table: SupabaseConstants.eggsTable,
-        userId: userId,
-        recordId: 'egg-stale',
-        status: SyncStatus.error,
-        retryCount: ValidatedSyncMixin.maxSyncRetries,
-      );
-      when(
-        () => syncDao.getErrorsByTable(userId, SupabaseConstants.eggsTable),
-      ).thenAnswer((_) async => [stale]);
-      when(
-        () => syncDao.getPendingByTable(userId, SupabaseConstants.eggsTable),
-      ).thenAnswer((_) async => []);
-
-      await repository.pushAll(userId);
-
-      verify(() => syncDao.hardDelete('stale')).called(1);
-    });
+        // getErrorsByTable is clearStaleErrors' first call. It must NOT run
+        // during pushAll: deleting an error row before the reconcile pull would
+        // strip the pending+error protection and let the pull hardDelete an
+        // unsynced local record. Cleanup is the orchestrator's post-pull job.
+        verifyNever(
+          () => syncDao.getErrorsByTable(userId, SupabaseConstants.eggsTable),
+        );
+        verify(
+          () => syncDao.getPendingByTable(userId, SupabaseConstants.eggsTable),
+        ).called(1);
+      },
+    );
 
     test('cleans orphan sync metadata when local egg is missing', () async {
       final pending = TestFixtures.sampleSyncMetadata(

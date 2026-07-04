@@ -106,7 +106,9 @@ void main() {
       () => syncDao.getPendingByTable(any(), any()),
     ).thenAnswer((_) async => []);
     when(() => syncDao.getPendingRecordIds(any())).thenAnswer((_) async => {});
-    // ValidatedSyncMixin.clearStaleErrors needs these.
+    // Legacy defensive stubs: clearStaleErrors is no longer called during
+    // pushAll (cleanup moved to the orchestrator's post-pull step) — kept
+    // harmless so setUp stays behavior-agnostic.
     when(
       () => syncDao.getErrorsByTable(any(), any()),
     ).thenAnswer((_) async => []);
