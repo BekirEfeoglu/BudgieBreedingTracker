@@ -154,11 +154,14 @@ class NotificationScheduler
 
     var index = 0;
     for (final entry in milestones.entries) {
-      final milestoneDate = startDate.add(Duration(days: entry.key));
+      // Field addition (day + N), NOT startDate.add(Duration(days: N)):
+      // Duration adds N×24h of absolute time and lands on the wrong calendar
+      // day across a DST transition. Building the local date field directly is
+      // DST-safe and keeps the milestone day in sync with the calendar events.
       final scheduledDate = DateTime(
-        milestoneDate.year,
-        milestoneDate.month,
-        milestoneDate.day,
+        startDate.year,
+        startDate.month,
+        startDate.day + entry.key,
         hour,
       );
       if (!scheduledDate.isAfter(now0)) {

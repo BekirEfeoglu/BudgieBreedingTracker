@@ -68,6 +68,17 @@ extension ChickX on Chick {
 
   bool get isBanded => bandingDate != null;
 
-  DateTime? get plannedBandingDate =>
-      hatchDate?.add(Duration(days: bandingDay));
+  DateTime? get plannedBandingDate {
+    final hatch = hatchDate;
+    if (hatch == null) return null;
+    // Field addition (day + N), not Duration add, so the banding date lands on
+    // the correct calendar day across DST (matches scheduleBandingReminders).
+    return DateTime(
+      hatch.year,
+      hatch.month,
+      hatch.day + bandingDay,
+      hatch.hour,
+      hatch.minute,
+    );
+  }
 }

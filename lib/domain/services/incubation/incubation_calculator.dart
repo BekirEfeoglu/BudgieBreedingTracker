@@ -114,56 +114,52 @@ abstract class IncubationCalculator {
       species: species,
       totalDays: totalDays,
     );
+    // Field addition (day + N), NOT startDate.add(Duration(days: N)): Duration
+    // adds N×24h of absolute time and drifts to the wrong calendar day across a
+    // DST transition. Building the local date field directly is DST-safe and
+    // keeps these dates in sync with the calendar event generator.
+    DateTime dateFor(int day) =>
+        DateTime(startDate.year, startDate.month, startDate.day + day);
     return [
       IncubationMilestone(
         day: milestones.candlingDay,
         title: 'incubation.milestone_candling'.tr(),
         description: 'incubation.milestone_candling_desc'.tr(),
         type: MilestoneType.candling,
-        date: startDate.add(Duration(days: milestones.candlingDay)),
-        isPassed: now.isAfter(
-          startDate.add(Duration(days: milestones.candlingDay)),
-        ),
+        date: dateFor(milestones.candlingDay),
+        isPassed: now.isAfter(dateFor(milestones.candlingDay)),
       ),
       IncubationMilestone(
         day: milestones.secondCheckDay,
         title: 'incubation.milestone_second_check'.tr(),
         description: 'incubation.milestone_second_check_desc'.tr(),
         type: MilestoneType.check,
-        date: startDate.add(Duration(days: milestones.secondCheckDay)),
-        isPassed: now.isAfter(
-          startDate.add(Duration(days: milestones.secondCheckDay)),
-        ),
+        date: dateFor(milestones.secondCheckDay),
+        isPassed: now.isAfter(dateFor(milestones.secondCheckDay)),
       ),
       IncubationMilestone(
         day: milestones.sensitivePeriodDay,
         title: 'incubation.milestone_sensitive'.tr(),
         description: 'incubation.milestone_sensitive_desc'.tr(),
         type: MilestoneType.sensitive,
-        date: startDate.add(Duration(days: milestones.sensitivePeriodDay)),
-        isPassed: now.isAfter(
-          startDate.add(Duration(days: milestones.sensitivePeriodDay)),
-        ),
+        date: dateFor(milestones.sensitivePeriodDay),
+        isPassed: now.isAfter(dateFor(milestones.sensitivePeriodDay)),
       ),
       IncubationMilestone(
         day: milestones.expectedHatchDay,
         title: 'incubation.milestone_hatch'.tr(),
         description: 'incubation.milestone_hatch_desc'.tr(),
         type: MilestoneType.hatch,
-        date: startDate.add(Duration(days: milestones.expectedHatchDay)),
-        isPassed: now.isAfter(
-          startDate.add(Duration(days: milestones.expectedHatchDay)),
-        ),
+        date: dateFor(milestones.expectedHatchDay),
+        isPassed: now.isAfter(dateFor(milestones.expectedHatchDay)),
       ),
       IncubationMilestone(
         day: milestones.lateHatchDay,
         title: 'incubation.milestone_late'.tr(),
         description: 'incubation.milestone_late_desc'.tr(),
         type: MilestoneType.late,
-        date: startDate.add(Duration(days: milestones.lateHatchDay)),
-        isPassed: now.isAfter(
-          startDate.add(Duration(days: milestones.lateHatchDay)),
-        ),
+        date: dateFor(milestones.lateHatchDay),
+        isPassed: now.isAfter(dateFor(milestones.lateHatchDay)),
       ),
     ];
   }

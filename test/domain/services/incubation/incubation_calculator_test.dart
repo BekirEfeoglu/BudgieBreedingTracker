@@ -202,6 +202,20 @@ void main() {
         expect(milestones[4].day, 21); // late hatch
       });
 
+      test('milestone dates use DST-safe field addition (day + N)', () {
+        // Regression: dates must be the calendar day (start.day + offset), not
+        // startDate.add(Duration(days: N)) which drifts across DST boundaries.
+        final startDate = DateTime(2026, 3, 1);
+        final milestones = IncubationCalculator.getMilestones(startDate);
+        for (final m in milestones) {
+          expect(
+            m.date,
+            DateTime(startDate.year, startDate.month, startDate.day + m.day),
+            reason: 'milestone day ${m.day} must land on the exact calendar day',
+          );
+        }
+      });
+
       test('supports species-aware milestone days', () {
         final startDate = DateTime(2025, 1, 1);
         final milestones = IncubationCalculator.getMilestones(
