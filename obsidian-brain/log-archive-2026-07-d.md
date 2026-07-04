@@ -2,6 +2,16 @@
 
 Back to [[log]].
 
+## [2026-07-03] feat (branch) | community post edit client data path
+
+Branch `feature/community-tab-faz1` (commit `68d6a57`). Client wiring for the
+5-minute edit: `CommunityPost.editedAt` (`DateTime?`) + `CommunityPostX.isEdited`;
+`CommunityPostRepository.update({postId, content})` →
+`CommunityPostRemoteSource.updateContent` → `EdgeFunctionClient.updateCommunityPost`
+(`mode: 'update'`). `_parsePost` reads `edited_at`; `update` invalidates post cache.
+Online-first exemption doc-blocks untouched; generated Freezed files gitignored
+(regenerated in CI). UI (sheet/menu/badge) lands in a later branch task.
+
 ## [2026-07-03] feat (branch) | community post edit hardening migration
 
 Branch `feature/community-tab-faz1` (NOT yet merged/applied to prod). Migration

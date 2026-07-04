@@ -13,15 +13,16 @@ their submitted feedback.
 
 ## Categories
 
-`FeedbackCategory` enum: `general`, `bug`, `feature_request`, `complaint`,
-`praise`. Categories drive the submission form layout (e.g. bug adds
-device info section).
+`FeedbackCategory` enum (`feedback_providers.dart`): `bug`, `feature`,
+`general` — three values only. Each carries a label, description, `LucideIcons`
+icon, and colour.
 
 ## Statuses
 
-`FeedbackStatus` enum: lifecycle from `submitted` → `triaged` → `responded` /
-`resolved` / `closed`. Status changes happen admin-side via
-`/admin/feedback`.
+`FeedbackStatus` (feature enum, `feedback_providers.dart`): `open`,
+`inProgress`, `resolved`, `closed` (+ `unknown` fallback). A separate
+`FeedbackStatus` lives in `core/enums/admin_enums.dart` for the admin queue.
+Status changes happen admin-side via `/admin/feedback`.
 
 ## Key Providers
 
@@ -29,7 +30,7 @@ device info section).
 |----------|------|---------|
 | `feedbackFormStateProvider` | `NotifierProvider` | Form field state + submission |
 | `feedbackHistoryProvider(userId)` | `FutureProvider.family` | User's past submissions |
-| `feedbackRepositoryProvider` | `Provider` | Online-first repository |
+| `feedbackServiceProvider` | `Provider<FeedbackRemoteService>` | Online-only service (`feedbackRepositoryProvider` is a back-compat alias) |
 
 ## Widgets
 
@@ -42,13 +43,15 @@ device info section).
 | `FeedbackHistoryCard` | Individual submission tile with status badge |
 | `FeedbackInfoBanner` | Top-of-screen disclaimer + privacy hint |
 
-## Online-First
+## Online-Only
 
-Feedback is **online-first** — submission requires connectivity, history
-fetch hits Supabase. Local mirror would offer no UX value (user can't
-respond offline). `feedbackRepositoryProvider` follows the
-`*Repository` exception path documented in
-[[architecture/online-first-exemption]].
+Feedback is **online-only** — submission requires connectivity, history fetch
+hits Supabase, no local Drift mirror. The class is `FeedbackRemoteService`
+(correctly named per [[architecture/online-first-exemption]] — a single-user
+remote resource, NOT a cross-user-feed `*Repository` exemption). The file is
+still `feedback_repository.dart` and the test `feedback_repository_test.dart` for
+legacy reasons; class + provider (`feedbackServiceProvider`) carry the correct
+name.
 
 ## Admin Flow
 

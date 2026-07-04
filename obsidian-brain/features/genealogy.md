@@ -21,9 +21,28 @@
 - `offspringProvider`, `inbreedingDataProvider`, `ancestorStatsProvider`
 - (`genealogyTreeProvider` does not exist — no single combined async-tree provider; the tree is composed client-side from the above)
 
+## Route Gating
+
+`/genealogy` is premium-gated: `app_router.dart` calls
+`PremiumGuard.redirect(isPremium)` for `AppRoutes.genealogy` — this is the
+**only** route using `PremiumGuard.redirect` (statistics/genetics gate inline
+with an extra rewarded-ad path; genealogy has **no** rewarded bypass). Grace
+period counts as access (`effectivePremiumProvider`). See [[features/premium]].
+
+## PDF / Image Export
+
+`PedigreeExportButton` → `PdfExportService.generatePedigreeReport(rootBird,
+ancestors, maxDepth)`; file `pedigree_<safeName>_<timestamp>.pdf`, shared via the
+OS sheet. PNG export (`onCaptureImage`) has a callback signature but the
+RepaintBoundary capture is not wired in `tree_content` — treat PNG as unshipped.
+See [[domain/data-io]].
+
 ## Inbreeding Detection
 
-Inbreeding coefficient calculated in genetics engine. High coefficient triggers UI warning. See [[domain/genetics-engine]].
+Inbreeding coefficient calculated in genetics engine. High coefficient triggers
+UI warning. `inbreedingDataProvider` carries a `depthLimited` flag — when the
+user's pedigree-depth setting truncates the ancestor map, the coefficient is a
+lower bound and the UI says so. See [[domain/genetics-engine]].
 
 ## Corrupted Pedigree Handling
 

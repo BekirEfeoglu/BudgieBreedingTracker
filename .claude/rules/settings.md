@@ -7,7 +7,7 @@ Ayarlar hub'ı: tema, dil, bildirim, sync, gizlilik/güvenlik, yedekleme ve yasa
 |-------|--------|-----------------|
 | Display | Theme (light/dark/system), compact view | bu dosya |
 | Language & Region | Locale (tr/en/de), tarih formatı | localization.md, datetime-format.md |
-| Accessibility | Dosya mevcut, genişletilmemiş (unwired) | accessibility.md |
+| Accessibility | Font boyutu (`fontScaleProvider`), animasyon azaltma, haptic feedback (`AccessibilitySection`) | accessibility.md |
 | Notifications | Master toggle + detay ekranı linki | notifications.md |
 | Data Storage | Auto/WiFi-only/background/realtime sync toggle'ları, manuel sync, sync health, conflict history, cache clear | background-sync.md, feature-flags.md § Sync Runtime Flags |
 | Privacy & Security | Leaderboard görünürlüğü, şifre değiştirme, 2FA, oturumlar, GDPR export, yasal linkler, hesap silme | security.md, profile.md, gamification.md |

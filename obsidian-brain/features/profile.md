@@ -27,18 +27,22 @@ or routed sub-screens (`twoFactorSetup`, `twoFactorVerify`).
 
 ## Avatar Upload
 
-Pipeline (full details in [[patterns/assets-images]]):
+Pipeline (`avatar_picker_sheet.dart` → `AvatarUploadNotifier` →
+`ProfileRepository.uploadAvatar` → `StorageService`):
 
-1. `ImagePicker` → local file
+1. `ImagePicker` with `maxWidth/maxHeight: 512`, `imageQuality: 80` (downscale
+   happens at pick time — this is the avatar-specific sizing, NOT the general
+   1920px/q85 photo pipeline)
 2. 10 MB guard (rejects before network)
-3. Compress to 1920px / JPEG q85
-4. `scan-image-safety` Edge Function (fail-closed)
-5. Upload to `bird-photos` Supabase Storage bucket (RLS user-scoped)
-6. `CachedNetworkImage` cache invalidated on URL change
+3. Upload to the **`avatars`** Supabase Storage bucket (path
+   `avatars/{userId}/avatar.{ext}`, RLS user-scoped). `StorageService` holds an
+   optional `ImageSafetyService` for uploads (see [[domain/moderation-service]]).
+4. Save URL to Drift profile + mark sync pending → `CachedNetworkImage`
+   invalidated on URL change
 
 The picker sheet captures the root `ScaffoldMessenger` **before** popping
 itself. The old code kept the sheet's own context and re-checked `.mounted`
-after the async pick — always false post-pop — so steps 2–5 were skipped and
+after the async pick — always false post-pop — so the upload was skipped and
 a validly-picked avatar was never uploaded (and picker errors were swallowed);
 fixed 2026-07-02 via `ImagePickerGuard.ensureWithinSizeLimitVia`.
 
@@ -56,9 +60,23 @@ server — it's purely a local nudge.
 
 ## Account Deletion
 
-CTA lives in Settings, not Profile (see [[features/settings]]). The
-multi-step confirm + grace period is handled by
-`account_storage_cleanup_provider.dart` (domain/profile service).
+CTA lives in Settings, not Profile (see [[features/settings]]). Orchestrated by
+`AccountDeletionController` (`account_deletion_providers.dart`), NOT a grace
+period. Fixed step order (destructive, irreversible after the RPC):
+
+1. Verify current password
+2. `requireAal2ForDestructiveAction()` — if MFA is enrolled, an AAL2 challenge
+   is required (`MfaAssuranceRequiredException` → challenge dialog →
+   `completeAfterMfaChallenge()`)
+3. Storage cleanup — `accountStorageCleanupProvider.deleteAllUserFiles(userId)`
+   (this provider is one step, not the whole flow)
+4. OAuth token revoke (best-effort, `revoke-oauth-token`)
+5. RPC `requestAccountDeletionForVerifiedSession()` → deletes `auth.users`
+6. Local `clearAllUserData(userId)` + full SharedPreferences wipe
+7. Sign out all sessions (best-effort)
+
+The guard is password + AAL2 — there is no type-to-confirm here (that pattern is
+admin-panel destructive actions, see [[features/admin]]).
 
 ## Online-First
 

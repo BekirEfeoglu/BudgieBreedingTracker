@@ -6,7 +6,7 @@ Maps every `.claude/rules/*.md` file to the wiki page(s) that synthesize it.
 |-----------|------------------|----------------|
 | `accessibility.md` | [[patterns/accessibility]] | [[patterns/anti-patterns]] (A5) |
 | `admin.md` | [[features/admin]] | [[patterns/security]], [[infrastructure/edge-functions]] |
-| `ads.md` | [[domain/services-index]] (ads service) | [[features/premium]], [[features/statistics]] |
+| `ads.md` | [[domain/ads-service]] | [[features/premium]], [[features/statistics]] |
 | `ai-workflow.md` | [[infrastructure/branch-workflow]] | [[infrastructure/scripts]] |
 | `app-update.md` | [[features/app_update]] | [[infrastructure/release-ops]] |
 | `architecture.md` | [[architecture/layers]] | [[architecture/data-flow]], [[architecture/online-first-exemption]] |

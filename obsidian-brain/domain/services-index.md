@@ -22,7 +22,7 @@
 | Sync | [[domain/sync-service]] | Background sync orchestration | Yes (online trigger) |
 | Breeding / IncubationRiskAssistant | (see [[features/breeding]]) | Derived risk summary | No |
 | Profile | (see [[features/profile]]) | Account orchestration, storage cleanup | Yes |
-| Ads | (see [[domain/premium-service]] / ad gating) | Reward-based feature unlock | Partial |
+| Ads | [[domain/ads-service]] | AdMob banner + interstitial + rewarded; premium ad-free; reward = screen-access gate | Partial |
 | Update check / App update | (see [[features/app_update]]) | In-app update prompting (optional + hard-block) | Yes |
 
 ## Naming Rules

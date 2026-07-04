@@ -68,7 +68,11 @@ See [[domain/data-io]] for the underlying services.
 - Local snapshot (JSON, optional encryption)
 - Remote backup upload (Supabase Storage)
 - Remote backup list + restore
-- Scheduled backup toggle (uses `BackupScheduler`)
+
+`BackupScheduler` (`lib/domain/services/backup/backup_scheduler.dart`) is
+defined but **not wired into `BackupScreen`** — there is no scheduled-backup
+toggle in the UI yet (the periodic auto-backup in [[domain/data-io]] is a
+design goal, not shipped).
 
 ## Security Settings
 
@@ -79,7 +83,9 @@ See [[domain/data-io]] for the underlying services.
   than silently failed; the Settings-local dialog that swallowed that
   exception for every 2FA user was removed 2026-07-02)
 - Active OAuth providers (Google / Apple) — link/unlink
-- "Delete account" CTA → multi-step confirm + grace period
+- "Delete account" CTA → `AccountDeletionController`, guarded by password +
+  AAL2 (MFA re-challenge if 2FA enrolled), NOT a grace period (see
+  [[features/profile]] for the full step order)
 
 ## Developer Menu
 

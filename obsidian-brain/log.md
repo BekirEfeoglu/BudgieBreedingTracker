@@ -4,6 +4,22 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-04] docs | Wiki gap + drift fix (parallel to rule sweep)
+
+Extended the coverage sweep to obsidian-brain. Created [[domain/ads-service]]
+(the ads subsystem had no wiki page — banners/interstitials/rewarded were only
+punted to premium-service). Verified 5 wiki claims against source and fixed the
+drift: profile.md avatar bucket `bird-photos`→`avatars` (path
+`avatars/{userId}/avatar.{ext}`, sizing 512px/q80 not 1920/q85) and account
+deletion "grace period"→`AccountDeletionController` + AAL2 order; feedback.md
+categories 5→3 (`bug/feature/general`), statuses →`open/inProgress/resolved/
+closed`, class → `FeedbackRemoteService` (online-only, not a `*Repository`
+exemption); settings.md account deletion grace→AAL2 + `BackupScheduler` marked
+unwired; genealogy.md gained the `PremiumGuard` route note + PDF export. Also
+corrected my own `settings.md` rule (accessibility section is wired: font scale
++ reduce-animations + haptics, not "unwired"). index.md + services-index.md
+register the new page.
+
 ## [2026-07-04] docs | 7 missing rule files created (coverage gap sweep)
 
 Compared `.claude/rules/` coverage against the 24 feature modules + 23 domain
@@ -173,15 +189,5 @@ success → `applyPostEdit` + `communityPostByIdProvider` invalidate, failure �
 `canEditPost` (UTC now−createdAt < 5 min), `edited` badge on the header, 6 l10n keys
 (tr/en/de). 436/436 community tests, analyze/l10n/quality clean. Completes the
 post-edit vertical (migration → edge fn → data path → UI) on the branch.
-
-## [2026-07-03] feat (branch) | community post edit client data path
-
-Branch `feature/community-tab-faz1` (commit `68d6a57`). Client wiring for the
-5-minute edit: `CommunityPost.editedAt` (`DateTime?`) + `CommunityPostX.isEdited`;
-`CommunityPostRepository.update({postId, content})` →
-`CommunityPostRemoteSource.updateContent` → `EdgeFunctionClient.updateCommunityPost`
-(`mode: 'update'`). `_parsePost` reads `edited_at`; `update` invalidates post cache.
-Online-first exemption doc-blocks untouched; generated Freezed files gitignored
-(regenerated in CI). UI (sheet/menu/badge) lands in a later branch task.
 
 Older entries are archived in [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

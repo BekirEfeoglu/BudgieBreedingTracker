@@ -76,7 +76,8 @@ Full catalog of every page in the obsidian-brain wiki.
 
 | Page | Description |
 |------|-------------|
-| [[domain/services-index]] | Map of all 22 domain services |
+| [[domain/services-index]] | Map of all 23 domain service directories |
+| [[domain/ads-service]] | AdMob banner/interstitial/rewarded, premium ad-free, reward gating |
 | [[domain/auth-service]] | Login, session refresh, MFA |
 | [[domain/calendar-service]] | Event scheduling |
 | [[domain/data-io]] | Backup (JSON, AES), Excel import/export, PDF export |
