@@ -4,6 +4,21 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-04] docs | 7 missing rule files created (coverage gap sweep)
+
+Compared `.claude/rules/` coverage against the 24 feature modules + 23 domain
+service dirs; seven shipped subsystems had no rule file. Created, grounded in
+current code by three parallel code-exploration passes: `ads.md` (lazy SDK
+init, ATT ordering, real banner call sites, rewarded access providers),
+`app-update.md` (overlay-not-dialog prompt, minSupportedBuild force, fail-open),
+`genealogy.md` (single-fetch traversal, depth persist, truncation-aware
+inbreeding), `health-records.md` (mixin FK checks, follow-up reminders, known
+chick-selector gap), `profile.md` (account deletion order + AAL2 guard),
+`feedback.md` (online-only naming, device-info transparency), `settings.md`
+(hub map — contract owners per toggle). CLAUDE.md § Rules table +
+[[sources/rules-index]] updated; marketplace.md ad-placement line annotated as
+design-goal (banners not wired to marketplace).
+
 ## [2026-07-04] docs | Rulebook drift sweep #2 (constants vs prose)
 
 Second verification pass over `.claude/rules/` + `CLAUDE.md`, this time
@@ -168,23 +183,5 @@ Branch `feature/community-tab-faz1` (commit `68d6a57`). Client wiring for the
 (`mode: 'update'`). `_parsePost` reads `edited_at`; `update` invalidates post cache.
 Online-first exemption doc-blocks untouched; generated Freezed files gitignored
 (regenerated in CI). UI (sheet/menu/badge) lands in a later branch task.
-
-## [2026-07-03] feat (branch) | community post edit hardening migration
-
-Branch `feature/community-tab-faz1` (NOT yet merged/applied to prod). Migration
-`20260703120000_community_post_edit_hardening.sql` (committed `3cdf483`): adds
-`community_posts.edited_at timestamptz`, narrows the `authenticated` UPDATE grant
-to `(is_deleted, needs_review)` so post **content** can no longer be
-edited directly by clients (edits must go through the moderated
-`create-community-post` edge fn `mode: 'update'`, being wired in the same branch),
-and recreates `fetch_community_feed` (DROP+CREATE — RETURNS TABLE shape changed) to
-return `edited_at`. Applied to prod 2026-07-03 (MCP; advisors 0 new). At apply time
-the original grant listed `reviewed_by` too, but that column does NOT exist on
-`community_posts` (never added by any migration) — dropped from the grant; the
-`clearReviewFlag` write to it is a pre-existing latent bug (IMPROVEMENT_PLAN §6.14).
-The other 3 authenticated UPDATE call-sites (`softDelete`, admin
-`approvePost`/`deletePost`) write only within the grant. Client edit UI +
-`edited` badge land in later tasks of the same branch. Design:
-`docs/superpowers/specs/2026-07-03-community-tab-design.md`.
 
 Older entries are archived in [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

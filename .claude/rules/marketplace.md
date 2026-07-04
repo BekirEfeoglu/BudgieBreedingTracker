@@ -47,7 +47,7 @@ Limit ihlali: `validate-free-tier-limit` edge fn server-side enforce.
 
 ## Ad Placement
 - `AdService` (`lib/domain/services/ads/`) free kullanıcıya inline banner
-- Yer: listing detay sayfasında 1 banner, feed'de her 8 listing'de 1
+- Yer (tasarım hedefi): listing detay sayfasında 1 banner, feed'de her 8 listing'de 1 — banner henüz marketplace ekranlarına wire EDİLMEDİ; gerçek call site listesi ads.md § Banner Placement
 - Premium kullanıcıda ad GÖSTERME (entitlement aware)
 - Ad load fail: silent skip (UI'da boşluk bırakma)
 

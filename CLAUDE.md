@@ -247,6 +247,13 @@ Comprehensive rules in `.claude/rules/` (auto-loaded):
 | `data-io.md` | Backup (PBKDF2 + AES), Excel import/export, PDF pedigree, free vs premium, restore safety |
 | `home-widget.md` | iOS/Android widget bridge, shared storage schema, refresh triggers, deeplink, limitations |
 | `presence.md` | Online/away/offline TTL, heartbeat, privacy visibility, typing, last-seen, battery rules |
+| `ads.md` | AdMob lazy init, ATT ordering, banner/interstitial placement, rewarded access, premium ad-free |
+| `app-update.md` | Store version lookup, min build force update, overlay prompt, Android in-app update, fail-open |
+| `feedback.md` | Online-only feedback service, categories, device info transparency, history, admin-side fields |
+| `genealogy.md` | Pedigree traversal, depth persistence, inbreeding truncation, PDF export, PremiumGuard route |
+| `health-records.md` | Record lifecycle, ValidatedSyncMixin FK checks, follow-up reminders, privacy, known gaps |
+| `profile.md` | Profile model, avatar upload, security score, account deletion order, stats counters |
+| `settings.md` | Settings hub map, AppPreferences persistence, privacy/security section, backup screen, legal docs |
 
 ## Critical Anti-Patterns (24 rules — must avoid)
 

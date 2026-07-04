@@ -6,7 +6,9 @@ Maps every `.claude/rules/*.md` file to the wiki page(s) that synthesize it.
 |-----------|------------------|----------------|
 | `accessibility.md` | [[patterns/accessibility]] | [[patterns/anti-patterns]] (A5) |
 | `admin.md` | [[features/admin]] | [[patterns/security]], [[infrastructure/edge-functions]] |
+| `ads.md` | [[domain/services-index]] (ads service) | [[features/premium]], [[features/statistics]] |
 | `ai-workflow.md` | [[infrastructure/branch-workflow]] | [[infrastructure/scripts]] |
+| `app-update.md` | [[features/app_update]] | [[infrastructure/release-ops]] |
 | `architecture.md` | [[architecture/layers]] | [[architecture/data-flow]], [[architecture/online-first-exemption]] |
 | `assets-images.md` | [[patterns/assets-images]] | [[patterns/anti-patterns]] (#12, #13) |
 | `background-sync.md` | [[data-layer/sync-strategy]] | [[domain/sync-service]], [[architecture/offline-first]] |
@@ -26,10 +28,13 @@ Maps every `.claude/rules/*.md` file to the wiki page(s) that synthesize it.
 | `encryption.md` | [[domain/encryption-service]] | [[patterns/security]], [[domain/data-io]] |
 | `error-handling.md` | [[patterns/error-handling]] | [[patterns/observability]] |
 | `feature-flags.md` | [[patterns/feature-flags]] | [[infrastructure/environment]] |
+| `feedback.md` | [[features/feedback]] | [[features/admin]] |
 | `forms-validation.md` | [[patterns/forms-validation]] | [[patterns/ui-patterns]] |
 | `gamification.md` | [[domain/gamification-service]] | [[features/gamification]], [[features/community]] |
+| `genealogy.md` | [[features/genealogy]] | [[domain/genetics-engine]], [[domain/data-io]] |
 | `genetics.md` | [[domain/genetics-engine]] | [[features/genetics]], [[domain/local-ai]] |
 | `git-rules.md` | [[infrastructure/branch-workflow]] | |
+| `health-records.md` | [[features/health_records]] | [[data-layer/sync-strategy]], [[domain/notification-service]] |
 | `home-widget.md` | [[domain/home-widget-service]] | [[domain/notification-service]] |
 | `local-ai.md` | [[domain/local-ai]] | [[domain/genetics-engine]] |
 | `localization.md` | [[patterns/l10n]] | [[patterns/anti-patterns]] (#11) |
@@ -43,9 +48,11 @@ Maps every `.claude/rules/*.md` file to the wiki page(s) that synthesize it.
 | `performance.md` | [[patterns/performance]] | [[data-layer/drift]] |
 | `premium-revenuecat.md` | [[domain/premium-service]] | [[features/premium]], [[infrastructure/edge-functions]] |
 | `presence.md` | [[domain/presence-service]] | [[features/messaging]], [[features/community]] |
+| `profile.md` | [[features/profile]] | [[patterns/security]], [[domain/premium-service]] |
 | `providers.md` | [[patterns/providers]] | [[patterns/ui-patterns]] |
 | `release-ops.md` | [[infrastructure/release-ops]] | [[infrastructure/ci-cd]] |
 | `security.md` | [[patterns/security]] | [[patterns/observability]], [[domain/auth-service]], [[domain/encryption-service]] |
+| `settings.md` | [[features/settings]] | [[domain/data-io]], [[domain/sync-service]] |
 | `statistics.md` | [[features/statistics]] | [[domain/data-io]], [[patterns/performance]] |
 | `test-stability.md` | [[patterns/testing]] (stability section) | [[patterns/anti-patterns]] (A1) |
 | `testing.md` | [[patterns/testing]] | |
