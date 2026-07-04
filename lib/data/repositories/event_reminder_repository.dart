@@ -161,19 +161,15 @@ class EventReminderRepository extends BaseRepository<EventReminder>
         // Detect real conflicts: a conflict is when a local record has
         // PENDING sync metadata AND the remote record overwrites it.
         // Normal server updates (no pending local changes) are not conflicts.
-        for (final remoteItem in remote) {
-          if (!pendingIds.contains(remoteItem.id)) continue;
-          final localItem = localMap[remoteItem.id];
-          if (localItem == null) continue;
-          if (localItem.updatedAt != null &&
-              remoteItem.updatedAt != null &&
-              remoteItem.updatedAt!.isAfter(localItem.updatedAt!)) {
-            lastPullConflicts.add((
-              recordId: remoteItem.id,
-              detail: remoteItem.eventId,
-            ));
-          }
-        }
+        lastPullConflicts.addAll(
+          detectPullConflicts(
+            remote: remote,
+            localMap: localMap,
+            pendingIds: pendingIds,
+            idOf: (e) => e.id,
+            detailOf: (e) => e.eventId,
+          ),
+        );
 
         await _localDao.insertAll(remote);
 

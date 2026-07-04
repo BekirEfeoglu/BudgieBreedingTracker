@@ -45,6 +45,34 @@ abstract class BaseRepository<T> {
 ///
 /// Implements pull (server → local) and push (local → server) operations.
 /// Uses server-wins conflict resolution on pull.
+/// Detects pull conflicts: every locally-PENDING record that the incoming
+/// remote batch is about to overwrite. Server-wins still applies (the caller
+/// writes remote over local); this only surfaces the discarded local edit so it
+/// is never silently lost (data-layer.md § Conflict Resolution).
+///
+/// A pending local row is a conflict on ANY overwrite — remote newer, equal, OR
+/// older — because an unpushed local edit is discarded regardless of clock
+/// order. An earlier "remote strictly newer" gate silently dropped conflicts on
+/// equal/older remote (e.g. under device-vs-server clock skew), which is exactly
+/// the silent-overwrite the rulebook forbids. Shared by every syncable repo
+/// (and the custom [PhotoRepository]) so the rule can't drift per-entity again.
+List<({String recordId, String detail})> detectPullConflicts<T>({
+  required List<T> remote,
+  required Map<String, T> localMap,
+  required Set<String> pendingIds,
+  required String Function(T item) idOf,
+  required String Function(T item) detailOf,
+}) {
+  final conflicts = <({String recordId, String detail})>[];
+  for (final item in remote) {
+    final id = idOf(item);
+    if (!pendingIds.contains(id)) continue;
+    if (!localMap.containsKey(id)) continue;
+    conflicts.add((recordId: id, detail: detailOf(item)));
+  }
+  return conflicts;
+}
+
 mixin SyncableRepository<T> on BaseRepository<T> {
   static const _uuid = Uuid();
 

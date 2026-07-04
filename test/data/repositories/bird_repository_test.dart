@@ -550,19 +550,20 @@ void main() {
       });
 
       test(
-        'pull does NOT report conflict when remote is older than local',
+        'pull reports conflict when a PENDING local edit is overwritten by an '
+        'equal/older remote (server-wins must not silently discard it)',
         () async {
           final localBird = createTestBird(
             id: 'bird-1',
             name: 'Newer Local',
             userId: userId,
-            updatedAt: DateTime(2024, 6, 2), // newer
+            updatedAt: DateTime(2024, 6, 2), // newer local pending edit
           );
           final remoteBird = createTestBird(
             id: 'bird-1',
             name: 'Older Remote',
             userId: userId,
-            updatedAt: DateTime(2024, 6, 1),
+            updatedAt: DateTime(2024, 6, 1), // older, but still overwrites
           );
 
           when(
@@ -577,7 +578,12 @@ void main() {
 
           await repository.pull(userId, lastSyncedAt: DateTime(2024, 5, 1));
 
-          expect(repository.lastPullConflicts, isEmpty);
+          // Regression: insertAll still overwrites the pending local row with
+          // the older remote (server-wins), so the discarded edit MUST surface
+          // as a conflict. The old "remote strictly newer" gate dropped it
+          // silently — the exact data-loss the rulebook forbids.
+          expect(repository.lastPullConflicts, hasLength(1));
+          expect(repository.lastPullConflicts.first.recordId, 'bird-1');
         },
       );
 

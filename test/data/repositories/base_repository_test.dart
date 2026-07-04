@@ -316,4 +316,44 @@ void main() {
       },
     );
   });
+
+  group('detectPullConflicts', () {
+    ({String id, String name}) rec(String id, String name) =>
+        (id: id, name: name);
+
+    test('flags a pending local row overwritten by remote regardless of order', () {
+      final remote = [rec('a', 'RA'), rec('b', 'RB'), rec('c', 'RC')];
+      final localMap = {
+        'a': rec('a', 'LA'),
+        'b': rec('b', 'LB'),
+        // 'c' is NOT present locally.
+      };
+
+      final conflicts = detectPullConflicts<({String id, String name})>(
+        remote: remote,
+        localMap: localMap,
+        pendingIds: {'a', 'b', 'c'},
+        idOf: (e) => e.id,
+        detailOf: (e) => e.name,
+      );
+
+      // a + b are pending AND present locally → conflict, timestamp-agnostic
+      // (the whole point: an unpushed edit is discarded on ANY overwrite).
+      // c is pending but absent locally → nothing to discard → no conflict.
+      expect(conflicts.map((c) => c.recordId), ['a', 'b']);
+      expect(conflicts.first.detail, 'RA');
+    });
+
+    test('ignores rows that are not pending even if present locally', () {
+      final conflicts = detectPullConflicts<({String id, String name})>(
+        remote: [rec('a', 'RA')],
+        localMap: {'a': rec('a', 'LA')},
+        pendingIds: const {},
+        idOf: (e) => e.id,
+        detailOf: (e) => e.name,
+      );
+
+      expect(conflicts, isEmpty);
+    });
+  });
 }

@@ -131,19 +131,15 @@ class BirdRepository extends BaseRepository<Bird>
         // Detect real conflicts: a conflict is when a local record has
         // PENDING sync metadata AND the remote record overwrites it.
         // Normal server updates (no pending local changes) are not conflicts.
-        for (final remoteBird in remote) {
-          if (!pendingIds.contains(remoteBird.id)) continue;
-          final localBird = localMap[remoteBird.id];
-          if (localBird == null) continue;
-          if (localBird.updatedAt != null &&
-              remoteBird.updatedAt != null &&
-              remoteBird.updatedAt!.isAfter(localBird.updatedAt!)) {
-            lastPullConflicts.add((
-              recordId: remoteBird.id,
-              detail: remoteBird.name,
-            ));
-          }
-        }
+        lastPullConflicts.addAll(
+          detectPullConflicts(
+            remote: remote,
+            localMap: localMap,
+            pendingIds: pendingIds,
+            idOf: (b) => b.id,
+            detailOf: (b) => b.name,
+          ),
+        );
 
         await _localDao.insertAll(remote);
 

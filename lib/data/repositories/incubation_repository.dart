@@ -169,19 +169,15 @@ class IncubationRepository extends BaseRepository<Incubation>
         // Detect real conflicts: a conflict is when a local record has
         // PENDING sync metadata AND the remote record overwrites it.
         final localMap = {for (final item in localItems) item.id: item};
-        for (final remoteItem in remote) {
-          if (!pendingIds.contains(remoteItem.id)) continue;
-          final localItem = localMap[remoteItem.id];
-          if (localItem == null) continue;
-          if (localItem.updatedAt != null &&
-              remoteItem.updatedAt != null &&
-              remoteItem.updatedAt!.isAfter(localItem.updatedAt!)) {
-            _lastPullConflicts.add((
-              recordId: remoteItem.id,
-              detail: remoteItem.id,
-            ));
-          }
-        }
+        _lastPullConflicts.addAll(
+          detectPullConflicts(
+            remote: remote,
+            localMap: localMap,
+            pendingIds: pendingIds,
+            idOf: (e) => e.id,
+            detailOf: (e) => e.id,
+          ),
+        );
 
         await _localDao.insertAll(remote);
       }

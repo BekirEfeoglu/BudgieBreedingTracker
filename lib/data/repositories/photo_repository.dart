@@ -135,19 +135,15 @@ class PhotoRepository {
         final localItems = await _localDao.getAll(userId);
         final localMap = {for (final item in localItems) item.id: item};
         final pendingIds = await _syncDao.getPendingRecordIds(userId);
-        for (final remoteItem in remote) {
-          if (!pendingIds.contains(remoteItem.id)) continue;
-          final localItem = localMap[remoteItem.id];
-          if (localItem == null) continue;
-          if (localItem.updatedAt != null &&
-              remoteItem.updatedAt != null &&
-              remoteItem.updatedAt!.isAfter(localItem.updatedAt!)) {
-            lastPullConflicts.add((
-              recordId: remoteItem.id,
-              detail: remoteItem.id,
-            ));
-          }
-        }
+        lastPullConflicts.addAll(
+          detectPullConflicts(
+            remote: remote,
+            localMap: localMap,
+            pendingIds: pendingIds,
+            idOf: (e) => e.id,
+            detailOf: (e) => e.id,
+          ),
+        );
         await _localDao.insertAll(remote);
       }
       // Full sync reconciliation: remove local orphans not on server
