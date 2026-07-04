@@ -25,6 +25,16 @@ class MarketplaceTabContent extends ConsumerWidget {
     final userId = ref.watch(currentUserIdProvider);
     final listingsAsync = ref.watch(marketplaceListingsProvider(userId));
 
+    // Surface favorite-toggle failures — the heart is non-optimistic, so a
+    // failed toggle otherwise looks like nothing happened.
+    ref.listen<MarketplaceFormState>(marketplaceFormStateProvider, (prev, next) {
+      if (next.error != null && prev?.error != next.error) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(next.error!)));
+      }
+    });
+
     return Column(
       children: [
         // Action bar

@@ -20,6 +20,15 @@ class MarketplaceFavoritesScreen extends ConsumerWidget {
     final userId = ref.watch(currentUserIdProvider);
     final listingsAsync = ref.watch(marketplaceFavoritesProvider(userId));
 
+    // Surface un-favorite failures instead of silently leaving the item.
+    ref.listen<MarketplaceFormState>(marketplaceFormStateProvider, (prev, next) {
+      if (next.error != null && prev?.error != next.error) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(next.error!)));
+      }
+    });
+
     return Scaffold(
       appBar: AppBar(title: Text('marketplace.favorites'.tr())),
       body: RefreshIndicator(
@@ -55,6 +64,10 @@ class MarketplaceFavoritesScreen extends ConsumerWidget {
                   // Heart on the favorites screen is the un-favorite
                   // affordance. Without this wire the user could not
                   // remove items from their own favorites list.
+                  // The notifier invalidates marketplaceFavoritesProvider after
+                  // the awaited toggle, so the un-favorited item leaves the
+                  // list once the server write actually completes (no racy
+                  // pre-completion microtask invalidate needed here).
                   onFavoriteToggle: () {
                     ref
                         .read(marketplaceFormStateProvider.notifier)
@@ -63,11 +76,6 @@ class MarketplaceFavoritesScreen extends ConsumerWidget {
                           listingId: listing.id,
                           isFavorited: !listing.isFavoritedByMe,
                         );
-                    // Refresh the favorites list so an un-favorited
-                    // item disappears from view promptly.
-                    Future.microtask(() {
-                      ref.invalidate(marketplaceFavoritesProvider(userId));
-                    });
                   },
                 );
               },

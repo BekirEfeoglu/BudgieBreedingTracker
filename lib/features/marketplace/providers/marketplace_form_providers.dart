@@ -283,13 +283,20 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
         listingId: listingId,
         isFavorited: isFavorited,
       );
+      // The heart is non-optimistic — it renders from listing.isFavoritedByMe,
+      // which comes from these list providers. Without a refresh the tap
+      // appears to do nothing on the feed even on success. Invalidating here
+      // (after the awaited write) updates the heart at every call site and
+      // also fixes the favorites screen's prior microtask race, where the
+      // invalidate could fire before the toggle completed.
+      ref.invalidate(marketplaceListingsProvider(userId));
+      ref.invalidate(marketplaceFavoritesProvider(userId));
     } catch (e, st) {
       AppLogger.error('marketplace.toggleFavorite', e, st);
-      // Audit M7: previously the catch swallowed the error silently — the
-      // heart icon kept its optimistic flip while the server state was
-      // unchanged, gaslighting the user. Surface via state.error so the
-      // form listener emits a snackbar; ref.listen consumers re-render
-      // the heart from the authoritative `marketplaceFavoritesProvider`.
+      // Audit M7: the catch previously claimed the "form listener emits a
+      // snackbar", but the feed/tab/favorites screens that actually call this
+      // never listened — the failure was silent (gaslighting) there. Surface
+      // via state.error; those screens now listen and show a snackbar.
       state = state.copyWith(error: 'marketplace.favorite_failed'.tr());
     }
   }
