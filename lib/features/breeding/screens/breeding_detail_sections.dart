@@ -12,12 +12,22 @@ class _IncubationSection extends ConsumerWidget {
     final daysElapsed = incubation.daysElapsed;
     final totalDays = incubation.totalIncubationDays();
     final isComplete = incubation.isComplete;
+    // Pass species (not just totalDays) so the displayed stage/milestone days
+    // match the species-driven notifications/calendar events the user actually
+    // receives. With only totalDays the calculator falls back to percentage
+    // math, which diverges by a day for cockatiel (19d) and finch (14d).
     final stageColor = isComplete
         ? IncubationCalculator.getCompletedStageColor()
-        : IncubationCalculator.getStageColor(daysElapsed, totalDays: totalDays);
+        : IncubationCalculator.getStageColor(
+            daysElapsed,
+            species: incubation.species,
+          );
     final stageLabel = isComplete
         ? 'breeding.completed'.tr()
-        : IncubationCalculator.getStageLabel(daysElapsed, totalDays: totalDays);
+        : IncubationCalculator.getStageLabel(
+            daysElapsed,
+            species: incubation.species,
+          );
 
     return Padding(
       padding: AppSpacing.screenPadding,

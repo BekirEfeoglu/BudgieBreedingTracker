@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/data/providers/date_format_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
@@ -192,17 +193,23 @@ class BreedingEggsSection extends ConsumerWidget {
 class BreedingMilestoneSection extends StatelessWidget {
   final DateTime startDate;
   final int? totalDays;
+  final Species? species;
 
   const BreedingMilestoneSection({
     super.key,
     required this.startDate,
     this.totalDays,
+    this.species,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Prefer species so the milestone timeline matches the species-driven
+    // notifications the user receives; totalDays is the percentage-based
+    // fallback used only when species is unknown.
     final milestones = IncubationCalculator.getMilestones(
       startDate,
+      species: species,
       totalDays: totalDays,
     );
 

@@ -36,7 +36,13 @@ class _GenealogyScreenState extends ConsumerState<GenealogyScreen> {
   @override
   void initState() {
     super.initState();
-    initPedigreeDepth(ref);
+    _initPedigreeDepth();
+  }
+
+  Future<void> _initPedigreeDepth() async {
+    final depth = await loadPedigreeDepthPreference();
+    if (!mounted) return;
+    ref.read(pedigreeDepthProvider.notifier).setDepth(depth);
   }
 
   @override

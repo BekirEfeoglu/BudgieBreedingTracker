@@ -41,6 +41,14 @@ class ChickListScreen extends ConsumerStatefulWidget {
 class _ChickListScreenState extends ConsumerState<ChickListScreen> {
   final Set<String> _selectedIds = {};
 
+  /// Guards [_runBulkAction] re-entry. Without this, a second confirm-tap
+  /// while the first bulk pass is still iterating launches a parallel pass
+  /// over the same selection set; because ChickFormNotifier actions report
+  /// failure via the shared `state.error` (not a rethrow), the second pass
+  /// misreads the first pass's in-flight state and counts skipped chicks as
+  /// successes. Mirrors the BirdListScreen guard.
+  bool _isBulkRunning = false;
+
   bool get _isSelectionMode => _selectedIds.isNotEmpty;
 
   void _toggleSelection(String id) {
@@ -123,31 +131,40 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
   }) async {
     final total = _selectedIds.length;
     if (total == 0) return;
+    // Re-entry guard: a spam confirm-tap could otherwise launch a second pass
+    // while the first is still iterating, cross-contaminating the shared
+    // `state.error` reads and miscounting skipped chicks as successes.
+    if (_isBulkRunning) return;
+    _isBulkRunning = true;
     final messenger = ScaffoldMessenger.of(context);
     final notifier = ref.read(chickFormStateProvider.notifier);
     final failures = <String>[];
 
-    for (final id in _selectedIds.toList()) {
-      if (!mounted) return;
-      try {
-        await action(notifier, id);
-        // ChickFormNotifier actions (deleteChick, markAsDeceased, ...) catch
-        // their own exceptions internally and report failure via
-        // state.error instead of rethrowing, so the catch clause below
-        // never fires for that class of failure — the per-item outcome
-        // must be read from state, which each action resets to null at its
-        // own start and leaves null on its success path.
-        if (ref.read(chickFormStateProvider).error != null) {
+    try {
+      for (final id in _selectedIds.toList()) {
+        if (!mounted) return;
+        try {
+          await action(notifier, id);
+          // ChickFormNotifier actions (deleteChick, markAsDeceased, ...) catch
+          // their own exceptions internally and report failure via
+          // state.error instead of rethrowing, so the catch clause below
+          // never fires for that class of failure — the per-item outcome
+          // must be read from state, which each action resets to null at its
+          // own start and leaves null on its success path.
+          if (ref.read(chickFormStateProvider).error != null) {
+            failures.add(id);
+          }
+        } catch (e, st) {
+          // Broad catch is intentional: per-item resilience so one failing
+          // chick doesn't abort the whole bulk operation. The failure is
+          // logged with its stack trace and surfaced to the user via the
+          // partial-failure SnackBar below.
+          AppLogger.error('[ChickListScreen] $logTag failed for $id', e, st);
           failures.add(id);
         }
-      } catch (e, st) {
-        // Broad catch is intentional: per-item resilience so one failing
-        // chick doesn't abort the whole bulk operation. The failure is
-        // logged with its stack trace and surfaced to the user via the
-        // partial-failure SnackBar below.
-        AppLogger.error('[ChickListScreen] $logTag failed for $id', e, st);
-        failures.add(id);
       }
+    } finally {
+      _isBulkRunning = false;
     }
     if (!mounted) return;
 

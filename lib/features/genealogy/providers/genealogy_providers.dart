@@ -38,14 +38,16 @@ final pedigreeDepthProvider = NotifierProvider<PedigreeDepthNotifier, int>(
   PedigreeDepthNotifier.new,
 );
 
-/// Initializes pedigree depth from SharedPreferences.
-Future<void> initPedigreeDepth(WidgetRef ref) async {
+/// Loads the persisted pedigree depth (clamped 3–8, default 5).
+///
+/// Pure by design: it awaits a SharedPreferences platform-channel round-trip,
+/// so the caller must apply the result to [pedigreeDepthProvider] behind its
+/// own `mounted` check. Reading a provider off a disposed `ConsumerState` ref
+/// after the await would throw a `StateError` (the screen can be popped during
+/// the first cold-launch round-trip before SharedPreferences caches).
+Future<int> loadPedigreeDepthPreference() async {
   final prefs = await SharedPreferences.getInstance();
-  final depth = (prefs.getInt(AppPreferences.keyPedigreeDepth) ?? 5).clamp(
-    3,
-    8,
-  );
-  ref.read(pedigreeDepthProvider.notifier).setDepth(depth);
+  return (prefs.getInt(AppPreferences.keyPedigreeDepth) ?? 5).clamp(3, 8);
 }
 
 /// Persists pedigree depth and updates provider.

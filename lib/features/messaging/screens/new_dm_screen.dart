@@ -30,6 +30,12 @@ class _NewDmScreenState extends ConsumerState<NewDmScreen> {
   String? _startingDmWith;
   Timer? _debounce;
 
+  /// Sequence guard: the 300ms debounce prevents overlapping *dispatch* but
+  /// not overlapping *completion* — a slow response for an earlier query could
+  /// otherwise land after a faster response for a newer query and overwrite
+  /// the list with results that no longer match the field.
+  int _searchSeq = 0;
+
   @override
   void dispose() {
     _debounce?.cancel();
@@ -40,6 +46,9 @@ class _NewDmScreenState extends ConsumerState<NewDmScreen> {
   void _onSearchChanged(String query) {
     _debounce?.cancel();
     if (query.trim().length < 2) {
+      // Invalidate any in-flight search so its late response can't repopulate
+      // the list after the user cleared/shortened the query.
+      _searchSeq++;
       setState(() => _results = []);
       return;
     }
@@ -49,19 +58,20 @@ class _NewDmScreenState extends ConsumerState<NewDmScreen> {
   }
 
   Future<void> _performSearch(String query) async {
+    final requestId = ++_searchSeq;
     setState(() => _isSearching = true);
     try {
       final userId = ref.read(currentUserIdProvider);
       final repo = ref.read(messagingRepositoryProvider);
       final results = await repo.searchProfiles(query, excludeUserId: userId);
-      if (!mounted) return;
+      if (!mounted || requestId != _searchSeq) return;
       setState(() {
         _results = results;
         _isSearching = false;
       });
     } catch (e, st) {
       AppLogger.error('NewDmScreen', e, st);
-      if (!mounted) return;
+      if (!mounted || requestId != _searchSeq) return;
       setState(() => _isSearching = false);
     }
   }

@@ -219,6 +219,7 @@ class _DetailContent extends ConsumerWidget {
                                 ),
                                 BreedingMilestoneSection(
                                   startDate: incubation.startDate!,
+                                  species: incubation.species,
                                   totalDays: incubation.totalIncubationDays(),
                                 ),
                               ],

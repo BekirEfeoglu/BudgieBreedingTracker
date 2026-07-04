@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/utils/realtime_error_log_throttle.dart';
 import 'base_remote_source.dart';
 
 class MessageRemoteSource {
@@ -123,6 +124,7 @@ class MessageRemoteSource {
     void Function(Map<String, dynamic> payload) onMessage,
   ) {
     final channel = _client.channel('messages:$conversationId');
+    final errorLog = RealtimeErrorLogThrottle();
     channel
         .onPostgresChanges(
           event: PostgresChangeEvent.insert,
@@ -138,11 +140,13 @@ class MessageRemoteSource {
           },
         )
         .subscribe((status, error) {
-          if (error != null) {
-            AppLogger.warning(
-              '[messages:$conversationId] Realtime status: $status, error: $error',
-            );
+          if (error == null) {
+            errorLog.reset();
+            return;
           }
+          errorLog.logError(
+            '[messages:$conversationId] Realtime status: $status, error: $error',
+          );
         });
     return channel;
   }
@@ -153,6 +157,7 @@ class MessageRemoteSource {
     void Function(Map<String, dynamic> payload) onUpdate,
   ) {
     final channel = _client.channel('conversation-updates');
+    final errorLog = RealtimeErrorLogThrottle();
     channel
         .onPostgresChanges(
           event: PostgresChangeEvent.update,
@@ -166,11 +171,13 @@ class MessageRemoteSource {
           },
         )
         .subscribe((status, error) {
-          if (error != null) {
-            AppLogger.warning(
-              '[conversation-updates] Realtime status: $status, error: $error',
-            );
+          if (error == null) {
+            errorLog.reset();
+            return;
           }
+          errorLog.logError(
+            '[conversation-updates] Realtime status: $status, error: $error',
+          );
         });
     return channel;
   }
