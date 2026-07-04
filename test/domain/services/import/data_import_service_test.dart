@@ -270,6 +270,67 @@ void main() {
     });
 
     test(
+      'importBirdsFromExcel keeps a bird whose parent ids cannot be resolved, '
+      'nulling the dangling links instead of dropping the whole bird',
+      () async {
+        // Empty target flock: parent ids from a re-imported export / another
+        // account resolve to nothing. Option A imports the bird with the
+        // dangling lineage links dropped, rather than discarding it entirely
+        // (which silently lost every bird that had a parent on re-import).
+        when(() => birdRepo.getAll('user-1')).thenAnswer((_) async => const []);
+
+        final bytes = _buildWorkbook({
+          'Kuslar': [
+            [
+              'Ad',
+              'Halka No',
+              'Cinsiyet',
+              'Tur',
+              'Durum',
+              'Dogum Tarihi',
+              'Renk',
+              'Kafes',
+              'Legacy Notlar',
+              'Baba ID',
+              'Anne ID',
+              'Notlar',
+            ],
+            [
+              'Yavru',
+              'TR-9',
+              'Erkek',
+              'Budgie',
+              'Alive',
+              '01.01.2025',
+              '',
+              'A1',
+              '',
+              'father-gone',
+              'mother-gone',
+              'orphaned',
+            ],
+          ],
+        });
+
+        final result = await service.importBirdsFromExcel(
+          bytes: bytes,
+          userId: 'user-1',
+        );
+
+        expect(result.importedCount, 1);
+        expect(result.skippedCount, 0);
+        expect(result.errors, isEmpty);
+        final saved =
+            (verify(() => birdRepo.saveAll(captureAny())).captured.single
+                    as List<Bird>)
+                .single;
+        expect(saved.name, 'Yavru');
+        expect(saved.fatherId, isNull);
+        expect(saved.motherId, isNull);
+      },
+    );
+
+    test(
       'importBirdsFromExcel enforces maxTotalBirds limit for free tier',
       () async {
         when(() => birdRepo.getAll(any())).thenAnswer(

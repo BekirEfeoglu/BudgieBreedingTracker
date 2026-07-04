@@ -9,6 +9,9 @@ part of 'data_import_service.dart';
 /// to the provided callbacks.
 ///
 /// [parseRow] returns `null` when the row should be skipped.
+/// [validate] validates and may return a SANITIZED copy of the item to persist
+/// (e.g. a bird with an unresolvable parent link nulled out); throw to skip the
+/// row. The returned item — not the raw parsed one — is what gets saved.
 /// [onSkip] (optional) produces the error message for skipped rows.
 /// [onError] (optional) customizes the error message for thrown row errors.
 /// [sheetNotFoundError] (optional) is added to errors when the sheet
@@ -19,7 +22,7 @@ Future<ImportResult> _importSheet<T>({
   required List<String> sheetNames,
   required String label,
   required T? Function(List<Data?> row, String userId) parseRow,
-  required Future<void> Function(T item) validate,
+  required Future<T> Function(T item) validate,
   required Future<void> Function(List<T> items) saveAll,
   String Function(List<Data?> row, int rowIndex)? onSkip,
   String Function(Object error, int rowIndex)? onError,
@@ -75,8 +78,8 @@ Future<ImportResult> _importSheet<T>({
         }
         continue;
       }
-      await validate(item);
-      validItems.add(item);
+      final prepared = await validate(item);
+      validItems.add(prepared);
       imported++;
     } catch (e) {
       AppLogger.warning('[DataImportService] Row ${i + 1}: $e');

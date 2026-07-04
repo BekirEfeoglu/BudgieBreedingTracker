@@ -20,8 +20,12 @@ part 'data_import_service_sheet.dart';
 
 /// Imports data from Excel files into the local database.
 ///
-/// Supports importing bird, breeding pair, egg, chick, and health record
-/// data from Excel workbooks that follow the same format as the exported files.
+/// Consumes workbooks in the documented IMPORT column layout (see each parser's
+/// `Expected columns`) — a hand-fillable template. This is NOT byte-compatible
+/// with the human-readable export report, whose column order differs; the
+/// lossless round-trip path is the encrypted backup. A parent/FK reference that
+/// cannot be resolved to a bird in the user's flock is dropped (the row still
+/// imports) instead of discarding the whole record — see [_sanitizeBirdParents].
 class DataImportService {
   DataImportService(
     this._birdRepo,
@@ -37,32 +41,46 @@ class DataImportService {
   final ChickRepository _chickRepo;
   final HealthRecordRepository _healthRecordRepo;
 
-  void _validateBirdParents(Bird bird, Map<String, Bird> birdsById) {
-    if (bird.fatherId != null) {
-      final father = birdsById[bird.fatherId!];
+  /// Validates and, where necessary, sanitizes a bird's parent references,
+  /// returning the bird to persist.
+  ///
+  /// A parent reference that cannot be RESOLVED (no such bird in this user's
+  /// flock) is nulled out and the bird is still imported. Excel is a
+  /// human-readable report, not a lossless round-trip format — the encrypted
+  /// backup is — and the import regenerates ids, so cross-file lineage links
+  /// can't survive a re-import anyway. Dropping only the dangling link (rather
+  /// than the whole bird) stops a re-imported flock from silently losing every
+  /// bird that has a parent. A parent that DOES resolve but is genetically
+  /// invalid (wrong gender / different species) is a real data error and still
+  /// rejects the row, preserving typo detection for hand-crafted templates.
+  Bird _sanitizeBirdParents(Bird bird, Map<String, Bird> birdsById) {
+    var fatherId = bird.fatherId;
+    var motherId = bird.motherId;
+
+    if (fatherId != null) {
+      final father = birdsById[fatherId];
       if (father == null || father.userId != bird.userId) {
-        throw const _ImportValidationException('birds.not_found');
-      }
-      if (father.gender != BirdGender.male) {
+        fatherId = null; // unresolvable → drop the link, keep the bird
+      } else if (father.gender != BirdGender.male) {
         throw const _ImportValidationException('birds.invalid_father');
-      }
-      if (father.species != bird.species) {
+      } else if (father.species != bird.species) {
         throw const _ImportValidationException('birds.parent_species_mismatch');
       }
     }
 
-    if (bird.motherId != null) {
-      final mother = birdsById[bird.motherId!];
+    if (motherId != null) {
+      final mother = birdsById[motherId];
       if (mother == null || mother.userId != bird.userId) {
-        throw const _ImportValidationException('birds.not_found');
-      }
-      if (mother.gender != BirdGender.female) {
+        motherId = null; // unresolvable → drop the link, keep the bird
+      } else if (mother.gender != BirdGender.female) {
         throw const _ImportValidationException('birds.invalid_mother');
-      }
-      if (mother.species != bird.species) {
+      } else if (mother.species != bird.species) {
         throw const _ImportValidationException('birds.parent_species_mismatch');
       }
     }
+
+    if (fatherId == bird.fatherId && motherId == bird.motherId) return bird;
+    return bird.copyWith(fatherId: fatherId, motherId: motherId);
   }
 
   void _validateBreedingPairBirds(
@@ -132,9 +150,10 @@ class DataImportService {
             existingBirdCount + importedBirds >= maxTotalBirds) {
           throw _BirdLimitExceededException(maxTotalBirds);
         }
-        _validateBirdParents(bird, birdsById);
-        birdsById[bird.id] = bird; // same-file forward references
+        final sanitized = _sanitizeBirdParents(bird, birdsById);
+        birdsById[sanitized.id] = sanitized; // same-file forward references
         importedBirds++;
+        return sanitized;
       },
       saveAll: _birdRepo.saveAll,
     );
@@ -189,6 +208,7 @@ class DataImportService {
         }
         _validateBreedingPairBirds(pair, birdsById);
         if (isActive) importedActivePairs++;
+        return pair;
       },
       saveAll: _breedingPairRepo.saveAll,
     );
@@ -210,7 +230,7 @@ class DataImportService {
       parseRow: (row, uid) => ExcelRowParsers.parseEggRow(row, uid),
       onSkip: (_, rowIndex) =>
           'import.row_date_required'.tr(args: ['$rowIndex']),
-      validate: (_) async {},
+      validate: (item) async => item,
       saveAll: _eggRepo.saveAll,
     );
   }
@@ -229,7 +249,7 @@ class DataImportService {
       sheetNames: const ['Yavrular', 'Chicks', 'Sheet4'],
       label: 'Chicks',
       parseRow: (row, uid) => ExcelRowParsers.parseChickRow(row, uid),
-      validate: (_) async {},
+      validate: (item) async => item,
       saveAll: _chickRepo.saveAll,
     );
   }
@@ -255,7 +275,7 @@ class DataImportService {
         }
         return 'import.row_date_required'.tr(args: ['$rowIndex']);
       },
-      validate: (_) async {},
+      validate: (item) async => item,
       saveAll: _healthRecordRepo.saveAll,
     );
   }
