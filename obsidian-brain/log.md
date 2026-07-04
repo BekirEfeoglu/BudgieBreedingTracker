@@ -4,6 +4,24 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-04] fix | Four surfaced findings fixed in order (D, A, C, B)
+
+The user asked to fix all four findings the bug hunt surfaced but had deferred.
+(D) `72f095e` eggs — deleting the sole/last egg now cancels the now-empty
+incubation (`fromDelete` flag) instead of stranding it `active` against the
+free-tier limit. (A) `6101459` sync — pull recorded a conflict only when remote
+was strictly newer, but insertAll overwrites unconditionally, so a pending local
+edit clobbered by an equal/older remote (clock skew) was silently discarded;
+conflict RECORDING widened to any pending overwrite (server-wins unchanged), and
+the 14 divergent per-repo conflict loops collapsed into one shared
+`detectPullConflicts`. (C) `ddeb1a7` sync — unified the stale-error threshold
+(`maxSyncRetries` → `RetryScheduler.maxRetries`; the >=10 branch was unreachable)
+and gave `clearStaleErrors` the orchestrator path's 24h age guard. (B) `0bc0bc0`
+sync — the incremental pull cursor is rolled back 5 min at read time to tolerate
+device-vs-server clock skew (persisted checkpoint + display unchanged). Each fix
+has regression tests; 511 repo+sync green, analyze clean. See
+[[data-layer/sync-strategy]], [[domain/eggs-service]].
+
 ## [2026-07-04] docs | DST field-addition pattern synced to rule + wiki pages
 
 Follow-up doc sync for `07638b5`: `.claude/rules/datetime-format.md` § Hatch
@@ -156,41 +174,5 @@ gates `_onAppResumed`'s in-app-update check (6h) and RevenueCat premium refresh
 (5m) so rapid foreground/background flips don't re-fire them; presence/realtime/
 notification-recovery/pushChanges stay unthrottled; `reset()` fires on logout.
 Cold-start timing + push-delivery are manual device-QA (not run). See [[features/auth]].
-
-## [2026-07-03] perf (branch) | Sync/cascade/import batching
-
-Branch `perf/performance-improvements`, tasks 1-6 (each subagent-reviewed
-clean). **Push (T1-3, `bcd13c7`/`b7d18d7`/`ffb4a49`):** the per-row `pushAll`
-loop (one HTTP upsert per pending row) is replaced by
-`SyncableRepository.pushPendingBatched` — chunks of 100 → one `upsertAll` +
-one `SyncMetadataDao.deleteByRecords` per chunk. New batch metadata helpers
-(`getByRecords`/`deleteByRecords`/`markPendingByRecords`) do the pending-marker
-bookkeeping in one statement each. Chunk failure falls back to per-item
-`push()` (poison-row isolation); `PushStats.pushed` counts only real successes
-(telemetry-only). All 13 syncable repos routed through it (mixin hooks + 4
-inline). **Cascade deletes (T4-5, `108c0885`/`d6b016c`):** `EventRepository.removeBy*`
-→ one `softDeleteByIds` + one `markPendingByRecords` + one best-effort batched
-`pushAll`; `GrowthMeasurementRepository.removeByChickIds` → one `hardDeleteByIds`
-+ one batch `pendingDelete` metadata + one `BaseRemoteSource.deleteByIds`
-(tombstones survive on remote failure). **Import (T6, `5ca9536`):** Excel import
-persists via one `repo.saveAll` (no per-row push) + map-based FK validation
-(one `getAll`, zero per-row `getById`); batch is all-or-nothing. **Index (T7,
-`f9babe0`):** schema v25→v26 adds `idx_conflict_history_user_table_record`
-`(user_id, table_name, record_id)` so `ConflictHistoryDao` exists-checks seek
-instead of full-scan. See [[data-layer/sync-strategy]], [[data-layer/repositories]],
-[[domain/data-io]], [[data-layer/migrations]].
-
-## [2026-07-03] fix (branch) | community post-edit + admin follow-ups
-
-Branch `fix/community-followups` (commit `b9e4f77`, review-approved). 7 deferred
-fixes: (1) admin `clearReviewFlag` wrote a non-existent `reviewed_by` column →
-removed (that admin action was broken in prod; IMPROVEMENT_PLAN §6.14 closed);
-(2) edit sheet now uses the shared `showAppBottomSheet` (SafeArea bottom inset on
-notched devices); (3) comment empty-state fires on `visibleComments.isEmpty` so a
-fully-muted thread no longer renders blank; (4) `_maxLength` cross-refs the edge
-schema; (5) `PostEditNotifier.editPost` → `Future<String?>` so the specific
-`edit_window_expired` message surfaces (previously an unused l10n key); (6) dropped
-a redundant `invalidateAll()` in `update()`; (7) added a real edit-menu tap-through
-widget test. 470/470 community+remote-source tests green (§6.13 + §6.14 closed).
 
 Older entries are archived in [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
