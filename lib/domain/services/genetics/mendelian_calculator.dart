@@ -85,7 +85,7 @@ class MendelianCalculator {
     //    distances.
     //    Priority (tightest linkage first):
     //    Ino-Slate (2 cM) → Cin-Ino (3 cM) → Cin-Slate (5 cM) →
-    //    Op-Ino (30 cM) → Op-Cin (34 cM) → Op-Slate (40 cM).
+    //    Op-Ino (30 cM) → Op-Cin (32 cM) → Op-Slate (40.5 cM).
     //    Each mutation consumed once paired; remainder stay independent.
     final hasCinnamon = allIds.contains(GeneticsConstants.mutCinnamon);
     final hasOpaline = allIds.contains(GeneticsConstants.mutOpaline);

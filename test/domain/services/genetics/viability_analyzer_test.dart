@@ -1,3 +1,4 @@
+import 'package:budgie_breeding_tracker/core/constants/genetics_constants.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/lethal_combination_database.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -125,6 +126,53 @@ void main() {
         (w) => w.combination.id == 'df_spangle',
       );
       expect(spangleWarnings, isEmpty);
+    });
+  });
+
+  group('recessive lethal with non-visual carrier parents (regression)', () {
+    // Feather Duster is autosomal recessive: a carrier parent is NOT visual,
+    // so the parents' visual mutation sets are empty even though a double-factor
+    // (lethal) offspring is produced. A visual-only parent pre-check used to
+    // drop this warning entirely; the analyzer must rely on the authoritative
+    // per-offspring doubleFactorIds instead.
+    test('flags DF Feather Duster from carrier x carrier (empty visual sets)', () {
+      final result = analyzer.analyze(
+        fatherMutations: const {},
+        motherMutations: const {},
+        offspringResults: [
+          _offspring(
+            phenotype: 'Feather Duster',
+            probability: 0.25,
+            doubleFactorIds: {GeneticsConstants.mutFeatherDuster},
+          ),
+          _offspring(phenotype: 'Normal', probability: 0.75),
+        ],
+      );
+
+      expect(result.hasWarnings, isTrue);
+      expect(
+        result.warnings.map((w) => w.combination.id),
+        contains('df_feather_duster'),
+      );
+      expect(result.totalAffectedProbability, closeTo(0.25, 1e-9));
+      expect(result.highestSeverity, LethalSeverity.lethal);
+    });
+
+    test('does not flag Feather Duster when no offspring is double factor', () {
+      final result = analyzer.analyze(
+        fatherMutations: const {},
+        motherMutations: const {},
+        offspringResults: [
+          _offspring(
+            phenotype: 'Feather Duster (carrier)',
+            probability: 0.5,
+            visualMutations: const [],
+          ),
+          _offspring(phenotype: 'Normal', probability: 0.5),
+        ],
+      );
+
+      expect(result.hasWarnings, isFalse);
     });
   });
 

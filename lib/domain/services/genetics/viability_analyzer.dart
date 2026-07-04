@@ -140,16 +140,12 @@ class ViabilityAnalyzer {
     Set<String> motherMutations,
     List<OffspringResult> offspringResults,
   ) {
-    // Short-circuit: if neither parent can contribute the allele, no offspring
-    // can be homozygous for it.
-    final fatherCanProvide = combo.requiredMutationIds.any(
-      fatherMutations.contains,
-    );
-    final motherCanProvide = combo.requiredMutationIds.any(
-      motherMutations.contains,
-    );
-    if (!fatherCanProvide || !motherCanProvide) return const [];
-
+    // Rely solely on per-offspring double-factor tagging — NO visual-only
+    // parent pre-check. A visual short-circuit wrongly drops recessive lethals
+    // (e.g. Feather Duster): carrier parents are NOT in the visual set yet can
+    // still produce a homozygous (double-factor) offspring. `doubleFactorIds`
+    // is authoritative — the engine only tags an offspring double-factor when
+    // both parents contributed the allele, so this cannot false-positive.
     final warnings = <ViabilityWarning>[];
     for (final result in offspringResults) {
       final hasDoubleFactor = combo.requiredMutationIds.any(
