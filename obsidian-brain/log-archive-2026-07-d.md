@@ -2,6 +2,25 @@
 
 Back to [[log]].
 
+## [2026-07-04] perf (branch) | Rebuild hygiene: calendar filter + risk identity
+
+Branch `perf/performance-improvements`, tasks 10-11 (commits `115f58bc`,
+`d86f7d3`, `6c7c015`; review-approved). **Search (T10):** the bird-search
+300ms debounce already shipped (`f43b7ef`); added timing regression tests
+(200ms→'' / 350ms→value bracketing the timer + immediate-clear bypass) that
+were missing, so a debounce removal can no longer pass silently — production
+untouched. **Calendar (T11):** new `filteredCalendarEventsProvider` runs
+`filterCalendarEvents` once per (stream, filter) change; the month/week/day
+providers derive from it instead of each re-filtering. **Risk lists (T11):**
+`IncubationRiskSummary.risksForPair`/`risksForIncubation` now return cached,
+identity-stable, `List.unmodifiable` buckets (shared `const []` for no-risk
+ids) so risk cards skip rebuilds when unchanged; a follow-up fix froze the
+lists to prevent shared-cache mutation. **Platform (T12, `e2691aa`):** added
+`flutter_displaymode` to request the Android panel's high refresh rate at
+startup (guarded, fail-silent); Sentry `tracesSampleRate` now budgeted by env
+(`sentryTracesSampleRateFor`: dev 1.0 / staging 0.5 / prod 0.1) per
+observability.md instead of a flat 0.3. See [[features/calendar]], [[features/breeding]], [[architecture/tech-stack]].
+
 ## [2026-07-03] perf (branch) | Startup + resume path
 
 Branch `perf/performance-improvements`, tasks 8-9 (commits `d80360f`/`d46d8f3`,

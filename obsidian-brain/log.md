@@ -4,6 +4,21 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-04] fix | Excel import tolerates unresolvable parent refs (Option A)
+
+Deferred audit item (F-IO-1); user chose Option A. Re-importing an export
+silently dropped every bird with a father/mother + all pairs: the import
+regenerates ids, so the FK refs (old ids) never resolved and the parent
+validation threw `birds.not_found`, skipping the whole row. `_sanitizeBirdParents`
+now NULLS an unresolvable parent ref and still imports the bird (drops only the
+dangling link); a parent that resolves but is genetically invalid (wrong
+gender/species) still rejects. `_importSheet`'s `validate` returns the sanitized
+item to persist. Pairs still skip (they need two real birds). Discovered in
+passing: the export report and import template column layouts differ (only
+name/ring/gender/parent-ids/notes align), so the true lossless round-trip is the
+encrypted backup, not Excel — the class doc + data-io wiki now say so. See
+[[domain/data-io]].
+
 ## [2026-07-04] fix | Sync stale-error cleanup moved out of the push phase
 
 Deferred audit item, now requested. `ValidatedSyncMixin.pushAll` ran
@@ -176,24 +191,5 @@ LC_ALL=en_US.UTF-8 pod install` (UTF-8 prefix avoids the CocoaPods
 `Unicode Normalization` crash); commit `ios/Podfile.lock` together with
 pubspec files when it changes; an unchanged lock is normal for stub iOS
 podspecs — the run still regenerates `Pods/Manifest.lock`.
-
-## [2026-07-04] perf (branch) | Rebuild hygiene: calendar filter + risk identity
-
-Branch `perf/performance-improvements`, tasks 10-11 (commits `115f58bc`,
-`d86f7d3`, `6c7c015`; review-approved). **Search (T10):** the bird-search
-300ms debounce already shipped (`f43b7ef`); added timing regression tests
-(200ms→'' / 350ms→value bracketing the timer + immediate-clear bypass) that
-were missing, so a debounce removal can no longer pass silently — production
-untouched. **Calendar (T11):** new `filteredCalendarEventsProvider` runs
-`filterCalendarEvents` once per (stream, filter) change; the month/week/day
-providers derive from it instead of each re-filtering. **Risk lists (T11):**
-`IncubationRiskSummary.risksForPair`/`risksForIncubation` now return cached,
-identity-stable, `List.unmodifiable` buckets (shared `const []` for no-risk
-ids) so risk cards skip rebuilds when unchanged; a follow-up fix froze the
-lists to prevent shared-cache mutation. **Platform (T12, `e2691aa`):** added
-`flutter_displaymode` to request the Android panel's high refresh rate at
-startup (guarded, fail-silent); Sentry `tracesSampleRate` now budgeted by env
-(`sentryTracesSampleRateFor`: dev 1.0 / staging 0.5 / prod 0.1) per
-observability.md instead of a flat 0.3. See [[features/calendar]], [[features/breeding]], [[architecture/tech-stack]].
 
 Older entries are archived in [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
