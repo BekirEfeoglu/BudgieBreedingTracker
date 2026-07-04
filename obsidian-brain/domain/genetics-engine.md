@@ -9,7 +9,7 @@ Source: `.claude/rules/genetics.md` (primary), `.claude/rules/local-ai.md` (AI i
 - **Punnett square** — standard Mendelian inheritance calculation
 - **Epistasis** — multi-locus gene interaction (e.g., opaline + clearwing)
 - **MUTAVI rates** — authoritative mutation frequency data (see `docs/muhabbet-kusu-genetik-rehberi.md`)
-- **Inbreeding coefficient** — F coefficient calculation from pedigree
+- **Inbreeding coefficient** — Wright's F from pedigree (`inbreeding_calculator.dart`); enforces the disjoint-path rule (a father-line and mother-line path form a loop only if they share the apex and no other individual) so an ancestor reachable from both sides only through a nearer common ancestor isn't double-counted; F_A recursive + memoized (double-count bug fixed 2026-07-04)
 - **Dominant allelic series** — bug fixed 2026-04-09 (v2 calculation)
 - 930+ genetics-specific domain tests
 

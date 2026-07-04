@@ -4,6 +4,30 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-04] fix | Comprehensive audit sweep — 8 findings fixed, 2 deferred
+
+Full multi-subsystem bug hunt (8 parallel audit agents), each fix verified.
+**genetics** — `inbreeding_calculator` double-counted Wright loops through a
+common ancestor's own ancestors (full-sib mating with an inbred grandpa returned
+0.359375 vs the correct 0.265625, inflating risk bands); rewrote to store
+vertex-set paths + a disjoint-path rule + recursive memoized F_A (1123
+genetics/genealogy tests green). **calendar** — auto-generated milestone/hatch
+events were stored at UTC-midnight then bucketed by local day, showing a day
+earlier than the local-wall-clock reminder in UTC-negative zones; switched to
+local field addition to match the scheduler. **marketplace** — feed/tab favorite
+toggle was non-optimistic with no refresh and its error listener lived only on
+the form screen (tap looked like a no-op on success / silent on failure); the
+notifier now invalidates the list providers on success and the feed/favorites
+screens surface errors. **messaging** — `message_remote_source` realtime
+callbacks now use `RealtimeErrorLogThrottle` (sibling sources already did); new-DM
+search got a sequence guard. **chicks** — bulk action gained the `_isBulkRunning`
+re-entry guard `BirdListScreen` already had. **breeding** — incubation detail now
+passes `species` to the milestone/stage calculator (cockatiel/finch drifted a day
+from reminders). **genealogy** — `initPedigreeDepth` await→ref.read now
+mounted-guarded. Deferred with tasks: push-phase stale-error cleanup timing
+hazard + Excel round-trip FK loss (freshly-iterated / product-decision surfaces).
+See [[domain/genetics-engine]], [[domain/calendar-service]], [[features/marketplace]].
+
 ## [2026-07-04] fix | Four surfaced findings fixed in order (D, A, C, B)
 
 The user asked to fix all four findings the bug hunt surfaced but had deferred.
@@ -157,22 +181,5 @@ lists to prevent shared-cache mutation. **Platform (T12, `e2691aa`):** added
 startup (guarded, fail-silent); Sentry `tracesSampleRate` now budgeted by env
 (`sentryTracesSampleRateFor`: dev 1.0 / staging 0.5 / prod 0.1) per
 observability.md instead of a flat 0.3. See [[features/calendar]], [[features/breeding]], [[architecture/tech-stack]].
-
-## [2026-07-03] perf (branch) | Startup + resume path
-
-Branch `perf/performance-improvements`, tasks 8-9 (commits `d80360f`/`d46d8f3`,
-review-approved, 0 findings). **Splash (T8):** `appInitializationProvider` no
-longer awaits FCM token registration (`pushNotificationService.init`, a network
-call) or `_syncAuthMetadataToProfile` before `InitStep.ready` — both move to a
-deferred fire-and-forget microtask. LOCAL notification channels +
-`rateLimiterReadyProvider` stay awaited (a reminder must not fire before
-DND/rate-limit prefs load), and `processPendingPayloads` stays right after
-`ready`. `_rescheduleNotifications`/`_recoverPendingNotifications` remain
-separate microtasks. **Resume (T9):** new `ResumeThrottle`
-(`lib/core/utils/resume_throttle.dart`, in-memory per-key, injectable clock)
-gates `_onAppResumed`'s in-app-update check (6h) and RevenueCat premium refresh
-(5m) so rapid foreground/background flips don't re-fire them; presence/realtime/
-notification-recovery/pushChanges stay unthrottled; `reset()` fires on logout.
-Cold-start timing + push-delivery are manual device-QA (not run). See [[features/auth]].
 
 Older entries are archived in [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
