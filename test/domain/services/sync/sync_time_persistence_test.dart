@@ -328,8 +328,12 @@ void main() {
 
         await orchestrator.fullSync();
 
+        // Cursor is rolled back by the 5-min clock-skew margin (read-time).
         verify(
-          () => mockBirdRepository.pull(_userId, lastSyncedAt: lastSync),
+          () => mockBirdRepository.pull(
+            _userId,
+            lastSyncedAt: lastSync.subtract(const Duration(minutes: 5)),
+          ),
         ).called(1);
       },
     );
@@ -380,9 +384,12 @@ void main() {
 
       await orchestrator.fullSync();
 
-      // Incremental pull passes the persisted lastSync value
+      // Incremental pull passes the persisted lastSync minus the skew margin.
       verify(
-        () => mockBirdRepository.pull(_userId, lastSyncedAt: lastSync),
+        () => mockBirdRepository.pull(
+          _userId,
+          lastSyncedAt: lastSync.subtract(const Duration(minutes: 5)),
+        ),
       ).called(1);
 
       // Reconcile timestamp should NOT be updated

@@ -58,6 +58,16 @@ class SyncOrchestrator {
   /// Minimum interval between consecutive forceFullSync calls.
   static const _forceFullSyncCooldown = Duration(minutes: 2);
 
+  /// Safety margin rolled off the incremental pull cursor. `since` is compared
+  /// against the server's `updated_at`, but the persisted checkpoint is stamped
+  /// from the DEVICE clock — if the device runs ahead of the server, rows the
+  /// server writes inside the skew window would have `updated_at <= since` and
+  /// be missed on the incremental path until the next 6h reconcile. Rolling the
+  /// cursor back re-pulls a small overlap, which is harmless (idempotent
+  /// upserts). Applied at read time only: the persisted checkpoint and the
+  /// last-synced display still reflect the true sync instant.
+  static const _incrementalSyncSkewMargin = Duration(minutes: 5);
+
   /// Default upper bound for a single network sync phase (push / pull).
   ///
   /// A normal online sync completes in ~3s (perf budget). The underlying
@@ -96,8 +106,12 @@ class SyncOrchestrator {
         return SyncResult.error;
       }
 
-      // Load persisted lastSyncTime for incremental pull
-      final lastSync = await _loadLastSyncTime();
+      // Load persisted lastSyncTime for incremental pull, rolled back by the
+      // clock-skew margin so a device running ahead of the server doesn't miss
+      // rows written inside the skew window (see [_incrementalSyncSkewMargin]).
+      final lastSync = (await _loadLastSyncTime())?.subtract(
+        _incrementalSyncSkewMargin,
+      );
 
       // Check if full reconciliation is due
       final needsReconcile = await _isReconcileDue();

@@ -393,8 +393,12 @@ void main() {
 
       expect(result, SyncResult.success);
       verify(() => mockProfileRepository.pushPending(_userId)).called(1);
+      // Incremental pull cursor is rolled back by the 5-min clock-skew margin.
       verify(
-        () => mockBirdRepository.pull(_userId, lastSyncedAt: lastSync),
+        () => mockBirdRepository.pull(
+          _userId,
+          lastSyncedAt: lastSync.subtract(const Duration(minutes: 5)),
+        ),
       ).called(1);
 
       final prefs = await SharedPreferences.getInstance();
@@ -405,6 +409,40 @@ void main() {
       expect(persistedLastSync, isNotNull);
       expect(DateTime.parse(persistedLastSync!).isAfter(lastSync), isTrue);
       expect(container.read(lastSyncTimeProvider), isNotNull);
+    });
+
+    test('rolls the incremental pull cursor back by the clock-skew margin', () async {
+      // Regression: `since` is compared against the server's `updated_at`, but
+      // the stored checkpoint is stamped from the device clock. The cursor is
+      // rolled back 5 min so a device running ahead of the server doesn't skip
+      // rows written inside the skew window. The persisted checkpoint and the
+      // last-synced display are unchanged (see the persistence tests).
+      final lastSync = DateTime.now().subtract(const Duration(hours: 2));
+      SharedPreferences.setMockInitialValues({
+        'pref_last_synced_at': lastSync.toIso8601String(),
+        'pref_last_reconciled_at': DateTime.now()
+            .subtract(const Duration(hours: 1))
+            .toIso8601String(),
+      });
+
+      final container = createContainer();
+      addTearDown(container.dispose);
+      final orchestrator = container.read(syncOrchestratorProvider);
+
+      await orchestrator.fullSync();
+
+      verify(
+        () => mockBirdRepository.pull(
+          _userId,
+          lastSyncedAt: lastSync.subtract(const Duration(minutes: 5)),
+        ),
+      ).called(1);
+
+      // The persisted checkpoint itself stays at the true instant (>= lastSync,
+      // not rolled back).
+      final prefs = await SharedPreferences.getInstance();
+      final persisted = DateTime.parse(prefs.getString('pref_last_synced_at')!);
+      expect(persisted.isAfter(lastSync), isTrue);
     });
 
     test(
@@ -1114,9 +1152,12 @@ void main() {
         final result = await orchestrator.fullSync();
 
         expect(result, SyncResult.success);
-        // Incremental pull uses lastSync timestamp
+        // Incremental pull uses lastSync minus the 5-min clock-skew margin.
         verify(
-          () => mockBirdRepository.pull(_userId, lastSyncedAt: lastSync),
+          () => mockBirdRepository.pull(
+            _userId,
+            lastSyncedAt: lastSync.subtract(const Duration(minutes: 5)),
+          ),
         ).called(1);
 
         // Reconcile time should NOT be updated
