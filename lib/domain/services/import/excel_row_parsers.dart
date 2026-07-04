@@ -23,7 +23,14 @@ abstract final class ExcelRowParsers {
   ///
   /// Expected columns: Ad (0), Halka No (1), Cinsiyet (2), Tur (3),
   /// Durum (4), Dogum Tarihi (5), Renk (6), Kafes (7),
-  /// Notlar (8) or Baba ID (9), Anne ID (10), Notlar (11)
+  /// Notlar (8) or Baba ID (9), Anne ID (10), Notlar (11),
+  /// ID (12), Olum Tarihi (13), Satis Tarihi (14)
+  ///
+  /// The trailing ID/death/sale columns are written by [ExcelExportService] so
+  /// re-importing an export is a lossless round-trip: when present, the original
+  /// id is PRESERVED (FK lineage refs then resolve; upsert makes re-import
+  /// idempotent). Hand-filled templates omit them → a fresh id is generated and
+  /// the dates stay null, i.e. legacy behavior is unchanged.
   ///
   /// Returns `null` when name is empty (row skipped).
   static Bird? parseBirdRow(List<Data?> row, String userId) {
@@ -39,6 +46,9 @@ abstract final class ExcelRowParsers {
     final fatherId = cellToString(row, 9);
     final motherId = cellToString(row, 10);
     final notes = cellToString(row, 11) ?? cellToString(row, 8);
+    final providedId = cellToString(row, 12);
+    final deathDateStr = cellToString(row, 13);
+    final soldDateStr = cellToString(row, 14);
 
     final gender = parseGender(genderStr);
     final species = parseSpecies(speciesStr);
@@ -46,7 +56,9 @@ abstract final class ExcelRowParsers {
     final birthDate = parseDate(birthDateStr);
 
     return Bird(
-      id: _uuid.v7(),
+      id: (providedId != null && providedId.isNotEmpty)
+          ? providedId
+          : _uuid.v7(),
       userId: userId,
       name: name,
       ringNumber: ringNumber,
@@ -54,6 +66,8 @@ abstract final class ExcelRowParsers {
       species: species,
       status: status,
       birthDate: birthDate,
+      deathDate: parseDate(deathDateStr),
+      soldDate: parseDate(soldDateStr),
       fatherId: fatherId,
       motherId: motherId,
       cageNumber: cage,
@@ -70,7 +84,10 @@ abstract final class ExcelRowParsers {
   /// Parses a single Excel row into a [BreedingPair].
   ///
   /// Expected columns: Erkek ID (0), Disi ID (1), Kafes (2), Durum (3),
-  /// Eslestirme (4), Ayrilma (5), Notlar (6)
+  /// Eslestirme (4), Ayrilma (5), Notlar (6), ID (7)
+  ///
+  /// The trailing ID column is written by the exporter; when present the
+  /// original pair id is preserved (lossless round-trip + idempotent re-import).
   static BreedingPair parseBreedingPairRow(List<Data?> row, String userId) {
     final maleId = cellToString(row, 0);
     final femaleId = cellToString(row, 1);
@@ -79,13 +96,16 @@ abstract final class ExcelRowParsers {
     final pairingDateStr = cellToString(row, 4);
     final separationDateStr = cellToString(row, 5);
     final notes = cellToString(row, 6);
+    final providedId = cellToString(row, 7);
 
     final status = parseBreedingStatus(statusStr);
     final pairingDate = parseDate(pairingDateStr);
     final separationDate = parseDate(separationDateStr);
 
     return BreedingPair(
-      id: _uuid.v7(),
+      id: (providedId != null && providedId.isNotEmpty)
+          ? providedId
+          : _uuid.v7(),
       userId: userId,
       maleId: maleId,
       femaleId: femaleId,
@@ -106,7 +126,10 @@ abstract final class ExcelRowParsers {
   /// Parses a single Excel row into an [Egg].
   ///
   /// Expected columns: No (0), Yumurtlama (1), Durum (2), Doller (3),
-  /// Cikim (4), Kulucka ID (5), Notlar (6)
+  /// Cikim (4), Kulucka ID (5), Notlar (6), ID (7)
+  ///
+  /// The trailing ID column is written by the exporter; when present the
+  /// original egg id is preserved (lossless round-trip + idempotent re-import).
   ///
   /// Returns `null` when layDate is missing (row skipped).
   static Egg? parseEggRow(List<Data?> row, String userId) {
@@ -117,6 +140,7 @@ abstract final class ExcelRowParsers {
     final hatchDateStr = cellToString(row, 4);
     final incubationId = cellToString(row, 5);
     final notes = cellToString(row, 6);
+    final providedId = cellToString(row, 7);
 
     final layDate = parseDate(layDateStr);
     if (layDate == null) return null;
@@ -127,7 +151,9 @@ abstract final class ExcelRowParsers {
     final hatchDate = parseDate(hatchDateStr);
 
     return Egg(
-      id: _uuid.v7(),
+      id: (providedId != null && providedId.isNotEmpty)
+          ? providedId
+          : _uuid.v7(),
       userId: userId,
       eggNumber: eggNumber,
       layDate: layDate,
@@ -148,7 +174,10 @@ abstract final class ExcelRowParsers {
   /// Parses a single Excel row into a [Chick].
   ///
   /// Expected columns: Ad (0), Halka (1), Cinsiyet (2), Saglik (3),
-  /// Cikim (4), Suten Kesme (5), Cikim Agirligi (6), Notlar (7)
+  /// Cikim (4), Suten Kesme (5), Cikim Agirligi (6), Notlar (7), ID (8)
+  ///
+  /// The trailing ID column is written by the exporter; when present the
+  /// original chick id is preserved (lossless round-trip + idempotent re-import).
   static Chick parseChickRow(List<Data?> row, String userId) {
     final name = cellToString(row, 0);
     final ringNumber = cellToString(row, 1);
@@ -158,6 +187,7 @@ abstract final class ExcelRowParsers {
     final weanDateStr = cellToString(row, 5);
     final hatchWeightStr = cellToString(row, 6);
     final notes = cellToString(row, 7);
+    final providedId = cellToString(row, 8);
 
     final gender = parseGender(genderStr);
     final healthStatus = parseHealthStatus(healthStr);
@@ -166,7 +196,9 @@ abstract final class ExcelRowParsers {
     final hatchWeight = double.tryParse(hatchWeightStr ?? '');
 
     return Chick(
-      id: _uuid.v7(),
+      id: (providedId != null && providedId.isNotEmpty)
+          ? providedId
+          : _uuid.v7(),
       userId: userId,
       name: name,
       ringNumber: ringNumber,

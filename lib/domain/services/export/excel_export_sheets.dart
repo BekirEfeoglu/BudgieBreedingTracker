@@ -5,14 +5,19 @@ extension _ExcelSheetBuilders on ExcelExportService {
     final sheet = excel['export.sheet_eggs'.tr()];
     final headerStyle = CellStyle(bold: true);
 
+    // Column order matches DataImportService's egg parser (no@0, lay@1,
+    // status@2, fertile@3, hatch@4, incubationId@5, notes@6) with the full egg
+    // id trailing at col 7, so re-import is a lossless round-trip (the
+    // incubation link is now exported too, and the id preserved).
     final headers = [
-      'export.header_id'.tr(),
       'export.header_no'.tr(),
       'export.header_lay_date'.tr(),
       'export.header_status'.tr(),
-      'export.header_hatch_date'.tr(),
       'export.header_fertile_check'.tr(),
+      'export.header_hatch_date'.tr(),
+      'export.header_incubation_id'.tr(),
       'export.header_notes'.tr(),
+      'export.header_id'.tr(),
     ];
     for (var i = 0; i < headers.length; i++) {
       final cell = sheet.cell(
@@ -25,17 +30,18 @@ extension _ExcelSheetBuilders on ExcelExportService {
     for (var row = 0; row < eggs.length; row++) {
       final e = eggs[row];
       final values = [
-        e.id.substring(0, 8),
         '${e.eggNumber ?? ""}',
         ExcelExportService._dateFormat.format(e.layDate),
         e.status.name,
-        e.hatchDate != null
-            ? ExcelExportService._dateFormat.format(e.hatchDate!)
-            : '',
         e.fertileCheckDate != null
             ? ExcelExportService._dateFormat.format(e.fertileCheckDate!)
             : '',
+        e.hatchDate != null
+            ? ExcelExportService._dateFormat.format(e.hatchDate!)
+            : '',
+        e.incubationId ?? '',
         e.notes ?? '',
+        e.id,
       ];
       for (var col = 0; col < values.length; col++) {
         sheet
@@ -105,6 +111,9 @@ extension _ExcelSheetBuilders on ExcelExportService {
     final sheet = excel['export.sheet_chicks'.tr()];
     final headerStyle = CellStyle(bold: true);
 
+    // Column order already matches the chick parser (name@0 … notes@7); gender
+    // is written as an enum NAME (not a localized label) and the full id trails
+    // at col 8 so re-import round-trips losslessly.
     final headers = [
       'export.header_name'.tr(),
       'export.header_ring_number'.tr(),
@@ -114,6 +123,7 @@ extension _ExcelSheetBuilders on ExcelExportService {
       'export.header_weaning'.tr(),
       'export.header_hatch_weight'.tr(),
       'export.header_notes'.tr(),
+      'export.header_id'.tr(),
     ];
     for (var i = 0; i < headers.length; i++) {
       final cell = sheet.cell(
@@ -128,7 +138,7 @@ extension _ExcelSheetBuilders on ExcelExportService {
       final values = [
         c.name ?? '',
         c.ringNumber ?? '',
-        _genderLabel(c.gender.name),
+        c.gender.name,
         c.healthStatus.name,
         c.hatchDate != null
             ? ExcelExportService._dateFormat.format(c.hatchDate!)
@@ -138,6 +148,7 @@ extension _ExcelSheetBuilders on ExcelExportService {
             : '',
         c.hatchWeight != null ? c.hatchWeight.toString() : '',
         c.notes ?? '',
+        c.id,
       ];
       for (var col = 0; col < values.length; col++) {
         sheet

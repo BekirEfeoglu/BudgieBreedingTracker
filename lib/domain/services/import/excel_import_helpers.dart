@@ -10,10 +10,35 @@ import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 final _dateFormat = DateFormat('dd.MM.yyyy');
 
 /// Finds a sheet by trying multiple possible names, falling back to null.
+/// Normalizes a sheet name for tolerant matching: lowercased with Turkish /
+/// German diacritics folded to ASCII, so a localized export sheet name (e.g.
+/// "Kuşlar", "Vögel") matches the ASCII template name the importer looks for
+/// ("Kuslar", "Birds"). Enables lossless export → import round-trips.
+String _normalizeSheetName(String s) => s
+    .toLowerCase()
+    .replaceAll('ş', 's')
+    .replaceAll('ı', 'i')
+    .replaceAll('ç', 'c')
+    .replaceAll('ğ', 'g')
+    .replaceAll('ö', 'o')
+    .replaceAll('ü', 'u')
+    .replaceAll('ä', 'a')
+    .replaceAll('ß', 'ss')
+    .trim();
+
 Sheet? findSheet(Excel excel, List<String> names) {
+  // Exact match first — fast path, preserves the caller's name priority.
   for (final name in names) {
     if (excel.tables.containsKey(name)) {
       return excel.tables[name];
+    }
+  }
+  // Diacritic/case-insensitive fallback so a localized export sheet name still
+  // resolves to the ASCII template name (e.g. "Kuşlar" → "Kuslar").
+  final targets = names.map(_normalizeSheetName).toSet();
+  for (final entry in excel.tables.entries) {
+    if (targets.contains(_normalizeSheetName(entry.key))) {
+      return entry.value;
     }
   }
   return null;

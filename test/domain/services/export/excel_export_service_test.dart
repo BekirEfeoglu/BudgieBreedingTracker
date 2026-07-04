@@ -71,10 +71,11 @@ void main() {
       expect(workbook.tables.containsKey('export.sheet_chicks'), isTrue);
 
       final breedingSheet = workbook.tables['export.sheet_breeding']!;
-      // header + 1 row
+      // header + 1 row. Male/female ids lead (col 0/1); the full pair id now
+      // trails at the end (import-aligned, round-trip layout).
       expect(breedingSheet.rows.length, 2);
-      expect(breedingSheet.rows[1][1]?.value.toString(), 'bird-0001');
-      expect(breedingSheet.rows[1][2]?.value.toString(), 'bird-0002');
+      expect(breedingSheet.rows[1][0]?.value.toString(), 'bird-0001');
+      expect(breedingSheet.rows[1][1]?.value.toString(), 'bird-0002');
 
       final incubationSheet = workbook.tables['export.sheet_incubations']!;
       expect(incubationSheet.rows.length, 2);

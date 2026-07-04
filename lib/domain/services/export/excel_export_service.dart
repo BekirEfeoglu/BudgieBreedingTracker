@@ -60,19 +60,29 @@ class ExcelExportService {
     final sheet = excel['export.sheet_birds'.tr()];
     final headerStyle = CellStyle(bold: true);
 
+    // Column order matches DataImportService's bird parser (species@3,
+    // status@4, cage@7, father@9, mother@10, notes@11) so a re-import is a
+    // lossless round-trip. Columns 6 ("Renk") and 8 are legacy positions the
+    // parser skips — kept empty so the father/mother/notes indices line up.
+    // The trailing ID (12) / death (13) / sale (14) columns carry the full
+    // (untruncated) id and the extra dates the parser reads to reconstruct the
+    // bird exactly (see excel_row_parsers.parseBirdRow).
     final headers = [
       'export.header_name'.tr(),
       'export.header_ring_number'.tr(),
       'export.header_gender'.tr(),
-      'export.header_status'.tr(),
       'export.header_species'.tr(),
-      'export.header_cage'.tr(),
+      'export.header_status'.tr(),
       'export.header_birth_date'.tr(),
-      'export.header_death_date'.tr(),
-      'export.header_sale_date'.tr(),
+      'export.header_color'.tr(),
+      'export.header_cage'.tr(),
+      'export.header_notes'.tr(),
       'export.header_father_id'.tr(),
       'export.header_mother_id'.tr(),
       'export.header_notes'.tr(),
+      'export.header_id'.tr(),
+      'export.header_death_date'.tr(),
+      'export.header_sale_date'.tr(),
     ];
     for (var i = 0; i < headers.length; i++) {
       final cell = sheet.cell(
@@ -84,19 +94,27 @@ class ExcelExportService {
 
     for (var row = 0; row < birds.length; row++) {
       final b = birds[row];
+      // Enum-backed fields (gender/species/status) are written as stable enum
+      // NAMES, not localized labels, so re-import parses them back exactly
+      // regardless of locale — the import's parseGender/parseSpecies/
+      // parseBirdStatus accept these tokens. (species was already exported this
+      // way; gender/status now match for a lossless round-trip.)
       final values = [
         b.name,
         b.ringNumber ?? '',
-        _genderLabel(b.gender.name),
-        _statusLabel(b.status.name),
+        b.gender.name,
         b.species.name,
-        b.cageNumber ?? '',
+        b.status.name,
         b.birthDate != null ? _dateFormat.format(b.birthDate!) : '',
-        b.deathDate != null ? _dateFormat.format(b.deathDate!) : '',
-        b.soldDate != null ? _dateFormat.format(b.soldDate!) : '',
+        '', // col 6 (Renk) — legacy, parser skips
+        b.cageNumber ?? '',
+        '', // col 8 — legacy notes slot, parser reads notes from col 11
         b.fatherId ?? '',
         b.motherId ?? '',
         b.notes ?? '',
+        b.id,
+        b.deathDate != null ? _dateFormat.format(b.deathDate!) : '',
+        b.soldDate != null ? _dateFormat.format(b.soldDate!) : '',
       ];
       for (var col = 0; col < values.length; col++) {
         sheet
@@ -114,8 +132,10 @@ class ExcelExportService {
     final sheet = excel['export.sheet_breeding'.tr()];
     final headerStyle = CellStyle(bold: true);
 
+    // Column order matches DataImportService's pair parser (maleId@0,
+    // femaleId@1, cage@2, status@3, pairing@4, separation@5, notes@6) with the
+    // full pair id trailing at col 7, so re-import is a lossless round-trip.
     final headers = [
-      'export.header_id'.tr(),
       'export.header_male_id'.tr(),
       'export.header_female_id'.tr(),
       'export.header_cage'.tr(),
@@ -123,6 +143,7 @@ class ExcelExportService {
       'export.header_pairing_date'.tr(),
       'export.header_separation_date'.tr(),
       'export.header_notes'.tr(),
+      'export.header_id'.tr(),
     ];
     for (var i = 0; i < headers.length; i++) {
       final cell = sheet.cell(
@@ -135,7 +156,6 @@ class ExcelExportService {
     for (var row = 0; row < pairs.length; row++) {
       final p = pairs[row];
       final values = [
-        p.id.substring(0, 8),
         p.maleId ?? '',
         p.femaleId ?? '',
         p.cageNumber ?? '',
@@ -143,6 +163,7 @@ class ExcelExportService {
         p.pairingDate != null ? _dateFormat.format(p.pairingDate!) : '',
         p.separationDate != null ? _dateFormat.format(p.separationDate!) : '',
         p.notes ?? '',
+        p.id,
       ];
       for (var col = 0; col < values.length; col++) {
         sheet
@@ -182,18 +203,4 @@ class ExcelExportService {
 
   static bool _isDigitOrDot(int codeUnit) =>
       (codeUnit >= 0x30 && codeUnit <= 0x39) || codeUnit == 0x2E;
-
-  String _genderLabel(String name) => switch (name) {
-    'male' => 'export.gender_male'.tr(),
-    'female' => 'export.gender_female'.tr(),
-    _ => 'export.gender_unknown'.tr(),
-  };
-
-  String _statusLabel(String name) => switch (name) {
-    'alive' => 'export.status_alive'.tr(),
-    'dead' => 'export.status_dead'.tr(),
-    'sold' => 'export.status_sold'.tr(),
-    'gifted' => 'export.status_gifted'.tr(),
-    _ => name,
-  };
 }

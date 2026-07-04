@@ -21,11 +21,14 @@ part 'data_import_service_sheet.dart';
 /// Imports data from Excel files into the local database.
 ///
 /// Consumes workbooks in the documented IMPORT column layout (see each parser's
-/// `Expected columns`) — a hand-fillable template. This is NOT byte-compatible
-/// with the human-readable export report, whose column order differs; the
-/// lossless round-trip path is the encrypted backup. A parent/FK reference that
-/// cannot be resolved to a bird in the user's flock is dropped (the row still
-/// imports) instead of discarding the whole record — see [_sanitizeBirdParents].
+/// `Expected columns`). [ExcelExportService] now writes this exact layout with a
+/// trailing full-uuid ID column, so an export → import is a **lossless
+/// round-trip**: the ID is preserved (upsert makes re-import idempotent) and FK
+/// lineage refs resolve to the same rows. Hand-filled templates omit the ID
+/// column → a fresh id is generated (legacy behavior). A parent/FK reference
+/// that still cannot be resolved to a bird in the user's flock (e.g. a
+/// cross-account template) is dropped — the row still imports — instead of
+/// discarding the whole record; see [_sanitizeBirdParents].
 class DataImportService {
   DataImportService(
     this._birdRepo,
@@ -44,15 +47,15 @@ class DataImportService {
   /// Validates and, where necessary, sanitizes a bird's parent references,
   /// returning the bird to persist.
   ///
-  /// A parent reference that cannot be RESOLVED (no such bird in this user's
-  /// flock) is nulled out and the bird is still imported. Excel is a
-  /// human-readable report, not a lossless round-trip format — the encrypted
-  /// backup is — and the import regenerates ids, so cross-file lineage links
-  /// can't survive a re-import anyway. Dropping only the dangling link (rather
-  /// than the whole bird) stops a re-imported flock from silently losing every
-  /// bird that has a parent. A parent that DOES resolve but is genetically
-  /// invalid (wrong gender / different species) is a real data error and still
-  /// rejects the row, preserving typo detection for hand-crafted templates.
+  /// On a normal export → import round-trip the ids are preserved, so lineage
+  /// refs resolve and this nulls nothing. But when a reference cannot be
+  /// RESOLVED (no such bird in this user's flock — e.g. a cross-account or
+  /// hand-crafted template), the link is nulled out and the bird is still
+  /// imported: dropping only the dangling link (rather than the whole bird)
+  /// stops such an import from silently losing every bird that has a parent. A
+  /// parent that DOES resolve but is genetically invalid (wrong gender /
+  /// different species) is a real data error and still rejects the row,
+  /// preserving typo detection for hand-crafted templates.
   Bird _sanitizeBirdParents(Bird bird, Map<String, Bird> birdsById) {
     var fatherId = bird.fatherId;
     var motherId = bird.motherId;
@@ -131,7 +134,7 @@ class DataImportService {
     return _importSheet(
       bytes: bytes,
       userId: userId,
-      sheetNames: const ['Kuslar', 'Birds', 'Sheet1'],
+      sheetNames: ['Kuslar', 'Birds', 'Sheet1', 'export.sheet_birds'.tr()],
       label: 'Birds',
       sheetNotFoundError: 'import.sheet_not_found'.tr(),
       parseRow: (row, uid) => ExcelRowParsers.parseBirdRow(row, uid),
@@ -185,7 +188,12 @@ class DataImportService {
     return _importSheet(
       bytes: bytes,
       userId: userId,
-      sheetNames: const ['Ureme Ciftleri', 'Breeding Pairs', 'Sheet2'],
+      sheetNames: [
+        'Ureme Ciftleri',
+        'Breeding Pairs',
+        'Sheet2',
+        'export.sheet_breeding'.tr(),
+      ],
       label: 'Breeding pairs',
       parseRow: (row, uid) => ExcelRowParsers.parseBreedingPairRow(row, uid),
       onError: (error, rowIndex) {
@@ -225,7 +233,7 @@ class DataImportService {
     return _importSheet(
       bytes: bytes,
       userId: userId,
-      sheetNames: const ['Yumurtalar', 'Eggs', 'Sheet3'],
+      sheetNames: ['Yumurtalar', 'Eggs', 'Sheet3', 'export.sheet_eggs'.tr()],
       label: 'Eggs',
       parseRow: (row, uid) => ExcelRowParsers.parseEggRow(row, uid),
       onSkip: (_, rowIndex) =>
@@ -246,7 +254,7 @@ class DataImportService {
     return _importSheet(
       bytes: bytes,
       userId: userId,
-      sheetNames: const ['Yavrular', 'Chicks', 'Sheet4'],
+      sheetNames: ['Yavrular', 'Chicks', 'Sheet4', 'export.sheet_chicks'.tr()],
       label: 'Chicks',
       parseRow: (row, uid) => ExcelRowParsers.parseChickRow(row, uid),
       validate: (item) async => item,

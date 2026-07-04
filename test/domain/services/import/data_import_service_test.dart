@@ -14,6 +14,7 @@ import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
+import 'package:budgie_breeding_tracker/domain/services/export/excel_export_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/import/data_import_service.dart';
 
 import '../../../helpers/mocks.dart';
@@ -725,6 +726,142 @@ void main() {
       // Bird map is loaded once for the whole sheet, not per row.
       verify(() => birdRepo.getAll('user-1')).called(1);
       verifyNever(() => birdRepo.getById(any()));
+    });
+  });
+
+  group('Excel export → import round-trip (Option B)', () {
+    test('birds round-trip preserves ids, lineage and fields', () async {
+      const userId = 'user-1';
+      final father = createTestBird(
+        id: 'bird-father',
+        name: 'Baba',
+        gender: BirdGender.male,
+        species: Species.budgie,
+        userId: userId,
+      );
+      final mother = createTestBird(
+        id: 'bird-mother',
+        name: 'Anne',
+        gender: BirdGender.female,
+        species: Species.budgie,
+        userId: userId,
+      );
+      final child = createTestBird(
+        id: 'bird-child',
+        name: 'Yavru',
+        gender: BirdGender.male,
+        species: Species.budgie,
+        userId: userId,
+        fatherId: 'bird-father',
+        motherId: 'bird-mother',
+      );
+
+      // Real export → real import into an empty account. Because the export
+      // now carries the full id and the import preserves it, the child's
+      // parent refs resolve to the just-imported parents (same ids).
+      final bytes = await ExcelExportService().exportBirds([
+        father,
+        mother,
+        child,
+      ]);
+      final result = await service.importBirdsFromExcel(
+        bytes: bytes,
+        userId: userId,
+      );
+
+      expect(result.importedCount, 3);
+      expect(result.errors, isEmpty);
+      final saved =
+          verify(() => birdRepo.saveAll(captureAny())).captured.single
+              as List<Bird>;
+      final savedChild = saved.firstWhere((b) => b.name == 'Yavru');
+      expect(savedChild.id, 'bird-child'); // full id preserved (not truncated)
+      expect(savedChild.fatherId, 'bird-father'); // lineage survived
+      expect(savedChild.motherId, 'bird-mother');
+      expect(savedChild.species, Species.budgie);
+      expect(savedChild.gender, BirdGender.male);
+    });
+
+    test('pairs / eggs / chicks round-trip preserve their ids', () async {
+      const userId = 'user-1';
+      final male = createTestBird(
+        id: 'male-1',
+        gender: BirdGender.male,
+        species: Species.budgie,
+        userId: userId,
+      );
+      final female = createTestBird(
+        id: 'female-1',
+        gender: BirdGender.female,
+        species: Species.budgie,
+        userId: userId,
+      );
+      const pair = BreedingPair(
+        id: 'pair-1',
+        userId: userId,
+        maleId: 'male-1',
+        femaleId: 'female-1',
+        status: BreedingStatus.active,
+      );
+      final egg = Egg(
+        id: 'egg-1',
+        userId: userId,
+        layDate: DateTime(2026, 1, 1),
+        status: EggStatus.laid,
+        incubationId: 'inc-1',
+      );
+      const chick = Chick(
+        id: 'chick-1',
+        userId: userId,
+        name: 'Civ',
+        gender: BirdGender.male,
+        healthStatus: ChickHealthStatus.healthy,
+      );
+
+      final bytes = await ExcelExportService().exportAll(
+        birds: [male, female],
+        pairs: [pair],
+        incubations: const [],
+        eggs: [egg],
+        chicks: [chick],
+      );
+
+      // Pair birds must resolve → seed the account with them.
+      when(
+        () => birdRepo.getAll(userId),
+      ).thenAnswer((_) async => [male, female]);
+      final pairResult = await service.importBreedingPairsFromExcel(
+        bytes: bytes,
+        userId: userId,
+      );
+      expect(pairResult.importedCount, 1);
+      final savedPair =
+          (verify(() => breedingRepo.saveAll(captureAny())).captured.single
+              as List<BreedingPair>).single;
+      expect(savedPair.id, 'pair-1');
+      expect(savedPair.maleId, 'male-1');
+
+      final eggResult = await service.importEggsFromExcel(
+        bytes: bytes,
+        userId: userId,
+      );
+      expect(eggResult.importedCount, 1);
+      final savedEgg =
+          (verify(() => eggRepo.saveAll(captureAny())).captured.single
+              as List<Egg>).single;
+      expect(savedEgg.id, 'egg-1');
+      expect(savedEgg.incubationId, 'inc-1');
+
+      final chickResult = await service.importChicksFromExcel(
+        bytes: bytes,
+        userId: userId,
+      );
+      expect(chickResult.importedCount, 1);
+      final savedChick =
+          (verify(() => chickRepo.saveAll(captureAny())).captured.single
+              as List<Chick>).single;
+      expect(savedChick.id, 'chick-1');
+      expect(savedChick.gender, BirdGender.male);
     });
   });
 }
