@@ -474,14 +474,31 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
   /// stops showing the pair as active and `guardBreedingPairLimit` no
   /// longer counts it (was stranding free-tier users with no remaining
   /// pair slots even after all their eggs hatched out).
-  Future<void> _completeIncubationIfAllEggsTerminal(Egg trigger) async {
+  Future<void> _completeIncubationIfAllEggsTerminal(
+    Egg trigger, {
+    bool fromDelete = false,
+  }) async {
     final incubationId = trigger.incubationId;
     if (incubationId == null) return;
 
     final eggRepo = ref.read(eggRepositoryProvider);
     final siblings = await eggRepo.getByIncubation(incubationId);
-    if (siblings.isEmpty) return;
-    final allTerminal = siblings.every((e) => e.status.isTerminal);
+
+    final bool allTerminal;
+    final bool anyHatched;
+    if (siblings.isEmpty) {
+      // A never-populated incubation legitimately has zero eggs — leave it
+      // alone. But when we arrive here from deleting the LAST egg, the
+      // incubation is empty *because* its only clutch was just removed, so
+      // cancel it (no hatch) instead of stranding it `active` against the
+      // free-tier limit forever with nothing left to resolve it.
+      if (!fromDelete) return;
+      allTerminal = true;
+      anyHatched = false;
+    } else {
+      allTerminal = siblings.every((e) => e.status.isTerminal);
+      anyHatched = siblings.any((e) => e.status == EggStatus.hatched);
+    }
     if (!allTerminal) return;
 
     final incubationRepo = ref.read(incubationRepositoryProvider);
@@ -489,7 +506,6 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
     if (incubation == null) return;
     if (incubation.status == IncubationStatus.completed) return;
 
-    final anyHatched = siblings.any((e) => e.status == EggStatus.hatched);
     final now = DateTime.now();
     final newIncubationStatus = anyHatched
         ? IncubationStatus.completed
@@ -651,7 +667,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       // limit even though nothing is left to track.
       if (egg != null) {
         try {
-          await _completeIncubationIfAllEggsTerminal(egg);
+          await _completeIncubationIfAllEggsTerminal(egg, fromDelete: true);
         } catch (e) {
           AppLogger.warning(
             'Failed to auto-complete incubation after deleting egg $id: $e',

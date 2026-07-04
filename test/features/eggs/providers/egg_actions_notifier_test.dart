@@ -384,6 +384,58 @@ void main() {
       },
     );
 
+    test('cancels the incubation when deleting the SOLE egg (empty clutch)', () async {
+      // inc-1's only egg is deleted, leaving the incubation with zero eggs.
+      // Regression: it must not stay stuck `active` — deleting the last egg
+      // cancels the now-empty incubation (no hatch) and flips the parent pair,
+      // so a free-tier user isn't blocked by a phantom active incubation.
+      when(() => eggRepo.getById('egg-1')).thenAnswer(
+        (_) async => Egg(
+          id: 'egg-1',
+          userId: 'test-user',
+          incubationId: 'inc-1',
+          layDate: DateTime(2024, 1, 10),
+          status: EggStatus.incubating,
+        ),
+      );
+      when(() => eggRepo.remove('egg-1')).thenAnswer((_) async {});
+      // After the delete the incubation has no eggs left.
+      when(
+        () => eggRepo.getByIncubation('inc-1'),
+      ).thenAnswer((_) async => <Egg>[]);
+      when(() => incubationRepo.save(any())).thenAnswer((_) async {});
+      when(
+        () => incubationRepo.getByBreedingPairIds(['pair-1']),
+      ).thenAnswer((_) async => <Incubation>[]);
+      when(() => breedingPairRepo.getById('pair-1')).thenAnswer(
+        (_) async => const BreedingPair(
+          id: 'pair-1',
+          userId: 'test-user',
+          maleId: 'male-1',
+          femaleId: 'female-1',
+          status: BreedingStatus.active,
+        ),
+      );
+      when(() => breedingPairRepo.save(any())).thenAnswer((_) async {});
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container.read(eggActionsProvider.notifier).deleteEgg('egg-1');
+
+      final savedIncubation =
+          verify(() => incubationRepo.save(captureAny())).captured.single
+              as Incubation;
+      expect(savedIncubation.status, IncubationStatus.cancelled);
+
+      final savedPair =
+          verify(() => breedingPairRepo.save(captureAny())).captured.single
+              as BreedingPair;
+      expect(savedPair.status, BreedingStatus.cancelled);
+
+      expect(container.read(eggActionsProvider).isSuccess, isTrue);
+    });
+
     test(
       'cancels milestone notifications and removes calendar events when '
       'an incubation auto-completes — this is the common closing path and, '
