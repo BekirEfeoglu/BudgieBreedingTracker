@@ -79,4 +79,4 @@ Before reporting completion, capture:
 - GitHub status/check-run summary for the pushed commit when CI is part of the task
 - remaining skipped checks with the reason they are acceptable
 
-> **Related**: git-rules.md (commit format), branch-workflow.md (merge policy), new-feature-checklist.md (entity steps)
+> **Related**: git-rules.md (commit format), branch-workflow.md (merge policy), new-feature-checklist.md (entity steps), documentation-sync.md (keep CLAUDE.md + wiki in sync with every change)

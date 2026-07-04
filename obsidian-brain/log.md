@@ -4,6 +4,17 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-04] docs | New rule: documentation-sync (every change updates docs)
+
+Added `.claude/rules/documentation-sync.md` — the canonical home for the
+"every change updates CLAUDE.md + rules + obsidian-brain, same change" discipline
+that was scattered across ai-workflow.md, release-ops.md § Documentation Drift,
+code-review.md § 10, and this wiki's Ingest contract. Covers the source-of-truth
+hierarchy, a what-changed→what-to-update table, the Ingest/≤200-line contract,
+the three verification scripts, and CI enforcement (rules-sync, code-quality,
+auto-fix-stats). Registered in CLAUDE.md § Rules table + [[sources/rules-index]];
+ai-workflow.md Related footer points to it.
+
 ## [2026-07-04] docs | Wiki gap + drift fix (parallel to rule sweep)
 
 Extended the coverage sweep to obsidian-brain. Created [[domain/ads-service]]
@@ -179,15 +190,5 @@ column) so it can't affect messaging's block-RLS DM rejection. SELECT is owner-o
 INSERT/DELETE owner-scoped; `FORCE RLS`, `no_self_mute` CHECK, `unique_pair`, index on
 `user_id`. NOT applied to prod. Client (repo/provider/feed+comment filter/menu) lands in
 the next branch task.
-
-## [2026-07-03] feat (branch) | community post edit UI (sheet, menu, badge)
-
-Branch `feature/community-tab-faz1` (commit `d31eef5`). User-facing edit: content-only
-bottom sheet (`community_post_edit_sheet.dart`), `postEditProvider` (`editPost → bool`;
-success → `applyPostEdit` + `communityPostByIdProvider` invalidate, failure →
-`AppLogger.error` + Sentry, feed left intact), author-only "Edit" menu item gated by
-`canEditPost` (UTC now−createdAt < 5 min), `edited` badge on the header, 6 l10n keys
-(tr/en/de). 436/436 community tests, analyze/l10n/quality clean. Completes the
-post-edit vertical (migration → edge fn → data path → UI) on the branch.
 
 Older entries are archived in [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

@@ -214,6 +214,7 @@ Comprehensive rules in `.claude/rules/` (auto-loaded):
 | `git-rules.md` | Conventional commits, branch naming, PR workflow (main-first) |
 | `branch-workflow.md` | main-only branch strategy, merge policy, hotfix exception |
 | `ai-workflow.md` | Quality gates (canonical), task approach, prohibited actions, investigation |
+| `documentation-sync.md` | Every change updates CLAUDE.md + rules + obsidian-brain wiki; stats/wiki/log sync, CI enforcement |
 | `chat.md` | Response language (Turkish), debugging approach, code review feedback |
 | `ci-actions.md` | GitHub Actions design, Dependabot, billing failures, deployment safety |
 | `release-ops.md` | Release channels, version bump, environment discipline, Supabase ops |

@@ -22,6 +22,7 @@ Maps every `.claude/rules/*.md` file to the wiki page(s) that synthesize it.
 | `community.md` | [[features/community]] | [[architecture/online-first-exemption]], [[features/messaging]] |
 | `data-io.md` | [[domain/data-io]] | [[domain/encryption-service]], [[features/premium]] |
 | `data-layer.md` | [[data-layer/drift]] | [[data-layer/supabase]], [[data-layer/repositories]] |
+| `documentation-sync.md` | [[CLAUDE.md]] (wiki maintenance contract) | [[infrastructure/scripts]], [[infrastructure/branch-workflow]] |
 | `datetime-format.md` | [[patterns/datetime-format]] | [[domain/notification-service]] |
 | `edge-functions.md` | [[infrastructure/edge-functions]] | [[domain/premium-service]], [[domain/notification-service]], [[domain/moderation-service]] |
 | `empty-loading-error-states.md` | [[patterns/empty-loading-error-states]] | [[patterns/ui-patterns]] |
