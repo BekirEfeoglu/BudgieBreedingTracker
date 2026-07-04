@@ -4,6 +4,19 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-04] fix | Excel is now a lossless round-trip (Option B)
+
+Follow-up to Option A, per user request. `ExcelExportService` now writes each
+sheet in the import parser's exact column order with a trailing full-uuid ID
+column (birds also carry death/sale dates; eggs the incubation link), and
+serializes gender/species/status as stable enum NAMES (not localized labels) so
+re-import parses them in any locale. The parsers PRESERVE the exported id
+(idempotent upsert; lineage FKs resolve to the same rows). `findSheet` folds
+diacritics and the importer also accepts the export's l10n sheet-name key
+("Kuşlar" ↔ "Kuslar"). Two real export→import round-trip tests (birds with
+lineage; pairs/eggs/chicks id preservation) + 156 import/export tests green. See
+[[domain/data-io]].
+
 ## [2026-07-04] fix | Excel import tolerates unresolvable parent refs (Option A)
 
 Deferred audit item (F-IO-1); user chose Option A. Re-importing an export
@@ -178,18 +191,5 @@ filter rule, CLAUDE.md key-dep corrections (supabase iOS-CI cap,
 purchases 10.2.3) + pod-install build command + an "Adding or bumping a
 dependency" workflow. Oldest two log entries rotated to the new
 [[log-archive-2026-07-d]].
-
-## [2026-07-04] docs | Rule: iOS Pods sync after dependency changes
-
-New `.claude/rules/architecture.md` § "iOS Pods Sync" (mirrored in
-[[architecture/tech-stack]] § Changing Dependencies), from a real incident:
-after T12 added `flutter_displaymode`, `flutter pub get` refreshed the plugin
-registrant but the local CocoaPods sandbox stayed stale → Xcode failed with
-"The sandbox is not in sync with the Podfile.lock". Rule: every pubspec
-dependency change is followed by `cd ios && LANG=en_US.UTF-8
-LC_ALL=en_US.UTF-8 pod install` (UTF-8 prefix avoids the CocoaPods
-`Unicode Normalization` crash); commit `ios/Podfile.lock` together with
-pubspec files when it changes; an unchanged lock is normal for stub iOS
-podspecs — the run still regenerates `Pods/Manifest.lock`.
 
 Older entries are archived in [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

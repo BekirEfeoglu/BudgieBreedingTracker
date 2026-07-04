@@ -34,17 +34,23 @@ Remote bucket: `SupabaseConstants.backupsBucket`, RLS-scoped to owner.
 ## Import (Excel)
 
 `DataImportService` consumes workbooks in the documented IMPORT column layout
-(a hand-fillable template). This is **not** byte-compatible with the export
-report — the two share only a few columns (name/ring/gender/fatherId/motherId/
-notes) and differ on the rest (e.g. export status@3/species@4, import
-species@3/status@4); the lossless round-trip path is the encrypted backup, not
-Excel. Bird parent refs go through `_sanitizeBirdParents` (2026-07-04, "tolerant
-import"): a reference that **can't be resolved** to a bird in the user's flock is
-nulled out and the bird is still imported (dropping only the dangling lineage
-link, so a re-import no longer silently discards every bird that has a parent),
-while a parent that resolves but is genetically invalid (wrong gender / different
-species) still rejects the row. Breeding pairs still require two resolvable birds
-(a pair without them is meaningless) and surface a clear `ImportResult` error.
+(a hand-fillable template). **Option B (2026-07-04): export → import is now a
+lossless round-trip.** `ExcelExportService` writes that exact column layout with
+a trailing full-uuid ID column (birds also carry death/sale dates; eggs carry the
+incubation link), and enum-backed fields (gender/species/status) are serialized
+as stable enum NAMES — not localized labels — so re-import parses them back in
+any locale. The parsers PRESERVE the exported id (upsert → idempotent re-import;
+FK lineage refs resolve to the same rows). `findSheet` also folds diacritics so a
+localized export sheet name ("Kuşlar") resolves to the ASCII template name, and
+the importer additionally accepts the export's l10n sheet-name key. Bird parent
+refs still go through `_sanitizeBirdParents` ("tolerant import"): on a normal
+round-trip it nulls nothing (ids preserved), but a reference that **can't be
+resolved** (cross-account / hand-crafted template) is nulled and the bird still
+imports (no whole-bird drop), while a parent that resolves but is genetically
+invalid (wrong gender / different species) still rejects the row. Breeding pairs
+still require two resolvable birds and surface a clear `ImportResult` error.
+The encrypted backup remains the recommended full-fidelity path (photos,
+timestamps, all entities); Excel round-trips the tabular entities.
 
 Supported sheets: birds, breeding pairs, eggs, chicks, health records.
 Sheet columns are Turkish-labeled (master locale) — column order is fixed,

@@ -2,6 +2,19 @@
 
 Back to [[log]].
 
+## [2026-07-04] docs | Rule: iOS Pods sync after dependency changes
+
+New `.claude/rules/architecture.md` § "iOS Pods Sync" (mirrored in
+[[architecture/tech-stack]] § Changing Dependencies), from a real incident:
+after T12 added `flutter_displaymode`, `flutter pub get` refreshed the plugin
+registrant but the local CocoaPods sandbox stayed stale → Xcode failed with
+"The sandbox is not in sync with the Podfile.lock". Rule: every pubspec
+dependency change is followed by `cd ios && LANG=en_US.UTF-8
+LC_ALL=en_US.UTF-8 pod install` (UTF-8 prefix avoids the CocoaPods
+`Unicode Normalization` crash); commit `ios/Podfile.lock` together with
+pubspec files when it changes; an unchanged lock is normal for stub iOS
+podspecs — the run still regenerates `Pods/Manifest.lock`.
+
 ## [2026-07-04] perf (branch) | Rebuild hygiene: calendar filter + risk identity
 
 Branch `perf/performance-improvements`, tasks 10-11 (commits `115f58bc`,
