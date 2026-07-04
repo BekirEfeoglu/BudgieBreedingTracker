@@ -15,6 +15,7 @@ class DatabaseException extends AppException {}
 class ValidationException extends AppException {}
 class PermissionException extends AppException {}
 class FreeTierLimitException extends AppException {}
+class NotFoundException extends AppException {}
 ```
 
 ## Error Flow

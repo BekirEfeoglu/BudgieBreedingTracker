@@ -23,16 +23,20 @@ Local write (Drift) -> SyncMetadata dirty flag
 | Periodic (15dk timer) | Light pull, sadece online + foreground |
 
 ## SyncMetadata Tablosu
-Per-entity row:
+Bekleyen KAYIT başına bir satır — entity-tipi başına değil. `UNIQUE(table_name, record_id)` kısıtı var; başarılı push satırı SİLER (gerçek model: `lib/data/models/sync_metadata_model.dart`):
 ```dart
-class SyncMetadata {
-  String entityType;        // 'birds', 'eggs', ...
-  DateTime? lastSyncedAt;   // Last successful sync
-  DateTime? lastPulledAt;   // Last server pull (for delta sync)
-  int dirtyCount;           // # of local unsynced changes
-  String? lastError;        // Last sync error code
-  int retryCount;           // Current backoff attempt
-}
+@freezed SyncMetadata:
+  String id;                // client UUID (PK)
+  String table;             // JSON 'table_name' — 'birds', 'eggs', ...
+  String userId;
+  SyncStatus status;        // pending | pendingDelete | error
+                            // (synced fiilen kullanılmaz — başarı satırı siler;
+                            //  pendingDelete: hard-delete repoları — incubation,
+                            //  notification, growth_measurement)
+  String? recordId;         // hangi kayıt
+  String? errorMessage;     // son hata
+  int? retryCount;          // backoff denemesi
+  DateTime? lastSyncedAt; DateTime? createdAt; DateTime? updatedAt;
 ```
 
 ## Retry & Backoff

@@ -21,15 +21,15 @@
 
 ## Heartbeat
 - Gerçek API session-tabanlı: `startSession(userId)` → periyodik `heartbeat(...)` → `endSession(...)` (`user_presence_service.dart`)
-- Interval: 30 saniye (foreground)
+- Gerçek sabitler `user_presence_constants.dart`: `heartbeatInterval = 2 dk` · `onlineThreshold = 5 dk` · `sessionTtl = 10 dk` — dokümanda süre yazarken BU sabitlere bak, ezbere değer yazma
 - Mekanizma: Supabase realtime `track` payload + `user_sessions` table upsert
 - App background → heartbeat dur, `away` state'e geç
 - App foreground → heartbeat resume + immediate update
-- Network kopukluğunda: 90s TTL içinde `offline`
+- Network kopukluğunda: `onlineThreshold` (5 dk) aşılınca `offline`
 
 ## TTL & Cleanup
-- `user_presence.last_heartbeat_at` 90s'den eskiyse offline say
-- Cleanup cron veya query-time filter (`now() - last_heartbeat_at < interval '90 seconds'`)
+- Son heartbeat `onlineThreshold`'dan (5 dk) eskiyse offline say; session satırı `sessionTtl` (10 dk) sonra temizlenebilir
+- Cleanup cron veya query-time filter (threshold sabitleriyle — hardcoded saniye YOK)
 - Realtime channel disconnect server tarafında otomatik temizlik
 - Logout: explicit `clearPresence()` çağrısı (sticky online engeli)
 
@@ -67,7 +67,7 @@ Privacy: feed'de online badge YOK (passive scrolling kullanıcıyı outvalue ede
 - Heartbeat sadece foreground (background'da bandwidth + battery israfı)
 - Background fetch ile presence sync YAPMA (iOS BGTaskScheduler farklı amaçla)
 - Realtime channel sayısı sınırlı (Supabase free tier 200 concurrent) — sadece aktif conversation'da subscribe
-- Throttle: 30s minimum heartbeat aralığı (rapid foreground/background toggle koruması)
+- Throttle: heartbeat aralığı `heartbeatInterval` (2 dk) altına düşürülmez (rapid foreground/background toggle koruması)
 
 ## Edge Cases
 - iOS app suspended (background 30s+): realtime socket düşer, server `offline` görür
@@ -76,7 +76,7 @@ Privacy: feed'de online badge YOK (passive scrolling kullanıcıyı outvalue ede
 - Concurrent session: 5 cihaz limiti (security.md MFA policy ile uyumlu)
 
 ## Performance
-- Heartbeat overhead: < 1KB/30s = ~3KB/dk
+- Heartbeat overhead: < 1KB / 2 dk (heartbeatInterval) — ihmal edilebilir
 - Realtime channel: 1 global presence channel + 1 per active conversation
 - Last-seen render: cached değer (5sn TTL), her rebuild server fetch YAPMA
 - Bulk profile lookup: batch (`profileLookupProvider`) — N+1 query engeli
@@ -89,7 +89,7 @@ Privacy: feed'de online badge YOK (passive scrolling kullanıcıyı outvalue ede
 
 ```dart
 test('reports offline after TTL expires', () {
-  final lastBeat = DateTime.now().subtract(const Duration(seconds: 95));
+  final lastBeat = DateTime.now().subtract(const Duration(minutes: 6)); // > onlineThreshold (5 dk)
   expect(UserPresenceService.isOnline(lastBeat), isFalse);
 });
 
@@ -115,7 +115,7 @@ test('respects invisible privacy mode', () async {
 5. Feed'de online badge göstermek (privacy)
 6. Heartbeat'i `setState` ile UI thread'inde hesaplamak (jank)
 7. Logout'ta explicit clearPresence atlamak (sticky online görünür)
-8. TTL'i çok kısa yapmak (90s makul — 30s aşırı flicker)
+8. Online eşiğini heartbeat aralığından kısa yapmak (flicker — gerçek oran: 2 dk beat / 5 dk threshold, `user_presence_constants.dart`)
 9. Multi-device'ta tüm session'ları "online" saymak (en son heartbeat tek doğru)
 10. Typing indicator'ı DB'ye yazmak (anti-pattern: messaging.md ile çelişir)
 

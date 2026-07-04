@@ -10,7 +10,7 @@ Source: `.claude/rules/background-sync.md`, `.claude/rules/data-layer.md`
 
 ```
 1. User action → Drift write (immediate)
-2. SyncMetadata.markDirty(entityType, id)
+2. markPending(recordId, userId) — sync_metadata upsert (pending)
 3. (async, when online) SyncService.pushPending()
 4. For each dirty record:
    a. ValidatedSyncMixin.validateParents() → skip if parent missing
@@ -59,15 +59,21 @@ maxRetries = 7
 
 ## SyncMetadata Schema
 
+One row per pending RECORD (not per entity type), `UNIQUE(table_name, record_id)`;
+a successful push DELETES the row (`lib/data/models/sync_metadata_model.dart`):
+
 ```dart
-class SyncMetadata {
-  String entityType;      // 'birds', 'eggs', etc.
-  DateTime? lastSyncedAt; // last successful push
-  DateTime? lastPulledAt; // last server pull (for delta)
-  int dirtyCount;         // pending local changes
-  String? lastError;      // last error code
-  int retryCount;         // current backoff attempt
-}
+@freezed SyncMetadata:
+  String id;            // client UUID (PK)
+  String table;         // JSON 'table_name' — 'birds', 'eggs', ...
+  String userId;
+  SyncStatus status;    // pending | pendingDelete | error
+                        // (synced is unused — success deletes the row;
+                        //  pendingDelete: hard-delete repos)
+  String? recordId;
+  String? errorMessage;
+  int? retryCount;
+  DateTime? lastSyncedAt; DateTime? createdAt; DateTime? updatedAt;
 ```
 
 ## Batch & Debounce

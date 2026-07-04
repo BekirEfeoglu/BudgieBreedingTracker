@@ -86,7 +86,8 @@ Boş listeden farklı: kullanıcının veri var ama filtre eşleşmiyor.
 |-----|-------|-----|
 | `NetworkException` | "İnternet bağlantısı yok" | Retry |
 | `AuthException` | "Oturum sona erdi" | "Giriş Yap" |
-| `ServerException` | "Sunucuya ulaşılamadı" | Retry + Destek |
+| `DatabaseException` / `StorageException` | "Sunucuya/veriye ulaşılamadı" | Retry + Destek |
+| `NotFoundException` | "Kayıt bulunamadı" | Geri |
 | `ValidationException` | Field-level, form'da göster | — |
 | `PermissionException` | "Bu işlem için yetkiniz yok" | Geri |
 | `FreeTierLimitException` | "Ücretsiz limit doldu" | Premium upgrade |

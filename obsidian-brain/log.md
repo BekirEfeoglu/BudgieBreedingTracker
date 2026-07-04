@@ -4,6 +4,25 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-04] docs | Rulebook drift sweep #2 (constants vs prose)
+
+Second verification pass over `.claude/rules/` + `CLAUDE.md`, this time
+checking numeric/schema claims against source. Fixed: assets-images icon
+count 89→93 (mirrored in [[patterns/assets-images]]); presence.md's 30s
+heartbeat / 90s TTL narrative replaced with the real
+`user_presence_constants.dart` values (2 min beat / 5 min onlineThreshold /
+10 min sessionTtl) across Heartbeat, TTL, Performance, throttle and the
+anti-pattern; background-sync.md + [[data-layer/sync-strategy]] fictional
+`SyncMetadata` schema (entityType/dirtyCount/markDirty) replaced with the
+real per-record model (table_name, SyncStatus pending|pendingDelete|error,
+UNIQUE(table_name,record_id), success deletes the row); encryption.md usage
+claim widened (birds_dao + backup pipeline + app.dart dispose);
+error-handling gained the missing `NotFoundException`; empty-loading's
+nonexistent `ServerException` row corrected. CLAUDE.md script lists gained 8
+missing entries (run_local_quality_gate, check_remote_status,
+verify_security, git hooks, breeding regression + 3 test files). CI job
+table verified against ci.yml — no drift.
+
 ## [2026-07-04] docs | Rulebook drift sweep (batched sync, pods, deps)
 
 Rules + CLAUDE.md reconciled with shipped code after a full review of
@@ -167,22 +186,5 @@ The other 3 authenticated UPDATE call-sites (`softDelete`, admin
 `approvePost`/`deletePost`) write only within the grant. Client edit UI +
 `edited` badge land in later tasks of the same branch. Design:
 `docs/superpowers/specs/2026-07-03-community-tab-design.md`.
-
-## [2026-07-03] feat | send-push server-side quiet hours — opt-in, fail-open (§5.2)
-
-`send-push` can now honor a recipient's quiet-hours window (previously
-device-only; push bypassed it). Pure helpers in `push_core.ts`
-(`isWithinQuietHours` mirrors the client `NotificationRateLimiter` wraparound,
-`localHourInZone` via IANA tz, `isSuppressedByQuietHours` fail-open) + `index.ts`
-reads `profiles.quiet_hours` (JSONB, migration `20260703044437`, applied to
-prod via MCP) and drops suppressed recipients before token resolution.
-Safe-by-construction: suppression is **opt-in** (`respectQuietHours: true`), so
-with no caller opting in yet it is a strict no-op — critical/incubation
-notifications are never held back — and any missing/invalid config delivers.
-Caught a real bug via live schema check: `profiles` has no `user_id` column
-(PK is `id` = auth.uid()), so the recipient lookup selects on `id`. 7 Deno
-tests (30 total green); `deno check` clean. Remaining activation (client DND
-sync + caller opt-in taxonomy) noted in `.claude/rules/notifications.md`. See
-[[domain/notification-service]].
 
 Older entries are archived in [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

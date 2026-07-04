@@ -64,6 +64,11 @@ python3 scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats + rule inlin
 
 ### Other Scripts
 ```bash
+scripts/run_local_quality_gate.sh        # Canonical pre-commit gate (diff, rules, quality, conditional l10n/script tests)
+scripts/check_remote_status.py           # Post-push: exact-SHA GitHub status + check-run verification
+scripts/verify_security.py               # Security posture (cert pinning wired, secrets, webhook JWT exemptions)
+scripts/install_git_hooks.sh             # Install local git hooks
+scripts/run_breeding_egg_regression.sh   # Focused breeding/egg lifecycle regression suite
 scripts/generate_ios_env.sh              # Generate iOS environment config from dart-defines
 scripts/setup_push_env.sh               # Setup FCM push notification environment
 scripts/monitor_pg_performance.sql       # PostgreSQL performance monitoring queries
@@ -87,6 +92,9 @@ scripts/test_code_quality_main.py       # Main entry tests for code quality
 scripts/test_verify_rules.py            # Tests for verify_rules.py
 scripts/test_check_platform_targets.py  # Tests for platform target policy
 scripts/test_check_obsidian_brain.py    # Tests for obsidian-brain wiki lint
+scripts/test_check_remote_status.py     # Tests for check_remote_status.py
+scripts/test_verify_security.py         # Tests for verify_security.py
+scripts/test_app_store_config.py        # App Store config consistency tests
 ```
 
 ## Codebase Stats

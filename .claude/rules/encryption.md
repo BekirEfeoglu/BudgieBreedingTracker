@@ -1,6 +1,6 @@
 # Encryption
 
-`EncryptionService` (`lib/domain/services/encryption/`) hassas alanları (ring_number, genotypeInfo, notes) AES-256-CBC + HMAC-SHA256 ile şifreler. Şu an sadece `birds_dao.dart` `EncryptionService` kullanır. Anahtar `flutter_secure_storage` üzerinde platform keychain/keystore'da tutulur.
+`EncryptionService` (`lib/domain/services/encryption/`) hassas alanları (ring_number, genotypeInfo, notes) AES-256-CBC + HMAC-SHA256 ile şifreler. Alan şifrelemesini sadece `birds_dao.dart` yapar; servise ayrıca backup hattı (`backup_service`/`backup_restorer`/`backup_data_collector`) ve `app.dart` (background'a geçişte anahtar cache'ini `dispose` etmek için) dokunur. Anahtar `flutter_secure_storage` üzerinde platform keychain/keystore'da tutulur.
 
 ## Algoritma
 | Bileşen | Spesifikasyon |
