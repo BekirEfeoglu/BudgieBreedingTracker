@@ -3,6 +3,7 @@ import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
+import 'package:budgie_breeding_tracker/domain/services/sync/retry_scheduler.dart';
 import 'package:uuid/uuid.dart';
 
 /// Statistics returned by [SyncableRepository.pushAll].
@@ -280,8 +281,10 @@ mixin ValidatedSyncMixin<T> on BaseRepository<T>, SyncableRepository<T> {
   /// Extracts the userId from an item.
   String getEntityUserId(T item);
 
-  /// Maximum retry count before clearing stale error records.
-  static const int maxSyncRetries = 10;
+  /// Maximum retry count before clearing stale error records. Kept equal to
+  /// [RetryScheduler.maxRetries] so this cleanup fires exactly when retries are
+  /// exhausted — it was 10 while retries capped at 7, so this path never ran.
+  static const int maxSyncRetries = RetryScheduler.maxRetries;
 
   /// Pushes all pending items with orphan cleanup and FK validation.
   /// Valid items are batched into chunked upserts (see [pushPendingBatched]);
@@ -342,9 +345,17 @@ mixin ValidatedSyncMixin<T> on BaseRepository<T>, SyncableRepository<T> {
   /// events are visible in production monitoring.
   Future<void> clearStaleErrors(String userId) async {
     final tableErrors = await syncDao.getErrorsByTable(userId, syncTableName);
+    // Mirror SyncErrorHandler.cleanupUnrecoverableErrors: a record is only
+    // unrecoverable once it has BOTH exhausted retries AND aged past the 24h
+    // window. Without this age guard the two cleanup paths disagreed and this
+    // one could discard a record the orchestrator's cleanup would still keep.
+    final cutoff = DateTime.now().subtract(const Duration(hours: 24));
     final staleIds = <String>[];
     for (final meta in tableErrors) {
-      if ((meta.retryCount ?? 0) >= maxSyncRetries) {
+      final createdAt = meta.createdAt;
+      if ((meta.retryCount ?? 0) >= maxSyncRetries &&
+          createdAt != null &&
+          !createdAt.isAfter(cutoff)) {
         staleIds.add(meta.recordId ?? 'unknown');
         AppLogger.warning(
           '[$syncLogTag] Cleared stale error after $maxSyncRetries retries: '

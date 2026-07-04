@@ -110,6 +110,7 @@ SyncMetadata _metadata({
   SyncStatus status = SyncStatus.pending,
   int? retryCount,
   String? errorMessage,
+  DateTime? createdAt,
 }) {
   return SyncMetadata(
     id: id,
@@ -119,6 +120,7 @@ SyncMetadata _metadata({
     recordId: recordId,
     retryCount: retryCount,
     errorMessage: errorMessage,
+    createdAt: createdAt,
   );
 }
 
@@ -178,12 +180,15 @@ void main() {
               recordId: 'r1',
               status: SyncStatus.error,
               retryCount: ValidatedSyncMixin.maxSyncRetries,
+              // Exhausted retries AND aged past the 24h window → unrecoverable.
+              createdAt: DateTime.now().subtract(const Duration(days: 2)),
             ),
             _metadata(
               id: 'fresh',
               recordId: 'r2',
               status: SyncStatus.error,
               retryCount: ValidatedSyncMixin.maxSyncRetries - 1,
+              createdAt: DateTime.now().subtract(const Duration(days: 2)),
             ),
           ],
         );
@@ -192,6 +197,30 @@ void main() {
 
         verify(() => mockSyncDao.hardDelete('stale')).called(1);
         verifyNever(() => mockSyncDao.hardDelete('fresh'));
+      },
+    );
+
+    test(
+      'clearStaleErrors keeps retry-exhausted records still inside the 24h window',
+      () async {
+        when(
+          () => mockSyncDao.getErrorsByTable(_userId, _tableName),
+        ).thenAnswer(
+          (_) async => [
+            _metadata(
+              id: 'recent',
+              recordId: 'r3',
+              status: SyncStatus.error,
+              retryCount: ValidatedSyncMixin.maxSyncRetries,
+              // Retries exhausted but created moments ago → still protected.
+              createdAt: DateTime.now().subtract(const Duration(hours: 1)),
+            ),
+          ],
+        );
+
+        await repository.clearStaleErrors(_userId);
+
+        verifyNever(() => mockSyncDao.hardDelete('recent'));
       },
     );
 
