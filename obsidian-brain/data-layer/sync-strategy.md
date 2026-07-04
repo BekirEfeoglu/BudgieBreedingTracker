@@ -48,14 +48,34 @@ maxRetries = 7
 - No retry on: `AuthException`, `ValidationException` (permanent)
 - After max retries: error persists in `SyncMetadata`, surfaced via global `OfflineBanner` retry CTA
 - `pendingDeletionSyncErrorsProvider` pre-warns at 20h+ before the 24h stale cleanup runs
+- Both stale-error cleanup paths agree (unified 2026-07-04): `SyncErrorHandler.cleanupUnrecoverableErrors` (orchestrator, per cycle) and `ValidatedSyncMixin.clearStaleErrors` (per FK-repo `pushAll`) both delete on `retryCount >= RetryScheduler.maxRetries` (7) AND `createdAt` older than 24h. Previously `clearStaleErrors` used a divergent `>= 10` with no age guard — unreachable dead code, since retries cap at 7.
 
 ## Conflict Resolution
 
-- Last-write-wins via server `updated_at` timestamp
-- Conflict detected: `local.dirty == true` AND `remote.updatedAt > local.lastPulledAt`
-- Server wins: local edit stored in `lastPullConflicts`
-- `conflictNotifierProvider` shows UI banner with "View conflicts" CTA
+- Last-write-wins: on pull the server row always overwrites local (`insertAll`)
+- Conflict detected: the local row has PENDING sync metadata AND the remote batch
+  overwrites it — recorded on **ANY** overwrite (remote newer, equal, OR older),
+  because an unpushed local edit is discarded regardless of timestamp order. An
+  earlier "remote strictly newer" gate silently dropped conflicts on equal/older
+  remote under device-vs-server clock skew (the silent-overwrite the rulebook
+  forbids); widened 2026-07-04.
+- Shared `detectPullConflicts` (`base_repository.dart`) is the single source of
+  this rule for all 14 syncable repos + the custom `PhotoRepository` (previously
+  14 divergent inline copies — the exact drift that let the gap rot unnoticed)
+- Server still wins the data; only conflict RECORDING widened. The discarded
+  local edit is stored in `lastPullConflicts` → `conflict_history` (30-day)
+- `conflictNotifierProvider` shows a UI banner with a "View conflicts" CTA
 - **Never silent overwrite**
+
+## Incremental Pull Cursor
+
+- Incremental pull passes `since` (persisted `lastSyncedAt`) → `updated_at > since`
+- `since` is compared against the server's `updated_at` but stamped from the
+  DEVICE clock. The cursor is rolled back by a **5-min skew margin at read time**
+  (`_incrementalSyncSkewMargin`) so a device running ahead of the server doesn't
+  skip rows written inside the skew window (else missed until the 6h reconcile).
+  The persisted checkpoint and the last-synced display stay at the true instant;
+  re-pulling the small overlap is harmless (idempotent upserts). Added 2026-07-04.
 
 ## SyncMetadata Schema
 
@@ -106,9 +126,9 @@ See [[data-layer/repositories]] — prevents orphan push when FK parent was dele
 1. `.insert()` instead of `.upsert()` (breaks idempotency)
 2. Server-assigned IDs instead of client UUIDs (breaks offline create)
 3. Missing ValidatedSyncMixin on FK-parent entities
-4. Silent conflict overwrite without notifying user
+4. Silent conflict overwrite without notifying user (record on ANY pending overwrite, not just remote-newer)
 5. Retrying auth errors indefinitely
-6. Comparing local clock to server clock (always use server `updated_at`)
+6. Gating conflict detection on a client-vs-server timestamp comparison (clock skew silently drops conflicts — record on any pending overwrite instead; the incremental `since` cursor carries a skew margin)
 
 ## See Also
 

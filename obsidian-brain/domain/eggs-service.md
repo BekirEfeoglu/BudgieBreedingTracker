@@ -54,7 +54,11 @@ updateEggStatus(egg, newStatus)
 deleteEgg(id)
   ├── soft-delete via repository
   ├── cancel egg-specific notifications
-  └── propagate to _completeIncubationIfAllEggsTerminal
+  └── _completeIncubationIfAllEggsTerminal(fromDelete: true)
+       └── if this was the LAST egg (siblings now empty), cancel the empty
+            incubation + flip the pair, so it doesn't strand `active` against
+            the free-tier limit. Never-populated incubations are still left
+            alone (fromDelete defaults false elsewhere). Added 2026-07-04.
 ```
 
 ## Terminal Status
