@@ -2,6 +2,29 @@
 
 Back to [[log]].
 
+## [2026-07-03] feat (branch) | community mute client (feed + comment filter)
+
+Branch `feature/community-tab-faz1` (commit `40013c0`). Client for `community_mutes`:
+remote (`CommunityEngagementRemoteSource` mute methods, `.upsert` idempotent) → repo →
+`mutedUsersProvider` (`MutedUsersNotifier`, SharedPreferences + server sync,
+optimistic+rollback — mirrors the block stack). Feed filter applies muted after blocked
+across all four tab arms; new `visibleCommentsProvider` filters muted+blocked comment
+authors and the detail screen renders from it. Light action (no confirm, toast only),
+community-only (never touches messaging — mute doesn't affect DMs). 27/27 new tests,
+2171 community+data suite green, analyze/l10n/quality clean. Last impl task of the
+post-edit + mute branch; migrations (edit hardening, mutes) await the checkpoint apply.
+
+## [2026-07-03] feat (branch) | community_mutes table (soft block, owner-only RLS)
+
+Branch `feature/community-tab-faz1` (commit `74c7ad1`). Migration
+`20260703121000_community_mutes.sql`: new `public.community_mutes` table for a
+one-directional visibility-only mute — a SEPARATE table (not a `community_blocks`
+column) so it can't affect messaging's block-RLS DM rejection. SELECT is owner-only
+(`auth.uid() = user_id`, no two-sided branch) so the muted user can't discover the row;
+INSERT/DELETE owner-scoped; `FORCE RLS`, `no_self_mute` CHECK, `unique_pair`, index on
+`user_id`. NOT applied to prod. Client (repo/provider/feed+comment filter/menu) lands in
+the next branch task.
+
 ## [2026-07-03] feat (branch) | community post edit UI (sheet, menu, badge)
 
 Branch `feature/community-tab-faz1` (commit `d31eef5`). User-facing edit: content-only

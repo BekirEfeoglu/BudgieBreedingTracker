@@ -4,6 +4,24 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-04] fix | Two correctness bugs from a live-code bug hunt
+
+Four adversarial bug-hunt agents swept the live high-risk subsystems
+(breeding/egg lifecycle, sync/data, datetime/notifications, genetics); each
+finding was re-verified against source before any change. Two confirmed HIGH
+bugs fixed. (1) `f52fd49` genetics: `ViabilityAnalyzer._checkOffspringHomozygous`
+short-circuited on parent VISUAL sets, so an autosomal-recessive lethal
+(Feather Duster) never warned for carrier×carrier — now relies solely on the
+authoritative per-offspring `doubleFactorIds`. (2) `07638b5` incubation: milestone
++ banding dates used `startDate.add(Duration(days:N))` (DST-drifts a day; the
+notification fired a day off from the calendar events) → switched to DST-safe
+field addition in notification_scheduler, incubation_calculator, chick_model.
+Both got regression tests; 1399 affected tests green. Surfaced but NOT changed
+(need product/architecture decision): sync conflict-recording gap on equal/older
+remote timestamps, checkpoint device-clock skew, retry threshold 7-vs-10
+divergence, sole-egg-delete leaving an incubation stuck active. See
+[[domain/genetics-engine]], [[domain/incubation-service]].
+
 ## [2026-07-04] docs | New rule: documentation-sync (every change updates docs)
 
 Added `.claude/rules/documentation-sync.md` — the canonical home for the
@@ -167,28 +185,5 @@ schema; (5) `PostEditNotifier.editPost` → `Future<String?>` so the specific
 `edit_window_expired` message surfaces (previously an unused l10n key); (6) dropped
 a redundant `invalidateAll()` in `update()`; (7) added a real edit-menu tap-through
 widget test. 470/470 community+remote-source tests green (§6.13 + §6.14 closed).
-
-## [2026-07-03] feat (branch) | community mute client (feed + comment filter)
-
-Branch `feature/community-tab-faz1` (commit `40013c0`). Client for `community_mutes`:
-remote (`CommunityEngagementRemoteSource` mute methods, `.upsert` idempotent) → repo →
-`mutedUsersProvider` (`MutedUsersNotifier`, SharedPreferences + server sync,
-optimistic+rollback — mirrors the block stack). Feed filter applies muted after blocked
-across all four tab arms; new `visibleCommentsProvider` filters muted+blocked comment
-authors and the detail screen renders from it. Light action (no confirm, toast only),
-community-only (never touches messaging — mute doesn't affect DMs). 27/27 new tests,
-2171 community+data suite green, analyze/l10n/quality clean. Last impl task of the
-post-edit + mute branch; migrations (edit hardening, mutes) await the checkpoint apply.
-
-## [2026-07-03] feat (branch) | community_mutes table (soft block, owner-only RLS)
-
-Branch `feature/community-tab-faz1` (commit `74c7ad1`). Migration
-`20260703121000_community_mutes.sql`: new `public.community_mutes` table for a
-one-directional visibility-only mute — a SEPARATE table (not a `community_blocks`
-column) so it can't affect messaging's block-RLS DM rejection. SELECT is owner-only
-(`auth.uid() = user_id`, no two-sided branch) so the muted user can't discover the row;
-INSERT/DELETE owner-scoped; `FORCE RLS`, `no_self_mute` CHECK, `unique_pair`, index on
-`user_id`. NOT applied to prod. Client (repo/provider/feed+comment filter/menu) lands in
-the next branch task.
 
 Older entries are archived in [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
