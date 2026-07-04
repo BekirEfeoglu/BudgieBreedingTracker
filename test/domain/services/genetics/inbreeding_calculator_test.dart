@@ -148,13 +148,19 @@ void main() {
         ancestors: ancestors,
       );
 
-      // Without (1+F_A), the result would be exactly 0.25 (full-sibling mating
-      // with only grandpa+grandma as common ancestors). With (1+F_A), the
-      // inbreeding of common ancestor grandpa (F_A=0.125 from half-sibling
-      // parents) increases the coefficient. Additional common ancestors
-      // (ggf1, ggm1, common-anc) also contribute through shared paths.
+      // subject's parents are full siblings, so F(subject) == kinship of the
+      // parents. Both parents descend from grandpa × grandma:
+      //   loop via grandpa: (1/2)^3 · (1 + F_grandpa), F_grandpa = 0.125
+      //                     (grandpa's parents ggf1/ggm1 are half-sibs sharing
+      //                      common-anc) = 0.125 · 1.125 = 0.140625
+      //   loop via grandma: (1/2)^3 · (1 + 0)           = 0.125
+      // grandpa's own ancestors (ggf1/ggm1/common-anc) do NOT add independent
+      // loops — every path to them from both sides passes through grandpa, so
+      // their relatedness is already in the (1 + F_grandpa) term. Total =
+      // 0.265625 (independently confirmed via the kinship recursion
+      // f(full sibs) = 1/4[f(gp,gp) + 2·f(gp,gm) + f(gm,gm)]).
       expect(result, greaterThan(0.25));
-      expect(result, closeTo(0.359375, 0.01));
+      expect(result, closeTo(0.265625, 0.0001));
     });
 
     test('parent-offspring mating produces high coefficient', () {

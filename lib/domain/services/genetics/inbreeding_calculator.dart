@@ -33,73 +33,58 @@ class InbreedingCalculator {
       return const InbreedingDetail(coefficient: 0.0);
     }
 
-    // Build ancestor path lists for father and mother lines
-    // Each ancestor can be reached via multiple paths → store ALL depths
-    final fatherAncestors = <String, List<int>>{};
-    final motherAncestors = <String, List<int>>{};
+    // Collect every path from the father line and mother line, storing each
+    // path as the SET of individuals it passes through (line root → ancestor,
+    // inclusive). Storing full paths — not just depths — is what lets us apply
+    // Wright's disjoint-path rule below.
+    final fatherPaths = <String, List<Set<String>>>{};
+    final motherPaths = <String, List<Set<String>>>{};
     var depthLimited = false;
-
     void onDepthLimit() => depthLimited = true;
 
-    _collectAncestors(
+    _collectPaths(
       bird.fatherId!,
       ancestors,
-      fatherAncestors,
+      fatherPaths,
+      const {},
       0,
       onDepthLimit: onDepthLimit,
     );
-    _collectAncestors(
+    _collectPaths(
       bird.motherId!,
       ancestors,
-      motherAncestors,
+      motherPaths,
+      const {},
       0,
       onDepthLimit: onDepthLimit,
     );
 
-    // Find common ancestors
-    final commonAncestors = fatherAncestors.keys
-        .where(motherAncestors.containsKey)
+    final commonAncestors = fatherPaths.keys
+        .where(motherPaths.containsKey)
         .toSet();
-
     if (commonAncestors.isEmpty) {
       return InbreedingDetail(coefficient: 0.0, depthLimited: depthLimited);
     }
 
-    // Wright's path coefficient: F = sum over all common ancestors A,
-    // for each pair of paths (n1, n2): (1/2)^(n1+n2+1) * (1 + F_A)
-    // where F_A is the inbreeding coefficient of common ancestor A.
+    // Wright's path coefficient:
+    //   F = Σ over each valid loop  (1/2)^(n1 + n2 + 1) · (1 + F_A)
+    // A "loop" is a father-line path and a mother-line path that meet at a
+    // common ancestor A and share NO other individual. Omitting the
+    // share-no-other-individual check is the classic double-counting bug: an
+    // ancestor reachable from both sides ONLY through a nearer common ancestor
+    // does not form an independent loop — its relatedness is already captured
+    // by the (1 + F_A) term of that nearer ancestor.
+    final memo = <String, double>{};
     double coefficient = 0.0;
     for (final ancestorId in commonAncestors) {
-      final fatherPaths = fatherAncestors[ancestorId]!;
-      final motherPaths = motherAncestors[ancestorId]!;
-
-      // Calculate F_A: the inbreeding coefficient of this common ancestor.
-      // This accounts for cases where the common ancestor is itself inbred.
-      final ancestor = ancestors[ancestorId];
-      double ancestorF = 0.0;
-      if (ancestor != null &&
-          ancestor.fatherId != null &&
-          ancestor.motherId != null) {
-        final ancFatherAnc = <String, List<int>>{};
-        final ancMotherAnc = <String, List<int>>{};
-        _collectAncestors(ancestor.fatherId!, ancestors, ancFatherAnc, 0);
-        _collectAncestors(ancestor.motherId!, ancestors, ancMotherAnc, 0);
-        final ancCommon = ancFatherAnc.keys
-            .where(ancMotherAnc.containsKey)
-            .toSet();
-        for (final aId in ancCommon) {
-          for (final an1 in ancFatherAnc[aId]!) {
-            for (final an2 in ancMotherAnc[aId]!) {
-              ancestorF += math.pow(0.5, an1 + an2 + 1);
-            }
+      final fA = _inbreedingOf(ancestorId, ancestors, memo, <String>{});
+      for (final pf in fatherPaths[ancestorId]!) {
+        for (final pm in motherPaths[ancestorId]!) {
+          if (_sharesOnly(pf, pm, ancestorId)) {
+            coefficient +=
+                math.pow(0.5, (pf.length - 1) + (pm.length - 1) + 1) *
+                (1 + fA);
           }
-        }
-        ancestorF = ancestorF.clamp(0.0, 0.5);
-      }
-
-      for (final n1 in fatherPaths) {
-        for (final n2 in motherPaths) {
-          coefficient += math.pow(0.5, n1 + n2 + 1) * (1 + ancestorF);
         }
       }
     }
@@ -111,6 +96,11 @@ class InbreedingCalculator {
   }
 
   /// Returns the set of common ancestor IDs between father and mother lines.
+  ///
+  /// This is the raw genealogical intersection (every individual appearing in
+  /// both lines), used by the UI to highlight shared ancestors. Not every
+  /// common ancestor forms an independent inbreeding loop — see
+  /// [calculateDetailed] for the loop-counting rule.
   Set<String> findCommonAncestors({
     required String birdId,
     required Map<String, Bird> ancestors,
@@ -120,13 +110,12 @@ class InbreedingCalculator {
       return const {};
     }
 
-    final fatherAncestors = <String, List<int>>{};
-    final motherAncestors = <String, List<int>>{};
+    final fatherPaths = <String, List<Set<String>>>{};
+    final motherPaths = <String, List<Set<String>>>{};
+    _collectPaths(bird.fatherId!, ancestors, fatherPaths, const {}, 0);
+    _collectPaths(bird.motherId!, ancestors, motherPaths, const {}, 0);
 
-    _collectAncestors(bird.fatherId!, ancestors, fatherAncestors, 0);
-    _collectAncestors(bird.motherId!, ancestors, motherAncestors, 0);
-
-    return fatherAncestors.keys.where(motherAncestors.containsKey).toSet();
+    return fatherPaths.keys.where(motherPaths.containsKey).toSet();
   }
 
   /// Returns a human-readable risk level for the given coefficient.
@@ -149,12 +138,71 @@ class InbreedingCalculator {
     return InbreedingRisk.none;
   }
 
-  void _collectAncestors(
+  /// True when [a] and [b] share exactly one individual, [apex]. Both sets are
+  /// guaranteed to contain [apex] (it is each path's endpoint), so the loop is
+  /// valid iff they share no OTHER individual.
+  bool _sharesOnly(Set<String> a, Set<String> b, String apex) {
+    for (final id in a) {
+      if (id != apex && b.contains(id)) return false;
+    }
+    return true;
+  }
+
+  /// Recursively computes Wright's inbreeding coefficient for [id] using the
+  /// same disjoint-path rule as [calculateDetailed]. [memo] caches results per
+  /// bird; [computing] breaks reference cycles in corrupt pedigrees.
+  double _inbreedingOf(
+    String id,
+    Map<String, Bird> ancestors,
+    Map<String, double> memo,
+    Set<String> computing,
+  ) {
+    final cached = memo[id];
+    if (cached != null) return cached;
+    if (computing.contains(id)) return 0.0; // cycle guard
+
+    final bird = ancestors[id];
+    if (bird == null || bird.fatherId == null || bird.motherId == null) {
+      memo[id] = 0.0;
+      return 0.0;
+    }
+
+    computing.add(id);
+    final fatherPaths = <String, List<Set<String>>>{};
+    final motherPaths = <String, List<Set<String>>>{};
+    _collectPaths(bird.fatherId!, ancestors, fatherPaths, const {}, 0);
+    _collectPaths(bird.motherId!, ancestors, motherPaths, const {}, 0);
+
+    double f = 0.0;
+    for (final ancestorId in fatherPaths.keys.where(motherPaths.containsKey)) {
+      final fA = _inbreedingOf(ancestorId, ancestors, memo, computing);
+      for (final pf in fatherPaths[ancestorId]!) {
+        for (final pm in motherPaths[ancestorId]!) {
+          if (_sharesOnly(pf, pm, ancestorId)) {
+            f +=
+                math.pow(0.5, (pf.length - 1) + (pm.length - 1) + 1) *
+                (1 + fA);
+          }
+        }
+      }
+    }
+    computing.remove(id);
+
+    final result = f.clamp(0.0, 0.5).toDouble();
+    memo[id] = result;
+    return result;
+  }
+
+  /// Collects every path from [id]'s line into [collected], keyed by ancestor
+  /// ID. Each stored entry is the set of individuals on that path (line root →
+  /// ancestor, inclusive); the number of edges to the ancestor is
+  /// `set.length - 1`.
+  void _collectPaths(
     String id,
     Map<String, Bird> allAncestors,
-    Map<String, List<int>> collected,
+    Map<String, List<Set<String>>> collected,
+    Set<String> pathSoFar,
     int depth, {
-    Set<String>? pathVisited,
     void Function()? onDepthLimit,
   }) {
     if (depth > GeneticsConstants.maxAncestorDepth) {
@@ -165,31 +213,30 @@ class InbreedingCalculator {
     final bird = allAncestors[id];
     if (bird == null) return;
 
-    // Guard against cyclic pedigree data (bird listed as its own ancestor)
-    final visited = pathVisited ?? <String>{};
-    if (visited.contains(id)) return;
-    final nextVisited = {...visited, id};
+    // Guard against cyclic pedigree data (an individual appearing twice on the
+    // same path).
+    if (pathSoFar.contains(id)) return;
+    final nextPath = {...pathSoFar, id};
 
-    // Store ALL paths to each ancestor (not just shortest)
-    collected.putIfAbsent(id, () => []).add(depth);
+    collected.putIfAbsent(id, () => []).add(nextPath);
 
     if (bird.fatherId != null) {
-      _collectAncestors(
+      _collectPaths(
         bird.fatherId!,
         allAncestors,
         collected,
+        nextPath,
         depth + 1,
-        pathVisited: nextVisited,
         onDepthLimit: onDepthLimit,
       );
     }
     if (bird.motherId != null) {
-      _collectAncestors(
+      _collectPaths(
         bird.motherId!,
         allAncestors,
         collected,
+        nextPath,
         depth + 1,
-        pathVisited: nextVisited,
         onDepthLimit: onDepthLimit,
       );
     }
