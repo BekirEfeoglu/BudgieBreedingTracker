@@ -85,10 +85,16 @@ caller code) can fully displace useful context before a real crash is
 captured. `RealtimeErrorLogThrottle`
 (`lib/core/utils/realtime_error_log_throttle.dart`) caps consecutive
 `.warning` calls (default 5, matching `RealtimeSyncService.maxReconnectFailures`)
-then drops to `.debug` — one instance per subscription, `reset()` on
-success. Used by `EventRemoteSource.subscribeToEvents` and
-`CommunityPostRemoteSource.subscribeToPostChanges` (2026-07-02, iOS
-Simulator `EADDRNOTAVAIL` reconnect-storm finding).
+then drops to `.debug` — one instance per subscription. The reset/log policy
+lives in the shared `handleRealtimeSubscribeStatus`
+(`lib/data/remote/api/realtime_subscribe_status_handler.dart`): reset the budget
+ONLY on `subscribed`; log (throttled) on `channelError`/`timedOut`; ignore the
+transient `closed`. The SDK reports `closed`/`timedOut` with a null error
+mid-reconnect, so the earlier `reset()`-on-any-null-error cleared the budget
+between every `channelError`, defeating the cap entirely (2026-07-05 fix). Used
+by `EventRemoteSource.subscribeToEvents` and
+`CommunityPostRemoteSource.subscribeToPostChanges` (2026-07-02, iOS Simulator
+`EADDRNOTAVAIL` reconnect-storm finding).
 
 ## Anti-Patterns
 

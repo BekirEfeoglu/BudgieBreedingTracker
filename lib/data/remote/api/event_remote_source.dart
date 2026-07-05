@@ -4,6 +4,7 @@ import 'package:budgie_breeding_tracker/data/models/supabase_extensions.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/utils/realtime_error_log_throttle.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/base_remote_source.dart';
+import 'package:budgie_breeding_tracker/data/remote/api/realtime_subscribe_status_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'
     show
         RealtimeChannel,
@@ -123,12 +124,10 @@ class EventRemoteSource extends BaseRemoteSource<Event> {
           },
         )
         .subscribe((status, error) {
-          if (error == null) {
-            errorLog.reset();
-            return;
-          }
-          errorLog.logError(
-            '[events:$userId] Realtime status: $status, error: $error',
+          handleRealtimeSubscribeStatus(
+            status: status,
+            throttle: errorLog,
+            message: '[events:$userId] Realtime status: $status, error: $error',
           );
         });
     return channel;

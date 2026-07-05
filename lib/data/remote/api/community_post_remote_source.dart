@@ -6,6 +6,7 @@ import '../../../core/utils/realtime_error_log_throttle.dart';
 import '../supabase/edge_function_client.dart';
 import 'base_remote_source.dart';
 import 'community_profile_cache.dart';
+import 'realtime_subscribe_status_handler.dart';
 
 /// Remote data source for community posts.
 ///
@@ -337,12 +338,11 @@ class CommunityPostRemoteSource {
           },
         )
         .subscribe((status, error) {
-          if (error == null) {
-            errorLog.reset();
-            return;
-          }
-          errorLog.logError(
-            '[community-posts-feed] Realtime status: $status, error: $error',
+          handleRealtimeSubscribeStatus(
+            status: status,
+            throttle: errorLog,
+            message:
+                '[community-posts-feed] Realtime status: $status, error: $error',
           );
         });
     return channel;

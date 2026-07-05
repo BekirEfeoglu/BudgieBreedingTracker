@@ -4,6 +4,33 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-05] fix | Realtime log-throttle reset defeated by null-error statuses
+
+`RealtimeErrorLogThrottle` (the Sentry breadcrumb-budget guard) was reset on any
+null-error subscribe status. The Supabase SDK reports `closed`/`timedOut` with a
+null error mid-reconnect (`realtime_channel.dart`), so the counter was cleared
+between every `channelError` — the 5-warning cap never engaged and a failing
+channel logged `.warning` forever (surfaced by the iOS Simulator
+`EADDRNOTAVAIL, port 0` reconnect storm on `community-posts-feed`). Extracted the
+correct policy into shared `handleRealtimeSubscribeStatus`
+(`lib/data/remote/api/realtime_subscribe_status_handler.dart`): reset only on
+`subscribed`; log (throttled) on `channelError`/`timedOut`; ignore transient
+`closed`. Wired into `CommunityPostRemoteSource` + `EventRemoteSource`; 4 TDD
+tests. Mirrored in [[patterns/observability]]. Underlying WebSocket bind failure
+is environmental (simulator); REST feed unaffected.
+
+## [2026-07-05] feat | Community feed visual redesign
+
+Working-tree redesign of the community feed UI (behavior unchanged). New shared
+`community_avatar.dart` (`CommunityAvatar` — circular avatar with optional brand
+gradient ring + first-letter initials fallback, reused across post header, guide
+cards, story strip). Pill tabs (`community_pill_tabs.dart`) now show icon+label
+inline with the active tab filled by the `AppColors.primary→primaryLight`
+gradient and full-radius pills. Action bar (`community_post_actions.dart`): liked
+heart → `colorScheme.error` (red), bookmark → `AppColors.accent` (amber). FAB,
+feed overlays, guide cards, and post card body/parts restyled to `AppColors`
+brand accents. One new l10n key `community.guide_badge` ("Rehber", tr/en/de).
+
 ## [2026-07-05] fix | Excel round-trip: incubations imported + health exported
 
 Audit found "Option B" wasn't lossless: export wrote an Incubations sheet but
@@ -165,24 +192,5 @@ chick-selector gap), `profile.md` (account deletion order + AAL2 guard),
 (hub map — contract owners per toggle). CLAUDE.md § Rules table +
 [[sources/rules-index]] updated; marketplace.md ad-placement line annotated as
 design-goal (banners not wired to marketplace).
-
-## [2026-07-04] docs | Rulebook drift sweep #2 (constants vs prose)
-
-Second verification pass over `.claude/rules/` + `CLAUDE.md`, this time
-checking numeric/schema claims against source. Fixed: assets-images icon
-count 89→93 (mirrored in [[patterns/assets-images]]); presence.md's 30s
-heartbeat / 90s TTL narrative replaced with the real
-`user_presence_constants.dart` values (2 min beat / 5 min onlineThreshold /
-10 min sessionTtl) across Heartbeat, TTL, Performance, throttle and the
-anti-pattern; background-sync.md + [[data-layer/sync-strategy]] fictional
-`SyncMetadata` schema (entityType/dirtyCount/markDirty) replaced with the
-real per-record model (table_name, SyncStatus pending|pendingDelete|error,
-UNIQUE(table_name,record_id), success deletes the row); encryption.md usage
-claim widened (birds_dao + backup pipeline + app.dart dispose);
-error-handling gained the missing `NotFoundException`; empty-loading's
-nonexistent `ServerException` row corrected. CLAUDE.md script lists gained 8
-missing entries (run_local_quality_gate, check_remote_status,
-verify_security, git hooks, breeding regression + 3 test files). CI job
-table verified against ci.yml — no drift.
 
 Older entries are archived in [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
