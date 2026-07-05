@@ -46,7 +46,7 @@ void main() {
       await tester.pumpWidget(wrap());
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(LucideIcons.flame), findsOneWidget);
+      expect(find.byIcon(LucideIcons.compass), findsOneWidget);
       expect(find.byIcon(LucideIcons.users), findsOneWidget);
       expect(
         find.byWidgetPredicate(
@@ -54,7 +54,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.byIcon(LucideIcons.store), findsOneWidget);
+      expect(find.byIcon(LucideIcons.tag), findsOneWidget);
     });
 
     testWidgets('tapping a tab updates the active tab provider', (
@@ -96,8 +96,9 @@ void main() {
       await tester.pumpWidget(wrap());
       await tester.pumpAndSettle();
 
-      // Default test width (800px) should use Row layout
-      expect(find.byType(Row), findsOneWidget);
+      // Default test width (800px) uses the Row layout (each pill also lays
+      // its icon + label out in a Row), and never the narrow Wrap fallback.
+      expect(find.byType(Row), findsWidgets);
       expect(find.byType(Wrap), findsNothing);
     });
 

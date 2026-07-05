@@ -2,8 +2,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/enums/community_enums.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_icon.dart';
 import '../../../data/models/community_post_model.dart';
 import 'community_media_gallery.dart';
 import 'community_post_actions.dart';
@@ -132,10 +135,21 @@ class CommunityPostCardBody extends StatelessWidget {
           ),
         ),
         if (allImages.isNotEmpty)
-          CommunityMediaGallery(
-            imageUrls: allImages,
-            onDoubleTap: onDoubleTapMedia,
-            onOpenImage: onOpenImage,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              0,
+              AppSpacing.lg,
+              AppSpacing.xs,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+              child: CommunityMediaGallery(
+                imageUrls: allImages,
+                onDoubleTap: onDoubleTapMedia,
+                onOpenImage: onOpenImage,
+              ),
+            ),
           ),
         Padding(
           padding: const EdgeInsets.fromLTRB(
@@ -204,15 +218,28 @@ class _GuideLeadBlock extends StatelessWidget {
                   vertical: AppSpacing.xs,
                 ),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primary,
+                  gradient: const LinearGradient(
+                    colors: [AppColors.accentLight, AppColors.accent],
+                  ),
                   borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                 ),
-                child: Text(
-                  'community.tab_guides'.tr(),
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onPrimary,
-                    fontWeight: FontWeight.w800,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const AppIcon(
+                      AppIcons.guide,
+                      size: 12,
+                      color: AppColors.premiumBadgeText,
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
+                    Text(
+                      'community.guide_badge'.tr(),
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: AppColors.premiumBadgeText,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),

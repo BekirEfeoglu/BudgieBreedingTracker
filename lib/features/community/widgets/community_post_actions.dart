@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../core/constants/app_icons.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/app_haptics.dart';
 import '../../../core/widgets/app_icon.dart';
@@ -59,7 +60,10 @@ class _CommunityPostActionsState extends ConsumerState<CommunityPostActions> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final likedColor = theme.colorScheme.primary;
+    // Liked heart turns red; bookmark turns amber — matches the community
+    // redesign's action-bar accents.
+    final likedColor = theme.colorScheme.error;
+    const bookmarkColor = AppColors.accent;
     final defaultColor = theme.colorScheme.onSurfaceVariant;
 
     final likedBg = post.isLikedByMe
@@ -106,7 +110,11 @@ class _CommunityPostActionsState extends ConsumerState<CommunityPostActions> {
           onTap: _onBookmark,
           child: AnimatedToggleButton(
             isActive: post.isBookmarkedByMe,
-            activeIcon: AppIcon(AppIcons.bookmark, size: 22, color: likedColor),
+            activeIcon: const AppIcon(
+              AppIcons.bookmark,
+              size: 22,
+              color: bookmarkColor,
+            ),
             inactiveIcon: AppIcon(
               AppIcons.bookmark,
               size: 22,

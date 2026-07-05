@@ -76,6 +76,24 @@ never affects DMs; that's block's job). 4 l10n keys (tr/en/de). Migration
 `20260703121000_community_mutes.sql` applied to prod + merged to main 2026-07-03
 (advisors 0 new; FORCE RLS + owner-only SELECT verified).
 
+## Feed UI (visual redesign)
+
+Feed presentation restyle (2026-07-05, behavior unchanged) around `AppColors`
+brand accents:
+
+- `community_avatar.dart` — shared `CommunityAvatar`: circular avatar with an
+  optional brand gradient ring and first-letter initials fallback when
+  `avatarUrl` is null; reused across post header, guide cards, and story strip
+  for visual consistency.
+- `community_pill_tabs.dart` — tabs show icon + label inline; active tab filled
+  with the `AppColors.primary → primaryLight` gradient, full-radius pills,
+  inactive tabs transparent.
+- `community_post_actions.dart` — liked heart turns `colorScheme.error` (red),
+  bookmark turns `AppColors.accent` (amber).
+- FAB, `community_feed_overlays.dart`, `community_feed_guide_cards.dart`, and
+  `community_post_card_body/parts.dart` restyled to brand accents. New l10n key
+  `community.guide_badge` ("Rehber", tr/en/de).
+
 ## Cache
 
 `community_profile_cache`, `community_post_cache` in `lib/data/remote/api/`

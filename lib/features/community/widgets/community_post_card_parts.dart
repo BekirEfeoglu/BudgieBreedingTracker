@@ -1,10 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/constants/app_icons.dart';
 import '../../../core/enums/community_enums.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../data/models/community_post_model.dart';
@@ -50,7 +50,8 @@ class PostTypeBadge extends StatelessWidget {
   }
 }
 
-/// Chip linking to a bird's detail page.
+/// Chip linking to a bird's detail page — warm amber-tinted pill matching the
+/// community redesign's bird link affordance.
 class BirdLinkChip extends StatelessWidget {
   final CommunityPost post;
 
@@ -61,18 +62,69 @@ class BirdLinkChip extends StatelessWidget {
     final theme = Theme.of(context);
     final label = post.birdName ?? 'community.linked_bird'.tr();
 
-    return ActionChip(
-      avatar: const AppIcon(AppIcons.bird, size: 18),
-      label: Text(label),
-      onPressed: post.birdId == null
-          ? null
-          : () => context.push(
-              AppRoutes.birdDetail.replaceFirst(':id', post.birdId!),
+    return Semantics(
+      button: post.birdId != null,
+      label: label,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        onTap: post.birdId == null
+            ? null
+            : () => context.push(
+                AppRoutes.birdDetail.replaceFirst(':id', post.birdId!),
+              ),
+        child: Container(
+          constraints: const BoxConstraints(
+            minHeight: AppSpacing.touchTargetMin,
+          ),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xs,
+            AppSpacing.xs,
+            AppSpacing.md,
+            AppSpacing.xs,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.accent.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            border: Border.all(
+              color: AppColors.accent.withValues(alpha: 0.35),
             ),
-      side: BorderSide(
-        color: theme.colorScheme.outlineVariant.withValues(alpha: 0.45),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppColors.accentLight, AppColors.accent],
+                  ),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                ),
+                child: const AppIcon(
+                  AppIcons.bird,
+                  size: 18,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Flexible(
+                child: Text(
+                  label,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: AppColors.warningTextAdaptive(context),
+                    fontWeight: FontWeight.w700,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      backgroundColor: theme.colorScheme.surface,
     );
   }
 }
@@ -141,7 +193,7 @@ class _TagChip extends StatelessWidget {
   }
 }
 
-/// Like and comment count summary row.
+/// Subtle "{likes} beğeni · {comments} yorum" summary line.
 class EngagementSummary extends StatelessWidget {
   final CommunityPost post;
 
@@ -150,80 +202,19 @@ class EngagementSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final parts = <String>[
+      if (post.likeCount > 0)
+        'community.likes_count'.tr(args: ['${post.likeCount}']),
+      if (post.commentCount > 0)
+        'community.comments_count'.tr(args: ['${post.commentCount}']),
+    ];
+    if (parts.isEmpty) return const SizedBox.shrink();
 
-    return Wrap(
-      spacing: AppSpacing.md,
-      runSpacing: AppSpacing.xs,
-      children: [
-        if (post.likeCount > 0)
-          _MetricBadge(
-            icon: const AppIcon(AppIcons.heart),
-            value: '${post.likeCount}',
-            label: 'community.like'.tr(),
-            iconColor: theme.colorScheme.primary,
-          ),
-        if (post.commentCount > 0)
-          _MetricBadge(
-            icon: const Icon(LucideIcons.messageCircle),
-            value: '${post.commentCount}',
-            label: 'community.comment'.tr(),
-            iconColor: theme.colorScheme.secondary,
-          ),
-      ],
-    );
-  }
-}
-
-class _MetricBadge extends StatelessWidget {
-  final Widget icon;
-  final String value;
-  final String label;
-  final Color iconColor;
-
-  const _MetricBadge({
-    required this.icon,
-    required this.value,
-    required this.label,
-    required this.iconColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(
-          alpha: 0.55,
-        ),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconTheme.merge(
-            data: IconThemeData(size: 14, color: iconColor),
-            child: icon,
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            value,
-            style: theme.textTheme.labelSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            label,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
+    return Text(
+      parts.join(' · '),
+      style: theme.textTheme.bodySmall?.copyWith(
+        color: theme.colorScheme.onSurfaceVariant,
+        fontWeight: FontWeight.w600,
       ),
     );
   }

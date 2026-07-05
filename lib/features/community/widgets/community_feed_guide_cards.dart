@@ -1,136 +1,66 @@
 part of 'community_feed_list.dart';
 
+int _guideReadMinutes(CommunityPost post) {
+  final totalWords = '${post.title ?? ''} ${post.content}'
+      .split(RegExp(r'\s+'))
+      .where((part) => part.trim().isNotEmpty)
+      .length;
+  return (totalWords / 180).ceil().clamp(1, 99);
+}
+
+/// Featured guide card (first item on the guides tab).
 class _FeaturedGuideCard extends StatelessWidget {
   const _FeaturedGuideCard({required this.post});
 
   final CommunityPost post;
 
-  int get _readMinutes {
-    final totalWords = '${post.title ?? ''} ${post.content}'
-        .split(RegExp(r'\s+'))
-        .where((part) => part.trim().isNotEmpty)
-        .length;
-    return (totalWords / 180).ceil().clamp(1, 99);
-  }
+  void _open(BuildContext context) => context.push(
+    AppRoutes.communityPostDetail.replaceFirst(':postId', post.id),
+  );
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return GestureDetector(
-      onTap: () => context.push(
-        AppRoutes.communityPostDetail.replaceFirst(':postId', post.id),
-      ),
+      onTap: () => _open(context),
       child: Container(
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
           border: Border.all(
-            color: theme.colorScheme.primary.withValues(alpha: 0.16),
+            color: theme.colorScheme.primary.withValues(alpha: 0.18),
           ),
           boxShadow: [
             BoxShadow(
-              color: theme.shadowColor.withValues(alpha: 0.06),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+              color: theme.colorScheme.primary.withValues(alpha: 0.12),
+              blurRadius: 22,
+              offset: const Offset(0, 12),
             ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: 156,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    theme.colorScheme.primary.withValues(alpha: 0.22),
-                    theme.colorScheme.surfaceContainerHighest,
-                  ],
-                ),
-              ),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (post.primaryImageUrl != null)
-                    CachedNetworkImage(
-                      imageUrl: post.primaryImageUrl!,
-                      fit: BoxFit.cover,
-                      // Featured guide card is ~double-feed-card height;
-                      // cap both memory and disk cache to sane bounds.
-                      memCacheWidth: 900,
-                      maxWidthDiskCache: 900,
-                    ),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          theme.colorScheme.primary.withValues(alpha: 0.14),
-                          Colors.black.withValues(alpha: 0.10),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: Row(
-                      children: [
-                        _GuideTopChip(label: 'community.guides_featured'.tr()),
-                        const Spacer(),
-                        _GuideTopChip(
-                          label: 'community.guide_read_time'.tr(
-                            args: ['$_readMinutes'],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+            _GuideCardHeader(
+              post: post,
+              badgeLabel: 'community.guides_featured'.tr(),
+              minHeight: 150,
+              titleStyle: theme.textTheme.headlineSmall,
+              subtitle: post.content,
             ),
             Padding(
               padding: const EdgeInsets.all(AppSpacing.lg),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    post.title ?? 'community.tab_guides'.tr(),
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      height: 1.1,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    post.content,
-                    maxLines: 4,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                      height: 1.45,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
                   Row(
                     children: [
-                      CircleAvatar(
+                      CommunityAvatar(
+                        username: post.username,
+                        avatarUrl: post.avatarUrl,
                         radius: 18,
-                        backgroundColor: theme.colorScheme.primaryContainer,
-                        backgroundImage: post.avatarUrl != null
-                            ? CachedNetworkImageProvider(post.avatarUrl!)
-                            : null,
-                        child: post.avatarUrl == null
-                            ? Text(
-                                post.username.isNotEmpty
-                                    ? post.username[0].toUpperCase()
-                                    : '?',
-                              )
-                            : null,
                       ),
                       const SizedBox(width: AppSpacing.sm),
                       Expanded(
@@ -142,6 +72,7 @@ class _FeaturedGuideCard extends StatelessWidget {
                               style: theme.textTheme.titleSmall?.copyWith(
                                 fontWeight: FontWeight.w700,
                               ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                             Text(
                               formatCommunityDate(post.createdAt),
@@ -152,18 +83,10 @@ class _FeaturedGuideCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      TextButton.icon(
-                        onPressed: () => context.push(
-                          AppRoutes.communityPostDetail.replaceFirst(
-                            ':postId',
-                            post.id,
-                          ),
-                        ),
-                        icon: const Icon(LucideIcons.bookOpen, size: 18),
-                        label: Text('community.guide_open_hint'.tr()),
-                      ),
                     ],
                   ),
+                  const SizedBox(height: AppSpacing.md),
+                  _GuideOpenButton(onTap: () => _open(context)),
                 ],
               ),
             ),
@@ -174,9 +97,259 @@ class _FeaturedGuideCard extends StatelessWidget {
   }
 }
 
-class _GuideTopChip extends StatelessWidget {
-  const _GuideTopChip({required this.label});
+/// Compact guide card used in the guides library list.
+class _GuideLibraryCard extends StatelessWidget {
+  const _GuideLibraryCard({required this.post, required this.highlightTone});
 
+  final CommunityPost post;
+  final bool highlightTone;
+
+  void _open(BuildContext context) => context.push(
+    AppRoutes.communityPostDetail.replaceFirst(':postId', post.id),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onTap: () => _open(context),
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+          border: Border.all(
+            color: theme.colorScheme.primary.withValues(alpha: 0.14),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
+              blurRadius: 18,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _GuideCardHeader(
+              post: post,
+              badgeLabel: 'community.guide_badge'.tr(),
+              minHeight: 116,
+              ringColors: highlightTone
+                  ? const [AppColors.primaryDark, AppColors.primaryLight]
+                  : const [AppColors.info, AppColors.primaryLight],
+              titleStyle: theme.textTheme.titleLarge,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      CommunityAvatar(
+                        username: post.username,
+                        avatarUrl: post.avatarUrl,
+                        radius: 16,
+                        ring: false,
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Text(
+                          post.username,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  _GuideOpenButton(onTap: () => _open(context)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Saturated brand-gradient header shared by both guide cards. Renders the
+/// optional cover image under a legibility scrim, a faint bird watermark, the
+/// amber badge + read-time chip, and the white title (plus optional subtitle).
+class _GuideCardHeader extends StatelessWidget {
+  const _GuideCardHeader({
+    required this.post,
+    required this.badgeLabel,
+    required this.minHeight,
+    this.subtitle,
+    this.titleStyle,
+    this.ringColors,
+  });
+
+  final CommunityPost post;
+  final String badgeLabel;
+  final double minHeight;
+  final String? subtitle;
+  final TextStyle? titleStyle;
+
+  /// Gradient colors for the header background (defaults to the primary ramp).
+  final List<Color>? ringColors;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final hasImage =
+        post.primaryImageUrl != null && post.primaryImageUrl!.isNotEmpty;
+    final headerColors =
+        ringColors ??
+        const [AppColors.primaryDark, AppColors.primary, AppColors.primaryLight];
+
+    return Container(
+      constraints: BoxConstraints(minHeight: minHeight),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: headerColors,
+        ),
+      ),
+      child: Stack(
+        children: [
+          if (hasImage) ...[
+            Positioned.fill(
+              child: CachedNetworkImage(
+                imageUrl: post.primaryImageUrl!,
+                fit: BoxFit.cover,
+                memCacheWidth: 900,
+                maxWidthDiskCache: 900,
+              ),
+            ),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      AppColors.primaryDark.withValues(alpha: 0.55),
+                      AppColors.primaryDark.withValues(alpha: 0.88),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+          Positioned(
+            right: -24,
+            top: -20,
+            child: AppIcon(
+              AppIcons.bird,
+              size: 150,
+              color: Colors.white.withValues(alpha: 0.10),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    _GuideBadge(label: badgeLabel),
+                    const Spacer(),
+                    _GuideGlassChip(
+                      icon: LucideIcons.clock,
+                      label: 'community.guide_read_time'.tr(
+                        args: ['${_guideReadMinutes(post)}'],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  post.title ?? 'community.tab_guides'.tr(),
+                  style: (titleStyle ?? theme.textTheme.titleLarge)?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    height: 1.2,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (subtitle != null && subtitle!.trim().isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    subtitle!,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.82),
+                      height: 1.35,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Amber pill badge ("Rehber" / "Öne çıkan rehber") on the guide header.
+class _GuideBadge extends StatelessWidget {
+  const _GuideBadge({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.accentLight, AppColors.accent],
+        ),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const AppIcon(
+            AppIcons.guide,
+            size: 12,
+            color: AppColors.premiumBadgeText,
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: AppColors.premiumBadgeText,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Translucent white chip (read-time) on the guide header.
+class _GuideGlassChip extends StatelessWidget {
+  const _GuideGlassChip({required this.icon, required this.label});
+
+  final IconData icon;
   final String label;
 
   @override
@@ -189,152 +362,65 @@ class _GuideTopChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.w700,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: Colors.white),
+          const SizedBox(width: AppSpacing.xs),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _GuideLibraryCard extends StatelessWidget {
-  const _GuideLibraryCard({required this.post, required this.highlightTone});
+/// Outline "Detaylı rehber olarak aç" button below the guide header.
+class _GuideOpenButton extends StatelessWidget {
+  const _GuideOpenButton({required this.onTap});
 
-  final CommunityPost post;
-  final bool highlightTone;
-
-  int get _readMinutes {
-    final totalWords = '${post.title ?? ''} ${post.content}'
-        .split(RegExp(r'\s+'))
-        .where((part) => part.trim().isNotEmpty)
-        .length;
-    return (totalWords / 180).ceil().clamp(1, 99);
-  }
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accent = highlightTone
-        ? theme.colorScheme.primary
-        : theme.colorScheme.tertiary;
-
-    return InkWell(
-      borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-      onTap: () => context.push(
-        AppRoutes.communityPostDetail.replaceFirst(':postId', post.id),
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-          border: Border.all(
-            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.28),
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: onTap,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: theme.colorScheme.primary,
+          backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.06),
+          side: BorderSide(
+            color: theme.colorScheme.primary.withValues(alpha: 0.55),
+            width: 1.5,
+          ),
+          minimumSize: const Size.fromHeight(46),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          ),
+          textStyle: theme.textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w700,
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                  ),
-                  child: Icon(LucideIcons.bookOpen, color: accent),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        post.username,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        '${formatCommunityDate(post.createdAt)} • ${'community.guide_read_time'.tr(args: ['$_readMinutes'])}',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              post.title ?? 'community.tab_guides'.tr(),
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w800,
-                height: 1.15,
+            Flexible(
+              child: Text(
+                'community.guide_open_hint'.tr(),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              post.content,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-                height: 1.5,
-              ),
-            ),
-            if (post.tags.isNotEmpty) ...[
-              const SizedBox(height: AppSpacing.md),
-              Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.sm,
-                children: [
-                  for (final tag in post.tags.take(3))
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.sm,
-                        vertical: AppSpacing.xs,
-                      ),
-                      decoration: BoxDecoration(
-                        color: accent.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.radiusFull,
-                        ),
-                      ),
-                      child: Text(
-                        tag.startsWith('#') ? tag : '#$tag',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: accent,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ],
-            const SizedBox(height: AppSpacing.md),
-            Row(
-              children: [
-                Text(
-                  'community.guide_open_hint'.tr(),
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: accent,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const Spacer(),
-                Icon(LucideIcons.arrowUpRight, size: 18, color: accent),
-              ],
-            ),
+            const SizedBox(width: AppSpacing.sm),
+            const Icon(LucideIcons.arrowRight, size: 18),
           ],
         ),
       ),

@@ -3,12 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/constants/app_icons.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/app_haptics.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../providers/community_providers.dart';
 
-/// Pill-shaped chip tab bar for community feed filtering.
+/// Segmented pill tab bar for community feed filtering.
+///
+/// Horizontal control: each tab shows its icon and label inline. The active
+/// tab is filled with the brand gradient; inactive tabs stay transparent so
+/// the shared track (owned by the parent rail) reads as one segmented bar.
 class CommunityPillTabs extends ConsumerWidget {
   const CommunityPillTabs({super.key});
 
@@ -18,26 +23,28 @@ class CommunityPillTabs extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.all(AppSpacing.sm),
+      padding: const EdgeInsets.all(AppSpacing.xs),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final useGrid = constraints.maxWidth < 280;
 
+          void select(CommunityFeedTab tab) {
+            AppHaptics.selectionClick();
+            ref.read(communityActiveTabProvider.notifier).state = tab;
+          }
+
           if (useGrid) {
             return Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
+              spacing: AppSpacing.xs,
+              runSpacing: AppSpacing.xs,
               children: CommunityFeedTab.values.map((tab) {
-                final itemWidth = (constraints.maxWidth - AppSpacing.sm) / 2;
+                final itemWidth = (constraints.maxWidth - AppSpacing.xs) / 2;
                 return SizedBox(
                   width: itemWidth,
                   child: _PillTab(
                     tab: tab,
                     isActive: activeTab == tab,
-                    onTap: () {
-                      AppHaptics.selectionClick();
-                      ref.read(communityActiveTabProvider.notifier).state = tab;
-                    },
+                    onTap: () => select(tab),
                     theme: theme,
                   ),
                 );
@@ -45,20 +52,16 @@ class CommunityPillTabs extends ConsumerWidget {
             );
           }
 
-          // 4-column: use Row + Expanded to avoid subpixel wrap issues
+          // 4-column: Row + Expanded to avoid subpixel wrap issues.
           return Row(
             children: [
               for (int i = 0; i < CommunityFeedTab.values.length; i++) ...[
-                if (i > 0) const SizedBox(width: AppSpacing.sm),
+                if (i > 0) const SizedBox(width: AppSpacing.xs),
                 Expanded(
                   child: _PillTab(
                     tab: CommunityFeedTab.values[i],
                     isActive: activeTab == CommunityFeedTab.values[i],
-                    onTap: () {
-                      AppHaptics.selectionClick();
-                      ref.read(communityActiveTabProvider.notifier).state =
-                          CommunityFeedTab.values[i];
-                    },
+                    onTap: () => select(CommunityFeedTab.values[i]),
                     theme: theme,
                   ),
                 ),
@@ -86,69 +89,55 @@ class _PillTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final activeColor = theme.colorScheme.onPrimary;
+    final inactiveColor = theme.colorScheme.onSurfaceVariant;
+
     return Semantics(
       button: true,
       selected: isActive,
       label: tab.label,
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
         onTap: onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOut,
           constraints: const BoxConstraints(
-            minHeight: AppSpacing.touchTargetMd + AppSpacing.md,
+            minHeight: AppSpacing.touchTargetMd,
           ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.sm,
-            vertical: AppSpacing.md,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
           decoration: BoxDecoration(
             gradient: isActive
-                ? LinearGradient(
-                    colors: [
-                      theme.colorScheme.primary,
-                      theme.colorScheme.primary.withValues(alpha: 0.82),
-                    ],
+                ? const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppColors.primary, AppColors.primaryLight],
                   )
                 : null,
-            color: isActive
-                ? null
-                : theme.colorScheme.surfaceContainerHighest.withValues(
-                    alpha: 0.72,
-                  ),
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            border: Border.all(
-              color: isActive
-                  ? theme.colorScheme.primary.withValues(alpha: 0.15)
-                  : theme.colorScheme.outlineVariant.withValues(alpha: 0.2),
-            ),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
             boxShadow: isActive
                 ? [
                     BoxShadow(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.18),
-                      blurRadius: 14,
-                      offset: const Offset(0, 6),
+                      color: AppColors.primary.withValues(alpha: 0.32),
+                      blurRadius: 12,
+                      offset: const Offset(0, 5),
                     ),
                   ]
                 : null,
           ),
-          child: Column(
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _tabIcon(tab, isActive, theme),
-              const SizedBox(height: AppSpacing.xs),
-              SizedBox(
-                width: double.infinity,
+              const SizedBox(width: AppSpacing.xs + 2),
+              Flexible(
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
                     tab.label,
                     maxLines: 1,
-                    textAlign: TextAlign.center,
                     style: theme.textTheme.labelLarge?.copyWith(
-                      color: isActive
-                          ? theme.colorScheme.onPrimary
-                          : theme.colorScheme.onSurface,
+                      color: isActive ? activeColor : inactiveColor,
                       fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
                     ),
                   ),
@@ -168,7 +157,7 @@ class _PillTab extends StatelessWidget {
 
     return switch (tab) {
       CommunityFeedTab.explore => Icon(
-        LucideIcons.flame,
+        LucideIcons.compass,
         size: 16,
         color: color,
       ),
@@ -183,7 +172,7 @@ class _PillTab extends StatelessWidget {
         color: color,
       ),
       CommunityFeedTab.marketplace => Icon(
-        LucideIcons.store,
+        LucideIcons.tag,
         size: 16,
         color: color,
       ),

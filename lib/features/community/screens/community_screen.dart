@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/constants/app_icons.dart';
 import '../../../core/widgets/app_icon.dart';
@@ -37,10 +38,15 @@ class CommunityScreen extends ConsumerWidget {
                   ref.watch(isFounderProvider).value == true)
           ? FloatingActionButton.extended(
               onPressed: () => context.push(_buildCreatePostRoute(activeTab)),
+              backgroundColor: AppColors.accent,
+              foregroundColor: AppColors.premiumBadgeText,
               icon: activeTab == CommunityFeedTab.guides
                   ? const AppIcon(AppIcons.guide)
                   : const AppIcon(AppIcons.edit),
-              label: Text('community.create_post'.tr()),
+              label: Text(
+                'community.create_post'.tr(),
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
             )
           : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -129,18 +135,13 @@ class _CommunityTabRail extends StatelessWidget {
       ),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.colorScheme.surface.withValues(alpha: 0.86),
-          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-          border: Border.all(
-            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.28),
+          color: theme.colorScheme.surfaceContainerHighest.withValues(
+            alpha: 0.6,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: theme.shadowColor.withValues(alpha: 0.06),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          border: Border.all(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.22),
+          ),
         ),
         child: const CommunityPillTabs(),
       ),

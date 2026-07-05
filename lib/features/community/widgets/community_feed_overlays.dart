@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 
 /// Floating banner that appears when new posts arrive while user is scrolled.
@@ -28,29 +29,29 @@ class NewPostsBanner extends StatelessWidget {
               vertical: AppSpacing.sm,
             ),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [AppColors.primary, AppColors.primaryLight],
+              ),
               borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
               boxShadow: [
                 BoxShadow(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+                  color: AppColors.primary.withValues(alpha: 0.4),
+                  blurRadius: 14,
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  LucideIcons.arrowUp,
-                  size: 16,
-                  color: theme.colorScheme.onPrimary,
-                ),
+                const Icon(LucideIcons.arrowUp, size: 16, color: Colors.white),
                 const SizedBox(width: AppSpacing.sm),
                 Text(
                   'community.new_posts_banner'.tr(args: ['$count']),
                   style: theme.textTheme.labelLarge?.copyWith(
-                    color: theme.colorScheme.onPrimary,
+                    color: Colors.white,
                     fontWeight: FontWeight.w700,
                   ),
                 ),

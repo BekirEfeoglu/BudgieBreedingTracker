@@ -5,17 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
-import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/enums/community_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
-import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/community_post_model.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_post_card_parts.dart';
-
-Finder _findHeartAppIcon() =>
-    find.byWidgetPredicate((w) => w is AppIcon && w.asset == AppIcons.heart);
 
 void main() {
   Widget wrap(Widget child) {
@@ -93,12 +87,17 @@ void main() {
       );
     }
 
+    // Redesigned summary renders a single subtle "{likes} · {comments}" line
+    // (no icons/pills). Tests mount without EasyLocalization, so .tr() yields
+    // the raw key — assert against the raw key substrings.
+    final likesKey = l10n('community.likes_count');
+    final commentsKey = l10n('community.comments_count');
+
     testWidgets('shows nothing when both counts are zero', (tester) async {
       await tester.pumpWidget(wrap(EngagementSummary(post: createPost())));
       await tester.pump();
 
-      expect(_findHeartAppIcon(), findsNothing);
-      expect(find.byIcon(LucideIcons.messageCircle), findsNothing);
+      expect(find.byType(Text), findsNothing);
     });
 
     testWidgets('shows like count when > 0', (tester) async {
@@ -107,8 +106,8 @@ void main() {
       );
       await tester.pump();
 
-      expect(_findHeartAppIcon(), findsOneWidget);
-      expect(find.text('5'), findsOneWidget);
+      expect(find.textContaining(likesKey), findsOneWidget);
+      expect(find.textContaining(commentsKey), findsNothing);
     });
 
     testWidgets('shows comment count when > 0', (tester) async {
@@ -117,8 +116,8 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byIcon(LucideIcons.messageCircle), findsOneWidget);
-      expect(find.text('12'), findsOneWidget);
+      expect(find.textContaining(commentsKey), findsOneWidget);
+      expect(find.textContaining(likesKey), findsNothing);
     });
 
     testWidgets('shows both counts when both > 0', (tester) async {
@@ -127,30 +126,29 @@ void main() {
       );
       await tester.pump();
 
-      expect(_findHeartAppIcon(), findsOneWidget);
-      expect(find.byIcon(LucideIcons.messageCircle), findsOneWidget);
-      expect(find.text('3'), findsOneWidget);
-      expect(find.text('7'), findsOneWidget);
+      // Both metrics render within the single summary line.
+      expect(find.textContaining(likesKey), findsOneWidget);
+      expect(find.textContaining(commentsKey), findsOneWidget);
     });
 
-    testWidgets('hides like icon when likeCount is zero', (tester) async {
+    testWidgets('hides like part when likeCount is zero', (tester) async {
       await tester.pumpWidget(
         wrap(EngagementSummary(post: createPost(comments: 1))),
       );
       await tester.pump();
 
-      expect(_findHeartAppIcon(), findsNothing);
-      expect(find.byIcon(LucideIcons.messageCircle), findsOneWidget);
+      expect(find.textContaining(likesKey), findsNothing);
+      expect(find.textContaining(commentsKey), findsOneWidget);
     });
 
-    testWidgets('hides comment icon when commentCount is zero', (tester) async {
+    testWidgets('hides comment part when commentCount is zero', (tester) async {
       await tester.pumpWidget(
         wrap(EngagementSummary(post: createPost(likes: 1))),
       );
       await tester.pump();
 
-      expect(_findHeartAppIcon(), findsOneWidget);
-      expect(find.byIcon(LucideIcons.messageCircle), findsNothing);
+      expect(find.textContaining(likesKey), findsOneWidget);
+      expect(find.textContaining(commentsKey), findsNothing);
     });
   });
 
@@ -341,7 +339,7 @@ void main() {
       expect(find.text(l10n('community.linked_bird')), findsOneWidget);
     });
 
-    testWidgets('renders as ActionChip', (tester) async {
+    testWidgets('renders a tappable chip with icon and name', (tester) async {
       const post = CommunityPost(
         id: 'p1',
         userId: 'u1',
@@ -351,7 +349,9 @@ void main() {
       await tester.pumpWidget(wrap(const BirdLinkChip(post: post)));
       await tester.pump();
 
-      expect(find.byType(ActionChip), findsOneWidget);
+      expect(find.byType(InkWell), findsOneWidget);
+      expect(find.byType(SvgPicture), findsOneWidget);
+      expect(find.text('Sarı'), findsOneWidget);
     });
   });
 

@@ -215,7 +215,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text(l10n('community.tab_guides')), findsWidgets);
+      expect(find.text(l10n('community.guide_badge')), findsWidgets);
       expect(find.text(l10n('community.guide_open_hint')), findsOneWidget);
     });
 

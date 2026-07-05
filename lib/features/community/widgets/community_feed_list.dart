@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/constants/app_icons.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/empty_state.dart';
@@ -21,6 +22,7 @@ import '../../../data/providers/user_role_providers.dart'
     show isFounderProvider;
 import '../providers/community_feed_providers.dart';
 import '../providers/community_providers.dart';
+import 'community_avatar.dart';
 import 'community_feed_overlays.dart';
 import 'community_feed_states.dart';
 import 'community_following_list.dart';
