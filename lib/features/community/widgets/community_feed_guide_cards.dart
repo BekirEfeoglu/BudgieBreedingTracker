@@ -8,6 +8,19 @@ int _guideReadMinutes(CommunityPost post) {
   return (totalWords / 180).ceil().clamp(1, 99);
 }
 
+/// "Lv.X · Title · date" (or just the date) for a guide author row.
+String _guideAuthorMeta(CommunityPost post) {
+  final date = formatCommunityDate(post.createdAt);
+  final level = post.authorLevel;
+  if (level == null) return date;
+  // authorTitle is an l10n key (profiles.xp_title) — resolve it for display.
+  final title = post.authorTitle;
+  final levelPart = (title != null && title.isNotEmpty)
+      ? '${'community.level_prefix'.tr()}$level · ${title.tr()}'
+      : '${'community.level_prefix'.tr()}$level';
+  return '$levelPart · $date';
+}
+
 /// Featured guide card (first item on the guides tab).
 class _FeaturedGuideCard extends StatelessWidget {
   const _FeaturedGuideCard({required this.post});
@@ -67,18 +80,36 @@ class _FeaturedGuideCard extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              post.username,
-                              style: theme.textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    post.username,
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (post.authorIsVerified) ...[
+                                  const SizedBox(width: AppSpacing.xs),
+                                  Semantics(
+                                    label: 'community.verified_breeder'.tr(),
+                                    child: Icon(
+                                      LucideIcons.badgeCheck,
+                                      size: 15,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                             Text(
-                              formatCommunityDate(post.createdAt),
+                              _guideAuthorMeta(post),
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
@@ -156,7 +187,7 @@ class _GuideLibraryCard extends StatelessWidget {
                         ring: false,
                       ),
                       const SizedBox(width: AppSpacing.sm),
-                      Expanded(
+                      Flexible(
                         child: Text(
                           post.username,
                           style: theme.textTheme.titleSmall?.copyWith(
@@ -165,6 +196,17 @@ class _GuideLibraryCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      if (post.authorIsVerified) ...[
+                        const SizedBox(width: AppSpacing.xs),
+                        Semantics(
+                          label: 'community.verified_breeder'.tr(),
+                          child: Icon(
+                            LucideIcons.badgeCheck,
+                            size: 15,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: AppSpacing.md),

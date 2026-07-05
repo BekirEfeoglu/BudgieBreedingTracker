@@ -14,6 +14,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/app_haptics.dart';
 import '../../../core/utils/image_picker_guard.dart';
 import '../../../core/providers/action_feedback_providers.dart';
+import '../../../domain/services/premium/premium_providers.dart';
 import '../providers/community_create_providers.dart';
 
 part 'community_create_post_widgets.dart';
@@ -139,7 +140,22 @@ class _CommunityCreatePostScreenState
 
   // ── Image helpers ──────────────────────────────────────────────────────────
 
+  /// Photos allowed per post: free tier 3, premium 10 (community.md). The
+  /// server (`validate-free-tier-limit`) is authoritative; this is the UX cap
+  /// so a free user can't queue 10 photos and only discover the limit on submit.
+  static const _freeMaxImages = 3;
+  static const _premiumMaxImages = 10;
+
+  int get _maxImages =>
+      ref.read(effectivePremiumProvider) ? _premiumMaxImages : _freeMaxImages;
+
   Future<void> _pickImages() async {
+    final remainingSlots = _maxImages - _selectedImages.length;
+    if (remainingSlots <= 0) {
+      _showImageLimitReached();
+      return;
+    }
+
     final picker = ImagePicker();
     final images = await picker.pickMultiImage(
       maxWidth: 1200,
@@ -152,7 +168,24 @@ class _CommunityCreatePostScreenState
       images,
     );
     if (filtered.isEmpty || !mounted) return;
-    setState(() => _selectedImages.addAll(filtered));
+
+    final accepted = filtered.take(remainingSlots).toList();
+    setState(() => _selectedImages.addAll(accepted));
+    if (filtered.length > accepted.length && mounted) {
+      _showImageLimitReached();
+    }
+  }
+
+  void _showImageLimitReached() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'community.photo_limit_reached'.tr(
+            namedArgs: {'max': '$_maxImages'},
+          ),
+        ),
+      ),
+    );
   }
 
   void _removeImage(int index) {

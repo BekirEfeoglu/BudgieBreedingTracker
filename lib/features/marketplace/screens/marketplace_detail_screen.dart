@@ -111,7 +111,8 @@ class _MarketplaceDetailScreenState
                           context,
                           MaterialPageRoute(
                             builder: (_) => CommunityImageViewer(
-                              imageUrl: listing.imageUrls[index],
+                              imageUrls: listing.imageUrls,
+                              initialIndex: index,
                             ),
                           ),
                         ),

@@ -16,6 +16,9 @@ class CommunityUserHeader extends StatelessWidget {
   final String username;
   final String? avatarUrl;
   final DateTime createdAt;
+  final int? authorLevel;
+  final String? authorTitle;
+  final bool authorIsVerified;
   final bool isOwnPost;
   final bool isFollowing;
   final bool isEdited;
@@ -35,6 +38,9 @@ class CommunityUserHeader extends StatelessWidget {
     required this.username,
     this.avatarUrl,
     required this.createdAt,
+    this.authorLevel,
+    this.authorTitle,
+    this.authorIsVerified = false,
     this.isOwnPost = false,
     this.isFollowing = false,
     this.isEdited = false,
@@ -101,18 +107,35 @@ class CommunityUserHeader extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    username,
-                    style: theme.textTheme.titleSmall,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          username,
+                          style: theme.textTheme.titleSmall,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      // Verified breeder badge — same glyph/tint the
+                      // marketplace uses for consistency.
+                      if (authorIsVerified) ...[
+                        const SizedBox(width: AppSpacing.xs),
+                        Semantics(
+                          label: 'community.verified_breeder'.tr(),
+                          child: Icon(
+                            LucideIcons.badgeCheck,
+                            size: 15,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                  Text(
-                    isEdited
-                        ? '${formatCommunityDate(createdAt)} · ${'community.edited_badge'.tr()}'
-                        : formatCommunityDate(createdAt),
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
+                  _AuthorMetaLine(
+                    createdAt: createdAt,
+                    isEdited: isEdited,
+                    authorLevel: authorLevel,
+                    authorTitle: authorTitle,
                   ),
                   if (isOwnPost) ...[
                     const SizedBox(height: AppSpacing.xs),
@@ -303,4 +326,64 @@ class CommunityUserHeader extends StatelessWidget {
     CommunityPostType.showcase => 'community.post_type_showcase'.tr(),
     _ => '',
   };
+}
+
+/// Secondary line under the author name: an optional "Lv.X · Title" gamification
+/// badge (amber) followed by the relative post date.
+class _AuthorMetaLine extends StatelessWidget {
+  const _AuthorMetaLine({
+    required this.createdAt,
+    required this.isEdited,
+    required this.authorLevel,
+    required this.authorTitle,
+  });
+
+  final DateTime createdAt;
+  final bool isEdited;
+  final int? authorLevel;
+  final String? authorTitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final metaStyle = theme.textTheme.labelSmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+    final dateText = isEdited
+        ? '${formatCommunityDate(createdAt)} · ${'community.edited_badge'.tr()}'
+        : formatCommunityDate(createdAt);
+
+    if (authorLevel == null) {
+      return Text(dateText, style: metaStyle);
+    }
+
+    // authorTitle is an l10n key (e.g. 'gamification.title_master') stored in
+    // profiles.xp_title — resolve it for display.
+    final hasTitle = authorTitle != null && authorTitle!.isNotEmpty;
+    final levelText = hasTitle
+        ? '${'community.level_prefix'.tr()}$authorLevel · ${authorTitle!.tr()}'
+        : '${'community.level_prefix'.tr()}$authorLevel';
+
+    return Row(
+      children: [
+        Flexible(
+          child: Text(
+            levelText,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: AppColors.warningTextAdaptive(context),
+              fontWeight: FontWeight.w600,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        Flexible(
+          child: Text(
+            ' · $dateText',
+            style: metaStyle,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
 }

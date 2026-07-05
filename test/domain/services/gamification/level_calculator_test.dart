@@ -63,21 +63,51 @@ void main() {
       expect(result.nextLevelXp, 500);
     });
 
-    test('titleForLevel returns correct titles', () {
+    test('titleForLevel returns correct titles (10-tier ladder)', () {
+      // Tier boundaries — mirror private.xp_title_for_level exactly.
       expect(LevelCalculator.titleForLevel(1), 'gamification.title_beginner');
       expect(LevelCalculator.titleForLevel(2), 'gamification.title_novice');
+      expect(LevelCalculator.titleForLevel(3), 'gamification.title_novice');
+      expect(LevelCalculator.titleForLevel(4), 'gamification.title_enthusiast');
+      expect(LevelCalculator.titleForLevel(6), 'gamification.title_enthusiast');
       expect(
-        LevelCalculator.titleForLevel(3),
+        LevelCalculator.titleForLevel(7),
         'gamification.title_experienced',
       );
-      expect(LevelCalculator.titleForLevel(5), 'gamification.title_expert');
-      expect(LevelCalculator.titleForLevel(10), 'gamification.title_master');
       expect(
-        LevelCalculator.titleForLevel(15),
+        LevelCalculator.titleForLevel(10),
+        'gamification.title_experienced',
+      );
+      expect(LevelCalculator.titleForLevel(11), 'gamification.title_expert');
+      expect(LevelCalculator.titleForLevel(15), 'gamification.title_expert');
+      expect(LevelCalculator.titleForLevel(16), 'gamification.title_master');
+      expect(LevelCalculator.titleForLevel(22), 'gamification.title_master');
+      expect(
+        LevelCalculator.titleForLevel(23),
         'gamification.title_grand_master',
       );
-      expect(LevelCalculator.titleForLevel(20), 'gamification.title_legendary');
-      expect(LevelCalculator.titleForLevel(25), 'gamification.title_legendary');
+      expect(
+        LevelCalculator.titleForLevel(32),
+        'gamification.title_grand_master',
+      );
+      expect(
+        LevelCalculator.titleForLevel(33),
+        'gamification.title_legendary',
+      );
+      expect(
+        LevelCalculator.titleForLevel(49),
+        'gamification.title_legendary',
+      );
+      expect(LevelCalculator.titleForLevel(50), 'gamification.title_champion');
+      expect(LevelCalculator.titleForLevel(74), 'gamification.title_champion');
+      expect(
+        LevelCalculator.titleForLevel(75),
+        'gamification.title_bird_whisperer',
+      );
+      expect(
+        LevelCalculator.titleForLevel(100),
+        'gamification.title_bird_whisperer',
+      );
     });
   });
 }

@@ -2654,6 +2654,8 @@
     "create_post": "Beitrag erstellen",
     "content_label": "Was beschäftigt Sie?",
     "content_or_image_required": "Bitte Text oder Bild hinzufügen",
+    "photo_limit_reached": "Du kannst bis zu {max} Fotos hinzufügen",
+    "verified_breeder": "Verifizierter Züchter",
     "add_photo": "Foto hinzufügen",
     "add_tags": "Tags hinzufügen",
     "tag_hint": "Tags durch Kommas getrennt eingeben",
@@ -2675,6 +2677,7 @@
     "share_action": "Teilen",
     "edit_post": "Bearbeiten",
     "edited_badge": "bearbeitet",
+    "level_prefix": "Lv.",
     "edit_post_title": "Beitrag bearbeiten",
     "edit_saved": "Beitrag aktualisiert",
     "edit_error": "Beitrag konnte nicht aktualisiert werden. Bitte erneut versuchen.",
@@ -3103,7 +3106,10 @@
     "title_expert": "Experten-Züchter",
     "title_master": "Meister-Züchter",
     "title_grand_master": "Großmeister",
-    "title_legendary": "Legendärer Züchter"
+    "title_legendary": "Legendärer Züchter",
+    "title_enthusiast": "Begeisterter Züchter",
+    "title_champion": "Champion-Züchter",
+    "title_bird_whisperer": "Vogelflüsterer"
   },
   "leaderboard": {
     "title": "Bestenliste",

@@ -51,7 +51,9 @@ class CommunityPostCardBody extends StatelessWidget {
   final VoidCallback? onSendMessage;
   final VoidCallback? onFollowToggle;
   final VoidCallback onDoubleTapMedia;
-  final ValueChanged<String> onOpenImage;
+
+  /// Called with the tapped image's index into [CommunityPost.allImageUrls].
+  final ValueChanged<int> onOpenImage;
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +80,9 @@ class CommunityPostCardBody extends StatelessWidget {
                 username: post.username,
                 avatarUrl: post.avatarUrl,
                 createdAt: post.createdAt ?? DateTime.now(),
+                authorLevel: post.authorLevel,
+                authorTitle: post.authorTitle,
+                authorIsVerified: post.authorIsVerified,
                 isOwnPost: isOwnPost,
                 isFollowing: post.isFollowingAuthor,
                 isEdited: post.isEdited,
@@ -161,6 +166,18 @@ class CommunityPostCardBody extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Text/guide cards (no media above) get a hairline separator over
+              // the action bar, matching the redesign's text-card treatment.
+              if (allImages.isEmpty) ...[
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: theme.colorScheme.outlineVariant.withValues(
+                    alpha: 0.5,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+              ],
               CommunityPostActions(post: post),
               if (hasEngagement) ...[
                 const SizedBox(height: AppSpacing.md),

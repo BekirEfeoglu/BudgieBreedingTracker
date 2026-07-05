@@ -31,6 +31,13 @@ abstract class CommunityPost with _$CommunityPost {
     @JsonKey(includeFromJson: false) @Default(false) bool isLikedByMe,
     @JsonKey(includeFromJson: false) @Default(false) bool isBookmarkedByMe,
     @JsonKey(includeFromJson: false) @Default(false) bool isFollowingAuthor,
+    // Author gamification badges — merged from the profiles table by
+    // CommunityProfileCache, never written back to the posts table.
+    @JsonKey(name: 'author_level', includeToJson: false) int? authorLevel,
+    @JsonKey(name: 'author_title', includeToJson: false) String? authorTitle,
+    @JsonKey(name: 'author_is_verified', includeToJson: false)
+    @Default(false)
+    bool authorIsVerified,
     @Default(false) bool isDeleted,
     @Default(false) bool needsReview,
     DateTime? editedAt,

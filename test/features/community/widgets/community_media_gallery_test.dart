@@ -1,6 +1,7 @@
 @Tags(['community'])
 library;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,7 +15,9 @@ void main() {
   }
 
   group('CommunityMediaGallery', () {
-    testWidgets('renders PageView with images', (tester) async {
+    testWidgets('renders a cell per image in a collage (no PageView)', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         wrap(
           CommunityMediaGallery(
@@ -29,10 +32,11 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byType(PageView), findsOneWidget);
+      expect(find.byType(PageView), findsNothing);
+      expect(find.byType(CachedNetworkImage), findsNWidgets(2));
     });
 
-    testWidgets('shows page indicator for multiple images', (tester) async {
+    testWidgets('shows "1 / N" counter chip for 3+ images', (tester) async {
       await tester.pumpWidget(
         wrap(
           CommunityMediaGallery(
@@ -48,10 +52,32 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('1/3'), findsOneWidget);
+      expect(find.text('1 / 3'), findsOneWidget);
     });
 
-    testWidgets('hides page indicator for single image', (tester) async {
+    testWidgets('shows "+N" overlay when more than 3 images', (tester) async {
+      await tester.pumpWidget(
+        wrap(
+          CommunityMediaGallery(
+            imageUrls: const [
+              'https://example.com/1.jpg',
+              'https://example.com/2.jpg',
+              'https://example.com/3.jpg',
+              'https://example.com/4.jpg',
+              'https://example.com/5.jpg',
+            ],
+            onDoubleTap: () {},
+            onOpenImage: (_) {},
+          ),
+        ),
+      );
+      await tester.pump();
+
+      // 5 images → 3 shown in the collage, "+2" overlay on the last cell.
+      expect(find.text('+2'), findsOneWidget);
+    });
+
+    testWidgets('shows no counter chip for single image', (tester) async {
       await tester.pumpWidget(
         wrap(
           CommunityMediaGallery(
@@ -63,7 +89,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('1/1'), findsNothing);
+      expect(find.text('1 / 1'), findsNothing);
     });
 
     testWidgets('calls onDoubleTap callback', (tester) async {
@@ -79,7 +105,6 @@ void main() {
       );
       await tester.pump();
 
-      // GestureDetector onDoubleTap requires two quick taps
       await tester.tap(find.byType(GestureDetector).first);
       await tester.pump(kDoubleTapMinTime);
       await tester.tap(find.byType(GestureDetector).first);
@@ -100,47 +125,42 @@ void main() {
       );
       await tester.pump();
 
-      // No heart icon initially
       expect(find.byIcon(Icons.favorite_rounded), findsNothing);
 
-      // Double-tap to trigger heart animation
       await tester.tap(find.byType(GestureDetector).first);
       await tester.pump(kDoubleTapMinTime);
       await tester.tap(find.byType(GestureDetector).first);
       await tester.pump();
 
-      // Heart icon should appear during animation
       expect(find.byIcon(Icons.favorite_rounded), findsOneWidget);
 
-      // After animation completes, heart should disappear
       await tester.pumpAndSettle();
       expect(find.byIcon(Icons.favorite_rounded), findsNothing);
     });
 
-    testWidgets('calls onOpenImage on single tap after timeout', (
+    testWidgets('calls onOpenImage with the tapped index after timeout', (
       tester,
     ) async {
-      String? openedUrl;
+      int? openedIndex;
       await tester.pumpWidget(
         wrap(
           CommunityMediaGallery(
             imageUrls: const ['https://example.com/1.jpg'],
             onDoubleTap: () {},
-            onOpenImage: (url) => openedUrl = url,
+            onOpenImage: (index) => openedIndex = index,
           ),
         ),
       );
       await tester.pump();
 
       await tester.tap(find.byType(GestureDetector).first);
-      // Wait for double-tap timeout so single tap registers
       await tester.pump(kDoubleTapTimeout);
       await tester.pumpAndSettle();
 
-      expect(openedUrl, 'https://example.com/1.jpg');
+      expect(openedIndex, 0);
     });
 
-    testWidgets('has fixed height of 320', (tester) async {
+    testWidgets('single image uses the tall (300) cell height', (tester) async {
       await tester.pumpWidget(
         wrap(
           CommunityMediaGallery(
@@ -152,8 +172,10 @@ void main() {
       );
       await tester.pump();
 
-      final sizedBox = tester.widget<SizedBox>(find.byType(SizedBox).first);
-      expect(sizedBox.height, 320);
+      expect(
+        find.byWidgetPredicate((w) => w is SizedBox && w.height == 300),
+        findsOneWidget,
+      );
     });
 
     testWidgets('renders empty SizedBox for empty imageUrls', (tester) async {
@@ -169,6 +191,7 @@ void main() {
       await tester.pump();
 
       expect(find.byType(PageView), findsNothing);
+      expect(find.byType(CachedNetworkImage), findsNothing);
       expect(find.byType(SizedBox), findsWidgets);
     });
 

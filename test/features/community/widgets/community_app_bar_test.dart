@@ -96,6 +96,61 @@ void main() {
       expect(find.text('TE'), findsOneWidget);
     });
 
+    testWidgets('shows Lv.1 level badge when the user has no level row', (
+      tester,
+    ) async {
+      await tester.pumpWidget(wrap());
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(LucideIcons.star), findsOneWidget);
+      expect(
+        find.textContaining('${l10n('community.level_prefix')}1'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('shows the real level and title when available', (
+      tester,
+    ) async {
+      const userId = 'lvl-user';
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserIdProvider.overrideWithValue(userId),
+            userProfileProvider.overrideWith((ref) => Stream.value(null)),
+            userLevelProvider(userId).overrideWith(
+              (ref) => Future.value(
+                const UserLevel(
+                  id: 'l1',
+                  userId: userId,
+                  level: 14,
+                  title: 'gamification.title_master',
+                ),
+              ),
+            ),
+            unreadNotificationsProvider(
+              userId,
+            ).overrideWith((ref) => Stream.value([])),
+            actionFeedbackProvider.overrideWith(
+              _EmptyActionFeedbackNotifier.new,
+            ),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(
+              appBar: CommunityAppBar(),
+              body: SizedBox.shrink(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining('${l10n('community.level_prefix')}14'),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('action icons have tooltips', (tester) async {
       await tester.pumpWidget(wrap());
       await tester.pumpAndSettle();

@@ -34,20 +34,19 @@ Public feed, post + comment + like + report akışı. **Online-first** (`*Reposi
 ```
 Compose -> Client moderation -> Edge create-community-post
   -> server moderation + guard -> service-role insert
-  -> Optimistic UI append
-  -> Realtime broadcast diğer kullanıcılara
-  -> Failure: revert optimistic add + l10n error
+  -> Başarıda feed.refresh() (tam re-fetch) + realtime broadcast
+  -> Failure: l10n error, feed'e post eklenmez
 ```
 
-- Optimistic insert: client UUID, server timestamp authoritative
+- **Post create optimistic DEĞİL** (2026-07-05 doğrulaması): `CommunityCreateNotifier` başarıda `communityFeedProvider.refresh()` çağırır — client-UUID optimistic append/revert YOK. Bilinçli: server moderation/guard sonrası authoritative satır tek kaynak. (Like/bookmark/follow/comment-like ise optimistic + rollback — aşağıya bkz.)
 - **Post edit — implement edildi + prod'da (`main`, 2026-07-03):** İçerik-yalnızca düzenleme 5 dk pencerede. `CommunityPostRepository.update({postId, content})` → `CommunityPostRemoteSource.updateContent` → `create-community-post` edge fn `mode:'update'` (moderation yeniden çalışır, fail-closed). Pencere edge fn'de (`EDIT_WINDOW_MS`) + `community_posts` authenticated UPDATE grant'i `(is_deleted, needs_review)` kolonlarına daraltılarak (migration `20260703120000`, prod'a uygulandı) enforce edilir — content doğrudan client `.update()` ile değişemez. `edited_at` kolonu + UI'da `edited` rozeti (edit sheet `showAppBottomSheet`); "Düzenle" yalnız kendi postunda + pencere içinde. (Yazarın kendi `needs_review`'ünü temizleyebilmesi bilinçli kapsam dışı. `clearReviewFlag`'in var olmayan `reviewed_by` yazımı 2026-07-03'te kaldırıldı.)
-- Delete: soft delete (`deleted_at`), feed query filter
+- Delete: soft delete (`is_deleted = true` kolonu — `deleted_at` DEĞİL), feed query filter
 
 ## Comment
-- Nested 1 seviye (reply-to-reply YOK — UX kompleksite)
-- Per-post comment count cache invalidate'i write sonrası
+- **Düz liste (0 nesting)** — model/UI'da parent/reply alanı YOK; "nested 1 seviye" tasarım hedefiydi, implement edilmedi. Reply akışı eklenirse bu satır + model güncellenmeli.
+- Comment yazma/silme/like `commentListProvider(postId)`'i günceller (add → `fetchInitial`, delete → `removeComment`, like → optimistic `applyLikeToggle`+rollback). `visibleCommentsProvider` bunu izler. Ayrı bir `commentsForPostProvider` YOK (2026-07-05'te ölü çift-kaynak olarak kaldırıldı).
 - Comment moderation: `create-community-comment` Edge Function içinde fail-closed
-- Long comment 2K char limit, UI textarea expandable
+- Char limit **1000** (`CommentFormNotifier.maxCommentLength` + input `maxLength`), UI textarea expandable
 
 ## Like / Reaction
 - Tek tip like (Twitter heart benzeri, multi-emoji YOK)
@@ -81,16 +80,17 @@ Compose -> Client moderation -> Edge create-community-post
 - Storage path: `community-photos/<user_id>/<post_id>/<timestamp>-<uuid>.<ext>`
 
 ## Premium Features
-- Premium kullanıcı: max 10 fotoğraflı post, free max 3
-- Verified breeder badge (gamification.md)
-- Pinned post (premium only, max 1 aktif)
+- Foto/post: free **3**, premium **10** — client-side enforce edilir (`CommunityCreatePostScreen._maxImages`, `effectivePremiumProvider`; limit aşımında `community.photo_limit_reached` toast). Server `validate-free-tier-limit` authoritative kalır; client cap yalnız UX (2026-07-05'te eklendi).
+- Verified breeder badge (gamification.md) — post/guide yazar satırında `Semantics(label: community.verified_breeder)` + `LucideIcons.badgeCheck`
+- Pinned post: `community_posts.is_pinned` kolonu + select mevcut ama **client tarafında set/görüntüleme/premium gate YOK** — henüz implement edilmedi (tasarım hedefi, "shipped" varsayma)
+- **Bird-link / mutation-tags**: `CommunityPost.birdId`/`mutationTags` alanları + `_parsePost` okuması + `BirdLinkChip`/`PostTagWrap` render'ı mevcut ama `community_posts` tablosunda `bird_id`/`bird_name`/`mutation_tags` **kolonları yok** (canlı DB doğrulandı 2026-07-05) → alanlar her zaman boş, çip/etiket render edilmez. Latent/yarım özellik; `_feedColumns`'a EKLEME (sorguyu kırar). Aktive etmek şema migration + create-post wiring gerektirir.
 
 ## RLS Policy Yapısı
 - SELECT: herkes okuyabilir (public feed)
 - INSERT: authenticated direct insert disabled; create post/comment Edge Functions service-role ile yazar ve JWT owner bilgisini kullanır
 - UPDATE: 5dk window + author only
 - DELETE: author OR admin
-- Soft delete: `deleted_at IS NULL` filter tüm SELECT'lerde
+- Soft delete: `is_deleted = false` filter tüm SELECT'lerde (`deleted_at` kolonu yok)
 
 ## Block / Mute
 - Block: karşılıklı feed gizleme, DM engelleme

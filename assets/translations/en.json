@@ -2654,6 +2654,8 @@
     "create_post": "Create Post",
     "content_label": "What's on your mind?",
     "content_or_image_required": "Please add text or an image",
+    "photo_limit_reached": "You can add up to {max} photos",
+    "verified_breeder": "Verified breeder",
     "add_photo": "Add Photo",
     "add_tags": "Add Tags",
     "tag_hint": "Add tags separated by commas",
@@ -2675,6 +2677,7 @@
     "share_action": "Share",
     "edit_post": "Edit",
     "edited_badge": "edited",
+    "level_prefix": "Lv.",
     "edit_post_title": "Edit Post",
     "edit_saved": "Post updated",
     "edit_error": "Could not update the post. Please try again.",
@@ -3103,7 +3106,10 @@
     "title_expert": "Expert Breeder",
     "title_master": "Master Breeder",
     "title_grand_master": "Grand Master",
-    "title_legendary": "Legendary Breeder"
+    "title_legendary": "Legendary Breeder",
+    "title_enthusiast": "Enthusiast Breeder",
+    "title_champion": "Champion Breeder",
+    "title_bird_whisperer": "Bird Whisperer"
   },
   "leaderboard": {
     "title": "Leaderboard",

@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -13,6 +14,7 @@ import '../../../data/providers/user_role_providers.dart'
     show isFounderProvider;
 // Cross-feature import: marketplace tab embedded in community hub (composite screen pattern)
 import 'package:budgie_breeding_tracker/shared/widgets/marketplace.dart';
+import '../providers/community_feed_providers.dart';
 import '../providers/community_providers.dart';
 import '../widgets/community_app_bar.dart';
 import '../widgets/community_feed_list.dart';
@@ -28,25 +30,27 @@ class CommunityScreen extends ConsumerWidget {
     final activeTab = ref.watch(communityActiveTabProvider);
     final theme = Theme.of(context);
 
+    // Hide the FAB while the welcome empty state is showing — that empty state
+    // renders its own create-post CTA, so a second FAB would be a redundant
+    // duplicate button on an otherwise empty screen.
+    final showWelcomeEmpty =
+        isEnabled &&
+        activeTab != CommunityFeedTab.marketplace &&
+        activeTab != CommunityFeedTab.guides &&
+        ref.watch(communityShowWelcomeEmptyProvider(activeTab));
+
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       appBar: const CommunityAppBar(),
       floatingActionButton:
           isEnabled &&
+              !showWelcomeEmpty &&
               activeTab != CommunityFeedTab.marketplace &&
               (activeTab != CommunityFeedTab.guides ||
                   ref.watch(isFounderProvider).value == true)
-          ? FloatingActionButton.extended(
+          ? _CreatePostFab(
+              isGuide: activeTab == CommunityFeedTab.guides,
               onPressed: () => context.push(_buildCreatePostRoute(activeTab)),
-              backgroundColor: AppColors.accent,
-              foregroundColor: AppColors.premiumBadgeText,
-              icon: activeTab == CommunityFeedTab.guides
-                  ? const AppIcon(AppIcons.guide)
-                  : const AppIcon(AppIcons.edit),
-              label: Text(
-                'community.create_post'.tr(),
-                style: const TextStyle(fontWeight: FontWeight.w800),
-              ),
             )
           : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -159,6 +163,80 @@ class _ComingSoonBody extends StatelessWidget {
         icon: const AppIcon(AppIcons.community),
         title: 'community.coming_soon'.tr(),
         subtitle: 'community.coming_soon_hint'.tr(),
+      ),
+    );
+  }
+}
+
+/// Amber-gradient "Gönderi Oluştur" pill FAB matching the community redesign.
+///
+/// A custom gradient pill (FloatingActionButton has no gradient support) with
+/// a plus icon for posts, or the guide glyph on the guides tab.
+class _CreatePostFab extends StatelessWidget {
+  const _CreatePostFab({required this.isGuide, required this.onPressed});
+
+  final bool isGuide;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'community.create_post'.tr(),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          onTap: onPressed,
+          child: Ink(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [AppColors.accent, AppColors.accentLight],
+              ),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.accent.withValues(alpha: 0.45),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 52),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (isGuide)
+                      const AppIcon(
+                        AppIcons.guide,
+                        size: 22,
+                        color: AppColors.premiumBadgeText,
+                      )
+                    else
+                      const Icon(
+                        LucideIcons.plus,
+                        size: 22,
+                        color: AppColors.premiumBadgeText,
+                      ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(
+                      'community.create_post'.tr(),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.premiumBadgeText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

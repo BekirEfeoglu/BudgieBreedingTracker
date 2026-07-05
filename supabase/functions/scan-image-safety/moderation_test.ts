@@ -5,6 +5,7 @@ import {
   estimateBase64Bytes,
   interpretOpenAIModerationResponse,
   MAX_IMAGE_BYTES,
+  moderateImageWithOpenAI,
   validateImageInput,
 } from "./moderation.ts";
 
@@ -80,4 +81,34 @@ Deno.test("interpretOpenAIModerationResponse rejects empty provider response", (
 
   assertEquals(result.safe, false);
   assertEquals(result.reason, "invalid_provider_response");
+});
+
+Deno.test("moderateImageWithOpenAI sends image_url as an object with a url key", async () => {
+  const originalFetch = globalThis.fetch;
+  let capturedBody: string | undefined;
+  globalThis.fetch = ((_url: string | URL | Request, init?: RequestInit) => {
+    capturedBody = init?.body as string;
+    return Promise.resolve(
+      new Response(
+        JSON.stringify({ results: [{ flagged: false, categories: {} }] }),
+        { status: 200 },
+      ),
+    );
+  }) as typeof fetch;
+
+  try {
+    await moderateImageWithOpenAI({
+      apiKey: "test-key",
+      imageBase64: "QUJDRA==",
+      mimeType: "image/jpeg",
+    });
+
+    const parsed = JSON.parse(capturedBody ?? "{}");
+    const imageUrl = parsed.input?.[0]?.image_url;
+    // Must be an object { url }, NOT a bare string (OpenAI rejects the string).
+    assertEquals(typeof imageUrl, "object");
+    assertEquals(imageUrl.url, "data:image/jpeg;base64,QUJDRA==");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });

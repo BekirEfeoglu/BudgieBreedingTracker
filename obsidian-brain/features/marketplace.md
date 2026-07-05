@@ -15,6 +15,14 @@ cross-user content, so they live online-only.
 | `MarketplaceFavoritesScreen` | bookmarks (private to user) |
 | `MarketplaceSellerListingsScreen` | other seller's profile listings |
 
+`MarketplaceTabContent` also embeds the marketplace inside the Community
+"Pazar" tab. As of 2026-07-05 that embedded tab renders listings in a
+**2-column grid** (`GridView.builder`, `SliverGridDelegateWithFixedCrossAxisCount`)
+to match `design/Topluluk.dc.html`. The grid uses a `compact: true` variant of
+`MarketplaceListingCard` (default `false`) — image with type badge + favorite,
+price, title, location line — so the 5 standalone marketplace screens keep their
+original card layout unchanged.
+
 ## Online-First by Design
 
 `marketplace_listing_remote_source.dart` follows the `*RemoteSource`

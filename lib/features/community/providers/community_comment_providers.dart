@@ -11,23 +11,6 @@ import 'community_feed_providers.dart';
 import '../../../domain/services/moderation/moderation_providers.dart';
 
 // ---------------------------------------------------------------------------
-// Comments for a post
-// ---------------------------------------------------------------------------
-
-final commentsForPostProvider =
-    FutureProvider.family<List<CommunityComment>, String>((ref, postId) async {
-      final repo = ref.watch(communityCommentRepositoryProvider);
-      final userId = ref.watch(currentUserIdProvider);
-
-      try {
-        return await repo.getByPost(postId: postId, currentUserId: userId);
-      } catch (e, st) {
-        AppLogger.error('commentsForPostProvider', e, st);
-        return [];
-      }
-    });
-
-// ---------------------------------------------------------------------------
 // Paginated comment list
 // ---------------------------------------------------------------------------
 
@@ -127,6 +110,39 @@ class CommentListNotifier extends Notifier<CommentListState> {
   void addCommentLocally(CommunityComment comment) {
     state = CommentListState(
       comments: [...state.comments, comment],
+      hasMore: state.hasMore,
+      cursor: state.cursor,
+    );
+  }
+
+  /// Removes a deleted comment in place, preserving pagination cursor so the
+  /// thread doesn't reset to the first page after a delete.
+  void removeComment(String commentId) {
+    state = CommentListState(
+      comments: state.comments
+          .where((c) => c.id != commentId)
+          .toList(growable: false),
+      hasMore: state.hasMore,
+      cursor: state.cursor,
+    );
+  }
+
+  /// Optimistically flips the like state of a single comment. Calling it a
+  /// second time (on failure) rolls the change back. Preserves pagination.
+  void applyLikeToggle(String commentId) {
+    state = CommentListState(
+      comments: state.comments
+          .map(
+            (c) => c.id == commentId
+                ? c.copyWith(
+                    isLikedByMe: !c.isLikedByMe,
+                    likeCount: c.isLikedByMe
+                        ? (c.likeCount - 1).clamp(0, 1 << 31)
+                        : c.likeCount + 1,
+                  )
+                : c,
+          )
+          .toList(growable: false),
       hasMore: state.hasMore,
       cursor: state.cursor,
     );
@@ -234,7 +250,10 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
       await repo.create(postId: postId, userId: userId, content: content);
 
       ref.read(communityFeedProvider.notifier).incrementCommentCount(postId);
-      ref.invalidate(commentsForPostProvider(postId));
+      // Reload the paginated list the UI actually renders
+      // (`visibleCommentsProvider` reads `commentListProvider`), so the new
+      // comment appears without a manual refresh.
+      await ref.read(commentListProvider(postId).notifier).fetchInitial();
 
       _lastSubmitAt = DateTime.now();
       state = state.copyWith(isLoading: false, isSuccess: true);
@@ -274,7 +293,7 @@ class CommentDeleteNotifier extends Notifier<void> {
       final repo = ref.read(communityCommentRepositoryProvider);
       await repo.delete(commentId: commentId, userId: userId);
       ref.read(communityFeedProvider.notifier).decrementCommentCount(postId);
-      ref.invalidate(commentsForPostProvider(postId));
+      ref.read(commentListProvider(postId).notifier).removeComment(commentId);
       return true;
     } catch (e, st) {
       AppLogger.error('CommentDeleteNotifier', e, st);
@@ -309,11 +328,15 @@ class CommentLikeToggleNotifier extends Notifier<void> {
     if (userId == 'anonymous') return;
     if (!_inFlight.add(commentId)) return;
 
+    // Optimistic flip on the list the UI renders; roll back on failure.
+    final listNotifier = ref.read(commentListProvider(postId).notifier);
+    listNotifier.applyLikeToggle(commentId);
+
     try {
       final repo = ref.read(communitySocialRepositoryProvider);
       await repo.toggleCommentLike(userId: userId, commentId: commentId);
-      ref.invalidate(commentsForPostProvider(postId));
     } catch (e, st) {
+      listNotifier.applyLikeToggle(commentId);
       AppLogger.error('CommentLikeToggleNotifier', e, st);
       Sentry.captureException(e, stackTrace: st);
     } finally {

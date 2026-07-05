@@ -143,6 +143,11 @@ class CommunityPostRepository {
     _cache?.invalidateAll();
   }
 
+  /// Drops cached feed/post snapshots after a social mutation (like, bookmark,
+  /// follow) so a subsequent refetch reflects the new like_count / follow state
+  /// instead of serving a pre-toggle snapshot within the TTL window.
+  void invalidateFeedCache() => _cache?.invalidateAll();
+
   /// Content-only edit within the server-enforced 5-minute window.
   Future<void> update({required String postId, required String content}) async {
     await _postSource.updateContent(postId, content);

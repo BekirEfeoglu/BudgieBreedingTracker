@@ -102,7 +102,12 @@ export async function moderateImageWithOpenAI(args: {
       input: [
         {
           type: "image_url",
-          image_url: `data:${mimeType};base64,${imageBase64}`,
+          // OpenAI's moderations API requires image_url as an object with a
+          // `url` key — a bare string is rejected with HTTP 400 (which the
+          // caller turns into a fail-closed 503, blocking all photo posts).
+          image_url: {
+            url: `data:${mimeType};base64,${imageBase64}`,
+          },
         },
       ],
     }),

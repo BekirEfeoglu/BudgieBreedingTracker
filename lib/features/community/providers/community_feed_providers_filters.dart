@@ -73,3 +73,25 @@ final communityVisiblePostsProvider =
 
       return sorted;
     });
+
+// ---------------------------------------------------------------------------
+// Welcome empty state — single source of truth
+// ---------------------------------------------------------------------------
+
+/// Whether the "be the first to post" welcome empty state (with its own create
+/// CTA) is showing for [tab]. Mirrors the logic in `_buildFeedBody`.
+///
+/// Used both by the feed body (to render the empty state) and by
+/// [CommunityScreen] (to hide the redundant create-post FAB while the empty
+/// state's own CTA is on screen). Guides tab renders its own library view and
+/// never shows this welcome empty state.
+final communityShowWelcomeEmptyProvider =
+    Provider.family<bool, CommunityFeedTab>((ref, tab) {
+      final feedState = ref.watch(communityFeedProvider);
+      if (feedState.isLoading) return false;
+      if (feedState.posts.isEmpty) return true;
+      if (tab == CommunityFeedTab.explore) {
+        return ref.watch(communityVisiblePostsProvider(tab)).isEmpty;
+      }
+      return false;
+    });

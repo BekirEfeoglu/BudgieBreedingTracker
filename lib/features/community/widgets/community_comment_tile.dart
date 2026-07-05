@@ -143,11 +143,11 @@ class CommunityCommentTile extends ConsumerWidget {
   }
 
   Future<void> _showReportDialog(BuildContext context, WidgetRef ref) async {
-    final reason = await showCommunityReportSheet(
+    final result = await showCommunityReportSheet(
       context,
       title: 'community.report_comment'.tr(),
     );
-    if (reason == null || !context.mounted) return;
+    if (result == null || !context.mounted) return;
     try {
       final userId = ref.read(currentUserIdProvider);
       final repo = ref.read(communitySocialRepositoryProvider);
@@ -155,7 +155,8 @@ class CommunityCommentTile extends ConsumerWidget {
         userId: userId,
         targetId: comment.id,
         targetType: 'comment',
-        reason: reason,
+        reason: result.reason,
+        description: result.description,
       );
       if (context.mounted) {
         ActionFeedbackService.show('community.report_submitted'.tr());

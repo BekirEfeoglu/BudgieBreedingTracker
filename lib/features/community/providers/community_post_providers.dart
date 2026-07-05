@@ -48,6 +48,9 @@ class LikeToggleNotifier extends Notifier<void> {
     try {
       final repo = ref.read(communitySocialRepositoryProvider);
       await repo.toggleLike(userId: userId, postId: postId);
+      // Drop the TTL feed cache so a later refetch shows the new like state
+      // instead of a pre-toggle snapshot (optimistic UI already updated).
+      ref.read(communityPostRepositoryProvider).invalidateFeedCache();
     } catch (e, st) {
       ref.read(communityFeedProvider.notifier).optimisticLikeToggle(postId);
       AppLogger.error('LikeToggleNotifier', e, st);
@@ -82,6 +85,7 @@ class BookmarkToggleNotifier extends Notifier<void> {
     try {
       final repo = ref.read(communitySocialRepositoryProvider);
       await repo.toggleBookmark(userId: userId, postId: postId);
+      ref.read(communityPostRepositoryProvider).invalidateFeedCache();
     } catch (e, st) {
       ref.read(communityFeedProvider.notifier).optimisticBookmarkToggle(postId);
       AppLogger.error('BookmarkToggleNotifier', e, st);
@@ -182,6 +186,7 @@ class FollowToggleNotifier extends Notifier<void> {
     try {
       final repo = ref.read(communitySocialRepositoryProvider);
       await repo.toggleFollow(userId: userId, targetUserId: targetUserId);
+      ref.read(communityPostRepositoryProvider).invalidateFeedCache();
     } catch (e, st) {
       ref
           .read(communityFeedProvider.notifier)

@@ -98,6 +98,22 @@ iteratively (not a closed-form solve) to get `(level, currentLevelXp,
 nextLevelXp)`; the server-side `private.xp_calculate_level()` mirrors this
 same loop exactly rather than deriving its own formula, to avoid drift.
 
+## Rank Ladder (10 tiers)
+
+`LevelCalculator.titleForLevel(level)` maps a level to a rank **l10n key**
+(`gamification.title_*`), stored in `profiles.xp_title` / `user_levels.title`
+(the KEY, not resolved text — UI must `.tr()` it). Bands (expanded from 7 to
+10 tiers on 2026-07-05, migration `20260705120000_expand_rank_ladder`):
+`≤1` beginner · `2-3` novice · `4-6` enthusiast · `7-10` experienced ·
+`11-15` expert · `16-22` master (Usta Yetiştirici) · `23-32` grand_master ·
+`33-49` legendary · `50-74` champion · `≥75` bird_whisperer.
+
+Dart `titleForLevel` and SQL `private.xp_title_for_level` **must be byte-for-byte
+identical** — the gamification RLS `WITH CHECK` (`title =
+private.xp_title_for_level(level)`) rejects mismatched XP/level writes. Changing
+bands/keys means Dart + SQL migration + l10n (tr/en/de) together, plus a backfill
+of existing `user_levels.title` and `profiles.xp_title`.
+
 ## Provider Wiring
 
 `gamificationServiceProvider` is consumed via `ref.read()` in domain

@@ -28,11 +28,21 @@ class MarketplaceListingCard extends StatelessWidget {
   final MarketplaceListing listing;
   final VoidCallback? onFavoriteToggle;
 
+  /// When true the card renders a compact, fixed-height layout suited to a
+  /// 2-column grid (image with an on-photo type badge + favorite heart, then
+  /// price/title/location). Defaults to the original full-width list layout so
+  /// existing list-based screens are unaffected.
+  final bool compact;
+
   const MarketplaceListingCard({
     super.key,
     required this.listing,
     this.onFavoriteToggle,
+    this.compact = false,
   });
+
+  /// Fixed image height for the compact grid card.
+  static const double _compactImageHeight = 120;
 
   String _relativeTime(DateTime? dateTime) {
     if (dateTime == null) return '';
@@ -52,6 +62,7 @@ class MarketplaceListingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    if (compact) return _buildCompact(context, theme);
 
     return Card(
       margin: const EdgeInsets.symmetric(
@@ -153,12 +164,108 @@ class MarketplaceListingCard extends StatelessWidget {
     );
   }
 
-  Widget _buildImageArea(ThemeData theme) {
-    return AspectRatio(
-      aspectRatio: 16 / 9,
-      child: Stack(
-        fit: StackFit.expand,
+  /// Compact 2-column grid layout: fixed-height image with an on-photo type
+  /// badge (top-left) + favorite heart (top-right), then price, title and a
+  /// location line. Same tap-to-detail and favorite wiring as the list card.
+  Widget _buildCompact(BuildContext context, ThemeData theme) {
+    return Card(
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => context.push('${AppRoutes.marketplace}/${listing.id}'),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildImageArea(theme, compact: true),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildPriceArea(theme),
+                  const SizedBox(height: AppSpacing.xxs),
+                  Text(
+                    listing.title,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Row(
+                    children: [
+                      Icon(
+                        LucideIcons.mapPin,
+                        size: 13,
+                        color: theme.colorScheme.outline,
+                      ),
+                      const SizedBox(width: AppSpacing.xxs),
+                      Expanded(
+                        child: Text(
+                          listing.city,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.outline,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// On-photo filled type badge used by the compact grid card (top-left).
+  Widget _buildCompactTypeBadge() {
+    final color = _listingTypeColor(listing.listingType);
+    final label = _listingTypeLabel(listing.listingType);
+    if (label.isEmpty) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xxs,
+      ),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
+          _listingTypeIcon(
+            listing.listingType,
+            size: 12,
+            color: _ImageOverlayColors.overlayIcon,
+          ),
+          const SizedBox(width: AppSpacing.xxs),
+          Text(
+            label,
+            style: const TextStyle(
+              color: _ImageOverlayColors.overlayIcon,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImageArea(ThemeData theme, {bool compact = false}) {
+    final imageStack = Stack(
+      fit: StackFit.expand,
+      children: [
           Hero(
             tag: 'marketplace_image_${listing.id}',
             child: listing.primaryImageUrl != null
@@ -186,8 +293,16 @@ class MarketplaceListingCard extends StatelessWidget {
                     ),
                   ),
           ),
-          // Photo count badge (top-left)
-          if (listing.imageUrls.length > 1)
+          // Top-left overlay. Compact grid cards pin the listing type badge
+          // here (to match the marketplace design); the list card keeps the
+          // multi-photo count indicator.
+          if (compact)
+            Positioned(
+              top: AppSpacing.xs,
+              left: AppSpacing.xs,
+              child: _buildCompactTypeBadge(),
+            )
+          else if (listing.imageUrls.length > 1)
             Positioned(
               top: AppSpacing.xs,
               left: AppSpacing.xs,
@@ -262,9 +377,13 @@ class MarketplaceListingCard extends StatelessWidget {
                 ),
               ),
             ),
-        ],
-      ),
+      ],
     );
+
+    if (compact) {
+      return SizedBox(height: _compactImageHeight, child: imageStack);
+    }
+    return AspectRatio(aspectRatio: 16 / 9, child: imageStack);
   }
 
   Widget _buildPriceArea(ThemeData theme) {

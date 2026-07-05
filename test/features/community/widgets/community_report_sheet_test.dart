@@ -240,7 +240,7 @@ void main() {
     });
 
     testWidgets('submitting returns selected reason', (tester) async {
-      CommunityReportReason? result;
+      CommunityReportResult? result;
 
       await pumpTranslatedWidget(
         tester,
@@ -265,11 +265,50 @@ void main() {
       await tester.tap(find.text(resolvedL10n('community.report_confirm')));
       await tester.pumpAndSettle();
 
-      expect(result, CommunityReportReason.misinformation);
+      expect(result?.reason, CommunityReportReason.misinformation);
+      expect(result?.description, isNull);
+    });
+
+    testWidgets('other reason returns the typed description', (tester) async {
+      CommunityReportResult? result;
+
+      await pumpTranslatedWidget(
+        tester,
+        Builder(
+          builder: (context) => ElevatedButton(
+            onPressed: () async {
+              result = await showCommunityReportSheet(context, title: 'Report');
+            },
+            child: const Text('Open'),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.text(resolvedL10n('community.report_reason_other')),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'Scam listing');
+      await tester.pumpAndSettle();
+
+      final confirm = find.text(resolvedL10n('community.report_confirm'));
+      await tester.ensureVisible(confirm);
+      await tester.pumpAndSettle();
+      await tester.tap(confirm);
+      await tester.pumpAndSettle();
+
+      expect(result?.reason, CommunityReportReason.other);
+      expect(result?.description, 'Scam listing');
     });
 
     testWidgets('dismissing sheet returns null', (tester) async {
-      CommunityReportReason? result = CommunityReportReason.spam;
+      CommunityReportResult? result = const CommunityReportResult(
+        reason: CommunityReportReason.spam,
+      );
 
       await pumpTranslatedWidget(
         tester,

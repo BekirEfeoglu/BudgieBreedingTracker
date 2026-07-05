@@ -61,6 +61,16 @@ class BirdLinkChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final label = post.birdName ?? 'community.linked_bird'.tr();
+    // Question posts use a cyan (tertiary) chip; other posts keep the warm
+    // amber affordance — matches the redesign's two bird-link variants.
+    final isQuestion = post.postType == CommunityPostType.question;
+    final baseColor = isQuestion ? theme.colorScheme.tertiary : AppColors.accent;
+    final gradientColors = isQuestion
+        ? [theme.colorScheme.tertiary.withValues(alpha: 0.8), baseColor]
+        : const [AppColors.accentLight, AppColors.accent];
+    final textColor = isQuestion
+        ? theme.colorScheme.tertiary
+        : AppColors.warningTextAdaptive(context);
 
     return Semantics(
       button: post.birdId != null,
@@ -83,11 +93,9 @@ class BirdLinkChip extends StatelessWidget {
             AppSpacing.xs,
           ),
           decoration: BoxDecoration(
-            color: AppColors.accent.withValues(alpha: 0.1),
+            color: baseColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            border: Border.all(
-              color: AppColors.accent.withValues(alpha: 0.35),
-            ),
+            border: Border.all(color: baseColor.withValues(alpha: 0.35)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -97,10 +105,10 @@ class BirdLinkChip extends StatelessWidget {
                 height: 32,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [AppColors.accentLight, AppColors.accent],
+                    colors: gradientColors,
                   ),
                   borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                 ),
@@ -115,7 +123,7 @@ class BirdLinkChip extends StatelessWidget {
                 child: Text(
                   label,
                   style: theme.textTheme.labelLarge?.copyWith(
-                    color: AppColors.warningTextAdaptive(context),
+                    color: textColor,
                     fontWeight: FontWeight.w700,
                   ),
                   overflow: TextOverflow.ellipsis,

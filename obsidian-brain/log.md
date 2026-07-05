@@ -4,6 +4,126 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-05] fix | Community post creation broken — guard trigger used auth.uid() under service_role
+
+Screenshot: creating a post ("test"/"123") failed with "Beklenmeyen bir hata
+oluştu." Edge logs showed `create-community-post` 400 (moderate-content 200).
+Traced via Supabase MCP to the `community_posts` BEFORE INSERT trigger
+`internal.enforce_community_post_guards()` → `public.check_community_post_allowed()`
+reads `auth.uid()`, which is NULL on the edge fn's service_role insert →
+guard returns `unauthorized` → trigger RAISEs → `insert_failed`. Every post
+blocked (feed stayed empty). Reproduced live (raw insert raised
+`community_post_guard_denied / unauthorized`), fixed the trigger to evaluate
+`private.check_community_post_allowed_for_user(NEW.user_id, NEW.content_hash)`
+(row author, not session), dropped the dead `is_admin()` short-circuit. Migration
+`20260705193000_fix_community_post_guard_trigger_row_author.sql` applied to prod;
+post-fix author insert succeeds, verification row cleaned up, security advisors 0
+new. See [[features/community]].
+
+## [2026-07-05] fix | Community: hide create-post FAB on welcome empty state
+
+Screenshot showed two identical "Gönderi Oluştur" buttons on an empty Explore
+feed — the `EmptyState` centered CTA plus the amber `_CreatePostFab`. Extracted
+the welcome-empty condition into `communityShowWelcomeEmptyProvider`
+(`community_feed_providers_filters.dart`) as the single source of truth; wired
+`community_feed_items.dart` `_buildFeedBody` to it (dropped now-unused `posts`
+param) and made `CommunityScreen` suppress the FAB while it's true (explore/
+following only; marketplace/guides already excluded). FAB returns when the feed
+has content. analyze clean, 446 community tests pass.
+
+## [2026-07-05] fix | Sync-conflict banner root cause — RLS 42P17 recursion + schema drift
+
+User's persistent "Senkronizasyon çakışmaları algılandı" banner. Live-diagnosed
+from the running sim (read `sync_metadata` in the device SQLite → 14 `error`
+rows) + rolled-back authenticated-role INSERT simulation against prod. ROOT
+CAUSE: the `free_tier_{bird,breeding_pair,incubation}_limit` INSERT policies
+(from migration `20260403130000`) ran `SELECT count(*) FROM <own table>` inside
+that table's own WITH CHECK → **Postgres 42P17 infinite recursion** on every
+insert → sanitized to "Database operation failed" → offline-first push jammed,
+rows stuck in `error`, and the pull-conflict detector surfaced the server-side
+copies as "conflicts". Migration `20260705181823` moves the counts into
+SECURITY DEFINER `private.count_active_*` helpers (bypass RLS, same limits),
+applied to prod + local file written (advisors 0 new; all 5 entity inserts now
+pass in sim). SECONDARY: `chicks.banding_day`/`banding_date` + `events.chick_id`
+columns the client persists+pushes were never added server-side (schema drift) —
+added. CLIENT: `OfflineBanner._retrySync` called `forceFullSync` (pushes only
+already-pending rows), so the banner's retry button never re-pushed `error`-state
+records; now calls `retryFailedRecords` first (mirrors `triggerManualSync`) +
+`verifyInOrder` test. Recovery: periodic sync / pull-to-refresh reset error→pending
+→ push succeeds → banner clears. See [[data-layer/sync-strategy]],
+[[patterns/security]].
+
+## [2026-07-05] fix | Community tab review sweep — 8 findings fixed
+
+Comprehensive Community-tab review (4 parallel audit agents) surfaced findings
+across the in-progress feed redesign; fixed in order. HIGH: multi-image
+regression — collage viewer opened only the tapped single image, so images 4+
+were unreachable; `CommunityImageViewer` is now a swipeable `PageView`
+(`imageUrls`+`initialIndex`, disposes its controller), gallery `onOpenImage` is
+index-based, marketplace viewer opens the full set. MED: `full_name` leaked as
+public `username` (now `display_name` first, PII); feed cache not invalidated on
+like/bookmark/follow (`invalidateFeedCache`); dead `commentsForPostProvider`
+dual-source removed — add/delete/like now update `commentListProvider`
+(in-place `removeComment` + optimistic `applyLikeToggle`); report "Other"
+free-text was dropped (`CommunityReportResult{reason,description}` →
+`community_reports.description`); premium photo cap 3/10 enforced
+(`community.photo_limit_reached`); verified-breeder `badgeCheck` given
+`Semantics`. Hygiene: 3 orphaned widgets + tests deleted (~745 lines);
+`_AuthorMetaLine` date now `Flexible`. Live-verified `community_posts` has no
+`bird_id`/`mutation_tags` columns → bird chip/tags are latent (do not add to
+`_feedColumns`). Rule + wiki drift corrected (comment flat not 1-level, char
+limit 1000, post-create refetch not optimistic, `is_deleted` not `deleted_at`).
+Deferred (noted, non-blocking): hardcoded Supabase column strings (#8,
+manual-review), multi-device block/mute union staleness, `edited_at` optimistic
+clock. See [[features/community]].
+
+## [2026-07-05] fix | Photo posts blocked by scan-image-safety 503
+
+Diagnosed "can't create a post": edge-function logs showed `scan-image-safety`
+503 on every photo post (fail-closed → blocked). Root cause: the OpenAI
+moderations request sent `image_url` as a bare string, which OpenAI rejects with
+400 → thrown → 503. Fixed to the canonical object form `image_url: { url }` in
+`scan-image-safety/moderation.ts` + fetch-mock regression test (deno 10/10).
+Needs deploy (`supabase functions deploy scan-image-safety` / CI); if it still
+503s afterward the `OPENAI_API_KEY` secret is missing/invalid (unverifiable from
+here). The lone `create-community-post` 400 was local keyword moderation
+rejecting that specific text — not systemic.
+
+## [2026-07-05] feat | Rank ladder expanded to 10 tiers + display fix
+
+Fixed community author/guide badges rendering the raw `gamification.title_*` key
+instead of `.tr()`-resolving it, then expanded the rank ladder 7→10 tiers with
+ranks beyond Lv.20 (was: all Lv.20+ = "Efsanevi"). New keys `title_enthusiast` /
+`title_champion` / `title_bird_whisperer` (tr/en/de); bands remapped in Dart
+`LevelCalculator.titleForLevel` AND the mirrored SQL `private.xp_title_for_level`
+(migration `20260705120000_expand_rank_ladder`, applied to prod — 0 user_levels
+rows so no-op backfill, boundary-verified). Dart↔SQL parity enforced by the RLS
+`WITH CHECK`. Updated [[domain/gamification-service]] + `gamification.md`.
+
+## [2026-07-05] feat | Community tab aligned to `design/Topluluk.dc.html`
+
+Structural + visual pass on the Community feed to match the design mockup.
+Behavior changes (not just styling): Explore dropped the quick composer, sort
+bar and scroll-to-top FAB (post-first feed, no story strip on Explore); the
+`following` tab now renders a story strip + follow-authored post feed instead of
+short-circuiting to `CommunityFollowingList` (kept but unwired, along with
+`community_quick_composer.dart`/`community_section_bar.dart`);
+`community_media_gallery.dart` rewritten from a PageView carousel to a collage
+grid (1/2/3+ layouts, `1 / N` counter, `+{N-3}` overlay); question-post bird
+chip cyan variant + text-card action separator; amber-gradient `_CreatePostFab`
+with a plus glyph. Embedded Community "Pazar" tab now a 2-column grid via a
+`compact` `MarketplaceListingCard` variant (5 standalone marketplace screens
+unchanged). Follow-up (same day): the mockup's per-author verified-check +
+`Lv.X · Title` badges were wired from REAL data — `CommunityProfileCache` now
+selects `level, xp_title, is_verified_breeder` and merges
+`author_level`/`author_title`/`author_is_verified` into feed rows; `CommunityPost`
+gained matching enrichment-only fields (`includeToJson: false`);
+`CommunityUserHeader` + guide cards render the badge (`LucideIcons.badgeCheck`,
+new l10n `community.level_prefix`). Also: Explore empty → welcoming EmptyState;
+`CommunityAppBar` gains a gradient-ring avatar + always-on `★ Lv.X · Title` badge
+(Lv.1 fallback); realtime stubbed in feed tests. analyze + tests + anti-pattern +
+l10n green. Updated [[features/community]] + [[features/marketplace]].
+
 ## [2026-07-05] docs | ci-actions rule: non-required Pages `deploy` transient
 
 Encoded this session's push lesson so a transient GitHub Pages failure isn't
@@ -65,128 +185,5 @@ diacritics and the importer also accepts the export's l10n sheet-name key
 ("Kuşlar" ↔ "Kuslar"). Two real export→import round-trip tests (birds with
 lineage; pairs/eggs/chicks id preservation) + 156 import/export tests green. See
 [[domain/data-io]].
-
-## [2026-07-04] fix | Excel import tolerates unresolvable parent refs (Option A)
-
-Deferred audit item (F-IO-1); user chose Option A. Re-importing an export
-silently dropped every bird with a father/mother + all pairs: the import
-regenerates ids, so the FK refs (old ids) never resolved and the parent
-validation threw `birds.not_found`, skipping the whole row. `_sanitizeBirdParents`
-now NULLS an unresolvable parent ref and still imports the bird (drops only the
-dangling link); a parent that resolves but is genetically invalid (wrong
-gender/species) still rejects. `_importSheet`'s `validate` returns the sanitized
-item to persist. Pairs still skip (they need two real birds). Discovered in
-passing: the export report and import template column layouts differ (only
-name/ring/gender/parent-ids/notes align), so the true lossless round-trip is the
-encrypted backup, not Excel — the class doc + data-io wiki now say so. See
-[[domain/data-io]].
-
-## [2026-07-04] fix | Sync stale-error cleanup moved out of the push phase
-
-Deferred audit item, now requested. `ValidatedSyncMixin.pushAll` ran
-`clearStaleErrors` first — in the PUSH phase, before the reconcile pull. Deleting
-an error `sync_metadata` row there strips reconcile protection
-(`getPendingRecordIds` = pending+error), so the following full pull could
-hardDelete an unsynced local-only record → data loss. Removed the push-phase call
-(the orchestrator's `cleanupUnrecoverableErrors` already runs it globally POST-pull,
-the safe time), and set `createdAt` in `markPending`'s insert branch so the (now
-sole, post-pull) cleanup + Sentry monitoring stop being inert on the common
-`pending→error` path (createdAt was null → zombie error rows forever). Converted the
-two push-phase-cleanup tests into "pushAll does NOT clean" regression guards; 510
-repo+sync green. See [[data-layer/sync-strategy]].
-
-## [2026-07-04] fix | Comprehensive audit sweep — 8 findings fixed, 2 deferred
-
-Full multi-subsystem bug hunt (8 parallel audit agents), each fix verified.
-**genetics** — `inbreeding_calculator` double-counted Wright loops through a
-common ancestor's own ancestors (full-sib mating with an inbred grandpa returned
-0.359375 vs the correct 0.265625, inflating risk bands); rewrote to store
-vertex-set paths + a disjoint-path rule + recursive memoized F_A (1123
-genetics/genealogy tests green). **calendar** — auto-generated milestone/hatch
-events were stored at UTC-midnight then bucketed by local day, showing a day
-earlier than the local-wall-clock reminder in UTC-negative zones; switched to
-local field addition to match the scheduler. **marketplace** — feed/tab favorite
-toggle was non-optimistic with no refresh and its error listener lived only on
-the form screen (tap looked like a no-op on success / silent on failure); the
-notifier now invalidates the list providers on success and the feed/favorites
-screens surface errors. **messaging** — `message_remote_source` realtime
-callbacks now use `RealtimeErrorLogThrottle` (sibling sources already did); new-DM
-search got a sequence guard. **chicks** — bulk action gained the `_isBulkRunning`
-re-entry guard `BirdListScreen` already had. **breeding** — incubation detail now
-passes `species` to the milestone/stage calculator (cockatiel/finch drifted a day
-from reminders). **genealogy** — `initPedigreeDepth` await→ref.read now
-mounted-guarded. Deferred with tasks: push-phase stale-error cleanup timing
-hazard + Excel round-trip FK loss (freshly-iterated / product-decision surfaces).
-See [[domain/genetics-engine]], [[domain/calendar-service]], [[features/marketplace]].
-
-## [2026-07-04] fix | Four surfaced findings fixed in order (D, A, C, B)
-
-The user asked to fix all four findings the bug hunt surfaced but had deferred.
-(D) `72f095e` eggs — deleting the sole/last egg now cancels the now-empty
-incubation (`fromDelete` flag) instead of stranding it `active` against the
-free-tier limit. (A) `6101459` sync — pull recorded a conflict only when remote
-was strictly newer, but insertAll overwrites unconditionally, so a pending local
-edit clobbered by an equal/older remote (clock skew) was silently discarded;
-conflict RECORDING widened to any pending overwrite (server-wins unchanged), and
-the 14 divergent per-repo conflict loops collapsed into one shared
-`detectPullConflicts`. (C) `ddeb1a7` sync — unified the stale-error threshold
-(`maxSyncRetries` → `RetryScheduler.maxRetries`; the >=10 branch was unreachable)
-and gave `clearStaleErrors` the orchestrator path's 24h age guard. (B) `0bc0bc0`
-sync — the incremental pull cursor is rolled back 5 min at read time to tolerate
-device-vs-server clock skew (persisted checkpoint + display unchanged). Each fix
-has regression tests; 511 repo+sync green, analyze clean. See
-[[data-layer/sync-strategy]], [[domain/eggs-service]].
-
-## [2026-07-04] docs | DST field-addition pattern synced to rule + wiki pages
-
-Follow-up doc sync for `07638b5`: `.claude/rules/datetime-format.md` § Hatch
-Date Prediction rewritten (Duration-add was still blessed as "acceptable" —
-now field addition is mandatory, new anti-pattern #10) and the pattern
-documented in [[patterns/datetime-format]] + [[domain/incubation-service]].
-
-## [2026-07-04] fix | Two correctness bugs from a live-code bug hunt
-
-Four adversarial bug-hunt agents swept the live high-risk subsystems
-(breeding/egg lifecycle, sync/data, datetime/notifications, genetics); each
-finding was re-verified against source before any change. Two confirmed HIGH
-bugs fixed. (1) `f52fd49` genetics: `ViabilityAnalyzer._checkOffspringHomozygous`
-short-circuited on parent VISUAL sets, so an autosomal-recessive lethal
-(Feather Duster) never warned for carrier×carrier — now relies solely on the
-authoritative per-offspring `doubleFactorIds`. (2) `07638b5` incubation: milestone
-+ banding dates used `startDate.add(Duration(days:N))` (DST-drifts a day; the
-notification fired a day off from the calendar events) → switched to DST-safe
-field addition in notification_scheduler, incubation_calculator, chick_model.
-Both got regression tests; 1399 affected tests green. Surfaced but NOT changed
-(need product/architecture decision): sync conflict-recording gap on equal/older
-remote timestamps, checkpoint device-clock skew, retry threshold 7-vs-10
-divergence, sole-egg-delete leaving an incubation stuck active. See
-[[domain/genetics-engine]], [[domain/incubation-service]].
-
-## [2026-07-04] docs | New rule: documentation-sync (every change updates docs)
-
-Added `.claude/rules/documentation-sync.md` — the canonical home for the
-"every change updates CLAUDE.md + rules + obsidian-brain, same change" discipline
-that was scattered across ai-workflow.md, release-ops.md § Documentation Drift,
-code-review.md § 10, and this wiki's Ingest contract. Covers the source-of-truth
-hierarchy, a what-changed→what-to-update table, the Ingest/≤200-line contract,
-the three verification scripts, and CI enforcement (rules-sync, code-quality,
-auto-fix-stats). Registered in CLAUDE.md § Rules table + [[sources/rules-index]];
-ai-workflow.md Related footer points to it.
-
-## [2026-07-04] docs | Wiki gap + drift fix (parallel to rule sweep)
-
-Extended the coverage sweep to obsidian-brain. Created [[domain/ads-service]]
-(the ads subsystem had no wiki page — banners/interstitials/rewarded were only
-punted to premium-service). Verified 5 wiki claims against source and fixed the
-drift: profile.md avatar bucket `bird-photos`→`avatars` (path
-`avatars/{userId}/avatar.{ext}`, sizing 512px/q80 not 1920/q85) and account
-deletion "grace period"→`AccountDeletionController` + AAL2 order; feedback.md
-categories 5→3 (`bug/feature/general`), statuses →`open/inProgress/resolved/
-closed`, class → `FeedbackRemoteService` (online-only, not a `*Repository`
-exemption); settings.md account deletion grace→AAL2 + `BackupScheduler` marked
-unwired; genealogy.md gained the `PremiumGuard` route note + PDF export. Also
-corrected my own `settings.md` rule (accessibility section is wired: font scale
-+ reduce-animations + haptics, not "unwired"). index.md + services-index.md
-register the new page.
 
 Older entries are archived in [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

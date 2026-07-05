@@ -20,6 +20,9 @@ void main() {
     when(
       () => mockOrchestrator.forceFullSync(),
     ).thenAnswer((_) async => SyncResult.success);
+    when(
+      () => mockOrchestrator.retryFailedRecords(any()),
+    ).thenAnswer((_) async {});
   });
 
   SyncMetadata staleError(String id) {
@@ -91,14 +94,21 @@ void main() {
       expect(find.text(l10n('sync.retry_action')), findsOneWidget);
     });
 
-    testWidgets('retry action forces full sync', (tester) async {
+    testWidgets('retry action resets failed records then forces full sync', (
+      tester,
+    ) async {
       await tester.pumpWidget(subject(status: SyncDisplayStatus.error));
       await tester.pump();
 
       await tester.tap(find.text(l10n('sync.retry_action')));
       await tester.pump();
 
-      verify(() => mockOrchestrator.forceFullSync()).called(1);
+      // Error-state records must be reset to pending FIRST (forceFullSync only
+      // pushes already-pending rows), otherwise the button is a no-op for them.
+      verifyInOrder([
+        () => mockOrchestrator.retryFailedRecords('user-1'),
+        () => mockOrchestrator.forceFullSync(),
+      ]);
     });
 
     testWidgets('shows stale pre-warning before cleanup window', (

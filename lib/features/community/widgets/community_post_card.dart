@@ -147,11 +147,11 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
   }
 
   Future<void> _handleReport() async {
-    final reason = await showCommunityReportSheet(
+    final result = await showCommunityReportSheet(
       context,
       title: 'community.report_post'.tr(),
     );
-    if (reason == null || !mounted) return;
+    if (result == null || !mounted) return;
     try {
       final userId = ref.read(currentUserIdProvider);
       final repo = ref.read(communitySocialRepositoryProvider);
@@ -159,7 +159,8 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
         userId: userId,
         targetId: post.id,
         targetType: 'post',
-        reason: reason,
+        reason: result.reason,
+        description: result.description,
       );
       ref.read(communityFeedProvider.notifier).removePost(post.id);
       if (mounted) {
@@ -213,10 +214,13 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
     context.push('${AppRoutes.messages}/$conversationId');
   }
 
-  void _openImageViewer(String imageUrl) {
+  void _openImageViewer(int index) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => CommunityImageViewer(imageUrl: imageUrl),
+        builder: (_) => CommunityImageViewer(
+          imageUrls: post.allImageUrls,
+          initialIndex: index,
+        ),
       ),
     );
   }

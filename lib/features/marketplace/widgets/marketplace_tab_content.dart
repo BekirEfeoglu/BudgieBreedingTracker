@@ -92,16 +92,27 @@ class MarketplaceTabContent extends ConsumerWidget {
                   );
                 }
 
-                return ListView.builder(
-                  padding: const EdgeInsets.only(
-                    top: AppSpacing.sm,
-                    bottom: AppSpacing.xxxl * 2,
+                return GridView.builder(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.sm,
+                    AppSpacing.lg,
+                    AppSpacing.xxxl * 2,
                   ),
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: AppSpacing.md,
+                        mainAxisSpacing: AppSpacing.md,
+                        mainAxisExtent: 232,
+                      ),
                   itemCount: listings.length,
                   itemBuilder: (context, index) {
                     final listing = listings[index];
                     return MarketplaceListingCard(
+                      key: ValueKey(listing.id),
                       listing: listing,
+                      compact: true,
                       onFavoriteToggle: () => ref
                           .read(marketplaceFormStateProvider.notifier)
                           .toggleFavorite(

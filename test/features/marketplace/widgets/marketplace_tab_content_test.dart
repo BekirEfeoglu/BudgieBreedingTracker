@@ -151,9 +151,10 @@ void main() {
         buildSubject(listingsAsync: const AsyncData(_sampleListings)),
       );
 
-      expect(find.byType(ListView), findsOneWidget);
-      // At least the first card must be visible; the second may be offscreen
-      // due to lazy rendering in ListView.builder within the test viewport.
+      // Redesign: the embedded Pazar tab renders listings in a 2-column grid.
+      expect(find.byType(GridView), findsOneWidget);
+      // At least the first card must be visible; others may be offscreen
+      // due to lazy rendering in GridView.builder within the test viewport.
       expect(find.byType(MarketplaceListingCard), findsAtLeastNWidgets(1));
       expect(find.text('Test Budgie'), findsOneWidget);
     });

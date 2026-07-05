@@ -212,6 +212,53 @@ void main() {
       expect(result[0]['content'], 'Hello');
     });
 
+    test('merges gamification badges (level, title, verified)', () async {
+      selectBuilder.result = [
+        {
+          'id': 'u1',
+          'display_name': 'Alice',
+          'avatar_url': null,
+          'level': 14,
+          'xp_title': 'Usta',
+          'is_verified_breeder': true,
+        },
+      ];
+
+      final rows = [
+        {'id': 'p1', 'user_id': 'u1', 'content': 'Hello'},
+      ];
+
+      final result = await cache.mergeIntoRows(rows);
+
+      expect(result[0]['author_level'], 14);
+      expect(result[0]['author_title'], 'Usta');
+      expect(result[0]['author_is_verified'], isTrue);
+    });
+
+    test('defaults author_is_verified to false when column is null', () async {
+      selectBuilder.result = [
+        {
+          'id': 'u1',
+          'display_name': 'Alice',
+          'avatar_url': null,
+          'level': 3,
+          'xp_title': '',
+          'is_verified_breeder': null,
+        },
+      ];
+
+      final rows = [
+        {'id': 'p1', 'user_id': 'u1', 'content': 'Hi'},
+      ];
+
+      final result = await cache.mergeIntoRows(rows);
+
+      expect(result[0]['author_level'], 3);
+      // Empty xp_title normalizes to null (no badge title shown).
+      expect(result[0]['author_title'], isNull);
+      expect(result[0]['author_is_verified'], isFalse);
+    });
+
     test('passes through rows without matching profile', () async {
       selectBuilder.result = [
         {'id': 'u1', 'display_name': 'Alice', 'avatar_url': null},
@@ -230,12 +277,12 @@ void main() {
       expect(result[1]['content'], 'Missing');
     });
 
-    test('falls back to display_name when full_name is null', () async {
+    test('falls back to full_name when display_name is null', () async {
       selectBuilder.result = [
         {
           'id': 'u1',
-          'full_name': null,
-          'display_name': 'Alice',
+          'display_name': null,
+          'full_name': 'Alice Smith',
           'avatar_url': null,
         },
       ];
@@ -247,10 +294,10 @@ void main() {
       final result = await cache.mergeIntoRows(rows);
 
       expect(result, hasLength(1));
-      expect(result[0]['username'], 'Alice');
+      expect(result[0]['username'], 'Alice Smith');
     });
 
-    test('prefers full_name over display_name', () async {
+    test('prefers display_name over full_name (PII: no real-name leak)', () async {
       selectBuilder.result = [
         {
           'id': 'u1',
@@ -267,7 +314,7 @@ void main() {
       final result = await cache.mergeIntoRows(rows);
 
       expect(result, hasLength(1));
-      expect(result[0]['username'], 'Alice Smith');
+      expect(result[0]['username'], 'Alice');
     });
 
     test(

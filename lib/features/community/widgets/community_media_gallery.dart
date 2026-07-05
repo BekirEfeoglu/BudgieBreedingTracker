@@ -6,11 +6,22 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/animations/double_tap_like_animation.dart';
 
-/// Image carousel for community post media.
-class CommunityMediaGallery extends StatefulWidget {
+/// Collage grid for community post media.
+///
+/// Layout adapts to image count:
+/// - 1 image: single full-width cell (~300 tall).
+/// - 2 images: two equal side-by-side cells (~220 tall).
+/// - 3+ images: big left cell (2fr) with a "1 / N" counter chip, plus a right
+///   column (1fr) split into two stacked cells; when there are more than 3
+///   images the bottom-right cell shows a "+{N-3}" overlay (~220 tall).
+class CommunityMediaGallery extends StatelessWidget {
   final List<String> imageUrls;
   final VoidCallback onDoubleTap;
-  final ValueChanged<String> onOpenImage;
+
+  /// Called with the tapped cell's image index. The full-screen viewer opened
+  /// from it is swipeable, so every image (even those past the 3-cell collage)
+  /// stays reachable.
+  final ValueChanged<int> onOpenImage;
 
   const CommunityMediaGallery({
     super.key,
@@ -19,113 +30,182 @@ class CommunityMediaGallery extends StatefulWidget {
     required this.onOpenImage,
   });
 
-  @override
-  State<CommunityMediaGallery> createState() => _CommunityMediaGalleryState();
-}
-
-class _CommunityMediaGalleryState extends State<CommunityMediaGallery> {
-  final _pageController = PageController();
-  int _currentIndex = 0;
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
+  static const double _gap = 4;
+  static const double _singleHeight = 300;
+  static const double _gridHeight = 220;
 
   @override
   Widget build(BuildContext context) {
+    if (imageUrls.isEmpty) return const SizedBox.shrink();
+
     final theme = Theme.of(context);
 
-    if (widget.imageUrls.isEmpty) return const SizedBox.shrink();
-
     return RepaintBoundary(
-      child: Stack(
-        alignment: Alignment.center,
+      child: DoubleTapLikeAnimation(
+        onLike: onDoubleTap,
+        likeIcon: Icon(
+          Icons.favorite_rounded,
+          size: 80,
+          color: Colors.white.withValues(alpha: 0.9),
+          shadows: [
+            Shadow(
+              blurRadius: 24,
+              color: theme.shadowColor.withValues(alpha: 0.38),
+            ),
+          ],
+        ),
+        child: _buildCollage(context),
+      ),
+    );
+  }
+
+  Widget _buildCollage(BuildContext context) {
+    final count = imageUrls.length;
+
+    if (count == 1) {
+      return SizedBox(
+        height: _singleHeight,
+        width: double.infinity,
+        child: _cell(context, imageUrls[0], 0),
+      );
+    }
+
+    if (count == 2) {
+      return SizedBox(
+        height: _gridHeight,
+        child: Row(
+          children: [
+            Expanded(child: _cell(context, imageUrls[0], 0)),
+            const SizedBox(width: _gap),
+            Expanded(child: _cell(context, imageUrls[1], 1)),
+          ],
+        ),
+      );
+    }
+
+    // 3+ images: big left cell + stacked right column.
+    final remaining = count - 3;
+    return SizedBox(
+      height: _gridHeight,
+      child: Row(
         children: [
-          SizedBox(
-            height: 320,
-            child: DoubleTapLikeAnimation(
-              onLike: widget.onDoubleTap,
-              likeIcon: Icon(
-                Icons.favorite_rounded,
-                size: 80,
-                color: Colors.white.withValues(alpha: 0.9),
-                shadows: [
-                  Shadow(
-                    blurRadius: 24,
-                    color: theme.shadowColor.withValues(alpha: 0.38),
-                  ),
-                ],
-              ),
-              child: GestureDetector(
-                onTap: () =>
-                    widget.onOpenImage(widget.imageUrls[_currentIndex]),
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: widget.imageUrls.length,
-                  onPageChanged: (index) {
-                    setState(() => _currentIndex = index);
-                  },
-                  itemBuilder: (context, index) {
-                    return CachedNetworkImage(
-                      imageUrl: widget.imageUrls[index],
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      memCacheWidth: 900,
-                      memCacheHeight: 1200,
-                      maxWidthDiskCache: 900,
-                      maxHeightDiskCache: 1200,
-                      placeholder: (_, __) => ColoredBox(
-                        color: theme.colorScheme.surfaceContainerHighest,
-                        child: const SizedBox(
-                          height: 320,
-                          width: double.infinity,
-                          child: Center(
-                            child: Icon(LucideIcons.image, size: 32),
-                          ),
-                        ),
-                      ),
-                      errorWidget: (_, __, ___) => Container(
-                        color: theme.colorScheme.surfaceContainerHighest,
-                        child: const Icon(LucideIcons.imageOff, size: 32),
-                      ),
-                    );
-                  },
-                ),
-              ),
+          Expanded(
+            flex: 2,
+            child: _cell(
+              context,
+              imageUrls[0],
+              0,
+              counter: _counterChip(context, count),
             ),
           ),
-          // Page indicator
-          if (widget.imageUrls.length > 1)
-            Positioned(
-              bottom: AppSpacing.md,
-              child: Semantics(
-                label: 'community.image_indicator'.tr(
-                  args: ['${_currentIndex + 1}', '${widget.imageUrls.length}'],
-                ),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.45),
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          const SizedBox(width: _gap),
+          Expanded(
+            child: Column(
+              children: [
+                Expanded(child: _cell(context, imageUrls[1], 1)),
+                const SizedBox(height: _gap),
+                Expanded(
+                  child: _cell(
+                    context,
+                    imageUrls[2],
+                    2,
+                    overlayMore: remaining > 0 ? remaining : null,
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                      vertical: AppSpacing.xs,
-                    ),
-                    child: Text(
-                      '${_currentIndex + 1}/${widget.imageUrls.length}',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// A single tappable image cell.
+  ///
+  /// [counter] pins a "1 / N" chip to the bottom-left. [overlayMore] paints a
+  /// dark scrim with a centered "+X" for the "more images" affordance.
+  Widget _cell(
+    BuildContext context,
+    String url,
+    int index, {
+    Widget? counter,
+    int? overlayMore,
+  }) {
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onTap: () => onOpenImage(index),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          CachedNetworkImage(
+            imageUrl: url,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            memCacheWidth: 900,
+            memCacheHeight: 1200,
+            maxWidthDiskCache: 900,
+            maxHeightDiskCache: 1200,
+            placeholder: (_, __) => ColoredBox(
+              color: theme.colorScheme.surfaceContainerHighest,
+              child: const Center(
+                child: Icon(LucideIcons.image, size: 32),
+              ),
+            ),
+            errorWidget: (_, __, ___) => Container(
+              color: theme.colorScheme.surfaceContainerHighest,
+              child: const Icon(LucideIcons.imageOff, size: 32),
+            ),
+          ),
+          if (overlayMore != null)
+            ColoredBox(
+              color: Colors.black.withValues(alpha: 0.45),
+              child: Center(
+                child: Text(
+                  '+$overlayMore',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
             ),
+          if (counter != null)
+            Positioned(
+              left: AppSpacing.sm,
+              bottom: AppSpacing.sm,
+              child: counter,
+            ),
         ],
+      ),
+    );
+  }
+
+  /// The "1 / N" indicator chip shown on the primary cell.
+  Widget _counterChip(BuildContext context, int count) {
+    final theme = Theme.of(context);
+
+    return Semantics(
+      label: 'community.image_indicator'.tr(args: ['1', '$count']),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.45),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.xs,
+          ),
+          child: Text(
+            '1 / $count',
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
       ),
     );
   }

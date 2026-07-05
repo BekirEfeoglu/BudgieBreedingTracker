@@ -90,13 +90,21 @@ class CommunityProfileCache {
       if (profile != null) {
         return {
           ...row,
+          // Public feed identity must prefer the chosen display name; full_name
+          // (a possibly-legal/real name) is only a last-resort fallback so it
+          // never leaks as the public handle. Matches
+          // CommunityPostRepository.getFollowedUserSummaries ordering.
           'username':
-              _nonEmpty(profile['full_name']) ??
               _nonEmpty(profile['display_name']) ??
+              _nonEmpty(profile['full_name']) ??
               '',
           'avatar_url': StorageUrlNormalizer.normalizePublicObjectUrl(
             _nonEmpty(profile['avatar_url']),
           ),
+          // Gamification enrichment for author badges (level, title, verified).
+          'author_level': profile['level'],
+          'author_title': _nonEmpty(profile['xp_title']),
+          'author_is_verified': profile['is_verified_breeder'] == true,
         };
       }
       return row;
@@ -118,7 +126,10 @@ class CommunityProfileCache {
       chunks.map(
         (chunk) => _client
             .from(SupabaseConstants.profilesTable)
-            .select('id, display_name, full_name, avatar_url')
+            .select(
+              'id, display_name, full_name, avatar_url, '
+              'level, xp_title, is_verified_breeder',
+            )
             .inFilter('id', chunk),
       ),
     );

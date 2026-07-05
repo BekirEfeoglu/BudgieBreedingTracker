@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart';
@@ -151,7 +152,16 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner> {
     setState(() => _isRetrying = true);
 
     try {
-      final result = await ref.read(syncOrchestratorProvider).forceFullSync();
+      final orchestrator = ref.read(syncOrchestratorProvider);
+      // Reset backoff-ready error records to pending FIRST — forceFullSync only
+      // pushes already-pending rows, so without this the retry button would not
+      // re-push records stuck in error state (mirrors triggerManualSync).
+      try {
+        await orchestrator.retryFailedRecords(ref.read(currentUserIdProvider));
+      } catch (e) {
+        AppLogger.debug('[OfflineBanner] retryFailedRecords failed: $e');
+      }
+      final result = await orchestrator.forceFullSync();
       if (!mounted) return;
       if (result == SyncResult.success) {
         ref.read(syncErrorProvider.notifier).state = false;

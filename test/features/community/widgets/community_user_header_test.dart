@@ -44,6 +44,61 @@ void main() {
       expect(find.text('BudgieKing'), findsOneWidget);
     });
 
+    testWidgets('shows verified badge when author is verified', (tester) async {
+      await tester.pumpWidget(
+        wrap(
+          CommunityUserHeader(
+            userId: 'u1',
+            username: 'BudgieKing',
+            createdAt: DateTime.now(),
+            authorIsVerified: true,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(LucideIcons.badgeCheck), findsOneWidget);
+    });
+
+    testWidgets('hides verified badge when author is not verified', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        wrap(
+          CommunityUserHeader(
+            userId: 'u1',
+            username: 'BudgieKing',
+            createdAt: DateTime.now(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(LucideIcons.badgeCheck), findsNothing);
+    });
+
+    testWidgets('shows level and resolved rank title badge', (tester) async {
+      await tester.pumpWidget(
+        wrap(
+          CommunityUserHeader(
+            userId: 'u1',
+            username: 'BudgieKing',
+            createdAt: DateTime.now(),
+            authorLevel: 14,
+            // Stored as an l10n key in profiles.xp_title.
+            authorTitle: 'gamification.title_master',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Key resolves to the rank name (e.g. "Usta Yetiştirici").
+      final expected =
+          '${l10n('community.level_prefix')}14 · '
+          '${l10n('gamification.title_master')}';
+      expect(find.textContaining(expected), findsOneWidget);
+    });
+
     testWidgets('shows initial letter when no avatar', (tester) async {
       await tester.pumpWidget(
         wrap(

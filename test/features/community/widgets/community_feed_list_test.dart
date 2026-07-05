@@ -11,7 +11,6 @@ import 'package:budgie_breeding_tracker/features/community/providers/community_f
 import 'package:budgie_breeding_tracker/features/community/providers/community_post_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_feed_list.dart';
-import 'package:budgie_breeding_tracker/features/community/widgets/community_following_list.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 
 void main() {
@@ -37,6 +36,7 @@ void main() {
       overrides: [
         currentUserIdProvider.overrideWithValue(currentUserId),
         communityFeedProvider.overrideWith(() => _FakeFeedNotifier(feedState)),
+        communityNewPostCountProvider.overrideWith(_FakeNewPostNotifier.new),
         communityVisiblePostsProvider(tab).overrideWithValue(visiblePosts),
         userProfileProvider.overrideWith((ref) => Stream.value(null)),
       ],
@@ -47,7 +47,9 @@ void main() {
   }
 
   group('CommunityFeedList', () {
-    testWidgets('shows explore sort controls and story strip', (tester) async {
+    testWidgets('explore shows posts without composer, story strip or sort', (
+      tester,
+    ) async {
       final now = DateTime.now();
       final posts = [
         CommunityPost(
@@ -78,18 +80,14 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Quick composer hint visible
-      expect(find.text(l10n('community.quick_hint')), findsOneWidget);
-      // Story strip title visible
-      expect(find.text(l10n('community.stories_title')), findsOneWidget);
-      // Sort controls visible (no scroll needed — hero removed)
-      expect(find.text(l10n('community.sort_newest')), findsOneWidget);
-      expect(find.text(l10n('community.sort_trending')), findsOneWidget);
+      // Redesign: explore drops the quick composer, story strip and sort
+      // controls — the feed is post-first.
+      expect(find.text(l10n('community.quick_hint')), findsNothing);
+      expect(find.text(l10n('community.stories_title')), findsNothing);
+      expect(find.text(l10n('community.sort_newest')), findsNothing);
+      expect(find.text(l10n('community.sort_trending')), findsNothing);
 
-      await tester.drag(find.byType(CustomScrollView), const Offset(0, -500));
-      await tester.pumpAndSettle();
-
-      // Post content visible after scroll
+      // Post content is visible.
       expect(find.text('Alpha Loft'), findsWidgets);
     });
 
@@ -160,37 +158,6 @@ void main() {
 
       expect(find.text('Guide title'), findsOneWidget);
       expect(find.text('Question title'), findsNothing);
-    });
-
-    testWidgets('scroll-to-top FAB is hidden initially (scale 0)', (
-      tester,
-    ) async {
-      final posts = List.generate(
-        3,
-        (i) => CommunityPost(
-          id: 'p$i',
-          userId: 'u$i',
-          username: 'User$i',
-          content: 'Post $i',
-          createdAt: DateTime.now().subtract(Duration(hours: i)),
-        ),
-      );
-
-      await tester.pumpWidget(
-        createSubject(
-          feedState: FeedState(posts: posts, isLoading: false, hasMore: false),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      // FAB should be in tree with scale 0 (hidden)
-      final animatedScale = tester.widget<AnimatedScale>(
-        find.descendant(
-          of: find.byType(Stack),
-          matching: find.byType(AnimatedScale),
-        ),
-      );
-      expect(animatedScale.scale, 0.0);
     });
 
     testWidgets('new posts banner is hidden initially', (tester) async {
@@ -270,34 +237,36 @@ void main() {
       expect(likeTriggered, isTrue);
     });
 
-    testWidgets('following tab renders CommunityFollowingList', (tester) async {
+    testWidgets('following tab renders posts from followed authors', (
+      tester,
+    ) async {
+      final followPost = CommunityPost(
+        id: 'f1',
+        userId: 'followed-user',
+        username: 'Followed Author',
+        content: 'A post from someone I follow',
+        isFollowingAuthor: true,
+        createdAt: DateTime.now().subtract(const Duration(hours: 1)),
+      );
+
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            currentUserIdProvider.overrideWithValue('me'),
-            communityFeedProvider.overrideWith(
-              () => _FakeFeedNotifier(
-                const FeedState(posts: [], isLoading: false, hasMore: false),
-              ),
-            ),
-            communityVisiblePostsProvider(
-              CommunityFeedTab.following,
-            ).overrideWithValue([]),
-            userProfileProvider.overrideWith((ref) => Stream.value(null)),
-            followedUsersProvider.overrideWith(
-              (ref) => Future.value(<Map<String, dynamic>>[]),
-            ),
-          ],
-          child: const MaterialApp(
-            home: Scaffold(
-              body: CommunityFeedList(tab: CommunityFeedTab.following),
-            ),
+        createSubject(
+          feedState: FeedState(
+            posts: [followPost],
+            isLoading: false,
+            hasMore: false,
           ),
+          tab: CommunityFeedTab.following,
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(find.byType(CommunityFollowingList), findsOneWidget);
+      // Redesign: the following tab is now a feed (story strip + posts),
+      // not the people-management list (CommunityFollowingList was deleted).
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -400));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Followed Author'), findsWidgets);
     });
 
     testWidgets('swipe left on post triggers bookmark', (tester) async {
@@ -391,6 +360,51 @@ void main() {
       expect(find.text('How to breed?'), findsOneWidget);
     });
 
+    testWidgets(
+      'explore with no visible posts shows welcoming empty state, not search',
+      (tester) async {
+        // Posts exist but none pass the explore filter (e.g. all guides).
+        final posts = [
+          CommunityPost(
+            id: 'g1',
+            userId: 'u1',
+            username: 'Guide Author',
+            content: 'A guide',
+            postType: CommunityPostType.guide,
+            createdAt: DateTime.now(),
+          ),
+        ];
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              currentUserIdProvider.overrideWithValue('me'),
+              communityFeedProvider.overrideWith(
+                () => _FakeFeedNotifier(
+                  FeedState(posts: posts, isLoading: false, hasMore: false),
+                ),
+              ),
+              communityNewPostCountProvider.overrideWith(
+                _FakeNewPostNotifier.new,
+              ),
+              communityVisiblePostsProvider(
+                CommunityFeedTab.explore,
+              ).overrideWithValue(const []),
+              userProfileProvider.overrideWith((ref) => Stream.value(null)),
+            ],
+            child: const MaterialApp(home: Scaffold(body: CommunityFeedList())),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Welcoming "be the first to post" state, with a create CTA.
+        expect(find.text(l10n('community.no_posts')), findsOneWidget);
+        expect(find.text(l10n('community.create_post')), findsWidgets);
+        // NOT the search-oriented filtered empty state.
+        expect(find.text(l10n('community.empty_filtered_title')), findsNothing);
+      },
+    );
+
     testWidgets('loading state shows shimmer placeholder', (tester) async {
       await tester.pumpWidget(
         createSubject(
@@ -431,4 +445,11 @@ class _FakeFeedNotifier extends CommunityFeedNotifier {
 
   @override
   FeedState build() => _state;
+}
+
+/// Skips the realtime websocket subscription that the real notifier opens in
+/// `build()` — keeps widget tests free of pending network timers.
+class _FakeNewPostNotifier extends CommunityNewPostNotifier {
+  @override
+  int build() => 0;
 }

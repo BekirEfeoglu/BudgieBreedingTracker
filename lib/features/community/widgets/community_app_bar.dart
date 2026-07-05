@@ -13,6 +13,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../data/models/profile_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
+import '../../../domain/services/gamification/level_calculator.dart';
 import '../../../router/route_names.dart';
 import 'package:budgie_breeding_tracker/shared/providers/gamification.dart';
 import 'package:budgie_breeding_tracker/shared/widgets/app_shell.dart';
@@ -82,16 +83,14 @@ class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 userLevelAsync.when(
                   loading: () => const SizedBox.shrink(),
                   error: (_, __) => const SizedBox.shrink(),
+                  // Every user is at least Lv.1 — fall back to it (with the
+                  // level-1 title) so the badge always shows, like the design.
                   data: (level) {
-                    if (level == null) return const SizedBox.shrink();
-                    return Text(
-                      'Lv.${level.level} · ${level.title.isNotEmpty ? level.title.tr() : ''}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    );
+                    final lvl = level?.level ?? 1;
+                    final titleKey = (level != null && level.title.isNotEmpty)
+                        ? level.title
+                        : LevelCalculator.titleForLevel(lvl);
+                    return _LevelBadge(level: lvl, titleKey: titleKey);
                   },
                 ),
               ],
@@ -112,6 +111,41 @@ class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
           onPressed: () => context.push(AppRoutes.communitySearch),
         ),
         const SizedBox(width: AppSpacing.sm),
+      ],
+    );
+  }
+}
+
+/// Amber "★ Lv.X · Title" badge under the "Topluluk" app-bar title.
+class _LevelBadge extends StatelessWidget {
+  const _LevelBadge({required this.level, required this.titleKey});
+
+  final int level;
+  final String titleKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final title = titleKey.tr();
+    final label = title.isEmpty
+        ? '${'community.level_prefix'.tr()}$level'
+        : '${'community.level_prefix'.tr()}$level · $title';
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(LucideIcons.star, size: 12, color: AppColors.accent),
+        const SizedBox(width: AppSpacing.xs),
+        Flexible(
+          child: Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: AppColors.warningTextAdaptive(context),
+              fontWeight: FontWeight.w600,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
       ],
     );
   }
@@ -170,16 +204,17 @@ class _ProfileAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Gradient ring around the avatar (blue → amber), matching the design's
+    // profile chip. The image / initials sit inside the ring.
     return Container(
       width: AppSpacing.touchTargetMin,
       height: AppSpacing.touchTargetMin,
+      padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: avatarUrl == null
-            ? LinearGradient(
-                colors: [theme.colorScheme.primary, AppColors.accent],
-              )
-            : null,
+        gradient: LinearGradient(
+          colors: [theme.colorScheme.primary, AppColors.accent],
+        ),
         boxShadow: [
           BoxShadow(
             color: theme.colorScheme.primary.withValues(alpha: 0.24),
@@ -188,21 +223,24 @@ class _ProfileAvatar extends StatelessWidget {
           ),
         ],
       ),
-      clipBehavior: Clip.antiAlias,
-      child: avatarUrl != null
-          ? CachedNetworkImage(
-              imageUrl: avatarUrl!,
-              fit: BoxFit.cover,
-              // Avatars render at ~40-64dp; downsample aggressively to
-              // avoid caching full-resolution originals.
-              memCacheWidth: 192,
-              maxWidthDiskCache: 192,
-              placeholder: (_, __) =>
-                  _InitialsCircle(initials: initials, theme: theme),
-              errorWidget: (_, __, ___) =>
-                  _InitialsCircle(initials: initials, theme: theme),
-            )
-          : _InitialsCircle(initials: initials, theme: theme),
+      child: ClipOval(
+        child: avatarUrl != null
+            ? CachedNetworkImage(
+                imageUrl: avatarUrl!,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                // Avatars render at ~40-64dp; downsample aggressively to
+                // avoid caching full-resolution originals.
+                memCacheWidth: 192,
+                maxWidthDiskCache: 192,
+                placeholder: (_, __) =>
+                    _InitialsCircle(initials: initials, theme: theme),
+                errorWidget: (_, __, ___) =>
+                    _InitialsCircle(initials: initials, theme: theme),
+              )
+            : _InitialsCircle(initials: initials, theme: theme),
+      ),
     );
   }
 }
@@ -215,12 +253,15 @@ class _InitialsCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        initials,
-        style: theme.textTheme.labelLarge?.copyWith(
-          color: theme.colorScheme.onPrimary,
-          fontWeight: FontWeight.w700,
+    return ColoredBox(
+      color: theme.colorScheme.primaryContainer,
+      child: Center(
+        child: Text(
+          initials,
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: theme.colorScheme.onPrimaryContainer,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );

@@ -12,20 +12,18 @@ Widget _buildFeedScrollView({
   required int newPostCount,
   required int lastSeenCount,
   required bool showSwipeHint,
-  required bool showScrollToTop,
   required void Function(int) onUpdateNewPostCount,
   required void Function(int) onUpdateLastSeenCount,
   required VoidCallback onScrollToTop,
   required VoidCallback onDismissSwipeHint,
-  required void Function(CommunityExploreSort) onChangeSort,
 }) {
   final feedState = ref.watch(communityFeedProvider);
   final posts = feedState.posts;
-  final currentUserId = ref.watch(currentUserIdProvider);
   final visiblePosts = ref.watch(communityVisiblePostsProvider(tab));
-  final isExplore = tab == CommunityFeedTab.explore;
-  final showExploreExtras = isExplore && visiblePosts.isNotEmpty;
-  final exploreSort = ref.watch(exploreSortProvider);
+  final isFollowing = tab == CommunityFeedTab.following;
+  // Story strip lives on the "Takip" (following) tab per the redesign — a
+  // horizontal ring of recently-active followed users above their feed.
+  final showFollowingStories = isFollowing && visiblePosts.isNotEmpty;
   final isGuides = tab == CommunityFeedTab.guides;
   final defaultCreateType = tab == CommunityFeedTab.guides
       ? CommunityPostType.guide
@@ -71,27 +69,8 @@ Widget _buildFeedScrollView({
           controller: scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-            // 1. Quick Composer
-            if (!isGuides)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.lg,
-                    AppSpacing.xs,
-                    AppSpacing.lg,
-                    AppSpacing.md,
-                  ),
-                  child: CommunityQuickComposer(
-                    currentUserId: currentUserId,
-                    onCreatePost: () =>
-                        context.push(_buildCreatePostRoute(defaultCreateType)),
-                    onCreateTypedPost: (type) =>
-                        context.push(_buildCreatePostRoute(type)),
-                  ),
-                ),
-              ),
-            // 2. Story Strip (explore only)
-            if (isExplore && showExploreExtras)
+            // Story strip (following tab only)
+            if (showFollowingStories)
               SliverToBoxAdapter(
                 child: CommunityStoryStrip(
                   stories: CommunityStoryStrip.fromPosts(visiblePosts),
@@ -99,31 +78,12 @@ Widget _buildFeedScrollView({
                       context.push(_buildCreatePostRoute(defaultCreateType)),
                 ),
               ),
-            // 3. Section Bar
-            if (visiblePosts.isNotEmpty)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.lg,
-                    AppSpacing.xs,
-                    AppSpacing.lg,
-                    AppSpacing.md,
-                  ),
-                  child: CommunitySectionBar(
-                    tab: tab,
-                    visibleCount: visiblePosts.length,
-                    exploreSort: exploreSort,
-                    onExploreSortChanged: onChangeSort,
-                  ),
-                ),
-              ),
-            // 4. Empty states or post list
+            // Empty states or post list
             ..._buildFeedBody(
               context: context,
               ref: ref,
               tab: tab,
               feedState: feedState,
-              posts: posts,
               visiblePosts: visiblePosts,
             ),
           ],
@@ -133,28 +93,6 @@ Widget _buildFeedScrollView({
       _NewPostsBannerOverlay(newPostCount: newPostCount, onTap: onScrollToTop),
       // Swipe onboarding hint
       if (showSwipeHint) _SwipeHintOverlay(onDismiss: onDismissSwipeHint),
-      // Scroll-to-top mini FAB (bottom-left to avoid conflict with create-post FAB)
-      Positioned(
-        left: AppSpacing.md,
-        bottom: AppSpacing.md,
-        child: AnimatedScale(
-          scale: showScrollToTop ? 1.0 : 0.0,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutBack,
-          child: FloatingActionButton.small(
-            heroTag: 'scrollToTop',
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              scrollController.animateTo(
-                0,
-                duration: const Duration(milliseconds: 400),
-                curve: Curves.easeOutCubic,
-              );
-            },
-            child: const Icon(LucideIcons.arrowUp, size: 18),
-          ),
-        ),
-      ),
     ],
   );
 }
@@ -165,10 +103,16 @@ List<Widget> _buildFeedBody({
   required WidgetRef ref,
   required CommunityFeedTab tab,
   required FeedState feedState,
-  required List<CommunityPost> posts,
   required List<CommunityPost> visiblePosts,
 }) {
-  if (!feedState.isLoading && posts.isEmpty) {
+  // Explore has no user-facing search/filter UI, so an empty Explore feed is a
+  // "be the first to post" moment — not a "no search results" one. Route it to
+  // the welcoming empty state (with a create CTA) rather than the filtered one.
+  // Source of truth lives in `communityShowWelcomeEmptyProvider` so the
+  // CommunityScreen FAB can hide while this CTA is on screen.
+  final showWelcomeEmpty = ref.watch(communityShowWelcomeEmptyProvider(tab));
+
+  if (showWelcomeEmpty) {
     return [
       SliverToBoxAdapter(
         child: Padding(

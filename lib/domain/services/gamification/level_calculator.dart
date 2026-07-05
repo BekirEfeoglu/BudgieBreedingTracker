@@ -25,14 +25,22 @@ abstract final class LevelCalculator {
     );
   }
 
+  /// Maps a level to its rank title l10n key.
+  ///
+  /// MUST stay byte-for-byte identical to the SQL `private.xp_title_for_level`
+  /// (migration `20260705120000_expand_rank_ladder`) — the gamification RLS
+  /// `WITH CHECK` enforces `xp_title = private.xp_title_for_level(level)`, so a
+  /// divergence silently rejects XP/level writes. Change both together.
   static String titleForLevel(int level) => switch (level) {
-    1 => 'gamification.title_beginner',
-    2 => 'gamification.title_novice',
-    >= 3 && <= 4 => 'gamification.title_experienced',
-    >= 5 && <= 9 => 'gamification.title_expert',
-    >= 10 && <= 14 => 'gamification.title_master',
-    >= 15 && <= 19 => 'gamification.title_grand_master',
-    >= 20 => 'gamification.title_legendary',
-    _ => 'gamification.title_beginner',
+    <= 1 => 'gamification.title_beginner',
+    >= 2 && <= 3 => 'gamification.title_novice',
+    >= 4 && <= 6 => 'gamification.title_enthusiast',
+    >= 7 && <= 10 => 'gamification.title_experienced',
+    >= 11 && <= 15 => 'gamification.title_expert',
+    >= 16 && <= 22 => 'gamification.title_master',
+    >= 23 && <= 32 => 'gamification.title_grand_master',
+    >= 33 && <= 49 => 'gamification.title_legendary',
+    >= 50 && <= 74 => 'gamification.title_champion',
+    _ => 'gamification.title_bird_whisperer',
   };
 }

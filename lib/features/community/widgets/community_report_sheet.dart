@@ -8,15 +8,26 @@ import '../../../core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 import 'community_report_reasons.dart';
 
+/// Outcome of the report sheet: the chosen [reason] plus an optional free-text
+/// [description] the user typed for [CommunityReportReason.other] (persisted to
+/// `community_reports.description` for the moderation queue).
+class CommunityReportResult {
+  const CommunityReportResult({required this.reason, this.description});
+
+  final CommunityReportReason reason;
+  final String? description;
+}
+
 /// Shows a card-based bottom sheet for the user to pick a [CommunityReportReason].
 ///
 /// [title] is the sheet headline (e.g. "Gönderiyi Bildir").
-/// Returns the selected reason, or `null` if dismissed.
-Future<CommunityReportReason?> showCommunityReportSheet(
+/// Returns the selected reason (with any "Other" free text), or `null` if
+/// dismissed.
+Future<CommunityReportResult?> showCommunityReportSheet(
   BuildContext context, {
   required String title,
 }) {
-  return showAppBottomSheet<CommunityReportReason>(
+  return showAppBottomSheet<CommunityReportResult>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -49,9 +60,18 @@ class _CommunityReportSheetState extends State<_CommunityReportSheet> {
   }
 
   void _onSubmit() {
-    if (_selected == null) return;
+    final reason = _selected;
+    if (reason == null) return;
     AppHaptics.mediumImpact();
-    Navigator.of(context).pop(_selected);
+    final text = _otherController.text.trim();
+    Navigator.of(context).pop(
+      CommunityReportResult(
+        reason: reason,
+        description: reason == CommunityReportReason.other && text.isNotEmpty
+            ? text
+            : null,
+      ),
+    );
   }
 
   @override

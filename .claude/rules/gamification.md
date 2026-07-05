@@ -33,6 +33,35 @@ Cooldown'lar farm/spam engellemek için. Server-side enforce (`xp_transactions` 
 - Max level: 100 (cap, sonrası "Master Breeder" cosmetic)
 - Level-up notification: in-app banner + opsiyonel push (settings'te kapatılabilir)
 
+### Rütbe Merdiveni (10 kademe)
+`LevelCalculator.titleForLevel(level)` seviyeyi bir rütbe l10n **anahtarına**
+eşler (`gamification.title_*`). `profiles.xp_title` / `user_levels.title` bu
+ANAHTARI saklar; UI göstermeden önce `.tr()` çağırır (2026-07-05'te community
+yazar rozetinde ham anahtar sızıyordu — düzeltildi).
+
+| Seviye | Anahtar | tr |
+|--------|---------|----|
+| ≤1 | `title_beginner` | Acemi Yetiştirici |
+| 2–3 | `title_novice` | Çaylak Yetiştirici |
+| 4–6 | `title_enthusiast` | Hevesli Yetiştirici |
+| 7–10 | `title_experienced` | Deneyimli Yetiştirici |
+| 11–15 | `title_expert` | Uzman Yetiştirici |
+| 16–22 | `title_master` | Usta Yetiştirici |
+| 23–32 | `title_grand_master` | Büyük Usta |
+| 33–49 | `title_legendary` | Efsanevi Yetiştirici |
+| 50–74 | `title_champion` | Şampiyon Yetiştirici |
+| ≥75 | `title_bird_whisperer` | Kuş Fısıldayan |
+
+**Kritik:** Dart `titleForLevel` ile SQL `private.xp_title_for_level` **birebir
+aynı** olmak zorunda — gamification RLS `WITH CHECK` `title =
+private.xp_title_for_level(level)` zorlar, ayrışma XP/level yazımını sessizce
+reddeder. Bandları/anahtarları değiştirmek üçünü (Dart + SQL migration + l10n
+tr/en/de) BİRLİKTE değiştirmeyi + mevcut satırların backfill'ini gerektirir
+(bkz. migration `20260705120000_expand_rank_ladder`, prod'a uygulandı).
+Rollout: SQL migration istemci sürümüyle birlikte gitmeli; güncellenmemiş
+istemci remapped seviyede eski anahtar yazarsa o tek XP yazımı reddedilir
+(recordAction yutar, veri kaybı yok).
+
 ## Badge Sistemi
 - Badge tanımları server'dan gelir (`GamificationRemoteSource.fetchBadges()`); local model `badge_model.dart`. Hardcoded definitions dosyası YOK
 - Achievement-based: tek seferlik unlock (örn. "İlk kuluçka")

@@ -2654,6 +2654,8 @@
     "create_post": "Gönderi Oluştur",
     "content_label": "Aklınızda ne var?",
     "content_or_image_required": "Lütfen metin veya görsel ekleyin",
+    "photo_limit_reached": "En fazla {max} fotoğraf ekleyebilirsiniz",
+    "verified_breeder": "Doğrulanmış Yetiştirici",
     "add_photo": "Fotoğraf Ekle",
     "add_tags": "Etiket Ekle",
     "tag_hint": "Etiketleri virgülle ayırarak ekleyin",
@@ -2675,6 +2677,7 @@
     "share_action": "Paylaş",
     "edit_post": "Düzenle",
     "edited_badge": "düzenlendi",
+    "level_prefix": "Lv.",
     "edit_post_title": "Gönderiyi Düzenle",
     "edit_saved": "Gönderi güncellendi",
     "edit_error": "Gönderi güncellenemedi. Tekrar deneyin.",
@@ -3103,7 +3106,10 @@
     "title_expert": "Uzman Yetiştirici",
     "title_master": "Usta Yetiştirici",
     "title_grand_master": "Büyük Usta",
-    "title_legendary": "Efsanevi Yetiştirici"
+    "title_legendary": "Efsanevi Yetiştirici",
+    "title_enthusiast": "Hevesli Yetiştirici",
+    "title_champion": "Şampiyon Yetiştirici",
+    "title_bird_whisperer": "Kuş Fısıldayan"
   },
   "leaderboard": {
     "title": "Liderlik Tablosu",
