@@ -12,6 +12,7 @@ import 'package:budgie_breeding_tracker/data/repositories/breeding_pair_reposito
 import 'package:budgie_breeding_tracker/data/repositories/chick_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/egg_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/health_record_repository.dart';
+import 'package:budgie_breeding_tracker/data/repositories/incubation_repository.dart';
 import 'package:budgie_breeding_tracker/domain/services/import/excel_import_helpers.dart';
 import 'package:budgie_breeding_tracker/domain/services/import/excel_row_parsers.dart';
 import 'package:budgie_breeding_tracker/domain/services/import/import_result.dart';
@@ -33,6 +34,7 @@ class DataImportService {
   DataImportService(
     this._birdRepo,
     this._breedingPairRepo,
+    this._incubationRepo,
     this._eggRepo,
     this._chickRepo,
     this._healthRecordRepo,
@@ -40,6 +42,7 @@ class DataImportService {
 
   final BirdRepository _birdRepo;
   final BreedingPairRepository _breedingPairRepo;
+  final IncubationRepository _incubationRepo;
   final EggRepository _eggRepo;
   final ChickRepository _chickRepo;
   final HealthRecordRepository _healthRecordRepo;
@@ -222,6 +225,33 @@ class DataImportService {
     );
   }
 
+  /// Imports incubations from an Excel file.
+  ///
+  /// Expected columns: ID (0), Kulucka Cifti ID (1), Tur (2), Durum (3),
+  /// Baslangic (4), Beklenen Cikim (5), Toplam Gun (6), Notlar (7)
+  ///
+  /// Must run AFTER breeding pairs and BEFORE eggs in a full import so that an
+  /// egg's `incubationId` FK resolves to a row created here (see
+  /// [importAllFromExcel]).
+  Future<ImportResult> importIncubationsFromExcel({
+    required Uint8List bytes,
+    required String userId,
+  }) async {
+    return _importSheet(
+      bytes: bytes,
+      userId: userId,
+      sheetNames: [
+        'Kuluckalar',
+        'Incubations',
+        'export.sheet_incubations'.tr(),
+      ],
+      label: 'Incubations',
+      parseRow: (row, uid) => ExcelRowParsers.parseIncubationRow(row, uid),
+      validate: (item) async => item,
+      saveAll: _incubationRepo.saveAll,
+    );
+  }
+
   /// Imports eggs from an Excel file.
   ///
   /// Expected columns: No (0), Yumurtlama (1), Durum (2), Doller (3),
@@ -273,7 +303,7 @@ class DataImportService {
     return _importSheet(
       bytes: bytes,
       userId: userId,
-      sheetNames: const ['Saglik', 'Health Records', 'Sheet5'],
+      sheetNames: ['Saglik', 'Health Records', 'Sheet5', 'export.sheet_health'.tr()],
       label: 'Health records',
       parseRow: (row, uid) => ExcelRowParsers.parseHealthRecordRow(row, uid),
       onSkip: (row, rowIndex) {
@@ -307,6 +337,12 @@ class DataImportService {
         bytes: bytes,
         userId: userId,
         maxActivePairs: maxActiveBreedingPairs,
+      ),
+      // Incubations before eggs so an egg's incubationId FK resolves to a
+      // freshly-imported incubation row.
+      'incubations': await importIncubationsFromExcel(
+        bytes: bytes,
+        userId: userId,
       ),
       'eggs': await importEggsFromExcel(bytes: bytes, userId: userId),
       'chicks': await importChicksFromExcel(bytes: bytes, userId: userId),

@@ -46,7 +46,8 @@ User picks .budgie.zip
 - Restore atomic değil — failure halinde partial state mümkün → progress log + resume
 
 ## Excel Export
-- Tüm bird, egg, chick, breeding_pair sheet'leri
+- Altı sheet: bird, breeding_pair, **incubation**, egg, chick, **health_record** — `importAllFromExcel`'in okuduğu tüm entity'lerle simetrik (round-trip). Incubation id'si TAM yazılır (kırpılmaz) ki egg'in `incubationId` FK'si re-import'ta çözülsün; health kaydı da id-korumalı trailing kolonla yazılır
+- Enum alanları (gender/species/status/type) locale-bağımsız enum `.name` token'ı olarak yazılır — parser bunları locale'den bağımsız çözer
 - Header: l10n key tabanlı (kullanıcı dilinde)
 - Sayı format: locale-aware
 - Tarih: ISO-8601 string (Excel parse hatasını engelle)
@@ -66,6 +67,7 @@ birdSheet.appendRow([
 - Row başına validation: required field, enum value, date format
 - Hata satırı: skip + report (kullanıcıya "5/100 row failed" özet)
 - Persist BATCH: geçerli satırlar tek `repo.saveAll` ile yazılır (satır başına HTTP push YOK); FK doğrulaması tek `getAll` haritasından yapılır (satır başına `getById` yok, aynı dosyadaki önce-gelen ebeveyn satırları haritaya eklenir)
+- Sheet import SIRASI FK'ye duyarlı: `importAllFromExcel` birds → breeding_pairs → **incubations → eggs** → chicks → health_records sırasında koşar (egg'in `incubationId`'si önce import edilen incubation'a çözülsün)
 - Sheet başına all-or-nothing: `saveAll` tek Drift transaction'dır — ortada patlarsa kısmi import KALMAZ; `ImportResult` `importedCount: 0` + sheet-level hata döner
 - Duplicate check: ring_number unique → conflict resolution
 - Max file size: 10MB (assets-images.md limit consistency)

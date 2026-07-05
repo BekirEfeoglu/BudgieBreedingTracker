@@ -59,6 +59,13 @@ extension _ExcelSheetBuilders on ExcelExportService {
     final sheet = excel['export.sheet_incubations'.tr()];
     final headerStyle = CellStyle(bold: true);
 
+    // Column order matches DataImportService's incubation parser (id@0,
+    // breedingPairId@1, species@2, status@3, startDate@4, expectedHatch@5,
+    // totalDays@6, notes@7). The id is written in FULL (not truncated) so an
+    // egg's incubationId FK resolves back to this row on re-import — a lossless
+    // round-trip. species/status are written as stable enum NAMES the parser
+    // accepts regardless of locale. totalDays@6 is a derived display column the
+    // parser ignores.
     final headers = [
       'export.header_id'.tr(),
       'export.header_breeding_pair_id'.tr(),
@@ -80,7 +87,7 @@ extension _ExcelSheetBuilders on ExcelExportService {
     for (var row = 0; row < incubations.length; row++) {
       final incubation = incubations[row];
       final values = [
-        incubation.id.substring(0, 8),
+        incubation.id,
         incubation.breedingPairId ?? '',
         incubation.species.name,
         incubation.status.name,
@@ -149,6 +156,59 @@ extension _ExcelSheetBuilders on ExcelExportService {
         c.hatchWeight != null ? c.hatchWeight.toString() : '',
         c.notes ?? '',
         c.id,
+      ];
+      for (var col = 0; col < values.length; col++) {
+        sheet
+            .cell(
+              CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row + 1),
+            )
+            .value = TextCellValue(
+          sanitize(values[col]),
+        );
+      }
+    }
+  }
+
+  void _addHealthRecordsSheet(Excel excel, List<HealthRecord> records) {
+    final sheet = excel['export.sheet_health'.tr()];
+    final headerStyle = CellStyle(bold: true);
+
+    // Column order matches DataImportService's health parser (title@0, type@1,
+    // date@2, birdId@3, description@4, treatment@5, veterinarian@6, notes@7)
+    // with the full id trailing at col 8, so re-import is a lossless round-trip.
+    // type is written as a stable enum NAME the parser accepts regardless of
+    // locale.
+    final headers = [
+      'export.header_title'.tr(),
+      'export.header_type'.tr(),
+      'export.header_date'.tr(),
+      'export.header_bird_id'.tr(),
+      'export.header_description'.tr(),
+      'export.header_treatment'.tr(),
+      'export.header_veterinarian'.tr(),
+      'export.header_notes'.tr(),
+      'export.header_id'.tr(),
+    ];
+    for (var i = 0; i < headers.length; i++) {
+      final cell = sheet.cell(
+        CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0),
+      );
+      cell.value = TextCellValue(headers[i]);
+      cell.cellStyle = headerStyle;
+    }
+
+    for (var row = 0; row < records.length; row++) {
+      final r = records[row];
+      final values = [
+        r.title,
+        r.type.name,
+        ExcelExportService._dateFormat.format(r.date),
+        r.birdId ?? '',
+        r.description ?? '',
+        r.treatment ?? '',
+        r.veterinarian ?? '',
+        r.notes ?? '',
+        r.id,
       ];
       for (var col = 0; col < values.length; col++) {
         sheet

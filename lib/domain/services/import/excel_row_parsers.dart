@@ -4,6 +4,7 @@ import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
+import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/import/excel_import_helpers.dart';
 import 'package:uuid/uuid.dart';
 
@@ -120,6 +121,49 @@ abstract final class ExcelRowParsers {
   }
 
   // ---------------------------------------------------------------------------
+  // Incubation
+  // ---------------------------------------------------------------------------
+
+  /// Parses a single Excel row into an [Incubation].
+  ///
+  /// Expected columns: ID (0), Kulucka Cifti ID (1), Tur (2), Durum (3),
+  /// Baslangic (4), Beklenen Cikim (5), Toplam Gun (6), Notlar (7)
+  ///
+  /// The leading ID column is written in full by [ExcelExportService]; when
+  /// present the original incubation id is preserved so an egg's `incubationId`
+  /// FK resolves back to this row (lossless round-trip + idempotent re-import).
+  /// Column 6 (total days) is a derived display value and is ignored. Returns
+  /// `null` when the row carries no id, no breeding-pair ref and no start date
+  /// (a blank row).
+  static Incubation? parseIncubationRow(List<Data?> row, String userId) {
+    final providedId = cellToString(row, 0);
+    final breedingPairId = cellToString(row, 1);
+    final speciesStr = cellToString(row, 2);
+    final statusStr = cellToString(row, 3);
+    final startDateStr = cellToString(row, 4);
+    final expectedHatchStr = cellToString(row, 5);
+    final notes = cellToString(row, 7);
+
+    final startDate = parseDate(startDateStr);
+    final hasId = providedId != null && providedId.isNotEmpty;
+    final hasPair = breedingPairId != null && breedingPairId.isNotEmpty;
+    if (!hasId && !hasPair && startDate == null) return null;
+
+    return Incubation(
+      id: hasId ? providedId : _uuid.v7(),
+      userId: userId,
+      breedingPairId: breedingPairId,
+      species: parseSpecies(speciesStr),
+      status: parseIncubationStatus(statusStr),
+      startDate: startDate,
+      expectedHatchDate: parseDate(expectedHatchStr),
+      notes: notes,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
   // Egg
   // ---------------------------------------------------------------------------
 
@@ -220,7 +264,11 @@ abstract final class ExcelRowParsers {
   /// Parses a single Excel row into a [HealthRecord].
   ///
   /// Expected columns: Baslik (0), Tur (1), Tarih (2), Kus ID (3),
-  /// Aciklama (4), Tedavi (5), Veteriner (6), Notlar (7)
+  /// Aciklama (4), Tedavi (5), Veteriner (6), Notlar (7), ID (8)
+  ///
+  /// The trailing ID column is written by the exporter; when present the
+  /// original record id is preserved (lossless round-trip + idempotent
+  /// re-import). Hand-filled templates omit it → a fresh id is generated.
   ///
   /// Returns `null` when title is empty or date is missing (row skipped).
   static HealthRecord? parseHealthRecordRow(List<Data?> row, String userId) {
@@ -232,6 +280,7 @@ abstract final class ExcelRowParsers {
     final treatment = cellToString(row, 5);
     final veterinarian = cellToString(row, 6);
     final notes = cellToString(row, 7);
+    final providedId = cellToString(row, 8);
 
     if (title == null || title.isEmpty) return null;
 
@@ -241,7 +290,9 @@ abstract final class ExcelRowParsers {
     final type = parseHealthRecordType(typeStr);
 
     return HealthRecord(
-      id: _uuid.v7(),
+      id: (providedId != null && providedId.isNotEmpty)
+          ? providedId
+          : _uuid.v7(),
       userId: userId,
       title: title,
       type: type,

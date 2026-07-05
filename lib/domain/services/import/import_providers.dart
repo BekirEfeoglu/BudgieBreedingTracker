@@ -7,6 +7,7 @@ final dataImportServiceProvider = Provider<DataImportService>((ref) {
   return DataImportService(
     ref.watch(birdRepositoryProvider),
     ref.watch(breedingPairRepositoryProvider),
+    ref.watch(incubationRepositoryProvider),
     ref.watch(eggRepositoryProvider),
     ref.watch(chickRepositoryProvider),
     ref.watch(healthRecordRepositoryProvider),

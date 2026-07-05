@@ -8,6 +8,7 @@ import '../../../data/models/bird_model.dart';
 import '../../../data/models/breeding_pair_model.dart';
 import '../../../data/models/chick_model.dart';
 import '../../../data/models/egg_model.dart';
+import '../../../data/models/health_record_model.dart';
 import '../../../data/models/incubation_model.dart';
 
 part 'excel_export_sheets.dart';
@@ -25,6 +26,7 @@ class ExcelExportService {
     required List<Incubation> incubations,
     required List<Egg> eggs,
     required List<Chick> chicks,
+    List<HealthRecord> healthRecords = const [],
   }) async {
     final excel = Excel.createExcel();
 
@@ -33,6 +35,7 @@ class ExcelExportService {
     _addIncubationsSheet(excel, incubations);
     _addEggsSheet(excel, eggs);
     _addChicksSheet(excel, chicks);
+    _addHealthRecordsSheet(excel, healthRecords);
 
     // Remove default Sheet1
     excel.delete('Sheet1');

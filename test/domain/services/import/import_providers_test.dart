@@ -45,6 +45,7 @@ Uint8List _buildBirdWorkbookBytes() {
 void main() {
   late MockBirdRepository birdRepo;
   late MockBreedingPairRepository breedingRepo;
+  late MockIncubationRepository incubationRepo;
   late MockEggRepository eggRepo;
   late MockChickRepository chickRepo;
   late MockHealthRecordRepository healthRepo;
@@ -56,6 +57,7 @@ void main() {
   setUp(() {
     birdRepo = MockBirdRepository();
     breedingRepo = MockBreedingPairRepository();
+    incubationRepo = MockIncubationRepository();
     eggRepo = MockEggRepository();
     chickRepo = MockChickRepository();
     healthRepo = MockHealthRecordRepository();
@@ -69,6 +71,7 @@ void main() {
       overrides: [
         birdRepositoryProvider.overrideWithValue(birdRepo),
         breedingPairRepositoryProvider.overrideWithValue(breedingRepo),
+        incubationRepositoryProvider.overrideWithValue(incubationRepo),
         eggRepositoryProvider.overrideWithValue(eggRepo),
         chickRepositoryProvider.overrideWithValue(chickRepo),
         healthRecordRepositoryProvider.overrideWithValue(healthRepo),

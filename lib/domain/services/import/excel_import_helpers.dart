@@ -143,6 +143,27 @@ BreedingStatus parseBreedingStatus(String? value) {
   return BreedingStatus.active;
 }
 
+IncubationStatus parseIncubationStatus(String? value) {
+  if (value == null) return IncubationStatus.active;
+  final lower = value.toLowerCase().trim();
+  if (lower.isEmpty) return IncubationStatus.active;
+  if (lower == 'aktif' || lower == 'active' || lower == 'aktiv') {
+    return IncubationStatus.active;
+  }
+  if (lower == 'tamamlandi' ||
+      lower == 'completed' ||
+      lower == 'abgeschlossen') {
+    return IncubationStatus.completed;
+  }
+  if (lower == 'iptal' ||
+      lower == 'iptal edildi' ||
+      lower == 'cancelled' ||
+      lower == 'abgebrochen') {
+    return IncubationStatus.cancelled;
+  }
+  return IncubationStatus.unknown;
+}
+
 EggStatus parseEggStatus(String? value) {
   if (value == null) return EggStatus.laid;
   final lower = value.toLowerCase().trim();

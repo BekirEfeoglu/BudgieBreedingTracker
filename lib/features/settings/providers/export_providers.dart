@@ -10,6 +10,7 @@ import '../../../data/models/bird_model.dart';
 import '../../../data/models/breeding_pair_model.dart';
 import '../../../data/models/chick_model.dart';
 import '../../../data/models/egg_model.dart';
+import '../../../data/models/health_record_model.dart';
 import '../../../data/models/incubation_model.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/services/export/excel_export_service.dart';
@@ -92,6 +93,7 @@ class ExportActions {
       incubations: data.incubations,
       eggs: data.eggs,
       chicks: data.chicks,
+      healthRecords: data.healthRecords,
     );
     await _shareFile(bytes, 'budgie_veri.xlsx');
   });
@@ -131,6 +133,7 @@ class ExportActions {
       _ref.read(incubationRepositoryProvider).getAll(userId),
       _ref.read(eggRepositoryProvider).getAll(userId),
       _ref.read(chickRepositoryProvider).getAll(userId),
+      _ref.read(healthRecordRepositoryProvider).getAll(userId),
     ).wait;
     return _ExportData(
       birds: results.$1,
@@ -138,6 +141,7 @@ class ExportActions {
       incubations: results.$3,
       eggs: results.$4,
       chicks: results.$5,
+      healthRecords: results.$6,
     );
   }
 
@@ -167,6 +171,7 @@ class _ExportData {
   final List<Incubation> incubations;
   final List<Egg> eggs;
   final List<Chick> chicks;
+  final List<HealthRecord> healthRecords;
 
   _ExportData({
     required this.birds,
@@ -174,5 +179,6 @@ class _ExportData {
     required this.incubations,
     required this.eggs,
     required this.chicks,
+    required this.healthRecords,
   });
 }

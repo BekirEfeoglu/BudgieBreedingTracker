@@ -14,6 +14,7 @@ import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
+import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/export/excel_export_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/import/data_import_service.dart';
 
@@ -34,6 +35,7 @@ Uint8List _buildWorkbook(Map<String, List<List<String>>> sheets) {
 void main() {
   late MockBirdRepository birdRepo;
   late MockBreedingPairRepository breedingRepo;
+  late MockIncubationRepository incubationRepo;
   late MockEggRepository eggRepo;
   late MockChickRepository chickRepo;
   late MockHealthRecordRepository healthRepo;
@@ -73,6 +75,7 @@ void main() {
   setUp(() {
     birdRepo = MockBirdRepository();
     breedingRepo = MockBreedingPairRepository();
+    incubationRepo = MockIncubationRepository();
     eggRepo = MockEggRepository();
     chickRepo = MockChickRepository();
     healthRepo = MockHealthRecordRepository();
@@ -82,6 +85,7 @@ void main() {
     when(() => birdRepo.getById(any())).thenAnswer((_) async => null);
     when(() => breedingRepo.saveAll(any())).thenAnswer((_) async {});
     when(() => breedingRepo.getAll(any())).thenAnswer((_) async => []);
+    when(() => incubationRepo.saveAll(any())).thenAnswer((_) async {});
     when(() => eggRepo.saveAll(any())).thenAnswer((_) async {});
     when(() => chickRepo.saveAll(any())).thenAnswer((_) async {});
     when(() => healthRepo.saveAll(any())).thenAnswer((_) async {});
@@ -89,6 +93,7 @@ void main() {
     service = DataImportService(
       birdRepo,
       breedingRepo,
+      incubationRepo,
       eggRepo,
       chickRepo,
       healthRepo,
@@ -862,6 +867,96 @@ void main() {
               as List<Chick>).single;
       expect(savedChick.id, 'chick-1');
       expect(savedChick.gender, BirdGender.male);
+    });
+
+    test(
+      'incubations round-trip: exported incubation is re-imported with its '
+      'full id so eggs keep their incubationId link',
+      () async {
+        const userId = 'user-1';
+        const incubation = Incubation(
+          id: 'incubation-abcdef-123456',
+          userId: userId,
+          breedingPairId: 'pair-1',
+          species: Species.budgie,
+          status: IncubationStatus.active,
+        );
+        final egg = Egg(
+          id: 'egg-1',
+          userId: userId,
+          layDate: DateTime(2026, 1, 1),
+          status: EggStatus.laid,
+          incubationId: 'incubation-abcdef-123456',
+        );
+
+        final bytes = await ExcelExportService().exportAll(
+          birds: const [],
+          pairs: const [],
+          incubations: const [incubation],
+          eggs: [egg],
+          chicks: const [],
+        );
+
+        final results = await service.importAllFromExcel(
+          bytes: bytes,
+          userId: userId,
+        );
+
+        // Incubation survives the round-trip (was silently dropped before).
+        expect(results['incubations']!.importedCount, 1);
+        final savedInc =
+            (verify(() => incubationRepo.saveAll(captureAny())).captured.single
+                as List<Incubation>).single;
+        expect(savedInc.id, 'incubation-abcdef-123456');
+        expect(savedInc.breedingPairId, 'pair-1');
+        expect(savedInc.species, Species.budgie);
+        expect(savedInc.status, IncubationStatus.active);
+
+        // The egg's FK still points at the (now-imported) incubation's full id.
+        final savedEgg =
+            (verify(() => eggRepo.saveAll(captureAny())).captured.single
+                as List<Egg>).single;
+        expect(savedEgg.incubationId, 'incubation-abcdef-123456');
+      },
+    );
+
+    test('health records round-trip preserves id and fields', () async {
+      const userId = 'user-1';
+      final record = HealthRecord(
+        id: 'health-1',
+        userId: userId,
+        title: 'Yearly check',
+        type: HealthRecordType.vaccination,
+        date: DateTime(2026, 3, 14),
+        birdId: 'bird-1',
+        treatment: 'Vitamin boost',
+        veterinarian: 'Dr. Kus',
+      );
+
+      final bytes = await ExcelExportService().exportAll(
+        birds: const [],
+        pairs: const [],
+        incubations: const [],
+        eggs: const [],
+        chicks: const [],
+        healthRecords: [record],
+      );
+
+      final result = await service.importHealthRecordsFromExcel(
+        bytes: bytes,
+        userId: userId,
+      );
+
+      expect(result.importedCount, 1);
+      final saved =
+          (verify(() => healthRepo.saveAll(captureAny())).captured.single
+              as List<HealthRecord>).single;
+      expect(saved.id, 'health-1');
+      expect(saved.title, 'Yearly check');
+      expect(saved.type, HealthRecordType.vaccination);
+      expect(saved.birdId, 'bird-1');
+      expect(saved.treatment, 'Vitamin boost');
+      expect(saved.veterinarian, 'Dr. Kus');
     });
   });
 }
