@@ -4,6 +4,17 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-05] fix | Excel round-trip: incubations imported + health exported
+
+Audit found "Option B" wasn't lossless: export wrote an Incubations sheet but
+import had no parser (round-trip dropped every incubation + dangled egg
+`incubationId`); symmetrically export omitted health records. Added
+`parseIncubationRow`/`parseIncubationStatus`/`importIncubationsFromExcel` (wired
+breeding_pairs→incubations→eggs for FK ordering), un-truncated the exported
+incubation id, `_addHealthRecordsSheet` + id-preserving `parseHealthRecordRow`,
+`IncubationRepository` injected, 8 new `export.*` l10n keys. +2 round-trip tests;
+gates green. See [[domain/data-io]].
+
 ## [2026-07-04] fix | Excel is now a lossless round-trip (Option B)
 
 Follow-up to Option A, per user request. `ExcelExportService` now writes each
@@ -174,22 +185,4 @@ missing entries (run_local_quality_gate, check_remote_status,
 verify_security, git hooks, breeding regression + 3 test files). CI job
 table verified against ci.yml — no drift.
 
-## [2026-07-04] docs | Rulebook drift sweep (batched sync, pods, deps)
-
-Rules + CLAUDE.md reconciled with shipped code after a full review of
-`.claude/rules/` + `CLAUDE.md`. Fixed stale facts: background-sync.md's
-fictional "500ms debounce before push" replaced with the real batched-push
-contract (pushPendingBatched chunks, poison-row fallback, telemetry-only
-`PushStats.pushed`); performance.md's two-arg `AppLogger('perf', ...)`
-examples corrected to the single-message contract (mirrored in
-[[patterns/performance]]); data-layer.md remote-source count 26→27;
-data-io.md documents the all-or-nothing `saveAll` Excel import; premium
-entitlement flow notes the 5-min `ResumeThrottle`. Added missing content:
-notifications.md § FCM deferred-off-splash guard, observability.md
-`sentryTracesSampleRateFor` enforcement note, calendar.md single-pass
-filter rule, CLAUDE.md key-dep corrections (supabase iOS-CI cap,
-purchases 10.2.3) + pod-install build command + an "Adding or bumping a
-dependency" workflow. Oldest two log entries rotated to the new
-[[log-archive-2026-07-d]].
-
-Older entries are archived in [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
+Older entries are archived in [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

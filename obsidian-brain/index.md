@@ -18,6 +18,7 @@ Full catalog of every page in the obsidian-brain wiki.
 | [[log-archive-2026-07-b]] | Archived July 2026 change log entries (07-02, pre-all-tabs-audit) |
 | [[log-archive-2026-07-c]] | Archived July 2026 change log entries (07-02 all-tabs audit) |
 | [[log-archive-2026-07-d]] | Archived July 2026 change log entries (07-03 plan execution) |
+| [[log-archive-2026-07-e]] | Archived July 2026 change log entries (07-04 rulebook drift sweep) |
 | [[overview]] | High-level synthesis — what the app does, architecture diagram, key decisions |
 
 ## Architecture

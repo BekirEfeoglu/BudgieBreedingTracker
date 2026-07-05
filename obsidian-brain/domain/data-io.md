@@ -52,9 +52,19 @@ still require two resolvable birds and surface a clear `ImportResult` error.
 The encrypted backup remains the recommended full-fidelity path (photos,
 timestamps, all entities); Excel round-trips the tabular entities.
 
-Supported sheets: birds, breeding pairs, eggs, chicks, health records.
-Sheet columns are Turkish-labeled (master locale) — column order is fixed,
-not name-based, to survive translation drift.
+Supported sheets: birds, breeding pairs, **incubations**, eggs, chicks,
+health records. Sheet columns are Turkish-labeled (master locale) — column
+order is fixed, not name-based, to survive translation drift.
+
+**FK-aware sheet ordering (2026-07-05):** `importAllFromExcel` runs
+birds → breeding_pairs → **incubations → eggs** → chicks → health_records so an
+egg's `incubationId` resolves to a freshly-imported incubation. Before this,
+incubations were exported but had NO import parser — a full round-trip silently
+dropped every incubation and left each egg's `incubationId` dangling (nulled by
+the tolerant path). Now `parseIncubationRow` + `parseIncubationStatus` reconstruct
+them and the exported id is written in FULL (was truncated to 8 chars) so the FK
+resolves. Health records also gained id preservation (trailing ID column) so
+re-import is idempotent, not duplicate-generating.
 
 **Batch persistence:** `_importSheet` parses+validates every row, then persists
 the valid ones with a single `repo.saveAll(validItems)` (one batched local
@@ -74,8 +84,11 @@ rows in the same sheet resolve against them. `saveAll` is all-or-nothing (Drift
 | `PdfExportService` | Statistics summary + per-section page builders |
 | `PedigreePdfBuilder` (+ chart/table/constants) | Genealogy pedigree PDF with chart + table |
 
-Excel sheets share the column format with the Excel importer, so
-export → edit externally → import round-trips cleanly.
+Excel `exportAll` writes SIX sheets — birds, breeding pairs, incubations, eggs,
+chicks, health records — symmetric with the importer's supported sheets (health
+was previously omitted from export while the importer could read it; incubations
+were exported but never imported). Sheets share the column format with the Excel
+importer, so export → edit externally → import round-trips cleanly.
 
 ## Encryption Hook
 
