@@ -4,6 +4,17 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-05] docs | ci-actions rule: non-required Pages `deploy` transient
+
+Encoded this session's push lesson so a transient GitHub Pages failure isn't
+mistaken for a CI failure again. `ci-actions.md` § Post-Push Verification now
+distinguishes the authoritative signal (commit status `success` + required
+`ci.yml` check-runs) from the branch badge, and a new § Non-Required / Transient
+Checks documents `pages-build-deployment`/`deploy` (auto-generated, non-required,
+`docs/` site): its `Deployment failed, try again later.` / stuck-`building`
+failures are GitHub-side infra, non-blocking, self-heal on the next push — re-run
+once at most, never chase. Mirrored in [[infrastructure/ci-cd]].
+
 ## [2026-07-05] fix | Realtime log-throttle reset defeated by null-error statuses
 
 `RealtimeErrorLogThrottle` (the Sentry breadcrumb-budget guard) was reset on any
@@ -177,20 +188,5 @@ unwired; genealogy.md gained the `PremiumGuard` route note + PDF export. Also
 corrected my own `settings.md` rule (accessibility section is wired: font scale
 + reduce-animations + haptics, not "unwired"). index.md + services-index.md
 register the new page.
-
-## [2026-07-04] docs | 7 missing rule files created (coverage gap sweep)
-
-Compared `.claude/rules/` coverage against the 24 feature modules + 23 domain
-service dirs; seven shipped subsystems had no rule file. Created, grounded in
-current code by three parallel code-exploration passes: `ads.md` (lazy SDK
-init, ATT ordering, real banner call sites, rewarded access providers),
-`app-update.md` (overlay-not-dialog prompt, minSupportedBuild force, fail-open),
-`genealogy.md` (single-fetch traversal, depth persist, truncation-aware
-inbreeding), `health-records.md` (mixin FK checks, follow-up reminders, known
-chick-selector gap), `profile.md` (account deletion order + AAL2 guard),
-`feedback.md` (online-only naming, device-info transparency), `settings.md`
-(hub map — contract owners per toggle). CLAUDE.md § Rules table +
-[[sources/rules-index]] updated; marketplace.md ad-placement line annotated as
-design-goal (banners not wired to marketplace).
 
 Older entries are archived in [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

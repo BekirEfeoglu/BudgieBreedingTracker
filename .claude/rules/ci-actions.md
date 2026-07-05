@@ -62,10 +62,19 @@
   ```bash
   python3 scripts/check_remote_status.py
   ```
-- Basari saymak icin status state `success`, tum check-run'lar `completed` olmali; yalnizca bilinen/intentional skipped job kabul edilir
+- Basari saymak icin: commit **status `success`** VE tum **required `ci.yml` check-run'lari** `completed:success` olmali (bilinen/intentional skipped kabul). Branch UI rozeti (`17/19` gibi) required-olmayan bir check patlayinca da kirmizi olur — tek basina "basarisiz" sayma (bkz. § Non-Required / Transient Checks)
 - Main-only deploy veya Xcode Cloud gibi gec gelen check-run'lar sonradan baslayabilir; ilk `success` durumundan sonra script hala unfinished check gosteriyorsa kapanis yapma, poll etmeye devam et
 - `in_progress`, `queued`, `failure`, `error`, `action_required` veya conclusion'siz check varken "temiz" ya da "cozuldu" deme
 - Workflow UI degisikligi yapildiysa once yeni commit veya clean rebuild ile yeni run baslat; eski run sonucunu yeni ayarin kaniti sayma
+
+### Non-Required / Transient Checks (GitHub Pages `deploy`)
+`main` push'unda en sik "sahte kirmizi" kaynagi budur; kod hatasiyla karistirma.
+- `pages-build-deployment` (jobs: `build` / `deploy` / `report-build-status`) GitHub'in `docs/` GitHub Pages sitesi icin **otomatik urettigi** workflow'dur — `ci.yml`'de DEGILDIR, **required status check DEGILDIR**, uygulamayi/branch merge'ini bloklamaz. `check_remote_status.py` ciktisinda ci.yml'den **ayri bir run ID** altinda gorunur.
+- `deploy` job'i sik sik **gecici** patlar: `Deployment failed, try again later.` (Pages backend) ya da legacy build `building`de asili kalir. **Kod hatasi DEGILDIR:** `docs/` degismediyse deploy edilen icerik oncekiyle birebir ayni ve `build` job'i ✓ gecer.
+- Teshis: tek basarisiz check-run **yalnizca** `pages-build-deployment` run'i altindaki `deploy` ise → gecici, gecebilirsin. Legacy build durumu: `gh api repos/<owner>/<repo>/pages -q .status` (`building`de takiliysa GitHub-side hang; `built`/`errored` terminal).
+- **Kovalama sinirli:** en fazla **1** `gh run rerun --failed <pages_run_id>` (istersen `gh api -X POST repos/<owner>/<repo>/pages/builds` ile taze build). Hala patliyor + build `building`de asiliysa bu GitHub Pages altyapi sorunudur, repo'dan cozulmez — **saatlerce re-run etme**. Kendiliginden duzelir: backend toparlayinca bir sonraki `main` push'u (veya re-run) temiz deploy eder.
+- **Tamamlanma:** commit `status success` + tum required `ci.yml` check'leri yesilse push **dogrulanmis** sayilir; yalniz Pages `deploy`in kirmizi kalmasi bunu gecersizlestirmez — handoff'ta "GitHub-side Pages transient, non-blocking" notu birak.
+- `check_remote_status.py` ciktisini otomatik parse ederken **ozet sayaci satirlarini** (`completed:failure: 1`) degil yalniz **check-run girdi satirlarini** (`- <ad> (completed:failure) <url>`) esle ve failure kararinda Pages run ID'sini haric tut; aksi halde Pages transient'i gercek CI hatasi gibi gorunur.
 
 ## Deployment Safety
 - GitHub Pages, Supabase deploy ve store release job'larini gereksiz birbirine baglama

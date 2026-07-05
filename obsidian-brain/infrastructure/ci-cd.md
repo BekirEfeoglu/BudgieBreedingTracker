@@ -67,7 +67,16 @@ Do not declare CI green from UI badge alone. Verify exact commit SHA:
 python3 scripts/check_remote_status.py
 ```
 
-Success = status `success` + all check-runs `completed`. Stale green from earlier commit is not evidence.
+Success = commit status `success` + all **required `ci.yml`** check-runs
+`completed:success` (known/intentional skips OK). The branch badge (e.g.
+`17/19`) also turns red when a **non-required** check fails: the auto-generated
+`pages-build-deployment` / `deploy` job (GitHub Pages site from `docs/`)
+commonly fails transiently — `Deployment failed, try again later.` or a legacy
+build stuck in `building`. That is a GitHub-side Pages-infra transient, not a
+code failure and non-blocking; re-run at most once, it self-heals on the next
+push. Do not chase it or count it against the push. Stale green from an earlier
+commit is not evidence. (Rule: `ci-actions.md` § Non-Required / Transient
+Checks.)
 
 ## See Also
 

@@ -2,6 +2,21 @@
 
 Back to [[log]].
 
+## [2026-07-04] docs | 7 missing rule files created (coverage gap sweep)
+
+Compared `.claude/rules/` coverage against the 24 feature modules + 23 domain
+service dirs; seven shipped subsystems had no rule file. Created, grounded in
+current code by three parallel code-exploration passes: `ads.md` (lazy SDK
+init, ATT ordering, real banner call sites, rewarded access providers),
+`app-update.md` (overlay-not-dialog prompt, minSupportedBuild force, fail-open),
+`genealogy.md` (single-fetch traversal, depth persist, truncation-aware
+inbreeding), `health-records.md` (mixin FK checks, follow-up reminders, known
+chick-selector gap), `profile.md` (account deletion order + AAL2 guard),
+`feedback.md` (online-only naming, device-info transparency), `settings.md`
+(hub map — contract owners per toggle). CLAUDE.md § Rules table +
+[[sources/rules-index]] updated; marketplace.md ad-placement line annotated as
+design-goal (banners not wired to marketplace).
+
 ## [2026-07-04] docs | Rulebook drift sweep #2 (constants vs prose)
 
 Second verification pass over `.claude/rules/` + `CLAUDE.md`, this time
