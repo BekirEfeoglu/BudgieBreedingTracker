@@ -1,5 +1,5 @@
 name: "Guvenlik Sorunu (Public)"
-description: "Dusuk oncelikli guvenlik iyilestirme onerisi (KRITIK ZAFIYETLER ICIN SECURITY.md'yi okuyun)"
+description: "Dusuk oncelikli guvenlik iyilestirme onerisi (KRITIK ZAFIYETLER ICIN Security Advisories kullanin)"
 labels: ["type: security", "status: triage"]
 body:
   - type: markdown

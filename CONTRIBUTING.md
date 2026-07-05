@@ -96,7 +96,7 @@ Add new keys to all three files when introducing user-facing text.
 
 - Use the provided issue templates (Bug Report or Feature Request)
 - Do **not** open blank issues
-- For security vulnerabilities, see [SECURITY.md](SECURITY.md)
+- For security vulnerabilities, report privately via [GitHub Security Advisories](https://github.com/BekirEfeoglu/BudgieBreedingTracker/security/advisories/new)
 
 ## License
 

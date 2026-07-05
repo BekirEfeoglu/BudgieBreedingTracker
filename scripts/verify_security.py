@@ -4,7 +4,7 @@ BudgieBreedingTracker - Security Posture Verification
 
 Lightweight security audit that runs in CI to flag regressions in the
 project's security posture. Each check maps to a specific control listed
-in SECURITY.md / .claude/rules/security.md.
+in .claude/rules/security.md.
 
 Checks:
   1. Build obfuscation: Codemagic + GitHub Actions release-ready builds must
@@ -549,7 +549,7 @@ def main() -> int:
     print(
         f"{RED}{BOLD}{failed}/{total} security controls failed.{RESET} "
         f"Review the FAIL items above and either fix the regression or "
-        f"update SECURITY.md if the control is intentionally relaxed."
+        f"update .claude/rules/security.md if the control is intentionally relaxed."
     )
     return 1
 

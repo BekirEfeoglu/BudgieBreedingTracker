@@ -313,7 +313,7 @@ See [`.github/workflows/ci.yml`](.github/workflows/ci.yml) for the full pipeline
 Contributions should follow the repository conventions for architecture, localization, and commit format.
 
 - Contribution guide: [`CONTRIBUTING.md`](CONTRIBUTING.md)
-- Security policy: [`SECURITY.md`](SECURITY.md)
+- Security: report privately via [GitHub Security Advisories](https://github.com/BekirEfeoglu/BudgieBreedingTracker/security/advisories/new)
 - Privacy policy: [`docs/privacy-policy.html`](docs/privacy-policy.html)
 - Terms of use: [`docs/terms-of-use.html`](docs/terms-of-use.html)
 - Accessibility statement: [`docs/accessibility.html`](docs/accessibility.html)
