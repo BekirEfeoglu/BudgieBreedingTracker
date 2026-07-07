@@ -4,6 +4,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/constants/genetics_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/gamification_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/date_utils.dart'
     as date_utils;
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
@@ -12,6 +13,7 @@ import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/gamification/gamification_action_recorder.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/inbreeding_calculator.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/species_incubation_config.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/free_tier_limit_providers.dart';
@@ -485,6 +487,14 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
         }
         rethrow;
       }
+
+      recordGamificationAction(
+        ref,
+        userId: userId,
+        action: XpAction.createBreeding,
+        referenceId: pairId,
+        checkVerifiedBreeder: true,
+      );
 
       // Side effects: schedule notifications + generate calendar milestones.
       // Failures must not undo the successful primary mutation — the

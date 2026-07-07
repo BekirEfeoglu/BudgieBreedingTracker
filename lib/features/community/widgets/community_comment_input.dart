@@ -46,17 +46,26 @@ class _CommunityCommentInputState extends ConsumerState<CommunityCommentInput> {
     // (before this fire-and-forget call resolved) wiped the user's draft when
     // the submit was rejected async — moderation, cooldown, or network — and
     // they had to retype it. Mirrors the messaging input-bar fix.
+    final replyToComment = ref.read(replyToCommentProvider);
     final accepted = await ref
         .read(commentFormProvider.notifier)
-        .addComment(postId: widget.postId, content: text);
+        .addComment(
+          postId: widget.postId,
+          content: text,
+          parentId: replyToComment?.id,
+        );
     if (!mounted || !accepted) return;
     _controller.clear();
+    if (replyToComment != null) {
+      ref.read(replyToCommentProvider.notifier).state = null;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final formState = ref.watch(commentFormProvider);
+    final replyToComment = ref.watch(replyToCommentProvider);
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
     final isFocused = _focusNode.hasFocus;
     final hasText = _controller.text.trim().isNotEmpty;
@@ -83,77 +92,123 @@ class _CommunityCommentInputState extends ConsumerState<CommunityCommentInput> {
             ),
           ),
         ),
-        child: SafeArea(
-          top: false,
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _controller,
-                  focusNode: _focusNode,
-                  enabled: !formState.isLoading,
-                  maxLength: 1000,
-                  minLines: 1,
-                  maxLines: 4,
-                  decoration: InputDecoration(
-                    hintText: 'community.add_comment'.tr(),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (replyToComment != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: Row(
+                  children: [
+                    Icon(
+                      LucideIcons.reply,
+                      size: 16,
+                      color: theme.colorScheme.primary,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.lg,
-                      vertical: AppSpacing.sm,
+                    const SizedBox(width: AppSpacing.xs),
+                    Expanded(
+                      child: Text(
+                        'community.replying_to'.tr(
+                          namedArgs: {'user': replyToComment.username},
+                        ),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    isDense: true,
-                  ),
-                  buildCounter:
-                      (
-                        _, {
-                        required currentLength,
-                        required isFocused,
-                        maxLength,
-                      }) {
-                        if (currentLength < 800) return null;
-                        final isNearLimit = currentLength >= 950;
-                        return Text(
-                          '$currentLength/$maxLength',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: isNearLimit
-                                ? theme.colorScheme.error
-                                : theme.colorScheme.onSurfaceVariant,
-                          ),
-                        );
+                    GestureDetector(
+                      onTap: () {
+                        ref.read(replyToCommentProvider.notifier).state = null;
                       },
-                  textInputAction: TextInputAction.send,
-                  onSubmitted: (_) => _submit(),
+                      child: Icon(
+                        LucideIcons.x,
+                        size: 16,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: AppSpacing.sm),
-              if (formState.isLoading)
-                const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              else
-                AnimatedOpacity(
-                  opacity: hasText ? 1.0 : 0.4,
-                  duration: const Duration(milliseconds: 150),
-                  child: AnimatedScale(
-                    scale: hasText ? 1.0 : 0.9,
-                    duration: const Duration(milliseconds: 150),
-                    child: AppIconButton(
-                      onPressed: hasText ? _submit : null,
-                      icon: Icon(
-                        LucideIcons.send,
-                        color: theme.colorScheme.primary,
+            SafeArea(
+              top: false,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      focusNode: _focusNode,
+                      enabled: !formState.isLoading,
+                      maxLength: 1000,
+                      minLines: 1,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        hintText: replyToComment != null
+                            ? 'community.add_reply'.tr()
+                            : 'community.add_comment'.tr(),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusXl,
+                          ),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg,
+                          vertical: AppSpacing.sm,
+                        ),
+                        isDense: true,
                       ),
-                      semanticLabel: 'common.save'.tr(),
+                      buildCounter:
+                          (
+                            _, {
+                            required currentLength,
+                            required isFocused,
+                            maxLength,
+                          }) {
+                            if (currentLength < 800) return null;
+                            final isNearLimit = currentLength >= 950;
+                            return Text(
+                              '$currentLength/$maxLength',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: isNearLimit
+                                    ? theme.colorScheme.error
+                                    : theme.colorScheme.onSurfaceVariant,
+                              ),
+                            );
+                          },
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (_) => _submit(),
                     ),
                   ),
-                ),
-            ],
-          ),
+                  const SizedBox(width: AppSpacing.sm),
+                  if (formState.isLoading)
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  else
+                    AnimatedOpacity(
+                      opacity: hasText ? 1.0 : 0.4,
+                      duration: const Duration(milliseconds: 150),
+                      child: AnimatedScale(
+                        scale: hasText ? 1.0 : 0.9,
+                        duration: const Duration(milliseconds: 150),
+                        child: AppIconButton(
+                          onPressed: hasText ? _submit : null,
+                          icon: Icon(
+                            LucideIcons.send,
+                            color: theme.colorScheme.primary,
+                          ),
+                          semanticLabel: 'common.save'.tr(),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

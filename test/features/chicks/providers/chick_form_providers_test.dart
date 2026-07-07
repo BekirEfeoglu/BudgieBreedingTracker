@@ -6,6 +6,7 @@ import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_pro
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/gamification_enums.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,16 +20,29 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late MockChickRepository mockChickRepo;
+  late MockGamificationRepository mockGamificationRepo;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     mockChickRepo = MockChickRepository();
+    mockGamificationRepo = MockGamificationRepository();
     registerFallbackValue(_chick());
+    registerFallbackValue(XpAction.recordChick);
+    when(
+      () => mockGamificationRepo.recordAction(
+        any(),
+        any(),
+        referenceId: any(named: 'referenceId'),
+      ),
+    ).thenAnswer((_) async {});
   });
 
   ProviderContainer createContainer() {
     return ProviderContainer(
-      overrides: [chickRepositoryProvider.overrideWithValue(mockChickRepo)],
+      overrides: [
+        chickRepositoryProvider.overrideWithValue(mockChickRepo),
+        gamificationRepositoryProvider.overrideWithValue(mockGamificationRepo),
+      ],
     );
   }
 
@@ -74,6 +88,28 @@ void main() {
       expect(state.isSuccess, isTrue);
       expect(state.isLoading, isFalse);
       expect(state.error, isNull);
+    });
+
+    test('records recordChick XP after successful save', () async {
+      when(() => mockChickRepo.save(any())).thenAnswer((_) async {});
+
+      final container = createContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(chickFormStateProvider.notifier)
+          .createChick(userId: 'user-1', hatchDate: DateTime(2025, 3, 1));
+
+      final savedChick =
+          verify(() => mockChickRepo.save(captureAny())).captured.single
+              as Chick;
+      verify(
+        () => mockGamificationRepo.recordAction(
+          'user-1',
+          XpAction.recordChick,
+          referenceId: savedChick.id,
+        ),
+      ).called(1);
     });
 
     test('saves chick with provided name', () async {

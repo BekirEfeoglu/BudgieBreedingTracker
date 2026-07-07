@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/widgets/buttons/app_icon_button.dart';
@@ -16,6 +17,7 @@ import '../widgets/badge_card.dart';
 import '../widgets/xp_progress_bar.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
+import '../widgets/animated_rank_icon.dart';
 
 class BadgesScreen extends ConsumerWidget {
   const BadgesScreen({super.key});
@@ -96,7 +98,10 @@ class BadgesScreen extends ConsumerWidget {
 
                       if (enriched.isEmpty) {
                         return EmptyState(
-                          icon: const Icon(LucideIcons.award),
+                          icon: const AnimatedRankIcon(
+                            iconAsset: AppIcons.rankSilver,
+                            size: 48,
+                          ),
                           title: 'badges.no_badges'.tr(),
                           subtitle: 'badges.no_badges_hint'.tr(),
                         );

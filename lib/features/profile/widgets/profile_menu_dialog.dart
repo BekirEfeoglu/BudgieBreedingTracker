@@ -46,11 +46,11 @@ class ProfileMenuDialog extends ConsumerWidget {
     final hasBadges = isPremium || isFounder || (profile?.isAdmin == true);
 
     return Align(
-      alignment: Alignment.topRight,
+      alignment: AlignmentDirectional.topEnd,
       child: Padding(
-        padding: EdgeInsets.only(
+        padding: EdgeInsetsDirectional.only(
           top: mediaQuery.padding.top + kToolbarHeight + AppSpacing.sm,
-          right: AppSpacing.lg,
+          end: AppSpacing.lg,
         ),
         child: Material(
           elevation: 4,

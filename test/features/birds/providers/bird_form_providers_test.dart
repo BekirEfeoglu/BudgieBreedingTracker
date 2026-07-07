@@ -4,6 +4,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/gamification_enums.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
@@ -16,10 +17,13 @@ import '../../../helpers/mocks.dart';
 void main() {
   late MockBirdRepository repo;
   late MockBirdLifecycleService lifecycleService;
+  late MockGamificationRepository gamificationRepo;
 
   setUp(() {
     repo = MockBirdRepository();
     lifecycleService = MockBirdLifecycleService();
+    gamificationRepo = MockGamificationRepository();
+    registerFallbackValue(XpAction.addBird);
     registerFallbackValue(
       const Bird(
         id: 'fallback-id',
@@ -38,6 +42,13 @@ void main() {
     when(
       () => lifecycleService.cancelActiveBreedingsForBird(any()),
     ).thenAnswer((_) async => true);
+    when(
+      () => gamificationRepo.recordAction(
+        any(),
+        any(),
+        referenceId: any(named: 'referenceId'),
+      ),
+    ).thenAnswer((_) async {});
   });
 
   ProviderContainer makeContainer({bool isPremium = false}) {
@@ -45,6 +56,7 @@ void main() {
       overrides: [
         birdRepositoryProvider.overrideWithValue(repo),
         birdLifecycleServiceProvider.overrideWithValue(lifecycleService),
+        gamificationRepositoryProvider.overrideWithValue(gamificationRepo),
         isPremiumProvider.overrideWithValue(isPremium),
         effectivePremiumProvider.overrideWithValue(isPremium),
       ],
@@ -144,6 +156,29 @@ void main() {
       expect(state.isSuccess, isTrue);
       expect(state.isLoading, isFalse);
       verify(() => repo.save(any())).called(1);
+    });
+
+    test('createBird records addBird XP after successful save', () async {
+      stubUnderLimit();
+      when(() => repo.save(any())).thenAnswer((_) async {});
+      when(() => repo.getCount(any())).thenAnswer((_) async => 2);
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(birdFormStateProvider.notifier)
+          .createBird(userId: 'user-1', name: 'Alpha', gender: BirdGender.male);
+
+      final savedBird =
+          verify(() => repo.save(captureAny())).captured.single as Bird;
+      verify(
+        () => gamificationRepo.recordAction(
+          'user-1',
+          XpAction.addBird,
+          referenceId: savedBird.id,
+        ),
+      ).called(1);
     });
 
     test('createBird blocks duplicate ring number', () async {
@@ -534,9 +569,7 @@ void main() {
         final container = makeContainer();
         addTearDown(container.dispose);
 
-        await container
-            .read(birdFormStateProvider.notifier)
-            .markAsGifted('b1');
+        await container.read(birdFormStateProvider.notifier).markAsGifted('b1');
 
         final state = container.read(birdFormStateProvider);
         expect(state.isSuccess, isTrue);
@@ -557,9 +590,9 @@ void main() {
             excludeId: any(named: 'excludeId'),
           ),
         ).thenAnswer((_) async => false);
-        when(() => repo.getCount(any())).thenAnswer(
-          (_) async => AppConstants.freeTierMaxBirds,
-        );
+        when(
+          () => repo.getCount(any()),
+        ).thenAnswer((_) async => AppConstants.freeTierMaxBirds);
 
         final container = makeContainer();
         addTearDown(container.dispose);

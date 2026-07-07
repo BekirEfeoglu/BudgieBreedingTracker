@@ -32,7 +32,7 @@ Widget _buildFeedScrollView({
   if (feedState.error != null && posts.isEmpty) {
     return Center(
       child: app.ErrorState(
-        message: '${'community.feed_load_error'.tr()}: ${feedState.error}',
+        message: _feedErrorMessage(feedState.error),
         onRetry: () => ref.read(communityFeedProvider.notifier).refresh(),
       ),
     );
@@ -186,6 +186,20 @@ String _buildCreatePostRoute(CommunityPostType type) {
   return type == CommunityPostType.general
       ? AppRoutes.communityCreatePost
       : '${AppRoutes.communityCreatePost}?type=${type.toJson()}';
+}
+
+String _feedErrorMessage(String? error) {
+  final title = 'community.feed_load_error'.tr();
+  if (error == null || error.isEmpty) return title;
+
+  final safeErrorKey = _isLocalizationKey(error)
+      ? error
+      : 'errors.unknown_error';
+  return '$title: ${safeErrorKey.tr()}';
+}
+
+bool _isLocalizationKey(String value) {
+  return RegExp(r'^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$').hasMatch(value);
 }
 
 /// Floating banner overlay for new posts notification.

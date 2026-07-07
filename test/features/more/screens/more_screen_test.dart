@@ -111,8 +111,30 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();
 
-      // SliverAppBar.large renders the title in expanded + collapsed slots.
+      // The title stays in the compact pinned app bar.
       expect(find.text(l10n('nav.more')), findsWidgets);
+    });
+
+    testWidgets('uses compact header with bottom-nav scroll breathing room', (
+      tester,
+    ) async {
+      await tester.pumpWidget(createSubject());
+      await tester.pumpAndSettle();
+
+      final appBar = tester.widget<SliverAppBar>(find.byType(SliverAppBar));
+      expect(appBar.expandedHeight, isNull);
+      expect(appBar.pinned, isTrue);
+      expect(find.byType(FlexibleSpaceBar), findsNothing);
+
+      final contentPadding = tester.widget<SliverPadding>(
+        find.byWidgetPredicate(
+          (widget) => widget is SliverPadding && widget.child is SliverList,
+        ),
+      );
+      expect(
+        contentPadding.padding.resolve(TextDirection.ltr).bottom,
+        greaterThanOrEqualTo(80),
+      );
     });
 
     testWidgets('shows core menu items', (tester) async {
@@ -195,13 +217,14 @@ void main() {
       await tester.pumpAndSettle();
 
       // Admin panel is at the bottom — scroll to make it visible
+      final adminTile = find.widgetWithText(ListTile, l10n('more.admin_panel'));
       await tester.scrollUntilVisible(
-        find.text(l10n('more.admin_panel')),
+        adminTile,
         200,
         scrollable: find.byType(Scrollable),
       );
       await tester.pumpAndSettle();
-      expect(find.text(l10n('more.admin_panel')), findsOneWidget);
+      expect(adminTile, findsOneWidget);
     });
 
     testWidgets('shows premium badge next to premium features', (tester) async {

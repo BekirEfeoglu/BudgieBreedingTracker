@@ -35,6 +35,8 @@ void main() {
         tester,
         CommunityPostCardBody(
           post: _post(content: 'The canary sings'),
+          authorName: 'alice',
+          authorAvatarUrl: null,
           showFullContent: false,
           maxContentLines: 3,
           isOwnPost: false,
@@ -57,6 +59,8 @@ void main() {
         tester,
         CommunityPostCardBody(
           post: _post(postType: CommunityPostType.guide, title: 'Guide'),
+          authorName: 'alice',
+          authorAvatarUrl: null,
           showFullContent: false,
           maxContentLines: 3,
           isOwnPost: false,

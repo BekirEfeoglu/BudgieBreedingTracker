@@ -12,6 +12,7 @@ import 'package:budgie_breeding_tracker/data/models/community_post_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_feed_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_post_list_screen.dart';
+import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -68,6 +69,7 @@ Widget _buildSubject({
     overrides: [
       currentUserIdProvider.overrideWithValue('user-1'),
       communityFeedProvider.overrideWith(() => _FakeFeedNotifier()),
+      userProfileProvider.overrideWith((ref) => Stream.value(null)),
     ],
     child: MaterialApp.router(
       routerConfig: _buildRouter(

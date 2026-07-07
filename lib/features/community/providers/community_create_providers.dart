@@ -8,10 +8,12 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/enums/community_enums.dart';
+import '../../../core/enums/gamification_enums.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../data/repositories/community_post_repository.dart';
 import '../../../data/repositories/repository_providers.dart';
+import '../../../domain/services/gamification/gamification_action_recorder.dart';
 import '../../../domain/services/moderation/content_moderation_service.dart';
 import 'community_feed_providers.dart';
 import '../../../domain/services/moderation/moderation_providers.dart';
@@ -58,6 +60,9 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
     String? title,
     List<String> tags = const [],
     List<XFile> images = const [],
+    String? birdId,
+    String? birdName,
+    List<String> mutationTags = const [],
   }) async {
     if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
@@ -182,9 +187,17 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
         if (title != null && title.trim().isNotEmpty) 'title': title.trim(),
         if (tags.isNotEmpty) 'tags': tags,
         if (imageUrls.isNotEmpty) 'image_urls': imageUrls,
+        if (birdId != null && birdId.isNotEmpty) 'bird_id': birdId,
       };
 
       await repo.create(data);
+
+      recordGamificationAction(
+        ref,
+        userId: userId,
+        action: XpAction.sharePost,
+        referenceId: postId,
+      );
 
       ref.read(communityFeedProvider.notifier).refresh();
       _lastPostAt = DateTime.now();

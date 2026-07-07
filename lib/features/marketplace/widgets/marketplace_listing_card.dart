@@ -21,7 +21,6 @@ abstract final class _ImageOverlayColors {
   static const overlayBackground = Color(0x8A000000); // black54 equivalent
   static const overlayIcon = Color(0xFFFFFFFF); // white
   static const favoriteActive = AppColors.listingFavoriteActive;
-  static const freeLabel = AppColors.listingFreeLabel;
 }
 
 class MarketplaceListingCard extends StatelessWidget {
@@ -112,8 +111,6 @@ class MarketplaceListingCard extends StatelessWidget {
                         color: _listingTypeColor(listing.listingType),
                         icon: _listingTypeIcon(listing.listingType, size: 14),
                       ),
-                      const Spacer(),
-                      _buildPriceArea(theme),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.xs),
@@ -186,8 +183,6 @@ class MarketplaceListingCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildPriceArea(theme),
-                  const SizedBox(height: AppSpacing.xxs),
                   Text(
                     listing.title,
                     style: theme.textTheme.bodyMedium?.copyWith(
@@ -377,6 +372,12 @@ class MarketplaceListingCard extends StatelessWidget {
                 ),
               ),
             ),
+          // Bottom-right overlay: Glassmorphic Price Badge
+          Positioned(
+            bottom: AppSpacing.xs,
+            right: AppSpacing.xs,
+            child: _buildPriceBadge(theme),
+          ),
       ],
     );
 
@@ -386,28 +387,36 @@ class MarketplaceListingCard extends StatelessWidget {
     return AspectRatio(aspectRatio: 16 / 9, child: imageStack);
   }
 
-  Widget _buildPriceArea(ThemeData theme) {
-    if (listing.listingType == MarketplaceListingType.adoption &&
-        listing.price == null) {
-      return Text(
-        'marketplace.free_label'.tr(),
-        style: theme.textTheme.titleMedium?.copyWith(
-          color: _ImageOverlayColors.freeLabel,
+  Widget _buildPriceBadge(ThemeData theme) {
+    final isFree = listing.listingType == MarketplaceListingType.adoption && listing.price == null;
+    final text = isFree ? 'marketplace.free_label'.tr() : (listing.price != null ? listing.priceDisplay : '');
+    if (text.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: 4,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.65),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.15),
+          width: 0.5,
+        ),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 12,
           fontWeight: FontWeight.bold,
         ),
-      );
-    }
-    if (listing.price != null) {
-      return Text(
-        listing.priceDisplay,
-        style: theme.textTheme.titleMedium?.copyWith(
-          color: theme.colorScheme.primary,
-          fontWeight: FontWeight.bold,
-        ),
-      );
-    }
-    return const SizedBox.shrink();
+      ),
+    );
   }
+
+
 
   String _listingTypeLabel(MarketplaceListingType type) => switch (type) {
     MarketplaceListingType.sale => 'marketplace.type_sale'.tr(),

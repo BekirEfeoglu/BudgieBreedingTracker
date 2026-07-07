@@ -26,6 +26,7 @@ import 'package:budgie_breeding_tracker/data/repositories/clutch_repository.dart
 import 'package:budgie_breeding_tracker/data/repositories/egg_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/event_reminder_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/event_repository.dart';
+import 'package:budgie_breeding_tracker/data/repositories/gamification_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/growth_measurement_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/health_record_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/incubation_repository.dart';
@@ -90,6 +91,9 @@ class MockEventReminderRepository extends Mock
 
 class MockGrowthMeasurementRepository extends Mock
     implements GrowthMeasurementRepository {}
+
+class MockGamificationRepository extends Mock
+    implements GamificationRepository {}
 
 class MockCommunityPostRepository extends Mock
     implements CommunityPostRepository {}

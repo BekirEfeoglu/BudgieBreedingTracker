@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/gamification_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
@@ -17,11 +18,14 @@ class _MockToggleNotifier extends NotificationToggleSettingsNotifier {
 void main() {
   late MockHealthRecordRepository repo;
   late MockNotificationScheduler scheduler;
+  late MockGamificationRepository gamificationRepo;
   final date = DateTime(2024, 6, 1);
 
   setUp(() {
     repo = MockHealthRecordRepository();
     scheduler = MockNotificationScheduler();
+    gamificationRepo = MockGamificationRepository();
+    registerFallbackValue(XpAction.addHealthRecord);
     registerFallbackValue(
       HealthRecord(
         id: '',
@@ -42,12 +46,20 @@ void main() {
         recordId: any(named: 'recordId'),
       ),
     ).thenAnswer((_) async {});
+    when(
+      () => gamificationRepo.recordAction(
+        any(),
+        any(),
+        referenceId: any(named: 'referenceId'),
+      ),
+    ).thenAnswer((_) async {});
   });
 
   ProviderContainer makeContainer() => ProviderContainer(
     overrides: [
       healthRecordRepositoryProvider.overrideWithValue(repo),
       notificationSchedulerProvider.overrideWithValue(scheduler),
+      gamificationRepositoryProvider.overrideWithValue(gamificationRepo),
       notificationToggleSettingsProvider.overrideWith(_MockToggleNotifier.new),
     ],
   );
@@ -116,6 +128,31 @@ void main() {
         final s = c.read(healthRecordFormStateProvider);
         expect(s.isSuccess, isTrue);
         expect(s.isLoading, isFalse);
+      });
+
+      test('records addHealthRecord XP after successful save', () async {
+        when(() => repo.save(any())).thenAnswer((_) async {});
+        final c = makeContainer();
+        addTearDown(c.dispose);
+        await c
+            .read(healthRecordFormStateProvider.notifier)
+            .createRecord(
+              userId: 'u1',
+              title: 'Checkup',
+              type: HealthRecordType.checkup,
+              date: date,
+            );
+
+        final savedRecord =
+            verify(() => repo.save(captureAny())).captured.single
+                as HealthRecord;
+        verify(
+          () => gamificationRepo.recordAction(
+            'u1',
+            XpAction.addHealthRecord,
+            referenceId: savedRecord.id,
+          ),
+        ).called(1);
       });
 
       test('calls repo.save with correct data', () async {
@@ -288,7 +325,9 @@ void main() {
             birdId: 'bird-1',
             followUpDate: DateTime(2024, 6, 5),
           );
-          final updated = previous.copyWith(followUpDate: DateTime(2024, 6, 10));
+          final updated = previous.copyWith(
+            followUpDate: DateTime(2024, 6, 10),
+          );
           when(() => repo.getById('hr-1')).thenAnswer((_) async => previous);
           when(() => repo.save(any())).thenAnswer((_) async {});
           stubScheduler();
@@ -319,85 +358,77 @@ void main() {
         },
       );
 
-      test(
-        'cancels reminders without rescheduling when the bird is removed '
-        'from the record',
-        () async {
-          final previous = HealthRecord(
-            id: 'hr-1',
-            date: date,
-            type: HealthRecordType.illness,
-            title: 'Flu',
-            userId: 'u1',
-            birdId: 'bird-1',
-            followUpDate: DateTime(2024, 6, 5),
-          );
-          final updated = HealthRecord(
-            id: 'hr-1',
-            date: date,
-            type: HealthRecordType.illness,
-            title: 'Flu',
-            userId: 'u1',
-            followUpDate: DateTime(2024, 6, 5),
-          );
-          when(() => repo.getById('hr-1')).thenAnswer((_) async => previous);
-          when(() => repo.save(any())).thenAnswer((_) async {});
+      test('cancels reminders without rescheduling when the bird is removed '
+          'from the record', () async {
+        final previous = HealthRecord(
+          id: 'hr-1',
+          date: date,
+          type: HealthRecordType.illness,
+          title: 'Flu',
+          userId: 'u1',
+          birdId: 'bird-1',
+          followUpDate: DateTime(2024, 6, 5),
+        );
+        final updated = HealthRecord(
+          id: 'hr-1',
+          date: date,
+          type: HealthRecordType.illness,
+          title: 'Flu',
+          userId: 'u1',
+          followUpDate: DateTime(2024, 6, 5),
+        );
+        when(() => repo.getById('hr-1')).thenAnswer((_) async => previous);
+        when(() => repo.save(any())).thenAnswer((_) async {});
 
-          final c = makeContainer();
-          addTearDown(c.dispose);
-          await c
-              .read(healthRecordFormStateProvider.notifier)
-              .updateRecord(updated);
+        final c = makeContainer();
+        addTearDown(c.dispose);
+        await c
+            .read(healthRecordFormStateProvider.notifier)
+            .updateRecord(updated);
 
-          verify(
-            () => scheduler.cancelHealthCheckReminders(
-              'bird-1',
-              recordId: 'hr-1',
-            ),
-          ).called(1);
-          verifyNever(
-            () => scheduler.scheduleHealthCheckReminder(
-              recordId: any(named: 'recordId'),
-              birdId: any(named: 'birdId'),
-              birdName: any(named: 'birdName'),
-              hour: any(named: 'hour'),
-              durationDays: any(named: 'durationDays'),
-              settings: any(named: 'settings'),
-            ),
-          );
-        },
-      );
+        verify(
+          () =>
+              scheduler.cancelHealthCheckReminders('bird-1', recordId: 'hr-1'),
+        ).called(1);
+        verifyNever(
+          () => scheduler.scheduleHealthCheckReminder(
+            recordId: any(named: 'recordId'),
+            birdId: any(named: 'birdId'),
+            birdName: any(named: 'birdName'),
+            hour: any(named: 'hour'),
+            durationDays: any(named: 'durationDays'),
+            settings: any(named: 'settings'),
+          ),
+        );
+      });
 
-      test(
-        'does not touch reminders when neither followUpDate nor birdId '
-        'changed',
-        () async {
-          final previous = HealthRecord(
-            id: 'hr-1',
-            date: date,
-            type: HealthRecordType.illness,
-            title: 'Flu',
-            userId: 'u1',
-            birdId: 'bird-1',
-            followUpDate: DateTime(2024, 6, 5),
-          );
-          when(() => repo.getById('hr-1')).thenAnswer((_) async => previous);
-          when(() => repo.save(any())).thenAnswer((_) async {});
+      test('does not touch reminders when neither followUpDate nor birdId '
+          'changed', () async {
+        final previous = HealthRecord(
+          id: 'hr-1',
+          date: date,
+          type: HealthRecordType.illness,
+          title: 'Flu',
+          userId: 'u1',
+          birdId: 'bird-1',
+          followUpDate: DateTime(2024, 6, 5),
+        );
+        when(() => repo.getById('hr-1')).thenAnswer((_) async => previous);
+        when(() => repo.save(any())).thenAnswer((_) async {});
 
-          final c = makeContainer();
-          addTearDown(c.dispose);
-          await c
-              .read(healthRecordFormStateProvider.notifier)
-              .updateRecord(previous.copyWith(notes: 'unrelated edit'));
+        final c = makeContainer();
+        addTearDown(c.dispose);
+        await c
+            .read(healthRecordFormStateProvider.notifier)
+            .updateRecord(previous.copyWith(notes: 'unrelated edit'));
 
-          verifyNever(
-            () => scheduler.cancelHealthCheckReminders(
-              any(),
-              recordId: any(named: 'recordId'),
-            ),
-          );
-        },
-      );
+        verifyNever(
+          () => scheduler.cancelHealthCheckReminders(
+            any(),
+            recordId: any(named: 'recordId'),
+          ),
+        );
+      });
     });
 
     group('deleteRecord', () {
@@ -449,10 +480,8 @@ void main() {
             .deleteRecord('hr-1');
 
         verify(
-          () => scheduler.cancelHealthCheckReminders(
-            'bird-1',
-            recordId: 'hr-1',
-          ),
+          () =>
+              scheduler.cancelHealthCheckReminders('bird-1', recordId: 'hr-1'),
         ).called(1);
       });
 

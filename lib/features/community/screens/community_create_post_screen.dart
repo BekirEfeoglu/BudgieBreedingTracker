@@ -9,12 +9,18 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/enums/community_enums.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/app_haptics.dart';
 import '../../../core/utils/image_picker_guard.dart';
 import '../../../core/providers/action_feedback_providers.dart';
+import '../../../core/utils/logger.dart';
+import '../../../core/widgets/app_icon.dart';
 import '../../../domain/services/premium/premium_providers.dart';
+import '../../../data/models/bird_model.dart';
+import '../../../data/providers/bird_stream_providers.dart';
+import '../../../data/providers/auth_state_providers.dart';
 import '../providers/community_create_providers.dart';
 
 part 'community_create_post_widgets.dart';
@@ -40,6 +46,7 @@ class _CommunityCreatePostScreenState
   final _tagController = TextEditingController();
   final _selectedImages = <XFile>[];
   final _tags = <String>[];
+  Bird? _selectedBird;
   late CommunityPostType _postType;
 
   static const _draftKey = 'community_post_draft';
@@ -79,6 +86,7 @@ class _CommunityCreatePostScreenState
       'content': _contentController.text,
       'postType': _postType.toJson(),
       'tags': _tags,
+      'birdId': _selectedBird?.id,
     });
     await prefs.setString(_draftKey, data);
   }
@@ -89,7 +97,8 @@ class _CommunityCreatePostScreenState
     if (raw == null) return null;
     try {
       return jsonDecode(raw) as Map<String, dynamic>;
-    } catch (_) {
+    } catch (e) {
+      AppLogger.warning('Community post draft could not be decoded: $e');
       return null;
     }
   }
@@ -134,6 +143,20 @@ class _CommunityCreatePostScreenState
     _tags
       ..clear()
       ..addAll(List<String>.from(draft['tags'] as List? ?? []));
+
+    final draftBirdId = draft['birdId'] as String?;
+    if (draftBirdId != null) {
+      final userId = ref.read(currentUserIdProvider);
+      if (userId != 'anonymous') {
+        final birdsOpt = ref.read(birdsStreamProvider(userId)).value;
+        if (birdsOpt != null) {
+          _selectedBird = birdsOpt
+              .where((b) => b.id == draftBirdId)
+              .firstOrNull;
+        }
+      }
+    }
+
     if (!mounted) return;
     setState(() {});
   }
@@ -180,9 +203,7 @@ class _CommunityCreatePostScreenState
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'community.photo_limit_reached'.tr(
-            namedArgs: {'max': '$_maxImages'},
-          ),
+          'community.photo_limit_reached'.tr(namedArgs: {'max': '$_maxImages'}),
         ),
       ),
     );
@@ -235,6 +256,7 @@ class _CommunityCreatePostScreenState
               : null,
           tags: _tags,
           images: _selectedImages,
+          birdId: _selectedBird?.id,
         );
   }
 
@@ -360,6 +382,10 @@ class _CommunityCreatePostScreenState
               ),
               const SizedBox(height: AppSpacing.md),
 
+              // Bird selector
+              _buildBirdSelector(theme, formState.isLoading),
+              const SizedBox(height: AppSpacing.md),
+
               // Tags input
               Row(
                 children: [
@@ -437,6 +463,57 @@ class _CommunityCreatePostScreenState
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildBirdSelector(ThemeData theme, bool isLoading) {
+    final userId = ref.watch(currentUserIdProvider);
+    if (userId == 'anonymous') return const SizedBox.shrink();
+
+    final birdsAsync = ref.watch(birdsStreamProvider(userId));
+
+    return birdsAsync.when(
+      data: (birds) {
+        if (birds.isEmpty) return const SizedBox.shrink();
+        final validSelectedBird = birds.any((b) => b.id == _selectedBird?.id)
+            ? _selectedBird
+            : null;
+        return InputDecorator(
+          decoration: InputDecoration(
+            labelText: 'community.tag_bird'.tr(),
+            border: const OutlineInputBorder(),
+            prefixIcon: const AppIcon(AppIcons.bird),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: 0,
+            ),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<Bird>(
+              value: validSelectedBird,
+              isExpanded: true,
+              hint: Text('community.no_bird_selected'.tr()),
+              items: [
+                DropdownMenuItem<Bird>(
+                  value: null,
+                  child: Text('community.no_bird_selected'.tr()),
+                ),
+                ...birds.map(
+                  (b) => DropdownMenuItem(value: b, child: Text(b.name)),
+                ),
+              ],
+              onChanged: isLoading
+                  ? null
+                  : (bird) {
+                      setState(() => _selectedBird = bird);
+                      _scheduleDraftSave();
+                    },
+            ),
+          ),
+        );
+      },
+      loading: () => const LinearProgressIndicator(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 

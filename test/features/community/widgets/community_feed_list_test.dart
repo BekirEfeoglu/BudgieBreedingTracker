@@ -78,7 +78,7 @@ void main() {
           feedState: FeedState(posts: posts, isLoading: false, hasMore: false),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       // Redesign: explore drops the quick composer, story strip and sort
       // controls — the feed is post-first.
@@ -418,6 +418,28 @@ void main() {
       await tester.pump();
 
       expect(find.byType(CommunityFeedList), findsOneWidget);
+    });
+
+    testWidgets('error state hides raw exception details', (tester) async {
+      await tester.pumpWidget(
+        createSubject(
+          feedState: const FeedState(
+            posts: [],
+            isLoading: false,
+            hasMore: false,
+            error: "Instance of 'NetworkException'",
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('NetworkException'), findsNothing);
+      expect(
+        find.text(
+          '${l10n('community.feed_load_error')}: ${l10n('errors.unknown_error')}',
+        ),
+        findsOneWidget,
+      );
     });
   });
 }

@@ -5,7 +5,7 @@ abstract final class FeatureFlags {
   static const bool communityEnabled = true;
   static const bool marketplaceEnabled = true;
   static const bool messagingEnabled = false;
-  static const bool gamificationEnabled = false;
+  static const bool gamificationEnabled = true;
 
   /// Image/bird/listing message attachments. Disabled because the UI exists
   /// but the upload pipeline (image picker → scan-image-safety → Storage →

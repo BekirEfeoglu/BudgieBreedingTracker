@@ -1,11 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budgie_breeding_tracker/core/enums/gamification_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/date_utils.dart'
     as date_utils;
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/utils/sentry_error_filter.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/gamification/gamification_action_recorder.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_settings_providers.dart';
 import 'package:uuid/uuid.dart';
@@ -75,6 +77,13 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
       );
       await repo.save(record);
 
+      recordGamificationAction(
+        ref,
+        userId: userId,
+        action: XpAction.addHealthRecord,
+        referenceId: record.id,
+      );
+
       // Schedule health check reminders if a bird is associated
       if (birdId != null) {
         await _scheduleHealthCheckReminders(
@@ -137,10 +146,7 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
     if (birdId == null) return;
     try {
       final scheduler = ref.read(notificationSchedulerProvider);
-      await scheduler.cancelHealthCheckReminders(
-        birdId,
-        recordId: record.id,
-      );
+      await scheduler.cancelHealthCheckReminders(birdId, recordId: record.id);
     } catch (e) {
       AppLogger.warning('Failed to cancel health check reminders: $e');
     }

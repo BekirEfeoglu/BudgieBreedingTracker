@@ -145,17 +145,44 @@ class _NotificationBellButtonState
         }
       },
       semanticLabel: 'notifications.inbox_title'.tr(),
-      icon: totalBadge > 0
-          ? Badge(
-              label: Text(
-                totalBadge > 99 ? '99+' : '$totalBadge',
-                style: Theme.of(
-                  context,
-                ).textTheme.labelSmall?.copyWith(fontSize: 10),
+      icon: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          const AppIcon(AppIcons.notification, size: 22),
+          if (totalBadge > 0)
+            Positioned(
+              top: -4,
+              right: -6,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.error,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.surface,
+                    width: 1.5,
+                  ),
+                ),
+                constraints: const BoxConstraints(
+                  minWidth: 16,
+                  minHeight: 16,
+                ),
+                child: Center(
+                  child: Text(
+                    totalBadge > 99 ? '99+' : '$totalBadge',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      height: 1,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ),
-              child: const AppIcon(AppIcons.notification, size: 22),
-            )
-          : const AppIcon(AppIcons.notification, size: 22),
+            ),
+        ],
+      ),
     );
   }
 }

@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/enums/bird_enums.dart';
+import '../../../core/enums/gamification_enums.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/repositories/repository_providers.dart';
+import '../../../domain/services/gamification/gamification_action_recorder.dart';
 import 'package:budgie_breeding_tracker/shared/providers/breeding.dart';
 import '../../../domain/services/moderation/moderation_providers.dart';
 import '../../../domain/services/moderation/content_moderation_service.dart';
@@ -133,6 +135,12 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
         'image_urls': imageUrls,
         'city': city,
       });
+      recordGamificationAction(
+        ref,
+        userId: userId,
+        action: XpAction.createListing,
+        referenceId: listingId,
+      );
       // Invalidate the feed + owner-scoped list providers so the form
       // screen pops to fresh data instead of stale cache. Audit M2.
       ref.invalidate(marketplaceListingsProvider(userId));

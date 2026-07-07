@@ -67,13 +67,19 @@ void main() {
     });
 
     testWidgets('shows empty state when no badges', (tester) async {
-      await pumpLocalizedApp(tester, buildSubject());
+      await pumpLocalizedApp(tester, buildSubject(), settle: false);
+      await tester.pump();
 
       expect(find.byType(EmptyState), findsOneWidget);
     });
 
     testWidgets('shows badges when data available', (tester) async {
-      await pumpLocalizedApp(tester, buildSubject(badges: [testBadge]));
+      await pumpLocalizedApp(
+        tester,
+        buildSubject(badges: [testBadge]),
+        settle: false,
+      );
+      await tester.pump();
 
       expect(find.byType(GridView), findsOneWidget);
     });

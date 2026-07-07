@@ -44,9 +44,10 @@ class CommunityPostRepository {
     int limit = 20,
     DateTime? before,
     String? beforeId,
+    String? sortBy,
   }) async {
     final cacheKey =
-        'feed:$currentUserId:$limit:${before?.toIso8601String()}:$beforeId';
+        'feed:$currentUserId:$limit:${before?.toIso8601String()}:$beforeId:$sortBy';
     final cached = _cache?.getFeed(cacheKey);
     if (cached != null) return cached;
 
@@ -55,6 +56,7 @@ class CommunityPostRepository {
       limit: limit,
       before: before,
       beforeId: beforeId,
+      sortBy: sortBy,
     );
     final posts = await _enrichPosts(rows, currentUserId);
     _cache?.putFeed(cacheKey, posts);
@@ -151,6 +153,11 @@ class CommunityPostRepository {
   /// Content-only edit within the server-enforced 5-minute window.
   Future<void> update({required String postId, required String content}) async {
     await _postSource.updateContent(postId, content);
+    _cache?.invalidatePost(postId);
+  }
+
+  Future<void> togglePin({required String postId, required bool isPinned}) async {
+    await _postSource.togglePin(postId, isPinned);
     _cache?.invalidatePost(postId);
   }
 
@@ -307,6 +314,7 @@ class CommunityPostRepository {
       isLikedByMe: likedIds.contains(id),
       isBookmarkedByMe: bookmarkedIds.contains(id),
       isFollowingAuthor: _asBool(row['is_following_author']) ?? false,
+      isPinned: _asBool(row['is_pinned']) ?? false,
       editedAt: _asDateTime(row['edited_at']),
       createdAt: _asDateTime(row['created_at']),
       updatedAt: _asDateTime(row['updated_at']),

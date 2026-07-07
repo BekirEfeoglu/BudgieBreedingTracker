@@ -49,6 +49,41 @@ function baseDeps(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function birdAwareAdminClient(birdRow: Record<string, unknown> | null) {
+  const insertedRows: Record<string, unknown>[] = [];
+
+  return {
+    insertedRows,
+    client: {
+      from: (table: string) => {
+        if (table === "birds") {
+          return {
+            select: (_cols: string) => {
+              const query = {
+                eq: (_col: string, _v: unknown) => query,
+                maybeSingle: () =>
+                  Promise.resolve({ data: birdRow, error: null }),
+              };
+              return query;
+            },
+          };
+        }
+
+        return {
+          insert: (row: Record<string, unknown>) => {
+            insertedRows.push({ table, ...row });
+            return {
+              select: () => ({
+                single: () => Promise.resolve({ data: row, error: null }),
+              }),
+            };
+          },
+        };
+      },
+    },
+  };
+}
+
 Deno.test("create-community-post rejects missing authentication", async () => {
   const { deps } = baseDeps({
     getAuthenticatedUserId: () => Promise.resolve(null),
@@ -108,6 +143,52 @@ Deno.test("create-community-post inserts with authenticated owner only", async (
   assertEquals("created_at" in insertedRows[0], false);
 });
 
+Deno.test("create-community-post rejects bird links not owned by the authenticated user", async () => {
+  const admin = birdAwareAdminClient(null);
+  const { deps } = baseDeps({ createAdminClient: () => admin.client });
+
+  const response = await createCommunityPostHandler(deps)(
+    jsonRequest({
+      post: {
+        content: "Kus etiketi denemesi",
+        bird_id: "00000000-0000-7000-8000-000000000777",
+      },
+    }),
+  );
+
+  assertEquals(response.status, 400);
+  assertEquals(await response.json(), { error: "invalid_bird" });
+  assertEquals(admin.insertedRows.length, 0);
+});
+
+Deno.test("create-community-post derives bird fields from the owned bird row", async () => {
+  const birdId = "00000000-0000-7000-8000-000000000777";
+  const admin = birdAwareAdminClient({
+    id: birdId,
+    user_id: "user-auth",
+    name: "Mavis",
+    mutations: ["opaline", "blue"],
+  });
+  const { deps } = baseDeps({ createAdminClient: () => admin.client });
+
+  const response = await createCommunityPostHandler(deps)(
+    jsonRequest({
+      post: {
+        content: "Mavis bugun yumurtalikta sakin.",
+        bird_id: birdId,
+        bird_name: "Spoofed",
+        mutation_tags: ["wrong"],
+      },
+    }),
+  );
+
+  assertEquals(response.status, 200);
+  assertEquals(admin.insertedRows.length, 1);
+  assertEquals(admin.insertedRows[0].bird_id, birdId);
+  assertEquals(admin.insertedRows[0].bird_name, "Mavis");
+  assertEquals(admin.insertedRows[0].mutation_tags, ["opaline", "blue"]);
+});
+
 // baseDeps createAdminClient'ine eklenecek: mevcut from() dönüşüne
 // select-chain (fetch existing) ve update-chain mock'ları.
 function updateCapableAdminClient(existingRow: Record<string, unknown> | null) {
@@ -118,7 +199,8 @@ function updateCapableAdminClient(existingRow: Record<string, unknown> | null) {
       from: (_table: string) => ({
         select: (_cols: string) => ({
           eq: (_col: string, _v: unknown) => ({
-            maybeSingle: () => Promise.resolve({ data: existingRow, error: null }),
+            maybeSingle: () =>
+              Promise.resolve({ data: existingRow, error: null }),
           }),
         }),
         update: (row: Record<string, unknown>) => ({
@@ -172,7 +254,10 @@ Deno.test("update mode rejects after 5-minute window", async () => {
   const admin = updateCapableAdminClient(stale);
   const { deps } = baseDeps({ createAdminClient: () => admin.client });
   const response = await createCommunityPostHandler(deps)(
-    jsonRequest({ post: { id: stale.id, content: "gec kaldim" }, mode: "update" }),
+    jsonRequest({
+      post: { id: stale.id, content: "gec kaldim" },
+      mode: "update",
+    }),
   );
   assertEquals(response.status, 400);
   assertEquals((await response.json()).error, "edit_window_expired");
@@ -183,7 +268,10 @@ Deno.test("update mode rejects non-author", async () => {
   const admin = updateCapableAdminClient(foreign);
   const { deps } = baseDeps({ createAdminClient: () => admin.client });
   const response = await createCommunityPostHandler(deps)(
-    jsonRequest({ post: { id: foreign.id, content: "baskasinin postu" }, mode: "update" }),
+    jsonRequest({
+      post: { id: foreign.id, content: "baskasinin postu" },
+      mode: "update",
+    }),
   );
   assertEquals(response.status, 403);
   assertEquals((await response.json()).error, "not_post_author");
@@ -193,7 +281,10 @@ Deno.test("update mode rejects missing post", async () => {
   const admin = updateCapableAdminClient(null);
   const { deps } = baseDeps({ createAdminClient: () => admin.client });
   const response = await createCommunityPostHandler(deps)(
-    jsonRequest({ post: { id: FRESH_POST.id, content: "yok" }, mode: "update" }),
+    jsonRequest({
+      post: { id: FRESH_POST.id, content: "yok" },
+      mode: "update",
+    }),
   );
   assertEquals(response.status, 400);
   assertEquals((await response.json()).error, "post_not_found");
@@ -205,7 +296,10 @@ Deno.test("update mode runs moderation on new content", async () => {
   // moderate-content keyword listesinden bilinen bir kelime kullan —
   // mevcut create-mode moderation testindeki fixture'la AYNI kelimeyi al.
   const response = await createCommunityPostHandler(deps)(
-    jsonRequest({ post: { id: FRESH_POST.id, content: MODERATION_REJECTED_FIXTURE }, mode: "update" }),
+    jsonRequest({
+      post: { id: FRESH_POST.id, content: MODERATION_REJECTED_FIXTURE },
+      mode: "update",
+    }),
   );
   assertEquals(response.status, 400);
   assertEquals((await response.json()).error, "moderation_rejected");

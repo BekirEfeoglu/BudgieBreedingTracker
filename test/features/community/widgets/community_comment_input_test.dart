@@ -175,5 +175,6 @@ class _FakeCommentFormNotifier extends CommentFormNotifier {
   Future<bool> addComment({
     required String postId,
     required String content,
+    String? parentId,
   }) async => false;
 }

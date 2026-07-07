@@ -5,13 +5,26 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
+import 'package:budgie_breeding_tracker/core/widgets/skeleton_loader.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_media_gallery.dart';
 
 void main() {
-  Widget wrap(Widget child) {
-    return MaterialApp(home: Scaffold(body: child));
+  Widget wrap(Widget child, {bool disableAnimations = true}) {
+    return MaterialApp(
+      home: MediaQuery(
+        data: MediaQueryData(disableAnimations: disableAnimations),
+        child: Scaffold(body: child),
+      ),
+    );
+  }
+
+  Future<void> doubleTapGallery(WidgetTester tester) async {
+    final galleryCenter = tester.getCenter(find.byType(CommunityMediaGallery));
+    await tester.tapAt(galleryCenter);
+    await tester.pump(kDoubleTapMinTime + const Duration(milliseconds: 1));
+    await tester.tapAt(galleryCenter);
+    await tester.pump();
   }
 
   group('CommunityMediaGallery', () {
@@ -105,12 +118,10 @@ void main() {
       );
       await tester.pump();
 
-      await tester.tap(find.byType(GestureDetector).first);
-      await tester.pump(kDoubleTapMinTime);
-      await tester.tap(find.byType(GestureDetector).first);
-      await tester.pumpAndSettle();
+      await doubleTapGallery(tester);
 
       expect(doubleTapped, isTrue);
+      await tester.pump(kDoubleTapTimeout);
     });
 
     testWidgets('shows heart animation on double-tap', (tester) async {
@@ -121,20 +132,18 @@ void main() {
             onDoubleTap: () {},
             onOpenImage: (_) {},
           ),
+          disableAnimations: false,
         ),
       );
       await tester.pump();
 
       expect(find.byIcon(Icons.favorite_rounded), findsNothing);
 
-      await tester.tap(find.byType(GestureDetector).first);
-      await tester.pump(kDoubleTapMinTime);
-      await tester.tap(find.byType(GestureDetector).first);
-      await tester.pump();
+      await doubleTapGallery(tester);
 
       expect(find.byIcon(Icons.favorite_rounded), findsOneWidget);
 
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 700));
       expect(find.byIcon(Icons.favorite_rounded), findsNothing);
     });
 
@@ -153,9 +162,9 @@ void main() {
       );
       await tester.pump();
 
-      await tester.tap(find.byType(GestureDetector).first);
+      await tester.tap(find.byType(InkWell).first);
       await tester.pump(kDoubleTapTimeout);
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(openedIndex, 0);
     });
@@ -195,7 +204,7 @@ void main() {
       expect(find.byType(SizedBox), findsWidgets);
     });
 
-    testWidgets('shows placeholder icon while loading', (tester) async {
+    testWidgets('shows skeleton placeholder while loading', (tester) async {
       await tester.pumpWidget(
         wrap(
           CommunityMediaGallery(
@@ -207,7 +216,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byIcon(LucideIcons.image), findsOneWidget);
+      expect(find.byType(SkeletonLoader), findsOneWidget);
     });
   });
 }

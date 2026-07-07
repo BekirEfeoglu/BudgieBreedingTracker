@@ -19,6 +19,7 @@ const rateLimiter = createRateLimiter({
 
 const commentSchema = z.object({
   post_id: z.string().uuid(),
+  parent_id: z.string().uuid().optional(),
   content: z.string().min(1).max(1000),
 });
 
@@ -149,6 +150,7 @@ export function createCommunityCommentHandler(
       const { data, error } = await inserter({
         id: deps.randomUUID(),
         post_id: postId,
+        parent_id: parsed.data.parent_id,
         user_id: userId,
         content,
         is_deleted: false,

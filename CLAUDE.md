@@ -101,8 +101,8 @@ scripts/test_app_store_config.py        # App Store config consistency tests
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 1003 Dart files |
-| Test files (test/) | 915 test files, 11,395+ individual tests |
+| Source files (lib/) | 1007 Dart files |
+| Test files (test/) | 913 test files, 11,395+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -110,11 +110,11 @@ scripts/test_app_store_config.py        # App Store config consistency tests
 | Freezed models | 29 model files + statistics_models + supabase_extensions |
 | Domain services | 23 directories |
 | Routes | 74 |
-| Custom SVG icons | 93 constants, 93 files on disk |
+| Custom SVG icons | 99 constants, 99 files on disk |
 | Shared widgets | 35 (15 root + 4 buttons + 2 cards + 2 dialog + 1 bottom_sheet + 5 eggs) |
 | Enum files | 15 |
 | Supabase constants | 143 (tables + buckets + columns) |
-| L10n keys | ~3,046 per language, 41 categories |
+| L10n keys | ~3,047 per language, 41 categories |
 | DB schema version | 26 |
 
 ## CI/CD Pipeline
@@ -193,7 +193,7 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 | `validate-free-tier-limit` | Free tier entity limit enforcement |
 
 ### Migrations
-189 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
+192 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
 
 ## Rules
 
@@ -367,7 +367,7 @@ Security:      lib/core/security/
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
-Migrations:    supabase/migrations/ (189 files)
+Migrations:    supabase/migrations/ (192 files)
 Scripts:       scripts/
 CI:            .github/workflows/ + codemagic.yaml
 ```

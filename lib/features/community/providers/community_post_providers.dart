@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
+import '../../../core/enums/gamification_enums.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/models/community_post_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
@@ -43,11 +44,22 @@ class LikeToggleNotifier extends Notifier<void> {
     if (userId == 'anonymous') return;
     if (!_inFlight.add(postId)) return;
 
+    final feedState = ref.read(communityFeedProvider);
+    final post = feedState.posts.where((p) => p.id == postId).firstOrNull;
+    final authorId = post?.userId;
+
     ref.read(communityFeedProvider.notifier).optimisticLikeToggle(postId);
 
     try {
       final repo = ref.read(communitySocialRepositoryProvider);
-      await repo.toggleLike(userId: userId, postId: postId);
+      final isNewLike = await repo.toggleLike(userId: userId, postId: postId);
+
+      if (isNewLike && authorId != null && authorId != userId) {
+        ref
+            .read(gamificationRepositoryProvider)
+            .recordAction(authorId, XpAction.receiveLike, referenceId: postId);
+      }
+
       // Drop the TTL feed cache so a later refetch shows the new like state
       // instead of a pre-toggle snapshot (optimistic UI already updated).
       ref.read(communityPostRepositoryProvider).invalidateFeedCache();

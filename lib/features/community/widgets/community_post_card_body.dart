@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../data/models/community_post_model.dart';
+import 'community_link_preview.dart';
 import 'community_media_gallery.dart';
 import 'community_post_actions.dart';
 import 'community_post_card_parts.dart';
@@ -23,6 +24,8 @@ class CommunityPostCardBody extends StatelessWidget {
   const CommunityPostCardBody({
     super.key,
     required this.post,
+    required this.authorName,
+    this.authorAvatarUrl,
     required this.showFullContent,
     required this.maxContentLines,
     required this.isOwnPost,
@@ -39,6 +42,8 @@ class CommunityPostCardBody extends StatelessWidget {
   });
 
   final CommunityPost post;
+  final String authorName;
+  final String? authorAvatarUrl;
   final bool showFullContent;
   final int maxContentLines;
   final bool isOwnPost;
@@ -62,6 +67,12 @@ class CommunityPostCardBody extends StatelessWidget {
     final allImages = post.allImageUrls;
     final isGuide = post.postType == CommunityPostType.guide;
 
+    final urlRegExp = RegExp(
+      r'https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)',
+    );
+    final urlMatch = urlRegExp.firstMatch(post.content);
+    final firstUrl = urlMatch?.group(0);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -77,8 +88,8 @@ class CommunityPostCardBody extends StatelessWidget {
             children: [
               CommunityUserHeader(
                 userId: post.userId,
-                username: post.username,
-                avatarUrl: post.avatarUrl,
+                username: authorName,
+                avatarUrl: authorAvatarUrl,
                 createdAt: post.createdAt ?? DateTime.now(),
                 authorLevel: post.authorLevel,
                 authorTitle: post.authorTitle,
@@ -110,6 +121,39 @@ class CommunityPostCardBody extends StatelessWidget {
                     if (post.postType != CommunityPostType.general &&
                         post.postType != CommunityPostType.unknown)
                       PostTypeBadge(postType: post.postType),
+                    if (post.isPinned)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.tertiary.withValues(
+                            alpha: 0.15,
+                          ),
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusFull,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              LucideIcons.pin,
+                              size: 12,
+                              color: theme.colorScheme.tertiary,
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            Text(
+                              'community.pinned'.tr(),
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: theme.colorScheme.tertiary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     if (post.title != null)
                       Text(
                         post.title!,
@@ -127,6 +171,10 @@ class CommunityPostCardBody extends StatelessWidget {
                   showFull: showFullContent,
                   maxLines: maxContentLines,
                 ),
+              ],
+              if (firstUrl != null) ...[
+                const SizedBox(height: AppSpacing.md),
+                CommunityLinkPreview(url: firstUrl),
               ],
               if (post.birdId != null) ...[
                 const SizedBox(height: AppSpacing.md),
@@ -218,7 +266,7 @@ class _GuideLeadBlock extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            theme.colorScheme.primary.withValues(alpha: 0.12),
+            theme.colorScheme.primary.withValues(alpha: 0.18),
             theme.colorScheme.surface,
           ],
         ),
@@ -269,7 +317,7 @@ class _GuideLeadBlock extends StatelessWidget {
                   color: theme.colorScheme.surface.withValues(alpha: 0.82),
                   borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                   border: Border.all(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.14),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.20),
                   ),
                 ),
                 child: Text(

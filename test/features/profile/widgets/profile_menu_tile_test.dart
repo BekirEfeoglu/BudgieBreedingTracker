@@ -165,5 +165,25 @@ void main() {
 
       expect(find.text('John Doe'), findsOneWidget);
     });
+
+    testWidgets('constrains long values to avoid overflow', (tester) async {
+      const longValue = 'very.long.profile.value.that.should.not.overflow';
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: ProfileInfoRow(
+              icon: Icon(Icons.person),
+              label: 'Name',
+              value: longValue,
+            ),
+          ),
+        ),
+      );
+
+      final valueText = tester.widget<Text>(find.text(longValue));
+      expect(valueText.maxLines, 2);
+      expect(valueText.overflow, TextOverflow.ellipsis);
+    });
   });
 }

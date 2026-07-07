@@ -61,6 +61,7 @@ class CommunityCommentRemoteSource {
       final result = await _edgeFunctionClient.createCommunityComment(
         postId: postId,
         content: content,
+        parentId: data['parent_id']?.toString(),
       );
       if (!result.success) {
         throw Exception(result.error ?? 'create_community_comment_failed');

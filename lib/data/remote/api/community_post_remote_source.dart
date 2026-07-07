@@ -29,7 +29,8 @@ class CommunityPostRemoteSource {
   /// to reduce payload size.
   static const _feedColumns =
       'id, user_id, content, title, post_type, '
-      'image_urls, tags, like_count, comment_count, view_count, '
+      'image_urls, tags, bird_id, bird_name, mutation_tags, '
+      'like_count, comment_count, view_count, '
       'is_pinned, visibility, created_at, updated_at, edited_at, is_deleted';
 
   Future<List<Map<String, dynamic>>> fetchFeed({
@@ -37,19 +38,35 @@ class CommunityPostRemoteSource {
     int limit = 20,
     DateTime? before,
     String? beforeId,
+    String? sortBy,
   }) async {
     try {
       if (currentUserId.isEmpty) {
         throw ArgumentError('currentUserId is required');
       }
-      final result = await _client.rpc<List<dynamic>>(
-        'fetch_community_feed',
-        params: {
-          'p_limit': limit,
-          'p_before_created_at': before?.toIso8601String(),
-          'p_before_id': beforeId,
-        },
-      );
+
+      List<dynamic> result;
+      try {
+        result = await _fetchFeedRpc(
+          limit: limit,
+          before: before,
+          beforeId: beforeId,
+          sortBy: sortBy,
+        );
+      } on PostgrestException catch (e) {
+        if (sortBy == null || !_isMissingSortFeedRpcSignature(e)) {
+          rethrow;
+        }
+        AppLogger.warning(
+          'CommunityPostRemoteSource.fetchFeed falling back to legacy '
+          'fetch_community_feed RPC signature',
+        );
+        result = await _fetchFeedRpc(
+          limit: limit,
+          before: before,
+          beforeId: beforeId,
+        );
+      }
 
       final rows = result
           .whereType<Map>()
@@ -63,6 +80,35 @@ class CommunityPostRemoteSource {
         st,
       );
     }
+  }
+
+  Future<List<dynamic>> _fetchFeedRpc({
+    required int limit,
+    DateTime? before,
+    String? beforeId,
+    String? sortBy,
+  }) async {
+    return _client.rpc<List<dynamic>>(
+      'fetch_community_feed',
+      params: {
+        'p_limit': limit,
+        'p_before_created_at': before?.toIso8601String(),
+        'p_before_id': beforeId,
+        if (sortBy != null) 'p_sort_by': sortBy,
+      },
+    );
+  }
+
+  bool _isMissingSortFeedRpcSignature(PostgrestException error) {
+    final details = [
+      error.message,
+      error.code,
+      error.details,
+      error.hint,
+    ].whereType<Object>().join(' ');
+    return error.code == 'PGRST202' &&
+        details.contains('fetch_community_feed') &&
+        details.contains('p_sort_by');
   }
 
   Future<Map<String, dynamic>?> fetchById(String postId) async {
@@ -139,6 +185,22 @@ class CommunityPostRemoteSource {
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
         'CommunityPostRemoteSource.updateContent',
+        e,
+        st,
+      );
+    }
+  }
+
+  /// Toggles the is_pinned status of a post (Admin only).
+  Future<void> togglePin(String postId, bool isPinned) async {
+    try {
+      await _client
+          .from(SupabaseConstants.communityPostsTable)
+          .update({'is_pinned': isPinned})
+          .eq(SupabaseConstants.colId, postId);
+    } catch (e, st) {
+      throw BaseRemoteSource.handleErrorForTag(
+        'CommunityPostRemoteSource.togglePin',
         e,
         st,
       );

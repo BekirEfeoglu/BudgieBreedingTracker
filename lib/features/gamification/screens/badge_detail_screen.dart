@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
 
 import '../../../core/theme/app_spacing.dart';
@@ -12,6 +13,7 @@ import 'package:budgie_breeding_tracker/shared/providers/breeding.dart';
 import '../providers/gamification_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
+import '../widgets/animated_rank_icon.dart';
 
 class BadgeDetailScreen extends ConsumerWidget {
   final String badgeId;
@@ -77,13 +79,16 @@ class BadgeDetailScreen extends ConsumerWidget {
                   ? _tierColor(badge.tier, theme)
                   : theme.colorScheme.surfaceContainerHighest,
             ),
-            child: Icon(
-              isUnlocked ? LucideIcons.award : LucideIcons.lock,
-              size: 56,
-              color: isUnlocked
-                  ? theme.colorScheme.onPrimary
-                  : theme.colorScheme.outline,
-            ),
+            child: isUnlocked
+                ? AnimatedRankIcon(
+                    iconAsset: AppIcons.getBadgeIcon(badge.tier.name),
+                    size: 48,
+                  )
+                : Icon(
+                    LucideIcons.lock,
+                    size: 48,
+                    color: theme.colorScheme.outline,
+                  ),
           ),
           const SizedBox(height: AppSpacing.xl),
           // Badge name

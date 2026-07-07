@@ -45,12 +45,11 @@ class CommunityScreen extends ConsumerWidget {
       floatingActionButton:
           isEnabled &&
               !showWelcomeEmpty &&
-              activeTab != CommunityFeedTab.marketplace &&
               (activeTab != CommunityFeedTab.guides ||
                   ref.watch(isFounderProvider).value == true)
           ? _CreatePostFab(
-              isGuide: activeTab == CommunityFeedTab.guides,
-              onPressed: () => context.push(_buildCreatePostRoute(activeTab)),
+              activeTab: activeTab,
+              onPressed: () => context.push(_buildCreateRoute(activeTab)),
             )
           : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -77,7 +76,11 @@ class CommunityScreen extends ConsumerWidget {
     );
   }
 
-  String _buildCreatePostRoute(CommunityFeedTab activeTab) {
+  String _buildCreateRoute(CommunityFeedTab activeTab) {
+    if (activeTab == CommunityFeedTab.marketplace) {
+      return '${AppRoutes.marketplace}/form';
+    }
+
     final initialType = switch (activeTab) {
       CommunityFeedTab.guides => CommunityPostType.guide,
       _ => CommunityPostType.general,
@@ -173,71 +176,118 @@ class _ComingSoonBody extends StatelessWidget {
 /// A custom gradient pill (FloatingActionButton has no gradient support) with
 /// a plus icon for posts, or the guide glyph on the guides tab.
 class _CreatePostFab extends StatelessWidget {
-  const _CreatePostFab({required this.isGuide, required this.onPressed});
+  const _CreatePostFab({required this.activeTab, required this.onPressed});
 
-  final bool isGuide;
+  final CommunityFeedTab activeTab;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
+    final isGuide = activeTab == CommunityFeedTab.guides;
+    final isMarket = activeTab == CommunityFeedTab.marketplace;
+    final showLabel = MediaQuery.sizeOf(context).width >= 430;
+
+    final label = isMarket
+        ? 'marketplace.add_listing'.tr()
+        : isGuide
+        ? 'community.create_guide'.tr()
+        : 'community.create_post'.tr();
+
     return Semantics(
       button: true,
-      label: 'community.create_post'.tr(),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
+      label: label,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppColors.accent, AppColors.accentLight],
+          ),
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-          onTap: onPressed,
-          child: Ink(
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [AppColors.accent, AppColors.accentLight],
-              ),
-              borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.accent.withValues(alpha: 0.45),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.accent.withValues(alpha: 0.28),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
             ),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 52),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (isGuide)
-                      const AppIcon(
-                        AppIcons.guide,
-                        size: 22,
-                        color: AppColors.premiumBadgeText,
-                      )
-                    else
-                      const Icon(
-                        LucideIcons.plus,
-                        size: 22,
-                        color: AppColors.premiumBadgeText,
+          ],
+        ),
+        child: Material(
+          type: MaterialType.transparency,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onPressed,
+            child: showLabel
+                ? ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minHeight: AppSpacing.touchTargetLg,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
                       ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(
-                      'community.create_post'.tr(),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.premiumBadgeText,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _CreatePostIcon(isGuide: isGuide, isMarket: isMarket),
+                          const SizedBox(width: AppSpacing.sm),
+                          Text(
+                            label,
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.premiumBadgeText,
+                                ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
+                  )
+                : SizedBox.square(
+                    dimension: AppSpacing.touchTargetLg,
+                    child: Center(
+                      child: _CreatePostIcon(
+                        isGuide: isGuide,
+                        isMarket: isMarket,
+                      ),
+                    ),
+                  ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _CreatePostIcon extends StatelessWidget {
+  const _CreatePostIcon({required this.isGuide, required this.isMarket});
+
+  final bool isGuide;
+  final bool isMarket;
+
+  @override
+  Widget build(BuildContext context) {
+    if (isMarket) {
+      return const Icon(
+        LucideIcons.store,
+        size: 22,
+        color: AppColors.premiumBadgeText,
+      );
+    }
+
+    if (isGuide) {
+      return const AppIcon(
+        AppIcons.guide,
+        size: 22,
+        color: AppColors.premiumBadgeText,
+      );
+    }
+
+    return const Icon(
+      LucideIcons.plus,
+      size: 22,
+      color: AppColors.premiumBadgeText,
     );
   }
 }

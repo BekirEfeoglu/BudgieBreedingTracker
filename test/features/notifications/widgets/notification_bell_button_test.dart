@@ -69,19 +69,22 @@ void main() {
       expect(find.byType(IconButton), findsAtLeastNWidgets(1));
     });
 
-    testWidgets('shows no Badge when unread count is zero', (tester) async {
+    testWidgets('shows no badge count when unread count is zero', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildSubject(unread: []));
       await tester.pump();
-      expect(find.byType(Badge), findsNothing);
+      expect(find.text('1'), findsNothing);
+      expect(find.text('99+'), findsNothing);
     });
 
-    testWidgets('shows Badge when there are unread notifications', (
+    testWidgets('shows badge count when there are unread notifications', (
       tester,
     ) async {
       final unread = [makeNotification(id: 'n-1'), makeNotification(id: 'n-2')];
       await tester.pumpWidget(buildSubject(unread: unread));
       await tester.pump();
-      expect(find.byType(Badge), findsAtLeastNWidgets(1));
+      expect(find.text('2'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('Badge shows correct count text', (tester) async {
@@ -121,7 +124,6 @@ void main() {
       await tester.pump();
 
       // Badge should appear with count 1
-      expect(find.byType(Badge), findsAtLeastNWidgets(1));
       expect(find.text('1'), findsAtLeastNWidgets(1));
     });
 
@@ -136,7 +138,6 @@ void main() {
       await tester.pump();
 
       // Badge should show 3
-      expect(find.byType(Badge), findsAtLeastNWidgets(1));
       expect(find.text('3'), findsAtLeastNWidgets(1));
     });
 
@@ -209,7 +210,7 @@ void main() {
       await tester.pump();
 
       // Badge should be gone (feedback marked as read, no notifications)
-      expect(find.byType(Badge), findsNothing);
+      expect(find.text('1'), findsNothing);
     });
   });
 }

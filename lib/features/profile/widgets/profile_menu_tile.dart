@@ -116,6 +116,8 @@ class ProfileInfoRow extends StatelessWidget {
             children: [
               Text(
                 label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -123,6 +125,8 @@ class ProfileInfoRow extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 value,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: valueColor,
                   fontWeight: valueColor != null ? FontWeight.w600 : null,

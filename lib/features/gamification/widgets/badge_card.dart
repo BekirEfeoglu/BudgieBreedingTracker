@@ -2,9 +2,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../providers/gamification_providers.dart';
+import 'animated_rank_icon.dart';
 
 class BadgeCard extends StatelessWidget {
   final EnrichedBadge enrichedBadge;
@@ -36,13 +38,16 @@ class BadgeCard extends StatelessWidget {
                       ? _tierColor(badge.tier, theme).withValues(alpha: 0.2)
                       : theme.colorScheme.surfaceContainerHighest,
                 ),
-                child: Icon(
-                  isUnlocked ? LucideIcons.award : LucideIcons.lock,
-                  size: 28,
-                  color: isUnlocked
-                      ? _tierColor(badge.tier, theme)
-                      : theme.colorScheme.outline,
-                ),
+                child: isUnlocked
+                    ? AnimatedRankIcon(
+                        iconAsset: AppIcons.getBadgeIcon(badge.tier.name),
+                        size: 28,
+                      )
+                    : Icon(
+                        LucideIcons.lock,
+                        size: 28,
+                        color: theme.colorScheme.outline,
+                      ),
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(

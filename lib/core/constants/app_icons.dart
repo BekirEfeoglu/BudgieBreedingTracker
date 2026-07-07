@@ -73,6 +73,35 @@ abstract final class AppIcons {
   static const post = 'assets/icons/community/post.svg';
   static const story = 'assets/icons/community/story.svg';
   static const bookmark = 'assets/icons/community/bookmark.svg';
+  static const rank = 'assets/icons/community/rank.svg';
+  static const rankBronze = 'assets/icons/community/rank_bronze.svg';
+  static const rankSilver = 'assets/icons/community/rank_silver.svg';
+  static const rankGold = 'assets/icons/community/rank_gold.svg';
+  static const rankPlatinum = 'assets/icons/community/rank_platinum.svg';
+  static const rankLegendary = 'assets/icons/community/rank_legendary.svg';
+
+  static String getBadgeIcon(String tierName) {
+    switch (tierName.toLowerCase()) {
+      case 'bronze':
+        return rankBronze;
+      case 'silver':
+        return rankSilver;
+      case 'gold':
+        return rankGold;
+      case 'platinum':
+        return rankPlatinum;
+      default:
+        return rank;
+    }
+  }
+
+  static String getLevelIcon(String levelTitleKey) {
+    if (levelTitleKey.contains('novice') || levelTitleKey.contains('beginner')) return rankBronze;
+    if (levelTitleKey.contains('experienced') || levelTitleKey.contains('expert')) return rankSilver;
+    if (levelTitleKey.contains('master') || levelTitleKey.contains('champion')) return rankPlatinum;
+    if (levelTitleKey.contains('legendary') || levelTitleKey.contains('whisperer')) return rankLegendary;
+    return rankGold;
+  }
 
   // ── Settings ──
   static const settings = 'assets/icons/settings/settings.svg';

@@ -14,15 +14,17 @@ class CommunitySocialRepository {
   const CommunitySocialRepository({required CommunitySocialRemoteSource source})
     : _source = source;
 
-  Future<void> toggleLike({
+  Future<bool> toggleLike({
     required String userId,
     required String postId,
   }) async {
     final isLiked = await _source.isPostLiked(userId, postId);
     if (isLiked) {
       await _source.unlikePost(userId, postId);
+      return false;
     } else {
       await _source.likePost(userId, postId);
+      return true;
     }
   }
 

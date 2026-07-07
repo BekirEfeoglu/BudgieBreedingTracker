@@ -47,7 +47,7 @@ class _FeaturedGuideCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: theme.colorScheme.primary.withValues(alpha: 0.12),
+              color: theme.colorScheme.primary.withValues(alpha: 0.15),
               blurRadius: 22,
               offset: const Offset(0, 12),
             ),
@@ -117,6 +117,37 @@ class _FeaturedGuideCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: AppSpacing.md),
+                  if (post.tags.isNotEmpty || post.mutationTags.isNotEmpty) ...[
+                    Wrap(
+                      spacing: AppSpacing.xs,
+                      runSpacing: AppSpacing.xs,
+                      children: [
+                        for (final tag in [...post.tags, ...post.mutationTags].take(3))
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.7),
+                              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                              border: Border.all(
+                                color: theme.colorScheme.secondary.withValues(alpha: 0.15),
+                                width: 0.5,
+                              ),
+                            ),
+                            child: Text(
+                              '#$tag',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: theme.colorScheme.onSecondaryContainer,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
                   _GuideOpenButton(onTap: () => _open(context)),
                 ],
               ),
@@ -151,11 +182,11 @@ class _GuideLibraryCard extends StatelessWidget {
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
           border: Border.all(
-            color: theme.colorScheme.primary.withValues(alpha: 0.14),
+            color: theme.colorScheme.primary.withValues(alpha: 0.18),
           ),
           boxShadow: [
             BoxShadow(
-              color: theme.colorScheme.primary.withValues(alpha: 0.1),
+              color: theme.colorScheme.primary.withValues(alpha: 0.15),
               blurRadius: 18,
               offset: const Offset(0, 10),
             ),
@@ -209,6 +240,37 @@ class _GuideLibraryCard extends StatelessWidget {
                       ],
                     ],
                   ),
+                  if (post.tags.isNotEmpty || post.mutationTags.isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    Wrap(
+                      spacing: AppSpacing.xs,
+                      runSpacing: AppSpacing.xs,
+                      children: [
+                        for (final tag in [...post.tags, ...post.mutationTags].take(3))
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.7),
+                              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                              border: Border.all(
+                                color: theme.colorScheme.secondary.withValues(alpha: 0.15),
+                                width: 0.5,
+                              ),
+                            ),
+                            child: Text(
+                              '#$tag',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: theme.colorScheme.onSecondaryContainer,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: AppSpacing.md),
                   _GuideOpenButton(onTap: () => _open(context)),
                 ],
@@ -268,8 +330,13 @@ class _GuideCardHeader extends StatelessWidget {
               child: CachedNetworkImage(
                 imageUrl: post.primaryImageUrl!,
                 fit: BoxFit.cover,
-                memCacheWidth: 900,
-                maxWidthDiskCache: 900,
+                memCacheWidth: 600,
+                maxWidthDiskCache: 600,
+                placeholder: (_, __) => const SkeletonLoader(
+                  width: double.infinity,
+                  height: double.infinity,
+                  borderRadius: 0,
+                ),
               ),
             ),
             Positioned.fill(
@@ -293,7 +360,7 @@ class _GuideCardHeader extends StatelessWidget {
             child: AppIcon(
               AppIcons.bird,
               size: 150,
-              color: Colors.white.withValues(alpha: 0.10),
+              color: Colors.white.withValues(alpha: 0.15),
             ),
           ),
           Padding(

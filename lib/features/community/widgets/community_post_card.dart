@@ -11,6 +11,7 @@ import '../../../core/enums/community_enums.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../../../data/models/community_post_model.dart';
+import '../../../data/models/profile_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../router/route_names.dart';
@@ -21,6 +22,7 @@ import 'community_image_viewer.dart';
 import 'community_post_card_body.dart';
 import 'community_post_edit_sheet.dart';
 import 'community_report_sheet.dart';
+import 'package:budgie_breeding_tracker/shared/providers/profile.dart';
 
 /// Card widget displaying a single community post with full interaction.
 ///
@@ -64,8 +66,18 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
         DateTime.now().toUtc().difference(createdAt.toUtc()) <
             const Duration(minutes: 5);
 
+    final profile = isOwnPost ? ref.watch(userProfileProvider).value : null;
+    final displayUsername = isOwnPost && profile != null && profile.resolvedDisplayName.isNotEmpty
+        ? profile.resolvedDisplayName
+        : post.username;
+    final displayAvatarUrl = isOwnPost && profile != null
+        ? profile.avatarUrl
+        : post.avatarUrl;
+
     final cardChild = CommunityPostCardBody(
       post: post,
+      authorName: displayUsername,
+      authorAvatarUrl: displayAvatarUrl,
       showFullContent: widget.showFullContent,
       maxContentLines: CommunityPostCard._maxContentLines,
       isOwnPost: isOwnPost,

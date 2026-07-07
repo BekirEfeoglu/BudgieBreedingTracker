@@ -28,7 +28,7 @@ class PostTypeBadge extends StatelessWidget {
         vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withValues(alpha: 0.1),
+        color: theme.colorScheme.primary.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
       ),
       child: Text(
@@ -93,7 +93,7 @@ class BirdLinkChip extends StatelessWidget {
             AppSpacing.xs,
           ),
           decoration: BoxDecoration(
-            color: baseColor.withValues(alpha: 0.1),
+            color: baseColor.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
             border: Border.all(color: baseColor.withValues(alpha: 0.35)),
           ),

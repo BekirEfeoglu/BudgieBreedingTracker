@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/animations/double_tap_like_animation.dart';
+import '../../../core/widgets/skeleton_loader.dart';
 
 /// Collage grid for community post media.
 ///
@@ -132,52 +133,63 @@ class CommunityMediaGallery extends StatelessWidget {
     int? overlayMore,
   }) {
     final theme = Theme.of(context);
+    final imageCount = imageUrls.length;
+    final semanticLabel = 'community.image_indicator'.tr(
+      args: ['${index + 1}', '$imageCount'],
+    );
 
-    return GestureDetector(
-      onTap: () => onOpenImage(index),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          CachedNetworkImage(
-            imageUrl: url,
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-            memCacheWidth: 900,
-            memCacheHeight: 1200,
-            maxWidthDiskCache: 900,
-            maxHeightDiskCache: 1200,
-            placeholder: (_, __) => ColoredBox(
-              color: theme.colorScheme.surfaceContainerHighest,
-              child: const Center(
-                child: Icon(LucideIcons.image, size: 32),
-              ),
-            ),
-            errorWidget: (_, __, ___) => Container(
-              color: theme.colorScheme.surfaceContainerHighest,
-              child: const Icon(LucideIcons.imageOff, size: 32),
-            ),
-          ),
-          if (overlayMore != null)
-            ColoredBox(
-              color: Colors.black.withValues(alpha: 0.45),
-              child: Center(
-                child: Text(
-                  '+$overlayMore',
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
+    return Semantics(
+      button: true,
+      image: true,
+      label: semanticLabel,
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          onTap: () => onOpenImage(index),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              CachedNetworkImage(
+                imageUrl: url,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                memCacheWidth: 600,
+                memCacheHeight: 800,
+                maxWidthDiskCache: 600,
+                maxHeightDiskCache: 800,
+                placeholder: (_, __) => const SkeletonLoader(
+                  width: double.infinity,
+                  height: double.infinity,
+                  borderRadius: 0,
+                ),
+                errorWidget: (_, __, ___) => Container(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  child: const Icon(LucideIcons.imageOff, size: 32),
                 ),
               ),
-            ),
-          if (counter != null)
-            Positioned(
-              left: AppSpacing.sm,
-              bottom: AppSpacing.sm,
-              child: counter,
-            ),
-        ],
+              if (overlayMore != null)
+                ColoredBox(
+                  color: Colors.black.withValues(alpha: 0.45),
+                  child: Center(
+                    child: Text(
+                      '+$overlayMore',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              if (counter != null)
+                PositionedDirectional(
+                  start: AppSpacing.sm,
+                  bottom: AppSpacing.sm,
+                  child: counter,
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -1,6 +1,6 @@
 part of 'account_deletion_dialog.dart';
 
-/// Confirmation dialog for account deletion requiring typed confirmation.
+/// Confirmation dialog for account deletion requiring password verification.
 class AccountDeletionDialog extends StatefulWidget {
   const AccountDeletionDialog({super.key});
 
@@ -18,21 +18,13 @@ class AccountDeletionDialog extends StatefulWidget {
 }
 
 class _AccountDeletionDialogState extends State<AccountDeletionDialog> {
-  final _controller = TextEditingController();
   final _passwordController = TextEditingController();
   bool _canDelete = false;
   bool _obscurePassword = true;
 
-  /// Language-neutral confirmation phrase.
-  static const _confirmPhrase = 'DELETE';
-
-  /// User-friendly display phrase shown to the user.
-  static const _displayPhrase = 'DELETE';
-
   void _onFieldChanged() {
-    final phraseOk = _controller.text.trim().toUpperCase() == _confirmPhrase;
     final passwordOk = _passwordController.text.isNotEmpty;
-    final canDelete = phraseOk && passwordOk;
+    final canDelete = passwordOk;
     if (canDelete != _canDelete) {
       setState(() => _canDelete = canDelete);
     }
@@ -41,15 +33,12 @@ class _AccountDeletionDialogState extends State<AccountDeletionDialog> {
   @override
   void initState() {
     super.initState();
-    _controller.addListener(_onFieldChanged);
     _passwordController.addListener(_onFieldChanged);
   }
 
   @override
   void dispose() {
-    _controller.removeListener(_onFieldChanged);
     _passwordController.removeListener(_onFieldChanged);
-    _controller.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -64,7 +53,7 @@ class _AccountDeletionDialogState extends State<AccountDeletionDialog> {
           AppIcon(
             AppIcons.warning,
             color: theme.colorScheme.error,
-            semanticsLabel: 'Warning',
+            semanticsLabel: 'profile.delete_account'.tr(),
           ),
           const SizedBox(width: AppSpacing.sm),
           Text('profile.delete_account'.tr()),
@@ -107,24 +96,6 @@ class _AccountDeletionDialogState extends State<AccountDeletionDialog> {
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            'profile.delete_account_confirm_hint'.tr(args: [_displayPhrase]),
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          TextField(
-            controller: _controller,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              hintText: _displayPhrase,
-              hintStyle: TextStyle(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Text(
             'profile.delete_account_password_hint'.tr(),
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
@@ -134,12 +105,14 @@ class _AccountDeletionDialogState extends State<AccountDeletionDialog> {
           TextField(
             controller: _passwordController,
             obscureText: _obscurePassword,
+            textInputAction: TextInputAction.done,
+            autofillHints: const [AutofillHints.password],
             decoration: InputDecoration(
               border: const OutlineInputBorder(),
               hintText: 'auth.password'.tr(),
               suffixIcon: AppIconButton(
                 icon: Icon(
-                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  _obscurePassword ? LucideIcons.eyeOff : LucideIcons.eye,
                 ),
                 semanticLabel: _obscurePassword
                     ? 'auth.show_password'.tr()

@@ -15,6 +15,8 @@ import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart' as app;
 import '../../../core/widgets/loading_state.dart';
+import '../../../core/widgets/skeleton_loader.dart';
+import '../../../core/utils/logger.dart';
 import '../../../router/route_names.dart';
 import '../../../data/providers/user_role_providers.dart'
     show isFounderProvider;
@@ -73,8 +75,8 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
       _swipeHintTimer = Timer(const Duration(seconds: 4), () {
         if (mounted) setState(() => _showSwipeHint = false);
       });
-    } catch (_) {
-      // SharedPreferences unavailable — skip onboarding
+    } catch (e) {
+      AppLogger.warning('Community swipe onboarding unavailable: $e');
     }
   }
 

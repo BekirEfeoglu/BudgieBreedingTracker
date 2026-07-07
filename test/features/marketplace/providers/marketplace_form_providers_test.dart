@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/gamification_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/marketplace_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/marketplace_listing_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/marketplace_repository.dart';
@@ -13,6 +14,7 @@ import 'package:budgie_breeding_tracker/domain/services/moderation/content_moder
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/moderation/moderation_providers.dart';
 import 'package:budgie_breeding_tracker/features/marketplace/providers/marketplace_form_providers.dart';
+import '../../../helpers/mocks.dart' show MockGamificationRepository;
 
 class MockMarketplaceRepository extends Mock implements MarketplaceRepository {}
 
@@ -22,14 +24,25 @@ class MockContentModerationService extends Mock
 void main() {
   late MockMarketplaceRepository mockRepo;
   late MockContentModerationService mockModeration;
+  late MockGamificationRepository mockGamificationRepo;
   late ProviderContainer container;
 
   setUp(() {
     mockRepo = MockMarketplaceRepository();
     mockModeration = MockContentModerationService();
+    mockGamificationRepo = MockGamificationRepository();
+    registerFallbackValue(XpAction.createListing);
+    when(
+      () => mockGamificationRepo.recordAction(
+        any(),
+        any(),
+        referenceId: any(named: 'referenceId'),
+      ),
+    ).thenAnswer((_) async {});
     container = ProviderContainer(
       overrides: [
         marketplaceRepositoryProvider.overrideWithValue(mockRepo),
+        gamificationRepositoryProvider.overrideWithValue(mockGamificationRepo),
         contentModerationServiceProvider.overrideWithValue(mockModeration),
         currentUserIdProvider.overrideWithValue('u1'),
       ],
@@ -75,6 +88,32 @@ void main() {
       final state = container.read(marketplaceFormStateProvider);
       expect(state.isSuccess, isTrue);
       expect(state.isLoading, isFalse);
+    });
+
+    test('records createListing XP after successful create', () async {
+      await container
+          .read(marketplaceFormStateProvider.notifier)
+          .createListing(
+            userId: 'u1',
+            listingType: MarketplaceListingType.sale,
+            title: 'Test',
+            description: 'Desc',
+            price: 100,
+            species: 'Budgerigar',
+            gender: BirdGender.male,
+            city: 'Istanbul',
+          );
+
+      final payload =
+          verify(() => mockRepo.create(captureAny())).captured.single
+              as Map<String, dynamic>;
+      verify(
+        () => mockGamificationRepo.recordAction(
+          'u1',
+          XpAction.createListing,
+          referenceId: payload['id'] as String,
+        ),
+      ).called(1);
     });
 
     test('rejects listing when moderation fails', () async {

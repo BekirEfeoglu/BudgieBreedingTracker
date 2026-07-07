@@ -35,9 +35,11 @@ class CommunityCommentTile extends ConsumerWidget {
           ? _showDeleteDialog(context, ref)
           : _showReportDialog(context, ref),
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.sm,
+        padding: EdgeInsets.only(
+          left: comment.parentId != null ? AppSpacing.xl * 2 : AppSpacing.lg,
+          right: AppSpacing.lg,
+          top: AppSpacing.sm,
+          bottom: AppSpacing.sm,
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,6 +86,19 @@ class CommunityCommentTile extends ConsumerWidget {
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(comment.content, style: theme.textTheme.bodySmall),
+                  const SizedBox(height: AppSpacing.xs),
+                  GestureDetector(
+                    onTap: () {
+                      ref.read(replyToCommentProvider.notifier).state = comment;
+                    },
+                    child: Text(
+                      'community.reply'.tr(),
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

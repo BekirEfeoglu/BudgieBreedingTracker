@@ -36,26 +36,12 @@ void main() {
       expect(button.onPressed, isNull);
     });
 
-    testWidgets('delete button remains disabled with wrong text', (
+    testWidgets('delete button enables when password is entered', (
       tester,
     ) async {
       await pumpDialog(tester);
 
-      await tester.enterText(find.byType(TextField).first, 'wrong text');
-      await tester.pump();
-
-      final button = findDeleteButton(tester);
-      expect(button.onPressed, isNull);
-    });
-
-    testWidgets('delete button enables when DELETE and password are entered', (
-      tester,
-    ) async {
-      await pumpDialog(tester);
-
-      final textFields = find.byType(TextField);
-      await tester.enterText(textFields.first, 'DELETE');
-      await tester.enterText(textFields.last, 'password123');
+      await tester.enterText(find.byType(TextField), 'password123');
       await tester.pump();
 
       final button = findDeleteButton(tester);
@@ -67,47 +53,17 @@ void main() {
     ) async {
       await pumpDialog(tester);
 
-      await tester.enterText(find.byType(TextField).first, 'DELETE');
       await tester.pump();
 
       final button = findDeleteButton(tester);
       expect(button.onPressed, isNull);
     });
 
-    testWidgets('delete button enables with lowercase delete', (tester) async {
+    testWidgets('dialog only asks for password verification', (tester) async {
       await pumpDialog(tester);
 
-      final textFields = find.byType(TextField);
-      await tester.enterText(textFields.first, 'delete');
-      await tester.enterText(textFields.last, 'pass');
-      await tester.pump();
-
-      final button = findDeleteButton(tester);
-      expect(button.onPressed, isNotNull);
-    });
-
-    testWidgets('delete button enables with mixed case', (tester) async {
-      await pumpDialog(tester);
-
-      final textFields = find.byType(TextField);
-      await tester.enterText(textFields.first, 'Delete');
-      await tester.enterText(textFields.last, 'pass');
-      await tester.pump();
-
-      final button = findDeleteButton(tester);
-      expect(button.onPressed, isNotNull);
-    });
-
-    testWidgets('leading/trailing whitespace is trimmed', (tester) async {
-      await pumpDialog(tester);
-
-      final textFields = find.byType(TextField);
-      await tester.enterText(textFields.first, '  DELETE  ');
-      await tester.enterText(textFields.last, 'pass');
-      await tester.pump();
-
-      final button = findDeleteButton(tester);
-      expect(button.onPressed, isNotNull);
+      expect(find.byType(TextField), findsOneWidget);
+      expect(find.textContaining('DELETE'), findsNothing);
     });
 
     testWidgets('cancel returns null', (tester) async {
@@ -140,7 +96,7 @@ void main() {
       expect(dialogResult, isNull);
     });
 
-    testWidgets('confirm returns password when phrase and password entered', (
+    testWidgets('confirm returns password when password entered', (
       tester,
     ) async {
       String? dialogResult;
@@ -165,11 +121,8 @@ void main() {
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
 
-      // Enter confirmation phrase and password
-      final textFields = find.byType(TextField);
-      await tester.enterText(textFields.first, 'DELETE');
-      await tester.pump();
-      await tester.enterText(textFields.last, 'myPassword123!');
+      // Enter password
+      await tester.enterText(find.byType(TextField), 'myPassword123!');
       await tester.pump();
 
       // Tap delete button

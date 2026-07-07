@@ -38,7 +38,12 @@ class ProfileSkeleton extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [_StatSkeleton(), _StatSkeleton(), _StatSkeleton()],
+            children: [
+              _StatSkeleton(),
+              _StatSkeleton(),
+              _StatSkeleton(),
+              _StatSkeleton(),
+            ],
           ),
         ),
         SizedBox(height: AppSpacing.lg),

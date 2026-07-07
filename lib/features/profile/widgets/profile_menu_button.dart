@@ -118,7 +118,9 @@ class _AvatarButton extends StatelessWidget {
           opacity: curved,
           child: ScaleTransition(
             scale: Tween<double>(begin: 0.92, end: 1.0).animate(curved),
-            alignment: Alignment.topRight,
+            alignment: AlignmentDirectional.topEnd.resolve(
+              Directionality.of(context),
+            ),
             child: child,
           ),
         );

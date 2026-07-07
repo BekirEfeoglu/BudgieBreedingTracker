@@ -196,6 +196,14 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
       // now-persisted bird references.
       birdPersisted = true;
 
+      recordGamificationAction(
+        ref,
+        userId: userId,
+        action: XpAction.addBird,
+        referenceId: birdId,
+        checkVerifiedBreeder: true,
+      );
+
       String? warning;
       if (photoUrl != null && photoFile != null) {
         try {

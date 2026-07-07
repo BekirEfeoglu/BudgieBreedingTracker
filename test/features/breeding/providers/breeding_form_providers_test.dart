@@ -11,6 +11,7 @@ import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/gamification_enums.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/calendar/calendar_event_providers.dart';
@@ -72,6 +73,7 @@ void main() {
   late MockClutchRepository mockClutchRepo;
   late MockNotificationScheduler mockScheduler;
   late MockCalendarEventGenerator mockCalendarGen;
+  late MockGamificationRepository mockGamificationRepo;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -82,11 +84,13 @@ void main() {
     mockClutchRepo = MockClutchRepository();
     mockScheduler = MockNotificationScheduler();
     mockCalendarGen = MockCalendarEventGenerator();
+    mockGamificationRepo = MockGamificationRepository();
     registerFallbackValue(_pair());
     registerFallbackValue(
       const Incubation(id: 'fallback', userId: 'fallback-user'),
     );
     registerFallbackValue(Species.budgie);
+    registerFallbackValue(XpAction.createBreeding);
     // deleteBreeding looks up legacy clutch rows for the pair; default to
     // none so existing delete tests are unaffected.
     when(() => mockClutchRepo.getByBreeding(any())).thenAnswer((_) async => []);
@@ -147,6 +151,13 @@ void main() {
         species: any(named: 'species'),
       ),
     ).thenAnswer((_) async {});
+    when(
+      () => mockGamificationRepo.recordAction(
+        any(),
+        any(),
+        referenceId: any(named: 'referenceId'),
+      ),
+    ).thenAnswer((_) async {});
   });
 
   ProviderContainer createContainer({bool isPremium = false}) {
@@ -157,6 +168,7 @@ void main() {
         eggRepositoryProvider.overrideWithValue(mockEggRepo),
         birdRepositoryProvider.overrideWithValue(mockBirdRepo),
         clutchRepositoryProvider.overrideWithValue(mockClutchRepo),
+        gamificationRepositoryProvider.overrideWithValue(mockGamificationRepo),
         notificationSchedulerProvider.overrideWithValue(mockScheduler),
         notificationToggleSettingsProvider.overrideWith(
           _TestNotificationToggleSettingsNotifier.new,
@@ -301,6 +313,35 @@ void main() {
       expect(state.isSuccess, isTrue);
       expect(state.isLoading, isFalse);
       expect(state.error, isNull);
+    });
+
+    test('records createBreeding XP after pair and incubation save', () async {
+      stubUnderLimits();
+      when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
+      when(() => mockIncubationRepo.save(any())).thenAnswer((_) async {});
+
+      final container = createContainer();
+      addTearDown(container.dispose);
+
+      await container
+          .read(breedingFormStateProvider.notifier)
+          .createBreeding(
+            userId: 'user-1',
+            maleId: 'male-1',
+            femaleId: 'female-1',
+            pairingDate: DateTime(2025, 1, 1),
+          );
+
+      final savedPair =
+          verify(() => mockPairRepo.save(captureAny())).captured.single
+              as BreedingPair;
+      verify(
+        () => mockGamificationRepo.recordAction(
+          'user-1',
+          XpAction.createBreeding,
+          referenceId: savedPair.id,
+        ),
+      ).called(1);
     });
 
     test('saves both pair and incubation', () async {

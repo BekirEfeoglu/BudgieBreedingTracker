@@ -293,10 +293,15 @@ class EdgeFunctionClient {
   Future<EdgeFunctionResult> createCommunityComment({
     required String postId,
     required String content,
+    String? parentId,
   }) {
     return invoke(
       'create-community-comment',
-      body: {'post_id': postId, 'content': content},
+      body: {
+        'post_id': postId,
+        'content': content,
+        if (parentId != null) 'parent_id': parentId,
+      },
     );
   }
 

@@ -107,6 +107,36 @@ void main() {
       // Advance past the swipe-hint timer to avoid pending timer assertion.
       await tester.pump(const Duration(seconds: 5));
     });
+
+    testWidgets('uses icon-only create FAB on phone width', (tester) async {
+      tester.view.physicalSize = const Size(393, 852);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        createSubject(
+          communityEnabled: true,
+          feedState: FeedState(
+            posts: [
+              CommunityPost(
+                id: 'post-1',
+                userId: 'user-1',
+                username: 'Tester',
+                content: 'Test post',
+                createdAt: DateTime(2026),
+              ),
+            ],
+            isLoading: false,
+            hasMore: false,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 5));
+
+      expect(find.text(l10n('community.create_post')), findsNothing);
+    });
   });
 }
 

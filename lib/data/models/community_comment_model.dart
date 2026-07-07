@@ -16,6 +16,8 @@ abstract class CommunityComment with _$CommunityComment {
     required String content,
     @Default(0) int likeCount,
     @JsonKey(includeFromJson: false) @Default(false) bool isLikedByMe,
+    String? parentId,
+    @Default(0) int replyCount,
     @Default(false) bool needsReview,
     DateTime? createdAt,
   }) = _CommunityComment;

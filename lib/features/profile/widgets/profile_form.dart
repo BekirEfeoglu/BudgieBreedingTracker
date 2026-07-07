@@ -69,6 +69,7 @@ class _ProfileFormState extends ConsumerState<ProfileForm> {
               radius: 48,
               isUploading: widget.isAvatarUploading,
               onTap: widget.onAvatarTap,
+              semanticLabel: 'profile.edit_avatar'.tr(),
             ),
           ),
           const SizedBox(height: AppSpacing.xxl),

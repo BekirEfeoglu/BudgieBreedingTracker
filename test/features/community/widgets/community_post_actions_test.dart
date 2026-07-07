@@ -72,7 +72,7 @@ void main() {
           userId: any(named: 'userId'),
           postId: any(named: 'postId'),
         ),
-      ).thenAnswer((_) async {});
+      ).thenAnswer((_) async => true);
 
       await tester.pumpWidget(createSubject(_testPost(id: 'p-1')));
       await tester.pump();

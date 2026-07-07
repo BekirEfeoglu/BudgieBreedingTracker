@@ -38,6 +38,7 @@ abstract class CommunityPost with _$CommunityPost {
     @JsonKey(name: 'author_is_verified', includeToJson: false)
     @Default(false)
     bool authorIsVerified,
+    @Default(false) bool isPinned,
     @Default(false) bool isDeleted,
     @Default(false) bool needsReview,
     DateTime? editedAt,

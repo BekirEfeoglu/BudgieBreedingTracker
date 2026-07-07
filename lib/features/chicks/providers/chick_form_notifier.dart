@@ -48,6 +48,14 @@ class ChickFormNotifier extends Notifier<ChickFormState>
       );
       await repo.save(chick);
 
+      recordGamificationAction(
+        ref,
+        userId: userId,
+        action: XpAction.recordChick,
+        referenceId: chick.id,
+        checkVerifiedBreeder: true,
+      );
+
       // Schedule chick care reminders (feeding every 4 hours for 14 days)
       try {
         final scheduler = ref.read(notificationSchedulerProvider);

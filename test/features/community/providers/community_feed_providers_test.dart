@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_feed_providers.dart';
@@ -201,7 +202,8 @@ void main() {
         (i) => makePost('p$i', createdAt: DateTime(2024, 1, 20 - i)),
       );
       when(
-        () => repo.getFeed(currentUserId: 'user-1', limit: 20),
+        () =>
+            repo.getFeed(currentUserId: 'user-1', limit: 20, sortBy: 'newest'),
       ).thenAnswer((_) async => posts);
 
       final container = ProviderContainer(
@@ -221,7 +223,10 @@ void main() {
       expect(state.hasMore, isTrue);
       expect(state.cursor, posts.last.createdAt);
       expect(state.cursorPostId, posts.last.id);
-      verify(() => repo.getFeed(currentUserId: 'user-1', limit: 20)).called(1);
+      verify(
+        () =>
+            repo.getFeed(currentUserId: 'user-1', limit: 20, sortBy: 'newest'),
+      ).called(1);
     });
 
     test(
@@ -237,7 +242,11 @@ void main() {
           makePost('p21', createdAt: DateTime(2023, 12, 30)),
         ];
         when(
-          () => repo.getFeed(currentUserId: 'user-1', limit: 20),
+          () => repo.getFeed(
+            currentUserId: 'user-1',
+            limit: 20,
+            sortBy: 'newest',
+          ),
         ).thenAnswer((_) async => firstPage);
         when(
           () => repo.getFeed(
@@ -245,6 +254,7 @@ void main() {
             limit: 20,
             before: firstPage.last.createdAt,
             beforeId: firstPage.last.id,
+            sortBy: 'newest',
           ),
         ).thenAnswer((_) async => secondPage);
 
@@ -272,6 +282,7 @@ void main() {
             limit: 20,
             before: firstPage.last.createdAt,
             beforeId: firstPage.last.id,
+            sortBy: 'newest',
           ),
         ).called(1);
       },
@@ -279,7 +290,10 @@ void main() {
 
     test('fetchInitial handles supabase unavailable errors gracefully', () async {
       final repo = MockCommunityPostRepository();
-      when(() => repo.getFeed(currentUserId: 'user-1', limit: 20)).thenThrow(
+      when(
+        () =>
+            repo.getFeed(currentUserId: 'user-1', limit: 20, sortBy: 'newest'),
+      ).thenThrow(
         StateError(
           'You must initialize the supabase instance before calling Supabase.instance',
         ),
@@ -303,6 +317,30 @@ void main() {
       expect(state.error, isNull);
     });
 
+    test('fetchInitial stores l10n key for network errors', () async {
+      final repo = MockCommunityPostRepository();
+      when(
+        () =>
+            repo.getFeed(currentUserId: 'user-1', limit: 20, sortBy: 'newest'),
+      ).thenThrow(const NetworkException('No internet connection'));
+
+      final container = ProviderContainer(
+        overrides: [
+          communityPostRepositoryProvider.overrideWithValue(repo),
+          currentUserIdProvider.overrideWithValue('user-1'),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.listen(communityFeedProvider, (_, __) {});
+      await flushAsync();
+
+      final state = container.read(communityFeedProvider);
+      expect(state.posts, isEmpty);
+      expect(state.isLoading, isFalse);
+      expect(state.error, 'errors.network_unavailable');
+    });
+
     test('fetchMore stores generic errors and keeps existing posts', () async {
       final repo = MockCommunityPostRepository();
       final firstPage = List.generate(
@@ -310,7 +348,8 @@ void main() {
         (i) => makePost('p$i', createdAt: DateTime(2024, 1, 20 - i)),
       );
       when(
-        () => repo.getFeed(currentUserId: 'user-1', limit: 20),
+        () =>
+            repo.getFeed(currentUserId: 'user-1', limit: 20, sortBy: 'newest'),
       ).thenAnswer((_) async => firstPage);
       when(
         () => repo.getFeed(
@@ -318,6 +357,7 @@ void main() {
           limit: 20,
           before: firstPage.last.createdAt,
           beforeId: firstPage.last.id,
+          sortBy: 'newest',
         ),
       ).thenThrow(Exception('pagination failed'));
 
@@ -336,7 +376,7 @@ void main() {
       final state = container.read(communityFeedProvider);
       expect(state.posts, hasLength(20));
       expect(state.isLoading, isFalse);
-      expect(state.error, contains('pagination failed'));
+      expect(state.error, 'errors.unknown_error');
       expect(state.hasMore, isTrue);
     });
   });

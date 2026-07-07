@@ -6,7 +6,8 @@ import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_header.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/avatar_widget.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:budgie_breeding_tracker/shared/providers/gamification.dart'
+    as gamification;
 
 import '../../../helpers/test_localization.dart';
 
@@ -38,6 +39,32 @@ ProfileStats _fakeStats({
   totalChicks: totalChicks,
 );
 
+gamification.EnrichedBadge _fakeUnlockedBadge({
+  required String id,
+  required String key,
+  required String nameKey,
+  gamification.BadgeCategory category = gamification.BadgeCategory.milestone,
+  gamification.BadgeTier tier = gamification.BadgeTier.gold,
+}) {
+  return gamification.EnrichedBadge(
+    badge: gamification.Badge(
+      id: id,
+      key: key,
+      category: category,
+      tier: tier,
+      nameKey: nameKey,
+      requirement: 1,
+    ),
+    userBadge: gamification.UserBadge(
+      id: 'user-$id',
+      userId: 'user-1',
+      badgeId: id,
+      isUnlocked: true,
+      progress: 1,
+    ),
+  );
+}
+
 Widget _buildSubject({
   Profile? profile,
   String displayName = 'Test User',
@@ -46,6 +73,8 @@ Widget _buildSubject({
   VoidCallback? onEditAvatar,
   bool isAvatarUploading = false,
   ProfileStats? stats,
+  gamification.UserLevel? userLevel,
+  List<gamification.EnrichedBadge> unlockedBadges = const [],
 }) {
   return MaterialApp(
     home: Scaffold(
@@ -58,6 +87,8 @@ Widget _buildSubject({
           onEditAvatar: onEditAvatar ?? () {},
           isAvatarUploading: isAvatarUploading,
           stats: stats,
+          userLevel: userLevel,
+          unlockedBadges: unlockedBadges,
         ),
       ),
     ),
@@ -73,6 +104,8 @@ Future<void> _pumpHeader(
   VoidCallback? onEditAvatar,
   bool isAvatarUploading = false,
   ProfileStats? stats,
+  gamification.UserLevel? userLevel,
+  List<gamification.EnrichedBadge> unlockedBadges = const [],
   Duration? animationDuration,
 }) async {
   await pumpLocalizedApp(
@@ -85,6 +118,8 @@ Future<void> _pumpHeader(
       onEditAvatar: onEditAvatar,
       isAvatarUploading: isAvatarUploading,
       stats: stats,
+      userLevel: userLevel,
+      unlockedBadges: unlockedBadges,
     ),
     settle: false,
   );
@@ -130,9 +165,10 @@ void main() {
       bool avatarTapped = false;
       await _pumpHeader(tester, onEditAvatar: () => avatarTapped = true);
 
-      final cameraButton = find.ancestor(
-        of: find.byIcon(LucideIcons.camera),
-        matching: find.byType(InkWell),
+      final cameraButton = find.byWidgetPredicate(
+        (widget) =>
+            widget is IconButton &&
+            widget.tooltip == l10n('profile.edit_avatar'),
       );
       expect(cameraButton, findsOneWidget);
 
@@ -142,7 +178,22 @@ void main() {
       expect(avatarTapped, isTrue);
     });
 
-    testWidgets('camera InkWell disabled when isAvatarUploading', (
+    testWidgets('camera button keeps a 48dp tap target', (tester) async {
+      await _pumpHeader(tester);
+
+      final cameraButton = find.byWidgetPredicate(
+        (widget) =>
+            widget is IconButton &&
+            widget.tooltip == l10n('profile.edit_avatar'),
+      );
+
+      expect(cameraButton, findsOneWidget);
+      final size = tester.getSize(cameraButton);
+      expect(size.width, greaterThanOrEqualTo(48));
+      expect(size.height, greaterThanOrEqualTo(48));
+    });
+
+    testWidgets('camera button disabled when isAvatarUploading', (
       tester,
     ) async {
       bool avatarTapped = false;
@@ -152,14 +203,32 @@ void main() {
         isAvatarUploading: true,
       );
 
-      final cameraInkWell = tester.widget<InkWell>(
-        find.ancestor(
-          of: find.byIcon(LucideIcons.camera),
-          matching: find.byType(InkWell),
+      final cameraButton = tester.widget<IconButton>(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is IconButton &&
+              widget.tooltip == l10n('profile.edit_avatar'),
         ),
       );
-      expect(cameraInkWell.onTap, isNull);
+      expect(cameraButton.onPressed, isNull);
       expect(avatarTapped, isFalse);
+    });
+
+    testWidgets('display name and email are constrained for long text', (
+      tester,
+    ) async {
+      const longName = 'Very Long Profile Display Name For Overflow Testing';
+      const longEmail = 'very.long.profile.email.address@example.test';
+
+      await _pumpHeader(tester, displayName: longName, email: longEmail);
+
+      final nameText = tester.widget<Text>(find.text(longName));
+      final emailText = tester.widget<Text>(find.text(longEmail));
+
+      expect(nameText.maxLines, 2);
+      expect(nameText.overflow, TextOverflow.ellipsis);
+      expect(emailText.maxLines, 1);
+      expect(emailText.overflow, TextOverflow.ellipsis);
     });
 
     testWidgets('shows stats row when stats are provided', (tester) async {
@@ -194,6 +263,82 @@ void main() {
       final profile = _fakeProfile(role: 'admin');
       await _pumpHeader(tester, profile: profile);
       expect(find.text(l10n('profile.admin_badge')), findsOneWidget);
+    });
+
+    testWidgets('shows gamification level and unlocked badges', (tester) async {
+      const userLevel = gamification.UserLevel(
+        id: 'level-1',
+        userId: 'user-1',
+        level: 100,
+        title: 'gamification.title_bird_whisperer',
+      );
+      const unlockedBadges = [
+        gamification.EnrichedBadge(
+          badge: gamification.Badge(
+            id: 'badge-1',
+            key: 'first_bird',
+            category: gamification.BadgeCategory.milestone,
+            tier: gamification.BadgeTier.gold,
+            nameKey: 'badges.first_bird',
+            requirement: 1,
+          ),
+          userBadge: gamification.UserBadge(
+            id: 'user-badge-1',
+            userId: 'user-1',
+            badgeId: 'badge-1',
+            isUnlocked: true,
+            progress: 1,
+          ),
+        ),
+      ];
+
+      await _pumpHeader(
+        tester,
+        userLevel: userLevel,
+        unlockedBadges: unlockedBadges,
+      );
+
+      expect(
+        find.textContaining('${l10n('community.level_prefix')}100'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(l10n('gamification.title_bird_whisperer')),
+        findsOneWidget,
+      );
+      expect(find.text(l10n('badges.first_bird')), findsOneWidget);
+    });
+
+    testWidgets('prioritizes a compact profile badge summary', (tester) async {
+      await _pumpHeader(
+        tester,
+        profile: _fakeProfile(isPremium: true, role: 'founder'),
+        unlockedBadges: [
+          _fakeUnlockedBadge(
+            id: 'badge-1',
+            key: 'first_bird',
+            nameKey: 'badges.first_bird',
+          ),
+          _fakeUnlockedBadge(
+            id: 'badge-2',
+            key: 'verified_breeder',
+            nameKey: 'badges.verified_breeder',
+            category: gamification.BadgeCategory.special,
+            tier: gamification.BadgeTier.platinum,
+          ),
+          _fakeUnlockedBadge(
+            id: 'badge-3',
+            key: 'one_year',
+            nameKey: 'badges.one_year',
+            tier: gamification.BadgeTier.gold,
+          ),
+        ],
+      );
+
+      expect(find.text(l10n('badges.verified_breeder')), findsOneWidget);
+      expect(find.text(l10n('badges.first_bird')), findsNothing);
+      expect(find.text(l10n('badges.one_year')), findsNothing);
+      expect(find.text('+2'), findsOneWidget);
     });
 
     testWidgets('does not show badges when profile has no special role', (

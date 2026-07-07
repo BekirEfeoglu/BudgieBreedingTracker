@@ -5,38 +5,46 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
-import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
-import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
+import 'package:budgie_breeding_tracker/data/providers/profile_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_app_bar.dart';
-import 'package:budgie_breeding_tracker/features/gamification/providers/gamification_providers.dart';
-import 'package:budgie_breeding_tracker/features/notifications/providers/notification_list_providers.dart';
-import 'package:budgie_breeding_tracker/features/notifications/widgets/notification_bell_button.dart';
-import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
-
-class _EmptyActionFeedbackNotifier extends ActionFeedbackNotifier {
-  @override
-  List<ActionFeedback> build() => [];
-}
+import 'package:budgie_breeding_tracker/shared/providers/gamification.dart';
 
 void main() {
   Widget wrap({String userId = 'test-user-123'}) {
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, __) => const Scaffold(
+            appBar: CommunityAppBar(),
+            body: SizedBox.shrink(),
+          ),
+        ),
+        GoRoute(
+          path: '/community/user/:userId',
+          builder: (_, state) => Scaffold(
+            body: Text('community-profile-${state.pathParameters['userId']}'),
+          ),
+        ),
+        GoRoute(
+          path: '/profile',
+          builder: (_, __) => const Scaffold(body: Text('normal-profile')),
+        ),
+      ],
+    );
+
     return ProviderScope(
       overrides: [
         currentUserIdProvider.overrideWithValue(userId),
         userProfileProvider.overrideWith((ref) => Stream.value(null)),
         userLevelProvider(userId).overrideWith((ref) => Future.value(null)),
-        unreadNotificationsProvider(
-          userId,
-        ).overrideWith((ref) => Stream.value([])),
-        actionFeedbackProvider.overrideWith(_EmptyActionFeedbackNotifier.new),
       ],
-      child: const MaterialApp(
-        home: Scaffold(appBar: CommunityAppBar(), body: SizedBox.shrink()),
-      ),
+      child: MaterialApp.router(routerConfig: router),
     );
   }
 
@@ -55,11 +63,11 @@ void main() {
       expect(find.text(l10n('community.title')), findsOneWidget);
     });
 
-    testWidgets('implements PreferredSizeWidget with height 92', (
+    testWidgets('implements PreferredSizeWidget with height 72', (
       tester,
     ) async {
       const appBar = CommunityAppBar();
-      expect(appBar.preferredSize, const Size.fromHeight(92));
+      expect(appBar.preferredSize, const Size.fromHeight(72));
     });
 
     testWidgets('shows message action icon', (tester) async {
@@ -69,31 +77,40 @@ void main() {
       expect(find.byIcon(LucideIcons.messageCircle), findsOneWidget);
     });
 
-    testWidgets('shows notification bell button', (tester) async {
+    testWidgets('shows community profile shortcut', (tester) async {
       await tester.pumpWidget(wrap());
       await tester.pumpAndSettle();
 
-      expect(find.byType(NotificationBellButton), findsOneWidget);
+      expect(find.byTooltip(l10n('community.my_profile')), findsOneWidget);
     });
 
     testWidgets('shows search icon', (tester) async {
       await tester.pumpWidget(wrap());
       await tester.pumpAndSettle();
 
-      expect(
-        find.byWidgetPredicate(
-          (widget) => widget is AppIcon && widget.asset == AppIcons.search,
-        ),
-        findsOneWidget,
-      );
+      expect(find.byIcon(LucideIcons.search), findsOneWidget);
     });
 
-    testWidgets('shows user initials when no avatar', (tester) async {
+    testWidgets('community profile shortcut uses community tooltip', (
+      tester,
+    ) async {
       await tester.pumpWidget(wrap(userId: 'test-user'));
       await tester.pumpAndSettle();
 
-      // When profile is null and userId is 'test-user', initials = 'TE'
-      expect(find.text('TE'), findsOneWidget);
+      expect(find.byTooltip(l10n('community.my_profile')), findsOneWidget);
+    });
+
+    testWidgets('opens normal profile when current user avatar is tapped', (
+      tester,
+    ) async {
+      await tester.pumpWidget(wrap(userId: 'test-user'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip(l10n('community.my_profile')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('normal-profile'), findsOneWidget);
+      expect(find.text('community-profile-test-user'), findsNothing);
     });
 
     testWidgets('shows Lv.1 level badge when the user has no level row', (
@@ -102,10 +119,27 @@ void main() {
       await tester.pumpWidget(wrap());
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(LucideIcons.star), findsOneWidget);
       expect(
         find.textContaining('${l10n('community.level_prefix')}1'),
         findsOneWidget,
+      );
+    });
+
+    testWidgets('hides level badge on narrow widths so title stays readable', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(393, 852);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(wrap());
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('community.title')), findsOneWidget);
+      expect(
+        find.textContaining('${l10n('community.level_prefix')}1'),
+        findsNothing,
       );
     });
 
@@ -128,17 +162,19 @@ void main() {
                 ),
               ),
             ),
-            unreadNotificationsProvider(
-              userId,
-            ).overrideWith((ref) => Stream.value([])),
-            actionFeedbackProvider.overrideWith(
-              _EmptyActionFeedbackNotifier.new,
-            ),
           ],
-          child: const MaterialApp(
-            home: Scaffold(
-              appBar: CommunityAppBar(),
-              body: SizedBox.shrink(),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (_, __) => const Scaffold(
+                    appBar: CommunityAppBar(),
+                    body: SizedBox.shrink(),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -163,9 +199,7 @@ void main() {
       await tester.pumpWidget(wrap());
       await tester.pumpAndSettle();
 
-      // Actions: messages (_ActionIcon), NotificationBellButton, search (_ActionIcon)
-      // Plus leading back arrow — total 4 IconButtons
-      expect(find.byType(IconButton), findsNWidgets(4));
+      expect(find.byType(IconButton), findsNWidgets(3));
     });
 
     testWidgets('renders with transparent AppBar background', (tester) async {

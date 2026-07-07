@@ -11,7 +11,15 @@ import '../widgets/community_comment_input.dart';
 import '../widgets/community_comment_tile.dart';
 import '../widgets/community_feed_states.dart';
 import '../widgets/community_post_card.dart';
+import '../widgets/community_post_markdown.dart';
+import '../../../core/widgets/skeleton_loader.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
+import '../../../data/providers/user_role_providers.dart';
+import '../../../data/repositories/repository_providers.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import '../providers/community_feed_providers.dart';
 
 /// Detail screen showing a single post with its comments.
 class CommunityPostDetailScreen extends ConsumerStatefulWidget {
@@ -52,6 +60,7 @@ class _CommunityPostDetailScreenState
     final postAsync = ref.watch(communityPostByIdProvider(postId));
     final commentState = ref.watch(commentListProvider(postId));
     final visibleComments = ref.watch(visibleCommentsProvider(postId));
+    final isAdmin = ref.watch(isAdminProvider).value ?? false;
 
     ref.listen<CommentFormState>(commentFormProvider, (_, state) {
       if (!context.mounted) return;
@@ -81,6 +90,25 @@ class _CommunityPostDetailScreenState
             orElse: () => 'community.post_detail'.tr(),
           ),
         ),
+        actions: [
+          if (isAdmin)
+            postAsync.maybeWhen(
+              data: (post) => post != null
+                  ? AppIconButton(
+                      icon: Icon(post.isPinned ? LucideIcons.pinOff : LucideIcons.pin),
+                      semanticLabel: post.isPinned ? 'community.unpin_post'.tr() : 'community.pin_post'.tr(),
+                      onPressed: () async {
+                        await ref
+                            .read(communityPostRepositoryProvider)
+                            .togglePin(postId: post.id, isPinned: !post.isPinned);
+                        ref.invalidate(communityPostByIdProvider(post.id));
+                        ref.read(communityFeedProvider.notifier).refresh();
+                      },
+                    )
+                  : const SizedBox.shrink(),
+              orElse: () => const SizedBox.shrink(),
+            ),
+        ],
       ),
       body: Column(
         children: [
@@ -303,7 +331,7 @@ class _GuideDetailArticle extends StatelessWidget {
             ),
             borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
             border: Border.all(
-              color: theme.colorScheme.primary.withValues(alpha: 0.12),
+              color: theme.colorScheme.primary.withValues(alpha: 0.18),
             ),
           ),
           child: Column(
@@ -363,10 +391,50 @@ class _GuideDetailArticle extends StatelessWidget {
           _GuideOutlineCard(items: _outlineItems),
         ],
         const SizedBox(height: AppSpacing.lg),
-        CommunityPostCard(
-          post: post,
-          showFullContent: true,
-          isInteractive: false,
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ContentText(
+                content: post.content,
+                showFull: true,
+                maxLines: 0,
+              ),
+              if (post.allImageUrls.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.xl),
+                for (final imageUrl in post.allImageUrls)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: theme.shadowColor.withValues(alpha: 0.08),
+                              blurRadius: 16,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          memCacheWidth: 600,
+                          placeholder: (_, __) => const SkeletonLoader(
+                            height: 220,
+                            width: double.infinity,
+                          ),
+                          errorWidget: (_, __, ___) => const SizedBox.shrink(),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ],
+          ),
         ),
       ],
     );
@@ -390,7 +458,7 @@ class _GuideMetaChip extends StatelessWidget {
         color: theme.colorScheme.surface.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
         border: Border.all(
-          color: theme.colorScheme.primary.withValues(alpha: 0.10),
+          color: theme.colorScheme.primary.withValues(alpha: 0.15),
         ),
       ),
       child: Text(

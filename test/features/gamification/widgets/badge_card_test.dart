@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/features/gamification/providers/gamification_providers.dart';
+import 'package:budgie_breeding_tracker/features/gamification/widgets/animated_rank_icon.dart';
 import 'package:budgie_breeding_tracker/features/gamification/widgets/badge_card.dart';
 
 import '../../../helpers/test_localization.dart';
@@ -54,10 +55,12 @@ void main() {
       await pumpLocalizedWidget(
         tester,
         const BadgeCard(enrichedBadge: enriched),
+        settle: false,
       );
+      await tester.pump();
 
       expect(find.byIcon(LucideIcons.checkCircle), findsOneWidget);
-      expect(find.byIcon(LucideIcons.award), findsOneWidget);
+      expect(find.byType(AnimatedRankIcon), findsOneWidget);
       expect(find.byType(LinearProgressIndicator), findsNothing);
     });
 

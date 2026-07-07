@@ -35,6 +35,27 @@ void main() {
       expect(tapped, isTrue);
     });
 
+    testWidgets('tap-enabled avatar exposes button semantics', (tester) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await pumpWidgetSimple(
+          tester,
+          AvatarWidget(onTap: () {}, semanticLabel: 'Edit avatar'),
+        );
+
+        final node = tester.getSemantics(
+          find.byWidgetPredicate(
+            (widget) =>
+                widget is Semantics && widget.properties.label == 'Edit avatar',
+          ),
+        );
+        expect(node.flagsCollection.isButton, isTrue);
+        expect(node.label, 'Edit avatar');
+      } finally {
+        semantics.dispose();
+      }
+    });
+
     testWidgets('shows upload spinner when isUploading is true', (
       tester,
     ) async {

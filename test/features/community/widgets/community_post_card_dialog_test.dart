@@ -16,6 +16,7 @@ import 'package:budgie_breeding_tracker/data/repositories/repository_providers.d
 import 'package:budgie_breeding_tracker/features/community/providers/community_feed_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_post_card.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 
 import '../../../helpers/mocks.dart';
 
@@ -89,6 +90,7 @@ void main() {
         communityPostRepositoryProvider.overrideWithValue(mockPostRepo),
         communitySocialRepositoryProvider.overrideWithValue(mockSocialRepo),
         communityFeedProvider.overrideWith(() => _FakeFeedNotifier()),
+        userProfileProvider.overrideWith((ref) => Stream.value(null)),
       ],
       child: MaterialApp.router(
         routerConfig: buildRouter(

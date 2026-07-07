@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 export 'package:budgie_breeding_tracker/data/models/community_post_model.dart';
 export 'package:budgie_breeding_tracker/data/models/community_comment_model.dart';
+export 'package:budgie_breeding_tracker/data/providers/community_profile_providers.dart'
+    show publicUserProfileProvider;
 export 'package:budgie_breeding_tracker/core/enums/community_enums.dart';
 
 /// Whether the community feature is enabled.
@@ -31,10 +33,13 @@ enum CommunityFeedTab {
 /// Sort options for the explore tab.
 enum CommunityExploreSort { newest, trending }
 
-/// Explore sort state.
 class ExploreSortNotifier extends Notifier<CommunityExploreSort> {
   @override
   CommunityExploreSort build() => CommunityExploreSort.newest;
+
+  void setSort(CommunityExploreSort newSort) {
+    state = newSort;
+  }
 }
 
 final exploreSortProvider =

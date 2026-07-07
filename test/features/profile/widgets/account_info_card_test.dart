@@ -51,8 +51,31 @@ void main() {
       );
       await tester.pump();
 
-      // Copy tooltip is on an InkWell — at least one exists
-      expect(find.byType(InkWell), findsAtLeastNWidgets(1));
+      final copyButton = find.byWidgetPredicate(
+        (widget) =>
+            widget is IconButton &&
+            widget.tooltip == l10n('profile.copy_email'),
+      );
+
+      expect(copyButton, findsOneWidget);
+    });
+
+    testWidgets('copy email action keeps a 48dp tap target', (tester) async {
+      await tester.pumpWidget(
+        _wrap(const AccountInfoCard(profile: null, email: email)),
+      );
+      await tester.pump();
+
+      final copyButton = find.byWidgetPredicate(
+        (widget) =>
+            widget is IconButton &&
+            widget.tooltip == l10n('profile.copy_email'),
+      );
+
+      expect(copyButton, findsOneWidget);
+      final size = tester.getSize(copyButton);
+      expect(size.width, greaterThanOrEqualTo(48));
+      expect(size.height, greaterThanOrEqualTo(48));
     });
 
     testWidgets('shows full name row when profile has fullName', (

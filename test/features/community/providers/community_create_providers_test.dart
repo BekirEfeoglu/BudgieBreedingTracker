@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/community_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/gamification_enums.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/data/repositories/community_post_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
@@ -16,6 +17,7 @@ import 'package:budgie_breeding_tracker/domain/services/moderation/content_moder
 import 'package:budgie_breeding_tracker/domain/services/moderation/image_safety_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/moderation/moderation_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_create_providers.dart';
+import '../../../helpers/mocks.dart' show MockGamificationRepository;
 
 class MockCommunityPostRepository extends Mock
     implements CommunityPostRepository {}
@@ -60,6 +62,7 @@ class RejectingSecondImageSafetyService extends ImageSafetyService {
 void main() {
   setUpAll(() {
     registerFallbackValue(XFile.fromData(Uint8List(0)));
+    registerFallbackValue(XpAction.sharePost);
   });
 
   group('CreatePostState', () {
@@ -162,6 +165,58 @@ void main() {
         expect(container.read(createPostProvider).isSuccess, isTrue);
       },
     );
+
+    test('sends only bird_id for linked bird metadata', () async {
+      final repo = MockCommunityPostRepository();
+      final gamificationRepo = MockGamificationRepository();
+      when(
+        () => repo.checkPostAllowed(any()),
+      ).thenAnswer((_) async => {'allowed': true});
+      when(() => repo.create(any())).thenAnswer((_) async {});
+      when(
+        () => gamificationRepo.recordAction(
+          any(),
+          any(),
+          referenceId: any(named: 'referenceId'),
+        ),
+      ).thenAnswer((_) async {});
+
+      final container = ProviderContainer(
+        overrides: [
+          currentUserIdProvider.overrideWithValue('user-1'),
+          communityPostRepositoryProvider.overrideWithValue(repo),
+          gamificationRepositoryProvider.overrideWithValue(gamificationRepo),
+          contentModerationServiceProvider.overrideWithValue(
+            const AllowedContentModerationService(),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container
+          .read(createPostProvider.notifier)
+          .createPost(
+            content: 'Linked bird post',
+            birdId: 'bird-1',
+            birdName: 'Spoofed Bird',
+            mutationTags: const ['wrong'],
+          );
+
+      final captured =
+          verify(() => repo.create(captureAny())).captured.single
+              as Map<String, dynamic>;
+      expect(captured['bird_id'], 'bird-1');
+      expect(captured.containsKey('bird_name'), isFalse);
+      expect(captured.containsKey('mutation_tags'), isFalse);
+      expect(container.read(createPostProvider).isSuccess, isTrue);
+      verify(
+        () => gamificationRepo.recordAction(
+          'user-1',
+          XpAction.sharePost,
+          referenceId: captured['id'] as String,
+        ),
+      ).called(1);
+    });
 
     test('scans every image before uploading any image', () async {
       final repo = MockCommunityPostRepository();

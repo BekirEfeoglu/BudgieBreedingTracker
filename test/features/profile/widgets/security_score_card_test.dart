@@ -147,7 +147,7 @@ void main() {
       );
     });
 
-    testWidgets('completed factor has strikethrough decoration', (
+    testWidgets('completed factor remains readable without strikethrough', (
       tester,
     ) async {
       await pumpTranslatedWidget(
@@ -160,7 +160,10 @@ void main() {
         (t) => t.data == resolvedL10n('profile.security_factor_password'),
         orElse: () => const Text(''),
       );
-      expect(completedText.style?.decoration, TextDecoration.lineThrough);
+      expect(
+        completedText.style?.decoration,
+        isNot(TextDecoration.lineThrough),
+      );
     });
 
     testWidgets('calls onFactorTap for incomplete factor', (tester) async {

@@ -245,6 +245,56 @@ void _showMoreAboutDialog(BuildContext context) {
   );
 }
 
+class _SectionCard extends StatelessWidget {
+  const _SectionCard({required this.children, this.isPremium = false});
+
+  final List<Widget> children;
+  final bool isPremium;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: isPremium
+            ? AppColors.premiumGold.withValues(alpha: 0.05)
+            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        border: Border.all(
+          color: isPremium
+              ? AppColors.premiumGold.withValues(alpha: 0.2)
+              : colorScheme.outlineVariant.withValues(alpha: 0.4),
+        ),
+      ),
+      child: Column(children: children),
+    );
+  }
+}
+
+class _SectionDivider extends StatelessWidget {
+  const _SectionDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(
+        left: 56.0,
+      ), // Aligns with text in ListTile
+      child: Divider(
+        height: 1,
+        thickness: 1,
+        color: Theme.of(
+          context,
+        ).colorScheme.outlineVariant.withValues(alpha: 0.4),
+      ),
+    );
+  }
+}
+
 class _MoreTile extends StatelessWidget {
   const _MoreTile({
     required this.icon,

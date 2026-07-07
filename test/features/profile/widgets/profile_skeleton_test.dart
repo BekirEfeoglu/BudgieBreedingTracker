@@ -110,7 +110,7 @@ void main() {
       expect(buttonSkeleton, isNotEmpty);
     });
 
-    testWidgets('has stats row with three stat skeletons', (tester) async {
+    testWidgets('has stats row with four stat skeletons', (tester) async {
       await tester.pumpWidget(_wrap(const ProfileSkeleton()));
       await tester.pump();
 
@@ -124,8 +124,8 @@ void main() {
       final statLabelSkeletons = skeletons.where(
         (s) => s.width == 48 && s.height == 12,
       );
-      expect(statValueSkeletons.length, 3);
-      expect(statLabelSkeletons.length, 3);
+      expect(statValueSkeletons.length, 4);
+      expect(statLabelSkeletons.length, 4);
     });
 
     testWidgets('has section skeletons with title loaders', (tester) async {

@@ -257,10 +257,19 @@ class RoutingFakeClient extends Fake implements SupabaseClient {
   }
 
   final _rpcResults = <String, Object?>{};
+  final _rpcQueues = <String, List<({Object? result, Object? error})>>{};
   final rpcCalls = <({String fn, Map<String, dynamic>? params})>[];
 
   /// Registers a fake result for `client.rpc(fn, ...)` calls.
   void addRpc(String fn, Object? result) => _rpcResults[fn] = result;
+
+  /// Registers sequential fake results/errors for `client.rpc(fn, ...)`.
+  void addRpcQueue(
+    String fn,
+    List<({Object? result, Object? error})> responses,
+  ) {
+    _rpcQueues[fn] = List<({Object? result, Object? error})>.of(responses);
+  }
 
   @override
   PostgrestFilterBuilder<T> rpc<T>(
@@ -269,6 +278,14 @@ class RoutingFakeClient extends Fake implements SupabaseClient {
     get = false,
   }) {
     rpcCalls.add((fn: fn, params: params));
+    final queued = _rpcQueues[fn];
+    if (queued != null && queued.isNotEmpty) {
+      final response = queued.removeAt(0);
+      return FakeFilterBuilder<T>(
+        result: response.result as T?,
+        error: response.error,
+      );
+    }
     return FakeFilterBuilder<T>(result: _rpcResults[fn] as T?);
   }
 }

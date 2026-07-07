@@ -308,5 +308,8 @@ class _FakeCreatePostNotifier extends CreatePostNotifier {
     String? title,
     List<String> tags = const [],
     List<XFile> images = const [],
+    String? birdId,
+    String? birdName,
+    List<String> mutationTags = const [],
   }) async {}
 }

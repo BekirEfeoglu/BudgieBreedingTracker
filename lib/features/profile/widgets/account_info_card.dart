@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/app_haptics.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../data/models/profile_model.dart';
 import 'profile_menu_tile.dart';
 
@@ -39,22 +40,12 @@ class AccountInfoCard extends StatelessWidget {
               label: 'profile.email'.tr(),
               value: email,
               trailing: email.isNotEmpty
-                  ? Tooltip(
-                      message: 'profile.copy_email'.tr(),
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        onTap: () => _copyEmail(context, email),
-                        child: Padding(
-                          padding: const EdgeInsets.all(AppSpacing.xs),
-                          child: Icon(
-                            LucideIcons.copy,
-                            size: 16,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
+                  ? AppIconButton(
+                      icon: const Icon(LucideIcons.copy),
+                      onPressed: () => _copyEmail(context, email),
+                      semanticLabel: 'profile.copy_email'.tr(),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      iconSize: 16,
                     )
                   : null,
             ),

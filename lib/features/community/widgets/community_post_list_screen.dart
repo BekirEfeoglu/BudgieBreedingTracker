@@ -14,6 +14,14 @@ import 'community_post_card.dart';
 /// Handles loading/error/empty/data states uniformly, used by
 /// [CommunityBookmarksScreen] and [CommunityUserPostsScreen].
 class CommunityPostListScreen extends ConsumerWidget {
+  final Widget? headerSliver;
+  final String appBarTitle;
+  final AsyncValue<List<CommunityPost>> postsAsync;
+  final Future<void> Function() onRefresh;
+  final Widget emptyIcon;
+  final String emptyTitle;
+  final String? emptySubtitle;
+
   const CommunityPostListScreen({
     super.key,
     required this.appBarTitle,
@@ -22,50 +30,62 @@ class CommunityPostListScreen extends ConsumerWidget {
     required this.emptyIcon,
     required this.emptyTitle,
     this.emptySubtitle,
+    this.headerSliver,
   });
-
-  final String appBarTitle;
-  final AsyncValue<List<CommunityPost>> postsAsync;
-  final Future<void> Function() onRefresh;
-  final Widget emptyIcon;
-  final String emptyTitle;
-  final String? emptySubtitle;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(title: Text(appBarTitle)),
-      body: postsAsync.when(
-        loading: () => const CommunityFeedSkeleton(),
-        error: (e, _) => Center(
-          child: app.ErrorState(
-            message: 'common.data_load_error'.tr(),
-            onRetry: onRefresh,
-          ),
-        ),
-        data: (posts) {
-          if (posts.isEmpty) {
-            return Center(
-              child: EmptyState(
-                icon: emptyIcon,
-                title: emptyTitle,
-                subtitle: emptySubtitle,
+      body: RefreshIndicator(
+        onRefresh: onRefresh,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            if (headerSliver != null) headerSliver!,
+            postsAsync.when(
+              loading: () => const SliverFillRemaining(
+                child: CommunityFeedSkeleton(),
               ),
-            );
-          }
-          return RefreshIndicator(
-            onRefresh: onRefresh,
-            child: ListView.builder(
-              padding: const EdgeInsets.only(
-                top: AppSpacing.sm,
-                bottom: AppSpacing.xxxl * 2,
+              error: (e, _) => SliverFillRemaining(
+                child: Center(
+                  child: app.ErrorState(
+                    message: 'common.data_load_error'.tr(),
+                    onRetry: onRefresh,
+                  ),
+                ),
               ),
-              itemCount: posts.length,
-              itemBuilder: (_, i) =>
-                  CommunityPostCard(key: ValueKey(posts[i].id), post: posts[i]),
+              data: (posts) {
+                if (posts.isEmpty) {
+                  return SliverFillRemaining(
+                    child: Center(
+                      child: EmptyState(
+                        icon: emptyIcon,
+                        title: emptyTitle,
+                        subtitle: emptySubtitle,
+                      ),
+                    ),
+                  );
+                }
+                return SliverPadding(
+                  padding: const EdgeInsets.only(
+                    top: AppSpacing.sm,
+                    bottom: AppSpacing.xxxl * 2,
+                  ),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (_, i) => CommunityPostCard(
+                        key: ValueKey(posts[i].id),
+                        post: posts[i],
+                      ),
+                      childCount: posts.length,
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }

@@ -64,12 +64,14 @@ class CommunityCommentRepository {
     required String postId,
     required String userId,
     required String content,
+    String? parentId,
   }) async {
     await _commentSource.insert({
       'id': const Uuid().v7(),
       'post_id': postId,
       'user_id': userId,
       'content': content.trim(),
+      if (parentId != null) 'parent_id': parentId,
     });
   }
 
@@ -111,6 +113,11 @@ class CommunityCommentRepository {
         ? DateTime.tryParse(createdAtStr)
         : null;
 
+    final parentId = row['parent_id']?.toString();
+    final replyCount = row['reply_count'] is int
+        ? row['reply_count'] as int
+        : int.tryParse(row['reply_count']?.toString() ?? '') ?? 0;
+
     return CommunityComment(
       id: id,
       postId: postId,
@@ -120,6 +127,8 @@ class CommunityCommentRepository {
       content: content,
       likeCount: likeCount,
       isLikedByMe: likedCommentIds.contains(id),
+      parentId: parentId,
+      replyCount: replyCount,
       createdAt: createdAt,
     );
   }

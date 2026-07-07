@@ -15,6 +15,7 @@ class AvatarWidget extends StatelessWidget {
     this.imageUrl,
     this.radius = 48,
     this.onTap,
+    this.semanticLabel,
     this.isUploading = false,
     this.isPremium = false,
   });
@@ -22,6 +23,7 @@ class AvatarWidget extends StatelessWidget {
   final String? imageUrl;
   final double radius;
   final VoidCallback? onTap;
+  final String? semanticLabel;
   final bool isUploading;
   final bool isPremium;
 
@@ -54,67 +56,72 @@ class AvatarWidget extends StatelessWidget {
         minWidth: AppSpacing.touchTargetMin,
         minHeight: AppSpacing.touchTargetMin,
       ),
-      child: GestureDetector(
-        onTap: isUploading ? null : onTap,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            if (isPremium)
-              ShimmerShineAnimation(
-                isActive: true,
-                duration: const Duration(seconds: 3),
-                shineColor: theme.colorScheme.surface,
-                child: Container(
-                  width: (radius * 2) + 8,
-                  height: (radius * 2) + 8,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: const LinearGradient(
-                      colors: [
-                        AppColors.accent,
-                        AppColors.primary,
-                        AppColors.accent,
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.accent.withValues(alpha: 0.4),
-                        blurRadius: 12,
-                        spreadRadius: 2,
+      child: Semantics(
+        button: onTap != null,
+        enabled: onTap != null && !isUploading,
+        label: onTap != null ? semanticLabel : null,
+        child: GestureDetector(
+          onTap: isUploading ? null : onTap,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              if (isPremium)
+                ShimmerShineAnimation(
+                  isActive: true,
+                  duration: const Duration(seconds: 3),
+                  shineColor: theme.colorScheme.surface,
+                  child: Container(
+                    width: (radius * 2) + 8,
+                    height: (radius * 2) + 8,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        colors: [
+                          AppColors.accent,
+                          AppColors.primary,
+                          AppColors.accent,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                    ],
-                  ),
-                ),
-              ),
-            // Biraz beyaz aralık (Border gibi)
-            if (isPremium)
-              Container(
-                width: (radius * 2) + 4,
-                height: (radius * 2) + 4,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: theme.colorScheme.surface,
-                ),
-              ),
-            avatarCore,
-            if (isUploading)
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: theme.shadowColor.withValues(alpha: 0.4),
-                  ),
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 3,
-                      color: theme.colorScheme.onPrimary,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.accent.withValues(alpha: 0.4),
+                          blurRadius: 12,
+                          spreadRadius: 2,
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ),
-          ],
+              // Biraz beyaz aralık (Border gibi)
+              if (isPremium)
+                Container(
+                  width: (radius * 2) + 4,
+                  height: (radius * 2) + 4,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: theme.colorScheme.surface,
+                  ),
+                ),
+              avatarCore,
+              if (isUploading)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: theme.shadowColor.withValues(alpha: 0.4),
+                    ),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 3,
+                        color: theme.colorScheme.onPrimary,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

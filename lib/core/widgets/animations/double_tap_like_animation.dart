@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class DoubleTapLikeAnimation extends StatefulWidget {
   final Widget child;
@@ -11,7 +12,7 @@ class DoubleTapLikeAnimation extends StatefulWidget {
     required this.child,
     this.onLike,
     this.likeIcon = const Icon(
-      Icons.favorite,
+      LucideIcons.heart,
       color: Colors.white,
       size: 100,
     ),
@@ -27,6 +28,7 @@ class _DoubleTapLikeAnimationState extends State<DoubleTapLikeAnimation>
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
   bool _isAnimating = false;
+  bool _reduceMotion = false;
 
   @override
   void initState() {
@@ -38,42 +40,56 @@ class _DoubleTapLikeAnimationState extends State<DoubleTapLikeAnimation>
 
     _scaleAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween(begin: 0.0, end: 1.2).chain(CurveTween(curve: Curves.easeOutBack)),
+        tween: Tween(
+          begin: 0.0,
+          end: 1.2,
+        ).chain(CurveTween(curve: Curves.easeOutBack)),
         weight: 40,
       ),
       TweenSequenceItem(
-        tween: Tween(begin: 1.2, end: 1.0).chain(CurveTween(curve: Curves.easeIn)),
+        tween: Tween(
+          begin: 1.2,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeIn)),
         weight: 20,
       ),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.0), weight: 20),
       TweenSequenceItem(
-        tween: Tween(begin: 1.0, end: 1.0),
-        weight: 20,
-      ),
-      TweenSequenceItem(
-        tween: Tween(begin: 1.0, end: 0.0).chain(CurveTween(curve: Curves.easeIn)),
+        tween: Tween(
+          begin: 1.0,
+          end: 0.0,
+        ).chain(CurveTween(curve: Curves.easeIn)),
         weight: 20,
       ),
     ]).animate(_controller);
 
     _opacityAnimation = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween(begin: 0.0, end: 1.0),
-        weight: 20,
-      ),
-      TweenSequenceItem(
-        tween: Tween(begin: 1.0, end: 1.0),
-        weight: 50,
-      ),
-      TweenSequenceItem(
-        tween: Tween(begin: 1.0, end: 0.0),
-        weight: 30,
-      ),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 20),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.0), weight: 50),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 30),
     ]).animate(_controller);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    if (_reduceMotion) {
+      _controller.stop();
+      _isAnimating = false;
+    }
   }
 
   void _handleDoubleTap() {
     HapticFeedback.lightImpact();
     widget.onLike?.call();
+
+    if (_reduceMotion) {
+      if (_isAnimating) {
+        setState(() => _isAnimating = false);
+      }
+      return;
+    }
 
     setState(() {
       _isAnimating = true;

@@ -3,11 +3,11 @@ import 'package:budgie_breeding_tracker/core/constants/feature_flags.dart';
 
 void main() {
   group('FeatureFlags', () {
-    test('all social features are disabled by default', () {
+    test('social and gamification feature flags match production rollout', () {
       expect(FeatureFlags.communityEnabled, isTrue);
       expect(FeatureFlags.marketplaceEnabled, isTrue);
       expect(FeatureFlags.messagingEnabled, isFalse);
-      expect(FeatureFlags.gamificationEnabled, isFalse);
+      expect(FeatureFlags.gamificationEnabled, isTrue);
     });
   });
 }

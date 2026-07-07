@@ -142,9 +142,8 @@ class _FactorRow extends StatelessWidget {
                 factor.labelKey.tr(),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: isCompleted
-                      ? theme.colorScheme.onSurfaceVariant
+                      ? theme.colorScheme.onSurface
                       : theme.colorScheme.onSurface,
-                  decoration: isCompleted ? TextDecoration.lineThrough : null,
                 ),
               ),
             ),

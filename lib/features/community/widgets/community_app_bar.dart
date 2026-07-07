@@ -13,110 +13,198 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../data/models/profile_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
+import '../../../data/providers/profile_stream_providers.dart';
 import '../../../domain/services/gamification/level_calculator.dart';
 import '../../../router/route_names.dart';
 import 'package:budgie_breeding_tracker/shared/providers/gamification.dart';
-import 'package:budgie_breeding_tracker/shared/widgets/app_shell.dart';
-import 'package:budgie_breeding_tracker/shared/providers/profile.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/gamification.dart';
+import '../providers/community_providers.dart';
+import 'community_filter_sheet.dart';
 
-/// Profile-centric AppBar for the community screen.
-class CommunityAppBar extends ConsumerWidget implements PreferredSizeWidget {
+class CommunityAppBar extends ConsumerStatefulWidget implements PreferredSizeWidget {
   const CommunityAppBar({super.key});
 
   @override
-  Size get preferredSize => const Size.fromHeight(92);
+  Size get preferredSize => const Size.fromHeight(72);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CommunityAppBar> createState() => _CommunityAppBarState();
+}
+
+class _CommunityAppBarState extends ConsumerState<CommunityAppBar> {
+  bool _isSearchActive = false;
+  final _searchController = TextEditingController();
+  final _searchFocusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _toggleSearch() {
+    setState(() {
+      _isSearchActive = !_isSearchActive;
+      if (!_isSearchActive) {
+        _searchController.clear();
+        // Option A: If we want inline search to actually trigger search results on the same page,
+        // we would need to integrate the search query with communityFeedProvider.
+        // Currently, communityFeedProvider doesn't accept a search query directly, it relies on community_search_screen.
+        // So inline search is best if it navigates to the search screen upon submission,
+        // OR we just keep the search icon as navigation, but we promised "Feed İçine Entegre Arama".
+      } else {
+        _searchFocusNode.requestFocus();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final userId = ref.watch(currentUserIdProvider);
     final userLevelAsync = ref.watch(userLevelProvider(userId));
-    final profile = ref.watch(userProfileProvider).value;
-    final theme = Theme.of(context);
-
-    final displayName = profile?.resolvedDisplayName ?? '';
-    final initials = displayName.isNotEmpty
-        ? displayName[0].toUpperCase()
-        : (userId.length >= 2
-              ? userId.substring(0, 2).toUpperCase()
-              : userId.toUpperCase());
+    final activeTab = ref.watch(communityActiveTabProvider);
+    final canPop = Navigator.canPop(context);
+    final levelBadge = userLevelAsync.maybeWhen<Widget?>(
+      data: (level) {
+        final lvl = level?.level ?? 1;
+        final titleKey = (level != null && level.title.isNotEmpty)
+            ? level.title
+            : LevelCalculator.titleForLevel(lvl);
+        return _LevelBadge(level: lvl, titleKey: titleKey);
+      },
+      orElse: () => null,
+    );
 
     return AppBar(
-      toolbarHeight: 92,
+      toolbarHeight: 72,
       backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
       systemOverlayStyle: SystemUiOverlayStyle.dark,
-      leading: AppIconButton(
-        icon: const Icon(LucideIcons.arrowLeft),
-        semanticLabel: 'common.back'.tr(),
-        onPressed: () => context.pop(),
-      ),
+      automaticallyImplyLeading: false,
+      leading: canPop
+          ? AppIconButton(
+              icon: const Icon(LucideIcons.arrowLeft),
+              semanticLabel: 'common.back'.tr(),
+              onPressed: () => context.pop(),
+            )
+          : null,
+      leadingWidth: canPop ? 56 : 16,
       titleSpacing: 0,
-      title: Row(
-        children: [
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-              onTap: () => context.push(AppRoutes.profile),
-              child: _ProfileAvatar(
-                avatarUrl: profile?.avatarUrl,
-                initials: initials,
-                theme: theme,
-              ),
+      title: _isSearchActive
+          ? _buildSearchBar(theme)
+          : _CommunityAppBarTitle(
+              showCommunityIcon: !canPop,
+              levelBadge: levelBadge,
             ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Flexible(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'community.title'.tr(),
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                userLevelAsync.when(
-                  loading: () => const SizedBox.shrink(),
-                  error: (_, __) => const SizedBox.shrink(),
-                  // Every user is at least Lv.1 — fall back to it (with the
-                  // level-1 title) so the badge always shows, like the design.
-                  data: (level) {
-                    final lvl = level?.level ?? 1;
-                    final titleKey = (level != null && level.title.isNotEmpty)
-                        ? level.title
-                        : LevelCalculator.titleForLevel(lvl);
-                    return _LevelBadge(level: lvl, titleKey: titleKey);
-                  },
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
       actions: [
+        if (!_isSearchActive && activeTab == CommunityFeedTab.explore)
+          _ActionIcon(
+            icon: const Icon(LucideIcons.slidersHorizontal, size: 18),
+            tooltip: 'common.sort'.tr(),
+            onPressed: () => showCommunityFilterSheet(context),
+          ),
+        if (!_isSearchActive)
+          _ActionIcon(
+            icon: const Icon(LucideIcons.messageCircle, size: 18),
+            tooltip: 'messaging.title'.tr(),
+            onPressed: () => context.push(AppRoutes.messages),
+          ),
         _ActionIcon(
-          icon: const Icon(LucideIcons.messageCircle, size: 18),
-          tooltip: 'messaging.title'.tr(),
-          onPressed: () => context.push(AppRoutes.messages),
+          icon: Icon(_isSearchActive ? LucideIcons.x : LucideIcons.search, size: 18),
+          tooltip: _isSearchActive ? 'common.cancel'.tr() : 'community.search'.tr(),
+          onPressed: _toggleSearch,
         ),
-        const NotificationBellButton(),
-        _ActionIcon(
-          icon: const AppIcon(AppIcons.search, size: 18),
-          tooltip: 'community.search'.tr(),
-          onPressed: () => context.push(AppRoutes.communitySearch),
-        ),
+        if (!_isSearchActive) const _CommunityProfileButton(),
         const SizedBox(width: AppSpacing.sm),
       ],
     );
   }
+
+  Widget _buildSearchBar(ThemeData theme) {
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+      ),
+      child: TextField(
+        controller: _searchController,
+        focusNode: _searchFocusNode,
+        textInputAction: TextInputAction.search,
+        onSubmitted: (query) {
+          if (query.trim().isNotEmpty) {
+            _toggleSearch(); // close search bar
+            // Push to search screen with the query
+            context.push('${AppRoutes.communitySearch}?q=${Uri.encodeComponent(query.trim())}');
+          }
+        },
+        decoration: InputDecoration(
+          hintText: 'community.search'.tr(),
+          hintStyle: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 10),
+        ),
+      ),
+    );
+  }
 }
 
-/// Amber "★ Lv.X · Title" badge under the "Topluluk" app-bar title.
+class _CommunityAppBarTitle extends StatelessWidget {
+  const _CommunityAppBarTitle({
+    required this.showCommunityIcon,
+    required this.levelBadge,
+  });
+
+  final bool showCommunityIcon;
+  final Widget? levelBadge;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final showIcon = showCommunityIcon && constraints.maxWidth >= 176;
+        final showLevelBadge =
+            levelBadge != null &&
+            constraints.maxWidth >= (showIcon ? 238 : 188);
+
+        return Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            if (showIcon) ...[
+              const SizedBox(width: AppSpacing.md),
+              const AppIcon(AppIcons.community, size: 20),
+              const SizedBox(width: AppSpacing.sm),
+            ],
+            Expanded(
+              child: Text(
+                'community.title'.tr(),
+                maxLines: 1,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (showLevelBadge) ...[
+              const SizedBox(width: AppSpacing.sm),
+              levelBadge!,
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Amber inline pill badge showing "Lv.X" next to the rank icon.
 class _LevelBadge extends StatelessWidget {
   const _LevelBadge({required this.level, required this.titleKey});
 
@@ -126,27 +214,38 @@ class _LevelBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final title = titleKey.tr();
-    final label = title.isEmpty
-        ? '${'community.level_prefix'.tr()}$level'
-        : '${'community.level_prefix'.tr()}$level · $title';
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Icon(LucideIcons.star, size: 12, color: AppColors.accent),
-        const SizedBox(width: AppSpacing.xs),
-        Flexible(
-          child: Text(
-            label,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: AppColors.warningTextAdaptive(context),
-              fontWeight: FontWeight.w600,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: 3,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.warningTextAdaptive(context).withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+        border: Border.all(
+          color: AppColors.warningTextAdaptive(context).withValues(alpha: 0.28),
+          width: 0.5,
         ),
-      ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AnimatedRankIcon(
+            iconAsset: AppIcons.getLevelIcon(titleKey),
+            size: 12,
+            isAnimated: false,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            '${'community.level_prefix'.tr()}$level',
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: AppColors.warningTextAdaptive(context),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -191,79 +290,112 @@ class _ActionIcon extends StatelessWidget {
   }
 }
 
-class _ProfileAvatar extends StatelessWidget {
-  final String? avatarUrl;
-  final String initials;
-  final ThemeData theme;
+class _CommunityProfileButton extends ConsumerWidget {
+  const _CommunityProfileButton();
 
-  const _ProfileAvatar({
-    required this.avatarUrl,
-    required this.initials,
-    required this.theme,
-  });
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userId = ref.watch(currentUserIdProvider);
+    final profileAsync = ref.watch(userProfileProvider);
+
+    return profileAsync.when(
+      loading: () => _CommunityAvatarButton(userId: userId, profile: null),
+      error: (_, __) => _CommunityAvatarButton(userId: userId, profile: null),
+      data: (profile) =>
+          _CommunityAvatarButton(userId: userId, profile: profile),
+    );
+  }
+}
+
+class _CommunityAvatarButton extends StatelessWidget {
+  const _CommunityAvatarButton({required this.userId, required this.profile});
+
+  final String userId;
+  final Profile? profile;
 
   @override
   Widget build(BuildContext context) {
-    // Gradient ring around the avatar (blue → amber), matching the design's
-    // profile chip. The image / initials sit inside the ring.
-    return Container(
-      width: AppSpacing.touchTargetMin,
-      height: AppSpacing.touchTargetMin,
-      padding: const EdgeInsets.all(2),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [theme.colorScheme.primary, AppColors.accent],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.primary.withValues(alpha: 0.24),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+    final profileDisplayName = profile?.resolvedDisplayName;
+    final profileAvatarUrl = profile?.avatarUrl;
+    final displayName = profileDisplayName?.trim().isNotEmpty == true
+        ? profileDisplayName!
+        : userId;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+      child: Tooltip(
+        message: 'community.my_profile'.tr(),
+        child: Semantics(
+          button: true,
+          label: 'community.my_profile'.tr(),
+          child: Material(
+            color: Colors.transparent,
+            child: InkResponse(
+              onTap: userId == 'anonymous'
+                  ? null
+                  : () => context.push(AppRoutes.profile),
+              radius: AppSpacing.touchTargetMin / 2,
+              containedInkWell: false,
+              child: _CommunityAvatar(
+                displayName: displayName,
+                avatarUrl: profileAvatarUrl,
+              ),
+            ),
           ),
-        ],
-      ),
-      child: ClipOval(
-        child: avatarUrl != null
-            ? CachedNetworkImage(
-                imageUrl: avatarUrl!,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-                // Avatars render at ~40-64dp; downsample aggressively to
-                // avoid caching full-resolution originals.
-                memCacheWidth: 192,
-                maxWidthDiskCache: 192,
-                placeholder: (_, __) =>
-                    _InitialsCircle(initials: initials, theme: theme),
-                errorWidget: (_, __, ___) =>
-                    _InitialsCircle(initials: initials, theme: theme),
-              )
-            : _InitialsCircle(initials: initials, theme: theme),
+        ),
       ),
     );
   }
 }
 
-class _InitialsCircle extends StatelessWidget {
-  final String initials;
-  final ThemeData theme;
+class _CommunityAvatar extends StatelessWidget {
+  const _CommunityAvatar({required this.displayName, required this.avatarUrl});
 
-  const _InitialsCircle({required this.initials, required this.theme});
+  final String displayName;
+  final String? avatarUrl;
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: theme.colorScheme.primaryContainer,
+    final theme = Theme.of(context);
+    final initials = _getInitials(displayName);
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        minWidth: AppSpacing.touchTargetMin,
+        minHeight: AppSpacing.touchTargetMin,
+      ),
       child: Center(
-        child: Text(
-          initials,
-          style: theme.textTheme.labelLarge?.copyWith(
-            color: theme.colorScheme.onPrimaryContainer,
-            fontWeight: FontWeight.w700,
-          ),
+        child: CircleAvatar(
+          radius: 18,
+          backgroundColor: theme.colorScheme.primary,
+          backgroundImage: avatarUrl != null
+              ? CachedNetworkImageProvider(
+                  avatarUrl!,
+                  maxWidth: 72,
+                  maxHeight: 72,
+                )
+              : null,
+          child: avatarUrl == null
+              ? Text(
+                  initials,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.onPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                )
+              : null,
         ),
       ),
     );
+  }
+
+  String _getInitials(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return '?';
+    final parts = trimmed.split(RegExp(r'\s+'));
+    if (parts.length >= 2 && parts.first.isNotEmpty && parts.last.isNotEmpty) {
+      return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
+    }
+    return trimmed[0].toUpperCase();
   }
 }

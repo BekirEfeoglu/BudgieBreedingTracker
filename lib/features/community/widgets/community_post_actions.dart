@@ -60,45 +60,52 @@ class _CommunityPostActionsState extends ConsumerState<CommunityPostActions> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Liked heart turns red; bookmark turns amber — matches the community
-    // redesign's action-bar accents.
     final likedColor = theme.colorScheme.error;
     const bookmarkColor = AppColors.accent;
     final defaultColor = theme.colorScheme.onSurfaceVariant;
 
-    final likedBg = post.isLikedByMe
-        ? theme.colorScheme.errorContainer
-        : theme.colorScheme.surfaceContainerHighest;
-    final commentBg = theme.colorScheme.surfaceContainerHighest;
-
     return Row(
       children: [
-        _PillActionButton(
+        _ActionButton(
           semanticLabel: 'community.like'.tr(),
-          backgroundColor: likedBg,
+          backgroundColor: post.isLikedByMe
+              ? theme.colorScheme.errorContainer.withValues(alpha: 0.5)
+              : null,
           onTap: _onLike,
-          child: AnimatedToggleButton(
-            isActive: post.isLikedByMe,
-            activeIcon: AppIcon(AppIcons.like, size: 20, color: likedColor),
-            inactiveIcon: AppIcon(AppIcons.like, size: 20, color: defaultColor),
-            onToggle: _onLike,
-            label: post.likeCount > 0 ? '${post.likeCount}' : null,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+          child: IgnorePointer(
+            child: AnimatedToggleButton(
+              isActive: post.isLikedByMe,
+              activeIcon: AppIcon(AppIcons.like, size: 20, color: likedColor),
+              inactiveIcon: AppIcon(
+                AppIcons.like,
+                size: 20,
+                color: defaultColor,
+              ),
+              onToggle: _onLike,
+              label: post.likeCount > 0 ? '${post.likeCount}' : null,
+              labelStyle: theme.textTheme.labelSmall?.copyWith(
+                color: post.isLikedByMe ? likedColor : defaultColor,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.xs),
+        _ActionButton(
+          semanticLabel: 'community.comment'.tr(),
+          onTap: _onComment,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+          child: _ActionContent(
+            icon: AppIcon(AppIcons.comment, size: 20, color: defaultColor),
+            label: post.commentCount > 0 ? '${post.commentCount}' : null,
             labelStyle: theme.textTheme.labelSmall?.copyWith(
-              color: post.isLikedByMe ? likedColor : defaultColor,
+              color: defaultColor,
               fontWeight: FontWeight.w600,
             ),
           ),
         ),
-        const SizedBox(width: AppSpacing.sm),
-        _PillActionButton(
-          semanticLabel: 'community.comment'.tr(),
-          icon: AppIcon(AppIcons.comment, size: 20, color: defaultColor),
-          label: post.commentCount > 0 ? '${post.commentCount}' : null,
-          labelColor: theme.colorScheme.secondary,
-          backgroundColor: commentBg,
-          onTap: _onComment,
-        ),
-        const SizedBox(width: AppSpacing.sm),
+        const SizedBox(width: AppSpacing.xs),
         _ActionButton(
           semanticLabel: 'community.share_post'.tr(),
           icon: AppIcon(AppIcons.share, size: 22, color: defaultColor),
@@ -108,19 +115,24 @@ class _CommunityPostActionsState extends ConsumerState<CommunityPostActions> {
         _ActionButton(
           semanticLabel: 'community.bookmark'.tr(),
           onTap: _onBookmark,
-          child: AnimatedToggleButton(
-            isActive: post.isBookmarkedByMe,
-            activeIcon: const AppIcon(
-              AppIcons.bookmark,
-              size: 22,
-              color: bookmarkColor,
+          backgroundColor: post.isBookmarkedByMe
+              ? AppColors.accent.withValues(alpha: 0.16)
+              : null,
+          child: IgnorePointer(
+            child: AnimatedToggleButton(
+              isActive: post.isBookmarkedByMe,
+              activeIcon: const AppIcon(
+                AppIcons.bookmark,
+                size: 22,
+                color: bookmarkColor,
+              ),
+              inactiveIcon: AppIcon(
+                AppIcons.bookmark,
+                size: 22,
+                color: defaultColor,
+              ),
+              onToggle: _onBookmark,
             ),
-            inactiveIcon: AppIcon(
-              AppIcons.bookmark,
-              size: 22,
-              color: defaultColor,
-            ),
-            onToggle: _onBookmark,
           ),
         ),
       ],
@@ -128,69 +140,24 @@ class _CommunityPostActionsState extends ConsumerState<CommunityPostActions> {
   }
 }
 
-class _PillActionButton extends StatelessWidget {
-  /// When [child] is provided it is used as content; [icon] and [label] are
-  /// ignored. This allows embedding an [AnimatedToggleButton] while keeping
-  /// the pill container.
-  final Widget? child;
-  final Widget? icon;
-  final VoidCallback onTap;
-  final String? label;
-  final Color? labelColor;
-  final Color backgroundColor;
-  final String? semanticLabel;
+class _ActionContent extends StatelessWidget {
+  const _ActionContent({required this.icon, this.label, this.labelStyle});
 
-  const _PillActionButton({
-    required this.onTap,
-    required this.backgroundColor,
-    this.child,
-    this.icon,
-    this.label,
-    this.labelColor,
-    this.semanticLabel,
-  });
+  final Widget icon;
+  final String? label;
+  final TextStyle? labelStyle;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final content =
-        child ??
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            icon!,
-            if (label != null) ...[
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                label!,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: labelColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ],
-        );
-    return Semantics(
-      button: true,
-      label: semanticLabel,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: onTap,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minHeight: AppSpacing.touchTargetMin,
-          ),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: content,
-          ),
-        ),
-      ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        icon,
+        if (label != null) ...[
+          const SizedBox(width: AppSpacing.xs),
+          Text(label!, style: labelStyle),
+        ],
+      ],
     );
   }
 }
@@ -200,34 +167,41 @@ class _ActionButton extends StatelessWidget {
   final Widget? child;
   final Widget? icon;
   final VoidCallback onTap;
+  final Color? backgroundColor;
+  final EdgeInsetsGeometry padding;
   final String? semanticLabel;
 
   const _ActionButton({
     required this.onTap,
     this.child,
     this.icon,
+    this.backgroundColor,
+    this.padding = EdgeInsets.zero,
     this.semanticLabel,
   });
 
   @override
   Widget build(BuildContext context) {
+    final color = backgroundColor ?? Colors.transparent;
+
     return Semantics(
       button: true,
       label: semanticLabel,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          minWidth: AppSpacing.touchTargetMin,
-          minHeight: AppSpacing.touchTargetMin,
-        ),
+      child: Material(
+        color: color,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
         child: InkWell(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
           onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.md,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minWidth: AppSpacing.touchTargetMin,
+              minHeight: AppSpacing.touchTargetMin,
             ),
-            child: child ?? icon!,
+            child: Padding(
+              padding: padding,
+              child: Center(child: child ?? icon!),
+            ),
           ),
         ),
       ),

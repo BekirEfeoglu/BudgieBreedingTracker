@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show RealtimeChannel;
 
+import '../../../core/errors/app_exception.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/local/preferences/app_preferences.dart';
 import '../../../data/providers/auth_state_providers.dart';
@@ -64,6 +65,7 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
 
   @override
   FeedState build() {
+    ref.watch(exploreSortProvider);
     Future.microtask(() => fetchInitial());
     return const FeedState(isLoading: true);
   }
@@ -75,8 +77,16 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
     try {
       final repo = ref.read(communityPostRepositoryProvider);
       final userId = ref.read(currentUserIdProvider);
+      final sort = ref.read(exploreSortProvider);
 
-      final posts = await repo.getFeed(currentUserId: userId, limit: _pageSize);
+      final sortBy = sort == CommunityExploreSort.trending
+          ? 'trending'
+          : 'newest';
+      final posts = await repo.getFeed(
+        currentUserId: userId,
+        limit: _pageSize,
+        sortBy: sortBy,
+      );
       if (!ref.mounted) return;
 
       state = FeedState(
@@ -96,7 +106,7 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
       } else {
         AppLogger.error('CommunityFeedNotifier.fetchInitial', e, st);
         if (!ref.mounted) return;
-        state = FeedState(isLoading: false, error: e.toString());
+        state = FeedState(isLoading: false, error: _feedErrorKey(e));
       }
     }
   }
@@ -110,12 +120,17 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
     try {
       final repo = ref.read(communityPostRepositoryProvider);
       final userId = ref.read(currentUserIdProvider);
+      final sort = ref.read(exploreSortProvider);
 
+      final sortBy = sort == CommunityExploreSort.trending
+          ? 'trending'
+          : 'newest';
       final newPosts = await repo.getFeed(
         currentUserId: userId,
         limit: _pageSize,
         before: state.cursor,
         beforeId: state.cursorPostId,
+        sortBy: sortBy,
       );
       if (!ref.mounted) return;
 
@@ -154,7 +169,7 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
       } else {
         AppLogger.error('CommunityFeedNotifier.fetchMore', e, st);
         if (!ref.mounted) return;
-        state = state.copyWith(isLoading: false, error: e.toString());
+        state = state.copyWith(isLoading: false, error: _feedErrorKey(e));
       }
     }
   }
@@ -221,6 +236,18 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
     final message = error.toString();
     return message.contains('You must initialize the supabase instance') ||
         message.contains('provider that is in error state');
+  }
+
+  String _feedErrorKey(Object error) {
+    if (error is NetworkException) return 'errors.network_unavailable';
+    if (error is AppException && _isLocalizationKey(error.message)) {
+      return error.message;
+    }
+    return 'errors.unknown_error';
+  }
+
+  bool _isLocalizationKey(String value) {
+    return RegExp(r'^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$').hasMatch(value);
   }
 }
 

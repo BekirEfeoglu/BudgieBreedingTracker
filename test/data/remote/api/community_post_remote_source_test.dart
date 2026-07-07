@@ -3,6 +3,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 
 import 'package:budgie_breeding_tracker/data/remote/api/community_post_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/community_profile_cache.dart';
@@ -66,6 +67,51 @@ void main() {
         'p_limit': 10,
         'p_before_created_at': before.toIso8601String(),
         'p_before_id': 'post-9',
+      });
+    });
+
+    test('retries legacy feed RPC when sort parameter is unavailable', () async {
+      client.addRpcQueue('fetch_community_feed', [
+        (
+          result: null,
+          error: const PostgrestException(
+            message:
+                'Could not find the function public.fetch_community_feed(p_before_created_at, p_before_id, p_limit, p_sort_by) in the schema cache',
+            code: 'PGRST202',
+            details:
+                'Searched for the function public.fetch_community_feed with parameters p_sort_by',
+          ),
+        ),
+        (
+          result: [
+            {
+              'id': 'p1',
+              'user_id': 'u1',
+              'content': 'Legacy result',
+              'is_deleted': false,
+            },
+          ],
+          error: null,
+        ),
+      ]);
+
+      final result = await source.fetchFeed(
+        currentUserId: 'viewer-1',
+        sortBy: 'trending',
+      );
+
+      expect(result.single['content'], 'Legacy result');
+      expect(client.rpcCalls, hasLength(2));
+      expect(client.rpcCalls.first.params, {
+        'p_limit': 20,
+        'p_before_created_at': null,
+        'p_before_id': null,
+        'p_sort_by': 'trending',
+      });
+      expect(client.rpcCalls.last.params, {
+        'p_limit': 20,
+        'p_before_created_at': null,
+        'p_before_id': null,
       });
     });
 

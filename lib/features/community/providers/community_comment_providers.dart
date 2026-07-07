@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
+import '../../../core/enums/gamification_enums.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/models/community_comment_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
@@ -193,6 +194,7 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
   Future<bool> addComment({
     required String postId,
     required String content,
+    String? parentId,
   }) async {
     // Guard against double-submit while the previous call is in flight.
     if (state.isLoading) return false;
@@ -247,7 +249,17 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
       }
 
       final repo = ref.read(communityCommentRepositoryProvider);
-      await repo.create(postId: postId, userId: userId, content: content);
+      await repo.create(
+        postId: postId,
+        userId: userId,
+        content: content,
+        parentId: parentId,
+      );
+
+      // Award XP for adding a comment
+      ref
+          .read(gamificationRepositoryProvider)
+          .recordAction(userId, XpAction.addComment, referenceId: postId);
 
       ref.read(communityFeedProvider.notifier).incrementCommentCount(postId);
       // Reload the paginated list the UI actually renders
@@ -357,18 +369,31 @@ final commentLikeToggleProvider =
 /// Comments visible to the current user: filters out blocked AND muted
 /// authors client-side (block server-side'da yalnız feed RPC'de filtreli;
 /// yorumlar için tek filtre noktası burası).
-final visibleCommentsProvider =
-    Provider.family<List<CommunityComment>, String>((ref, postId) {
-      final comments = ref.watch(
-        commentListProvider(postId).select((s) => s.comments),
-      );
-      final blocked = ref.watch(blockedUsersProvider);
-      final muted = ref.watch(mutedUsersProvider);
-      if (blocked.isEmpty && muted.isEmpty) return comments;
-      return comments
-          .where(
-            (c) =>
-                !blocked.contains(c.userId) && !muted.contains(c.userId),
-          )
-          .toList();
-    });
+final visibleCommentsProvider = Provider.family<List<CommunityComment>, String>(
+  (ref, postId) {
+    final comments = ref.watch(
+      commentListProvider(postId).select((s) => s.comments),
+    );
+    final blocked = ref.watch(blockedUsersProvider);
+    final muted = ref.watch(mutedUsersProvider);
+    if (blocked.isEmpty && muted.isEmpty) return comments;
+    return comments
+        .where((c) => !blocked.contains(c.userId) && !muted.contains(c.userId))
+        .toList();
+  },
+);
+
+// ---------------------------------------------------------------------------
+// Reply to comment state
+// ---------------------------------------------------------------------------
+
+/// Holds the comment currently being replied to, if any.
+class ReplyToCommentNotifier extends Notifier<CommunityComment?> {
+  @override
+  CommunityComment? build() => null;
+}
+
+final replyToCommentProvider =
+    NotifierProvider<ReplyToCommentNotifier, CommunityComment?>(
+      ReplyToCommentNotifier.new,
+    );
