@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/profile_stream_providers.dart';
@@ -35,6 +36,12 @@ void main() {
           path: '/profile',
           builder: (_, __) => const Scaffold(body: Text('normal-profile')),
         ),
+        GoRoute(
+          path: '/community/search',
+          builder: (_, state) => Scaffold(
+            body: Text('search-${state.uri.queryParameters['q'] ?? ''}'),
+          ),
+        ),
       ],
     );
 
@@ -49,6 +56,10 @@ void main() {
   }
 
   group('CommunityAppBar', () {
+    setUp(() {
+      SharedPreferences.setMockInitialValues({});
+    });
+
     testWidgets('renders without crashing', (tester) async {
       await tester.pumpWidget(wrap());
       await tester.pumpAndSettle();
@@ -89,6 +100,19 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byIcon(LucideIcons.search), findsOneWidget);
+    });
+
+    testWidgets('submits inline search to the search route', (tester) async {
+      await tester.pumpWidget(wrap());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip(l10n('community.search')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'lutino');
+      await tester.testTextInput.receiveAction(TextInputAction.search);
+      await tester.pumpAndSettle();
+
+      expect(find.text('search-lutino'), findsOneWidget);
     });
 
     testWidgets('community profile shortcut uses community tooltip', (

@@ -4,6 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 
 /// Floating banner that appears when new posts arrive while user is scrolled.
 class NewPostsBanner extends StatelessWidget {
@@ -16,46 +17,61 @@ class NewPostsBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final label = 'community.new_posts_banner'.tr(args: ['$count']);
+
     return Center(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-          onTap: onTap,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.sm,
-            ),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [AppColors.primary, AppColors.primaryLight],
+      child: Semantics(
+        button: true,
+        label: label,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+            onTap: onTap,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: AppSpacing.touchTargetMin,
               ),
-              borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.4),
-                  blurRadius: 14,
-                  offset: const Offset(0, 6),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.sm,
                 ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(LucideIcons.arrowUp, size: 16, color: Colors.white),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  'community.new_posts_banner'.tr(args: ['$count']),
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppColors.primary, AppColors.primaryLight],
                   ),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.4),
+                      blurRadius: 14,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
                 ),
-              ],
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      LucideIcons.arrowUp,
+                      size: 16,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(
+                      label,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -109,10 +125,11 @@ class SwipeOnboardingHint extends StatelessWidget {
                     ),
                   ),
                 ),
-                InkWell(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                  onTap: onDismiss,
-                  child: Icon(
+                AppIconButton(
+                  onPressed: onDismiss,
+                  semanticLabel: 'common.close'.tr(),
+                  padding: EdgeInsets.zero,
+                  icon: Icon(
                     LucideIcons.x,
                     size: 18,
                     color: theme.colorScheme.onInverseSurface.withValues(

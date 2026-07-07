@@ -35,8 +35,18 @@ void main() {
       await tester.pump();
 
       // Should contain multiple SkeletonLoader widgets
-      // (1 composer skeleton + 3 post skeletons with multiple loaders each)
+      // (3 post skeletons with multiple loaders each)
       expect(find.byType(SkeletonLoader), findsWidgets);
+    });
+
+    testWidgets('does not render removed composer placeholder', (tester) async {
+      await tester.pumpWidget(wrap(const CommunityFeedSkeleton()));
+      await tester.pump();
+
+      final skeletons = tester.widgetList<SkeletonLoader>(
+        find.byType(SkeletonLoader),
+      );
+      expect(skeletons.any((loader) => loader.height == 48), isFalse);
     });
 
     testWidgets('renders inside a ListView', (tester) async {

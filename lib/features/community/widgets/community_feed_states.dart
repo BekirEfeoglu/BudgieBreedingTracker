@@ -22,12 +22,7 @@ class CommunityFeedSkeleton extends StatelessWidget {
         AppSpacing.xxxl,
       ),
       children: [
-        // Compact composer skeleton
-        const RepaintBoundary(
-          child: SkeletonLoader(height: 48, borderRadius: AppSpacing.radiusXl),
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        // Post card skeletons (x3)
+        // Post card skeletons (x3) — mirrors the post-first feed layout.
         ...List.generate(
           3,
           (_) => const RepaintBoundary(

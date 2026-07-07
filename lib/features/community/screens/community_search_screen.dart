@@ -17,7 +17,9 @@ import '../widgets/community_post_card.dart';
 part 'community_search_results.dart';
 
 class CommunitySearchScreen extends ConsumerStatefulWidget {
-  const CommunitySearchScreen({super.key});
+  const CommunitySearchScreen({super.key, this.initialQuery = ''});
+
+  final String initialQuery;
 
   @override
   ConsumerState<CommunitySearchScreen> createState() =>
@@ -30,8 +32,17 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen> {
   @override
   void initState() {
     super.initState();
-    final initialValue = ref.read(communitySearchProvider).query;
+    final routeQuery = widget.initialQuery.trim();
+    final initialValue = routeQuery.isNotEmpty
+        ? routeQuery
+        : ref.read(communitySearchProvider).query;
     _controller = TextEditingController(text: initialValue);
+    if (routeQuery.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref.read(communitySearchProvider.notifier).setQuery(routeQuery);
+      });
+    }
   }
 
   @override

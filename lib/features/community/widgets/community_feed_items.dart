@@ -172,6 +172,21 @@ List<Widget> _buildFeedBody({
                 child: LoadingState(),
               );
             }
+            if (feedState.error != null) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  0,
+                  AppSpacing.sm,
+                  0,
+                  AppSpacing.lg,
+                ),
+                child: app.ErrorState(
+                  message: _feedErrorMessage(feedState.error),
+                  onRetry: () =>
+                      ref.read(communityFeedProvider.notifier).fetchMore(),
+                ),
+              );
+            }
             return const SizedBox.shrink();
           }
           final post = visiblePosts[index];

@@ -39,7 +39,9 @@ List<RouteBase> buildCommunityRoutes() => [
       ),
       GoRoute(
         path: 'search',
-        builder: (context, state) => const CommunitySearchScreen(),
+        builder: (context, state) => CommunitySearchScreen(
+          initialQuery: state.uri.queryParameters['q'] ?? '',
+        ),
       ),
       // Parameterized paths AFTER specific paths
       GoRoute(

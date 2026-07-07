@@ -119,15 +119,16 @@ class _CommunityCommentInputState extends ConsumerState<CommunityCommentInput> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () {
+                    AppIconButton(
+                      onPressed: () {
                         ref.read(replyToCommentProvider.notifier).state = null;
                       },
-                      child: Icon(
+                      icon: Icon(
                         LucideIcons.x,
                         size: 16,
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
+                      semanticLabel: 'common.cancel'.tr(),
                     ),
                   ],
                 ),
@@ -183,10 +184,17 @@ class _CommunityCommentInputState extends ConsumerState<CommunityCommentInput> {
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   if (formState.isLoading)
-                    const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                    SizedBox.square(
+                      dimension: AppSpacing.touchTargetMin,
+                      child: Center(
+                        child: SizedBox.square(
+                          dimension: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            semanticsLabel: 'common.loading'.tr(),
+                          ),
+                        ),
+                      ),
                     )
                   else
                     AnimatedOpacity(
@@ -201,7 +209,7 @@ class _CommunityCommentInputState extends ConsumerState<CommunityCommentInput> {
                             LucideIcons.send,
                             color: theme.colorScheme.primary,
                           ),
-                          semanticLabel: 'common.save'.tr(),
+                          semanticLabel: 'community.send_comment'.tr(),
                         ),
                       ),
                     ),

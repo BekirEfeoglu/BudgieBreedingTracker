@@ -28,7 +28,10 @@ void main() {
     );
   }
 
-  ProviderScope buildScope({List<CommunityPost>? posts}) {
+  ProviderScope buildScope({
+    List<CommunityPost>? posts,
+    String initialQuery = '',
+  }) {
     return ProviderScope(
       overrides: [
         currentUserIdProvider.overrideWithValue('me'),
@@ -37,7 +40,9 @@ void main() {
         ),
       ],
       child: MaterialApp.router(
-        routerConfig: buildRouter(const CommunitySearchScreen()),
+        routerConfig: buildRouter(
+          CommunitySearchScreen(initialQuery: initialQuery),
+        ),
       ),
     );
   }
@@ -123,6 +128,17 @@ void main() {
       expect(find.text(l10n('community.search_posts')), findsOneWidget);
       expect(find.text(l10n('community.search_users')), findsOneWidget);
       expect(find.text(l10n('community.search_tags')), findsOneWidget);
+
+      await tester.pumpWidget(const MaterialApp(home: SizedBox()));
+    });
+
+    testWidgets('applies route query as initial search text', (tester) async {
+      await tester.pumpWidget(buildScope(initialQuery: 'lutino'));
+      await tester.pump();
+
+      final textField = tester.widget<TextField>(find.byType(TextField));
+      expect(textField.controller!.text, 'lutino');
+      expect(find.text(l10n('community.search_posts')), findsOneWidget);
 
       await tester.pumpWidget(const MaterialApp(home: SizedBox()));
     });

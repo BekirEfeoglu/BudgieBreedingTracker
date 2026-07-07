@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/logger.dart';
 import '../../../core/widgets/error_state.dart' as app;
 import '../providers/community_comment_providers.dart';
 import '../providers/community_post_providers.dart';
@@ -54,6 +55,23 @@ class _CommunityPostDetailScreenState
     });
   }
 
+  Future<void> _togglePin(CommunityPost post) async {
+    try {
+      await ref
+          .read(communityPostRepositoryProvider)
+          .togglePin(postId: post.id, isPinned: !post.isPinned);
+      if (!mounted) return;
+      ref.invalidate(communityPostByIdProvider(post.id));
+      ref.read(communityFeedProvider.notifier).refresh();
+    } catch (e, st) {
+      AppLogger.error('CommunityPostDetailScreen._togglePin', e, st);
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('community.pin_error'.tr())));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final postId = widget.postId;
@@ -95,15 +113,13 @@ class _CommunityPostDetailScreenState
             postAsync.maybeWhen(
               data: (post) => post != null
                   ? AppIconButton(
-                      icon: Icon(post.isPinned ? LucideIcons.pinOff : LucideIcons.pin),
-                      semanticLabel: post.isPinned ? 'community.unpin_post'.tr() : 'community.pin_post'.tr(),
-                      onPressed: () async {
-                        await ref
-                            .read(communityPostRepositoryProvider)
-                            .togglePin(postId: post.id, isPinned: !post.isPinned);
-                        ref.invalidate(communityPostByIdProvider(post.id));
-                        ref.read(communityFeedProvider.notifier).refresh();
-                      },
+                      icon: Icon(
+                        post.isPinned ? LucideIcons.pinOff : LucideIcons.pin,
+                      ),
+                      semanticLabel: post.isPinned
+                          ? 'community.unpin_post'.tr()
+                          : 'community.pin_post'.tr(),
+                      onPressed: () => _togglePin(post),
                     )
                   : const SizedBox.shrink(),
               orElse: () => const SizedBox.shrink(),
@@ -247,6 +263,17 @@ class _CommunityPostDetailScreenState
                           return const Padding(
                             padding: EdgeInsets.all(AppSpacing.lg),
                             child: LoadingState(),
+                          );
+                        }
+                        if (commentState.error != null) {
+                          return Padding(
+                            padding: const EdgeInsets.all(AppSpacing.lg),
+                            child: app.ErrorState(
+                              message: 'community.comment_load_error'.tr(),
+                              onRetry: () => ref
+                                  .read(commentListProvider(postId).notifier)
+                                  .fetchMore(),
+                            ),
                           );
                         }
                         if (commentState.hasMore) {
@@ -396,11 +423,7 @@ class _GuideDetailArticle extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ContentText(
-                content: post.content,
-                showFull: true,
-                maxLines: 0,
-              ),
+              ContentText(content: post.content, showFull: true, maxLines: 0),
               if (post.allImageUrls.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.xl),
                 for (final imageUrl in post.allImageUrls)

@@ -30,6 +30,7 @@ void main() {
 
       expect(find.byType(TextField), findsOneWidget);
       expect(find.byIcon(LucideIcons.send), findsOneWidget);
+      expect(find.byTooltip(l10n('community.send_comment')), findsOneWidget);
     });
 
     testWidgets('shows hint text', (tester) async {
@@ -53,7 +54,10 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      final progress = tester.widget<CircularProgressIndicator>(
+        find.byType(CircularProgressIndicator),
+      );
+      expect(progress.semanticsLabel, l10n('common.loading'));
       expect(find.byIcon(LucideIcons.send), findsNothing);
     });
 

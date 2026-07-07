@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -19,9 +21,11 @@ import '../../../router/route_names.dart';
 import 'package:budgie_breeding_tracker/shared/providers/gamification.dart';
 import 'package:budgie_breeding_tracker/shared/widgets/gamification.dart';
 import '../providers/community_providers.dart';
+import '../providers/community_search_providers.dart';
 import 'community_filter_sheet.dart';
 
-class CommunityAppBar extends ConsumerStatefulWidget implements PreferredSizeWidget {
+class CommunityAppBar extends ConsumerStatefulWidget
+    implements PreferredSizeWidget {
   const CommunityAppBar({super.key});
 
   @override
@@ -43,20 +47,42 @@ class _CommunityAppBarState extends ConsumerState<CommunityAppBar> {
     super.dispose();
   }
 
-  void _toggleSearch() {
+  void _openSearch() {
     setState(() {
-      _isSearchActive = !_isSearchActive;
-      if (!_isSearchActive) {
-        _searchController.clear();
-        // Option A: If we want inline search to actually trigger search results on the same page,
-        // we would need to integrate the search query with communityFeedProvider.
-        // Currently, communityFeedProvider doesn't accept a search query directly, it relies on community_search_screen.
-        // So inline search is best if it navigates to the search screen upon submission,
-        // OR we just keep the search icon as navigation, but we promised "Feed İçine Entegre Arama".
-      } else {
-        _searchFocusNode.requestFocus();
-      }
+      _isSearchActive = true;
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _searchFocusNode.requestFocus();
+    });
+  }
+
+  void _closeSearch() {
+    setState(() {
+      _isSearchActive = false;
+      _searchController.clear();
+    });
+  }
+
+  void _toggleSearch() {
+    if (_isSearchActive) {
+      _closeSearch();
+    } else {
+      _openSearch();
+    }
+  }
+
+  void _submitSearch(String rawQuery) {
+    final query = rawQuery.trim();
+    if (query.isEmpty) return;
+
+    ref.read(communitySearchProvider.notifier).setQuery(query);
+    unawaited(
+      ref.read(communitySearchHistoryProvider.notifier).addQuery(query),
+    );
+    _closeSearch();
+    context.push(
+      '${AppRoutes.communitySearch}?q=${Uri.encodeComponent(query)}',
+    );
   }
 
   @override
@@ -114,8 +140,13 @@ class _CommunityAppBarState extends ConsumerState<CommunityAppBar> {
             onPressed: () => context.push(AppRoutes.messages),
           ),
         _ActionIcon(
-          icon: Icon(_isSearchActive ? LucideIcons.x : LucideIcons.search, size: 18),
-          tooltip: _isSearchActive ? 'common.cancel'.tr() : 'community.search'.tr(),
+          icon: Icon(
+            _isSearchActive ? LucideIcons.x : LucideIcons.search,
+            size: 18,
+          ),
+          tooltip: _isSearchActive
+              ? 'common.cancel'.tr()
+              : 'community.search'.tr(),
           onPressed: _toggleSearch,
         ),
         if (!_isSearchActive) const _CommunityProfileButton(),
@@ -135,20 +166,17 @@ class _CommunityAppBarState extends ConsumerState<CommunityAppBar> {
         controller: _searchController,
         focusNode: _searchFocusNode,
         textInputAction: TextInputAction.search,
-        onSubmitted: (query) {
-          if (query.trim().isNotEmpty) {
-            _toggleSearch(); // close search bar
-            // Push to search screen with the query
-            context.push('${AppRoutes.communitySearch}?q=${Uri.encodeComponent(query.trim())}');
-          }
-        },
+        onSubmitted: _submitSearch,
         decoration: InputDecoration(
           hintText: 'community.search'.tr(),
           hintStyle: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 10),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: 10,
+          ),
         ),
       ),
     );

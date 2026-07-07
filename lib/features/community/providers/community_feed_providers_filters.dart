@@ -20,24 +20,18 @@ final communityVisiblePostsProvider =
       // Filter out muted users' posts (one-directional, visibility-only)
       final visible = mutedUserIds.isEmpty
           ? unblocked
-          : unblocked
-              .where((p) => !mutedUserIds.contains(p.userId))
-              .toList();
+          : unblocked.where((p) => !mutedUserIds.contains(p.userId)).toList();
 
       // Filter by tab
       final filtered = switch (tab) {
         CommunityFeedTab.explore =>
-          visible
-              .where((p) => p.postType != CommunityPostType.guide)
-              .toList(),
+          visible.where((p) => p.postType != CommunityPostType.guide).toList(),
         CommunityFeedTab.following =>
           visible
               .where((p) => p.isFollowingAuthor && p.userId != currentUserId)
               .toList(),
         CommunityFeedTab.guides =>
-          visible
-              .where((p) => p.postType == CommunityPostType.guide)
-              .toList(),
+          visible.where((p) => p.postType == CommunityPostType.guide).toList(),
         // Unreachable via CommunityScreen (marketplace tab embeds
         // MarketplaceTabContent); kept for exhaustiveness. Question posts
         // surface in the explore tab.
@@ -87,11 +81,10 @@ final communityVisiblePostsProvider =
 /// never shows this welcome empty state.
 final communityShowWelcomeEmptyProvider =
     Provider.family<bool, CommunityFeedTab>((ref, tab) {
+      if (tab != CommunityFeedTab.explore) return false;
+
       final feedState = ref.watch(communityFeedProvider);
       if (feedState.isLoading) return false;
       if (feedState.posts.isEmpty) return true;
-      if (tab == CommunityFeedTab.explore) {
-        return ref.watch(communityVisiblePostsProvider(tab)).isEmpty;
-      }
-      return false;
+      return ref.watch(communityVisiblePostsProvider(tab)).isEmpty;
     });

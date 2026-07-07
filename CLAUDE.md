@@ -102,7 +102,7 @@ scripts/test_app_store_config.py        # App Store config consistency tests
 | Metric | Value |
 | --- | --- |
 | Source files (lib/) | 1007 Dart files |
-| Test files (test/) | 913 test files, 11,395+ individual tests |
+| Test files (test/) | 913 test files, 11,403+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -114,7 +114,7 @@ scripts/test_app_store_config.py        # App Store config consistency tests
 | Shared widgets | 35 (15 root + 4 buttons + 2 cards + 2 dialog + 1 bottom_sheet + 5 eggs) |
 | Enum files | 15 |
 | Supabase constants | 143 (tables + buckets + columns) |
-| L10n keys | ~3,047 per language, 41 categories |
+| L10n keys | ~3,050 per language, 41 categories |
 | DB schema version | 26 |
 
 ## CI/CD Pipeline

@@ -331,6 +331,46 @@ void main() {
       expect(visible, isEmpty);
     });
 
+    test('welcome empty state is shown only on explore', () {
+      final container = createContainer(posts: []);
+      addTearDown(container.dispose);
+      container.read(communityFeedProvider);
+
+      expect(
+        container.read(
+          communityShowWelcomeEmptyProvider(CommunityFeedTab.explore),
+        ),
+        isTrue,
+      );
+      expect(
+        container.read(
+          communityShowWelcomeEmptyProvider(CommunityFeedTab.following),
+        ),
+        isFalse,
+      );
+    });
+
+    test('explore welcome empty state handles filtered-out visible posts', () {
+      final container = createContainer(
+        posts: [
+          makePost(
+            'guide-only',
+            postType: CommunityPostType.guide,
+            createdAt: now,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.read(communityFeedProvider);
+
+      expect(
+        container.read(
+          communityShowWelcomeEmptyProvider(CommunityFeedTab.explore),
+        ),
+        isTrue,
+      );
+    });
+
     test('returns empty list when all posts are from blocked users', () {
       final posts = [makePost('p1', userId: 'blocked', createdAt: now)];
 

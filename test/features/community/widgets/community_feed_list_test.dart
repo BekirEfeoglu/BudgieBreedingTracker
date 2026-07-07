@@ -405,6 +405,66 @@ void main() {
       },
     );
 
+    testWidgets('following with no posts shows following empty state', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createSubject(
+          feedState: const FeedState(
+            posts: [],
+            isLoading: false,
+            hasMore: false,
+          ),
+          tab: CommunityFeedTab.following,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(l10n('community.empty_following_title')),
+        findsOneWidget,
+      );
+      expect(find.text(l10n('community.no_posts')), findsNothing);
+    });
+
+    testWidgets('pagination error shows retry footer without raw details', (
+      tester,
+    ) async {
+      final posts = [
+        CommunityPost(
+          id: 'p1',
+          userId: 'u1',
+          username: 'User',
+          content: 'Visible post',
+          createdAt: DateTime.now(),
+        ),
+      ];
+
+      await tester.pumpWidget(
+        createSubject(
+          feedState: FeedState(
+            posts: posts,
+            isLoading: false,
+            hasMore: true,
+            error: "Instance of 'NetworkException'",
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -700));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('NetworkException'), findsNothing);
+      expect(
+        find.text(
+          '${l10n('community.feed_load_error')}: ${l10n('errors.unknown_error')}',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text(l10n('common.retry')), findsOneWidget);
+    });
+
     testWidgets('loading state shows shimmer placeholder', (tester) async {
       await tester.pumpWidget(
         createSubject(

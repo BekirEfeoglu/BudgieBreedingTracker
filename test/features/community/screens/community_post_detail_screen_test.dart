@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/models/community_comment_model.dart';
 import 'package:budgie_breeding_tracker/data/models/community_post_model.dart';
 import 'package:budgie_breeding_tracker/core/enums/community_enums.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_comment_providers.dart';
@@ -79,6 +80,58 @@ void main() {
       expect(find.text(l10n('community.no_comments')), findsOneWidget);
     });
 
+    testWidgets('shows retry footer when comment pagination fails', (
+      tester,
+    ) async {
+      var fetchMoreCalls = 0;
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('me'),
+            communityPostByIdProvider(
+              'post-1',
+            ).overrideWith((ref) async => null),
+            commentListProvider('post-1').overrideWith(
+              () => _FakeCommentListNotifier(
+                initialState: CommentListState(
+                  comments: [
+                    CommunityComment(
+                      id: 'comment-1',
+                      postId: 'post-1',
+                      userId: 'u1',
+                      username: 'Ayse',
+                      content: 'Merhaba',
+                      createdAt: DateTime(2026, 7, 7),
+                    ),
+                  ],
+                  hasMore: true,
+                  error: Exception('NetworkException'),
+                ),
+                onFetchMore: () => fetchMoreCalls++,
+              ),
+            ),
+            commentFormProvider.overrideWith(() => _FakeCommentFormNotifier()),
+          ],
+          child: MaterialApp.router(
+            routerConfig: buildRouter(
+              const CommunityPostDetailScreen(postId: 'post-1'),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Merhaba'), findsOneWidget);
+      expect(find.text(l10n('community.comment_load_error')), findsOneWidget);
+      expect(find.textContaining('NetworkException'), findsNothing);
+
+      await tester.tap(find.text(l10n('common.retry')));
+      await tester.pump();
+
+      expect(fetchMoreCalls, 1);
+    });
+
     testWidgets('has comment input at bottom', (tester) async {
       await tester.pumpWidget(
         buildScope(const CommunityPostDetailScreen(postId: 'post-1')),
@@ -138,16 +191,24 @@ void main() {
 }
 
 class _FakeCommentListNotifier extends CommentListNotifier {
-  _FakeCommentListNotifier() : super('post-1');
+  _FakeCommentListNotifier({
+    this.initialState = const CommentListState(),
+    this.onFetchMore,
+  }) : super('post-1');
+
+  final CommentListState initialState;
+  final VoidCallback? onFetchMore;
 
   @override
-  CommentListState build() => const CommentListState();
+  CommentListState build() => initialState;
 
   @override
   Future<void> fetchInitial() async {}
 
   @override
-  Future<void> fetchMore() async {}
+  Future<void> fetchMore() async {
+    onFetchMore?.call();
+  }
 }
 
 class _FakeCommentFormNotifier extends CommentFormNotifier {
