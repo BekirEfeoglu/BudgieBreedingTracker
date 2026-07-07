@@ -30,11 +30,6 @@ import AppTrackingTransparency
     return false
   }
 
-  override init() {
-    AppDelegate.configureFirebaseIfNeeded()
-    super.init()
-  }
-
   private static func configureFirebaseIfNeeded() {
     guard !firebaseConfigured else { return }
     guard Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil else { return }
