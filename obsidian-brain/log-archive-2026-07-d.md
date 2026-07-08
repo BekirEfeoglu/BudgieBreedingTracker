@@ -145,8 +145,8 @@ the original grant listed `reviewed_by` too, but that column does NOT exist on
 `clearReviewFlag` write to it is a pre-existing latent bug (IMPROVEMENT_PLAN §6.14).
 The other 3 authenticated UPDATE call-sites (`softDelete`, admin
 `approvePost`/`deletePost`) write only within the grant. Client edit UI +
-`edited` badge land in later tasks of the same branch. Design:
-`docs/superpowers/specs/2026-07-03-community-tab-design.md`.
+`edited` badge land in later tasks of the same branch. Design summary is retained
+in [[features/community]].
 
 ## [2026-07-03] feat | send-push server-side quiet hours — opt-in, fail-open (§5.2)
 

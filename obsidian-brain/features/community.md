@@ -57,8 +57,8 @@ on the author's own post inside the window. Applied to prod + merged to main
 2026-07-03 (advisors 0 new). Follow-up polish (`fix/community-followups`): edit
 sheet uses shared `showAppBottomSheet` (safe-area), the specific `edit_window_expired`
 message surfaces, and the comment empty-state fires on `visibleComments.isEmpty`
-(fully-muted thread no longer blank). See
-`docs/superpowers/specs/2026-07-03-community-tab-design.md`.
+(fully-muted thread no longer blank). Design decisions are retained in this
+community brain page and [[log]].
 
 **Client** (commits `68d6a57` data, `d31eef5` UI): `CommunityPost.editedAt` +
 `CommunityPostX.isEdited`; `CommunityPostRepository.update({postId, content})` →
