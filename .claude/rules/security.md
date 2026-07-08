@@ -54,16 +54,20 @@ await _storage.deleteAll();  // on logout
 |------|---------|
 | Supabase session token | Secure storage (auto by SDK) |
 | Refresh token | Secure storage |
-| MFA recovery codes (kısa süre) | Secure storage |
 | User preferences (theme, language) | SharedPreferences (OK) |
 | FCM token | Supabase DB |
 
 ### MFA UX Flow
 1. **Enroll**: Settings → Security → Enable 2FA
-2. Supabase TOTP secret üretir → QR code göster + manuel yedek kod
+2. Supabase TOTP secret üretir → QR code göster + manuel secret
 3. Kullanıcı 6 haneli kod gir → `verify` → server activate
-4. **Recovery codes**: 8 kod üret, bir daha gösterilmez — kullanıcı kaydetmeli
-5. Login flow: email/password → MFA challenge → TOTP veya recovery code
+4. Login flow: email/password → MFA challenge → TOTP
+
+**Recovery codes YOK (2026-07-02 audit):** `TwoFactorService`'te recovery-code
+üretimi, UI adımı veya l10n anahtarı bulunmuyor — authenticator cihazını
+kaybeden kullanıcının self-service kurtarma yolu yok (bilinen boşluk, tasarım
+hedefi). Eklenirse bu bölüm + auth.md + obsidian-brain known-gaps birlikte
+güncellenmeli. Recovery-code UI'ı varmış gibi dokümante etme/sunma.
 
 ### Session Refresh
 - Supabase SDK otomatik refresh (expire'dan 5dk önce)

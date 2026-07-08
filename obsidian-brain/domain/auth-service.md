@@ -1,6 +1,6 @@
 # Auth Service
 
-Source: `.claude/rules/security.md`
+Source: `.claude/rules/auth.md`, `.claude/rules/security.md`
 
 **Location**: `lib/domain/services/` (auth) + Supabase Auth SDK
 

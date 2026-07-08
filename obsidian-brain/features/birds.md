@@ -98,6 +98,7 @@ records. No separate timeline table exists.
 
 ## Rules
 
+- `.claude/rules/birds.md` — owning rule: status lifecycle side effects, encryption, photo partial-failure, cage ledger, free tier
 - `.claude/rules/data-layer.md` — Bird is a root entity (no ValidatedSyncMixin needed)
 - `.claude/rules/assets-images.md` — photo upload pipeline
 - `.claude/rules/breeding-eggs.md` — Bird as head of entity chain

@@ -220,6 +220,7 @@ Comprehensive rules in `.claude/rules/` (auto-loaded):
 | `release-ops.md` | Release channels, version bump, environment discipline, Supabase ops |
 | `edge-functions.md` | Edge fn inventory, auth/validation, MFA policy, invocation, testing, deploy |
 | `security.md` | Auth, RLS, route guards, credentials, data protection, OAuth |
+| `auth.md` | Client auth flow: router guards, session, MFA challenge, AAL2 destructive-action pattern, cooldowns, logout chain |
 | `performance.md` | Drift optimization, Riverpod rebuilds, widget perf, images, sync, startup |
 | `accessibility.md` | WCAG 2.1 AA, touch targets, semantic labels, contrast, font scaling |
 | `observability.md` | AppLogger + Sentry, breadcrumb, tag conventions, PII protection, sample rate budget, structured schema |
@@ -234,6 +235,7 @@ Comprehensive rules in `.claude/rules/` (auto-loaded):
 | `feature-flags.md` | dart-define debug flags, runtime toggles, kill switches, premium gating, lifecycle |
 | `empty-loading-error-states.md` | EmptyState/LoadingState/ErrorState/SkeletonLoader catalog, AsyncValue mapping |
 | `migrations.md` | Drift schemaVersion bump, onUpgrade, Supabase SQL migration, RLS, idempotent SQL, rollback |
+| `birds.md` | Root bird entity: status lifecycle side effects, encrypted fields, photo partial-failure contract, cage ledger, free tier |
 | `breeding-eggs.md` | Bird→BreedingPair→Incubation→Egg→Chick lifecycle, write atomicity, side effects, free tier guards |
 | `genetics.md` | Punnett, MUTAVI rates, calculationVersion, allelic series, sex-linked linkage, lethal combos, inbreeding |
 | `encryption.md` | AES-256-CBC + HMAC, secure storage key mgmt, key rotation, payload codec, what-to-encrypt |

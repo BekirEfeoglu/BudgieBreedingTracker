@@ -1,6 +1,6 @@
 # Migrations
 
-İki migration sistemi paralel çalışır: **Drift schema migration** (local SQLite) ve **Supabase SQL migration** (remote Postgres). İkisi de versiyonlanır, sıralı, idempotent olmaz değildir.
+İki migration sistemi paralel çalışır: **Drift schema migration** (local SQLite) ve **Supabase SQL migration** (remote Postgres). İkisi de versiyonlanır ve sıralı uygulanır; Drift migration'ları sıralı `onUpgrade` adımlarıdır (tekrar koşmaz), Supabase SQL migration'ları ise idempotent yazılmak ZORUNDADIR (bkz. § Idempotency).
 
 ## Drift Migration (Local)
 
@@ -62,7 +62,7 @@ Drift test helper `setSchemaVersion(int)` ile geçmiş versiyondan upgrade simü
 - Format: `YYYYMMDDHHmmss_short_description.sql`
 - Örnek: `20260514120000_add_ring_number_to_birds.sql`
 - Timestamp UTC, lexicographic sort = chronological run order
-- 174 migration mevcut, sıralı uygulanır
+- 196 migration mevcut, sıralı uygulanır (güncel sayı: CLAUDE.md § Codebase Stats)
 
 ### Migration File Structure
 ```sql

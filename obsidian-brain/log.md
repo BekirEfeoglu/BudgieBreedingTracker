@@ -4,6 +4,22 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-08] rules | Rulebook audit: auth.md + birds.md added, stale values fixed
+
+`.claude/rules/` audit (54 files): all structurally complete, but two core
+modules had no owning rule — added `auth.md` (router guard integration, MFA
+challenge, AAL2 destructive-action pattern, cooldown persist, logout chain)
+and `birds.md` (status lifecycle side effects via BirdLifecycleService,
+BirdsDao field encryption, photo partial-failure contract, cage ledger MVP,
+free tier 15). Three-place registration done (CLAUDE.md § Rules table,
+rules-index, this log); features/auth, features/birds, domain/auth-service
+now cite the owning rules. Stale rule content fixed: migrations.md garbled
+intro + 174→196 count, premium-revenuecat purchases_flutter ^10.0.2→^10.2.3,
+testing.md CI timeout 25→30/40, icon count 93→99 (assets-images,
+coding-standards), and security.md § MFA UX Flow no longer presents recovery
+codes as shipped (2026-07-02 audit: they don't exist — also added to
+known-gaps).
+
 ## [2026-07-08] docs | Brain expansion: router page, known-gaps registry, drift fixes
 
 Added [[architecture/router-navigation]] (GoRouter redirect chain, guard order,

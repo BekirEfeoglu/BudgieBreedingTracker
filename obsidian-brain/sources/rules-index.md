@@ -11,7 +11,9 @@ Maps every `.claude/rules/*.md` file to the wiki page(s) that synthesize it.
 | `app-update.md` | [[features/app_update]] | [[infrastructure/release-ops]] |
 | `architecture.md` | [[architecture/layers]] | [[architecture/data-flow]], [[architecture/online-first-exemption]] |
 | `assets-images.md` | [[patterns/assets-images]] | [[patterns/anti-patterns]] (#12, #13) |
+| `auth.md` | [[features/auth]] | [[domain/auth-service]], [[patterns/security]], [[architecture/router-navigation]] |
 | `background-sync.md` | [[data-layer/sync-strategy]] | [[domain/sync-service]], [[architecture/offline-first]] |
+| `birds.md` | [[features/birds]] | [[features/breeding]], [[domain/encryption-service]], [[patterns/assets-images]] |
 | `branch-workflow.md` | [[infrastructure/branch-workflow]] | [[infrastructure/ci-cd]] |
 | `breeding-eggs.md` | [[features/breeding]] | [[features/eggs]], [[features/chicks]], [[domain/eggs-service]], [[domain/incubation-service]] |
 | `calendar.md` | [[features/calendar]] | [[domain/calendar-service]], [[domain/notification-service]] |

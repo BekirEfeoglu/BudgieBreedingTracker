@@ -55,7 +55,8 @@ first render truly needs is awaited before `InitStep.ready`:
 
 ## Rules
 
-- `.claude/rules/security.md` — full auth details
+- `.claude/rules/auth.md` — owning rule: client auth flow, MFA challenge, AAL2 pattern, cooldowns, logout chain
+- `.claude/rules/security.md` — policy: secure storage, MFA lockout, OAuth topology
 - `.claude/rules/edge-functions.md` — mfa-lockout, revoke-oauth-token
 
 ## See Also
