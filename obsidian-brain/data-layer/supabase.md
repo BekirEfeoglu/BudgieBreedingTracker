@@ -6,7 +6,7 @@ Source: `.claude/rules/data-layer.md`, `.claude/rules/security.md`
 
 - **Package**: `supabase_flutter >=2.5.0 <2.13.0` — iOS CI cap, do NOT lift (2.13+ pulls a `device_info_plus` with a visionOS selector that breaks the iOS CI build; see pubspec comment)
 - **Remote sources**: 28 `*_remote_source.dart` files (entity + base/caches/providers)
-- **Migrations**: 196 tracked SQL files in `supabase/migrations/`
+- **Migrations**: 197 tracked SQL files in `supabase/migrations/`
 - **Edge Functions**: 12 (see [[infrastructure/edge-functions]])
 - **Supabase constants**: 151 string constants (tables + buckets + columns)
 

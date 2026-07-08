@@ -4,6 +4,24 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-08] fix | Migration deployment drift repaired (prod)
+
+Comprehensive app audit found 3 migrations shipped in client code but never
+applied to prod: `add_bird_tags_to_posts` (community_posts bird_id/bird_name/
+mutation_tags columns), `fetch_community_feed_sort` (p_sort_by RPC param), and
+`admin_atomic_audit_rpcs` (21 admin audit RPCs). Post detail/user-posts were
+400'ing (client `_feedColumns` selected non-existent columns) and admin
+user-management RPCs were missing. Applied all 3 to prod via MCP (deps verified
+first), added the `community_mutes` FK covering index (perf advisor 0001), then
+reconciled the ledger: `git mv`'d 8 local files onto their production ledger
+versions (6 timestamp-twins from prior MCP applies + the 2 newly-applied) and
+inserted the admin migration's ledger row → 197 local ↔ 197 ledger, zero drift,
+`db push` now a clean no-op. Security advisors: no new findings (admin RPCs
+correctly private SECURITY DEFINER + public INVOKER wrappers, anon revoked).
+Docs synced: comment replies (one-level) and bird-link/mutation tags are now
+SHIPPED (removed from known-gaps); community rule + wiki + migrations page
+updated with the "deploy is manual, verify after merge" lesson.
+
 ## [2026-07-08] rules | Rulebook audit: auth.md + birds.md added, stale values fixed
 
 `.claude/rules/` audit (54 files): all structurally complete, but two core

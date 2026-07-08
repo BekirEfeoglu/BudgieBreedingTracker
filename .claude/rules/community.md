@@ -43,7 +43,7 @@ Compose -> Client moderation -> Edge create-community-post
 - Delete: soft delete (`is_deleted = true` kolonu — `deleted_at` DEĞİL), feed query filter
 
 ## Comment
-- **Düz liste (0 nesting)** — model/UI'da parent/reply alanı YOK; "nested 1 seviye" tasarım hedefiydi, implement edilmedi. Reply akışı eklenirse bu satır + model güncellenmeli.
+- **Tek seviye reply (nested 1 seviye) — shipped + prod'da (2026-07-07):** `CommunityComment.parentId` + `parent_id` kolonu (migration `20260707093514`, prod'da). UI: `replyToCommentProvider` state, `community_comment_input.dart` "→ @kullanıcı" reply banner'ı + `parentId` geçişi, `community_comment_tile.dart` `parentId != null` ise girinti (`AppSpacing.xl * 2`). Reply trigger execute-grant'ı `harden_comment_reply_trigger_function_execute` (migration `20260707194236`) ile hardened. 2+ seviye nesting YOK — tek seviye sınırı korunur (anti-pattern #8).
 - Comment yazma/silme/like `commentListProvider(postId)`'i günceller (add → `fetchInitial`, delete → `removeComment`, like → optimistic `applyLikeToggle`+rollback). `visibleCommentsProvider` bunu izler. Ayrı bir `commentsForPostProvider` YOK (2026-07-05'te ölü çift-kaynak olarak kaldırıldı).
 - Comment moderation: `create-community-comment` Edge Function içinde fail-closed
 - Char limit **1000** (`CommentFormNotifier.maxCommentLength` + input `maxLength`), UI textarea expandable
@@ -83,7 +83,7 @@ Compose -> Client moderation -> Edge create-community-post
 - Foto/post: free **3**, premium **10** — client-side enforce edilir (`CommunityCreatePostScreen._maxImages`, `effectivePremiumProvider`; limit aşımında `community.photo_limit_reached` toast). Server `validate-free-tier-limit` authoritative kalır; client cap yalnız UX (2026-07-05'te eklendi).
 - Verified breeder badge (gamification.md) — post/guide yazar satırında `Semantics(label: community.verified_breeder)` + `LucideIcons.badgeCheck`
 - Pinned post: `community_posts.is_pinned` kolonu + select mevcut ama **client tarafında set/görüntüleme/premium gate YOK** — henüz implement edilmedi (tasarım hedefi, "shipped" varsayma)
-- **Bird-link / mutation-tags**: `CommunityPost.birdId`/`mutationTags` alanları + `_parsePost` okuması + `BirdLinkChip`/`PostTagWrap` render'ı mevcut ama `community_posts` tablosunda `bird_id`/`bird_name`/`mutation_tags` **kolonları yok** (canlı DB doğrulandı 2026-07-05) → alanlar her zaman boş, çip/etiket render edilmez. Latent/yarım özellik; `_feedColumns`'a EKLEME (sorguyu kırar). Aktive etmek şema migration + create-post wiring gerektirir.
+- **Bird-link / mutation-tags — shipped + prod'da (2026-07-08):** `community_posts.bird_id` (FK → `birds.id` ON DELETE SET NULL) + `bird_name` + `mutation_tags TEXT[]` kolonları prod'da (migration `20260708153615_add_bird_tags_to_posts`, `idx_community_posts_bird_id` partial index dahil). Tam round-trip: create-post edge fn `bird_id`/`mutation_tags`'ı Zod ile validate edip yazar (`handler.ts`), `_feedColumns` seçer, `CommunityPostRepository._parsePost` okur, `BirdLinkChip`/`PostTagWrap` render eder. **Not:** bu kolonlar `_feedColumns`'ta ZORUNLU — kaldırmak/kolonları drop etmek `fetchById`/`fetchByUser`'ı 400 ile kırar (2026-07-08'de kolon prod'da yokken tam bu drift yaşandı).
 
 ## RLS Policy Yapısı
 - SELECT: herkes okuyabilir (public feed)
@@ -120,5 +120,6 @@ Compose -> Client moderation -> Edge create-community-post
 8. Comment'i 2+ seviye nested yapmak (UX karmaşası)
 9. Moderation atlayıp publish (release-blocker — moderation.md fail-closed)
 10. Public bucket'ta kullanıcı kimliği tahmin edilebilir path (`<email>/...` gibi)
+11. `_feedColumns`'a kolon eklerken/çıkarırken prod şema ile senkron olmamak (kolon prod'da yokken query 400 döner — `bird_id`/`mutation_tags` 2026-07-08 drift'i; migration ÖNCE deploy edilmeli, migrations.md deploy sırası)
 
 > **İlgili**: architecture.md § Online-First Exemption, moderation.md (`moderate-content`), messaging.md (DM CTA + block sync), gamification.md (verified badge), edge-functions.md (`create-community-post`, `create-community-comment`, `upload-community-photo`), assets-images.md (post images)

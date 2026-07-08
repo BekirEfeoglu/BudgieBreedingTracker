@@ -30,18 +30,33 @@ See [[architecture/online-first-exemption]]
 - Threshold-based auto-flag + human review queue
 - Photos scanned by `scan-image-safety` Edge Function before upload
 
+## Comment Replies (one-level, shipped 2026-07-07)
+
+`CommunityComment.parentId` + `community_comments.parent_id` (migration
+`20260707093514`, prod). UI: `replyToCommentProvider`, "→ @user" banner in
+`community_comment_input.dart`, one-level indent in `community_comment_tile.dart`
+when `parentId != null`. Reply-trigger grant hardened by `20260707194236`.
+**One level only** — no 2+ nesting.
+
+## Bird-Link + Mutation Tags (shipped 2026-07-08)
+
+`community_posts.bird_id` (FK → `birds.id` ON DELETE SET NULL) + `bird_name` +
+`mutation_tags TEXT[]` live via migration `20260708153615_add_bird_tags_to_posts`
+(+ `idx_community_posts_bird_id` partial index). Full round-trip:
+`create-community-post` validates+writes, `_feedColumns` selects, repository
+parses, `BirdLinkChip`/`PostTagWrap` render. Latent until 2026-07-08 — client
+had already added them to `_feedColumns`, 400'ing `fetchById`/`fetchByUser`
+until the migration deployed. See [[data-layer/migrations]].
+
 ## Post-guard trigger fix — service_role vs auth.uid() (2026-07-05)
 
-Post creation was **fully broken** — `create-community-post` returned 400
-`insert_failed` ("Beklenmeyen bir hata oluştu."), feed stayed empty. The
-`community_posts` BEFORE INSERT trigger `internal.enforce_community_post_guards()`
+Post creation was fully broken — the `community_posts` BEFORE INSERT trigger
 guarded via `public.check_community_post_allowed()` (reads `auth.uid()`), but the
-edge fn inserts as **service_role** where `auth.uid()` is NULL → `unauthorized` →
-RAISE on every insert. Fix (migration
-`20260705193000_fix_community_post_guard_trigger_row_author.sql`, prod-applied):
-guard `NEW.user_id` via `private.check_community_post_allowed_for_user(...)`;
+edge fn inserts as **service_role** (`auth.uid()` NULL) → RAISE on every insert.
+Fix (migration `20260705190654_fix_community_post_guard_trigger_row_author`,
+prod): guard `NEW.user_id` via `private.check_community_post_allowed_for_user(...)`,
 dropped the dead `is_admin()` bypass. DB guards (24h age, 5/hr+20/day, 1h dedup)
-preserved; edge fn still pre-checks with user JWT. See [[log]].
+preserved. See [[log]].
 
 ## Post Edit (5-minute window)
 
@@ -87,18 +102,11 @@ merged to main 2026-07-03 (advisors 0 new; FORCE RLS + owner-only SELECT verifie
 ## Feed UI (visual redesign)
 
 Feed restyle (2026-07-05, behavior unchanged) around `AppColors` brand accents:
-
-- `community_avatar.dart` — shared `CommunityAvatar`: circular avatar with an
-  optional brand gradient ring and initials fallback when `avatarUrl` is null;
-  reused across post header, guide cards, and story strip.
-- `community_pill_tabs.dart` — tabs show icon + label inline; active tab filled
-  with the `AppColors.primary → primaryLight` gradient, full-radius pills,
-  inactive tabs transparent.
-- `community_post_actions.dart` — liked heart turns `colorScheme.error` (red),
-  bookmark turns `AppColors.accent` (amber).
-- FAB, `community_feed_overlays.dart`, `community_feed_guide_cards.dart`,
-  `community_post_card_body/parts.dart` restyled to brand accents. l10n
-  `community.guide_badge` ("Rehber", tr/en/de).
+shared `CommunityAvatar` (gradient ring + initials fallback), icon+label pill
+tabs with active-tab gradient (`community_pill_tabs.dart`), liked heart →
+`colorScheme.error` / bookmark → `AppColors.accent` (`community_post_actions.dart`),
+and brand-accent restyle of the FAB, feed overlays, guide cards, and post-card
+body/parts. l10n `community.guide_badge` ("Rehber", tr/en/de).
 
 ### Layout alignment to `design/Topluluk.dc.html` (2026-07-05, behavior changed)
 
@@ -125,12 +133,11 @@ Structural pass matching the design mockup — this one changes behavior:
   pill with a plus glyph (guide glyph on the guides tab); the founder-only rule
   on the guides tab is preserved.
 - **Author badges (real data)**: verified-breeder + `Lv.X · Title` badge on
-  author rows, wired from `profiles` via `CommunityProfileCache` (select pulls
-  `level, xp_title, is_verified_breeder`; `mergeIntoRows` → `author_*`).
-  `CommunityPost.authorLevel/authorTitle/authorIsVerified` (enrichment-only,
-  `includeToJson: false`); `CommunityUserHeader` + guide cards render them
-  (`LucideIcons.badgeCheck`). l10n `community.level_prefix`. Badges only show when
-  the profile actually carries them (no fabrication).
+  author rows, wired from `profiles` via `CommunityProfileCache` (`level,
+  xp_title, is_verified_breeder` → `author_*`). `CommunityPost.authorLevel/
+  authorTitle/authorIsVerified` (enrichment-only, `includeToJson: false`),
+  rendered by `CommunityUserHeader` + guide cards. Shown only when the profile
+  actually carries them (no fabrication).
 
 - **Explore empty state**: an empty Explore feed now shows the welcoming
   `EmptyState` ("Henüz gönderi yok" + create CTA) instead of the search-oriented
@@ -163,17 +170,18 @@ See [[features/marketplace]] for the embedded Pazar tab's 2-column grid change.
 
 ## Known Deferred Work
 
-- Bird-link chips and mutation tags are latent; `community_posts` has no backing columns.
 - Hardcoded Supabase column strings in community remain a manual-review follow-up.
 - Multi-device block/mute union staleness is known but not blocking current UX.
 - `edited_at` optimistic clock behavior is noted for later polish.
+- Pinned posts (`is_pinned`) column + select exist but no client set/display/premium gate yet.
 
 ## Do Not Reintroduce
 
 - Do not show both empty-state create CTA and floating create FAB together.
 - Do not expose `full_name` as a public community username.
 - Do not re-add the removed quick composer / section bar / people-list following tab.
-- Do not add missing bird/tag columns to `_feedColumns` without a migration first.
+- Do not drop `bird_id`/`bird_name`/`mutation_tags` from `_feedColumns` — the columns are now live and the direct-select paths (`fetchById`/`fetchByUser`) 400 without them.
+- Do not add 2+ levels of comment nesting — one-level replies are the ceiling.
 
 ## Cache
 

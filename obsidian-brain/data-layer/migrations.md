@@ -39,12 +39,18 @@ MigrationStrategy(
 
 Format: `YYYYMMDDHHmmss_short_description.sql`
 
-196 tracked migration files in `supabase/migrations/` — applied in lexicographic
-(chronological) order. Verified 1:1 against production (zero drift,
-2026-07-02; rerun production verification after deploying newer local
-migrations). `supabase/migrations/README.md` maps the full history by
-date-range/theme for orientation — additive only, no file was moved,
-renamed, or deleted.
+197 tracked migration files in `supabase/migrations/` — applied in lexicographic
+(chronological) order. **Verified 1:1 against production (zero drift, 2026-07-08):**
+197 local files ↔ 197 ledger rows, both diff directions empty. That audit
+repaired a real drift: 3 migrations (bird-tag columns, `fetch_community_feed`
+sort RPC, the 21 admin audit RPCs) had shipped in client code but were never
+applied to prod — feed detail/admin actions were 400'ing — and 6 earlier
+migrations sat in the ledger under MCP-generated timestamps that differed from
+their local filenames. Fix: applied the 3 missing SQL to prod, then `git mv`'d
+the 8 drifted local files onto the exact ledger versions so `db push` is a
+clean no-op. **Deploy is manual (`supabase db push` / MCP `apply_migration`) —
+merging a migration to `main` does NOT auto-apply it.** After adding a
+migration, always confirm it landed in prod (`list_migrations` / ledger diff).
 
 ### Idempotency (Required)
 
