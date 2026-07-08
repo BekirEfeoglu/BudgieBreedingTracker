@@ -72,6 +72,10 @@ Enforced by `scripts/verify_code_quality.py` (27 checker categories — 19/24 CL
 - 3,068 keys per language, 41 categories
 - See [[patterns/l10n]]
 
+### 6. Design Goal ≠ Shipped
+- Rule files document both shipped behavior AND unshipped design targets
+- Before assuming a surface works end-to-end, check [[known-gaps]]
+
 ## Codebase Stats (as of 2026-07-08, kept in sync via `verify_rules.py --strict`)
 
 | Metric | Value |

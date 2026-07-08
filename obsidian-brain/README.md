@@ -8,6 +8,7 @@ Knowledge wiki for the BudgieBreedingTracker Flutter project. Maintained by LLM;
 |---------|-----------|
 | App overview | [[overview]] |
 | Task-oriented cheat sheet | [[cheat-sheet]] |
+| What looks shipped but isn't | [[known-gaps]] |
 | All pages | [[index]] |
 | Architecture | [[architecture/layers]] |
 | 24 Feature modules | [[features/_features-index]] |

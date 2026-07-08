@@ -52,12 +52,12 @@ Maps every `.claude/rules/*.md` file to the wiki page(s) that synthesize it.
 | `profile.md` | [[features/profile]] | [[patterns/security]], [[domain/premium-service]] |
 | `providers.md` | [[patterns/providers]] | [[patterns/ui-patterns]] |
 | `release-ops.md` | [[infrastructure/release-ops]] | [[infrastructure/ci-cd]] |
-| `security.md` | [[patterns/security]] | [[patterns/observability]], [[domain/auth-service]], [[domain/encryption-service]] |
+| `security.md` | [[patterns/security]] | [[patterns/observability]], [[domain/auth-service]], [[domain/encryption-service]], [[architecture/router-navigation]] |
 | `settings.md` | [[features/settings]] | [[domain/data-io]], [[domain/sync-service]] |
 | `statistics.md` | [[features/statistics]] | [[domain/data-io]], [[patterns/performance]] |
 | `test-stability.md` | [[patterns/testing]] (stability section) | [[patterns/anti-patterns]] (A1) |
 | `testing.md` | [[patterns/testing]] | |
-| `ui-patterns.md` | [[patterns/ui-patterns]] | [[patterns/forms-validation]], [[patterns/empty-loading-error-states]] |
+| `ui-patterns.md` | [[patterns/ui-patterns]] | [[patterns/forms-validation]], [[patterns/empty-loading-error-states]], [[architecture/router-navigation]] |
 
 ## Rule Files Without Dedicated Wiki Pages
 

@@ -10,6 +10,7 @@ Full catalog of every page in the obsidian-brain wiki.
 | [[CLAUDE.md]] | Wiki schema and maintenance contract |
 | [[index]] | This page |
 | [[cheat-sheet]] | Task-oriented "how do I…" / "where is…" / "when does…" |
+| [[known-gaps]] | Latent surfaces, unshipped design goals, deliberate absences |
 | [[log]] | Chronological change log |
 | [[log-archive-2026-05]] | Archived May 2026 change log entries |
 | [[log-archive-2026-06]] | Archived June 2026 change log entries (06-21 to 06-29) |
@@ -32,6 +33,7 @@ Full catalog of every page in the obsidian-brain wiki.
 | [[architecture/offline-first]] | Local-first philosophy, sync triggers, SyncMetadata |
 | [[architecture/online-first-exemption]] | When *Repository ≠ offline-first (Community, Messaging) |
 | [[architecture/folder-structure]] | Full lib/ and assets/ topology |
+| [[architecture/router-navigation]] | GoRouter redirect chain, guards, deep-link validation, 74 routes |
 
 ## Features (24 modules)
 

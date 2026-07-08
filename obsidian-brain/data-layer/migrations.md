@@ -39,7 +39,7 @@ MigrationStrategy(
 
 Format: `YYYYMMDDHHmmss_short_description.sql`
 
-194 tracked migration files in `supabase/migrations/` — applied in lexicographic
+196 tracked migration files in `supabase/migrations/` — applied in lexicographic
 (chronological) order. Verified 1:1 against production (zero drift,
 2026-07-02; rerun production verification after deploying newer local
 migrations). `supabase/migrations/README.md` maps the full history by
@@ -131,7 +131,6 @@ Never delete or rename migration files. If a mistake exists, create a new migrat
 
 ## Known Deferred Work
 
-- Two local untracked migrations exist in the working tree until they are reviewed/staged.
 - Production verification date in this page should be refreshed after the next Supabase deploy.
 - Large-table index work should be split into dedicated concurrent-index migrations.
 

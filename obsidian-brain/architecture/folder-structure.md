@@ -54,11 +54,15 @@ lib/
 │       ├── widgets/
 │       └── providers/
 │
-├── router/
+├── router/                        See [[architecture/router-navigation]]
 │   ├── app_router.dart
 │   ├── route_names.dart           AppRoutes constants (74 routes)
+│   ├── redirect_guards.dart       Session lock / auth / 2FA redirects
+│   ├── route_utils.dart           UUID + editId deep-link validation
+│   ├── router_notifier.dart       refreshListenable
 │   ├── guards/
 │   │   ├── admin_guard.dart
+│   │   ├── founder_guard.dart
 │   │   └── premium_guard.dart
 │   └── routes/                    Route files by domain
 │       ├── admin_routes.dart

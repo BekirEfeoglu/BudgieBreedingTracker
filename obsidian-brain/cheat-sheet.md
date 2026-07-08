@@ -10,7 +10,7 @@ start from.
 |----------|-----------|
 | Add a brand-new entity (model → DB → repo → UI)? | [[features/_features-index]] → entity lifecycle, then [[data-layer/repositories]] |
 | Add a localization key? | [[patterns/l10n]] — Turkish first, then en/de, then `check_l10n_sync.py` |
-| Add a new route? | [[architecture/folder-structure]] + [[patterns/ui-patterns]] (specific before `:id`) |
+| Add a new route or guard? | [[architecture/router-navigation]] — redirect chain, specific before `:id`, `editId` validation |
 | Add a custom SVG icon? | [[patterns/assets-images]] — `AppIcons` constants, `AppIcon` widget |
 | Change a Drift table or column? | [[data-layer/migrations]] — bump `schemaVersion`, write `onUpgrade`, mirror in Supabase SQL |
 | Write a new sync repository? | [[data-layer/repositories]] + [[data-layer/sync-strategy]] — `BaseRepository`, `ValidatedSyncMixin` if FK parent |
@@ -25,7 +25,12 @@ start from.
 | Style with theme? | [[patterns/ui-patterns]] — `Theme.of(context)`, `AppSpacing`, `withValues(alpha:)` |
 | Avoid an anti-pattern? | [[patterns/anti-patterns]] — 24 rules + audit-flagged extras |
 | Deploy an Edge Function? | [[infrastructure/edge-functions]] + [[infrastructure/ci-cd]] |
-| Configure a kill switch? | [[patterns/feature-flags]] — runtime / compile / entitlement / server kill switch |
+| Configure a kill switch? | [[patterns/feature-flags]] — runtime / compile / entitlement (server kill switch is UNSHIPPED, see [[known-gaps]]) |
+| Encrypt a sensitive field? | [[domain/encryption-service]] — what-to-encrypt table, AES + HMAC, key rotation |
+| Add an XP-earning action? | [[domain/gamification-service]] — XP constants, server-side RLS enforcement, daily limits |
+| Moderate user content? | [[domain/moderation-service]] — two-layer fail-closed pipeline, context thresholds |
+| Add or check a Supabase migration? | [[data-layer/migrations]] — idempotent SQL, RLS, `private` RPC pattern; deploy is manual (`supabase db push`) |
+| Check if a feature is actually shipped? | [[known-gaps]] — latent surfaces, unshipped design goals, deliberate absences |
 | Verify code quality before commit? | [[infrastructure/scripts]] — quality gates |
 
 ## "Where does X live?"
@@ -38,8 +43,8 @@ start from.
 | Repositories | `lib/data/repositories/` — [[data-layer/repositories]] |
 | Remote sources | `lib/data/remote/api/` — [[data-layer/supabase]] |
 | Domain services | `lib/domain/services/` — [[domain/services-index]] |
-| Routes | `lib/router/routes/` |
-| Route guards | `lib/router/guards/` |
+| Routes | `lib/router/routes/` — [[architecture/router-navigation]] |
+| Route guards | `lib/router/guards/` — [[architecture/router-navigation]] |
 | Shared widgets | `lib/core/widgets/` — [[patterns/ui-patterns]] |
 | SVG icon constants | `lib/core/constants/app_icons.dart` — [[patterns/assets-images]] |
 | Theme + spacing | `lib/core/theme/` |
@@ -65,24 +70,30 @@ start from.
 | Migration runs | Drift `onUpgrade` (local) or Supabase SQL (remote) ([[data-layer/migrations]]) |
 | `min_supported_build` bump | All users below version see non-dismissible blocking dialog ([[features/app_update]]) |
 
-## "Which Edge Function does this?"
+## "Which Edge Function does this?" (12 total)
 
 | Need | Function |
 |------|----------|
-| Premium status validation | `sync-premium-status` |
+| Premium status validation (client pull) | `sync-premium-status` |
+| RevenueCat subscription events (webhook push) | `revenuecat-webhook` |
 | Free-tier limit enforcement | `validate-free-tier-limit` |
 | Push notification delivery | `send-push` |
 | Photo NSFW / CSAM scan | `scan-image-safety` |
 | Community text moderation | `moderate-content` |
+| Community post create/edit (server-side moderation) | `create-community-post` |
+| Community comment create (moderation + block check) | `create-community-comment` |
+| Community photo upload (moderation + storage) | `upload-community-photo` |
 | MFA brute-force lockout | `mfa-lockout` |
 | OAuth token revocation on logout | `revoke-oauth-token` |
 | Admin system health | `system-health` |
 
-All require JWT verification — see [[infrastructure/edge-functions]].
+All client-called functions require JWT verification; `revenuecat-webhook` is the
+sole shared-secret exception (`verify_jwt=false`) — see [[infrastructure/edge-functions]].
 
 ## See Also
 
 - [[README]] — quick navigation by section
 - [[index]] — full page catalog
 - [[overview]] — high-level synthesis
+- [[known-gaps]] — what looks shipped but isn't
 - [[sources/rules-index]] — rules → wiki mapping

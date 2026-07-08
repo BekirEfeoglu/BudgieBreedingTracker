@@ -4,9 +4,9 @@ Source: `.claude/rules/data-layer.md`, `.claude/rules/security.md`
 
 ## Overview
 
-- **Package**: supabase_flutter ^2.5.0
+- **Package**: `supabase_flutter >=2.5.0 <2.13.0` — iOS CI cap, do NOT lift (2.13+ pulls a `device_info_plus` with a visionOS selector that breaks the iOS CI build; see pubspec comment)
 - **Remote sources**: 28 `*_remote_source.dart` files (entity + base/caches/providers)
-- **Migrations**: 194 tracked SQL files in `supabase/migrations/`
+- **Migrations**: 196 tracked SQL files in `supabase/migrations/`
 - **Edge Functions**: 12 (see [[infrastructure/edge-functions]])
 - **Supabase constants**: 151 string constants (tables + buckets + columns)
 
@@ -68,13 +68,19 @@ Postgres function then exposes only public-safe columns:
 
 ## Storage Buckets
 
+All 8 bucket names live in `SupabaseConstants` (lines ~179-188):
+
 | Bucket | Access | Content |
 |--------|--------|---------|
-| `bird-photos` | Private (user-scoped RLS) | Bird photos |
-| `community-photos` | Server upload, signed URL read | Community images |
-| `marketplace-listings` | Public read, auth write | Listing photos |
-| `health-records` | Private | Health documents |
-| `chat-attachments` | Conversation-scoped RLS | DM attachments |
+| `bird-photos` | Private (user-scoped RLS) | Bird photos + health record photos |
+| `egg-photos` / `chick-photos` | Private (user-scoped RLS) | Egg / chick photos |
+| `avatars` | Private | Profile avatars |
+| `backups` | Private | User backups |
+| `community-photos` | Server upload (edge fn), signed URL read | Community images |
+| `photos` (const `marketplacePhotosBucket`) | Public read, auth write | Marketplace listing photos |
+| `message-photos` | Defined but NOT yet wired (DM attachment upload unshipped) | — |
+
+There are NO `health-records` or `chat-attachments` buckets — health photos go to `bird-photos`; DM attachments are unshipped (see [[known-gaps]]).
 
 - Private: signed URL (1h TTL)
 - Public: CDN URL
