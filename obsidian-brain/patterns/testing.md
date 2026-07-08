@@ -4,7 +4,7 @@ Source: `.claude/rules/testing.md`, `.claude/rules/test-stability.md`
 
 ## Stats
 
-- 913 test files, 12,059 individual tests verified by the latest full `flutter test`
+- 914 test files, 11,436+ individual tests (CLAUDE.md § Codebase Stats; a full `flutter test` run reports more due to parameterized tests)
 - CI timeout: 30 minutes (job-level 40 minutes)
 - Golden tests excluded from main CI (`--exclude-tags golden`)
 

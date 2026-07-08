@@ -19,7 +19,9 @@ buckets; marketplace bucket is `photos`), folder-structure router listing gained
 founder_guard/redirect_guards/route_utils/router_notifier, cheat-sheet edge-fn
 table completed to all 12 (JWT note now carries the `revenuecat-webhook`
 shared-secret exception) plus new task rows, stale "two local untracked
-migrations" bullet removed.
+migrations" bullet removed. Second sweep: 913/12,059 test stats → 914/11,436+
+(testing, overview — now mirrors CLAUDE.md § Codebase Stats), 3,050 → 3,068
+l10n keys (l10n, folder-structure).
 
 ## [2026-07-08] docs | Obsidian brain inventory synced
 
