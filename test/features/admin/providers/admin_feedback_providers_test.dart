@@ -96,16 +96,44 @@ class _FakeAdminQueryBuilder extends Fake implements SupabaseQueryBuilder {
   }
 }
 
+class _RpcCall {
+  const _RpcCall(this.fn, this.params);
+
+  final String fn;
+  final Map<String, dynamic>? params;
+}
+
+class _FakeRpcBuilder<T> extends Fake implements PostgrestFilterBuilder<T> {
+  @override
+  Future<S> then<S>(
+    FutureOr<S> Function(T value) onValue, {
+    Function? onError,
+  }) {
+    return Future<T>.value(null as T).then(onValue, onError: onError);
+  }
+}
+
 class _FakeAdminSupabaseClient extends Fake implements SupabaseClient {
   _FakeAdminSupabaseClient(this.queryBuilder);
 
   final _FakeAdminQueryBuilder queryBuilder;
   final requestedTables = <String>[];
+  final rpcCalls = <_RpcCall>[];
 
   @override
   SupabaseQueryBuilder from(String table) {
     requestedTables.add(table);
     return queryBuilder;
+  }
+
+  @override
+  PostgrestFilterBuilder<T> rpc<T>(
+    String fn, {
+    Map<String, dynamic>? params,
+    get = false,
+  }) {
+    rpcCalls.add(_RpcCall(fn, params));
+    return _FakeRpcBuilder<T>();
   }
 }
 
@@ -206,6 +234,55 @@ void main() {
       container.read(feedbackStatusFilterProvider.notifier).state =
           FeedbackStatus.open;
       expect(container.read(feedbackStatusFilterProvider), FeedbackStatus.open);
+    });
+  });
+
+  group('AdminFeedbackActionNotifier', () {
+    test('updates feedback through the audited server RPC', () async {
+      final maybeSingleBuilder = _FakeAdminMaybeSingleBuilder(
+        result: {'role': 'admin', 'is_active': true},
+      );
+      final filterBuilder = _FakeAdminSelectBuilder(
+        maybeSingleBuilder: maybeSingleBuilder,
+      );
+      final client = _FakeAdminSupabaseClient(
+        _FakeAdminQueryBuilder(filterBuilder),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          currentUserIdProvider.overrideWithValue('admin-1'),
+          supabaseClientProvider.overrideWithValue(client),
+        ],
+        retry: (_, __) => null,
+      );
+      addTearDown(container.dispose);
+
+      final result = await container
+          .read(adminFeedbackActionProvider.notifier)
+          .updateFeedback(
+            feedbackId: 'feedback-1',
+            status: FeedbackStatus.resolved.toJson(),
+            priority: 'high',
+            adminResponse: 'Yanıtlandı',
+            assignedAdminId: 'admin-1',
+          );
+
+      expect(result, true);
+      expect(client.rpcCalls, hasLength(1));
+      expect(client.rpcCalls.single.fn, 'admin_update_feedback');
+      expect(client.rpcCalls.single.params, {
+        'p_feedback_id': 'feedback-1',
+        'p_status': FeedbackStatus.resolved.toJson(),
+        'p_priority': 'high',
+        'p_admin_response': 'Yanıtlandı',
+        'p_category': null,
+        'p_assigned_admin_id': 'admin-1',
+        'p_internal_note': null,
+      });
+      expect(
+        client.requestedTables,
+        isNot(contains(SupabaseConstants.feedbackTable)),
+      );
     });
   });
 }

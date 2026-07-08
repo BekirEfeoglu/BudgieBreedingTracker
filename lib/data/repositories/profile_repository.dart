@@ -91,6 +91,22 @@ class ProfileRepository {
   /// Permanently deletes the local profile.
   Future<void> hardRemove(String id) => _localDao.hardDelete(id);
 
+  /// Syncs server-side push quiet-hours preferences.
+  ///
+  /// This is intentionally remote-only: the local notification DND window is
+  /// already persisted in SharedPreferences, while
+  /// `profiles.quiet_hours` is read only by the `send-push` Edge Function.
+  Future<void> updateQuietHours({
+    required String userId,
+    required Map<String, dynamic> quietHours,
+  }) async {
+    if (userId == 'anonymous') return;
+    await _remoteSource.updateQuietHours(
+      userId: userId,
+      quietHours: quietHours,
+    );
+  }
+
   /// Pulls the profile from Supabase and stores locally.
   ///
   /// If there are pending local changes, pushes them first to avoid

@@ -53,7 +53,7 @@ void main() {
       },
     );
 
-    test('opsiyonel guncelleme Android store bildirimi icin gorunur kalir', () {
+    test('opsiyonel guncelleme normal prompt icin gorunur kalir', () {
       const info = AppUpdateInfo(
         latestVersion: '1.1.2',
         latestBuild: 33,
@@ -68,6 +68,37 @@ void main() {
       expect(visible, isNotNull);
       expect(visible!.isUpdateAvailable, isTrue);
       expect(visible.isRequired, isFalse);
+    });
+
+    test('Android opsiyonel DB promptunu Play native akisa birakir', () {
+      const info = AppUpdateInfo(
+        latestVersion: '1.1.2',
+        latestBuild: 33,
+        minSupportedBuild: 0,
+        storeUrl:
+            'https://play.google.com/store/apps/details?id=com.budgiebreeding.budgie_breeding_tracker',
+      );
+
+      final status = info.evaluate(currentVersion: '1.1.1', currentBuild: 32);
+      final visible = visibleAppUpdateStatus(status, suppressOptional: true);
+
+      expect(visible, isNull);
+    });
+
+    test('Android zorunlu DB promptunu bastirmaz', () {
+      const info = AppUpdateInfo(
+        latestVersion: '1.1.2',
+        latestBuild: 33,
+        minSupportedBuild: 33,
+        storeUrl:
+            'https://play.google.com/store/apps/details?id=com.budgiebreeding.budgie_breeding_tracker',
+      );
+
+      final status = info.evaluate(currentVersion: '1.1.1', currentBuild: 32);
+      final visible = visibleAppUpdateStatus(status, suppressOptional: true);
+
+      expect(visible, isNotNull);
+      expect(visible!.isRequired, isTrue);
     });
 
     test(

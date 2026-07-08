@@ -61,6 +61,9 @@ void main() {
       notificationSchedulerProvider.overrideWithValue(scheduler),
       gamificationRepositoryProvider.overrideWithValue(gamificationRepo),
       notificationToggleSettingsProvider.overrideWith(_MockToggleNotifier.new),
+      notificationToggleSettingsReadyProvider.overrideWith(
+        (_) async => const NotificationToggleSettings(),
+      ),
     ],
   );
 

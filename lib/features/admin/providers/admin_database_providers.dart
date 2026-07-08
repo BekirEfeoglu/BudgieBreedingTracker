@@ -20,17 +20,19 @@ final syncStatusSummaryProvider = FutureProvider<SyncStatusSummary>((
   try {
     final pendingResult = await client
         .from(SupabaseConstants.syncMetadataTable)
-        .select('id, created_at')
-        .eq('status', 'pending');
+        .select('${SupabaseConstants.colId}, ${SupabaseConstants.colCreatedAt}')
+        .eq(SupabaseConstants.colStatus, 'pending');
     final errorResult = await client
         .from(SupabaseConstants.syncMetadataTable)
-        .select('id')
-        .eq('status', 'error');
+        .select(SupabaseConstants.colId)
+        .eq(SupabaseConstants.colStatus, 'error');
 
     final pendingList = pendingResult as List;
     DateTime? oldestPending;
     for (final row in pendingList) {
-      final createdAt = DateTime.tryParse(row['created_at'] as String? ?? '');
+      final createdAt = DateTime.tryParse(
+        row[SupabaseConstants.colCreatedAt] as String? ?? '',
+      );
       if (createdAt != null &&
           (oldestPending == null || createdAt.isBefore(oldestPending))) {
         oldestPending = createdAt;
@@ -63,13 +65,16 @@ final softDeleteStatsProvider =
         try {
           final allDeleted = await client
               .from(table)
-              .select('id')
-              .eq('is_deleted', true);
+              .select(SupabaseConstants.colId)
+              .eq(SupabaseConstants.colIsDeleted, true);
           final olderDeleted = await client
               .from(table)
-              .select('id')
-              .eq('is_deleted', true)
-              .lt('updated_at', cutoff.toUtc().toIso8601String());
+              .select(SupabaseConstants.colId)
+              .eq(SupabaseConstants.colIsDeleted, true)
+              .lt(
+                SupabaseConstants.colUpdatedAt,
+                cutoff.toUtc().toIso8601String(),
+              );
 
           stats.add(
             SoftDeleteStats(

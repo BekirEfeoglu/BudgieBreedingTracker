@@ -2,7 +2,7 @@
 
 Source: `.claude/rules/notifications.md`
 
-**Location**: `lib/data/services/notification_service.dart`, `lib/domain/services/`
+**Location**: `lib/domain/services/notifications/notification_service.dart`
 
 ## Two Channels
 
@@ -31,9 +31,10 @@ IANA timezone; `isSuppressedByQuietHours` is **fail-open**). `index.ts` reads
 suppressed recipients before token resolution. Suppression is **opt-in**: only
 requests with `respectQuietHours: true` are affected, so critical/incubation
 notifications (which omit it) are never held back, and any missing/invalid
-config delivers. Added 2026-07-03; activation still needs the client to sync
-its DND window and callers to opt non-critical notifications in
-(`.claude/rules/notifications.md` § Quiet Hours).
+config delivers. Client DND changes sync to `profiles.quiet_hours`, and manual
+admin user/bulk pushes opt in with `respectQuietHours: true`; new non-critical
+callers must opt in deliberately (`.claude/rules/notifications.md` § Quiet
+Hours).
 
 ## Token Management
 
@@ -63,6 +64,24 @@ Validate type before navigating. Unknown type → `AppLogger.warning` + home fal
 - `tz.TZDateTime` — mandatory (not naive `DateTime`)
 - Deterministic IDs via `NotificationIds.generate()` — FNV-1a hash into a partitioned ID space, NOT raw `.hashCode`
 - Cancel + reschedule on insert/update
+- Scheduling side effects must await `notificationToggleSettingsReadyProvider.future`
+  before passing settings to `NotificationScheduler`; direct synchronous reads
+  can use default `true` values before Drift-backed settings load.
+- `NotificationRescheduler` loads the user's persisted settings via
+  `NotificationSettingsDao.getByUser()` and passes the snapshot to every
+  incubation, egg, chick-care, and banding schedule call.
+- Local background notification taps are persisted first and restored through
+  `NotificationService.restorePendingBackgroundTapPayloads()` so payloads are
+  not lost before the router is ready.
+
+## Permission Flow
+
+- No first-launch prompt. Permission starts as unknown/false in
+  `notificationPermissionGrantedProvider` until the platform status is checked.
+- `NotificationSettingsScreen` refreshes status without prompting.
+- Explicit CTA uses `notificationPermissionRequestControllerProvider`; if the
+  user still denies permission, app notification settings are opened where
+  supported.
 
 ## Channels / Categories
 
@@ -73,6 +92,26 @@ Validate type before navigating. Unknown type → `AppLogger.warning` + home fal
 | `marketplace` | Listing matches | High |
 | `community` | Mentions, replies | Default |
 | `system` | Maintenance | Low |
+
+## Current Decisions
+
+- Permission is never requested on first launch; explicit CTAs own the prompt.
+- Local scheduling must wait for persisted toggle settings before scheduling.
+- Quiet hours are opt-in on push requests via `respectQuietHours: true`.
+- Background notification taps are persisted and restored after router readiness.
+
+## Known Deferred Work
+
+- New non-critical push callers must deliberately opt into quiet-hours suppression.
+- DM attachment storage is not wired here; notification payloads should not assume it.
+- Platform-specific permission edge cases should stay behind `NotificationPermissionHandler`.
+
+## Do Not Reintroduce
+
+- Do not navigate automatically from foreground push notifications.
+- Do not use raw `DateTime` for scheduled notifications.
+- Do not rely on Dart `hashCode` for notification IDs.
+- Do not read default toggle values synchronously before Drift settings load.
 
 ## Anti-Patterns
 

@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -34,6 +35,7 @@ class NotificationSettingsScreen extends ConsumerWidget {
     final settings = ref.watch(notificationToggleSettingsProvider);
     final notifier = ref.read(notificationToggleSettingsProvider.notifier);
     final batteryWarningDismissed = ref.watch(_batteryWarningDismissedProvider);
+    ref.watch(notificationPermissionStatusRefreshProvider);
 
     return Scaffold(
       appBar: AppBar(

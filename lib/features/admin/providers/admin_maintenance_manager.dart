@@ -1,10 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
 import '../../../shared/providers/auth.dart';
-import '../constants/admin_constants.dart';
 import 'admin_auth_utils.dart';
 import 'admin_dashboard_providers.dart';
 import 'admin_filter_providers.dart';
@@ -31,19 +29,9 @@ class AdminMaintenanceManager {
       await requireAdmin(_ref);
       final client = _ref.read(supabaseClientProvider);
 
-      await client
-          .from(SupabaseConstants.securityEventsTable)
-          .update({
-            'is_resolved': true,
-            'resolved_at': DateTime.now().toUtc().toIso8601String(),
-          })
-          .eq('id', eventId);
-
-      await logAdminAction(
-        client,
-        _ref.read(currentUserIdProvider),
-        'security_event_dismissed',
-        details: {'message': 'Event $eventId resolved'},
+      await client.rpc(
+        'admin_dismiss_security_event',
+        params: {'p_event_id': eventId},
       );
 
       _updateState(isLoading: false, isSuccess: true);
@@ -73,28 +61,9 @@ class AdminMaintenanceManager {
     try {
       await requireAdmin(_ref);
       final client = _ref.read(supabaseClientProvider);
-      final cutoff = DateTime.now().subtract(Duration(days: days));
-
-      var totalCleaned = 0;
-      for (final table in AdminConstants.softDeletableTables) {
-        try {
-          final result = await client
-              .from(table)
-              .delete()
-              .eq('is_deleted', true)
-              .lt('updated_at', cutoff.toUtc().toIso8601String())
-              .select('id');
-          totalCleaned += (result as List).length;
-        } catch (e, st) {
-          AppLogger.warning('cleanSoftDeleted: Failed for $table: $e\n$st');
-        }
-      }
-
-      await logAdminAction(
-        client,
-        _ref.read(currentUserIdProvider),
-        'soft_delete_cleanup',
-        details: {'days': days, 'cleaned': totalCleaned},
+      await client.rpc(
+        'admin_clean_soft_deleted_records',
+        params: {'p_days': days},
       );
 
       _updateState(
@@ -114,19 +83,7 @@ class AdminMaintenanceManager {
     try {
       await requireAdmin(_ref);
       final client = _ref.read(supabaseClientProvider);
-      final cutoff = DateTime.now().subtract(const Duration(hours: 24));
-
-      await client
-          .from(SupabaseConstants.syncMetadataTable)
-          .delete()
-          .eq('status', 'error')
-          .lt('created_at', cutoff.toUtc().toIso8601String());
-
-      await logAdminAction(
-        client,
-        _ref.read(currentUserIdProvider),
-        'sync_stuck_reset',
-      );
+      await client.rpc('admin_reset_stuck_sync_records');
 
       _updateState(
         isLoading: false,

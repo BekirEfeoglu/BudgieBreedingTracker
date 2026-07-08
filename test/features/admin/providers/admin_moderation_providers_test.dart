@@ -18,6 +18,13 @@ class _UpdateCall {
   final eqCalls = <MapEntry<String, Object>>[];
 }
 
+class _RpcCall {
+  _RpcCall(this.fn, this.params);
+
+  final String fn;
+  final Map<String, dynamic>? params;
+}
+
 class _FakeMaybeSingle extends Fake
     implements PostgrestTransformBuilder<PostgrestMap?> {
   _FakeMaybeSingle(this.result);
@@ -27,19 +34,15 @@ class _FakeMaybeSingle extends Fake
   Future<S> then<S>(
     FutureOr<S> Function(PostgrestMap? value) onValue, {
     Function? onError,
-  }) =>
-      Future<PostgrestMap?>.value(result).then(onValue, onError: onError);
+  }) => Future<PostgrestMap?>.value(result).then(onValue, onError: onError);
 }
 
 // ignore: must_be_immutable
-class _FakeFilter extends Fake implements PostgrestFilterBuilder<PostgrestList> {
-  _FakeFilter(this.result, {this.onEq, this.gate});
+class _FakeFilter extends Fake
+    implements PostgrestFilterBuilder<PostgrestList> {
+  _FakeFilter(this.result, {this.onEq});
   PostgrestList result;
   final void Function(String column, Object value)? onEq;
-
-  /// When set (only on update filters), resolution waits on this future so a
-  /// test can observe the in-flight processing state.
-  final Future<void>? gate;
 
   @override
   PostgrestFilterBuilder<PostgrestList> eq(String column, Object value) {
@@ -53,8 +56,7 @@ class _FakeFilter extends Fake implements PostgrestFilterBuilder<PostgrestList> 
     bool ascending = false,
     bool nullsFirst = false,
     String? referencedTable,
-  }) =>
-      this;
+  }) => this;
 
   @override
   PostgrestTransformBuilder<PostgrestMap?> maybeSingle() =>
@@ -65,10 +67,7 @@ class _FakeFilter extends Fake implements PostgrestFilterBuilder<PostgrestList> 
     FutureOr<S> Function(PostgrestList value) onValue, {
     Function? onError,
   }) {
-    final base = gate == null
-        ? Future<PostgrestList>.value(result)
-        : gate!.then((_) => result);
-    return base.then(onValue, onError: onError);
+    return Future<PostgrestList>.value(result).then(onValue, onError: onError);
   }
 }
 
@@ -92,20 +91,48 @@ class _FakeQuery extends Fake implements SupabaseQueryBuilder {
     return _FakeFilter(
       const [],
       onEq: (c, v) => call.eqCalls.add(MapEntry(c, v)),
-      gate: store.updateGate?.future,
     );
   }
 }
 
+class _FakeRpc<T> extends Fake implements PostgrestFilterBuilder<T> {
+  _FakeRpc({this.error, this.gate});
+
+  final Object? error;
+  final Future<void>? gate;
+
+  @override
+  Future<S> then<S>(
+    FutureOr<S> Function(T value) onValue, {
+    Function? onError,
+  }) {
+    final source = gate == null
+        ? Future<T>.value(null as T)
+        : gate!.then((_) => null as T);
+    if (error != null) {
+      final failing = gate == null
+          ? Future<T>.error(error!)
+          : gate!.then<T>((_) => Future<T>.error(error!));
+      return failing.then(onValue, onError: onError);
+    }
+    return source.then(onValue, onError: onError);
+  }
+}
+
 class _Store {
-  _Store({required this.adminRow, this.posts = const [], this.updateGate});
+  _Store({
+    required this.adminRow,
+    this.posts = const [],
+    this.rpcGate,
+    this.rpcError,
+  });
   final PostgrestList adminRow;
   final PostgrestList posts;
 
-  /// When set, update calls block on this completer so a test can inspect the
-  /// notifier's in-flight processing set.
-  final Completer<void>? updateGate;
+  final Completer<void>? rpcGate;
+  final Object? rpcError;
   final updates = <_UpdateCall>[];
+  final rpcCalls = <_RpcCall>[];
 
   PostgrestList rowsFor(String table) {
     if (table == SupabaseConstants.communityPostsTable) return posts;
@@ -119,20 +146,30 @@ class _FakeClient extends Fake implements SupabaseClient {
 
   @override
   SupabaseQueryBuilder from(String table) => _FakeQuery(table, store);
+
+  @override
+  PostgrestFilterBuilder<T> rpc<T>(
+    String fn, {
+    Map<String, dynamic>? params,
+    get = false,
+  }) {
+    store.rpcCalls.add(_RpcCall(fn, params));
+    return _FakeRpc<T>(error: store.rpcError, gate: store.rpcGate?.future);
+  }
 }
 
 // ── Helpers ─────────────────────────────────────────────────
 
 PostgrestList _adminRow({String role = 'admin', bool isActive = true}) => [
-      {'role': role, 'is_active': isActive},
-    ];
+  {'role': role, 'is_active': isActive},
+];
 
 Map<String, dynamic> _postRow({String id = 'post-1'}) => {
-      'id': id,
-      'user_id': 'author-1',
-      'content': 'hello',
-      'needs_review': true,
-    };
+  'id': id,
+  'user_id': 'author-1',
+  'content': 'hello',
+  'needs_review': true,
+};
 
 ProviderContainer _container(_Store store) {
   final container = ProviderContainer(
@@ -164,30 +201,58 @@ void main() {
   });
 
   group('AdminModerationNotifier', () {
-    test('approvePost clears needs_review without deleting', () async {
+    test('approvePost sends approve decision to audited RPC', () async {
       final store = _Store(adminRow: _adminRow());
       final container = _container(store);
 
-      await container.read(adminModerationProvider.notifier).approvePost('post-1');
+      await container
+          .read(adminModerationProvider.notifier)
+          .approvePost('post-1');
 
-      expect(store.updates, hasLength(1));
-      final call = store.updates.single;
-      expect(call.table, SupabaseConstants.communityPostsTable);
-      expect(call.values[SupabaseConstants.colNeedsReview], false);
-      expect(call.values.containsKey(SupabaseConstants.colIsDeleted), isFalse);
-      expect(call.eqCalls.single.key, SupabaseConstants.colId);
-      expect(call.eqCalls.single.value, 'post-1');
+      expect(store.rpcCalls, hasLength(1));
+      expect(store.rpcCalls.single.params, {
+        'p_entity_type': 'post',
+        'p_entity_id': 'post-1',
+        'p_action': 'approve',
+      });
+      expect(store.updates, isEmpty);
     });
+
+    test(
+      'approvePost delegates moderation and audit to the server RPC',
+      () async {
+        final store = _Store(adminRow: _adminRow());
+        final container = _container(store);
+
+        await container
+            .read(adminModerationProvider.notifier)
+            .approvePost('post-1');
+
+        expect(store.rpcCalls, hasLength(1));
+        expect(store.rpcCalls.single.fn, 'admin_moderate_community_content');
+        expect(store.rpcCalls.single.params, {
+          'p_entity_type': 'post',
+          'p_entity_id': 'post-1',
+          'p_action': 'approve',
+        });
+        expect(store.updates, isEmpty);
+      },
+    );
 
     test('deletePost soft-deletes and clears review flag', () async {
       final store = _Store(adminRow: _adminRow());
       final container = _container(store);
 
-      await container.read(adminModerationProvider.notifier).deletePost('post-1');
+      await container
+          .read(adminModerationProvider.notifier)
+          .deletePost('post-1');
 
-      final call = store.updates.single;
-      expect(call.values[SupabaseConstants.colIsDeleted], true);
-      expect(call.values[SupabaseConstants.colNeedsReview], false);
+      expect(store.rpcCalls.single.params, {
+        'p_entity_type': 'post',
+        'p_entity_id': 'post-1',
+        'p_action': 'delete',
+      });
+      expect(store.updates, isEmpty);
     });
 
     test('deleteComment soft-deletes the comment', () async {
@@ -198,26 +263,31 @@ void main() {
           .read(adminModerationProvider.notifier)
           .deleteComment('comment-1');
 
-      final call = store.updates.single;
-      expect(call.table, SupabaseConstants.communityCommentsTable);
-      expect(call.values[SupabaseConstants.colIsDeleted], true);
-      expect(call.eqCalls.single.key, SupabaseConstants.colId);
-      expect(call.eqCalls.single.value, 'comment-1');
+      expect(store.rpcCalls.single.params, {
+        'p_entity_type': 'comment',
+        'p_entity_id': 'comment-1',
+        'p_action': 'delete',
+      });
+      expect(store.updates, isEmpty);
     });
 
     test('marks only the acting item as processing, then clears it', () async {
       final gate = Completer<void>();
-      final store = _Store(adminRow: _adminRow(), updateGate: gate);
+      final store = _Store(adminRow: _adminRow(), rpcGate: gate);
       final container = _container(store);
 
-      expect(container.read(adminModerationProvider), isEmpty);
+      expect(container.read(adminModerationProvider).processingIds, isEmpty);
 
       // Don't await: the synchronous prefix of _run adds the id before the
       // first await, so the in-flight state is observable immediately.
-      final future =
-          container.read(adminModerationProvider.notifier).approvePost('post-1');
+      final future = container
+          .read(adminModerationProvider.notifier)
+          .approvePost('post-1');
 
-      expect(container.read(adminModerationProvider), contains('post-1'));
+      expect(
+        container.read(adminModerationProvider).processingIds,
+        contains('post-1'),
+      );
       expect(
         container.read(adminModerationProvider).contains('post-2'),
         isFalse,
@@ -227,12 +297,12 @@ void main() {
       gate.complete();
       await future;
 
-      expect(container.read(adminModerationProvider), isEmpty);
+      expect(container.read(adminModerationProvider).processingIds, isEmpty);
     });
 
     test('ignores a double-tap on an already-processing item', () async {
       final gate = Completer<void>();
-      final store = _Store(adminRow: _adminRow(), updateGate: gate);
+      final store = _Store(adminRow: _adminRow(), rpcGate: gate);
       final container = _container(store);
       final notifier = container.read(adminModerationProvider.notifier);
 
@@ -242,9 +312,25 @@ void main() {
       gate.complete();
       await Future.wait([first, second]);
 
-      // Only the first call issued an update.
-      expect(store.updates, hasLength(1));
-      expect(container.read(adminModerationProvider), isEmpty);
+      // Only the first call issued a moderation RPC.
+      expect(store.rpcCalls, hasLength(1));
+      expect(container.read(adminModerationProvider).processingIds, isEmpty);
+    });
+
+    test('surfaces RPC errors and clears processing state', () async {
+      final store = _Store(
+        adminRow: _adminRow(),
+        rpcError: Exception('network failed'),
+      );
+      final container = _container(store);
+
+      await container
+          .read(adminModerationProvider.notifier)
+          .approvePost('post-1');
+
+      final state = container.read(adminModerationProvider);
+      expect(state.processingIds, isEmpty);
+      expect(state.error, contains('admin.action_error'));
     });
   });
 }

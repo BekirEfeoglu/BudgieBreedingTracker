@@ -45,8 +45,8 @@ class FcmTokenRemoteSource {
     try {
       await _client
           .from(SupabaseConstants.fcmTokensTable)
-          .update({'is_active': false})
-          .eq('token', token);
+          .update({SupabaseConstants.colIsActive: false})
+          .eq(SupabaseConstants.colToken, token);
     } catch (e, st) {
       AppLogger.error('[FcmTokenRemoteSource] deactivateToken failed', e, st);
       throw NetworkException(e.toString(), originalError: e);

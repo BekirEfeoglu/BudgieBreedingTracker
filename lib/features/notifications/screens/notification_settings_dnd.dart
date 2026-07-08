@@ -33,12 +33,12 @@ class _DndSectionState extends ConsumerState<_DndSection> {
     );
     if (picked == null || !mounted) return;
 
-    final limiter = ref.read(notificationRateLimiterProvider);
+    final notifier = ref.read(notificationToggleSettingsProvider.notifier);
     if (isStart) {
-      await limiter.setDndHours(startHour: picked.hour, endHour: _endHour);
+      await notifier.setDndHours(startHour: picked.hour, endHour: _endHour);
       if (mounted) setState(() => _startHour = picked.hour);
     } else {
-      await limiter.setDndHours(startHour: _startHour, endHour: picked.hour);
+      await notifier.setDndHours(startHour: _startHour, endHour: picked.hour);
       if (mounted) setState(() => _endHour = picked.hour);
     }
   }

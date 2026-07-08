@@ -26,6 +26,9 @@ abstract final class NotificationIds {
   /// Base ID offset for event reminders. Range: 700000-799999
   static const eventReminderBaseId = 700000;
 
+  /// Base ID offset for foreground push display notifications. Range: 800000-899999
+  static const pushDisplayBaseId = 800000;
+
   static const idsPerEntitySlot = 100;
 
   /// Generates a stable notification ID for an entity within a category.
@@ -52,5 +55,16 @@ abstract final class NotificationIds {
     }
     final slot = hash % 1000;
     return baseId + slot * 100 + offset;
+  }
+
+  /// Generates a stable foreground push notification ID without using hashCode.
+  static int generatePushDisplayId({String? messageId, DateTime? sentTime}) {
+    final stableMessageId = messageId?.trim();
+    if (stableMessageId != null && stableMessageId.isNotEmpty) {
+      return generate(pushDisplayBaseId, stableMessageId, 0);
+    }
+
+    final time = sentTime ?? DateTime.now().toUtc();
+    return pushDisplayBaseId + time.microsecondsSinceEpoch.remainder(100000);
   }
 }

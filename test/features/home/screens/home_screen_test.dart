@@ -54,6 +54,7 @@ void main() {
 
     Widget createSubject({
       AsyncValue<DashboardStats> statsAsync = const AsyncLoading(),
+      Future<void> Function()? onDeferredPermissionInitialized,
     }) {
       return ProviderScope(
         overrides: [
@@ -82,7 +83,9 @@ void main() {
           birdCountProvider('test-user').overrideWith((_) => Stream.value(0)),
           isPremiumProvider.overrideWithValue(false),
           adServiceProvider.overrideWithValue(MockAdService()),
-          deferredNotificationPermissionProvider.overrideWith((_) async {}),
+          deferredNotificationPermissionProvider.overrideWith((_) async {
+            await onDeferredPermissionInitialized?.call();
+          }),
           syncOrchestratorProvider.overrideWithValue(mockSync),
           // SyncStatusBar watches persistedConflictCountProvider; stub to 0
           // so we don't hit the real Drift DAO (which leaks timers in tests).
@@ -108,6 +111,24 @@ void main() {
 
       // Dashboard stats section uses skeleton loaders instead of spinners
       expect(find.byType(SkeletonLoader), findsWidgets);
+    });
+
+    testWidgets('does not trigger notification permission request on render', (
+      tester,
+    ) async {
+      var permissionPromptInitializations = 0;
+
+      await tester.pumpWidget(
+        createSubject(
+          statsAsync: const AsyncData(DashboardStats()),
+          onDeferredPermissionInitialized: () async {
+            permissionPromptInitializations++;
+          },
+        ),
+      );
+      await tester.pump();
+
+      expect(permissionPromptInitializations, 0);
     });
 
     testWidgets('shows dashboard stats when data is available', (tester) async {

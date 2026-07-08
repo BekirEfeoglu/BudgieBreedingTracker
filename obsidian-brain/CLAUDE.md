@@ -32,9 +32,10 @@ obsidian-brain/
 ## Page Conventions
 
 - **Max 200 lines** per page
+- **Active log cap**: keep `log.md` under 30 dated entries; rotate older entries to `log-archive-*.md`
 - **Frontmatter**: none required (Obsidian reads title from `# H1`)
 - **Cross-links**: `[[page-name]]` for same-directory, `[[folder/page]]` for others
-- **Source refs**: `lib/path/file.dart`, `.claude/rules/file.md`
+- **Source refs**: inline file paths must exist unless they are explicit placeholders/examples
 - **Code snippets**: only when the exact text is load-bearing (e.g., a pattern or anti-pattern)
 - **Stats**: copy from `CLAUDE.md` § Codebase Stats; run `python3 scripts/verify_rules.py --fix` when they drift
 
@@ -46,6 +47,14 @@ After a significant feature or rule change:
 2. Update the relevant wiki page(s)
 3. Append an entry to `log.md`
 4. If new page created, add it to `index.md`
+5. If `log.md` approaches the cap, move oldest entries into an archive page
+
+### High-Risk Pages
+`features/community.md`, `features/admin.md`, `domain/notification-service.md`,
+and `data-layer/migrations.md` must include:
+- `## Current Decisions`
+- `## Known Deferred Work`
+- `## Do Not Reintroduce`
 
 ### Query
 When answering a code question:
@@ -59,6 +68,7 @@ Before closing a wiki-update task:
 - Each new page has an `[[index]]` back-link or is reachable from the index
 - `log.md` has an entry for this session
 - No page exceeds 200 lines
+- `python3 scripts/check_obsidian_brain.py` passes
 
 ## Update Discipline
 

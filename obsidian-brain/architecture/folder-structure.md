@@ -8,8 +8,8 @@ Source: `.claude/rules/architecture.md`, `CLAUDE.md` § Key File Locations
 lib/
 ├── core/
 │   ├── constants/
-│   │   ├── app_icons.dart         93 SVG icon path constants
-│   │   ├── supabase_constants.dart  SupabaseConstants (142 table/column/bucket constants)
+│   │   ├── app_icons.dart         99 SVG icon path constants
+│   │   ├── supabase_constants.dart  SupabaseConstants (151 string table/column/bucket constants)
 │   │   └── app_spacing.dart       AppSpacing.xs/sm/md/lg/xl/xxl/xxxl
 │   ├── enums/                     15 enum files
 │   ├── errors/                    AppException hierarchy
@@ -31,10 +31,10 @@ lib/
 │   │   │   ├── daos/              20 DAO classes
 │   │   │   ├── mappers/           20 Mapper classes
 │   │   │   ├── converters/        enum_converters.dart
-│   │   │   └── app_database.dart  schemaVersion=25, DriftDatabase class
+│   │   │   └── app_database.dart  schemaVersion=26, DriftDatabase class
 │   │   └── preferences/           AppPreferences (SharedPreferences wrapper)
 │   ├── remote/
-│   │   ├── api/                   27 remote source classes + base + 2 caches + providers
+│   │   ├── api/                   28 *_remote_source.dart files + base/caches/providers
 │   │   ├── storage/               storage_service.dart
 │   │   └── supabase/              edge_function_client.dart, supabase_client.dart
 │   └── repositories/              23 entity repos + base + sync_metadata
@@ -75,7 +75,7 @@ lib/
 ```
 assets/
 ├── translations/
-│   ├── tr.json    Master (~3,014 keys, 41 categories)
+│   ├── tr.json    Master (3,050 keys, 41 categories)
 │   ├── en.json
 │   └── de.json
 ├── images/

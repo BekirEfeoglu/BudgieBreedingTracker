@@ -109,6 +109,32 @@ class _FakeInsertFilterBuilder extends Fake
   }
 }
 
+class _RpcCall {
+  const _RpcCall(this.fn, this.params);
+
+  final String fn;
+  final Map<String, dynamic>? params;
+}
+
+// ignore: must_be_immutable
+class _FakeRpcBuilder<T> extends Fake implements PostgrestFilterBuilder<T> {
+  _FakeRpcBuilder({this.result, this.error});
+
+  final T? result;
+  final Object? error;
+
+  @override
+  Future<S> then<S>(
+    FutureOr<S> Function(T value) onValue, {
+    Function? onError,
+  }) {
+    if (error != null) {
+      return Future<T>.error(error!).then(onValue, onError: onError);
+    }
+    return Future<T>.value(result as T).then(onValue, onError: onError);
+  }
+}
+
 class _FakeQueryBuilder extends Fake implements SupabaseQueryBuilder {
   _FakeQueryBuilder(
     this.filterBuilder, {
@@ -166,6 +192,7 @@ class _FakeUserManagerClient extends Fake implements SupabaseClient {
     required this.profilesBuilder,
     SupabaseQueryBuilder? subscriptionsBuilder,
     SupabaseQueryBuilder? adminLogsBuilder,
+    this.rpcErrors = const {},
   }) : subscriptionsBuilder =
            subscriptionsBuilder ?? _FakeQueryBuilder(_dummyFilter()),
        adminLogsBuilder = adminLogsBuilder ?? _FakeQueryBuilder(_dummyFilter());
@@ -173,7 +200,9 @@ class _FakeUserManagerClient extends Fake implements SupabaseClient {
   final SupabaseQueryBuilder profilesBuilder;
   final SupabaseQueryBuilder subscriptionsBuilder;
   final SupabaseQueryBuilder adminLogsBuilder;
+  final Map<String, Object> rpcErrors;
   final requestedTables = <String>[];
+  final rpcCalls = <_RpcCall>[];
 
   static _FakeFilterBuilder _dummyFilter() =>
       _FakeFilterBuilder(_FakeMaybeSingleBuilder());
@@ -187,6 +216,16 @@ class _FakeUserManagerClient extends Fake implements SupabaseClient {
     }
     if (table == SupabaseConstants.adminLogsTable) return adminLogsBuilder;
     throw StateError('Unexpected table: $table');
+  }
+
+  @override
+  PostgrestFilterBuilder<T> rpc<T>(
+    String fn, {
+    Map<String, dynamic>? params,
+    get = false,
+  }) {
+    rpcCalls.add(_RpcCall(fn, params));
+    return _FakeRpcBuilder<T>(error: rpcErrors[fn]);
   }
 }
 
@@ -253,6 +292,7 @@ _FakeUserManagerClient _clientWithTargetRole({
   _FakeUpdateFilterBuilder? updateBuilder,
   _FakeUpsertFilterBuilder? upsertBuilder,
   SupabaseQueryBuilder? subscriptionsBuilder,
+  Map<String, Object> rpcErrors = const {},
 }) {
   // The requireAdmin call reads role, then _fetchTargetUserRole reads role
   // again from the same profiles table. We use a single filter builder that
@@ -279,6 +319,7 @@ _FakeUserManagerClient _clientWithTargetRole({
   return _FakeUserManagerClient(
     profilesBuilder: profilesBuilder,
     subscriptionsBuilder: subscriptionsBuilder,
+    rpcErrors: rpcErrors,
   );
 }
 
@@ -414,6 +455,34 @@ void main() {
       );
     });
 
+    test('delegates status changes to the audited server RPC', () async {
+      final client = _clientWithTargetRole(
+        adminRole: 'admin',
+        targetRole: 'user',
+      );
+      final updates = <_StateUpdate>[];
+      final container = _makeContainer(userId: 'admin-1', client: client);
+      addTearDown(container.dispose);
+
+      final result = await _makeManager(
+        container,
+        updates,
+      ).toggleUserActive('target-user', true);
+
+      expect(result, AdminUserOperationResult.success);
+      expect(client.rpcCalls, hasLength(1));
+      expect(client.rpcCalls.single.fn, 'admin_set_user_active');
+      expect(client.rpcCalls.single.params, {
+        'target_user_id': 'target-user',
+        'p_is_active': true,
+      });
+      expect(
+        client.requestedTables,
+        isNot(contains(SupabaseConstants.adminLogsTable)),
+        reason: 'audit logging must be committed by the same server RPC',
+      );
+    });
+
     test('deactivates a regular user successfully', () async {
       final client = _clientWithTargetRole(
         adminRole: 'admin',
@@ -475,8 +544,7 @@ void main() {
       final client = _clientWithTargetRole(
         adminRole: 'admin',
         targetRole: 'user',
-        updateBuilder: _FakeUpdateFilterBuilder()
-          ..error = Exception('db error'),
+        rpcErrors: {'admin_set_user_active': Exception('rpc error')},
       );
       final updates = <_StateUpdate>[];
       final container = _makeContainer(userId: 'admin-1', client: client);
@@ -571,52 +639,50 @@ void main() {
       );
     });
 
-    test(
-      'clears expiry fields and marks subscription as manual grant',
-      () async {
-        final profileUpdateBuilder = _FakeUpdateFilterBuilder();
-        final subscriptionUpsertBuilder = _FakeUpsertFilterBuilder();
-        final subscriptionBuilder = _FakeQueryBuilder(
-          _FakeUserManagerClient._dummyFilter(),
-          upsertBuilder: subscriptionUpsertBuilder,
-        );
-        final client = _clientWithTargetRole(
-          adminRole: 'admin',
-          targetRole: 'user',
-          updateBuilder: profileUpdateBuilder,
-          subscriptionsBuilder: subscriptionBuilder,
-        );
-        final updates = <_StateUpdate>[];
-        final container = _makeContainer(userId: 'admin-1', client: client);
-        addTearDown(container.dispose);
+    test('delegates premium grant to the audited server RPC', () async {
+      final client = _clientWithTargetRole(
+        adminRole: 'admin',
+        targetRole: 'user',
+      );
+      final updates = <_StateUpdate>[];
+      final container = _makeContainer(userId: 'admin-1', client: client);
+      addTearDown(container.dispose);
 
-        final result = await _makeManager(
-          container,
-          updates,
-        ).grantPremium('target-user');
+      final result = await _makeManager(
+        container,
+        updates,
+      ).grantPremium('target-user');
 
-        expect(result, AdminUserOperationResult.success);
-        final profilePayload = profileUpdateBuilder.values.single as Map;
-        expect(profilePayload['is_premium'], true);
-        expect(profilePayload['subscription_status'], 'premium');
-        expect(profilePayload, containsPair('premium_expires_at', null));
-        expect(profilePayload, containsPair('grace_period_until', null));
+      expect(result, AdminUserOperationResult.success);
+      expect(client.rpcCalls, hasLength(1));
+      expect(client.rpcCalls.single.fn, 'admin_grant_premium');
+      expect(client.rpcCalls.single.params, {'target_user_id': 'target-user'});
+      expect(
+        client.requestedTables,
+        isNot(contains(SupabaseConstants.adminLogsTable)),
+      );
+    });
 
-        final subscriptionPayload =
-            subscriptionUpsertBuilder.values.single as Map;
-        expect(subscriptionUpsertBuilder.onConflictValue, 'user_id');
-        expect(subscriptionPayload['user_id'], 'target-user');
-        expect(subscriptionPayload['plan'], 'premium');
-        expect(subscriptionPayload['status'], 'active');
-        expect(subscriptionPayload['provider'], 'manual');
-        expect(subscriptionPayload, containsPair('current_period_end', null));
-        expect(subscriptionPayload['cancel_at_period_end'], false);
-        final currentPeriodStart =
-            subscriptionPayload['current_period_start'] as String?;
-        expect(currentPeriodStart, isNotNull);
-        expect(DateTime.tryParse(currentPeriodStart!), isNotNull);
-      },
-    );
+    test('does not write profile or subscription tables directly', () async {
+      final client = _clientWithTargetRole(
+        adminRole: 'admin',
+        targetRole: 'user',
+      );
+      final updates = <_StateUpdate>[];
+      final container = _makeContainer(userId: 'admin-1', client: client);
+      addTearDown(container.dispose);
+
+      final result = await _makeManager(
+        container,
+        updates,
+      ).grantPremium('target-user');
+
+      expect(result, AdminUserOperationResult.success);
+      expect(
+        client.requestedTables,
+        isNot(contains(SupabaseConstants.userSubscriptionsTable)),
+      );
+    });
 
     test('returns protected when target is founder', () async {
       final client = _clientWithTargetRole(
@@ -660,8 +726,7 @@ void main() {
       final client = _clientWithTargetRole(
         adminRole: 'admin',
         targetRole: 'user',
-        updateBuilder: _FakeUpdateFilterBuilder()
-          ..error = Exception('profile update failed'),
+        rpcErrors: {'admin_grant_premium': Exception('rpc failed')},
       );
       final updates = <_StateUpdate>[];
       final container = _makeContainer(userId: 'admin-1', client: client);
@@ -692,16 +757,10 @@ void main() {
     });
 
     test('returns failed when subscription upsert fails', () async {
-      final subscriptionUpsertBuilder = _FakeUpsertFilterBuilder()
-        ..error = Exception('upsert failed');
-      final subscriptionBuilder = _FakeQueryBuilder(
-        _FakeUserManagerClient._dummyFilter(),
-        upsertBuilder: subscriptionUpsertBuilder,
-      );
       final client = _clientWithTargetRole(
         adminRole: 'admin',
         targetRole: 'user',
-        subscriptionsBuilder: subscriptionBuilder,
+        rpcErrors: {'admin_grant_premium': Exception('rpc failed')},
       );
       final updates = <_StateUpdate>[];
       final container = _makeContainer(userId: 'admin-1', client: client);
@@ -740,12 +799,10 @@ void main() {
       );
     });
 
-    test('clears expiry and grace period fields on revoke', () async {
-      final profileUpdateBuilder = _FakeUpdateFilterBuilder();
+    test('delegates premium revoke to the audited server RPC', () async {
       final client = _clientWithTargetRole(
         adminRole: 'admin',
         targetRole: 'user',
-        updateBuilder: profileUpdateBuilder,
       );
       final updates = <_StateUpdate>[];
       final container = _makeContainer(userId: 'admin-1', client: client);
@@ -757,12 +814,38 @@ void main() {
       ).revokePremium('target-user');
 
       expect(result, AdminUserOperationResult.success);
-      final profilePayload = profileUpdateBuilder.values.single as Map;
-      expect(profilePayload['is_premium'], false);
-      expect(profilePayload['subscription_status'], 'free');
-      expect(profilePayload, containsPair('premium_expires_at', null));
-      expect(profilePayload, containsPair('grace_period_until', null));
+      expect(client.rpcCalls, hasLength(1));
+      expect(client.rpcCalls.single.fn, 'admin_revoke_premium');
+      expect(client.rpcCalls.single.params, {'target_user_id': 'target-user'});
+      expect(
+        client.requestedTables,
+        isNot(contains(SupabaseConstants.adminLogsTable)),
+      );
     });
+
+    test(
+      'does not write profile or subscription tables directly on revoke',
+      () async {
+        final client = _clientWithTargetRole(
+          adminRole: 'admin',
+          targetRole: 'user',
+        );
+        final updates = <_StateUpdate>[];
+        final container = _makeContainer(userId: 'admin-1', client: client);
+        addTearDown(container.dispose);
+
+        final result = await _makeManager(
+          container,
+          updates,
+        ).revokePremium('target-user');
+
+        expect(result, AdminUserOperationResult.success);
+        expect(
+          client.requestedTables,
+          isNot(contains(SupabaseConstants.userSubscriptionsTable)),
+        );
+      },
+    );
 
     test('returns protected when target is founder', () async {
       final client = _clientWithTargetRole(
@@ -789,8 +872,7 @@ void main() {
       final client = _clientWithTargetRole(
         adminRole: 'admin',
         targetRole: 'user',
-        updateBuilder: _FakeUpdateFilterBuilder()
-          ..error = Exception('profile update failed'),
+        rpcErrors: {'admin_revoke_premium': Exception('rpc failed')},
       );
       final updates = <_StateUpdate>[];
       final container = _makeContainer(userId: 'admin-1', client: client);
@@ -840,16 +922,10 @@ void main() {
     });
 
     test('returns failed when subscription status update fails', () async {
-      final subscriptionUpdateBuilder = _FakeUpdateFilterBuilder()
-        ..error = Exception('subscription update failed');
-      final subscriptionBuilder = _FakeQueryBuilder(
-        _FakeUserManagerClient._dummyFilter(),
-        updateBuilder: subscriptionUpdateBuilder,
-      );
       final client = _clientWithTargetRole(
         adminRole: 'admin',
         targetRole: 'user',
-        subscriptionsBuilder: subscriptionBuilder,
+        rpcErrors: {'admin_revoke_premium': Exception('rpc failed')},
       );
       final updates = <_StateUpdate>[];
       final container = _makeContainer(userId: 'admin-1', client: client);
@@ -862,6 +938,32 @@ void main() {
 
       expect(result, AdminUserOperationResult.failed);
       expect(updates.last.error, contains('admin.action_error'));
+    });
+  });
+
+  group('AdminUserManager.forceLogout', () {
+    test('delegates force logout and audit to the server RPC', () async {
+      final client = _clientWithTargetRole(
+        adminRole: 'admin',
+        targetRole: 'user',
+      );
+      final updates = <_StateUpdate>[];
+      final container = _makeContainer(userId: 'admin-1', client: client);
+      addTearDown(container.dispose);
+
+      final result = await _makeManager(
+        container,
+        updates,
+      ).forceLogout('target-user');
+
+      expect(result, AdminUserOperationResult.success);
+      expect(client.rpcCalls, hasLength(1));
+      expect(client.rpcCalls.single.fn, 'admin_force_logout');
+      expect(client.rpcCalls.single.params, {'target_user_id': 'target-user'});
+      expect(
+        client.requestedTables,
+        isNot(contains(SupabaseConstants.adminLogsTable)),
+      );
     });
   });
 

@@ -153,6 +153,8 @@ class _AdminSettingsContentState extends ConsumerState<AdminSettingsContent> {
             lastUpdatedAt: typedSettings.lastUpdated,
           ),
           const SizedBox(height: AppSpacing.lg),
+          _buildAppUpdateSection(),
+          const SizedBox(height: AppSpacing.lg),
           _buildSystemSection(systemKeys),
           const SizedBox(height: AppSpacing.lg),
           _buildFeatureSection(featureKeys),
@@ -206,6 +208,81 @@ class _AdminSettingsContentState extends ConsumerState<AdminSettingsContent> {
       ),
     ],
   );
+
+  Future<void> _editAppVersionSettings() async {
+    final current = AdminAppVersionConfig.fromSettingValue(
+      widget.settings['app_version']?['value'],
+    );
+    final updated = await showDialog<AdminAppVersionConfig>(
+      context: context,
+      builder: (context) => _AppVersionEditDialog(initialValue: current),
+    );
+    if (updated == null || !mounted) return;
+
+    setState(() => _updatingKey = 'app_version');
+    final messenger = ScaffoldMessenger.of(context);
+    final success = await ref
+        .read(adminSettingsActionProvider.notifier)
+        .updateJsonSetting(
+          key: 'app_version',
+          value: updated.toJson(),
+          isPublic: true,
+        );
+
+    if (!mounted) return;
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? 'admin.app_version_updated'.tr()
+              : 'admin.setting_update_error'.tr(),
+        ),
+      ),
+    );
+    if (mounted) setState(() => _updatingKey = null);
+  }
+
+  Widget _buildAppUpdateSection() {
+    final config = AdminAppVersionConfig.fromSettingValue(
+      widget.settings['app_version']?['value'],
+    );
+    final isUpdating = _updatingKey == 'app_version';
+    return AccentSettingsSection(
+      title: 'admin.app_update_settings'.tr(),
+      description: 'admin.app_update_settings_desc'.tr(),
+      icon: const Icon(LucideIcons.uploadCloud),
+      accentColor: AppColors.info,
+      activeCount: 1,
+      totalCount: 1,
+      children: [
+        _AppVersionPlatformSummary(title: 'admin.ios'.tr(), config: config.ios),
+        const Divider(height: 1, indent: AppSpacing.lg),
+        _AppVersionPlatformSummary(
+          title: 'admin.android'.tr(),
+          config: config.android,
+        ),
+        const Divider(height: 1),
+        Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: isUpdating ? null : _editAppVersionSettings,
+              icon: isUpdating
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(LucideIcons.edit3, size: 18),
+              label: Text('admin.edit_app_update_settings'.tr()),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildFeatureSection(List<String> keys) => AccentSettingsSection(
     title: 'admin.feature_flags'.tr(),
     description: 'admin.feature_flags_desc'.tr(),
@@ -301,4 +378,287 @@ class _AdminSettingsContentState extends ConsumerState<AdminSettingsContent> {
       ),
     ],
   );
+}
+
+class _AppVersionPlatformSummary extends StatelessWidget {
+  const _AppVersionPlatformSummary({required this.title, required this.config});
+
+  final String title;
+  final AdminPlatformVersionConfig config;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
+      child: Row(
+        children: [
+          Icon(
+            LucideIcons.smartphone,
+            color: theme.colorScheme.primary,
+            size: 20,
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  'admin.version_summary'.tr(
+                    args: [config.latestVersion, config.latestBuild.toString()],
+                  ),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                Text(
+                  'admin.minimum_build_summary'.tr(
+                    args: [config.minSupportedBuild.toString()],
+                  ),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AppVersionEditDialog extends StatefulWidget {
+  const _AppVersionEditDialog({required this.initialValue});
+
+  final AdminAppVersionConfig initialValue;
+
+  @override
+  State<_AppVersionEditDialog> createState() => _AppVersionEditDialogState();
+}
+
+class _AppVersionEditDialogState extends State<_AppVersionEditDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final _PlatformVersionControllers _ios;
+  late final _PlatformVersionControllers _android;
+
+  @override
+  void initState() {
+    super.initState();
+    _ios = _PlatformVersionControllers.fromConfig(widget.initialValue.ios);
+    _android = _PlatformVersionControllers.fromConfig(
+      widget.initialValue.android,
+    );
+  }
+
+  @override
+  void dispose() {
+    _ios.dispose();
+    _android.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('admin.edit_app_update_settings'.tr()),
+      content: SizedBox(
+        width: 520,
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildPlatformFields('admin.ios'.tr(), _ios),
+                const SizedBox(height: AppSpacing.lg),
+                _buildPlatformFields('admin.android'.tr(), _android),
+              ],
+            ),
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text('common.cancel'.tr()),
+        ),
+        FilledButton(onPressed: _save, child: Text('common.save'.tr())),
+      ],
+    );
+  }
+
+  Widget _buildPlatformFields(
+    String title,
+    _PlatformVersionControllers controllers,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: AppSpacing.sm),
+        TextFormField(
+          controller: controllers.latestVersion,
+          decoration: InputDecoration(labelText: 'admin.latest_version'.tr()),
+          validator: _required,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: controllers.latestBuild,
+                decoration: InputDecoration(
+                  labelText: 'admin.latest_build'.tr(),
+                ),
+                keyboardType: TextInputType.number,
+                validator: _nonNegativeInt,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: TextFormField(
+                controller: controllers.minSupportedBuild,
+                decoration: InputDecoration(
+                  labelText: 'admin.min_supported_build'.tr(),
+                ),
+                keyboardType: TextInputType.number,
+                validator: _nonNegativeInt,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        TextFormField(
+          controller: controllers.storeUrl,
+          decoration: InputDecoration(labelText: 'admin.store_url'.tr()),
+          keyboardType: TextInputType.url,
+          validator: _storeUrl,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        TextFormField(
+          controller: controllers.releaseNotesTr,
+          decoration: InputDecoration(labelText: 'admin.release_notes_tr'.tr()),
+          minLines: 2,
+          maxLines: 3,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        TextFormField(
+          controller: controllers.releaseNotesEn,
+          decoration: InputDecoration(labelText: 'admin.release_notes_en'.tr()),
+          minLines: 2,
+          maxLines: 3,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        TextFormField(
+          controller: controllers.releaseNotesDe,
+          decoration: InputDecoration(labelText: 'admin.release_notes_de'.tr()),
+          minLines: 2,
+          maxLines: 3,
+        ),
+      ],
+    );
+  }
+
+  String? _required(String? value) {
+    return value == null || value.trim().isEmpty
+        ? 'admin.platform_version_required'.tr()
+        : null;
+  }
+
+  String? _nonNegativeInt(String? value) {
+    final parsed = int.tryParse(value?.trim() ?? '');
+    return parsed == null || parsed < 0
+        ? 'admin.invalid_build_number'.tr()
+        : null;
+  }
+
+  String? _storeUrl(String? value) {
+    final uri = Uri.tryParse(value?.trim() ?? '');
+    if (uri == null ||
+        (uri.scheme != 'https' && uri.scheme != 'http') ||
+        uri.host.isEmpty) {
+      return 'admin.invalid_store_url'.tr();
+    }
+    return null;
+  }
+
+  void _save() {
+    if (_formKey.currentState?.validate() != true) return;
+    Navigator.of(context).pop(
+      AdminAppVersionConfig(ios: _ios.toConfig(), android: _android.toConfig()),
+    );
+  }
+}
+
+class _PlatformVersionControllers {
+  _PlatformVersionControllers({
+    required this.latestVersion,
+    required this.latestBuild,
+    required this.minSupportedBuild,
+    required this.storeUrl,
+    required this.releaseNotesTr,
+    required this.releaseNotesEn,
+    required this.releaseNotesDe,
+  });
+
+  factory _PlatformVersionControllers.fromConfig(
+    AdminPlatformVersionConfig config,
+  ) {
+    return _PlatformVersionControllers(
+      latestVersion: TextEditingController(text: config.latestVersion),
+      latestBuild: TextEditingController(text: config.latestBuild.toString()),
+      minSupportedBuild: TextEditingController(
+        text: config.minSupportedBuild.toString(),
+      ),
+      storeUrl: TextEditingController(text: config.storeUrl),
+      releaseNotesTr: TextEditingController(text: config.releaseNotesTr ?? ''),
+      releaseNotesEn: TextEditingController(text: config.releaseNotesEn ?? ''),
+      releaseNotesDe: TextEditingController(text: config.releaseNotesDe ?? ''),
+    );
+  }
+
+  final TextEditingController latestVersion;
+  final TextEditingController latestBuild;
+  final TextEditingController minSupportedBuild;
+  final TextEditingController storeUrl;
+  final TextEditingController releaseNotesTr;
+  final TextEditingController releaseNotesEn;
+  final TextEditingController releaseNotesDe;
+
+  AdminPlatformVersionConfig toConfig() {
+    return AdminPlatformVersionConfig(
+      latestVersion: latestVersion.text.trim(),
+      latestBuild: int.parse(latestBuild.text.trim()),
+      minSupportedBuild: int.parse(minSupportedBuild.text.trim()),
+      storeUrl: storeUrl.text.trim(),
+      releaseNotesTr: _blankToNull(releaseNotesTr.text),
+      releaseNotesEn: _blankToNull(releaseNotesEn.text),
+      releaseNotesDe: _blankToNull(releaseNotesDe.text),
+    );
+  }
+
+  void dispose() {
+    latestVersion.dispose();
+    latestBuild.dispose();
+    minSupportedBuild.dispose();
+    storeUrl.dispose();
+    releaseNotesTr.dispose();
+    releaseNotesEn.dispose();
+    releaseNotesDe.dispose();
+  }
+
+  String? _blankToNull(String value) {
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? null : trimmed;
+  }
 }

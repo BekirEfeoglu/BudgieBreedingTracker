@@ -185,8 +185,13 @@ class AppUpdateStatus {
   final int currentBuild;
 }
 
-AppUpdateStatus? visibleAppUpdateStatus(AppUpdateStatus status) {
-  return status.isUpdateAvailable ? status : null;
+AppUpdateStatus? visibleAppUpdateStatus(
+  AppUpdateStatus status, {
+  bool suppressOptional = false,
+}) {
+  if (!status.isUpdateAvailable) return null;
+  if (suppressOptional && !status.isRequired) return null;
+  return status;
 }
 
 int compareVersionNames(String left, String right) {

@@ -73,11 +73,31 @@ The native flow only runs on a Play-installed build (not debug/emulator/
 simulator). Fail-open: a failed check never blocks the app. A `completeFlexible`
 failure (user tapped restart but install failed) is reported to Sentry.
 
+## Store Launching
+
+`StoreUpdateLauncher` opens store targets through a platform channel first:
+
+- iOS: `SKStoreProductViewController` with App Store product id parsed from the
+  URL; external URL fallback if the product sheet cannot load.
+- Android: Play Store intent pinned to `com.android.vending` with the package id
+  parsed from the URL; external URL fallback if Play Store is unavailable.
+
+The prompt never hardcodes a URL at the widget layer. It uses `info.storeUrl`
+from DB/lookup, falling back to `AppConstants` in the resolver.
+
+## Admin Management
+
+Admin Settings exposes `system_settings.app_version` as a typed JSON editor for
+both platforms (`latest_version`, `latest_build`, `min_supported_build`,
+`store_url`, localized release notes). It writes through the audited
+`admin_update_system_setting` RPC with `is_public=true`; keep it public because
+the startup update check reads that row before any admin-only context exists.
+
 ## Dismissal & Frequency (iOS prompt)
 
 - "Later" hides the banner; the dismissed version is remembered
   (`_dismissedVersionKey`), so the same version won't re-prompt this launch
-- "Update now" opens the App Store via `url_launcher`
+- "Update now" uses `StoreUpdateLauncher`
 - Required updates have no "Later" — the full-screen layer can't be dismissed
 - The optional banner animates in (slide-up + fade) and matches the app's card
   language (tinted icon square, soft shadow)

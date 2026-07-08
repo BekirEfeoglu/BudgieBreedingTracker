@@ -11,8 +11,8 @@ import 'package:budgie_breeding_tracker/features/admin/widgets/admin_monitoring_
 
 import '../../../helpers/test_localization.dart';
 
-/// Test DB limit — use Pro plan default (8 GB).
-const _testDbLimit = AdminConstants.dbSizeLimitDefault;
+/// Test DB limit — use Pro plan quota (8 GB).
+const _testDbLimit = 8 * 1024 * 1024 * 1024;
 
 /// Healthy server: small DB, low connections, high cache.
 const _healthyCapacity = ServerCapacity(
@@ -306,5 +306,31 @@ void main() {
       );
       expect(find.byType(MonitoringContent), findsOneWidget);
     });
+
+    testWidgets(
+      'shows Free plan database limit when provider returns free cap',
+      (tester) async {
+        await pumpTranslatedWidget(
+          tester,
+          ProviderScope(
+            overrides: [
+              monitoringSnapshotsProvider.overrideWith(
+                (_) async => const MonitoringTrend(),
+              ),
+              dbSizeLimitProvider.overrideWith(
+                (_) async => AdminConstants.dbSizeLimitForPlan('free'),
+              ),
+            ],
+            child: const MonitoringContent(
+              capacity: ServerCapacity(databaseSizeBytes: 25 * 1024 * 1024),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('/ 500 MB'), findsOneWidget);
+        expect(find.text('/ 8.0 GB'), findsNothing);
+      },
+    );
   });
 }

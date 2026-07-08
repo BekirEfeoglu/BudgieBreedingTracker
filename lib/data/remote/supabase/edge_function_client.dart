@@ -348,6 +348,7 @@ class EdgeFunctionClient {
     required String title,
     required String body,
     Map<String, dynamic>? data,
+    bool respectQuietHours = false,
   }) {
     return invoke(
       'send-push',
@@ -356,6 +357,7 @@ class EdgeFunctionClient {
         'title': title,
         'body': body,
         if (data != null) 'data': data,
+        if (respectQuietHours) 'respectQuietHours': true,
       },
     );
   }

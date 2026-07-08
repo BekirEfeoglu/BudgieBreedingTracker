@@ -33,6 +33,30 @@ class _FakeMaybeSingleBuilder extends Fake
   }
 }
 
+class _RpcCall {
+  const _RpcCall(this.fn, this.params);
+
+  final String fn;
+  final Map<String, dynamic>? params;
+}
+
+class _FakeRpcBuilder<T> extends Fake implements PostgrestFilterBuilder<T> {
+  _FakeRpcBuilder({this.error});
+
+  final Object? error;
+
+  @override
+  Future<S> then<S>(
+    FutureOr<S> Function(T value) onValue, {
+    Function? onError,
+  }) {
+    if (error != null) {
+      return Future<T>.error(error!).then(onValue, onError: onError);
+    }
+    return Future<T>.value(null as T).then(onValue, onError: onError);
+  }
+}
+
 class _FakeAdminCheckBuilder extends Fake
     implements PostgrestFilterBuilder<PostgrestList> {
   _FakeAdminCheckBuilder({this.result});
@@ -134,12 +158,17 @@ class _FakeNotificationClient extends Fake implements SupabaseClient {
     required this.adminQueryBuilder,
     required this.notificationsQueryBuilder,
     required this.adminLogsQueryBuilder,
-  });
+    this.rpcErrors = const {},
+    List<String>? operationLog,
+  }) : operationLog = operationLog ?? <String>[];
 
   final _FakeAdminQueryBuilder adminQueryBuilder;
   final _FakeMutationQueryBuilder notificationsQueryBuilder;
   final _FakeMutationQueryBuilder adminLogsQueryBuilder;
+  final Map<String, Object> rpcErrors;
+  final List<String> operationLog;
   final requestedTables = <String>[];
+  final rpcCalls = <_RpcCall>[];
 
   @override
   SupabaseQueryBuilder from(String table) {
@@ -154,6 +183,17 @@ class _FakeNotificationClient extends Fake implements SupabaseClient {
     }
     throw StateError('Unexpected table: $table');
   }
+
+  @override
+  PostgrestFilterBuilder<T> rpc<T>(
+    String fn, {
+    Map<String, dynamic>? params,
+    get = false,
+  }) {
+    operationLog.add('rpc:$fn');
+    rpcCalls.add(_RpcCall(fn, params));
+    return _FakeRpcBuilder<T>(error: rpcErrors[fn]);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -161,9 +201,11 @@ class _FakeNotificationClient extends Fake implements SupabaseClient {
 // ---------------------------------------------------------------------------
 
 class _FakeEdgeFunctionClient extends Fake implements EdgeFunctionClient {
-  _FakeEdgeFunctionClient({this.pushResult});
+  _FakeEdgeFunctionClient({this.pushResult, List<String>? operationLog})
+    : operationLog = operationLog ?? <String>[];
 
   final EdgeFunctionResult? pushResult;
+  final List<String> operationLog;
   List<String>? lastPushUserIds;
   String? lastPushTitle;
   String? lastPushBody;
@@ -175,7 +217,9 @@ class _FakeEdgeFunctionClient extends Fake implements EdgeFunctionClient {
     required String title,
     required String body,
     Map<String, dynamic>? data,
+    bool respectQuietHours = false,
   }) async {
+    operationLog.add('push');
     pushCallCount++;
     lastPushUserIds = userIds;
     lastPushTitle = title;
@@ -221,6 +265,8 @@ _FakeNotificationClient _makeClient({
   PostgrestMap? adminUserResult,
   Object? notificationsInsertError,
   Object? logsInsertError,
+  Map<String, Object> rpcErrors = const {},
+  List<String>? operationLog,
 }) {
   final normalizedAdminResult = adminUserResult == null
       ? null
@@ -235,6 +281,8 @@ _FakeNotificationClient _makeClient({
     adminLogsQueryBuilder: _FakeMutationQueryBuilder(
       insertError: logsInsertError,
     ),
+    rpcErrors: rpcErrors,
+    operationLog: operationLog,
   );
 }
 
@@ -276,8 +324,13 @@ void main() {
       test(
         'success path - admin check passes, insert and push succeed',
         () async {
-          final client = _makeClient(adminUserResult: const {'role': 'admin'});
+          final operationLog = <String>[];
+          final client = _makeClient(
+            adminUserResult: const {'role': 'admin'},
+            operationLog: operationLog,
+          );
           final edgeClient = _FakeEdgeFunctionClient(
+            operationLog: operationLog,
             pushResult: const EdgeFunctionResult(
               success: true,
               data: {'success': 1, 'failure': 0},
@@ -305,33 +358,33 @@ void main() {
           expect(recorder.error, isNull);
           expect(recorder.successMessage, 'admin.notification_sent');
 
-          // Verify notification insert was called
-          expect(client.notificationsQueryBuilder.insertCallCount, 1);
-          final payload =
-              client.notificationsQueryBuilder.insertPayload
-                  as Map<String, dynamic>;
-          expect(payload['user_id'], 'target-user');
-          expect(payload['title'], 'Test Title');
-          expect(payload['body'], 'Test Body');
-          expect(payload['type'], 'custom');
-          expect(payload['priority'], 'normal');
-          expect(payload['read'], false);
-
           // Verify push was called
           expect(edgeClient.pushCallCount, 1);
           expect(edgeClient.lastPushUserIds, ['target-user']);
           expect(edgeClient.lastPushTitle, 'Test Title');
           expect(edgeClient.lastPushBody, 'Test Body');
 
-          // Verify admin log was recorded
-          expect(client.adminLogsQueryBuilder.insertCallCount, 1);
-          final logPayload =
-              client.adminLogsQueryBuilder.insertPayload
-                  as Map<String, dynamic>;
-          expect(logPayload['action'], 'notification_sent');
-          expect(logPayload['target_user_id'], 'target-user');
-          expect(logPayload['admin_user_id'], 'admin-user');
-          expect((logPayload['details'] as Map)['push_delivered'], isTrue);
+          expect(operationLog, [
+            'rpc:admin_send_notification',
+            'push',
+            'rpc:admin_update_notification_delivery',
+          ]);
+
+          // Verify in-app notification + audit are delegated to RPC before push.
+          expect(client.rpcCalls, hasLength(2));
+          expect(client.rpcCalls.first.fn, 'admin_send_notification');
+          expect(client.rpcCalls.first.params, {
+            'target_user_id': 'target-user',
+            'p_title': 'Test Title',
+            'p_body': 'Test Body',
+          });
+          expect(client.rpcCalls.last.fn, 'admin_update_notification_delivery');
+          expect(client.rpcCalls.last.params, {
+            'target_user_id': 'target-user',
+            'p_push_delivered': true,
+          });
+          expect(client.notificationsQueryBuilder.insertCallCount, 0);
+          expect(client.adminLogsQueryBuilder.insertCallCount, 0);
         },
       );
 
@@ -360,14 +413,11 @@ void main() {
           expect(recorder.isSuccess, isTrue);
           expect(recorder.successMessage, 'admin.notification_sent_no_push');
 
-          // Notification was still inserted
-          expect(client.notificationsQueryBuilder.insertCallCount, 1);
-
-          // Admin log records push_delivered as false
-          final logPayload =
-              client.adminLogsQueryBuilder.insertPayload
-                  as Map<String, dynamic>;
-          expect((logPayload['details'] as Map)['push_delivered'], isFalse);
+          // Notification + audit are still created by the server RPC.
+          expect(client.rpcCalls.first.fn, 'admin_send_notification');
+          expect(client.rpcCalls.last.fn, 'admin_update_notification_delivery');
+          expect(client.rpcCalls.last.params?['p_push_delivered'], isFalse);
+          expect(client.notificationsQueryBuilder.insertCallCount, 0);
         },
       );
 
@@ -392,6 +442,7 @@ void main() {
 
         // No notification insert or push should happen
         expect(client.notificationsQueryBuilder.insertCallCount, 0);
+        expect(client.rpcCalls, isEmpty);
         expect(edgeClient.pushCallCount, 0);
       });
 
@@ -421,16 +472,12 @@ void main() {
 
         expect(recorder.isSuccess, isTrue);
 
-        // Verify title was truncated to 200 chars
-        final payload =
-            client.notificationsQueryBuilder.insertPayload
-                as Map<String, dynamic>;
-        expect((payload['title'] as String).length, 200);
-        expect(payload['title'], 'A' * 200);
-
-        // Verify body was truncated to 1000 chars
-        expect((payload['body'] as String).length, 1000);
-        expect(payload['body'], 'B' * 1000);
+        // Verify title/body were truncated before the RPC write.
+        final params = client.rpcCalls.first.params!;
+        expect((params['p_title'] as String).length, 200);
+        expect(params['p_title'], 'A' * 200);
+        expect((params['p_body'] as String).length, 1000);
+        expect(params['p_body'], 'B' * 1000);
 
         // Verify push also got sanitized values
         expect(edgeClient.lastPushTitle!.length, 200);
@@ -467,8 +514,13 @@ void main() {
 
     group('sendBulkNotification', () {
       test('success path - multiple users', () async {
-        final client = _makeClient(adminUserResult: const {'role': 'admin'});
+        final operationLog = <String>[];
+        final client = _makeClient(
+          adminUserResult: const {'role': 'admin'},
+          operationLog: operationLog,
+        );
         final edgeClient = _FakeEdgeFunctionClient(
+          operationLog: operationLog,
           pushResult: const EdgeFunctionResult(
             success: true,
             data: {'success': 3, 'failure': 0},
@@ -499,16 +551,32 @@ void main() {
         expect(edgeClient.lastPushTitle, 'Bulk Title');
         expect(edgeClient.lastPushBody, 'Bulk Body');
 
-        // Verify admin log was recorded
-        final logPayload =
-            client.adminLogsQueryBuilder.insertPayload as Map<String, dynamic>;
-        expect(logPayload['action'], 'bulk_notification_sent');
-        expect(logPayload['admin_user_id'], 'admin-user');
-        expect((logPayload['details'] as Map)['count'], 3);
-        expect((logPayload['details'] as Map)['push_delivered'], isTrue);
+        expect(operationLog, [
+          'rpc:admin_send_bulk_notification',
+          'push',
+          'rpc:admin_update_bulk_notification_delivery',
+        ]);
+
+        // Verify in-app notification batch + audit are delegated to RPC first.
+        expect(client.rpcCalls, hasLength(2));
+        expect(client.rpcCalls.first.fn, 'admin_send_bulk_notification');
+        expect(client.rpcCalls.first.params, {
+          'p_user_ids': userIds,
+          'p_title': 'Bulk Title',
+          'p_body': 'Bulk Body',
+        });
+        expect(
+          client.rpcCalls.last.fn,
+          'admin_update_bulk_notification_delivery',
+        );
+        expect(client.rpcCalls.last.params, {
+          'p_user_ids': userIds,
+          'p_push_delivered': true,
+        });
+        expect(client.adminLogsQueryBuilder.insertCallCount, 0);
       });
 
-      test('inserts correct number of notification rows', () async {
+      test('passes all recipients to the bulk notification RPC', () async {
         final client = _makeClient(adminUserResult: const {'role': 'admin'});
         final edgeClient = _FakeEdgeFunctionClient(
           pushResult: const EdgeFunctionResult(
@@ -529,31 +597,11 @@ void main() {
         final userIds = ['user-1', 'user-2', 'user-3'];
         await manager.sendBulkNotification(userIds, 'Title', 'Body');
 
-        // Verify insert was called once with a list of 3 rows
-        expect(client.notificationsQueryBuilder.insertCallCount, 1);
-        final rows =
-            client.notificationsQueryBuilder.insertPayload
-                as List<Map<String, dynamic>>;
-        expect(rows.length, 3);
-
-        // Verify each row has the correct user_id
-        expect(rows[0]['user_id'], 'user-1');
-        expect(rows[1]['user_id'], 'user-2');
-        expect(rows[2]['user_id'], 'user-3');
-
-        // Verify common fields
-        for (final row in rows) {
-          expect(row['title'], 'Title');
-          expect(row['body'], 'Body');
-          expect(row['type'], 'custom');
-          expect(row['priority'], 'normal');
-          expect(row['read'], false);
-          expect(row['id'], isA<String>());
-        }
-
-        // Verify all IDs are unique
-        final ids = rows.map((r) => r['id']).toSet();
-        expect(ids.length, 3);
+        expect(client.rpcCalls.first.fn, 'admin_send_bulk_notification');
+        expect(client.rpcCalls.first.params?['p_user_ids'], userIds);
+        expect(client.rpcCalls.first.params?['p_title'], 'Title');
+        expect(client.rpcCalls.first.params?['p_body'], 'Body');
+        expect(client.notificationsQueryBuilder.insertCallCount, 0);
       });
 
       test('bulk push fails but in-app notifications succeed', () async {
@@ -583,8 +631,14 @@ void main() {
         expect(recorder.isSuccess, isTrue);
         expect(recorder.successMessage, 'admin.notification_sent_bulk_no_push');
 
-        // Notifications still inserted
-        expect(client.notificationsQueryBuilder.insertCallCount, 1);
+        // Notifications are still created by the server RPC.
+        expect(client.rpcCalls.first.fn, 'admin_send_bulk_notification');
+        expect(
+          client.rpcCalls.last.fn,
+          'admin_update_bulk_notification_delivery',
+        );
+        expect(client.rpcCalls.last.params?['p_push_delivered'], isFalse);
+        expect(client.notificationsQueryBuilder.insertCallCount, 0);
       });
 
       test('requireAdmin fails for bulk notification', () async {
@@ -610,6 +664,7 @@ void main() {
         expect(recorder.isSuccess, isFalse);
         expect(recorder.error, 'admin.action_error');
         expect(client.notificationsQueryBuilder.insertCallCount, 0);
+        expect(client.rpcCalls, isEmpty);
         expect(edgeClient.pushCallCount, 0);
       });
     });

@@ -12,7 +12,7 @@ import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/calendar/calendar_event_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
-import 'package:budgie_breeding_tracker/domain/services/notifications/notification_toggle_settings.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_settings_providers.dart';
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
 
 import '../../../helpers/mocks.dart';
@@ -107,6 +107,9 @@ void main() {
         eggRepositoryProvider.overrideWithValue(mockEggRepo),
         incubationRepositoryProvider.overrideWithValue(mockIncubationRepo),
         notificationSchedulerProvider.overrideWithValue(mockScheduler),
+        notificationToggleSettingsReadyProvider.overrideWith(
+          (_) async => const NotificationToggleSettings(),
+        ),
         calendarEventGeneratorProvider.overrideWithValue(mockCalendarGen),
       ],
     );

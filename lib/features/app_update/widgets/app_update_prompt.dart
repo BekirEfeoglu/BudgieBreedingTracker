@@ -2,12 +2,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_spacing.dart';
-import '../../../core/utils/logger.dart';
 import '../../../domain/services/app_update/app_update_info.dart';
 import '../../../domain/services/app_update/app_update_providers.dart';
+import '../../../domain/services/app_update/store_update_launcher.dart';
 
 /// iOS in-app update prompt, rendered as an in-tree overlay (NOT a route) so it
 /// survives GoRouter rebuilds. Mounted in the MaterialApp builder, above the
@@ -21,8 +20,8 @@ import '../../../domain/services/app_update/app_update_providers.dart';
 ///
 /// Platform split:
 /// - iOS: App Store lookup and DB-configured updates render here.
-/// - Android: DB-configured optional/required updates render here, while
-///   AndroidInAppUpdater still handles Play native update flows when available.
+/// - Android: DB-configured required updates render here; optional updates are
+///   delegated to AndroidInAppUpdater / Play native update flows.
 class AppUpdatePrompt extends ConsumerStatefulWidget {
   const AppUpdatePrompt({super.key, required this.child});
 
@@ -49,6 +48,7 @@ class _AppUpdatePromptState extends ConsumerState<AppUpdatePrompt> {
     final isIOS = platform == TargetPlatform.iOS;
     final isAndroid = platform == TargetPlatform.android;
     if (!isIOS && !isAndroid) return null;
+    if (isAndroid && !status.isRequired) return null;
 
     final versionKey =
         '${status.info.latestVersion}+${status.info.latestBuild}';
@@ -87,13 +87,7 @@ class _AppUpdatePromptState extends ConsumerState<AppUpdatePrompt> {
   }
 
   Future<void> _openStore(String storeUrl) async {
-    final uri = Uri.tryParse(storeUrl);
-    if (uri == null) return;
-    try {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } catch (e, st) {
-      AppLogger.error('[AppUpdate] Store launch failed', e, st);
-    }
+    await ref.read(storeUpdateLauncherProvider).openStore(storeUrl);
   }
 }
 

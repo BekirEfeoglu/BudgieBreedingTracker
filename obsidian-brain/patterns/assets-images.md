@@ -5,7 +5,7 @@ Source: `.claude/rules/assets-images.md`
 ## SVG Icon System
 
 - Domain icons: `AppIcon(AppIcons.x)` — rendered via `flutter_svg`
-- 93 constants in `lib/core/constants/app_icons.dart`
+- 99 constants in `lib/core/constants/app_icons.dart`
 - Asset directories: `assets/icons/<category>/` (10 categories)
 - Generic UI only: `LucideIcons.x` (settings, navigation)
 - **Never**: `Icon(Icons.x)` for domain concepts, raw SVG path strings
@@ -22,7 +22,7 @@ SvgPicture.asset('assets/icons/birds/bird.svg')  // raw path
 ### Adding a New SVG Icon
 
 1. Add SVG to `assets/icons/<category>/`
-2. Add constant to `AppIcons`: `static const String birdMale = 'assets/icons/birds/bird_male.svg'`
+2. Add constant to `AppIcons`: `static const male = 'assets/icons/birds/male.svg'`
 3. No pubspec.yaml change needed (wildcard `assets/icons/` already registered)
 4. Use: `AppIcon(AppIcons.birdMale)`
 

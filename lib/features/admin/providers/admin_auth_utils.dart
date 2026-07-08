@@ -1,10 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
-import '../../../core/utils/logger.dart';
 import '../../../shared/providers/auth.dart';
 import '../constants/admin_constants.dart';
 
@@ -22,11 +19,11 @@ Future<void> requireAdmin(Ref ref) async {
   // consistent with the is_admin() Postgres function and RLS policies.
   final result = await client
       .from(SupabaseConstants.profilesTable)
-      .select('role, is_active')
-      .eq('id', userId)
+      .select('${SupabaseConstants.colRole}, ${SupabaseConstants.colIsActive}')
+      .eq(SupabaseConstants.colId, userId)
       .maybeSingle();
-  final role = (result?['role'] as String?)?.toLowerCase();
-  final isActive = result?['is_active'] as bool?;
+  final role = (result?[SupabaseConstants.colRole] as String?)?.toLowerCase();
+  final isActive = result?[SupabaseConstants.colIsActive] as bool?;
   if (isActive != true || (role != 'admin' && role != 'founder')) {
     throw Exception('admin.permission_denied'.tr());
   }
@@ -42,34 +39,11 @@ Future<void> requireFounder(Ref ref) async {
   final userId = ref.read(currentUserIdProvider);
   final result = await client
       .from(SupabaseConstants.adminUsersTable)
-      .select('id')
-      .eq('user_id', userId)
-      .eq('role', AdminConstants.roleFounder)
+      .select(SupabaseConstants.colId)
+      .eq(SupabaseConstants.colUserId, userId)
+      .eq(SupabaseConstants.colRole, AdminConstants.roleFounder)
       .maybeSingle();
   if (result == null) {
     throw Exception('admin.founder_required'.tr());
-  }
-}
-
-/// Logs an admin action to admin_logs.
-///
-/// Shared utility to avoid duplicating this logic across admin providers.
-Future<void> logAdminAction(
-  SupabaseClient client,
-  String userId,
-  String action, {
-  String? targetUserId,
-  Map<String, dynamic>? details,
-}) async {
-  try {
-    await client.from(SupabaseConstants.adminLogsTable).insert({
-      'action': action,
-      'admin_user_id': userId,
-      if (targetUserId != null) 'target_user_id': targetUserId,
-      if (details != null) 'details': details,
-    });
-  } catch (e, st) {
-    AppLogger.error('logAdminAction: failed to log action: $action', e, st);
-    Sentry.captureException(e, stackTrace: st);
   }
 }

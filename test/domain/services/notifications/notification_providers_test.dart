@@ -157,11 +157,11 @@ void main() {
   });
 
   group('notificationPermissionGrantedProvider', () {
-    test('initial state is true (optimistic default)', () {
+    test('initial state is false until the platform permission is checked', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      expect(container.read(notificationPermissionGrantedProvider), isTrue);
+      expect(container.read(notificationPermissionGrantedProvider), isFalse);
     });
 
     test('state can be set to false when permission is denied', () {
@@ -202,7 +202,7 @@ void main() {
       container.read(notificationPermissionGrantedProvider.notifier).state =
           true;
 
-      expect(states, [false, true]);
+      expect(states, [true]);
     });
   });
 

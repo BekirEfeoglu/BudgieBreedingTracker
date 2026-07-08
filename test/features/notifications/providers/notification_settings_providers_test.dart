@@ -9,6 +9,7 @@ import 'package:budgie_breeding_tracker/data/local/database/daos/notification_se
 import 'package:budgie_breeding_tracker/data/models/notification_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_rate_limiter.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_scheduler.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_settings_providers.dart';
@@ -29,22 +30,31 @@ void main() {
   late MockNotificationService service;
   late MockNotificationSettingsDao dao;
   late MockNotificationRepository repo;
+  late MockProfileRepository profileRepo;
 
   setUpAll(() {
     registerFallbackValue(
       const NotificationSettings(id: 'fallback', userId: 'fallback'),
     );
+    registerFallbackValue(<String, dynamic>{});
   });
 
   setUp(() {
     service = MockNotificationService();
     dao = MockNotificationSettingsDao();
     repo = MockNotificationRepository();
+    profileRepo = MockProfileRepository();
     when(
       () => service.cancelByIdRange(any(), any()),
     ).thenAnswer((_) async => 0);
     when(() => dao.upsert(any())).thenAnswer((_) async {});
     when(() => repo.upsertSettings(any())).thenAnswer((_) async {});
+    when(
+      () => profileRepo.updateQuietHours(
+        userId: any(named: 'userId'),
+        quietHours: any(named: 'quietHours'),
+      ),
+    ).thenAnswer((_) async {});
   });
 
   ProviderContainer createContainer({NotificationSettings? initialSettings}) {
@@ -57,6 +67,10 @@ void main() {
         notificationServiceProvider.overrideWithValue(service),
         notificationSettingsDaoProvider.overrideWithValue(dao),
         notificationRepositoryProvider.overrideWithValue(repo),
+        profileRepositoryProvider.overrideWithValue(profileRepo),
+        notificationQuietHoursTimeZoneProvider.overrideWithValue(
+          () async => 'Europe/Istanbul',
+        ),
         currentUserIdProvider.overrideWithValue(_testUserId),
       ],
     );
@@ -90,6 +104,41 @@ void main() {
       expect(loaded.healthCheck, isTrue);
       expect(loaded.banding, isFalse);
       verifyNever(() => service.cancelByIdRange(any(), any()));
+    });
+
+    test('ready provider awaits persisted settings before returning', () async {
+      final container = createContainer(
+        initialSettings: const NotificationSettings(
+          id: 'ns-ready',
+          userId: _testUserId,
+          soundEnabled: false,
+          vibrationEnabled: false,
+          eggTurningEnabled: false,
+          incubationReminderEnabled: false,
+          feedingReminderEnabled: false,
+          healthCheckEnabled: false,
+          bandingEnabled: false,
+          cleanupDaysOld: 14,
+        ),
+      );
+      addTearDown(container.dispose);
+
+      final settings = await container.read(
+        notificationToggleSettingsReadyProvider.future,
+      );
+
+      expect(settings.soundEnabled, isFalse);
+      expect(settings.vibrationEnabled, isFalse);
+      expect(settings.eggTurning, isFalse);
+      expect(settings.incubation, isFalse);
+      expect(settings.chickCare, isFalse);
+      expect(settings.healthCheck, isFalse);
+      expect(settings.banding, isFalse);
+      expect(settings.cleanupDaysOld, 14);
+      expect(
+        container.read(notificationToggleSettingsProvider).eggTurning,
+        isFalse,
+      );
     });
 
     test(
@@ -197,6 +246,80 @@ void main() {
       expect(state.banding, isTrue);
       verify(() => repo.upsertSettings(any())).called(1);
       verifyNever(() => service.cancelByIdRange(any(), any()));
+    });
+
+    test(
+      'setDndHours persists local limiter and syncs server quiet hours',
+      () async {
+        final limiter = NotificationRateLimiter();
+        final container = ProviderContainer(
+          overrides: [
+            notificationServiceProvider.overrideWithValue(service),
+            notificationSettingsDaoProvider.overrideWithValue(dao),
+            notificationRepositoryProvider.overrideWithValue(repo),
+            profileRepositoryProvider.overrideWithValue(profileRepo),
+            notificationRateLimiterProvider.overrideWithValue(limiter),
+            notificationQuietHoursTimeZoneProvider.overrideWithValue(
+              () async => 'Europe/Istanbul',
+            ),
+            currentUserIdProvider.overrideWithValue(_testUserId),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container
+            .read(notificationToggleSettingsProvider.notifier)
+            .setDndHours(startHour: 23, endHour: 7);
+
+        expect(limiter.dndStartHour, 23);
+        expect(limiter.dndEndHour, 7);
+        final quietHours =
+            verify(
+                  () => profileRepo.updateQuietHours(
+                    userId: _testUserId,
+                    quietHours: captureAny(named: 'quietHours'),
+                  ),
+                ).captured.single
+                as Map<String, dynamic>;
+        expect(quietHours, {
+          'enabled': true,
+          'startHour': 23,
+          'endHour': 7,
+          'timeZone': 'Europe/Istanbul',
+        });
+      },
+    );
+
+    test('setDndHours with equal hours disables server quiet hours', () async {
+      final limiter = NotificationRateLimiter();
+      final container = ProviderContainer(
+        overrides: [
+          notificationServiceProvider.overrideWithValue(service),
+          notificationSettingsDaoProvider.overrideWithValue(dao),
+          notificationRepositoryProvider.overrideWithValue(repo),
+          profileRepositoryProvider.overrideWithValue(profileRepo),
+          notificationRateLimiterProvider.overrideWithValue(limiter),
+          notificationQuietHoursTimeZoneProvider.overrideWithValue(
+            () async => 'Europe/Istanbul',
+          ),
+          currentUserIdProvider.overrideWithValue(_testUserId),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container
+          .read(notificationToggleSettingsProvider.notifier)
+          .setDndHours(startHour: 0, endHour: 0);
+
+      final quietHours =
+          verify(
+                () => profileRepo.updateQuietHours(
+                  userId: _testUserId,
+                  quietHours: captureAny(named: 'quietHours'),
+                ),
+              ).captured.single
+              as Map<String, dynamic>;
+      expect(quietHours['enabled'], isFalse);
     });
 
     test(

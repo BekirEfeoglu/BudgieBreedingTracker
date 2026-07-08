@@ -2,7 +2,6 @@
 import 'dart:async';
 
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
-import 'package:budgie_breeding_tracker/features/admin/constants/admin_constants.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_maintenance_manager.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,6 +28,30 @@ class _FakeMaybeSingleBuilder extends Fake
         ? Future<PostgrestMap?>.value(result)
         : Future<PostgrestMap?>.error(error!);
     return source.then(onValue, onError: onError);
+  }
+}
+
+class _RpcCall {
+  const _RpcCall(this.fn, this.params);
+
+  final String fn;
+  final Map<String, dynamic>? params;
+}
+
+class _FakeRpcBuilder<T> extends Fake implements PostgrestFilterBuilder<T> {
+  _FakeRpcBuilder({this.error});
+
+  final Object? error;
+
+  @override
+  Future<S> then<S>(
+    FutureOr<S> Function(T value) onValue, {
+    Function? onError,
+  }) {
+    if (error != null) {
+      return Future<T>.error(error!).then(onValue, onError: onError);
+    }
+    return Future<T>.value(null as T).then(onValue, onError: onError);
   }
 }
 
@@ -146,6 +169,7 @@ class _FakeMaintenanceClient extends Fake implements SupabaseClient {
     this.securityEventsQueryBuilder,
     this.syncMetadataQueryBuilder,
     this.genericTableBuilder,
+    this.rpcErrors = const {},
   });
 
   final _FakeAdminQueryBuilder adminQueryBuilder;
@@ -153,7 +177,9 @@ class _FakeMaintenanceClient extends Fake implements SupabaseClient {
   final _FakeMutationQueryBuilder? securityEventsQueryBuilder;
   final _FakeMutationQueryBuilder? syncMetadataQueryBuilder;
   final _FakeMutationQueryBuilder? genericTableBuilder;
+  final Map<String, Object> rpcErrors;
   final requestedTables = <String>[];
+  final rpcCalls = <_RpcCall>[];
 
   @override
   SupabaseQueryBuilder from(String table) {
@@ -171,6 +197,16 @@ class _FakeMaintenanceClient extends Fake implements SupabaseClient {
     }
     // For soft-deletable tables (birds, eggs, etc.) return generic builder
     return genericTableBuilder ?? _FakeMutationQueryBuilder();
+  }
+
+  @override
+  PostgrestFilterBuilder<T> rpc<T>(
+    String fn, {
+    Map<String, dynamic>? params,
+    get = false,
+  }) {
+    rpcCalls.add(_RpcCall(fn, params));
+    return _FakeRpcBuilder<T>(error: rpcErrors[fn]);
   }
 }
 
@@ -207,6 +243,7 @@ _FakeMaintenanceClient _makeClient({
   _FakeMutationQueryBuilder? syncMetadataQueryBuilder,
   _FakeMutationQueryBuilder? genericTableBuilder,
   Object? logsInsertError,
+  Map<String, Object> rpcErrors = const {},
 }) {
   return _FakeMaintenanceClient(
     adminQueryBuilder: _FakeAdminQueryBuilder(
@@ -218,6 +255,7 @@ _FakeMaintenanceClient _makeClient({
     securityEventsQueryBuilder: securityEventsQueryBuilder,
     syncMetadataQueryBuilder: syncMetadataQueryBuilder,
     genericTableBuilder: genericTableBuilder,
+    rpcErrors: rpcErrors,
   );
 }
 
@@ -252,11 +290,9 @@ void main() {
     // dismissSecurityEvent
     // -----------------------------------------------------------------------
     group('dismissSecurityEvent', () {
-      test('success - updates event, logs action, sets isSuccess', () async {
-        final securityBuilder = _FakeMutationQueryBuilder();
+      test('success - delegates event dismissal to audited RPC', () async {
         final client = _makeClient(
           adminUserResult: const {'role': 'admin', 'is_active': true},
-          securityEventsQueryBuilder: securityBuilder,
         );
         final recorder = _StateRecorder();
         final setup = _makeContainerAndManager(
@@ -274,22 +310,10 @@ void main() {
         expect(recorder.isSuccess, isTrue);
         expect(recorder.error, isNull);
 
-        // Verify security_events table was accessed
-        expect(
-          client.requestedTables,
-          contains(SupabaseConstants.securityEventsTable),
-        );
-
-        // Verify admin log was recorded
-        expect(client.adminLogsQueryBuilder.insertCallCount, 1);
-        final logPayload =
-            client.adminLogsQueryBuilder.insertPayload as Map<String, dynamic>;
-        expect(logPayload['action'], 'security_event_dismissed');
-        expect(logPayload['admin_user_id'], 'admin-user');
-        expect(
-          (logPayload['details'] as Map)['message'],
-          'Event event-123 resolved',
-        );
+        expect(client.rpcCalls, hasLength(1));
+        expect(client.rpcCalls.single.fn, 'admin_dismiss_security_event');
+        expect(client.rpcCalls.single.params, {'p_event_id': 'event-123'});
+        expect(client.adminLogsQueryBuilder.insertCallCount, 0);
       });
 
       test('fails when not admin', () async {
@@ -365,58 +389,32 @@ void main() {
     // cleanSoftDeletedRecords
     // -----------------------------------------------------------------------
     group('cleanSoftDeletedRecords', () {
-      test(
-        'success - iterates tables, logs total cleaned, sets successMessage',
-        () async {
-          // Return a list with 2 items for each soft-deletable table
-          final genericBuilder = _FakeMutationQueryBuilder(
-            mutationBuilder: _FakeMutationBuilder(
-              selectResult: [
-                {'id': 'r1'},
-                {'id': 'r2'},
-              ],
-            ),
-          );
-          final client = _makeClient(
-            adminUserResult: const {'role': 'admin', 'is_active': true},
-            genericTableBuilder: genericBuilder,
-          );
-          final recorder = _StateRecorder();
-          final setup = _makeContainerAndManager(
-            userId: 'admin-user',
-            client: client,
-            recorder: recorder,
-          );
-          addTearDown(setup.container.dispose);
+      test('success - delegates cleanup to audited RPC', () async {
+        final client = _makeClient(
+          adminUserResult: const {'role': 'admin', 'is_active': true},
+        );
+        final recorder = _StateRecorder();
+        final setup = _makeContainerAndManager(
+          userId: 'admin-user',
+          client: client,
+          recorder: recorder,
+        );
+        addTearDown(setup.container.dispose);
 
-          final manager = setup.container.read(setup.managerProvider);
-          await manager.cleanSoftDeletedRecords(30);
+        final manager = setup.container.read(setup.managerProvider);
+        await manager.cleanSoftDeletedRecords(30);
 
-          // Verify state ends with success
-          expect(recorder.isLoading, isFalse);
-          expect(recorder.isSuccess, isTrue);
-          expect(recorder.error, isNull);
-          expect(recorder.successMessage, 'admin.soft_deleted_cleaned');
+        // Verify state ends with success
+        expect(recorder.isLoading, isFalse);
+        expect(recorder.isSuccess, isTrue);
+        expect(recorder.error, isNull);
+        expect(recorder.successMessage, 'admin.soft_deleted_cleaned');
 
-          // Verify all soft-deletable tables were accessed
-          for (final table in AdminConstants.softDeletableTables) {
-            expect(client.requestedTables, contains(table));
-          }
-
-          // Verify admin log was recorded with cleaned count
-          expect(client.adminLogsQueryBuilder.insertCallCount, 1);
-          final logPayload =
-              client.adminLogsQueryBuilder.insertPayload
-                  as Map<String, dynamic>;
-          expect(logPayload['action'], 'soft_delete_cleanup');
-          expect(logPayload['admin_user_id'], 'admin-user');
-          expect((logPayload['details'] as Map)['days'], 30);
-          expect(
-            (logPayload['details'] as Map)['cleaned'],
-            AdminConstants.softDeletableTables.length * 2,
-          );
-        },
-      );
+        expect(client.rpcCalls, hasLength(1));
+        expect(client.rpcCalls.single.fn, 'admin_clean_soft_deleted_records');
+        expect(client.rpcCalls.single.params, {'p_days': 30});
+        expect(client.adminLogsQueryBuilder.insertCallCount, 0);
+      });
 
       test('fails when not admin', () async {
         final client = _makeClient(adminUserResult: null);
@@ -442,46 +440,32 @@ void main() {
     // resetStuckSyncRecords
     // -----------------------------------------------------------------------
     group('resetStuckSyncRecords', () {
-      test(
-        'success - deletes stuck records, logs action, sets successMessage',
-        () async {
-          final syncBuilder = _FakeMutationQueryBuilder();
-          final client = _makeClient(
-            adminUserResult: const {'role': 'admin', 'is_active': true},
-            syncMetadataQueryBuilder: syncBuilder,
-          );
-          final recorder = _StateRecorder();
-          final setup = _makeContainerAndManager(
-            userId: 'admin-user',
-            client: client,
-            recorder: recorder,
-          );
-          addTearDown(setup.container.dispose);
+      test('success - delegates stuck sync reset to audited RPC', () async {
+        final client = _makeClient(
+          adminUserResult: const {'role': 'admin', 'is_active': true},
+        );
+        final recorder = _StateRecorder();
+        final setup = _makeContainerAndManager(
+          userId: 'admin-user',
+          client: client,
+          recorder: recorder,
+        );
+        addTearDown(setup.container.dispose);
 
-          final manager = setup.container.read(setup.managerProvider);
-          await manager.resetStuckSyncRecords();
+        final manager = setup.container.read(setup.managerProvider);
+        await manager.resetStuckSyncRecords();
 
-          // Verify state ends with success
-          expect(recorder.isLoading, isFalse);
-          expect(recorder.isSuccess, isTrue);
-          expect(recorder.error, isNull);
-          expect(recorder.successMessage, 'admin.stuck_reset');
+        // Verify state ends with success
+        expect(recorder.isLoading, isFalse);
+        expect(recorder.isSuccess, isTrue);
+        expect(recorder.error, isNull);
+        expect(recorder.successMessage, 'admin.stuck_reset');
 
-          // Verify sync_metadata table was accessed
-          expect(
-            client.requestedTables,
-            contains(SupabaseConstants.syncMetadataTable),
-          );
-
-          // Verify admin log was recorded
-          expect(client.adminLogsQueryBuilder.insertCallCount, 1);
-          final logPayload =
-              client.adminLogsQueryBuilder.insertPayload
-                  as Map<String, dynamic>;
-          expect(logPayload['action'], 'sync_stuck_reset');
-          expect(logPayload['admin_user_id'], 'admin-user');
-        },
-      );
+        expect(client.rpcCalls, hasLength(1));
+        expect(client.rpcCalls.single.fn, 'admin_reset_stuck_sync_records');
+        expect(client.rpcCalls.single.params, isNull);
+        expect(client.adminLogsQueryBuilder.insertCallCount, 0);
+      });
 
       test('fails when not admin', () async {
         final client = _makeClient(adminUserResult: null);

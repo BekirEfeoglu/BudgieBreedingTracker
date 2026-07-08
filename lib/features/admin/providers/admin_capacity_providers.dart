@@ -12,16 +12,19 @@ import 'admin_dashboard_providers.dart';
 import 'admin_models.dart';
 
 /// Supabase plan-based DB size limit provider.
-/// Reads 'supabase_plan' from system_settings, falls back to 'pro'.
+/// Reads 'supabase_plan' from system_settings, falls back to the Free plan.
 final dbSizeLimitProvider = FutureProvider<int>((ref) async {
   try {
     final settings = await ref.watch(adminSystemSettingsProvider.future);
     final planEntry = settings['supabase_plan'];
-    final plan = (planEntry?['value'] as String?) ?? 'pro';
+    final rawPlan = planEntry?['value'];
+    final plan = rawPlan is String && rawPlan.trim().isNotEmpty
+        ? rawPlan.trim()
+        : AdminConstants.planFree;
     return AdminConstants.dbSizeLimitForPlan(plan);
   } catch (e, st) {
     AppLogger.warning(
-      'admin: DB size limit fetch failed, using default: $e\n$st',
+      'admin: DB size limit fetch failed, using Free plan default: $e\n$st',
     );
     return AdminConstants.dbSizeLimitDefault;
   }

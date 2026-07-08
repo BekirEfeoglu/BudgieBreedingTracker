@@ -266,7 +266,9 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
     final incubationRepo = ref.read(incubationRepositoryProvider);
     final eggRepo = ref.read(eggRepositoryProvider);
     final scheduler = ref.read(notificationSchedulerProvider);
-    final settings = ref.read(notificationToggleSettingsProvider);
+    final settings = await ref.read(
+      notificationToggleSettingsReadyProvider.future,
+    );
     final incubations = await incubationRepo.getByBreedingPair(pairId);
     var sideEffectsOk = true;
     for (final incubation in incubations) {

@@ -257,6 +257,24 @@ void main() {
   });
 
   group('softDeleteStatsProvider', () {
+    test(
+      'soft-deletable table list excludes hard-delete notification tables',
+      () {
+        expect(
+          AdminConstants.softDeletableTables,
+          isNot(contains(SupabaseConstants.notificationsTable)),
+        );
+        expect(
+          AdminConstants.softDeletableTables,
+          isNot(contains(SupabaseConstants.notificationSchedulesTable)),
+        );
+        expect(
+          AdminConstants.softDeletableTables,
+          isNot(contains(SupabaseConstants.notificationSettingsTable)),
+        );
+      },
+    );
+
     test('returns stats for each soft-deletable table', () async {
       final container = ProviderContainer(
         overrides: [
@@ -497,8 +515,8 @@ void main() {
       );
     });
 
-    test('has 11 soft-deletable tables', () {
-      expect(AdminConstants.softDeletableTables, hasLength(11));
+    test('has 10 soft-deletable tables', () {
+      expect(AdminConstants.softDeletableTables, hasLength(10));
     });
 
     test('all table names are non-empty strings', () {

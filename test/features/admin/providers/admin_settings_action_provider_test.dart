@@ -112,6 +112,30 @@ class _FakeUpsertBuilder extends Fake
   }
 }
 
+class _RpcCall {
+  const _RpcCall(this.fn, this.params);
+
+  final String fn;
+  final Map<String, dynamic>? params;
+}
+
+class _FakeRpcBuilder<T> extends Fake implements PostgrestFilterBuilder<T> {
+  _FakeRpcBuilder({this.error});
+
+  final Object? error;
+
+  @override
+  Future<S> then<S>(
+    FutureOr<S> Function(T value) onValue, {
+    Function? onError,
+  }) {
+    if (error != null) {
+      return Future<T>.error(error!).then(onValue, onError: onError);
+    }
+    return Future<T>.value(null as T).then(onValue, onError: onError);
+  }
+}
+
 class _FakeQueryBuilder extends Fake implements SupabaseQueryBuilder {
   _FakeQueryBuilder(this.filterBuilder, {this.upsertBuilder});
 
@@ -144,6 +168,7 @@ class _FakeSupabaseClient extends Fake implements SupabaseClient {
     this.settingsFilterBuilder,
     this.upsertBuilder,
     this.upsertError,
+    this.rpcErrors = const {},
     User? currentUser,
   }) : _auth = _FakeGoTrueClient(currentUser: currentUser);
 
@@ -151,9 +176,11 @@ class _FakeSupabaseClient extends Fake implements SupabaseClient {
   final _FakeFilterBuilder? settingsFilterBuilder;
   final _FakeUpsertBuilder? upsertBuilder;
   final Object? upsertError;
+  final Map<String, Object> rpcErrors;
   final _FakeGoTrueClient _auth;
 
   final requestedTables = <String>[];
+  final rpcCalls = <_RpcCall>[];
 
   @override
   GoTrueClient get auth => _auth;
@@ -170,6 +197,16 @@ class _FakeSupabaseClient extends Fake implements SupabaseClient {
       return _FakeQueryBuilder(fb, upsertBuilder: upsertBuilder);
     }
     return _FakeQueryBuilder(_FakeFilterBuilder());
+  }
+
+  @override
+  PostgrestFilterBuilder<T> rpc<T>(
+    String fn, {
+    Map<String, dynamic>? params,
+    get = false,
+  }) {
+    rpcCalls.add(_RpcCall(fn, params));
+    return _FakeRpcBuilder<T>(error: rpcErrors[fn]);
   }
 }
 
@@ -419,11 +456,34 @@ void main() {
         expect(state.error, isNull);
       });
 
-      test('should call upsert on system_settings table', () async {
-        final settingsFilter = _FakeFilterBuilder();
+      test('should update through audited server RPC', () async {
         final client = _FakeSupabaseClient(
           adminFilterBuilder: _adminCheck(),
-          settingsFilterBuilder: settingsFilter,
+          currentUser: _FakeUser(),
+        );
+        final container = _makeContainer(client: client);
+        addTearDown(container.dispose);
+
+        final notifier = container.read(adminSettingsActionProvider.notifier);
+        final result = await notifier.updateSetting(
+          key: 'maintenance_mode',
+          value: true,
+        );
+
+        expect(result, true);
+        expect(client.rpcCalls, hasLength(1));
+        expect(client.rpcCalls.single.fn, 'admin_update_system_setting');
+        expect(client.rpcCalls.single.params, {
+          'p_key': 'maintenance_mode',
+          'p_value': true,
+          'p_category': 'maintenance',
+          'p_is_public': false,
+        });
+      });
+
+      test('should pass setting payload to server RPC', () async {
+        final client = _FakeSupabaseClient(
+          adminFilterBuilder: _adminCheck(),
           currentUser: _FakeUser(),
         );
         final container = _makeContainer(client: client);
@@ -432,22 +492,77 @@ void main() {
         final notifier = container.read(adminSettingsActionProvider.notifier);
         await notifier.updateSetting(key: 'maintenance_mode', value: true);
 
-        expect(
-          client.requestedTables,
-          contains(SupabaseConstants.systemSettingsTable),
+        expect(client.rpcCalls.single.fn, 'admin_update_system_setting');
+        expect(client.rpcCalls.single.params?['p_key'], 'maintenance_mode');
+        expect(client.rpcCalls.single.params?['p_value'], true);
+        expect(client.rpcCalls.single.params?['p_category'], 'maintenance');
+        expect(client.rpcCalls.single.params?['p_is_public'], false);
+      });
+
+      test('should update app version JSON through audited server RPC', () async {
+        final client = _FakeSupabaseClient(
+          adminFilterBuilder: _adminCheck(),
+          currentUser: _FakeUser(),
         );
-        expect(settingsFilter.upsertPayloads, hasLength(1));
-        expect(settingsFilter.upsertPayloads.first['key'], 'maintenance_mode');
-        expect(settingsFilter.upsertPayloads.first['value'], true);
-        expect(settingsFilter.upsertPayloads.first['category'], 'maintenance');
-        expect(settingsFilter.upsertPayloads.first['is_public'], false);
+        final container = _makeContainer(client: client);
+        addTearDown(container.dispose);
+
+        final notifier = container.read(adminSettingsActionProvider.notifier);
+        const config = AdminAppVersionConfig(
+          ios: AdminPlatformVersionConfig(
+            latestVersion: '1.1.5',
+            latestBuild: 52,
+            minSupportedBuild: 50,
+            storeUrl: 'https://apps.apple.com/app/id6759828211',
+            releaseNotesTr: 'Yeni surum hazir',
+          ),
+          android: AdminPlatformVersionConfig(
+            latestVersion: '1.1.5',
+            latestBuild: 52,
+            minSupportedBuild: 50,
+            storeUrl:
+                'https://play.google.com/store/apps/details?id=com.budgiebreeding.budgie_breeding_tracker',
+            releaseNotesTr: 'Yeni surum hazir',
+          ),
+        );
+
+        final result = await notifier.updateJsonSetting(
+          key: 'app_version',
+          value: config.toJson(),
+          isPublic: true,
+        );
+
+        expect(result, true);
+        expect(client.rpcCalls.single.fn, 'admin_update_system_setting');
+        expect(client.rpcCalls.single.params?['p_key'], 'app_version');
+        expect(client.rpcCalls.single.params?['p_category'], 'release');
+        expect(client.rpcCalls.single.params?['p_is_public'], true);
+        expect(client.rpcCalls.single.params?['p_value'], {
+          'ios': {
+            'latest_version': '1.1.5',
+            'latest_build': 52,
+            'min_supported_build': 50,
+            'store_url': 'https://apps.apple.com/app/id6759828211',
+            'release_notes_tr': 'Yeni surum hazir',
+            'release_notes_en': null,
+            'release_notes_de': null,
+          },
+          'android': {
+            'latest_version': '1.1.5',
+            'latest_build': 52,
+            'min_supported_build': 50,
+            'store_url':
+                'https://play.google.com/store/apps/details?id=com.budgiebreeding.budgie_breeding_tracker',
+            'release_notes_tr': 'Yeni surum hazir',
+            'release_notes_en': null,
+            'release_notes_de': null,
+          },
+        });
       });
 
       test('should set correct category for different keys', () async {
-        final settingsFilter = _FakeFilterBuilder();
         final client = _FakeSupabaseClient(
           adminFilterBuilder: _adminCheck(),
-          settingsFilterBuilder: settingsFilter,
           currentUser: _FakeUser(),
         );
         final container = _makeContainer(client: client);
@@ -459,14 +574,12 @@ void main() {
           value: false,
         );
 
-        expect(settingsFilter.upsertPayloads.first['category'], 'security');
+        expect(client.rpcCalls.single.params?['p_category'], 'security');
       });
 
-      test('should include user id in upsert payload', () async {
-        final settingsFilter = _FakeFilterBuilder();
+      test('should not send mutable audit identity from the client', () async {
         final client = _FakeSupabaseClient(
           adminFilterBuilder: _adminCheck(),
-          settingsFilterBuilder: settingsFilter,
           currentUser: _FakeUser(idValue: 'admin-123'),
         );
         final container = _makeContainer(client: client, userId: 'admin-123');
@@ -475,7 +588,8 @@ void main() {
         final notifier = container.read(adminSettingsActionProvider.notifier);
         await notifier.updateSetting(key: 'maintenance_mode', value: true);
 
-        expect(settingsFilter.upsertPayloads.first['updated_by'], 'admin-123');
+        expect(client.rpcCalls.single.params, isNot(contains('updated_by')));
+        expect(client.rpcCalls.single.params, isNot(contains('updated_at')));
       });
 
       test(
@@ -510,7 +624,9 @@ void main() {
       test('should return false and set error on upsert failure', () async {
         final client = _FakeSupabaseClient(
           adminFilterBuilder: _adminCheck(),
-          upsertError: Exception('DB write failed'),
+          rpcErrors: {
+            'admin_update_system_setting': Exception('RPC write failed'),
+          },
           currentUser: _FakeUser(),
         );
         final container = _makeContainer(client: client);
@@ -569,11 +685,32 @@ void main() {
         expect(state.error, isNull);
       });
 
-      test('should upsert all default settings', () async {
-        final settingsFilter = _FakeFilterBuilder();
+      test('should reset defaults through audited server RPC', () async {
         final client = _FakeSupabaseClient(
           adminFilterBuilder: _adminCheck(),
-          settingsFilterBuilder: settingsFilter,
+          currentUser: _FakeUser(),
+        );
+        final container = _makeContainer(client: client);
+        addTearDown(container.dispose);
+
+        final notifier = container.read(adminSettingsActionProvider.notifier);
+        final result = await notifier.resetToDefaults();
+
+        expect(result, true);
+        expect(client.rpcCalls, hasLength(1));
+        expect(client.rpcCalls.single.fn, 'admin_reset_system_settings');
+        final settings = client.rpcCalls.single.params?['p_settings'];
+        expect(settings, isA<List<Map<String, dynamic>>>());
+        expect(settings, hasLength(settingDefaults.length));
+        expect(
+          (settings as List<Map<String, dynamic>>).map((e) => e['key']),
+          containsAll(settingDefaults.keys),
+        );
+      });
+
+      test('should send all default settings to reset RPC', () async {
+        final client = _FakeSupabaseClient(
+          adminFilterBuilder: _adminCheck(),
           currentUser: _FakeUser(),
         );
         final container = _makeContainer(client: client);
@@ -582,26 +719,19 @@ void main() {
         final notifier = container.read(adminSettingsActionProvider.notifier);
         await notifier.resetToDefaults();
 
-        // Should upsert one entry per default setting
-        expect(
-          settingsFilter.upsertPayloads,
-          hasLength(settingDefaults.length),
-        );
-
-        // Verify all default keys are present
-        final upsertedKeys = settingsFilter.upsertPayloads
-            .map((p) => p['key'])
-            .toSet();
+        final settings =
+            client.rpcCalls.single.params?['p_settings']
+                as List<Map<String, dynamic>>;
+        expect(settings, hasLength(settingDefaults.length));
+        final upsertedKeys = settings.map((p) => p['key']).toSet();
         for (final key in settingDefaults.keys) {
           expect(upsertedKeys, contains(key));
         }
       });
 
       test('should use correct default values in upsert payloads', () async {
-        final settingsFilter = _FakeFilterBuilder();
         final client = _FakeSupabaseClient(
           adminFilterBuilder: _adminCheck(),
-          settingsFilterBuilder: settingsFilter,
           currentUser: _FakeUser(),
         );
         final container = _makeContainer(client: client);
@@ -610,7 +740,10 @@ void main() {
         final notifier = container.read(adminSettingsActionProvider.notifier);
         await notifier.resetToDefaults();
 
-        for (final payload in settingsFilter.upsertPayloads) {
+        final settings =
+            client.rpcCalls.single.params?['p_settings']
+                as List<Map<String, dynamic>>;
+        for (final payload in settings) {
           final key = payload['key'] as String;
           final value = payload['value'] as bool;
           expect(
@@ -622,10 +755,8 @@ void main() {
       });
 
       test('should set correct categories for each default setting', () async {
-        final settingsFilter = _FakeFilterBuilder();
         final client = _FakeSupabaseClient(
           adminFilterBuilder: _adminCheck(),
-          settingsFilterBuilder: settingsFilter,
           currentUser: _FakeUser(),
         );
         final container = _makeContainer(client: client);
@@ -634,7 +765,10 @@ void main() {
         final notifier = container.read(adminSettingsActionProvider.notifier);
         await notifier.resetToDefaults();
 
-        for (final payload in settingsFilter.upsertPayloads) {
+        final settings =
+            client.rpcCalls.single.params?['p_settings']
+                as List<Map<String, dynamic>>;
+        for (final payload in settings) {
           final key = payload['key'] as String;
           final category = payload['category'] as String;
           expect(
@@ -673,7 +807,9 @@ void main() {
       test('should return false and set error on upsert failure', () async {
         final client = _FakeSupabaseClient(
           adminFilterBuilder: _adminCheck(),
-          upsertError: Exception('Batch write failed'),
+          rpcErrors: {
+            'admin_reset_system_settings': Exception('Batch write failed'),
+          },
           currentUser: _FakeUser(),
         );
         final container = _makeContainer(client: client);
@@ -706,25 +842,29 @@ void main() {
         expect(state.error, isNotNull);
       });
 
-      test('should include user id and timestamp in all payloads', () async {
-        final settingsFilter = _FakeFilterBuilder();
-        final client = _FakeSupabaseClient(
-          adminFilterBuilder: _adminCheck(),
-          settingsFilterBuilder: settingsFilter,
-          currentUser: _FakeUser(idValue: 'admin-456'),
-        );
-        final container = _makeContainer(client: client, userId: 'admin-456');
-        addTearDown(container.dispose);
+      test(
+        'should leave audit identity and timestamps to the server',
+        () async {
+          final client = _FakeSupabaseClient(
+            adminFilterBuilder: _adminCheck(),
+            currentUser: _FakeUser(idValue: 'admin-456'),
+          );
+          final container = _makeContainer(client: client, userId: 'admin-456');
+          addTearDown(container.dispose);
 
-        final notifier = container.read(adminSettingsActionProvider.notifier);
-        await notifier.resetToDefaults();
+          final notifier = container.read(adminSettingsActionProvider.notifier);
+          await notifier.resetToDefaults();
 
-        for (final payload in settingsFilter.upsertPayloads) {
-          expect(payload['updated_by'], 'admin-456');
-          expect(payload['updated_at'], isNotNull);
-          expect(payload['is_public'], false);
-        }
-      });
+          final settings =
+              client.rpcCalls.single.params?['p_settings']
+                  as List<Map<String, dynamic>>;
+          for (final payload in settings) {
+            expect(payload, isNot(contains('updated_by')));
+            expect(payload, isNot(contains('updated_at')));
+            expect(payload['is_public'], false);
+          }
+        },
+      );
     });
 
     group('reset', () {

@@ -27,6 +27,30 @@ class _FakeMaybeSingleBuilder extends Fake
   }
 }
 
+class _RpcCall {
+  const _RpcCall(this.fn, this.params);
+
+  final String fn;
+  final Map<String, dynamic>? params;
+}
+
+class _FakeRpcBuilder<T> extends Fake implements PostgrestFilterBuilder<T> {
+  _FakeRpcBuilder({this.error});
+
+  final Object? error;
+
+  @override
+  Future<S> then<S>(
+    FutureOr<S> Function(T value) onValue, {
+    Function? onError,
+  }) {
+    if (error != null) {
+      return Future<T>.error(error!).then(onValue, onError: onError);
+    }
+    return Future<T>.value(null as T).then(onValue, onError: onError);
+  }
+}
+
 class _FakeAdminCheckBuilder extends Fake
     implements PostgrestFilterBuilder<PostgrestList> {
   _FakeAdminCheckBuilder({this.result});
@@ -181,6 +205,7 @@ class _FakeActionsClient extends Fake implements SupabaseClient {
   final _FakeMutationQueryBuilder securityEventsQueryBuilder;
   final _FakeMutationQueryBuilder adminLogsQueryBuilder;
   final requestedTables = <String>[];
+  final rpcCalls = <_RpcCall>[];
   int _profilesCallCount = 0;
 
   @override
@@ -198,6 +223,16 @@ class _FakeActionsClient extends Fake implements SupabaseClient {
         return adminLogsQueryBuilder;
     }
     throw StateError('Unexpected table: $table');
+  }
+
+  @override
+  PostgrestFilterBuilder<T> rpc<T>(
+    String fn, {
+    Map<String, dynamic>? params,
+    get = false,
+  }) {
+    rpcCalls.add(_RpcCall(fn, params));
+    return _FakeRpcBuilder<T>();
   }
 }
 
@@ -411,40 +446,22 @@ void main() {
       },
     );
 
-    test(
-      'dismissSecurityEvent marks event resolved and logs admin action',
-      () async {
-        final client = _makeClient(adminUserResult: const {'role': 'admin'});
-        final container = _makeContainer(userId: 'admin-user', client: client);
-        addTearDown(container.dispose);
+    test('dismissSecurityEvent delegates to audited server RPC', () async {
+      final client = _makeClient(adminUserResult: const {'role': 'admin'});
+      final container = _makeContainer(userId: 'admin-user', client: client);
+      addTearDown(container.dispose);
 
-        await container
-            .read(adminActionsProvider.notifier)
-            .dismissSecurityEvent('event-1');
+      await container
+          .read(adminActionsProvider.notifier)
+          .dismissSecurityEvent('event-1');
 
-        expect(client.securityEventsQueryBuilder.updatePayload, isA<Map>());
-        final payload = Map<String, dynamic>.from(
-          client.securityEventsQueryBuilder.updatePayload! as Map,
-        );
-        expect(payload['is_resolved'], isTrue);
-        expect(payload['resolved_at'], isA<String>());
-        expect(
-          client.securityEventsQueryBuilder.updateBuilder.eqCalls.single.key,
-          'id',
-        );
-        expect(
-          client.securityEventsQueryBuilder.updateBuilder.eqCalls.single.value,
-          'event-1',
-        );
-        expect(client.adminLogsQueryBuilder.insertPayload, isA<Map>());
-        final logPayload = Map<String, dynamic>.from(
-          client.adminLogsQueryBuilder.insertPayload! as Map,
-        );
-        expect(logPayload['action'], 'security_event_dismissed');
-        expect(logPayload['admin_user_id'], 'admin-user');
-        expect(container.read(adminActionsProvider).isSuccess, isTrue);
-      },
-    );
+      expect(client.rpcCalls, hasLength(1));
+      expect(client.rpcCalls.single.fn, 'admin_dismiss_security_event');
+      expect(client.rpcCalls.single.params, {'p_event_id': 'event-1'});
+      expect(client.securityEventsQueryBuilder.updatePayload, isNull);
+      expect(client.adminLogsQueryBuilder.insertPayload, isNull);
+      expect(container.read(adminActionsProvider).isSuccess, isTrue);
+    });
 
     test(
       'clearAuditLogs stores translated disabled error without deleting logs',

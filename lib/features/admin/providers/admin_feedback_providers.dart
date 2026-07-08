@@ -127,22 +127,18 @@ class AdminFeedbackActionNotifier extends Notifier<AdminFeedbackActionState> {
     try {
       await requireAdmin(ref);
       final client = ref.read(supabaseClientProvider);
-      final updates = <String, dynamic>{
-        SupabaseConstants.feedbackColStatus: status,
-        SupabaseConstants.feedbackColPriority: priority,
-        if (adminResponse != null && adminResponse.isNotEmpty)
-          SupabaseConstants.feedbackColAdminResponse: adminResponse,
-        if (category != null && category.isNotEmpty)
-          SupabaseConstants.feedbackColCategory: category,
-        if (assignedAdminId != null && assignedAdminId.isNotEmpty)
-          SupabaseConstants.feedbackColAssignedAdminId: assignedAdminId,
-        if (internalNote != null && internalNote.isNotEmpty)
-          SupabaseConstants.feedbackColInternalNote: internalNote,
-      };
-      await client
-          .from(SupabaseConstants.feedbackTable)
-          .update(updates)
-          .eq(SupabaseConstants.feedbackColId, feedbackId);
+      await client.rpc(
+        'admin_update_feedback',
+        params: {
+          'p_feedback_id': feedbackId,
+          'p_status': status,
+          'p_priority': priority,
+          'p_admin_response': adminResponse,
+          'p_category': category,
+          'p_assigned_admin_id': assignedAdminId,
+          'p_internal_note': internalNote,
+        },
+      );
       ref.invalidate(adminFeedbackProvider);
       // A status transition (open → resolved) decrements the open
       // badge on the admin dashboard. Without this invalidation the

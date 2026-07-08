@@ -33,7 +33,7 @@ Constraints: each page ≤ **200 lines**; when `log.md` nears the cap, move the 
 ```bash
 python3 scripts/verify_rules.py --fix      # FIRST if any count or inline ref drifted
 python3 scripts/verify_rules.py --strict   # CLAUDE.md stats + rule cross-references (0 tolerance)
-python3 scripts/check_obsidian_brain.py    # wiki index coverage, links, ≤200-line pages
+python3 scripts/check_obsidian_brain.py    # wiki index, links, file refs, metrics, decisions, log pressure
 ```
 Generated/managed values (CLAUDE.md stats, the `verify_code_quality` checker-count comment) are owned by `verify_rules.py` — regenerate, never hand-edit. A red `auto-fix-stats` on `main` means CLAUDE.md drifted, not that the script is wrong.
 

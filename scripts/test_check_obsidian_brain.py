@@ -68,6 +68,101 @@ class TestCheckObsidianBrain(unittest.TestCase):
             with patch.object(cob, "ROOT", root), patch.object(cob, "WIKI_DIR", wiki):
                 self.assertEqual(cob.main(), 1)
 
+    def test_returns_1_when_inline_file_reference_is_missing(self):
+        import check_obsidian_brain as cob
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            wiki = _write_valid_wiki(root)
+            (wiki / "topic.md").write_text(
+                "# Topic\n\nImplementation lives in `lib/missing/file.dart`.\n",
+                encoding="utf-8",
+            )
+
+            with patch.object(cob, "ROOT", root), patch.object(cob, "WIKI_DIR", wiki):
+                self.assertEqual(cob.main(), 1)
+
+    def test_returns_0_when_inline_file_reference_exists(self):
+        import check_obsidian_brain as cob
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            wiki = _write_valid_wiki(root)
+            (root / "lib").mkdir()
+            (root / "lib" / "existing.dart").write_text("void main() {}\n", encoding="utf-8")
+            (wiki / "topic.md").write_text(
+                "# Topic\n\nImplementation lives in `lib/existing.dart`.\n",
+                encoding="utf-8",
+            )
+
+            with patch.object(cob, "ROOT", root), patch.object(cob, "WIKI_DIR", wiki):
+                self.assertEqual(cob.main(), 0)
+
+    def test_returns_1_when_overview_schema_metric_drifts(self):
+        import check_obsidian_brain as cob
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            wiki = _write_valid_wiki(root)
+            (root / "lib" / "data" / "local" / "database").mkdir(parents=True)
+            (root / "lib" / "data" / "local" / "database" / "app_database.dart").write_text(
+                "class AppDatabase { int get schemaVersion => 26; }\n",
+                encoding="utf-8",
+            )
+            (wiki / "index.md").write_text(
+                "# Wiki Index\n\n| Page | Description |\n|---|---|\n"
+                "| [[README]] | Entry |\n| [[CLAUDE.md]] | Contract |\n"
+                "| [[index]] | Catalog |\n| [[log]] | Log |\n"
+                "| [[topic]] | Topic |\n| [[overview]] | Overview |\n",
+                encoding="utf-8",
+            )
+            (wiki / "overview.md").write_text(
+                "# Overview\n\n"
+                "| Metric | Value |\n"
+                "|--------|-------|\n"
+                "| DB schema version | 25 |\n",
+                encoding="utf-8",
+            )
+
+            with patch.object(cob, "ROOT", root), patch.object(cob, "WIKI_DIR", wiki):
+                self.assertEqual(cob.main(), 1)
+
+    def test_returns_1_when_required_decision_sections_are_missing(self):
+        import check_obsidian_brain as cob
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            wiki = _write_valid_wiki(root)
+            (wiki / "features").mkdir()
+            (wiki / "features" / "community.md").write_text(
+                "# Feature: community\n\n[[index]]\n",
+                encoding="utf-8",
+            )
+            (wiki / "index.md").write_text(
+                "# Wiki Index\n\n| Page | Description |\n|---|---|\n"
+                "| [[README]] | Entry |\n| [[CLAUDE.md]] | Contract |\n"
+                "| [[index]] | Catalog |\n| [[log]] | Log |\n"
+                "| [[topic]] | Topic |\n| [[features/community]] | Community |\n",
+                encoding="utf-8",
+            )
+
+            with patch.object(cob, "ROOT", root), patch.object(cob, "WIKI_DIR", wiki):
+                self.assertEqual(cob.main(), 1)
+
+    def test_returns_1_when_active_log_has_too_many_entries(self):
+        import check_obsidian_brain as cob
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            wiki = _write_valid_wiki(root)
+            entries = "\n".join(
+                f"## [2026-07-{day:02d}] docs | entry {day}" for day in range(1, 32)
+            )
+            (wiki / "log.md").write_text(f"# Log\n\n{entries}\n", encoding="utf-8")
+
+            with patch.object(cob, "ROOT", root), patch.object(cob, "WIKI_DIR", wiki):
+                self.assertEqual(cob.main(), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

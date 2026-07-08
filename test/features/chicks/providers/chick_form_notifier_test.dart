@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_settings_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_providers.dart';
 
 import '../../../helpers/mocks.dart';
@@ -54,6 +55,9 @@ void main() {
       overrides: [
         chickRepositoryProvider.overrideWithValue(mockChickRepo),
         notificationSchedulerProvider.overrideWithValue(mockScheduler),
+        notificationToggleSettingsReadyProvider.overrideWith(
+          (_) async => const NotificationToggleSettings(),
+        ),
       ],
     );
   }
@@ -210,8 +214,9 @@ void main() {
             .read(chickFormStateProvider.notifier)
             .updateChick(revived, previous: previous);
 
-        final captured =
-            verify(() => mockChickRepo.save(captureAny())).captured;
+        final captured = verify(
+          () => mockChickRepo.save(captureAny()),
+        ).captured;
         final saved = captured.first as Chick;
         expect(saved.healthStatus, ChickHealthStatus.healthy);
         expect(saved.deathDate, isNull);

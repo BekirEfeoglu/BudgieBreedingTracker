@@ -9,12 +9,14 @@ import {
   BODY_MAX,
   clampText,
   clampTokens,
+  isPermanentFcmTokenError,
   isSuppressedByQuietHours,
   isWithinQuietHours,
   localHourInZone,
   MAX_TOKENS,
   MAX_USER_IDS,
   normalizeData,
+  parseFcmErrorStatus,
   type QuietHours,
   resultStatus,
   TITLE_MAX,
@@ -241,7 +243,10 @@ Deno.test("localHourInZone: converts UTC to the recipient's local hour", () => {
 });
 
 Deno.test("localHourInZone: invalid timezone returns null (fail open)", () => {
-  assertEquals(localHourInZone(new Date("2026-07-03T22:30:00Z"), "Not/AZone"), null);
+  assertEquals(
+    localHourInZone(new Date("2026-07-03T22:30:00Z"), "Not/AZone"),
+    null,
+  );
 });
 
 Deno.test("isSuppressedByQuietHours: fails open on missing/disabled/invalid", () => {
@@ -291,4 +296,31 @@ Deno.test("isSuppressedByQuietHours: suppresses only inside an enabled window", 
   };
   // 01:30 local is before the 02:00 start -> deliver.
   assertEquals(isSuppressedByQuietHours(outside, now), false);
+});
+
+// ---------------------------------------------------------------------------
+// FCM permanent token failures
+// ---------------------------------------------------------------------------
+
+Deno.test("parseFcmErrorStatus extracts canonical FCM error status", () => {
+  const body = JSON.stringify({
+    error: {
+      status: "NOT_FOUND",
+      details: [
+        {
+          "@type": "type.googleapis.com/google.firebase.fcm.v1.FcmError",
+          errorCode: "UNREGISTERED",
+        },
+      ],
+    },
+  });
+
+  assertEquals(parseFcmErrorStatus(body), "UNREGISTERED");
+});
+
+Deno.test("isPermanentFcmTokenError marks stale/invalid device tokens", () => {
+  assertEquals(isPermanentFcmTokenError("UNREGISTERED"), true);
+  assertEquals(isPermanentFcmTokenError("INVALID_ARGUMENT"), true);
+  assertEquals(isPermanentFcmTokenError("QUOTA_EXCEEDED"), false);
+  assertEquals(isPermanentFcmTokenError(null), false);
 });

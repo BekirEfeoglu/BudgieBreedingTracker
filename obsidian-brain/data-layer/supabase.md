@@ -5,10 +5,10 @@ Source: `.claude/rules/data-layer.md`, `.claude/rules/security.md`
 ## Overview
 
 - **Package**: supabase_flutter ^2.5.0
-- **Remote sources**: 27 (entity + base + 2 caches + providers)
-- **Migrations**: 179 SQL files in `supabase/migrations/`
+- **Remote sources**: 28 `*_remote_source.dart` files (entity + base/caches/providers)
+- **Migrations**: 194 tracked SQL files in `supabase/migrations/`
 - **Edge Functions**: 12 (see [[infrastructure/edge-functions]])
-- **Supabase constants**: 142 (tables + buckets + columns)
+- **Supabase constants**: 151 string constants (tables + buckets + columns)
 
 ## SupabaseConstants
 
@@ -87,7 +87,7 @@ Postgres function then exposes only public-safe columns:
 
 ## Remote Source Location
 
-`lib/data/remote/api/` — 26 classes following naming:
+`lib/data/remote/api/` — 28 `*_remote_source.dart` files following naming:
 - Entity remote sources: `BirdRemoteSource`, `EggRemoteSource`, etc.
 - Base: `BaseRemoteSource`
 - Caches: `community_profile_cache`, `community_post_cache`

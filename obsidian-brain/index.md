@@ -19,6 +19,7 @@ Full catalog of every page in the obsidian-brain wiki.
 | [[log-archive-2026-07-c]] | Archived July 2026 change log entries (07-02 all-tabs audit) |
 | [[log-archive-2026-07-d]] | Archived July 2026 change log entries (07-03 plan execution) |
 | [[log-archive-2026-07-e]] | Archived July 2026 change log entries (07-04 rulebook drift sweep) |
+| [[log-archive-2026-07-f]] | Archived July 2026 change log entries (07-04/07-05 app fixes) |
 | [[overview]] | High-level synthesis — what the app does, architecture diagram, key decisions |
 
 ## Architecture
@@ -66,7 +67,7 @@ Full catalog of every page in the obsidian-brain wiki.
 
 | Page | Description |
 |------|-------------|
-| [[data-layer/drift]] | Local SQLite, 20 tables, DAOs, schema v25 |
+| [[data-layer/drift]] | Local SQLite, 20 tables, DAOs, schema v26 |
 | [[data-layer/supabase]] | Remote Postgres, SupabaseConstants, storage, .toSupabase() |
 | [[data-layer/repositories]] | BaseRepository, SyncableRepository, ValidatedSyncMixin |
 | [[data-layer/sync-strategy]] | Push/pull, idempotency, conflict resolution, retry |

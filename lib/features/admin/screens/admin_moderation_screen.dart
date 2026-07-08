@@ -12,13 +12,15 @@ import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/loading_state.dart';
 import '../../../data/models/community_comment_model.dart';
 import '../../../data/models/community_post_model.dart';
+import '../../../router/route_names.dart';
 import '../providers/admin_moderation_providers.dart';
 
 class AdminModerationScreen extends ConsumerStatefulWidget {
   const AdminModerationScreen({super.key});
 
   @override
-  ConsumerState<AdminModerationScreen> createState() => _AdminModerationScreenState();
+  ConsumerState<AdminModerationScreen> createState() =>
+      _AdminModerationScreenState();
 }
 
 class _AdminModerationScreenState extends ConsumerState<AdminModerationScreen>
@@ -39,6 +41,15 @@ class _AdminModerationScreenState extends ConsumerState<AdminModerationScreen>
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<String?>(adminModerationProvider.select((s) => s.error), (
+      previous,
+      next,
+    ) {
+      if (next == null || next == previous) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(next)));
+      ref.read(adminModerationProvider.notifier).clearError();
+    });
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('admin.moderation').tr(),
@@ -52,10 +63,7 @@ class _AdminModerationScreenState extends ConsumerState<AdminModerationScreen>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: const [
-          _PendingPostsTab(),
-          _PendingCommentsTab(),
-        ],
+        children: const [_PendingPostsTab(), _PendingCommentsTab()],
       ),
     );
   }
@@ -87,7 +95,8 @@ class _PendingPostsTab extends ConsumerWidget {
         return ListView.separated(
           padding: const EdgeInsets.all(AppSpacing.md),
           itemCount: posts.length,
-          separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.md),
+          separatorBuilder: (context, index) =>
+              const SizedBox(height: AppSpacing.md),
           itemBuilder: (context, index) {
             final post = posts[index];
             return _PendingPostCard(post: post);
@@ -109,7 +118,7 @@ class _PendingPostCard extends ConsumerWidget {
     // Watch only this post's membership so one card's action doesn't rebuild
     // or freeze every other card in the queue.
     final isProcessing = ref.watch(
-      adminModerationProvider.select((s) => s.contains(post.id)),
+      adminModerationProvider.select((s) => s.processingIds.contains(post.id)),
     );
 
     return Card(
@@ -134,7 +143,9 @@ class _PendingPostCard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        post.username.isNotEmpty ? post.username : 'Unknown',
+                        post.username.isNotEmpty
+                            ? post.username
+                            : 'common.unknown'.tr(),
                         style: theme.textTheme.titleMedium,
                       ),
                       Text(
@@ -150,7 +161,12 @@ class _PendingPostCard extends ConsumerWidget {
                   icon: const Icon(LucideIcons.externalLink),
                   semanticLabel: 'admin.view_user'.tr(),
                   onPressed: () {
-                    context.push('/admin/users/${post.userId}');
+                    context.push(
+                      AppRoutes.adminUserDetail.replaceFirst(
+                        ':userId',
+                        post.userId,
+                      ),
+                    );
                   },
                 ),
               ],
@@ -173,7 +189,8 @@ class _PendingPostCard extends ConsumerWidget {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: post.allImageUrls.length,
-                  separatorBuilder: (context, index) => const SizedBox(width: AppSpacing.sm),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(width: AppSpacing.sm),
                   itemBuilder: (context, index) {
                     return CachedNetworkImage(
                       imageUrl: post.allImageUrls[index],
@@ -208,10 +225,14 @@ class _PendingPostCard extends ConsumerWidget {
                 TextButton.icon(
                   icon: const Icon(LucideIcons.check),
                   label: const Text('admin.approve_content').tr(),
-                  style: TextButton.styleFrom(foregroundColor: AppColors.success),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.success,
+                  ),
                   onPressed: isProcessing
                       ? null
-                      : () => ref.read(adminModerationProvider.notifier).approvePost(post.id),
+                      : () => ref
+                            .read(adminModerationProvider.notifier)
+                            .approvePost(post.id),
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 FilledButton.icon(
@@ -222,7 +243,9 @@ class _PendingPostCard extends ConsumerWidget {
                   ),
                   onPressed: isProcessing
                       ? null
-                      : () => ref.read(adminModerationProvider.notifier).deletePost(post.id),
+                      : () => ref
+                            .read(adminModerationProvider.notifier)
+                            .deletePost(post.id),
                 ),
               ],
             ),
@@ -259,7 +282,8 @@ class _PendingCommentsTab extends ConsumerWidget {
         return ListView.separated(
           padding: const EdgeInsets.all(AppSpacing.md),
           itemCount: comments.length,
-          separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.md),
+          separatorBuilder: (context, index) =>
+              const SizedBox(height: AppSpacing.md),
           itemBuilder: (context, index) {
             final comment = comments[index];
             return _PendingCommentCard(comment: comment);
@@ -280,7 +304,9 @@ class _PendingCommentCard extends ConsumerWidget {
     final theme = Theme.of(context);
     // Watch only this comment's membership (see _PendingPostCard).
     final isProcessing = ref.watch(
-      adminModerationProvider.select((s) => s.contains(comment.id)),
+      adminModerationProvider.select(
+        (s) => s.processingIds.contains(comment.id),
+      ),
     );
 
     return Card(
@@ -305,7 +331,9 @@ class _PendingCommentCard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        comment.username.isNotEmpty ? comment.username : 'Unknown',
+                        comment.username.isNotEmpty
+                            ? comment.username
+                            : 'common.unknown'.tr(),
                         style: theme.textTheme.titleMedium,
                       ),
                       Text(
@@ -321,7 +349,12 @@ class _PendingCommentCard extends ConsumerWidget {
                   icon: const Icon(LucideIcons.externalLink),
                   semanticLabel: 'admin.view_user'.tr(),
                   onPressed: () {
-                    context.push('/admin/users/${comment.userId}');
+                    context.push(
+                      AppRoutes.adminUserDetail.replaceFirst(
+                        ':userId',
+                        comment.userId,
+                      ),
+                    );
                   },
                 ),
               ],
@@ -335,10 +368,14 @@ class _PendingCommentCard extends ConsumerWidget {
                 TextButton.icon(
                   icon: const Icon(LucideIcons.check),
                   label: const Text('admin.approve_content').tr(),
-                  style: TextButton.styleFrom(foregroundColor: AppColors.success),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.success,
+                  ),
                   onPressed: isProcessing
                       ? null
-                      : () => ref.read(adminModerationProvider.notifier).approveComment(comment.id),
+                      : () => ref
+                            .read(adminModerationProvider.notifier)
+                            .approveComment(comment.id),
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 FilledButton.icon(
@@ -349,7 +386,9 @@ class _PendingCommentCard extends ConsumerWidget {
                   ),
                   onPressed: isProcessing
                       ? null
-                      : () => ref.read(adminModerationProvider.notifier).deleteComment(comment.id),
+                      : () => ref
+                            .read(adminModerationProvider.notifier)
+                            .deleteComment(comment.id),
                 ),
               ],
             ),

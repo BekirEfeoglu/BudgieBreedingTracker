@@ -1,8 +1,9 @@
 import Flutter
 import UIKit
 import AppTrackingTransparency
+import StoreKit
 
-class SceneDelegate: FlutterSceneDelegate {
+class SceneDelegate: FlutterSceneDelegate, SKStoreProductViewControllerDelegate {
 
   // Holds a weak reference to Flutter's UIWindow so that AppDelegate's
   // key-window guard can restore it reliably.
@@ -13,6 +14,8 @@ class SceneDelegate: FlutterSceneDelegate {
   private var attChannel: FlutterMethodChannel?
   private var configChannel: FlutterMethodChannel?
   private var sensitiveScreenChannel: FlutterMethodChannel?
+  private var storeUpdateChannel: FlutterMethodChannel?
+  private var storeProductController: SKStoreProductViewController?
   private var sensitiveScreenEnabled = false
   private var sensitiveScreenObservers: [NSObjectProtocol] = []
   private var privacyOverlay: UIView?
@@ -29,6 +32,7 @@ class SceneDelegate: FlutterSceneDelegate {
     setupATTChannel()
     setupConfigChannel()
     setupSensitiveScreenChannel()
+    setupStoreUpdateChannel()
   }
 
   /// Sets up the MethodChannel that Dart calls on every text-field tap
@@ -155,6 +159,65 @@ class SceneDelegate: FlutterSceneDelegate {
       result(true)
     }
     sensitiveScreenChannel = channel
+  }
+
+  private func setupStoreUpdateChannel() {
+    guard let flutterVC = window?.rootViewController as? FlutterViewController else { return }
+    let engine = flutterVC.engine
+
+    let channel = FlutterMethodChannel(
+      name: "com.budgiebreeding.budgie_breeding_tracker/store_update",
+      binaryMessenger: engine.binaryMessenger
+    )
+    channel.setMethodCallHandler { [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) in
+      guard call.method == "openAppStoreProduct" else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      let args = call.arguments as? [String: Any]
+      guard let appId = args?["appId"] as? String else {
+        result(false)
+        return
+      }
+      self?.openAppStoreProduct(appId: appId, result: result)
+    }
+    storeUpdateChannel = channel
+  }
+
+  private func openAppStoreProduct(appId: String, result: @escaping FlutterResult) {
+    guard let productId = Int(appId) else {
+      result(false)
+      return
+    }
+
+    let controller = SKStoreProductViewController()
+    controller.delegate = self
+    storeProductController = controller
+    controller.loadProduct(
+      withParameters: [SKStoreProductParameterITunesItemIdentifier: productId]
+    ) { [weak self] loaded, _ in
+      DispatchQueue.main.async {
+        guard loaded, let self = self else {
+          result(false)
+          return
+        }
+        guard let presenter = self.window?.rootViewController else {
+          result(false)
+          return
+        }
+        presenter.present(controller, animated: true) {
+          result(true)
+        }
+      }
+    }
+  }
+
+  func productViewControllerDidFinish(_ viewController: SKStoreProductViewController) {
+    viewController.dismiss(animated: true) { [weak self] in
+      if self?.storeProductController === viewController {
+        self?.storeProductController = nil
+      }
+    }
   }
 
   private func setSensitiveScreenEnabled(_ enabled: Bool) {

@@ -45,17 +45,9 @@ class AdminUserManager {
       final role = await _fetchTargetUserRole(client, targetUserId);
       if (_isProtectedRole(role)) throw ProtectedRoleError(role!);
 
-      await client
-          .from(SupabaseConstants.profilesTable)
-          .update({'is_active': isActive})
-          .eq('id', targetUserId);
-
-      await logAdminAction(
-        client,
-        _ref.read(currentUserIdProvider),
-        isActive ? 'user_activated' : 'user_deactivated',
-        targetUserId: targetUserId,
-        details: {'message': isActive ? 'User activated' : 'User deactivated'},
+      await client.rpc(
+        'admin_set_user_active',
+        params: {'target_user_id': targetUserId, 'p_is_active': isActive},
       );
 
       _updateState(
@@ -82,36 +74,12 @@ class AdminUserManager {
     try {
       await requireAdmin(_ref);
       final client = _ref.read(supabaseClientProvider);
-      final now = DateTime.now().toUtc().toIso8601String();
       final role = await _fetchTargetUserRole(client, targetUserId);
       if (_isProtectedRole(role)) throw ProtectedRoleError(role!);
 
-      await _upsertSubscription(client, targetUserId, {
-        'plan': AdminConstants.planPremium,
-        'status': AdminConstants.statusActive,
-        'provider': AdminConstants.providerManual,
-        'current_period_start': now,
-        'current_period_end': null,
-        'cancel_at_period_end': false,
-        'updated_at': now,
-      });
-
-      await client
-          .from(SupabaseConstants.profilesTable)
-          .update({
-            'is_premium': true,
-            'subscription_status': AdminConstants.planPremium,
-            'premium_expires_at': null,
-            'grace_period_until': null,
-          })
-          .eq('id', targetUserId);
-
-      await logAdminAction(
-        client,
-        _ref.read(currentUserIdProvider),
-        'premium_granted',
-        targetUserId: targetUserId,
-        details: {'message': 'Premium subscription granted'},
+      await client.rpc(
+        'admin_grant_premium',
+        params: {'target_user_id': targetUserId},
       );
 
       _updateState(
@@ -156,35 +124,9 @@ class AdminUserManager {
       final role = await _fetchTargetUserRole(client, targetUserId);
       if (_isProtectedRole(role)) throw ProtectedRoleError(role!);
 
-      await client
-          .from(SupabaseConstants.profilesTable)
-          .update({
-            'is_premium': false,
-            'subscription_status': AdminConstants.planFree,
-            'premium_expires_at': null,
-            'grace_period_until': null,
-          })
-          .eq('id', targetUserId);
-
-      // Soft-revoke subscription record while preserving subscription history.
-      // Uses statusRevoked = 'canceled', a valid CHECK constraint value.
-      final now = DateTime.now().toUtc().toIso8601String();
-      await client
-          .from(SupabaseConstants.userSubscriptionsTable)
-          .update({
-            'status': AdminConstants.statusRevoked,
-            'current_period_end': now,
-            'cancel_at_period_end': false,
-            'updated_at': now,
-          })
-          .eq('user_id', targetUserId);
-
-      await logAdminAction(
-        client,
-        _ref.read(currentUserIdProvider),
-        'premium_revoked',
-        targetUserId: targetUserId,
-        details: {'message': 'Premium subscription revoked'},
+      await client.rpc(
+        'admin_revoke_premium',
+        params: {'target_user_id': targetUserId},
       );
 
       _updateState(
@@ -229,16 +171,9 @@ class AdminUserManager {
       final role = await _fetchTargetUserRole(client, targetUserId);
       if (_isProtectedRole(role)) throw ProtectedRoleError(role!);
 
-      await client.rpc('admin_force_logout', params: {
-        'target_user_id': targetUserId,
-      });
-
-      await logAdminAction(
-        client,
-        _ref.read(currentUserIdProvider),
-        'force_logout',
-        targetUserId: targetUserId,
-        details: {'message': 'User forcefully logged out of all devices'},
+      await client.rpc(
+        'admin_force_logout',
+        params: {'target_user_id': targetUserId},
       );
 
       _updateState(
@@ -248,7 +183,9 @@ class AdminUserManager {
       );
       return AdminUserOperationResult.success;
     } on ProtectedRoleError catch (e) {
-      AppLogger.info('AdminUserManager.forceLogout blocked for role: ${e.role}');
+      AppLogger.info(
+        'AdminUserManager.forceLogout blocked for role: ${e.role}',
+      );
       _updateState(isLoading: false, error: 'admin.protected_user_error'.tr());
       return AdminUserOperationResult.protected;
     } catch (e, st) {
@@ -270,7 +207,8 @@ class AdminUserManager {
   bool _isProtectedRoleMutationError(PostgrestException e) {
     final payload = '${e.message} ${e.details ?? ''} ${e.hint ?? ''}'
         .toLowerCase();
-    return payload.contains('protected_role_premium_mutation');
+    return payload.contains('protected_role_premium_mutation') ||
+        payload.contains('protected_role_admin_action');
   }
 
   Future<String?> _fetchTargetUserRole(
@@ -279,26 +217,12 @@ class AdminUserManager {
   ) async {
     final row = await client
         .from(SupabaseConstants.profilesTable)
-        .select('role')
-        .eq('id', targetUserId)
+        .select(SupabaseConstants.colRole)
+        .eq(SupabaseConstants.colId, targetUserId)
         .maybeSingle();
     if (row == null) {
       throw Exception('admin.user_not_found'.tr());
     }
     return row['role'] as String?;
-  }
-
-  /// Atomic upsert for user_subscriptions using PostgREST's onConflict.
-  /// Requires the UNIQUE constraint on user_id added in migration
-  /// 20260409100000_add_unique_constraint_user_subscriptions_user_id.
-  Future<void> _upsertSubscription(
-    SupabaseClient client,
-    String targetUserId,
-    Map<String, dynamic> data,
-  ) async {
-    await client.from(SupabaseConstants.userSubscriptionsTable).upsert({
-      ...data,
-      'user_id': targetUserId,
-    }, onConflict: 'user_id');
   }
 }

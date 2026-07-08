@@ -4,6 +4,7 @@ import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_background_tap_store.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_channel_config.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_permission_handler.dart';
 
@@ -13,14 +14,6 @@ export 'package:budgie_breeding_tracker/domain/services/notifications/notificati
 ///
 /// [payload] format: `type:id` (e.g., `breeding:abc-123`, `chick:xyz-456`).
 typedef NotificationTapCallback = void Function(String? payload);
-
-/// Top-level handler for background notification responses (required by plugin).
-///
-/// Must be a top-level or static function — cannot be an instance method.
-@pragma('vm:entry-point')
-void _onBackgroundNotificationTapped(NotificationResponse response) {
-  // Background taps are handled when the app resumes via pending payloads.
-}
 
 /// Wrapper around [FlutterLocalNotificationsPlugin] for displaying
 /// and scheduling local notifications.
@@ -89,12 +82,12 @@ class NotificationService with NotificationPermissionHandler {
       settings: settings,
       onDidReceiveNotificationResponse: _onNotificationTapped,
       onDidReceiveBackgroundNotificationResponse:
-          _onBackgroundNotificationTapped,
+          onBackgroundNotificationTapped,
     );
 
-    await _restoreLaunchNotificationPayload();
-
     _isInitialized = true;
+    await _restoreLaunchNotificationPayload();
+    await restorePendingBackgroundTapPayloads();
     AppLogger.info('[NotificationService] Initialized');
   }
 
@@ -265,6 +258,14 @@ class NotificationService with NotificationPermissionHandler {
         '[NotificationService] Failed to restore launch payload: $e',
       );
     }
+  }
+
+  /// Restores payloads received by the background tap callback.
+  ///
+  /// The callback can run outside the active app isolate, so payloads are
+  /// persisted first and drained once [onNotificationTap] is available.
+  Future<void> restorePendingBackgroundTapPayloads() async {
+    await restoreBackgroundTapPayloads(onNotificationTap);
   }
 
   void _ensureInitialized() {

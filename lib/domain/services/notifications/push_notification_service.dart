@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/fcm_token_remote_source.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_service.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_ids.dart';
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -234,9 +235,10 @@ class PushNotificationService {
   }
 
   int _notificationIdFor(RemoteMessage message) {
-    final sentTime = message.sentTime?.millisecondsSinceEpoch;
-    if (sentTime != null) return sentTime.remainder(1 << 31);
-    return message.messageId.hashCode & 0x7fffffff;
+    return NotificationIds.generatePushDisplayId(
+      messageId: message.messageId,
+      sentTime: message.sentTime,
+    );
   }
 
   String? _stringValue(Object? value) {

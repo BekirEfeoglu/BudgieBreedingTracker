@@ -19,9 +19,9 @@ final adminSystemAlertsProvider = FutureProvider<List<SystemAlert>>((
   final result = await client
       .from(SupabaseConstants.systemAlertsTable)
       .select()
-      .eq('is_active', true)
+      .eq(SupabaseConstants.colIsActive, true)
       .eq('is_acknowledged', false)
-      .order('created_at', ascending: false)
+      .order(SupabaseConstants.colCreatedAt, ascending: false)
       .limit(AdminConstants.maxAlertsLimit);
 
   return (result as List)
@@ -36,15 +36,15 @@ final adminPendingReviewCountProvider = FutureProvider<int>((ref) async {
 
   final postsResult = await client
       .from(SupabaseConstants.communityPostsTable)
-      .select('id')
-      .eq('is_deleted', false)
-      .eq('needs_review', true);
+      .select(SupabaseConstants.colId)
+      .eq(SupabaseConstants.colIsDeleted, false)
+      .eq(SupabaseConstants.colNeedsReview, true);
 
   final commentsResult = await client
       .from(SupabaseConstants.communityCommentsTable)
-      .select('id')
-      .eq('is_deleted', false)
-      .eq('needs_review', true);
+      .select(SupabaseConstants.colId)
+      .eq(SupabaseConstants.colIsDeleted, false)
+      .eq(SupabaseConstants.colNeedsReview, true);
 
   return (postsResult as List).length + (commentsResult as List).length;
 });
@@ -57,7 +57,7 @@ final recentAdminActionsProvider = FutureProvider<List<AdminLog>>((ref) async {
   final result = await client
       .from(SupabaseConstants.adminLogsTable)
       .select()
-      .order('created_at', ascending: false)
+      .order(SupabaseConstants.colCreatedAt, ascending: false)
       .limit(AdminConstants.recentActionsLimit);
 
   return (result as List)
@@ -100,15 +100,17 @@ final userGrowthDataProvider = FutureProvider<List<DailyDataPoint>>((
 
   final result = await client
       .from(SupabaseConstants.profilesTable)
-      .select('created_at')
-      .gte('created_at', since.toUtc().toIso8601String())
-      .order('created_at');
+      .select(SupabaseConstants.colCreatedAt)
+      .gte(SupabaseConstants.colCreatedAt, since.toUtc().toIso8601String())
+      .order(SupabaseConstants.colCreatedAt);
 
   final Map<String, int> grouped = {};
   for (final row in (result as List)) {
     // Supabase `created_at` is UTC. Bucket by UTC day so the key matches
     // the bucket key built from `DateTime.now().toUtc()` below.
-    final date = DateTime.parse(row['created_at'] as String).toUtc();
+    final date = DateTime.parse(
+      row[SupabaseConstants.colCreatedAt] as String,
+    ).toUtc();
     final key =
         '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
     grouped[key] = (grouped[key] ?? 0) + 1;
@@ -170,9 +172,11 @@ final recentUserActivityProvider = FutureProvider<List<UserActivity>>((
   Future<List<Map<String, dynamic>>> fetchRecent(String table) async {
     final result = await client
         .from(table)
-        .select('user_id, created_at')
-        .gte('created_at', since)
-        .eq('is_deleted', false);
+        .select(
+          '${SupabaseConstants.colUserId}, ${SupabaseConstants.colCreatedAt}',
+        )
+        .gte(SupabaseConstants.colCreatedAt, since)
+        .eq(SupabaseConstants.colIsDeleted, false);
     return (result as List).cast<Map<String, dynamic>>();
   }
 
@@ -187,8 +191,10 @@ final recentUserActivityProvider = FutureProvider<List<UserActivity>>((
   final Map<String, UserActivity> grouped = {};
   void process(List<Map<String, dynamic>> rows, String entityType) {
     for (final row in rows) {
-      final userId = row['user_id'] as String;
-      final createdAt = DateTime.parse(row['created_at'] as String);
+      final userId = row[SupabaseConstants.colUserId] as String;
+      final createdAt = DateTime.parse(
+        row[SupabaseConstants.colCreatedAt] as String,
+      );
       final key = '$userId:$entityType';
       final existing = grouped[key];
       if (existing != null) {
@@ -218,19 +224,22 @@ final recentUserActivityProvider = FutureProvider<List<UserActivity>>((
   final userIds = grouped.values.map((a) => a.userId).toSet();
   final profileRows = await client
       .from(SupabaseConstants.profilesTable)
-      .select('id, full_name, avatar_url')
-      .inFilter('id', userIds.toList());
+      .select(
+        '${SupabaseConstants.colId}, ${SupabaseConstants.colFullName}, '
+        '${SupabaseConstants.colAvatarUrl}',
+      )
+      .inFilter(SupabaseConstants.colId, userIds.toList());
   final profiles = <String, Map<String, dynamic>>{};
   for (final p in (profileRows as List)) {
-    profiles[p['id'] as String] = p as Map<String, dynamic>;
+    profiles[p[SupabaseConstants.colId] as String] = p as Map<String, dynamic>;
   }
 
   final activities = grouped.values.map((a) {
     final profile = profiles[a.userId];
     return a.copyWith(
-      fullName: profile?['full_name'] as String? ?? '',
+      fullName: profile?[SupabaseConstants.colFullName] as String? ?? '',
       avatarUrl: StorageUrlNormalizer.normalizePublicObjectUrl(
-        profile?['avatar_url'] as String?,
+        profile?[SupabaseConstants.colAvatarUrl] as String?,
       ),
     );
   }).toList();
@@ -251,8 +260,8 @@ final recentErrorsSummaryProvider = FutureProvider<ErrorSummary>((ref) async {
   final eventsResult = await client
       .from(SupabaseConstants.securityEventsTable)
       .select()
-      .gte('created_at', since)
-      .order('created_at', ascending: false);
+      .gte(SupabaseConstants.colCreatedAt, since)
+      .order(SupabaseConstants.colCreatedAt, ascending: false);
 
   final events = (eventsResult as List)
       .map((row) => SecurityEvent.fromJson(row as Map<String, dynamic>))

@@ -3,9 +3,11 @@ import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/chicks_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/incubations_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/notification_settings_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_scheduler.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_toggle_settings.dart';
 
 /// Re-schedules all active notifications on app startup.
 ///
@@ -17,15 +19,18 @@ class NotificationRescheduler {
     required IncubationsDao incubationsDao,
     required EggsDao eggsDao,
     required ChicksDao chicksDao,
+    required NotificationSettingsDao notificationSettingsDao,
     required NotificationScheduler scheduler,
   }) : _incubationsDao = incubationsDao,
        _eggsDao = eggsDao,
        _chicksDao = chicksDao,
+       _notificationSettingsDao = notificationSettingsDao,
        _scheduler = scheduler;
 
   final IncubationsDao _incubationsDao;
   final EggsDao _eggsDao;
   final ChicksDao _chicksDao;
+  final NotificationSettingsDao _notificationSettingsDao;
   final NotificationScheduler _scheduler;
 
   /// Re-schedules all notifications for active entities of the given [userId].
@@ -38,10 +43,12 @@ class NotificationRescheduler {
       '[NotificationRescheduler] Starting rescheduleAll for $maskedUserId',
     );
 
+    final settings = await _loadToggleSettings(userId);
+
     await Future.wait([
-      _rescheduleIncubations(userId),
-      _rescheduleEggs(userId),
-      _rescheduleChicks(userId),
+      _rescheduleIncubations(userId, settings),
+      _rescheduleEggs(userId, settings),
+      _rescheduleChicks(userId, settings),
     ]);
 
     AppLogger.info(
@@ -49,7 +56,35 @@ class NotificationRescheduler {
     );
   }
 
-  Future<void> _rescheduleIncubations(String userId) async {
+  Future<NotificationToggleSettings> _loadToggleSettings(String userId) async {
+    try {
+      final settings = await _notificationSettingsDao.getByUser(userId);
+      if (settings == null) return const NotificationToggleSettings();
+
+      return NotificationToggleSettings(
+        soundEnabled: settings.soundEnabled,
+        vibrationEnabled: settings.vibrationEnabled,
+        eggTurning: settings.eggTurningEnabled,
+        incubation: settings.incubationReminderEnabled,
+        chickCare: settings.feedingReminderEnabled,
+        healthCheck: settings.healthCheckEnabled,
+        banding: settings.bandingEnabled,
+        cleanupDaysOld: settings.cleanupDaysOld,
+      );
+    } catch (e, st) {
+      AppLogger.error(
+        '[NotificationRescheduler] Failed to load notification settings',
+        e,
+        st,
+      );
+      return const NotificationToggleSettings();
+    }
+  }
+
+  Future<void> _rescheduleIncubations(
+    String userId,
+    NotificationToggleSettings settings,
+  ) async {
     try {
       final incubations = await _incubationsDao.getAll(userId);
       final active = incubations.where(
@@ -67,6 +102,7 @@ class NotificationRescheduler {
           startDate: incubation.startDate!,
           label: label,
           species: incubation.species,
+          settings: settings,
         );
       }
     } catch (e, st) {
@@ -78,7 +114,10 @@ class NotificationRescheduler {
     }
   }
 
-  Future<void> _rescheduleEggs(String userId) async {
+  Future<void> _rescheduleEggs(
+    String userId,
+    NotificationToggleSettings settings,
+  ) async {
     try {
       final eggs = await _eggsDao.getIncubating(userId);
 
@@ -96,6 +135,7 @@ class NotificationRescheduler {
           startDate: egg.layDate,
           eggLabel: eggLabel,
           species: incubation?.species ?? Species.unknown,
+          settings: settings,
         );
       }
     } catch (e, st) {
@@ -107,7 +147,10 @@ class NotificationRescheduler {
     }
   }
 
-  Future<void> _rescheduleChicks(String userId) async {
+  Future<void> _rescheduleChicks(
+    String userId,
+    NotificationToggleSettings settings,
+  ) async {
     try {
       final chicks = await _chicksDao.getUnweaned(userId);
 
@@ -125,6 +168,7 @@ class NotificationRescheduler {
           startDate: startDate,
           intervalHours: 4,
           durationDays: 30,
+          settings: settings,
         );
 
         if (!chick.isBanded && chick.hatchDate != null) {
@@ -133,6 +177,7 @@ class NotificationRescheduler {
             chickLabel: chickLabel,
             hatchDate: chick.hatchDate!,
             bandingDay: chick.bandingDay,
+            settings: settings,
           );
         }
       }

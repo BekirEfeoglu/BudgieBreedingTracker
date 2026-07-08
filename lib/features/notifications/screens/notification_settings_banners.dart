@@ -160,7 +160,7 @@ class _BatteryOptimizationBannerState
 /// Warning banner shown when notification permission is denied.
 ///
 /// Guides the user to open system notification settings to grant permission.
-/// Only visible on Android when [notificationPermissionGrantedProvider] is false.
+/// Visible on iOS/Android when [notificationPermissionGrantedProvider] is false.
 /// Automatically re-checks permission status when the user returns from
 /// system settings (via [WidgetsBindingObserver.didChangeAppLifecycleState]).
 class _NotificationPermissionBanner extends ConsumerStatefulWidget {
@@ -188,7 +188,9 @@ class _NotificationPermissionBannerState
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && Platform.isAndroid) {
+    if (state == AppLifecycleState.resumed &&
+        !kIsWeb &&
+        (Platform.isAndroid || Platform.isIOS)) {
       _recheckPermission();
     }
   }
@@ -220,9 +222,21 @@ class _NotificationPermissionBannerState
     }
   }
 
+  Future<void> _requestPermissionOrOpenSettings() async {
+    await ref.read(notificationPermissionRequestControllerProvider)();
+    if (!mounted) return;
+
+    final granted = ref.read(notificationPermissionGrantedProvider);
+    if (!granted) {
+      await NotificationPermissionHandler.openNotificationSettings();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (!Platform.isAndroid) return const SizedBox.shrink();
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+      return const SizedBox.shrink();
+    }
 
     final granted = ref.watch(notificationPermissionGrantedProvider);
     if (granted) return const SizedBox.shrink();
@@ -272,9 +286,7 @@ class _NotificationPermissionBannerState
           Align(
             alignment: Alignment.centerRight,
             child: FilledButton.tonalIcon(
-              onPressed: () {
-                NotificationPermissionHandler.openNotificationSettings();
-              },
+              onPressed: _requestPermissionOrOpenSettings,
               icon: const Icon(LucideIcons.settings, size: 16),
               label: Text('notifications.open_settings'.tr()),
             ),

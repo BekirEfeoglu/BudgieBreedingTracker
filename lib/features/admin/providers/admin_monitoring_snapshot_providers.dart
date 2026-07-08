@@ -93,15 +93,18 @@ final monitoringSnapshotsProvider = FutureProvider<MonitoringTrend>((
   try {
     final result = await client
         .from(SupabaseConstants.dbMonitoringSnapshotsTable)
-        .select('snapshot_type, data, created_at')
+        .select(
+          '${SupabaseConstants.colSnapshotType}, ${SupabaseConstants.colData}, '
+          '${SupabaseConstants.colCreatedAt}',
+        )
         .gte(
-          'created_at',
+          SupabaseConstants.colCreatedAt,
           DateTime.now()
               .subtract(const Duration(hours: 24))
               .toUtc()
               .toIso8601String(),
         )
-        .order('created_at', ascending: false)
+        .order(SupabaseConstants.colCreatedAt, ascending: false)
         .limit(10);
 
     final rows = List<Map<String, dynamic>>.from(result);

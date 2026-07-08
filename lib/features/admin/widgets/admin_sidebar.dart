@@ -31,9 +31,12 @@ final _securityBadgeCountProvider = FutureProvider.autoDispose<int>((
   try {
     final result = await client
         .from(SupabaseConstants.securityEventsTable)
-        .select('id, event_type, created_at')
-        .gte('created_at', since)
-        .order('created_at', ascending: false)
+        .select(
+          '${SupabaseConstants.colId}, ${SupabaseConstants.colEventType}, '
+          '${SupabaseConstants.colCreatedAt}',
+        )
+        .gte(SupabaseConstants.colCreatedAt, since)
+        .order(SupabaseConstants.colCreatedAt, ascending: false)
         .limit(100);
 
     final events = (result as List)

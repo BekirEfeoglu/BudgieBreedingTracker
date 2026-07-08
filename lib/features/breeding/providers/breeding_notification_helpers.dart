@@ -184,7 +184,9 @@ class BreedingNotificationHelper {
   ) async {
     try {
       final scheduler = _ref.read(notificationSchedulerProvider);
-      final settings = _ref.read(notificationToggleSettingsProvider);
+      final settings = await _ref.read(
+        notificationToggleSettingsReadyProvider.future,
+      );
       final pairLabel = 'breeding.pair_label'.tr(args: [_shortId(pairId)]);
 
       await scheduler.scheduleIncubationMilestones(

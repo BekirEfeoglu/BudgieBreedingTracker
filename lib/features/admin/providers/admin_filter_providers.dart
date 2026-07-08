@@ -134,7 +134,7 @@ final adminAuditLogsProvider = FutureProvider.autoDispose<List<AdminLog>>((
   // Date range filters
   if (filter.startDate != null) {
     query = query.gte(
-      'created_at',
+      SupabaseConstants.colCreatedAt,
       filter.startDate!.toUtc().toIso8601String(),
     );
   }
@@ -150,7 +150,10 @@ final adminAuditLogsProvider = FutureProvider.autoDispose<List<AdminLog>>((
       endDate.month,
       endDate.day,
     ).add(const Duration(days: 1));
-    query = query.lt('created_at', endExclusive.toIso8601String());
+    query = query.lt(
+      SupabaseConstants.colCreatedAt,
+      endExclusive.toIso8601String(),
+    );
   }
 
   // Text search — server-side via PostgREST .or()
@@ -162,7 +165,9 @@ final adminAuditLogsProvider = FutureProvider.autoDispose<List<AdminLog>>((
     }
   }
 
-  final result = await query.order('created_at', ascending: false).limit(limit);
+  final result = await query
+      .order(SupabaseConstants.colCreatedAt, ascending: false)
+      .limit(limit);
 
   return (result as List)
       .map((row) => AdminLog.fromJson(row as Map<String, dynamic>))
@@ -200,7 +205,9 @@ final adminSecurityEventsProvider = FutureProvider.autoDispose<List<SecurityEven
     }
   }
 
-  final result = await query.order('created_at', ascending: false).limit(limit);
+  final result = await query
+      .order(SupabaseConstants.colCreatedAt, ascending: false)
+      .limit(limit);
 
   return (result as List)
       .map((row) => SecurityEvent.fromJson(row as Map<String, dynamic>))
@@ -220,9 +227,9 @@ final securityEventTrendProvider = FutureProvider<List<DailyDataPoint>>((
 
   final result = await client
       .from(SupabaseConstants.securityEventsTable)
-      .select('created_at')
-      .gte('created_at', sevenDaysAgo.toIso8601String())
-      .order('created_at');
+      .select(SupabaseConstants.colCreatedAt)
+      .gte(SupabaseConstants.colCreatedAt, sevenDaysAgo.toIso8601String())
+      .order(SupabaseConstants.colCreatedAt);
 
   final rows = result as List;
   // Normalize bucket key to UTC to match the UTC window. Without `.toUtc()`
@@ -231,7 +238,9 @@ final securityEventTrendProvider = FutureProvider<List<DailyDataPoint>>((
   // next day's bucket. See datetime-format.md § "UTC at Boundary".
   final grouped = <String, int>{};
   for (final row in rows) {
-    final date = DateTime.parse(row['created_at'] as String).toUtc();
+    final date = DateTime.parse(
+      row[SupabaseConstants.colCreatedAt] as String,
+    ).toUtc();
     final key =
         '${date.year}-'
         '${date.month.toString().padLeft(2, '0')}-'

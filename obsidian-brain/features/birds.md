@@ -23,7 +23,7 @@
 
 ## Data
 
-- **Model**: `lib/data/models/bird.dart` (Freezed)
+- **Model**: `lib/data/models/bird_model.dart` (Freezed)
 - **Table**: `lib/data/local/database/tables/birds_table.dart`
 - **DAO**: `lib/data/local/database/daos/birds_dao.dart`
 - **Repository**: `lib/data/repositories/bird_repository.dart`

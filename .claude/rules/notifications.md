@@ -7,7 +7,7 @@ Bildirimler iki kanal üzerinden gelir: **FCM push** (sunucu kaynaklı) ve **loc
 |-----|-------|---------|
 | Push (remote) | `firebase_messaging` | Sunucu — `send-push` edge function |
 | Local | `flutter_local_notifications` | Cihaz — schedule API |
-| Permission | `permission_handler` (iOS) | İlk launch + Settings |
+| Permission | `flutter_local_notifications` + platform settings | Contextual feature/settings CTA |
 
 ## FCM Push Flow
 ```
@@ -20,10 +20,11 @@ Domain event (egg hatching, marketplace sale)
 ```
 
 ## Permission Flow
-- iOS: zorunlu `requestPermission()` — kullanıcı reddederse settings deeplink göster
-- Android 13+: `POST_NOTIFICATIONS` runtime permission
+- iOS: `requestPermission()` yalnızca contextual CTA ile çağrılır; kullanıcı reddederse app settings deeplink gösterilir
+- Android 13+: `POST_NOTIFICATIONS` runtime permission yalnızca contextual CTA/feature flow ile istenir
 - İlk açılışta DEĞİL — kullanıcı bildirim ayarlarına girdiğinde veya feature flow'da kontekstli iste ("Kuluçka hatırlatması için bildirim izni gerekli")
-- Permission denied state'i provider'da takip et (`notificationPermissionProvider`)
+- Permission denied state'i `notificationPermissionGrantedProvider` ile takip et; provider gerçek platform status'u okunana kadar `false` başlar
+- `NotificationSettingsScreen` sadece status refresh yapar; prompt üretmez. CTA `notificationPermissionRequestControllerProvider` üzerinden çalışır
 
 ## FCM Token Management
 - Token Supabase'de `fcm_tokens` tablosuna kaydedilir (multi-device)
@@ -69,6 +70,9 @@ Push payload `data` field'ı standart şema:
 - Notification ID'leri deterministik, `NotificationIds.generate()` ile — raw `.hashCode` DEĞİL, FNV-1a hash + partition'lanmış ID alanı (bkz. calendar.md § ID Stability)
 - Cancel + reschedule pattern: insert/update'te eski ID'leri iptal et, yenilerini ekle
 - Timezone-aware: `tz.TZDateTime` kullan, naive `DateTime` değil
+- Feature side-effect'leri schedule etmeden önce `await ref.read(notificationToggleSettingsReadyProvider.future)` kullanmalı; doğrudan `notificationToggleSettingsProvider` okumak kayıtlı kapalı toggle'lar yüklenmeden default `true` ile schedule oluşturabilir
+- App-start/reboot reschedule akışı `NotificationRescheduler` üzerinden `NotificationSettingsDao.getByUser()` snapshot'ını scheduler'a geçirmeli; kullanıcı kapattığı kategoriler yeniden kurulmaz
+- Local notification background tap callback'i payload'ı kalıcı kuyruğa yazar; `NotificationService.init()`/restore bu payload'ları `onNotificationTap` ile işler
 
 ```dart
 // Schedule
@@ -104,23 +108,23 @@ migration `20260703044437`) penceresini okuyup, quiet penceresi içindeki
 alıcıları teslimattan düşürür.
 
 Emniyet by-construction: bastırma **opt-in** — sadece push isteği
-`respectQuietHours: true` gönderirse çalışır. Hiçbir mevcut caller bunu
-göndermediği için şu an davranış değişmez (kritik/incubation bildirimleri asla
-bastırılamaz). Ayrıca herhangi bir eksik/geçersiz config (NULL pref, geçersiz
-saat/tz, lookup hatası) → teslim et.
+`respectQuietHours: true` gönderirse çalışır. Kritik/incubation bildirimleri bu
+flag'i set etmez ve asla bastırılamaz. Ayrıca herhangi bir eksik/geçersiz config
+(NULL pref, geçersiz saat/tz, lookup hatası) → teslim et.
 
-**Aktivasyon için kalan (product kararı):** (a) client'ın DND penceresini
-`profiles.quiet_hours`'a sync etmesi (yerel DND şu an sadece cihazda), (b)
-non-kritik bildirim caller'larının `respectQuietHours: true` set etmesi — hangi
-notification tiplerinin quiet-hours'a saygı göstereceği bilinçli bir taksonomi
-kararı, `send-push` çağıran her trigger tek tek işaretlenmeli.
+Client DND penceresi `NotificationToggleSettingsNotifier.setDndHours()` ile
+local rate limiter'a ve `profiles.quiet_hours` kolonuna birlikte yazılır. Admin
+panelinden gönderilen manuel kullanıcı/bulk bildirimleri non-kritik kabul edilir
+ve `respectQuietHours: true` ile gönderilir. Yeni non-kritik `send-push`
+caller'ları bu flag'i bilinçli olarak set etmeli; sistem sağlığı, inkübasyon,
+güvenlik ve hesap kritik bildirimleri flag'i set etmemeli.
 - Kullanıcı kategori bazlı bildirim açma/kapama (`profile.notification_preferences`) — client-side UI var
 
 ## Testing
 - Unit: `NotificationService` mock'lanır
 - Integration: `send-push` edge fn test (auth + payload + FCM mock)
 - Manual: iOS Simulator local notification (push gerçek cihaz gerektirir)
-- Background handler test'i ayrı isolate'te çalışır — test setup'ta dikkat
+- Background local tap persistence için `SharedPreferences.setMockInitialValues({})` kullan; callback payload'ı restore edilene kadar kaybolmamalı
 
 ## Anti-Patterns
 1. İlk açılışta context'siz permission istemek (kullanıcı reddeder, geri dönüş yok)

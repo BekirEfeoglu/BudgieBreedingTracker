@@ -32,7 +32,7 @@
            │ DAO queries             │ remote upserts
 ┌──────────▼──────────┐  ┌──────────▼──────────────┐
 │  Drift (local SQLite)│  │  Supabase (remote Postgres)│
-│  20 tables, v25     │  │  26 remote sources        │
+│  20 tables, v26     │  │  27 remote sources        │
 └─────────────────────┘  └────────────────────────────┘
 ```
 
@@ -69,27 +69,27 @@ Enforced by `scripts/verify_code_quality.py` (27 checker categories — 19/24 CL
 ### 5. 3-Language Parity
 - Turkish is master language — all keys added to `tr.json` first
 - CI blocks PRs with missing keys in `en.json` or `de.json`
-- ~2,995 keys per language, 41 categories
+- 3,068 keys per language, 41 categories
 - See [[patterns/l10n]]
 
-## Codebase Stats (as of 2026-07-02, kept in sync via `verify_rules.py --strict`)
+## Codebase Stats (as of 2026-07-08, kept in sync via `verify_rules.py --strict`)
 
 | Metric | Value |
 |--------|-------|
-| Source files (lib/) | 1000 Dart files |
-| Test files | 910 files, 11,285+ tests |
+| Source files (lib/) | 1009 Dart files |
+| Test files | 914 files, 12,069 tests verified by last full run |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
-| Remote sources | 27 entity + base + 2 caches + providers |
+| Remote sources | 28 `*_remote_source.dart` files + base/caches/providers |
 | Freezed models | 29 model files + statistics_models + supabase_extensions |
 | Domain services | 23 directories |
 | Routes | 74 |
-| Custom SVG icons | 93 constants, 93 files |
+| Custom SVG icons | 99 constants, 99 files on disk |
 | Shared widgets | 35 |
 | Enum files | 15 |
-| Supabase constants | 142 |
-| L10n keys | ~3,014 per language, 41 categories |
-| DB schema version | 25 |
-| Supabase migrations | 179 SQL files |
+| Supabase constants | 151 string constants |
+| L10n keys | 3,068 per language, 41 categories |
+| DB schema version | 26 |
+| Supabase migrations | 196 tracked SQL files |
 | Edge Functions | 12 |

@@ -156,6 +156,7 @@ class _FakeBulkClient extends Fake implements SupabaseClient {
   int _profilesCallCount = 0;
 
   final calledRpcs = <String>[];
+  final calledRpcParams = <Map<String, dynamic>?>[];
 
   @override
   SupabaseQueryBuilder from(String table) {
@@ -183,7 +184,9 @@ class _FakeBulkClient extends Fake implements SupabaseClient {
     // bulkDeleteUserData now deletes via the reset_user_data RPC. Succeed
     // unless deleteError is set (drives the skip-on-failure path).
     calledRpcs.add(fn);
-    return _FakeMutationBuilder(error: deleteError) as PostgrestFilterBuilder<T>;
+    calledRpcParams.add(params);
+    return _FakeMutationBuilder(error: deleteError)
+        as PostgrestFilterBuilder<T>;
   }
 }
 
@@ -572,6 +575,11 @@ void main() {
           client.requestedTables,
           contains(SupabaseConstants.profilesTable),
         );
+        expect(client.calledRpcs, ['admin_bulk_delete_user_data']);
+        expect(client.calledRpcParams.single?['p_user_ids'], [
+          'user-1',
+          'user-2',
+        ]);
       });
 
       test('fails for active admin that is not founder', () async {
@@ -619,10 +627,8 @@ void main() {
         expect(lastCall['error'], isNotNull);
       });
     });
-    group('bulkDeleteUserData — partial table failure', () {
-      test('skips user when individual table deletes throw', () async {
-        // deleteError causes every table delete to throw; the user must not be
-        // counted as fully deleted because some data may remain.
+    group('bulkDeleteUserData — RPC failure', () {
+      test('fails when the audited server RPC throws', () async {
         final client = _makeClient(
           adminUserResult: const {'role': 'founder', 'is_active': true},
           founderUserResult: const {'id': 'admin-row-1'},
@@ -639,13 +645,14 @@ void main() {
         final result = await manager.bulkDeleteUserData({'user-1'});
 
         expect(result.succeeded, 0);
-        expect(result.skipped, 1);
+        expect(result.skipped, 0);
         final lastCall = tracker.calls.last;
-        expect(lastCall['isSuccess'], isTrue);
+        expect(lastCall['isSuccess'], isNull);
         expect(lastCall['isLoading'], isFalse);
+        expect(lastCall['error'], 'admin.action_error');
       });
 
-      test('handles multiple users with partial table failures', () async {
+      test('does not count any user when the bulk RPC fails', () async {
         final client = _makeClient(
           adminUserResult: const {'role': 'founder', 'is_active': true},
           founderUserResult: const {'id': 'admin-row-1'},
@@ -666,7 +673,7 @@ void main() {
         });
 
         expect(result.succeeded, 0);
-        expect(result.skipped, 3);
+        expect(result.skipped, 0);
       });
     });
 

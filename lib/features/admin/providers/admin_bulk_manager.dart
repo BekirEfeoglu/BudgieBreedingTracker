@@ -170,8 +170,12 @@ class AdminBulkManager {
       final client = _ref.read(supabaseClientProvider);
       final rows = await client
           .from(SupabaseConstants.profilesTable)
-          .select('id, email, full_name, avatar_url, created_at, is_active')
-          .inFilter('id', userIds.toList());
+          .select(
+            '${SupabaseConstants.colId}, ${SupabaseConstants.colEmail}, '
+            '${SupabaseConstants.colFullName}, ${SupabaseConstants.colAvatarUrl}, '
+            '${SupabaseConstants.colCreatedAt}, ${SupabaseConstants.colIsActive}',
+          )
+          .inFilter(SupabaseConstants.colId, userIds.toList());
       _updateState(isLoading: false, isSuccess: true);
       final data = List<Map<String, dynamic>>.from(rows);
       return format == ExportFormat.csv ? _toCsv(data) : jsonEncode(data);
@@ -199,35 +203,18 @@ class AdminBulkManager {
         '[admin] bulkDeleteUserData called for ${userIds.length} users',
       );
 
-      for (final userId in userIds) {
-        try {
-          // Use the server-side RPC to delete all data in a single transaction
-          // instead of looping over all tables client-side (N * tables queries).
-          await client.rpc('reset_user_data', params: {'target_user_id': userId});
-          succeeded++;
-        } catch (e, st) {
-          AppLogger.warning(
-            'admin: bulkDeleteUserData failed for ${AppLogger.obfuscate(userId)}: $e\n$st',
-          );
-          Sentry.addBreadcrumb(
-            Breadcrumb(
-              message: 'bulkDeleteUserData RPC failed for ${AppLogger.obfuscate(userId)}',
-              category: 'admin.bulk_delete',
-              level: SentryLevel.warning,
-              data: {'error': e.toString()},
-            ),
-          );
-          skipped++;
-        }
+      final response = await client.rpc(
+        'admin_bulk_delete_user_data',
+        params: {'p_user_ids': userIds.toList()},
+      );
+      if (response is Map) {
+        succeeded = (response['succeeded'] as num?)?.toInt() ?? 0;
+        skipped = (response['skipped'] as num?)?.toInt() ?? 0;
+      } else {
+        succeeded = userIds.length;
       }
 
       _updateState(isLoading: false, isSuccess: true);
-      await logAdminAction(
-        client,
-        _ref.read(currentUserIdProvider),
-        'bulk_user_data_deleted',
-        details: {'user_count': userIds.length, 'succeeded': succeeded},
-      );
       _ref.invalidate(adminUsersProvider);
       _ref.invalidate(adminUserCountsProvider);
       return (succeeded: succeeded, skipped: skipped);

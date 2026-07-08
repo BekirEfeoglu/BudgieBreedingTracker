@@ -56,7 +56,7 @@ dart fix --apply
 ```bash
 python3 scripts/check_l10n_sync.py       # Verify tr/en/de translation keys are in sync
 python3 scripts/check_platform_targets.py # Verify unsupported Flutter web target is absent
-python3 scripts/check_obsidian_brain.py  # Verify obsidian-brain index, links, and page length
+python3 scripts/check_obsidian_brain.py  # Verify obsidian-brain links, refs, metrics, decisions, log pressure
 python3 scripts/verify_code_quality.py    # Anti-pattern scan (27 checkers, 19/24 CLAUDE.md patterns + 9 extra documented scanners)
 python3 scripts/verify_rules.py          # Validate CLAUDE.md stats against codebase (single source of truth)
 python3 scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats + rule inline references
@@ -101,8 +101,8 @@ scripts/test_app_store_config.py        # App Store config consistency tests
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 1007 Dart files |
-| Test files (test/) | 913 test files, 11,403+ individual tests |
+| Source files (lib/) | 1009 Dart files |
+| Test files (test/) | 914 test files, 11,436+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -113,8 +113,8 @@ scripts/test_app_store_config.py        # App Store config consistency tests
 | Custom SVG icons | 99 constants, 99 files on disk |
 | Shared widgets | 35 (15 root + 4 buttons + 2 cards + 2 dialog + 1 bottom_sheet + 5 eggs) |
 | Enum files | 15 |
-| Supabase constants | 143 (tables + buckets + columns) |
-| L10n keys | ~3,050 per language, 41 categories |
+| Supabase constants | 151 (tables + buckets + columns) |
+| L10n keys | ~3,068 per language, 41 categories |
 | DB schema version | 26 |
 
 ## CI/CD Pipeline
@@ -193,7 +193,7 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 | `validate-free-tier-limit` | Free tier entity limit enforcement |
 
 ### Migrations
-194 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
+196 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
 
 ## Rules
 
@@ -367,7 +367,7 @@ Security:      lib/core/security/
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
-Migrations:    supabase/migrations/ (194 files)
+Migrations:    supabase/migrations/ (196 files)
 Scripts:       scripts/
 CI:            .github/workflows/ + codemagic.yaml
 ```

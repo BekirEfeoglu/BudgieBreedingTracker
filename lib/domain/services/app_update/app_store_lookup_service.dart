@@ -34,3 +34,15 @@ class AppStoreLookupService {
     }
   }
 }
+
+String appStoreLookupCountryCode(String localeName) {
+  final normalized = localeName.trim().replaceAll('-', '_');
+  if (normalized.isEmpty) return 'tr';
+
+  final parts = normalized.split('_').where((part) => part.isNotEmpty).toList();
+  if (parts.length < 2) return 'tr';
+
+  final country = parts[1].toLowerCase();
+  if (!RegExp(r'^[a-z]{2}$').hasMatch(country)) return 'tr';
+  return country;
+}

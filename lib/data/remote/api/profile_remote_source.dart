@@ -47,4 +47,18 @@ class ProfileRemoteSource extends BaseRemoteSourceNoSoftDelete<Profile> {
       throw handleError(e, st);
     }
   }
+
+  /// Updates the server-side push quiet-hours window for the authenticated user.
+  Future<void> updateQuietHours({
+    required String userId,
+    required Map<String, dynamic> quietHours,
+  }) async {
+    try {
+      await table
+          .update({SupabaseConstants.colQuietHours: quietHours})
+          .eq(SupabaseConstants.colId, userId);
+    } catch (e, st) {
+      throw handleError(e, st);
+    }
+  }
 }

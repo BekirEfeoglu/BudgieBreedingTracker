@@ -114,7 +114,9 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
   }) async {
     try {
       final scheduler = ref.read(notificationSchedulerProvider);
-      final settings = ref.read(notificationToggleSettingsProvider);
+      final settings = await ref.read(
+        notificationToggleSettingsReadyProvider.future,
+      );
 
       final durationDays = followUpDate != null
           ? date_utils.DateUtils.dayDiff(

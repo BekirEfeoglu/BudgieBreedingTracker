@@ -46,13 +46,6 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userId = ref.watch(currentUserIdProvider);
 
-    // Request notification permission after the user sees the home screen.
-    // Deferred by 3 seconds so the dialog doesn't appear immediately.
-    // Narrowed with .select((_) => null) so HomeScreen does not rebuild when
-    // the permission future transitions loading → data — we only need the
-    // provider to be initialized, not its value.
-    ref.watch(deferredNotificationPermissionProvider.select((_) => null));
-
     // Show a SnackBar with settings action when notification permission is denied.
     // Throttled to once per day to avoid nagging on every app launch.
     ref.listen<bool>(notificationPermissionGrantedProvider, (prev, granted) {

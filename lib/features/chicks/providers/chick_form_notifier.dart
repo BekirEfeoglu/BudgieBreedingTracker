@@ -59,7 +59,9 @@ class ChickFormNotifier extends Notifier<ChickFormState>
       // Schedule chick care reminders (feeding every 4 hours for 14 days)
       try {
         final scheduler = ref.read(notificationSchedulerProvider);
-        final settings = ref.read(notificationToggleSettingsProvider);
+        final settings = await ref.read(
+          notificationToggleSettingsReadyProvider.future,
+        );
         await scheduler.scheduleChickCareReminder(
           chickId: chick.id,
           chickLabel: _chickLabel(name, ringNumber, chick.id),
@@ -78,7 +80,9 @@ class ChickFormNotifier extends Notifier<ChickFormState>
       // Schedule banding reminders
       try {
         final scheduler = ref.read(notificationSchedulerProvider);
-        final settings = ref.read(notificationToggleSettingsProvider);
+        final settings = await ref.read(
+          notificationToggleSettingsReadyProvider.future,
+        );
         await scheduler.scheduleBandingReminders(
           chickId: chick.id,
           chickLabel: _chickLabel(name, ringNumber, chick.id),
@@ -161,7 +165,9 @@ class ChickFormNotifier extends Notifier<ChickFormState>
           !chick.isBanded) {
         try {
           final scheduler = ref.read(notificationSchedulerProvider);
-          final settings = ref.read(notificationToggleSettingsProvider);
+          final settings = await ref.read(
+            notificationToggleSettingsReadyProvider.future,
+          );
           await scheduler.cancelBandingReminders(chick.id);
           if (chick.hatchDate != null) {
             await scheduler.scheduleBandingReminders(

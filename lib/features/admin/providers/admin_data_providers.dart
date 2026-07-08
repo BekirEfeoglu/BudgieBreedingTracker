@@ -45,10 +45,10 @@ class AdminUserNameCacheNotifier extends Notifier<Map<String, String>> {
       final client = ref.read(supabaseClientProvider);
       final result = await client
           .from(SupabaseConstants.profilesTable)
-          .select('full_name')
-          .eq('id', userId)
+          .select(SupabaseConstants.colFullName)
+          .eq(SupabaseConstants.colId, userId)
           .maybeSingle();
-      final fullName = result?['full_name'] as String?;
+      final fullName = result?[SupabaseConstants.colFullName] as String?;
       final fallback = _shortUserId(userId);
       final name = fullName?.trim().isNotEmpty == true
           ? fullName!.trim()
@@ -97,7 +97,7 @@ final adminStatsProvider = FutureProvider<AdminStats>((ref) async {
       try {
         var query = client.from(table).count();
         if (excludeDeleted) {
-          query = query.eq('is_deleted', false);
+          query = query.eq(SupabaseConstants.colIsDeleted, false);
         }
         return await query;
       } catch (inner, innerSt) {
@@ -129,9 +129,12 @@ final adminStatsProvider = FutureProvider<AdminStats>((ref) async {
       bool excludeDeleted = false,
     }) async {
       try {
-        var query = client.from(table).select('id').eq(column, value);
+        var query = client
+            .from(table)
+            .select(SupabaseConstants.colId)
+            .eq(column, value);
         if (excludeDeleted) {
-          query = query.eq('is_deleted', false);
+          query = query.eq(SupabaseConstants.colIsDeleted, false);
         }
         final result = await query;
         return (result as List).length;

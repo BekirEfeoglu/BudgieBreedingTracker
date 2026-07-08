@@ -7,11 +7,14 @@ import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/chicks_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/incubations_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/notification_settings_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
+import 'package:budgie_breeding_tracker/data/models/notification_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_rescheduler.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_scheduler.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_toggle_settings.dart';
 
 // ── Mock classes ──
 
@@ -20,6 +23,9 @@ class MockIncubationsDao extends Mock implements IncubationsDao {}
 class MockEggsDao extends Mock implements EggsDao {}
 
 class MockChicksDao extends Mock implements ChicksDao {}
+
+class MockNotificationSettingsDao extends Mock
+    implements NotificationSettingsDao {}
 
 class MockNotificationScheduler extends Mock implements NotificationScheduler {}
 
@@ -83,11 +89,13 @@ void main() {
   setUpAll(() {
     registerFallbackValue(Species.unknown);
     registerFallbackValue(DateTime(2024));
+    registerFallbackValue(const NotificationToggleSettings());
   });
 
   late MockIncubationsDao mockIncubationsDao;
   late MockEggsDao mockEggsDao;
   late MockChicksDao mockChicksDao;
+  late MockNotificationSettingsDao mockNotificationSettingsDao;
   late MockNotificationScheduler mockScheduler;
   late NotificationRescheduler rescheduler;
 
@@ -95,12 +103,14 @@ void main() {
     mockIncubationsDao = MockIncubationsDao();
     mockEggsDao = MockEggsDao();
     mockChicksDao = MockChicksDao();
+    mockNotificationSettingsDao = MockNotificationSettingsDao();
     mockScheduler = MockNotificationScheduler();
 
     rescheduler = NotificationRescheduler(
       incubationsDao: mockIncubationsDao,
       eggsDao: mockEggsDao,
       chicksDao: mockChicksDao,
+      notificationSettingsDao: mockNotificationSettingsDao,
       scheduler: mockScheduler,
     );
 
@@ -108,6 +118,9 @@ void main() {
     when(() => mockIncubationsDao.getAll(_userId)).thenAnswer((_) async => []);
     when(() => mockEggsDao.getIncubating(_userId)).thenAnswer((_) async => []);
     when(() => mockChicksDao.getUnweaned(_userId)).thenAnswer((_) async => []);
+    when(
+      () => mockNotificationSettingsDao.getByUser(_userId),
+    ).thenAnswer((_) async => null);
 
     // Default scheduler stubs — no-op
     when(
@@ -116,6 +129,7 @@ void main() {
         startDate: any(named: 'startDate'),
         label: any(named: 'label'),
         species: any(named: 'species'),
+        settings: any(named: 'settings'),
       ),
     ).thenAnswer((_) async {});
 
@@ -125,6 +139,7 @@ void main() {
         startDate: any(named: 'startDate'),
         eggLabel: any(named: 'eggLabel'),
         species: any(named: 'species'),
+        settings: any(named: 'settings'),
       ),
     ).thenAnswer((_) async {});
 
@@ -135,6 +150,7 @@ void main() {
         startDate: any(named: 'startDate'),
         intervalHours: any(named: 'intervalHours'),
         durationDays: any(named: 'durationDays'),
+        settings: any(named: 'settings'),
       ),
     ).thenAnswer((_) async {});
 
@@ -144,11 +160,98 @@ void main() {
         chickLabel: any(named: 'chickLabel'),
         hatchDate: any(named: 'hatchDate'),
         bandingDay: any(named: 'bandingDay'),
+        settings: any(named: 'settings'),
       ),
     ).thenAnswer((_) async {});
   });
 
   group('NotificationRescheduler.rescheduleAll', () {
+    test('passes saved toggle settings to all scheduled categories', () async {
+      when(() => mockNotificationSettingsDao.getByUser(_userId)).thenAnswer(
+        (_) async => const NotificationSettings(
+          id: 'settings-1',
+          userId: _userId,
+          eggTurningEnabled: false,
+          incubationReminderEnabled: false,
+          feedingReminderEnabled: false,
+          healthCheckEnabled: true,
+          bandingEnabled: false,
+        ),
+      );
+      final incubation = _incubation();
+      final egg = _egg();
+      final chick = _chick(name: 'Sunny');
+      when(
+        () => mockIncubationsDao.getAll(_userId),
+      ).thenAnswer((_) async => [incubation]);
+      when(
+        () => mockEggsDao.getIncubating(_userId),
+      ).thenAnswer((_) async => [egg]);
+      when(
+        () => mockChicksDao.getUnweaned(_userId),
+      ).thenAnswer((_) async => [chick]);
+
+      await rescheduler.rescheduleAll(_userId);
+
+      final incubationSettings =
+          verify(
+                () => mockScheduler.scheduleIncubationMilestones(
+                  incubationId: incubation.id,
+                  startDate: incubation.startDate!,
+                  label: 'incubati',
+                  species: incubation.species,
+                  settings: captureAny(named: 'settings'),
+                ),
+              ).captured.single
+              as NotificationToggleSettings;
+      final eggSettings =
+          verify(
+                () => mockScheduler.scheduleEggTurningReminders(
+                  eggId: egg.id,
+                  startDate: egg.layDate,
+                  eggLabel: 'Egg 1',
+                  species: Species.unknown,
+                  settings: captureAny(named: 'settings'),
+                ),
+              ).captured.single
+              as NotificationToggleSettings;
+      final chickCareSettings =
+          verify(
+                () => mockScheduler.scheduleChickCareReminder(
+                  chickId: chick.id,
+                  chickLabel: 'Sunny',
+                  startDate: chick.hatchDate!,
+                  intervalHours: 4,
+                  durationDays: 30,
+                  settings: captureAny(named: 'settings'),
+                ),
+              ).captured.single
+              as NotificationToggleSettings;
+      final bandingSettings =
+          verify(
+                () => mockScheduler.scheduleBandingReminders(
+                  chickId: chick.id,
+                  chickLabel: 'Sunny',
+                  hatchDate: chick.hatchDate!,
+                  bandingDay: chick.bandingDay,
+                  settings: captureAny(named: 'settings'),
+                ),
+              ).captured.single
+              as NotificationToggleSettings;
+
+      for (final settings in [
+        incubationSettings,
+        eggSettings,
+        chickCareSettings,
+        bandingSettings,
+      ]) {
+        expect(settings.eggTurning, isFalse);
+        expect(settings.incubation, isFalse);
+        expect(settings.chickCare, isFalse);
+        expect(settings.banding, isFalse);
+      }
+    });
+
     group('incubations', () {
       test(
         'schedules milestones for active incubation with startDate',
@@ -173,6 +276,7 @@ void main() {
               startDate: DateTime(2024, 1, 1),
               label: 'incubati',
               species: incubation.species,
+              settings: any(named: 'settings'),
             ),
           ).called(1);
         },
@@ -195,6 +299,7 @@ void main() {
             startDate: any(named: 'startDate'),
             label: any(named: 'label'),
             species: any(named: 'species'),
+            settings: any(named: 'settings'),
           ),
         );
       });
@@ -216,6 +321,7 @@ void main() {
             startDate: any(named: 'startDate'),
             label: any(named: 'label'),
             species: any(named: 'species'),
+            settings: any(named: 'settings'),
           ),
         );
       });
@@ -240,6 +346,7 @@ void main() {
             startDate: any(named: 'startDate'),
             label: any(named: 'label'),
             species: any(named: 'species'),
+            settings: any(named: 'settings'),
           ),
         );
       });
@@ -263,6 +370,7 @@ void main() {
             startDate: egg.layDate,
             eggLabel: 'Egg 3',
             species: Species.unknown,
+            settings: any(named: 'settings'),
           ),
         ).called(1);
       });
@@ -294,6 +402,7 @@ void main() {
               startDate: egg.layDate,
               eggLabel: 'Egg 2',
               species: Species.canary,
+              settings: any(named: 'settings'),
             ),
           ).called(1);
         },
@@ -316,6 +425,7 @@ void main() {
             startDate: egg.layDate,
             eggLabel: 'Egg ',
             species: Species.unknown,
+            settings: any(named: 'settings'),
           ),
         ).called(1);
       });
@@ -333,6 +443,7 @@ void main() {
             startDate: any(named: 'startDate'),
             eggLabel: any(named: 'eggLabel'),
             species: any(named: 'species'),
+            settings: any(named: 'settings'),
           ),
         );
       });
@@ -361,6 +472,7 @@ void main() {
             startDate: DateTime(2024, 1, 20),
             intervalHours: 4,
             durationDays: 30,
+            settings: any(named: 'settings'),
           ),
         ).called(1);
 
@@ -370,6 +482,7 @@ void main() {
             chickLabel: 'Tweety',
             hatchDate: DateTime(2024, 1, 20),
             bandingDay: 10,
+            settings: any(named: 'settings'),
           ),
         ).called(1);
       });
@@ -392,6 +505,7 @@ void main() {
             startDate: any(named: 'startDate'),
             intervalHours: 4,
             durationDays: 30,
+            settings: any(named: 'settings'),
           ),
         ).called(1);
       });
@@ -416,6 +530,7 @@ void main() {
             startDate: any(named: 'startDate'),
             intervalHours: any(named: 'intervalHours'),
             durationDays: any(named: 'durationDays'),
+            settings: any(named: 'settings'),
           ),
         ).called(1);
 
@@ -425,6 +540,7 @@ void main() {
             chickLabel: any(named: 'chickLabel'),
             hatchDate: any(named: 'hatchDate'),
             bandingDay: any(named: 'bandingDay'),
+            settings: any(named: 'settings'),
           ),
         );
       });
@@ -443,6 +559,7 @@ void main() {
             startDate: any(named: 'startDate'),
             intervalHours: any(named: 'intervalHours'),
             durationDays: any(named: 'durationDays'),
+            settings: any(named: 'settings'),
           ),
         );
       });
@@ -475,6 +592,7 @@ void main() {
               startDate: any(named: 'startDate'),
               eggLabel: any(named: 'eggLabel'),
               species: any(named: 'species'),
+              settings: any(named: 'settings'),
             ),
           ).called(1);
 
@@ -485,6 +603,7 @@ void main() {
               startDate: any(named: 'startDate'),
               intervalHours: any(named: 'intervalHours'),
               durationDays: any(named: 'durationDays'),
+              settings: any(named: 'settings'),
             ),
           ).called(1);
         },
@@ -516,6 +635,7 @@ void main() {
               startDate: any(named: 'startDate'),
               label: any(named: 'label'),
               species: any(named: 'species'),
+              settings: any(named: 'settings'),
             ),
           ).called(1);
 
@@ -526,6 +646,7 @@ void main() {
               startDate: any(named: 'startDate'),
               intervalHours: any(named: 'intervalHours'),
               durationDays: any(named: 'durationDays'),
+              settings: any(named: 'settings'),
             ),
           ).called(1);
         },

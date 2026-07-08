@@ -19,9 +19,11 @@ import {
   BODY_MAX,
   clampText,
   clampTokens,
+  isPermanentFcmTokenError,
   isSuppressedByQuietHours,
   MAX_TOKENS,
   normalizeData,
+  parseFcmErrorStatus,
   type PushRequest,
   type QuietHours,
   resultStatus,
@@ -130,12 +132,39 @@ async function sendToFcm(
 
   if (!response.ok) {
     const errorText = await response.text();
+    const errorStatus = parseFcmErrorStatus(errorText);
     console.error(`[send-push] FCM delivery failed: ${errorText}`);
-    return { ok: false };
+    return {
+      ok: false,
+      token,
+      permanentTokenFailure: isPermanentFcmTokenError(errorStatus),
+    };
   }
 
   await response.json();
-  return { ok: true };
+  return { ok: true, token, permanentTokenFailure: false };
+}
+
+async function deactivateFcmTokens(tokens: string[]): Promise<void> {
+  const uniqueTokens = [...new Set(tokens)];
+  if (uniqueTokens.length === 0) return;
+
+  const supabase = createSupabaseAdmin();
+  const { error } = await supabase
+    .from("fcm_tokens")
+    .update({ is_active: false })
+    .in("token", uniqueTokens);
+
+  if (error) {
+    console.error(
+      `[send-push] Failed to deactivate ${uniqueTokens.length} invalid tokens: ${error.message}`,
+    );
+    return;
+  }
+
+  console.info(
+    `[send-push] Deactivated ${uniqueTokens.length} permanent-failure tokens`,
+  );
 }
 
 Deno.serve(async (req: Request) => {
@@ -217,7 +246,9 @@ Deno.serve(async (req: Request) => {
     // filtered (no user to look up); critical notifications simply omit
     // `respectQuietHours`, so they are never held back here.
     let deliveryRequest = request;
-    if (request.respectQuietHours === true && (request.tokens?.length ?? 0) === 0) {
+    if (
+      request.respectQuietHours === true && (request.tokens?.length ?? 0) === 0
+    ) {
       const ids = request.userIds ?? (request.userId ? [request.userId] : []);
       if (ids.length > 0) {
         const supabase = createSupabaseAdmin();
@@ -249,7 +280,11 @@ Deno.serve(async (req: Request) => {
               `[send-push] quiet_hours suppressed=${suppressed.size} ` +
                 `delivered=${delivered.length}`,
             );
-            deliveryRequest = { ...request, userId: undefined, userIds: delivered };
+            deliveryRequest = {
+              ...request,
+              userId: undefined,
+              userIds: delivered,
+            };
             if (delivered.length === 0) {
               return new Response(
                 JSON.stringify({
@@ -277,6 +312,7 @@ Deno.serve(async (req: Request) => {
 
     let successCount = 0;
     let failureCount = 0;
+    const tokensToDeactivate: string[] = [];
     for (const tokenBatch of batchItems(tokens, BATCH_SIZE)) {
       const results = await Promise.all(
         tokenBatch.map((token) =>
@@ -285,7 +321,14 @@ Deno.serve(async (req: Request) => {
       );
       successCount += results.filter((item) => item.ok).length;
       failureCount += results.filter((item) => !item.ok).length;
+      tokensToDeactivate.push(
+        ...results
+          .filter((item) => item.permanentTokenFailure)
+          .map((item) => item.token),
+      );
     }
+
+    await deactivateFcmTokens(tokensToDeactivate);
 
     return new Response(
       JSON.stringify({ success: successCount, failure: failureCount }),

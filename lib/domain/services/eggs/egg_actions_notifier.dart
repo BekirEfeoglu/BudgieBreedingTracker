@@ -38,6 +38,11 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
   @override
   EggActionsState build() => const EggActionsState();
 
+  void _setStateIfMounted(EggActionsState Function(EggActionsState) update) {
+    if (!ref.mounted) return;
+    state = update(state);
+  }
+
   /// Adds a new egg to an incubation.
   Future<void> addEgg({
     required String incubationId,
@@ -64,9 +69,11 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       final incubationRepo = ref.read(incubationRepositoryProvider);
       final incubation = await incubationRepo.getById(incubationId);
       if (incubation == null || incubation.userId != userId) {
-        state = state.copyWith(
-          isLoading: false,
-          error: 'eggs.invalid_incubation'.tr(),
+        _setStateIfMounted(
+          (current) => current.copyWith(
+            isLoading: false,
+            error: 'eggs.invalid_incubation'.tr(),
+          ),
         );
         return;
       }
@@ -99,7 +106,9 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
         // First egg defines the incubation start date, so schedule milestones immediately.
         try {
           final scheduler = ref.read(notificationSchedulerProvider);
-          final settings = ref.read(notificationToggleSettingsProvider);
+          final settings = await ref.read(
+            notificationToggleSettingsReadyProvider.future,
+          );
           await scheduler.scheduleIncubationMilestones(
             incubationId: startedIncubation.id,
             startDate: layDate,
@@ -142,7 +151,9 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       // Schedule egg turning reminders
       try {
         final scheduler = ref.read(notificationSchedulerProvider);
-        final settings = ref.read(notificationToggleSettingsProvider);
+        final settings = await ref.read(
+          notificationToggleSettingsReadyProvider.future,
+        );
         await scheduler.scheduleEggTurningReminders(
           eggId: egg.id,
           startDate: layDate,
@@ -177,17 +188,22 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
         }
       }
 
-      state = state.copyWith(
-        isLoading: false,
-        warning: sideEffectErrors.isNotEmpty
-            ? 'errors.background_tasks_partial'.tr()
-            : null,
-        isSuccess: true,
+      _setStateIfMounted(
+        (current) => current.copyWith(
+          isLoading: false,
+          warning: sideEffectErrors.isNotEmpty
+              ? 'errors.background_tasks_partial'.tr()
+              : null,
+          isSuccess: true,
+        ),
       );
     } catch (e) {
       AppLogger.error('EggActionsNotifier', e, StackTrace.current);
       Sentry.captureException(e, stackTrace: StackTrace.current);
-      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
+      _setStateIfMounted(
+        (current) =>
+            current.copyWith(isLoading: false, error: 'errors.unknown'.tr()),
+      );
     }
   }
 
@@ -242,9 +258,11 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       // ...) that synced in from another device during the gap.
       final current = await repo.getById(egg.id);
       if (current == null) {
-        state = state.copyWith(
-          isLoading: false,
-          error: 'eggs.egg_not_found'.tr(),
+        _setStateIfMounted(
+          (state) => state.copyWith(
+            isLoading: false,
+            error: 'eggs.egg_not_found'.tr(),
+          ),
         );
         return;
       }
@@ -252,7 +270,10 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       // Only stamp event dates when the status actually changes. Without
       // this guard, re-saving an already-hatched egg would reset its
       // hatchDate to today and the chick age math would silently drift.
-      var updated = current.copyWith(status: newStatus, updatedAt: DateTime.now());
+      var updated = current.copyWith(
+        status: newStatus,
+        updatedAt: DateTime.now(),
+      );
 
       if (newStatus != current.status) {
         if (newStatus == EggStatus.hatched) {
@@ -313,16 +334,21 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
           ? 'errors.chick_auto_create_failed'.tr()
           : (sideEffectError ? 'errors.background_tasks_partial'.tr() : null);
 
-      state = state.copyWith(
-        isLoading: false,
-        warning: warning,
-        isSuccess: true,
-        chickCreated: didCreateChick,
+      _setStateIfMounted(
+        (current) => current.copyWith(
+          isLoading: false,
+          warning: warning,
+          isSuccess: true,
+          chickCreated: didCreateChick,
+        ),
       );
     } catch (e) {
       AppLogger.error('EggActionsNotifier', e, StackTrace.current);
       Sentry.captureException(e, stackTrace: StackTrace.current);
-      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
+      _setStateIfMounted(
+        (current) =>
+            current.copyWith(isLoading: false, error: 'errors.unknown'.tr()),
+      );
     }
   }
 
@@ -398,7 +424,9 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       // Schedule chick care reminders
       try {
         final scheduler = ref.read(notificationSchedulerProvider);
-        final chickSettings = ref.read(notificationToggleSettingsProvider);
+        final chickSettings = await ref.read(
+          notificationToggleSettingsReadyProvider.future,
+        );
         await scheduler.scheduleChickCareReminder(
           chickId: chick.id,
           chickLabel: chickLabel,
@@ -436,7 +464,9 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
       // Schedule banding reminders for auto-created chick
       try {
         final scheduler = ref.read(notificationSchedulerProvider);
-        final chickSettings = ref.read(notificationToggleSettingsProvider);
+        final chickSettings = await ref.read(
+          notificationToggleSettingsReadyProvider.future,
+        );
         await scheduler.scheduleBandingReminders(
           chickId: chick.id,
           chickLabel: chickLabel,
@@ -675,11 +705,16 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
         }
       }
 
-      state = state.copyWith(isLoading: false, isSuccess: true);
+      _setStateIfMounted(
+        (current) => current.copyWith(isLoading: false, isSuccess: true),
+      );
     } catch (e) {
       AppLogger.error('EggActionsNotifier', e, StackTrace.current);
       Sentry.captureException(e, stackTrace: StackTrace.current);
-      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
+      _setStateIfMounted(
+        (current) =>
+            current.copyWith(isLoading: false, error: 'errors.unknown'.tr()),
+      );
     }
   }
 

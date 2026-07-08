@@ -3,6 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -163,6 +164,7 @@ void main() {
     late NotificationService service;
 
     setUp(() {
+      SharedPreferences.setMockInitialValues({});
       mockPlugin = _MockPlugin();
       service = NotificationService(plugin: mockPlugin);
 
@@ -247,6 +249,52 @@ void main() {
         ),
       ).called(1);
     });
+
+    test(
+      'persists background tap payloads until they can be restored',
+      () async {
+        DidReceiveBackgroundNotificationResponseCallback? backgroundCallback;
+        final receivedPayloads = <String?>[];
+        service.onNotificationTap = receivedPayloads.add;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(_timezoneChannel, (call) async {
+              if (call.method == 'getLocalTimezone') return 'UTC';
+              return null;
+            });
+        when(
+          () => mockPlugin.initialize(
+            settings: any(named: 'settings'),
+            onDidReceiveNotificationResponse: any(
+              named: 'onDidReceiveNotificationResponse',
+            ),
+            onDidReceiveBackgroundNotificationResponse: any(
+              named: 'onDidReceiveBackgroundNotificationResponse',
+            ),
+          ),
+        ).thenAnswer((invocation) async {
+          backgroundCallback =
+              invocation.namedArguments[const Symbol(
+                    'onDidReceiveBackgroundNotificationResponse',
+                  )]
+                  as DidReceiveBackgroundNotificationResponseCallback;
+          return true;
+        });
+
+        await service.init();
+        backgroundCallback!(
+          const NotificationResponse(
+            notificationResponseType:
+                NotificationResponseType.selectedNotification,
+            payload: 'bird:background-id',
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        await service.restorePendingBackgroundTapPayloads();
+
+        expect(receivedPayloads, ['bird:background-id']);
+      },
+    );
   });
 
   group('NotificationService show/schedule/cancel (DI)', () {

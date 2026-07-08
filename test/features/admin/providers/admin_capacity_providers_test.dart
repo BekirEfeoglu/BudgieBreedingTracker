@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/features/admin/constants/admin_constants.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_capacity_providers.dart';
+import 'package:budgie_breeding_tracker/features/admin/providers/admin_dashboard_providers.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 
@@ -297,10 +298,61 @@ void main() {
       );
     });
 
+    test('defaults to the Free plan database size quota', () {
+      expect(AdminConstants.dbSizeLimitDefault, 500 * 1024 * 1024);
+    });
+
     test('is case-insensitive', () {
       expect(
         AdminConstants.dbSizeLimitForPlan('Pro'),
         AdminConstants.dbSizeLimitForPlan('pro'),
+      );
+    });
+  });
+
+  group('dbSizeLimitProvider', () {
+    test(
+      'uses Free plan limit when supabase_plan setting is missing',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            adminSystemSettingsProvider.overrideWith((_) async => const {}),
+          ],
+          retry: (_, __) => null,
+        );
+        final sub = container.listen(dbSizeLimitProvider, (_, __) {});
+        addTearDown(() {
+          sub.close();
+          container.dispose();
+        });
+
+        await expectLater(
+          container.read(dbSizeLimitProvider.future),
+          completion(500 * 1024 * 1024),
+        );
+      },
+    );
+
+    test('uses configured Pro plan limit when supabase_plan is pro', () async {
+      final container = ProviderContainer(
+        overrides: [
+          adminSystemSettingsProvider.overrideWith(
+            (_) async => const {
+              'supabase_plan': {'value': 'pro'},
+            },
+          ),
+        ],
+        retry: (_, __) => null,
+      );
+      final sub = container.listen(dbSizeLimitProvider, (_, __) {});
+      addTearDown(() {
+        sub.close();
+        container.dispose();
+      });
+
+      await expectLater(
+        container.read(dbSizeLimitProvider.future),
+        completion(8 * 1024 * 1024 * 1024),
       );
     });
   });

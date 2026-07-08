@@ -39,9 +39,10 @@ MigrationStrategy(
 
 Format: `YYYYMMDDHHmmss_short_description.sql`
 
-182 migration files in `supabase/migrations/` — applied in lexicographic
+194 tracked migration files in `supabase/migrations/` — applied in lexicographic
 (chronological) order. Verified 1:1 against production (zero drift,
-2026-07-02). `supabase/migrations/README.md` maps the full history by
+2026-07-02; rerun production verification after deploying newer local
+migrations). `supabase/migrations/README.md` maps the full history by
 date-range/theme for orientation — additive only, no file was moved,
 renamed, or deleted.
 
@@ -120,6 +121,26 @@ Note: `CONCURRENTLY` cannot run inside a transaction.
 ### Forward-Only Policy
 
 Never delete or rename migration files. If a mistake exists, create a new migration to correct it.
+
+## Current Decisions
+
+- Drift schema is v26 and must advance one version at a time.
+- Supabase SQL migrations are forward-only and tracked in chronological filenames.
+- Privileged RPCs use `private` `SECURITY DEFINER` implementations plus public invoker wrappers.
+- Production drift verification is required after deploying newer local migrations.
+
+## Known Deferred Work
+
+- Two local untracked migrations exist in the working tree until they are reviewed/staged.
+- Production verification date in this page should be refreshed after the next Supabase deploy.
+- Large-table index work should be split into dedicated concurrent-index migrations.
+
+## Do Not Reintroduce
+
+- Do not add public `SECURITY DEFINER` RPCs directly.
+- Do not delete, rename, or rewrite historical migration files.
+- Do not add non-idempotent DDL without `IF EXISTS` / `IF NOT EXISTS`.
+- Do not add remote columns without checking Drift/Supabase sync direction.
 
 ## Anti-Patterns
 

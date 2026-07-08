@@ -71,6 +71,14 @@ void main() {
       expect(find.text(l10n('admin.security')), findsOneWidget);
     });
 
+    testWidgets('should_show_app_update_settings_section', (tester) async {
+      await tester.pumpWidget(
+        _wrap(AdminSettingsContent(settings: _settingsMap)),
+      );
+      await tester.pump();
+      expect(find.text(l10n('admin.app_update_settings')), findsOneWidget);
+    });
+
     testWidgets('should_show_multiple_accent_settings_sections', (
       tester,
     ) async {
@@ -78,8 +86,8 @@ void main() {
         _wrap(AdminSettingsContent(settings: _settingsMap)),
       );
       await tester.pump();
-      // System, Feature, Security, Data, Notification = 5 sections
-      expect(find.byType(AccentSettingsSection), findsNWidgets(5));
+      // App Update, System, Feature, Security, Data, Notification = 6 sections
+      expect(find.byType(AccentSettingsSection), findsNWidgets(6));
     });
 
     testWidgets('should_show_reset_defaults_button', (tester) async {

@@ -34,6 +34,38 @@ export function normalizeData(
   return normalized;
 }
 
+/** Extracts the most specific FCM error status/code from a v1 error body. */
+export function parseFcmErrorStatus(errorText: string): string | null {
+  try {
+    const parsed = JSON.parse(errorText) as {
+      error?: {
+        status?: unknown;
+        details?: Array<Record<string, unknown>>;
+      };
+    };
+    for (const detail of parsed.error?.details ?? []) {
+      const errorCode = detail.errorCode;
+      if (typeof errorCode === "string" && errorCode.trim().length > 0) {
+        return errorCode;
+      }
+    }
+    const status = parsed.error?.status;
+    return typeof status === "string" && status.trim().length > 0
+      ? status
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Whether the FCM error means the device token should be deactivated. */
+export function isPermanentFcmTokenError(status: string | null): boolean {
+  return status === "UNREGISTERED" ||
+    status === "INVALID_ARGUMENT" ||
+    status === "NOT_FOUND" ||
+    status === "SENDER_ID_MISMATCH";
+}
+
 /** De-duplicates tokens and caps at MAX_TOKENS. */
 export function clampTokens(tokens: string[]): string[] {
   const unique = [...new Set(tokens)];

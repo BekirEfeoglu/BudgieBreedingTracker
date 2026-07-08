@@ -142,9 +142,7 @@ void main() {
     when(
       () => mockScheduler.cancelIncubationMilestones(any()),
     ).thenAnswer((_) async {});
-    when(
-      () => mockEventRepo.removeByEggIds(any()),
-    ).thenAnswer((_) async => 0);
+    when(() => mockEventRepo.removeByEggIds(any())).thenAnswer((_) async => 0);
     when(
       () => mockEventRepo.removeByIncubationIds(any()),
     ).thenAnswer((_) async => 0);
@@ -219,6 +217,9 @@ void main() {
         notificationSchedulerProvider.overrideWithValue(mockScheduler),
         notificationToggleSettingsProvider.overrideWith(
           _TestNotificationToggleSettingsNotifier.new,
+        ),
+        notificationToggleSettingsReadyProvider.overrideWith(
+          (_) async => const NotificationToggleSettings(),
         ),
         calendarEventGeneratorProvider.overrideWithValue(mockCalendarGen),
         eventRepositoryProvider.overrideWithValue(mockEventRepo),
@@ -384,89 +385,31 @@ void main() {
       },
     );
 
-    test('cancels the incubation when deleting the SOLE egg (empty clutch)', () async {
-      // inc-1's only egg is deleted, leaving the incubation with zero eggs.
-      // Regression: it must not stay stuck `active` — deleting the last egg
-      // cancels the now-empty incubation (no hatch) and flips the parent pair,
-      // so a free-tier user isn't blocked by a phantom active incubation.
-      when(() => eggRepo.getById('egg-1')).thenAnswer(
-        (_) async => Egg(
-          id: 'egg-1',
-          userId: 'test-user',
-          incubationId: 'inc-1',
-          layDate: DateTime(2024, 1, 10),
-          status: EggStatus.incubating,
-        ),
-      );
-      when(() => eggRepo.remove('egg-1')).thenAnswer((_) async {});
-      // After the delete the incubation has no eggs left.
-      when(
-        () => eggRepo.getByIncubation('inc-1'),
-      ).thenAnswer((_) async => <Egg>[]);
-      when(() => incubationRepo.save(any())).thenAnswer((_) async {});
-      when(
-        () => incubationRepo.getByBreedingPairIds(['pair-1']),
-      ).thenAnswer((_) async => <Incubation>[]);
-      when(() => breedingPairRepo.getById('pair-1')).thenAnswer(
-        (_) async => const BreedingPair(
-          id: 'pair-1',
-          userId: 'test-user',
-          maleId: 'male-1',
-          femaleId: 'female-1',
-          status: BreedingStatus.active,
-        ),
-      );
-      when(() => breedingPairRepo.save(any())).thenAnswer((_) async {});
-
-      final container = makeContainer();
-      addTearDown(container.dispose);
-
-      await container.read(eggActionsProvider.notifier).deleteEgg('egg-1');
-
-      final savedIncubation =
-          verify(() => incubationRepo.save(captureAny())).captured.single
-              as Incubation;
-      expect(savedIncubation.status, IncubationStatus.cancelled);
-
-      final savedPair =
-          verify(() => breedingPairRepo.save(captureAny())).captured.single
-              as BreedingPair;
-      expect(savedPair.status, BreedingStatus.cancelled);
-
-      expect(container.read(eggActionsProvider).isSuccess, isTrue);
-    });
-
     test(
-      'cancels milestone notifications and removes calendar events when '
-      'an incubation auto-completes — this is the common closing path and, '
-      'unlike the explicit cancel/complete breeding buttons, previously did '
-      'neither',
+      'cancels the incubation when deleting the SOLE egg (empty clutch)',
       () async {
-        when(() => eggRepo.getById('egg-2')).thenAnswer(
+        // inc-1's only egg is deleted, leaving the incubation with zero eggs.
+        // Regression: it must not stay stuck `active` — deleting the last egg
+        // cancels the now-empty incubation (no hatch) and flips the parent pair,
+        // so a free-tier user isn't blocked by a phantom active incubation.
+        when(() => eggRepo.getById('egg-1')).thenAnswer(
           (_) async => Egg(
-            id: 'egg-2',
+            id: 'egg-1',
             userId: 'test-user',
             incubationId: 'inc-1',
             layDate: DateTime(2024, 1, 10),
             status: EggStatus.incubating,
           ),
         );
-        when(() => eggRepo.remove('egg-2')).thenAnswer((_) async {});
-        when(() => eggRepo.getByIncubation('inc-1')).thenAnswer(
-          (_) async => [
-            Egg(
-              id: 'egg-1',
-              userId: 'test-user',
-              incubationId: 'inc-1',
-              layDate: DateTime(2024, 1, 1),
-              status: EggStatus.hatched,
-            ),
-          ],
-        );
+        when(() => eggRepo.remove('egg-1')).thenAnswer((_) async {});
+        // After the delete the incubation has no eggs left.
+        when(
+          () => eggRepo.getByIncubation('inc-1'),
+        ).thenAnswer((_) async => <Egg>[]);
         when(() => incubationRepo.save(any())).thenAnswer((_) async {});
         when(
           () => incubationRepo.getByBreedingPairIds(['pair-1']),
-        ).thenAnswer((_) async => []);
+        ).thenAnswer((_) async => <Incubation>[]);
         when(() => breedingPairRepo.getById('pair-1')).thenAnswer(
           (_) async => const BreedingPair(
             id: 'pair-1',
@@ -481,16 +424,70 @@ void main() {
         final container = makeContainer();
         addTearDown(container.dispose);
 
-        await container.read(eggActionsProvider.notifier).deleteEgg('egg-2');
+        await container.read(eggActionsProvider.notifier).deleteEgg('egg-1');
 
-        verify(
-          () => mockScheduler.cancelIncubationMilestones('inc-1'),
-        ).called(1);
-        verify(
-          () => mockEventRepo.removeByIncubationIds(['inc-1']),
-        ).called(1);
+        final savedIncubation =
+            verify(() => incubationRepo.save(captureAny())).captured.single
+                as Incubation;
+        expect(savedIncubation.status, IncubationStatus.cancelled);
+
+        final savedPair =
+            verify(() => breedingPairRepo.save(captureAny())).captured.single
+                as BreedingPair;
+        expect(savedPair.status, BreedingStatus.cancelled);
+
+        expect(container.read(eggActionsProvider).isSuccess, isTrue);
       },
     );
+
+    test('cancels milestone notifications and removes calendar events when '
+        'an incubation auto-completes — this is the common closing path and, '
+        'unlike the explicit cancel/complete breeding buttons, previously did '
+        'neither', () async {
+      when(() => eggRepo.getById('egg-2')).thenAnswer(
+        (_) async => Egg(
+          id: 'egg-2',
+          userId: 'test-user',
+          incubationId: 'inc-1',
+          layDate: DateTime(2024, 1, 10),
+          status: EggStatus.incubating,
+        ),
+      );
+      when(() => eggRepo.remove('egg-2')).thenAnswer((_) async {});
+      when(() => eggRepo.getByIncubation('inc-1')).thenAnswer(
+        (_) async => [
+          Egg(
+            id: 'egg-1',
+            userId: 'test-user',
+            incubationId: 'inc-1',
+            layDate: DateTime(2024, 1, 1),
+            status: EggStatus.hatched,
+          ),
+        ],
+      );
+      when(() => incubationRepo.save(any())).thenAnswer((_) async {});
+      when(
+        () => incubationRepo.getByBreedingPairIds(['pair-1']),
+      ).thenAnswer((_) async => []);
+      when(() => breedingPairRepo.getById('pair-1')).thenAnswer(
+        (_) async => const BreedingPair(
+          id: 'pair-1',
+          userId: 'test-user',
+          maleId: 'male-1',
+          femaleId: 'female-1',
+          status: BreedingStatus.active,
+        ),
+      );
+      when(() => breedingPairRepo.save(any())).thenAnswer((_) async {});
+
+      final container = makeContainer();
+      addTearDown(container.dispose);
+
+      await container.read(eggActionsProvider.notifier).deleteEgg('egg-2');
+
+      verify(() => mockScheduler.cancelIncubationMilestones('inc-1')).called(1);
+      verify(() => mockEventRepo.removeByIncubationIds(['inc-1'])).called(1);
+    });
 
     test(
       'auto-completion still succeeds when notification/calendar cleanup '
@@ -600,31 +597,28 @@ void main() {
       },
     );
 
-    test(
-      'refuses to resurrect an egg that was deleted concurrently',
-      () async {
-        // Simulates the race: the caller is still holding a stale Egg
-        // snapshot (e.g. from a status-update bottom sheet) when the egg's
-        // breeding pair gets deleted elsewhere. getById now returns null
-        // because the row is soft-deleted.
-        when(() => eggRepo.getById('egg-1')).thenAnswer((_) async => null);
+    test('refuses to resurrect an egg that was deleted concurrently', () async {
+      // Simulates the race: the caller is still holding a stale Egg
+      // snapshot (e.g. from a status-update bottom sheet) when the egg's
+      // breeding pair gets deleted elsewhere. getById now returns null
+      // because the row is soft-deleted.
+      when(() => eggRepo.getById('egg-1')).thenAnswer((_) async => null);
 
-        final container = makeContainer();
-        addTearDown(container.dispose);
+      final container = makeContainer();
+      addTearDown(container.dispose);
 
-        await container
-            .read(eggActionsProvider.notifier)
-            .updateEggStatus(testEgg(), EggStatus.hatched);
+      await container
+          .read(eggActionsProvider.notifier)
+          .updateEggStatus(testEgg(), EggStatus.hatched);
 
-        verifyNever(() => eggRepo.save(any()));
-        verifyNever(() => chickRepo.save(any()));
+      verifyNever(() => eggRepo.save(any()));
+      verifyNever(() => chickRepo.save(any()));
 
-        final state = container.read(eggActionsProvider);
-        expect(state.isSuccess, isFalse);
-        expect(state.error, isNotNull);
-        expect(state.chickCreated, isFalse);
-      },
-    );
+      final state = container.read(eggActionsProvider);
+      expect(state.isSuccess, isFalse);
+      expect(state.error, isNotNull);
+      expect(state.chickCreated, isFalse);
+    });
 
     test('skips chick creation when chick already exists for egg', () async {
       when(() => eggRepo.save(any())).thenAnswer((_) async {});
@@ -664,8 +658,7 @@ void main() {
         // fields this test asserts on (eggNumber/clutchId), matching what a
         // real fetch would return for this id.
         when(() => eggRepo.getById('egg-1')).thenAnswer(
-          (_) async =>
-              testEgg(eggNumber: 7).copyWith(clutchId: 'clutch-1'),
+          (_) async => testEgg(eggNumber: 7).copyWith(clutchId: 'clutch-1'),
         );
 
         final container = makeContainer();

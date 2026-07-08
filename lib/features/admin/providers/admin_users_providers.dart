@@ -133,7 +133,10 @@ final adminUsersProvider = FutureProvider.family<List<AdminUser>, AdminUsersQuer
   }
 
   if (usesSessionActivityFilter) {
-    request = request.inFilter('id', filteredActivity.keys.toList());
+    request = request.inFilter(
+      SupabaseConstants.colId,
+      filteredActivity.keys.toList(),
+    );
   }
 
   // Validate sortField against allowed columns to prevent schema probing
@@ -305,10 +308,12 @@ Future<Map<String, DateTime>> _loadVisibleUserActivity(
 
   final rows = await client
       .from(SupabaseConstants.userSessionsTable)
-      .select('user_id, ${SupabaseConstants.colLastActiveAt}')
-      .eq('is_active', true)
+      .select(
+        '${SupabaseConstants.colUserId}, ${SupabaseConstants.colLastActiveAt}',
+      )
+      .eq(SupabaseConstants.colIsActive, true)
       .gte(SupabaseConstants.colLastActiveAt, onlineSince.toIso8601String())
-      .inFilter('user_id', ids)
+      .inFilter(SupabaseConstants.colUserId, ids)
       .order(SupabaseConstants.colLastActiveAt, ascending: false);
 
   return _latestActivityByUser(rows as List);
@@ -389,27 +394,27 @@ final adminUserDetailProvider = FutureProvider.family<AdminUserDetail, String>((
     chicksCount: (result['chicks_count'] as num?)?.toInt() ?? 0,
     healthRecordsCount: (result['health_records_count'] as num?)?.toInt() ?? 0,
     eventsCount: (result['events_count'] as num?)?.toInt() ?? 0,
-    activityLogs: (result['activity_logs'] as List?)
+    activityLogs:
+        (result['activity_logs'] as List?)
             ?.map((l) => AdminLog.fromJson(l as Map<String, dynamic>))
-            .toList() ?? [],
+            .toList() ??
+        [],
   );
 });
 
 /// Fetch security events for a specific user.
-final adminUserSecurityEventsProvider = FutureProvider.family<List<SecurityEvent>, String>((
-  ref,
-  userId,
-) async {
-  await requireAdmin(ref);
-  final client = ref.watch(supabaseClientProvider);
+final adminUserSecurityEventsProvider =
+    FutureProvider.family<List<SecurityEvent>, String>((ref, userId) async {
+      await requireAdmin(ref);
+      final client = ref.watch(supabaseClientProvider);
 
-  final result = await client
-      .from(SupabaseConstants.securityEventsTable)
-      .select()
-      .eq(SupabaseConstants.colUserId, userId)
-      .order(SupabaseConstants.colCreatedAt, ascending: false)
-      .limit(50);
+      final result = await client
+          .from(SupabaseConstants.securityEventsTable)
+          .select()
+          .eq(SupabaseConstants.colUserId, userId)
+          .order(SupabaseConstants.colCreatedAt, ascending: false)
+          .limit(50);
 
-  final rows = (result as List).cast<Map<String, dynamic>>();
-  return rows.map((row) => SecurityEvent.fromJson(row)).toList();
-});
+      final rows = (result as List).cast<Map<String, dynamic>>();
+      return rows.map((row) => SecurityEvent.fromJson(row)).toList();
+    });

@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/security/sensitive_clipboard.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
@@ -11,9 +10,8 @@ import '../../../core/widgets/dialogs/typed_confirm_dialog.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/loading_state.dart';
 import '../../../core/utils/logger.dart';
-import '../../../data/providers/auth_state_providers.dart';
+import '../../../shared/providers/auth.dart';
 import '../providers/admin_actions_provider.dart';
-import '../providers/admin_auth_utils.dart';
 import '../providers/admin_providers.dart';
 import '../widgets/admin_notification_sheet.dart';
 import '../widgets/admin_user_detail_widgets.dart';
@@ -323,22 +321,23 @@ class _AdminUserDetailScreenState extends ConsumerState<AdminUserDetailScreen> {
       // Audit trail: record the export against the target user. Per
       // security.md, admin operations touching cross-user PII must be
       // logged so reviewers can trace data access.
-      final adminUserId = ref.read(currentUserIdProvider);
-      await logAdminAction(
-        Supabase.instance.client,
-        adminUserId,
-        'user_data_exported',
-        targetUserId: widget.userId,
-        details: {
-          'birds_count': detail.birdsCount,
-          'pairs_count': detail.pairsCount,
-          'eggs_count': detail.eggsCount,
-          'chicks_count': detail.chicksCount,
-          'health_records_count': detail.healthRecordsCount,
-          'events_count': detail.eventsCount,
-          'photos_count': content.photos.length,
-        },
-      );
+      await ref
+          .read(supabaseClientProvider)
+          .rpc(
+            'admin_log_user_data_export',
+            params: {
+              'target_user_id': widget.userId,
+              'p_details': {
+                'birds_count': detail.birdsCount,
+                'pairs_count': detail.pairsCount,
+                'eggs_count': detail.eggsCount,
+                'chicks_count': detail.chicksCount,
+                'health_records_count': detail.healthRecordsCount,
+                'events_count': detail.eventsCount,
+                'photos_count': content.photos.length,
+              },
+            },
+          );
 
       if (!mounted) return;
       ScaffoldMessenger.of(

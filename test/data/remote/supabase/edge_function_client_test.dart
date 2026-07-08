@@ -143,6 +143,39 @@ void main() {
       ).called(1);
     });
 
+    test('sendPush forwards quiet-hours opt-in flag when requested', () async {
+      when(
+        () => mockFunctions.invoke(
+          'send-push',
+          body: any(named: 'body'),
+          headers: any(named: 'headers'),
+        ),
+      ).thenAnswer(
+        (_) async =>
+            FunctionResponse(status: 200, data: {'success': 1, 'failure': 0}),
+      );
+
+      final result = await client.sendPush(
+        userIds: ['user-1'],
+        title: 'Title',
+        body: 'Body',
+        data: {'type': 'community'},
+        respectQuietHours: true,
+      );
+
+      expect(result.success, isTrue);
+      final capturedBody =
+          verify(
+                () => mockFunctions.invoke(
+                  'send-push',
+                  body: captureAny(named: 'body'),
+                  headers: any(named: 'headers'),
+                ),
+              ).captured.single
+              as Map<String, dynamic>;
+      expect(capturedBody['respectQuietHours'], isTrue);
+    });
+
     test(
       'invoke returns failure when function responds with error status',
       () async {

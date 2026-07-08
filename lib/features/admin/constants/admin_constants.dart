@@ -35,18 +35,20 @@ abstract final class AdminConstants {
 
   // Capacity thresholds
   static const double capacityWarningPercent = 0.9;
-  static const int dbSizeLimitBytes = 8 * 1024 * 1024 * 1024; // 8 GB (Pro Plan)
+  static const int dbSizeLimitFreeBytes = 500 * 1024 * 1024; // 500 MB
+  static const int dbSizeLimitProBytes = 8 * 1024 * 1024 * 1024; // 8 GB
+  static const int dbSizeLimitBytes = dbSizeLimitFreeBytes;
   static const double healthyThreshold = 0.7;
   static const double warningThreshold = 0.9;
 
   // DB size limits by Supabase plan (bytes)
   static const Map<String, int> dbSizeLimitByPlan = {
-    'free': 500 * 1024 * 1024, // 500 MB
-    'pro': 8 * 1024 * 1024 * 1024, // 8 GB
-    'team': 8 * 1024 * 1024 * 1024, // 8 GB
+    'free': dbSizeLimitFreeBytes,
+    'pro': dbSizeLimitProBytes,
+    'team': dbSizeLimitProBytes,
     'enterprise': 16 * 1024 * 1024 * 1024, // 16 GB
   };
-  static const int dbSizeLimitDefault = 8 * 1024 * 1024 * 1024; // 8 GB
+  static const int dbSizeLimitDefault = dbSizeLimitFreeBytes;
 
   /// Returns DB size limit for the given Supabase plan name.
   static int dbSizeLimitForPlan(String plan) =>
@@ -93,7 +95,6 @@ abstract final class AdminConstants {
     SupabaseConstants.eventsTable,
     SupabaseConstants.eventRemindersTable,
     SupabaseConstants.healthRecordsTable,
-    SupabaseConstants.notificationsTable,
     SupabaseConstants.photosTable,
   ];
 

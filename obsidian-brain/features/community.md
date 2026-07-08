@@ -153,36 +153,27 @@ Structural pass matching the design mockup — this one changes behavior:
 
 See [[features/marketplace]] for the embedded Pazar tab's 2-column grid change.
 
-### Review sweep (2026-07-05, bug + hygiene fixes)
+## Current Decisions
 
-Post-redesign audit fixes:
+- Community remains online-first: server/feed cache is authoritative, no Drift mirror.
+- Explore is post-first: no quick composer, sort bar, story strip, or scroll-to-top FAB.
+- Comments use `commentListProvider` as the single source; add/delete/like update it.
+- Profile enrichment uses public-safe `display_name`, level/title, and verified breeder flags.
+- Multi-image posts open the full swipeable image set from the tapped index.
 
-- **Multi-image reachability (regression fix)**: the collage viewer only opened
-  the tapped cell's single image, so images 4+ in a post were unreachable.
-  `CommunityImageViewer` is now a swipeable `PageView` (`imageUrls` + `initialIndex`,
-  `i / N` counter, disposes its `PageController`); gallery `onOpenImage` is index-based.
-  Marketplace detail viewer opens the full listing set too.
-- **PII**: `CommunityProfileCache` public `username` now prefers `display_name`
-  over `full_name` (real name no longer leaks as the public handle) — matches
-  `getFollowedUserSummaries`.
-- **Feed cache staleness**: like/bookmark/follow now call
-  `CommunityPostRepository.invalidateFeedCache()` so a refetch reflects the toggle
-  instead of the pre-toggle TTL snapshot.
-- **Comment single-source**: dead `commentsForPostProvider` removed; add/delete/like
-  update `commentListProvider` (the source `visibleCommentsProvider` reads) —
-  delete/like are now in-place (`removeComment` / optimistic `applyLikeToggle`+rollback),
-  add re-fetches.
-- **Report "Other" text**: sheet now returns `CommunityReportResult(reason, description)`;
-  the free-text description reaches `community_reports.description` (was dropped).
-- **Premium photo cap**: `CommunityCreatePostScreen` enforces free 3 / premium 10
-  (`_maxImages`, `effectivePremiumProvider`, `community.photo_limit_reached`).
-- **a11y**: verified-breeder `badgeCheck` wrapped in `Semantics(community.verified_breeder)`
-  (header + guide cards); `_AuthorMetaLine` trailing date is now `Flexible`.
-- **Dead code**: `community_quick_composer` / `community_section_bar` /
-  `community_following_list` + tests deleted.
-- **Latent**: bird-link chip + mutation tags never populate — `community_posts` has
-  no `bird_id`/`bird_name`/`mutation_tags` columns (live-verified); do NOT add them
-  to `_feedColumns` (breaks the query).
+## Known Deferred Work
+
+- Bird-link chips and mutation tags are latent; `community_posts` has no backing columns.
+- Hardcoded Supabase column strings in community remain a manual-review follow-up.
+- Multi-device block/mute union staleness is known but not blocking current UX.
+- `edited_at` optimistic clock behavior is noted for later polish.
+
+## Do Not Reintroduce
+
+- Do not show both empty-state create CTA and floating create FAB together.
+- Do not expose `full_name` as a public community username.
+- Do not re-add the removed quick composer / section bar / people-list following tab.
+- Do not add missing bird/tag columns to `_feedColumns` without a migration first.
 
 ## Cache
 

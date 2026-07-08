@@ -107,6 +107,25 @@ undercounts them. The screen shows these global counts when the list is
 unfiltered and falls back to the loaded set while filtered/searched. Counts
 are invalidated on refresh, retry, and user mutations (bulk + detail).
 
+## Current Decisions
+
+- `admin/` is the only feature allowed to call Supabase `client.from()` directly.
+- Every route is guarded by `AdminGuard`; admin/founder role is required.
+- Destructive actions use two-step confirmation and write audit entries.
+- User list summary counts come from database-wide providers, not the loaded page.
+
+## Known Deferred Work
+
+- Access-token revocation remains bounded by token expiry after `admin_force_logout`.
+- Admin aggregate RPCs should stay narrow; add fields only when a screen needs them.
+- Monitoring and capacity values depend on server-side RPC coverage and may lag UI needs.
+
+## Do Not Reintroduce
+
+- Do not spread direct `client.from()` calls outside `lib/features/admin/`.
+- Do not add single-confirm destructive admin actions.
+- Do not derive global user counts from the paginated visible list.
+
 ## Edge Function Hooks
 
 | Edge fn | Used in |

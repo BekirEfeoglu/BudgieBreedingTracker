@@ -113,6 +113,14 @@ abstract class SupabaseConstants {
   static const String colGender = 'gender';
   static const String colIsActive = 'is_active';
   static const String colPlatform = 'platform';
+  static const String colToken = 'token';
+  static const String colEmail = 'email';
+  static const String colFullName = 'full_name';
+  static const String colAvatarUrl = 'avatar_url';
+  static const String colQuietHours = 'quiet_hours';
+  static const String colEventType = 'event_type';
+  static const String colSnapshotType = 'snapshot_type';
+  static const String colData = 'data';
 
   // Foreign-key columns (shared across multiple tables)
   static const String colBlockedUserId = 'blocked_user_id';

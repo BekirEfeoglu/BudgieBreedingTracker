@@ -161,6 +161,9 @@ void main() {
         notificationToggleSettingsProvider.overrideWith(
           _TestNotificationToggleSettingsNotifier.new,
         ),
+        notificationToggleSettingsReadyProvider.overrideWith(
+          (_) async => const NotificationToggleSettings(),
+        ),
         calendarEventGeneratorProvider.overrideWithValue(mockCalendarGen),
       ],
     );

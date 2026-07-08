@@ -7,6 +7,19 @@ import 'package:http/testing.dart';
 import 'package:budgie_breeding_tracker/domain/services/app_update/app_store_lookup_service.dart';
 
 void main() {
+  group('appStoreLookupCountryCode', () {
+    test('returns country part from common locale names', () {
+      expect(appStoreLookupCountryCode('tr_TR'), 'tr');
+      expect(appStoreLookupCountryCode('en_US'), 'us');
+      expect(appStoreLookupCountryCode('de-DE'), 'de');
+    });
+
+    test('falls back to tr when locale has no country part', () {
+      expect(appStoreLookupCountryCode('en'), 'tr');
+      expect(appStoreLookupCountryCode(''), 'tr');
+    });
+  });
+
   group('AppStoreLookupService.fetchLatest', () {
     test(
       'returns AppStoreListing when lookup succeeds with valid payload',

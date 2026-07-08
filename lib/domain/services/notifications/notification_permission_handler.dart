@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 
@@ -85,16 +86,25 @@ mixin NotificationPermissionHandler {
     return granted ?? false;
   }
 
-  /// Checks whether notifications are currently enabled on Android.
+  /// Checks whether notifications are currently enabled on iOS or Android.
   ///
-  /// Returns `true` on iOS (handled separately) or if notifications are
-  /// enabled. Returns `false` only when Android notifications are disabled.
+  /// Returns `true` on unsupported platforms. Returns `false` when the
+  /// platform reports notification permission as disabled.
   Future<bool> areNotificationsEnabled() async {
+    final iosImpl = plugin
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >();
+    if (iosImpl != null) {
+      final permissions = await iosImpl.checkPermissions();
+      return permissions?.isEnabled ?? false;
+    }
+
     final androidImpl = plugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >();
-    if (androidImpl == null) return true; // iOS or unsupported platform
+    if (androidImpl == null) return true;
 
     final enabled = await androidImpl.areNotificationsEnabled();
     return enabled ?? true;
@@ -235,10 +245,27 @@ mixin NotificationPermissionHandler {
   ///
   /// On Android 8+: opens the app-specific notification settings.
   /// On older Android: opens the app detail settings page.
+  /// On iOS: opens the app settings page.
   /// Returns `true` if the settings page was opened, `false` on failure.
-  /// Only effective on Android — returns `false` on other platforms.
   static Future<bool> openNotificationSettings() async {
-    if (!Platform.isAndroid || kIsWeb) return false;
+    if (kIsWeb) return false;
+
+    if (Platform.isIOS) {
+      try {
+        return launchUrl(
+          Uri.parse('app-settings:'),
+          mode: LaunchMode.externalApplication,
+        );
+      } catch (e) {
+        AppLogger.warning(
+          '[NotificationService] Failed to open iOS notification settings: $e',
+        );
+        return false;
+      }
+    }
+
+    if (!Platform.isAndroid) return false;
+
     try {
       final result = await _batteryChannel.invokeMethod<bool>(
         'openNotificationSettings',

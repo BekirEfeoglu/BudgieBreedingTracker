@@ -54,12 +54,12 @@ void processPendingPayloads(Ref ref) {
 
 /// Tracks whether Android notification permission was granted.
 ///
-/// Set to `false` by [_initNotifications] in auth_providers when the
-/// runtime permission is denied on Android 13+. UI layers can listen
-/// to this provider and show a guidance SnackBar.
+/// Starts as `false` until the platform permission state is checked.
+/// UI layers can listen to this provider and show a guidance SnackBar
+/// only after contextual permission checks update it.
 class NotificationPermissionNotifier extends Notifier<bool> {
   @override
-  bool build() => true;
+  bool build() => false;
 }
 
 final notificationPermissionGrantedProvider =
@@ -74,6 +74,7 @@ Future<void> _requestNotificationPermissionIfNeeded(
   Ref ref, {
   required Duration delay,
   required bool initializeServiceIfNeeded,
+  bool forceRequest = false,
 }) async {
   if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
 
@@ -91,97 +92,98 @@ Future<void> _requestNotificationPermissionIfNeeded(
 
   // Check actual permission status — not just whether we prompted before.
   // The user may have granted/revoked permission via system settings.
-  if (Platform.isAndroid) {
-    final enabled = await notifService.areNotificationsEnabled();
-    final wasDisabled =
-        ref.read(notificationPermissionGrantedProvider) == false;
-    ref.read(notificationPermissionGrantedProvider.notifier).state = enabled;
+  final enabled = await notifService.areNotificationsEnabled();
+  final wasDisabled = ref.read(notificationPermissionGrantedProvider) == false;
+  ref.read(notificationPermissionGrantedProvider.notifier).state = enabled;
 
-    AppLogger.info(
-      '[NotificationProviders] Android permission check: '
-      'enabled=$enabled, alreadyPrompted=$alreadyPrompted, '
-      'wasDisabled=$wasDisabled',
-    );
+  AppLogger.info(
+    '[NotificationProviders] Notification permission check: '
+    'platform=${Platform.operatingSystem}, enabled=$enabled, '
+    'alreadyPrompted=$alreadyPrompted, wasDisabled=$wasDisabled, '
+    'forceRequest=$forceRequest',
+  );
 
-    if (enabled) {
-      // Permission already granted — just re-check exact alarm + battery.
+  if (enabled) {
+    // Permission already granted — just re-check exact alarm + battery.
+    if (Platform.isAndroid) {
       await notifService.requestExactAlarmPermissionIfNeeded();
       await notifService.requestBatteryOptimizationExemptionIfNeeded();
-
-      // If permission was previously denied and is now enabled (user
-      // granted via system settings while app was closed), reschedule
-      // all active notifications so they are registered with the OS.
-      if (wasDisabled || alreadyPrompted) {
-        final userId = ref.read(currentUserIdProvider);
-        if (userId != 'anonymous') {
-          try {
-            await ref
-                .read(notificationReschedulerProvider)
-                .rescheduleAll(userId);
-            AppLogger.info(
-              '[NotificationProviders] Rescheduled notifications after '
-              'permission granted from settings',
-            );
-          } catch (e) {
-            AppLogger.warning(
-              '[NotificationProviders] Reschedule after permission grant '
-              'failed: $e',
-            );
-          }
-        }
-      }
-      return;
     }
-
-    // Permission not granted — always show the OS dialog if the system
-    // allows it. On Android 13+ the OS will only show the dialog once
-    // per install; subsequent calls return immediately with the current
-    // status. So it is safe to call requestPermission() every time.
-    final granted = await notifService.requestPermission();
-    AppLogger.info(
-      '[NotificationProviders] Permission request result: granted=$granted',
-    );
-
-    await prefs.setBool(_notificationPermissionPromptedKey, true);
-
-    if (!granted) {
-      ref.read(notificationPermissionGrantedProvider.notifier).state = false;
-      return;
-    }
-
-    ref.read(notificationPermissionGrantedProvider.notifier).state = true;
-    await notifService.requestExactAlarmPermissionIfNeeded();
-    await notifService.requestBatteryOptimizationExemptionIfNeeded();
 
     final userId = ref.read(currentUserIdProvider);
-    if (userId != 'anonymous') {
-      try {
-        await ref.read(pushNotificationServiceProvider).syncToken(userId);
-      } catch (e) {
-        AppLogger.warning('[NotificationProviders] FCM token sync failed: $e');
-      }
+    if (userId != 'anonymous' && (wasDisabled || alreadyPrompted)) {
+      await _rescheduleNotificationsAfterPermissionGranted(ref, userId);
     }
     return;
   }
 
-  // iOS flow — unchanged
-  if (alreadyPrompted) return;
+  if (alreadyPrompted && !forceRequest) return;
 
   final granted = await notifService.requestPermission();
+  AppLogger.info(
+    '[NotificationProviders] Permission request result: granted=$granted',
+  );
+
   await prefs.setBool(_notificationPermissionPromptedKey, true);
 
   if (!granted) {
     ref.read(notificationPermissionGrantedProvider.notifier).state = false;
+    return;
+  }
+
+  ref.read(notificationPermissionGrantedProvider.notifier).state = true;
+  if (Platform.isAndroid) {
+    await notifService.requestExactAlarmPermissionIfNeeded();
+    await notifService.requestBatteryOptimizationExemptionIfNeeded();
+  }
+
+  final userId = ref.read(currentUserIdProvider);
+  if (userId != 'anonymous') {
+    try {
+      await ref.read(pushNotificationServiceProvider).syncToken(userId);
+    } catch (e) {
+      AppLogger.warning('[NotificationProviders] FCM token sync failed: $e');
+    }
+    await _rescheduleNotificationsAfterPermissionGranted(ref, userId);
   }
 }
 
+Future<void> _rescheduleNotificationsAfterPermissionGranted(
+  Ref ref,
+  String userId,
+) async {
+  try {
+    await ref.read(notificationReschedulerProvider).rescheduleAll(userId);
+    AppLogger.info(
+      '[NotificationProviders] Rescheduled notifications after permission grant',
+    );
+  } catch (e) {
+    AppLogger.warning(
+      '[NotificationProviders] Reschedule after permission grant failed: $e',
+    );
+  }
+}
+
+/// Contextual notification permission request trigger.
+///
+/// Intended for explicit user actions in notification settings or feature flows.
+/// It uses the same permission/reschedule/token sync path as the deferred
+/// provider without prompting from HomeScreen or startup.
+final notificationPermissionRequestControllerProvider =
+    Provider<Future<void> Function()>((ref) {
+      return () => _requestNotificationPermissionIfNeeded(
+        ref,
+        delay: Duration.zero,
+        initializeServiceIfNeeded: true,
+        forceRequest: true,
+      );
+    });
+
 /// Deferred notification permission request.
 ///
-/// Waits a few seconds after the home screen renders, then requests
-/// notification permission. This ensures the user sees the app before
-/// the OS permission dialog appears — required by App Store guidelines.
+/// Kept for feature flows that intentionally want a delayed contextual prompt.
+/// Do not watch this from HomeScreen or app startup.
 ///
-/// Watch this provider from [HomeScreen] to trigger the request.
 /// Uses `initializeServiceIfNeeded: true` as a safety fallback in case
 /// the service wasn't initialized during [appInitializationProvider].
 final deferredNotificationPermissionProvider = FutureProvider<void>((
@@ -192,6 +194,22 @@ final deferredNotificationPermissionProvider = FutureProvider<void>((
     delay: const Duration(seconds: 3),
     initializeServiceIfNeeded: true,
   );
+});
+
+/// Refreshes the current platform permission state without showing a prompt.
+final notificationPermissionStatusRefreshProvider = FutureProvider<void>((
+  ref,
+) async {
+  if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+    ref.read(notificationPermissionGrantedProvider.notifier).state = true;
+    return;
+  }
+
+  final service = ref.read(notificationServiceProvider);
+  if (!service.isInitialized) return;
+
+  final enabled = await service.areNotificationsEnabled();
+  ref.read(notificationPermissionGrantedProvider.notifier).state = enabled;
 });
 
 /// Provides the singleton [NotificationService] instance.
@@ -291,6 +309,7 @@ final notificationReschedulerProvider = Provider<NotificationRescheduler>((
     incubationsDao: ref.watch(incubationsDaoProvider),
     eggsDao: ref.watch(eggsDaoProvider),
     chicksDao: ref.watch(chicksDaoProvider),
+    notificationSettingsDao: ref.watch(notificationSettingsDaoProvider),
     scheduler: ref.watch(notificationSchedulerProvider),
   );
 });

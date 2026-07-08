@@ -1,8 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 
-import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
 import '../../../shared/providers/auth.dart';
 import 'admin_auth_utils.dart';
@@ -41,21 +39,21 @@ class AdminNotificationManager {
           ? body.trim().substring(0, 1000)
           : body.trim();
 
-      await client.from(SupabaseConstants.notificationsTable).upsert({
-        'id': const Uuid().v7(),
-        'user_id': targetUserId,
-        'title': sanitizedTitle,
-        'body': sanitizedBody,
-        'type': 'custom',
-        'priority': 'normal',
-        'read': false,
-      }, onConflict: 'id');
+      await client.rpc(
+        'admin_send_notification',
+        params: {
+          'target_user_id': targetUserId,
+          'p_title': sanitizedTitle,
+          'p_body': sanitizedBody,
+        },
+      );
 
       final edgeClient = _ref.read(edgeFunctionClientProvider);
       final pushResult = await edgeClient.sendPush(
         userIds: [targetUserId],
         title: sanitizedTitle,
         body: sanitizedBody,
+        respectQuietHours: true,
       );
 
       bool pushFailed;
@@ -78,12 +76,12 @@ class AdminNotificationManager {
         }
       }
 
-      await logAdminAction(
-        client,
-        _ref.read(currentUserIdProvider),
-        'notification_sent',
-        targetUserId: targetUserId,
-        details: {'title': sanitizedTitle, 'push_delivered': !pushFailed},
+      await client.rpc(
+        'admin_update_notification_delivery',
+        params: {
+          'target_user_id': targetUserId,
+          'p_push_delivered': !pushFailed,
+        },
       );
 
       _updateState(
@@ -117,29 +115,21 @@ class AdminNotificationManager {
           ? body.trim().substring(0, 1000)
           : body.trim();
 
-      final rows = userIds
-          .map(
-            (uid) => {
-              'id': const Uuid().v7(),
-              'user_id': uid,
-              'title': sanitizedTitle,
-              'body': sanitizedBody,
-              'type': 'custom',
-              'priority': 'normal',
-              'read': false,
-            },
-          )
-          .toList();
-
-      await client
-          .from(SupabaseConstants.notificationsTable)
-          .upsert(rows, onConflict: 'id');
+      await client.rpc(
+        'admin_send_bulk_notification',
+        params: {
+          'p_user_ids': userIds,
+          'p_title': sanitizedTitle,
+          'p_body': sanitizedBody,
+        },
+      );
 
       final edgeClient = _ref.read(edgeFunctionClientProvider);
       final pushResult = await edgeClient.sendPush(
         userIds: userIds,
         title: sanitizedTitle,
         body: sanitizedBody,
+        respectQuietHours: true,
       );
 
       bool pushFailed;
@@ -162,15 +152,9 @@ class AdminNotificationManager {
         }
       }
 
-      await logAdminAction(
-        client,
-        _ref.read(currentUserIdProvider),
-        'bulk_notification_sent',
-        details: {
-          'title': sanitizedTitle,
-          'count': userIds.length,
-          'push_delivered': !pushFailed,
-        },
+      await client.rpc(
+        'admin_update_bulk_notification_delivery',
+        params: {'p_user_ids': userIds, 'p_push_delivered': !pushFailed},
       );
 
       final countStr = '${userIds.length}';

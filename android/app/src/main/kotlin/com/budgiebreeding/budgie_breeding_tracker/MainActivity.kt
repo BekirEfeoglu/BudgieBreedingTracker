@@ -2,6 +2,7 @@ package com.budgiebreeding.budgie_breeding_tracker
 
 import android.content.Context
 import android.content.Intent
+import android.content.ActivityNotFoundException
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
@@ -22,6 +23,8 @@ class MainActivity : FlutterActivity() {
             "com.budgiebreeding.budgie_breeding_tracker/battery"
         private const val SENSITIVE_SCREEN_CHANNEL =
             "com.budgiebreeding.budgie_breeding_tracker/sensitive_screen"
+        private const val STORE_UPDATE_CHANNEL =
+            "com.budgiebreeding.budgie_breeding_tracker/store_update"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -144,6 +147,32 @@ class MainActivity : FlutterActivity() {
                             window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
                         }
                         result.success(true)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, STORE_UPDATE_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "openPlayStore" -> {
+                        val url = call.argument<String>("url")
+                        if (url.isNullOrBlank()) {
+                            result.success(false)
+                            return@setMethodCallHandler
+                        }
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                            setPackage("com.android.vending")
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        try {
+                            startActivity(intent)
+                            result.success(true)
+                        } catch (e: ActivityNotFoundException) {
+                            result.success(false)
+                        } catch (e: Exception) {
+                            result.success(false)
+                        }
                     }
                     else -> result.notImplemented()
                 }

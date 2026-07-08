@@ -112,6 +112,7 @@ void main() {
       expect(NotificationIds.bandingBaseId, 500000);
       expect(NotificationIds.scheduleBaseId, 600000);
       expect(NotificationIds.eventReminderBaseId, 700000);
+      expect(NotificationIds.pushDisplayBaseId, 800000);
     });
 
     test('bandingBaseId is 500000', () {
@@ -150,6 +151,30 @@ void main() {
       expect(eventReminderId, greaterThanOrEqualTo(700000));
       expect(eventReminderId, lessThan(800000));
       expect(eventReminderId, isNot(bandingId));
+    });
+  });
+
+  group('NotificationIds.generatePushDisplayId', () {
+    test('messageId produces deterministic ID in push display range', () {
+      final id1 = NotificationIds.generatePushDisplayId(
+        messageId: 'fcm-message-1',
+      );
+      final id2 = NotificationIds.generatePushDisplayId(
+        messageId: 'fcm-message-1',
+      );
+
+      expect(id1, id2);
+      expect(id1, greaterThanOrEqualTo(NotificationIds.pushDisplayBaseId));
+      expect(id1, lessThan(NotificationIds.pushDisplayBaseId + 100000));
+    });
+
+    test('sentTime fallback avoids raw hashCode and stays in range', () {
+      final id = NotificationIds.generatePushDisplayId(
+        sentTime: DateTime.utc(2026, 7, 8, 12, 0),
+      );
+
+      expect(id, greaterThanOrEqualTo(NotificationIds.pushDisplayBaseId));
+      expect(id, lessThan(NotificationIds.pushDisplayBaseId + 100000));
     });
   });
 

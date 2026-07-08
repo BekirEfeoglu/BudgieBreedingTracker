@@ -108,7 +108,9 @@ void main() {
     expect(find.text('app child'), findsOneWidget);
   });
 
-  testWidgets('shows optional update banner on Android', (tester) async {
+  testWidgets('suppresses optional DB update banner on Android', (
+    tester,
+  ) async {
     const status = AppUpdateStatus(
       info: updateInfo,
       isUpdateAvailable: true,
@@ -123,9 +125,9 @@ void main() {
     );
 
     expect(find.text('app child'), findsOneWidget);
-    expect(find.text('app_update.available_title'), findsOneWidget);
-    expect(find.text('app_update.later'), findsOneWidget);
-    expect(find.text('app_update.update_now'), findsOneWidget);
+    expect(find.text('app_update.available_title'), findsNothing);
+    expect(find.text('app_update.later'), findsNothing);
+    expect(find.text('app_update.update_now'), findsNothing);
     expect(find.text('app_update.required_title'), findsNothing);
   });
 
