@@ -61,12 +61,26 @@ echo ">>> STEP 1: flutter toolchain"
 if ! command -v flutter >/dev/null 2>&1; then
   FLUTTER_HOME="$HOME/flutter"
   if [ ! -x "$FLUTTER_HOME/bin/flutter" ]; then
-    # Pin to 3.41.4 to keep parity with GitHub Actions and local dev.
-    # Cloning plain 'stable' picks the newest Flutter, which ships Dart
-    # 3.12 and makes IconData a final class -- that breaks lucide_icons
-    # 0.257.0 (LucideIconData extends IconData).
-    echo ">>> STEP 1a: git clone flutter 3.41.4"
-    run_with_retries 3 10 git clone https://github.com/flutter/flutter.git --depth 1 -b 3.41.4 "$FLUTTER_HOME"
+    # Install Flutter 3.41.4 by downloading the prebuilt SDK archive instead of
+    # `git clone https://github.com/flutter/flutter.git`. That git clone is a
+    # known-flaky Xcode Cloud failure point (flutter/flutter#163198 — many users
+    # hit intermittent post-clone crashes / "Not a valid object name") and was the
+    # real cause of the intermittent Build - iOS failure here; curl + unzip of the
+    # pinned release is far more reliable. Pinned to 3.41.4 to keep parity with
+    # GitHub Actions and local dev (newer Flutter ships Dart 3.12, which makes
+    # IconData a final class and breaks lucide_icons 0.257.0).
+    flutter_arch="$(uname -m)"
+    if [ "$flutter_arch" = "arm64" ]; then
+      flutter_zip="flutter_macos_arm64_3.41.4-stable.zip"
+    else
+      flutter_zip="flutter_macos_3.41.4-stable.zip"
+    fi
+    flutter_url="https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/${flutter_zip}"
+    echo ">>> STEP 1a: download Flutter 3.41.4 SDK ($flutter_arch) from $flutter_url"
+    run_with_retries 3 10 curl -fSL --retry 3 -o "$HOME/flutter_sdk.zip" "$flutter_url"
+    echo ">>> STEP 1b: unzip Flutter SDK to \$HOME"
+    unzip -q "$HOME/flutter_sdk.zip" -d "$HOME"
+    rm -f "$HOME/flutter_sdk.zip"
   fi
   export PATH="$FLUTTER_HOME/bin:$PATH"
 fi
