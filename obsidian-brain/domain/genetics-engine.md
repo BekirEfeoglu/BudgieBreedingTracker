@@ -17,7 +17,7 @@ Source: `.claude/rules/genetics.md` (primary), `.claude/rules/local-ai.md` (AI i
 
 Every result stores the algorithm version. When the engine is updated, old results can be flagged stale.
 
-- Current version: `v4`
+- Current version: `v5` (2026-07-09: multi-locus combiner keeps the double-factor subset a distinct `(double factor)` result keyed by its exact DF set, so offspringHomozygous lethals — crested, DF spangle, feather duster, DF dominant pied — fire in multi-locus crosses instead of being silently merged away; v4 tagged full-dominant homozygotes "(double)")
 
 ## Confidence Thresholds (AI-assisted)
 

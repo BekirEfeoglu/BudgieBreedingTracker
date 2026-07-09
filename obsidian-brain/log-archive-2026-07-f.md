@@ -5,6 +5,28 @@ Archived July 2026 entries rotated out of [[log]] during the
 
 ---
 
+## [2026-07-05] fix | Sync-conflict banner root cause — RLS 42P17 recursion + schema drift
+
+User's persistent "Senkronizasyon çakışmaları algılandı" banner. Live-diagnosed
+from the running sim (read `sync_metadata` in the device SQLite → 14 `error`
+rows) + rolled-back authenticated-role INSERT simulation against prod. ROOT
+CAUSE: the `free_tier_{bird,breeding_pair,incubation}_limit` INSERT policies
+(from migration `20260403130000`) ran `SELECT count(*) FROM <own table>` inside
+that table's own WITH CHECK → **Postgres 42P17 infinite recursion** on every
+insert → sanitized to "Database operation failed" → offline-first push jammed,
+rows stuck in `error`, and the pull-conflict detector surfaced the server-side
+copies as "conflicts". Migration `20260705181823` moves the counts into
+SECURITY DEFINER `private.count_active_*` helpers (bypass RLS, same limits),
+applied to prod + local file written (advisors 0 new; all 5 entity inserts now
+pass in sim). SECONDARY: `chicks.banding_day`/`banding_date` + `events.chick_id`
+columns the client persists+pushes were never added server-side (schema drift) —
+added. CLIENT: `OfflineBanner._retrySync` called `forceFullSync` (pushes only
+already-pending rows), so the banner's retry button never re-pushed `error`-state
+records; now calls `retryFailedRecords` first (mirrors `triggerManualSync`) +
+`verifyInOrder` test. Recovery: periodic sync / pull-to-refresh reset error→pending
+→ push succeeds → banner clears. See [[data-layer/sync-strategy]],
+[[patterns/security]].
+
 ## [2026-07-05] fix | Community tab review sweep — 8 findings fixed
 
 Comprehensive Community-tab review (4 parallel audit agents) surfaced findings

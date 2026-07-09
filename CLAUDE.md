@@ -102,7 +102,7 @@ scripts/test_app_store_config.py        # App Store config consistency tests
 | Metric | Value |
 | --- | --- |
 | Source files (lib/) | 1015 Dart files |
-| Test files (test/) | 917 test files, 11,481+ individual tests |
+| Test files (test/) | 917 test files, 11,483+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |

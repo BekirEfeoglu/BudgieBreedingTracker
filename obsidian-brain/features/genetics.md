@@ -19,8 +19,8 @@
 - Epistasis handling (multiple loci interactions)
 - MUTAVI-sourced mutation rates (authoritative reference: `docs/muhabbet-kusu-genetik-rehberi.md`)
 - Inbreeding coefficient calculation
-- Calculation version: v4 (full-dominant homozygotes tagged "(double)", 2026-07-02; v3 extended Z-linkage to all ino_locus alleles, 2026-04-19)
-- 930+ genetics-specific domain tests
+- Calculation version: v5 (2026-07-09: multi-locus combiner keeps the DF subset a distinct `(double factor)` result so offspringHomozygous lethals fire in multi-locus crosses; v4 tagged full-dominant homozygotes "(double)", 2026-07-02)
+- 950+ genetics-specific domain tests
 
 ## `calculationVersion`
 

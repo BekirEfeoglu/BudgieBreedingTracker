@@ -4,6 +4,24 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-09] fix | Genetics: DF lethal warnings dropped in multi-locus crosses (v5)
+
+Followed up the audit's deferred genetics FINDING 1. Traced end-to-end: EVERY
+offspringHomozygous lethal (crested, DF spangle, feather duster, DF dominant
+pied) — not just dominant_pied — had its warning silently dropped in any
+multi-locus cross. Root cause was NOT the guardian's `(homozygous)`-match
+one-liner (which failed its own regression test) but the combiner grouping:
+`_resolveEpistasisForCombined` keyed results by the epistasis compound name
+(identical for homo/heterozygous dominant), so DF and SF merged and the
+`doubleFactorIds` tag was overwritten. Fix keeps the DF subset a distinct
+`(double factor)` result keyed by its exact DF set (so different homozygous
+loci don't cross-pollute tags and over-attribute a lethal). Verified via
+diagnostic: warnings fire + affected probability is the true ~25% subset for
+both dominant_pied and crested + a second locus. calculationVersion 4→5;
+regression tests for both. Also folded in 2 LOW cleanups: removed dead
+`LethalScope.parentAnyVisual` + checker, reconciled the crested "sub-vital"
+comment vs its LethalSeverity.lethal classification. Commits 1f2ffa3, 4de2eca.
+
 ## [2026-07-09] fix | Comprehensive audit sweep (6 agents + Supabase DB checks)
 
 Full-scope audit (Supabase now connected). DB-side: security advisors clean;
@@ -171,27 +189,5 @@ the welcome-empty condition into `communityShowWelcomeEmptyProvider`
 param) and made `CommunityScreen` suppress the FAB while it's true (explore/
 following only; marketplace/guides already excluded). FAB returns when the feed
 has content. analyze clean, 446 community tests pass.
-
-## [2026-07-05] fix | Sync-conflict banner root cause — RLS 42P17 recursion + schema drift
-
-User's persistent "Senkronizasyon çakışmaları algılandı" banner. Live-diagnosed
-from the running sim (read `sync_metadata` in the device SQLite → 14 `error`
-rows) + rolled-back authenticated-role INSERT simulation against prod. ROOT
-CAUSE: the `free_tier_{bird,breeding_pair,incubation}_limit` INSERT policies
-(from migration `20260403130000`) ran `SELECT count(*) FROM <own table>` inside
-that table's own WITH CHECK → **Postgres 42P17 infinite recursion** on every
-insert → sanitized to "Database operation failed" → offline-first push jammed,
-rows stuck in `error`, and the pull-conflict detector surfaced the server-side
-copies as "conflicts". Migration `20260705181823` moves the counts into
-SECURITY DEFINER `private.count_active_*` helpers (bypass RLS, same limits),
-applied to prod + local file written (advisors 0 new; all 5 entity inserts now
-pass in sim). SECONDARY: `chicks.banding_day`/`banding_date` + `events.chick_id`
-columns the client persists+pushes were never added server-side (schema drift) —
-added. CLIENT: `OfflineBanner._retrySync` called `forceFullSync` (pushes only
-already-pending rows), so the banner's retry button never re-pushed `error`-state
-records; now calls `retryFailedRecords` first (mirrors `triggerManualSync`) +
-`verifyInOrder` test. Recovery: periodic sync / pull-to-refresh reset error→pending
-→ push succeeds → banner clears. See [[data-layer/sync-strategy]],
-[[patterns/security]].
 
 Older entries are archived in [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
