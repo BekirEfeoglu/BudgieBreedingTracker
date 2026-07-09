@@ -95,5 +95,5 @@ Enforced by `scripts/verify_code_quality.py` (27 checker categories — 19/24 CL
 | Supabase constants | 154 string constants |
 | L10n keys | 3,104 per language, 41 categories |
 | DB schema version | 27 |
-| Supabase migrations | 204 tracked SQL files |
+| Supabase migrations | 205 tracked SQL files |
 | Edge Functions | 12 |
