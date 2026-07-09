@@ -39,11 +39,19 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
+      // Bracket the provider read so a midnight rollover between the provider's
+      // internal DateTime.now() and the test's cannot flake the assertion: the
+      // provider's now is between `before` and `after`, so its calendar day is
+      // one of those two ends.
+      final before = DateTime.now();
       final date = container.read(selectedDateProvider);
-      final now = DateTime.now();
-      expect(date.year, now.year);
-      expect(date.month, now.month);
-      expect(date.day, now.day);
+      final after = DateTime.now();
+
+      DateTime dayOf(DateTime d) => DateTime(d.year, d.month, d.day);
+      expect(
+        dayOf(date),
+        anyOf(equals(dayOf(before)), equals(dayOf(after))),
+      );
     });
 
     test('can change selected date', () {
