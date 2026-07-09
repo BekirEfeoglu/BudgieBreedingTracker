@@ -41,12 +41,18 @@ Source: `.claude/rules/auth.md`, `.claude/rules/security.md`
 - TOTP enrollment via Supabase Auth
 - Lockout: 5 failed attempts → `mfa-lockout` Edge Function
 - 7-day decay window before lockout count decrements
-- **Recovery codes do not exist (2026-07-02 audit):** `TwoFactorService` has
-  no `generateRecoveryCodes` method, no recovery-code UI step in either 2FA
-  screen, and no l10n keys reference them. A user who loses their
-  authenticator device has no self-service recovery path today — this was a
-  design target documented here and in `.claude/rules/security.md`, not
-  shipped behavior.
+- **Recovery codes — shipped (2026-07-09):** `RecoveryCodeService`
+  (`lib/domain/services/auth/recovery_code_service.dart`) generates 10
+  single-use codes at 2FA enrollment, shown to the user ONCE and stored only as
+  SHA-256 hashes (`mfa_recovery_codes` table, own-scope RLS). The login 2FA
+  verify screen's "use a recovery code" path calls the
+  `redeem_mfa_recovery_code` RPC: it verifies the hash, marks the code used, and
+  server-side deletes the user's `auth.mfa_factors` rows (an AAL1 user cannot
+  delete their own verified factor, so the real work is a `private`
+  `SECURITY DEFINER` function behind a `public` `SECURITY INVOKER` wrapper). MFA
+  is disabled, AAL1 login completes, and the user is routed to re-enroll. Client
+  normalization (strip non-alnum + upper) must match the SQL normalization
+  exactly. Migrations `20260709115154` + `20260709115445`.
 
 ## Destructive-Action Re-Authentication (changePassword / account deletion)
 
