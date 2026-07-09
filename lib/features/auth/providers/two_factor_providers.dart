@@ -1,11 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:budgie_breeding_tracker/data/providers/supabase_client_provider.dart';
+import 'package:budgie_breeding_tracker/domain/services/auth/recovery_code_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/auth/two_factor_service.dart';
 
 /// Provider for [TwoFactorService].
 final twoFactorServiceProvider = Provider<TwoFactorService>((ref) {
   return TwoFactorService(ref.watch(supabaseClientProvider));
+});
+
+/// Provider for [RecoveryCodeService] (MFA backup codes).
+final recoveryCodeServiceProvider = Provider<RecoveryCodeService>((ref) {
+  return RecoveryCodeService(ref.watch(supabaseClientProvider));
 });
 
 /// Holds the factor ID when 2FA verification is pending after login.

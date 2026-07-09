@@ -31,7 +31,7 @@ Redirect zincirindeki auth katmanları `lib/router/redirect_guards.dart`'ta, sı
 - Enroll: Settings → Security → 2FA; TOTP secret + QR; `verify` sonrası aktif
 - Login: password → `post_login_mfa_checker.dart` MFA challenge'a yönlendirir
 - Lockout: 5 hatalı deneme → lockout, 7 gün decay — `mfa-lockout` edge fn server-side enforce (security.md § MFA Lockout Policy tek kaynak)
-- **Recovery codes YOK** (2026-07-02 audit) — bilinen boşluk; varmış gibi UI/doc üretme (security.md § MFA UX Flow)
+- **Recovery codes — shipped (2026-07-09):** 2FA kurulumunda 10 tek-kullanımlık kod üretilir (`RecoveryCodeService`, SHA-256 hash olarak `mfa_recovery_codes`'ta saklanır). Login 2FA verify ekranında "Kurtarma kodu kullan" → `redeem_mfa_recovery_code` RPC MFA'yı server-side devre dışı bırakır (AAL1 login tamamlanır, re-enroll'a yönlendirir). Detay: security.md § MFA UX Flow
 
 ## AAL2 & Destructive Aksiyonlar (şifre değişimi, hesap silme)
 Password re-auth (`signInWithPassword`) MFA'lı session'ı **AAL1'e düşürür** — "check → reauth → check" dizisi MFA'lı her kullanıcıda `MfaAssuranceRequiredException` fırlatır (2026-07-02'de düzeltilen gerçek bug).
@@ -73,7 +73,7 @@ Best-effort adımların hatası zinciri DURDURMAZ (log + devam). Hesap silme bu 
 2. Korunan rotada guard atlamak ("hızlı test" dahil — ai-workflow prohibited)
 3. Destructive aksiyonun AAL2 kontrolünü ilk yıkıcı adımdan SONRA yapmak (2026-07-02 bug'ının tekrarı)
 4. MFA-required durumu password re-auth ile çözmeye çalışmak (AAL1'e düşürür — challenge dialog kullan)
-5. Recovery-code akışı varmış gibi UI/doc yazmak (shipped değil)
+5. Recovery-code redeem'i client-side unenroll ile çözmeye çalışmak (AAL1'de kullanıcı verified factor'ı silemez — server-side `redeem_mfa_recovery_code` RPC zorunlu); veya kodu plaintext saklamak (yalnız SHA-256 hash)
 6. Cooldown'ı yalnız bellekte tutmak (restart bypass — persist zorunlu)
 7. Logout'ta FCM/presence/Sentry temizliğini atlamak (cross-device bildirim sızıntısı, sticky online, PII)
 8. Raw auth hata metnini kullanıcıya göstermek (error mapper + l10n)

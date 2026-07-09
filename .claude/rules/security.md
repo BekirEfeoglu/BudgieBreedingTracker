@@ -63,11 +63,21 @@ await _storage.deleteAll();  // on logout
 3. Kullanıcı 6 haneli kod gir → `verify` → server activate
 4. Login flow: email/password → MFA challenge → TOTP
 
-**Recovery codes YOK (2026-07-02 audit):** `TwoFactorService`'te recovery-code
-üretimi, UI adımı veya l10n anahtarı bulunmuyor — authenticator cihazını
-kaybeden kullanıcının self-service kurtarma yolu yok (bilinen boşluk, tasarım
-hedefi). Eklenirse bu bölüm + auth.md + obsidian-brain known-gaps birlikte
-güncellenmeli. Recovery-code UI'ı varmış gibi dokümante etme/sunma.
+**Recovery codes — shipped (2026-07-09):** 2FA kurulumu tamamlanınca
+`RecoveryCodeService` (`lib/domain/services/auth/recovery_code_service.dart`)
+10 tek-kullanımlık kod üretir; kodlar kullanıcıya BİR kez gösterilir, DB'de
+yalnızca **SHA-256 hash** olarak (`mfa_recovery_codes` tablosu, own-scope RLS)
+saklanır. Login 2FA verify ekranındaki "Kurtarma kodu kullan" akışı
+`redeem_mfa_recovery_code` RPC'sini çağırır: RPC hash'i doğrular, kodu used
+işaretler ve kullanıcının `auth.mfa_factors` satırlarını **server-side siler**
+(AAL1'de kullanıcı kendi verified factor'ını silemez — bu yüzden SECURITY
+DEFINER). Böylece MFA devre dışı kalır, AAL1 login tamamlanır ve kullanıcı
+tekrar kurmaya yönlendirilir. Güvenlik deseni: exposed `public` wrapper
+INVOKER, gerçek iş `private.redeem_mfa_recovery_code` DEFINER'da (advisor
+0028/0029 temiz); yüksek entropili (50-bit) kodlar brute-force'u infeasible
+kılar (kasıtlı olarak per-attempt lock yok). Client normalize (`strip
+non-alnum + upper`) SQL normalize ile birebir aynı olmalı. Migration'lar
+`20260709115154` + `20260709115445`.
 
 ### Session Refresh
 - Supabase SDK otomatik refresh (expire'dan 5dk önce)

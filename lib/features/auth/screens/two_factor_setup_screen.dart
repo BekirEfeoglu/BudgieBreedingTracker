@@ -15,9 +15,12 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/primary_button.dart';
 import 'package:budgie_breeding_tracker/core/security/sensitive_clipboard.dart';
 import 'package:budgie_breeding_tracker/core/security/sensitive_screen_guard.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_providers.dart';
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/widgets/otp_input_field.dart';
+import 'package:budgie_breeding_tracker/features/auth/widgets/recovery_codes_dialog.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 part 'two_factor_setup_screen_views.dart';
@@ -132,6 +135,35 @@ class _TwoFactorSetupScreenState extends ConsumerState<TwoFactorSetupScreen> {
             : 'auth.2fa_invalid_code'.tr();
         _isVerifying = false;
       });
+    }
+
+    // Issue recovery codes only after a successful enrollment. Kept after the
+    // if/else so the await never precedes the failure-branch setState.
+    if (success && mounted) {
+      await _generateAndShowRecoveryCodes();
+    }
+  }
+
+  /// Issues one-time recovery codes right after successful enrollment so a
+  /// lost authenticator never means a locked-out account. A generation failure
+  /// does not undo enrollment — the user can regenerate later from security
+  /// settings.
+  Future<void> _generateAndShowRecoveryCodes() async {
+    final userId = ref.read(currentUserIdProvider);
+    try {
+      final codes = await ref
+          .read(recoveryCodeServiceProvider)
+          .generate(userId);
+      if (!mounted) return;
+      await showRecoveryCodesDialog(context, codes: codes);
+    } catch (e, st) {
+      AppLogger.error('recovery code generation on enrollment failed', e, st);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text('auth.recovery_codes_generate_failed'.tr())),
+        );
     }
   }
 

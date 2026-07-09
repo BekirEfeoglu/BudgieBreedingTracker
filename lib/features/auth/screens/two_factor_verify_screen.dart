@@ -12,6 +12,7 @@ import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart
 import 'package:budgie_breeding_tracker/domain/services/auth/mfa_lockout_service.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/widgets/otp_input_field.dart';
+import 'package:budgie_breeding_tracker/features/auth/widgets/recovery_codes_dialog.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 /// Screen for verifying 2FA during login.
@@ -195,6 +196,30 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
     }
   }
 
+  /// Lets a user who lost their authenticator redeem a recovery code. On
+  /// success the RPC disables MFA server-side, so clearing the pending gate
+  /// and navigating home completes the (now MFA-free) AAL1 login.
+  Future<void> _useRecoveryCode() async {
+    if (_isVerifying || _isLockedOut) return;
+    final redeemed = await showRecoveryCodeRedeemDialog(context);
+    if (!mounted || !redeemed) return;
+
+    try {
+      await ref.read(mfaLockoutServiceProvider).reset();
+    } catch (e, st) {
+      AppLogger.error('$_tag Server lockout reset failed: $e', e, st);
+    }
+    if (!mounted) return;
+
+    ref.read(pendingMfaFactorIdProvider.notifier).state = null;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text('auth.recovery_code_redeemed'.tr())),
+      );
+    context.go(AppRoutes.home);
+  }
+
   Future<void> _handleSuccess() async {
     // Reset server-side lockout
     try {
@@ -332,6 +357,13 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
                 textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextButton(
+                onPressed: (_isVerifying || _isLockedOut)
+                    ? null
+                    : _useRecoveryCode,
+                child: Text('auth.use_recovery_code'.tr()),
               ),
             ],
           ),
