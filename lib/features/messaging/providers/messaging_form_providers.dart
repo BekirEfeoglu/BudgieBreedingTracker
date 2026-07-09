@@ -48,6 +48,16 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
   static const _sendCooldown = Duration(seconds: 2);
   DateTime? _lastSentAt;
 
+  /// Whether a send would currently be rejected by the client-side cooldown.
+  ///
+  /// The photo-attachment path uploads to Storage BEFORE calling [sendMessage],
+  /// so a cooldown-rejected send would orphan the uploaded object. Callers
+  /// check this before uploading to avoid that orphan entirely.
+  bool get isWithinSendCooldown {
+    final last = _lastSentAt;
+    return last != null && DateTime.now().difference(last) < _sendCooldown;
+  }
+
   Future<Message?> sendMessage({
     required String conversationId,
     required String senderId,

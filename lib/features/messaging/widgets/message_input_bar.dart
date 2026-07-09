@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:uuid/uuid.dart';
 import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
@@ -33,6 +34,14 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
   final _controller = TextEditingController();
   bool _hasText = false;
   bool _isAttachingPhoto = false;
+
+  /// The last send that has not yet succeeded, so the SnackBar "retry" action
+  /// replays the exact same payload — crucially the IMAGE (with its already
+  /// uploaded URL, reused not re-uploaded) rather than blindly re-sending the
+  /// text field. Reusing [messageId] lets the failed optimistic bubble be
+  /// replaced on retry instead of duplicated. Cleared on success.
+  ({String? content, MessageType type, String? imageUrl, String messageId})?
+  _pendingSend;
 
   @override
   void initState() {
@@ -70,7 +79,7 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
             content: Text(error),
             action: SnackBarAction(
               label: 'common.retry'.tr(),
-              onPressed: _sendMessage,
+              onPressed: _retryLastSend,
             ),
           ),
         );
@@ -145,7 +154,18 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
   Future<void> _sendMessage() async {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
+    await _dispatchSend(content: text, type: MessageType.text);
+  }
 
+  /// Single send path for both text and image messages. Records [_pendingSend]
+  /// before dispatching so a failure can be replayed verbatim, and clears the
+  /// text field / pending payload only once the send actually succeeds.
+  Future<void> _dispatchSend({
+    String? content,
+    required MessageType type,
+    String? imageUrl,
+    String? reuseMessageId,
+  }) async {
     final userId = ref.read(currentUserIdProvider);
     final notifier = ref.read(messagingFormStateProvider.notifier);
     // Pull the display name once at send time so the saved row carries
@@ -154,18 +174,49 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
     // yet; server-side trigger can backfill from `profiles` later.
     final profile = ref.read(userProfileProvider).value;
     final senderName = profile?.resolvedDisplayName ?? '';
-    // Don't clear the input until we know the send succeeded. If the
-    // call is rejected (cooldown, length cap, content moderation), the
-    // user keeps their text instead of losing it and having to retype.
+    final messageId = reuseMessageId ?? const Uuid().v7();
+    _pendingSend = (
+      content: content,
+      type: type,
+      imageUrl: imageUrl,
+      messageId: messageId,
+    );
+
+    // Don't clear the input until we know the send succeeded. If the call is
+    // rejected (cooldown, length cap, content moderation), the user keeps
+    // their text/photo instead of losing it and having to redo it.
     final sent = await notifier.sendMessage(
       conversationId: widget.conversationId,
       senderId: userId,
       senderName: senderName,
-      content: text,
-      messageType: MessageType.text,
+      content: content,
+      messageType: type,
+      imageUrl: imageUrl,
+      clientMessageId: messageId,
     );
-    if (!mounted || sent == null) return;
-    _controller.clear();
+    if (sent == null) return;
+    _pendingSend = null;
+    if (type == MessageType.text && mounted) _controller.clear();
+  }
+
+  /// Replays the last unsuccessful send. For an image this re-sends the SAME
+  /// uploaded URL (no re-upload, no orphan) instead of the old behavior of
+  /// firing the text field. Falls back to a fresh text send when nothing is
+  /// pending.
+  void _retryLastSend() {
+    final pending = _pendingSend;
+    if (pending == null) {
+      unawaited(_sendMessage());
+      return;
+    }
+    unawaited(
+      _dispatchSend(
+        content: pending.content,
+        type: pending.type,
+        imageUrl: pending.imageUrl,
+        reuseMessageId: pending.messageId,
+      ),
+    );
   }
 
   void _showAttachmentOptions() {
@@ -205,9 +256,20 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
       );
       if (!mounted || !withinSize) return;
 
+      // Gate on the send cooldown BEFORE uploading — otherwise a photo picked
+      // within 2s of the previous send uploads to Storage and is then rejected
+      // by sendMessage's cooldown, orphaning the object.
+      final notifier = ref.read(messagingFormStateProvider.notifier);
+      if (notifier.isWithinSendCooldown) {
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(content: Text('messaging.send_cooldown'.tr())),
+          );
+        return;
+      }
+
       final userId = ref.read(currentUserIdProvider);
-      final profile = ref.read(userProfileProvider).value;
-      final senderName = profile?.resolvedDisplayName ?? '';
       final imageUrl = await attachmentService.uploadPhoto(
         userId: userId,
         conversationId: widget.conversationId,
@@ -215,15 +277,10 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
       );
       if (!mounted) return;
 
-      await ref
-          .read(messagingFormStateProvider.notifier)
-          .sendMessage(
-            conversationId: widget.conversationId,
-            senderId: userId,
-            senderName: senderName,
-            messageType: MessageType.image,
-            imageUrl: imageUrl,
-          );
+      // Reuse the uploaded URL through the shared send path so a failure can be
+      // retried without re-uploading (the SnackBar retry replays this exact
+      // image, not the text field).
+      await _dispatchSend(type: MessageType.image, imageUrl: imageUrl);
     } catch (e, st) {
       AppLogger.error('messaging attachment upload failed', e, st);
       if (!mounted) return;

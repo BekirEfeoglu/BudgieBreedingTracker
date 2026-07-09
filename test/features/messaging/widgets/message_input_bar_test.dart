@@ -261,6 +261,56 @@ void main() {
       expect(recorder.sendCount, 0);
     });
 
+    testWidgets(
+      'retry after a failed photo send replays the same image, not the text',
+      (tester) async {
+        final attachmentService = MessageAttachmentService(
+          pickPhoto: (_) async =>
+              XFile.fromData(Uint8List(128), name: 'dm.jpg'),
+          uploadPhoto:
+              ({required userId, required conversationId, required file}) async {
+                return 'https://cdn.example.com/photo.jpg';
+              },
+        );
+        final failing = _FailingRecordingMessagingFormNotifier();
+
+        await pumpLocalizedApp(
+          tester,
+          buildSubject(
+            notifierFactory: () => failing,
+            attachmentsEnabled: true,
+            attachmentService: attachmentService,
+          ),
+        );
+
+        // Send a photo — the upload succeeds but the message send fails.
+        await tester.tap(find.byIcon(LucideIcons.plus));
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.widgetWithText(ListTile, l10n('messaging.attach_photo')),
+        );
+        await tester.pumpAndSettle();
+
+        expect(failing.calls.length, 1);
+        expect(failing.calls.last.type, MessageType.image);
+        expect(failing.calls.last.imageUrl, 'https://cdn.example.com/photo.jpg');
+
+        // Retry must replay the IMAGE (same URL, same message id — reused, not
+        // re-uploaded), never fall back to a text send.
+        await tester.tap(find.text(l10n('common.retry')));
+        await tester.pumpAndSettle();
+
+        expect(failing.calls.length, 2);
+        expect(failing.calls.last.type, MessageType.image);
+        expect(failing.calls.last.imageUrl, 'https://cdn.example.com/photo.jpg');
+        expect(
+          failing.calls[0].messageId,
+          failing.calls[1].messageId,
+          reason: 'retry reuses the same client message id',
+        );
+      },
+    );
+
     testWidgets('send button is disabled for whitespace-only input', (
       tester,
     ) async {
@@ -344,6 +394,41 @@ class _FakeMessagingFormNotifier extends MessagingFormNotifier {
       senderName: senderName,
       content: content,
     );
+  }
+
+  @override
+  void reset() {}
+}
+
+/// Records every send attempt and always fails, so retry behavior (which
+/// payload gets replayed) can be asserted.
+class _FailingRecordingMessagingFormNotifier extends MessagingFormNotifier {
+  final List<({MessageType type, String? imageUrl, String? messageId})> calls =
+      [];
+
+  @override
+  MessagingFormState build() => const MessagingFormState();
+
+  @override
+  Future<Message?> sendMessage({
+    required String conversationId,
+    required String senderId,
+    required String senderName,
+    String? senderAvatarUrl,
+    String? content,
+    MessageType messageType = MessageType.text,
+    String? imageUrl,
+    String? referenceId,
+    Map<String, dynamic>? referenceData,
+    String? clientMessageId,
+  }) async {
+    calls.add((
+      type: messageType,
+      imageUrl: imageUrl,
+      messageId: clientMessageId,
+    ));
+    state = state.copyWith(error: 'send failed', isSuccess: false);
+    return null;
   }
 
   @override

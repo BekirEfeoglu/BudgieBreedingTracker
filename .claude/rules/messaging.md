@@ -77,6 +77,7 @@ Shipped: `Message.deliveryStatus` local-only (`@JsonKey(includeFromJson: false, 
 - `message-photos` bucket/policy migration'ı: `20260709120000_add_message_photos_storage_bucket.sql`. Fetch edilen image mesajlarında `MessagingRepository` eski signed URL'leri `StorageUrlResolver` ile tazeler.
 - `birdCard`/`listingCard` render desteği var, ancak üretici UI henüz yok; gerçek seçici/producer eklenmeden bottom-sheet seçeneği gösterme.
 - Genel dosya/audio attachment ve `chat-attachments` bucket tasarımı shipped değil; `chat-attachments` diye bucket yok.
+- **Retry/orphan sözleşmesi (2026-07-09):** Foto yükleme `sendMessage`'den ÖNCE olduğu için gönderim reddedilirse (özellikle **cooldown**, sonraki başarılı gönderimin ardından 2 sn) Storage objesi orphan kalır. İki savunma: (1) `MessageInputBar._sendPhotoAttachment` yüklemeden ÖNCE `MessagingFormNotifier.isWithinSendCooldown` kontrol eder — cooldown'da hiç yüklemez; (2) SnackBar "tekrar dene" artık son gönderimi (`_pendingSend`) **replay eder** — fotoğraf ise **aynı yüklü URL'i reuse eder (yeniden yüklemez)** ve aynı client message id ile başarısız optimistic baloncuğu değiştirir. Ürün kararı: **reuse** (re-upload değil). Kalan sınırlı boşluk: kullanıcı başarısız fotoyu hiç retry etmeyip vazgeçerse yüklenmiş obje orphan kalır (küçük, private bucket; kabul edilir — GC scheduled job scope dışı).
 
 ## Pagination
 - Initial load: son 30 mesaj
