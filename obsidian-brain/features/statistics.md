@@ -78,12 +78,10 @@ Comprehensive read-only audit — findings reported, most still open:
   light, 4.7:1 dark). Fixing this app-wide means picking new semantic color
   values (a design decision affecting every `AppColors.success/warning/info`
   consumer, not just charts) — left open pending design review.
-- Verified 2026-07-02, not auto-fixed (feature gap, not a bug): 
-  `gender_pie_chart`/`chick_survival_chart` only guard `total == 0`, not
-  `.claude/rules/statistics.md`'s documented `< 3` insufficient-data
-  threshold ("chart yerine table göster") — confirmed no chart in the
-  feature implements that threshold today. Implementing the table fallback
-  is a new UI, not a mechanical fix — left open.
+- Fixed 2026-07-09: `gender_pie_chart` and `chick_survival_chart` now use the
+  documented `< 3` insufficient-data threshold. Zero totals still render
+  `ChartEmpty`; totals of 1-2 render `ChartLowData` with a compact table
+  instead of a misleading pie chart.
 - 6 charts format numbers/percentages without `NumberFormat` — not
   reverified this pass.
 

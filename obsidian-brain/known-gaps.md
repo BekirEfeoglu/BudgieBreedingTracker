@@ -13,14 +13,7 @@ decision; the owning rule file says what closing them requires.
 
 ## Latent Code Surfaces (code exists, doesn't work end-to-end)
 
-| Surface | Reality | Owning rule |
-|---------|---------|-------------|
-| Community pinned posts | `is_pinned` column + select exist; no client set/display/premium gate | `community.md` |
-| DM attachments | `message_type` supports image, `image_url` column + `message-photos` bucket constant exist, but the input-bar attach button is a stub — no upload flow | `messaging.md`, `assets-images.md` |
-| DM delivery status | No client-side sending/sent/failed field on `Message`, no per-bubble indicator. Partial: send failure surfaces a retry SnackBar and preserves text (2026-07-03) | `messaging.md` |
-| Genealogy PNG export | `onCaptureImage` callback signature exists but is not wired to a RepaintBoundary capture — only PDF export works | `genealogy.md` |
-| Feedback admin response | `adminResponse` model field exists; history card never displays it | `feedback.md` |
-| Health record chick selector | Animal dropdown lists chicks, but the model only carries `birdId` — chick selection is NOT persisted (schema + migration + mixin work to fix) | `health-records.md` |
+No open latent code surfaces are currently tracked.
 
 ## Designed But Never Built
 

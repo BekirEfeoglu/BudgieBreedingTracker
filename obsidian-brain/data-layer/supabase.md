@@ -66,6 +66,13 @@ Postgres function then exposes only public-safe columns:
   `client.rpc('get_leaderboard', params: {'p_limit': limit})` in
   `GamificationRemoteSource`. Migration `20260528120000_*`.
 
+## Health Records
+
+`health_records` supports optional `bird_id` and `chick_id` parents. Both are
+nullable FK columns with `ON DELETE SET NULL`, so a medical record can remain as
+history when the linked animal row is removed. Client sync validates both
+parents through `HealthRecordRepository` before push.
+
 ## Storage Buckets
 
 All 8 bucket names live in `SupabaseConstants` (lines ~179-188):
@@ -78,9 +85,9 @@ All 8 bucket names live in `SupabaseConstants` (lines ~179-188):
 | `backups` | Private | User backups |
 | `community-photos` | Server upload (edge fn), signed URL read | Community images |
 | `photos` (const `marketplacePhotosBucket`) | Public read, auth write | Marketplace listing photos |
-| `message-photos` | Defined but NOT yet wired (DM attachment upload unshipped) | — |
+| `message-photos` | Private (user-scoped RLS), signed URL read | DM photo messages |
 
-There are NO `health-records` or `chat-attachments` buckets — health photos go to `bird-photos`; DM attachments are unshipped (see [[known-gaps]]).
+There are NO `health-records` or `chat-attachments` buckets — health photos go to `bird-photos`; DM photo messages go to `message-photos`.
 
 - Private: signed URL (1h TTL)
 - Public: CDN URL

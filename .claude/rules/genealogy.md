@@ -39,7 +39,7 @@ Pedigree ağacı, ata/yavru izleme, akrabalık (inbreeding) görselleştirme ve 
 - `PedigreeExportButton` → `generatePedigreeReport(rootBird, ancestors, maxDepth)`; dosya adı `pedigree_<safeName>_<timestamp>.pdf`
 - Premium özelliği (data-io.md § Free vs Premium) — rota zaten premium-gated olduğundan ekstra gate yok
 - Paylaşım l10n: `genealogy.pedigree_share_subject` / `genealogy.pedigree_share_text`
-- **Bilinen boşluk:** `onCaptureImage` (PNG export) callback imzası mevcut ama tree_content'te RepaintBoundary capture'a bağlanmadı — PNG yolunu "çalışıyor" varsayma
+- PNG export yalnız tree modunda görünür: `TreeContent`, `FamilyTreeViewState.captureTreeImage()` callback'ini `PedigreeExportButton.onCaptureImage` olarak verir; list modunda callback null kaldığı için image seçeneği gizlenir
 
 ## Empty / Error State
 - Kuş + chick yoksa: `EmptyState` (`genealogy.no_birds` / `genealogy.no_birds_subtitle`) + kuş ekleme CTA

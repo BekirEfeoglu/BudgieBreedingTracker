@@ -39,14 +39,17 @@ the eventual echo (`sendMessage` returns the `Message`, and the input bar
 clears only on that non-null return — wired 2026-07-02, previously the text
 stayed and users double-posted).
 
-On failure the text is preserved and, as of 2026-07-03, the reason is
-surfaced: `MessageInputBar` `ref.listen`s `messagingFormStateProvider` and
-shows `state.error` (cooldown / moderation / length / network) in a SnackBar
-with a `common.retry` action that re-sends the preserved text, then calls
-`clearError()`. There is still no client-side delivery-status field on
-`Message`, so there is no in-thread "sending/failed" bubble — that would need
-`messagingRealtimeProvider` to upsert its list by id (see
-`.claude/rules/messaging.md` § Delivery Status).
+On failure the text is preserved and the reason is surfaced:
+`MessageInputBar` `ref.listen`s `messagingFormStateProvider` and shows
+`state.error` (cooldown / moderation / length / network) in a SnackBar with a
+`common.retry` action that re-sends the preserved text, then calls
+`clearError()`.
+
+Delivery status is local-only: `Message.deliveryStatus` is excluded from JSON
+and defaults to `sent` for server rows. `MessagingFormNotifier` adds a
+`sending` optimistic message after validation/moderation and before the repo
+call, then id-upserts it to `sent` on success or `failed` on repository error.
+`MessageBubble` renders clock / failed / read-check indicators from that state.
 
 ## Push Notifications
 
@@ -66,14 +69,17 @@ See [[domain/notification-service]].
 
 ## Attachments
 
-**Not wired up yet (2026-07-02 audit):** `message_input_bar.dart`'s attach
-button is fully stubbed (`onTap: Navigator.pop`) — there is no working
-gallery/camera attachment flow. `SupabaseConstants.messagePhotosBucket`
-(`message-photos`) is defined but has zero call sites. `messages.image_url`
-+ `message_type` (`image`/`birdCard`/`listingCard`) schema support exists,
-so a future attachment flow has somewhere to write to, but the 10MB guard /
-`scan-image-safety` / compress pipeline described in `.claude/rules/messaging.md`
-is a design target, not shipped behavior.
+Photo attachments are wired end-to-end. `MessageInputBar` shows a single photo
+option, `MessageAttachmentService` picks a compressed gallery image, the 10MB
+client guard runs before upload, `StorageService.uploadMessagePhoto` scans with
+`scan-image-safety`, and `MessagingFormNotifier.sendMessage` persists an
+`image` message with `image_url`. `message-photos` is a private user-scoped
+bucket created by migration `20260709120000_add_message_photos_storage_bucket.sql`.
+Fetched image message URLs are refreshed by `StorageUrlResolver`.
+
+`birdCard` and `listingCard` render paths still exist, but there is no producer
+UI yet; do not show those bottom-sheet options until a real selector flow ships.
+There is no generic `chat-attachments` bucket.
 
 ## Read Receipts
 

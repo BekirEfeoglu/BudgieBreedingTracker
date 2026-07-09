@@ -33,9 +33,10 @@ period counts as access (`effectivePremiumProvider`). See [[features/premium]].
 
 `PedigreeExportButton` → `PdfExportService.generatePedigreeReport(rootBird,
 ancestors, maxDepth)`; file `pedigree_<safeName>_<timestamp>.pdf`, shared via the
-OS sheet. PNG export (`onCaptureImage`) has a callback signature but the
-RepaintBoundary capture is not wired in `tree_content` — treat PNG as unshipped.
-See [[domain/data-io]].
+OS sheet. PNG export is wired in tree mode: `TreeContent` passes
+`FamilyTreeViewState.captureTreeImage()` to `PedigreeExportButton`, and the tree
+is captured from the `FamilyTreeView` `RepaintBoundary`. List mode intentionally
+hides the image option by passing `onCaptureImage: null`. See [[domain/data-io]].
 
 ## Inbreeding Detection
 

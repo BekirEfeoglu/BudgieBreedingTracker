@@ -57,6 +57,8 @@ name.
 
 Admins access submissions via `/admin/feedback` (see [[features/admin]]).
 Status transitions and replies are admin-only and gated by `AdminGuard`.
+User history surfaces admin replies in both `FeedbackHistoryCard` (reply
+indicator) and `FeedbackDetailSheet` (full response body).
 
 ## L10n
 

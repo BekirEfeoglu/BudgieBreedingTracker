@@ -12,22 +12,23 @@ Kuş sağlık olayları: kontrol, hastalık, aşı, ilaç, ölüm kaydı + takip
 | Filter | `HealthRecordFilterBar` → `filteredHealthRecordsProvider` |
 
 ## Entity Şekli
-- Alanlar: `id, date, type, title, userId, birdId?, description?, treatment?, veterinarian?, notes?, weight?, cost?, followUpDate?, isDeleted`
+- Alanlar: `id, date, type, title, userId, birdId?, chickId?, description?, treatment?, veterinarian?, notes?, weight?, cost?, followUpDate?, isDeleted`
 - `HealthRecordType` enum: `checkup, illness, injury, vaccination, medication, death, unknown` — server-side enum, `unknown` case zorunlu (anti-pattern #15/#16)
-- FK parent: `birdId` **nullable**, Supabase'de `ON DELETE SET NULL` — kayıt kuşsuz yaşayabilir
-- **Bilinen sınırlama:** `health_record_animal_selector` dropdown'ı chick de listeler ama model yalnız `birdId` taşır — chick seçimi kayıtta TUTULMAZ. Chick FK eklemek şema + migration + mixin işi, sessizce "düzeltme"
+- FK parent: `birdId` ve `chickId` **nullable**, Supabase'de `ON DELETE SET NULL` — kayıt kuşsuz/civcivsiz yaşayabilir
+- Form selector kuş ve civciv seçimlerini ayrı taşır; birini seçmek diğerini temizler. Civciv seçimi `chickId` olarak kalıcıdır, `birdId` yerine yazılmaz.
 - Ağırlık takibi ayrı: `GrowthMeasurementRepository` chick büyüme ölçümüdür, HealthRecord.weight tek-nokta kayıttır — karıştırma
 
 ## Sync Doğrulaması (ValidatedSyncMixin)
 `validateForeignKeys` push öncesi üç kontrol yapar (`health_record_repository.dart`):
-1. `birdId != null` ise kuş local'de var ve soft-delete değil
-2. Kuş pending-delete tombstone değil
-3. Kuş remote'a zaten sync'lenmiş (pending değil) — parent'tan önce child push edilmez
+1. `birdId != null` ise kuş local'de var, soft-delete değil ve remote'a sync'lenmiş
+2. `chickId != null` ise civciv local'de var, soft-delete değil ve remote'a sync'lenmiş
+3. Parent pending/pendingDelete ise child push edilmez; parent'tan önce child push etmek FK hatasıdır
 
 Orphan push engeli background-sync.md § ValidatedSyncMixin sözleşmesinin parçası; mixin'i bu repodan KALDIRMA.
 
 ## Follow-Up Hatırlatmaları
 - `followUpDate` set + `birdId != null` → `scheduleHealthCheckReminder(recordId, birdId, hour: 9, durationDays)`
+- `chickId` tek başına reminder schedule etmez; health-check notification payload'ı kuş odaklıdır.
 - Süre: `date_utils.DateUtils.dayDiff(now, followUpDate).clamp(1, 30)` — max 30 gün, dayDiff prefix'li import (datetime-format.md)
 - `followUpDate` yoksa create'ten itibaren 7 gün varsayılan pencere
 - Update'te `birdId`/`followUpDate` değişimi algılanır → eski ID'ler cancel + yeniden schedule (calendar.md cancel+reschedule pattern'i)
@@ -53,7 +54,7 @@ Orphan push engeli background-sync.md § ValidatedSyncMixin sözleşmesinin par�
 
 ## Anti-Patterns
 1. `ValidatedSyncMixin`'i atlayıp health record push etmek (orphan risk)
-2. Chick seçimini kaydediyormuş gibi UI sunmak (bilinen sınırlama — şema işi olmadan çözülmez)
+2. Chick seçimini `birdId` olarak yazmak veya iki FK'yi formdan aynı anda set etmek
 3. Reminder'ı `DateTime.now()` ile schedule etmek (`tz.TZDateTime`, notifications.md)
 4. Delete'te reminder cancel atlamak (zombie notification)
 5. Health içeriğini Sentry/log'a yazmak (PII)

@@ -25,7 +25,7 @@ Uygulama içi geri bildirim: kategori seçimi, cihaz bilgisi şeffaflığı, gö
 ## Gönderim & Geçmiş
 - Insert `upsert` ile (data-layer.md § Write Safety); founder bildirimi DB INSERT trigger'ı ile atomik — client ekstra çağrı yapmaz
 - History tab: kullanıcının kendi kayıtları (`fetchByUser`, created_at DESC), status badge gösterir
-- **Bilinen boşluk:** `adminResponse` alanı modelde var ama history kartında GÖSTERİLMİYOR (display unwired) — yanıt gösterimi eklenirse bu rule güncellenmeli
+- Admin yanıtı varsa history kartı `feedback.admin_response` göstergesiyle işaretler; detay sheet'i tam `adminResponse` metnini gösterir
 - **Bilinen boşluk:** rate limit YOK (client veya server) — spam vektörü; eklenecekse server-side olmalı (moderation.md prensibi)
 
 ## UX

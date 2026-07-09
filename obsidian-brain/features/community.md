@@ -102,11 +102,10 @@ merged to main 2026-07-03 (advisors 0 new; FORCE RLS + owner-only SELECT verifie
 ## Feed UI (visual redesign)
 
 Feed restyle (2026-07-05, behavior unchanged) around `AppColors` brand accents:
-shared `CommunityAvatar` (gradient ring + initials fallback), icon+label pill
-tabs with active-tab gradient (`community_pill_tabs.dart`), liked heart →
-`colorScheme.error` / bookmark → `AppColors.accent` (`community_post_actions.dart`),
-and brand-accent restyle of the FAB, feed overlays, guide cards, and post-card
-body/parts. l10n `community.guide_badge` ("Rehber", tr/en/de).
+shared `CommunityAvatar` (gradient ring + initials), pill tabs with active
+gradient (`community_pill_tabs.dart`), liked heart → `colorScheme.error` /
+bookmark → `AppColors.accent` (`community_post_actions.dart`), restyled FAB /
+overlays / guide cards / post-card parts. l10n `community.guide_badge` (tr/en/de).
 
 ### Layout alignment to `design/Topluluk.dc.html` (2026-07-05, behavior changed)
 
@@ -132,31 +131,24 @@ Structural pass matching the design mockup — this one changes behavior:
 - **Create FAB**: `_CreatePostFab` in `community_screen.dart` — amber-gradient
   pill with a plus glyph (guide glyph on the guides tab); the founder-only rule
   on the guides tab is preserved.
-- **Author badges (real data)**: verified-breeder + `Lv.X · Title` badge on
-  author rows, wired from `profiles` via `CommunityProfileCache` (`level,
-  xp_title, is_verified_breeder` → `author_*`). `CommunityPost.authorLevel/
-  authorTitle/authorIsVerified` (enrichment-only, `includeToJson: false`),
-  rendered by `CommunityUserHeader` + guide cards. Shown only when the profile
-  actually carries them (no fabrication).
+- **Author badges (real data)**: verified-breeder + `Lv.X · Title` on author
+  rows, wired from `profiles` via `CommunityProfileCache` (`level, xp_title,
+  is_verified_breeder` → `author_*`; enrichment-only, `includeToJson: false`),
+  rendered by `CommunityUserHeader` + guide cards. Shown only when present (no
+  fabrication).
 
-- **Explore empty state**: an empty Explore feed now shows the welcoming
-  `EmptyState` ("Henüz gönderi yok" + create CTA) instead of the search-oriented
-  `FilteredFeedEmptyState` ("Eşleşen gönderi yok / try different search"), since
-  Explore has no visible search/filter UI. The welcome-empty condition lives in
-  `communityShowWelcomeEmptyProvider` (`community_feed_providers_filters.dart`) —
-  single source of truth: `!isLoading && (posts.isEmpty || (explore &&
-  visiblePosts.isEmpty))`. `_buildFeedBody` watches it; Takip/Rehberler/Pazar
-  keep the filtered state. `CommunityScreen` also suppresses `_CreatePostFab`
-  while it's true (explore/following only) so the empty state's own centered CTA
-  isn't duplicated by the FAB — no more two "Gönderi Oluştur" buttons on an empty
-  feed; FAB returns once the feed has content.
+- **Explore empty state**: empty Explore shows the welcoming `EmptyState`
+  (create CTA), not the search-oriented `FilteredFeedEmptyState`, since Explore
+  has no search/filter UI. Single source of truth `communityShowWelcomeEmptyProvider`
+  (`community_feed_providers_filters.dart`): `!isLoading && (posts.isEmpty ||
+  (explore && visiblePosts.isEmpty))`; `CommunityScreen` also suppresses
+  `_CreatePostFab` while true so the state's own CTA isn't duplicated (FAB returns
+  with content). Takip/Rehberler/Pazar keep the filtered state.
 
-- **App-bar profile chip**: `CommunityAppBar` shows the current user's avatar in
-  a blue→amber gradient ring (`_ProfileAvatar`) and an amber `★ Lv.X · Title`
-  badge (`_LevelBadge`) under "Topluluk". The level falls back to **Lv.1** with
-  `LevelCalculator.titleForLevel(1)` when `userLevelProvider` returns null (user
-  with no `user_levels` row) so the badge always renders, matching the design;
-  the hardcoded `'Lv.'` was replaced with `community.level_prefix`.
+- **App-bar profile chip**: `CommunityAppBar` shows the user's avatar (blue→amber
+  gradient ring) + amber `★ Lv.X · Title` badge under "Topluluk", falling back to
+  **Lv.1**/`titleForLevel(1)` when `userLevelProvider` is null so it always
+  renders; `'Lv.'` replaced with `community.level_prefix`.
 
 See [[features/marketplace]] for the embedded Pazar tab's 2-column grid change.
 
@@ -173,7 +165,16 @@ See [[features/marketplace]] for the embedded Pazar tab's 2-column grid change.
 - Hardcoded Supabase column strings in community remain a manual-review follow-up.
 - Multi-device block/mute union staleness is known but not blocking current UX.
 - `edited_at` optimistic clock behavior is noted for later polish.
-- Pinned posts (`is_pinned`) column + select exist but no client set/display/premium gate yet.
+- Global pinned-first pagination is a backend follow-up; shipped behavior pins
+  only within the loaded feed window to preserve the `(created_at, id)` cursor.
+
+## Pinned Posts
+
+Client-wired: `is_pinned` parses from feed/detail rows, `CommunityPostCardBody`
+shows the badge (even titleless general posts), `CommunityFeedNotifier` keeps
+loaded pinned posts first, and `PostPinToggleNotifier` does optimistic pin/unpin
+with rollback. Admin/founder (`isAdminProvider`) pin/unpin from the feed card menu
+and detail app bar; cache invalidation is feed-wide since pin state affects order.
 
 ## Do Not Reintroduce
 

@@ -11,7 +11,7 @@ Direkt mesajlaşma. **Online-first** (`*Repository` exemption — architecture.m
 | Repository | `MessagingRepository` (online-first, no Drift table) |
 | Realtime | Supabase realtime channels per conversation |
 | Presence | `presence.md` ile online/typing indikator |
-| Storage | `SupabaseConstants.messagePhotosBucket` (`message-photos`) tanımlı ama henüz hiçbir call site'ta kullanılmıyor — bkz. § Attachments |
+| Storage | `SupabaseConstants.messagePhotosBucket` (`message-photos`) private, user-scoped DM fotoğrafları — bkz. § Attachments |
 | Moderation | `moderate-content` (DM permissive threshold) |
 
 ## Online-First Contract
@@ -34,7 +34,7 @@ messages: (id, conversation_id, sender_id, body, sent_at, ...)
 - Conversation ID: rastgele `Uuid().v7()` (participant çiftinden deterministik türetilmiyor)
 - 1-1 conversation duplicate engeli: lookup-then-create-with-retry (mevcut conversation var mı önce sorgula, yoksa oluştur)
 - Grup: `role` alanı owner/admin/member ayrımı yapar; katılımcı ekleme/çıkarma `conversation_participants` üzerinden
-- `messages` tablosunda `attachments`/`delivered_at`/`read_at` KOLONLARI YOK — bkz. § Delivery Status ve § Attachments (aşağıda, henüz implement edilmedi)
+- `messages` tablosunda `attachments`/`delivered_at`/`read_at` KOLONLARI YOK; fotoğraf mesajları mevcut `image_url` + `message_type=image` alanlarını kullanır.
 
 ## Send Flow
 ```
@@ -52,9 +52,7 @@ User types -> Send button
 - Failure'da local kuyruğa koy, connectivity dönünce auto-retry (max 3)
 
 ## Delivery Status
-**Kısmi (2026-07-03):** Başarı yolunda `MessageInputBar._sendMessage` gönderim başarılı olunca input'u temizler ve dönen `Message`'ı `messagingRealtimeProvider.addLocalMessage` ile optimistic append eder (detail-screen merge id'ye göre dedup eder). Başarısızlıkta metin **korunur** ve hata artık **yüzeye çıkar**: `MessageInputBar` `messagingFormStateProvider`'ı `ref.listen` ile dinler, `state.error` set olunca sebebi (cooldown/moderation/uzunluk/ağ) `common.retry` aksiyonlu bir SnackBar ile gösterir, sonra `clearError()` çağırır; retry korunan metni yeniden gönderir.
-
-**Hâlâ yok (gelecek tasarım hedefi):** `Message` modelinde client-side delivery-status alanı (sending/sent/failed) YOK, dolayısıyla thread içinde balon-üstü "gönderiliyor/başarısız" göstergesi de yok. Bunu eklemek `messagingRealtimeProvider`'ın liste yönetimini id-bazlı upsert'e çevirmeyi gerektirir (şu an prepend eder; realtime echo ile optimistic mesaj map-merge sayesinde dedup oluyor ama liste seviyesinde değil) — yoğun test edilmiş çekirdek davranış olduğu için ayrı, denetimli bir refactor.
+Shipped: `Message.deliveryStatus` local-only (`@JsonKey(includeFromJson: false, includeToJson: false)`) ve server satırlarında varsayılan `sent`. `MessagingFormNotifier.sendMessage` validation/moderation geçtikten sonra aynı client id ile `sending` optimistic mesajı `messagingRealtimeProvider`'a ekler; repository başarıyla dönerse id-bazlı upsert ile `sent`, hata dönerse `failed` yapar. `MessageBubble` clock / failed / read-check göstergelerini bu local state'ten render eder. Başarısızlıkta metin korunur ve `MessageInputBar` SnackBar + `common.retry` aksiyonunu göstermeye devam eder.
 
 ## Read Receipts
 - Gerçek şema: `messages.read_by` (JSONB kullanıcı ID dizisi) + `conversation_participants.last_read_at`
@@ -75,7 +73,10 @@ User types -> Send button
 
 ## Attachments
 - `messages.message_type` şeması `image`/`birdCard`/`listingCard`'ı destekler (`image_url` kolonu mevcut)
-- **Genel dosya/fotoğraf ekleme akışı henüz implement edilmedi (2026-07-02 audit):** `message_input_bar.dart`'taki "ekle" butonu tam olarak stub'lanmış (`onTap: Navigator.pop`) — kullanıcı galeri/kamera'dan serbest bir dosya ekleyemiyor. Bu bölümdeki 10MB image / 1MB audio / `chat-attachments` bucket path tasarımı henüz koda bağlanmadı; gelecek tasarım hedefidir.
+- Shipped photo flow: `MessageInputBar` ek butonu yalnız fotoğraf seçeneğini gösterir; `MessageAttachmentService` `ImagePicker` ile 1920px / JPEG q85 seçer, `ImagePickerGuard` 10MB ön kontrolü yapar, `StorageService.uploadMessagePhoto` `scan-image-safety` sonrası `message-photos/{userId}/{conversationId}/...` path'ine yükler ve `MessagingFormNotifier.sendMessage(messageType: image, imageUrl: ...)` ile optimistic gönderir.
+- `message-photos` bucket/policy migration'ı: `20260709120000_add_message_photos_storage_bucket.sql`. Fetch edilen image mesajlarında `MessagingRepository` eski signed URL'leri `StorageUrlResolver` ile tazeler.
+- `birdCard`/`listingCard` render desteği var, ancak üretici UI henüz yok; gerçek seçici/producer eklenmeden bottom-sheet seçeneği gösterme.
+- Genel dosya/audio attachment ve `chat-attachments` bucket tasarımı shipped değil; `chat-attachments` diye bucket yok.
 
 ## Pagination
 - Initial load: son 30 mesaj
