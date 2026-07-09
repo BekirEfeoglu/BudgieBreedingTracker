@@ -785,7 +785,16 @@
     "days_ago": "{} gün önce",
     "active_sessions_info": "Oturumunuz bu cihazda aktif. Diğer cihazlarda açık kalan oturumları güvenlik için tümünü kapatarak sonlandırabilirsiniz.",
     "clear_cache_confirm": "Önbellek temizlensin mi? Geçici dosyalar silinir; verileriniz etkilenmez.",
-    "version_copied": "Sürüm bilgisi kopyalandı"
+    "version_copied": "Sürüm bilgisi kopyalandı",
+    "backup_daily": "Günlük",
+    "backup_weekly": "Haftalık",
+    "backup_monthly": "Aylık",
+    "backup_never": "Kapalı",
+    "auto_backup_title": "Otomatik Yedekleme",
+    "auto_backup_desc": "Verileriniz seçtiğiniz sıklıkta cihazınıza otomatik olarak yedeklenir (şifreli).",
+    "auto_backup_premium_hint": "Otomatik yedekleme Premium ile açılır",
+    "auto_backup_error": "Yedekleme ayarları yüklenemedi",
+    "auto_backup_last": "Son otomatik yedekleme: {}"
   },
   "backup": {
     "title": "Veri Aktarımı",

@@ -31,7 +31,7 @@ Ayarlar hub'ı: tema, dil, bildirim, sync, gizlilik/güvenlik, yedekleme ve yasa
 - In-flight guard: `exportLoadingProvider` — eşzamanlı export/import bloklanır
 - Paylaşım `SharePlus`; temp dosya paylaşımdan sonra silinir (data-io.md § Share Sheet)
 - `lastExportDateProvider` in-session — persist edilmez
-- **Bilinen boşluk:** backup_screen'de zamanlanmış yedekleme UI'ı YOK — data-io.md § Backup Triggers'taki periodic auto-backup ekranda henüz sunulmuyor; ekleyecek olan data-io.md ile birlikte bu dosyayı güncellemeli
+- **Otomatik yedekleme — shipped (2026-07-09):** backup_screen'de premium-gated frekans seçici (`_AutoBackupSection`, Günlük/Haftalık/Aylık/Kapalı) + son otomatik yedekleme zamanı. Frekans `BackupScheduler` (SharedPreferences) ile persist edilir; yedekleme `app.dart _onAppResumed`'da `backupSchedulerProvider.runIfScheduled` ile due olunca çalışır (6h throttle + interval gate). `backupServiceProvider`/`backupSchedulerProvider`/`backupScheduleControllerProvider` `backup_schedule_providers.dart`'ta. Free kullanıcı upsell tile görür. Runtime `EncryptionService` ile şifreli, cihaz-yerel (kullanıcı şifresi istemez — data-io.md § Backup Triggers)
 
 ## Legal Documents
 - `LegalDocumentScreen` + `LegalDocumentType` (`privacyPolicy, termsOfService, communityGuidelines`)

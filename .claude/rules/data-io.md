@@ -26,7 +26,7 @@ backup.budgie.zip
 
 ## Backup Triggers
 - Manuel: Settings → Backup → Export now
-- Periodic (premium): `BackupScheduler` günlük/haftalık (kullanıcı seçer)
+- Periodic (premium): `BackupScheduler` günlük/haftalık/aylık (kullanıcı seçer) — **shipped 2026-07-09**: UI backup_screen'de (`_AutoBackupSection`), tetikleme `app.dart _onAppResumed`'da `runIfScheduled` ile (6h throttle + interval gate); runtime `EncryptionService` ile şifreli (kullanıcı şifresi istemez, cihaz-yerel). Provider'lar `backup_schedule_providers.dart` (settings.md § Backup Screen)
 - Pre-migration: app update öncesi otomatik (safety net)
 - Path: cihaz Documents/budgie-backups/ + share sheet
 

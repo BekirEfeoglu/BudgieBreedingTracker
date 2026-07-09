@@ -29,6 +29,7 @@ import 'features/app_update/widgets/android_in_app_updater.dart';
 import 'features/app_update/widgets/app_update_prompt.dart';
 import 'features/genetics/providers/genetics_providers.dart';
 import 'domain/services/premium/premium_providers.dart';
+import 'features/settings/providers/backup_schedule_providers.dart';
 import 'features/settings/providers/settings_providers.dart';
 import 'router/app_router.dart';
 import 'router/route_names.dart';
@@ -51,6 +52,7 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
   final _resumeThrottle = ResumeThrottle();
   static const _premiumRefreshInterval = Duration(minutes: 5);
   static const _updateCheckInterval = Duration(hours: 6);
+  static const _scheduledBackupCheckInterval = Duration(hours: 6);
 
   @override
   void initState() {
@@ -151,6 +153,14 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
     if (_resumeThrottle.shouldRun('premium_refresh', _premiumRefreshInterval)) {
       ref.read(localPremiumProvider.notifier).refresh();
     }
+    // Auto-backup safety net (premium): the scheduler no-ops unless the chosen
+    // interval has elapsed, so the 6h throttle just bounds how often we check.
+    if (_resumeThrottle.shouldRun(
+      'scheduled_backup',
+      _scheduledBackupCheckInterval,
+    )) {
+      unawaited(_runScheduledBackupIfDue(userId));
+    }
     unawaited(ref.read(realtimeSyncServiceProvider).subscribeIfAllowed());
     unawaited(_recoverPendingNotifications());
     // Re-check exact alarm permission — user may have granted it via Settings
@@ -167,6 +177,19 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
         unawaited(Sentry.captureException(e, stackTrace: st));
         return false;
       });
+    }
+  }
+
+  /// Runs a scheduled backup when due. Premium-only (matches the settings
+  /// gate); failures are logged, never surfaced — this is a background safety
+  /// net, not a user-facing action.
+  Future<void> _runScheduledBackupIfDue(String userId) async {
+    try {
+      if (!ref.read(effectivePremiumProvider)) return;
+      await ref.read(backupSchedulerProvider).runIfScheduled(userId);
+    } catch (e, st) {
+      AppLogger.error('[AppResume] Scheduled backup failed', e, st);
+      unawaited(Sentry.captureException(e, stackTrace: st));
     }
   }
 

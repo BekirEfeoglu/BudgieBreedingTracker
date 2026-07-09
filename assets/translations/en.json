@@ -785,7 +785,16 @@
     "days_ago": "{} days ago",
     "active_sessions_info": "Your session is active on this device. For security, you can end sessions left open on other devices by signing out of all of them.",
     "clear_cache_confirm": "Clear the cache? Temporary files will be deleted; your data is not affected.",
-    "version_copied": "Version info copied"
+    "version_copied": "Version info copied",
+    "backup_daily": "Daily",
+    "backup_weekly": "Weekly",
+    "backup_monthly": "Monthly",
+    "backup_never": "Off",
+    "auto_backup_title": "Automatic Backup",
+    "auto_backup_desc": "Your data is backed up to this device automatically at the frequency you choose (encrypted).",
+    "auto_backup_premium_hint": "Automatic backup is unlocked with Premium",
+    "auto_backup_error": "Could not load backup settings",
+    "auto_backup_last": "Last automatic backup: {}"
   },
   "backup": {
     "title": "Data Export",

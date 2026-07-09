@@ -159,3 +159,109 @@ class _ExportTile extends StatelessWidget {
     );
   }
 }
+
+/// Premium-gated auto-backup schedule picker. Free users see an upsell tile;
+/// premium users pick a frequency (persisted via [BackupScheduler]). The
+/// backup itself runs on app resume when due (see app.dart `_onAppResumed`).
+class _AutoBackupSection extends ConsumerWidget {
+  const _AutoBackupSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isPremium = ref.watch(effectivePremiumProvider);
+    final dateFormat = ref.watch(dateFormatProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _SectionHeader(
+          title: 'settings.auto_backup_title'.tr(),
+          icon: const AppIcon(AppIcons.backup),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        if (!isPremium)
+          _ExportTile(
+            icon: const AppIcon(AppIcons.backup),
+            color: AppColors.info,
+            title: 'settings.auto_backup_title'.tr(),
+            subtitle: 'settings.auto_backup_premium_hint'.tr(),
+            isLoading: false,
+            onTap: () => context.push(AppRoutes.premium),
+          )
+        else
+          ref
+              .watch(backupScheduleControllerProvider)
+              .when(
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(AppSpacing.md),
+                  child: LoadingState(),
+                ),
+                error: (_, _) => Padding(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  child: Text('settings.auto_backup_error'.tr()),
+                ),
+                data: (schedule) => _AutoBackupControls(
+                  schedule: schedule,
+                  dateFormat: dateFormat,
+                ),
+              ),
+      ],
+    );
+  }
+}
+
+class _AutoBackupControls extends ConsumerWidget {
+  const _AutoBackupControls({required this.schedule, required this.dateFormat});
+
+  final BackupScheduleState schedule;
+  final AppDateFormat dateFormat;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+          child: Text(
+            'settings.auto_backup_desc'.tr(),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        for (final freq in BackupFrequency.values)
+          ListTile(
+            title: Text(freq.labelKey.tr()),
+            trailing: schedule.frequency == freq
+                ? Icon(LucideIcons.check, color: theme.colorScheme.primary)
+                : null,
+            onTap: () => ref
+                .read(backupScheduleControllerProvider.notifier)
+                .setFrequency(freq),
+          ),
+        if (schedule.lastBackup != null)
+          Padding(
+            padding: const EdgeInsets.only(
+              top: AppSpacing.sm,
+              left: AppSpacing.sm,
+            ),
+            child: Text(
+              'settings.auto_backup_last'.tr(
+                args: [
+                  dateFormat.formatter(withTime: true).format(
+                    schedule.lastBackup!,
+                  ),
+                ],
+              ),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}

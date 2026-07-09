@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/constants/app_constants.dart';
@@ -13,13 +14,16 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/app_screen_title.dart';
+import '../../../core/widgets/loading_state.dart';
 import '../../../domain/services/import/import_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import '../../../domain/services/ads/ad_reward_providers.dart';
 import '../../../core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/free_tier_limit_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
+import '../../../domain/services/backup/backup_scheduler.dart';
 import '../../../router/route_names.dart';
+import '../providers/backup_schedule_providers.dart';
 import '../providers/settings_providers.dart';
 import '../providers/export_providers.dart';
 
@@ -97,6 +101,8 @@ class BackupScreen extends ConsumerWidget {
             isLoading: isLoading,
             onTap: () => _handleImport(context, ref),
           ),
+          const SizedBox(height: AppSpacing.xxl),
+          const _AutoBackupSection(),
         ],
       ),
     );
