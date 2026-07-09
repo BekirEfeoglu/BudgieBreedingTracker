@@ -67,7 +67,21 @@ fi
 flutter --version
 run_with_retries 3 10 flutter precache --ios
 run_with_retries 3 10 flutter pub get
-dart run build_runner build
+
+# drift_dev 2.31 intermittently throws "Circular error when deserializing drift
+# modules" (build-order dependent). Retry with a clean cache so a flaky codegen
+# pass does not fail the whole archive. Unlike run_with_retries this cleans the
+# build cache between attempts, which is what clears the circular-error state.
+build_attempt=1
+until dart run build_runner build --delete-conflicting-outputs; do
+  if [ "$build_attempt" -ge 5 ]; then
+    echo "build_runner failed after $build_attempt attempts" >&2
+    exit 1
+  fi
+  echo "build_runner attempt $build_attempt failed; cleaning and retrying" >&2
+  dart run build_runner clean || true
+  build_attempt=$((build_attempt + 1))
+done
 
 if ! command -v pod >/dev/null 2>&1; then
   export HOMEBREW_NO_AUTO_UPDATE=1
