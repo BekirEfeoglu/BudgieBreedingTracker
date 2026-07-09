@@ -27,7 +27,10 @@ DECLARE
   v_title text;
 BEGIN
   -- Authoritative total: recompute from the ledger, never trust a delta.
-  SELECT COALESCE(SUM(amount), 0) INTO v_total
+  -- Cast SUM (bigint) to integer to match the one-time heal below and the
+  -- deployed prod function exactly (v_total is integer; the cast is explicit
+  -- rather than relying on the implicit assignment cast).
+  SELECT COALESCE(SUM(amount), 0)::integer INTO v_total
   FROM public.xp_transactions
   WHERE user_id = NEW.user_id;
 
