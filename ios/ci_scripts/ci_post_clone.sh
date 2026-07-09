@@ -74,7 +74,7 @@ run_with_retries 3 10 flutter pub get
 # build cache between attempts, which is what clears the circular-error state.
 build_attempt=1
 until dart run build_runner build --delete-conflicting-outputs; do
-  if [ "$build_attempt" -ge 5 ]; then
+  if [ "$build_attempt" -ge 8 ]; then
     echo "build_runner failed after $build_attempt attempts" >&2
     exit 1
   fi
