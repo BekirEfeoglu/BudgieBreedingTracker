@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
@@ -47,11 +48,19 @@ class RecoveryCodeService {
       await _client
           .from(SupabaseConstants.mfaRecoveryCodesTable)
           .delete()
-          .eq('user_id', userId);
+          .eq(SupabaseConstants.colUserId, userId);
 
-      await _client.from(SupabaseConstants.mfaRecoveryCodesTable).insert([
-        for (final code in codes) {'user_id': userId, 'code_hash': _hash(code)},
-      ]);
+      // Upsert (never insert) with client-generated ids so a retry after a
+      // partial write is idempotent instead of duplicating hashes on this
+      // MFA-critical path (data-layer.md § Write Safety).
+      await _client.from(SupabaseConstants.mfaRecoveryCodesTable).upsert([
+        for (final code in codes)
+          {
+            SupabaseConstants.colId: const Uuid().v7(),
+            SupabaseConstants.colUserId: userId,
+            SupabaseConstants.colCodeHash: _hash(code),
+          },
+      ], onConflict: SupabaseConstants.colId);
 
       return codes;
     } catch (e, st) {
@@ -66,9 +75,9 @@ class RecoveryCodeService {
     try {
       final rows = await _client
           .from(SupabaseConstants.mfaRecoveryCodesTable)
-          .select('id')
-          .eq('user_id', userId)
-          .isFilter('used_at', null);
+          .select(SupabaseConstants.colId)
+          .eq(SupabaseConstants.colUserId, userId)
+          .isFilter(SupabaseConstants.colUsedAt, null);
       return (rows as List).length;
     } catch (e, st) {
       AppLogger.error('recovery codes count failed', e, st);
