@@ -74,6 +74,27 @@ List<({String recordId, String detail})> detectPullConflicts<T>({
   return conflicts;
 }
 
+/// Logs a repository `pull()` failure and reports UNEXPECTED errors to Sentry.
+///
+/// Typed [AppException]s (offline `NetworkException`, validation, etc.) are
+/// expected sync noise and are only logged. Everything else — serialization,
+/// `TypeError`, Drift corruption, a malformed remote payload — is the
+/// sync/corruption class that observability.md routes to Sentry as an issue,
+/// not just a breadcrumb. Callers that already `rethrow` AppException pass
+/// through safely (the filter is then a no-op); the one caller that swallows
+/// AppException (profile) is correctly kept out of Sentry. Top-level like
+/// [detectPullConflicts] so the custom PhotoRepository / ProfileRepository
+/// (which do not mix in [SyncableRepository]) share the one implementation.
+void reportPullFailure(String logTag, Object error, StackTrace stackTrace) {
+  AppLogger.error('[$logTag] Pull failed', error, stackTrace);
+  if (error is AppException) return;
+  Sentry.captureException(
+    error,
+    stackTrace: stackTrace,
+    withScope: (scope) => scope.setTag('sync_phase', 'pull'),
+  );
+}
+
 mixin SyncableRepository<T> on BaseRepository<T> {
   static const _uuid = Uuid();
 

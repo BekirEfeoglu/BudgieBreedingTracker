@@ -1,6 +1,5 @@
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
-import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/health_records_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
@@ -203,7 +202,7 @@ class HealthRecordRepository extends BaseRepository<HealthRecord>
     } on AppException {
       rethrow;
     } catch (e, st) {
-      AppLogger.error('[HealthRecordRepository] Pull failed', e, st);
+      reportPullFailure('HealthRecordRepository', e, st);
     }
   }
 

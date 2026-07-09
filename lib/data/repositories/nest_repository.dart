@@ -141,7 +141,7 @@ class NestRepository extends BaseRepository<Nest>
     } on AppException {
       rethrow;
     } catch (e, st) {
-      AppLogger.error('[NestRepository] Pull failed', e, st);
+      reportPullFailure('NestRepository', e, st);
     }
   }
 

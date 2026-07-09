@@ -193,7 +193,7 @@ class IncubationRepository extends BaseRepository<Incubation>
     } on AppException {
       rethrow;
     } catch (e, st) {
-      AppLogger.error('[IncubationRepository] Pull failed', e, st);
+      reportPullFailure('IncubationRepository', e, st);
     }
   }
 

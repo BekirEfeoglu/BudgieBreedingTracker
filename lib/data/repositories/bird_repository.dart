@@ -165,7 +165,7 @@ class BirdRepository extends BaseRepository<Bird>
     } on AppException {
       rethrow;
     } catch (e, st) {
-      AppLogger.error('[BirdRepository] Pull failed', e, st);
+      reportPullFailure('BirdRepository', e, st);
     }
   }
 

@@ -1,6 +1,5 @@
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
-import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/breeding_pairs_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
@@ -212,7 +211,7 @@ class BreedingPairRepository extends BaseRepository<BreedingPair>
     } on AppException {
       rethrow;
     } catch (e, st) {
-      AppLogger.error('[BreedingPairRepository] Pull failed', e, st);
+      reportPullFailure('BreedingPairRepository', e, st);
     }
   }
 

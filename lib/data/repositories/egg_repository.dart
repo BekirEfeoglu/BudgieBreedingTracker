@@ -1,6 +1,5 @@
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
-import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/clutches_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/eggs_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/incubations_dao.dart';
@@ -223,7 +222,7 @@ class EggRepository extends BaseRepository<Egg>
     } on AppException {
       rethrow;
     } catch (e, st) {
-      AppLogger.error('[EggRepository] Pull failed', e, st);
+      reportPullFailure('EggRepository', e, st);
     }
   }
 

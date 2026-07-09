@@ -6,6 +6,7 @@ import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/community_profile_cache.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/profile_remote_source.dart';
+import 'package:budgie_breeding_tracker/data/repositories/base_repository.dart';
 import 'package:budgie_breeding_tracker/data/remote/storage/storage_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
@@ -138,7 +139,7 @@ class ProfileRepository {
         await _localDao.upsert(remote);
       }
     } catch (e, st) {
-      AppLogger.error('[ProfileRepository] Pull failed', e, st);
+      reportPullFailure('ProfileRepository', e, st);
     }
   }
 

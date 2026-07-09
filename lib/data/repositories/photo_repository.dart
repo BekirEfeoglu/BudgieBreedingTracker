@@ -160,7 +160,7 @@ class PhotoRepository {
     } on AppException {
       rethrow;
     } catch (e, st) {
-      AppLogger.error('[PhotoRepository] Pull failed', e, st);
+      reportPullFailure('PhotoRepository', e, st);
     }
   }
 

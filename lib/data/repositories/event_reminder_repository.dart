@@ -1,6 +1,5 @@
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
-import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/event_reminders_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/events_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
@@ -195,7 +194,7 @@ class EventReminderRepository extends BaseRepository<EventReminder>
     } on AppException {
       rethrow;
     } catch (e, st) {
-      AppLogger.error('[EventReminderRepository] Pull failed', e, st);
+      reportPullFailure('EventReminderRepository', e, st);
     }
   }
 

@@ -1,6 +1,5 @@
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
-import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/chicks_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/clutches_dao.dart';
@@ -255,7 +254,7 @@ class ChickRepository extends BaseRepository<Chick>
     } on AppException {
       rethrow;
     } catch (e, st) {
-      AppLogger.error('[ChickRepository] Pull failed', e, st);
+      reportPullFailure('ChickRepository', e, st);
     }
   }
 

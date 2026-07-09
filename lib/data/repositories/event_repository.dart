@@ -348,7 +348,7 @@ class EventRepository extends BaseRepository<Event>
     } on AppException {
       rethrow;
     } catch (e, st) {
-      AppLogger.error('[EventRepository] Pull failed', e, st);
+      reportPullFailure('EventRepository', e, st);
     }
   }
 

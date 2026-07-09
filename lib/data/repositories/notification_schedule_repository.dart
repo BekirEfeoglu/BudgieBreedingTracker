@@ -166,7 +166,7 @@ class NotificationScheduleRepository
     } on AppException {
       rethrow;
     } catch (e, st) {
-      AppLogger.error('[NotificationScheduleRepository] Pull failed', e, st);
+      reportPullFailure('NotificationScheduleRepository', e, st);
     }
   }
 

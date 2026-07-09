@@ -202,7 +202,7 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
     } on AppException {
       rethrow;
     } catch (e, st) {
-      AppLogger.error('[GrowthMeasurementRepository] Pull failed', e, st);
+      reportPullFailure('GrowthMeasurementRepository', e, st);
     }
   }
 

@@ -147,7 +147,7 @@ class NotificationRepository extends BaseRepository<AppNotification>
     } on AppException {
       rethrow;
     } catch (e, st) {
-      AppLogger.error('[NotificationRepository] Pull failed', e, st);
+      reportPullFailure('NotificationRepository', e, st);
     }
   }
 
