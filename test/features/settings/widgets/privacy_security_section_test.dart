@@ -76,8 +76,9 @@ void main() {
     ) async {
       await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
-      // Birinci ListTile sifre degistir
-      await tester.tap(find.byType(ListTile).first);
+      // Index 0 is the read-receipts SwitchListTile (renders an inner
+      // ListTile); the nav tiles start at index 1. Sifre degistir = index 1.
+      await tester.tap(find.byType(ListTile).at(1));
       await tester.pumpAndSettle();
 
       // Delegates to the shared MFA-aware password-change sheet, which renders
@@ -89,9 +90,10 @@ void main() {
     testWidgets('veri disa aktar tile tiklama dialog acar', (tester) async {
       await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
-      // Veri disa aktar 4. tile (index 3)
+      // Read-receipts toggle at index 0 shifts the nav/action tiles by one:
+      // veri disa aktar = index 4.
       final tiles = find.byType(ListTile);
-      await tester.tap(tiles.at(3));
+      await tester.tap(tiles.at(4));
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsOneWidget);
@@ -100,9 +102,9 @@ void main() {
     testWidgets('aktif oturumlar tile tiklama dialog acar', (tester) async {
       await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
-      // Aktif oturumlar 3. tile (index 2)
+      // Aktif oturumlar = index 3 (after the read-receipts toggle at 0).
       final tiles = find.byType(ListTile);
-      await tester.tap(tiles.at(2));
+      await tester.tap(tiles.at(3));
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsOneWidget);
@@ -111,9 +113,9 @@ void main() {
     testWidgets('2FA tile tiklama GoRouter push calisir', (tester) async {
       await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
-      // 2FA tile index 1
+      // 2FA = index 2 (after the read-receipts toggle at 0).
       final tiles = find.byType(ListTile);
-      await tester.tap(tiles.at(1));
+      await tester.tap(tiles.at(2));
       await tester.pumpAndSettle();
 
       expect(find.text('2FA Kurulum'), findsOneWidget);
