@@ -4,6 +4,12 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-09] audit | Full-scope sweep: genetics + calendar test hardening
+
+Multi-agent sweep from clean main (all gates green). Only fixes: feather_duster
++ df_spangle multi-locus DF regression guards (v5 claimed 4 combos, 2 untested)
+and a calendar midnight-rollover flake. Community-tag PR-gate gap flagged to user.
+
 ## [2026-07-09] fix | Genetics: DF lethal warnings dropped in multi-locus crosses (v5)
 
 Followed up the audit's deferred genetics FINDING 1. Traced end-to-end: EVERY
