@@ -722,11 +722,17 @@ def check_bare_catch(lines: List[str], filepath: Path, cat: Category):
         match = re.search(r'\bcatch\s*\(\s*e\b', line)
         if not match:
             continue
-        # Look ahead 5 lines for AppLogger, Sentry, or error delegation
-        lookahead = "".join(lines[i:min(i + 5, len(lines))])
+        # Look ahead 8 lines for AppLogger, Sentry, or error delegation.
+        # 8 (not 5) so a rollback-then-log body (optimistic-update
+        # notifiers) whose AppLogger.error trails the rollback still counts.
+        lookahead = "".join(lines[i:min(i + 8, len(lines))])
         if "AppLogger." in lookahead or "Sentry." in lookahead:
             continue
         if "handleError" in lookahead or "markError" in lookahead or "markSyncError" in lookahead:
+            continue
+        # reportPullFailure() (base_repository.dart) already does both
+        # AppLogger.error + Sentry.captureException — recognize it as a sink.
+        if "reportPullFailure" in lookahead:
             continue
         # Skip short rethrow/return/state patterns (common in Notifiers)
         short_body = "".join(lines[i:min(i + 5, len(lines))]).strip()

@@ -927,6 +927,32 @@ class TestCheckBareCatch(unittest.TestCase):
         cat = _run_checker(check_bare_catch, lines, self.NORMAL_PATH)
         self.assertEqual(len(cat.findings), 0)
 
+    def test_no_finding_when_report_pull_failure(self):
+        """reportPullFailure() delegates to AppLogger.error + Sentry."""
+        lines = [
+            "  } catch (e, st) {",
+            "    reportPullFailure('BirdRepository', e, st);",
+            "  }",
+        ]
+        cat = _run_checker(check_bare_catch, lines, self.NORMAL_PATH)
+        self.assertEqual(len(cat.findings), 0)
+
+    def test_no_finding_when_applogger_after_rollback_within_window(self):
+        """Rollback-then-log body: AppLogger.error trails the rollback but
+        still falls inside the 8-line lookahead window."""
+        lines = [
+            "  } catch (e, st) {",
+            "    if (previous != null) {",
+            "      ref",
+            "          .read(feedProvider.notifier)",
+            "          .applyState(id, value: previous.value);",
+            "    }",
+            "    AppLogger.error('Toggle.failed', e, st);",
+            "  }",
+        ]
+        cat = _run_checker(check_bare_catch, lines, self.NORMAL_PATH)
+        self.assertEqual(len(cat.findings), 0)
+
 
 # ── check_mounted_async ────────────────────────────────────────────────────────
 
