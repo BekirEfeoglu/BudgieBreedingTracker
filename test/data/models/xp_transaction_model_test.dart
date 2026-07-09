@@ -1,6 +1,3 @@
-@Tags(['community'])
-library;
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/data/models/xp_transaction_model.dart';
 import 'package:budgie_breeding_tracker/core/enums/gamification_enums.dart';

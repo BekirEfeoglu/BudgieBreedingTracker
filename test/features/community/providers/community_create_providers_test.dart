@@ -1,6 +1,3 @@
-@Tags(['community'])
-library;
-
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';

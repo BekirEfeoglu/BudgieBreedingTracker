@@ -1,6 +1,3 @@
-@Tags(['community'])
-library;
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/domain/services/gamification/level_calculator.dart';
 
