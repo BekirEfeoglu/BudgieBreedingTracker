@@ -159,7 +159,7 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
           // birdPersisted below.
           uploadedPhotoUrl = photoUrl;
         } catch (e, st) {
-          AppLogger.error('BirdFormNotifier photo upload', e, st);
+          AppLogger.error('[BirdFormNotifier] photo upload', e, st);
           state = state.copyWith(
             isLoading: false,
             error: 'birds.photo_upload_error'.tr(),
@@ -256,7 +256,7 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
         lastAction: BirdFormAction.save,
       );
     } catch (e, st) {
-      AppLogger.error('BirdFormNotifier', e, st);
+      AppLogger.error('[BirdFormNotifier]', e, st);
       reportIfUnexpected(e, st);
       // Compensating cleanup: only delete the uploaded storage object if the
       // bird row was never persisted. Once persisted, bird.photoUrl owns
@@ -342,7 +342,7 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
         lastAction: BirdFormAction.save,
       );
     } catch (e, st) {
-      AppLogger.error('BirdFormNotifier', e, st);
+      AppLogger.error('[BirdFormNotifier]', e, st);
       reportIfUnexpected(e, st);
       state = state.copyWith(
         isLoading: false,

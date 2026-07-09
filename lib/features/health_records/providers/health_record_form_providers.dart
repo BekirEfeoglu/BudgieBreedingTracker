@@ -96,7 +96,7 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
 
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
-      AppLogger.error('HealthRecordFormNotifier', e, st);
+      AppLogger.error('[HealthRecordFormNotifier]', e, st);
       reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
@@ -194,7 +194,7 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
 
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
-      AppLogger.error('HealthRecordFormNotifier', e, st);
+      AppLogger.error('[HealthRecordFormNotifier]', e, st);
       reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
@@ -222,7 +222,7 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
       }
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
-      AppLogger.error('HealthRecordFormNotifier', e, st);
+      AppLogger.error('[HealthRecordFormNotifier]', e, st);
       reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
