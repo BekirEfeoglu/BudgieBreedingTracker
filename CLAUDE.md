@@ -113,7 +113,7 @@ scripts/test_app_store_config.py        # App Store config consistency tests
 | Custom SVG icons | 99 constants, 99 files on disk |
 | Shared widgets | 35 (15 root + 4 buttons + 2 cards + 2 dialog + 1 bottom_sheet + 5 eggs) |
 | Enum files | 15 |
-| Supabase constants | 152 (tables + buckets + columns) |
+| Supabase constants | 154 (tables + buckets + columns) |
 | L10n keys | ~3,104 per language, 41 categories |
 | DB schema version | 27 |
 
@@ -193,7 +193,7 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 | `validate-free-tier-limit` | Free tier entity limit enforcement |
 
 ### Migrations
-203 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
+204 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
 
 ## Rules
 
@@ -369,7 +369,7 @@ Security:      lib/core/security/
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
-Migrations:    supabase/migrations/ (203 files)
+Migrations:    supabase/migrations/ (204 files)
 Scripts:       scripts/
 CI:            .github/workflows/ + codemagic.yaml
 ```

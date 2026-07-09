@@ -4,6 +4,27 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-09] fix | Comprehensive audit sweep (6 agents + Supabase DB checks)
+
+Full-scope audit (Supabase now connected). DB-side: security advisors clean;
+the only perf-advisor WARNs (3× `auth_rls_initplan`) were my new
+`mfa_recovery_codes` policies calling `auth.uid()` bare — rewrapped as
+`(select auth.uid())` (migration `20260709130517`, advisor 3→0). Migration
+deployment-drift found + repaired: 2 local files (`add_health_record_chick_fk`,
+`add_message_photos_storage_bucket`) had version prefixes not matching the prod
+ledger (prior MCP-apply timestamps) — `git mv`'d to `20260709103045`/`103112`,
+local↔prod 204↔204. Code fixes: recovery-code writes `.insert()`→`.upsert()` +
+client v7 ids + SupabaseConstants (MFA-critical idempotency, `colCodeHash`/
+`colUsedAt` added); PII obfuscation of user UUIDs in messaging + gamification
+logs; corrected a fail-open→fail-CLOSED doc comment on `scanImageSafety`;
+replaced brittle `.at(N)` privacy-test finders with text finders. Edge-fn
+lane: 12/12 clean (Deno 204/0), only test-completeness gaps (deferred).
+Genetics lane found a real bug — `df_dominant_pied` semi-lethal warning
+dropped in multi-locus crosses — but the one-line fix failed its own
+regression test, so it was reverted and deferred to a dedicated task (needs a
+proper multi-locus DF-path trace + calculationVersion 4→5 bump). 113 unused_index
+INFOs left untouched (trigram/FK-covering/low-traffic — don't-drop lesson).
+
 ## [2026-07-09] feat | Close 7 gaps (gamification brick, DM retry, MFA recovery, feedback limit, auto-backup, read receipts, calendar reminders)
 
 Seven-item sweep, each its own commit + prod migration where needed (applied
@@ -172,29 +193,5 @@ records; now calls `retryFailedRecords` first (mirrors `triggerManualSync`) +
 `verifyInOrder` test. Recovery: periodic sync / pull-to-refresh reset error→pending
 → push succeeds → banner clears. See [[data-layer/sync-strategy]],
 [[patterns/security]].
-
-## [2026-07-05] fix | Community tab review sweep — 8 findings fixed
-
-Comprehensive Community-tab review (4 parallel audit agents) surfaced findings
-across the in-progress feed redesign; fixed in order. HIGH: multi-image
-regression — collage viewer opened only the tapped single image, so images 4+
-were unreachable; `CommunityImageViewer` is now a swipeable `PageView`
-(`imageUrls`+`initialIndex`, disposes its controller), gallery `onOpenImage` is
-index-based, marketplace viewer opens the full set. MED: `full_name` leaked as
-public `username` (now `display_name` first, PII); feed cache not invalidated on
-like/bookmark/follow (`invalidateFeedCache`); dead `commentsForPostProvider`
-dual-source removed — add/delete/like now update `commentListProvider`
-(in-place `removeComment` + optimistic `applyLikeToggle`); report "Other"
-free-text was dropped (`CommunityReportResult{reason,description}` →
-`community_reports.description`); premium photo cap 3/10 enforced
-(`community.photo_limit_reached`); verified-breeder `badgeCheck` given
-`Semantics`. Hygiene: 3 orphaned widgets + tests deleted (~745 lines);
-`_AuthorMetaLine` date now `Flexible`. Live-verified `community_posts` has no
-`bird_id`/`mutation_tags` columns → bird chip/tags are latent (do not add to
-`_feedColumns`). Rule + wiki drift corrected (comment flat not 1-level, char
-limit 1000, post-create refetch not optimistic, `is_deleted` not `deleted_at`).
-Deferred (noted, non-blocking): hardcoded Supabase column strings (#8,
-manual-review), multi-device block/mute union staleness, `edited_at` optimistic
-clock. See [[features/community]].
 
 Older entries are archived in [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

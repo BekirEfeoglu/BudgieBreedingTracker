@@ -5,6 +5,30 @@ Archived July 2026 entries rotated out of [[log]] during the
 
 ---
 
+## [2026-07-05] fix | Community tab review sweep — 8 findings fixed
+
+Comprehensive Community-tab review (4 parallel audit agents) surfaced findings
+across the in-progress feed redesign; fixed in order. HIGH: multi-image
+regression — collage viewer opened only the tapped single image, so images 4+
+were unreachable; `CommunityImageViewer` is now a swipeable `PageView`
+(`imageUrls`+`initialIndex`, disposes its controller), gallery `onOpenImage` is
+index-based, marketplace viewer opens the full set. MED: `full_name` leaked as
+public `username` (now `display_name` first, PII); feed cache not invalidated on
+like/bookmark/follow (`invalidateFeedCache`); dead `commentsForPostProvider`
+dual-source removed — add/delete/like now update `commentListProvider`
+(in-place `removeComment` + optimistic `applyLikeToggle`); report "Other"
+free-text was dropped (`CommunityReportResult{reason,description}` →
+`community_reports.description`); premium photo cap 3/10 enforced
+(`community.photo_limit_reached`); verified-breeder `badgeCheck` given
+`Semantics`. Hygiene: 3 orphaned widgets + tests deleted (~745 lines);
+`_AuthorMetaLine` date now `Flexible`. Live-verified `community_posts` has no
+`bird_id`/`mutation_tags` columns → bird chip/tags are latent (do not add to
+`_feedColumns`). Rule + wiki drift corrected (comment flat not 1-level, char
+limit 1000, post-create refetch not optimistic, `is_deleted` not `deleted_at`).
+Deferred (noted, non-blocking): hardcoded Supabase column strings (#8,
+manual-review), multi-device block/mute union staleness, `edited_at` optimistic
+clock. See [[features/community]].
+
 ## [2026-07-08] fix | App update redirects and admin version config
 
 Aligned the Apple/Google update flow: Android optional DB banners are now
