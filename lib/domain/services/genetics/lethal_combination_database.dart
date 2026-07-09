@@ -28,10 +28,6 @@ enum LethalScope {
   /// every offspring is flagged as affected (e.g. Ino × Ino, Pallid × Pallid).
   parentBothVisual,
 
-  /// Each parent must visually express at least one mutation from the set
-  /// (e.g. any Crested allele × any Crested allele).
-  parentAnyVisual,
-
   /// An individual offspring must be homozygous (double factor) for the
   /// required mutation (e.g. DF Spangle, DF Dominant Pied, Feather Duster).
   offspringHomozygous,
@@ -61,9 +57,9 @@ class LethalCombination {
 
   /// Mutation IDs involved in this combination. Interpretation depends on
   /// [scope]: `parentBothVisual` uses the first ID for each parent check,
-  /// `parentAnyVisual` matches any allele from the set, `offspringHomozygous`
-  /// uses the first ID for a double-factor offspring check, and
-  /// `offspringVisual` requires every ID to appear in offspring visuals.
+  /// `offspringHomozygous` uses the first ID for a double-factor offspring
+  /// check, and `offspringVisual` requires every ID to appear in offspring
+  /// visuals.
   final Set<String> requiredMutationIds;
 
   /// Which layer of the pairing triggers the warning — parent-level or

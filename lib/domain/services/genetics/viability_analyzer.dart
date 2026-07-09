@@ -78,13 +78,6 @@ class ViabilityAnalyzer {
           motherMutations,
           offspringResults,
         );
-      case LethalScope.parentAnyVisual:
-        return _checkParentAnyVisual(
-          combo,
-          fatherMutations,
-          motherMutations,
-          offspringResults,
-        );
       case LethalScope.offspringHomozygous:
         return _checkOffspringHomozygous(
           combo,
@@ -108,26 +101,6 @@ class ViabilityAnalyzer {
     if (!fatherMutations.contains(mutId) || !motherMutations.contains(mutId)) {
       return const [];
     }
-    return [
-      for (final result in offspringResults)
-        ViabilityWarning(combination: combo, offspring: result),
-    ];
-  }
-
-  List<ViabilityWarning> _checkParentAnyVisual(
-    LethalCombination combo,
-    Set<String> fatherMutations,
-    Set<String> motherMutations,
-    List<OffspringResult> offspringResults,
-  ) {
-    // Each parent must visually express at least one allele from the set.
-    final fatherHasAny = combo.requiredMutationIds.any(
-      fatherMutations.contains,
-    );
-    final motherHasAny = combo.requiredMutationIds.any(
-      motherMutations.contains,
-    );
-    if (!fatherHasAny || !motherHasAny) return const [];
     return [
       for (final result in offspringResults)
         ViabilityWarning(combination: combo, offspring: result),
