@@ -4,6 +4,22 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-09] feat | Close 7 gaps (gamification brick, DM retry, MFA recovery, feedback limit, auto-backup, read receipts, calendar reminders)
+
+Seven-item sweep, each its own commit + prod migration where needed (applied
+Supabase-first via MCP, advisors clean): **(1)** gamification `total_xp` drift
+brick fixed with an AFTER INSERT trigger deriving `user_levels` from
+`SUM(xp_transactions)` (`20260709113822`, backfill heals drift). **(2)** DM
+photo: cooldown pre-check + retry replays the uploaded image, not text.
+**(3)** MFA recovery codes — `mfa_recovery_codes` (SHA-256, own-scope RLS) +
+`redeem_mfa_recovery_code` RPC (private DEFINER deletes `auth.mfa_factors`,
+public INVOKER wrapper; `20260709115154`/`115445`). **(4)** feedback rate limit
+BEFORE INSERT trigger, 5/user/hour (`20260709120555`). **(5)** wired the
+orphaned `BackupScheduler`/`BackupService` + premium frequency picker + resume
+trigger. **(6)** reciprocal `readReceiptsEnabledProvider` (skips write + caps
+bubble). **(7)** calendar reminder editing via `updateEvent(reconcileReminder)`.
+Removed 5 known-gaps rows; tr/en/de keys + owner rules updated per item.
+
 ## [2026-07-09] fix | Audit sweep — gamification profile sync, rank icons, post photo cap
 
 Parallel-agent audit of the post-`f435373` diff (community redesign, 10-tier
@@ -180,15 +196,5 @@ limit 1000, post-create refetch not optimistic, `is_deleted` not `deleted_at`).
 Deferred (noted, non-blocking): hardcoded Supabase column strings (#8,
 manual-review), multi-device block/mute union staleness, `edited_at` optimistic
 clock. See [[features/community]].
-
-## [2026-07-08] fix | App update redirects and admin version config
-
-Aligned the Apple/Google update flow: Android optional DB banners are now
-suppressed so Play in-app update owns optional prompts, while DB-required
-`min_supported_build` blocks still render on both platforms. Added
-`StoreUpdateLauncher` with iOS App Store product sheet / Android Play Store
-intent first, external URL fallback second. Admin Settings now edits
-`system_settings.app_version` as typed iOS/Android JSON through the audited RPC.
-Targeted app-update/admin tests pass.
 
 Older entries are archived in [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

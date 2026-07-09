@@ -5,6 +5,16 @@ Archived July 2026 entries rotated out of [[log]] during the
 
 ---
 
+## [2026-07-08] fix | App update redirects and admin version config
+
+Aligned the Apple/Google update flow: Android optional DB banners are now
+suppressed so Play in-app update owns optional prompts, while DB-required
+`min_supported_build` blocks still render on both platforms. Added
+`StoreUpdateLauncher` with iOS App Store product sheet / Android Play Store
+intent first, external URL fallback second. Admin Settings now edits
+`system_settings.app_version` as typed iOS/Android JSON through the audited RPC.
+Targeted app-update/admin tests pass.
+
 ## [2026-07-05] fix | Photo posts blocked by scan-image-safety 503
 
 Diagnosed "can't create a post": edge-function logs showed `scan-image-safety`
