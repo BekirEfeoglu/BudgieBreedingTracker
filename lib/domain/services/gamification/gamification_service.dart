@@ -53,7 +53,11 @@ class GamificationService {
         if (todayCount >= dailyLimit) return;
       }
 
-      // Insert XP transaction
+      // Insert XP transaction. The AFTER INSERT trigger
+      // (private.sync_user_level_from_xp, migration 20260709113822) recomputes
+      // user_levels + profiles.level/xp_title from the authoritative SUM inside
+      // the same transaction — the client never computes total_xp, so the old
+      // incremental-drift brick (audit K12) is impossible by construction.
       await _remoteSource.insertXpTransaction({
         'id': const Uuid().v7(),
         'user_id': userId,
@@ -61,9 +65,6 @@ class GamificationService {
         'amount': xpAmount,
         if (referenceId != null) 'reference_id': referenceId,
       });
-
-      // Update user level
-      await _updateUserLevel(userId, xpAmount);
 
       // Update badge progress
       await _updateBadgeProgress(userId, action);
@@ -76,41 +77,6 @@ class GamificationService {
       if (_inFlight[lockKey] == completer) {
         _inFlight.remove(lockKey);
       }
-    }
-  }
-
-  Future<void> _updateUserLevel(String userId, int addedXp) async {
-    try {
-      final existing = await _remoteSource.fetchUserLevel(userId);
-      final currentTotalXp = (existing?['total_xp'] as int? ?? 0) + addedXp;
-      final levelResult = LevelCalculator.calculateLevel(currentTotalXp);
-      final title = LevelCalculator.titleForLevel(levelResult.level);
-
-      final levelData = <String, dynamic>{
-        'user_id': userId,
-        'total_xp': currentTotalXp,
-        'level': levelResult.level,
-        'current_level_xp': levelResult.currentLevelXp,
-        'next_level_xp': levelResult.nextLevelXp,
-        'title': title,
-      };
-
-      if (existing != null) {
-        levelData['id'] = existing['id'] as String;
-      } else {
-        levelData['id'] = const Uuid().v7();
-      }
-
-      await _remoteSource.upsertUserLevel(levelData);
-
-      // Sync to profile (level/title only — does not reset is_verified_breeder)
-      await _remoteSource.updateProfileLevelInfo(
-        userId,
-        level: levelResult.level,
-        title: title,
-      );
-    } catch (e, st) {
-      AppLogger.error('gamification updateUserLevel error', e, st);
     }
   }
 
@@ -155,7 +121,10 @@ class GamificationService {
         if (isNowUnlocked && !wasAlreadyUnlocked) {
           badgeData['unlocked_at'] = DateTime.now().toIso8601String();
 
-          // Award bonus XP for unlocking
+          // Award bonus XP for unlocking. The xp_transactions AFTER INSERT
+          // trigger recomputes user_levels + profile from the SUM, so no
+          // client-side level upsert is needed (and none must be done — an
+          // incremental upsert here would re-introduce the drift brick).
           final xpReward = badge['xp_reward'] as int? ?? 0;
           if (xpReward > 0) {
             await _remoteSource.insertXpTransaction({
@@ -165,33 +134,6 @@ class GamificationService {
               'amount': xpReward,
               'reference_id': badge['id'] as String,
             });
-            // Update level directly without triggering badge progress again
-            final existingLevel = await _remoteSource.fetchUserLevel(userId);
-            final updatedTotalXp =
-                (existingLevel?['total_xp'] as int? ?? 0) + xpReward;
-            final bonusLevelResult = LevelCalculator.calculateLevel(
-              updatedTotalXp,
-            );
-            final bonusTitle = LevelCalculator.titleForLevel(
-              bonusLevelResult.level,
-            );
-
-            final bonusLevelData = <String, dynamic>{
-              'user_id': userId,
-              'total_xp': updatedTotalXp,
-              'level': bonusLevelResult.level,
-              'current_level_xp': bonusLevelResult.currentLevelXp,
-              'next_level_xp': bonusLevelResult.nextLevelXp,
-              'title': bonusTitle,
-            };
-
-            if (existingLevel != null) {
-              bonusLevelData['id'] = existingLevel['id'] as String;
-            } else {
-              bonusLevelData['id'] = const Uuid().v7();
-            }
-
-            await _remoteSource.upsertUserLevel(bonusLevelData);
           }
         }
 

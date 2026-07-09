@@ -97,7 +97,7 @@ yok). Eklenirse bu bölüm gerçek implementasyonla güncellenmelidir.
 
 ## Sync Strategy
 - `GamificationRepository` online-first — local Drift mirror YOK, server XP/badge ledger'ı source of truth
-- Her aksiyon server'a direkt yazılır (`xp_transactions` tablosu)
+- Her aksiyon server'a direkt yazılır (`xp_transactions` tablosu); `user_levels` + `profiles.level`/`xp_title` bu insert'i izleyen trigger'la SUM'dan türetilir (bkz. § Server-Side Write Enforcement → Atomik level türetme)
 - ValidatedSyncMixin bu repo'da kullanılmaz (offline-first değil, exemption listesine dahil — architecture.md § Online-First Exemption)
 
 ### Server-Side Write Enforcement (2026-07-02'de eklendi)
@@ -108,6 +108,8 @@ yok). Eklenirse bu bölüm gerçek implementasyonla güncellenmelidir.
 - `profiles.level`/`xp_title` → kullanıcının kendi `user_levels` satırıyla eşleşmeli; `is_verified_breeder = true` → `private.meets_verified_breeder_criteria()` gerekir
 
 Migration'lar: `20260702175125_gamification_server_side_helpers.sql`, `20260702175232_gamification_lock_down_self_grant.sql`. Canlıda `SET LOCAL ROLE authenticated` + sahte JWT ile rollback'li saldırı simülasyonuyla doğrulandı (doğrudan self-grant, keyfi XP miktarı, keyfi seviye üzerine yazma, sahte satırdan seviye uydurma, `verified_breeder` rozetini progress-eşitleme ile açma — hepsi reddedildi; meşru akış hâlâ çalışıyor).
+
+**Atomik level türetme (audit K12/G2) — 2026-07-09'da kapatıldı:** `user_levels` artık **her zaman** `SUM(xp_transactions.amount)`'tan türetilir. `xp_transactions`'a bir `AFTER INSERT` trigger (`private.sync_user_level_from_xp`, SECURITY DEFINER + `search_path=''`) aynı transaction içinde SUM'ı yeniden hesaplar, `user_levels`'i upsert eder ve `profiles.level`/`xp_title`'ı senkronlar. Client **artık `total_xp` hesaplamaz/yazmaz** — eski artımlı yol (`existing + addedXp` → `upsertUserLevel`) kaldırıldı. Bu, önceki "brick" hatasını yapısal olarak imkânsız kılar: insert ile level-upsert arasında bir istek düşse bile `user_levels` bir sonraki insert'te SUM'a hizalanır (eskiden kalıcı desync → RLS WITH CHECK her level yazımını sessizce reddediyordu). Migration `20260709113822_gamification_atomic_level_sync.sql` mevcut drift'li satırları da SUM'dan yeniden hesaplayarak iyileştirir (backfill). RLS WITH CHECK kısıtları defense-in-depth olarak kalır (doğrudan client yazım denemesi hâlâ reddedilir). `GamificationService._updateUserLevel` ve badge-bonus manuel level upsert bloğu silindi; badge bonus XP'si de aynı trigger'la türetilir.
 
 **Günlük limit (audit K12) — 2026-07-03'te kapatıldı:** `XpConstants.dailyLimits` artık server-side de zorlanıyor. WITH CHECK per-row olduğu için aggregate/count bazlı günlük limiti uygulayamaz; bu yüzden ayrı bir `BEFORE INSERT` trigger (`private.enforce_xp_daily_limit`, SECURITY DEFINER + `search_path=''`) UTC-günü içindeki aynı-action satır sayısını sayar ve limiti aşan insert'i `check_violation` ile reddeder. Limitler `private.xp_daily_limit()` ile mirror'lanır (`dailyLogin: 1`, `completeProfile: 1`, `sendMessage: 5`; diğerleri capsiz = NULL). Reddedilen insert client'ta `GamificationService.recordAction`'ın try/catch'iyle yutulur (XP opsiyonel yan etki) — happy path zaten client-side ön-kontrolle erken döndüğü için trigger yalnızca doğrudan-API kötüye kullanımında veya nadir race'te ateşler. Migration: `20260702234529_xp_daily_limit_enforcement.sql`. Canlıda rollback'li transaction ile doğrulandı (5 `sendMessage` kabul, 6. reddedildi, capsiz `addBird` kabul; test satırları rollback edildi, `security` advisor yeni bulgu 0).
 
@@ -150,7 +152,7 @@ test('badge unlock fires on threshold', () async {
 ## Anti-Patterns
 1. XP satın almak / premium hızlandırıcı (pay-to-win, gambling policy)
 2. Random reward / loot box (Apple policy ihlali)
-3. Client-side XP hesabı authoritative saymak (2026-07-02'de RLS WITH CHECK ile miktar/seviye/rozet server-enforce edildi; 2026-07-03'te günlük limit de `BEFORE INSERT` trigger ile kapatıldı — bkz. § Server-Side Write Enforcement + § Günlük limit)
+3. Client-side XP hesabı authoritative saymak (2026-07-02'de RLS WITH CHECK ile miktar/seviye/rozet server-enforce edildi; 2026-07-03'te günlük limit `BEFORE INSERT` trigger ile; 2026-07-09'da `total_xp`/level artımlı client hesabı tamamen kaldırılıp `AFTER INSERT` trigger ile SUM'dan türetildi — client'ta yeniden `upsertUserLevel`/artımlı `total_xp` EKLEME, bkz. § Server-Side Write Enforcement)
 4. Cooldown'sız spam-able XP source: günlük limitli action'lar (`dailyLogin`/`completeProfile`/`sendMessage`) artık server-side capped; capsiz action'lar (örn. `sharePost`, `addComment`) hâlâ yalnızca içerik-moderation/rate-limit ile sınırlı — XP tarafında kasıtlı capsiz
 5. Leaderboard'a opt-out koymamak (privacy)
 6. Badge unlock'ı her widget rebuild'de check (perf — trigger-time only)

@@ -34,14 +34,6 @@ void main() {
     when(
       () => mockRemote.fetchUserLevel(userId),
     ).thenAnswer((_) async => existingLevel);
-    when(() => mockRemote.upsertUserLevel(any())).thenAnswer((_) async {});
-    when(
-      () => mockRemote.updateProfileLevelInfo(
-        userId,
-        level: any(named: 'level'),
-        title: any(named: 'title'),
-      ),
-    ).thenAnswer((_) async {});
     when(() => mockRemote.fetchBadges()).thenAnswer((_) async => badges);
     when(
       () => mockRemote.fetchUserBadges(userId),
@@ -83,7 +75,7 @@ void main() {
   });
 
   group('GamificationService.recordAction', () {
-    test('inserts XP transaction and updates level for addBird', () async {
+    test('inserts XP transaction for addBird', () async {
       setUpBasicRecordAction();
 
       await service.recordAction(userId, XpAction.addBird);
@@ -97,14 +89,25 @@ void main() {
           ),
         ),
       ).called(1);
-      verify(() => mockRemote.upsertUserLevel(any())).called(1);
-      verify(
+    });
+
+    test('delegates level computation to the DB trigger, never upserts '
+        'user_levels or profile level from the client', () async {
+      // Migration 20260709113822 added an AFTER INSERT trigger that recomputes
+      // user_levels + profile.level from SUM(xp_transactions). The client must
+      // NOT compute/upsert total_xp incrementally — that was the drift brick.
+      setUpBasicRecordAction();
+
+      await service.recordAction(userId, XpAction.addBird);
+
+      verifyNever(() => mockRemote.upsertUserLevel(any()));
+      verifyNever(
         () => mockRemote.updateProfileLevelInfo(
-          userId,
+          any(),
           level: any(named: 'level'),
           title: any(named: 'title'),
         ),
-      ).called(1);
+      );
     });
 
     test('skips when XP amount is 0 (unlockBadge not in xpValues)', () async {
@@ -180,65 +183,25 @@ void main() {
     });
   });
 
-  group('GamificationService level update', () {
-    test('creates new level record when none exists', () async {
+  group('GamificationService level update (server-authoritative)', () {
+    // Level/total_xp are now recomputed server-side from SUM(xp_transactions)
+    // by the AFTER INSERT trigger (migration 20260709113822). The client only
+    // has to insert the ledger row; it never reads or writes total_xp, so
+    // there is no client state that can drift out of sync with the SUM.
+    test('inserts only the ledger row, no client level bookkeeping', () async {
       setUpBasicRecordAction(existingLevel: null);
 
       await service.recordAction(userId, XpAction.addBird);
 
-      verify(
-        () => mockRemote.upsertUserLevel(
-          any(
-            that: predicate<Map<String, dynamic>>(
-              (m) =>
-                  m['user_id'] == userId &&
-                  m['total_xp'] == 10 &&
-                  m['level'] == 1,
-            ),
-          ),
-        ),
-      ).called(1);
-    });
-
-    test('accumulates XP on existing level record', () async {
-      setUpBasicRecordAction(
-        existingLevel: {
-          'id': 'level-id-1',
-          'user_id': userId,
-          'total_xp': 90,
-          'level': 1,
-        },
-      );
-
-      await service.recordAction(userId, XpAction.addBird); // +10 XP
-
-      // 90 + 10 = 100 XP -> level 2
-      verify(
-        () => mockRemote.upsertUserLevel(
-          any(
-            that: predicate<Map<String, dynamic>>(
-              (m) =>
-                  m['id'] == 'level-id-1' &&
-                  m['total_xp'] == 100 &&
-                  m['level'] == 2,
-            ),
-          ),
-        ),
-      ).called(1);
-    });
-
-    test('syncs level and title to profile', () async {
-      setUpBasicRecordAction(existingLevel: {'id': 'lvl-1', 'total_xp': 0});
-
-      await service.recordAction(userId, XpAction.addBird);
-
-      verify(
+      verify(() => mockRemote.insertXpTransaction(any())).called(1);
+      verifyNever(() => mockRemote.upsertUserLevel(any()));
+      verifyNever(
         () => mockRemote.updateProfileLevelInfo(
-          userId,
-          level: 1,
-          title: 'gamification.title_beginner',
+          any(),
+          level: any(named: 'level'),
+          title: any(named: 'title'),
         ),
-      ).called(1);
+      );
     });
   });
 
