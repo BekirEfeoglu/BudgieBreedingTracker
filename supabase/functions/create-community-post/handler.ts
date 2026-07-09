@@ -38,7 +38,9 @@ const postSchema = z.object({
       "general",
     ]).optional(),
     tags: z.array(z.string().trim().min(1).max(40)).max(10).optional(),
-    image_urls: z.array(z.string().url()).max(6).optional(),
+    // Premium ceiling is 10 photos/post (free is client-capped at 3); the
+    // server cap must not sit below the premium max or premium posts 400.
+    image_urls: z.array(z.string().url()).max(10).optional(),
     bird_id: z.string().uuid().optional(),
     bird_name: z.string().max(100).optional(),
     mutation_tags: z.array(z.string().trim().max(50)).max(10).optional(),
