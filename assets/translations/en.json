@@ -794,7 +794,9 @@
     "auto_backup_desc": "Your data is backed up to this device automatically at the frequency you choose (encrypted).",
     "auto_backup_premium_hint": "Automatic backup is unlocked with Premium",
     "auto_backup_error": "Could not load backup settings",
-    "auto_backup_last": "Last automatic backup: {}"
+    "auto_backup_last": "Last automatic backup: {}",
+    "read_receipts": "Read receipts",
+    "read_receipts_desc": "When off, others can't see that you read their messages, and you won't see their read status either."
   },
   "backup": {
     "title": "Data Export",

@@ -794,7 +794,9 @@
     "auto_backup_desc": "Ihre Daten werden in der von Ihnen gewählten Häufigkeit automatisch (verschlüsselt) auf diesem Gerät gesichert.",
     "auto_backup_premium_hint": "Automatische Sicherung wird mit Premium freigeschaltet",
     "auto_backup_error": "Sicherungseinstellungen konnten nicht geladen werden",
-    "auto_backup_last": "Letzte automatische Sicherung: {}"
+    "auto_backup_last": "Letzte automatische Sicherung: {}",
+    "read_receipts": "Lesebestätigungen",
+    "read_receipts_desc": "Wenn deaktiviert, sehen andere nicht, dass Sie ihre Nachrichten gelesen haben, und Sie sehen deren Lesestatus ebenfalls nicht."
   },
   "backup": {
     "title": "Datenexport",

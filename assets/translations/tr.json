@@ -794,7 +794,9 @@
     "auto_backup_desc": "Verileriniz seçtiğiniz sıklıkta cihazınıza otomatik olarak yedeklenir (şifreli).",
     "auto_backup_premium_hint": "Otomatik yedekleme Premium ile açılır",
     "auto_backup_error": "Yedekleme ayarları yüklenemedi",
-    "auto_backup_last": "Son otomatik yedekleme: {}"
+    "auto_backup_last": "Son otomatik yedekleme: {}",
+    "read_receipts": "Okundu bilgisi",
+    "read_receipts_desc": "Kapalıyken karşı taraf mesajlarınızı okuduğunuzu göremez; siz de başkalarının okuma durumunu görmezsiniz."
   },
   "backup": {
     "title": "Veri Aktarımı",

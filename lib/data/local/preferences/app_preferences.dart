@@ -18,6 +18,7 @@ class AppPreferences {
   static const keyThemeMode = 'pref_theme_mode';
   static const keyLanguage = 'pref_language';
   static const keyNotificationsEnabled = 'pref_notifications_enabled';
+  static const keyReadReceiptsEnabled = 'pref_read_receipts_enabled';
   static const keyCompactView = 'pref_compact_view';
   static const keyLastSyncedAt = 'pref_last_synced_at';
   static const keyOnboardingComplete = 'pref_onboarding_complete';

@@ -56,7 +56,7 @@ Shipped: `Message.deliveryStatus` local-only (`@JsonKey(includeFromJson: false, 
 
 ## Read Receipts
 - Gerçek şema: `messages.read_by` (JSONB kullanıcı ID dizisi) + `conversation_participants.last_read_at`
-- **Privacy toggle henüz implement edilmedi (2026-07-02 audit):** her okuma koşulsuz kaydedilir — kullanıcının bunu kapatabileceği bir ayar (`Settings → Messaging`) kod tabanında YOK. Bu bölüm gelecek tasarım hedefidir.
+- **Privacy toggle — shipped (2026-07-09), resiprokal:** `readReceiptsEnabledProvider` (`lib/data/providers/read_receipts_provider.dart`, `PrefBoolNotifier` → `AppPreferences.keyReadReceiptsEnabled`, default `true`). Toggle Settings → Privacy & Security'de. Kapalıyken: (1) `MessageDetailScreen._markVisibleAsRead` erken döner → `markAsRead` RPC'si çağrılmaz, `read_by`'a kullanıcı EKLENMEZ (karşı taraf okuma görmez); (2) resiprokal olarak `MessageBubble.showReadReceipts=false` ile okuma göstergesi "delivered" (tek check) ile sınırlanır (kullanıcı da başkalarının okuma durumunu görmez). **Neden güvenli:** `Conversation.unreadCount` `@JsonKey(includeFromJson:false)`, hiç doldurulmuyor — `read_by`'ı kullanıcının kendi unread takibi KULLANMIYOR, yani yazımı atlamak unread'i bozmaz. Provider `data/providers`'ta (feature değil) ki messaging cross-feature import olmadan enforce edebilsin; settings_toggle_providers re-export eder.
 
 ## Realtime Subscription
 - Aktif conversation: Supabase realtime channel `conversation_<id>`
@@ -120,7 +120,7 @@ Shipped: `Message.deliveryStatus` local-only (`@JsonKey(includeFromJson: false, 
 ## Anti-Patterns
 1. `MessagingRepository`'ye Drift table eklemek (online-first contract)
 2. Realtime subscription dispose etmemek (battery + concurrent socket limit)
-3. Read receipt'i mandatory yapmak (privacy ihlali — şu an zaten opt-out yok, bkz. § Read Receipts gap)
+3. Read receipt'i mandatory yapmak (privacy ihlali — `readReceiptsEnabledProvider` opt-out'unu hem yazımda hem resiprokal gösterimde honor et, bkz. § Read Receipts)
 4. Grup conversation'larda block/moderation kontrolünü 1-1'e göre gevşetmek (participant sayısı arttıkça spam/abuse yüzeyi büyür)
 5. Moderation atlamak DM diye (anti-pattern: moderation.md spam riski)
 6. Optimistic insert failure'da kullanıcıya bildirmeden silmek (gaslighting)

@@ -11,6 +11,7 @@ import '../../../core/widgets/app_icon.dart';
 import '../../../router/route_names.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/profile_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/read_receipts_provider.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
@@ -43,6 +44,14 @@ class PrivacySecuritySection extends ConsumerWidget {
             onChanged: (value) =>
                 _setLeaderboardVisibility(ref, profile, value),
           ),
+        SettingsToggleTile(
+          title: 'settings.read_receipts'.tr(),
+          subtitle: 'settings.read_receipts_desc'.tr(),
+          icon: const Icon(LucideIcons.checkCheck),
+          value: ref.watch(readReceiptsEnabledProvider),
+          onChanged: (value) =>
+              ref.read(readReceiptsEnabledProvider.notifier).set(value),
+        ),
         SettingsNavigationTile(
           title: 'settings.change_password'.tr(),
           icon: const AppIcon(AppIcons.password),

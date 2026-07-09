@@ -188,6 +188,34 @@ void main() {
       expect(find.byIcon(LucideIcons.check), findsNothing);
     });
 
+    testWidgets(
+      'caps at single check when the viewer disabled read receipts',
+      (tester) async {
+        final message = Message(
+          id: 'msg-1',
+          conversationId: 'conv-1',
+          senderId: 'user-1',
+          content: 'Hello',
+          readBy: const ['user-1', 'user-2'],
+          createdAt: DateTime(2025, 3, 15, 10, 0),
+        );
+
+        await pumpLocalizedWidget(
+          tester,
+          MessageBubble(
+            message: message,
+            isMe: true,
+            showReadReceipts: false,
+          ),
+        );
+
+        // Read status hidden (reciprocal): delivered check only, never the
+        // blue double-check.
+        expect(find.byIcon(LucideIcons.check), findsOneWidget);
+        expect(find.byIcon(LucideIcons.checkCheck), findsNothing);
+      },
+    );
+
     testWidgets('does not show read receipt icons for other users', (
       tester,
     ) async {

@@ -8,6 +8,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/widgets/error_state.dart' as app;
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/read_receipts_provider.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import '../providers/messaging_providers.dart';
 import '../providers/messaging_realtime_providers.dart';
@@ -65,6 +66,9 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
   /// [_maxMarkReadAttempts] times before giving up to avoid the
   /// flapping-network unbounded-retry hazard.
   void _markVisibleAsRead(List<Message> messages, String userId) {
+    // Respect the read-receipt privacy toggle: when off, never broadcast that
+    // the user read a message (reciprocal — the UI also hides others' status).
+    if (!ref.read(readReceiptsEnabledProvider)) return;
     final repo = ref.read(messagingRepositoryProvider);
     for (final msg in messages) {
       if (msg.senderId == userId) continue;
@@ -112,6 +116,7 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
     // same filter so a block taking effect mid-session hides in-flight
     // realtime messages too.
     final blockedSenders = ref.watch(blockedUsersProvider).toSet();
+    final showReadReceipts = ref.watch(readReceiptsEnabledProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -221,6 +226,7 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
                     return MessageBubble(
                       message: message,
                       isMe: message.senderId == userId,
+                      showReadReceipts: showReadReceipts,
                     );
                   },
                 );

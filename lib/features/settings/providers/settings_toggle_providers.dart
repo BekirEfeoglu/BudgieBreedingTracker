@@ -6,6 +6,9 @@ import '../../../data/local/preferences/pref_notifier.dart';
 
 // Re-export sync settings from domain layer so existing feature imports work.
 export 'package:budgie_breeding_tracker/domain/services/sync/sync_settings_providers.dart';
+// Read-receipts toggle lives in data/providers (so messaging can enforce it
+// without a cross-feature import); re-exported here for the settings UI.
+export 'package:budgie_breeding_tracker/data/providers/read_receipts_provider.dart';
 
 // ---------------------------------------------------------------------------
 // Notifications Master Toggle

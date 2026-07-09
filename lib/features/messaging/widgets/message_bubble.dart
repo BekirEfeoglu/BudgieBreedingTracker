@@ -13,7 +13,17 @@ class MessageBubble extends StatelessWidget {
   final Message message;
   final bool isMe;
 
-  const MessageBubble({super.key, required this.message, required this.isMe});
+  /// When false (the viewer disabled read receipts), the read indicator is
+  /// capped at "delivered" — the recipient's read status is never shown,
+  /// mirroring the fact that the viewer no longer broadcasts their own.
+  final bool showReadReceipts;
+
+  const MessageBubble({
+    super.key,
+    required this.message,
+    required this.isMe,
+    this.showReadReceipts = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -125,12 +135,11 @@ class MessageBubble extends StatelessWidget {
       );
     }
 
+    final isRead = showReadReceipts && message.readBy.length > 1;
     return Icon(
-      message.readBy.length > 1 ? LucideIcons.checkCheck : LucideIcons.check,
+      isRead ? LucideIcons.checkCheck : LucideIcons.check,
       size: 14,
-      color: message.readBy.length > 1
-          ? theme.colorScheme.primary
-          : theme.colorScheme.outline,
+      color: isRead ? theme.colorScheme.primary : theme.colorScheme.outline,
     );
   }
 

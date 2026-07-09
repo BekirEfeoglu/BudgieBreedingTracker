@@ -21,6 +21,7 @@ Ayarlar hub'ı: tema, dil, bildirim, sync, gizlilik/güvenlik, yedekleme ve yasa
 
 ## Privacy & Security Bölümü
 - `showInLeaderboard` toggle'ı `profileRepository` üzerinden yazar (profil alanı — gamification.md leaderboard opt-out)
+- **Okundu bilgisi (read receipts) toggle'ı** `readReceiptsEnabledProvider` (AppPreferences, local) — resiprokal messaging gizlilik ayarı (messaging.md § Read Receipts sahibi; sözleşmeyi orada düzelt, burada sadece kopya)
 - Şifre değiştirme sheet'i MFA challenge destekler — hesap silme akışındaki AAL2 pattern'inin kardeşi (profile.md); birini değiştirirken diğerini kontrol et
 - Aktif oturumlar: per-session listeleme YOK — açıklama dialog'u + "tüm oturumları kapat" aksiyonu (bilinen sınırlama, over-promise etme)
 - GDPR kişisel veri export'u (Excel) **free** — premium export gate'inden ayrı yol (veri sahipliği prensibi, data-io.md)
