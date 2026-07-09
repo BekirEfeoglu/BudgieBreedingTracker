@@ -51,6 +51,14 @@ hardening added 2026-07-02 (see § Server-Side Write Guards below). Before
 that date this section's claim was aspirational, not true: any
 authenticated user could self-grant the flag directly.
 
+Separately, from 2026-04-02 to 2026-07-09 the write was silently **dead**:
+`updateProfileVerification` / `updateProfileLevelInfo` filtered
+`.eq('user_id', ...)`, but `profiles` is keyed by `id` (= `auth.users.id`)
+and has no `user_id` column, so every call 400'd and was swallowed by the
+service's catch. Consequence: `profiles.level`/`xp_title` froze after each
+level-up and the verified-breeder tick could never appear from the client
+despite the badge unlocking. Fixed 2026-07-09 by filtering `.eq('id', ...)`.
+
 ## Server-Side Write Guards (added 2026-07-02)
 
 `xp_transactions`/`user_levels`/`user_badges` previously had **no**
@@ -103,10 +111,17 @@ same loop exactly rather than deriving its own formula, to avoid drift.
 `LevelCalculator.titleForLevel(level)` maps a level to a rank **l10n key**
 (`gamification.title_*`), stored in `profiles.xp_title` / `user_levels.title`
 (the KEY, not resolved text — UI must `.tr()` it). Bands (expanded from 7 to
-10 tiers on 2026-07-05, migration `20260705120000_expand_rank_ladder`):
+10 tiers on 2026-07-05, migration `20260705165421_expand_rank_ladder`):
 `≤1` beginner · `2-3` novice · `4-6` enthusiast · `7-10` experienced ·
 `11-15` expert · `16-22` master (Usta Yetiştirici) · `23-32` grand_master ·
 `33-49` legendary · `50-74` champion · `≥75` bird_whisperer.
+
+`AppIcons.getLevelIcon(titleKey)` maps each band to one of 5 badge icons
+(bronze/silver/gold/platinum/legendary, 2 tiers each) and **must stay
+monotonic** — through 2026-07-09 it was not updated for the expansion, so
+`enthusiast` fell through to gold (outranking silver) and `champion`
+downgraded to platinum below the lower `legendary` tier. Fixed to a strict
+ascending ladder 2026-07-09.
 
 Dart `titleForLevel` and SQL `private.xp_title_for_level` **must be byte-for-byte
 identical** — the gamification RLS `WITH CHECK` (`title =

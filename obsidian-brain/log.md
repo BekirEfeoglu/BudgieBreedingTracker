@@ -4,6 +4,24 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-09] fix | Audit sweep — gamification profile sync, rank icons, post photo cap
+
+Parallel-agent audit of the post-`f435373` diff (community redesign, 10-tier
+rank ladder, comment replies, mutes, admin atomic RPCs). Fixed and pushed:
+**(1)** `GamificationRemoteSource.updateProfileVerification`/`updateProfileLevelInfo`
+filtered `profiles.eq('user_id')`, but `profiles` is keyed by `id` and has no
+`user_id` column — every level-up/verified sync 400'd silently since 2026-04-02,
+freezing `profiles.level`/`xp_title` and blocking the verified tick. Now `.eq('id')`.
+**(2)** `AppIcons.getLevelIcon` never updated for the 10-tier expansion —
+non-monotonic (enthusiast→gold, champion→platinum below legendary); remapped to a
+strict 5-icon ascending ladder. **(3)** `create-community-post` Zod `image_urls`
+cap was 6 vs the premium max of 10 — premium 7–10-photo posts uploaded then 400'd;
+raised to 10. Also fixed `check_bare_catch` false positives (recognize
+`reportPullFailure` + widen lookahead to 8 lines). Deferred (needs server RPC):
+`total_xp` computed incrementally vs the RLS `SUM()` WITH CHECK — one dropped
+request between insert and level-upsert permanently bricks a user's leveling.
+Updated gamification-service.md + edge-functions.md. Commits da3c02d, 600c3c2, e808dff.
+
 ## [2026-07-09] fix | Pull-failure Sentry reporting across syncable repos
 
 A PII/observability agent sweep found every syncable repository's `pull()`

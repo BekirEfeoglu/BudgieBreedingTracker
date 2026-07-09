@@ -48,7 +48,7 @@ Current webhook receivers: `revenuecat-webhook` (shared secret via `REVENUECAT_W
 | `sync-premium-status` | RevenueCat checked with secret key; client assertions not trusted |
 | `revenuecat-webhook` | Refetches full subscriber on every event; converges with `sync-premium-status` on identical state. TEST events ack 200 without DB writes. Unknown event types still refetch defensively. Founder/admin short-circuit mirrors `sync-premium-status`. |
 | `moderate-content` | Threshold auto-flag + human review queue |
-| `create-community-post` | Server-side moderation + post guard before insert |
+| `create-community-post` | Server-side moderation + post guard before insert; also `mode:'update'` edit-window path. `image_urls` Zod cap is **10** (the premium max) — through 2026-07-09 it was `6`, which deterministically 400'd premium 7–10-photo posts after upload. |
 | `create-community-comment` | Server-side moderation + reciprocal block check before insert |
 | `upload-community-photo` | Server-side image moderation before Storage write |
 
