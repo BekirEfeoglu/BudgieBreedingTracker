@@ -227,9 +227,30 @@ Map<String, OffspringResult> _resolveEpistasisForCombined(
     }).toList();
     final allCarried = [...carrierIds, ...c.carriedMutations];
     final uniqueCarried = allCarried.toSet().toList();
-    final phenotypeLabel = _buildPhenotypeLabel(compoundName, uniqueCarried);
+    final baseLabel = _buildPhenotypeLabel(compoundName, uniqueCarried);
 
-    final key = '$phenotypeLabel|${c.sex.name}';
+    // Keep the double-factor subset as its own result (it carries the
+    // semi-lethal/lethal warning and its own ~25% probability) instead of
+    // collapsing it into the single-factor phenotype group. The epistasis
+    // compound name is identical for homozygous vs heterozygous dominant, so
+    // without a distinct label they merged into one key and the doubleFactorIds
+    // tag was overwritten/lost — dropping every offspringHomozygous lethal
+    // (crested, DF spangle, feather duster, DF dominant pied) in multi-locus
+    // crosses. Mirrors the single-locus path, which labels the DF result
+    // separately ("(double)"/"(homozygous)").
+    final phenotypeLabel = doubleFactorIds.isEmpty
+        ? baseLabel
+        : '$baseLabel (double factor)';
+
+    // Include the EXACT double-factor set in the grouping key so results whose
+    // homozygous loci differ don't merge — merging would union their DF tags
+    // and over-attribute a lethal to offspring that aren't actually homozygous
+    // for it (e.g. an Aa dominant-pied × bb blue group being tagged
+    // dominant_pied because it shares the base label with the AA×bb group).
+    final key = doubleFactorIds.isEmpty
+        ? '$phenotypeLabel|${c.sex.name}'
+        : '$phenotypeLabel|${c.sex.name}'
+              '|${(doubleFactorIds.toList()..sort()).join(",")}';
 
     if (resultMap.containsKey(key)) {
       final existing = resultMap[key]!;
@@ -246,7 +267,7 @@ Map<String, OffspringResult> _resolveEpistasisForCombined(
           ...uniqueCarried,
         }.toList(),
         maskedMutations: maskedMuts,
-        doubleFactorIds: doubleFactorIds,
+        doubleFactorIds: {...existing.doubleFactorIds, ...doubleFactorIds},
       );
     } else {
       resultMap[key] = OffspringResult(

@@ -17,8 +17,9 @@ Tüm hesap çıktıları kalıcı kaydedildiğinde `calculationVersion` alanı i
 | v2 | 2026-04-09 | Dominant allelic series fix, MUTAVI rate güncellemesi |
 | v3 | 2026-04-19 | Z-kromozom linkage tüm ino_locus allellerine genişletildi (pallid, pearly, texas_clearbody) |
 | v4 | 2026-07-02 | Tam-dominant allelic homozigotlar `(double)` ile etiketlendi; crested × crested artık ayrı ~%25 DF sonucu üretir (DF-lethal doğru işaretlenir) |
+| v5 | 2026-07-09 | Multi-locus combiner DF (homozygous) subset'ini artık single-factor grubuna çökertmiyor; önce epistasis compound adı homo/hetero için aynı olduğundan aynı key'e merge olup `doubleFactorIds` eziliyordu → **tüm offspringHomozygous lethal'lar** (crested, DF spangle, feather duster, DF dominant pied) multi-locus crosslarda sessizce düşüyordu. DF subset artık exact-DF-set ile key'lenen ayrı `(double factor)` sonucu; uyarılar multi-locus'ta da ateşler, affected olasılık gerçek ~%25 subset |
 
-Güncel değer: `GeneticsConstants.calculationVersion = 4`. `GeneticsHistory.isStale` bu sabite göre eski kayıtları işaretler; sabit değiştiğinde `genetics_constants_test.dart` literal assertion'ı ve `genetics_history_model_test.dart` isStale testleri güncellenmeli.
+Güncel değer: `GeneticsConstants.calculationVersion = 5`. `GeneticsHistory.isStale` bu sabite göre eski kayıtları işaretler; sabit değiştiğinde `genetics_constants_test.dart` literal assertion'ı ve `genetics_history_model_test.dart` isStale testleri güncellenmeli.
 
 Eski kayıtlar göründüğünde UI rozetle uyarır ("hesap eski sürüm, yeniden çalıştır"). Migration ile zorla yeniden hesaplama YOK — kullanıcı veri bütünlüğü için manuel yeniden hesap tetikler.
 

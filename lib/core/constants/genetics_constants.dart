@@ -63,7 +63,11 @@ abstract final class GeneticsConstants {
   static const String locusIno = 'ino_locus';
 
   /// Crested locus: tufted / half-circular / full-circular alleles.
-  /// Crested pairings are treated as sub-vital risk in viability warnings.
+  /// The double-factor (homozygous) crested subset is classified
+  /// `LethalSeverity.lethal` in `lethal_combination_database.dart` (the v4
+  /// DF-lethal decision, endorsed by genetics.md) — MUTAVI K10 calls crest
+  /// "subvital", but only the ~25% DF subset is flagged, not every crested
+  /// pairing.
   static const String locusCrested = 'crested';
 
   // ── Sex-linked mutation IDs ──
@@ -138,7 +142,17 @@ abstract final class GeneticsConstants {
   /// instead of merging with single-factor birds. This splits e.g. crested ×
   /// crested into a separate ~25% DF result (correctly flagged as DF-lethal),
   /// changing the offspring set for crested crosses.
-  static const int calculationVersion = 4;
+  ///
+  /// v5 (2026-07-09): the multi-locus combiner no longer collapses the
+  /// homozygous double-factor subset into the single-factor phenotype group.
+  /// Previously the epistasis compound name was identical for homo/heterozygous
+  /// dominant, so they merged into one key and the doubleFactorIds tag was
+  /// overwritten/lost — silently dropping EVERY offspringHomozygous lethal
+  /// (crested, DF spangle, feather duster, DF dominant pied) in any multi-locus
+  /// cross. The DF subset is now a distinct "(double factor)" result keyed by
+  /// its exact double-factor set, so those lethal/semi-lethal warnings fire in
+  /// multi-locus crosses and their affected probability is the true ~25% subset.
+  static const int calculationVersion = 5;
 
   // ── ReverseCalculator limits ──
   /// Maximum parent genotype options evaluated per locus in reverse calculation.

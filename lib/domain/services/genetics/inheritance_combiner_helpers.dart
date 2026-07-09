@@ -83,7 +83,10 @@ OffspringSex _mergeSex(OffspringSex a, OffspringSex b) {
     final id = MutationDatabase.getByName(cleanName)?.id;
     if (id != null) {
       visualMutIds.add(id);
-      if (name.contains('(double)')) {
+      // Autosomal-dominant homozygotes are marked '(homozygous)', not
+      // '(double)'; match both so string-marked DF loci (e.g. dominant_pied)
+      // are tagged, mirroring the single-locus path.
+      if (name.contains('(double)') || name.contains('(homozygous)')) {
         doubleFactorIds.add(id);
       }
     }

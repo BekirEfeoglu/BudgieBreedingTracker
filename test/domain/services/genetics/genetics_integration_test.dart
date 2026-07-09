@@ -296,6 +296,108 @@ void main() {
       expect(analysis.highestSeverity, LethalSeverity.semiLethal);
       expect(analysis.totalAffectedProbability, closeTo(0.25, 1e-6));
     });
+
+    test(
+      'MULTI-locus dominant_pied x dominant_pied + blue still flags '
+      'df_dominant_pied for the ~25% homozygous subset (v5)',
+      () {
+        // Before v5, the multi-locus combiner collapsed the homozygous and
+        // heterozygous dominant-pied results into one epistasis compound name
+        // and overwrote/lost the doubleFactorIds tag — silently dropping the
+        // df_dominant_pied semi-lethal warning in ANY multi-locus cross. Adding
+        // a second autosomal locus (blue) exercises that path.
+        final father = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'dominant_pied': AlleleState.carrier,
+            'blue': AlleleState.carrier,
+          },
+        );
+        final mother = ParentGenotype(
+          gender: BirdGender.female,
+          mutations: {
+            'dominant_pied': AlleleState.carrier,
+            'blue': AlleleState.carrier,
+          },
+        );
+
+        final results = calculator.calculateFromGenotypes(
+          father: father,
+          mother: mother,
+        );
+
+        // The dominant_pied double-factor subset is tagged and stays a distinct
+        // result set (not merged into the single-factor group).
+        final dfProb = results
+            .where((r) => r.doubleFactorIds.contains('dominant_pied'))
+            .fold<double>(0, (sum, r) => sum + r.probability);
+        expect(
+          dfProb,
+          closeTo(0.25, 1e-6),
+          reason: 'exactly the ~25% homozygous subset carries the DF tag',
+        );
+
+        const analyzer = ViabilityAnalyzer();
+        final analysis = analyzer.analyze(
+          fatherMutations: const {'dominant_pied', 'blue'},
+          motherMutations: const {'dominant_pied', 'blue'},
+          offspringResults: results,
+        );
+        expect(
+          analysis.warnings.any((w) => w.combination.id == 'df_dominant_pied'),
+          isTrue,
+          reason: 'df_dominant_pied must fire in multi-locus crosses too',
+        );
+        // Only the homozygous subset is affected — not the whole pied group.
+        expect(analysis.totalAffectedProbability, closeTo(0.25, 1e-6));
+      },
+    );
+
+    test(
+      'MULTI-locus crested x crested + blue still flags df_crested for the '
+      '~25% homozygous subset (v5)',
+      () {
+        // Same multi-locus DF-drop bug affected crested (structural DF tag),
+        // not just the string-marked dominant_pied — the fix is in the combiner
+        // grouping, so cover both.
+        final father = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'crested_tufted': AlleleState.carrier,
+            'blue': AlleleState.carrier,
+          },
+        );
+        final mother = ParentGenotype(
+          gender: BirdGender.female,
+          mutations: {
+            'crested_tufted': AlleleState.carrier,
+            'blue': AlleleState.carrier,
+          },
+        );
+
+        final results = calculator.calculateFromGenotypes(
+          father: father,
+          mother: mother,
+        );
+
+        final dfProb = results
+            .where((r) => r.doubleFactorIds.contains('crested_tufted'))
+            .fold<double>(0, (sum, r) => sum + r.probability);
+        expect(dfProb, closeTo(0.25, 1e-6));
+
+        const analyzer = ViabilityAnalyzer();
+        final analysis = analyzer.analyze(
+          fatherMutations: const {'crested_tufted', 'blue'},
+          motherMutations: const {'crested_tufted', 'blue'},
+          offspringResults: results,
+        );
+        expect(
+          analysis.warnings.any((w) => w.combination.id == 'df_crested'),
+          isTrue,
+        );
+        expect(analysis.totalAffectedProbability, closeTo(0.25, 1e-6));
+      },
+    );
   });
 
   // =====================================================================
