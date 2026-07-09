@@ -327,7 +327,9 @@ class EdgeFunctionClient {
   ///
   /// Sends a base64-encoded image to a server-side vision API for content
   /// safety analysis. Returns `{ "safe": true/false, "reason": "..." }`.
-  /// Falls back to safe (allowed) if the edge function is unavailable.
+  /// The caller (`ImageSafetyService`) treats an unavailable/failed scan as
+  /// UNSAFE — the pipeline is fail-CLOSED (moderation.md). Do not reintroduce
+  /// a fail-open fallback here.
   Future<EdgeFunctionResult> scanImageSafety({
     required String imageBase64,
     required String mimeType,

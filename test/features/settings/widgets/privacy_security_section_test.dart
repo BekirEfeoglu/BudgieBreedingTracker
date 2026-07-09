@@ -12,6 +12,7 @@ import 'package:budgie_breeding_tracker/features/settings/widgets/privacy_securi
 import 'package:budgie_breeding_tracker/features/settings/widgets/settings_section_header.dart';
 import 'package:budgie_breeding_tracker/shared/widgets/profile_account.dart'
     show PasswordChangeForm;
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import '../../../helpers/test_localization.dart';
 
@@ -76,9 +77,11 @@ void main() {
     ) async {
       await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
-      // Index 0 is the read-receipts SwitchListTile (renders an inner
-      // ListTile); the nav tiles start at index 1. Sifre degistir = index 1.
-      await tester.tap(find.byType(ListTile).at(1));
+      // Tap by tile title, not index — the read-receipts SwitchListTile shifts
+      // positional finders (this list already needed one index-fix commit).
+      await tester.tap(
+        find.widgetWithText(ListTile, l10n('settings.change_password')),
+      );
       await tester.pumpAndSettle();
 
       // Delegates to the shared MFA-aware password-change sheet, which renders
@@ -90,10 +93,9 @@ void main() {
     testWidgets('veri disa aktar tile tiklama dialog acar', (tester) async {
       await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
-      // Read-receipts toggle at index 0 shifts the nav/action tiles by one:
-      // veri disa aktar = index 4.
-      final tiles = find.byType(ListTile);
-      await tester.tap(tiles.at(4));
+      await tester.tap(
+        find.widgetWithText(ListTile, l10n('settings.export_personal_data')),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsOneWidget);
@@ -102,9 +104,9 @@ void main() {
     testWidgets('aktif oturumlar tile tiklama dialog acar', (tester) async {
       await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
-      // Aktif oturumlar = index 3 (after the read-receipts toggle at 0).
-      final tiles = find.byType(ListTile);
-      await tester.tap(tiles.at(3));
+      await tester.tap(
+        find.widgetWithText(ListTile, l10n('settings.active_sessions')),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsOneWidget);
@@ -113,9 +115,9 @@ void main() {
     testWidgets('2FA tile tiklama GoRouter push calisir', (tester) async {
       await pumpLocalizedApp(tester, buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
-      // 2FA = index 2 (after the read-receipts toggle at 0).
-      final tiles = find.byType(ListTile);
-      await tester.tap(tiles.at(2));
+      await tester.tap(
+        find.widgetWithText(ListTile, l10n('settings.two_factor_auth')),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('2FA Kurulum'), findsOneWidget);
