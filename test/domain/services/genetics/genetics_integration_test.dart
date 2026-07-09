@@ -398,6 +398,106 @@ void main() {
         expect(analysis.totalAffectedProbability, closeTo(0.25, 1e-6));
       },
     );
+
+    test(
+      'MULTI-locus spangle x spangle + blue still flags df_spangle for the '
+      '~25% homozygous subset (v5)',
+      () {
+        // spangle is INCOMPLETE-dominant (not tam-dominant like dominant_pied),
+        // yet the offspringHomozygous scope still relies on doubleFactorIds
+        // tagging. Guard that the multi-locus combiner grouping keeps the DF
+        // subset distinct for spangle too — the v5 fix claims all four
+        // offspringHomozygous lethals, this covers spangle explicitly.
+        final father = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'spangle': AlleleState.carrier,
+            'blue': AlleleState.carrier,
+          },
+        );
+        final mother = ParentGenotype(
+          gender: BirdGender.female,
+          mutations: {
+            'spangle': AlleleState.carrier,
+            'blue': AlleleState.carrier,
+          },
+        );
+
+        final results = calculator.calculateFromGenotypes(
+          father: father,
+          mother: mother,
+        );
+
+        final dfProb = results
+            .where((r) => r.doubleFactorIds.contains('spangle'))
+            .fold<double>(0, (sum, r) => sum + r.probability);
+        expect(dfProb, closeTo(0.25, 1e-6));
+
+        const analyzer = ViabilityAnalyzer();
+        final analysis = analyzer.analyze(
+          fatherMutations: const {'spangle', 'blue'},
+          motherMutations: const {'spangle', 'blue'},
+          offspringResults: results,
+        );
+        expect(
+          analysis.warnings.any((w) => w.combination.id == 'df_spangle'),
+          isTrue,
+          reason: 'df_spangle must fire in multi-locus crosses too',
+        );
+        expect(analysis.totalAffectedProbability, closeTo(0.25, 1e-6));
+      },
+    );
+
+    test(
+      'MULTI-locus feather_duster x feather_duster + blue still flags '
+      'df_feather_duster for the ~25% homozygous subset (v5)',
+      () {
+        // feather_duster is autosomal RECESSIVE — carrier parents are NOT
+        // visual, yet still produce a homozygous (double-factor) lethal
+        // offspring. The offspringHomozygous check is doubleFactorIds-driven
+        // precisely so recessive lethals are not dropped; verify it survives a
+        // multi-locus cross (the v5 combiner-grouping fix).
+        final father = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'feather_duster': AlleleState.carrier,
+            'blue': AlleleState.carrier,
+          },
+        );
+        final mother = ParentGenotype(
+          gender: BirdGender.female,
+          mutations: {
+            'feather_duster': AlleleState.carrier,
+            'blue': AlleleState.carrier,
+          },
+        );
+
+        final results = calculator.calculateFromGenotypes(
+          father: father,
+          mother: mother,
+        );
+
+        final dfProb = results
+            .where((r) => r.doubleFactorIds.contains('feather_duster'))
+            .fold<double>(0, (sum, r) => sum + r.probability);
+        expect(dfProb, closeTo(0.25, 1e-6));
+
+        const analyzer = ViabilityAnalyzer();
+        final analysis = analyzer.analyze(
+          fatherMutations: const {'feather_duster', 'blue'},
+          motherMutations: const {'feather_duster', 'blue'},
+          offspringResults: results,
+        );
+        expect(
+          analysis.warnings.any(
+            (w) => w.combination.id == 'df_feather_duster',
+          ),
+          isTrue,
+          reason: 'df_feather_duster must fire in multi-locus crosses too',
+        );
+        expect(analysis.totalAffectedProbability, closeTo(0.25, 1e-6));
+      },
+    );
   });
 
   // =====================================================================
