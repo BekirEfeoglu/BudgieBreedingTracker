@@ -186,8 +186,37 @@ void main() {
   // 25. REMAINING LINKED-PAIR REPULSION COVERAGE
   // Cin-Slate (5 cM), Op-Ino (30 cM), Op-Cin (32 cM) — repulsion phase.
   // =====================================================================
-  group('Cinnamon-Slate linkage (5 cM) repulsion', () {
-    test('parental singles ≈ 23.75% each, recombinant compound rare (~1.25%)', () {
+  group('Cinnamon-Slate linkage (5 cM)', () {
+    test('coupling: parental compound + normal ≈ 23.75% each, recombinant singles rare (~1.25%)', () {
+      final father = ParentGenotype(
+        gender: BirdGender.male,
+        mutations: {
+          'cinnamon': AlleleState.carrier,
+          'slate': AlleleState.carrier,
+        },
+      );
+      const mother = ParentGenotype.empty(gender: BirdGender.female);
+
+      final results = calculator.calculateFromGenotypes(
+        father: father,
+        mother: mother,
+      );
+
+      expectNormalizedProbabilities(results);
+
+      // Parental compound (Cinnamon+Slate) daughters ≈ (1-0.05)/2 * 0.5.
+      expect(compoundFemaleWith(results, 'cinnamon', 'slate'), closeTo(0.2375, 0.02));
+      // Parental Normal daughters ≈ (1-0.05)/2 * 0.5.
+      expect(
+        sumProbability(results, 'Normal', sex: OffspringSex.female),
+        closeTo(0.2375, 0.02),
+      );
+      // Recombinant single-mutation daughters ≈ 0.05/2 * 0.5 ≈ 1.25% each.
+      expect(femaleWith(results, 'cinnamon', without: 'slate'), closeTo(0.0125, 0.01));
+      expect(femaleWith(results, 'slate', without: 'cinnamon'), closeTo(0.0125, 0.01));
+    });
+
+    test('repulsion: parental singles ≈ 23.75% each, recombinant compound rare (~1.25%)', () {
       final father = ParentGenotype(
         gender: BirdGender.male,
         mutations: {
@@ -212,8 +241,39 @@ void main() {
     });
   });
 
-  group('Opaline-Ino linkage (30 cM) repulsion', () {
-    test('parental singles ≈ 17.5% each, recombinant compound ≈ 7.5%', () {
+  group('Opaline-Ino linkage (30 cM)', () {
+    test('coupling: parental compound + normal ≈ 17.5% each, recombinant singles ≈ 7.5%', () {
+      final father = ParentGenotype(
+        gender: BirdGender.male,
+        mutations: {
+          'opaline': AlleleState.carrier,
+          'ino': AlleleState.carrier,
+        },
+      );
+      const mother = ParentGenotype.empty(gender: BirdGender.female);
+
+      final results = calculator.calculateFromGenotypes(
+        father: father,
+        mother: mother,
+      );
+
+      expectNormalizedProbabilities(results);
+
+      // Parental compound (Opaline+Ino) daughters ≈ (1-0.30)/2 * 0.5 = 0.175.
+      final compound = compoundFemaleWith(results, 'opaline', 'ino');
+      expect(compound, closeTo(0.175, 0.03));
+      // Parental Normal daughters ≈ (1-0.30)/2 * 0.5 = 0.175.
+      expect(
+        sumProbability(results, 'Normal', sex: OffspringSex.female),
+        closeTo(0.175, 0.03),
+      );
+      // Recombinant singles ≈ 0.30/2 * 0.5 = 0.075, rarer than the parentals.
+      expect(femaleWith(results, 'opaline', without: 'ino'), closeTo(0.075, 0.03));
+      expect(femaleWith(results, 'ino', without: 'opaline'), closeTo(0.075, 0.03));
+      expect(femaleWith(results, 'ino', without: 'opaline'), lessThan(compound));
+    });
+
+    test('repulsion: parental singles ≈ 17.5% each, recombinant compound ≈ 7.5%', () {
       final father = ParentGenotype(
         gender: BirdGender.male,
         mutations: {
@@ -240,8 +300,39 @@ void main() {
     });
   });
 
-  group('Opaline-Cinnamon linkage (32 cM) repulsion', () {
-    test('parental singles ≈ 17% each, recombinant compound ≈ 8%', () {
+  group('Opaline-Cinnamon linkage (32 cM)', () {
+    test('coupling: parental compound + normal ≈ 17% each, recombinant singles ≈ 8%', () {
+      final father = ParentGenotype(
+        gender: BirdGender.male,
+        mutations: {
+          'opaline': AlleleState.carrier,
+          'cinnamon': AlleleState.carrier,
+        },
+      );
+      const mother = ParentGenotype.empty(gender: BirdGender.female);
+
+      final results = calculator.calculateFromGenotypes(
+        father: father,
+        mother: mother,
+      );
+
+      expectNormalizedProbabilities(results);
+
+      // Parental compound (Opaline+Cinnamon) daughters ≈ (1-0.32)/2 * 0.5 = 0.17.
+      final compound = compoundFemaleWith(results, 'opaline', 'cinnamon');
+      expect(compound, closeTo(0.17, 0.03));
+      // Parental Normal daughters ≈ (1-0.32)/2 * 0.5 = 0.17.
+      expect(
+        sumProbability(results, 'Normal', sex: OffspringSex.female),
+        closeTo(0.17, 0.03),
+      );
+      // Recombinant singles ≈ 0.32/2 * 0.5 = 0.08, rarer than the parentals.
+      expect(femaleWith(results, 'opaline', without: 'cinnamon'), closeTo(0.08, 0.03));
+      expect(femaleWith(results, 'cinnamon', without: 'opaline'), closeTo(0.08, 0.03));
+      expect(femaleWith(results, 'cinnamon', without: 'opaline'), lessThan(compound));
+    });
+
+    test('repulsion: parental singles ≈ 17% each, recombinant compound ≈ 8%', () {
       final father = ParentGenotype(
         gender: BirdGender.male,
         mutations: {
