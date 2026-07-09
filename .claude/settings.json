@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "timeout": 10,
+            "command": "python3 -c \"\nimport json, os\ntry:\n    root = os.getcwd()\n    with open(os.path.join(root, 'obsidian-brain/index.md')) as f:\n        index = f.read()\n    print(json.dumps({'hookSpecificOutput': {'hookEventName': 'SessionStart', 'additionalContext': '## Obsidian Brain — Wiki Catalog (auto-loaded)\\n\\nRead relevant pages BEFORE touching a feature/pattern. Use Read tool on the paths below.\\n\\n' + index}}))\nexcept Exception:\n    pass\n\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "agent",
+            "timeout": 120,
+            "statusMessage": "Obsidian Brain güncelleniyor...",
+            "prompt": "You are maintaining the obsidian-brain knowledge wiki for the BudgieBreedingTracker Flutter project.\n\nYour task: check what changed in this session and update the relevant wiki pages.\n\nSteps:\n1. Run `git diff HEAD --name-only` and `git diff --cached --name-only` to find changed files. Also check `git log --oneline -3 --name-only` for recent commits.\n2. Skip if no Dart/SQL/edge-function/rule files changed (e.g. only wiki files changed). Exit silently.\n2a. ALSO skip when the only changes are trivial or cosmetic and do not alter anything a wiki page documents — e.g. extracting a magic number into a named constant, adding `const`, swapping an icon, renaming a private symbol/variable, reformatting, or comment-only edits. A wiki page documents screens, providers, domain/engine logic and behavior, data schema, API/contract shapes, and dependencies; if the change does not touch any of those, exit silently. When in doubt, prefer skipping over adding noise.\n3. For each changed file, determine which obsidian-brain page covers it:\n   - `lib/features/<name>/` → `obsidian-brain/features/<name>.md`\n   - `lib/data/` → `obsidian-brain/data-layer/` (drift.md, repositories.md, sync-strategy.md, etc.)\n   - `lib/domain/services/<name>/` → `obsidian-brain/domain/<name>.md`\n   - `lib/router/` → `obsidian-brain/architecture/` or `obsidian-brain/patterns/ui-patterns.md`\n   - `lib/core/` → relevant `obsidian-brain/patterns/` page\n   - `supabase/functions/<name>/` → `obsidian-brain/infrastructure/edge-functions.md`\n   - `supabase/migrations/` → `obsidian-brain/data-layer/migrations.md`\n   - `.claude/rules/<name>.md` → `obsidian-brain/patterns/<name>.md` or `obsidian-brain/sources/rules-index.md`\n   - `pubspec.yaml` → `obsidian-brain/architecture/tech-stack.md`\n4. For each affected wiki page: read the current content, read the changed source file(s), and update the wiki page to reflect what changed. Keep pages concise (under 200 lines). Do NOT rewrite entire pages — only update the sections that are affected.\n5. Append a one-line entry to `obsidian-brain/log.md` in format: `## [YYYY-MM-DD] update | <brief description of what changed>`\n\nWorking directory is the project root: /Users/bekirefeoglu/Desktop/BudgieBreedingTracker\nWiki directory: obsidian-brain/\n\nImportant: If nothing relevant changed, do nothing and exit. Keep updates minimal and accurate."
+          }
+        ]
+      }
+    ]
+  }
+}
