@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
+import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/feedback_remote_source.dart';
 
 import '../../../helpers/fake_supabase.dart';
@@ -77,6 +79,22 @@ void main() {
       expect(
         () => source.insert({'user_id': 'user-1', 'message': 'test'}),
         throwsA(isA<Exception>()),
+      );
+    });
+
+    test('maps the rate-limit trigger error to a ValidationException', () async {
+      feedbackUpsertBuilder.error = const PostgrestException(
+        message: 'FEEDBACK_RATE_LIMIT: too many feedback submissions',
+        code: '23514',
+      );
+
+      await expectLater(
+        source.insert({'user_id': 'user-1', 'message': 'spam'}),
+        throwsA(
+          isA<ValidationException>()
+              .having((e) => e.code, 'code', 'feedback_rate_limit')
+              .having((e) => e.message, 'message', 'feedback.rate_limited'),
+        ),
       );
     });
   });

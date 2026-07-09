@@ -28,7 +28,6 @@ No open latent code surfaces are currently tracked.
 | Scheduled auto-backup UI | `BackupScheduler` design exists but backup screen has no scheduling UI | `settings.md`, `data-io.md` |
 | Per-session listing in Settings → security | Only an explanation dialog + "sign out all sessions" — don't over-promise | `settings.md` |
 | Calendar reminder editing | Reminder-offset dropdown shows only on event CREATE; edit does not manage reminders | `calendar.md` |
-| Feedback rate limit | None (client or server) — known spam vector; if added, must be server-side | `feedback.md` |
 
 ## Deliberate Absences (decisions, not gaps — do not "add")
 

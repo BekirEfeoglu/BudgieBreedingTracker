@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
+import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
@@ -220,6 +221,15 @@ class FeedbackFormNotifier extends Notifier<FeedbackFormState> {
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
       AppLogger.error('FeedbackFormNotifier', e, st);
+      // Server-side anti-spam rejection is expected user behavior, not a bug —
+      // surface the localized "slow down" message and skip Sentry noise.
+      if (e is AppException && e.code == 'feedback_rate_limit') {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'feedback.rate_limited',
+        );
+        return;
+      }
       Sentry.captureException(e, stackTrace: st);
       // Map raw exception to a localizable error key so the UI never
       // surfaces vendor / Postgres text. Network failures route to a

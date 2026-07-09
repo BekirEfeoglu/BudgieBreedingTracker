@@ -2532,6 +2532,7 @@
     "email_invalid": "Geben Sie eine gültige E-Mail-Adresse ein",
     "email_label": "E-Mail (Optional)",
     "error": "Fehler beim Senden des Feedbacks",
+    "rate_limited": "Sie haben zu viel Feedback gesendet. Bitte versuchen Sie es später erneut.",
     "feature_description": "Schlagen Sie eine neue Funktion vor",
     "feature_request": "Funktionswunsch",
     "general": "Allgemein",

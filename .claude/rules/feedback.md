@@ -26,7 +26,7 @@ Uygulama içi geri bildirim: kategori seçimi, cihaz bilgisi şeffaflığı, gö
 - Insert `upsert` ile (data-layer.md § Write Safety); founder bildirimi DB INSERT trigger'ı ile atomik — client ekstra çağrı yapmaz
 - History tab: kullanıcının kendi kayıtları (`fetchByUser`, created_at DESC), status badge gösterir
 - Admin yanıtı varsa history kartı `feedback.admin_response` göstergesiyle işaretler; detay sheet'i tam `adminResponse` metnini gösterir
-- **Bilinen boşluk:** rate limit YOK (client veya server) — spam vektörü; eklenecekse server-side olmalı (moderation.md prensibi)
+- **Rate limit — shipped (2026-07-09, server-side):** `feedback` tablosunda `BEFORE INSERT` trigger (`private.enforce_feedback_rate_limit`, SECURITY DEFINER) kullanıcı başına **saatte 5** gönderimi aşınca insert'i `check_violation` + `FEEDBACK_RATE_LIMIT` marker'ıyla reddeder (migration `20260709120555`). `FeedbackRemoteSource.insert` marker'ı yakalayıp `ValidationException(code: feedback_rate_limit)` fırlatır; `FeedbackFormNotifier` bunu `feedback.rate_limited` l10n mesajına eşler ve Sentry'ye GÖNDERMEZ (beklenen kullanıcı davranışı). Client-side ön-kontrol yok — sunucu authoritative.
 
 ## UX
 - Email alanı opsiyonel — anonim geri bildirime izin ver
