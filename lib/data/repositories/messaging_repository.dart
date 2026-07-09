@@ -280,8 +280,11 @@ class MessagingRepository {
       userId,
     );
     if (!isMember) {
+      // Obfuscate the user id — `.warning` attaches a Sentry breadcrumb even in
+      // release, and the full auth UUID is PII (observability.md).
       AppLogger.warning(
-        'messaging: User $userId is not a participant of $conversationId',
+        '[Messaging] User ${AppLogger.obfuscate(userId)} is not a '
+        'participant of $conversationId',
       );
       return null;
     }

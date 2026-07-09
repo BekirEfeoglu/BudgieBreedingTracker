@@ -179,8 +179,9 @@ class GamificationService {
 
       if (!meetsCriteria) {
         AppLogger.info(
-          'Verified breeder check for $userId: level=$level, '
-          'birds=${counts['birds']}, breeding=${counts['breeding_pairs']}, '
+          'Verified breeder check for ${AppLogger.obfuscate(userId)}: '
+          'level=$level, birds=${counts['birds']}, '
+          'breeding=${counts['breeding_pairs']}, '
           'chicks=${counts['chicks']} — criteria not met',
         );
         return;
@@ -227,8 +228,9 @@ class GamificationService {
       );
 
       AppLogger.info(
-        'Verified breeder unlocked for $userId: level=$level, '
-        'birds=${counts['birds']}, breeding=${counts['breeding_pairs']}, '
+        'Verified breeder unlocked for ${AppLogger.obfuscate(userId)}: '
+        'level=$level, birds=${counts['birds']}, '
+        'breeding=${counts['breeding_pairs']}, '
         'chicks=${counts['chicks']}',
       );
     } catch (e, st) {
