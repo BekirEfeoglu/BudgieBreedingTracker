@@ -60,6 +60,7 @@ python3 scripts/check_obsidian_brain.py  # Verify obsidian-brain links, refs, me
 python3 scripts/verify_code_quality.py    # Anti-pattern scan (27 checkers, 19/24 CLAUDE.md patterns + 9 extra documented scanners)
 python3 scripts/verify_rules.py          # Validate CLAUDE.md stats against codebase (single source of truth)
 python3 scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats + rule inline references
+python3 scripts/verify_migration_drift.py # Migration structure guard (dup versions, malformed names); --online adds prod ledger parity
 ```
 
 ### Other Scripts
@@ -95,6 +96,7 @@ scripts/test_check_obsidian_brain.py    # Tests for obsidian-brain wiki lint
 scripts/test_check_remote_status.py     # Tests for check_remote_status.py
 scripts/test_verify_security.py         # Tests for verify_security.py
 scripts/test_app_store_config.py        # App Store config consistency tests
+scripts/test_verify_migration_drift.py  # Tests for verify_migration_drift.py
 ```
 
 ## Codebase Stats

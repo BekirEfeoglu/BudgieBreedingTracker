@@ -306,6 +306,9 @@ jobs:
       - name: Obsidian brain lint
         run: python scripts/check_obsidian_brain.py
 
+      - name: Migration drift (structure)
+        run: python scripts/verify_migration_drift.py
+
   rules-sync:
     name: Rules Sync
     runs-on: ubuntu-24.04
