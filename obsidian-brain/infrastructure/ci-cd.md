@@ -15,7 +15,7 @@ Runs on PRs and main pushes.
 | `e2e-community-test` | E2E + community tagged tests | `workflow_dispatch`/`schedule` |
 | `scripts-test` | Python script tests (≥98% coverage) | PR merge |
 | `l10n-sync` | Translation key parity (--strict-keys) | PR merge |
-| `code-quality` | Anti-pattern scan + platform target policy + wiki lint | PR merge |
+| `code-quality` | Anti-pattern scan + platform target policy + wiki lint + migration structure drift (`verify_migration_drift.py`) | PR merge |
 | `rules-sync` | CLAUDE.md stats verification | PR merge |
 | `security-audit` | `python scripts/verify_security.py` — cert pinning, secrets | PR merge |
 | `auto-fix-stats` | Auto-PR for CLAUDE.md drift | main only |
@@ -59,6 +59,7 @@ Manual workflow for signed AAB readiness. Does not run on main push (to avoid sl
 - Archive/TestFlight only when Apple signing + provisioning profile + registered device ready
 - `ios/ci_scripts/ci_post_clone.sh`: runs `flutter pub get`, `dart run build_runner build`, `pod install`
 - Must be executable. Retry/backoff on pod download failures.
+- `build_runner` is wrapped in a clean-and-retry loop (cap 5, `build_runner clean` between attempts) — the drift_dev 2.31 "Circular error" codegen flake failed post-clone (action_required, ~47s) when it was a bare call. Keep both ci.yml AND this post-clone retry-hardened; they are separate systems.
 
 ## Post-Push Verification
 

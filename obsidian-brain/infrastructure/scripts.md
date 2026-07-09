@@ -15,6 +15,7 @@ All scripts in `scripts/` directory.
 | `verify_rules.py` | Validate CLAUDE.md stats against codebase |
 | `verify_rules.py --fix` | Auto-fix CLAUDE.md stats + inline rule references |
 | `check_remote_status.py` | Verify exact commit SHA GitHub status/check-run summary |
+| `verify_migration_drift.py` | Migration structure guard: duplicate version prefixes + malformed filenames (offline, in the `code-quality` CI job); `--online` adds prod-ledger version parity via `supabase migration list --linked` |
 
 ## Pre-Commit Gate
 
@@ -45,6 +46,7 @@ scripts/run_local_quality_gate.sh
 | `test_check_platform_targets.py` | Tests for platform target policy |
 | `test_check_obsidian_brain.py` | Tests for wiki lint |
 | `test_verify_security.py` | Tests for verify_security.py |
+| `test_verify_migration_drift.py` | Tests for verify_migration_drift.py (27 tests, 100% cov) |
 
 ## Internal Modules
 

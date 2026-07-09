@@ -4,6 +4,17 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-09] ci | Audit follow-ups: migration drift guard + codegen-flake hardening
+
+Post-audit "apply all suggestions" round. Added `scripts/verify_migration_drift.py`
+(offline dup-version/malformed-name structural guard wired into the code-quality
+job; opt-in `--online` prod-ledger parity; 27 tests, 100% cov). Added coupling-
+phase linkage tests for the 3 previously repulsion-only Z-pairs (all 6 now assert
+both phases). Bumped the drift_dev "Circular error" codegen retry cap 3→5 in
+ci.yml, then found the Xcode Cloud `Build - iOS` post-clone ran build_runner BARE
+(the only unprotected codegen step) — action_required at ~47s — and wrapped it in
+the same clean-and-retry loop. See [[infrastructure/ci-cd]], [[infrastructure/scripts]].
+
 ## [2026-07-09] fix | Migration content-drift reconciliation (repo ↔ prod ledger)
 
 Deep migration check via Supabase MCP: version parity prod=local, but the

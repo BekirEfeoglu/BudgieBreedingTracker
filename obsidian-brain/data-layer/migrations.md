@@ -151,6 +151,7 @@ Never delete or rename migration files. If a mistake exists, create a new migrat
 - Supabase SQL migrations are forward-only and tracked in chronological filenames.
 - Privileged RPCs use `private` `SECURITY DEFINER` implementations plus public invoker wrappers.
 - Production drift verification (version + content) is required after deploying newer local migrations; the ledger's `statements` column is the source for content-drift md5 checks.
+- Structural drift (duplicate version prefixes, malformed filenames — the 2026-05-29 collision class) is now auto-guarded every PR by `scripts/verify_migration_drift.py` in the `code-quality` job; its `--online` mode adds prod-ledger version parity when a token is present. Content-drift (file vs applied `statements`) remains a manual MCP procedure.
 - Committed migration files that drift from the ledger but are superseded by a later drift-free migration are left as-is (final schema reproduces prod); only a file that determines the *final* state and diverges gets a forward reconciliation migration.
 
 ## Known Deferred Work
