@@ -52,13 +52,21 @@ filter/stream change instead of three times.
 
 `Event` model owns the union; UI distinguishes by `EventType` enum.
 
-For a new manual event, the form offers a reminder-offset dropdown
+The manual-event form offers a reminder-offset dropdown
 (`kReminderOffsetOptions` in `calendar_form_providers.dart`: no reminder / at
 time / 30 min / 1 hour / 1 day before). `EventFormNotifier.createEvent`'s
 `reminderMinutesBefore` param drives it — default `kDefaultReminderMinutesBefore`
-(30, the historic behavior), `null` skips the reminder. Shown only when
-creating (editing does not manage reminders). Added 2026-07-03; before that
-every event got a fixed 30-minute reminder.
+(30, the historic behavior), `null` skips the reminder. Added 2026-07-03; before
+that every event got a fixed 30-minute reminder.
+
+**Editing (2026-07-09):** the dropdown now shows in edit mode too. On open,
+`_loadExistingReminder` reads the event's current offset via
+`eventReminderRepository.getByEvent` (pre-fills, or "no reminder" when none).
+Saving calls `updateEvent(event, reminderMinutesBefore:, reconcileReminder:
+true)`, which cancels + removes the old reminder(s) (and their OS
+notifications) then re-creates the chosen offset — the cancel+reschedule
+pattern. `reconcileReminder` defaults to `false` so other `updateEvent` callers
+(e.g. a status change) keep the legacy date-shift-only re-arm.
 
 ## Widgets
 
