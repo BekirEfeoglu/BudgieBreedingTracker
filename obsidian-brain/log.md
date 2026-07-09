@@ -4,6 +4,22 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-09] fix | Pull-failure Sentry reporting across syncable repos
+
+A PII/observability agent sweep found every syncable repository's `pull()`
+swallowed unexpected errors (serialization, Drift corruption, malformed payload)
+with only `AppLogger.error` — a breadcrumb, not a Sentry issue — and since the
+repo swallows it, the central `SyncPullHandler` never sees it. Added top-level
+`reportPullFailure()` in `base_repository.dart` (mirrors `detectPullConflicts`
+so non-mixin Photo/Profile repos share it): logs then `Sentry.captureException`
+with a `sync_phase: pull` tag, filtering `AppException` so ProfileRepository's
+swallowed offline failures stay out of Sentry. Applied to all 15 `pull()` sites;
+removed now-unused logger imports (commit 5b73ef2). Also 4090d64: bracket-prefix
+form-notifier log tags (observability.md convention). A third suggestion
+(skip NetworkException in `SentryErrorFilter`) was rejected — an explicit test
+asserts NetworkException IS reported, a deliberate decision. Updated
+data-layer/repositories.md § SyncableRepository.
+
 ## [2026-07-08] fix | Migration deployment drift repaired (prod)
 
 Comprehensive app audit found 3 migrations shipped in client code but never
