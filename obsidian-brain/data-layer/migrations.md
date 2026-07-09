@@ -8,7 +8,7 @@ Two parallel migration systems: **Drift** (local SQLite) and **Supabase SQL** (r
 
 ### Schema Version
 
-`schemaVersion = 26` in `app_database.dart`. Must be incremented sequentially — no skipping. (v25 added `profiles.show_in_leaderboard` via `_migrateV24ToV25`; v26 added the `idx_conflict_history_user_table_record` composite index via `_migrateV25ToV26`, which re-runs the idempotent `_createPerformanceIndexes`.)
+`schemaVersion = 27` in `app_database.dart`. Must be incremented sequentially — no skipping. (v25 added `profiles.show_in_leaderboard` via `_migrateV24ToV25`; v26 added the `idx_conflict_history_user_table_record` composite index via `_migrateV25ToV26`; v27 added `events.chick_id` (+ backfill NULL-ing orphaned refs) via `_migrateV26ToV27`, paired with Supabase `20260709103045`.)
 
 ### Pattern
 
@@ -39,16 +39,33 @@ MigrationStrategy(
 
 Format: `YYYYMMDDHHmmss_short_description.sql`
 
-197 tracked migration files in `supabase/migrations/` — applied in lexicographic
-(chronological) order. **Verified 1:1 against production (zero drift, 2026-07-08):**
-197 local files ↔ 197 ledger rows, both diff directions empty. That audit
-repaired a real drift: 3 migrations (bird-tag columns, `fetch_community_feed`
-sort RPC, the 21 admin audit RPCs) had shipped in client code but were never
-applied to prod — feed detail/admin actions were 400'ing — and 6 earlier
-migrations sat in the ledger under MCP-generated timestamps that differed from
-their local filenames. Fix: applied the 3 missing SQL to prod, then `git mv`'d
-the 8 drifted local files onto the exact ledger versions so `db push` is a
-clean no-op. **Deploy is manual (`supabase db push` / MCP `apply_migration`) —
+205 tracked migration files in `supabase/migrations/` — applied in lexicographic
+(chronological) order. **Verified against production 2026-07-09 (MCP live):**
+205 local files ↔ 205 ledger rows, version parity exact (0 duplicates), all
+recent effects confirmed in the live schema. A **content-drift** pass compared
+each committed file against the ledger's `statements` column (normalized md5,
+`;`/comment-insensitive): 4 files diverged from what prod actually applied.
+`20260709113822` (gamification level-sync trigger, missing `::integer`) was a
+cosmetic diff — reconciled in-place. `20260403140000` (admin_get_table_counts
+json→TABLE) and `20260413100000` (cleanup fns) are **benign**: a later drift-free
+migration (`20260501115000` / `20260604185816`) redefines those objects, so a
+fresh `db reset` still reproduces prod. `20260430130000` (system_settings SELECT
+policy) was a **real behavioral divergence** — the committed file used
+`public.is_admin()`, prod applied `private.is_admin()`, and the two functions
+have different bodies; no later migration recreated the policy. Fixed forward via
+`20260709180636_reconcile_system_settings_select_policy_is_admin`, applied to
+prod as an idempotent no-op (policy unchanged) so repo + prod stay in lockstep.
+The 3 older *files* still differ from their intermediate ledger entries but are
+**deliberately not edited** (rewriting applied history + fresh-apply ordering
+risk); the final schema reproduces prod via later migrations.
+
+An earlier **2026-07-08** audit had verified 197↔197 and repaired a different
+drift: 3 migrations (bird-tag columns, `fetch_community_feed` sort RPC, the admin
+audit RPCs) had shipped in client code but were never applied to prod — feed
+detail/admin actions were 400'ing — and 6 earlier migrations sat in the ledger
+under MCP-generated timestamps differing from their local filenames; fix was to
+apply the 3 missing SQL then `git mv` the 8 drifted files onto the exact ledger
+versions. **Deploy is manual (`supabase db push` / MCP `apply_migration`) —
 merging a migration to `main` does NOT auto-apply it.** After adding a
 migration, always confirm it landed in prod (`list_migrations` / ledger diff).
 
@@ -130,20 +147,22 @@ Never delete or rename migration files. If a mistake exists, create a new migrat
 
 ## Current Decisions
 
-- Drift schema is v26 and must advance one version at a time.
+- Drift schema is v27 and must advance one version at a time.
 - Supabase SQL migrations are forward-only and tracked in chronological filenames.
 - Privileged RPCs use `private` `SECURITY DEFINER` implementations plus public invoker wrappers.
-- Production drift verification is required after deploying newer local migrations.
+- Production drift verification (version + content) is required after deploying newer local migrations; the ledger's `statements` column is the source for content-drift md5 checks.
+- Committed migration files that drift from the ledger but are superseded by a later drift-free migration are left as-is (final schema reproduces prod); only a file that determines the *final* state and diverges gets a forward reconciliation migration.
 
 ## Known Deferred Work
 
-- Production verification date in this page should be refreshed after the next Supabase deploy.
+- `20260403140000`, `20260413100000`, `20260430130000` committed files still differ from their ledger `statements` (intermediate versions superseded later); benign for final schema, not reconciled to avoid rewriting applied history.
 - Large-table index work should be split into dedicated concurrent-index migrations.
 
 ## Do Not Reintroduce
 
 - Do not add public `SECURITY DEFINER` RPCs directly.
-- Do not delete, rename, or rewrite historical migration files.
+- Do not delete, rename, or rewrite historical migration files (reconcile drift with a forward migration, not an in-place edit of an applied file).
+- Do not commit a forward reconciliation migration without also applying it to prod (MCP `apply_migration`) — an unapplied local migration is drift (local ahead of prod).
 - Do not add non-idempotent DDL without `IF EXISTS` / `IF NOT EXISTS`.
 - Do not add remote columns without checking Drift/Supabase sync direction.
 

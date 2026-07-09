@@ -4,6 +4,17 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-09] fix | Migration content-drift reconciliation (repo ↔ prod ledger)
+
+Deep migration check via Supabase MCP: version parity prod=local, but the
+ledger's `statements` column revealed 4 files diverging from applied SQL.
+Gamification `::integer` (cosmetic) reconciled in-place; admin_get_table_counts
++ cleanup fns benign (later drift-free migration redefines them). Real one:
+`20260430130000` system_settings SELECT policy used `public.is_admin()` while
+prod ran `private.is_admin()` (different bodies → behavioral). Fixed forward via
+`20260709180636`, applied to prod as an idempotent no-op; repo+prod now 205 in
+lockstep. Old files left un-edited (no history rewrite). See [[data-layer/migrations]].
+
 ## [2026-07-09] audit | Full-scope sweep: genetics + calendar test hardening
 
 Multi-agent sweep from clean main (all gates green). Only fixes: feather_duster
@@ -168,32 +179,5 @@ it now validates inline file references, selected `overview.md` metrics, require
 decision sections on high-risk pages, and active `log.md` archive pressure. Added
 regression tests, documented the stronger contract, and rotated older July entries
 to [[log-archive-2026-07-f]].
-
-## [2026-07-05] fix | Community post creation broken — guard trigger used auth.uid() under service_role
-
-Screenshot: creating a post ("test"/"123") failed with "Beklenmeyen bir hata
-oluştu." Edge logs showed `create-community-post` 400 (moderate-content 200).
-Traced via Supabase MCP to the `community_posts` BEFORE INSERT trigger
-`internal.enforce_community_post_guards()` → `public.check_community_post_allowed()`
-reads `auth.uid()`, which is NULL on the edge fn's service_role insert →
-guard returns `unauthorized` → trigger RAISEs → `insert_failed`. Every post
-blocked (feed stayed empty). Reproduced live (raw insert raised
-`community_post_guard_denied / unauthorized`), fixed the trigger to evaluate
-`private.check_community_post_allowed_for_user(NEW.user_id, NEW.content_hash)`
-(row author, not session), dropped the dead `is_admin()` short-circuit. Migration
-`20260705193000_fix_community_post_guard_trigger_row_author.sql` applied to prod;
-post-fix author insert succeeds, verification row cleaned up, security advisors 0
-new. See [[features/community]].
-
-## [2026-07-05] fix | Community: hide create-post FAB on welcome empty state
-
-Screenshot showed two identical "Gönderi Oluştur" buttons on an empty Explore
-feed — the `EmptyState` centered CTA plus the amber `_CreatePostFab`. Extracted
-the welcome-empty condition into `communityShowWelcomeEmptyProvider`
-(`community_feed_providers_filters.dart`) as the single source of truth; wired
-`community_feed_items.dart` `_buildFeedBody` to it (dropped now-unused `posts`
-param) and made `CommunityScreen` suppress the FAB while it's true (explore/
-following only; marketplace/guides already excluded). FAB returns when the feed
-has content. analyze clean, 446 community tests pass.
 
 Older entries are archived in [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

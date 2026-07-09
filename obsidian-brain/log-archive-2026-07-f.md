@@ -5,6 +5,33 @@ Archived July 2026 entries rotated out of [[log]] during the
 
 ---
 
+## [2026-07-05] fix | Community post creation broken — guard trigger used auth.uid() under service_role
+
+Screenshot: creating a post ("test"/"123") failed with "Beklenmeyen bir hata
+oluştu." Edge logs showed `create-community-post` 400 (moderate-content 200).
+Traced via Supabase MCP to the `community_posts` BEFORE INSERT trigger
+`internal.enforce_community_post_guards()` → `public.check_community_post_allowed()`
+reads `auth.uid()`, which is NULL on the edge fn's service_role insert →
+guard returns `unauthorized` → trigger RAISEs → `insert_failed`. Every post
+blocked (feed stayed empty). Reproduced live (raw insert raised
+`community_post_guard_denied / unauthorized`), fixed the trigger to evaluate
+`private.check_community_post_allowed_for_user(NEW.user_id, NEW.content_hash)`
+(row author, not session), dropped the dead `is_admin()` short-circuit. Migration
+`20260705193000_fix_community_post_guard_trigger_row_author.sql` applied to prod;
+post-fix author insert succeeds, verification row cleaned up, security advisors 0
+new. See [[features/community]].
+
+## [2026-07-05] fix | Community: hide create-post FAB on welcome empty state
+
+Screenshot showed two identical "Gönderi Oluştur" buttons on an empty Explore
+feed — the `EmptyState` centered CTA plus the amber `_CreatePostFab`. Extracted
+the welcome-empty condition into `communityShowWelcomeEmptyProvider`
+(`community_feed_providers_filters.dart`) as the single source of truth; wired
+`community_feed_items.dart` `_buildFeedBody` to it (dropped now-unused `posts`
+param) and made `CommunityScreen` suppress the FAB while it's true (explore/
+following only; marketplace/guides already excluded). FAB returns when the feed
+has content. analyze clean, 446 community tests pass.
+
 ## [2026-07-05] fix | Sync-conflict banner root cause — RLS 42P17 recursion + schema drift
 
 User's persistent "Senkronizasyon çakışmaları algılandı" banner. Live-diagnosed
