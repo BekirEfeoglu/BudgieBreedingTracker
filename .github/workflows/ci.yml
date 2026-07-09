@@ -40,7 +40,7 @@ jobs:
           # clean cache so a flaky codegen pass does not fail the whole job.
           attempt=1
           until dart run build_runner build --delete-conflicting-outputs; do
-            if [ "$attempt" -ge 3 ]; then
+            if [ "$attempt" -ge 5 ]; then
               echo "build_runner failed after $attempt attempts"
               exit 1
             fi
@@ -77,7 +77,7 @@ jobs:
           # clean cache so a flaky codegen pass does not fail the whole job.
           attempt=1
           until dart run build_runner build --delete-conflicting-outputs; do
-            if [ "$attempt" -ge 3 ]; then
+            if [ "$attempt" -ge 5 ]; then
               echo "build_runner failed after $attempt attempts"
               exit 1
             fi
@@ -136,7 +136,7 @@ jobs:
           # clean cache so a flaky codegen pass does not fail the whole job.
           attempt=1
           until dart run build_runner build --delete-conflicting-outputs; do
-            if [ "$attempt" -ge 3 ]; then
+            if [ "$attempt" -ge 5 ]; then
               echo "build_runner failed after $attempt attempts"
               exit 1
             fi
@@ -213,7 +213,7 @@ jobs:
           # clean cache so a flaky codegen pass does not fail the whole job.
           attempt=1
           until dart run build_runner build --delete-conflicting-outputs; do
-            if [ "$attempt" -ge 3 ]; then
+            if [ "$attempt" -ge 5 ]; then
               echo "build_runner failed after $attempt attempts"
               exit 1
             fi
@@ -444,7 +444,7 @@ jobs:
           # clean cache so a flaky codegen pass does not fail the whole job.
           attempt=1
           until dart run build_runner build --delete-conflicting-outputs; do
-            if [ "$attempt" -ge 3 ]; then
+            if [ "$attempt" -ge 5 ]; then
               echo "build_runner failed after $attempt attempts"
               exit 1
             fi
@@ -484,7 +484,7 @@ jobs:
           # clean cache so a flaky codegen pass does not fail the whole job.
           attempt=1
           until dart run build_runner build --delete-conflicting-outputs; do
-            if [ "$attempt" -ge 3 ]; then
+            if [ "$attempt" -ge 5 ]; then
               echo "build_runner failed after $attempt attempts"
               exit 1
             fi
