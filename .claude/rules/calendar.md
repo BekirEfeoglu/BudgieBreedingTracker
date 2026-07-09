@@ -44,8 +44,15 @@ offset'i **kullanıcı seçimlidir** (2026-07-03): event formundaki dropdown
 _hatırlatma yok / etkinlik anında (0) / 30 dk / 1 saat / 1 gün önce_
 seçtirir; varsayılan `kDefaultReminderMinutesBefore` (30 dk, eski davranış).
 `createEvent`'in `reminderMinutesBefore` parametresi `null` ise hiç reminder
-oluşturulmaz. Dropdown yalnızca yeni event'te gösterilir (edit reminder'ları
-yönetmez). Otomatik kuluçka/yumurta-çevirme hatırlatmaları ayrı bir sistemdir
+oluşturulmaz. **Edit — shipped (2026-07-09):** dropdown artık düzenlemede de
+gösterilir; form açılışında `_loadExistingReminder` mevcut reminder offset'ini
+`eventReminderRepository.getByEvent` ile yükler (yoksa "hatırlatma yok").
+Kaydetme `updateEvent(..., reminderMinutesBefore:, reconcileReminder: true)`
+ile reconcile eder: eski reminder(ler) iptal + silinir (`_cleanupRemindersForEvent`
+OS bildirimini de iptal eder), sonra yeni offset seçildiyse yeniden oluşturulur
+(cancel+reschedule pattern). `reconcileReminder: false` (diğer caller'lar, örn.
+status değişimi) eski davranışı korur: reminder yalnızca tarih kaydığında
+re-arm edilir. Otomatik kuluçka/yumurta-çevirme hatırlatmaları ayrı bir sistemdir
 (`NotificationScheduler`, `event_reminders` tablosunu kullanmaz — bkz. ID
 Stability). Quiet hours (notifications.md) her iki sistemde de honored.
 

@@ -25,7 +25,6 @@ No open latent code surfaces are currently tracked.
 | Marketplace inline banner ads | Design target only; real banner call sites are home, calendar, bird/breeding/chick lists | `marketplace.md`, `ads.md` |
 | Statistics free preview / custom range / AI insight | `/statistics` is all-or-nothing gated (premium OR rewarded ad); no per-chart free tier | `statistics.md` |
 | Per-session listing in Settings → security | Only an explanation dialog + "sign out all sessions" — don't over-promise | `settings.md` |
-| Calendar reminder editing | Reminder-offset dropdown shows only on event CREATE; edit does not manage reminders | `calendar.md` |
 
 ## Deliberate Absences (decisions, not gaps — do not "add")
 

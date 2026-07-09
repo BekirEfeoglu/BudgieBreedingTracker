@@ -270,6 +270,92 @@ void main() {
     );
 
     test(
+      'updateEvent with reconcileReminder replaces the reminder at the new '
+      'offset',
+      () async {
+        final original = Event(
+          id: 'e1',
+          title: 'Vet visit',
+          eventDate: DateTime(2024, 6, 1, 10),
+          type: EventType.custom,
+          userId: 'u1',
+        );
+        final oldReminder = EventReminder(
+          id: 'r-old',
+          userId: 'u1',
+          eventId: 'e1',
+          minutesBefore: 30,
+          createdAt: DateTime(2024, 6, 1),
+        );
+        when(() => repo.getById('e1')).thenAnswer((_) async => original);
+        when(() => repo.save(any())).thenAnswer((_) async {});
+        when(
+          () => reminderRepo.getByEvent('e1'),
+        ).thenAnswer((_) async => [oldReminder]);
+        when(() => reminderRepo.remove(any())).thenAnswer((_) async {});
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(eventFormStateProvider.notifier)
+            .updateEvent(
+              original.copyWith(title: 'Vet visit 2'),
+              reminderMinutesBefore: 60,
+              reconcileReminder: true,
+            );
+
+        // Old reminder cancelled + removed, new one created at 60 minutes.
+        verify(() => reminderRepo.remove('r-old')).called(1);
+        verify(() => notificationService.cancel(any())).called(1);
+        final saved =
+            verify(() => reminderRepo.save(captureAny())).captured.single
+                as EventReminder;
+        expect(saved.minutesBefore, 60);
+      },
+    );
+
+    test(
+      'updateEvent with reconcileReminder and null offset removes the reminder '
+      'and creates none',
+      () async {
+        final original = Event(
+          id: 'e1',
+          title: 'Vet visit',
+          eventDate: DateTime(2024, 6, 1, 10),
+          type: EventType.custom,
+          userId: 'u1',
+        );
+        final oldReminder = EventReminder(
+          id: 'r-old',
+          userId: 'u1',
+          eventId: 'e1',
+          minutesBefore: 30,
+          createdAt: DateTime(2024, 6, 1),
+        );
+        when(() => repo.getById('e1')).thenAnswer((_) async => original);
+        when(() => repo.save(any())).thenAnswer((_) async {});
+        when(
+          () => reminderRepo.getByEvent('e1'),
+        ).thenAnswer((_) async => [oldReminder]);
+        when(() => reminderRepo.remove(any())).thenAnswer((_) async {});
+
+        final container = makeContainer();
+        addTearDown(container.dispose);
+
+        await container
+            .read(eventFormStateProvider.notifier)
+            .updateEvent(
+              original,
+              reconcileReminder: true,
+            );
+
+        verify(() => reminderRepo.remove('r-old')).called(1);
+        verifyNever(() => reminderRepo.save(any()));
+      },
+    );
+
+    test(
       'updateEvent does not touch reminders when the event date is unchanged',
       () async {
         final original = Event(

@@ -118,21 +118,42 @@ class EventFormNotifier extends Notifier<EventFormState>
   }
 
   /// Updates an existing event.
-  Future<void> updateEvent(Event event) async {
+  ///
+  /// When [reconcileReminder] is true (the edit form now manages reminders),
+  /// [reminderMinutesBefore] fully replaces the event's reminder: any existing
+  /// reminders are cancelled + removed, then the chosen offset is re-created
+  /// (`null` = no reminder). When false (other callers, e.g. a status change),
+  /// the legacy behavior applies: reminders are only re-armed if the date
+  /// shifted, so the offset the user picked at creation is preserved.
+  Future<void> updateEvent(
+    Event event, {
+    int? reminderMinutesBefore,
+    bool reconcileReminder = false,
+  }) async {
     if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
     try {
       final repo = ref.read(eventRepositoryProvider);
       final previous = await repo.getById(event.id);
       await repo.save(event.copyWith(updatedAt: DateTime.now().toUtc()));
-      // If the event time shifted, cancel any already-scheduled OS
-      // notification(s) and re-arm pending reminders so the processor
-      // re-schedules with the new triggerTime on its next tick.
-      final dateShifted =
-          previous == null ||
-          !previous.eventDate.isAtSameMomentAs(event.eventDate);
-      if (dateShifted) {
-        await _resetRemindersForReschedule(event.id);
+      if (reconcileReminder) {
+        // Replace the reminder with the user's edited choice: drop the old
+        // one(s) (cancels their OS notifications) and re-create if chosen. The
+        // notification processor re-arms the fresh reminder on its next tick.
+        await _cleanupRemindersForEvent(event.id);
+        if (reminderMinutesBefore != null) {
+          await _createReminder(event, reminderMinutesBefore);
+        }
+      } else {
+        // If the event time shifted, cancel any already-scheduled OS
+        // notification(s) and re-arm pending reminders so the processor
+        // re-schedules with the new triggerTime on its next tick.
+        final dateShifted =
+            previous == null ||
+            !previous.eventDate.isAtSameMomentAs(event.eventDate);
+        if (dateShifted) {
+          await _resetRemindersForReschedule(event.id);
+        }
       }
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {

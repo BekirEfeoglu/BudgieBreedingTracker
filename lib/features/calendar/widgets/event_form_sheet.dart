@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +12,7 @@ import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/date_picker_field.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/calendar/providers/calendar_form_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/date_format_providers.dart';
 import 'package:budgie_breeding_tracker/features/calendar/widgets/event_card.dart';
@@ -96,11 +99,28 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
       _eventDate = localDate;
       _eventTime = TimeOfDay(hour: localDate.hour, minute: localDate.minute);
       _eventType = existing.type;
+      // Load the event's current reminder so the dropdown reflects it in edit
+      // mode (and the user can change/remove it).
+      unawaited(_loadExistingReminder(existing.id));
     } else {
       _eventDate = widget.initialDate ?? DateTime.now();
       _eventTime = TimeOfDay.now();
       _eventType = EventType.custom;
     }
+  }
+
+  /// Reads the event's existing reminder offset into [_reminderChoice] so the
+  /// edit form opens showing the current setting (or "no reminder").
+  Future<void> _loadExistingReminder(String eventId) async {
+    final reminders = await ref
+        .read(eventReminderRepositoryProvider)
+        .getByEvent(eventId);
+    if (!mounted) return;
+    setState(() {
+      _reminderChoice = reminders.isEmpty
+          ? _noReminderSentinel
+          : reminders.first.minutesBefore;
+    });
   }
 
   @override
@@ -247,35 +267,33 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
               _TimePickerField(eventTime: _eventTime, onTap: _pickTime),
               const SizedBox(height: AppSpacing.lg),
 
-              // Reminder offset — only for new events. Editing an event does
-              // not create/modify reminders (they were persisted at creation),
-              // so showing the control there would be misleading.
-              if (!_isEditing) ...[
-                DropdownButtonFormField<int>(
-                  initialValue: _reminderChoice,
-                  // Fill the field width and ellipsize long localized labels
-                  // instead of overflowing the row (e.g. German "Zum
-                  // Ereigniszeitpunkt").
-                  isExpanded: true,
-                  decoration: InputDecoration(
-                    labelText: 'calendar.reminder_label'.tr(),
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(LucideIcons.bell),
-                  ),
-                  items: [
-                    for (final minutes in kReminderOffsetOptions)
-                      DropdownMenuItem<int>(
-                        value: minutes ?? _noReminderSentinel,
-                        child: Text(_reminderOptionLabel(minutes)),
-                      ),
-                  ],
-                  onChanged: (value) => setState(
-                    () => _reminderChoice =
-                        value ?? kDefaultReminderMinutesBefore,
-                  ),
+              // Reminder offset — shown for both create and edit. In edit
+              // mode the dropdown is pre-filled from the event's current
+              // reminder and any change is reconciled on save.
+              DropdownButtonFormField<int>(
+                initialValue: _reminderChoice,
+                // Fill the field width and ellipsize long localized labels
+                // instead of overflowing the row (e.g. German "Zum
+                // Ereigniszeitpunkt").
+                isExpanded: true,
+                decoration: InputDecoration(
+                  labelText: 'calendar.reminder_label'.tr(),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(LucideIcons.bell),
                 ),
-                const SizedBox(height: AppSpacing.lg),
-              ],
+                items: [
+                  for (final minutes in kReminderOffsetOptions)
+                    DropdownMenuItem<int>(
+                      value: minutes ?? _noReminderSentinel,
+                      child: Text(_reminderOptionLabel(minutes)),
+                    ),
+                ],
+                onChanged: (value) => setState(
+                  () =>
+                      _reminderChoice = value ?? kDefaultReminderMinutesBefore,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
 
               // Notes field
               // IMPROVED: add maxLength to prevent excessive input
@@ -368,6 +386,9 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
               ? null
               : _notesController.text.trim(),
         ),
+        reminderMinutesBefore:
+            _reminderChoice == _noReminderSentinel ? null : _reminderChoice,
+        reconcileReminder: true,
       );
     } else {
       notifier.createEvent(
