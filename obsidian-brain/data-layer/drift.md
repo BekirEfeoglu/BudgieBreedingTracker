@@ -5,7 +5,7 @@ Source: `.claude/rules/data-layer.md`, `.claude/rules/migrations.md`
 ## Overview
 
 - **Package**: drift ^2.31.0 (type-safe SQLite ORM)
-- **Schema version**: 26 (in `app_database.dart`)
+- **Schema version**: 27 (in `app_database.dart`)
 - **Tables**: 20
 - **DAOs**: 20
 - **Mappers**: 20
@@ -34,6 +34,37 @@ import 'package:budgie/data/local/database/tables/birds_table.dart';
 // WRONG
 import 'package:budgie/data/local/database/app_database.dart'; // in DAO
 ```
+
+## Circular FK References (drift_dev codegen crash)
+
+A **bidirectional** typed FK between two tables makes their table files import each
+other AND forms a reference cycle in drift_dev's module graph. drift_dev 2.31
+intermittently crashes on it with `Circular error when deserializing drift
+modules` — build-order dependent, so it fails some CI runners and not others, and
+codegen retries do NOT clear it (a clean retry re-hits the same analysis order).
+This surfaced as an Xcode Cloud post-clone failure (`build_runner` exit 1, ~33s)
+even after 8 retries; only a source fix resolves it.
+
+**Rule:** never close a `.references()` cycle. Keep the primary child→parent FK as
+`.references()`; declare the *back-reference* with a raw `.customConstraint(...)`
+and drop the offending import so no typed module edge is created.
+
+```dart
+// clutches.incubationId keeps the typed reference (primary child→parent FK):
+TextColumn get incubationId => text().nullable().references(IncubationsTable, #id)();
+
+// incubations.clutchId would CLOSE the cycle → break it with a raw constraint
+// (no import of clutches_table.dart, no typed edge). Identical generated SQL:
+TextColumn get clutchId =>
+    text().nullable().customConstraint('NULL REFERENCES clutches (id)')();
+```
+
+`.customConstraint()` emits the FK string verbatim into the column's SQL and is
+opaque to the module graph — the `REFERENCES clutches (id)` constraint is
+preserved 1:1 (verify in `app_database.g.dart`), so there is no schema change and
+no version bump. Prefer `.customConstraint()` over dropping the FK entirely; the
+`NULL ` prefix marks the column nullable per Drift's documented pattern. See
+[[log]] 2026-07-09 for the clutches↔incubations fix.
 
 ## Query Patterns
 

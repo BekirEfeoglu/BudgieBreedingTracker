@@ -176,3 +176,16 @@ filter rule, CLAUDE.md key-dep corrections (supabase iOS-CI cap,
 purchases 10.2.3) + pod-install build command + an "Adding or bumping a
 dependency" workflow. Oldest two log entries rotated to the new
 [[log-archive-2026-07-d]].
+
+## [2026-07-04] fix | Excel is now a lossless round-trip (Option B)
+
+Follow-up to Option A, per user request. `ExcelExportService` now writes each
+sheet in the import parser's exact column order with a trailing full-uuid ID
+column (birds also carry death/sale dates; eggs the incubation link), and
+serializes gender/species/status as stable enum NAMES (not localized labels) so
+re-import parses them in any locale. The parsers PRESERVE the exported id
+(idempotent upsert; lineage FKs resolve to the same rows). `findSheet` folds
+diacritics and the importer also accepts the export's l10n sheet-name key
+("Kuşlar" ↔ "Kuslar"). Two real export→import round-trip tests (birds with
+lineage; pairs/eggs/chicks id preservation) + 156 import/export tests green. See
+[[domain/data-io]].

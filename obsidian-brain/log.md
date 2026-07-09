@@ -4,6 +4,19 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-09] fix | Drift clutches↔incubations module cycle crashed drift_dev codegen
+
+Root-caused the intermittent Xcode Cloud post-clone failure (Build - iOS
+action_required, `build_runner` exit 1 ~33s, survived 8 retries): a bidirectional
+typed FK (clutches.incubationId ⇄ incubations.clutchId, both `.references()`)
+formed a reference cycle that drift_dev 2.31 crashes on ("Circular error when
+deserializing drift modules"), build-order dependent so it hit some CI runners
+only. Retries can't clear it. Fixed by declaring incubations.clutchId's FK with a
+raw `.customConstraint('NULL REFERENCES clutches (id)')` (+ dropping the
+clutches_table import) — breaks the module edge, preserves the SQL FK 1:1, no
+schema change. 763 db/incubation/egg tests pass. See [[data-layer/drift]] §
+Circular FK References.
+
 ## [2026-07-09] ci | Audit follow-ups: migration drift guard + codegen-flake hardening
 
 Post-audit "apply all suggestions" round. Added `scripts/verify_migration_drift.py`
@@ -182,13 +195,5 @@ language, 194 tracked Supabase migrations, 28 remote-source files, and current
 Supabase constant counts. Also corrected stale schema v25 references, the old
 notification-service path, and duplicated migration-count values across the
 overview, index, data-layer, architecture, testing, and l10n pages.
-
-## [2026-07-08] docs | Obsidian brain wiki doctor hardened
-
-Extended `scripts/check_obsidian_brain.py` beyond index/link/page-length checks:
-it now validates inline file references, selected `overview.md` metrics, required
-decision sections on high-risk pages, and active `log.md` archive pressure. Added
-regression tests, documented the stronger contract, and rotated older July entries
-to [[log-archive-2026-07-f]].
 
 Older entries are archived in [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

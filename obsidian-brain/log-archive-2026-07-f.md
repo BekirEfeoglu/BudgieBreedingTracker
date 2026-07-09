@@ -5,6 +5,14 @@ Archived July 2026 entries rotated out of [[log]] during the
 
 ---
 
+## [2026-07-08] docs | Obsidian brain wiki doctor hardened
+
+Extended `scripts/check_obsidian_brain.py` beyond index/link/page-length checks:
+it now validates inline file references, selected `overview.md` metrics, required
+decision sections on high-risk pages, and active `log.md` archive pressure. Added
+regression tests, documented the stronger contract, and rotated older July entries
+to [[log-archive-2026-07-f]].
+
 ## [2026-07-05] fix | Community post creation broken — guard trigger used auth.uid() under service_role
 
 Screenshot: creating a post ("test"/"123") failed with "Beklenmeyen bir hata
@@ -183,16 +191,3 @@ breeding_pairs→incubations→eggs for FK ordering), un-truncated the exported
 incubation id, `_addHealthRecordsSheet` + id-preserving `parseHealthRecordRow`,
 `IncubationRepository` injected, 8 new `export.*` l10n keys. +2 round-trip tests;
 gates green. See [[domain/data-io]].
-
-## [2026-07-04] fix | Excel is now a lossless round-trip (Option B)
-
-Follow-up to Option A, per user request. `ExcelExportService` now writes each
-sheet in the import parser's exact column order with a trailing full-uuid ID
-column (birds also carry death/sale dates; eggs the incubation link), and
-serializes gender/species/status as stable enum NAMES (not localized labels) so
-re-import parses them in any locale. The parsers PRESERVE the exported id
-(idempotent upsert; lineage FKs resolve to the same rows). `findSheet` folds
-diacritics and the importer also accepts the export's l10n sheet-name key
-("Kuşlar" ↔ "Kuslar"). Two real export→import round-trip tests (birds with
-lineage; pairs/eggs/chicks id preservation) + 156 import/export tests green. See
-[[domain/data-io]].
