@@ -95,11 +95,31 @@ abstract final class AppIcons {
     }
   }
 
+  /// Maps a rank title key to its badge icon across the 10-tier ladder
+  /// (see LevelCalculator.titleForLevel). Five icons, two tiers each, in
+  /// strictly ascending order so a higher rank never shows a lower-tier icon.
+  /// Order matters: `grand_master` must be tested before `master`.
   static String getLevelIcon(String levelTitleKey) {
-    if (levelTitleKey.contains('novice') || levelTitleKey.contains('beginner')) return rankBronze;
-    if (levelTitleKey.contains('experienced') || levelTitleKey.contains('expert')) return rankSilver;
-    if (levelTitleKey.contains('master') || levelTitleKey.contains('champion')) return rankPlatinum;
-    if (levelTitleKey.contains('legendary') || levelTitleKey.contains('whisperer')) return rankLegendary;
+    if (levelTitleKey.contains('beginner') || levelTitleKey.contains('novice')) {
+      return rankBronze; // levels 1–3
+    }
+    if (levelTitleKey.contains('enthusiast') ||
+        levelTitleKey.contains('experienced')) {
+      return rankSilver; // levels 4–10
+    }
+    if (levelTitleKey.contains('grand_master')) {
+      return rankPlatinum; // levels 23–32
+    }
+    if (levelTitleKey.contains('expert') || levelTitleKey.contains('master')) {
+      return rankGold; // levels 11–22
+    }
+    if (levelTitleKey.contains('legendary')) {
+      return rankPlatinum; // levels 33–49
+    }
+    if (levelTitleKey.contains('champion') ||
+        levelTitleKey.contains('whisperer')) {
+      return rankLegendary; // levels 50+
+    }
     return rankGold;
   }
 

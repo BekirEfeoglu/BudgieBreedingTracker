@@ -143,7 +143,9 @@ class GamificationRemoteSource {
             'level': level,
             'xp_title': title,
           })
-          .eq('user_id', userId);
+          // profiles PK is `id` (= auth.users.id); there is no `user_id`
+          // column, so filtering on it 400s and silently drops the sync.
+          .eq(SupabaseConstants.colId, userId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag('gamification', e, st);
     }
@@ -221,7 +223,8 @@ class GamificationRemoteSource {
       await _client
           .from(SupabaseConstants.profilesTable)
           .update({'level': level, 'xp_title': title})
-          .eq('user_id', userId);
+          // profiles PK is `id` (= auth.users.id); no `user_id` column exists.
+          .eq(SupabaseConstants.colId, userId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag('gamification', e, st);
     }
