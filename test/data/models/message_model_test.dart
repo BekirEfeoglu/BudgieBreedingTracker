@@ -65,6 +65,7 @@ void main() {
 
         expect(message.senderName, '');
         expect(message.messageType, MessageType.text);
+        expect(message.deliveryStatus, MessageDeliveryStatus.sent);
         expect(message.referenceData, isEmpty);
         expect(message.readBy, isEmpty);
         expect(message.isDeleted, false);
@@ -73,6 +74,21 @@ void main() {
         expect(message.imageUrl, isNull);
         expect(message.referenceId, isNull);
         expect(message.createdAt, isNull);
+      });
+
+      test('deliveryStatus is local only and not serialized', () {
+        const message = Message(
+          id: 'msg-1',
+          conversationId: 'conv-1',
+          senderId: 'user-1',
+          deliveryStatus: MessageDeliveryStatus.sending,
+        );
+
+        final json = message.toJson();
+        final restored = Message.fromJson(json);
+
+        expect(json.containsKey('delivery_status'), isFalse);
+        expect(restored.deliveryStatus, MessageDeliveryStatus.sent);
       });
     });
 
@@ -89,6 +105,26 @@ void main() {
         expect(message.isImage, isFalse);
         expect(message.isBirdCard, isFalse);
         expect(message.isListingCard, isFalse);
+      });
+
+      test('delivery status helpers reflect local send state', () {
+        const sending = Message(
+          id: 'msg-1',
+          conversationId: 'conv-1',
+          senderId: 'user-1',
+          deliveryStatus: MessageDeliveryStatus.sending,
+        );
+        const failed = Message(
+          id: 'msg-2',
+          conversationId: 'conv-1',
+          senderId: 'user-1',
+          deliveryStatus: MessageDeliveryStatus.failed,
+        );
+
+        expect(sending.isSending, isTrue);
+        expect(sending.isFailed, isFalse);
+        expect(failed.isSending, isFalse);
+        expect(failed.isFailed, isTrue);
       });
 
       test('isImage returns true for image type', () {

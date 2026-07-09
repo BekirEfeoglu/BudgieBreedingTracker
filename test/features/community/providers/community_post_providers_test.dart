@@ -3,9 +3,37 @@ library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/data/models/community_post_model.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_feed_providers.dart';
+import 'package:budgie_breeding_tracker/features/community/providers/community_post_providers.dart';
+
+import '../../../helpers/mocks.dart';
+
+const _testPosts = [
+  CommunityPost(
+    id: 'p1',
+    userId: 'u1',
+    username: 'Ali',
+    likeCount: 5,
+    commentCount: 2,
+    isLikedByMe: false,
+    isBookmarkedByMe: false,
+    isFollowingAuthor: false,
+  ),
+  CommunityPost(
+    id: 'p2',
+    userId: 'u2',
+    username: 'Veli',
+    likeCount: 10,
+    commentCount: 3,
+    isLikedByMe: true,
+    isBookmarkedByMe: true,
+    isFollowingAuthor: true,
+  ),
+];
 
 void main() {
   group('FeedState', () {
@@ -41,34 +69,11 @@ void main() {
   group('CommunityFeedNotifier optimistic methods', () {
     late ProviderContainer container;
 
-    final testPosts = [
-      const CommunityPost(
-        id: 'p1',
-        userId: 'u1',
-        username: 'Ali',
-        likeCount: 5,
-        commentCount: 2,
-        isLikedByMe: false,
-        isBookmarkedByMe: false,
-        isFollowingAuthor: false,
-      ),
-      const CommunityPost(
-        id: 'p2',
-        userId: 'u2',
-        username: 'Veli',
-        likeCount: 10,
-        commentCount: 3,
-        isLikedByMe: true,
-        isBookmarkedByMe: true,
-        isFollowingAuthor: true,
-      ),
-    ];
-
     setUp(() {
       container = ProviderContainer(
         overrides: [
           communityFeedProvider.overrideWith(
-            () => _FakeFeedNotifier(posts: testPosts),
+            () => _FakeFeedNotifier(posts: _testPosts),
           ),
         ],
       );
@@ -152,6 +157,76 @@ void main() {
       final posts = container.read(communityFeedProvider).posts;
       expect(posts.length, 1);
       expect(posts.first.id, 'p2');
+    });
+
+    test('applyPinState updates pin state', () {
+      container
+          .read(communityFeedProvider.notifier)
+          .applyPinState('p1', isPinned: true);
+      final posts = container.read(communityFeedProvider).posts;
+      expect(posts.first.id, 'p1');
+      expect(posts.first.isPinned, isTrue);
+    });
+  });
+
+  group('PostPinToggleNotifier', () {
+    test('toggles pin through repository and updates feed', () async {
+      final repo = MockCommunityPostRepository();
+      when(
+        () => repo.togglePin(postId: 'p1', isPinned: true),
+      ).thenAnswer((_) async {});
+
+      final container = ProviderContainer(
+        overrides: [
+          communityPostRepositoryProvider.overrideWithValue(repo),
+          communityFeedProvider.overrideWith(
+            () => _FakeFeedNotifier(posts: _testPosts),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.read(communityFeedProvider);
+
+      final ok = await container
+          .read(postPinToggleProvider.notifier)
+          .togglePin('p1', isPinned: true);
+
+      expect(ok, isTrue);
+      final pinned = container
+          .read(communityFeedProvider)
+          .posts
+          .firstWhere((p) => p.id == 'p1');
+      expect(pinned.isPinned, isTrue);
+      verify(() => repo.togglePin(postId: 'p1', isPinned: true)).called(1);
+    });
+
+    test('rolls back optimistic pin state on repository failure', () async {
+      final repo = MockCommunityPostRepository();
+      when(
+        () => repo.togglePin(postId: 'p1', isPinned: true),
+      ).thenThrow(Exception('nope'));
+
+      final container = ProviderContainer(
+        overrides: [
+          communityPostRepositoryProvider.overrideWithValue(repo),
+          communityFeedProvider.overrideWith(
+            () => _FakeFeedNotifier(posts: _testPosts),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.read(communityFeedProvider);
+
+      final ok = await container
+          .read(postPinToggleProvider.notifier)
+          .togglePin('p1', isPinned: true);
+
+      expect(ok, isFalse);
+      final post = container
+          .read(communityFeedProvider)
+          .posts
+          .firstWhere((p) => p.id == 'p1');
+      expect(post.isPinned, isFalse);
     });
   });
 

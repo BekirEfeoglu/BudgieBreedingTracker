@@ -74,6 +74,7 @@ void main() {
       String id, {
       bool liked = false,
       bool bookmarked = false,
+      bool pinned = false,
     }) {
       return CommunityPost(
         id: id,
@@ -83,6 +84,7 @@ void main() {
         likeCount: liked ? 1 : 0,
         isLikedByMe: liked,
         isBookmarkedByMe: bookmarked,
+        isPinned: pinned,
         createdAt: DateTime(2024),
       );
     }
@@ -177,6 +179,30 @@ void main() {
       expect(state.posts.length, 2);
       expect(state.posts.map((p) => p.id).toList(), ['1', '3']);
     });
+
+    test('applyPinState updates pin flag and moves pinned posts first', () {
+      final container = ProviderContainer(
+        overrides: [
+          communityFeedProvider.overrideWith(
+            () => _TestFeedNotifier([
+              makePost('1'),
+              makePost('2'),
+              makePost('3', pinned: true),
+            ]),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.read(communityFeedProvider);
+      container
+          .read(communityFeedProvider.notifier)
+          .applyPinState('2', isPinned: true);
+
+      final state = container.read(communityFeedProvider);
+      expect(state.posts.map((p) => p.id), ['2', '3', '1']);
+      expect(state.posts.first.isPinned, isTrue);
+    });
   });
 
   group('CommunityFeedNotifier fetch flows', () {
@@ -228,6 +254,44 @@ void main() {
             repo.getFeed(currentUserId: 'user-1', limit: 20, sortBy: 'newest'),
       ).called(1);
     });
+
+    test(
+      'fetchInitial displays pinned posts first without changing cursor',
+      () async {
+        final repo = MockCommunityPostRepository();
+        final posts = [
+          makePost('newest', createdAt: DateTime(2024, 1, 3)),
+          makePost(
+            'pinned',
+            createdAt: DateTime(2024, 1, 2),
+          ).copyWith(isPinned: true),
+          makePost('oldest', createdAt: DateTime(2024, 1, 1)),
+        ];
+        when(
+          () => repo.getFeed(
+            currentUserId: 'user-1',
+            limit: 20,
+            sortBy: 'newest',
+          ),
+        ).thenAnswer((_) async => posts);
+
+        final container = ProviderContainer(
+          overrides: [
+            communityPostRepositoryProvider.overrideWithValue(repo),
+            currentUserIdProvider.overrideWithValue('user-1'),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        container.listen(communityFeedProvider, (_, __) {});
+        await flushAsync();
+
+        final state = container.read(communityFeedProvider);
+        expect(state.posts.map((p) => p.id), ['pinned', 'newest', 'oldest']);
+        expect(state.cursor, posts.last.createdAt);
+        expect(state.cursorPostId, posts.last.id);
+      },
+    );
 
     test(
       'fetchMore appends posts and updates hasMore when page is short',

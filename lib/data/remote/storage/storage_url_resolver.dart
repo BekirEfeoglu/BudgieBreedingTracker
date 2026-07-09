@@ -24,6 +24,7 @@ class StorageUrlResolver {
     SupabaseConstants.birdPhotosBucket,
     SupabaseConstants.eggPhotosBucket,
     SupabaseConstants.chickPhotosBucket,
+    SupabaseConstants.messagePhotosBucket,
   };
 
   Future<String?> resolve(String? url) async {

@@ -1,9 +1,12 @@
 @Tags(['community'])
 library;
 
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/core/enums/messaging_enums.dart';
@@ -13,6 +16,7 @@ import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_pro
 import 'package:budgie_breeding_tracker/features/messaging/providers/messaging_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/messaging/providers/messaging_providers.dart'
     show messageAttachmentsEnabledProvider;
+import 'package:budgie_breeding_tracker/features/messaging/services/message_attachment_service.dart';
 import 'package:budgie_breeding_tracker/features/messaging/widgets/message_input_bar.dart';
 
 import '../../../helpers/test_localization.dart';
@@ -21,6 +25,7 @@ void main() {
   Widget buildSubject({
     MessagingFormNotifier Function()? notifierFactory,
     bool? attachmentsEnabled,
+    MessageAttachmentService? attachmentService,
   }) {
     return ProviderScope(
       overrides: [
@@ -35,6 +40,8 @@ void main() {
         userProfileProvider.overrideWith((ref) => Stream.value(null)),
         if (notifierFactory != null)
           messagingFormStateProvider.overrideWith(notifierFactory),
+        if (attachmentService != null)
+          messageAttachmentServiceProvider.overrideWithValue(attachmentService),
       ],
       child: const MaterialApp(
         home: Scaffold(body: MessageInputBar(conversationId: 'conv-1')),
@@ -164,12 +171,95 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byIcon(LucideIcons.image), findsOneWidget);
-        expect(find.byIcon(LucideIcons.store), findsOneWidget);
         expect(find.text(l10n('messaging.attach_photo')), findsAtLeast(1));
-        expect(find.text(l10n('messaging.attach_bird')), findsOneWidget);
-        expect(find.text(l10n('messaging.attach_listing')), findsOneWidget);
+        expect(find.text(l10n('messaging.attach_bird')), findsNothing);
+        expect(find.text(l10n('messaging.attach_listing')), findsNothing);
       },
     );
+
+    testWidgets('photo attachment uploads and sends an image message', (
+      tester,
+    ) async {
+      var pickCount = 0;
+      String? uploadedUserId;
+      String? uploadedConversationId;
+      final attachmentService = MessageAttachmentService(
+        pickPhoto: (_) async {
+          pickCount++;
+          return XFile.fromData(Uint8List(128), name: 'dm.jpg');
+        },
+        uploadPhoto:
+            ({required userId, required conversationId, required file}) async {
+              uploadedUserId = userId;
+              uploadedConversationId = conversationId;
+              return 'https://cdn.example.com/message-photo.jpg';
+            },
+      );
+      final recorder = _RecordingMessagingFormNotifier();
+
+      await pumpLocalizedApp(
+        tester,
+        buildSubject(
+          notifierFactory: () => recorder,
+          attachmentsEnabled: true,
+          attachmentService: attachmentService,
+        ),
+      );
+
+      await tester.tap(find.byIcon(LucideIcons.plus));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.widgetWithText(ListTile, l10n('messaging.attach_photo')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(pickCount, 1);
+      expect(uploadedUserId, 'test-user');
+      expect(uploadedConversationId, 'conv-1');
+      expect(recorder.sendCount, 1);
+      expect(recorder.lastMessageType, MessageType.image);
+      expect(
+        recorder.lastImageUrl,
+        'https://cdn.example.com/message-photo.jpg',
+      );
+    });
+
+    testWidgets('photo attachment upload failure shows localized error', (
+      tester,
+    ) async {
+      final attachmentService = MessageAttachmentService(
+        pickPhoto: (_) async {
+          return XFile.fromData(Uint8List(128), name: 'dm.jpg');
+        },
+        uploadPhoto:
+            ({required userId, required conversationId, required file}) async {
+              throw Exception('upload failed');
+            },
+      );
+      final recorder = _RecordingMessagingFormNotifier();
+
+      await pumpLocalizedApp(
+        tester,
+        buildSubject(
+          notifierFactory: () => recorder,
+          attachmentsEnabled: true,
+          attachmentService: attachmentService,
+        ),
+      );
+
+      await tester.tap(find.byIcon(LucideIcons.plus));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.widgetWithText(ListTile, l10n('messaging.attach_photo')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(l10n('messaging.attachment_upload_failed')),
+        findsOneWidget,
+      );
+      expect(recorder.sendCount, 0);
+    });
 
     testWidgets('send button is disabled for whitespace-only input', (
       tester,
@@ -190,6 +280,42 @@ void main() {
   });
 }
 
+class _RecordingMessagingFormNotifier extends _FakeMessagingFormNotifier {
+  int sendCount = 0;
+  MessageType? lastMessageType;
+  String? lastImageUrl;
+
+  @override
+  Future<Message?> sendMessage({
+    required String conversationId,
+    required String senderId,
+    required String senderName,
+    String? senderAvatarUrl,
+    String? content,
+    MessageType messageType = MessageType.text,
+    String? imageUrl,
+    String? referenceId,
+    Map<String, dynamic>? referenceData,
+    String? clientMessageId,
+  }) {
+    sendCount++;
+    lastMessageType = messageType;
+    lastImageUrl = imageUrl;
+    return super.sendMessage(
+      conversationId: conversationId,
+      senderId: senderId,
+      senderName: senderName,
+      senderAvatarUrl: senderAvatarUrl,
+      content: content,
+      messageType: messageType,
+      imageUrl: imageUrl,
+      referenceId: referenceId,
+      referenceData: referenceData,
+      clientMessageId: clientMessageId,
+    );
+  }
+}
+
 class _FakeMessagingFormNotifier extends MessagingFormNotifier {
   @override
   MessagingFormState build() => const MessagingFormState();
@@ -205,6 +331,7 @@ class _FakeMessagingFormNotifier extends MessagingFormNotifier {
     String? imageUrl,
     String? referenceId,
     Map<String, dynamic>? referenceData,
+    String? clientMessageId,
   }) async {
     // The input bar clears the controller (and optimistically appends) only
     // when sendMessage returns a non-null persisted message; the fake mirrors
@@ -242,6 +369,7 @@ class _FailingMessagingFormNotifier extends MessagingFormNotifier {
     String? imageUrl,
     String? referenceId,
     Map<String, dynamic>? referenceData,
+    String? clientMessageId,
   }) async {
     sendCount++;
     state = state.copyWith(error: 'send failed', isSuccess: false);

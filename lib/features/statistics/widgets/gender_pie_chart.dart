@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
+import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_insufficient_data_table.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_legend_item.dart';
 
 /// Pie chart showing male/female/unknown bird gender distribution.
@@ -46,6 +47,29 @@ class _GenderPieChartState extends State<GenderPieChart> {
 
     if (total == 0) {
       return const ChartEmpty();
+    }
+
+    if (total < 3) {
+      return ChartInsufficientDataTable(
+        total: total,
+        entries: [
+          ChartInsufficientDataEntry(
+            label: 'statistics.male'.tr(),
+            count: widget.maleCount,
+            color: AppColors.genderMale,
+          ),
+          ChartInsufficientDataEntry(
+            label: 'statistics.female'.tr(),
+            count: widget.femaleCount,
+            color: AppColors.genderFemale,
+          ),
+          ChartInsufficientDataEntry(
+            label: 'statistics.unknown'.tr(),
+            count: widget.unknownCount,
+            color: AppColors.neutral400,
+          ),
+        ],
+      );
     }
 
     return Column(

@@ -32,6 +32,7 @@ abstract class HealthRecord with _$HealthRecord {
     required String title,
     required String userId,
     String? birdId,
+    String? chickId,
     String? description,
     String? treatment,
     String? veterinarian,

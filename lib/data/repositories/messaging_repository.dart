@@ -1,13 +1,17 @@
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/constants/supabase_constants.dart';
+import '../../core/enums/messaging_enums.dart';
 import '../../core/utils/logger.dart';
 import '../models/conversation_model.dart';
 import '../models/conversation_participant_model.dart';
 import '../models/message_model.dart';
 import '../remote/api/conversation_remote_source.dart';
 import '../remote/api/message_remote_source.dart';
+import '../remote/storage/storage_service.dart';
+import '../remote/storage/storage_url_resolver.dart';
 
 /// Online-first: realtime multi-party conversations. No local Drift mirror by design.
 ///
@@ -19,14 +23,20 @@ class MessagingRepository {
   final ConversationRemoteSource _conversationSource;
   final MessageRemoteSource _messageSource;
   final SupabaseClient _client;
+  final StorageService? _storageService;
+  final StorageUrlResolver? _storageUrlResolver;
 
   const MessagingRepository({
     required ConversationRemoteSource conversationSource,
     required MessageRemoteSource messageSource,
     required SupabaseClient client,
+    StorageService? storageService,
+    StorageUrlResolver? storageUrlResolver,
   }) : _conversationSource = conversationSource,
        _messageSource = messageSource,
-       _client = client;
+       _client = client,
+       _storageService = storageService,
+       _storageUrlResolver = storageUrlResolver;
 
   /// Search profiles by display_name or full_name for DM user picker.
   ///
@@ -161,12 +171,45 @@ class MessagingRepository {
       limit: limit,
       before: before,
     );
-    return rows.map((r) => Message.fromJson(r)).toList();
+    final messages = rows.map((r) => Message.fromJson(r)).toList();
+    final resolver = _storageUrlResolver;
+    if (resolver == null) return messages;
+    return Future.wait(
+      messages.map((message) => _resolveMessageImageUrl(message, resolver)),
+    );
   }
 
   Future<Message> sendMessage(Map<String, dynamic> data) async {
     final row = await _messageSource.insert(data);
     return Message.fromJson(row);
+  }
+
+  Future<String> uploadMessagePhoto({
+    required String userId,
+    required String conversationId,
+    required XFile file,
+  }) {
+    final storageService = _storageService;
+    if (storageService == null) {
+      throw StateError('Message photo upload requires StorageService');
+    }
+    return storageService.uploadMessagePhoto(
+      userId: userId,
+      conversationId: conversationId,
+      file: file,
+    );
+  }
+
+  Future<Message> _resolveMessageImageUrl(
+    Message message,
+    StorageUrlResolver resolver,
+  ) async {
+    if (message.messageType != MessageType.image || message.imageUrl == null) {
+      return message;
+    }
+    final resolved = await resolver.resolve(message.imageUrl);
+    if (resolved == null || resolved == message.imageUrl) return message;
+    return message.copyWith(imageUrl: resolved);
   }
 
   Future<void> markAsRead(String messageId, String userId) async {

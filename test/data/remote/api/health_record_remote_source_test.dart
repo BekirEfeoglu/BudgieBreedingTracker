@@ -67,6 +67,7 @@ void main() {
         type: HealthRecordType.checkup,
         title: 'Annual Check',
         userId: 'user-1',
+        chickId: 'chick-1',
       );
 
       await source.upsert(record);
@@ -76,6 +77,36 @@ void main() {
       expect(payload['title'], 'Annual Check');
       expect(payload['type'], 'checkup');
       expect(payload['user_id'], 'user-1');
+      expect(payload['chick_id'], 'chick-1');
+      expect(payload.containsKey('created_at'), isFalse);
+      expect(payload.containsKey('updated_at'), isFalse);
+    });
+
+    test('fetchByChick filters by user and chick', () async {
+      selectBuilder.result = [
+        {
+          'id': 'hr-1',
+          'date': '2024-02-01T00:00:00.000',
+          'type': 'checkup',
+          'title': 'Nest check',
+          'user_id': 'user-1',
+          'chick_id': 'chick-1',
+          'is_deleted': false,
+        },
+      ];
+
+      final result = await source.fetchByChick('user-1', 'chick-1');
+
+      expect(result, hasLength(1));
+      expect(result.single.chickId, 'chick-1');
+      final eqKeys = selectBuilder.eqCalls
+          .map((entry) => '${entry.key}:${entry.value}')
+          .toList();
+      expect(
+        eqKeys,
+        containsAll(['user_id:user-1', 'chick_id:chick-1', 'is_deleted:false']),
+      );
+      expect(selectBuilder.orderCalls, contains('date'));
     });
 
     test('converts fetch failures to NetworkException', () async {

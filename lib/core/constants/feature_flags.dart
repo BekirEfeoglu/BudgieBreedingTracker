@@ -7,9 +7,7 @@ abstract final class FeatureFlags {
   static const bool messagingEnabled = false;
   static const bool gamificationEnabled = true;
 
-  /// Image/bird/listing message attachments. Disabled because the UI exists
-  /// but the upload pipeline (image picker → scan-image-safety → Storage →
-  /// send) is not wired (Messaging audit C1+C2). Flip to `true` after
-  /// implementing the pipeline AND removing the empty-onTap ListTiles.
-  static const bool messageAttachmentsEnabled = false;
+  /// Direct-message photo attachments. Bird/listing cards stay hidden until
+  /// they have real producers instead of empty bottom-sheet actions.
+  static const bool messageAttachmentsEnabled = true;
 }

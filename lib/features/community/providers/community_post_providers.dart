@@ -177,6 +177,50 @@ final postEditProvider = NotifierProvider<PostEditNotifier, void>(
 );
 
 // ---------------------------------------------------------------------------
+// Post pin toggle
+// ---------------------------------------------------------------------------
+
+class PostPinToggleNotifier extends Notifier<void> {
+  @override
+  void build() {}
+
+  final Set<String> _inFlight = <String>{};
+
+  Future<bool> togglePin(String postId, {required bool isPinned}) async {
+    if (!_inFlight.add(postId)) return false;
+
+    final feedPosts = ref.read(communityFeedProvider).posts;
+    final previous = feedPosts.where((p) => p.id == postId).firstOrNull;
+    ref
+        .read(communityFeedProvider.notifier)
+        .applyPinState(postId, isPinned: isPinned);
+
+    try {
+      final repo = ref.read(communityPostRepositoryProvider);
+      await repo.togglePin(postId: postId, isPinned: isPinned);
+      repo.invalidateFeedCache();
+      ref.invalidate(communityPostByIdProvider(postId));
+      return true;
+    } catch (e, st) {
+      if (previous != null) {
+        ref
+            .read(communityFeedProvider.notifier)
+            .applyPinState(postId, isPinned: previous.isPinned);
+      }
+      AppLogger.error('PostPinToggleNotifier.togglePin', e, st);
+      await Sentry.captureException(e, stackTrace: st);
+      return false;
+    } finally {
+      _inFlight.remove(postId);
+    }
+  }
+}
+
+final postPinToggleProvider = NotifierProvider<PostPinToggleNotifier, void>(
+  PostPinToggleNotifier.new,
+);
+
+// ---------------------------------------------------------------------------
 // Follow toggle
 // ---------------------------------------------------------------------------
 

@@ -1,21 +1,24 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-
-import '../../../core/constants/app_icons.dart';
-import '../../../core/enums/messaging_enums.dart';
-import '../../../core/theme/app_spacing.dart';
-import '../../../core/widgets/app_icon.dart';
-import '../../../core/widgets/buttons/app_icon_button.dart';
+import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/profile_stream_providers.dart';
+
+import '../../../core/enums/messaging_enums.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
+import '../../../core/utils/image_picker_guard.dart';
+import '../../../core/utils/logger.dart';
 import '../providers/messaging_form_providers.dart';
 import '../providers/messaging_providers.dart'
     show messageAttachmentsEnabledProvider;
-import '../providers/messaging_realtime_providers.dart';
-import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
+import '../services/message_attachment_service.dart';
 
 class MessageInputBar extends ConsumerStatefulWidget {
   final String conversationId;
@@ -29,6 +32,7 @@ class MessageInputBar extends ConsumerStatefulWidget {
 class _MessageInputBarState extends ConsumerState<MessageInputBar> {
   final _controller = TextEditingController();
   bool _hasText = false;
+  bool _isAttachingPhoto = false;
 
   @override
   void initState() {
@@ -87,14 +91,15 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
       child: SafeArea(
         child: Row(
           children: [
-            // Attach button hidden until the upload pipeline ships.
-            // Messaging audit C1+C2 — the bottom-sheet options were dead
-            // UI (`onTap: Navigator.pop`) and the receive-side rendering
-            // path for image/bird/listing messages had no producer.
             if (attachmentsEnabled)
               AppIconButton(
-                icon: const Icon(LucideIcons.plus),
-                onPressed: _showAttachmentOptions,
+                icon: _isAttachingPhoto
+                    ? const SizedBox.square(
+                        dimension: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(LucideIcons.plus),
+                onPressed: _isAttachingPhoto ? null : _showAttachmentOptions,
                 tooltip: 'messaging.attach_photo'.tr(),
                 semanticLabel: 'messaging.attach_photo'.tr(),
               ),
@@ -161,11 +166,6 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
     );
     if (!mounted || sent == null) return;
     _controller.clear();
-    // Optimistically surface the just-sent message so the sender sees it
-    // immediately even when realtime delivery is gated off by rollout flags.
-    // The detail-screen merge dedupes by id, so the realtime echo (same
-    // server id) won't duplicate it.
-    ref.read(messagingRealtimeProvider.notifier).addLocalMessage(sent);
   }
 
   void _showAttachmentOptions() {
@@ -180,25 +180,62 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
               title: Text('messaging.attach_photo'.tr()),
               onTap: () {
                 Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const AppIcon(AppIcons.bird),
-              title: Text('messaging.attach_bird'.tr()),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(LucideIcons.store),
-              title: Text('messaging.attach_listing'.tr()),
-              onTap: () {
-                Navigator.pop(context);
+                unawaited(_sendPhotoAttachment());
               },
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _sendPhotoAttachment() async {
+    if (_isAttachingPhoto) return;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _isAttachingPhoto = true);
+
+    try {
+      final attachmentService = ref.read(messageAttachmentServiceProvider);
+      final picked = await attachmentService.pickPhoto(ImageSource.gallery);
+      if (!mounted || picked == null) return;
+
+      final withinSize = await ImagePickerGuard.ensureWithinSizeLimitVia(
+        messenger,
+        picked,
+      );
+      if (!mounted || !withinSize) return;
+
+      final userId = ref.read(currentUserIdProvider);
+      final profile = ref.read(userProfileProvider).value;
+      final senderName = profile?.resolvedDisplayName ?? '';
+      final imageUrl = await attachmentService.uploadPhoto(
+        userId: userId,
+        conversationId: widget.conversationId,
+        file: picked,
+      );
+      if (!mounted) return;
+
+      await ref
+          .read(messagingFormStateProvider.notifier)
+          .sendMessage(
+            conversationId: widget.conversationId,
+            senderId: userId,
+            senderName: senderName,
+            messageType: MessageType.image,
+            imageUrl: imageUrl,
+          );
+    } catch (e, st) {
+      AppLogger.error('messaging attachment upload failed', e, st);
+      if (!mounted) return;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text('messaging.attachment_upload_failed'.tr())),
+        );
+    } finally {
+      if (mounted) {
+        setState(() => _isAttachingPhoto = false);
+      }
+    }
   }
 }

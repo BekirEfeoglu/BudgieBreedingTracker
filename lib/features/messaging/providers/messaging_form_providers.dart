@@ -9,6 +9,7 @@ import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/services/moderation/moderation_providers.dart';
 import '../../../domain/services/moderation/content_moderation_service.dart';
 import '../../../shared/providers/community.dart';
+import 'messaging_realtime_providers.dart';
 
 class MessagingFormState {
   final bool isLoading;
@@ -57,7 +58,9 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
     String? imageUrl,
     String? referenceId,
     Map<String, dynamic>? referenceData,
+    String? clientMessageId,
   }) async {
+    String? optimisticMessageId;
     try {
       // Client-side throttle — prevent rapid-fire messages
       final now = DateTime.now();
@@ -87,9 +90,30 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
         }
       }
 
+      final messageId = clientMessageId ?? const Uuid().v7();
+      optimisticMessageId = messageId;
+      final optimisticMessage = Message(
+        id: messageId,
+        conversationId: conversationId,
+        senderId: senderId,
+        senderName: senderName,
+        senderAvatarUrl: senderAvatarUrl,
+        content: trimmedContent,
+        messageType: messageType,
+        imageUrl: imageUrl,
+        referenceId: referenceId,
+        referenceData: referenceData ?? const {},
+        readBy: [senderId],
+        deliveryStatus: MessageDeliveryStatus.sending,
+        createdAt: DateTime.now().toUtc(),
+      );
+      ref
+          .read(messagingRealtimeProvider.notifier)
+          .addLocalMessage(optimisticMessage);
+
       final repo = ref.read(messagingRepositoryProvider);
       final sent = await repo.sendMessage({
-        'id': const Uuid().v7(),
+        'id': messageId,
         'conversation_id': conversationId,
         'sender_id': senderId,
         'sender_name': senderName,
@@ -101,6 +125,10 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
         if (referenceData != null) 'reference_data': referenceData,
         'read_by': [senderId],
       });
+      final delivered = sent.copyWith(
+        deliveryStatus: MessageDeliveryStatus.sent,
+      );
+      ref.read(messagingRealtimeProvider.notifier).addLocalMessage(delivered);
       _lastSentAt = DateTime.now();
       // Signal success so the input bar clears the field. Without this the
       // `isSuccess` flag stayed at its `false` default on the send path
@@ -110,9 +138,14 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
       // Return the persisted message so the input bar can optimistically
       // append it — the sender sees it immediately even when realtime is
       // gated off by rollout flags. The detail-screen merge dedupes by id.
-      return sent;
+      return delivered;
     } catch (e, st) {
       AppLogger.error('messaging', e, st);
+      if (optimisticMessageId != null) {
+        ref
+            .read(messagingRealtimeProvider.notifier)
+            .markLocalMessageFailed(optimisticMessageId);
+      }
       state = state.copyWith(error: 'errors.unknown'.tr());
       return null;
     }

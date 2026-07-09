@@ -8,6 +8,7 @@ HealthRecord _buildHealthRecord({
   String title = 'General check',
   String userId = 'user-1',
   String? birdId,
+  String? chickId,
   String? description,
   String? treatment,
   String? veterinarian,
@@ -26,6 +27,7 @@ HealthRecord _buildHealthRecord({
     title: title,
     userId: userId,
     birdId: birdId,
+    chickId: chickId,
     description: description,
     treatment: treatment,
     veterinarian: veterinarian,
@@ -50,6 +52,7 @@ void main() {
           title: 'Medication cycle',
           userId: 'user-42',
           birdId: 'bird-1',
+          chickId: 'chick-1',
           description: 'Respiratory issue',
           treatment: 'Antibiotic',
           veterinarian: 'Dr. Kaya',
@@ -70,6 +73,7 @@ void main() {
         expect(restored.title, record.title);
         expect(restored.userId, record.userId);
         expect(restored.birdId, record.birdId);
+        expect(restored.chickId, record.chickId);
         expect(restored.description, record.description);
         expect(restored.treatment, record.treatment);
         expect(restored.veterinarian, record.veterinarian);

@@ -85,21 +85,52 @@ class MessageBubble extends StatelessWidget {
                 ),
                 if (isMe) ...[
                   const SizedBox(width: AppSpacing.xs),
-                  Icon(
-                    message.readBy.length > 1
-                        ? LucideIcons.checkCheck
-                        : LucideIcons.check,
-                    size: 14,
-                    color: message.readBy.length > 1
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.outline,
-                  ),
+                  _buildDeliveryStatus(theme),
                 ],
               ],
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDeliveryStatus(ThemeData theme) {
+    if (message.isSending) {
+      return Icon(
+        LucideIcons.clock3,
+        size: 14,
+        color: theme.colorScheme.outline,
+      );
+    }
+
+    if (message.isFailed) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            LucideIcons.alertCircle,
+            size: 14,
+            color: theme.colorScheme.error,
+          ),
+          const SizedBox(width: AppSpacing.xs / 2),
+          Text(
+            'messaging.send_failed'.tr(),
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.error,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Icon(
+      message.readBy.length > 1 ? LucideIcons.checkCheck : LucideIcons.check,
+      size: 14,
+      color: message.readBy.length > 1
+          ? theme.colorScheme.primary
+          : theme.colorScheme.outline,
     );
   }
 

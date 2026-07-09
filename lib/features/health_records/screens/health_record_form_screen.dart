@@ -48,6 +48,7 @@ class _HealthRecordFormScreenState
   DateTime _date = DateTime.now();
   DateTime? _followUpDate;
   String? _birdId;
+  String? _chickId;
   bool _isEdit = false;
   bool _didPopulateFromExisting = false;
   HealthRecord? _existingRecord;
@@ -78,6 +79,7 @@ class _HealthRecordFormScreenState
     _type = record.type;
     _date = record.date;
     _birdId = record.birdId;
+    _chickId = record.chickId;
     _descriptionController.text = record.description ?? '';
     _treatmentController.text = record.treatment ?? '';
     _vetController.text = record.veterinarian ?? '';
@@ -210,6 +212,7 @@ class _HealthRecordFormScreenState
                       date: _date,
                       followUpDate: _followUpDate,
                       birdId: _birdId,
+                      chickId: _chickId,
                       birds: birdsAsync.value ?? [],
                       chicks: chicksAsync.value ?? [],
                       isAnimalsLoading:
@@ -220,6 +223,7 @@ class _HealthRecordFormScreenState
                       onFollowUpDateChanged: (d) =>
                           setState(() => _followUpDate = d),
                       onBirdChanged: (v) => setState(() => _birdId = v),
+                      onChickChanged: (v) => setState(() => _chickId = v),
                     ),
                     const SizedBox(height: AppSpacing.xxl),
 
@@ -263,6 +267,7 @@ class _HealthRecordFormScreenState
           type: _type,
           date: _date,
           birdId: _birdId,
+          chickId: _chickId,
           description: _descriptionController.text.isEmpty
               ? null
               : _descriptionController.text.trim(),
@@ -287,6 +292,7 @@ class _HealthRecordFormScreenState
         type: _type,
         date: _date,
         birdId: _birdId,
+        chickId: _chickId,
         description: _descriptionController.text.isEmpty
             ? null
             : _descriptionController.text.trim(),

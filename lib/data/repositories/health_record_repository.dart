@@ -1,6 +1,7 @@
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart';
+import 'package:budgie_breeding_tracker/data/local/database/daos/chicks_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/health_records_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
@@ -11,10 +12,10 @@ import 'package:uuid/uuid.dart';
 
 /// Repository for [HealthRecord] entities with offline-first sync support.
 ///
-/// Uses [ValidatedSyncMixin] to validate the optional `birdId` FK before
-/// pushing to Supabase. This matches the discipline applied to sibling
-/// repositories (chick, egg, event_reminder) and prevents FK constraint
-/// violations when a parent bird is deleted locally between record creation
+/// Uses [ValidatedSyncMixin] to validate the optional `birdId` and `chickId`
+/// FKs before pushing to Supabase. This matches the discipline applied to
+/// sibling repositories (chick, egg, event_reminder) and prevents FK constraint
+/// violations when a parent entity is deleted locally between record creation
 /// and the next sync cycle.
 class HealthRecordRepository extends BaseRepository<HealthRecord>
     with SyncableRepository<HealthRecord>, ValidatedSyncMixin<HealthRecord> {
@@ -22,6 +23,7 @@ class HealthRecordRepository extends BaseRepository<HealthRecord>
   final HealthRecordRemoteSource _remoteSource;
   final SyncMetadataDao _syncDao;
   final BirdsDao _birdsDao;
+  final ChicksDao _chicksDao;
 
   static const _uuid = Uuid();
 
@@ -30,10 +32,12 @@ class HealthRecordRepository extends BaseRepository<HealthRecord>
     required HealthRecordRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
     required BirdsDao birdsDao,
+    required ChicksDao chicksDao,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
        _syncDao = syncDao,
-       _birdsDao = birdsDao;
+       _birdsDao = birdsDao,
+       _chicksDao = chicksDao;
 
   static const _table = SupabaseConstants.healthRecordsTable;
 
@@ -91,6 +95,24 @@ class HealthRecordRepository extends BaseRepository<HealthRecord>
           (syncMeta.status == SyncStatus.pending ||
               syncMeta.status == SyncStatus.pendingDelete)) {
         return 'Bird ${record.birdId} not yet synced to server';
+      }
+    }
+    if (record.chickId != null) {
+      final chick = await _chicksDao.getByIdIncludingDeleted(record.chickId!);
+      if (chick == null) {
+        return 'Referenced chick ${record.chickId} not found locally';
+      }
+      if (chick.isDeleted) {
+        return 'Referenced chick ${record.chickId} pending tombstone sync';
+      }
+      final syncMeta = await _syncDao.getByRecord(
+        SupabaseConstants.chicksTable,
+        record.chickId!,
+      );
+      if (syncMeta != null &&
+          (syncMeta.status == SyncStatus.pending ||
+              syncMeta.status == SyncStatus.pendingDelete)) {
+        return 'Chick ${record.chickId} not yet synced to server';
       }
     }
     return null;
@@ -234,4 +256,14 @@ class HealthRecordRepository extends BaseRepository<HealthRecord>
   /// Latest health records for a bird.
   Future<List<HealthRecord>> getLatest(String birdId, {int limit = 5}) =>
       _localDao.getLatest(birdId, limit: limit);
+
+  /// Health records for a specific chick (live stream).
+  Stream<List<HealthRecord>> watchByChick(String chickId) =>
+      _localDao.watchByChick(chickId);
+
+  /// Latest health records for a chick.
+  Future<List<HealthRecord>> getLatestForChick(
+    String chickId, {
+    int limit = 5,
+  }) => _localDao.getLatestForChick(chickId, limit: limit);
 }

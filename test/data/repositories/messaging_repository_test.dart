@@ -11,6 +11,7 @@ import 'package:budgie_breeding_tracker/data/models/conversation_participant_mod
 import 'package:budgie_breeding_tracker/data/models/message_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/conversation_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/message_remote_source.dart';
+import 'package:budgie_breeding_tracker/data/remote/storage/storage_url_resolver.dart';
 import 'package:budgie_breeding_tracker/data/repositories/messaging_repository.dart';
 
 import '../../helpers/fake_supabase.dart';
@@ -26,6 +27,8 @@ class MockPostgrestFilterBuilder extends Mock
     implements PostgrestFilterBuilder {}
 
 class MockRealtimeChannel extends Mock implements RealtimeChannel {}
+
+class MockStorageUrlResolver extends Mock implements StorageUrlResolver {}
 
 // ── Test Data Helpers ──
 
@@ -58,6 +61,7 @@ Map<String, dynamic> _makeMessageRow({
   String senderName = 'TestUser',
   String? content = 'Hello',
   String messageType = 'text',
+  String? imageUrl,
 }) => {
   'id': id,
   'conversation_id': conversationId,
@@ -66,7 +70,7 @@ Map<String, dynamic> _makeMessageRow({
   'sender_avatar_url': null,
   'content': content,
   'message_type': messageType,
-  'image_url': null,
+  'image_url': imageUrl,
   'reference_id': null,
   'reference_data': <String, dynamic>{},
   'read_by': <String>[],
@@ -397,6 +401,42 @@ void main() {
       final result = await repository.getMessages('conv-1');
 
       expect(result, isEmpty);
+    });
+
+    test('resolves signed URLs for image messages', () async {
+      const staleUrl =
+          'https://project.supabase.co/storage/v1/object/sign/'
+          'message-photos/u1/conv-1/photo.jpg?token=old';
+      final resolver = MockStorageUrlResolver();
+      when(() => resolver.resolve(staleUrl)).thenAnswer(
+        (_) async => 'https://project.supabase.co/fresh-message-photo',
+      );
+      final repository = MessagingRepository(
+        conversationSource: conversationSource,
+        messageSource: messageSource,
+        client: client,
+        storageUrlResolver: resolver,
+      );
+      when(
+        () => messageSource.fetchMessages('conv-1', limit: 50, before: null),
+      ).thenAnswer(
+        (_) async => [
+          _makeMessageRow(
+            id: 'm1',
+            messageType: 'image',
+            content: null,
+            imageUrl: staleUrl,
+          ),
+        ],
+      );
+
+      final result = await repository.getMessages('conv-1');
+
+      expect(
+        result.single.imageUrl,
+        'https://project.supabase.co/fresh-message-photo',
+      );
+      verify(() => resolver.resolve(staleUrl)).called(1);
     });
   });
 

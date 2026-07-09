@@ -40,6 +40,22 @@ void main() {
       expect(find.byType(ChartEmpty), findsNothing);
     });
 
+    testWidgets('renders low-data table instead of PieChart below 3 birds', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
+        buildSubject(maleCount: 1, femaleCount: 1),
+        settle: false,
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.byType(ChartLowData), findsOneWidget);
+      expect(find.byType(Table), findsOneWidget);
+      expect(find.byType(PieChart), findsNothing);
+      expect(find.byType(ChartEmpty), findsNothing);
+    });
+
     testWidgets('renders PieChart when female count provided', (tester) async {
       await pumpLocalizedApp(
         tester,
@@ -60,17 +76,18 @@ void main() {
       expect(find.byType(PieChart), findsOneWidget);
     });
 
-    testWidgets('renders without crashing when only unknown count', (
-      tester,
-    ) async {
-      await pumpLocalizedApp(
-        tester,
-        buildSubject(unknownCount: 2),
-        settle: false,
-      );
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(find.byType(PieChart), findsOneWidget);
-    });
+    testWidgets(
+      'renders without crashing when only unknown count is sufficient',
+      (tester) async {
+        await pumpLocalizedApp(
+          tester,
+          buildSubject(unknownCount: 3),
+          settle: false,
+        );
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.byType(PieChart), findsOneWidget);
+      },
+    );
 
     testWidgets('shows legend items when data present', (tester) async {
       await pumpLocalizedApp(

@@ -16,6 +16,7 @@ void main() {
         title: 'Annual vaccine',
         userId: 'u1',
         birdId: 'b1',
+        chickId: 'c1',
         description: 'Routine vaccination',
         treatment: 'Vaccine X',
         veterinarian: 'Dr. Smith',
@@ -33,6 +34,7 @@ void main() {
       expect(model.title, 'Annual vaccine');
       expect(model.userId, 'u1');
       expect(model.birdId, 'b1');
+      expect(model.chickId, 'c1');
       expect(model.description, 'Routine vaccination');
       expect(model.treatment, 'Vaccine X');
       expect(model.veterinarian, 'Dr. Smith');
@@ -52,6 +54,7 @@ void main() {
       final model = row.toModel();
 
       expect(model.birdId, isNull);
+      expect(model.chickId, isNull);
       expect(model.description, isNull);
       expect(model.treatment, isNull);
       expect(model.weight, isNull);
@@ -69,6 +72,7 @@ void main() {
         title: 'Sick bird',
         userId: 'u1',
         birdId: 'b1',
+        chickId: 'c1',
         weight: 30.0,
       );
       final companion = model.toCompanion();
@@ -79,6 +83,7 @@ void main() {
       expect(companion.title.value, 'Sick bird');
       expect(companion.userId.value, 'u1');
       expect(companion.birdId.value, 'b1');
+      expect(companion.chickId.value, 'c1');
       expect(companion.weight.value, 30.0);
     });
 

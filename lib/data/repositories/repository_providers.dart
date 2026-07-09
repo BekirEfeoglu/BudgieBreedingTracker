@@ -87,6 +87,7 @@ final healthRecordRepositoryProvider = Provider<HealthRecordRepository>((ref) {
     remoteSource: ref.watch(healthRecordRemoteSourceProvider),
     syncDao: ref.watch(syncMetadataDaoProvider),
     birdsDao: ref.watch(birdsDaoProvider),
+    chicksDao: ref.watch(chicksDaoProvider),
   );
 });
 
@@ -243,6 +244,8 @@ final messagingRepositoryProvider = Provider<MessagingRepository>((ref) {
     conversationSource: ref.watch(conversationRemoteSourceProvider),
     messageSource: ref.watch(messageRemoteSourceProvider),
     client: ref.watch(supabaseClientProvider),
+    storageService: ref.watch(storageServiceProvider),
+    storageUrlResolver: ref.watch(storageUrlResolverProvider),
   );
 });
 

@@ -24,6 +24,13 @@ abstract class Message with _$Message {
     String? referenceId,
     @Default({}) Map<String, dynamic> referenceData,
     @Default([]) List<String> readBy,
+    @Default(MessageDeliveryStatus.sent)
+    @JsonKey(
+      includeFromJson: false,
+      includeToJson: false,
+      unknownEnumValue: MessageDeliveryStatus.unknown,
+    )
+    MessageDeliveryStatus deliveryStatus,
     @Default(false) bool isDeleted,
     DateTime? createdAt,
   }) = _Message;
@@ -37,5 +44,7 @@ extension MessageX on Message {
   bool get isImage => messageType == MessageType.image;
   bool get isBirdCard => messageType == MessageType.birdCard;
   bool get isListingCard => messageType == MessageType.listingCard;
+  bool get isSending => deliveryStatus == MessageDeliveryStatus.sending;
+  bool get isFailed => deliveryStatus == MessageDeliveryStatus.failed;
   bool isReadBy(String userId) => readBy.contains(userId);
 }

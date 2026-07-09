@@ -26,10 +26,12 @@ class CommunityUserHeader extends StatelessWidget {
   final bool isEdited;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
+  final VoidCallback? onTogglePin;
   final VoidCallback? onReport;
   final VoidCallback? onBlock;
   final VoidCallback? onMuteToggle;
   final bool isMutedAuthor;
+  final bool isPinned;
   final VoidCallback? onFollowToggle;
   final VoidCallback? onSendMessage;
   final CommunityPostType? postType;
@@ -48,10 +50,12 @@ class CommunityUserHeader extends StatelessWidget {
     this.isEdited = false,
     this.onEdit,
     this.onDelete,
+    this.onTogglePin,
     this.onReport,
     this.onBlock,
     this.onMuteToggle,
     this.isMutedAuthor = false,
+    this.isPinned = false,
     this.onFollowToggle,
     this.onSendMessage,
     this.postType,
@@ -66,6 +70,7 @@ class CommunityUserHeader extends StatelessWidget {
         postType != CommunityPostType.unknown;
     final hasMenu =
         isOwnPost ||
+        onTogglePin != null ||
         onReport != null ||
         onBlock != null ||
         onMuteToggle != null ||
@@ -292,6 +297,7 @@ class CommunityUserHeader extends StatelessWidget {
                             AppHaptics.heavyImpact();
                             onDelete?.call();
                           }
+                          if (value == 'pin') onTogglePin?.call();
                           if (value == 'message') onSendMessage?.call();
                           if (value == 'report') onReport?.call();
                           if (value == 'mute') onMuteToggle?.call();
@@ -312,6 +318,15 @@ class CommunityUserHeader extends StatelessWidget {
                             PopupMenuItem(
                               value: 'delete',
                               child: Text('community.delete_post'.tr()),
+                            ),
+                          if (onTogglePin != null)
+                            PopupMenuItem(
+                              value: 'pin',
+                              child: Text(
+                                isPinned
+                                    ? 'community.unpin_post'.tr()
+                                    : 'community.pin_post'.tr(),
+                              ),
                             ),
                           if (!isOwnPost && onReport != null)
                             PopupMenuItem(

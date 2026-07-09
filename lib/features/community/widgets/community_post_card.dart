@@ -13,6 +13,7 @@ import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../../../data/models/community_post_model.dart';
 import '../../../data/models/profile_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
+import '../../../data/providers/user_role_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../router/route_names.dart';
 import 'package:budgie_breeding_tracker/shared/providers/messaging.dart';
@@ -56,6 +57,7 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
     final theme = Theme.of(context);
     final currentUserId = ref.watch(currentUserIdProvider);
     final isOwnPost = post.userId == currentUserId;
+    final isAdmin = ref.watch(isAdminProvider).value ?? false;
     final isGuide = post.postType == CommunityPostType.guide;
     final mutedUserIds = ref.watch(mutedUsersProvider);
     final isMutedAuthor = mutedUserIds.contains(post.userId);
@@ -67,7 +69,8 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
             const Duration(minutes: 5);
 
     final profile = isOwnPost ? ref.watch(userProfileProvider).value : null;
-    final displayUsername = isOwnPost && profile != null && profile.resolvedDisplayName.isNotEmpty
+    final displayUsername =
+        isOwnPost && profile != null && profile.resolvedDisplayName.isNotEmpty
         ? profile.resolvedDisplayName
         : post.username;
     final displayAvatarUrl = isOwnPost && profile != null
@@ -83,6 +86,7 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
       isOwnPost: isOwnPost,
       onEdit: canEditPost ? _handleEdit : null,
       onDelete: isOwnPost ? _handleDelete : null,
+      onTogglePin: isAdmin ? _handleTogglePin : null,
       onReport: isOwnPost ? null : _handleReport,
       onBlock: isOwnPost ? null : _handleBlock,
       onMuteToggle: isOwnPost ? null : _handleMuteToggle,
@@ -155,6 +159,23 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(errorKey.tr())));
+    }
+  }
+
+  Future<void> _handleTogglePin() async {
+    final nextPinned = !post.isPinned;
+    final ok = await ref
+        .read(postPinToggleProvider.notifier)
+        .togglePin(post.id, isPinned: nextPinned);
+    if (!mounted) return;
+    if (ok) {
+      ActionFeedbackService.show(
+        (nextPinned ? 'community.post_pinned' : 'community.post_unpinned').tr(),
+      );
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('community.pin_error'.tr())));
     }
   }
 

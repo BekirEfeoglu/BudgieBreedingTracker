@@ -26,6 +26,8 @@ class StorageService {
   static const String _avatarsBucket = SupabaseConstants.avatarsBucket;
   static const String _communityPhotosBucket =
       SupabaseConstants.communityPhotosBucket;
+  static const String _messagePhotosBucket =
+      SupabaseConstants.messagePhotosBucket;
 
   /// Allowed image file extensions for upload.
   static const _allowedExtensions = {
@@ -50,6 +52,7 @@ class StorageService {
     SupabaseConstants.eggPhotosBucket,
     SupabaseConstants.chickPhotosBucket,
     SupabaseConstants.marketplacePhotosBucket,
+    SupabaseConstants.messagePhotosBucket,
   };
 
   const StorageService(
@@ -221,6 +224,27 @@ class StorageService {
       throw const StorageException('Community photo upload returned no URL');
     }
     return signedUrl;
+  }
+
+  /// Uploads a direct-message photo and returns a signed URL.
+  ///
+  /// File is stored at:
+  /// `message-photos/{userId}/{conversationId}/{timestamp}.{ext}`.
+  Future<String> uploadMessagePhoto({
+    required String userId,
+    required String conversationId,
+    required XFile file,
+  }) async {
+    _sanitizePath(userId);
+    _sanitizePath(conversationId);
+    final ext = StorageUtils.safeExtension(file.name);
+    if (ext == null) {
+      throw const StorageException('File has no valid extension');
+    }
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final path = '$userId/$conversationId/$timestamp.$ext';
+
+    return _uploadFile(bucket: _messagePhotosBucket, path: path, file: file);
   }
 
   /// Deletes a community post photo by its storage path.
@@ -422,6 +446,7 @@ class StorageService {
       SupabaseConstants.chickPhotosBucket,
       SupabaseConstants.backupsBucket,
       _communityPhotosBucket,
+      _messagePhotosBucket,
     ];
     final cleanupTargets = [
       for (final bucket in buckets) MapEntry(bucket, userId),

@@ -31,6 +31,7 @@ class CommunityPostCardBody extends StatelessWidget {
     required this.isOwnPost,
     required this.onEdit,
     required this.onDelete,
+    this.onTogglePin,
     required this.onReport,
     required this.onBlock,
     this.onMuteToggle,
@@ -49,6 +50,7 @@ class CommunityPostCardBody extends StatelessWidget {
   final bool isOwnPost;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
+  final VoidCallback? onTogglePin;
   final VoidCallback? onReport;
   final VoidCallback? onBlock;
   final VoidCallback? onMuteToggle;
@@ -99,6 +101,8 @@ class CommunityPostCardBody extends StatelessWidget {
                 isEdited: post.isEdited,
                 onEdit: onEdit,
                 onDelete: onDelete,
+                onTogglePin: onTogglePin,
+                isPinned: post.isPinned,
                 onReport: onReport,
                 onBlock: onBlock,
                 onMuteToggle: onMuteToggle,
@@ -110,7 +114,8 @@ class CommunityPostCardBody extends StatelessWidget {
               if (isGuide) ...[
                 const SizedBox(height: AppSpacing.md),
                 _GuideLeadBlock(post: post),
-              ] else if (post.postType != CommunityPostType.general ||
+              ] else if (post.isPinned ||
+                  post.postType != CommunityPostType.general ||
                   post.title != null) ...[
                 const SizedBox(height: AppSpacing.md),
                 Wrap(

@@ -27,4 +27,15 @@ class HealthRecordRemoteSource extends BaseRemoteSource<HealthRecord> {
         .order(SupabaseConstants.colDate, ascending: false);
     return response.map((json) => fromJson(json)).toList();
   }
+
+  /// Fetches health records for a specific chick.
+  Future<List<HealthRecord>> fetchByChick(String userId, String chickId) async {
+    final response = await table
+        .select()
+        .eq(SupabaseConstants.colUserId, userId)
+        .eq(SupabaseConstants.colChickId, chickId)
+        .eq(SupabaseConstants.colIsDeleted, false)
+        .order(SupabaseConstants.colDate, ascending: false);
+    return response.map((json) => fromJson(json)).toList();
+  }
 }

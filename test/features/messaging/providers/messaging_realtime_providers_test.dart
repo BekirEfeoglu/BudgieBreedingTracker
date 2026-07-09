@@ -4,6 +4,7 @@ library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:budgie_breeding_tracker/core/enums/messaging_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/message_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/messaging_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
@@ -46,6 +47,53 @@ void main() {
       expect(state.length, 1);
       expect(state.first.id, 'msg-1');
       expect(state.first.content, 'Hello');
+    });
+
+    test(
+      'addLocalMessage updates existing message instead of duplicating it',
+      () {
+        const sending = Message(
+          id: 'msg-1',
+          conversationId: 'conv-1',
+          senderId: 'user-1',
+          content: 'Hello',
+          deliveryStatus: MessageDeliveryStatus.sending,
+        );
+        const sent = Message(
+          id: 'msg-1',
+          conversationId: 'conv-1',
+          senderId: 'user-1',
+          content: 'Hello',
+          deliveryStatus: MessageDeliveryStatus.sent,
+          readBy: ['user-1'],
+        );
+
+        final notifier = container.read(messagingRealtimeProvider.notifier);
+        notifier.addLocalMessage(sending);
+        notifier.addLocalMessage(sent);
+
+        final state = container.read(messagingRealtimeProvider);
+        expect(state, hasLength(1));
+        expect(state.first.deliveryStatus, MessageDeliveryStatus.sent);
+        expect(state.first.readBy, ['user-1']);
+      },
+    );
+
+    test('markLocalMessageFailed updates an optimistic message by id', () {
+      const sending = Message(
+        id: 'msg-1',
+        conversationId: 'conv-1',
+        senderId: 'user-1',
+        content: 'Hello',
+        deliveryStatus: MessageDeliveryStatus.sending,
+      );
+
+      final notifier = container.read(messagingRealtimeProvider.notifier);
+      notifier.addLocalMessage(sending);
+      notifier.markLocalMessageFailed('msg-1');
+
+      final state = container.read(messagingRealtimeProvider);
+      expect(state.single.deliveryStatus, MessageDeliveryStatus.failed);
     });
 
     test('addLocalMessage prepends multiple messages in order', () {

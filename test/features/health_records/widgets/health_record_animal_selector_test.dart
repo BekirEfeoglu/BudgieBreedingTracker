@@ -33,11 +33,13 @@ void main() {
       await pumpTranslatedWidget(
         tester,
         HealthRecordAnimalSelector(
-          selectedId: null,
+          selectedBirdId: null,
+          selectedChickId: null,
           birds: const [],
           chicks: const [],
           isLoading: true,
-          onChanged: (_) {},
+          onBirdChanged: (_) {},
+          onChickChanged: (_) {},
         ),
         settle: false,
       );
@@ -51,11 +53,13 @@ void main() {
       await pumpTranslatedWidget(
         tester,
         HealthRecordAnimalSelector(
-          selectedId: null,
+          selectedBirdId: null,
+          selectedChickId: null,
           birds: const [],
           chicks: const [],
           isLoading: false,
-          onChanged: (_) {},
+          onBirdChanged: (_) {},
+          onChickChanged: (_) {},
         ),
         settle: false,
       );
@@ -72,11 +76,13 @@ void main() {
       await pumpTranslatedWidget(
         tester,
         HealthRecordAnimalSelector(
-          selectedId: null,
+          selectedBirdId: null,
+          selectedChickId: null,
           birds: [_testBird1],
           chicks: const [],
           isLoading: true,
-          onChanged: (_) {},
+          onBirdChanged: (_) {},
+          onChickChanged: (_) {},
         ),
         settle: false,
       );
@@ -92,11 +98,13 @@ void main() {
       await pumpTranslatedWidget(
         tester,
         HealthRecordAnimalSelector(
-          selectedId: null,
+          selectedBirdId: null,
+          selectedChickId: null,
           birds: const [],
           chicks: const [],
           isLoading: false,
-          onChanged: (_) {},
+          onBirdChanged: (_) {},
+          onChickChanged: (_) {},
         ),
         settle: false,
       );
@@ -111,11 +119,13 @@ void main() {
       await pumpTranslatedWidget(
         tester,
         HealthRecordAnimalSelector(
-          selectedId: null,
+          selectedBirdId: null,
+          selectedChickId: null,
           birds: [_testBird1, _testBird2],
           chicks: const [],
           isLoading: false,
-          onChanged: (_) {},
+          onBirdChanged: (_) {},
+          onChickChanged: (_) {},
         ),
         settle: false,
       );
@@ -130,11 +140,13 @@ void main() {
       await pumpTranslatedWidget(
         tester,
         HealthRecordAnimalSelector(
-          selectedId: null,
+          selectedBirdId: null,
+          selectedChickId: null,
           birds: const [],
           chicks: [_testChick],
           isLoading: false,
-          onChanged: (_) {},
+          onBirdChanged: (_) {},
+          onChickChanged: (_) {},
         ),
         settle: false,
       );
@@ -146,16 +158,19 @@ void main() {
     });
 
     testWidgets('calls onChanged when value selected', (tester) async {
-      String? changedValue;
+      String? changedBirdId;
+      String? changedChickId;
 
       await pumpTranslatedWidget(
         tester,
         HealthRecordAnimalSelector(
-          selectedId: null,
+          selectedBirdId: null,
+          selectedChickId: null,
           birds: [_testBird1],
           chicks: [_testChick],
           isLoading: false,
-          onChanged: (value) => changedValue = value,
+          onBirdChanged: (value) => changedBirdId = value,
+          onChickChanged: (value) => changedChickId = value,
         ),
         settle: false,
       );
@@ -167,7 +182,41 @@ void main() {
       await tester.tap(find.text('Tweety').last);
       await tester.pumpAndSettle();
 
-      expect(changedValue, 'bird-1');
+      expect(changedBirdId, 'bird-1');
+      expect(changedChickId, isNull);
+    });
+
+    testWidgets('calls chick callback and clears bird when chick selected', (
+      tester,
+    ) async {
+      String? changedBirdId = 'bird-1';
+      String? changedChickId;
+
+      await pumpTranslatedWidget(
+        tester,
+        HealthRecordAnimalSelector(
+          selectedBirdId: 'bird-1',
+          selectedChickId: null,
+          birds: [_testBird1],
+          chicks: [_testChick],
+          isLoading: false,
+          onBirdChanged: (value) => changedBirdId = value,
+          onChickChanged: (value) => changedChickId = value,
+        ),
+        settle: false,
+      );
+
+      await tester.tap(
+        find.byWidgetPredicate((w) => w is DropdownButtonFormField<String>),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text('${resolvedL10n('chicks.chick_label')} #chick-').last,
+      );
+      await tester.pumpAndSettle();
+
+      expect(changedBirdId, isNull);
+      expect(changedChickId, 'chick-1');
     });
   });
 }

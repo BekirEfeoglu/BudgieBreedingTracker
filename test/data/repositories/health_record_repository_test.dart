@@ -18,6 +18,7 @@ HealthRecord _sampleHealthRecord({
   String id = 'health-1',
   String userId = 'user-1',
   String? birdId,
+  String? chickId,
 }) {
   return HealthRecord(
     id: id,
@@ -26,6 +27,7 @@ HealthRecord _sampleHealthRecord({
     title: 'Checkup',
     userId: userId,
     birdId: birdId,
+    chickId: chickId,
   );
 }
 
@@ -34,6 +36,7 @@ void main() {
   late MockHealthRecordRemoteSource remoteSource;
   late MockSyncMetadataDao syncDao;
   late MockBirdsDao birdsDao;
+  late MockChicksDao chicksDao;
   late HealthRecordRepository repository;
 
   const userId = 'user-1';
@@ -49,12 +52,14 @@ void main() {
     remoteSource = MockHealthRecordRemoteSource();
     syncDao = MockSyncMetadataDao();
     birdsDao = MockBirdsDao();
+    chicksDao = MockChicksDao();
 
     repository = HealthRecordRepository(
       localDao: localDao,
       remoteSource: remoteSource,
       syncDao: syncDao,
       birdsDao: birdsDao,
+      chicksDao: chicksDao,
     );
 
     when(() => localDao.insertItem(any())).thenAnswer((_) async {});
@@ -78,9 +83,7 @@ void main() {
     when(() => syncDao.insertItem(any())).thenAnswer((_) async {});
     when(() => syncDao.insertAll(any())).thenAnswer((_) async {});
     when(() => syncDao.deleteByRecord(any(), any())).thenAnswer((_) async {});
-    when(
-      () => syncDao.deleteByRecords(any(), any()),
-    ).thenAnswer((_) async {});
+    when(() => syncDao.deleteByRecords(any(), any())).thenAnswer((_) async {});
     when(
       () => syncDao.getPendingByTable(any(), any()),
     ).thenAnswer((_) async => []);
@@ -102,6 +105,11 @@ void main() {
           birdsDao.getById(invocation.positionalArguments.first as String),
     );
     when(() => birdsDao.getById(any())).thenAnswer((_) async => null);
+    when(() => chicksDao.getByIdIncludingDeleted(any())).thenAnswer(
+      (invocation) =>
+          chicksDao.getById(invocation.positionalArguments.first as String),
+    );
+    when(() => chicksDao.getById(any())).thenAnswer((_) async => null);
   });
 
   group('HealthRecordRepository', () {
@@ -144,8 +152,9 @@ void main() {
 
         await repository.pushAll(userId);
 
-        final captured =
-            verify(() => remoteSource.upsertAll(captureAny())).captured;
+        final captured = verify(
+          () => remoteSource.upsertAll(captureAny()),
+        ).captured;
         expect((captured.single as List), [record]);
       },
     );
@@ -172,6 +181,38 @@ void main() {
         when(() => localDao.getById(record.id)).thenAnswer((_) async => record);
         when(
           () => birdsDao.getById('missing-bird'),
+        ).thenAnswer((_) async => null);
+
+        final stats = await repository.pushAll(userId);
+
+        verifyNever(() => remoteSource.upsert(any()));
+        expect(stats.pushed, 0);
+        expect(stats.orphansCleaned, 1);
+      },
+    );
+
+    test(
+      'pushAll skips record when referenced chick is not found locally',
+      () async {
+        final record = _sampleHealthRecord(
+          id: 'health-1',
+          userId: userId,
+          chickId: 'missing-chick',
+        );
+        final pending = TestFixtures.sampleSyncMetadata(
+          table: SupabaseConstants.healthRecordsTable,
+          userId: userId,
+          recordId: record.id,
+        );
+        when(
+          () => syncDao.getPendingByTable(
+            userId,
+            SupabaseConstants.healthRecordsTable,
+          ),
+        ).thenAnswer((_) async => [pending]);
+        when(() => localDao.getById(record.id)).thenAnswer((_) async => record);
+        when(
+          () => chicksDao.getById('missing-chick'),
         ).thenAnswer((_) async => null);
 
         final stats = await repository.pushAll(userId);

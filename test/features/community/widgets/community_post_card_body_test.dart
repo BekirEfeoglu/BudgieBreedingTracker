@@ -10,6 +10,7 @@ CommunityPost _post({
   String content = 'Hello budgies',
   String? title,
   List<String> imageUrls = const [],
+  bool isPinned = false,
 }) => CommunityPost(
   id: 'p1',
   userId: 'u1',
@@ -26,6 +27,7 @@ CommunityPost _post({
   imageUrls: imageUrls,
   mutationTags: const [],
   tags: const [],
+  isPinned: isPinned,
 );
 
 void main() {
@@ -77,6 +79,32 @@ void main() {
       );
       // Guide lead block shows the guide tab label
       expect(find.textContaining('Guide', findRichText: true), findsWidgets);
+    });
+
+    testWidgets('renders pinned badge for general post without title', (
+      tester,
+    ) async {
+      await pumpWidgetSimple(
+        tester,
+        CommunityPostCardBody(
+          post: _post(isPinned: true),
+          authorName: 'alice',
+          authorAvatarUrl: null,
+          showFullContent: false,
+          maxContentLines: 3,
+          isOwnPost: false,
+          onEdit: null,
+          onDelete: null,
+          onReport: () {},
+          onBlock: () {},
+          onSendMessage: () {},
+          onFollowToggle: () {},
+          onDoubleTapMedia: () {},
+          onOpenImage: (_) {},
+        ),
+      );
+
+      expect(find.text('community.pinned'), findsOneWidget);
     });
   });
 }

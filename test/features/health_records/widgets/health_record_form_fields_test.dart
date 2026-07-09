@@ -40,6 +40,7 @@ void main() {
     DateTime? date,
     DateTime? followUpDate,
     String? birdId,
+    String? chickId,
     ValueChanged<HealthRecordType>? onTypeChanged,
   }) {
     return HealthRecordFormFields(
@@ -54,6 +55,7 @@ void main() {
       date: date ?? DateTime(2025, 1, 15),
       followUpDate: followUpDate,
       birdId: birdId,
+      chickId: chickId,
       birds: const [],
       chicks: const [],
       isAnimalsLoading: false,
@@ -62,6 +64,7 @@ void main() {
       onDateChanged: (_) {},
       onFollowUpDateChanged: (_) {},
       onBirdChanged: (_) {},
+      onChickChanged: (_) {},
     );
   }
 

@@ -143,6 +143,14 @@ Future<void> _createPerformanceIndexes(AppDatabase db) async {
     'ON health_records (bird_id, is_deleted)',
   );
   await db.customStatement(
+    'CREATE INDEX IF NOT EXISTS idx_health_records_chick '
+    'ON health_records (chick_id)',
+  );
+  await db.customStatement(
+    'CREATE INDEX IF NOT EXISTS idx_health_records_chick_deleted '
+    'ON health_records (chick_id, is_deleted)',
+  );
+  await db.customStatement(
     'CREATE INDEX IF NOT EXISTS idx_growth_measurements_chick '
     'ON growth_measurements (chick_id)',
   );

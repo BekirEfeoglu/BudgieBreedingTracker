@@ -108,12 +108,36 @@ class HealthRecordsDao extends DatabaseAccessor<AppDatabase>
         .map((rows) => rows.map((r) => r.toModel()).toList());
   }
 
+  /// Watches non-deleted health records for a specific chick.
+  Stream<List<HealthRecord>> watchByChick(String chickId) {
+    return (select(healthRecordsTable)
+          ..where((t) => t.chickId.equals(chickId) & t.isDeleted.equals(false)))
+        .watch()
+        .map((rows) => rows.map((r) => r.toModel()).toList());
+  }
+
   /// Gets the latest health records for a specific bird, ordered by date descending.
   Future<List<HealthRecord>> getLatest(String birdId, {int limit = 5}) async {
     final rows =
         await (select(healthRecordsTable)
               ..where(
                 (t) => t.birdId.equals(birdId) & t.isDeleted.equals(false),
+              )
+              ..orderBy([(t) => OrderingTerm.desc(t.date)])
+              ..limit(limit))
+            .get();
+    return rows.map((r) => r.toModel()).toList();
+  }
+
+  /// Gets the latest health records for a specific chick, ordered by date descending.
+  Future<List<HealthRecord>> getLatestForChick(
+    String chickId, {
+    int limit = 5,
+  }) async {
+    final rows =
+        await (select(healthRecordsTable)
+              ..where(
+                (t) => t.chickId.equals(chickId) & t.isDeleted.equals(false),
               )
               ..orderBy([(t) => OrderingTerm.desc(t.date)])
               ..limit(limit))
@@ -194,10 +218,7 @@ class HealthRecordsDao extends DatabaseAccessor<AppDatabase>
     return query.watch().map((rows) {
       if (rows.isEmpty) return null;
       final row = rows.single;
-      return (
-        birdId: row.read<String>('bird_id'),
-        count: row.read<int>('cnt'),
-      );
+      return (birdId: row.read<String>('bird_id'), count: row.read<int>('cnt'));
     });
   }
 

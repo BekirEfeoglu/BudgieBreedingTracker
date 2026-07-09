@@ -19,6 +19,7 @@ void main() {
     HealthRecordType type = HealthRecordType.checkup,
     String title = 'Annual Check',
     String? birdId = 'bird-1',
+    String? chickId,
     bool isDeleted = false,
   }) {
     return HealthRecord(
@@ -29,6 +30,7 @@ void main() {
       title: title,
       userId: user,
       birdId: birdId,
+      chickId: chickId,
       isDeleted: isDeleted,
       createdAt: DateTime(2024, 1, 1),
       updatedAt: DateTime(2024, 1, 1),
@@ -43,6 +45,13 @@ void main() {
     );
   }
 
+  Future<void> insertChick(String id) async {
+    await db.customStatement(
+      'INSERT OR IGNORE INTO chicks (id, user_id, gender, health_status, is_deleted) '
+      "VALUES ('$id', 'user-1', 'unknown', 'healthy', 0)",
+    );
+  }
+
   setUp(() async {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     dao = db.healthRecordsDao;
@@ -50,6 +59,9 @@ void main() {
     await insertBird('bird-1');
     await insertBird('bird-2');
     await insertBird('bird-99');
+    await insertChick('chick-1');
+    await insertChick('chick-2');
+    await insertChick('chick-99');
   });
 
   tearDown(() async {
@@ -174,6 +186,17 @@ void main() {
       final result = await dao.getById('hr-1');
       expect(result, isNotNull);
       expect(result!.title, equals('Annual Check'));
+    });
+
+    test('persists optional chickId', () async {
+      await dao.insertItem(
+        makeEntry(id: 'hr-1', birdId: null, chickId: 'chick-1'),
+      );
+
+      final result = await dao.getById('hr-1');
+      expect(result, isNotNull);
+      expect(result!.birdId, isNull);
+      expect(result.chickId, equals('chick-1'));
     });
 
     test('upserts on conflict (updates existing)', () async {
@@ -386,6 +409,41 @@ void main() {
     );
   });
 
+  group('watchByChick', () {
+    test('returns non-deleted records for the specified chick', () async {
+      await dao.insertItem(
+        makeEntry(id: 'hr-1', birdId: null, chickId: 'chick-1'),
+      );
+      await dao.insertItem(
+        makeEntry(id: 'hr-2', birdId: null, chickId: 'chick-1'),
+      );
+      await dao.insertItem(
+        makeEntry(id: 'hr-3', birdId: null, chickId: 'chick-2'),
+      );
+
+      final results = await dao.watchByChick('chick-1').first;
+      expect(results.length, equals(2));
+    });
+
+    test('excludes soft-deleted records', () async {
+      await dao.insertItem(
+        makeEntry(id: 'hr-1', birdId: null, chickId: 'chick-1'),
+      );
+      await dao.insertItem(
+        makeEntry(
+          id: 'hr-2',
+          birdId: null,
+          chickId: 'chick-1',
+          isDeleted: true,
+        ),
+      );
+
+      final results = await dao.watchByChick('chick-1').first;
+      expect(results.length, equals(1));
+      expect(results.first.id, equals('hr-1'));
+    });
+  });
+
   group('getLatest', () {
     test('returns records ordered by date descending', () async {
       await dao.insertItem(
@@ -469,15 +527,11 @@ void main() {
   // different calendar month/day than the literal suggests.
   group('watchBusiestMonth', () {
     test('returns the month with the most records', () async {
-      await dao.insertItem(
-        makeEntry(id: 'h1', date: DateTime.utc(2025, 1, 5)),
-      );
+      await dao.insertItem(makeEntry(id: 'h1', date: DateTime.utc(2025, 1, 5)));
       await dao.insertItem(
         makeEntry(id: 'h2', date: DateTime.utc(2025, 1, 20)),
       );
-      await dao.insertItem(
-        makeEntry(id: 'h3', date: DateTime.utc(2025, 2, 1)),
-      );
+      await dao.insertItem(makeEntry(id: 'h3', date: DateTime.utc(2025, 2, 1)));
 
       final result = await dao.watchBusiestMonth(userId).first;
 
@@ -486,12 +540,8 @@ void main() {
     });
 
     test('breaks ties by the smaller month', () async {
-      await dao.insertItem(
-        makeEntry(id: 'h1', date: DateTime.utc(2025, 1, 1)),
-      );
-      await dao.insertItem(
-        makeEntry(id: 'h2', date: DateTime.utc(2025, 2, 1)),
-      );
+      await dao.insertItem(makeEntry(id: 'h1', date: DateTime.utc(2025, 1, 1)));
+      await dao.insertItem(makeEntry(id: 'h2', date: DateTime.utc(2025, 2, 1)));
 
       final result = await dao.watchBusiestMonth(userId).first;
 
@@ -499,9 +549,7 @@ void main() {
     });
 
     test('excludes soft-deleted records', () async {
-      await dao.insertItem(
-        makeEntry(id: 'h1', date: DateTime.utc(2025, 1, 1)),
-      );
+      await dao.insertItem(makeEntry(id: 'h1', date: DateTime.utc(2025, 1, 1)));
       await dao.insertItem(
         makeEntry(id: 'h2', date: DateTime.utc(2025, 1, 1), isDeleted: true),
       );
@@ -566,9 +614,7 @@ void main() {
     });
 
     test('excludes records with no follow-up date', () async {
-      await dao.insertItem(
-        makeEntry(id: 'h1', date: DateTime.utc(2025, 1, 1)),
-      );
+      await dao.insertItem(makeEntry(id: 'h1', date: DateTime.utc(2025, 1, 1)));
 
       final result = await dao.watchAverageTreatmentDays(userId).first;
 

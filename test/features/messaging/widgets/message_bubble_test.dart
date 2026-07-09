@@ -132,6 +132,43 @@ void main() {
       expect(find.byIcon(LucideIcons.checkCheck), findsNothing);
     });
 
+    testWidgets('shows clock for sending own message', (tester) async {
+      const message = Message(
+        id: 'msg-sending',
+        conversationId: 'conv-1',
+        senderId: 'user-1',
+        content: 'Sending',
+        deliveryStatus: MessageDeliveryStatus.sending,
+      );
+
+      await pumpLocalizedWidget(
+        tester,
+        const MessageBubble(message: message, isMe: true),
+      );
+
+      expect(find.byIcon(LucideIcons.clock3), findsOneWidget);
+      expect(find.byIcon(LucideIcons.check), findsNothing);
+    });
+
+    testWidgets('shows failed status for failed own message', (tester) async {
+      const message = Message(
+        id: 'msg-failed',
+        conversationId: 'conv-1',
+        senderId: 'user-1',
+        content: 'Failed',
+        deliveryStatus: MessageDeliveryStatus.failed,
+      );
+
+      await pumpLocalizedWidget(
+        tester,
+        const MessageBubble(message: message, isMe: true),
+      );
+
+      expect(find.byIcon(LucideIcons.alertCircle), findsOneWidget);
+      expect(find.text(l10n('messaging.send_failed')), findsOneWidget);
+      expect(find.byIcon(LucideIcons.check), findsNothing);
+    });
+
     testWidgets('shows double check when read by others', (tester) async {
       final message = Message(
         id: 'msg-1',

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/enums/messaging_enums.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/models/message_model.dart';
 import '../../../data/repositories/repository_providers.dart';
@@ -71,7 +72,25 @@ class MessagingRealtimeNotifier extends Notifier<List<Message>> {
   }
 
   void addLocalMessage(Message message) {
-    state = [message, ...state];
+    final existingIndex = state.indexWhere((item) => item.id == message.id);
+    if (existingIndex == -1) {
+      state = [message, ...state];
+      return;
+    }
+
+    final updated = [...state];
+    updated[existingIndex] = message;
+    state = updated;
+  }
+
+  void markLocalMessageFailed(String messageId) {
+    state = [
+      for (final message in state)
+        if (message.id == messageId)
+          message.copyWith(deliveryStatus: MessageDeliveryStatus.failed)
+        else
+          message,
+    ];
   }
 
   void clear() {

@@ -25,6 +25,7 @@ class HealthRecordFormFields extends StatelessWidget {
   final DateTime date;
   final DateTime? followUpDate;
   final String? birdId;
+  final String? chickId;
   final List<Bird> birds;
   final List<Chick> chicks;
   final bool isAnimalsLoading;
@@ -33,6 +34,7 @@ class HealthRecordFormFields extends StatelessWidget {
   final ValueChanged<DateTime> onDateChanged;
   final ValueChanged<DateTime?> onFollowUpDateChanged;
   final ValueChanged<String?> onBirdChanged;
+  final ValueChanged<String?> onChickChanged;
 
   const HealthRecordFormFields({
     super.key,
@@ -47,6 +49,7 @@ class HealthRecordFormFields extends StatelessWidget {
     required this.date,
     required this.followUpDate,
     required this.birdId,
+    required this.chickId,
     required this.birds,
     required this.chicks,
     required this.isAnimalsLoading,
@@ -55,6 +58,7 @@ class HealthRecordFormFields extends StatelessWidget {
     required this.onDateChanged,
     required this.onFollowUpDateChanged,
     required this.onBirdChanged,
+    required this.onChickChanged,
   });
 
   @override
@@ -98,11 +102,13 @@ class HealthRecordFormFields extends StatelessWidget {
 
         // Bird / Chick selector
         HealthRecordAnimalSelector(
-          selectedId: birdId,
+          selectedBirdId: birdId,
+          selectedChickId: chickId,
           birds: birds,
           chicks: chicks,
           isLoading: isAnimalsLoading,
-          onChanged: onBirdChanged,
+          onBirdChanged: onBirdChanged,
+          onChickChanged: onChickChanged,
         ),
         const SizedBox(height: AppSpacing.lg),
 

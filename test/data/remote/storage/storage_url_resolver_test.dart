@@ -100,5 +100,25 @@ void main() {
 
       verify(() => fileApi.createSignedUrl(any(), any())).called(1);
     });
+
+    test('creates fresh signed URL for message photo URLs', () async {
+      const url =
+          'https://project.supabase.co/storage/v1/object/sign/'
+          'message-photos/user-1/conv-1/photo.jpg?token=old';
+
+      await expectLater(
+        resolver.resolve(url),
+        completion('https://project.supabase.co/fresh-signed-url'),
+      );
+      verify(
+        () => storage.from('message-photos'),
+      ).called(greaterThanOrEqualTo(1));
+      verify(
+        () => fileApi.createSignedUrl(
+          'user-1/conv-1/photo.jpg',
+          StorageUrlResolver.signedUrlExpirySeconds,
+        ),
+      ).called(1);
+    });
   });
 }

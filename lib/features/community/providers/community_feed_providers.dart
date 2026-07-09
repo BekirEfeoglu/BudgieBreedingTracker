@@ -90,7 +90,7 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
       if (!ref.mounted) return;
 
       state = FeedState(
-        posts: posts,
+        posts: _pinnedFirst(posts),
         isLoading: false,
         hasMore: posts.length >= _pageSize,
         cursor: posts.isNotEmpty ? posts.last.createdAt : null,
@@ -153,7 +153,7 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
       }
 
       state = state.copyWith(
-        posts: allPosts,
+        posts: _pinnedFirst(allPosts),
         isLoading: false,
         hasMore: newPosts.length >= _pageSize,
         cursor: nextCursor,
@@ -230,6 +230,22 @@ class CommunityFeedNotifier extends Notifier<FeedState> {
       return p.copyWith(content: content, editedAt: editedAt);
     }).toList();
     state = state.copyWith(posts: updated);
+  }
+
+  void applyPinState(String postId, {required bool isPinned}) {
+    final updated = state.posts.map((p) {
+      if (p.id != postId) return p;
+      return p.copyWith(isPinned: isPinned);
+    }).toList();
+    state = state.copyWith(posts: _pinnedFirst(updated));
+  }
+
+  List<CommunityPost> _pinnedFirst(List<CommunityPost> posts) {
+    if (posts.length < 2) return posts;
+    return [
+      ...posts.where((post) => post.isPinned),
+      ...posts.where((post) => !post.isPinned),
+    ];
   }
 
   bool _isSupabaseUnavailableError(Object error) {

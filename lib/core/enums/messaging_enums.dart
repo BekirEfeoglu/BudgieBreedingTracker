@@ -32,6 +32,8 @@ enum MessageType {
   }
 }
 
+enum MessageDeliveryStatus { sending, sent, failed, unknown }
+
 enum ParticipantRole {
   owner,
   admin,

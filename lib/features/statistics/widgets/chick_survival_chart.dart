@@ -5,6 +5,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_card.dart';
+import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_insufficient_data_table.dart';
 import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_legend_item.dart';
 
 /// Pie chart showing chick health status distribution (healthy/sick/deceased).
@@ -20,6 +21,29 @@ class ChickSurvivalChart extends StatelessWidget {
 
     if (total == 0) {
       return const ChartEmpty();
+    }
+
+    if (total < 3) {
+      return ChartInsufficientDataTable(
+        total: total,
+        entries: [
+          ChartInsufficientDataEntry(
+            label: 'statistics.survival_healthy'.tr(),
+            count: data.healthy,
+            color: AppColors.success,
+          ),
+          ChartInsufficientDataEntry(
+            label: 'statistics.survival_sick'.tr(),
+            count: data.sick,
+            color: AppColors.warning,
+          ),
+          ChartInsufficientDataEntry(
+            label: 'statistics.survival_deceased'.tr(),
+            count: data.deceased,
+            color: AppColors.error,
+          ),
+        ],
+      );
     }
 
     return Column(

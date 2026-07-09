@@ -156,9 +156,12 @@ class CommunityPostRepository {
     _cache?.invalidatePost(postId);
   }
 
-  Future<void> togglePin({required String postId, required bool isPinned}) async {
+  Future<void> togglePin({
+    required String postId,
+    required bool isPinned,
+  }) async {
     await _postSource.togglePin(postId, isPinned);
-    _cache?.invalidatePost(postId);
+    _cache?.invalidateAll();
   }
 
   Future<Map<String, dynamic>> checkPostAllowed(String contentHash) {

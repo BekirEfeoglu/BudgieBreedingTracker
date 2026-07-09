@@ -4,12 +4,14 @@ library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:budgie_breeding_tracker/core/enums/messaging_enums.dart';
 import 'package:budgie_breeding_tracker/data/repositories/messaging_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/message_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/moderation/content_moderation_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/moderation/moderation_providers.dart';
 import 'package:budgie_breeding_tracker/features/messaging/providers/messaging_form_providers.dart';
+import 'package:budgie_breeding_tracker/features/messaging/providers/messaging_realtime_providers.dart';
 
 class MockMessagingRepository extends Mock implements MessagingRepository {}
 
@@ -74,6 +76,61 @@ void main() {
       verify(() => mockModeration.checkText('Hello world')).called(1);
       verify(() => mockRepo.sendMessage(any())).called(1);
     });
+
+    test(
+      'adds optimistic sending message then marks it sent on success',
+      () async {
+        when(() => mockRepo.sendMessage(any())).thenAnswer(
+          (_) async => const Message(
+            id: 'client-msg-1',
+            conversationId: 'conv-1',
+            senderId: 'user-1',
+            senderName: 'Test',
+            content: 'Hello world',
+            readBy: ['user-1'],
+          ),
+        );
+
+        final sent = await container
+            .read(messagingFormStateProvider.notifier)
+            .sendMessage(
+              conversationId: 'conv-1',
+              senderId: 'user-1',
+              senderName: 'Test',
+              content: 'Hello world',
+              clientMessageId: 'client-msg-1',
+            );
+
+        final realtime = container.read(messagingRealtimeProvider);
+        expect(sent, isNotNull);
+        expect(realtime, hasLength(1));
+        expect(realtime.single.id, 'client-msg-1');
+        expect(realtime.single.deliveryStatus, MessageDeliveryStatus.sent);
+      },
+    );
+
+    test(
+      'marks optimistic message failed when repository send fails',
+      () async {
+        when(() => mockRepo.sendMessage(any())).thenThrow(Exception('offline'));
+
+        final sent = await container
+            .read(messagingFormStateProvider.notifier)
+            .sendMessage(
+              conversationId: 'conv-1',
+              senderId: 'user-1',
+              senderName: 'Test',
+              content: 'Hello world',
+              clientMessageId: 'client-msg-2',
+            );
+
+        final realtime = container.read(messagingRealtimeProvider);
+        expect(sent, isNull);
+        expect(realtime, hasLength(1));
+        expect(realtime.single.id, 'client-msg-2');
+        expect(realtime.single.deliveryStatus, MessageDeliveryStatus.failed);
+      },
+    );
 
     test('rejects message when moderation fails', () async {
       when(() => mockModeration.checkText(any())).thenAnswer(
@@ -248,7 +305,9 @@ void main() {
 
   test('clearError clears only the error field', () async {
     // Over-length content sets an error before any repo/moderation call.
-    await container.read(messagingFormStateProvider.notifier).sendMessage(
+    await container
+        .read(messagingFormStateProvider.notifier)
+        .sendMessage(
           conversationId: 'c1',
           senderId: 's1',
           senderName: 'S',

@@ -39,6 +39,22 @@ void main() {
       expect(find.byType(ChartEmpty), findsNothing);
     });
 
+    testWidgets('renders low-data table instead of PieChart below 3 chicks', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
+        buildSubject(const ChickSurvivalData(healthy: 1, sick: 1)),
+        settle: false,
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.byType(ChartLowData), findsOneWidget);
+      expect(find.byType(Table), findsOneWidget);
+      expect(find.byType(PieChart), findsNothing);
+      expect(find.byType(ChartEmpty), findsNothing);
+    });
+
     testWidgets('renders PieChart with all three status counts', (
       tester,
     ) async {

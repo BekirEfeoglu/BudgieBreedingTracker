@@ -187,6 +187,50 @@ void main() {
       expect(find.text(l10n('community.delete_post')), findsOneWidget);
     });
 
+    testWidgets('shows pin option in popup when pin callback exists', (
+      tester,
+    ) async {
+      var called = false;
+      await tester.pumpWidget(
+        wrap(
+          CommunityUserHeader(
+            userId: 'u1',
+            username: 'User',
+            createdAt: DateTime.now(),
+            onTogglePin: () => called = true,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(PopupMenuButton<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n('community.pin_post')));
+      await tester.pumpAndSettle();
+
+      expect(called, isTrue);
+    });
+
+    testWidgets('shows unpin label for pinned posts', (tester) async {
+      await tester.pumpWidget(
+        wrap(
+          CommunityUserHeader(
+            userId: 'u1',
+            username: 'User',
+            createdAt: DateTime.now(),
+            isPinned: true,
+            onTogglePin: () {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(PopupMenuButton<String>));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('community.unpin_post')), findsOneWidget);
+    });
+
     testWidgets('shows post type icon for non-general post types', (
       tester,
     ) async {

@@ -6,19 +6,26 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 
 class HealthRecordAnimalSelector extends StatelessWidget {
-  final String? selectedId;
+  final String? selectedBirdId;
+  final String? selectedChickId;
   final List<Bird> birds;
   final List<Chick> chicks;
   final bool isLoading;
-  final ValueChanged<String?> onChanged;
+  final ValueChanged<String?> onBirdChanged;
+  final ValueChanged<String?> onChickChanged;
+
+  static const _birdPrefix = 'bird:';
+  static const _chickPrefix = 'chick:';
 
   const HealthRecordAnimalSelector({
     super.key,
-    required this.selectedId,
+    required this.selectedBirdId,
+    required this.selectedChickId,
     required this.birds,
     required this.chicks,
     required this.isLoading,
-    required this.onChanged,
+    required this.onBirdChanged,
+    required this.onChickChanged,
   });
 
   @override
@@ -35,9 +42,28 @@ class HealthRecordAnimalSelector extends StatelessWidget {
             .where((c) => c.birdId == null) // Exclude promoted-to-bird chicks
             .toList()
           ..sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
+    final rawSelectedValue = selectedChickId != null
+        ? '$_chickPrefix$selectedChickId'
+        : selectedBirdId != null
+        ? '$_birdPrefix$selectedBirdId'
+        : null;
+    // The persisted target may no longer be among the dropdown items — a chick
+    // linked to a health record can later be promoted to a bird (filtered out
+    // above), or a linked bird can be hard-deleted. DropdownButtonFormField
+    // asserts the value matches exactly one item, so coerce an orphaned value
+    // to null (the record's real chickId/birdId is held in separate screen
+    // state and is preserved on save unless the user changes the selection).
+    final validValues = <String>{
+      for (final b in sortedBirds) '$_birdPrefix${b.id}',
+      for (final c in sortedChicks) '$_chickPrefix${c.id}',
+    };
+    final selectedValue =
+        (rawSelectedValue != null && validValues.contains(rawSelectedValue))
+        ? rawSelectedValue
+        : null;
 
     return DropdownButtonFormField<String>(
-      initialValue: selectedId,
+      initialValue: selectedValue,
       decoration: InputDecoration(
         labelText: 'health_records.select_animal'.tr(),
         border: const OutlineInputBorder(),
@@ -68,7 +94,7 @@ class HealthRecordAnimalSelector extends StatelessWidget {
           ),
           ...sortedBirds.map(
             (bird) => DropdownMenuItem<String>(
-              value: bird.id,
+              value: '$_birdPrefix${bird.id}',
               child: Text(
                 bird.ringNumber != null
                     ? '${bird.name} (${bird.ringNumber})'
@@ -97,7 +123,7 @@ class HealthRecordAnimalSelector extends StatelessWidget {
                 chick.name ??
                 '${'chicks.chick_label'.tr()} #${chick.ringNumber ?? chick.id.substring(0, 6)}';
             return DropdownMenuItem<String>(
-              value: chick.id,
+              value: '$_chickPrefix${chick.id}',
               child: Text(
                 chick.ringNumber != null && chick.name != null
                     ? '$name (${chick.ringNumber})'
@@ -107,8 +133,25 @@ class HealthRecordAnimalSelector extends StatelessWidget {
           }),
         ],
       ],
-      onChanged: onChanged,
+      onChanged: _handleChanged,
       isExpanded: true,
     );
+  }
+
+  void _handleChanged(String? value) {
+    if (value == null) {
+      onBirdChanged(null);
+      onChickChanged(null);
+      return;
+    }
+    if (value.startsWith(_birdPrefix)) {
+      onBirdChanged(value.substring(_birdPrefix.length));
+      onChickChanged(null);
+      return;
+    }
+    if (value.startsWith(_chickPrefix)) {
+      onBirdChanged(null);
+      onChickChanged(value.substring(_chickPrefix.length));
+    }
   }
 }

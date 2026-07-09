@@ -184,6 +184,27 @@ void main() {
         expect(r.cost, 50.0);
       });
 
+      test('saves chickId without treating it as birdId', () async {
+        when(() => repo.save(any())).thenAnswer((_) async {});
+        final c = makeContainer();
+        addTearDown(c.dispose);
+        await c
+            .read(healthRecordFormStateProvider.notifier)
+            .createRecord(
+              userId: 'u1',
+              title: 'Nest check',
+              type: HealthRecordType.checkup,
+              date: date,
+              chickId: 'chick-1',
+            );
+
+        final r =
+            verify(() => repo.save(captureAny())).captured.single
+                as HealthRecord;
+        expect(r.birdId, isNull);
+        expect(r.chickId, 'chick-1');
+      });
+
       test('sets error on failure', () async {
         when(() => repo.save(any())).thenThrow(Exception('DB error'));
         final c = makeContainer();

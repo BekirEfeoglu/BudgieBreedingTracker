@@ -428,6 +428,75 @@ void main() {
     });
 
     // -----------------------------------------------------------------------
+    group('uploadMessagePhoto', () {
+      test('uploads to message-photos bucket and returns signed URL', () async {
+        final file = makeXFile(name: 'dm.jpg');
+        String? capturedPath;
+        when(
+          () => mockFileApi.uploadBinary(
+            any(),
+            any(),
+            fileOptions: any(named: 'fileOptions'),
+          ),
+        ).thenAnswer((invocation) async {
+          capturedPath = invocation.positionalArguments.first as String;
+          return 'storage-key';
+        });
+        when(
+          () => mockFileApi.createSignedUrl(any(), any()),
+        ).thenAnswer((_) async => 'https://cdn.example.com/message-photo.jpg');
+
+        final url = await service.uploadMessagePhoto(
+          userId: 'u1',
+          conversationId: 'conv-1',
+          file: file,
+        );
+
+        expect(url, 'https://cdn.example.com/message-photo.jpg');
+        expect(capturedPath, startsWith('u1/conv-1/'));
+        expect(capturedPath, endsWith('.jpg'));
+        verify(
+          () => mockStorage.from(SupabaseConstants.messagePhotosBucket),
+        ).called(greaterThanOrEqualTo(1));
+        verify(
+          () => mockImageSafety.scanImage(
+            bytes: any(named: 'bytes'),
+            mimeType: 'image/jpeg',
+          ),
+        ).called(1);
+      });
+
+      test('rejects unsafe message photos before upload', () async {
+        when(
+          () => mockImageSafety.scanImage(
+            bytes: any(named: 'bytes'),
+            mimeType: any(named: 'mimeType'),
+          ),
+        ).thenAnswer(
+          (_) async => const ImageSafetyResult.unsafe('image_flagged'),
+        );
+
+        final file = makeXFile(name: 'dm.jpg');
+
+        await expectLater(
+          () => service.uploadMessagePhoto(
+            userId: 'u1',
+            conversationId: 'conv-1',
+            file: file,
+          ),
+          throwsA(isA<StorageException>()),
+        );
+        verifyNever(
+          () => mockFileApi.uploadBinary(
+            any(),
+            any(),
+            fileOptions: any(named: 'fileOptions'),
+          ),
+        );
+      });
+    });
+
+    // -----------------------------------------------------------------------
     group('deleteBirdPhoto', () {
       test('removes the given path from bird-photos bucket', () async {
         when(() => mockFileApi.remove(any())).thenAnswer((_) async => []);
@@ -738,6 +807,21 @@ void main() {
         verify(() => mockFileApi.list(path: 'marketplace-images/u1')).called(1);
       });
 
+      test('clears message photo bucket for account deletion', () async {
+        when(
+          () => mockFileApi.list(path: any(named: 'path')),
+        ).thenAnswer((_) async => []);
+
+        await service.deleteAllUserFiles('u1');
+
+        verify(
+          () => mockStorage.from(SupabaseConstants.messagePhotosBucket),
+        ).called(1);
+        verify(
+          () => mockFileApi.list(path: 'u1'),
+        ).called(greaterThanOrEqualTo(1));
+      });
+
       test('removes files found in the first bucket', () async {
         final fileObj = FileObject.fromJson({'name': 'photo.jpg', 'id': 'f1'});
         var callCount = 0;
@@ -763,7 +847,7 @@ void main() {
           () => service.deleteAllUserFiles('u1'),
           throwsA(isA<StorageException>()),
         );
-        verify(() => mockStorage.from(any())).called(7);
+        verify(() => mockStorage.from(any())).called(8);
       });
 
       test('recurses into sub-folders (id == null → folder)', () async {

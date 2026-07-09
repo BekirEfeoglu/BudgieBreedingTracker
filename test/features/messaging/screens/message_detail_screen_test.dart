@@ -240,6 +240,7 @@ class _FakeMessagingFormNotifier extends MessagingFormNotifier {
     required String conversationId,
     required String senderId,
     required String senderName,
+    String? clientMessageId,
     String? senderAvatarUrl,
     String? content,
     MessageType messageType = MessageType.text,

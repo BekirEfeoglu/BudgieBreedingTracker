@@ -434,6 +434,18 @@ Future<void> _migrateV25ToV26(AppDatabase db, Migrator m) async {
   await _createPerformanceIndexes(db);
 }
 
+/// Migration v26 -> v27: Adds optional chick linkage to health records.
+///
+/// Existing rows keep NULL. The column is nullable because health records may
+/// still be global, bird-linked, or chick-linked.
+Future<void> _migrateV26ToV27(AppDatabase db, Migrator m) async {
+  final hasColumn = await _tableHasColumn(db, 'health_records', 'chick_id');
+  if (!hasColumn) {
+    await m.addColumn(db.healthRecordsTable, db.healthRecordsTable.chickId);
+  }
+  await _createPerformanceIndexes(db);
+}
+
 /// Checks whether [tableName] has a column named [columnName] via PRAGMA.
 ///
 /// Internal migration helper only — [tableName] and [columnName] must be
