@@ -24,7 +24,11 @@ class MutedUsersNotifier extends Notifier<List<String>> {
     if (!ref.mounted) return;
     state = localIds;
 
-    // Pull from server (merge with local)
+    // The server is authoritative. Replace (do NOT union) the local cache with
+    // the server set so an unmute performed on another device propagates here.
+    // A union would re-add server-removed IDs forever, so an unmute could never
+    // self-heal across devices. The local cache is only a fast-start snapshot
+    // shown before this fetch and a fallback if it fails.
     try {
       final userId = ref.read(currentUserIdProvider);
       if (userId == 'anonymous') return;
@@ -32,9 +36,9 @@ class MutedUsersNotifier extends Notifier<List<String>> {
       final serverIds = await repo.fetchMutedUserIds(userId);
       if (!ref.mounted) return;
 
-      final merged = {...localIds, ...serverIds}.toList();
-      await prefs.setStringList(AppPreferences.keyMutedUserIds, merged);
-      state = merged;
+      final authoritative = serverIds.toSet().toList();
+      await prefs.setStringList(AppPreferences.keyMutedUserIds, authoritative);
+      state = authoritative;
     } catch (e) {
       AppLogger.warning('Failed to sync muted users from server: $e');
     }

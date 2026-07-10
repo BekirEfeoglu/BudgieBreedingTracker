@@ -59,7 +59,12 @@ final communityActiveTabProvider =
     );
 
 /// Shared relative date formatter for community widgets.
-String formatCommunityDate(DateTime? date) {
+///
+/// Beyond 7 days it falls back to an absolute, locale-aware date instead of an
+/// ever-growing "N days ago" (a 400-day-old post reading "400 gün önce" is
+/// meaningless — datetime-format.md: >7 days → full date). Pass [locale]
+/// (`context.locale.toString()`) so month names match the app language.
+String formatCommunityDate(DateTime? date, {String? locale}) {
   if (date == null) return '';
   // Server timestamps come in as UTC; normalize to local before diff so
   // DST/timezone offsets do not produce negative inDays at boundaries
@@ -73,5 +78,8 @@ String formatCommunityDate(DateTime? date) {
   if (diff.inHours < 24) {
     return 'community.hours_ago'.tr(args: [diff.inHours.toString()]);
   }
-  return 'community.days_ago'.tr(args: [diff.inDays.toString()]);
+  if (diff.inDays <= 7) {
+    return 'community.days_ago'.tr(args: [diff.inDays.toString()]);
+  }
+  return DateFormat.yMMMd(locale).format(localDate);
 }

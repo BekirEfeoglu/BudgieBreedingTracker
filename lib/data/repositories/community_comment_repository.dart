@@ -60,19 +60,49 @@ class CommunityCommentRepository {
         .toList();
   }
 
-  Future<void> create({
+  /// Creates a comment and returns the server-persisted [CommunityComment] so
+  /// the caller can append it locally (the newest comment lands off the loaded
+  /// first page on long threads, so a page-1 refetch would hide it). Returns
+  /// `null` if the edge function did not echo the created row; the caller then
+  /// falls back to a refetch. Author display fields are supplied by the caller
+  /// (current user's profile) since the moderated insert response omits them.
+  Future<CommunityComment?> create({
     required String postId,
     required String userId,
     required String content,
     String? parentId,
+    String? authorUsername,
+    String? authorAvatarUrl,
   }) async {
-    await _commentSource.insert({
+    final created = await _commentSource.insert({
       'id': const Uuid().v7(),
       'post_id': postId,
       'user_id': userId,
       'content': content.trim(),
       if (parentId != null) 'parent_id': parentId,
     });
+
+    final id = created?['id']?.toString();
+    if (id == null) return null;
+
+    final createdAtStr = created?['created_at']?.toString();
+    final username = (authorUsername != null && authorUsername.trim().isNotEmpty)
+        ? authorUsername.trim()
+        : 'community.anonymous_user'.tr();
+
+    return CommunityComment(
+      id: id,
+      postId: postId,
+      userId: userId,
+      username: username,
+      avatarUrl: StorageUrlNormalizer.normalizePublicObjectUrl(authorAvatarUrl),
+      content: content.trim(),
+      likeCount: 0,
+      isLikedByMe: false,
+      parentId: parentId,
+      replyCount: 0,
+      createdAt: createdAtStr != null ? DateTime.tryParse(createdAtStr) : null,
+    );
   }
 
   Future<void> delete({

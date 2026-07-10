@@ -30,7 +30,7 @@ void main() {
     test(
       'calls insert with correct post_id, user_id, and trimmed content',
       () async {
-        when(() => commentSource.insert(any())).thenAnswer((_) async {});
+        when(() => commentSource.insert(any())).thenAnswer((_) async => null);
 
         await repository.create(
           postId: 'p1',

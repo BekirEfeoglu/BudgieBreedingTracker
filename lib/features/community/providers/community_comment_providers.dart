@@ -6,9 +6,11 @@ import '../../../core/enums/gamification_enums.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/models/community_comment_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
+import '../../../data/providers/profile_stream_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/services/moderation/content_moderation_service.dart';
 import 'community_feed_providers.dart';
+import 'community_post_providers.dart';
 import '../../../domain/services/moderation/moderation_providers.dart';
 
 // ---------------------------------------------------------------------------
@@ -249,11 +251,16 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
       }
 
       final repo = ref.read(communityCommentRepositoryProvider);
-      await repo.create(
+      final profile = ref.read(userProfileProvider).value;
+      final created = await repo.create(
         postId: postId,
         userId: userId,
         content: content,
         parentId: parentId,
+        // Public-safe display name only — never full_name (community.md
+        // "Do not expose full_name as a public community username").
+        authorUsername: profile?.displayName,
+        authorAvatarUrl: profile?.avatarUrl,
       );
 
       // Award XP for adding a comment
@@ -262,10 +269,20 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
           .recordAction(userId, XpAction.addComment, referenceId: postId);
 
       ref.read(communityFeedProvider.notifier).incrementCommentCount(postId);
-      // Reload the paginated list the UI actually renders
-      // (`visibleCommentsProvider` reads `commentListProvider`), so the new
-      // comment appears without a manual refresh.
-      await ref.read(commentListProvider(postId).notifier).fetchInitial();
+      // Refresh the detail screen's post card count, which reads the separate
+      // `communityPostByIdProvider` (not the feed state).
+      ref.invalidate(communityPostByIdProvider(postId));
+
+      // Append the server-created comment to the loaded list so it appears
+      // immediately. Appending (vs. a page-1 refetch) keeps the newest comment
+      // visible even on long, paginated threads where it lands off the first
+      // page. Fall back to a refetch only if the insert response was empty.
+      final listNotifier = ref.read(commentListProvider(postId).notifier);
+      if (created != null) {
+        listNotifier.addCommentLocally(created);
+      } else {
+        await listNotifier.fetchInitial();
+      }
 
       _lastSubmitAt = DateTime.now();
       state = state.copyWith(isLoading: false, isSuccess: true);
@@ -305,6 +322,7 @@ class CommentDeleteNotifier extends Notifier<void> {
       final repo = ref.read(communityCommentRepositoryProvider);
       await repo.delete(commentId: commentId, userId: userId);
       ref.read(communityFeedProvider.notifier).decrementCommentCount(postId);
+      ref.invalidate(communityPostByIdProvider(postId));
       ref.read(commentListProvider(postId).notifier).removeComment(commentId);
       return true;
     } catch (e, st) {

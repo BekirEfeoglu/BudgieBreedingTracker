@@ -50,7 +50,11 @@ class CommunityCommentRemoteSource {
     }
   }
 
-  Future<void> insert(Map<String, dynamic> data) async {
+  /// Inserts a comment through the moderated edge function and returns the
+  /// server-created row (`id,post_id,user_id,content,created_at`) so callers
+  /// can render it immediately without refetching page 1 — the newest comment
+  /// otherwise lands off-page on long, paginated threads.
+  Future<Map<String, dynamic>?> insert(Map<String, dynamic> data) async {
     try {
       final postId = data['post_id']?.toString();
       final content = data['content']?.toString();
@@ -66,6 +70,8 @@ class CommunityCommentRemoteSource {
       if (!result.success) {
         throw Exception(result.error ?? 'create_community_comment_failed');
       }
+      final created = result.data?['comment'];
+      return created is Map<String, dynamic> ? created : null;
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
         'community_comments.insert',
