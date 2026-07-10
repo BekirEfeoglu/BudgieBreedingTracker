@@ -45,7 +45,10 @@ void main() {
   });
 
   group('mutedUsersProvider', () {
-    test('loads local ids and merges unique server ids', () async {
+    test('server set is authoritative and replaces the local cache', () async {
+      // 'local-1' is a stale local id no longer on the server (e.g. unmuted on
+      // another device). load() must drop it, not union it — a union would
+      // keep it forever and the unmute could never propagate here.
       SharedPreferences.setMockInitialValues({
         AppPreferences.keyMutedUserIds: ['local-1', 'shared'],
       });
@@ -63,9 +66,8 @@ void main() {
       final state = container.read(mutedUsersProvider);
       final prefs = await SharedPreferences.getInstance();
 
-      expect(state.toSet(), {'local-1', 'shared', 'server-1'});
+      expect(state.toSet(), {'shared', 'server-1'});
       expect(prefs.getStringList(AppPreferences.keyMutedUserIds)?.toSet(), {
-        'local-1',
         'shared',
         'server-1',
       });

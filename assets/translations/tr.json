@@ -2730,6 +2730,8 @@
     "comment_error": "Yorum eklenemedi",
     "comment_load_error": "Yorumlar yüklenemedi",
     "no_comments": "Henüz yorum yok",
+    "no_comments_hint": "İlk yorumu sen yaz ve sohbeti başlat.",
+    "comment_options": "Yorum seçenekleri",
     "load_more_comments": "Daha fazla yorum yükle",
     "pin_error": "Gönderi sabitlenemedi",
     "bookmark": "Kaydet",

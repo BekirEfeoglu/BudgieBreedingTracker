@@ -55,10 +55,13 @@ void main() {
   });
 
   group('BlockedUsersNotifier - load', () {
-    test('loads local IDs from SharedPreferences', () async {
+    test('loads local IDs from SharedPreferences (server confirms)', () async {
       SharedPreferences.setMockInitialValues({
         AppPreferences.keyBlockedUserIds: ['local-1', 'local-2'],
       });
+      when(
+        () => repository.fetchBlockedUserIds('user-1'),
+      ).thenAnswer((_) async => ['local-1', 'local-2']);
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -70,7 +73,10 @@ void main() {
       expect(state, containsAll(['local-1', 'local-2']));
     });
 
-    test('merges local and server IDs without duplicates', () async {
+    test('server set is authoritative and replaces the local cache', () async {
+      // 'local-only' is a stale local id absent from the server (unblocked on
+      // another device). load() must drop it, not union it — a union keeps it
+      // forever so the cross-device unblock could never self-heal.
       SharedPreferences.setMockInitialValues({
         AppPreferences.keyBlockedUserIds: ['shared-1', 'local-only'],
       });
@@ -85,7 +91,7 @@ void main() {
       await container.read(blockedUsersProvider.notifier).load();
 
       final state = container.read(blockedUsersProvider);
-      expect(state.toSet(), {'shared-1', 'local-only', 'server-only'});
+      expect(state.toSet(), {'shared-1', 'server-only'});
     });
 
     test('skips server fetch for anonymous user', () async {

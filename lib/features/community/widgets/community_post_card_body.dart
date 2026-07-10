@@ -14,6 +14,13 @@ import 'community_post_actions.dart';
 import 'community_post_card_parts.dart';
 import 'community_user_header.dart';
 
+/// Compiled once at module load instead of on every card `build()` — RegExp
+/// compilation on the hottest path (every visible card, every rebuild) is real
+/// CPU cost.
+final RegExp _postUrlRegExp = RegExp(
+  r'https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)',
+);
+
 /// Visual body of a community post card.
 ///
 /// Stateless composition of user header, optional guide lead block,
@@ -69,10 +76,7 @@ class CommunityPostCardBody extends StatelessWidget {
     final allImages = post.allImageUrls;
     final isGuide = post.postType == CommunityPostType.guide;
 
-    final urlRegExp = RegExp(
-      r'https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)',
-    );
-    final urlMatch = urlRegExp.firstMatch(post.content);
+    final urlMatch = _postUrlRegExp.firstMatch(post.content);
     final firstUrl = urlMatch?.group(0);
 
     return Column(
@@ -232,7 +236,10 @@ class CommunityPostCardBody extends StatelessWidget {
                 const SizedBox(height: AppSpacing.sm),
               ],
               CommunityPostActions(post: post),
-              if (hasEngagement) ...[
+              // The action row already shows like/comment counts on its
+              // buttons; only repeat the "X beğeni · Y yorum" summary on the
+              // detail screen (showFullContent), not on every feed card.
+              if (hasEngagement && showFullContent) ...[
                 const SizedBox(height: AppSpacing.md),
                 EngagementSummary(post: post),
               ],
@@ -319,18 +326,18 @@ class _GuideLeadBlock extends StatelessWidget {
                   vertical: AppSpacing.xs,
                 ),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surface.withValues(alpha: 0.82),
+                  // Opaque container pair so contrast is deterministic in both
+                  // themes — a translucent `surface` over the primary-tinted
+                  // gradient could drop below 4.5:1 in dark mode.
+                  color: theme.colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                  border: Border.all(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.20),
-                  ),
                 ),
                 child: Text(
                   'community.guide_read_time'.tr(
                     args: ['$_estimatedReadMinutes'],
                   ),
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.primary,
+                    color: theme.colorScheme.onPrimaryContainer,
                     fontWeight: FontWeight.w700,
                   ),
                 ),

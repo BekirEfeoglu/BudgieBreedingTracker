@@ -12,6 +12,7 @@ class CommunityFeedSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return ListView(
       key: const Key('community_feed_skeleton'),
       physics: const AlwaysScrollableScrollPhysics(),
@@ -22,21 +23,33 @@ class CommunityFeedSkeleton extends StatelessWidget {
         AppSpacing.xxxl,
       ),
       children: [
-        // Post card skeletons (x3) — mirrors the post-first feed layout.
+        // Post card skeletons (x3) — mirror the real post card's border,
+        // radius, margin and avatar size so the swap to real cards doesn't
+        // reflow (empty-loading-error-states.md § skeleton must match shape).
         ...List.generate(
           3,
-          (_) => const RepaintBoundary(
-            child: Padding(
-              padding: EdgeInsets.only(bottom: AppSpacing.lg),
-              child: Column(
+          (_) => RepaintBoundary(
+            child: Container(
+              margin: const EdgeInsets.only(bottom: AppSpacing.md),
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                border: Border.all(
+                  color: theme.colorScheme.outlineVariant.withValues(
+                    alpha: 0.22,
+                  ),
+                ),
+              ),
+              child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Avatar row
+                  // Avatar row (avatar ~44 to match CommunityUserHeader)
                   Row(
                     children: [
                       SkeletonLoader(
-                        width: 36,
-                        height: 36,
+                        width: 44,
+                        height: 44,
                         borderRadius: AppSpacing.radiusFull,
                       ),
                       SizedBox(width: AppSpacing.md),

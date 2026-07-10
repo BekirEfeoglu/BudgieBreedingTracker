@@ -29,6 +29,10 @@ class _CommunityPostActionsState extends ConsumerState<CommunityPostActions> {
   CommunityPost get post => widget.post;
 
   void _onLike() {
+    // The like glyph is an AnimatedToggleButton wrapped in IgnorePointer, so
+    // its own tap haptic never fires — emit it here or the most-tapped control
+    // feels dead (single source of the tap haptic; double-tap has its own).
+    AppHaptics.lightImpact();
     ref.read(likeToggleProvider.notifier).toggleLike(post.id);
   }
 
@@ -54,6 +58,7 @@ class _CommunityPostActionsState extends ConsumerState<CommunityPostActions> {
   }
 
   void _onBookmark() {
+    AppHaptics.lightImpact();
     ref.read(bookmarkToggleProvider.notifier).toggleBookmark(post.id);
   }
 
@@ -187,20 +192,29 @@ class _ActionButton extends StatelessWidget {
     return Semantics(
       button: true,
       label: semanticLabel,
-      child: Material(
-        color: color,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-        child: InkWell(
+      // AnimatedContainer so the active/inactive background pill fades in/out
+      // instead of snapping while the icon scale-bounces.
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        curve: Curves.easeOut,
+        decoration: BoxDecoration(
+          color: color,
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-          onTap: onTap,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minWidth: AppSpacing.touchTargetMin,
-              minHeight: AppSpacing.touchTargetMin,
-            ),
-            child: Padding(
-              padding: padding,
-              child: Center(child: child ?? icon!),
+        ),
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+            onTap: onTap,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minWidth: AppSpacing.touchTargetMin,
+                minHeight: AppSpacing.touchTargetMin,
+              ),
+              child: Padding(
+                padding: padding,
+                child: Center(child: child ?? icon!),
+              ),
             ),
           ),
         ),

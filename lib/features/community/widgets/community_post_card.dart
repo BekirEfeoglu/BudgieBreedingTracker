@@ -1,4 +1,3 @@
-import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -57,10 +56,14 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
     final theme = Theme.of(context);
     final currentUserId = ref.watch(currentUserIdProvider);
     final isOwnPost = post.userId == currentUserId;
-    final isAdmin = ref.watch(isAdminProvider).value ?? false;
+    // Narrow the rebuild triggers: `.select` so admin-state resolving or any
+    // mute/unmute only rebuilds this card when THIS author's flag changes,
+    // instead of rebuilding every visible card at once.
+    final isAdmin = ref.watch(isAdminProvider.select((v) => v.value ?? false));
     final isGuide = post.postType == CommunityPostType.guide;
-    final mutedUserIds = ref.watch(mutedUsersProvider);
-    final isMutedAuthor = mutedUserIds.contains(post.userId);
+    final isMutedAuthor = ref.watch(
+      mutedUsersProvider.select((ids) => ids.contains(post.userId)),
+    );
     final createdAt = post.createdAt;
     final canEditPost =
         isOwnPost &&
@@ -100,7 +103,9 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
                 .read(followToggleProvider.notifier)
                 .toggleFollow(post.userId),
       onDoubleTapMedia: () {
-        AppHaptics.mediumImpact();
+        // No haptic here — the double-tap burst animation
+        // (DoubleTapLikeAnimation) already fires one; a second impact here
+        // made the gesture buzz twice.
         ref.read(likeToggleProvider.notifier).toggleLike(post.id);
       },
       onOpenImage: _openImageViewer,

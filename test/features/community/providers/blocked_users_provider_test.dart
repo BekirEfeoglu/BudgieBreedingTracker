@@ -45,7 +45,10 @@ void main() {
   });
 
   group('blockedUsersProvider', () {
-    test('loads local ids and merges unique server ids', () async {
+    test('server set is authoritative and replaces the local cache', () async {
+      // 'local-1' is a stale local id absent from the server (unblocked on
+      // another device). load() must drop it, not union it — a union keeps it
+      // forever so the cross-device unblock could never self-heal.
       SharedPreferences.setMockInitialValues({
         AppPreferences.keyBlockedUserIds: ['local-1', 'shared'],
       });
@@ -63,9 +66,8 @@ void main() {
       final state = container.read(blockedUsersProvider);
       final prefs = await SharedPreferences.getInstance();
 
-      expect(state.toSet(), {'local-1', 'shared', 'server-1'});
+      expect(state.toSet(), {'shared', 'server-1'});
       expect(prefs.getStringList(AppPreferences.keyBlockedUserIds)?.toSet(), {
-        'local-1',
         'shared',
         'server-1',
       });

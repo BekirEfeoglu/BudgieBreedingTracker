@@ -2,8 +2,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/widgets/app_icon.dart';
+import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart' as app;
 import '../providers/community_comment_providers.dart';
 import '../providers/community_post_providers.dart';
@@ -84,9 +87,9 @@ class _CommunityPostDetailScreenState
       if (!context.mounted) return;
       if (state.isSuccess) {
         ref.read(commentFormProvider.notifier).reset();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('community.comment_success'.tr())),
-        );
+        // No success SnackBar — the new comment appears inline and scrolls
+        // into view, so a toast is redundant and covers the input on small
+        // screens. Scroll-to-bottom is the confirmation.
         _scrollToBottom();
       }
       if (state.error != null) {
@@ -201,10 +204,14 @@ class _CommunityPostDetailScreenState
                           ),
                           child: Text(
                             postAsync.maybeWhen(
-                              data: (post) =>
-                                  post?.postType == CommunityPostType.guide
-                                  ? 'community.guide_discussion_title'.tr()
-                                  : 'community.comments'.tr(),
+                              data: (post) {
+                                final base =
+                                    post?.postType == CommunityPostType.guide
+                                    ? 'community.guide_discussion_title'.tr()
+                                    : 'community.comments'.tr();
+                                final count = post?.commentCount ?? 0;
+                                return count > 0 ? '$base ($count)' : base;
+                              },
                               orElse: () => 'community.comments'.tr(),
                             ),
                             style: Theme.of(context).textTheme.titleSmall
@@ -234,17 +241,14 @@ class _CommunityPostDetailScreenState
                   else if (visibleComments.isEmpty)
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.all(AppSpacing.lg),
-                        child: Center(
-                          child: Text(
-                            'community.no_comments'.tr(),
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
-                                ),
-                          ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg,
+                          vertical: AppSpacing.xl,
+                        ),
+                        child: EmptyState(
+                          icon: const AppIcon(AppIcons.comment, size: 44),
+                          title: 'community.no_comments'.tr(),
+                          subtitle: 'community.no_comments_hint'.tr(),
                         ),
                       ),
                     )

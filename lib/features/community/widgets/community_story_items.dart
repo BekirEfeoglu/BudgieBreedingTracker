@@ -44,7 +44,7 @@ class _CreateStoryButton extends StatelessWidget {
                 textAlign: TextAlign.center,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -141,7 +141,7 @@ class _StoryAvatar extends StatelessWidget {
                           '${story.postCount}',
                           textAlign: TextAlign.center,
                           style: theme.textTheme.labelSmall?.copyWith(
-                            fontSize: 9,
+                            fontSize: 11,
                             fontWeight: FontWeight.w800,
                             color: theme.colorScheme.onError,
                           ),
@@ -174,7 +174,7 @@ class _StoryAvatar extends StatelessWidget {
                         child: Text(
                           _formatStoryTime(story.lastPostAt),
                           style: theme.textTheme.labelSmall?.copyWith(
-                            fontSize: 9,
+                            fontSize: 11,
                             fontWeight: FontWeight.w700,
                             color: isVeryRecent
                                 ? theme.colorScheme.onPrimary
@@ -192,7 +192,7 @@ class _StoryAvatar extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: isVeryRecent ? FontWeight.w700 : FontWeight.w600,
                 ),
               ),

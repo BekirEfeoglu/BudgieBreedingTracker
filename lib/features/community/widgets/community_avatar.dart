@@ -29,11 +29,19 @@ class CommunityAvatar extends StatelessWidget {
     final theme = Theme.of(context);
     final hasImage = avatarUrl != null && avatarUrl!.isNotEmpty;
 
+    // Cap the decode to roughly the widget's pixel footprint (radius*2 logical
+    // × up to ~3x DPR) so a full-resolution source isn't decoded into memory
+    // for a small circle.
+    final decodeCap = (radius * 6).round();
     final inner = CircleAvatar(
       radius: radius,
       backgroundColor: theme.colorScheme.primaryContainer,
       backgroundImage: hasImage
-          ? CachedNetworkImageProvider(avatarUrl!)
+          ? CachedNetworkImageProvider(
+              avatarUrl!,
+              maxWidth: decodeCap,
+              maxHeight: decodeCap,
+            )
           : null,
       child: hasImage
           ? null

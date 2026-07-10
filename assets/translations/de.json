@@ -2729,6 +2729,8 @@
     "comment_error": "Kommentar konnte nicht hinzugefügt werden",
     "comment_load_error": "Kommentare konnten nicht geladen werden",
     "no_comments": "Noch keine Kommentare",
+    "no_comments_hint": "Sei der Erste, der kommentiert und das Gespräch beginnt.",
+    "comment_options": "Kommentaroptionen",
     "load_more_comments": "Weitere Kommentare laden",
     "pin_error": "Beitrag konnte nicht angeheftet werden",
     "bookmark": "Speichern",
