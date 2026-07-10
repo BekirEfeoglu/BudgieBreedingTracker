@@ -18,6 +18,32 @@ import '../../../helpers/test_localization.dart';
 
 class MockMarketplaceRepository extends Mock implements MarketplaceRepository {}
 
+/// Stub feed notifier that returns a fixed [build] future instead of hitting
+/// the repository — lets a widget test inject loading/data/error states for
+/// [marketplaceFeedProvider] without wiring the paginated repo methods.
+class _StubFeedNotifier extends MarketplaceFeedNotifier {
+  _StubFeedNotifier(this._build) : super('test-user');
+  final Future<MarketplaceFeedState> Function() _build;
+
+  @override
+  Future<MarketplaceFeedState> build() => _build();
+}
+
+/// Builds a stub feed notifier from a legacy `AsyncValue<List>` fixture
+/// (data → single non-paginated page; error → thrown; loading →
+/// never-completing).
+MarketplaceFeedNotifier _stubFeed(
+  AsyncValue<List<MarketplaceListing>> async,
+) => _StubFeedNotifier(
+  () => switch (async) {
+    AsyncData(:final value) => Future.value(
+      MarketplaceFeedState(items: value, hasMore: false),
+    ),
+    AsyncError(:final error) => Future<MarketplaceFeedState>.error(error),
+    _ => Completer<MarketplaceFeedState>().future,
+  },
+);
+
 void main() {
   late MockMarketplaceRepository mockRepo;
 
@@ -34,21 +60,17 @@ void main() {
         marketplaceRepositoryProvider.overrideWithValue(mockRepo),
         effectivePremiumProvider.overrideWithValue(false),
         canCreateListingProvider('test-user').overrideWithValue(true),
-        marketplaceListingsProvider('test-user').overrideWith(
-          (_) => switch (listingsAsync) {
-            AsyncData(:final value) => Future.value(value),
-            AsyncError(:final error) => Future.error(error),
-            _ => Future<List<MarketplaceListing>>.value([]),
-          },
-        ),
+        marketplaceFeedProvider(
+          'test-user',
+        ).overrideWith(() => _stubFeed(listingsAsync)),
       ],
       child: const MaterialApp(home: MarketplaceScreen()),
     );
   }
 
   testWidgets('loading state shows CircularProgressIndicator', (tester) async {
-    // Use a Completer that never completes — no pending timers
-    final completer = Completer<List<MarketplaceListing>>();
+    // Use a Completer that never completes until the end — no pending timers.
+    final completer = Completer<MarketplaceFeedState>();
 
     await pumpLocalizedApp(
       tester,
@@ -58,9 +80,9 @@ void main() {
           marketplaceRepositoryProvider.overrideWithValue(mockRepo),
           effectivePremiumProvider.overrideWithValue(false),
           canCreateListingProvider('test-user').overrideWithValue(true),
-          marketplaceListingsProvider(
+          marketplaceFeedProvider(
             'test-user',
-          ).overrideWith((_) => completer.future),
+          ).overrideWith(() => _StubFeedNotifier(() => completer.future)),
         ],
         child: const MaterialApp(home: MarketplaceScreen()),
       ),
@@ -70,7 +92,9 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
     // Complete future to avoid uncompleted future warnings
-    completer.complete([]);
+    completer.complete(
+      const MarketplaceFeedState(items: [], hasMore: false),
+    );
   });
 
   testWidgets('empty state shows EmptyState widget', (tester) async {

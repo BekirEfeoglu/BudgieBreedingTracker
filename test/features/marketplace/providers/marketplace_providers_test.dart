@@ -187,54 +187,79 @@ void main() {
     });
   });
 
-  group('marketplaceListingsProvider', () {
+  group('marketplaceFeedProvider', () {
     late MockMarketplaceRepository mockRepo;
 
     setUp(() {
       mockRepo = MockMarketplaceRepository();
     });
 
-    test('fetches listings from repository', () async {
-      final listings = [
-        _makeListing(id: 'l1', title: 'Blue Budgie'),
-        _makeListing(id: 'l2', title: 'Green Budgie'),
-      ];
+    /// Stubs `getListings` for any invocation, returning [rows].
+    void stubGetListings(List<MarketplaceListing> rows) {
       when(
         () => mockRepo.getListings(
-          currentUserId: 'user-1',
+          currentUserId: any(named: 'currentUserId'),
+          limit: any(named: 'limit'),
+          before: any(named: 'before'),
           city: any(named: 'city'),
           listingType: any(named: 'listingType'),
         ),
-      ).thenAnswer((_) async => listings);
+      ).thenAnswer((_) async => rows);
+    }
+
+    /// A full page of [count] listings, newest first (descending createdAt).
+    List<MarketplaceListing> pageOf(int count, {int startDay = 1}) => [
+      for (var i = 0; i < count; i++)
+        _makeListing(
+          id: 'l${startDay + i}',
+          createdAt: DateTime(2024, 1, startDay + i),
+        ),
+    ];
+
+    test('build fetches first page and marks hasMore false when short', () async {
+      stubGetListings(pageOf(3));
 
       final container = ProviderContainer(
         overrides: [marketplaceRepositoryProvider.overrideWithValue(mockRepo)],
       );
       addTearDown(container.dispose);
 
-      final result = await container.read(
-        marketplaceListingsProvider('user-1').future,
+      final state = await container.read(
+        marketplaceFeedProvider('user-1').future,
       );
 
-      expect(result, hasLength(2));
-      expect(result.first.title, 'Blue Budgie');
+      expect(state.items, hasLength(3));
+      expect(state.hasMore, isFalse);
+      expect(state.isSearch, isFalse);
       verify(
         () => mockRepo.getListings(
           currentUserId: 'user-1',
+          limit: marketplaceFeedPageSize,
+          before: null,
           city: null,
           listingType: null,
         ),
       ).called(1);
     });
 
-    test('passes listingType when filter is not all', () async {
-      when(
-        () => mockRepo.getListings(
-          currentUserId: 'user-1',
-          city: any(named: 'city'),
-          listingType: any(named: 'listingType'),
-        ),
-      ).thenAnswer((_) async => []);
+    test('build marks hasMore true when a full page returns', () async {
+      stubGetListings(pageOf(marketplaceFeedPageSize));
+
+      final container = ProviderContainer(
+        overrides: [marketplaceRepositoryProvider.overrideWithValue(mockRepo)],
+      );
+      addTearDown(container.dispose);
+
+      final state = await container.read(
+        marketplaceFeedProvider('user-1').future,
+      );
+
+      expect(state.items, hasLength(marketplaceFeedPageSize));
+      expect(state.hasMore, isTrue);
+    });
+
+    test('build passes listingType when filter is not all', () async {
+      stubGetListings(const []);
 
       final container = ProviderContainer(
         overrides: [
@@ -246,25 +271,21 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      await container.read(marketplaceListingsProvider('user-1').future);
+      await container.read(marketplaceFeedProvider('user-1').future);
 
       verify(
         () => mockRepo.getListings(
           currentUserId: 'user-1',
+          limit: marketplaceFeedPageSize,
+          before: null,
           city: null,
           listingType: 'trade',
         ),
       ).called(1);
     });
 
-    test('passes city when city filter is set', () async {
-      when(
-        () => mockRepo.getListings(
-          currentUserId: 'user-1',
-          city: any(named: 'city'),
-          listingType: any(named: 'listingType'),
-        ),
-      ).thenAnswer((_) async => []);
+    test('build passes city when city filter is set', () async {
+      stubGetListings(const []);
 
       final container = ProviderContainer(
         overrides: [
@@ -276,21 +297,25 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      await container.read(marketplaceListingsProvider('user-1').future);
+      await container.read(marketplaceFeedProvider('user-1').future);
 
       verify(
         () => mockRepo.getListings(
           currentUserId: 'user-1',
+          limit: marketplaceFeedPageSize,
+          before: null,
           city: 'Ankara',
           listingType: null,
         ),
       ).called(1);
     });
 
-    test('propagates error when repository throws', () async {
+    test('build propagates error when repository throws', () async {
       when(
         () => mockRepo.getListings(
-          currentUserId: 'user-1',
+          currentUserId: any(named: 'currentUserId'),
+          limit: any(named: 'limit'),
+          before: any(named: 'before'),
           city: any(named: 'city'),
           listingType: any(named: 'listingType'),
         ),
@@ -301,14 +326,16 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      AsyncValue<List<MarketplaceListing>>? lastValue;
+      // Keep a live subscription so the provider isn't disposed mid-build, and
+      // observe the emitted AsyncError instead of awaiting `.future` (which
+      // would surface as an unhandled rejection across tests).
+      AsyncValue<MarketplaceFeedState>? lastValue;
       container.listen(
-        marketplaceListingsProvider('user-1'),
+        marketplaceFeedProvider('user-1'),
         (_, next) => lastValue = next,
         fireImmediately: true,
       );
 
-      // Let the FutureProvider complete
       await Future<void>.delayed(Duration.zero);
       await Future<void>.delayed(Duration.zero);
       await Future<void>.delayed(Duration.zero);
@@ -316,6 +343,175 @@ void main() {
       expect(lastValue, isNotNull);
       expect(lastValue!.hasError, isTrue);
       expect(lastValue!.error, isA<Exception>());
+    });
+
+    test('search mode uses repo.search, sets isSearch, and never paginates',
+        () async {
+      final results = pageOf(3);
+      when(
+        () => mockRepo.search(
+          query: any(named: 'query'),
+          currentUserId: any(named: 'currentUserId'),
+          limit: any(named: 'limit'),
+        ),
+      ).thenAnswer((_) async => results);
+
+      final container = ProviderContainer(
+        overrides: [
+          marketplaceRepositoryProvider.overrideWithValue(mockRepo),
+          marketplaceSearchQueryProvider.overrideWith(
+            () => _FixedSearchNotifier('mavi'),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final state = await container.read(
+        marketplaceFeedProvider('user-1').future,
+      );
+
+      expect(state.isSearch, isTrue);
+      expect(state.hasMore, isFalse);
+      expect(state.items, hasLength(3));
+      verify(
+        () => mockRepo.search(
+          query: 'mavi',
+          currentUserId: 'user-1',
+          limit: marketplaceSearchPageSize,
+        ),
+      ).called(1);
+      verifyNever(
+        () => mockRepo.getListings(
+          currentUserId: any(named: 'currentUserId'),
+          limit: any(named: 'limit'),
+          before: any(named: 'before'),
+          city: any(named: 'city'),
+          listingType: any(named: 'listingType'),
+        ),
+      );
+
+      // loadMore is a no-op in search mode.
+      await container.read(marketplaceFeedProvider('user-1').notifier).loadMore();
+      final after = container.read(marketplaceFeedProvider('user-1')).asData!.value;
+      expect(after.items, hasLength(3));
+      verifyNever(
+        () => mockRepo.getListings(
+          currentUserId: any(named: 'currentUserId'),
+          limit: any(named: 'limit'),
+          before: any(named: 'before'),
+          city: any(named: 'city'),
+          listingType: any(named: 'listingType'),
+        ),
+      );
+    });
+
+    test('loadMore appends the next page with the before-cursor', () async {
+      final firstPage = pageOf(marketplaceFeedPageSize, startDay: 1);
+      final secondPage = pageOf(2, startDay: 100);
+
+      var call = 0;
+      final cursors = <DateTime?>[];
+      when(
+        () => mockRepo.getListings(
+          currentUserId: any(named: 'currentUserId'),
+          limit: any(named: 'limit'),
+          before: any(named: 'before'),
+          city: any(named: 'city'),
+          listingType: any(named: 'listingType'),
+        ),
+      ).thenAnswer((invocation) async {
+        cursors.add(invocation.namedArguments[#before] as DateTime?);
+        return call++ == 0 ? firstPage : secondPage;
+      });
+
+      final container = ProviderContainer(
+        overrides: [marketplaceRepositoryProvider.overrideWithValue(mockRepo)],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(marketplaceFeedProvider('user-1').future);
+      await container.read(marketplaceFeedProvider('user-1').notifier).loadMore();
+
+      final state = container.read(marketplaceFeedProvider('user-1')).asData!.value;
+      expect(
+        state.items,
+        hasLength(marketplaceFeedPageSize + 2),
+        reason: 'second page appended, not replaced',
+      );
+      expect(state.hasMore, isFalse, reason: 'second page was short');
+      expect(state.isLoadingMore, isFalse);
+      // First call has no cursor; second call uses the oldest loaded createdAt.
+      expect(cursors.first, isNull);
+      expect(cursors.last, firstPage.last.createdAt);
+    });
+
+    test('loadMore stops once a short page returns and no-ops afterward',
+        () async {
+      final firstPage = pageOf(marketplaceFeedPageSize, startDay: 1);
+      final shortPage = pageOf(1, startDay: 100);
+
+      var call = 0;
+      when(
+        () => mockRepo.getListings(
+          currentUserId: any(named: 'currentUserId'),
+          limit: any(named: 'limit'),
+          before: any(named: 'before'),
+          city: any(named: 'city'),
+          listingType: any(named: 'listingType'),
+        ),
+      ).thenAnswer((_) async => call++ == 0 ? firstPage : shortPage);
+
+      final container = ProviderContainer(
+        overrides: [marketplaceRepositoryProvider.overrideWithValue(mockRepo)],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(marketplaceFeedProvider('user-1').future);
+      await container.read(marketplaceFeedProvider('user-1').notifier).loadMore();
+
+      final state = container.read(marketplaceFeedProvider('user-1')).asData!.value;
+      expect(state.items, hasLength(marketplaceFeedPageSize + 1));
+      expect(state.hasMore, isFalse);
+
+      // A further loadMore does nothing (hasMore is false).
+      await container.read(marketplaceFeedProvider('user-1').notifier).loadMore();
+      expect(call, 2, reason: 'no third getListings call');
+    });
+
+    test('loadMore keeps loaded items and clears spinner on error', () async {
+      final firstPage = pageOf(marketplaceFeedPageSize, startDay: 1);
+
+      var call = 0;
+      when(
+        () => mockRepo.getListings(
+          currentUserId: any(named: 'currentUserId'),
+          limit: any(named: 'limit'),
+          before: any(named: 'before'),
+          city: any(named: 'city'),
+          listingType: any(named: 'listingType'),
+        ),
+      ).thenAnswer((_) async {
+        if (call++ == 0) return firstPage;
+        throw Exception('page 2 failed');
+      });
+
+      final container = ProviderContainer(
+        overrides: [marketplaceRepositoryProvider.overrideWithValue(mockRepo)],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(marketplaceFeedProvider('user-1').future);
+      await container.read(marketplaceFeedProvider('user-1').notifier).loadMore();
+
+      final state = container.read(marketplaceFeedProvider('user-1')).asData!.value;
+      expect(
+        state.items,
+        hasLength(marketplaceFeedPageSize),
+        reason: 'failed page must not wipe the loaded feed',
+      );
+      expect(state.isLoadingMore, isFalse);
+      // hasMore stays true so the user can retry by scrolling again.
+      expect(state.hasMore, isTrue);
     });
   });
 

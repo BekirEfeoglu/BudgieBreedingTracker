@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/enums/bird_enums.dart';
 import '../../../core/enums/marketplace_enums.dart';
+import '../../../core/utils/logger.dart';
 import '../../../data/models/marketplace_listing_model.dart';
 import '../../../data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
@@ -120,27 +121,138 @@ final activeFilterCountProvider = Provider<int>((ref) {
   return count;
 });
 
-/// Listings feed provider
-final marketplaceListingsProvider =
-    FutureProvider.family<List<MarketplaceListing>, String>((
-      ref,
-      userId,
-    ) async {
-      final repo = ref.watch(marketplaceRepositoryProvider);
-      final filter = ref.watch(marketplaceFilterProvider);
-      final city = ref.watch(marketplaceCityFilterProvider);
+/// Page size for the paginated (non-search) feed. A full page means there may
+/// be older listings to load; a short page means we've reached the end.
+const marketplaceFeedPageSize = 20;
 
-      String? listingType;
-      if (filter != MarketplaceFilter.all) {
-        listingType = filter.name;
-      }
+/// Search fetches a single wider page. Server-side `ilike` search is not
+/// paginated in the UI, so we cap results here instead of infinite-scrolling.
+const marketplaceSearchPageSize = 50;
 
-      return repo.getListings(
+/// Immutable snapshot of the marketplace feed for infinite scroll + search.
+///
+/// [isSearch] short-circuits pagination: search returns one capped page, so
+/// [hasMore]/`loadMore` never apply while a query is active. Value-equality is
+/// intentionally not implemented — the notifier always emits a fresh instance.
+class MarketplaceFeedState {
+  final List<MarketplaceListing> items;
+  final bool hasMore;
+  final bool isSearch;
+  final bool isLoadingMore;
+
+  const MarketplaceFeedState({
+    required this.items,
+    required this.hasMore,
+    this.isSearch = false,
+    this.isLoadingMore = false,
+  });
+
+  MarketplaceFeedState copyWith({
+    List<MarketplaceListing>? items,
+    bool? hasMore,
+    bool? isSearch,
+    bool? isLoadingMore,
+  }) => MarketplaceFeedState(
+    items: items ?? this.items,
+    hasMore: hasMore ?? this.hasMore,
+    isSearch: isSearch ?? this.isSearch,
+    isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+  );
+}
+
+/// Paginated marketplace feed with server-side search.
+///
+/// [build] loads the first page (or runs the active search query); [loadMore]
+/// appends the next cursor-based page. Replaces the old
+/// `marketplaceListingsProvider`, which hard-capped the feed at 20 rows and
+/// left server-side search (`MarketplaceRepository.search`) as dead code —
+/// searching beyond the first 20 returned "no results".
+class MarketplaceFeedNotifier extends AsyncNotifier<MarketplaceFeedState> {
+  MarketplaceFeedNotifier(this.userId);
+
+  final String userId;
+
+  @override
+  Future<MarketplaceFeedState> build() async {
+    final repo = ref.watch(marketplaceRepositoryProvider);
+    final filter = ref.watch(marketplaceFilterProvider);
+    final city = ref.watch(marketplaceCityFilterProvider);
+    final query = ref.watch(marketplaceSearchQueryProvider).trim();
+
+    if (query.isNotEmpty) {
+      final items = await repo.search(
+        query: query,
+        currentUserId: userId,
+        limit: marketplaceSearchPageSize,
+      );
+      return MarketplaceFeedState(items: items, hasMore: false, isSearch: true);
+    }
+
+    final items = await repo.getListings(
+      currentUserId: userId,
+      city: city,
+      listingType: filter == MarketplaceFilter.all ? null : filter.name,
+      limit: marketplaceFeedPageSize,
+    );
+    return MarketplaceFeedState(
+      items: items,
+      hasMore: items.length == marketplaceFeedPageSize,
+      isSearch: false,
+    );
+  }
+
+  /// Fetches the next page and appends it, using the oldest loaded listing's
+  /// `createdAt` as the cursor. No-ops in search mode, while already loading,
+  /// when there's nothing more, or when the cursor can't be resolved.
+  Future<void> loadMore() async {
+    final current = state.asData?.value;
+    if (current == null ||
+        !current.hasMore ||
+        current.isLoadingMore ||
+        current.isSearch ||
+        current.items.isEmpty) {
+      return;
+    }
+    final cursor = current.items.last.createdAt;
+    if (cursor == null) return;
+
+    state = AsyncData(current.copyWith(isLoadingMore: true));
+
+    final repo = ref.read(marketplaceRepositoryProvider);
+    final filter = ref.read(marketplaceFilterProvider);
+    final city = ref.read(marketplaceCityFilterProvider);
+
+    try {
+      final next = await repo.getListings(
         currentUserId: userId,
         city: city,
-        listingType: listingType,
+        listingType: filter == MarketplaceFilter.all ? null : filter.name,
+        limit: marketplaceFeedPageSize,
+        before: cursor,
       );
-    });
+      state = AsyncData(
+        current.copyWith(
+          items: [...current.items, ...next],
+          hasMore: next.length == marketplaceFeedPageSize,
+          isLoadingMore: false,
+        ),
+      );
+    } catch (e, st) {
+      // Keep the already-loaded page visible — a failed "load more" must never
+      // wipe the feed. Clear the spinner so the user can retry by scrolling.
+      AppLogger.error('marketplace.loadMore', e, st);
+      state = AsyncData(current.copyWith(isLoadingMore: false));
+    }
+  }
+}
+
+/// Paginated feed keyed by current user id (for favorite enrichment).
+final marketplaceFeedProvider =
+    AsyncNotifierProvider.family<
+      MarketplaceFeedNotifier,
+      MarketplaceFeedState,
+      String
+    >(MarketplaceFeedNotifier.new);
 
 /// Single listing detail
 final marketplaceListingByIdProvider =

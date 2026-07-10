@@ -17,13 +17,45 @@ import 'marketplace_listing_card.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Scaffold-free marketplace content for embedding in TabBarView.
-class MarketplaceTabContent extends ConsumerWidget {
+class MarketplaceTabContent extends ConsumerStatefulWidget {
   const MarketplaceTabContent({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MarketplaceTabContent> createState() =>
+      _MarketplaceTabContentState();
+}
+
+class _MarketplaceTabContentState extends ConsumerState<MarketplaceTabContent> {
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController()..addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  /// Triggers the next page when the user scrolls near the bottom (80%).
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final userId = ref.read(currentUserIdProvider);
+    final feed = ref.read(marketplaceFeedProvider(userId)).asData?.value;
+    if (feed == null || !feed.hasMore || feed.isLoadingMore) return;
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent * 0.8) {
+      ref.read(marketplaceFeedProvider(userId).notifier).loadMore();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final userId = ref.watch(currentUserIdProvider);
-    final listingsAsync = ref.watch(marketplaceListingsProvider(userId));
+    final feedAsync = ref.watch(marketplaceFeedProvider(userId));
 
     // Surface favorite-toggle failures — the heart is non-optimistic, so a
     // failed toggle otherwise looks like nothing happened.
@@ -45,7 +77,7 @@ class MarketplaceTabContent extends ConsumerWidget {
           ),
           child: Row(
             children: [
-              Expanded(child: _buildFilterChips(ref)),
+              const Expanded(child: MarketplaceFilterBar()),
               AppIconButton(
                 icon: const Icon(LucideIcons.listChecks, size: 20),
                 tooltip: 'marketplace.my_listings'.tr(),
@@ -59,21 +91,20 @@ class MarketplaceTabContent extends ConsumerWidget {
         Expanded(
           child: RefreshIndicator(
             onRefresh: () async {
-              ref.invalidate(marketplaceListingsProvider(userId));
+              ref.invalidate(marketplaceFeedProvider(userId));
             },
-            child: listingsAsync.when(
+            child: feedAsync.when(
               loading: () => const LoadingState(),
               error: (error, _) => app.ErrorState(
                 message: '${'common.data_load_error'.tr()}: $error',
-                onRetry: () =>
-                    ref.invalidate(marketplaceListingsProvider(userId)),
+                onRetry: () => ref.invalidate(marketplaceFeedProvider(userId)),
               ),
-              data: (allListings) {
+              data: (feed) {
                 final listings = ref.watch(
-                  filteredMarketplaceListingsProvider(allListings),
+                  filteredMarketplaceListingsProvider(feed.items),
                 );
 
-                if (allListings.isEmpty) {
+                if (feed.items.isEmpty) {
                   return EmptyState(
                     icon: const Icon(LucideIcons.store),
                     title: 'marketplace.no_listings'.tr(),
@@ -93,6 +124,7 @@ class MarketplaceTabContent extends ConsumerWidget {
                 }
 
                 return GridView.builder(
+                  controller: _scrollController,
                   padding: const EdgeInsets.fromLTRB(
                     AppSpacing.lg,
                     AppSpacing.sm,
@@ -106,8 +138,17 @@ class MarketplaceTabContent extends ConsumerWidget {
                         mainAxisSpacing: AppSpacing.md,
                         mainAxisExtent: 232,
                       ),
-                  itemCount: listings.length,
+                  // +1 grid cell for the bottom loading indicator.
+                  itemCount: listings.length + (feed.isLoadingMore ? 1 : 0),
                   itemBuilder: (context, index) {
+                    if (index >= listings.length) {
+                      return const Center(
+                        child: SizedBox.square(
+                          dimension: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      );
+                    }
                     final listing = listings[index];
                     return MarketplaceListingCard(
                       key: ValueKey(listing.id),
@@ -129,9 +170,5 @@ class MarketplaceTabContent extends ConsumerWidget {
         ),
       ],
     );
-  }
-
-  Widget _buildFilterChips(WidgetRef ref) {
-    return const MarketplaceFilterBar();
   }
 }

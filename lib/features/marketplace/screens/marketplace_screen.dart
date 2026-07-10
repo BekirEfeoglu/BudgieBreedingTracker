@@ -30,6 +30,7 @@ class MarketplaceScreen extends ConsumerStatefulWidget {
 
 class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
   late final TextEditingController _searchController;
+  late final ScrollController _scrollController;
   Timer? _debounceTimer;
 
   @override
@@ -39,12 +40,14 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
     _searchController.addListener(() {
       setState(() {});
     });
+    _scrollController = ScrollController()..addListener(_onScroll);
   }
 
   @override
   void dispose() {
     _debounceTimer?.cancel();
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -57,10 +60,22 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
     });
   }
 
+  /// Triggers the next page when the user scrolls near the bottom (80%).
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final userId = ref.read(currentUserIdProvider);
+    final feed = ref.read(marketplaceFeedProvider(userId)).asData?.value;
+    if (feed == null || !feed.hasMore || feed.isLoadingMore) return;
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent * 0.8) {
+      ref.read(marketplaceFeedProvider(userId).notifier).loadMore();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final userId = ref.watch(currentUserIdProvider);
-    final listingsAsync = ref.watch(marketplaceListingsProvider(userId));
+    final feedAsync = ref.watch(marketplaceFeedProvider(userId));
 
     // Surface favorite-toggle failures — the heart is non-optimistic, so a
     // failed toggle otherwise looks like nothing happened.
@@ -159,21 +174,21 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async {
-                ref.invalidate(marketplaceListingsProvider(userId));
+                ref.invalidate(marketplaceFeedProvider(userId));
               },
-              child: listingsAsync.when(
+              child: feedAsync.when(
                 loading: () => const LoadingState(),
                 error: (error, _) => app.ErrorState(
                   message: '${'common.data_load_error'.tr()}: $error',
                   onRetry: () =>
-                      ref.invalidate(marketplaceListingsProvider(userId)),
+                      ref.invalidate(marketplaceFeedProvider(userId)),
                 ),
-                data: (allListings) {
+                data: (feed) {
                   final listings = ref.watch(
-                    filteredMarketplaceListingsProvider(allListings),
+                    filteredMarketplaceListingsProvider(feed.items),
                   );
 
-                  if (allListings.isEmpty) {
+                  if (feed.items.isEmpty) {
                     return EmptyState(
                       icon: const Icon(LucideIcons.store),
                       title: 'marketplace.no_listings'.tr(),
@@ -193,12 +208,27 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
                   }
 
                   return ListView.builder(
+                    controller: _scrollController,
                     padding: const EdgeInsets.only(
                       top: AppSpacing.sm,
                       bottom: AppSpacing.xxxl * 2,
                     ),
-                    itemCount: listings.length,
+                    // +1 slot for the bottom infinite-scroll loading indicator.
+                    itemCount: listings.length + (feed.isLoadingMore ? 1 : 0),
                     itemBuilder: (context, index) {
+                      if (index >= listings.length) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(
+                            vertical: AppSpacing.lg,
+                          ),
+                          child: Center(
+                            child: SizedBox.square(
+                              dimension: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                        );
+                      }
                       final listing = listings[index];
                       return MarketplaceListingCard(
                         key: ValueKey(listing.id),

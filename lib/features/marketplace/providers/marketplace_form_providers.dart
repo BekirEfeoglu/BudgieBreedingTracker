@@ -143,7 +143,7 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
       );
       // Invalidate the feed + owner-scoped list providers so the form
       // screen pops to fresh data instead of stale cache. Audit M2.
-      ref.invalidate(marketplaceListingsProvider(userId));
+      ref.invalidate(marketplaceFeedProvider(userId));
       ref.invalidate(myMarketplaceListingsProvider(userId));
       state = state.copyWith(isLoading: false, isSuccess: true);
     } on FreeTierLimitException {
@@ -234,7 +234,7 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
         'image_urls': imageUrls,
         'city': city,
       }, userId: userId);
-      ref.invalidate(marketplaceListingsProvider(userId));
+      ref.invalidate(marketplaceFeedProvider(userId));
       ref.invalidate(myMarketplaceListingsProvider(userId));
       ref.invalidate(
         marketplaceListingByIdProvider((id: listingId, userId: userId)),
@@ -253,7 +253,7 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
       final repo = ref.read(marketplaceRepositoryProvider);
       final userId = ref.read(currentUserIdProvider);
       await repo.delete(listingId, userId: userId);
-      ref.invalidate(marketplaceListingsProvider(userId));
+      ref.invalidate(marketplaceFeedProvider(userId));
       ref.invalidate(myMarketplaceListingsProvider(userId));
       state = state.copyWith(isLoading: false, isSuccess: true);
     } catch (e, st) {
@@ -297,7 +297,7 @@ class MarketplaceFormNotifier extends Notifier<MarketplaceFormState> {
       // (after the awaited write) updates the heart at every call site and
       // also fixes the favorites screen's prior microtask race, where the
       // invalidate could fire before the toggle completed.
-      ref.invalidate(marketplaceListingsProvider(userId));
+      ref.invalidate(marketplaceFeedProvider(userId));
       ref.invalidate(marketplaceFavoritesProvider(userId));
     } catch (e, st) {
       AppLogger.error('marketplace.toggleFavorite', e, st);
