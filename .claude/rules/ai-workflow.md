@@ -25,6 +25,28 @@ If generation gets stuck: `dart run build_runner clean` first.
 5. **Run quality gates** — after every significant change, before declaring done
 6. **Update stats** — if codebase metrics change, run `verify_rules.py --fix`
 
+## First-Party Agent Routing
+
+Agent profiles under `.claude/agents/` are focused workflows, not generic
+personas. Use the smallest profile that matches the task; do not run every
+auditor by default.
+
+| Change / need | Profile | Mode |
+|---------------|---------|------|
+| General Flutter/Dart diff review | `code-reviewer` | Read-only |
+| Genetics engine/rate/viability change | `genetics-guardian` | Read-only |
+| Supabase migration or Edge Function audit | `migration-auditor` / `edge-function-auditor` | Read-only |
+| PII/logging or test-flake sweep | `pii-observability-auditor` / `test-stability-auditor` | Read-only |
+| Duplicate bug path hunt | `sibling-path-hunter` | Read-only |
+| Entity, dependency, or l10n implementation | `entity-scaffolder` / `dependency-bump-agent` / `l10n-agent` | Write-enabled |
+| Behavior/rule/CI change finished | `doc-sync-agent` | Write-enabled, docs only |
+| Push/release closure | `post-push-verifier` / `release-readiness-agent` | Read-only |
+
+Read-only profiles report findings and must not edit. Write-enabled profiles
+still obey the user's scope, dirty-worktree buckets, and approval boundaries.
+The complete catalog and routing notes live in
+`obsidian-brain/sources/agents-index.md`.
+
 ## Clean Development Loop
 - Begin with `git status --short --branch`; never overwrite unrelated local changes.
 - When the worktree is dirty, build a quick dirty-state ledger from `git diff --name-status` and `git status --short`: classify each path as task-owned, pre-existing/user, generated/dependency, or rule/doc before editing.
@@ -79,4 +101,4 @@ Before reporting completion, capture:
 - GitHub status/check-run summary for the pushed commit when CI is part of the task
 - remaining skipped checks with the reason they are acceptable
 
-> **Related**: git-rules.md (commit format), branch-workflow.md (merge policy), new-feature-checklist.md (entity steps), documentation-sync.md (keep CLAUDE.md + wiki in sync with every change)
+> **Related**: git-rules.md (commit format), branch-workflow.md (merge policy), new-feature-checklist.md (entity steps), documentation-sync.md (claim authority + doc sync), `obsidian-brain/sources/agents-index.md` (agent catalog)

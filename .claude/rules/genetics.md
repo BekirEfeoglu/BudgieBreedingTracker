@@ -2,11 +2,11 @@
 
 Muhabbet kuşu renk mutasyon genetiği — Punnett karesi, Mendel hesabı, allelik seri, sex-linked linkage, lethal kombinasyonlar ve inbreeding. Engine `lib/domain/services/genetics/` altında, primary giriş noktası `MendelianCalculator`.
 
-## Source of Truth
-- Mutasyon veritabanı: `mutation_database.dart` + `mutation_data_*.dart` partial dosyaları
-- Sabitler: `lib/core/constants/genetics_constants.dart`
-- Lethal kombinasyonlar: `lethal_combination_database.dart`
-- Authoritative MUTAVI guide: `docs/muhabbet-kusu-genetik-rehberi.md` (her tasarım kararı bu rehberle çakışmamalı)
+## Claim Authority
+- **Mevcut uygulama davranışı**: `mutation_database.dart` + `mutation_data_*.dart`, `genetics_constants.dart`, `lethal_combination_database.dart` ve çalışan engine testleri
+- **Biyolojik karar**: `docs/muhabbet-kusu-genetik-rehberi.md` + orada kayıtlı/onaylı kaynaklar; kod tek başına biyolojik kanıt değildir
+- **Persisted-result sözleşmesi**: `GeneticsConstants.calculationVersion` + `GeneticsHistory.isStale`
+- Kod rehberle çelişirse rehber kodu “yanlışlamak” için bypass edilmez; kaynak/evidence yeniden incelenir, karar belgelenir ve gerekiyorsa kod + test + version birlikte düzeltilir
 
 ## calculationVersion
 Tüm hesap çıktıları kalıcı kaydedildiğinde `calculationVersion` alanı ile birlikte saklanır. Engine'de algoritma değişikliği (allelic series fix, locus eklenmesi, MUTAVI rate güncellemesi) versiyon bump zorunlu.
@@ -75,10 +75,10 @@ Z kromozomu üzerinde gen sırası: **O — C — I — Slate**
     kaldırıldı** (ino/pallid/tcb × self sağlıklı eşleşmelerdi); scope handler'ı
     ileride gerçek bir parent-level lethal eklenirse diye korunur
   - `offspringHomozygous`: yavru çift doz taşır (`doubleFactorIds` üzerinden) —
-    **Feather Duster** (lethal), **DF Dominant Pied** (semi-lethal), **Crested**
-    (v6'da subVital; MUTAVI K10). 2026-07-02'de crested `parentAnyVisual`'dan bu
+    **Feather Duster** (lethal) ve **Crested** (v6'da subVital; MUTAVI K10).
+    2026-07-02'de crested `parentAnyVisual`'dan bu
     scope'a taşındı; yalnızca gerçek DF ~%25 alt kümesi işaretlenir, tüm crested
-    yavruları değil. DF Spangle v6'da kaldırıldı (canlı)
+    yavruları değil. DF Spangle v6'da, DF Dominant Pied v8'de kaldırıldı (canlı)
   - `offspringVisual`: yavru tüm gerekli mutasyonları görsel taşır
 - **Viability seti evidence-tabanlı (v6):** yalnız MUTAVI/klasik kaynakların
   desteklediği kombinasyonlar uyarılır. Sağlıklı/canlı eşleşmeye (lutino×lutino,
@@ -169,7 +169,7 @@ if (analysis.hasWarnings) {
 
 ## Testing
 - Unit: her inheritance pattern (`allelic_series`, `linked_pair`, `sex_linked`, `genotype`) ayrı test dosyası
-- Regression: `test/domain/services/genetics/` altında 930+ test (2026-07-02 itibarıyla) — dominant series fix, linkage phase, lethal DF ve double-factor tagging için baseline
+- Regression: `test/domain/services/genetics/` altında 977 açık `test()` bildirimi (2026-07-10 envanteri; parametrik çoğalmalar hariç) — güncel sayı için dosyaları say, bu satırı sabit kalite hedefi olarak kullanma
 - Linkage: 6 çiftin tamamı için coupling + repulsion `closeTo` assertion'ları (`genetics_linkage_test.dart`)
 - **MUTAVI referans matrisi** (`mutavi_reference_regression_test.dart`): `docs/muhabbet-kusu-genetik-rehberi.md`'nin kanonik crosslarını (Blue×Blue/split, Cinnamon/Ino × normal dişi, Greywing×Clearwing/Dilute, Cinnamon+Ino→Lacewing) her fixture'ın `guideSection` + `sourceIds` (K1–K14) taşıdığı, rehber oranlarını `closeTo` ile doğrulayan tek matris. Motor rehberle çelişirse bu suite kırılır. Not: rehber genotip oranı (25/50/25) ile motorun **fenotip** çıktısı (25 görsel / 75 normal-taşıyıcı) split×split'te ayrışır — motor fenotip tahmin eder
 - Lethal: her lethal pair için explicit test; DF-detection `genetics_integration_test.dart` içinde gerçek motor üzerinden doğrulanır
@@ -199,6 +199,15 @@ test('slate-ino linked pair produces correct ratios', () {
 - Fenotip rengi: phenotype palette istisna (theme dışı, biyolojik doğruluk önceliği)
 - Inbreeding uyarısı: confidence threshold gibi — kullanıcı kararı için bilgilendirme, gate değil
 - Reverse calculator önerileri `GeneticsConstants.reverseMaxDisplayResults` (25) ile sınırlı
+
+## Known Unshipped Work
+
+- **Explicit linkage phase control (roadmap D4) yoktur.** Phase hâlâ allele
+  state'lerden örtük çıkarılır; ayrı `Otomatik | Coupling | Repulsion` seçimi ve
+  history/isolate round-trip metadata'sı shipped kabul edilmez.
+- Diğer roadmap önerileri (`Q2`, `I2`, `M1`, `I3`–`I5`) planlama hedefidir;
+  `dev-docs/genetics-improvement-roadmap.md` içinde görünmesi uygulandıkları
+  anlamına gelmez. Güncel durum için `obsidian-brain/known-gaps.md` kontrol edilir.
 
 ## Anti-Patterns
 1. MUTAVI rehberini override eden hardcoded rate (rehber tek kaynak)

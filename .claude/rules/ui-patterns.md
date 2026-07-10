@@ -71,9 +71,9 @@ class _MyFormState extends ConsumerState<MyFormScreen> {
 
   Future<void> _onSubmit() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     await ref.read(myProvider.notifier).save(/* ... */);
-    
+
     if (!mounted) return;  // ALWAYS check mounted after async
     context.pop();
   }
