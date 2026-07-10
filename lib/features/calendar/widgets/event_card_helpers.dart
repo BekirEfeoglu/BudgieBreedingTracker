@@ -2,9 +2,10 @@ part of 'event_card.dart';
 
 /// Returns a widget icon for an [EventType].
 ///
-/// Domain events (breeding, egg, hatching, chick) use SVG AppIcons so they
-/// stay visually consistent with the rest of the app. Generic activity events
-/// (feeding, cleaning, medication, weightCheck) remain on LucideIcons as
+/// Domain events (breeding, egg, hatching, chick, vaccination, medication,
+/// weight) use SVG AppIcons so they stay visually consistent with the rest of
+/// the app — matching the same concepts in health_record_card. Only genuinely
+/// generic activity events (feeding, cleaning) remain on LucideIcons as
 /// allowed by anti-pattern #24.
 Widget eventTypeIconWidget(EventType type, {double size = 20, Color? color}) {
   switch (type) {
@@ -26,9 +27,9 @@ Widget eventTypeIconWidget(EventType type, {double size = 20, Color? color}) {
     case EventType.weightCheck:
       return AppIcon(AppIcons.weight, size: size, color: color);
     case EventType.vaccination:
-      return Icon(LucideIcons.syringe, size: size, color: color);
+      return AppIcon(AppIcons.syringe, size: size, color: color);
     case EventType.medication:
-      return Icon(LucideIcons.pill, size: size, color: color);
+      return AppIcon(AppIcons.pill, size: size, color: color);
     case EventType.feeding:
       return Icon(LucideIcons.wheat, size: size, color: color);
     case EventType.cleaning:

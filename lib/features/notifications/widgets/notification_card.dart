@@ -190,8 +190,8 @@ Widget notificationTypeWidget(NotificationType type, Color color) =>
         size: 20,
         color: color,
       ),
-      NotificationType.temperatureAlert => Icon(
-        LucideIcons.thermometer,
+      NotificationType.temperatureAlert => AppIcon(
+        AppIcons.thermometer,
         size: 20,
         color: color,
       ),
