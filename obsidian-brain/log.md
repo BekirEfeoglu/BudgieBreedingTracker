@@ -4,6 +4,18 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-09] rules | Session lessons folded into the rulebook
+
+ci-actions/release-ops/CLAUDE.md: Xcode Cloud post-clone installs Flutter via
+curl+unzip (git clone = known-flaky, flutter/flutter#163198 — the TRUE root of
+the recurring Build - iOS fail; first curl build passed in ~9 min), drift_dev
+"Circular error" is a non-fatal WARNING (simolus3/drift#3227), `>>> STEP N:`
+markers + superseded-build guidance. data-layer.md: never close a
+`.references()` cycle (customConstraint pattern). migrations.md: drift-guard
+script + ledger `statements` content-drift procedure + forward-reconcile rule.
+testing.md: tag→CI-gate table (community tag = weekly job; unit tests untagged).
+Wiki ci-cd.md Xcode Cloud section rewritten to match.
+
 ## [2026-07-09] fix | Drift clutches↔incubations module cycle crashed drift_dev codegen
 
 Root-caused the intermittent Xcode Cloud post-clone failure (Build - iOS
@@ -168,32 +180,4 @@ coding-standards), and security.md § MFA UX Flow no longer presents recovery
 codes as shipped (2026-07-02 audit: they don't exist — also added to
 known-gaps).
 
-## [2026-07-08] docs | Brain expansion: router page, known-gaps registry, drift fixes
-
-Added [[architecture/router-navigation]] (GoRouter redirect chain, guard order,
-RouterNotifier, deep-link UUID/editId validation — router was the last major
-subsystem without a page) and [[known-gaps]] (central registry of latent code
-surfaces, unshipped design goals, and deliberate absences, sourced from the
-rule files). Registered both in index/README; overview gained a "Design Goal ≠
-Shipped" decision pointing at known-gaps. Drift fixed: 73→74 routes
-(_features-index), 194→196 migrations (migrations, supabase), supabase_flutter
-constraint now shows the `<2.13.0` iOS CI cap, storage-bucket table corrected
-to the real 8 `SupabaseConstants` buckets (no `health-records`/`chat-attachments`
-buckets; marketplace bucket is `photos`), folder-structure router listing gained
-founder_guard/redirect_guards/route_utils/router_notifier, cheat-sheet edge-fn
-table completed to all 12 (JWT note now carries the `revenuecat-webhook`
-shared-secret exception) plus new task rows, stale "two local untracked
-migrations" bullet removed. Second sweep: 913/12,059 test stats → 914/11,436+
-(testing, overview — now mirrors CLAUDE.md § Codebase Stats), 3,050 → 3,068
-l10n keys (l10n, folder-structure).
-
-## [2026-07-08] docs | Obsidian brain inventory synced
-
-Fixed wiki drift found during the `obsidian-brain` audit: codebase stats now
-reflect schema v26, 913 test files / 12,059 passing tests, 3,050 l10n keys per
-language, 194 tracked Supabase migrations, 28 remote-source files, and current
-Supabase constant counts. Also corrected stale schema v25 references, the old
-notification-service path, and duplicated migration-count values across the
-overview, index, data-layer, architecture, testing, and l10n pages.
-
-Older entries are archived in [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
+Older entries are archived in [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

@@ -18,6 +18,19 @@ test/
 - CI excludes golden tests: `--exclude-tags golden`
 - CI timeout: test step 30 minutes (job-level 40)
 
+## Test Tags → CI Gates
+PR `test` job'u `--exclude-tags "golden || e2e || community"` ile koşar; taglı test PR gate'inden DÜŞER.
+
+| Tag | Koşan job | Ne için |
+|-----|-----------|---------|
+| (tagsız) | `test` (her PR/push) | Default — TÜM mock-based unit testler |
+| `golden` | `golden-test` (her PR, Linux) | Visual regression |
+| `e2e`, `scenario` | `e2e-community-test` (haftalık cron + manuel) | Ağır uçtan uca akışlar |
+| `community` | `e2e-community-test` (haftalık) | SADECE ağır community/marketplace/messaging screen+widget suite'leri |
+
+- Mocktail-based model / remote-source / repository / provider testini `community` ile TAG'LEME — PR koruması sıfırlanır, regresyon haftaya kalır (2026-07-09: 37 dosya bu yüzden untag edildi; 537 test ~10s'de PR gate'ine döndü)
+- Yeni bir tag-based exclusion eklemek Skipped Test Policy'ye tabidir: gerekçe + owner + PR-gate'te kalan coverage açıkça yazılmalı
+
 ## Patterns
 
 ### Unit Tests (Services, Models)

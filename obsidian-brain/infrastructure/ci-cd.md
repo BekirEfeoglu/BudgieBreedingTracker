@@ -57,9 +57,11 @@ Manual workflow for signed AAB readiness. Does not run on main push (to avoid sl
 
 - Build-only (`Build - iOS`, scheme `Runner`, Any iOS Simulator)
 - Archive/TestFlight only when Apple signing + provisioning profile + registered device ready
-- `ios/ci_scripts/ci_post_clone.sh`: runs `flutter pub get`, `dart run build_runner build`, `pod install`
-- Must be executable. Retry/backoff on pod download failures.
-- `build_runner` is wrapped in a clean-and-retry loop (cap 5, `build_runner clean` between attempts) — the drift_dev 2.31 "Circular error" codegen flake failed post-clone (action_required, ~47s) when it was a bare call. Keep both ci.yml AND this post-clone retry-hardened; they are separate systems.
+- `ios/ci_scripts/ci_post_clone.sh`: installs Flutter, runs `flutter pub get`, `dart run build_runner build`, `pod install`; must stay executable, retry/backoff on network steps
+- **Flutter install = curl+unzip of the pinned arch-aware SDK zip** (`flutter_macos[_arm64]_3.41.4-stable.zip`) — NEVER `git clone flutter/flutter`: that clone is known-flaky on Xcode Cloud (flutter/flutter#163198) and was the true root cause of the recurring ~40s `Build - iOS` action_required (2026-07-09). First curl-based build passed with a full ~9-min build.
+- drift_dev's "Circular error when deserializing drift modules" is a **non-fatal WARNING** (simolus3/drift#3227) — it never fails `build_runner`; do not chase it as a post-clone failure cause. The clean-and-retry loop (cap 8) remains as belt-and-braces.
+- The script prints `>>> STEP N:` markers before every step; Xcode Cloud only surfaces a generic "script failed (exited with code 1)", so the LAST marker in the log names the failing step. Keep the markers.
+- Rapid successive main pushes can make Xcode Cloud supersede intermediate builds (`action_required` on middle commits) — judge only the newest commit's build.
 
 ## Post-Push Verification
 

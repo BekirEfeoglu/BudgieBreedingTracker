@@ -12,7 +12,7 @@
 - App Store / Google Play publish mantigini GitHub Actions'a tasima
 - Main push CI'si release artifact uretmemeli; signed AAB icin manuel `Release Ready` workflow'u veya Codemagic kullan
 - `docs/` deployment mobil app release'lerinden ayri deger
-- Xcode Cloud Flutter build temiz clone'da `ios/ci_scripts/ci_post_clone.sh` ile hazirlanir
+- Xcode Cloud Flutter build temiz clone'da `ios/ci_scripts/ci_post_clone.sh` ile hazirlanir; script Flutter SDK'yi pinned zip'in curl+unzip'i ile kurar (`git clone flutter/flutter` DEGIL — Xcode Cloud'da bilinen flaky, ci-actions.md § Deployment Safety) ve her adimdan once `>>> STEP N:` marker basar
 - Xcode Cloud main workflow build-only olmalidir; archive/TestFlight/App Store export ancak Apple signing hesabi, Development/Ad Hoc profil ihtiyaci ve kayitli fiziksel cihazlar hazirsa acilir
 
 ## Version Bump

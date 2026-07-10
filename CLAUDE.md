@@ -131,7 +131,7 @@ scripts/test_verify_migration_drift.py  # Tests for verify_migration_drift.py
 | `e2e-community-test` | E2E + community tagged tests |
 | `scripts-test` | Python script tests (>=98% coverage) |
 | `l10n-sync` | Translation key parity (--strict-keys) |
-| `code-quality` | Anti-pattern scan + platform target policy + obsidian-brain lint (depends on scripts-test) |
+| `code-quality` | Anti-pattern scan + platform target policy + obsidian-brain lint + migration drift structure guard (depends on scripts-test) |
 | `rules-sync` | CLAUDE.md stats verification (--strict) |
 | `security-audit` | Security posture verification (cert pinning, secrets) |
 | `auto-fix-stats` | Auto-PR for CLAUDE.md drift (main only) |
@@ -143,7 +143,7 @@ Other workflow files: `release-ready.yml` (manual signed Android AAB), `release.
 
 Workflow changes must be validated locally before push: parse the edited YAML, quote or block-scalar `run:` commands containing `:`, and ensure each triggering event has at least one non-skipped job.
 
-Xcode Cloud is separate from GitHub Actions. Its Flutter iOS setup lives in `ios/ci_scripts/ci_post_clone.sh`; the script must remain executable, retry network-dependent setup, preserve real command exit codes, and fail fast if `Generated.xcconfig` or `Pods-Runner-*.xcfilelist` files are not generated.
+Xcode Cloud is separate from GitHub Actions. Its Flutter iOS setup lives in `ios/ci_scripts/ci_post_clone.sh`; the script must remain executable, retry network-dependent setup, preserve real command exit codes, and fail fast if `Generated.xcconfig` or `Pods-Runner-*.xcfilelist` files are not generated. It installs Flutter via curl+unzip of the pinned SDK archive — never `git clone flutter/flutter`, which is known-flaky on Xcode Cloud (flutter/flutter#163198) — and prints `>>> STEP N:` markers so a failure log names the failing step.
 
 ### Codemagic (`codemagic.yaml`) — production releases
 - `android-release`: AAB → Google Play (alpha track)
