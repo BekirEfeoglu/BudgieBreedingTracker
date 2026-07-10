@@ -104,7 +104,7 @@ scripts/test_verify_migration_drift.py  # Tests for verify_migration_drift.py
 | Metric | Value |
 | --- | --- |
 | Source files (lib/) | 1018 Dart files |
-| Test files (test/) | 919 test files, 11,508+ individual tests |
+| Test files (test/) | 919 test files, 11,509+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -116,7 +116,7 @@ scripts/test_verify_migration_drift.py  # Tests for verify_migration_drift.py
 | Shared widgets | 35 (15 root + 4 buttons + 2 cards + 2 dialog + 1 bottom_sheet + 5 eggs) |
 | Enum files | 15 |
 | Supabase constants | 154 (tables + buckets + columns) |
-| L10n keys | ~3,121 per language, 41 categories |
+| L10n keys | ~3,122 per language, 41 categories |
 | DB schema version | 27 |
 
 ## CI/CD Pipeline
