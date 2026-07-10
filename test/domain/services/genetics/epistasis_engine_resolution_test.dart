@@ -208,20 +208,24 @@ void main() {
       expect(result.maskedMutations, contains('Greywing'));
     });
 
-    test('Ino masks Pearly', () {
+    test('Ino does NOT mask Pearly (ino-locus allele, v6)', () {
+      // Pearly is an ino-locus allele resolved by the allelic-series resolver
+      // (pearly is dominant to ino), not masked by ino.
       final result = engine.resolveCompoundPhenotypeDetailed({'ino', 'pearly'});
 
-      expect(result.maskedMutations, contains('Pearly'));
+      expect(result.maskedMutations, isNot(contains('Pearly')));
     });
 
-    test('Ino masks Pallid (listed in masked mutations)', () {
+    test('Ino does NOT mask Pallid but still masks other loci (v6)', () {
       final result = engine.resolveCompoundPhenotypeDetailed({
         'ino',
         'pallid',
         'opaline',
       });
 
-      expect(result.maskedMutations, contains('Pallid'));
+      // Pallid co-expresses (PallidIno), it is not masked.
+      expect(result.maskedMutations, isNot(contains('Pallid')));
+      // Opaline (a different locus) is still masked by ino.
       expect(result.maskedMutations, contains('Opaline'));
     });
 
@@ -272,7 +276,8 @@ void main() {
       expect(result.maskedMutations, contains('Slate'));
       expect(result.maskedMutations, contains('Clearwing'));
       expect(result.maskedMutations, contains('Greywing'));
-      expect(result.maskedMutations, contains('Pearly'));
+      // Pearly is an ino-locus allele — not masked by ino (v6).
+      expect(result.maskedMutations, isNot(contains('Pearly')));
     });
 
     test('no masked mutations when Ino is absent', () {

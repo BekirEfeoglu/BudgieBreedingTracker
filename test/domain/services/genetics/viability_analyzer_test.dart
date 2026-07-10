@@ -19,6 +19,21 @@ OffspringResult _offspring({
   );
 }
 
+/// Convenience: a double-factor feather-duster offspring (lethal).
+OffspringResult _featherDuster(double p) => _offspring(
+      phenotype: 'Feather Duster',
+      probability: p,
+      doubleFactorIds: {GeneticsConstants.mutFeatherDuster},
+    );
+
+/// Convenience: a double-factor crested offspring (sub-vital, v6).
+OffspringResult _dfCrested(double p) => _offspring(
+      phenotype: 'DF Crested',
+      probability: p,
+      visualMutations: const ['crested_tufted'],
+      doubleFactorIds: const {'crested_tufted', 'crested_half_circular'},
+    );
+
 void main() {
   late ViabilityAnalyzer analyzer;
 
@@ -32,11 +47,9 @@ void main() {
         fatherMutations: {'blue'},
         motherMutations: {'blue'},
         offspringResults: [
-          _offspring(
-            phenotype: 'Blue',
-            probability: 1.0,
-            visualMutations: ['blue'],
-          ),
+          _offspring(phenotype: 'Blue', probability: 1.0, visualMutations: [
+            'blue',
+          ]),
         ],
       );
 
@@ -57,32 +70,38 @@ void main() {
     });
   });
 
-  group('hasWarnings', () {
-    test('is false when warnings list is empty', () {
-      final result = analyzer.analyze(
-        fatherMutations: const {},
-        motherMutations: const {},
-        offspringResults: [_offspring(phenotype: 'Normal', probability: 1.0)],
-      );
-
-      expect(result.warnings, isEmpty);
-      expect(result.hasWarnings, isFalse);
-    });
-
-    test('is true when warnings exist', () {
+  group('v6 removed the false-positive homozygous-pairing warnings', () {
+    test('Ino × Ino is a healthy pairing — no warning', () {
       final result = analyzer.analyze(
         fatherMutations: {'ino'},
         motherMutations: {'ino'},
-        offspringResults: [_offspring(phenotype: 'Ino', probability: 1.0)],
+        offspringResults: [
+          _offspring(phenotype: 'Lutino', probability: 0.5),
+          _offspring(phenotype: 'Albino', probability: 0.5),
+        ],
       );
-
-      expect(result.warnings, isNotEmpty);
-      expect(result.hasWarnings, isTrue);
+      expect(result.hasWarnings, isFalse);
     });
-  });
 
-  group('offspring-level lethal detection', () {
-    test('detects DF Spangle when offspring has homozygous spangle', () {
+    test('Pallid × Pallid and Texas Clearbody × Texas Clearbody — no warning',
+        () {
+      final pallid = analyzer.analyze(
+        fatherMutations: {'pallid'},
+        motherMutations: {'pallid'},
+        offspringResults: [_offspring(phenotype: 'Pallid', probability: 1.0)],
+      );
+      final tcb = analyzer.analyze(
+        fatherMutations: {'texas_clearbody'},
+        motherMutations: {'texas_clearbody'},
+        offspringResults: [
+          _offspring(phenotype: 'Texas Clearbody', probability: 1.0),
+        ],
+      );
+      expect(pallid.hasWarnings, isFalse);
+      expect(tcb.hasWarnings, isFalse);
+    });
+
+    test('DF Spangle is viable — no warning', () {
       final result = analyzer.analyze(
         fatherMutations: {'spangle'},
         motherMutations: {'spangle'},
@@ -93,58 +112,91 @@ void main() {
             visualMutations: ['spangle'],
             doubleFactorIds: {'spangle'},
           ),
+          _offspring(phenotype: 'Normal', probability: 0.75),
+        ],
+      );
+      expect(result.hasWarnings, isFalse);
+    });
+  });
+
+  group('offspring-level detection', () {
+    test('flags the DF feather-duster offspring as lethal', () {
+      final result = analyzer.analyze(
+        fatherMutations: {'feather_duster'},
+        motherMutations: {'feather_duster'},
+        offspringResults: [
+          _featherDuster(0.25),
+          _offspring(phenotype: 'Normal', probability: 0.75),
+        ],
+      );
+
+      final warnings = result.warnings.where(
+        (w) => w.combination.id == 'df_feather_duster',
+      );
+      expect(warnings, hasLength(1));
+      expect(result.highestSeverity, LethalSeverity.lethal);
+    });
+
+    test('flags only the DF crested offspring as sub-vital, not the SF', () {
+      final result = analyzer.analyze(
+        fatherMutations: {'crested_tufted'},
+        motherMutations: {'crested_full_circular'},
+        offspringResults: [
           _offspring(
-            phenotype: 'SF Spangle',
-            probability: 0.50,
-            visualMutations: ['spangle'],
+            phenotype: 'DF Crested',
+            probability: 0.25,
+            visualMutations: ['crested_tufted'],
+            doubleFactorIds: {'crested_tufted', 'crested_full_circular'},
+          ),
+          _offspring(
+            phenotype: 'Crested',
+            probability: 0.5,
+            visualMutations: ['crested_tufted'],
           ),
           _offspring(phenotype: 'Normal', probability: 0.25),
         ],
       );
 
-      final spangleWarnings = result.warnings.where(
-        (w) => w.combination.id == 'df_spangle',
+      final crested = result.warnings.where(
+        (w) => w.combination.id == 'df_crested',
       );
-      expect(spangleWarnings, hasLength(1));
-      expect(spangleWarnings.first.offspring.phenotype, 'DF Spangle');
+      expect(crested, hasLength(1));
+      expect(crested.first.offspring.probability, closeTo(0.25, 1e-9));
+      expect(result.highestSeverity, LethalSeverity.subVital);
     });
 
-    test('does not flag SF Spangle offspring as DF Spangle', () {
+    test('crested does not flag when no offspring is double factor', () {
       final result = analyzer.analyze(
-        fatherMutations: {'spangle'},
-        motherMutations: {'spangle'},
+        fatherMutations: {'crested_tufted'},
+        motherMutations: {'crested_full_circular'},
         offspringResults: [
           _offspring(
-            phenotype: 'SF Spangle',
-            probability: 0.50,
-            visualMutations: ['spangle'],
+            phenotype: 'Crested',
+            probability: 0.5,
+            visualMutations: ['crested_tufted'],
           ),
+          _offspring(phenotype: 'Normal', probability: 0.5),
         ],
       );
-
-      final spangleWarnings = result.warnings.where(
-        (w) => w.combination.id == 'df_spangle',
+      expect(
+        result.warnings.where((w) => w.combination.id == 'df_crested'),
+        isEmpty,
       );
-      expect(spangleWarnings, isEmpty);
     });
   });
 
   group('recessive lethal with non-visual carrier parents (regression)', () {
     // Feather Duster is autosomal recessive: a carrier parent is NOT visual,
     // so the parents' visual mutation sets are empty even though a double-factor
-    // (lethal) offspring is produced. A visual-only parent pre-check used to
-    // drop this warning entirely; the analyzer must rely on the authoritative
-    // per-offspring doubleFactorIds instead.
-    test('flags DF Feather Duster from carrier x carrier (empty visual sets)', () {
+    // (lethal) offspring is produced. The analyzer must rely on the
+    // authoritative per-offspring doubleFactorIds instead of a visual pre-check.
+    test('flags DF Feather Duster from carrier x carrier (empty visual sets)',
+        () {
       final result = analyzer.analyze(
         fatherMutations: const {},
         motherMutations: const {},
         offspringResults: [
-          _offspring(
-            phenotype: 'Feather Duster',
-            probability: 0.25,
-            doubleFactorIds: {GeneticsConstants.mutFeatherDuster},
-          ),
+          _featherDuster(0.25),
           _offspring(phenotype: 'Normal', probability: 0.75),
         ],
       );
@@ -163,332 +215,91 @@ void main() {
         fatherMutations: const {},
         motherMutations: const {},
         offspringResults: [
-          _offspring(
-            phenotype: 'Feather Duster (carrier)',
-            probability: 0.5,
-            visualMutations: const [],
-          ),
+          _offspring(phenotype: 'Feather Duster (carrier)', probability: 0.5),
           _offspring(phenotype: 'Normal', probability: 0.5),
         ],
       );
-
       expect(result.hasWarnings, isFalse);
     });
   });
 
-  group('parent-level checks', () {
-    test('ino x ino flags all offspring when both parents are visual ino', () {
+  group('severity ordering', () {
+    test('lethal (feather duster) outranks sub-vital (crested)', () {
       final result = analyzer.analyze(
-        fatherMutations: {'ino'},
-        motherMutations: {'ino'},
-        offspringResults: [
-          _offspring(phenotype: 'Lutino', probability: 0.5),
-          _offspring(phenotype: 'Albino', probability: 0.5),
-        ],
+        fatherMutations: {'feather_duster', 'crested_tufted'},
+        motherMutations: {'feather_duster', 'crested_half_circular'},
+        offspringResults: [_featherDuster(0.25), _dfCrested(0.25)],
       );
-
-      final inoWarnings = result.warnings.where(
-        (w) => w.combination.id == 'ino_x_ino',
-      );
-      expect(inoWarnings, hasLength(2));
-    });
-
-    test('ino x ino does not trigger when only father has ino', () {
-      final result = analyzer.analyze(
-        fatherMutations: {'ino'},
-        motherMutations: {'blue'},
-        offspringResults: [_offspring(phenotype: 'Ino', probability: 0.5)],
-      );
-
-      final inoWarnings = result.warnings.where(
-        (w) => w.combination.id == 'ino_x_ino',
-      );
-      expect(inoWarnings, isEmpty);
-    });
-
-    test('crested x crested flags only the double-factor offspring', () {
-      // A compound double-factor crest (two crest-locus alleles) is lethal;
-      // the single-factor crest and normal offspring are not.
-      final result = analyzer.analyze(
-        fatherMutations: {'crested_tufted'},
-        motherMutations: {'crested_full_circular'},
-        offspringResults: [
-          _offspring(
-            phenotype: 'Crested',
-            probability: 0.25,
-            visualMutations: ['crested_tufted'],
-            doubleFactorIds: {'crested_tufted', 'crested_full_circular'},
-          ),
-          _offspring(
-            phenotype: 'Crested',
-            probability: 0.5,
-            visualMutations: ['crested_tufted'],
-          ),
-          _offspring(phenotype: 'Normal', probability: 0.25),
-        ],
-      );
-
-      final crestedWarnings = result.warnings.where(
-        (w) => w.combination.id == 'df_crested',
-      );
-      // Only the double-factor offspring is flagged, not every offspring.
-      expect(crestedWarnings, hasLength(1));
-      expect(crestedWarnings.first.offspring.probability, closeTo(0.25, 1e-9));
-    });
-
-    test('crested x crested does not flag when no offspring is double factor', () {
-      final result = analyzer.analyze(
-        fatherMutations: {'crested_tufted'},
-        motherMutations: {'crested_full_circular'},
-        offspringResults: [
-          _offspring(
-            phenotype: 'Crested',
-            probability: 0.5,
-            visualMutations: ['crested_tufted'],
-          ),
-          _offspring(phenotype: 'Normal', probability: 0.5),
-        ],
-      );
-
-      final crestedWarnings = result.warnings.where(
-        (w) => w.combination.id == 'df_crested',
-      );
-      expect(crestedWarnings, isEmpty);
-    });
-  });
-
-  group('severity calculation', () {
-    test('highest severity is lethal when both lethal and semi exist', () {
-      final result = analyzer.analyze(
-        fatherMutations: {'crested_tufted', 'ino'},
-        motherMutations: {'crested_half_circular', 'ino'},
-        offspringResults: [
-          _offspring(
-            phenotype: 'Ino Crested',
-            probability: 1.0,
-            visualMutations: ['crested_tufted', 'ino'],
-            doubleFactorIds: {'crested_tufted', 'crested_half_circular'},
-          ),
-        ],
-      );
-
-      // lethal (df_crested) beats subVital (ino_x_ino)
       expect(result.highestSeverity, LethalSeverity.lethal);
     });
 
-    test('severity is lethal when a double-factor crested offspring exists', () {
+    test('crested-only cross is sub-vital, not lethal (v6)', () {
       final result = analyzer.analyze(
         fatherMutations: {'crested_tufted'},
         motherMutations: {'crested_half_circular'},
-        offspringResults: [
-          _offspring(
-            phenotype: 'Crested',
-            probability: 1.0,
-            visualMutations: ['crested_tufted'],
-            doubleFactorIds: {'crested_tufted', 'crested_half_circular'},
-          ),
-        ],
+        offspringResults: [_dfCrested(1.0)],
       );
-
-      expect(result.highestSeverity, LethalSeverity.lethal);
+      expect(result.highestSeverity, LethalSeverity.subVital);
     });
   });
 
   group('affected probability', () {
-    test('sums affected rates across warnings', () {
-      // Spangle x Spangle: only DF offspring triggers df_spangle (rate=1.0)
+    test('sums affected rates across distinct offspring', () {
       final result = analyzer.analyze(
-        fatherMutations: {'spangle'},
-        motherMutations: {'spangle'},
+        fatherMutations: {'feather_duster'},
+        motherMutations: {'feather_duster'},
         offspringResults: [
-          _offspring(
-            phenotype: 'DF Spangle',
-            probability: 0.25,
-            visualMutations: ['spangle'],
-            doubleFactorIds: {'spangle'},
-          ),
+          _featherDuster(0.25),
           _offspring(phenotype: 'Normal', probability: 0.75),
         ],
       );
-
       // 0.25 * 1.0 = 0.25
       expect(result.totalAffectedProbability, closeTo(0.25, 0.0001));
     });
 
-    test('clamps total affected probability to 1.0', () {
-      // ino x ino (parentBothVisual, rate=1.0) flags every offspring, so the
-      // aggregate already reaches 1.0; the double-factor crested offspring adds
-      // no extra since impact is capped per offspring at its probability.
+    test('double-counting guard: one offspring hit by two combos counts once',
+        () {
+      // An offspring that is DF for feather-duster AND a double-factor crest at
+      // once is matched by both df_feather_duster and df_crested. The analyzer
+      // keeps only the highest per-offspring impact, so it is not double-counted.
+      final both = _offspring(
+        phenotype: 'Feather Duster + DF Crested',
+        probability: 0.10,
+        doubleFactorIds: {
+          GeneticsConstants.mutFeatherDuster,
+          'crested_tufted',
+          'crested_half_circular',
+        },
+      );
+      final plainDuster = _featherDuster(0.20);
       final result = analyzer.analyze(
-        fatherMutations: {'ino', 'crested_tufted'},
-        motherMutations: {'ino', 'crested_half_circular'},
-        offspringResults: [
-          _offspring(
-            phenotype: 'Ino Crested',
-            probability: 0.5,
-            visualMutations: ['ino', 'crested_tufted'],
-            doubleFactorIds: {'crested_tufted', 'crested_half_circular'},
-          ),
-          _offspring(phenotype: 'Ino Normal', probability: 0.5),
-        ],
+        fatherMutations: {'feather_duster', 'crested_tufted'},
+        motherMutations: {'feather_duster', 'crested_half_circular'},
+        offspringResults: [both, plainDuster],
       );
 
-      expect(result.totalAffectedProbability, 1.0);
+      expect(
+        result.warnings.where((w) => w.combination.id == 'df_feather_duster'),
+        isNotEmpty,
+      );
+      expect(
+        result.warnings.where((w) => w.combination.id == 'df_crested'),
+        isNotEmpty,
+      );
+      // max(0.10, 0.10) + 0.20 = 0.30, not 0.40.
+      expect(result.totalAffectedProbability, closeTo(0.30, 0.0001));
     });
   });
 
   group('empty offspring list', () {
-    test('only parent checks run with no offspring', () {
+    test('no warnings when there are no offspring to attach to', () {
       final result = analyzer.analyze(
-        fatherMutations: {'ino'},
-        motherMutations: {'ino'},
+        fatherMutations: {'feather_duster'},
+        motherMutations: {'feather_duster'},
         offspringResults: const [],
       );
-
-      // ino_x_ino triggers but no offspring to attach warnings to
       expect(result.hasWarnings, isFalse);
       expect(result.totalAffectedProbability, 0.0);
     });
-
-    test('no warnings for normal parents with empty offspring', () {
-      final result = analyzer.analyze(
-        fatherMutations: {'blue'},
-        motherMutations: {'green'},
-        offspringResults: const [],
-      );
-
-      expect(result.hasWarnings, isFalse);
-    });
-  });
-
-  group('multiple offspring matching same combo', () {
-    test('probability sums correctly for DF Spangle across results', () {
-      final result = analyzer.analyze(
-        fatherMutations: {'spangle'},
-        motherMutations: {'spangle'},
-        offspringResults: [
-          _offspring(
-            phenotype: 'DF Spangle Male',
-            probability: 0.125,
-            sex: OffspringSex.male,
-            visualMutations: ['spangle'],
-            doubleFactorIds: {'spangle'},
-          ),
-          _offspring(
-            phenotype: 'DF Spangle Female',
-            probability: 0.125,
-            sex: OffspringSex.female,
-            visualMutations: ['spangle'],
-            doubleFactorIds: {'spangle'},
-          ),
-        ],
-      );
-
-      final spangleWarnings = result.warnings.where(
-        (w) => w.combination.id == 'df_spangle',
-      );
-      expect(spangleWarnings, hasLength(2));
-      // (0.125 * 1.0) + (0.125 * 1.0) = 0.25
-      expect(result.totalAffectedProbability, closeTo(0.25, 0.0001));
-    });
-  });
-
-  group('ino-locus sub-vital pairings', () {
-    test('pallid x pallid flags all offspring with subVital severity', () {
-      final result = analyzer.analyze(
-        fatherMutations: {'pallid'},
-        motherMutations: {'pallid'},
-        offspringResults: [
-          _offspring(
-            phenotype: 'Pallid',
-            probability: 0.5,
-            visualMutations: ['pallid'],
-          ),
-          _offspring(phenotype: 'Pallid carrier', probability: 0.5),
-        ],
-      );
-
-      final pallidWarnings = result.warnings.where(
-        (w) => w.combination.id == 'pallid_x_pallid',
-      );
-      expect(pallidWarnings, hasLength(2));
-      expect(
-        pallidWarnings.first.combination.severity,
-        LethalSeverity.subVital,
-      );
-    });
-
-    test('texas_clearbody x texas_clearbody flags all offspring', () {
-      final result = analyzer.analyze(
-        fatherMutations: {'texas_clearbody'},
-        motherMutations: {'texas_clearbody'},
-        offspringResults: [
-          _offspring(
-            phenotype: 'Texas Clearbody',
-            probability: 1.0,
-            visualMutations: ['texas_clearbody'],
-          ),
-        ],
-      );
-
-      final tcbWarnings = result.warnings.where(
-        (w) => w.combination.id == 'texas_clearbody_x_texas_clearbody',
-      );
-      expect(tcbWarnings, hasLength(1));
-    });
-
-    test('pallid x normal does not trigger pallid_x_pallid warning', () {
-      final result = analyzer.analyze(
-        fatherMutations: {'pallid'},
-        motherMutations: {'blue'},
-        offspringResults: [_offspring(phenotype: 'Pallid', probability: 0.5)],
-      );
-      final pallidWarnings = result.warnings.where(
-        (w) => w.combination.id == 'pallid_x_pallid',
-      );
-      expect(pallidWarnings, isEmpty);
-    });
-  });
-
-  group('double-counting guard', () {
-    test(
-      'offspring hit by multiple warnings contributes only its highest impact',
-      () {
-        // Both Ino × Ino (rate=1.0) and DF Spangle (rate=1.0) would flag the
-        // same DF Spangle + Ino offspring. Without deduplication, the combined
-        // impact would double-count. The analyzer now keeps only the highest
-        // per-offspring impact.
-        final dfSpangleIno = _offspring(
-          phenotype: 'DF Spangle Ino',
-          probability: 0.10,
-          visualMutations: ['spangle', 'ino'],
-          doubleFactorIds: {'spangle'},
-        );
-        final plainIno = _offspring(
-          phenotype: 'Ino',
-          probability: 0.20,
-          visualMutations: ['ino'],
-        );
-        final result = analyzer.analyze(
-          fatherMutations: {'ino', 'spangle'},
-          motherMutations: {'ino', 'spangle'},
-          offspringResults: [dfSpangleIno, plainIno],
-        );
-
-        // Two distinct warning rows may exist for dfSpangleIno (ino_x_ino,
-        // df_spangle) but totalAffectedProbability must reflect it once.
-        final inoWarnings = result.warnings.where(
-          (w) => w.combination.id == 'ino_x_ino',
-        );
-        final dfSpangleWarnings = result.warnings.where(
-          (w) => w.combination.id == 'df_spangle',
-        );
-        expect(inoWarnings, isNotEmpty);
-        expect(dfSpangleWarnings, isNotEmpty);
-
-        // Expected: max(0.10*1.0, 0.10*1.0) + 0.20*1.0 = 0.30 — not 0.40.
-        expect(result.totalAffectedProbability, closeTo(0.30, 0.0001));
-      },
-    );
   });
 }

@@ -18,8 +18,9 @@ Tüm hesap çıktıları kalıcı kaydedildiğinde `calculationVersion` alanı i
 | v3 | 2026-04-19 | Z-kromozom linkage tüm ino_locus allellerine genişletildi (pallid, pearly, texas_clearbody) |
 | v4 | 2026-07-02 | Tam-dominant allelic homozigotlar `(double)` ile etiketlendi; crested × crested artık ayrı ~%25 DF sonucu üretir (DF-lethal doğru işaretlenir) |
 | v5 | 2026-07-09 | Multi-locus combiner DF (homozygous) subset'ini artık single-factor grubuna çökertmiyor; önce epistasis compound adı homo/hetero için aynı olduğundan aynı key'e merge olup `doubleFactorIds` eziliyordu → **tüm offspringHomozygous lethal'lar** (crested, DF spangle, feather duster, DF dominant pied) multi-locus crosslarda sessizce düşüyordu. DF subset artık exact-DF-set ile key'lenen ayrı `(double factor)` sonucu; uyarılar multi-locus'ta da ateşler, affected olasılık gerçek ~%25 subset |
+| v6 | 2026-07-10 | Viability denetimi: lethal/sub-vital seti MUTAVI kaynaklarıyla hizalandı. `df_crested` `lethal → subVital` (MUTAVI K10 başlığı "A Subvital Character"); sağlıklı homozigot eşleşmelerin yanlış-pozitif uyarıları — `df_spangle`, `ino_x_ino`, `pallid_x_pallid`, `texas_clearbody_x_texas_clearbody` — kaldırıldı. Pearly/Pallid artık "ino tarafından maskelenmiş" listesinde değil (ino-lokusu allelleri; allelik-seri resolver'ıyla çözülür — Pearly ino'ya dominant, Pallid co-expressed). Viability uyarı seti/severity + `maskedMutations` çıktısı değişti |
 
-Güncel değer: `GeneticsConstants.calculationVersion = 5`. `GeneticsHistory.isStale` bu sabite göre eski kayıtları işaretler; sabit değiştiğinde `genetics_constants_test.dart` literal assertion'ı ve `genetics_history_model_test.dart` isStale testleri güncellenmeli.
+Güncel değer: `GeneticsConstants.calculationVersion = 6`. `GeneticsHistory.isStale` bu sabite göre eski kayıtları işaretler; sabit değiştiğinde `genetics_constants_test.dart` literal assertion'ı ve `genetics_history_model_test.dart` isStale testleri güncellenmeli.
 
 Eski kayıtlar göründüğünde UI rozetle uyarır ("hesap eski sürüm, yeniden çalıştır"). Migration ile zorla yeniden hesaplama YOK — kullanıcı veri bütünlüğü için manuel yeniden hesap tetikler.
 
@@ -67,13 +68,20 @@ Z kromozomu üzerinde gen sırası: **O — C — I — Slate**
 - `lethal_combination_database.dart` bilinen lethal/semi-lethal/sub-vital
   kombinasyonları tanımlar; her biri bir `LethalScope` ile hangi katmanın
   tetiklediğini belirtir:
-  - `parentBothVisual`: her iki ebeveyn de tek gerekli mutasyonu görsel taşır
-    (örn. Ino × Ino) → tüm yavrular etkilenmiş sayılır
+  - `parentBothVisual`: her iki ebeveyn de tek gerekli mutasyonu görsel taşır →
+    tüm yavrular etkilenmiş sayılır. **v6'da bu scope'u kullanan tüm kayıtlar
+    kaldırıldı** (ino/pallid/tcb × self sağlıklı eşleşmelerdi); scope handler'ı
+    ileride gerçek bir parent-level lethal eklenirse diye korunur
   - `offspringHomozygous`: yavru çift doz taşır (`doubleFactorIds` üzerinden) —
-    DF Spangle, DF Dominant Pied, Feather Duster, **Crested** (2026-07-02'de
-    `parentAnyVisual`'dan bu scope'a taşındı; artık yalnızca gerçek DF ~%25
-    alt kümesi işaretlenir, tüm crested yavruları değil)
+    **Feather Duster** (lethal), **DF Dominant Pied** (semi-lethal), **Crested**
+    (v6'da subVital; MUTAVI K10). 2026-07-02'de crested `parentAnyVisual`'dan bu
+    scope'a taşındı; yalnızca gerçek DF ~%25 alt kümesi işaretlenir, tüm crested
+    yavruları değil. DF Spangle v6'da kaldırıldı (canlı)
   - `offspringVisual`: yavru tüm gerekli mutasyonları görsel taşır
+- **Viability seti evidence-tabanlı (v6):** yalnız MUTAVI/klasik kaynakların
+  desteklediği kombinasyonlar uyarılır. Sağlıklı/canlı eşleşmeye (lutino×lutino,
+  DF spangle) yanlış-pozitif uyarı EKLEME — set/severity değişimi
+  `calculationVersion` bump gerektirir
 - Tespit `ViabilityAnalyzer` (`viability_analyzer.dart`) tarafından fenotipler
   üretildikten SONRA çalışır — engine'de `isLethal` bool'u YOKTUR. Sonuç
   `LethalAnalysisResult{warnings, highestSeverity, totalAffectedProbability}`.

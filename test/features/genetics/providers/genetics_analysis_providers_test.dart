@@ -182,17 +182,18 @@ void main() {
     test(
       'enriches results with lethal combination IDs when warnings present',
       () async {
-        // Use ino visual on both parents to trigger ino_x_ino warning
+        // Crest × crest triggers the df_crested (sub-vital) warning on the
+        // ~25% double-factor subset.
         final container = ProviderContainer();
         addTearDown(container.dispose);
 
         container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
           gender: BirdGender.male,
-          mutations: {'ino': AlleleState.visual},
+          mutations: {'crested_tufted': AlleleState.carrier},
         );
         container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
           gender: BirdGender.female,
-          mutations: {'ino': AlleleState.visual},
+          mutations: {'crested_tufted': AlleleState.carrier},
         );
 
         // Await FutureProvider so derived providers resolve

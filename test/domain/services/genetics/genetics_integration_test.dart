@@ -179,7 +179,7 @@ void main() {
         );
         expect(nonDf.isNotEmpty, isTrue);
 
-        // End-to-end: the analyzer flags only the DF subset as lethal.
+        // End-to-end: the analyzer flags only the DF subset as sub-vital (v6).
         const analyzer = ViabilityAnalyzer();
         final analysis = analyzer.analyze(
           fatherMutations: const {'crested_tufted'},
@@ -190,7 +190,7 @@ void main() {
           (w) => w.combination.id == 'df_crested',
         );
         expect(crestedWarnings, hasLength(1));
-        expect(analysis.highestSeverity, LethalSeverity.lethal);
+        expect(analysis.highestSeverity, LethalSeverity.subVital);
         expect(analysis.totalAffectedProbability, closeTo(0.25, 1e-6));
       },
     );
@@ -400,14 +400,12 @@ void main() {
     );
 
     test(
-      'MULTI-locus spangle x spangle + blue still flags df_spangle for the '
-      '~25% homozygous subset (v5)',
+      'MULTI-locus spangle x spangle + blue still tags the DF subset (v5 '
+      'engine behavior), though DF spangle no longer warns (v6)',
       () {
-        // spangle is INCOMPLETE-dominant (not tam-dominant like dominant_pied),
-        // yet the offspringHomozygous scope still relies on doubleFactorIds
-        // tagging. Guard that the multi-locus combiner grouping keeps the DF
-        // subset distinct for spangle too — the v5 fix claims all four
-        // offspringHomozygous lethals, this covers spangle explicitly.
+        // The v5 fix keeps the double-factor subset distinct in multi-locus
+        // crosses. That engine tagging must still hold for spangle even though
+        // v6 removed the df_spangle VIABILITY warning (DF spangle is viable).
         final father = ParentGenotype(
           gender: BirdGender.male,
           mutations: {
@@ -428,11 +426,13 @@ void main() {
           mother: mother,
         );
 
+        // Engine still tags the ~25% DF spangle subset in a multi-locus cross.
         final dfProb = results
             .where((r) => r.doubleFactorIds.contains('spangle'))
             .fold<double>(0, (sum, r) => sum + r.probability);
         expect(dfProb, closeTo(0.25, 1e-6));
 
+        // But the viability analyzer no longer raises df_spangle (v6).
         const analyzer = ViabilityAnalyzer();
         final analysis = analyzer.analyze(
           fatherMutations: const {'spangle', 'blue'},
@@ -441,10 +441,9 @@ void main() {
         );
         expect(
           analysis.warnings.any((w) => w.combination.id == 'df_spangle'),
-          isTrue,
-          reason: 'df_spangle must fire in multi-locus crosses too',
+          isFalse,
+          reason: 'df_spangle was removed in v6 (DF spangle is viable)',
         );
-        expect(analysis.totalAffectedProbability, closeTo(0.25, 1e-6));
       },
     );
 

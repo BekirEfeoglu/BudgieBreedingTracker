@@ -172,14 +172,16 @@ void main() {
       expect(result.maskedMutations, contains('Greywing'));
     });
 
-    test('Ino masks Pearly and Pallid simultaneously', () {
+    test('Ino does NOT mask its own locus alleles Pearly/Pallid (v6)', () {
       final result = engine.resolveCompoundPhenotypeDetailed({
         'ino',
         'pallid',
         'pearly',
       });
-      // PallidIno name, but pearly is masked
-      expect(result.maskedMutations, contains('Pearly'));
+      // Pearly and Pallid are ino-locus alleles resolved by the allelic-series
+      // resolver — they are not masked by ino.
+      expect(result.maskedMutations, isNot(contains('Pearly')));
+      expect(result.maskedMutations, isNot(contains('Pallid')));
     });
 
     test('Lacewing masks Cinnamon only when PallidIno', () {

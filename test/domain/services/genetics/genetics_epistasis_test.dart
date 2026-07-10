@@ -209,7 +209,7 @@ void main() {
   // 14. LETHAL COMBINATION DETECTION
   // =====================================================================
   group('Lethal combination detection', () {
-    test('Crested x Crested → lethal warning', () {
+    test('Crested x Crested → sub-vital warning (v6)', () {
       final father = ParentGenotype(
         gender: BirdGender.male,
         mutations: {'crested_tufted': AlleleState.carrier},
@@ -237,7 +237,7 @@ void main() {
       );
     });
 
-    test('Ino x Ino → sub-vital warning', () {
+    test('Ino x Ino → no warning (healthy pairing, removed in v6)', () {
       final father = ParentGenotype(
         gender: BirdGender.male,
         mutations: {'ino': AlleleState.visual},
@@ -258,15 +258,14 @@ void main() {
         offspringResults: results,
       );
 
-      expect(analysis.hasWarnings, isTrue);
+      expect(analysis.hasWarnings, isFalse);
       expect(
         analysis.warnings.any((w) => w.combination.id == 'ino_x_ino'),
-        isTrue,
+        isFalse,
       );
-      expect(analysis.highestSeverity, LethalSeverity.subVital);
     });
 
-    test('DF Spangle detection in SF x SF cross', () {
+    test('DF Spangle → no warning (viable, removed in v6)', () {
       final father = ParentGenotype(
         gender: BirdGender.male,
         mutations: {'spangle': AlleleState.carrier},
@@ -287,10 +286,9 @@ void main() {
         offspringResults: results,
       );
 
-      expect(analysis.hasWarnings, isTrue);
       expect(
         analysis.warnings.any((w) => w.combination.id == 'df_spangle'),
-        isTrue,
+        isFalse,
       );
     });
 

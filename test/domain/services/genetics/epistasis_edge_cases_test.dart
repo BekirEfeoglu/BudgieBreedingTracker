@@ -57,9 +57,11 @@ void main() {
       });
 
       expect(detailed.name, contains('Albino'));
-      // Opaline, pearly, and spangle should all be masked by ino
+      // Opaline and spangle (other loci) are masked by ino; Pearly is an
+      // ino-locus allele and is NOT masked (v6).
       expect(detailed.maskedMutations, contains('Opaline'));
-      expect(detailed.maskedMutations, contains('Pearly'));
+      expect(detailed.maskedMutations, contains('Spangle'));
+      expect(detailed.maskedMutations, isNot(contains('Pearly')));
     });
 
     test('double factor spangle + ino still resolves as ino variant', () {

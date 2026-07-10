@@ -70,12 +70,11 @@ void _collectMaskedMutations(
   if (visualMutations.contains(GeneticsConstants.mutGreywing)) {
     masked.add('Greywing');
   }
-  if (visualMutations.contains(GeneticsConstants.mutPearly)) {
-    masked.add('Pearly');
-  }
-  if (visualMutations.contains(GeneticsConstants.mutPallid)) {
-    masked.add('Pallid');
-  }
+  // Pearly and Pallid are NOT masked here: they are ino-locus ALLELES, so a
+  // bird expressing them alongside ino is a compound heterozygote resolved by
+  // the allelic-series resolver (e.g. "PallidIno", "Pearly") — they co-express
+  // or win by dominance, they are not masked by ino. Adding them to `masked`
+  // contradicted their own phenotype name.
   // Cinnamon is masked by Ino unless it's already part of the Lacewing name
   if (hasCinnamon && !parts.contains('Lacewing')) {
     masked.add('Cinnamon');

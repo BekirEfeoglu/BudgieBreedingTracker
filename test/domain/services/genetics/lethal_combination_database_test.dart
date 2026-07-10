@@ -36,14 +36,28 @@ void main() {
   group('LethalCombinationDatabase.getById', () {
     test('returns known combinations and null for unknown id', () {
       final crested = LethalCombinationDatabase.getById('df_crested');
-      final spangle = LethalCombinationDatabase.getById('df_spangle');
+      final featherDuster = LethalCombinationDatabase.getById(
+        'df_feather_duster',
+      );
       final unknown = LethalCombinationDatabase.getById('missing');
 
       expect(crested, isNotNull);
-      expect(crested!.severity, LethalSeverity.lethal);
-      expect(spangle, isNotNull);
-      expect(spangle!.severity, LethalSeverity.subVital);
+      // v6: crest is sub-vital (MUTAVI K10), not lethal.
+      expect(crested!.severity, LethalSeverity.subVital);
+      expect(featherDuster, isNotNull);
+      expect(featherDuster!.severity, LethalSeverity.lethal);
       expect(unknown, isNull);
+    });
+
+    test('v6 removed the false-positive viability warnings', () {
+      // Healthy homozygous pairings are no longer flagged (see v6 audit).
+      expect(LethalCombinationDatabase.getById('df_spangle'), isNull);
+      expect(LethalCombinationDatabase.getById('ino_x_ino'), isNull);
+      expect(LethalCombinationDatabase.getById('pallid_x_pallid'), isNull);
+      expect(
+        LethalCombinationDatabase.getById('texas_clearbody_x_texas_clearbody'),
+        isNull,
+      );
     });
   });
 
@@ -76,42 +90,40 @@ void main() {
       },
     );
 
-    test(
-      'flags ino x ino for every offspring when both parents are visual ino',
-      () {
-        final analysis = analyzer.analyze(
-          fatherMutations: const {'ino'},
-          motherMutations: const {'ino'},
-          offspringResults: [
-            _offspring(phenotype: 'Ino', probability: 0.6),
-            _offspring(phenotype: 'Ino', probability: 0.4),
-          ],
-        );
-
-        expect(analysis.warnings, hasLength(2));
-        expect(
-          analysis.warnings.every((w) => w.combination.id == 'ino_x_ino'),
-          isTrue,
-        );
-        expect(analysis.highestSeverity, LethalSeverity.subVital);
-        expect(analysis.totalAffectedProbability, closeTo(1.0, 0.0001));
-      },
-    );
-
-    test('does not flag ino x ino when only one parent is visual ino', () {
+    test('does not flag healthy ino x ino (removed in v6)', () {
       final analysis = analyzer.analyze(
-        fatherMutations: const {},
+        fatherMutations: const {'ino'},
         motherMutations: const {'ino'},
         offspringResults: [
-          _offspring(phenotype: 'Ino', probability: 0.5),
-          _offspring(phenotype: 'Normal', probability: 0.5),
+          _offspring(phenotype: 'Ino', probability: 0.6),
+          _offspring(phenotype: 'Ino', probability: 0.4),
         ],
       );
 
-      expect(
-        analysis.warnings.where((w) => w.combination.id == 'ino_x_ino'),
-        isEmpty,
+      // v6: Ino × Ino is a healthy, standard pairing — no viability warning.
+      expect(analysis.hasWarnings, isFalse);
+      expect(analysis.warnings, isEmpty);
+    });
+
+    test('flags the double-factor feather-duster offspring as lethal', () {
+      final analysis = analyzer.analyze(
+        fatherMutations: const {'feather_duster'},
+        motherMutations: const {'feather_duster'},
+        offspringResults: [
+          _offspring(
+            phenotype: 'Feather Duster',
+            probability: 0.25,
+            visualMutations: const ['feather_duster'],
+            doubleFactorIds: const {'feather_duster'},
+          ),
+          _offspring(phenotype: 'Normal', probability: 0.75),
+        ],
       );
+
+      expect(analysis.warnings, hasLength(1));
+      expect(analysis.warnings.single.combination.id, 'df_feather_duster');
+      expect(analysis.highestSeverity, LethalSeverity.lethal);
+      expect(analysis.totalAffectedProbability, closeTo(0.25, 0.0001));
     });
 
     test(
@@ -133,75 +145,75 @@ void main() {
 
         expect(analysis.warnings, hasLength(1));
         expect(analysis.warnings.single.combination.id, 'df_crested');
-        expect(analysis.highestSeverity, LethalSeverity.lethal);
+        // v6: crest is sub-vital, not lethal.
+        expect(analysis.highestSeverity, LethalSeverity.subVital);
         expect(analysis.totalAffectedProbability, closeTo(0.25, 0.0001));
       },
     );
 
-    test(
-      'sums across combinations and clamps total affected probability to 1.0',
-      () {
-        final analysis = analyzer.analyze(
-          fatherMutations: const {'spangle', 'ino'},
-          motherMutations: const {'spangle', 'ino'},
-          offspringResults: [
-            _offspring(
-              phenotype: 'Normal',
-              probability: 0.25,
-              compoundPhenotype: 'Double Factor Spangle',
-              visualMutations: const ['spangle'],
-              doubleFactorIds: const {'spangle'},
-            ),
-            _offspring(
-              phenotype: 'Ino',
-              probability: 0.75,
-              visualMutations: const ['ino'],
-            ),
-          ],
-        );
+    test('sums the affected probability across distinct offspring', () {
+      final analysis = analyzer.analyze(
+        fatherMutations: const {'feather_duster', 'crested_tufted'},
+        motherMutations: const {'feather_duster', 'crested_half_circular'},
+        offspringResults: [
+          _offspring(
+            phenotype: 'Feather Duster',
+            probability: 0.25,
+            visualMutations: const ['feather_duster'],
+            doubleFactorIds: const {'feather_duster'},
+          ),
+          _offspring(
+            phenotype: 'DF Crested',
+            probability: 0.25,
+            visualMutations: const ['crested_tufted'],
+            doubleFactorIds: const {'crested_tufted', 'crested_half_circular'},
+          ),
+        ],
+      );
 
-        expect(
-          analysis.warnings.where((w) => w.combination.id == 'ino_x_ino'),
-          hasLength(2),
-        );
-        expect(
-          analysis.warnings.where((w) => w.combination.id == 'df_spangle'),
-          hasLength(1),
-        );
-        expect(analysis.highestSeverity, LethalSeverity.subVital);
-        expect(analysis.totalAffectedProbability, 1.0);
-      },
-    );
+      expect(
+        analysis.warnings.where((w) => w.combination.id == 'df_feather_duster'),
+        hasLength(1),
+      );
+      expect(
+        analysis.warnings.where((w) => w.combination.id == 'df_crested'),
+        hasLength(1),
+      );
+      expect(analysis.totalAffectedProbability, closeTo(0.5, 0.0001));
+    });
 
     test(
       'reports lethal as highest severity when lethal and sub-vital coexist',
       () {
         final analysis = analyzer.analyze(
-          fatherMutations: const {'crested_tufted', 'ino'},
-          motherMutations: const {'crested_half_circular', 'ino'},
+          fatherMutations: const {'feather_duster', 'crested_tufted'},
+          motherMutations: const {'feather_duster', 'crested_half_circular'},
           offspringResults: [
+            _offspring(
+              phenotype: 'Feather Duster',
+              probability: 0.25,
+              visualMutations: const ['feather_duster'],
+              doubleFactorIds: const {'feather_duster'},
+            ),
             _offspring(
               phenotype: 'DF Crested',
               probability: 0.25,
-              visualMutations: const ['crested_tufted', 'ino'],
+              visualMutations: const ['crested_tufted'],
               doubleFactorIds: const {'crested_tufted', 'crested_half_circular'},
             ),
-            _offspring(phenotype: 'Ino', probability: 0.75),
           ],
         );
 
-        // Only the DF crested offspring triggers df_crested; ino_x_ino is a
-        // parent-level check so it flags every offspring.
+        expect(
+          analysis.warnings.where((w) => w.combination.id == 'df_feather_duster'),
+          hasLength(1),
+        );
         expect(
           analysis.warnings.where((w) => w.combination.id == 'df_crested'),
           hasLength(1),
         );
-        expect(
-          analysis.warnings.where((w) => w.combination.id == 'ino_x_ino'),
-          hasLength(2),
-        );
+        // Lethal (feather duster) outranks sub-vital (crested).
         expect(analysis.highestSeverity, LethalSeverity.lethal);
-        expect(analysis.totalAffectedProbability, 1.0);
       },
     );
   });

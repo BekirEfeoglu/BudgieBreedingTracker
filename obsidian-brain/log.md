@@ -4,6 +4,31 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-10] fix | Genetics engine audit — viability set aligned to MUTAVI (v6)
+
+3-agent read-only audit of the genetics engine (inheritance math, mutation data,
+epistasis+viability), each finding verified against the code + the corrected
+MUTAVI guide. **Core math confirmed correct** (sex-linked genotype, AR/AID,
+allelic series incl. sex-linked hemizygous females, ino masking). Fixes landed
+(calculationVersion v5→v6, viability output changed):
+- `df_crested` severity `lethal → subVital` — the app's own cited source
+  (MUTAVI K10, "Crest: A Subvital Character") calls crest subvital, not lethal.
+- Removed false-positive sub-vital warnings on healthy homozygous pairings:
+  `df_spangle` (DF spangle is viable), `ino_x_ino` / `pallid_x_pallid` /
+  `texas_clearbody_x_texas_clearbody` (standard, healthy — the guide never
+  warned them; an old comment mis-attributed it).
+- `epistasis_engine_modifiers` no longer lists Pearly/Pallid as "masked by Ino"
+  — they are ino-locus alleles resolved by the allelic-series resolver (Pearly
+  is dominant to ino; Pallid co-expresses), so masking them contradicted the
+  phenotype name.
+Non-versioned fixes: feather_duster description `(fd/fd)`→`(fdu/fdu)` (fd is
+Faded's symbol); defensive comment on pallid's ino-locus rank. Extensive test
+updates across 8 files to the new evidence-based behavior; 1016 genetics domain
++ 1018 feature + e2e green. Mutation catalog verified 39/39 vs the guide, all
+inheritance types/loci/sex-linkage correct. Debatable items left for the domain
+owner: AD "visual = homozygous" model (visual×normal→100% mutant vs guide 50/50
+heterozygous default); ino not masking melanin-pattern names (Blackface etc.).
+
 ## [2026-07-10] feat | Genetics roadmap Q1 — pruning diagnostic + coverage warning
 
 Multi-locus builds drop combinations below `probabilityPruningThreshold` then
@@ -164,20 +189,5 @@ regression test, so it was reverted and deferred to a dedicated task (needs a
 proper multi-locus DF-path trace + calculationVersion 4→5 bump). 113 unused_index
 INFOs left untouched (trigram/FK-covering/low-traffic — don't-drop lesson).
 
-## [2026-07-09] feat | Close 7 gaps (gamification brick, DM retry, MFA recovery, feedback limit, auto-backup, read receipts, calendar reminders)
-
-Seven-item sweep, each its own commit + prod migration where needed (applied
-Supabase-first via MCP, advisors clean): **(1)** gamification `total_xp` drift
-brick fixed with an AFTER INSERT trigger deriving `user_levels` from
-`SUM(xp_transactions)` (`20260709113822`, backfill heals drift). **(2)** DM
-photo: cooldown pre-check + retry replays the uploaded image, not text.
-**(3)** MFA recovery codes — `mfa_recovery_codes` (SHA-256, own-scope RLS) +
-`redeem_mfa_recovery_code` RPC (private DEFINER deletes `auth.mfa_factors`,
-public INVOKER wrapper; `20260709115154`/`115445`). **(4)** feedback rate limit
-BEFORE INSERT trigger, 5/user/hour (`20260709120555`). **(5)** wired the
-orphaned `BackupScheduler`/`BackupService` + premium frequency picker + resume
-trigger. **(6)** reciprocal `readReceiptsEnabledProvider` (skips write + caps
-bubble). **(7)** calendar reminder editing via `updateEvent(reconcileReminder)`.
-Removed 5 known-gaps rows; tr/en/de keys + owner rules updated per item.
 
 Older entries are archived in [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

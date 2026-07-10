@@ -22,7 +22,7 @@ Source: `.claude/rules/genetics.md` (primary), `.claude/rules/local-ai.md` (AI i
 
 Every result stores the algorithm version. When the engine is updated, old results can be flagged stale.
 
-- Current version: `v5` (2026-07-09: multi-locus combiner keeps the double-factor subset a distinct `(double factor)` result keyed by its exact DF set, so offspringHomozygous lethals — crested, DF spangle, feather duster, DF dominant pied — fire in multi-locus crosses instead of being silently merged away; v4 tagged full-dominant homozygotes "(double)")
+- Current version: `v6` (2026-07-10: viability audit aligned the lethal/sub-vital set with the cited MUTAVI sources — `df_crested` downgraded lethal→sub-vital per MUTAVI K10, and the false-positive warnings on healthy homozygous pairings `df_spangle`/`ino_x_ino`/`pallid_x_pallid`/`texas_clearbody_x_texas_clearbody` were removed; Pearly/Pallid no longer listed as masked-by-Ino since they are ino-locus alleles resolved by the allelic-series resolver. v5 kept the DF subset distinct in multi-locus crosses)
 
 ## Confidence Thresholds (AI-assisted)
 

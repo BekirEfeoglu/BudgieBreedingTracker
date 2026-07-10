@@ -21,6 +21,12 @@ abstract class MutationDataSexLinked {
       visualEffect:
           'Softened markings with diluted melanin and clearer body tone',
       locusId: 'ino_locus',
+      // NOTE: this rank is a tie-breaker only. Pallid does NOT follow simple
+      // dominance at the ino locus — it CO-EXPRESSES (compound) with the other
+      // ino alleles (PallidIno, Pallid Pearly, Pallid Texas Clearbody). Every
+      // pallid pair has an explicit rule in allele_resolver_compounds.dart, so
+      // the rank fallback must never be reached for pallid. If a new ino-locus
+      // allele is added, add an explicit `pallid + X` compound rule too.
       dominanceRank: 2,
     ),
     BudgieMutationRecord(
@@ -191,7 +197,7 @@ abstract class MutationDataSexLinked {
       localizationKey: 'genetics.mutation_feather_duster',
       description:
           'Lethal autosomal recessive causing continuously growing, curly feathers. '
-          'Homozygous birds (fd/fd) rarely survive beyond a few months',
+          'Homozygous birds (fdu/fdu) rarely survive beyond a few months',
       inheritanceType: InheritanceType.autosomalRecessive,
       dominance: Dominance.recessive,
       alleleSymbol: 'fdu',

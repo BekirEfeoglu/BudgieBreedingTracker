@@ -119,35 +119,29 @@ class LethalAnalysisResult {
 abstract class LethalCombinationDatabase {
   /// All known lethal/semi-lethal combinations.
   static const List<LethalCombination> allCombinations = [
-    // ── Crested × Crested (Embryonic Lethal for DF) ──
-    // Classical genetics: a double dose of crested (DF — two crest-locus
-    // alleles, whether the same or a compound of two crest alleles) is
-    // embryonic lethal. Only the ~25% of offspring that actually inherit two
-    // crest alleles die in shell, so this uses offspring-level homozygous
-    // scope (affectedRate 1.0 applied to that DF subset) rather than flagging
-    // every offspring of a crested pairing.
+    // ── Crested × Crested (Sub-Vital for DF) ──
+    // The app's cited source, MUTAVI K10 ("Crest: A Subvital Character in the
+    // Budgerigar"), classifies crest as SUB-VITAL — associated with embryo loss
+    // and neurological issues but not strictly 100% lethal. Only the ~25% of
+    // offspring that inherit two crest-locus alleles (DF, whether homozygous or
+    // a compound of two crest alleles) are affected, so this uses offspring-
+    // level homozygous scope (affectedRate 1.0 over that DF subset) rather than
+    // flagging every offspring of a crested pairing. Downgraded from `lethal`
+    // 2026-07-10 to match the cited source (v6).
     LethalCombination(
       id: 'df_crested',
       nameKey: 'genetics.lethal_df_crested_name',
       descriptionKey: 'genetics.lethal_df_crested_desc',
-      severity: LethalSeverity.lethal,
+      severity: LethalSeverity.subVital,
       affectedRate: 1.0,
       requiredMutationIds: GeneticsConstants.crestedAlleleIds,
       scope: LethalScope.offspringHomozygous,
     ),
 
-    // ── Double Factor Spangle (Sub-vital) ──
-    // DF Spangle birds are viable but often weaker with reduced feather quality.
-    // Spangle x Spangle → 25% DF Spangle, 50% SF Spangle, 25% Normal.
-    LethalCombination(
-      id: 'df_spangle',
-      nameKey: 'genetics.lethal_df_spangle_name',
-      descriptionKey: 'genetics.lethal_df_spangle_desc',
-      severity: LethalSeverity.subVital,
-      affectedRate: 1.0,
-      requiredMutationIds: {GeneticsConstants.mutSpangle},
-      scope: LethalScope.offspringHomozygous,
-    ),
+    // NOTE: Double Factor Spangle was removed as a viability warning
+    // (2026-07-10, v6). DF Spangle birds are fully viable, commonly bred
+    // all-yellow/all-white birds; any reduced feather quality is cosmetic, not
+    // a fitness/survival concern, so a sub-vital warning over-stated the risk.
 
     // ── Double Factor Dominant Pied (Semi-Lethal) ──
     // DF Dominant (Australian) Pied has significantly reduced viability.
@@ -162,21 +156,11 @@ abstract class LethalCombinationDatabase {
       scope: LethalScope.offspringHomozygous,
     ),
 
-    // ── Visual Ino x Visual Ino (Sub-Vital) ──
-    // Both parents visual Ino → all offspring visual Ino.
-    // Documented health issues: feather cysts, reduced immune function,
-    // smaller size, higher chick mortality, eye problems.
-    // Classified as sub-vital rather than semi-lethal: offspring are viable
-    // but with reduced fitness. The genetics guide warns against this combination.
-    LethalCombination(
-      id: 'ino_x_ino',
-      nameKey: 'genetics.lethal_ino_x_ino_name',
-      descriptionKey: 'genetics.lethal_ino_x_ino_desc',
-      severity: LethalSeverity.subVital,
-      affectedRate: 1.0,
-      requiredMutationIds: {GeneticsConstants.mutIno},
-      scope: LethalScope.parentBothVisual,
-    ),
+    // NOTE: Ino × Ino was removed as a viability warning (2026-07-10, v6).
+    // Lutino/Albino budgies are a standard, healthy, widely-bred variety and
+    // Ino × Ino simply yields more Ino offspring; there is no established
+    // sub-vital effect for budgie ino homozygosity, and the cited guide does
+    // NOT warn against this pairing (an earlier comment mis-attributed it).
     // ── Feather Duster (Lethal) ──
     // Homozygous feather duster (fdu/fdu) is invariably lethal.
     // Affected chicks have continuously growing, curly feathers and rarely
@@ -191,36 +175,10 @@ abstract class LethalCombinationDatabase {
       scope: LethalScope.offspringHomozygous,
     ),
 
-    // ── Visual Pallid × Visual Pallid (Sub-Vital) ──
-    // Pallid belongs to the same ino_locus as Ino but removes less melanin.
-    // Homozygous Pallid offspring are viable but show reduced body melanin,
-    // increased eye sensitivity, and somewhat lower vigour. Weaker effect
-    // than full Ino but still flagged as sub-vital so breeders can plan
-    // around the ino-locus homozygosity risk.
-    LethalCombination(
-      id: 'pallid_x_pallid',
-      nameKey: 'genetics.lethal_pallid_x_pallid_name',
-      descriptionKey: 'genetics.lethal_pallid_x_pallid_desc',
-      severity: LethalSeverity.subVital,
-      affectedRate: 1.0,
-      requiredMutationIds: {GeneticsConstants.mutPallid},
-      scope: LethalScope.parentBothVisual,
-    ),
-
-    // ── Visual Texas Clearbody × Visual Texas Clearbody (Sub-Vital) ──
-    // Texas Clearbody is an ino_locus allele that reduces body melanin while
-    // preserving wing markings. Homozygous offspring can exhibit eye and
-    // immune issues analogous (though milder) to full Ino × Ino. Treated as
-    // sub-vital to warn breeders about the ino-locus dosage effect.
-    LethalCombination(
-      id: 'texas_clearbody_x_texas_clearbody',
-      nameKey: 'genetics.lethal_tcb_x_tcb_name',
-      descriptionKey: 'genetics.lethal_tcb_x_tcb_desc',
-      severity: LethalSeverity.subVital,
-      affectedRate: 1.0,
-      requiredMutationIds: {GeneticsConstants.mutTexasClearbody},
-      scope: LethalScope.parentBothVisual,
-    ),
+    // NOTE: Pallid × Pallid and Texas Clearbody × Texas Clearbody were removed
+    // as viability warnings (2026-07-10, v6) for the same reason as Ino × Ino —
+    // these ino-locus alleles are viable in the homozygous state and the cited
+    // source does not flag their homozygosity as sub-vital.
   ];
 
   /// Find a combination by ID.

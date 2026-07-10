@@ -64,10 +64,9 @@ abstract final class GeneticsConstants {
 
   /// Crested locus: tufted / half-circular / full-circular alleles.
   /// The double-factor (homozygous) crested subset is classified
-  /// `LethalSeverity.lethal` in `lethal_combination_database.dart` (the v4
-  /// DF-lethal decision, endorsed by genetics.md) — MUTAVI K10 calls crest
-  /// "subvital", but only the ~25% DF subset is flagged, not every crested
-  /// pairing.
+  /// `LethalSeverity.subVital` in `lethal_combination_database.dart` (v6, 2026-
+  /// 07-10) to match the cited source MUTAVI K10 ("Crest: A Subvital
+  /// Character"). Only the ~25% DF subset is flagged, not every crested pairing.
   static const String locusCrested = 'crested';
 
   // ── Sex-linked mutation IDs ──
@@ -152,7 +151,16 @@ abstract final class GeneticsConstants {
   /// cross. The DF subset is now a distinct "(double factor)" result keyed by
   /// its exact double-factor set, so those lethal/semi-lethal warnings fire in
   /// multi-locus crosses and their affected probability is the true ~25% subset.
-  static const int calculationVersion = 5;
+  ///
+  /// v6 (2026-07-10): viability audit aligned the lethal/sub-vital set with the
+  /// cited MUTAVI sources. `df_crested` downgraded lethal → sub-vital (MUTAVI
+  /// K10 titles crest "A Subvital Character"); the false-positive sub-vital
+  /// warnings on healthy homozygous pairings — `df_spangle`, `ino_x_ino`,
+  /// `pallid_x_pallid`, `texas_clearbody_x_texas_clearbody` — were removed. The
+  /// ino-locus alleles Pearly/Pallid are no longer listed as "masked by Ino"
+  /// (they co-express/resolve via the allelic-series resolver). These change the
+  /// viability warning set/severity and the maskedMutations output.
+  static const int calculationVersion = 6;
 
   // ── ReverseCalculator limits ──
   /// Maximum parent genotype options evaluated per locus in reverse calculation.

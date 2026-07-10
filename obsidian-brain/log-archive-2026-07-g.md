@@ -5,6 +5,22 @@ full-scope audit follow-ups.
 
 ---
 
+## [2026-07-09] feat | Close 7 gaps (gamification brick, DM retry, MFA recovery, feedback limit, auto-backup, read receipts, calendar reminders)
+
+Seven-item sweep, each its own commit + prod migration where needed (applied
+Supabase-first via MCP, advisors clean): **(1)** gamification `total_xp` drift
+brick fixed with an AFTER INSERT trigger deriving `user_levels` from
+`SUM(xp_transactions)` (`20260709113822`, backfill heals drift). **(2)** DM
+photo: cooldown pre-check + retry replays the uploaded image, not text.
+**(3)** MFA recovery codes — `mfa_recovery_codes` (SHA-256, own-scope RLS) +
+`redeem_mfa_recovery_code` RPC (private DEFINER deletes `auth.mfa_factors`,
+public INVOKER wrapper; `20260709115154`/`115445`). **(4)** feedback rate limit
+BEFORE INSERT trigger, 5/user/hour (`20260709120555`). **(5)** wired the
+orphaned `BackupScheduler`/`BackupService` + premium frequency picker + resume
+trigger. **(6)** reciprocal `readReceiptsEnabledProvider` (skips write + caps
+bubble). **(7)** calendar reminder editing via `updateEvent(reconcileReminder)`.
+Removed 5 known-gaps rows; tr/en/de keys + owner rules updated per item.
+
 ## [2026-07-09] fix | Audit sweep — gamification profile sync, rank icons, post photo cap
 
 Parallel-agent audit of the post-`f435373` diff (community redesign, 10-tier
