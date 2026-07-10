@@ -4,9 +4,26 @@ Source: `.claude/rules/testing.md`, `.claude/rules/test-stability.md`
 
 ## Stats
 
-- 914 test files, 11,436+ individual tests (CLAUDE.md § Codebase Stats; a full `flutter test` run reports more due to parameterized tests)
+- 917 test files, 11,488+ individual tests (CLAUDE.md § Codebase Stats; a full `flutter test` run reports more due to parameterized tests)
 - CI timeout: 30 minutes (job-level 40 minutes)
-- Golden tests excluded from main CI (`--exclude-tags golden`)
+
+## Test Tags → CI Gates
+
+The PR `test` job runs with `--exclude-tags "golden || e2e || community"` — a
+tagged test drops off the PR gate entirely.
+
+| Tag | Runs in | Reserved for |
+|-----|---------|--------------|
+| (none) | `test` job — every PR/push | Default: ALL mock-based unit tests |
+| `golden` | `golden-test` job (every PR, Linux) | Visual regression |
+| `e2e`, `scenario` | `e2e-community-test` (weekly cron + manual) | Heavy end-to-end flows |
+| `community` | `e2e-community-test` (weekly) | ONLY heavy community/marketplace/messaging screen+widget suites |
+
+Never tag a mocktail-based model/remote-source/repository/provider test with
+`community` — it loses PR protection and regressions surface a week late
+(2026-07-09: 37 files were untagged for exactly this; 537 tests, ~10s, back on
+the PR gate). Adding any new tag-based exclusion falls under the skip policy:
+document reason + owner + what coverage remains on the PR gate.
 
 ## Structure
 
