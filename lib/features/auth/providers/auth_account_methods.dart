@@ -36,6 +36,27 @@ mixin _AuthAccountMixin {
       // legacy path through so non-MFA users aren't blocked.
       AppLogger.warning('[Auth] Failed to read AAL: $e');
       AppLogger.debug('[Auth] AAL read stack trace: $st');
+      // Previously this catch just returned, silently ALLOWING the
+      // destructive action even for MFA-enrolled users when the AAL read
+      // failed. Fall back to the enrolled-factor list and actually fail
+      // closed for a known verified factor (a stolen password must not
+      // bypass the second factor). If the factor list itself can't be read,
+      // stay on the legacy path — the caller still gates on the password
+      // reauth plus the post-reauth AAL re-check.
+      var hasVerifiedFactor = false;
+      try {
+        final factors = await _client.auth.mfa.listFactors();
+        hasVerifiedFactor = factors.totp.any(
+          (f) => f.status == FactorStatus.verified,
+        );
+      } catch (inner) {
+        AppLogger.warning(
+          '[Auth] MFA factor fallback failed after AAL read error: $inner',
+        );
+      }
+      if (hasVerifiedFactor) {
+        throw const MfaAssuranceRequiredException();
+      }
     }
   }
 

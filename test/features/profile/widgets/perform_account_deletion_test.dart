@@ -336,7 +336,14 @@ void main() {
             factorId: 'factor-1',
             code: '123456',
           ),
-        ).thenAnswer((_) async => true);
+        ).thenAnswer((_) async {
+          // A successful TOTP challenge elevates the session to AAL2, so the
+          // post-challenge AAL2 gate in completeAfterMfaChallenge now passes.
+          when(
+            () => mockAuth.requireAal2ForDestructiveAction(),
+          ).thenAnswer((_) async {});
+          return true;
+        });
 
         await pumpLocalizedApp(tester, buildSubject());
         await tester.tap(find.text('trigger-delete'));

@@ -40,7 +40,16 @@ class AccountDeletionController {
   /// a TOTP challenge, after [deleteAccount] threw
   /// [MfaAssuranceRequiredException]. Skips password re-verification —
   /// that already succeeded in the [deleteAccount] call that threw.
-  Future<void> completeAfterMfaChallenge() => _performDestructiveCleanup();
+  Future<void> completeAfterMfaChallenge() async {
+    // Symmetry with [deleteAccount]: confirm the just-completed TOTP
+    // challenge actually elevated the session to AAL2 BEFORE any irreversible
+    // step. _performDestructiveCleanup deletes remote storage files before
+    // the deletion RPC re-checks AAL2, so without this gate a session that
+    // did not truly reach AAL2 would wipe files first and only fail at the
+    // RPC. Fails closed (MfaAssuranceRequiredException) otherwise.
+    await _ref.read(authActionsProvider).requireAal2ForDestructiveAction();
+    await _performDestructiveCleanup();
+  }
 
   Future<void> _performDestructiveCleanup() async {
     final userId = _ref.read(currentUserIdProvider);
