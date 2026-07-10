@@ -9,7 +9,6 @@ Widget _buildFeedScrollView({
   required CommunityFeedTab tab,
   required ScrollController scrollController,
   required bool mounted,
-  required int newPostCount,
   required int lastSeenCount,
   required bool showSwipeHint,
   required void Function(int) onUpdateNewPostCount,
@@ -89,8 +88,9 @@ Widget _buildFeedScrollView({
           ],
         ),
       ),
-      // "New posts" floating banner with slide-in animation
-      _NewPostsBannerOverlay(newPostCount: newPostCount, onTap: onScrollToTop),
+      // "New posts" floating banner with slide-in animation. Watches the count
+      // itself so a background insert rebuilds only the banner.
+      _NewPostsBannerOverlay(onTap: onScrollToTop),
       // Swipe onboarding hint
       if (showSwipeHint) _SwipeHintOverlay(onDismiss: onDismissSwipeHint),
     ],
@@ -218,17 +218,18 @@ bool _isLocalizationKey(String value) {
 }
 
 /// Floating banner overlay for new posts notification.
-class _NewPostsBannerOverlay extends StatelessWidget {
-  final int newPostCount;
+///
+/// A [ConsumerWidget] that watches [communityNewPostCountProvider] itself, so
+/// an incoming foreign post rebuilds only this banner — not the entire feed
+/// scroll view (which would otherwise re-run the visible-posts filter/sort).
+class _NewPostsBannerOverlay extends ConsumerWidget {
   final VoidCallback onTap;
 
-  const _NewPostsBannerOverlay({
-    required this.newPostCount,
-    required this.onTap,
-  });
+  const _NewPostsBannerOverlay({required this.onTap});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final newPostCount = ref.watch(communityNewPostCountProvider);
     return Positioned(
       top: AppSpacing.sm,
       left: 0,

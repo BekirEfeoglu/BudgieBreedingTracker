@@ -48,11 +48,15 @@ void main() {
   }
 
   group('communityVisiblePostsProvider - explore tab', () {
-    test('returns all posts sorted by newest', () {
+    test('preserves the feed notifier order for newest (no re-sort)', () {
+      // The notifier delivers posts newest-first (+ pinned-first); the visible
+      // provider must preserve that order rather than re-sorting by createdAt
+      // (re-sorting is wasted per-tap work and would drop the pinned-first
+      // prefix). Input is newest-first here to mirror what the notifier emits.
       final posts = [
-        makePost('p1', createdAt: now.subtract(const Duration(hours: 2))),
-        makePost('p2', createdAt: now.subtract(const Duration(hours: 1))),
         makePost('p3', createdAt: now),
+        makePost('p2', createdAt: now.subtract(const Duration(hours: 1))),
+        makePost('p1', createdAt: now.subtract(const Duration(hours: 2))),
       ];
 
       final container = createContainer(posts: posts);
@@ -63,9 +67,7 @@ void main() {
         communityVisiblePostsProvider(CommunityFeedTab.explore),
       );
 
-      expect(visible.length, 3);
-      expect(visible.first.id, 'p3');
-      expect(visible.last.id, 'p1');
+      expect(visible.map((p) => p.id).toList(), ['p3', 'p2', 'p1']);
     });
 
     test('sorts by trending when explore sort is trending', () {
@@ -162,21 +164,25 @@ void main() {
       expect(visible.first.id, 'followed');
     });
 
-    test('always sorts by newest regardless of explore sort setting', () {
+    test('ignores the explore trending setting (keeps newest order)', () {
+      // Input is newest-first (p2 newer than p1) as the notifier delivers it.
+      // p1 has far higher engagement, so if the trending comparator leaked into
+      // the following tab it would jump to the front. It must not — following
+      // uses the newest branch, which preserves the notifier's order.
       final posts = [
-        makePost(
-          'p1',
-          userId: 'u1',
-          isFollowingAuthor: true,
-          likeCount: 100,
-          createdAt: now.subtract(const Duration(hours: 2)),
-        ),
         makePost(
           'p2',
           userId: 'u1',
           isFollowingAuthor: true,
           likeCount: 1,
           createdAt: now.subtract(const Duration(hours: 1)),
+        ),
+        makePost(
+          'p1',
+          userId: 'u1',
+          isFollowingAuthor: true,
+          likeCount: 100,
+          createdAt: now.subtract(const Duration(hours: 2)),
         ),
       ];
 
@@ -192,7 +198,7 @@ void main() {
         communityVisiblePostsProvider(CommunityFeedTab.following),
       );
 
-      // Should still be newest first, not trending
+      // Newest (p2) stays first; trending did not reorder p1 to the front.
       expect(visible.first.id, 'p2');
     });
   });
@@ -424,19 +430,22 @@ void main() {
   });
 
   group('communityVisiblePostsProvider - null createdAt handling', () {
-    test('posts with null createdAt use fallback date for sorting', () {
+    test('posts with null createdAt are kept (order preserved)', () {
+      // Input mirrors the notifier's newest-first delivery. The newest branch
+      // preserves order, so a null createdAt no longer needs a sort fallback —
+      // it just must not be dropped from the visible list.
       final posts = [
-        const CommunityPost(
-          id: 'no-date',
-          userId: 'u1',
-          username: 'user',
-          // createdAt is null
-        ),
         CommunityPost(
           id: 'has-date',
           userId: 'u1',
           username: 'user',
           createdAt: now,
+        ),
+        const CommunityPost(
+          id: 'no-date',
+          userId: 'u1',
+          username: 'user',
+          // createdAt is null
         ),
       ];
 
@@ -448,10 +457,7 @@ void main() {
         communityVisiblePostsProvider(CommunityFeedTab.explore),
       );
 
-      // Both posts should be present; null createdAt falls back to DateTime(2000)
-      expect(visible, hasLength(2));
-      // The post with `now` should come first (newest), null-date uses fallback year 2000
-      expect(visible.first.id, 'has-date');
+      expect(visible.map((p) => p.id).toList(), ['has-date', 'no-date']);
     });
   });
 }

@@ -85,7 +85,7 @@ void main() {
         );
       });
 
-      test('sorts by newest by default', () {
+      test('preserves the feed order by default (no re-sort for newest)', () {
         final container = createContainer();
         addTearDown(container.dispose);
         container.read(communityFeedProvider);
@@ -93,9 +93,9 @@ void main() {
         final visible = container.read(
           communityVisiblePostsProvider(CommunityFeedTab.explore),
         );
-        // p4 is newest (now), then p1, p2, p3
-        expect(visible.first.id, 'p4');
-        expect(visible.last.id, 'p3');
+        // Newest ordering is the notifier's responsibility; the provider only
+        // filters (guide p2 excluded) and preserves the input order.
+        expect(visible.map((p) => p.id).toList(), ['p1', 'p3', 'p4']);
       });
 
       test('sorts by trending when selected', () {

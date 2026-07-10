@@ -11,8 +11,8 @@ import '../../../data/models/community_post_model.dart';
 import '../providers/community_post_providers.dart';
 import 'community_post_card.dart';
 
-/// Wraps a [CommunityPostCard] with [AutomaticKeepAliveClientMixin] and
-/// swipe-to-like (right) / swipe-to-bookmark (left) gesture support.
+/// Wraps a [CommunityPostCard] with swipe-to-like (right) /
+/// swipe-to-bookmark (left) gesture support.
 class SwipeablePostCard extends ConsumerStatefulWidget {
   final CommunityPost post;
 
@@ -22,15 +22,15 @@ class SwipeablePostCard extends ConsumerStatefulWidget {
   ConsumerState<SwipeablePostCard> createState() => _SwipeablePostCardState();
 }
 
-class _SwipeablePostCardState extends ConsumerState<SwipeablePostCard>
-    with AutomaticKeepAliveClientMixin {
+class _SwipeablePostCardState extends ConsumerState<SwipeablePostCard> {
+  // NOTE: no AutomaticKeepAliveClientMixin. The transient drag state resets on
+  // drag-end, so there is nothing to preserve off-screen — keeping every card
+  // alive only defeats the SliverList's lazy disposal and pins ~100 image-heavy
+  // card subtrees in memory.
   static const _swipeThreshold = 80.0;
 
   double _dragExtent = 0;
   bool _actionTriggered = false;
-
-  @override
-  bool get wantKeepAlive => true;
 
   void _onHorizontalDragUpdate(DragUpdateDetails details) {
     setState(() {
@@ -48,13 +48,19 @@ class _SwipeablePostCardState extends ConsumerState<SwipeablePostCard>
   void _onHorizontalDragEnd(DragEndDetails details) {
     if (_dragExtent.abs() >= _swipeThreshold) {
       if (_dragExtent > 0) {
-        // Swipe right → like
-        ref.read(likeToggleProvider.notifier).toggleLike(widget.post.id);
+        // Swipe right → like. Additive only: the onboarding hint says
+        // "swipe right = like", so a swipe on an already-liked post should
+        // reinforce, never silently unlike it.
+        if (!widget.post.isLikedByMe) {
+          ref.read(likeToggleProvider.notifier).toggleLike(widget.post.id);
+        }
       } else {
-        // Swipe left → bookmark
-        ref
-            .read(bookmarkToggleProvider.notifier)
-            .toggleBookmark(widget.post.id);
+        // Swipe left → bookmark (additive, same rationale).
+        if (!widget.post.isBookmarkedByMe) {
+          ref
+              .read(bookmarkToggleProvider.notifier)
+              .toggleBookmark(widget.post.id);
+        }
       }
     }
     setState(() {
@@ -65,7 +71,6 @@ class _SwipeablePostCardState extends ConsumerState<SwipeablePostCard>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     final theme = Theme.of(context);
     final isRight = _dragExtent > 0;
     final progress = (_dragExtent.abs() / _swipeThreshold).clamp(0.0, 1.0);

@@ -46,8 +46,8 @@ final communityVisiblePostsProvider =
           ? ref.watch(exploreSortProvider)
           : CommunityExploreSort.newest;
 
-      final sorted = [...filtered];
       if (sort == CommunityExploreSort.trending) {
+        final sorted = [...filtered];
         sorted.sort((a, b) {
           final engA = (a.likeCount * 2) + a.commentCount;
           final engB = (b.likeCount * 2) + b.commentCount;
@@ -57,15 +57,15 @@ final communityVisiblePostsProvider =
             a.createdAt ?? DateTime(2000),
           );
         });
-      } else {
-        sorted.sort(
-          (a, b) => (b.createdAt ?? DateTime(2000)).compareTo(
-            a.createdAt ?? DateTime(2000),
-          ),
-        );
+        return sorted;
       }
 
-      return sorted;
+      // Newest: the feed already arrives newest-first AND pinned-first from the
+      // notifier (`_pinnedFirst`). Re-sorting by createdAt here is wasted
+      // O(n log n) on every like/bookmark/comment tap (each replaces the posts
+      // list, re-running this provider) and would also drop the pinned-first
+      // prefix. Preserve the notifier's order.
+      return filtered;
     });
 
 // ---------------------------------------------------------------------------

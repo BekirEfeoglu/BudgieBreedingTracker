@@ -107,15 +107,16 @@ class _CommunityFeedListState extends ConsumerState<CommunityFeedList> {
 
   @override
   Widget build(BuildContext context) {
-    final newPostCount = ref.watch(communityNewPostCountProvider);
-
+    // NOTE: communityNewPostCountProvider is intentionally NOT watched here.
+    // It's watched inside _NewPostsBannerOverlay so a foreign user's post
+    // rebuilds only the floating banner, not the whole feed scroll view (which
+    // would re-run communityVisiblePostsProvider for a background insert).
     return _buildFeedScrollView(
       context: context,
       ref: ref,
       tab: widget.tab,
       scrollController: _scrollController,
       mounted: mounted,
-      newPostCount: newPostCount,
       lastSeenCount: _lastSeenCount,
       showSwipeHint: _showSwipeHint,
       onUpdateNewPostCount: (_) =>
