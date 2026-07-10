@@ -143,18 +143,21 @@ export function createCommunityCommentHandler(
         }
       }
 
-      const inserter = admin.from("community_comments").insert;
-      if (!inserter) {
-        throw new Error("community_comments insert unavailable");
-      }
-      const { data, error } = await inserter({
-        id: deps.randomUUID(),
-        post_id: postId,
-        parent_id: parsed.data.parent_id,
-        user_id: userId,
-        content,
-        is_deleted: false,
-      })
+      // Call insert directly on the builder — do NOT hoist it into a const
+      // (`const inserter = admin.from(...).insert; inserter(...)`) because that
+      // detaches the method from its builder `this`, which crashes the real
+      // @supabase/supabase-js client (it worked only against the plain-object
+      // test mock). This mirrors create-community-post's insert call.
+      const { data, error } = await admin
+        .from("community_comments")
+        .insert({
+          id: deps.randomUUID(),
+          post_id: postId,
+          parent_id: parsed.data.parent_id,
+          user_id: userId,
+          content,
+          is_deleted: false,
+        })
         .select("id,post_id,user_id,content,created_at")
         .single();
 
