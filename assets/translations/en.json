@@ -2910,6 +2910,7 @@
     "write_first_post": "Make your first post!"
   },
   "marketplace": {
+    "moderation_rejected": "This listing's content was flagged by moderation. Please edit the text and try again.",
     "title": "Marketplace",
     "add_listing": "Create Listing",
     "new_listing": "New Listing",

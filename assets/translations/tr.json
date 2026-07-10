@@ -2910,6 +2910,7 @@
     "write_first_post": "İlk paylaşımınızı yapın!"
   },
   "marketplace": {
+    "moderation_rejected": "İlan içeriği moderasyon kurallarına takıldı. Lütfen metni düzenleyip tekrar deneyin.",
     "title": "Pazar Yeri",
     "add_listing": "İlan Ver",
     "new_listing": "Yeni İlan",

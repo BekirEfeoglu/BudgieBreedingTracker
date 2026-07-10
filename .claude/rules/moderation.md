@@ -69,6 +69,14 @@ Server scan FAIL → upload yapılmaz. Storage'da unscanned dosya bulunmaz (zero
 
 DM permissive olmasının sebebi: 1-1 mesajlaşmada kullanıcı zaten block edebilir. Public broadcast'lerde (post, listing) tolerance yok.
 
+**Marketplace listing server-side enforcement (2026-07-10):** community post/comment gibi
+listing text'i de artık client `checkText`'e ek olarak DB katmanında zorlanır —
+`BEFORE INSERT` trigger `trg_moderate_marketplace_listing` (`moderateText`'i birebir
+yansıtan SQL) tampered/direct-REST insert dahil hiçbir client'ın atlayamayacağı
+backstop'tur (marketplace.md § Moderation Strictness, migration `20260710120000`).
+Community edge fn'lerinin AI/heuristic moderasyonundan farkı: bu bir DB trigger'ı
+olduğu için sadece keyword/heuristic (moderateText) uygular, HTTP/AI çağrısı yapmaz.
+
 ## Rejection UX
 - L10n key: `moderation.rejected_<category>` (ör. `moderation.rejected_profanity`)
 - Generic fallback: `moderation.content_not_allowed`

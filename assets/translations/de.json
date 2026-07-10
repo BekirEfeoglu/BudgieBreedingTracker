@@ -2910,6 +2910,7 @@
     "write_first_post": "Erstellen Sie Ihren ersten Beitrag!"
   },
   "marketplace": {
+    "moderation_rejected": "Der Anzeigeninhalt wurde von der Moderation markiert. Bitte bearbeite den Text und versuche es erneut.",
     "title": "Marktplatz",
     "add_listing": "Anzeige erstellen",
     "new_listing": "Neue Anzeige",

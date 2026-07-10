@@ -161,6 +161,16 @@ class MarketplaceListingRemoteSource {
           .single();
       return response;
     } catch (e, st) {
+      // The BEFORE INSERT moderation trigger (server-side enforcement no
+      // client can skip) raises with a stable MARKETPLACE_MODERATION_REJECTED
+      // marker — surface a moderation message rather than a generic DB error.
+      if (e is PostgrestException &&
+          e.message.contains('MARKETPLACE_MODERATION_REJECTED')) {
+        throw const app_exc.ValidationException(
+          'marketplace.moderation_rejected',
+          code: 'marketplace_moderation_rejected',
+        );
+      }
       throw BaseRemoteSource.handleErrorForTag('marketplace_listings', e, st);
     }
   }

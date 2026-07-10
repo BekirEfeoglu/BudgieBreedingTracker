@@ -31,7 +31,25 @@ Compose -> Moderation pipeline -> Insert
 - Listing **çok strict** moderation (community.md threshold'undan üst)
 - Reason: spam, scam, illegal sale (kanunen yasak tür)
 - Image scan zorunlu — kuş olmayan fotoğraf reject
-- Server-side rule list: tehlikeli tür isimleri otomatik reject
+- **Server-side text moderation — shipped + prod'da (2026-07-10):** listing text'i
+  artık DB katmanında da moderate edilir. Client `checkText` insert öncesi koşar
+  ama tek savunma değildir: `BEFORE INSERT` trigger `trg_moderate_marketplace_listing`
+  (`private.enforce_marketplace_listing_moderation`, migration `20260710120000`)
+  title+description+species+mutation'ı `private.marketplace_moderation_violation`
+  ile denetler — bu fonksiyon `moderate-content/moderation.ts` `moderateText`'i
+  birebir yansıtır (PROHIBITED_PATTERNS denylist + excessive-caps + repeat-char +
+  URL-flood). Tampered/direct-REST insert bile moderation'ı ATLAYAMAZ; meşru
+  listing'ler community post'larıyla aynı şekilde geçer. Trigger `MARKETPLACE_MODERATION_REJECTED`
+  marker'ıyla RAISE eder; `MarketplaceListingRemoteSource.insert` bunu
+  `ValidationException('marketplace.moderation_rejected')`'e eşler. Scope
+  **INSERT-only** (edit zaten `needs_review`-on-edit trigger'ıyla flag'lenir).
+  **Neden RLS lockdown değil:** authenticated direct-INSERT'i kapatmak eski app
+  binary'lerini (hâlâ direct insert yapan) kırardı — trigger tüm client'ları
+  (eski/yeni/tampered) bozmadan enforce eder ve reversible'dır (DROP TRIGGER).
+  AI-katmanlı moderasyon (community'nin `moderate-content` edge fn'i gibi) ileride
+  eklenebilir; keyword/heuristic backstop artık DB-level garanti.
+- Denylist üç kopyalıdır (client Dart filtresi + TS edge fn + bu SQL mirror);
+  biri değişince üçünü senkron tut
 
 ## Premium Integration
 | Özellik | Free | Premium |
@@ -77,7 +95,7 @@ Limit ihlali: `validate-free-tier-limit` edge fn server-side enforce.
 
 ## RLS Policy
 - SELECT: herkes (public feed)
-- INSERT: auth.uid() = user_id + free_tier_limit check
+- INSERT: auth.uid() = user_id + free_tier_limit check + `BEFORE INSERT` moderation trigger (bkz. § Moderation Strictness)
 - UPDATE: 7 gün edit window + author only
 - DELETE: author OR admin
 - Soft delete: `archived_at IS NULL` filter
@@ -103,7 +121,7 @@ Limit ihlali: `validate-free-tier-limit` edge fn server-side enforce.
 2. Free tier limit'i client-only kontrol (edge fn server-side enforce)
 3. Telefon görünürlüğünü premium check'siz yapmak (paywall bypass)
 4. Premium user'a ad göstermek (entitlement aware değil)
-5. Strict moderation atlamak (scam/illegal trade riski yüksek)
+5. Strict moderation atlamak (scam/illegal trade riski yüksek) — client `checkText` TEK savunma değildir; server-side `BEFORE INSERT` trigger enforce eder (§ Moderation Strictness). Trigger'ı kaldırıp client-only'ye dönme; denylist'i değiştirirken üç kopyayı (client Dart + TS edge fn + SQL mirror) senkron tut
 6. Geolocation (lat/lon) toplamak (privacy + over-engineering)
 7. Listing silmek yerine archive YAPMAMAK (dispute durumunda kanıt yok)
 8. Storage cleanup'ı sync yapmak (silme yavaşlar — async job)

@@ -62,7 +62,7 @@ Drift test helper `setSchemaVersion(int)` ile geçmiş versiyondan upgrade simü
 - Format: `YYYYMMDDHHmmss_short_description.sql`
 - Örnek: `20260514120000_add_ring_number_to_birds.sql`
 - Timestamp UTC, lexicographic sort = chronological run order
-- 205 migration mevcut, sıralı uygulanır (güncel sayı: CLAUDE.md § Codebase Stats)
+- 206 migration mevcut, sıralı uygulanır (güncel sayı: CLAUDE.md § Codebase Stats)
 
 ### Migration File Structure
 ```sql
