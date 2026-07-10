@@ -4,6 +4,23 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-10] feat+refactor | Marketplace pagination/search (chip #2) + #8 column constants (chip #3)
+
+Closed the last two audit chips (delivered via parallel worktree agents; diffs
+reviewed + all gates run in the main tree). **B — marketplace pagination +
+server-side search:** the feed hard-capped at 20 and search/price/gender only
+scanned those 20 (`MarketplaceRepository.search` was dead code → search found
+nothing beyond page 1). `marketplaceFeedProvider` (AsyncNotifier.family) replaces
+single-page `marketplaceListingsProvider`: `build()` loads page 1 or runs the
+query via `repo.search` (cap 50); `loadMore()` appends the next before-cursor page
+(no-op in search/while-loading/at-end/null-cursor; a failed load-more keeps the
+page, never wipes it). Both surfaces (screen ListView + tab GridView) got a
+`ScrollController` + loadMore-at-80% + a bottom spinner; `filteredMarketplaceListingsProvider`
+unchanged. **C — #8 refactor:** replaced hardcoded Supabase column literals with
+`SupabaseConstants` across 16 `lib/data/` files — value-match only (every
+constant's value == the literal; table-specific `read`→`notificationColRead`;
+`listing_id` left as-is, no constant exists). No behavior change.
+
 ## [2026-07-10] feat | Marketplace server-side listing moderation (chip #1)
 
 Closed the audit's marketplace gap — listing text was client-moderated only
@@ -177,16 +194,5 @@ raw `.customConstraint('NULL REFERENCES clutches (id)')` (+ dropping the
 clutches_table import) — breaks the module edge, preserves the SQL FK 1:1, no
 schema change. 763 db/incubation/egg tests pass. See [[data-layer/drift]] §
 Circular FK References.
-
-## [2026-07-09] ci | Audit follow-ups: migration drift guard + codegen-flake hardening
-
-Post-audit "apply all suggestions" round. Added `scripts/verify_migration_drift.py`
-(offline dup-version/malformed-name structural guard wired into the code-quality
-job; opt-in `--online` prod-ledger parity; 27 tests, 100% cov). Added coupling-
-phase linkage tests for the 3 previously repulsion-only Z-pairs (all 6 now assert
-both phases). Bumped the drift_dev "Circular error" codegen retry cap 3→5 in
-ci.yml, then found the Xcode Cloud `Build - iOS` post-clone ran build_runner BARE
-(the only unprotected codegen step) — action_required at ~47s — and wrapped it in
-the same clean-and-retry loop. See [[infrastructure/ci-cd]], [[infrastructure/scripts]].
 
 Older entries are archived in [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

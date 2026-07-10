@@ -46,11 +46,26 @@ Listing photos go through the full upload pipeline:
 
 Multi-photo listings reorder via drag, primary photo first.
 
-## Filters
+## Filters & Pagination
 
 Filterable by species, gender, price range, location radius (if user
 opts in to location), free-text search. Filter state is ephemeral
 (not persisted across launches) to avoid stale "saved searches" surprise.
+
+**Infinite scroll + server-side search (2026-07-10):** the feed was hard-capped
+at 20 rows and search/price/gender only scanned those 20 — `MarketplaceRepository.search`
+was dead code, so searching anything beyond the first page returned "no results".
+`marketplaceFeedProvider` (`AsyncNotifierProvider.family<MarketplaceFeedState, userId>`)
+replaces the old single-page `marketplaceListingsProvider`: `build()` loads the
+first 20-row page (or runs the active query via `repo.search`, capped at 50),
+`loadMore()` appends the next cursor-based page (`before: items.last.createdAt`)
+and no-ops in search mode / while loading / at end / on a null cursor (a failed
+load-more keeps the loaded page, never wipes the feed). Both feed surfaces
+(`MarketplaceScreen` ListView + `MarketplaceTabContent` GridView) attach a
+`ScrollController` that calls `loadMore()` at ~80% and show a bottom loading
+indicator. `filteredMarketplaceListingsProvider` is unchanged — it still applies
+client price/gender/sort (and a now-redundant client search) over the loaded/
+searched items.
 
 `MarketplaceFormScreen` gender `ChoiceChip` avatars use domain SVG icons
 (`AppIcon(AppIcons.male / .female)`, unknown falls back to a generic
