@@ -164,7 +164,12 @@ class _HealthRecordListScreenState
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         final r = records[index];
-                        final animal = r.birdId != null ? animalCache[r.birdId!] : null;
+                        // A record links to a bird OR a chick; the cache keys
+                        // both by id, so fall back to chickId when birdId is
+                        // null (chick-linked records must still show a name).
+                        final animalId = r.birdId ?? r.chickId;
+                        final animal =
+                            animalId != null ? animalCache[animalId] : null;
                         final displayName = animal != null
                             ? (animal.ringNumber != null
                                 ? '${animal.name} (${animal.ringNumber})'

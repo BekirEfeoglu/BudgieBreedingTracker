@@ -2,7 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/gamification_enums.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
@@ -19,12 +21,24 @@ void main() {
   late MockHealthRecordRepository repo;
   late MockNotificationScheduler scheduler;
   late MockGamificationRepository gamificationRepo;
+  late MockBirdRepository birdRepo;
   final date = DateTime(2024, 6, 1);
 
   setUp(() {
     repo = MockHealthRecordRepository();
     scheduler = MockNotificationScheduler();
     gamificationRepo = MockGamificationRepository();
+    birdRepo = MockBirdRepository();
+    // Reminder scheduling resolves the associated bird's real name for the
+    // notification body (not the record title).
+    when(() => birdRepo.getById(any())).thenAnswer(
+      (_) async => const Bird(
+        id: 'b1',
+        userId: 'u1',
+        name: 'Maviş',
+        gender: BirdGender.unknown,
+      ),
+    );
     registerFallbackValue(XpAction.addHealthRecord);
     registerFallbackValue(
       HealthRecord(
@@ -58,6 +72,7 @@ void main() {
   ProviderContainer makeContainer() => ProviderContainer(
     overrides: [
       healthRecordRepositoryProvider.overrideWithValue(repo),
+      birdRepositoryProvider.overrideWithValue(birdRepo),
       notificationSchedulerProvider.overrideWithValue(scheduler),
       gamificationRepositoryProvider.overrideWithValue(gamificationRepo),
       notificationToggleSettingsProvider.overrideWith(_MockToggleNotifier.new),
@@ -260,11 +275,13 @@ void main() {
               date: date,
               birdId: 'b1',
             );
+        // The reminder body uses the associated bird's real name, resolved
+        // via birdRepositoryProvider — not the record title ('Checkup').
         verify(
           () => scheduler.scheduleHealthCheckReminder(
             recordId: any(named: 'recordId'),
             birdId: 'b1',
-            birdName: 'Checkup',
+            birdName: 'Maviş',
             hour: 9,
             durationDays: any(named: 'durationDays'),
             settings: any(named: 'settings'),

@@ -91,7 +91,6 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
         await _scheduleHealthCheckReminders(
           recordId: record.id,
           birdId: birdId,
-          birdName: title,
           followUpDate: followUpDate,
         );
       }
@@ -111,7 +110,6 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
   Future<void> _scheduleHealthCheckReminders({
     required String recordId,
     required String birdId,
-    required String birdName,
     DateTime? followUpDate,
   }) async {
     try {
@@ -119,6 +117,18 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
       final settings = await ref.read(
         notificationToggleSettingsReadyProvider.future,
       );
+
+      // Resolve the bird's real name for the reminder body. Previously the
+      // record TITLE was passed here, rendering "'<title>' için sağlık
+      // kontrolü" instead of the bird's name. Fall back to a generic label
+      // (never the title) if the bird can't be loaded.
+      var birdName = 'health_records.bird_label'.tr();
+      try {
+        final bird = await ref.read(birdRepositoryProvider).getById(birdId);
+        if (bird != null) birdName = bird.name;
+      } catch (e) {
+        AppLogger.warning('Failed to resolve bird name for reminder: $e');
+      }
 
       final durationDays = followUpDate != null
           ? date_utils.DateUtils.dayDiff(
@@ -188,7 +198,6 @@ class HealthRecordFormNotifier extends Notifier<HealthRecordFormState>
           await _scheduleHealthCheckReminders(
             recordId: record.id,
             birdId: record.birdId!,
-            birdName: record.title,
             followUpDate: record.followUpDate,
           );
         }

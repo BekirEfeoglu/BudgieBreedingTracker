@@ -50,15 +50,17 @@ class _HeaderSection extends StatelessWidget {
 }
 
 class _AnimalInfoCard extends ConsumerWidget {
-  final String birdId;
+  /// A health record links to either a bird OR a chick; the cache keys both by
+  /// id, so this holds whichever id the record carries.
+  final String animalId;
 
-  const _AnimalInfoCard({required this.birdId});
+  const _AnimalInfoCard({required this.animalId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userId = ref.watch(currentUserIdProvider);
     final cache = ref.watch(animalNameCacheProvider(userId));
-    final animal = cache[birdId];
+    final animal = cache[animalId];
 
     if (animal == null) return const SizedBox.shrink();
 
@@ -73,8 +75,9 @@ class _AnimalInfoCard extends ConsumerWidget {
       icon: AppIcon(animal.isChick ? AppIcons.chick : AppIcons.bird),
       title: typeLabel,
       subtitle: displayName,
-      onTap: () =>
-          context.push(animal.isChick ? '/chicks/$birdId' : '/birds/$birdId'),
+      onTap: () => context.push(
+        animal.isChick ? '/chicks/$animalId' : '/birds/$animalId',
+      ),
     );
   }
 }

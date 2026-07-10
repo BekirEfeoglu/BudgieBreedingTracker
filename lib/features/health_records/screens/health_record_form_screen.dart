@@ -75,11 +75,8 @@ class _HealthRecordFormScreenState
 
   void _populateFromExisting(HealthRecord record) {
     _existingRecord = record;
+    // Controllers self-notify on .text assignment.
     _titleController.text = record.title;
-    _type = record.type;
-    _date = record.date;
-    _birdId = record.birdId;
-    _chickId = record.chickId;
     _descriptionController.text = record.description ?? '';
     _treatmentController.text = record.treatment ?? '';
     _vetController.text = record.veterinarian ?? '';
@@ -88,8 +85,18 @@ class _HealthRecordFormScreenState
         ? record.weight.toString()
         : '';
     _costController.text = record.cost != null ? record.cost.toString() : '';
-    _followUpDate = record.followUpDate;
-    _didPopulateFromExisting = true;
+    // The type/date/follow-up/animal selectors are plain fields that only
+    // repaint on setState — without this the edit form shows default values
+    // until an unrelated rebuild (e.g. the birds stream emitting) happens to
+    // fire, and can latch the wrong selection if that lands first.
+    setState(() {
+      _type = record.type;
+      _date = record.date;
+      _birdId = record.birdId;
+      _chickId = record.chickId;
+      _followUpDate = record.followUpDate;
+      _didPopulateFromExisting = true;
+    });
   }
 
   @override

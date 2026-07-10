@@ -60,16 +60,30 @@ final healthRecordSearchQueryProvider =
     );
 
 /// Filtered health records.
+///
+/// autoDispose is required: the family is keyed by the `records` list, and the
+/// underlying Drift stream emits a NEW list identity on every change. Without
+/// autoDispose each emission would leave a permanently-cached family entry
+/// keyed on a now-dead list — unbounded growth over a long session.
 final filteredHealthRecordsProvider =
-    Provider.family<List<HealthRecord>, List<HealthRecord>>((ref, records) {
+    Provider.autoDispose.family<List<HealthRecord>, List<HealthRecord>>((
+      ref,
+      records,
+    ) {
       final filter = ref.watch(healthRecordFilterProvider);
       if (filter == HealthRecordFilter.all) return records;
       return records.where((r) => r.type == filter.recordType).toList();
     });
 
 /// Searched and filtered health records.
+///
+/// autoDispose for the same reason as [filteredHealthRecordsProvider] — keyed
+/// by a per-emission list identity.
 final searchedAndFilteredHealthRecordsProvider =
-    Provider.family<List<HealthRecord>, List<HealthRecord>>((ref, records) {
+    Provider.autoDispose.family<List<HealthRecord>, List<HealthRecord>>((
+      ref,
+      records,
+    ) {
       final filtered = ref.watch(filteredHealthRecordsProvider(records));
       final query = ref
           .watch(healthRecordSearchQueryProvider)

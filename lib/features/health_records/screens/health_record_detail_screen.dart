@@ -111,10 +111,12 @@ class _DetailContent extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (record.birdId != null)
-                    _AnimalInfoCard(birdId: record.birdId!),
-                  if (record.birdId != null)
+                  if (record.birdId != null || record.chickId != null) ...[
+                    _AnimalInfoCard(
+                      animalId: (record.birdId ?? record.chickId)!,
+                    ),
                     const SizedBox(height: AppSpacing.sm),
+                  ],
                   InfoCard(
                     icon: const AppIcon(AppIcons.calendar),
                     title: 'common.date'.tr(),
