@@ -1456,6 +1456,8 @@
     "male_offspring": "Erkek",
     "female_offspring": "Dişi",
     "no_results": "Sonuç bulunamadı",
+    "results_pruned_title": "Sonuç kümesi kısaltıldı",
+    "results_pruned_message": "Çok sayıda lokus nedeniyle düşük olasılıklı kombinasyonların ~%{}'i elendi; gösterilen oranlar kalan kümeye göre normalize edildi. Tam kapsam için daha az mutasyon seçin.",
     "no_results_hint": "Hesaplamak için ebeveyn mutasyonlarını seçin",
     "no_results_hint_filtered": "Seçilen mutasyonlar için geçerli bir yavru kombinasyonu üretilemedi. Ebeveyn seçimlerini kontrol edin",
     "no_male_results": "Erkek yavru sonucu yok",

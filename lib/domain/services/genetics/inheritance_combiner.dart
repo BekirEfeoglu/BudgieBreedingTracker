@@ -84,13 +84,22 @@ List<OffspringResult> _combineResults(List<_RawResult> rawResults) {
 }
 
 /// Combines results across multiple independent loci by multiplying
-/// probabilities and merging phenotype names.
-List<OffspringResult> _combineMultiLocus(
-  Map<String, List<_RawResult>> perLocusResults,
-) {
-  final combined = _crossAllLoci(perLocusResults);
-  final resultMap = _resolveEpistasisForCombined(combined);
-  return _normalizeAndSort(resultMap);
+/// probabilities and merging phenotype names, returning the offspring list plus
+/// [PruningDiagnostics] describing any combinatorial pruning that occurred.
+({List<OffspringResult> results, PruningDiagnostics diagnostics})
+_combineMultiLocus(Map<String, List<_RawResult>> perLocusResults) {
+  final crossed = _crossAllLoci(perLocusResults);
+  final resultMap = _resolveEpistasisForCombined(crossed.results);
+  final results = _normalizeAndSort(resultMap);
+  return (
+    results: results,
+    diagnostics: PruningDiagnostics(
+      wasPruned: crossed.prunedStateCount > 0,
+      prunedStateCount: crossed.prunedStateCount,
+      discardedProbabilityMassBeforeNormalization: crossed.discardedMass,
+      normalized: results.isNotEmpty,
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -99,9 +108,13 @@ List<OffspringResult> _combineMultiLocus(
 
 /// Builds the Cartesian product of per-locus results, multiplying
 /// probabilities across loci and merging phenotype/genotype metadata.
-List<_MultiLocusResult> _crossAllLoci(
-  Map<String, List<_RawResult>> perLocusResults,
-) {
+({
+  List<_MultiLocusResult> results,
+  int prunedStateCount,
+  double discardedMass,
+}) _crossAllLoci(Map<String, List<_RawResult>> perLocusResults) {
+  var prunedStateCount = 0;
+  var discardedMass = 0.0;
   final loci = perLocusResults.keys.toList();
   var combined = perLocusResults[loci[0]]!
       .map(
@@ -176,15 +189,25 @@ List<_MultiLocusResult> _crossAllLoci(
     combined = newCombined;
 
     // Early pruning: discard very low probability entries to prevent
-    // combinatorial explosion when many loci are selected.
-    combined = combined
-        .where(
-          (c) => c.probability >= GeneticsConstants.probabilityPruningThreshold,
-        )
-        .toList();
+    // combinatorial explosion when many loci are selected. Track what is
+    // dropped (count + raw mass) so callers can surface a coverage warning.
+    final kept = <_MultiLocusResult>[];
+    for (final c in combined) {
+      if (c.probability >= GeneticsConstants.probabilityPruningThreshold) {
+        kept.add(c);
+      } else {
+        prunedStateCount++;
+        discardedMass += c.probability;
+      }
+    }
+    combined = kept;
   }
 
-  return combined;
+  return (
+    results: combined,
+    prunedStateCount: prunedStateCount,
+    discardedMass: discardedMass,
+  );
 }
 
 // ---------------------------------------------------------------------------

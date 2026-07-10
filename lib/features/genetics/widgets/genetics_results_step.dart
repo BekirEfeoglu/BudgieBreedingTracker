@@ -13,6 +13,7 @@ import 'package:budgie_breeding_tracker/features/genetics/widgets/genetic_charts
 import 'package:budgie_breeding_tracker/features/genetics/widgets/epistasis_interactions_card.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/lethal_warning.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/offspring_prediction.dart';
+import 'package:budgie_breeding_tracker/features/genetics/widgets/pruning_coverage_warning.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/dihybrid_punnett_section.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/punnett_square.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/results_summary_banner.dart';
@@ -63,6 +64,7 @@ class GeneticsResultsStep extends ConsumerWidget {
     final lethalAnalysis = ref.watch(lethalAnalysisProvider);
     final epistasisInteractions = ref.watch(epistasisInteractionsProvider);
     final activeFilter = ref.watch(offspringFilterProvider);
+    final pruningDiagnostics = ref.watch(pruningDiagnosticsProvider);
 
     if (rawResults == null || rawResults.isEmpty || results == null) {
       final hasParentSelections = rawResults != null;
@@ -132,6 +134,19 @@ class GeneticsResultsStep extends ConsumerWidget {
                   ),
                 ),
               ),
+              // Pruning coverage warning (result set was truncated)
+              if (pruningDiagnostics?.wasPruned ?? false)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.sm),
+                    child: Padding(
+                      padding: AppSpacing.screenPadding,
+                      child: PruningCoverageWarning(
+                        diagnostics: pruningDiagnostics!,
+                      ),
+                    ),
+                  ),
+                ),
               // Lethal warning
               if (lethalAnalysis != null && lethalAnalysis.hasWarnings)
                 SliverToBoxAdapter(

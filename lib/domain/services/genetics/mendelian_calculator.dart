@@ -46,8 +46,22 @@ class MendelianCalculator {
   List<OffspringResult> calculateFromGenotypes({
     required ParentGenotype father,
     required ParentGenotype mother,
+  }) => _calculate(father: father, mother: mother).results;
+
+  /// Like [calculateFromGenotypes] but also returns [PruningDiagnostics] (Q1)
+  /// so a caller can warn when the multi-locus result set was truncated by
+  /// combinatorial pruning. [calculateFromGenotypes] returns just the list, so
+  /// its output stays byte-identical to before this diagnostic existed.
+  OffspringCalculation calculateDetailed({
+    required ParentGenotype father,
+    required ParentGenotype mother,
+  }) => _calculate(father: father, mother: mother);
+
+  OffspringCalculation _calculate({
+    required ParentGenotype father,
+    required ParentGenotype mother,
   }) {
-    if (father.isEmpty && mother.isEmpty) return [];
+    if (father.isEmpty && mother.isEmpty) return OffspringCalculation.empty;
 
     // Collect all mutation IDs from both parents
     final allIds = {...father.allMutationIds, ...mother.allMutationIds};
@@ -241,14 +255,24 @@ class MendelianCalculator {
       }
     }
 
-    if (perLocusResults.isEmpty) return [];
+    if (perLocusResults.isEmpty) return OffspringCalculation.empty;
 
-    // If only one locus, return simple results
+    // If only one locus, return simple results. Single-locus has no
+    // combinatorial pruning — only the sub-0.1% noise filter — so diagnostics
+    // report no pruning (results are still normalized).
     if (perLocusResults.length == 1) {
-      return _combineResults(perLocusResults.values.first);
+      final results = _combineResults(perLocusResults.values.first);
+      return OffspringCalculation(
+        results: results,
+        diagnostics: PruningDiagnostics(normalized: results.isNotEmpty),
+      );
     }
 
-    // Multi-locus combination: multiply probabilities across loci
-    return _combineMultiLocus(perLocusResults);
+    // Multi-locus combination: multiply probabilities across loci.
+    final combined = _combineMultiLocus(perLocusResults);
+    return OffspringCalculation(
+      results: combined.results,
+      diagnostics: combined.diagnostics,
+    );
   }
 }

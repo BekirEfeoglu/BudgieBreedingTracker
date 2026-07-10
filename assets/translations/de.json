@@ -1456,6 +1456,8 @@
     "male_offspring": "Männlich",
     "female_offspring": "Weiblich",
     "no_results": "Keine Ergebnisse gefunden",
+    "results_pruned_title": "Ergebnisse gekürzt",
+    "results_pruned_message": "Bei vielen Loci wurden ~{}% der unwahrscheinlichsten Kombinationen verworfen; die angezeigten Prozentwerte sind auf den Rest normiert. Wählen Sie weniger Mutationen für die volle Abdeckung.",
     "no_results_hint": "Wählen Sie Elternmutationen aus, um Nachkommen vorherzusagen",
     "no_results_hint_filtered": "Für die gewählten Mutationen konnte keine gültige Nachkommen-Kombination erzeugt werden. Überprüfen Sie Ihre Elternauswahl",
     "no_male_results": "Keine männlichen Nachkommen",

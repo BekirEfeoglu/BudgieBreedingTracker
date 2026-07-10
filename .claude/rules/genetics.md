@@ -132,6 +132,25 @@ if (analysis.hasWarnings) {
 - Fenotip naming: `epistasis_engine_naming.dart` sırayla compound > primary > sex-linked
 - Modifier mutasyonlar (Yellowface, Dilute) primary fenotipi değiştirir, kendi başına fenotip oluşturmaz
 
+## Pruning Diagnostic (Q1)
+- Çok-lokus hesap Kartezyen çarpım kurulurken `probabilityPruningThreshold`
+  (0.0005) altındaki kombinasyonları eler (kombinatoryal patlama koruması),
+  sonra kalanları normalize eder — bu normalize elenen kütleyi gizler
+- `MendelianCalculator.calculateDetailed(...)` → `OffspringCalculation`
+  {results, `PruningDiagnostics`}. `calculateFromGenotypes` DEĞİŞMEDEN aynı
+  listeyi döner (`_calculate(...).results`) — byte-semantics korunur
+- `PruningDiagnostics`: `wasPruned`, `prunedStateCount`,
+  `discardedProbabilityMassBeforeNormalization` (0..1 ham kütle),
+  `earlyPruningThreshold`, `minResultThreshold`, `normalized`. Sadece **erken
+  kombinatoryal pruning** sayılır; sub-0.1% min-threshold gürültü filtresi
+  sayılmaz (beklenen, uyarı üretmez)
+- Provider zinciri: `offspringCalculationProvider` (isolate `calculateDetailed`)
+  → `offspringResultsProvider` (results türetir) + `pruningDiagnosticsProvider`.
+  UI `PruningCoverageWarning` banner'ı `wasPruned` olduğunda gerçek diagnostic
+  yüzdesiyle gösterilir (mutasyon SAYISI heuristic'i DEĞİL — anti-pattern)
+- Metadata eklemek bump gerektirmez; eşik/normalizasyon davranışı değişirse
+  bump zorunlu (§ calculationVersion matrisi)
+
 ## Performance
 - Punnett karesi 4x4 dihybrid: O(1) — sabit küçük
 - Multi-locus N locus: O(2^N) en kötü durumda — pratikte N≤5 (5+ kombinasyon rare)

@@ -4,6 +4,24 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-10] feat | Genetics roadmap Q1 — pruning diagnostic + coverage warning
+
+Multi-locus builds drop combinations below `probabilityPruningThreshold` then
+normalize the survivors, which hides that mass was dropped (results read more
+certain than they are). New `MendelianCalculator.calculateDetailed()` returns
+`OffspringCalculation {results, PruningDiagnostics}` — wasPruned, prunedStateCount,
+discardedProbabilityMassBeforeNormalization (raw 0..1), thresholds, normalized —
+instrumented in `_crossAllLoci`'s early-pruning loop. `calculateFromGenotypes`
+still returns the identical list (`_calculate(...).results`), byte-semantics
+preserved (guarded by a test) → no calculationVersion bump. Provider chain:
+`offspringCalculationProvider` (isolate) → `offspringResultsProvider` (derived) +
+`pruningDiagnosticsProvider`; `PruningCoverageWarning` banner in the results step
+fires on the real diagnostic (not a mutation-count heuristic) with the discarded
+%. 8 new engine tests (5/6/7-locus boundaries deterministic: 6 loci ≈10.9% mass,
+7 ≈50%). 2 l10n keys tr/en/de. Docs: genetics.md § Pruning Diagnostic +
+[[domain/genetics-engine]]. All 2018 genetics tests + e2e green. Remaining
+unblocked: T1 (property tests, depends on this). Gated: D2/D4/Q2/I2.
+
 ## [2026-07-10] feat | Genetics roadmap D3 + Q3 + I1 (unblocked Phase A/B items)
 
 Continued `dev-docs/genetics-improvement-roadmap.md` after D1.
@@ -161,39 +179,5 @@ orphaned `BackupScheduler`/`BackupService` + premium frequency picker + resume
 trigger. **(6)** reciprocal `readReceiptsEnabledProvider` (skips write + caps
 bubble). **(7)** calendar reminder editing via `updateEvent(reconcileReminder)`.
 Removed 5 known-gaps rows; tr/en/de keys + owner rules updated per item.
-
-## [2026-07-09] fix | Audit sweep — gamification profile sync, rank icons, post photo cap
-
-Parallel-agent audit of the post-`f435373` diff (community redesign, 10-tier
-rank ladder, comment replies, mutes, admin atomic RPCs). Fixed and pushed:
-**(1)** `GamificationRemoteSource.updateProfileVerification`/`updateProfileLevelInfo`
-filtered `profiles.eq('user_id')`, but `profiles` is keyed by `id` and has no
-`user_id` column — every level-up/verified sync 400'd silently since 2026-04-02,
-freezing `profiles.level`/`xp_title` and blocking the verified tick. Now `.eq('id')`.
-**(2)** `AppIcons.getLevelIcon` never updated for the 10-tier expansion —
-non-monotonic (enthusiast→gold, champion→platinum below legendary); remapped to a
-strict 5-icon ascending ladder. **(3)** `create-community-post` Zod `image_urls`
-cap was 6 vs the premium max of 10 — premium 7–10-photo posts uploaded then 400'd;
-raised to 10. Also fixed `check_bare_catch` false positives (recognize
-`reportPullFailure` + widen lookahead to 8 lines). Deferred (needs server RPC):
-`total_xp` computed incrementally vs the RLS `SUM()` WITH CHECK — one dropped
-request between insert and level-upsert permanently bricks a user's leveling.
-Updated gamification-service.md + edge-functions.md. Commits da3c02d, 600c3c2, e808dff.
-
-## [2026-07-09] fix | Pull-failure Sentry reporting across syncable repos
-
-A PII/observability agent sweep found every syncable repository's `pull()`
-swallowed unexpected errors (serialization, Drift corruption, malformed payload)
-with only `AppLogger.error` — a breadcrumb, not a Sentry issue — and since the
-repo swallows it, the central `SyncPullHandler` never sees it. Added top-level
-`reportPullFailure()` in `base_repository.dart` (mirrors `detectPullConflicts`
-so non-mixin Photo/Profile repos share it): logs then `Sentry.captureException`
-with a `sync_phase: pull` tag, filtering `AppException` so ProfileRepository's
-swallowed offline failures stay out of Sentry. Applied to all 15 `pull()` sites;
-removed now-unused logger imports (commit 5b73ef2). Also 4090d64: bracket-prefix
-form-notifier log tags (observability.md convention). A third suggestion
-(skip NetworkException in `SentryErrorFilter`) was rejected — an explicit test
-asserts NetworkException IS reported, a deliberate decision. Updated
-data-layer/repositories.md § SyncableRepository.
 
 Older entries are archived in [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

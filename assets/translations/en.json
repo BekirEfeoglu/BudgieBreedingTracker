@@ -1456,6 +1456,8 @@
     "male_offspring": "Male",
     "female_offspring": "Female",
     "no_results": "No results found",
+    "results_pruned_title": "Results truncated",
+    "results_pruned_message": "With many loci, ~{}% of the lowest-probability combinations were dropped; the shown percentages are normalized over what remains. Select fewer mutations for full coverage.",
     "no_results_hint": "Select parent mutations to calculate offspring predictions",
     "no_results_hint_filtered": "No valid offspring combination could be produced for the selected mutations. Check your parent selections",
     "no_male_results": "No male offspring results",

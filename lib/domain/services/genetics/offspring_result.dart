@@ -45,6 +45,71 @@ class OffspringResult {
   });
 }
 
+/// Diagnostics about probability pruning during a multi-locus calculation.
+///
+/// The engine discards very-low-probability combinations while building the
+/// multi-locus Cartesian product (to prevent combinatorial explosion) and then
+/// normalizes the survivors to sum to 1.0. That normalization hides the fact
+/// that some probability mass was dropped, so results can read as more certain
+/// than they are. This carries the numbers the UI needs to warn honestly.
+///
+/// [none] means no combinatorial pruning happened — the result set is complete
+/// (bar sub-0.1% numerical-noise filtering, which is expected and not counted).
+class PruningDiagnostics {
+  const PruningDiagnostics({
+    this.wasPruned = false,
+    this.prunedStateCount = 0,
+    this.discardedProbabilityMassBeforeNormalization = 0.0,
+    this.earlyPruningThreshold = GeneticsConstants.probabilityPruningThreshold,
+    this.minResultThreshold = GeneticsConstants.probabilityMinThreshold,
+    this.normalized = false,
+  });
+
+  /// True when the early combinatorial pruning discarded at least one state.
+  final bool wasPruned;
+
+  /// How many combination states the early pruning removed.
+  final int prunedStateCount;
+
+  /// Sum of the raw (pre-normalization) joint probabilities of the pruned
+  /// states. Per-locus distributions each sum to ~1.0, so their product does
+  /// too — this reads directly as "≈X% of the probability mass was dropped".
+  final double discardedProbabilityMassBeforeNormalization;
+
+  /// The early-pruning threshold applied (`probabilityPruningThreshold`).
+  final double earlyPruningThreshold;
+
+  /// The final min-result threshold applied (`probabilityMinThreshold`).
+  final double minResultThreshold;
+
+  /// Whether the returned probabilities were normalized to sum to 1.0.
+  final bool normalized;
+
+  /// No combinatorial pruning occurred.
+  static const PruningDiagnostics none = PruningDiagnostics();
+}
+
+/// An offspring calculation paired with its [PruningDiagnostics].
+///
+/// [MendelianCalculator.calculateDetailed] returns this; the plain
+/// [MendelianCalculator.calculateFromGenotypes] returns just [results] so its
+/// output is byte-identical to before this diagnostic existed.
+class OffspringCalculation {
+  const OffspringCalculation({
+    required this.results,
+    required this.diagnostics,
+  });
+
+  final List<OffspringResult> results;
+  final PruningDiagnostics diagnostics;
+
+  /// An empty calculation with no pruning.
+  static const OffspringCalculation empty = OffspringCalculation(
+    results: [],
+    diagnostics: PruningDiagnostics.none,
+  );
+}
+
 /// Data for Punnett square visualization.
 class PunnettSquareData {
   final String mutationName;

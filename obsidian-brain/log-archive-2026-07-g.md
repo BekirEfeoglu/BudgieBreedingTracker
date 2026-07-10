@@ -5,6 +5,40 @@ full-scope audit follow-ups.
 
 ---
 
+## [2026-07-09] fix | Audit sweep — gamification profile sync, rank icons, post photo cap
+
+Parallel-agent audit of the post-`f435373` diff (community redesign, 10-tier
+rank ladder, comment replies, mutes, admin atomic RPCs). Fixed and pushed:
+**(1)** `GamificationRemoteSource.updateProfileVerification`/`updateProfileLevelInfo`
+filtered `profiles.eq('user_id')`, but `profiles` is keyed by `id` and has no
+`user_id` column — every level-up/verified sync 400'd silently since 2026-04-02,
+freezing `profiles.level`/`xp_title` and blocking the verified tick. Now `.eq('id')`.
+**(2)** `AppIcons.getLevelIcon` never updated for the 10-tier expansion —
+non-monotonic (enthusiast→gold, champion→platinum below legendary); remapped to a
+strict 5-icon ascending ladder. **(3)** `create-community-post` Zod `image_urls`
+cap was 6 vs the premium max of 10 — premium 7–10-photo posts uploaded then 400'd;
+raised to 10. Also fixed `check_bare_catch` false positives (recognize
+`reportPullFailure` + widen lookahead to 8 lines). Deferred (needs server RPC):
+`total_xp` computed incrementally vs the RLS `SUM()` WITH CHECK — one dropped
+request between insert and level-upsert permanently bricks a user's leveling.
+Updated gamification-service.md + edge-functions.md. Commits da3c02d, 600c3c2, e808dff.
+
+## [2026-07-09] fix | Pull-failure Sentry reporting across syncable repos
+
+A PII/observability agent sweep found every syncable repository's `pull()`
+swallowed unexpected errors (serialization, Drift corruption, malformed payload)
+with only `AppLogger.error` — a breadcrumb, not a Sentry issue — and since the
+repo swallows it, the central `SyncPullHandler` never sees it. Added top-level
+`reportPullFailure()` in `base_repository.dart` (mirrors `detectPullConflicts`
+so non-mixin Photo/Profile repos share it): logs then `Sentry.captureException`
+with a `sync_phase: pull` tag, filtering `AppException` so ProfileRepository's
+swallowed offline failures stay out of Sentry. Applied to all 15 `pull()` sites;
+removed now-unused logger imports (commit 5b73ef2). Also 4090d64: bracket-prefix
+form-notifier log tags (observability.md convention). A third suggestion
+(skip NetworkException in `SentryErrorFilter`) was rejected — an explicit test
+asserts NetworkException IS reported, a deliberate decision. Updated
+data-layer/repositories.md § SyncableRepository.
+
 ## [2026-07-08] fix | Migration deployment drift repaired (prod)
 
 Comprehensive app audit found 3 migrations shipped in client code but never
