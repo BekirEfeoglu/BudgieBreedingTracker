@@ -320,3 +320,17 @@ final userPostsProvider = FutureProvider.family<List<CommunityPost>, String>((
     return [];
   }
 });
+
+// ---------------------------------------------------------------------------
+// Tag / mutation discovery feed
+// ---------------------------------------------------------------------------
+
+/// Posts carrying a given tag or mutation tag — the discovery feed opened by
+/// tapping a tag/mutation chip. Rethrows so the screen can show a retryable
+/// error state (unlike the swallow-to-empty feeds above).
+final communityTagFeedProvider =
+    FutureProvider.family<List<CommunityPost>, String>((ref, tag) async {
+      final repo = ref.watch(communityPostRepositoryProvider);
+      final currentUserId = ref.watch(currentUserIdProvider);
+      return repo.getByTag(tag: tag, currentUserId: currentUserId);
+    });

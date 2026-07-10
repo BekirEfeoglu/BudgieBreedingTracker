@@ -267,6 +267,26 @@ void main() {
     });
   });
 
+  group('getByTag', () {
+    test('fetches tag feed and enriches with current-user social state', () async {
+      when(() => postSource.fetchByTag('opaline', limit: 30)).thenAnswer(
+        (_) async => [
+          _makePostRow(id: 'p1', userId: 'u2'),
+          _makePostRow(id: 'p2', userId: 'u3'),
+        ],
+      );
+      stubSocialEmpty();
+
+      final posts = await repository.getByTag(
+        tag: 'opaline',
+        currentUserId: 'u1',
+      );
+
+      expect(posts.map((p) => p.id), ['p1', 'p2']);
+      verify(() => postSource.fetchByTag('opaline', limit: 30)).called(1);
+    });
+  });
+
   group('getBookmarked', () {
     test('returns empty for anonymous user', () async {
       final posts = await repository.getBookmarked(currentUserId: 'anonymous');

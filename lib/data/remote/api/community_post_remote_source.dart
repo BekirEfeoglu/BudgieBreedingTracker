@@ -158,6 +158,40 @@ class CommunityPostRemoteSource {
     }
   }
 
+  /// Posts carrying [tag] in either the free `tags` (jsonb array) or the
+  /// bird-derived `mutation_tags` (text[]) column. Delegates to the
+  /// `get_community_posts_by_tag` RPC because the two columns need different
+  /// containment operators (`?` vs `@>`), which a single PostgREST `.or()`
+  /// can't express. Both are GIN-indexed (migration
+  /// `20260710160000_add_community_tag_gin_indexes`). Params are bound, so no
+  /// filter-injection surface.
+  Future<List<Map<String, dynamic>>> fetchByTag(
+    String tag, {
+    int limit = 30,
+  }) async {
+    try {
+      final trimmed = tag.trim();
+      if (trimmed.isEmpty) return [];
+
+      final result = await _client.rpc<List<dynamic>>(
+        'get_community_posts_by_tag',
+        params: {'p_tag': trimmed, 'p_limit': limit},
+      );
+
+      final rows = result
+          .whereType<Map>()
+          .map((row) => Map<String, dynamic>.from(row))
+          .toList(growable: false);
+      return _profileCache.mergeIntoRows(rows);
+    } catch (e, st) {
+      throw BaseRemoteSource.handleErrorForTag(
+        'CommunityPostRemoteSource.fetchByTag',
+        e,
+        st,
+      );
+    }
+  }
+
   Future<void> insert(Map<String, dynamic> data) async {
     try {
       final result = await _edgeFunctionClient.createCommunityPost(data);

@@ -88,6 +88,17 @@ class CommunityPostRepository {
     return _enrichPosts(rows, currentUserId);
   }
 
+  /// Posts tagged with [tag] (free `tags` or bird-derived `mutation_tags`),
+  /// newest first, enriched with the current user's like/bookmark state.
+  Future<List<CommunityPost>> getByTag({
+    required String tag,
+    required String currentUserId,
+    int limit = 30,
+  }) async {
+    final rows = await _postSource.fetchByTag(tag, limit: limit);
+    return _enrichPosts(rows, currentUserId);
+  }
+
   Future<List<CommunityPost>> getBookmarked({
     required String currentUserId,
   }) async {

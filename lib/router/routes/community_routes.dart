@@ -7,6 +7,7 @@ import '../../features/community/screens/community_create_post_screen.dart';
 import '../../features/community/screens/community_post_detail_screen.dart';
 import '../../features/community/screens/community_screen.dart';
 import '../../features/community/screens/community_search_screen.dart';
+import '../../features/community/screens/community_tag_feed_screen.dart';
 import '../../features/community/screens/community_user_posts_screen.dart';
 import '../route_names.dart';
 import '../route_utils.dart';
@@ -58,6 +59,14 @@ List<RouteBase> buildCommunityRoutes() => [
           final userId = state.pathParameters['userId']!;
           if (!isValidRouteId(userId)) return const NotFoundScreen();
           return CommunityUserPostsScreen(userId: userId);
+        },
+      ),
+      GoRoute(
+        path: 'tag/:tag',
+        builder: (context, state) {
+          final tag = state.pathParameters['tag'] ?? '';
+          if (tag.trim().isEmpty) return const NotFoundScreen();
+          return CommunityTagFeedScreen(tag: tag);
         },
       ),
     ],

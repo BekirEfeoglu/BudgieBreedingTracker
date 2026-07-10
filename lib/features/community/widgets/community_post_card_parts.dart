@@ -154,12 +154,14 @@ class PostTagWrap extends StatelessWidget {
         for (final mutationTag in post.mutationTags)
           _TagChip(
             label: mutationTag,
+            tagValue: mutationTag,
             backgroundColor: theme.colorScheme.tertiary.withValues(alpha: 0.14),
             foregroundColor: theme.colorScheme.tertiary,
           ),
         for (final tag in post.tags)
           _TagChip(
             label: tag.startsWith('#') ? tag : '#$tag',
+            tagValue: tag.startsWith('#') ? tag.substring(1) : tag,
             backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
             foregroundColor: theme.colorScheme.primary,
           ),
@@ -168,33 +170,51 @@ class PostTagWrap extends StatelessWidget {
   }
 }
 
+/// A tappable tag/mutation chip. Tapping opens the tag discovery feed
+/// ([CommunityTagFeedScreen]) for [tagValue] — the raw stored tag, not the
+/// `#`-prefixed display label.
 class _TagChip extends StatelessWidget {
   final String label;
+  final String tagValue;
   final Color backgroundColor;
   final Color foregroundColor;
 
   const _TagChip({
     required this.label,
+    required this.tagValue,
     required this.backgroundColor,
     required this.foregroundColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
+    return Semantics(
+      button: true,
+      label: 'community.tag_feed_open'.tr(namedArgs: {'tag': tagValue}),
+      child: Material(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: foregroundColor,
-          fontWeight: FontWeight.w600,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          onTap: () => context.push(
+            AppRoutes.communityTagFeed.replaceFirst(
+              ':tag',
+              Uri.encodeComponent(tagValue),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: AppSpacing.xs,
+            ),
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: foregroundColor,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ),
       ),
     );

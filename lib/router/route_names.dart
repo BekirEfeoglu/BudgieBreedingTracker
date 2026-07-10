@@ -30,6 +30,7 @@ abstract class AppRoutes {
   static const communityPostDetail = '/community/post/:postId';
   static const communityCreatePost = '/community/create';
   static const communityUserPosts = '/community/user/:userId';
+  static const communityTagFeed = '/community/tag/:tag';
   static const communityBookmarks = '/community/bookmarks';
   static const communitySearch = '/community/search';
 
