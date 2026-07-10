@@ -20,9 +20,12 @@ symmetric pre-cleanup AAL2 gate. **observability:** Sentry user scope set on
 login / nulled on logout; offline timeout + `NetworkException` no longer captured.
 **icons:** vaccination/medication/temp → `AppIcons`. EF1 (comment cross-post
 `parent_id`) was a false positive — the DB trigger already rejects it; migration
-ledger 205=prod. Deferred to owner: chick-promote paywall, genetics
-`df_dominant_pied` unsourced warning (needs version bump), marketplace moderation
-edge fn + pagination/search, #8 column-literal refactor.
+ledger 205=prod. **Owner then decided the two gated items:** chick promotion now
+enforces the free-tier bird limit (was a breed→promote paywall bypass); the
+unsourced `df_dominant_pied` semi-lethal warning was removed (calculationVersion
+7→8) — DF Australian Dominant Pied is viable, same class v6 dropped. Still
+deferred (chips): marketplace moderation edge fn + pagination/search, #8
+column-literal refactor.
 
 ## [2026-07-10] fix | Genetics deferred decisions — ino masks melanin patterns (v7); dominant model already OK
 
