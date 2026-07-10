@@ -4,6 +4,26 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-10] audit | Full-scope 10-lane sweep — 12 fixes across 6 features
+
+10 parallel read-only auditors (6 specialized + 4 feature-tab lanes over all 24
+tabs) from clean main; every fix shipped with tests. **more:** Statistics/Genetics
+tiles ignored the rewarded-ad providers the router honors, so a user who watched a
+reward ad was bounced back to the paywall (`navigateOrHint` now mirrors the gate).
+**health_records:** chick-linked records showed no animal name (list+detail read
+only `birdId`); reminder body used the record title not the bird's name; edit
+populate skipped `setState`; the `List`-keyed filter families leaked (→ autoDispose).
+**chicks:** `markAsWeaned`/`markAsDeceased` reported false success on a
+concurrently-deleted chick → now surface not-found. **auth:** AAL2 read-failure
+now fails closed for MFA-enrolled users; `completeAfterMfaChallenge` gained the
+symmetric pre-cleanup AAL2 gate. **observability:** Sentry user scope set on
+login / nulled on logout; offline timeout + `NetworkException` no longer captured.
+**icons:** vaccination/medication/temp → `AppIcons`. EF1 (comment cross-post
+`parent_id`) was a false positive — the DB trigger already rejects it; migration
+ledger 205=prod. Deferred to owner: chick-promote paywall, genetics
+`df_dominant_pied` unsourced warning (needs version bump), marketplace moderation
+edge fn + pagination/search, #8 column-literal refactor.
+
 ## [2026-07-10] fix | Genetics deferred decisions — ino masks melanin patterns (v7); dominant model already OK
 
 Handled the two items left for the domain owner after the v6 audit.
@@ -162,29 +182,5 @@ Gamification `::integer` (cosmetic) reconciled in-place; admin_get_table_counts
 prod ran `private.is_admin()` (different bodies → behavioral). Fixed forward via
 `20260709180636`, applied to prod as an idempotent no-op; repo+prod now 205 in
 lockstep. Old files left un-edited (no history rewrite). See [[data-layer/migrations]].
-
-## [2026-07-09] audit | Full-scope sweep: genetics + calendar test hardening
-
-Multi-agent sweep from clean main (all gates green). Only fixes: feather_duster
-+ df_spangle multi-locus DF regression guards (v5 claimed 4 combos, 2 untested)
-and a calendar midnight-rollover flake. Community-tag PR-gate gap flagged to user.
-
-## [2026-07-09] fix | Genetics: DF lethal warnings dropped in multi-locus crosses (v5)
-
-Followed up the audit's deferred genetics FINDING 1. Traced end-to-end: EVERY
-offspringHomozygous lethal (crested, DF spangle, feather duster, DF dominant
-pied) — not just dominant_pied — had its warning silently dropped in any
-multi-locus cross. Root cause was NOT the guardian's `(homozygous)`-match
-one-liner (which failed its own regression test) but the combiner grouping:
-`_resolveEpistasisForCombined` keyed results by the epistasis compound name
-(identical for homo/heterozygous dominant), so DF and SF merged and the
-`doubleFactorIds` tag was overwritten. Fix keeps the DF subset a distinct
-`(double factor)` result keyed by its exact DF set (so different homozygous
-loci don't cross-pollute tags and over-attribute a lethal). Verified via
-diagnostic: warnings fire + affected probability is the true ~25% subset for
-both dominant_pied and crested + a second locus. calculationVersion 4→5;
-regression tests for both. Also folded in 2 LOW cleanups: removed dead
-`LethalScope.parentAnyVisual` + checker, reconciled the crested "sub-vital"
-comment vs its LethalSeverity.lethal classification. Commits 1f2ffa3, 4de2eca.
 
 Older entries are archived in [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

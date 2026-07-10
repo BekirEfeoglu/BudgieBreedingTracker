@@ -5,6 +5,30 @@ full-scope audit follow-ups.
 
 ---
 
+## [2026-07-09] audit | Full-scope sweep: genetics + calendar test hardening
+
+Multi-agent sweep from clean main (all gates green). Only fixes: feather_duster
++ df_spangle multi-locus DF regression guards (v5 claimed 4 combos, 2 untested)
+and a calendar midnight-rollover flake. Community-tag PR-gate gap flagged to user.
+
+## [2026-07-09] fix | Genetics: DF lethal warnings dropped in multi-locus crosses (v5)
+
+Followed up the audit's deferred genetics FINDING 1. Traced end-to-end: EVERY
+offspringHomozygous lethal (crested, DF spangle, feather duster, DF dominant
+pied) — not just dominant_pied — had its warning silently dropped in any
+multi-locus cross. Root cause was NOT the guardian's `(homozygous)`-match
+one-liner (which failed its own regression test) but the combiner grouping:
+`_resolveEpistasisForCombined` keyed results by the epistasis compound name
+(identical for homo/heterozygous dominant), so DF and SF merged and the
+`doubleFactorIds` tag was overwritten. Fix keeps the DF subset a distinct
+`(double factor)` result keyed by its exact DF set (so different homozygous
+loci don't cross-pollute tags and over-attribute a lethal). Verified via
+diagnostic: warnings fire + affected probability is the true ~25% subset for
+both dominant_pied and crested + a second locus. calculationVersion 4→5;
+regression tests for both. Also folded in 2 LOW cleanups: removed dead
+`LethalScope.parentAnyVisual` + checker, reconciled the crested "sub-vital"
+comment vs its LethalSeverity.lethal classification. Commits 1f2ffa3, 4de2eca.
+
 ## [2026-07-09] fix | Comprehensive audit sweep (6 agents + Supabase DB checks)
 
 Full-scope audit (Supabase now connected). DB-side: security advisors clean;
