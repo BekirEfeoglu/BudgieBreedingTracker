@@ -6,6 +6,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../bootstrap.dart';
+import '../../../core/errors/app_exception.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/utils/safe_cast.dart';
 import 'auth_actions.dart';
@@ -90,6 +91,10 @@ final authSessionSideEffectsProvider = Provider<void>((ref) {
 
   ref.listen<String>(currentUserIdProvider, (previous, next) {
     if (next == 'anonymous') {
+      // Clear the Sentry user scope on logout so a later crash on a shared
+      // device can never attach the previous user's identity (observability.md
+      // logout chain; auth.md § Logout Zinciri step 5). id-only, never PII.
+      Sentry.configureScope((scope) => scope.setUser(null));
       ref.read(sessionLockedProvider.notifier).state = false;
       unawaited(ref.read(purchaseServiceProvider).logout());
       unawaited(ref.read(localPremiumProvider.notifier).setPremium(false));
@@ -99,6 +104,8 @@ final authSessionSideEffectsProvider = Provider<void>((ref) {
       return;
     }
 
+    // Tag Sentry issues with the (id-only) user for triage correlation.
+    Sentry.configureScope((scope) => scope.setUser(SentryUser(id: next)));
     unawaited(ref.read(pushNotificationServiceProvider).syncToken(next));
   });
 });
@@ -130,16 +137,23 @@ final appInitializationProvider = FutureProvider<void>((ref) async {
   final profileRepo = ref.read(profileRepositoryProvider);
   try {
     await profileRepo.pull(userId).timeout(const Duration(seconds: 5));
-  } on TimeoutException catch (e, st) {
+  } on TimeoutException {
+    // Expected on slow/offline networks — the app falls back to the cached
+    // local profile. A per-launch timeout is an offline condition and must
+    // NOT file a Sentry issue (observability.md: offline is not reported).
+    // The warning log still leaves a breadcrumb for context.
     AppLogger.warning(
       '[AppInit] Profile pull timed out after 5s, continuing offline',
     );
-    Sentry.captureException(e, stackTrace: st);
   } catch (e, st) {
     // Non-fatal: continue with cached local profile (or create one below).
-    // A persistent network failure should NOT lock the splash screen.
+    // A persistent network failure should NOT lock the splash screen, and
+    // offline/expected AppExceptions must not spam Sentry — only genuinely
+    // unexpected errors are captured.
     AppLogger.warning('[AppInit] Profile pull failed, continuing offline: $e');
-    Sentry.captureException(e, stackTrace: st);
+    if (e is! AppException) {
+      Sentry.captureException(e, stackTrace: st);
+    }
   }
 
   // Sync auth metadata (display_name/full_name) — deferred below; a late

@@ -38,10 +38,10 @@ void main() {
       expect(host.reportedErrors, isEmpty);
     });
 
-    test('reports NetworkException', () {
+    test('skips NetworkException (offline is an expected condition)', () {
       const error = NetworkException('connection failed');
       host.reportIfUnexpected(error, StackTrace.current);
-      expect(host.reportedErrors, [error]);
+      expect(host.reportedErrors, isEmpty);
     });
 
     test('reports AuthException', () {

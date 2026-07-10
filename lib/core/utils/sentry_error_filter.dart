@@ -2,11 +2,17 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 
 /// Mixin for Notifiers that need filtered Sentry error reporting.
-/// Skips expected exceptions (FreeTierLimitException, ValidationException)
-/// and only reports unexpected errors.
+/// Skips expected exceptions (FreeTierLimitException, ValidationException,
+/// NetworkException — offline is an expected user condition) and only reports
+/// unexpected errors. Mirrors the exclusion in base_repository.reportPullFailure
+/// and observability.md § "Sentry'ye GİTMEYEN olaylar".
 mixin SentryErrorFilter {
   void reportIfUnexpected(Object error, StackTrace stackTrace) {
-    if (error is FreeTierLimitException || error is ValidationException) return;
+    if (error is FreeTierLimitException ||
+        error is ValidationException ||
+        error is NetworkException) {
+      return;
+    }
     sendToSentry(error, stackTrace);
   }
 

@@ -89,7 +89,9 @@ class AppLogger {
       Breadcrumb(message: message, level: SentryLevel.error),
     );
     // Note: Sentry.captureException is NOT called here to avoid double
-    // reporting. Use ErrorHandler.handleAndReport() for Sentry capture.
+    // reporting. For Sentry capture, call Sentry.captureException directly at
+    // the critical call site, or use SentryErrorFilter.reportIfUnexpected in
+    // notifiers (base_repository.reportPullFailure for sync-pull failures).
   }
 
   /// Returns a safe, partial representation of a sensitive identifier
