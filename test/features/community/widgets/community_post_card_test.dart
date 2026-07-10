@@ -65,6 +65,7 @@ void main() {
     CommunityPost post, {
     String currentUserId = 'other-user',
     bool isInteractive = true,
+    bool showFullContent = false,
   }) {
     return ProviderScope(
       overrides: [
@@ -75,7 +76,11 @@ void main() {
       child: MaterialApp(
         home: Scaffold(
           body: SingleChildScrollView(
-            child: CommunityPostCard(post: post, isInteractive: isInteractive),
+            child: CommunityPostCard(
+              post: post,
+              isInteractive: isInteractive,
+              showFullContent: showFullContent,
+            ),
           ),
         ),
       ),
@@ -90,11 +95,16 @@ void main() {
       expect(find.byType(CommunityPostCard), findsOneWidget);
     });
 
-    testWidgets('shows Card widget', (tester) async {
+    testWidgets('renders the tappable card wrapper', (tester) async {
       await tester.pumpWidget(createSubject(_testPost()));
       await tester.pump();
 
-      expect(find.byType(Card), findsOneWidget);
+      // The card wrapper is a Container + Material + InkWell (soft-shadow
+      // elevation from the design mockup), not a Material Card.
+      expect(
+        find.byKey(CommunityPostCard.interactionKey),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows post content', (tester) async {
@@ -163,24 +173,43 @@ void main() {
       expect(find.text('7'), findsAtLeastNWidgets(1));
     });
 
+    // EngagementSummary renders only on the detail screen (showFullContent);
+    // feed cards drop it since the action row already shows the counts.
     testWidgets('hides engagement summary when both counts are zero', (
       tester,
     ) async {
       await tester.pumpWidget(
-        createSubject(_testPost(likeCount: 0, commentCount: 0)),
+        createSubject(
+          _testPost(likeCount: 0, commentCount: 0),
+          showFullContent: true,
+        ),
       );
       await tester.pump();
 
       expect(find.byType(EngagementSummary), findsNothing);
     });
 
-    testWidgets('shows engagement summary when likeCount > 0', (tester) async {
+    testWidgets('shows engagement summary on detail when likeCount > 0', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        createSubject(_testPost(likeCount: 3, commentCount: 0)),
+        createSubject(
+          _testPost(likeCount: 3, commentCount: 0),
+          showFullContent: true,
+        ),
       );
       await tester.pump();
 
       expect(find.byType(EngagementSummary), findsOneWidget);
+    });
+
+    testWidgets('feed card hides the engagement summary', (tester) async {
+      await tester.pumpWidget(
+        createSubject(_testPost(likeCount: 3, commentCount: 2)),
+      );
+      await tester.pump();
+
+      expect(find.byType(EngagementSummary), findsNothing);
     });
 
     testWidgets('shows post type badge for non-general types', (tester) async {

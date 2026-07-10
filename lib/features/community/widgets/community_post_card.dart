@@ -115,31 +115,55 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
       onOpenImage: _openImageViewer,
     );
 
-    return Card(
+    final borderRadius = BorderRadius.circular(AppSpacing.radiusXl);
+    // Soft two-layer elevation from the design mockup (`0 1px 2px …, 0 10px
+    // 26px -16px rgba(15,23,42,.18)`) — the flat elevation:0 card missed the
+    // intended depth. `theme.shadowColor` keeps it theme-aware (near-invisible
+    // on dark surfaces, where the hairline border still separates cards).
+    return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      elevation: 0,
-      color: isGuide
-          ? theme.colorScheme.surfaceContainerLowest
-          : theme.colorScheme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-        side: BorderSide(
+      decoration: BoxDecoration(
+        color: isGuide
+            ? theme.colorScheme.surfaceContainerLowest
+            : theme.colorScheme.surface,
+        borderRadius: borderRadius,
+        border: Border.all(
           color: isGuide
               ? theme.colorScheme.primary.withValues(alpha: 0.22)
-              : theme.colorScheme.outlineVariant.withValues(alpha: 0.22),
+              : theme.colorScheme.outlineVariant.withValues(alpha: 0.18),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.shadowColor.withValues(alpha: 0.04),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+          BoxShadow(
+            color: theme.shadowColor.withValues(alpha: 0.10),
+            blurRadius: 26,
+            spreadRadius: -16,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
-      clipBehavior: Clip.antiAlias,
-      child: widget.isInteractive
-          ? InkWell(
-              key: CommunityPostCard.interactionKey,
-              onTap: () => context.push(
-                AppRoutes.communityPostDetail.replaceFirst(':postId', post.id),
-              ),
-              borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-              child: cardChild,
-            )
-          : cardChild,
+      child: Material(
+        type: MaterialType.transparency,
+        borderRadius: borderRadius,
+        clipBehavior: Clip.antiAlias,
+        child: widget.isInteractive
+            ? InkWell(
+                key: CommunityPostCard.interactionKey,
+                onTap: () => context.push(
+                  AppRoutes.communityPostDetail.replaceFirst(
+                    ':postId',
+                    post.id,
+                  ),
+                ),
+                borderRadius: borderRadius,
+                child: cardChild,
+              )
+            : cardChild,
+      ),
     );
   }
 

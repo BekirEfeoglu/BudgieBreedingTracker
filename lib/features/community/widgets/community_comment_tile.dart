@@ -63,7 +63,10 @@ class CommunityCommentTile extends ConsumerWidget {
                   Text(
                     formatCommunityDate(
                       comment.createdAt,
-                      locale: context.locale.toString(),
+                      // Null-safe: `context.locale` throws without an
+                      // EasyLocalization ancestor; maybeLocaleOf falls back to
+                      // the intl default when Localizations is absent.
+                      locale: Localizations.maybeLocaleOf(context)?.toString(),
                     ),
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: mutedColor,

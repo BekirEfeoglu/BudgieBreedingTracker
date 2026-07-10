@@ -181,16 +181,20 @@ class CommunityPostCardBody extends StatelessWidget {
                   maxLines: maxContentLines,
                 ),
               ],
+              // Trailing metadata (link preview, bird link, tags) reads as one
+              // cluster attached to the content: `sm` between these related
+              // items, vs `md` between the distinct header / content / metadata
+              // blocks. Grouping-via-spacing makes the card scannable.
               if (firstUrl != null) ...[
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.sm),
                 CommunityLinkPreview(url: firstUrl),
               ],
               if (post.birdId != null) ...[
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.sm),
                 BirdLinkChip(post: post),
               ],
               if (post.mutationTags.isNotEmpty || post.tags.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.sm),
                 PostTagWrap(post: post),
               ],
             ],
