@@ -4,6 +4,15 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-10] docs | Claim authority, agent routing, and semantic drift repair
+
+Documentation governance now resolves authority by claim type instead of one
+global hierarchy; doc-sync/review/genetics agents and the stop hook perform a
+semantic pass before lint. Added [[sources/agents-index]] and centralized open
+genetics roadmap items in [[known-gaps]]. Reconciled current-state drift:
+genetics v5→v8, viability set 2, schema v26→v27, test/l10n counts, and provider
+names; historical log statements remain unchanged.
+
 ## [2026-07-10] feat+refactor | Marketplace pagination/search (chip #2) + #8 column constants (chip #3)
 
 Closed the last two audit chips (delivered via parallel worktree agents; diffs
@@ -181,18 +190,5 @@ markers + superseded-build guidance. data-layer.md: never close a
 script + ledger `statements` content-drift procedure + forward-reconcile rule.
 testing.md: tag→CI-gate table (community tag = weekly job; unit tests untagged).
 Wiki ci-cd.md Xcode Cloud section rewritten to match.
-
-## [2026-07-09] fix | Drift clutches↔incubations module cycle crashed drift_dev codegen
-
-Root-caused the intermittent Xcode Cloud post-clone failure (Build - iOS
-action_required, `build_runner` exit 1 ~33s, survived 8 retries): a bidirectional
-typed FK (clutches.incubationId ⇄ incubations.clutchId, both `.references()`)
-formed a reference cycle that drift_dev 2.31 crashes on ("Circular error when
-deserializing drift modules"), build-order dependent so it hit some CI runners
-only. Retries can't clear it. Fixed by declaring incubations.clutchId's FK with a
-raw `.customConstraint('NULL REFERENCES clutches (id)')` (+ dropping the
-clutches_table import) — breaks the module edge, preserves the SQL FK 1:1, no
-schema change. 763 db/incubation/egg tests pass. See [[data-layer/drift]] §
-Circular FK References.
 
 Older entries are archived in [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

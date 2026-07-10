@@ -31,6 +31,9 @@ start from.
 | Moderate user content? | [[domain/moderation-service]] — two-layer fail-closed pipeline, context thresholds |
 | Add or check a Supabase migration? | [[data-layer/migrations]] — idempotent SQL, RLS, `private` RPC pattern; deploy is manual (`supabase db push`) |
 | Check if a feature is actually shipped? | [[known-gaps]] — latent surfaces, unshipped design goals, deliberate absences |
+| Change genetics rates, loci, viability, or naming? | [[domain/genetics-engine]] + `.claude/rules/genetics.md` — evidence + version decision + regression |
+| Pick a project-local review/implementation agent? | [[sources/agents-index]] — trigger and read/write mode |
+| Resolve a code/rule/wiki/source conflict? | [[CLAUDE.md]] — classify authority by claim type before editing |
 | Verify code quality before commit? | [[infrastructure/scripts]] — quality gates |
 
 ## "Where does X live?"
@@ -52,6 +55,7 @@ start from.
 | Edge Functions | `supabase/functions/` — [[infrastructure/edge-functions]] |
 | Migrations | `supabase/migrations/` — [[data-layer/migrations]] |
 | Rules (source of truth for policy) | `.claude/rules/` — [[sources/rules-index]] |
+| Agent profiles | `.claude/agents/` — [[sources/agents-index]] |
 | Quality scripts | `scripts/` — [[infrastructure/scripts]] |
 
 ## "When does X fire?"

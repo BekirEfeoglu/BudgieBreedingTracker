@@ -7,7 +7,7 @@ Maps every `.claude/rules/*.md` file to the wiki page(s) that synthesize it.
 | `accessibility.md` | [[patterns/accessibility]] | [[patterns/anti-patterns]] (A5) |
 | `admin.md` | [[features/admin]] | [[patterns/security]], [[infrastructure/edge-functions]] |
 | `ads.md` | [[domain/ads-service]] | [[features/premium]], [[features/statistics]] |
-| `ai-workflow.md` | [[infrastructure/branch-workflow]] | [[infrastructure/scripts]] |
+| `ai-workflow.md` | [[infrastructure/branch-workflow]] | [[infrastructure/scripts]], [[sources/agents-index]] |
 | `app-update.md` | [[features/app_update]] | [[infrastructure/release-ops]] |
 | `architecture.md` | [[architecture/layers]] | [[architecture/data-flow]], [[architecture/online-first-exemption]] |
 | `assets-images.md` | [[patterns/assets-images]] | [[patterns/anti-patterns]] (#12, #13) |
@@ -24,7 +24,7 @@ Maps every `.claude/rules/*.md` file to the wiki page(s) that synthesize it.
 | `community.md` | [[features/community]] | [[architecture/online-first-exemption]], [[features/messaging]] |
 | `data-io.md` | [[domain/data-io]] | [[domain/encryption-service]], [[features/premium]] |
 | `data-layer.md` | [[data-layer/drift]] | [[data-layer/supabase]], [[data-layer/repositories]] |
-| `documentation-sync.md` | [[CLAUDE.md]] (wiki maintenance contract) | [[infrastructure/scripts]], [[infrastructure/branch-workflow]] |
+| `documentation-sync.md` | [[CLAUDE.md]] (wiki maintenance contract) | [[infrastructure/scripts]], [[infrastructure/branch-workflow]], [[sources/agents-index]] |
 | `datetime-format.md` | [[patterns/datetime-format]] | [[domain/notification-service]] |
 | `edge-functions.md` | [[infrastructure/edge-functions]] | [[domain/premium-service]], [[domain/notification-service]], [[domain/moderation-service]] |
 | `empty-loading-error-states.md` | [[patterns/empty-loading-error-states]] | [[patterns/ui-patterns]] |

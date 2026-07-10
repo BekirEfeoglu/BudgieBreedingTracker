@@ -32,7 +32,7 @@
            │ DAO queries             │ remote upserts
 ┌──────────▼──────────┐  ┌──────────▼──────────────┐
 │  Drift (local SQLite)│  │  Supabase (remote Postgres)│
-│  20 tables, v26     │  │  27 remote sources        │
+│  20 tables, v27     │  │  28 remote-source files   │
 └─────────────────────┘  └────────────────────────────┘
 ```
 
@@ -69,19 +69,19 @@ Enforced by `scripts/verify_code_quality.py` (27 checker categories — 19/24 CL
 ### 5. 3-Language Parity
 - Turkish is master language — all keys added to `tr.json` first
 - CI blocks PRs with missing keys in `en.json` or `de.json`
-- 3,068 keys per language, 41 categories
+- 3,113 keys per language, 41 categories
 - See [[patterns/l10n]]
 
 ### 6. Design Goal ≠ Shipped
 - Rule files document both shipped behavior AND unshipped design targets
 - Before assuming a surface works end-to-end, check [[known-gaps]]
 
-## Codebase Stats (as of 2026-07-09, kept in sync via `verify_rules.py --strict`)
+## Codebase Stats (as of 2026-07-10, kept in sync via `verify_rules.py --strict`)
 
 | Metric | Value |
 |--------|-------|
 | Source files (lib/) | 1017 Dart files |
-| Test files | 919 files, 11,498+ individual tests |
+| Test files | 919 files, 11,506+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |

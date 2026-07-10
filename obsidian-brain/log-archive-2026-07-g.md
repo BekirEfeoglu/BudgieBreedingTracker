@@ -5,6 +5,19 @@ full-scope audit follow-ups.
 
 ---
 
+## [2026-07-09] fix | Drift clutches↔incubations module cycle crashed drift_dev codegen
+
+Root-caused the intermittent Xcode Cloud post-clone failure (Build - iOS
+action_required, `build_runner` exit 1 ~33s, survived 8 retries): a bidirectional
+typed FK (clutches.incubationId ⇄ incubations.clutchId, both `.references()`)
+formed a reference cycle that drift_dev 2.31 crashes on ("Circular error when
+deserializing drift modules"), build-order dependent so it hit some CI runners
+only. Retries can't clear it. Fixed by declaring incubations.clutchId's FK with a
+raw `.customConstraint('NULL REFERENCES clutches (id)')` (+ dropping the
+clutches_table import) — breaks the module edge, preserves the SQL FK 1:1, no
+schema change. 763 db/incubation/egg tests pass. See [[data-layer/drift]] §
+Circular FK References.
+
 ## [2026-07-09] ci | Audit follow-ups: migration drift guard + codegen-flake hardening
 
 Post-audit "apply all suggestions" round. Added `scripts/verify_migration_drift.py`

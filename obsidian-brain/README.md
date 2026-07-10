@@ -17,6 +17,7 @@ Knowledge wiki for the BudgieBreedingTracker Flutter project. Maintained by LLM;
 | CI/CD & infrastructure | [[infrastructure/ci-cd]] |
 | 24 Anti-patterns | [[patterns/anti-patterns]] |
 | Rules → wiki map | [[sources/rules-index]] |
+| Agent profile catalog | [[sources/agents-index]] |
 | Change log | [[log]] |
 
 ## How to Use
@@ -25,7 +26,7 @@ Knowledge wiki for the BudgieBreedingTracker Flutter project. Maintained by LLM;
 - **Understand a rule**: check `patterns/` — each file maps to a `.claude/rules/` source.
 - **Add a page**: write the file, add an entry to `index.md`, append a log entry to `log.md`.
 - **Cross-links** use `[[page-name]]` (Obsidian wikilinks). Paths are relative to `obsidian-brain/`.
-- **Source of truth**: the actual source code and `.claude/rules/` files always win over this wiki.
+- **Authority depends on the claim**: source proves current behavior, rules define engineering policy, approved evidence supports biological facts, and this wiki synthesizes them. See [[CLAUDE.md]].
 
 ## Maintenance
 

@@ -1,50 +1,99 @@
 # Feature: genetics
 
-**Purpose**: Budgerigar genetics calculator — Punnett square, mutation rates, inbreeding coefficient.
+**Purpose**: Select or enter parent genotypes, calculate expected offspring,
+explain linkage/viability/inbreeding, and save or compare calculations.
 
-## Key Screens
+## Shipped Screens
 
-- Genetics calculator (select parent birds → view offspring probabilities)
-- Mutation reference guide
-- Genetics result detail
+- `GeneticsCalculatorScreen` — parent selection, preview, results, save
+- `GeneticsHistoryScreen` — saved calculations + stale indicators
+- `GeneticsCompareScreen` — selected-history comparison and sharing
+- `GeneticsReverseScreen` — target phenotype → parent suggestions
+- `AiPredictionsScreen` — optional image/text AI analysis
+- `GeneticsColorAuditScreen` — debug-gated phenotype color audit
 
-## Key Providers
+Mutation reference details are presented by `mutation_detail_sheet.dart`; there
+is no standalone mutation-guide screen.
 
-- `geneticsCalculatorProvider` — NotifierProvider (calculator state)
-- `geneticsResultProvider` — computed offspring distribution
+## Key Provider Flow
 
-## Genetics Engine (`lib/domain/services/genetics/`)
+```text
+fatherGenotypeProvider + motherGenotypeProvider
+  → offspringCalculationProvider (isolate, detailed result)
+      → offspringResultsProvider
+      → pruningDiagnosticsProvider
+  → lethalAnalysisProvider / enrichedOffspringResultsProvider
+```
 
-- Punnett square calculation
-- Epistasis handling (multiple loci interactions)
-- MUTAVI-sourced mutation rates (authoritative reference: `docs/muhabbet-kusu-genetik-rehberi.md`)
-- Inbreeding coefficient calculation
-- Calculation version: v5 (2026-07-09: multi-locus combiner keeps the DF subset a distinct `(double factor)` result so offspringHomozygous lethals fire in multi-locus crosses; v4 tagged full-dominant homozygotes "(double)", 2026-07-02)
-- 950+ genetics-specific domain tests
+Parent identity/provenance uses:
 
-## `calculationVersion`
+- `selectedFatherBirdProvider` / `selectedMotherBirdProvider`
+- `fatherGenotypeSourceProvider` / `motherGenotypeSourceProvider`
+- `ParentGenotypeSource {manual, fromBird, fromBirdEdited}`
 
-Stored per result so future algorithm changes can be detected and results can be flagged as stale.
+History streams through `geneticsHistoryStreamProvider`; saved rows retain
+`fatherBirdId`, `motherBirdId`, genotype maps, result JSON, and calculation
+version.
+
+## Current Engine Contract
+
+- Calculation version: **v8**.
+- Linkage rate/evidence/display metadata comes from one `LinkageCatalog`.
+- Derived/estimated linkage values are labeled in the UI.
+- Reverse results use a deterministic five-key comparator.
+- Real pruning diagnostics—not mutation count—drive the coverage warning.
+- Viability warnings currently cover DF Crest (sub-vital) and DF Feather
+  Duster (lethal); removed healthy-pair warnings must not be reintroduced
+  without approved evidence.
+- 977 explicit domain `test()` declarations as of 2026-07-10.
+
+See [[domain/genetics-engine]] for inheritance/version details.
+
+## Bird Selection Round-Trip
+
+Selecting a bird seeds the genotype and persists `{id,name}` identity. Manual
+edits switch provenance to `fromBirdEdited`. Unknown mutation IDs are excluded
+from the engine and surfaced as a localized scope warning. Reopening history
+restores IDs when the birds still exist and uses a safe fallback label otherwise.
 
 ## Compare / Sharing
 
-- `GeneticsCompareScreen` can compare selected history rows across phenotype probabilities.
-- Compare results include a share action that builds a short text summary from the selected calculations and opens the platform share sheet.
-- Share failures are logged through `AppLogger` and surfaced with localized UI feedback.
+Comparison reads stored genotypes/results and can share a localized summary via
+the platform share sheet. Failures use `AppLogger` and localized feedback.
 
-## Local AI Integration
+## Local AI Boundary
 
-`LocalAiService` can analyze a bird photo to suggest gender/mutation with confidence score:
-- Confidence < 0.7 → "tahmin" label, no auto-save
-- Confidence ≥ 0.7 → user review + accept to save
-- See [[domain/local-ai]]
+`LocalAiService` can suggest sex/mutation with confidence. Low confidence is
+shown as an estimate; all results require user review. The roadmap's direct
+AI-photo → canonical calculator-genotype bridge is **not shipped**.
+
+## Access
+
+Genetics is premium-gated inline by effective premium access or the temporary
+genetics rewarded-ad exemption. Genealogy's separate no-reward policy does not
+apply here.
+
+## Known Deferred Work
+
+- Explicit linkage phase control (D4)
+- Typed mutation evidence/confidence metadata (Q2)
+- Combined breeding-form genetics advisory (I2)
+- User-approved stale-history batch recompute (M1)
+- Prediction-vs-actual, AI genotype bridge, and multi-generation planner
+
+Canonical status is [[known-gaps]]; roadmap text alone does not imply shipping.
 
 ## Rules
 
-- `.claude/rules/local-ai.md` — AI confidence thresholds
-- Genetic color constants are an **exception** to hardcoded colors anti-pattern (biology requires fixed colors)
+- `.claude/rules/genetics.md`
+- `.claude/rules/local-ai.md`
+- `.claude/rules/premium-revenuecat.md`
+- Phenotype colors remain a biological-accuracy exception to theme colors.
 
 ## See Also
 
 - [[domain/genetics-engine]]
+- [[domain/local-ai]]
+- [[features/genealogy]]
 - [[features/_features-index]]
+- [[known-gaps]]

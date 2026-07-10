@@ -4,7 +4,7 @@ Source: `.claude/rules/testing.md`, `.claude/rules/test-stability.md`
 
 ## Stats
 
-- 917 test files, 11,488+ individual tests (CLAUDE.md § Codebase Stats; a full `flutter test` run reports more due to parameterized tests)
+- 919 test files, 11,506+ individual tests (managed baseline from `CLAUDE.md`; a full `flutter test` run can report more due to parameterized tests)
 - CI timeout: 30 minutes (job-level 40 minutes)
 
 ## Test Tags → CI Gates

@@ -2,14 +2,20 @@
 
 This file governs how LLMs read and update the obsidian-brain wiki.
 
-## Source of Truth Hierarchy
+## Authority by Claim Type
 
-1. **Actual source code** (`lib/`, `test/`, `supabase/`) — always authoritative
-2. **`.claude/rules/` files** — policy and pattern definitions
-3. **`CLAUDE.md`** (project root) — stats, anti-patterns, key file locations
-4. **This wiki** — synthesis and cross-referencing layer; derivative, never primary
+| Claim | Authority |
+|-------|-----------|
+| Current app behavior / API | Executed source path + tests |
+| Architecture / engineering policy | `AGENTS.md` + owning `.claude/rules/*.md` |
+| Biological/domain fact | Approved guide/evidence named by the rule; code is current implementation, not scientific proof |
+| Deployed remote state | Verified production state/ledger, not an unverified local migration alone |
+| Counts | Repository inventory + `verify_rules.py`; managed root `CLAUDE.md` values |
+| Navigation/synthesis | This wiki; derivative, never sole authority |
 
-If this wiki contradicts the sources above, update the wiki, not the sources.
+Classify the claim before resolving a conflict. Update stale wiki prose for
+implementation drift, but investigate code/tests when they contradict an
+approved biological, security, or deployed-state contract.
 
 ## Wiki Structure
 
@@ -60,7 +66,8 @@ and `data-layer/migrations.md` must include:
 When answering a code question:
 1. Check the relevant `patterns/` page first
 2. Cross-reference the `.claude/rules/` source for edge cases
-3. Never treat wiki content as more authoritative than the rule file
+3. Read the relevant production path for current behavior
+4. Apply the claim-authority table; do not treat code as biological proof
 
 ### Lint
 Before closing a wiki-update task:
@@ -68,7 +75,13 @@ Before closing a wiki-update task:
 - Each new page has an `[[index]]` back-link or is reachable from the index
 - `log.md` has an entry for this session
 - No page exceeds 200 lines
+- Old versions/names/counts were searched across sibling current-state pages
+- `known-gaps.md` agrees with what is actually shipped
 - `python3 scripts/check_obsidian_brain.py` passes
+
+The linter proves structure, links, selected metrics, and required sections. It
+does not prove that provider names exist, two paragraphs agree, or a biological
+claim has adequate evidence; those require the semantic pass above.
 
 ## Update Discipline
 

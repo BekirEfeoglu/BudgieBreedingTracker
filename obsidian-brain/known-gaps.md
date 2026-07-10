@@ -26,6 +26,21 @@ No open latent code surfaces are currently tracked.
 | Statistics free preview / custom range / AI insight | `/statistics` is all-or-nothing gated (premium OR rewarded ad); no per-chart free tier | `statistics.md` |
 | Per-session listing in Settings → security | Only an explanation dialog + "sign out all sessions" — don't over-promise | `settings.md` |
 
+## Genetics Roadmap — Still Open
+
+`dev-docs/genetics-improvement-roadmap.md` is a dated plan, not a shipped-state
+source. D1/D2/D3, Q1/Q3, and I1 are implemented; the items below are not.
+
+| ID / design goal | Current reality | Owning contract |
+|------------------|-----------------|-----------------|
+| D4 explicit linkage phase | No `Otomatik | Coupling | Repulsion` control or persisted phase metadata; phase is inferred from allele states | `genetics.md` |
+| Q2 mutation evidence metadata | `BudgieMutationRecord` has no typed `evidenceLevel`/`sourceIds`; disputes remain prose | `genetics.md` |
+| I2 breeding genetics advisory | Breeding form shows inbreeding only; no combined offspring + viability card | `genetics.md`, `breeding-eggs.md` |
+| M1 stale batch recompute | History shows stale rows but has no user-approved bulk recompute | `genetics.md` |
+| I3 prediction vs actual | Genetics history is not linked to a breeding pair/chick outcome comparison | `genetics.md`, `statistics.md` |
+| I4 AI → canonical genotype | AI prediction is review-only and does not seed calculator mutation IDs | `genetics.md`, `local-ai.md` |
+| I5 multi-generation planner | Discovery/RFC target only; no simulator, beam/pruning path model, or premium decision | `genetics.md` |
+
 ## Deliberate Absences (decisions, not gaps — do not "add")
 
 - **E2E encryption in DMs** — server must see content for moderation (`messaging.md`)
@@ -40,5 +55,6 @@ No open latent code surfaces are currently tracked.
 
 - [[cheat-sheet]] — task-oriented navigation
 - [[sources/rules-index]] — rules → wiki map
+- [[sources/agents-index]] — project-local agent routing
 - [[log]] — when gaps were opened/closed
 - [[index]]
