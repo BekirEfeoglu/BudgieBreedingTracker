@@ -109,6 +109,24 @@ extension ChickFormStatusActions on ChickFormNotifier {
         return;
       }
 
+      // Promotion creates a new Bird, so it must honor the same free-tier
+      // bird limit as adding a bird directly (bird_form_actions.dart) —
+      // otherwise breed → promote is an unbounded paywall bypass.
+      final isPremium = ref.read(effectivePremiumProvider);
+      if (!isPremium) {
+        try {
+          await ref
+              .read(freeTierLimitServiceProvider)
+              .guardBirdLimit(chick.userId);
+        } on FreeTierLimitException catch (e) {
+          state = state.copyWith(
+            isLoading: false,
+            error: 'premium.bird_limit_reached'.tr(args: ['${e.limit}']),
+          );
+          return;
+        }
+      }
+
       // Resolve parent IDs from breeding pair chain
       final (:fatherId, :motherId) = await _resolveParentIds(ref, chick.eggId);
 

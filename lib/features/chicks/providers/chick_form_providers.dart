@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/gamification_enums.dart';
+import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/utils/supabase_error_utils.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
@@ -12,6 +13,8 @@ import 'package:budgie_breeding_tracker/domain/services/calendar/calendar_event_
 import 'package:budgie_breeding_tracker/core/utils/sentry_error_filter.dart';
 import 'package:budgie_breeding_tracker/domain/services/gamification/gamification_action_recorder.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/egg_species_resolver.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/free_tier_limit_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_settings_providers.dart';
 import 'package:uuid/uuid.dart';

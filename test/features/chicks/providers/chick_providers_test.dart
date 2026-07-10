@@ -18,6 +18,7 @@ import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/growth_measurement_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_providers.dart';
 
@@ -70,6 +71,9 @@ void main() {
         breedingPairRepositoryProvider.overrideWithValue(breedingPairRepo),
         clutchRepositoryProvider.overrideWithValue(clutchRepo),
         growthMeasurementRepositoryProvider.overrideWithValue(growthRepo),
+        // Premium so promoteToBird skips the free-tier bird-limit guard;
+        // this suite covers promotion mechanics, not the limit.
+        effectivePremiumProvider.overrideWithValue(true),
       ],
     );
   }

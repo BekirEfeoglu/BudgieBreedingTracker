@@ -10,11 +10,17 @@ import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
+import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/free_tier_limit_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/free_tier_limit_service.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/features/chicks/providers/chick_form_providers.dart';
 
 import '../../../helpers/mocks.dart';
+
+class _MockFreeTierLimitService extends Mock implements FreeTierLimitService {}
 
 Chick _chick({
   String id = 'chick-1',
@@ -88,7 +94,10 @@ void main() {
     ).thenAnswer((_) async {});
   });
 
-  ProviderContainer createContainer() {
+  ProviderContainer createContainer({
+    bool isPremium = true,
+    FreeTierLimitService? freeTierService,
+  }) {
     return ProviderContainer(
       overrides: [
         chickRepositoryProvider.overrideWithValue(mockChickRepo),
@@ -98,6 +107,11 @@ void main() {
         breedingPairRepositoryProvider.overrideWithValue(mockBreedingPairRepo),
         clutchRepositoryProvider.overrideWithValue(mockClutchRepo),
         notificationSchedulerProvider.overrideWithValue(mockScheduler),
+        // Default premium so promotion mechanics tests skip the free-tier
+        // guard; the limit-enforcement test flips this to false.
+        effectivePremiumProvider.overrideWithValue(isPremium),
+        if (freeTierService != null)
+          freeTierLimitServiceProvider.overrideWithValue(freeTierService),
       ],
     );
   }
@@ -278,6 +292,31 @@ void main() {
   });
 
   group('ChickFormStatusActions - promoteToBird', () {
+    test('blocks promotion when a free user is at the bird limit', () async {
+      final chick = _chick(name: 'Cap', eggId: null);
+      final freeTier = _MockFreeTierLimitService();
+      when(
+        () => freeTier.guardBirdLimit(any()),
+      ).thenThrow(FreeTierLimitException('birds', 15));
+
+      final container = createContainer(
+        isPremium: false,
+        freeTierService: freeTier,
+      );
+      addTearDown(container.dispose);
+
+      await container
+          .read(chickFormStateProvider.notifier)
+          .promoteToBird(chick);
+
+      // Promotion creates a Bird, so it must honor the free-tier limit — no
+      // bird is saved and the limit error is surfaced.
+      final state = container.read(chickFormStateProvider);
+      expect(state.isSuccess, isFalse);
+      expect(state.error, isNotNull);
+      verifyNever(() => mockBirdRepo.save(any()));
+    });
+
     test('creates bird and links chick on successful promotion', () async {
       final chick = _chick(
         name: 'Pamuk',
