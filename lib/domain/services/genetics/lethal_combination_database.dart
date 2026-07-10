@@ -143,18 +143,13 @@ abstract class LethalCombinationDatabase {
     // all-yellow/all-white birds; any reduced feather quality is cosmetic, not
     // a fitness/survival concern, so a sub-vital warning over-stated the risk.
 
-    // ── Double Factor Dominant Pied (Semi-Lethal) ──
-    // DF Dominant (Australian) Pied has significantly reduced viability.
-    // Dominant Pied × Dominant Pied → 25% DF with elevated mortality.
-    LethalCombination(
-      id: 'df_dominant_pied',
-      nameKey: 'genetics.lethal_df_dominant_pied_name',
-      descriptionKey: 'genetics.lethal_df_dominant_pied_desc',
-      severity: LethalSeverity.semiLethal,
-      affectedRate: 1.0,
-      requiredMutationIds: {GeneticsConstants.mutDominantPied},
-      scope: LethalScope.offspringHomozygous,
-    ),
+    // NOTE: Double Factor Dominant Pied was removed as a viability warning
+    // (2026-07-10, v8). DF Australian (Dominant) Pied is a viable, commonly
+    // bred variety — the double factor simply shows more extensive pied
+    // markings; there is no established sub-vital/lethal effect. The prior
+    // "significantly reduced viability" warning was unsourced and failed the
+    // same v6 criterion applied to DF Spangle / Ino×Ino / Pallid / Texas
+    // Clearbody: the cited MUTAVI guide does NOT flag this pairing.
 
     // NOTE: Ino × Ino was removed as a viability warning (2026-07-10, v6).
     // Lutino/Albino budgies are a standard, healthy, widely-bred variety and

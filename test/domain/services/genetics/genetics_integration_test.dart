@@ -262,7 +262,7 @@ void main() {
       expect(analysis.totalAffectedProbability, closeTo(0.25, 1e-6));
     });
 
-    test('Dominant Pied carrier x carrier → engine flags df_dominant_pied', () {
+    test('Dominant Pied carrier x carrier → DF subset tagged, no warning (v8)', () {
       final father = ParentGenotype(
         gender: BirdGender.male,
         mutations: {'dominant_pied': AlleleState.carrier},
@@ -283,29 +283,34 @@ void main() {
       expect(dfResults, hasLength(1));
       expect(dfResults.single.probability, closeTo(0.25, 1e-6));
 
+      // v8: df_dominant_pied is no longer a viability warning — DF Australian
+      // Dominant Pied is a viable variety. The DF subset is still tagged
+      // (above), but a healthy pied cross must not fire a lethal/sub-vital
+      // warning.
       const analyzer = ViabilityAnalyzer();
       final analysis = analyzer.analyze(
         fatherMutations: const {'dominant_pied'},
         motherMutations: const {'dominant_pied'},
         offspringResults: results,
       );
-      final warnings = analysis.warnings.where(
-        (w) => w.combination.id == 'df_dominant_pied',
+      expect(
+        analysis.warnings.where((w) => w.combination.id == 'df_dominant_pied'),
+        isEmpty,
       );
-      expect(warnings, hasLength(1));
-      expect(analysis.highestSeverity, LethalSeverity.semiLethal);
-      expect(analysis.totalAffectedProbability, closeTo(0.25, 1e-6));
+      expect(analysis.totalAffectedProbability, closeTo(0.0, 1e-6));
     });
 
     test(
-      'MULTI-locus dominant_pied x dominant_pied + blue still flags '
-      'df_dominant_pied for the ~25% homozygous subset (v5)',
+      'MULTI-locus dominant_pied x dominant_pied + blue keeps the DF subset '
+      'tagged as a distinct ~25% result (v5 structural fix; no warning v8)',
       () {
         // Before v5, the multi-locus combiner collapsed the homozygous and
         // heterozygous dominant-pied results into one epistasis compound name
-        // and overwrote/lost the doubleFactorIds tag — silently dropping the
-        // df_dominant_pied semi-lethal warning in ANY multi-locus cross. Adding
-        // a second autosomal locus (blue) exercises that path.
+        // and overwrote/lost the doubleFactorIds tag in ANY multi-locus cross.
+        // The DF tag must survive so downstream consumers can identify the
+        // double-factor subset. (The df_dominant_pied WARNING itself was
+        // removed in v8 — asserted below — but the structural tag still
+        // matters.) Adding a second autosomal locus (blue) exercises that path.
         final father = ParentGenotype(
           gender: BirdGender.male,
           mutations: {
@@ -343,13 +348,14 @@ void main() {
           motherMutations: const {'dominant_pied', 'blue'},
           offspringResults: results,
         );
+        // v8: df_dominant_pied no longer warns (viable variety) — even in a
+        // multi-locus cross the healthy DF pied subset must not fire a warning.
         expect(
           analysis.warnings.any((w) => w.combination.id == 'df_dominant_pied'),
-          isTrue,
-          reason: 'df_dominant_pied must fire in multi-locus crosses too',
+          isFalse,
+          reason: 'df_dominant_pied is not a viability warning as of v8',
         );
-        // Only the homozygous subset is affected — not the whole pied group.
-        expect(analysis.totalAffectedProbability, closeTo(0.25, 1e-6));
+        expect(analysis.totalAffectedProbability, closeTo(0.0, 1e-6));
       },
     );
 

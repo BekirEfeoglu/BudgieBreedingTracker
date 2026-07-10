@@ -167,7 +167,14 @@ abstract final class GeneticsConstants {
   /// like Opaline/Cinnamon. Crest stays unmasked (feather structure). Pied /
   /// Fallow / Clearbody are intentionally left unmasked (debatable). Changes the
   /// phenotype name + maskedMutations output for ino + these patterns.
-  static const int calculationVersion = 7;
+  ///
+  /// v8 (2026-07-10): removed the `df_dominant_pied` semi-lethal viability
+  /// warning. DF Australian Dominant Pied is a viable, commonly bred variety
+  /// (the double factor just shows more extensive pied markings); the prior
+  /// "reduced viability" warning was unsourced and failed the same v6 criterion
+  /// applied to DF Spangle / Ino×Ino / Pallid / Texas Clearbody — the cited
+  /// MUTAVI guide does NOT flag it. Changes the viability warning set.
+  static const int calculationVersion = 8;
 
   // ── ReverseCalculator limits ──
   /// Maximum parent genotype options evaluated per locus in reverse calculation.
