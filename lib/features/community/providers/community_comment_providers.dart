@@ -290,9 +290,44 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
     } catch (e, st) {
       AppLogger.error('CommentFormNotifier', e, st);
       Sentry.captureException(e, stackTrace: st);
-      state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
+      state = state.copyWith(isLoading: false, error: _commentErrorMessage(e));
       return false;
     }
+  }
+
+  /// Maps a comment-create failure to a specific, actionable message instead of
+  /// a generic "unexpected error". The thrown exception carries the edge
+  /// function's error code (see [CommunityCommentRemoteSource.insert]).
+  String _commentErrorMessage(Object error) {
+    final s = error.toString().toLowerCase();
+    if (s.contains('unauthorized') ||
+        s.contains('no authenticated session') ||
+        s.contains('jwt') ||
+        s.contains('401')) {
+      return 'community.comment_auth_error'.tr();
+    }
+    if (s.contains('moderation_rejected') || s.contains('content_violation')) {
+      return 'community.moderation_violation'.tr();
+    }
+    if (s.contains('blocked')) {
+      return 'community.comment_blocked'.tr();
+    }
+    if (s.contains('post_not_found')) {
+      return 'community.comment_post_unavailable'.tr();
+    }
+    if (s.contains('rate limit') ||
+        s.contains('429') ||
+        s.contains('too many')) {
+      return 'community.comment_cooldown'.tr();
+    }
+    if (s.contains('socketexception') ||
+        s.contains('network') ||
+        s.contains('connection') ||
+        s.contains('host lookup') ||
+        s.contains('timeout')) {
+      return 'errors.network_unavailable'.tr();
+    }
+    return 'community.comment_error'.tr();
   }
 
   void reset() => state = const CommentFormState();

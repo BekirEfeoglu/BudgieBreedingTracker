@@ -68,7 +68,15 @@ class CommunityCommentRemoteSource {
         parentId: data['parent_id']?.toString(),
       );
       if (!result.success) {
-        throw Exception(result.error ?? 'create_community_comment_failed');
+        // Surface the specific server error code (e.g. `unauthorized`,
+        // `moderation_rejected`, `post_not_found`, `blocked_relationship`) so
+        // the UI can show an actionable message instead of a generic one.
+        final code = result.data?['error']?.toString();
+        throw Exception(
+          code != null && code.isNotEmpty
+              ? code
+              : (result.error ?? 'create_community_comment_failed'),
+        );
       }
       final created = result.data?['comment'];
       return created is Map<String, dynamic> ? created : null;
