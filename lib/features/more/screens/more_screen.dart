@@ -19,6 +19,7 @@ import '../../../data/providers/user_role_providers.dart';
 import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
 import 'package:budgie_breeding_tracker/shared/providers/settings.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/ads/ad_reward_providers.dart';
 
 part 'more_screen_sections.dart';
 
@@ -203,9 +204,15 @@ class MoreScreen extends ConsumerWidget {
     // failure within the grace window) keep route access — isPremiumProvider
     // alone would bounce paying customers to the paywall here.
     final hasPremiumAccess = ref.watch(effectivePremiumProvider);
+    // Mirror the router's reward exemptions (app_router.dart): a rewarded-ad
+    // unlock grants the SAME access here, otherwise a user who watched an ad
+    // for Statistics/Genetics would be bounced back to the paywall from this
+    // tile even though the route itself would admit them.
+    final statsRewardActive = ref.watch(isStatisticsRewardActiveProvider);
+    final geneticsRewardActive = ref.watch(isGeneticsRewardActiveProvider);
 
-    void navigateOrHint(String route) {
-      if (hasPremiumAccess) {
+    void navigateOrHint(String route, {bool rewardActive = false}) {
+      if (hasPremiumAccess || rewardActive) {
         context.push(route);
       } else {
         context.push(AppRoutes.premium);
@@ -217,7 +224,10 @@ class MoreScreen extends ConsumerWidget {
         icon: const AppIcon(AppIcons.statistics),
         title: 'more.statistics'.tr(),
         trailing: _PremiumBadge(theme: theme),
-        onTap: () => navigateOrHint(AppRoutes.statistics),
+        onTap: () => navigateOrHint(
+          AppRoutes.statistics,
+          rewardActive: statsRewardActive,
+        ),
       ),
       const _SectionDivider(),
       _MoreTile(
@@ -231,7 +241,10 @@ class MoreScreen extends ConsumerWidget {
         icon: const AppIcon(AppIcons.dna),
         title: 'more.genetics'.tr(),
         trailing: _PremiumBadge(theme: theme),
-        onTap: () => navigateOrHint(AppRoutes.genetics),
+        onTap: () => navigateOrHint(
+          AppRoutes.genetics,
+          rewardActive: geneticsRewardActive,
+        ),
       ),
       const _SectionDivider(),
       _MoreTile(
