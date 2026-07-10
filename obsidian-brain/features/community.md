@@ -63,24 +63,14 @@ preserved. See [[log]].
 Content-only edit within a **5-minute window**, enforced server-side. Migration
 `20260703120000_community_post_edit_hardening.sql` adds `community_posts.edited_at`
 and narrows the `authenticated` UPDATE grant to `(is_deleted, needs_review)` — post
-content can no longer be edited via a direct client `.update()`; edits go through
+content can't be edited via a direct client `.update()`; edits go through
 `create-community-post` edge fn `mode: 'update'` (moderation re-runs, fail-closed).
-(`reviewed_by` was in the planned grant but that column does NOT exist on
-`community_posts` — dropped; `clearReviewFlag`'s write to it is a pre-existing latent
-bug.) UI shows an `edited` badge; the edit action appears only
-on the author's own post inside the window. Applied to prod + merged to main
-2026-07-03 (advisors 0 new). Follow-up polish (`fix/community-followups`): edit
-sheet uses shared `showAppBottomSheet` (safe-area), the specific `edit_window_expired`
-message surfaces, and the comment empty-state fires on `visibleComments.isEmpty`
-(fully-muted thread no longer blank). Design decisions are retained in this
-community brain page and [[log]].
-
-**Client** (commits `68d6a57` data, `d31eef5` UI): `CommunityPost.editedAt` +
-`CommunityPostX.isEdited`; `CommunityPostRepository.update({postId, content})` →
-`updateContent` → `EdgeFunctionClient.updateCommunityPost` (`mode:'update'`).
-`community_post_edit_sheet.dart` + `postEditProvider` (success → `applyPostEdit` +
-invalidate `communityPostByIdProvider`; failure logs+Sentry, feed intact),
-author-only "Edit" gated by `canEditPost` (UTC 5-min), `edited` badge. 6 l10n keys.
+Client: `CommunityPostRepository.update({postId, content})` → `updateContent` →
+`updateCommunityPost`; `postEditProvider` (success → `applyPostEdit` + invalidate
+`communityPostByIdProvider`), author-only "Edit" gated by `canEditPost` (UTC
+5-min), `edited` badge. (`reviewed_by` was in the planned grant but that column
+does NOT exist on `community_posts`; `clearReviewFlag`'s write to it is a
+pre-existing latent bug.)
 
 ## Mute (soft block)
 
@@ -99,61 +89,65 @@ SharedPreferences `keyMutedUserIds` + server sync, optimistic+rollback — mirro
 never affects DMs; that's block's job). 4 l10n keys (tr/en/de). Applied to prod +
 merged to main 2026-07-03 (advisors 0 new; FORCE RLS + owner-only SELECT verified).
 
-## Feed UI (visual redesign)
+## Feed UI (visual redesign, 2026-07-05)
 
-Feed restyle (2026-07-05, behavior unchanged) around `AppColors` brand accents:
-shared `CommunityAvatar` (gradient ring + initials), pill tabs with active
-gradient (`community_pill_tabs.dart`), liked heart → `colorScheme.error` /
-bookmark → `AppColors.accent` (`community_post_actions.dart`), restyled FAB /
-overlays / guide cards / post-card parts. l10n `community.guide_badge` (tr/en/de).
+Restyle + structural pass to the `design/Topluluk.dc.html` mockup around
+`AppColors` brand accents. Key behavior: **Explore is post-first** (quick
+composer / section bar / scroll-to-top FAB removed; three orphaned widgets +
+tests deleted, ~745 lines); **Following = feed not people list** (story strip
+over follow-authored posts); **media collage** grid (1 / 2 / 3+ big-left) with
+`1/N` + `+{N-3}` overlays; `_CreatePostFab` amber pill (founder-only on guides);
+real author badges (verified-breeder + `Lv.X · Title` from `CommunityProfileCache`,
+enrichment-only); Explore empty → welcoming `EmptyState` via
+`communityShowWelcomeEmptyProvider`; app-bar profile chip (avatar + `★ Lv.X ·
+Title`, `community.level_prefix`). See [[features/marketplace]] for the Pazar tab
+grid.
 
-### Layout alignment to `design/Topluluk.dc.html` (2026-07-05, behavior changed)
+## Tag & Mutation Discovery Feed (shipped 2026-07-10)
 
-Structural pass matching the design mockup — this one changes behavior:
+Tapping a tag or mutation-tag chip (`PostTagWrap` / `_TagChip`) opens a discovery
+feed of every post carrying that tag. Write paths already existed — free `tags`
+via the create form, `mutation_tags` derived **server-side** from a linked bird
+(anti-spoof; client-sent `mutation_tags`/`bird_name` are ignored) — so this wired
+the read side end to end:
 
-- **Explore is post-first**: the quick composer, the sort/section bar and the
-  scroll-to-top mini FAB were removed from the feed (`community_feed_items.dart` /
-  `community_feed_list.dart`). The story strip no longer shows on Explore. The
-  three now-orphaned widgets (`community_quick_composer.dart`,
-  `community_section_bar.dart`, `community_following_list.dart`) + their tests
-  were **deleted** in the 2026-07-05 review sweep (~745 lines dead code).
-- **Following = feed, not people list**: `CommunityFeedList` no longer
-  short-circuits the `following` tab to a people list. It now renders the story
-  strip (`CommunityStoryStrip.fromPosts`) over the follow-authored post feed via
-  `communityVisiblePostsProvider(following)` (posts where `isFollowingAuthor`).
-- **Media collage**: `community_media_gallery.dart` rewritten from a `PageView`
-  carousel to a `StatelessWidget` collage grid — 1 full cell / 2 side-by-side /
-  3+ big-left (2fr) + stacked-right with a `1 / N` counter chip and a `+{N-3}`
-  overlay. Double-tap-to-like and tap-to-open preserved.
-- **Bird chip**: cyan (`tertiary`) variant on question posts, amber elsewhere
-  (`community_post_card_parts.dart`). Text/guide cards get a hairline separator
-  above the action bar.
-- **Create FAB**: `_CreatePostFab` in `community_screen.dart` — amber-gradient
-  pill with a plus glyph (guide glyph on the guides tab); the founder-only rule
-  on the guides tab is preserved.
-- **Author badges (real data)**: verified-breeder + `Lv.X · Title` on author
-  rows, wired from `profiles` via `CommunityProfileCache` (`level, xp_title,
-  is_verified_breeder` → `author_*`; enrichment-only, `includeToJson: false`),
-  rendered by `CommunityUserHeader` + guide cards. Shown only when present (no
-  fabrication).
+- **RPC `get_community_posts_by_tag(p_tag, p_limit)`** (migration
+  `20260710160000_add_community_tag_gin_indexes`, prod via MCP) does the mixed
+  containment the two columns need: `tags` is **jsonb** (`?` element existence),
+  `mutation_tags` is **text[]** (`@>` containment) — a single PostgREST `.or()`
+  can't express both. `SECURITY INVOKER` + `search_path=''`, so RLS still
+  applies. GIN indexes on both columns back the lookups.
+- Chain: `CommunityPostRemoteSource.fetchByTag` (calls the RPC, not `.or()`) →
+  `CommunityPostRepository.getByTag` → `communityTagFeedProvider.family` →
+  `CommunityTagFeedScreen` at `/community/tag/:tag` (`AppRoutes.communityTagFeed`).
+- `_TagChip` is now tappable (Material+InkWell, button semantics); it pushes the
+  raw stored tag (not the `#`-prefixed label), URL-encoded.
 
-- **Explore empty state**: empty Explore shows the welcoming `EmptyState`
-  (create CTA), not the search-oriented `FilteredFeedEmptyState`, since Explore
-  has no search/filter UI. Single source of truth `communityShowWelcomeEmptyProvider`
-  (`community_feed_providers_filters.dart`): `!isLoading && (posts.isEmpty ||
-  (explore && visiblePosts.isEmpty))`; `CommunityScreen` also suppresses
-  `_CreatePostFab` while true so the state's own CTA isn't duplicated (FAB returns
-  with content). Takip/Rehberler/Pazar keep the filtered state.
+## Audit Fixes (2026-07-10)
 
-- **App-bar profile chip**: `CommunityAppBar` shows the user's avatar (blue→amber
-  gradient ring) + amber `★ Lv.X · Title` badge under "Topluluk", falling back to
-  **Lv.1**/`titleForLevel(1)` when `userLevelProvider` is null so it always
-  renders; `'Lv.'` replaced with `community.level_prefix`.
-
-See [[features/marketplace]] for the embedded Pazar tab's 2-column grid change.
+Cross-validated 4-lane audit (bugs / a11y / UI-UX / perf):
+- **Comment visibility**: `addComment` appends the server-created comment locally
+  (edge fn returns it) instead of reloading page 1 — the newest comment stayed
+  off-page on long threads. Comment add/delete also invalidate
+  `communityPostByIdProvider` so the detail count refreshes.
+- **Block/mute staleness** + **newest re-sort**: see Current Decisions below.
+- **Perf**: dropped `AutomaticKeepAliveClientMixin` from `SwipeablePostCard`,
+  moved the new-post-count watch into the banner only, hoisted the URL RegExp,
+  narrowed post-card rebuilds via `.select`.
+- **a11y/UI**: single like haptic (was dead on tap / double on double-tap),
+  unified like color to error, removed duplicate feed engagement counts, comment
+  overflow menu + 48dp targets + reply connector, story labels ≥12sp, rich
+  empty-comment state, guide chip opaque contrast. Swipe-to-like is additive.
 
 ## Current Decisions
 
+- Tag/mutation discovery reads via the `get_community_posts_by_tag` RPC (not a
+  PostgREST `.or()`) because `tags` (jsonb) and `mutation_tags` (text[]) need
+  different containment operators. Mutation tags are authored only by linking a
+  bird; the client never sends `mutation_tags` (server derives them).
+- Block/mute `load()` is server-authoritative (replace local, not union).
+- `communityVisiblePostsProvider` does not re-sort the newest feed — the
+  notifier owns newest + pinned-first ordering.
 - Community remains online-first: server/feed cache is authoritative, no Drift mirror.
 - Explore is post-first: no quick composer, sort bar, story strip, or scroll-to-top FAB.
 - Comments use `commentListProvider` as the single source; add/delete/like update it.
@@ -183,6 +177,11 @@ and detail app bar; cache invalidation is feed-wide since pin state affects orde
 - Do not re-add the removed quick composer / section bar / people-list following tab.
 - Do not drop `bird_id`/`bird_name`/`mutation_tags` from `_feedColumns` — the columns are now live and the direct-select paths (`fetchById`/`fetchByUser`) 400 without them.
 - Do not add 2+ levels of comment nesting — one-level replies are the ceiling.
+- Do not union local+server block/mute IDs in `load()` — server-authoritative
+  replace is required for cross-device unblock/unmute to propagate.
+- Do not re-add a newest re-sort in `communityVisiblePostsProvider` (wasted
+  per-tap work; drops pinned-first — the notifier owns ordering).
+- Do not restore `AutomaticKeepAliveClientMixin` on `SwipeablePostCard`.
 
 ## Cache
 

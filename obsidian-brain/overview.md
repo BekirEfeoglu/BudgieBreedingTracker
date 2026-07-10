@@ -69,7 +69,7 @@ Enforced by `scripts/verify_code_quality.py` (27 checker categories — 19/24 CL
 ### 5. 3-Language Parity
 - Turkish is master language — all keys added to `tr.json` first
 - CI blocks PRs with missing keys in `en.json` or `de.json`
-- 3,113 keys per language, 41 categories
+- 3,118 keys per language, 41 categories
 - See [[patterns/l10n]]
 
 ### 6. Design Goal ≠ Shipped
@@ -80,7 +80,7 @@ Enforced by `scripts/verify_code_quality.py` (27 checker categories — 19/24 CL
 
 | Metric | Value |
 |--------|-------|
-| Source files (lib/) | 1017 Dart files |
+| Source files (lib/) | 1018 Dart files |
 | Test files | 919 files, 11,506+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
@@ -93,7 +93,7 @@ Enforced by `scripts/verify_code_quality.py` (27 checker categories — 19/24 CL
 | Shared widgets | 35 |
 | Enum files | 15 |
 | Supabase constants | 154 string constants |
-| L10n keys | 3,113 per language, 41 categories |
+| L10n keys | 3,118 per language, 41 categories |
 | DB schema version | 27 |
-| Supabase migrations | 206 tracked SQL files |
+| Supabase migrations | 207 tracked SQL files |
 | Edge Functions | 12 |

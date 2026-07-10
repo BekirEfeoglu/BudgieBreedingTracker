@@ -4,6 +4,12 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-10] feat+fix+perf | Community sweep + tag discovery feed
+
+4-lane audit + tag/mutation discovery feed: local comment append,
+server-authoritative block/mute `load()`, no keepAlive / newest re-sort, single
+like haptic, `get_community_posts_by_tag` RPC (migration `20260710160000`). [[features/community]]
+
 ## [2026-07-10] docs | Claim authority, agent routing, and semantic drift repair
 
 Documentation governance now resolves authority by claim type instead of one
