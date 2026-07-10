@@ -1,6 +1,6 @@
 # Muhabbet Kusu Genetik Rehberi
 
-Arastirma tarihi: 8 Nisan 2026
+Arastirma tarihi: 8 Nisan 2026 · Son gozden gecirme: 10 Temmuz 2026 (parblue caprazi, ino-lokusu dominans hiyerarsisi, crossing-over olcum bandlari duzeltildi/eklendi)
 
 Bu belge, muhabbet kusu renk genetiklerini ve mutasyonlarini tek yerde toplamak icin hazirlandi. Hedef, "hangi genetik hangi genetikle eslesirse ne cikar" sorusunu ezber listesi yerine kuralli bir sistemle cevaplamaktir.
 
@@ -99,12 +99,13 @@ graph LR
   O["Opaline"] --- C["Cinnamon"] --- I["Ino / Texas clearbody / Pearly / Pallid"] --- S["Slate"]
 ```
 
-MUTAVI kaynaklarina gore yaklasik crossing-over degerleri:
+MUTAVI kaynaklarina gore yaklasik crossing-over degerleri (bunlar tahmindir,
+kucuk orneklem ve olcum hatasi tasir):
 
-- `opaline <-> cinnamon`: yaklasik `%32` [K6]
-- `opaline <-> slate`: yaklasik `%40.5` [K6]
+- `opaline <-> cinnamon`: yaklasik `%32` [K6] — MUTAVI ham verisi 41/113 ≈ `%36 ± 6`; uygulama olcum bandinin alt ucundaki `%32` degerini kullanir.
+- `opaline <-> slate`: yaklasik `%40.5` [K6] — bu mesafe bagimsiz atilima yakin oldugu icin toplamsal harita mesafesinden (op-cin + cin-slate) buyuktur; cift crossing-over nedeniyle uzak lokuslarda rekombinasyon frekansi toplamsal degerin uzerine cikabilir.
 - `cinnamon <-> slate`: yaklasik `%5 veya daha az` [K6] [K11]
-- `cinnamon <-> ino`: yaklasik `%3` [K12]
+- `cinnamon <-> ino`: yaklasik `%3` [K12] — dogrudan olcum 1/36 ≈ `%2.8`; en az 1/18 bulan calismalarla birlikte tahmin `≥ %4 ± 3`.
 
 Bu, ozellikle `lacewing`, `opaline-cinnamon`, `cinnamon-slate` ve `opaline-slate` eslesmelerinde beklenmeyen ama biyolojik olarak aciklanabilir yavrular cikabilecegi anlamina gelir. [K6] [K12]
 
@@ -134,12 +135,13 @@ Sik eslesme ornekleri:
 | Green split Blue x Green split Blue | `%25 Blue`, `%50 Green split Blue`, `%25 Green` |
 | YF2 Blue x Blue | `%50 YF2 Blue`, `%50 Blue` |
 | Goldenface Blue x Blue | `%50 Goldenface Blue`, `%50 Blue` |
-| Aqua Blue x Turquoise Blue | `%25 Aqua Blue`, `%50 Turquoise/Aqua`, `%25 Turquoise Blue` |
+| Aqua Blue x Turquoise Blue | `%25 Turquoise Aqua`, `%25 Aqua Blue`, `%25 Turquoise Blue`, `%25 Blue` |
 
 Notlar:
 
 - `Yellowface Type I` cift faktor mavi seride beyaz yuzlu gibi gorunebilir. Bu, standartlar arasinda isim farki yaratan alanlardan biridir. [K4]
 - `Goldenface`, `Aqua`, `Turquoise`, `Blue Factor I/II` icin avicultur standardizasyonu kaynaga gore degisebilir; bu nedenle ayni lokusta olduklarini bilmek, isim ezberlemekten daha guvenlidir. [K3] [K4]
+- `aqua`, `turquoise` ve `blue` allelleri yesil seriye gore resesif (parblue), fakat kendi aralarinda **birbirine es-dominant (co-dominant)** davranir; iki farkli parblue alleli bir arada (or. `aqua/turquoise`) ara bir fenotip verir. Bu yuzden `Aqua Blue x Turquoise Blue` capraz, uc allelin (aqua, turquoise, blue) kombinasyonundan **dort** sinif uretir: her biri `%25` olacak sekilde `aqua/turquoise` (Turquoise Aqua), `aqua/blue`, `turquoise/blue` ve `blue/blue`. Tek lokustaki iki-allel caprazinda `blue/blue` sinifini atlamayin. [K3] [K4]
 
 ### 2. Dilution lokusu
 
@@ -166,6 +168,21 @@ Sik eslesme ornekleri:
 ### 3. Ino lokusu
 
 `ino`, `texas_clearbody`, `pearly` ve aviculture yorumlarinda `pallid` ayni gen ailesiyle iliskili ele alinir. MUTAVI, sex-linked clearbody'yi `ino` lokusunun bir alleli olarak tartisir. [K7]
+
+Bir erkek iki farkli ino-lokusu allelini birlikte tasidiginda (compound
+heterozigot) sonuc fenotipi uygulamada su sekilde belirlenir:
+
+- Yaban tip `ino+` tum mutant allellere baskindir (mutant tasinir, gorunmez).
+- `Texas Clearbody`, `Pearly` ve `Ino` arasinda **basit dominans** isler:
+  `Texas Clearbody > Pearly > Ino` — baskin olan gorunur, digeri tasinir
+  (or. `Texas Clearbody / Ino` erkeginde Texas Clearbody gorunur, ino tasinir).
+- `Pallid` bu siralamanin **istisnasidir**: diger mutant allelleri maskelemek
+  yerine onlarla **birlikte ifade edilir (compound)**. `Pallid / Ino` =
+  "PallidIno (Lacewing)", `Pallid / Pearly` = "Pallid Pearly",
+  `Pallid / Texas Clearbody` = "Pallid Texas Clearbody" — her iki allel de gorunur.
+
+Disiler Z bakimindan hemizigottur (tek allel) — compound olamaz, tasidiklari
+tek alleli gorunur olarak gosterirler. [K7]
 
 Pratik kombinasyonlar:
 
@@ -211,7 +228,7 @@ Asagidaki tablolar, projede desteklenen mutasyonlarin tamamini kapsar. `Eslesme 
 | Dark Factor | AID | Yesilde `Light -> Dark -> Olive`, mavide `Skyblue -> Cobalt -> Mauve` | AID tablosu | [K1] |
 | Violet | AID | Ozellikle mavi seride morumsu ton; 1 dark factor ile cok belirgin | AID tablosu | [K1] [K3] |
 | Grey | AD | Yesilde grey-green, mavide grey | AD tablosu | [K1] [K3] |
-| Anthracite | AID | Ozellikle mavi seride cok koyu kozmursu ton | AID tablosu | [K3] [K14] |
+| Anthracite | AID | Ozellikle mavi seride cok koyu kozmursu ton; es-dominant davranir, tek allel bile gorunur (split olamaz), cift faktor daha koyudur | AID tablosu | [K3] [K14] |
 
 ### B. Dilution ve melanin modifikatorleri
 
