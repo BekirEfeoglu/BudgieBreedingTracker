@@ -4,6 +4,14 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-10] docs | Testing wiki caught up with the tag→CI-gate rule
+
+[[patterns/testing]] now mirrors the "Test Tags → CI Gates" table added to
+`.claude/rules/testing.md` (community tag reserved for heavy screen/widget
+suites; mock-based unit tests stay untagged on the PR gate; new tag-based
+exclusions fall under the skip policy) and its stale stats were refreshed
+(914/11,436 → 917/11,488).
+
 ## [2026-07-09] rules | Session lessons folded into the rulebook
 
 ci-actions/release-ops/CLAUDE.md: Xcode Cloud post-clone installs Flutter via
