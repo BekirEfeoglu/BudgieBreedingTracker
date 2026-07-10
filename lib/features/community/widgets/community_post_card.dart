@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
+import '../../../core/constants/feature_flags.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/enums/community_enums.dart';
 import '../../../core/utils/logger.dart';
@@ -94,7 +95,10 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
       onBlock: isOwnPost ? null : _handleBlock,
       onMuteToggle: isOwnPost ? null : _handleMuteToggle,
       isMutedAuthor: isMutedAuthor,
-      onSendMessage: (!isOwnPost && currentUserId != 'anonymous')
+      onSendMessage:
+          (!isOwnPost &&
+              currentUserId != 'anonymous' &&
+              FeatureFlags.messagingEnabled)
           ? _handleSendMessage
           : null,
       onFollowToggle: isOwnPost

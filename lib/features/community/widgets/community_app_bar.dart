@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/constants/app_icons.dart';
+import '../../../core/constants/feature_flags.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -133,7 +134,7 @@ class _CommunityAppBarState extends ConsumerState<CommunityAppBar> {
             tooltip: 'common.sort'.tr(),
             onPressed: () => showCommunityFilterSheet(context),
           ),
-        if (!_isSearchActive)
+        if (!_isSearchActive && FeatureFlags.messagingEnabled)
           _ActionIcon(
             icon: const Icon(LucideIcons.messageCircle, size: 18),
             tooltip: 'messaging.title'.tr(),
