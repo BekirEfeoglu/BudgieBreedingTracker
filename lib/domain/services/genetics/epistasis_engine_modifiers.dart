@@ -70,6 +70,20 @@ void _collectMaskedMutations(
   if (visualMutations.contains(GeneticsConstants.mutGreywing)) {
     masked.add('Greywing');
   }
+  // Melanin-based pattern / expansion mutations: erased by ino's full melanin
+  // removal, so reported as masked (their names are suppressed in step 15).
+  if (visualMutations.contains(GeneticsConstants.mutBlackface)) {
+    masked.add('Blackface');
+  }
+  if (visualMutations.contains(GeneticsConstants.mutSaddleback)) {
+    masked.add('Saddleback');
+  }
+  if (visualMutations.contains(GeneticsConstants.mutFaded)) {
+    masked.add('Faded');
+  }
+  if (visualMutations.contains(GeneticsConstants.mutMottled)) {
+    masked.add('Mottled');
+  }
   // Pearly and Pallid are NOT masked here: they are ino-locus ALLELES, so a
   // bird expressing them alongside ino is a compound heterozygote resolved by
   // the allelic-series resolver (e.g. "PallidIno", "Pearly") — they co-express
@@ -281,17 +295,24 @@ void _addPatternAndModifierNaming(
     parts.add('Dominant Clearbody');
   }
 
-  // 15. Saddleback and other patterns
-  if (visualMutations.contains(GeneticsConstants.mutSaddleback)) {
-    parts.add('Saddleback');
-  }
-  if (visualMutations.contains(GeneticsConstants.mutFaded)) {
-    parts.add('Faded');
-  }
-  if (visualMutations.contains(GeneticsConstants.mutMottled)) {
-    parts.add('Mottled');
-  }
-  if (hasBlackface && !visualMutations.contains(GeneticsConstants.mutSpangle)) {
-    parts.add('Blackface');
+  // 15. Saddleback and other melanin-based patterns. Ino removes all melanin,
+  // so these are visually erased on a Lutino/Albino — do not append them to the
+  // name when ino is present (they are reported via maskedMutations instead).
+  // Crest (step 13) is deliberately NOT guarded: it is a feather-structure
+  // trait, visible on an ino bird.
+  if (!hasIno) {
+    if (visualMutations.contains(GeneticsConstants.mutSaddleback)) {
+      parts.add('Saddleback');
+    }
+    if (visualMutations.contains(GeneticsConstants.mutFaded)) {
+      parts.add('Faded');
+    }
+    if (visualMutations.contains(GeneticsConstants.mutMottled)) {
+      parts.add('Mottled');
+    }
+    if (hasBlackface &&
+        !visualMutations.contains(GeneticsConstants.mutSpangle)) {
+      parts.add('Blackface');
+    }
   }
 }

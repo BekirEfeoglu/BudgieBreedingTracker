@@ -160,7 +160,14 @@ abstract final class GeneticsConstants {
   /// ino-locus alleles Pearly/Pallid are no longer listed as "masked by Ino"
   /// (they co-express/resolve via the allelic-series resolver). These change the
   /// viability warning set/severity and the maskedMutations output.
-  static const int calculationVersion = 6;
+  ///
+  /// v7 (2026-07-10): Ino now masks the melanin-based pattern mutations
+  /// Blackface, Saddleback, Mottled and Faded in the phenotype name (they are
+  /// erased by ino's full melanin removal), reporting them via maskedMutations
+  /// like Opaline/Cinnamon. Crest stays unmasked (feather structure). Pied /
+  /// Fallow / Clearbody are intentionally left unmasked (debatable). Changes the
+  /// phenotype name + maskedMutations output for ino + these patterns.
+  static const int calculationVersion = 7;
 
   // ── ReverseCalculator limits ──
   /// Maximum parent genotype options evaluated per locus in reverse calculation.

@@ -5,6 +5,27 @@ full-scope audit follow-ups.
 
 ---
 
+## [2026-07-09] fix | Comprehensive audit sweep (6 agents + Supabase DB checks)
+
+Full-scope audit (Supabase now connected). DB-side: security advisors clean;
+the only perf-advisor WARNs (3× `auth_rls_initplan`) were my new
+`mfa_recovery_codes` policies calling `auth.uid()` bare — rewrapped as
+`(select auth.uid())` (migration `20260709130517`, advisor 3→0). Migration
+deployment-drift found + repaired: 2 local files (`add_health_record_chick_fk`,
+`add_message_photos_storage_bucket`) had version prefixes not matching the prod
+ledger (prior MCP-apply timestamps) — `git mv`'d to `20260709103045`/`103112`,
+local↔prod 204↔204. Code fixes: recovery-code writes `.insert()`→`.upsert()` +
+client v7 ids + SupabaseConstants (MFA-critical idempotency, `colCodeHash`/
+`colUsedAt` added); PII obfuscation of user UUIDs in messaging + gamification
+logs; corrected a fail-open→fail-CLOSED doc comment on `scanImageSafety`;
+replaced brittle `.at(N)` privacy-test finders with text finders. Edge-fn
+lane: 12/12 clean (Deno 204/0), only test-completeness gaps (deferred).
+Genetics lane found a real bug — `df_dominant_pied` semi-lethal warning
+dropped in multi-locus crosses — but the one-line fix failed its own
+regression test, so it was reverted and deferred to a dedicated task (needs a
+proper multi-locus DF-path trace + calculationVersion 4→5 bump). 113 unused_index
+INFOs left untouched (trigram/FK-covering/low-traffic — don't-drop lesson).
+
 ## [2026-07-09] feat | Close 7 gaps (gamification brick, DM retry, MFA recovery, feedback limit, auto-backup, read receipts, calendar reminders)
 
 Seven-item sweep, each its own commit + prod migration where needed (applied

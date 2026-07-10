@@ -289,6 +289,44 @@ void main() {
 
       expect(result.maskedMutations, isEmpty);
     });
+
+    test('Ino masks melanin-pattern mutations in the name (v7)', () {
+      // Blackface / Saddleback / Mottled / Faded are melanin-based: ino erases
+      // them. The name must NOT contain them; they are reported as masked.
+      for (final entry in {
+        'blackface': 'Blackface',
+        'saddleback': 'Saddleback',
+        'mottled': 'Mottled',
+        'faded': 'Faded',
+      }.entries) {
+        final result = engine.resolveCompoundPhenotypeDetailed({
+          'ino',
+          'blue',
+          entry.key,
+        });
+        expect(result.name, contains('Albino'), reason: entry.key);
+        expect(
+          result.name,
+          isNot(contains(entry.value)),
+          reason: '${entry.value} must not appear in an ino name',
+        );
+        expect(
+          result.maskedMutations,
+          contains(entry.value),
+          reason: '${entry.value} must be reported as masked',
+        );
+      }
+    });
+
+    test('Crest is NOT masked by Ino (feather structure, v7)', () {
+      final result = engine.resolveCompoundPhenotypeDetailed({
+        'ino',
+        'blue',
+        'crested_tufted',
+      });
+      // Crest is a feather-structure trait, visible on an ino bird.
+      expect(result.maskedMutations, isNot(contains('Crested')));
+    });
   });
 
   group('Dark Factor dosage with base color', () {

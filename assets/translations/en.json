@@ -1551,7 +1551,7 @@
     "no_mutations_selected": "No mutations selected",
     "carrier_info_tip": "Tap the V/C badge on a mutation chip to toggle carrier status.",
     "toggle_allele_state": "Toggle allele state",
-    "allele_dosage_tooltip": "DF = Homozygous (double factor)\nSF = Heterozygous (single factor)",
+    "allele_dosage_tooltip": "SF = Heterozygous (single factor) — passes to ~50% of offspring\nDF = Homozygous (double factor) — passes to all offspring\nA dominant mutation defaults to SF when added",
     "allele_state_tooltip": "V = Visual (homozygous)\nC = Carrier (heterozygous)\nS = Split (two different Z alleles)",
     "back": "Back",
     "next": "Next",

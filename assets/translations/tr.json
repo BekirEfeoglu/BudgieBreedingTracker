@@ -1551,7 +1551,7 @@
     "no_mutations_selected": "Mutasyon seçilmedi",
     "carrier_info_tip": "Taşıyıcı durumunu değiştirmek için mutasyon chip'indeki V/T badge'ına dokunun.",
     "toggle_allele_state": "Allel durumunu değiştir",
-    "allele_dosage_tooltip": "DF = Homozigot (çift faktör)\nSF = Heterozigot (tek faktör)",
+    "allele_dosage_tooltip": "SF = Heterozigot (tek faktör) — yavruların ~%50'sine geçer\nDF = Homozigot (çift faktör) — tüm yavrulara geçer\nDominant mutasyon eklenince varsayılan SF'dir",
     "allele_state_tooltip": "V = Görsel (homozigot)\nT = Taşıyıcı (heterozigot)\nS = Split (iki farklı Z alleli)",
     "back": "Geri",
     "next": "İleri",

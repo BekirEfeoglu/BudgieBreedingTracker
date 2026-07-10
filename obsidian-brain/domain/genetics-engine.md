@@ -22,7 +22,7 @@ Source: `.claude/rules/genetics.md` (primary), `.claude/rules/local-ai.md` (AI i
 
 Every result stores the algorithm version. When the engine is updated, old results can be flagged stale.
 
-- Current version: `v6` (2026-07-10: viability audit aligned the lethal/sub-vital set with the cited MUTAVI sources — `df_crested` downgraded lethal→sub-vital per MUTAVI K10, and the false-positive warnings on healthy homozygous pairings `df_spangle`/`ino_x_ino`/`pallid_x_pallid`/`texas_clearbody_x_texas_clearbody` were removed; Pearly/Pallid no longer listed as masked-by-Ino since they are ino-locus alleles resolved by the allelic-series resolver. v5 kept the DF subset distinct in multi-locus crosses)
+- Current version: `v7` (2026-07-10: Ino now masks the melanin-pattern mutations Blackface/Saddleback/Mottled/Faded in the phenotype name — erased by ino's melanin removal — and reports them via maskedMutations; Crest stays unmasked (feather structure); Pied/Fallow/Clearbody left unmasked. v6 aligned the viability set to MUTAVI: `df_crested` lethal→sub-vital (K10), removed false-positive warnings on healthy homozygous pairings `df_spangle`/`ino_x_ino`/`pallid_x_pallid`/`tcb×tcb`, and stopped listing ino-locus alleles Pearly/Pallid as masked-by-Ino)
 
 ## Confidence Thresholds (AI-assisted)
 

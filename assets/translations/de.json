@@ -1551,7 +1551,7 @@
     "no_mutations_selected": "Keine Mutationen ausgewählt",
     "carrier_info_tip": "Tippen Sie auf das V/T-Abzeichen an einem Mutations-Chip, um den Trägerstatus umzuschalten.",
     "toggle_allele_state": "Allelstatus umschalten",
-    "allele_dosage_tooltip": "DF = Homozygot (Doppelfaktor)\nSF = Heterozygot (Einzelfaktor)",
+    "allele_dosage_tooltip": "SF = Heterozygot (Einzelfaktor) — wird an ~50% der Nachkommen weitergegeben\nDF = Homozygot (Doppelfaktor) — wird an alle Nachkommen weitergegeben\nEine dominante Mutation ist beim Hinzufügen standardmäßig SF",
     "allele_state_tooltip": "V = Visuell (homozygot)\nT = Träger (heterozygot)\nS = Split (zwei verschiedene Z-Allele)",
     "back": "Zurück",
     "next": "Weiter",

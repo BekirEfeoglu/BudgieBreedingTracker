@@ -4,6 +4,25 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-10] fix | Genetics deferred decisions — ino masks melanin patterns (v7); dominant model already OK
+
+Handled the two items left for the domain owner after the v6 audit.
+**E1 (chosen: mask clear melanin cases):** Ino now masks the melanin-based
+pattern mutations Blackface/Saddleback/Mottled/Faded in the phenotype name
+(`epistasis_engine_modifiers` step 15 guarded by `!hasIno`) and reports them via
+maskedMutations. Crest stays unmasked (feather structure); Pied/Fallow/Clearbody
+left unmasked (debatable). calculationVersion v6→v7 (name + maskedMutations
+output changed). New resolution tests; version literal bumped.
+**M1 (chosen: clarify UI labels) — already implemented:** verify-don't-trust
+win. `AlleleStateBadge`/selection_summary already label AD+AID states as SF/DF
+(dosage-based) with a DF/SF tooltip, AND `mutation_chip_widgets` already defaults
+a newly-added dominant/incomplete-dominant mutation to `carrier` (= SF /
+heterozygous), so `grey × normal → 50/50` matches the guide out of the box. The
+`_getDominantAllelePair` visual=homozygous only applies when the user explicitly
+picks the clearly-labelled DF. Only enhancement: the dosage tooltip now spells
+out the breeding consequence (SF ~50% / DF 100%, default SF) in tr/en/de. No
+engine/math change, no version bump for M1.
+
 ## [2026-07-10] fix | Genetics engine audit — viability set aligned to MUTAVI (v6)
 
 3-agent read-only audit of the genetics engine (inheritance math, mutation data,
@@ -167,27 +186,5 @@ both dominant_pied and crested + a second locus. calculationVersion 4→5;
 regression tests for both. Also folded in 2 LOW cleanups: removed dead
 `LethalScope.parentAnyVisual` + checker, reconciled the crested "sub-vital"
 comment vs its LethalSeverity.lethal classification. Commits 1f2ffa3, 4de2eca.
-
-## [2026-07-09] fix | Comprehensive audit sweep (6 agents + Supabase DB checks)
-
-Full-scope audit (Supabase now connected). DB-side: security advisors clean;
-the only perf-advisor WARNs (3× `auth_rls_initplan`) were my new
-`mfa_recovery_codes` policies calling `auth.uid()` bare — rewrapped as
-`(select auth.uid())` (migration `20260709130517`, advisor 3→0). Migration
-deployment-drift found + repaired: 2 local files (`add_health_record_chick_fk`,
-`add_message_photos_storage_bucket`) had version prefixes not matching the prod
-ledger (prior MCP-apply timestamps) — `git mv`'d to `20260709103045`/`103112`,
-local↔prod 204↔204. Code fixes: recovery-code writes `.insert()`→`.upsert()` +
-client v7 ids + SupabaseConstants (MFA-critical idempotency, `colCodeHash`/
-`colUsedAt` added); PII obfuscation of user UUIDs in messaging + gamification
-logs; corrected a fail-open→fail-CLOSED doc comment on `scanImageSafety`;
-replaced brittle `.at(N)` privacy-test finders with text finders. Edge-fn
-lane: 12/12 clean (Deno 204/0), only test-completeness gaps (deferred).
-Genetics lane found a real bug — `df_dominant_pied` semi-lethal warning
-dropped in multi-locus crosses — but the one-line fix failed its own
-regression test, so it was reverted and deferred to a dedicated task (needs a
-proper multi-locus DF-path trace + calculationVersion 4→5 bump). 113 unused_index
-INFOs left untouched (trigram/FK-covering/low-traffic — don't-drop lesson).
-
 
 Older entries are archived in [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
