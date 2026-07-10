@@ -110,8 +110,10 @@ void main() {
     testWidgets('shows father bird name chip when selected', (tester) async {
       final container = ProviderContainer();
       addTearDown(container.dispose);
-      container.read(selectedFatherBirdNameProvider.notifier).state =
-          'Mavi Kus';
+      container.read(selectedFatherBirdProvider.notifier).state = (
+        id: 'f1',
+        name: 'Mavi Kus',
+      );
 
       await pumpLocalizedApp(
         tester,
@@ -134,8 +136,10 @@ void main() {
     testWidgets('shows mother bird name chip when selected', (tester) async {
       final container = ProviderContainer();
       addTearDown(container.dispose);
-      container.read(selectedMotherBirdNameProvider.notifier).state =
-          'Yesil Kus';
+      container.read(selectedMotherBirdProvider.notifier).state = (
+        id: 'm1',
+        name: 'Yesil Kus',
+      );
 
       await pumpLocalizedApp(
         tester,
@@ -204,8 +208,10 @@ void main() {
     ) async {
       final container = ProviderContainer();
       addTearDown(container.dispose);
-      container.read(selectedFatherBirdNameProvider.notifier).state =
-          'TestBird';
+      container.read(selectedFatherBirdProvider.notifier).state = (
+        id: 'f-test',
+        name: 'TestBird',
+      );
 
       await pumpLocalizedApp(
         tester,

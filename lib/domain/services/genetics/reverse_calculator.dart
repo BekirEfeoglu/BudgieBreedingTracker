@@ -62,7 +62,9 @@ class ReverseCalculator {
       maxFinalCombinations: _maxFinalCombinations,
     );
 
-    combinations.sort((a, b) => b.maxProbability.compareTo(a.maxProbability));
+    // Deterministic ordering: maxProbability desc, then the Q3 tie-break chain
+    // so identical input always yields the same ordered top results.
+    combinations.sort(ReverseCalculationResult.compare);
 
     return combinations
         .take(GeneticsConstants.reverseMaxDisplayResults)

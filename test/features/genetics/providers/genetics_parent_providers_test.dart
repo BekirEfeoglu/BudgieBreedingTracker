@@ -70,46 +70,81 @@ void main() {
     });
   });
 
-  group('SelectedFatherBirdNameNotifier', () {
+  group('SelectedFatherBirdNotifier (identity)', () {
     test('initial state is null', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      expect(container.read(selectedFatherBirdNameProvider), isNull);
+      expect(container.read(selectedFatherBirdProvider), isNull);
     });
 
-    test('can be set to a name', () {
+    test('carries bird id + name', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      container.read(selectedFatherBirdNameProvider.notifier).state = 'Charlie';
-      expect(container.read(selectedFatherBirdNameProvider), 'Charlie');
+      container.read(selectedFatherBirdProvider.notifier).state = (
+        id: 'bird-1',
+        name: 'Charlie',
+      );
+      final selected = container.read(selectedFatherBirdProvider);
+      expect(selected?.id, 'bird-1');
+      expect(selected?.name, 'Charlie');
     });
 
     test('can be cleared back to null', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      container.read(selectedFatherBirdNameProvider.notifier).state = 'Charlie';
-      container.read(selectedFatherBirdNameProvider.notifier).state = null;
-      expect(container.read(selectedFatherBirdNameProvider), isNull);
+      container.read(selectedFatherBirdProvider.notifier).state = (
+        id: 'bird-1',
+        name: 'Charlie',
+      );
+      container.read(selectedFatherBirdProvider.notifier).state = null;
+      expect(container.read(selectedFatherBirdProvider), isNull);
     });
   });
 
-  group('SelectedMotherBirdNameNotifier', () {
+  group('SelectedMotherBirdNotifier (identity)', () {
     test('initial state is null', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      expect(container.read(selectedMotherBirdNameProvider), isNull);
+      expect(container.read(selectedMotherBirdProvider), isNull);
     });
 
-    test('can be set to a name', () {
+    test('carries bird id + name', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      container.read(selectedMotherBirdNameProvider.notifier).state = 'Daisy';
-      expect(container.read(selectedMotherBirdNameProvider), 'Daisy');
+      container.read(selectedMotherBirdProvider.notifier).state = (
+        id: 'bird-2',
+        name: 'Daisy',
+      );
+      final selected = container.read(selectedMotherBirdProvider);
+      expect(selected?.id, 'bird-2');
+      expect(selected?.name, 'Daisy');
+    });
+  });
+
+  group('genotype provenance', () {
+    test('father source defaults to manual', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      expect(
+        container.read(fatherGenotypeSourceProvider),
+        ParentGenotypeSource.manual,
+      );
+    });
+
+    test('mother source can move to fromBirdEdited', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      container.read(motherGenotypeSourceProvider.notifier).state =
+          ParentGenotypeSource.fromBirdEdited;
+      expect(
+        container.read(motherGenotypeSourceProvider),
+        ParentGenotypeSource.fromBirdEdited,
+      );
     });
   });
 

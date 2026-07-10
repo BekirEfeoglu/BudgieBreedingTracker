@@ -3,6 +3,14 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 
+/// A genotype mapped from a [Bird], plus any mutation IDs on the bird that
+/// could not be resolved to a known mutation and were excluded (never passed to
+/// the engine).
+typedef BirdGenotypeMapping = ({
+  ParentGenotype genotype,
+  List<String> unmappedMutationIds,
+});
+
 /// Shared mapping helpers between Bird records and genetics genotype state.
 abstract final class BirdGenotypeMapper {
   /// Converts a persisted [Bird] to [ParentGenotype].
@@ -30,6 +38,42 @@ abstract final class BirdGenotypeMapper {
 
     final canonical = _canonicalizeMutations(mutations);
     return ParentGenotype(mutations: canonical, gender: bird.gender);
+  }
+
+  /// Like [birdToGenotype] but EXCLUDES mutation IDs that do not resolve to a
+  /// known [MutationDatabase] record and reports them, so the caller can warn
+  /// the user instead of the engine silently ignoring them. Unknown IDs are
+  /// never placed in the returned genotype.
+  static BirdGenotypeMapping birdToGenotypeMapping(Bird bird) {
+    if (bird.mutations == null || bird.mutations!.isEmpty) {
+      // The colour fallback only emits known mutation IDs, so nothing to flag.
+      return (
+        genotype: genotypeFromColor(
+          gender: bird.gender,
+          color: bird.colorMutation,
+        ),
+        unmappedMutationIds: const [],
+      );
+    }
+
+    final mutations = <String, AlleleState>{};
+    final unmapped = <String>[];
+    for (final mutationId in bird.mutations!) {
+      final resolvedId = MutationDatabase.resolveId(mutationId);
+      if (MutationDatabase.getById(resolvedId) == null) {
+        unmapped.add(mutationId);
+        continue;
+      }
+      final stateValue =
+          bird.genotypeInfo?[mutationId] ?? bird.genotypeInfo?[resolvedId];
+      mutations[mutationId] = _parseAlleleState(stateValue);
+    }
+
+    final canonical = _canonicalizeMutations(mutations);
+    return (
+      genotype: ParentGenotype(mutations: canonical, gender: bird.gender),
+      unmappedMutationIds: unmapped,
+    );
   }
 
   /// Builds a best-effort genotype from a single [BirdColor].

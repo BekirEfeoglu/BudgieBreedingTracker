@@ -248,8 +248,12 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
           },
         );
 
-        ref.read(selectedFatherBirdNameProvider.notifier).state = null;
-        ref.read(selectedMotherBirdNameProvider.notifier).state = null;
+        ref.read(selectedFatherBirdProvider.notifier).state = null;
+        ref.read(selectedMotherBirdProvider.notifier).state = null;
+        ref.read(fatherGenotypeSourceProvider.notifier).state =
+            ParentGenotypeSource.manual;
+        ref.read(motherGenotypeSourceProvider.notifier).state =
+            ParentGenotypeSource.manual;
         ref.read(selectedPunnettLocusProvider.notifier).state = null;
         ref.read(showSexSpecificProvider.notifier).state = true;
         ref.read(showGenotypeProvider.notifier).state = true;

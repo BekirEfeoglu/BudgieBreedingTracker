@@ -2,9 +2,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/domain/services/genetics/linkage_catalog.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
-import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
-import 'package:budgie_breeding_tracker/features/genetics/utils/phenotype_localizer.dart';
+import 'package:budgie_breeding_tracker/features/genetics/utils/linkage_display.dart';
 
 /// Z-chromosome sex-linked mutation IDs with known linkage.
 const _linkedSexLinkedIds = {
@@ -28,23 +28,6 @@ bool hasLinkedSexLinkedMutations(OffspringResult result) {
 /// Returns linked sex-linked mutation IDs from an offspring result.
 List<String> getLinkedIds(OffspringResult result) {
   return result.visualMutations.where(_linkedSexLinkedIds.contains).toList();
-}
-
-/// Linkage rates between Z-chromosome loci (centiMorgans).
-const _linkageRates = <String, Map<String, int>>{
-  'opaline': {'cinnamon': 34, 'ino': 30, 'slate': 40},
-  'cinnamon': {'ino': 3, 'slate': 5, 'opaline': 34},
-  'ino': {'slate': 2, 'cinnamon': 3, 'opaline': 30},
-  'slate': {'ino': 2, 'cinnamon': 5, 'opaline': 40},
-  'pallid': {'slate': 2, 'cinnamon': 3, 'opaline': 30},
-  'texas_clearbody': {'slate': 2, 'cinnamon': 3, 'opaline': 30},
-  'pearly': {'slate': 2, 'cinnamon': 3, 'opaline': 30},
-};
-
-String _linkageMutName(String id) {
-  final record = MutationDatabase.getById(id);
-  if (record == null) return id;
-  return PhenotypeLocalizer.localizePhenotype(record.name);
 }
 
 /// Tappable badge showing "Z-linked" with popup linkage details.
@@ -113,9 +96,13 @@ class ZLinkedBadge extends StatelessWidget {
       for (var j = i + 1; j < linkedIds.length; j++) {
         final a = linkedIds[i];
         final b = linkedIds[j];
-        final cM = _linkageRates[a]?[b] ?? _linkageRates[b]?[a];
-        if (cM != null) {
-          pairs.add('${_linkageMutName(a)} ↔ ${_linkageMutName(b)}: ~$cM cM');
+        final info = LinkageCatalog.lookup(a, b);
+        if (info != null) {
+          pairs.add(
+            '${linkageMutationName(a)} ↔ ${linkageMutationName(b)}: '
+            '~${info.displayCentiMorgansLabel} cM'
+            '${linkageEvidenceSuffix(info.evidence)}',
+          );
         }
       }
     }

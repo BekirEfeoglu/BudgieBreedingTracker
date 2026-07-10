@@ -23,26 +23,59 @@ final motherGenotypeProvider =
       MotherGenotypeNotifier.new,
     );
 
-/// Selected father bird name (for UI feedback after bird picker).
-class SelectedFatherBirdNameNotifier extends Notifier<String?> {
+/// Identity of a bird chosen from the user's collection to seed a parent.
+/// Carrying the id (not just the name) lets a saved calculation round-trip back
+/// to the real bird record via [GeneticsHistory.fatherBirdId]/`motherBirdId`.
+typedef SelectedParentBird = ({String id, String name});
+
+/// Provenance of a parent genotype:
+/// - [manual]: typed in by hand.
+/// - [fromBird]: seeded from a selected bird, unchanged.
+/// - [fromBirdEdited]: seeded from a bird, then hand-edited by the user.
+enum ParentGenotypeSource { manual, fromBird, fromBirdEdited }
+
+/// Selected father bird identity (id + name) after the bird picker.
+class SelectedFatherBirdNotifier extends Notifier<SelectedParentBird?> {
   @override
-  String? build() => null;
+  SelectedParentBird? build() => null;
 }
 
-final selectedFatherBirdNameProvider =
-    NotifierProvider<SelectedFatherBirdNameNotifier, String?>(
-      SelectedFatherBirdNameNotifier.new,
+final selectedFatherBirdProvider =
+    NotifierProvider<SelectedFatherBirdNotifier, SelectedParentBird?>(
+      SelectedFatherBirdNotifier.new,
     );
 
-/// Selected mother bird name (for UI feedback after bird picker).
-class SelectedMotherBirdNameNotifier extends Notifier<String?> {
+/// Selected mother bird identity (id + name) after the bird picker.
+class SelectedMotherBirdNotifier extends Notifier<SelectedParentBird?> {
   @override
-  String? build() => null;
+  SelectedParentBird? build() => null;
 }
 
-final selectedMotherBirdNameProvider =
-    NotifierProvider<SelectedMotherBirdNameNotifier, String?>(
-      SelectedMotherBirdNameNotifier.new,
+final selectedMotherBirdProvider =
+    NotifierProvider<SelectedMotherBirdNotifier, SelectedParentBird?>(
+      SelectedMotherBirdNotifier.new,
+    );
+
+/// Provenance of the father genotype (drives the "from bird / edited" badge).
+class FatherGenotypeSourceNotifier extends Notifier<ParentGenotypeSource> {
+  @override
+  ParentGenotypeSource build() => ParentGenotypeSource.manual;
+}
+
+final fatherGenotypeSourceProvider =
+    NotifierProvider<FatherGenotypeSourceNotifier, ParentGenotypeSource>(
+      FatherGenotypeSourceNotifier.new,
+    );
+
+/// Provenance of the mother genotype.
+class MotherGenotypeSourceNotifier extends Notifier<ParentGenotypeSource> {
+  @override
+  ParentGenotypeSource build() => ParentGenotypeSource.manual;
+}
+
+final motherGenotypeSourceProvider =
+    NotifierProvider<MotherGenotypeSourceNotifier, ParentGenotypeSource>(
+      MotherGenotypeSourceNotifier.new,
     );
 
 /// Parent visual mutation IDs used by viability checks.

@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_history_providers.dart';
+import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_providers.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/genetics_history_model.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 
@@ -12,6 +14,18 @@ import '../../../helpers/mocks.dart';
 
 void main() {
   late MockGeneticsHistoryDao mockDao;
+
+  setUpAll(() {
+    registerFallbackValue(
+      const GeneticsHistory(
+        id: 'fallback',
+        userId: 'fallback',
+        fatherGenotype: {},
+        motherGenotype: {},
+        resultsJson: '[]',
+      ),
+    );
+  });
 
   setUp(() {
     mockDao = MockGeneticsHistoryDao();
@@ -110,6 +124,71 @@ void main() {
 
       final state = container.read(geneticsHistorySaveProvider);
       expect(state, isA<AsyncError<void>>());
+    });
+  });
+
+  group('GeneticsHistorySaveNotifier.saveCurrentCalculation (I1 round-trip)', () {
+    Future<GeneticsHistory?> saveWith({
+      ({String id, String name})? fatherBird,
+      ({String id, String name})? motherBird,
+    }) async {
+      GeneticsHistory? captured;
+      when(() => mockDao.insertItem(any())).thenAnswer((invocation) async {
+        captured = invocation.positionalArguments.first as GeneticsHistory;
+      });
+
+      final container = ProviderContainer(
+        overrides: [
+          geneticsHistoryDaoProvider.overrideWithValue(mockDao),
+          currentUserIdProvider.overrideWithValue('user-1'),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
+        gender: BirdGender.male,
+        mutations: const {'blue': AlleleState.visual},
+      );
+      container.read(motherGenotypeProvider.notifier).state = ParentGenotype(
+        gender: BirdGender.female,
+        mutations: const {'blue': AlleleState.visual},
+      );
+      if (fatherBird != null) {
+        container.read(selectedFatherBirdProvider.notifier).state = fatherBird;
+      }
+      if (motherBird != null) {
+        container.read(selectedMotherBirdProvider.notifier).state = motherBird;
+      }
+
+      // Resolve results so the notifier reads a non-empty value.
+      await container.read(offspringResultsProvider.future);
+
+      final ok = await container
+          .read(geneticsHistorySaveProvider.notifier)
+          .saveCurrentCalculation();
+      expect(ok, isTrue);
+      return captured;
+    }
+
+    test('persists selected father/mother bird IDs + the edited genotype',
+        () async {
+      final saved = await saveWith(
+        fatherBird: (id: 'dad-id', name: 'Dad'),
+        motherBird: (id: 'mom-id', name: 'Mom'),
+      );
+      expect(saved, isNotNull);
+      expect(saved!.fatherBirdId, 'dad-id');
+      expect(saved.motherBirdId, 'mom-id');
+      // The (possibly edited) genotype is preserved alongside the IDs.
+      expect(saved.fatherGenotype, {'blue': 'visual'});
+      expect(saved.motherGenotype, {'blue': 'visual'});
+    });
+
+    test('leaves bird IDs null when the genotype was typed by hand', () async {
+      final saved = await saveWith();
+      expect(saved, isNotNull);
+      expect(saved!.fatherBirdId, isNull);
+      expect(saved.motherBirdId, isNull);
     });
   });
 

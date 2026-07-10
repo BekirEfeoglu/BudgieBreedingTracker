@@ -51,6 +51,9 @@ Z kromozomu üzerinde gen sırası: **O — C — I — Slate**
 | Op-Cin | ~32 cM | coupling + repulsion |
 | Op-Slate | ~40.5 cM | coupling + repulsion |
 
+- **Tek kaynak: `linkage_catalog.dart` (`LinkageCatalog`).** Altı çiftin recombination oranı, gösterim cM'i ve `measured | derived | estimated` kanıt türü BURADA tanımlanır. Hem motor (`mendelian_calculator.dart` → `tryLinkPair` `recombinationRateFor` ile) hem UI (`z_linked_badge.dart`, `mutation_detail_sheet.dart` → `linkagesFor`/`lookup`) bu kataloğu tüketir. cM display = `rate * 100` (tek ondalık). Widget içinde bağımsız cM tablosu EKLEME — 2026-07-10 öncesi `mutation_linkage_data.dart` + `z_linked_badge` local tablosu Op-Cin'i `34`, Op-Slate'i `40` gösteriyordu (motor `0.32`/`0.405` kullanırken); tek katalog bu drift'i yapısal olarak kapatır. Rate değeri hâlâ `GeneticsConstants.*Recombination` primitifleridir; katalog pair→rate eşlemesi + kanıt/gösterim metadata'sı ekler
+- ino-locus allelleri (ino/pallid/pearly/texas_clearbody) tek `ino` token'ına normalize olur; aynı locus'taki iki allel birbirine linked DEĞİLDİR (`lookup` `null`)
+- Türetilmiş (Op-Ino) ve tahmini (Ino-Slate) oranlar UI'da kanıt etiketiyle işaretlenir (`genetics.linkage_derived`/`linkage_estimated`), kesin ölçüm gibi sunulmaz
 - Baba iki linked mutasyonu heterozigot taşıyorsa `inheritance_linked_pair.dart` ile linked pair hesabı çalışır
 - Tightest linkage öncelik kazanır (en küçük cM)
 - Coupling (carrier): iki mutasyon aynı kromozomda; Repulsion (split): farklı kromozomlarda
@@ -101,10 +104,28 @@ if (analysis.hasWarnings) {
 - `reverse_calculator.dart` istenen fenotipten ebeveyn kombinasyonu önerir
 - Genetik mantık aynı, ters yönlü: her aday kombinasyon gerçek
   `MendelianCalculator.calculateFromGenotypes` ile doğrulanır (heuristic skor YOK)
-- Çıktı sıralaması: `maxProbability` azalan; ebeveyn-sayısı tie-break henüz
-  implement edilmemiştir
+- **Deterministik sıralama (`ReverseCalculationResult.compare`):** ① `maxProbability`
+  azalan → ② `probabilityAny` azalan → ③ non-wildtype ebeveyn state sayısı artan
+  (basit çift önce) → ④ visual gereksinim sayısı artan → ⑤ `canonicalSignature`
+  alfabetik (son deterministik anahtar). Ana anahtar yalnız eşitlikte kırılır;
+  aynı girdi + aynı sürüm aynı ilk 25 sonucu üretir. Bu comparator hem final
+  sort'ta hem `dedupeAndTrim` truncation'ında kullanılır (boundary ties stabil).
+  Reverse sonuçları persist EDİLMEZ → `calculationVersion` bump gerektirmez
 - Sonuç sınırı: `GeneticsConstants.reverseMaxDisplayResults` (25), calculator
   katmanında uygulanır (sadece UI'da değil)
+
+## Bird Selection Round-Trip (kuş kimliği + provenance)
+- Genetics hesaplayıcıda kuş seçimi `SelectedParentBird = ({id, name})` tutar
+  (ad değil kimlik) — `selectedFatherBirdProvider`/`selectedMotherBirdProvider`
+- Save `GeneticsHistory.fatherBirdId`/`motherBirdId`'yi bu kimlikten doldurur;
+  reopen (`genetics_history_card`) kimliği geri yükler (ad kuş listesinden lookup,
+  yoksa `genetics.saved_bird`). Model/tablo alanları zaten var → migration YOK
+- Provenance: `ParentGenotypeSource {manual, fromBird, fromBirdEdited}` —
+  kuştan seed `fromBird`, sonra manuel düzenleme `fromBirdEdited` (UI'da rozet)
+- `BirdGenotypeMapper.birdToGenotypeMapping` bilinmeyen mutation ID'lerini
+  genotipe KOYMAZ (motora geçmez) ve raporlar → seçimde kapsam uyarısı
+  (`genetics.bird_unmapped_mutations`). `birdToGenotype` (diğer caller'lar)
+  davranışı korunur
 
 ## Epistasis Engine
 - `epistasis_engine.dart` mutasyon etkileşimlerini handle eder (modifier, interaction, compound)
@@ -121,6 +142,7 @@ if (analysis.hasWarnings) {
 - Unit: her inheritance pattern (`allelic_series`, `linked_pair`, `sex_linked`, `genotype`) ayrı test dosyası
 - Regression: `test/domain/services/genetics/` altında 930+ test (2026-07-02 itibarıyla) — dominant series fix, linkage phase, lethal DF ve double-factor tagging için baseline
 - Linkage: 6 çiftin tamamı için coupling + repulsion `closeTo` assertion'ları (`genetics_linkage_test.dart`)
+- **MUTAVI referans matrisi** (`mutavi_reference_regression_test.dart`): `docs/muhabbet-kusu-genetik-rehberi.md`'nin kanonik crosslarını (Blue×Blue/split, Cinnamon/Ino × normal dişi, Greywing×Clearwing/Dilute, Cinnamon+Ino→Lacewing) her fixture'ın `guideSection` + `sourceIds` (K1–K14) taşıdığı, rehber oranlarını `closeTo` ile doğrulayan tek matris. Motor rehberle çelişirse bu suite kırılır. Not: rehber genotip oranı (25/50/25) ile motorun **fenotip** çıktısı (25 görsel / 75 normal-taşıyıcı) split×split'te ayrışır — motor fenotip tahmin eder
 - Lethal: her lethal pair için explicit test; DF-detection `genetics_integration_test.dart` içinde gerçek motor üzerinden doğrulanır
 - Lethal kombinasyon: her bilinen lethal pair için explicit test
 - Reverse calculator: bilinen fenotip→ebeveyn senaryolarıyla

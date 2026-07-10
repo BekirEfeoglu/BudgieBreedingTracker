@@ -40,6 +40,10 @@ class GeneticsHistorySaveNotifier extends Notifier<AsyncValue<void>> {
       final mother = ref.read(motherGenotypeProvider);
       final results = ref.read(offspringResultsProvider).value;
       final userId = ref.read(currentUserIdProvider);
+      // Persist the source bird identity so the calculation round-trips back to
+      // the real bird record (I1). Null when the genotype was typed by hand.
+      final fatherBird = ref.read(selectedFatherBirdProvider);
+      final motherBird = ref.read(selectedMotherBirdProvider);
 
       if (results == null || results.isEmpty) {
         state = const AsyncData(null);
@@ -51,6 +55,8 @@ class GeneticsHistorySaveNotifier extends Notifier<AsyncValue<void>> {
         userId: userId,
         fatherGenotype: _genotypeToMap(father),
         motherGenotype: _genotypeToMap(mother),
+        fatherBirdId: fatherBird?.id,
+        motherBirdId: motherBird?.id,
         resultsJson: jsonEncode(_resultsToJson(results)),
         calculationVersion: GeneticsConstants.calculationVersion,
         notes: notes,

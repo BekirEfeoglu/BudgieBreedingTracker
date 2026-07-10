@@ -1,9 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/domain/services/genetics/linkage_catalog.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
+import 'package:budgie_breeding_tracker/features/genetics/utils/linkage_display.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/inheritance_badge.dart';
-import 'package:budgie_breeding_tracker/features/genetics/widgets/mutation_linkage_data.dart';
 
 /// Shows a bottom sheet with detailed mutation information.
 Future<void> showMutationDetailSheet(
@@ -195,8 +196,8 @@ class _ZLinkageSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final linkages = mutationLinkageMap[mutationId];
-    if (linkages == null || linkages.isEmpty) return const SizedBox.shrink();
+    final linkages = LinkageCatalog.linkagesFor(mutationId);
+    if (linkages.isEmpty) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
 
@@ -237,7 +238,7 @@ class _ZLinkageSection extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          linkageMutationName(l.id),
+                          linkageMutationName(l.partnerLocus),
                           style: theme.textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w500,
                           ),
@@ -247,7 +248,7 @@ class _ZLinkageSection extends StatelessWidget {
                       const SizedBox(width: AppSpacing.sm),
                       Text(
                         'genetics.z_linkage_rate'.tr(
-                          args: [l.centiMorgans.toString()],
+                          args: [l.info.displayCentiMorgansLabel],
                         ),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.primary,

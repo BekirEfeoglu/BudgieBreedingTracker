@@ -175,8 +175,12 @@ class GeneticsCalculatorScreen extends ConsumerWidget {
         const ParentGenotype.empty(gender: BirdGender.female);
     ref.read(wizardStepProvider.notifier).state = 0;
     ref.read(selectedPunnettLocusProvider.notifier).state = null;
-    ref.read(selectedFatherBirdNameProvider.notifier).state = null;
-    ref.read(selectedMotherBirdNameProvider.notifier).state = null;
+    ref.read(selectedFatherBirdProvider.notifier).state = null;
+    ref.read(selectedMotherBirdProvider.notifier).state = null;
+    ref.read(fatherGenotypeSourceProvider.notifier).state =
+        ParentGenotypeSource.manual;
+    ref.read(motherGenotypeSourceProvider.notifier).state =
+        ParentGenotypeSource.manual;
   }
 }
 

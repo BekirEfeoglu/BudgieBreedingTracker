@@ -126,10 +126,14 @@ void main() {
         final container = createTestContainer();
         addTearDown(container.dispose);
 
-        container.read(selectedFatherBirdNameProvider.notifier).state =
-            'Sultan';
-        container.read(selectedMotherBirdNameProvider.notifier).state =
-            'Papatya';
+        container.read(selectedFatherBirdProvider.notifier).state = (
+          id: 'sultan-id',
+          name: 'Sultan',
+        );
+        container.read(selectedMotherBirdProvider.notifier).state = (
+          id: 'papatya-id',
+          name: 'Papatya',
+        );
         container.read(fatherGenotypeProvider.notifier).state = ParentGenotype(
           gender: BirdGender.male,
           mutations: {'ino': AlleleState.visual},
@@ -142,8 +146,9 @@ void main() {
         // Await FutureProvider before reading results
         final results = await container.read(offspringResultsProvider.future);
 
-        expect(container.read(selectedFatherBirdNameProvider), 'Sultan');
-        expect(container.read(selectedMotherBirdNameProvider), 'Papatya');
+        expect(container.read(selectedFatherBirdProvider)?.name, 'Sultan');
+        expect(container.read(selectedMotherBirdProvider)?.name, 'Papatya');
+        expect(container.read(selectedFatherBirdProvider)?.id, 'sultan-id');
         expect(results, isNotNull);
         expect(results!, isNotEmpty);
       },

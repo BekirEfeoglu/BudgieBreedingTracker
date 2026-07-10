@@ -2,6 +2,7 @@ import 'package:budgie_breeding_tracker/core/constants/genetics_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/epistasis_engine.dart';
+import 'package:budgie_breeding_tracker/domain/services/genetics/linkage_catalog.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 
@@ -110,13 +111,17 @@ class MendelianCalculator {
 
     final consumedSexLinked = <String>{};
 
-    void tryLinkPair(String id1, String id2, double rate) {
+    void tryLinkPair(String id1, String id2) {
       if (consumedSexLinked.contains(id1) || consumedSexLinked.contains(id2)) {
         return;
       }
       if (!fatherIsHeterozygousAt(id1) || !fatherIsHeterozygousAt(id2)) {
         return;
       }
+      // Single source of truth: the recombination rate comes from the same
+      // catalog the UI displays, so calculation and display can never drift.
+      final rate = LinkageCatalog.recombinationRateFor(id1, id2);
+      if (rate == null) return;
       final linkedResults = _calculateGenericLinkedPair(
         mutId1: id1,
         mutId2: id2,
@@ -148,48 +153,25 @@ class MendelianCalculator {
       removeFromAllelicGroup(id2);
     }
 
-    // Ordered by recombination rate (tightest first).
+    // Ordered by recombination rate (tightest first); each rate is resolved
+    // from LinkageCatalog inside tryLinkPair.
     if (inoLocusHetAllele != null && hasSlate) {
-      tryLinkPair(
-        inoLocusHetAllele,
-        GeneticsConstants.mutSlate,
-        GeneticsConstants.inoSlateRecombination,
-      );
+      tryLinkPair(inoLocusHetAllele, GeneticsConstants.mutSlate);
     }
     if (hasCinnamon && inoLocusHetAllele != null) {
-      tryLinkPair(
-        GeneticsConstants.mutCinnamon,
-        inoLocusHetAllele,
-        GeneticsConstants.cinnamonInoRecombination,
-      );
+      tryLinkPair(GeneticsConstants.mutCinnamon, inoLocusHetAllele);
     }
     if (hasCinnamon && hasSlate) {
-      tryLinkPair(
-        GeneticsConstants.mutCinnamon,
-        GeneticsConstants.mutSlate,
-        GeneticsConstants.cinnamonSlateRecombination,
-      );
+      tryLinkPair(GeneticsConstants.mutCinnamon, GeneticsConstants.mutSlate);
     }
     if (hasOpaline && inoLocusHetAllele != null) {
-      tryLinkPair(
-        GeneticsConstants.mutOpaline,
-        inoLocusHetAllele,
-        GeneticsConstants.opalineInoRecombination,
-      );
+      tryLinkPair(GeneticsConstants.mutOpaline, inoLocusHetAllele);
     }
     if (hasOpaline && hasCinnamon) {
-      tryLinkPair(
-        GeneticsConstants.mutOpaline,
-        GeneticsConstants.mutCinnamon,
-        GeneticsConstants.opalineCinnamonRecombination,
-      );
+      tryLinkPair(GeneticsConstants.mutOpaline, GeneticsConstants.mutCinnamon);
     }
     if (hasOpaline && hasSlate) {
-      tryLinkPair(
-        GeneticsConstants.mutOpaline,
-        GeneticsConstants.mutSlate,
-        GeneticsConstants.opalineSlateRecombination,
-      );
+      tryLinkPair(GeneticsConstants.mutOpaline, GeneticsConstants.mutSlate);
     }
 
     // 2. Allelic series loci

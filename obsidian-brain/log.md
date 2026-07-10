@@ -4,6 +4,48 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-10] feat | Genetics roadmap D3 + Q3 + I1 (unblocked Phase A/B items)
+
+Continued `dev-docs/genetics-improvement-roadmap.md` after D1.
+**D3** — `mutavi_reference_regression_test.dart`: guide-traceable regression
+matrix (Blue×Blue/split, Cinnamon/Ino×normal female, Greywing×Clearwing/Dilute,
+Cinnamon+Ino→Lacewing), each fixture carrying `guideSection` + `sourceIds`
+(K1–K14), asserting the guide's ratios. Documented that AR split×split collapses
+to phenotype 25% visible / 75% normal-carrier (guide's genotype 25/50/25).
+Test-only, no drift found → no version bump.
+**Q3** — `ReverseCalculationResult.compare`: deterministic 5-key tie-break
+(maxProbability → probabilityAny → fewer states → fewer visuals → alphabetical
+signature), used in the final sort AND `dedupeAndTrim` truncation so the top-25
+is reproducible. Reverse results aren't persisted → no version bump.
+**I1** — bird-selection round-trip: `SelectedParentBird ({id,name})` replaces the
+name-only providers; save fills `GeneticsHistory.fatherBirdId`/`motherBirdId`;
+reopen restores identity; `ParentGenotypeSource {manual,fromBird,fromBirdEdited}`
+provenance badge; `BirdGenotypeMapper.birdToGenotypeMapping` excludes+reports
+unknown mutations (UI scope warning). No migration (fields already existed).
+4 new l10n keys (tr/en/de). Docs: `.claude/rules/genetics.md` (Reverse,
+new Bird Selection Round-Trip, MUTAVI matrix) + [[domain/genetics-engine]].
+All 2005 genetics domain+feature tests + e2e green; gated items (D2/D4/Q2/I2)
+left for domain-owner/architecture decisions.
+
+## [2026-07-10] feat | Genetics roadmap D1 — typed linkage catalog + UI drift fix
+
+Executed D1 of `dev-docs/genetics-improvement-roadmap.md`. New
+`lib/domain/services/genetics/linkage_catalog.dart` (`LinkageCatalog`) is the
+single source for the 6 Z-linkage pairs: recombination rate (from
+`GeneticsConstants`), display cM (`rate*100`), and `measured|derived|estimated`
+evidence + source note. Engine (`mendelian_calculator` `tryLinkPair` →
+`recombinationRateFor`) and both UI surfaces (`z_linked_badge`,
+`mutation_detail_sheet` → `lookup`/`linkagesFor`) now read from it. Deleted the
+drifted widget-local tables — `mutation_linkage_data.dart` and the badge's
+`_linkageRates` showed Op-Cin `34`/Op-Slate `40` while the engine used
+`0.32`/`0.405`; catalog closes the drift by construction (Op-Cin 32, Op-Slate
+40.5). Ino-locus alleles normalize to one `ino` token. Derived/estimated rates
+carry an evidence label in the badge popup (`genetics.linkage_derived`/
+`linkage_estimated`, tr/en/de); unified the detail-sheet rate framing to cM.
+No `calculationVersion` bump (rates unchanged — UI drift + pure refactor).
+Updated `.claude/rules/genetics.md` § Sex-Linked Linkage and
+[[domain/genetics-engine]]. 15 new catalog tests; 1981 genetics tests green.
+
 ## [2026-07-10] docs | Testing wiki caught up with the tag→CI-gate rule
 
 [[patterns/testing]] now mirrors the "Test Tags → CI Gates" table added to
@@ -153,39 +195,5 @@ form-notifier log tags (observability.md convention). A third suggestion
 (skip NetworkException in `SentryErrorFilter`) was rejected — an explicit test
 asserts NetworkException IS reported, a deliberate decision. Updated
 data-layer/repositories.md § SyncableRepository.
-
-## [2026-07-08] fix | Migration deployment drift repaired (prod)
-
-Comprehensive app audit found 3 migrations shipped in client code but never
-applied to prod: `add_bird_tags_to_posts` (community_posts bird_id/bird_name/
-mutation_tags columns), `fetch_community_feed_sort` (p_sort_by RPC param), and
-`admin_atomic_audit_rpcs` (21 admin audit RPCs). Post detail/user-posts were
-400'ing (client `_feedColumns` selected non-existent columns) and admin
-user-management RPCs were missing. Applied all 3 to prod via MCP (deps verified
-first), added the `community_mutes` FK covering index (perf advisor 0001), then
-reconciled the ledger: `git mv`'d 8 local files onto their production ledger
-versions (6 timestamp-twins from prior MCP applies + the 2 newly-applied) and
-inserted the admin migration's ledger row → 197 local ↔ 197 ledger, zero drift,
-`db push` now a clean no-op. Security advisors: no new findings (admin RPCs
-correctly private SECURITY DEFINER + public INVOKER wrappers, anon revoked).
-Docs synced: comment replies (one-level) and bird-link/mutation tags are now
-SHIPPED (removed from known-gaps); community rule + wiki + migrations page
-updated with the "deploy is manual, verify after merge" lesson.
-
-## [2026-07-08] rules | Rulebook audit: auth.md + birds.md added, stale values fixed
-
-`.claude/rules/` audit (54 files): all structurally complete, but two core
-modules had no owning rule — added `auth.md` (router guard integration, MFA
-challenge, AAL2 destructive-action pattern, cooldown persist, logout chain)
-and `birds.md` (status lifecycle side effects via BirdLifecycleService,
-BirdsDao field encryption, photo partial-failure contract, cage ledger MVP,
-free tier 15). Three-place registration done (CLAUDE.md § Rules table,
-rules-index, this log); features/auth, features/birds, domain/auth-service
-now cite the owning rules. Stale rule content fixed: migrations.md garbled
-intro + 174→196 count, premium-revenuecat purchases_flutter ^10.0.2→^10.2.3,
-testing.md CI timeout 25→30/40, icon count 93→99 (assets-images,
-coding-standards), and security.md § MFA UX Flow no longer presents recovery
-codes as shipped (2026-07-02 audit: they don't exist — also added to
-known-gaps).
 
 Older entries are archived in [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

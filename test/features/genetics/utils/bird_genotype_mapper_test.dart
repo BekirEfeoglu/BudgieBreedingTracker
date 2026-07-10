@@ -94,4 +94,60 @@ void main() {
       expect(genotypeInfo['ino'], 'carrier');
     });
   });
+
+  group('BirdGenotypeMapper.birdToGenotypeMapping (I1)', () {
+    test('reports unknown mutation IDs and excludes them from the genotype', () {
+      const bird = Bird(
+        id: 'bird-9',
+        name: 'Mystery',
+        gender: BirdGender.male,
+        userId: 'user-1',
+        mutations: ['ino', 'not_a_real_mutation'],
+        genotypeInfo: {'ino': 'visual', 'not_a_real_mutation': 'visual'},
+      );
+
+      final mapping = BirdGenotypeMapper.birdToGenotypeMapping(bird);
+
+      // Known mutation kept; unknown excluded (never reaches the engine).
+      expect(mapping.genotype.getState('ino'), AlleleState.visual);
+      expect(
+        mapping.genotype.mutations.containsKey('not_a_real_mutation'),
+        isFalse,
+      );
+      // Unknown reported so the UI can warn the user.
+      expect(mapping.unmappedMutationIds, ['not_a_real_mutation']);
+    });
+
+    test('all-known mutations produce no unmapped report', () {
+      const bird = Bird(
+        id: 'bird-10',
+        name: 'Known',
+        gender: BirdGender.female,
+        userId: 'user-1',
+        mutations: ['blue'],
+        genotypeInfo: {'blue': 'visual'},
+      );
+
+      final mapping = BirdGenotypeMapper.birdToGenotypeMapping(bird);
+
+      expect(mapping.unmappedMutationIds, isEmpty);
+      expect(mapping.genotype.getState('blue'), AlleleState.visual);
+    });
+
+    test('legacy IDs resolve (not reported as unmapped)', () {
+      const bird = Bird(
+        id: 'bird-11',
+        name: 'Legacy',
+        gender: BirdGender.male,
+        userId: 'user-1',
+        mutations: ['lutino'],
+        genotypeInfo: {'lutino': 'carrier'},
+      );
+
+      final mapping = BirdGenotypeMapper.birdToGenotypeMapping(bird);
+
+      expect(mapping.unmappedMutationIds, isEmpty);
+      expect(mapping.genotype.getState('ino'), AlleleState.carrier);
+    });
+  });
 }

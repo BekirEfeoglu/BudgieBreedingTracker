@@ -7,6 +7,7 @@ import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_providers.dart';
+import 'package:budgie_breeding_tracker/features/genetics/utils/bird_genotype_mapper.dart';
 import 'package:budgie_breeding_tracker/shared/widgets/genetics.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/bird_picker_dialog.dart';
 
@@ -33,32 +34,69 @@ class ParentSelectionStep extends ConsumerWidget {
     );
     if (bird == null || !context.mounted) return;
 
-    final genotype = birdToGenotype(bird);
+    // Map to a genotype excluding any mutation the engine can't resolve, and
+    // report those so the user is warned instead of them being silently
+    // dropped at the engine boundary (I1).
+    final mapping = BirdGenotypeMapper.birdToGenotypeMapping(bird);
+    final genotype = mapping.genotype;
+    final SelectedParentBird identity = (id: bird.id, name: bird.name);
+
     if (gender == BirdGender.male) {
       ref.read(fatherGenotypeProvider.notifier).state = genotype;
-      ref.read(selectedFatherBirdNameProvider.notifier).state = bird.name;
+      ref.read(selectedFatherBirdProvider.notifier).state = identity;
+      ref.read(fatherGenotypeSourceProvider.notifier).state =
+          ParentGenotypeSource.fromBird;
     } else {
       ref.read(motherGenotypeProvider.notifier).state = genotype;
-      ref.read(selectedMotherBirdNameProvider.notifier).state = bird.name;
+      ref.read(selectedMotherBirdProvider.notifier).state = identity;
+      ref.read(motherGenotypeSourceProvider.notifier).state =
+          ParentGenotypeSource.fromBird;
+    }
+
+    final String message;
+    if (mapping.unmappedMutationIds.isNotEmpty) {
+      message = 'genetics.bird_unmapped_mutations'.tr(
+        args: [
+          bird.name,
+          mapping.unmappedMutationIds.length.toString(),
+        ],
+      );
+    } else if (genotype.isNotEmpty) {
+      message = 'genetics.bird_selected'.tr(args: [bird.name]);
+    } else {
+      message = 'genetics.no_mutations_hint'.tr();
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          genotype.isNotEmpty
-              ? 'genetics.bird_selected'.tr(args: [bird.name])
-              : 'genetics.no_mutations_hint'.tr(),
-        ),
-        duration: const Duration(seconds: 2),
+        content: Text(message),
+        duration: const Duration(seconds: 3),
       ),
     );
+  }
+
+  /// Localized provenance label for a parent genotype, or `null` when the
+  /// genotype was typed by hand (no badge needed).
+  static String? _provenanceLabel(ParentGenotypeSource source) {
+    return switch (source) {
+      ParentGenotypeSource.manual => null,
+      ParentGenotypeSource.fromBird => 'genetics.genotype_from_bird'.tr(),
+      ParentGenotypeSource.fromBirdEdited =>
+        'genetics.genotype_from_bird_edited'.tr(),
+    };
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final selectedFather = ref.watch(selectedFatherBirdNameProvider);
-    final selectedMother = ref.watch(selectedMotherBirdNameProvider);
+    final selectedFather = ref.watch(selectedFatherBirdProvider);
+    final selectedMother = ref.watch(selectedMotherBirdProvider);
+    final fatherProvenance = _provenanceLabel(
+      ref.watch(fatherGenotypeSourceProvider),
+    );
+    final motherProvenance = _provenanceLabel(
+      ref.watch(motherGenotypeSourceProvider),
+    );
 
     return SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: AppSpacing.xxxl * 2),
@@ -81,6 +119,14 @@ class ParentSelectionStep extends ConsumerWidget {
                         onGenotypeChanged: (genotype) {
                           ref.read(fatherGenotypeProvider.notifier).state =
                               genotype;
+                          // A hand-edit after a bird seed marks provenance.
+                          if (ref.read(fatherGenotypeSourceProvider) !=
+                              ParentGenotypeSource.manual) {
+                            ref
+                                    .read(fatherGenotypeSourceProvider.notifier)
+                                    .state =
+                                ParentGenotypeSource.fromBirdEdited;
+                          }
                         },
                       ),
                     ),
@@ -104,7 +150,7 @@ class ParentSelectionStep extends ConsumerWidget {
                             color: theme.colorScheme.primary,
                           ),
                           label: Text(
-                            selectedFather,
+                            selectedFather.name,
                             overflow: TextOverflow.ellipsis,
                           ),
                           onDeleted: () {
@@ -114,11 +160,12 @@ class ParentSelectionStep extends ConsumerWidget {
                               gender: BirdGender.male,
                             );
                             ref
-                                    .read(
-                                      selectedFatherBirdNameProvider.notifier,
-                                    )
+                                .read(selectedFatherBirdProvider.notifier)
+                                .state = null;
+                            ref
+                                    .read(fatherGenotypeSourceProvider.notifier)
                                     .state =
-                                null;
+                                ParentGenotypeSource.manual;
                           },
                           visualDensity: VisualDensity.compact,
                         ),
@@ -126,6 +173,10 @@ class ParentSelectionStep extends ConsumerWidget {
                     ],
                   ],
                 ),
+                if (fatherProvenance != null) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  _ProvenanceLabel(text: fatherProvenance),
+                ],
               ],
             ),
           ),
@@ -147,6 +198,13 @@ class ParentSelectionStep extends ConsumerWidget {
                         onGenotypeChanged: (genotype) {
                           ref.read(motherGenotypeProvider.notifier).state =
                               genotype;
+                          if (ref.read(motherGenotypeSourceProvider) !=
+                              ParentGenotypeSource.manual) {
+                            ref
+                                    .read(motherGenotypeSourceProvider.notifier)
+                                    .state =
+                                ParentGenotypeSource.fromBirdEdited;
+                          }
                         },
                       ),
                     ),
@@ -171,7 +229,7 @@ class ParentSelectionStep extends ConsumerWidget {
                             color: theme.colorScheme.primary,
                           ),
                           label: Text(
-                            selectedMother,
+                            selectedMother.name,
                             overflow: TextOverflow.ellipsis,
                           ),
                           onDeleted: () {
@@ -181,11 +239,12 @@ class ParentSelectionStep extends ConsumerWidget {
                               gender: BirdGender.female,
                             );
                             ref
-                                    .read(
-                                      selectedMotherBirdNameProvider.notifier,
-                                    )
+                                .read(selectedMotherBirdProvider.notifier)
+                                .state = null;
+                            ref
+                                    .read(motherGenotypeSourceProvider.notifier)
                                     .state =
-                                null;
+                                ParentGenotypeSource.manual;
                           },
                           visualDensity: VisualDensity.compact,
                         ),
@@ -193,11 +252,49 @@ class ParentSelectionStep extends ConsumerWidget {
                     ],
                   ],
                 ),
+                if (motherProvenance != null) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  _ProvenanceLabel(text: motherProvenance),
+                ],
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Small muted label showing where a parent genotype came from (seeded from a
+/// bird, or seeded then hand-edited).
+class _ProvenanceLabel extends StatelessWidget {
+  final String text;
+
+  const _ProvenanceLabel({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          Icons.info_outline,
+          size: 12,
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+        const SizedBox(width: 4),
+        Flexible(
+          child: Text(
+            text,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontStyle: FontStyle.italic,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

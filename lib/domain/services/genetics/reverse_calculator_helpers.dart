@@ -156,8 +156,11 @@ abstract class ReverseCalculatorHelpers {
       }
     }
 
+    // Deterministic ordering (same Q3 comparator as the final sort) so the
+    // truncation to [limit] keeps a stable, reproducible set even when several
+    // combinations tie on maxProbability at the boundary.
     final deduped = bySignature.values.toList()
-      ..sort((a, b) => b.maxProbability.compareTo(a.maxProbability));
+      ..sort(ReverseCalculationResult.compare);
 
     if (deduped.length <= limit) return deduped;
     return deduped.take(limit).toList();

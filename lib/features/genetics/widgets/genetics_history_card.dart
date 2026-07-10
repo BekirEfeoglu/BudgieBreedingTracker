@@ -15,6 +15,8 @@ import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_pro
 import 'package:budgie_breeding_tracker/features/genetics/utils/phenotype_colors.dart';
 import 'package:budgie_breeding_tracker/features/genetics/utils/phenotype_localizer.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/genetics_history_parent_chip.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/bird_stream_providers.dart';
 
 /// Card showing a saved genetics calculation summary.
 class GeneticsHistoryCard extends ConsumerWidget {
@@ -255,9 +257,50 @@ class GeneticsHistoryCard extends ConsumerWidget {
 
     ref.read(fatherGenotypeProvider.notifier).state = father;
     ref.read(motherGenotypeProvider.notifier).state = mother;
+
+    // Round-trip the saved bird identities (I1) so re-entering the editor still
+    // links back to the real birds. The saved genotype is the final state, so
+    // provenance is reported as "from bird".
+    _restoreBirdIdentity(
+      ref,
+      birdId: entry.fatherBirdId,
+      setIdentity: (v) =>
+          ref.read(selectedFatherBirdProvider.notifier).state = v,
+      setSource: (v) =>
+          ref.read(fatherGenotypeSourceProvider.notifier).state = v,
+    );
+    _restoreBirdIdentity(
+      ref,
+      birdId: entry.motherBirdId,
+      setIdentity: (v) =>
+          ref.read(selectedMotherBirdProvider.notifier).state = v,
+      setSource: (v) =>
+          ref.read(motherGenotypeSourceProvider.notifier).state = v,
+    );
+
     ref.read(wizardStepProvider.notifier).state = 2;
 
     context.pop();
+  }
+
+  void _restoreBirdIdentity(
+    WidgetRef ref, {
+    required String? birdId,
+    required void Function(SelectedParentBird?) setIdentity,
+    required void Function(ParentGenotypeSource) setSource,
+  }) {
+    if (birdId == null) {
+      setIdentity(null);
+      setSource(ParentGenotypeSource.manual);
+      return;
+    }
+    final userId = ref.read(currentUserIdProvider);
+    final birds = ref.read(birdsStreamProvider(userId)).value ?? const [];
+    final match = birds.where((b) => b.id == birdId);
+    final name =
+        match.isNotEmpty ? match.first.name : 'genetics.saved_bird'.tr();
+    setIdentity((id: birdId, name: name));
+    setSource(ParentGenotypeSource.fromBird);
   }
 
   Future<void> _onDelete(BuildContext context, WidgetRef ref) async {

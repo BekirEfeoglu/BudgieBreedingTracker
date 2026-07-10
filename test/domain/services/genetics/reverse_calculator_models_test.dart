@@ -102,6 +102,132 @@ void main() {
     });
   });
 
+  group('ReverseCalculationResult.compare (Q3 deterministic tie-break)', () {
+    ReverseCalculationResult res({
+      Map<String, AlleleState> father = const {},
+      Map<String, AlleleState> mother = const {},
+      double male = 0,
+      double female = 0,
+    }) =>
+        ReverseCalculationResult(
+          father: ParentGenotype(gender: BirdGender.male, mutations: father),
+          mother: ParentGenotype(gender: BirdGender.female, mutations: mother),
+          probabilityMale: male,
+          probabilityFemale: female,
+        );
+
+    test('1. maxProbability descending is the primary key', () {
+      final high = res(male: 0.5, female: 0.5);
+      final low = res(male: 0.25, female: 0.25);
+      expect(ReverseCalculationResult.compare(high, low), lessThan(0));
+      final sorted = [low, high]..sort(ReverseCalculationResult.compare);
+      expect(sorted.first.maxProbability, 0.5);
+    });
+
+    test('2. on maxProbability tie, higher probabilityAny wins', () {
+      final a = res(male: 0.5, female: 0.5); // max .5, any .5
+      final b = res(male: 0.5, female: 0.1); // max .5, any .3
+      expect(ReverseCalculationResult.compare(a, b), lessThan(0));
+    });
+
+    test('3. on prob tie, fewer non-wildtype parent states wins (simpler)', () {
+      final simple = res(
+        father: const {'blue': AlleleState.visual},
+        male: 0.5,
+        female: 0.5,
+      );
+      final complex = res(
+        father: const {'blue': AlleleState.visual},
+        mother: const {'grey': AlleleState.visual},
+        male: 0.5,
+        female: 0.5,
+      );
+      expect(simple.nonWildtypeStateCount, 1);
+      expect(complex.nonWildtypeStateCount, 2);
+      expect(ReverseCalculationResult.compare(simple, complex), lessThan(0));
+    });
+
+    test('4. on state-count tie, fewer visual requirements wins', () {
+      final carrier = res(
+        father: const {'blue': AlleleState.carrier},
+        male: 0.5,
+        female: 0.5,
+      );
+      final visual = res(
+        father: const {'blue': AlleleState.visual},
+        male: 0.5,
+        female: 0.5,
+      );
+      expect(carrier.visualRequirementCount, 0);
+      expect(visual.visualRequirementCount, 1);
+      expect(ReverseCalculationResult.compare(carrier, visual), lessThan(0));
+    });
+
+    test('5. canonical signature is the final alphabetical tie-break', () {
+      final a = res(
+        father: const {'blue': AlleleState.visual},
+        male: 0.5,
+        female: 0.5,
+      );
+      final b = res(
+        father: const {'grey': AlleleState.visual},
+        male: 0.5,
+        female: 0.5,
+      );
+      // Everything ties except the signature: 'blue' < 'grey'.
+      expect(a.nonWildtypeStateCount, b.nonWildtypeStateCount);
+      expect(a.visualRequirementCount, b.visualRequirementCount);
+      expect(ReverseCalculationResult.compare(a, b), lessThan(0));
+      expect(a.canonicalSignature.compareTo(b.canonicalSignature), lessThan(0));
+    });
+
+    test('primary key dominates: higher maxProbability wins even if complex', () {
+      final complexButBetter = res(
+        father: const {
+          'blue': AlleleState.visual,
+          'grey': AlleleState.visual,
+        },
+        male: 0.9,
+        female: 0.9,
+      );
+      final simpleButWorse = res(
+        father: const {'blue': AlleleState.visual},
+        male: 0.5,
+        female: 0.5,
+      );
+      // Simpler pairing must NOT jump ahead of a strictly better probability.
+      expect(
+        ReverseCalculationResult.compare(complexButBetter, simpleButWorse),
+        lessThan(0),
+      );
+    });
+
+    test('sort is order-independent (same result from any input order)', () {
+      final x = res(father: const {'blue': AlleleState.visual}, male: 0.5, female: 0.5);
+      final y = res(father: const {'grey': AlleleState.visual}, male: 0.5, female: 0.5);
+      final z = res(male: 0.9, female: 0.9);
+      final a = [x, y, z]..sort(ReverseCalculationResult.compare);
+      final b = [z, y, x]..sort(ReverseCalculationResult.compare);
+      expect(
+        a.map((r) => r.canonicalSignature).toList(),
+        b.map((r) => r.canonicalSignature).toList(),
+      );
+      expect(a.first.maxProbability, 0.9); // best prob first
+    });
+
+    test('calculateParents is deterministic: same input -> same ordered results',
+        () {
+      const calc = ReverseCalculator();
+      final first = calc.calculateParents({'cinnamon', 'ino'});
+      final second = calc.calculateParents({'cinnamon', 'ino'});
+      expect(first, isNotEmpty);
+      expect(
+        first.map((r) => r.canonicalSignature).toList(),
+        second.map((r) => r.canonicalSignature).toList(),
+      );
+    });
+  });
+
   group('LocusPairResult', () {
     test('stores locus-level parent genotypes and probabilities', () {
       const lpr = LocusPairResult(

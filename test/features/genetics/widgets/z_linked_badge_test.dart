@@ -95,8 +95,9 @@ void main() {
       await tester.tap(find.byType(GestureDetector));
       await tester.pumpAndSettle();
 
-      // opaline-cinnamon linkage rate is 34 cM
-      expect(find.textContaining('34 cM'), findsOneWidget);
+      // opaline-cinnamon linkage rate is 32 cM (single-sourced from
+      // LinkageCatalog; previously drifted to 34 in the widget-local table)
+      expect(find.textContaining('32 cM'), findsOneWidget);
     });
 
     testWidgets('popup shows close button', (tester) async {
@@ -139,7 +140,7 @@ void main() {
       await tester.tap(find.byType(GestureDetector));
       await tester.pumpAndSettle();
 
-      // Should show 3 pairs: opaline-cinnamon (34cM), opaline-ino (30cM),
+      // Should show 3 pairs: opaline-cinnamon (32cM), opaline-ino (30cM),
       // cinnamon-ino (3cM)
       expect(find.textContaining('cM'), findsNWidgets(3));
     });
