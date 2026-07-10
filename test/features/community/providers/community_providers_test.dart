@@ -13,6 +13,27 @@ void main() {
     });
   });
 
+  group('guideTopicFilterProvider', () {
+    test('starts null, toggles on/off, and clears', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final notifier = container.read(guideTopicFilterProvider.notifier);
+
+      expect(container.read(guideTopicFilterProvider), isNull);
+
+      notifier.toggle('opaline');
+      expect(container.read(guideTopicFilterProvider), 'opaline');
+
+      // Toggling the active topic clears it.
+      notifier.toggle('opaline');
+      expect(container.read(guideTopicFilterProvider), isNull);
+
+      notifier.toggle('spangle');
+      notifier.clear();
+      expect(container.read(guideTopicFilterProvider), isNull);
+    });
+  });
+
   group('exploreSortProvider', () {
     test('defaults to newest and can be updated', () {
       final container = ProviderContainer();

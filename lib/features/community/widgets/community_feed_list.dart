@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/app_haptics.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart' as app;
@@ -21,6 +22,7 @@ import '../../../router/route_names.dart';
 import '../../../data/providers/user_role_providers.dart'
     show isFounderProvider;
 import '../providers/community_feed_providers.dart';
+import '../providers/community_post_providers.dart';
 import '../providers/community_providers.dart';
 import 'community_avatar.dart';
 import 'community_feed_overlays.dart';

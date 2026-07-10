@@ -148,6 +148,8 @@ class _FeaturedGuideCard extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.md),
                   ],
+                  _GuideActionsRow(post: post),
+                  const SizedBox(height: AppSpacing.md),
                   _GuideOpenButton(onTap: () => _open(context)),
                 ],
               ),
@@ -271,6 +273,8 @@ class _GuideLibraryCard extends StatelessWidget {
                       ],
                     ),
                   ],
+                  const SizedBox(height: AppSpacing.md),
+                  _GuideActionsRow(post: post),
                   const SizedBox(height: AppSpacing.md),
                   _GuideOpenButton(onTap: () => _open(context)),
                 ],
@@ -487,6 +491,81 @@ class _GuideGlassChip extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Engagement summary (likes + comments) plus a bookmark toggle for a guide
+/// card. Bookmarking fulfils the guides-hero promise ("collect re-readable
+/// content in one place"), and the counts signal which guides breeders valued.
+class _GuideActionsRow extends ConsumerWidget {
+  const _GuideActionsRow({required this.post});
+
+  final CommunityPost post;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final muted = theme.colorScheme.onSurfaceVariant;
+    final bookmarked = post.isBookmarkedByMe;
+
+    Widget stat(Widget icon, int value) => Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        icon,
+        const SizedBox(width: AppSpacing.xs),
+        Text(
+          '$value',
+          style: theme.textTheme.labelMedium?.copyWith(
+            color: muted,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+
+    return Row(
+      children: [
+        stat(AppIcon(AppIcons.like, size: 16, color: muted), post.likeCount),
+        const SizedBox(width: AppSpacing.lg),
+        stat(
+          AppIcon(AppIcons.comment, size: 16, color: muted),
+          post.commentCount,
+        ),
+        const Spacer(),
+        Semantics(
+          button: true,
+          label: 'community.bookmark'.tr(),
+          child: Material(
+            color: bookmarked
+                ? AppColors.accent.withValues(alpha: 0.14)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+              onTap: () {
+                AppHaptics.lightImpact();
+                ref
+                    .read(bookmarkToggleProvider.notifier)
+                    .toggleBookmark(post.id);
+              },
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minWidth: AppSpacing.touchTargetMin,
+                  minHeight: AppSpacing.touchTargetMin,
+                ),
+                child: Center(
+                  child: AppIcon(
+                    AppIcons.bookmark,
+                    size: 20,
+                    color: bookmarked ? AppColors.accent : muted,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

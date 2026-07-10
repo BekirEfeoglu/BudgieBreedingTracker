@@ -47,6 +47,24 @@ final exploreSortProvider =
       ExploreSortNotifier.new,
     );
 
+/// Selected topic (tag) filter for the Guides tab library. `null` = all topics.
+///
+/// Client-side filter over the already-loaded guide posts, so switching topics
+/// is instant and needs no extra fetch. Reset when leaving the Guides tab is
+/// not required — re-selecting the same chip clears it.
+class GuideTopicFilterNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void toggle(String topic) => state = state == topic ? null : topic;
+  void clear() => state = null;
+}
+
+final guideTopicFilterProvider =
+    NotifierProvider<GuideTopicFilterNotifier, String?>(
+      GuideTopicFilterNotifier.new,
+    );
+
 /// Active tab state for pill tab bar (replaces DefaultTabController).
 class CommunityActiveTabNotifier extends Notifier<CommunityFeedTab> {
   @override
