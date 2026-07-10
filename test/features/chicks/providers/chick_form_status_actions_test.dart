@@ -157,7 +157,7 @@ void main() {
       );
     });
 
-    test('is a no-op when chick not found', () async {
+    test('reports not-found (no write) when chick missing', () async {
       when(
         () => mockChickRepo.getById('missing'),
       ).thenAnswer((_) async => null);
@@ -170,7 +170,10 @@ void main() {
           .markAsWeaned('missing');
 
       final state = container.read(chickFormStateProvider);
-      expect(state.isSuccess, isTrue);
+      // A concurrently-deleted chick must surface not-found rather than a
+      // false success for a write that never happened.
+      expect(state.isSuccess, isFalse);
+      expect(state.error, isNotNull);
       verifyNever(() => mockChickRepo.save(any()));
     });
 
@@ -236,7 +239,7 @@ void main() {
       expect(saved.deathDate, isNotNull);
     });
 
-    test('is a no-op when chick not found', () async {
+    test('reports not-found (no write) when chick missing', () async {
       when(
         () => mockChickRepo.getById('missing'),
       ).thenAnswer((_) async => null);
@@ -249,7 +252,9 @@ void main() {
           .markAsDeceased('missing');
 
       final state = container.read(chickFormStateProvider);
-      expect(state.isSuccess, isTrue);
+      // Surface not-found rather than a false success (see markAsWeaned).
+      expect(state.isSuccess, isFalse);
+      expect(state.error, isNotNull);
       verifyNever(() => mockChickRepo.save(any()));
     });
 

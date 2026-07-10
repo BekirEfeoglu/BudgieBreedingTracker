@@ -297,7 +297,7 @@ void main() {
       expect(savedChick.weanDate, weanDate);
     });
 
-    test('sets isSuccess even when chick not found (no-op)', () async {
+    test('reports not-found (no false success) when chick missing', () async {
       when(() => mockChickRepo.getById(any())).thenAnswer((_) async => null);
 
       final container = createContainer();
@@ -308,7 +308,9 @@ void main() {
           .markAsWeaned('missing-chick');
 
       final state = container.read(chickFormStateProvider);
-      expect(state.isSuccess, isTrue);
+      // A concurrently-deleted chick surfaces not-found, not a false success.
+      expect(state.isSuccess, isFalse);
+      expect(state.error, isNotNull);
     });
   });
 

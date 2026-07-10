@@ -9,21 +9,29 @@ extension ChickFormStatusActions on ChickFormNotifier {
     try {
       final repo = ref.read(chickRepositoryProvider);
       final chick = await repo.getById(id);
-      var sideEffectError = false;
-      if (chick != null) {
-        await repo.save(
-          chick.copyWith(
-            weanDate: weanDate ?? DateTime.now(),
-            updatedAt: DateTime.now(),
-          ),
+      if (chick == null) {
+        // Concurrently deleted (e.g. on another device). Surface not-found
+        // rather than reporting a false success for a write that never
+        // happened — mirrors markBandingComplete's null handling. Set the
+        // error directly (no throw) so it does not reach Sentry.
+        state = state.copyWith(
+          isLoading: false,
+          error: 'errors.not_found'.tr(),
         );
-        sideEffectError = await _cancelChickReminders(
-          ref,
-          id,
-          cancelCare: true,
-          cancelBanding: false,
-        );
+        return;
       }
+      await repo.save(
+        chick.copyWith(
+          weanDate: weanDate ?? DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+      );
+      final sideEffectError = await _cancelChickReminders(
+        ref,
+        id,
+        cancelCare: true,
+        cancelBanding: false,
+      );
       state = state.copyWith(
         isLoading: false,
         warning: sideEffectError
@@ -45,22 +53,29 @@ extension ChickFormStatusActions on ChickFormNotifier {
     try {
       final repo = ref.read(chickRepositoryProvider);
       final chick = await repo.getById(id);
-      var sideEffectError = false;
-      if (chick != null) {
-        await repo.save(
-          chick.copyWith(
-            healthStatus: ChickHealthStatus.deceased,
-            deathDate: deathDate ?? DateTime.now(),
-            updatedAt: DateTime.now(),
-          ),
+      if (chick == null) {
+        // Concurrently deleted — surface not-found instead of a false
+        // success (see markAsWeaned / markBandingComplete). Direct state set,
+        // no throw, so it does not reach Sentry.
+        state = state.copyWith(
+          isLoading: false,
+          error: 'errors.not_found'.tr(),
         );
-        sideEffectError = await _cancelChickReminders(
-          ref,
-          id,
-          cancelCare: true,
-          cancelBanding: true,
-        );
+        return;
       }
+      await repo.save(
+        chick.copyWith(
+          healthStatus: ChickHealthStatus.deceased,
+          deathDate: deathDate ?? DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+      );
+      final sideEffectError = await _cancelChickReminders(
+        ref,
+        id,
+        cancelCare: true,
+        cancelBanding: true,
+      );
       state = state.copyWith(
         isLoading: false,
         warning: sideEffectError
