@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/enums/gamification_enums.dart';
+import '../../../core/errors/app_exception.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/models/community_comment_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
@@ -299,7 +300,18 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
   /// a generic "unexpected error". The thrown exception carries the edge
   /// function's error code (see [CommunityCommentRemoteSource.insert]).
   String _commentErrorMessage(Object error) {
-    final s = error.toString().toLowerCase();
+    // Read the wrapped message/code, NOT toString(): AppException has no custom
+    // toString, so `error.toString()` is "Instance of 'NetworkException'" —
+    // which would falsely match the network branch for every wrapped error.
+    final parts = <String>[];
+    if (error is AppException) {
+      parts.add(error.message);
+      if (error.code != null) parts.add(error.code!);
+      if (error.originalError != null) parts.add(error.originalError.toString());
+    } else {
+      parts.add(error.toString());
+    }
+    final s = parts.join(' ').toLowerCase();
     if (s.contains('unauthorized') ||
         s.contains('no authenticated session') ||
         s.contains('jwt') ||

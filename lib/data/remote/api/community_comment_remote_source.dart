@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
+import '../../../core/errors/app_exception.dart';
 import '../supabase/edge_function_client.dart';
 import 'base_remote_source.dart';
 import 'community_profile_cache.dart';
@@ -71,8 +72,12 @@ class CommunityCommentRemoteSource {
         // Surface the specific server error code (e.g. `unauthorized`,
         // `moderation_rejected`, `post_not_found`, `blocked_relationship`) so
         // the UI can show an actionable message instead of a generic one.
+        // Throw an AppException (not a bare Exception): handleErrorForTag
+        // passes AppExceptions through unchanged, so the code stays in
+        // `.message` — a bare Exception would be re-wrapped as a
+        // NetworkException and mis-classified as an offline error.
         final code = result.data?['error']?.toString();
-        throw Exception(
+        throw ValidationException(
           code != null && code.isNotEmpty
               ? code
               : (result.error ?? 'create_community_comment_failed'),
