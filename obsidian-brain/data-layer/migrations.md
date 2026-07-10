@@ -39,9 +39,9 @@ MigrationStrategy(
 
 Format: `YYYYMMDDHHmmss_short_description.sql`
 
-205 tracked migration files in `supabase/migrations/` — applied in lexicographic
-(chronological) order. **Verified against production 2026-07-09 (MCP live):**
-205 local files ↔ 205 ledger rows, version parity exact (0 duplicates), all
+206 tracked migration files in `supabase/migrations/` — applied in lexicographic
+(chronological) order. **Verified against production 2026-07-10 (MCP live):**
+206 local files ↔ 206 ledger rows, version parity exact (0 duplicates), all
 recent effects confirmed in the live schema. A **content-drift** pass compared
 each committed file against the ledger's `statements` column (normalized md5,
 `;`/comment-insensitive): 4 files diverged from what prod actually applied.

@@ -108,6 +108,26 @@ count check gated listing creation — trivially bypassed by calling the
 repository directly. Now fixed: `guardMarketplaceListingLimit()` calls the
 Edge Function before `repo.create()`.
 
+## Moderation (server-side, 2026-07-10)
+
+Listing text moderation was **client-side only** until 2026-07-10: the client
+ran `checkText` before a direct `.upsert()`, but RLS INSERT only checked
+ownership and there was no insert-time moderation — a tampered/direct-REST
+client could publish a scam listing skipping moderation (immediately public via
+`status=active` + `needs_review=false`). Now a `BEFORE INSERT` trigger
+`trg_moderate_marketplace_listing` (`private.enforce_marketplace_listing_moderation`,
+migration `20260710120000`) moderates `title`+`description`+`species`+`mutation`
+via `private.marketplace_moderation_violation` — a faithful SQL mirror of
+`moderate-content/moderation.ts` `moderateText` (denylist + caps/repeat/URL
+heuristics). Enforced for **every** client (old/new/tampered), breaks no
+legitimate listing, reversible (`DROP TRIGGER`). Scope is INSERT-only (edits
+already flagged by the `needs_review`-on-edit trigger). NOT an RLS lockdown —
+that would break old binaries still doing direct inserts. Client maps the
+`MARKETPLACE_MODERATION_REJECTED` marker to `ValidationException('marketplace.moderation_rejected')`.
+Image moderation was already server-side fail-closed. Follow-up: AI-layer
+moderation (like the community `moderate-content` edge fn) could augment the
+keyword/heuristic DB backstop.
+
 ## Rules
 
 - `.claude/rules/marketplace.md` — listing lifecycle, strict moderation threshold, premium gates, ad placement (entitlement aware), contact flow, RLS, location privacy

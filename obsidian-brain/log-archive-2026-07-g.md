@@ -5,6 +5,17 @@ full-scope audit follow-ups.
 
 ---
 
+## [2026-07-09] fix | Migration content-drift reconciliation (repo ↔ prod ledger)
+
+Deep migration check via Supabase MCP: version parity prod=local, but the
+ledger's `statements` column revealed 4 files diverging from applied SQL.
+Gamification `::integer` (cosmetic) reconciled in-place; admin_get_table_counts
++ cleanup fns benign (later drift-free migration redefines them). Real one:
+`20260430130000` system_settings SELECT policy used `public.is_admin()` while
+prod ran `private.is_admin()` (different bodies → behavioral). Fixed forward via
+`20260709180636`, applied to prod as an idempotent no-op; repo+prod now 205 in
+lockstep. Old files left un-edited (no history rewrite). See [[data-layer/migrations]].
+
 ## [2026-07-09] audit | Full-scope sweep: genetics + calendar test hardening
 
 Multi-agent sweep from clean main (all gates green). Only fixes: feather_duster

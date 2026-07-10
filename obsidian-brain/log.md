@@ -4,6 +4,20 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-10] feat | Marketplace server-side listing moderation (chip #1)
+
+Closed the audit's marketplace gap — listing text was client-moderated only
+(a tampered/direct-REST insert bypassed it → immediately public). Added a
+`BEFORE INSERT` trigger `trg_moderate_marketplace_listing` (migration
+`20260710120000`, APPLIED TO PROD via MCP) mirroring moderate-content/moderation.ts
+`moderateText` (denylist + caps/repeat/URL heuristics) over
+title+description+species+mutation. Chose the trigger over the edge-fn+RLS-lockdown
+"recommended" fix: locking down authenticated INSERT would break old binaries
+still doing direct inserts — the trigger enforces for ALL clients, breaks none,
+reversible (`DROP TRIGGER`). Verified live (scam blocked, clean allowed, tx rolled
+back); security advisor clean. Client maps `MARKETPLACE_MODERATION_REJECTED` →
+`ValidationException('marketplace.moderation_rejected')`.
+
 ## [2026-07-10] audit | Full-scope 10-lane sweep — 12 fixes across 6 features
 
 10 parallel read-only auditors (6 specialized + 4 feature-tab lanes over all 24
@@ -174,16 +188,5 @@ both phases). Bumped the drift_dev "Circular error" codegen retry cap 3→5 in
 ci.yml, then found the Xcode Cloud `Build - iOS` post-clone ran build_runner BARE
 (the only unprotected codegen step) — action_required at ~47s — and wrapped it in
 the same clean-and-retry loop. See [[infrastructure/ci-cd]], [[infrastructure/scripts]].
-
-## [2026-07-09] fix | Migration content-drift reconciliation (repo ↔ prod ledger)
-
-Deep migration check via Supabase MCP: version parity prod=local, but the
-ledger's `statements` column revealed 4 files diverging from applied SQL.
-Gamification `::integer` (cosmetic) reconciled in-place; admin_get_table_counts
-+ cleanup fns benign (later drift-free migration redefines them). Real one:
-`20260430130000` system_settings SELECT policy used `public.is_admin()` while
-prod ran `private.is_admin()` (different bodies → behavioral). Fixed forward via
-`20260709180636`, applied to prod as an idempotent no-op; repo+prod now 205 in
-lockstep. Old files left un-edited (no history rewrite). See [[data-layer/migrations]].
 
 Older entries are archived in [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
