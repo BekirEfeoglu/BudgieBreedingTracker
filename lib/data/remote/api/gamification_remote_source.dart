@@ -26,7 +26,7 @@ class GamificationRemoteSource {
       final response = await _client
           .from(SupabaseConstants.userBadgesTable)
           .select()
-          .eq('user_id', userId);
+          .eq(SupabaseConstants.colUserId, userId);
       return List<Map<String, dynamic>>.from(response);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag('gamification', e, st);
@@ -48,7 +48,7 @@ class GamificationRemoteSource {
       final response = await _client
           .from(SupabaseConstants.userLevelsTable)
           .select()
-          .eq('user_id', userId)
+          .eq(SupabaseConstants.colUserId, userId)
           .maybeSingle();
       return response;
     } catch (e, st) {
@@ -60,7 +60,7 @@ class GamificationRemoteSource {
     try {
       await _client
           .from(SupabaseConstants.userLevelsTable)
-          .upsert(data, onConflict: 'user_id');
+          .upsert(data, onConflict: SupabaseConstants.colUserId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag('gamification', e, st);
     }
@@ -84,8 +84,8 @@ class GamificationRemoteSource {
       final response = await _client
           .from(SupabaseConstants.xpTransactionsTable)
           .select()
-          .eq('user_id', userId)
-          .order('created_at', ascending: false)
+          .eq(SupabaseConstants.colUserId, userId)
+          .order(SupabaseConstants.colCreatedAt, ascending: false)
           .limit(limit);
       return List<Map<String, dynamic>>.from(response);
     } catch (e, st) {
@@ -117,10 +117,10 @@ class GamificationRemoteSource {
 
       final response = await _client
           .from(SupabaseConstants.xpTransactionsTable)
-          .select('id')
-          .eq('user_id', userId)
+          .select(SupabaseConstants.colId)
+          .eq(SupabaseConstants.colUserId, userId)
           .eq('action', action)
-          .gte('created_at', startOfDay.toIso8601String());
+          .gte(SupabaseConstants.colCreatedAt, startOfDay.toIso8601String());
       return (response as List).length;
     } catch (e, st) {
       AppLogger.error('gamification', e, st);
@@ -182,23 +182,23 @@ class GamificationRemoteSource {
       final results = await Future.wait([
         _client
             .from(SupabaseConstants.birdsTable)
-            .select('id')
-            .eq('user_id', userId)
+            .select(SupabaseConstants.colId)
+            .eq(SupabaseConstants.colUserId, userId)
             .then((r) => (r as List).length),
         _client
             .from(SupabaseConstants.breedingPairsTable)
-            .select('id')
-            .eq('user_id', userId)
+            .select(SupabaseConstants.colId)
+            .eq(SupabaseConstants.colUserId, userId)
             .then((r) => (r as List).length),
         _client
             .from(SupabaseConstants.chicksTable)
-            .select('id')
-            .eq('user_id', userId)
+            .select(SupabaseConstants.colId)
+            .eq(SupabaseConstants.colUserId, userId)
             .then((r) => (r as List).length),
         _client
             .from(SupabaseConstants.communityPostsTable)
-            .select('id')
-            .eq('user_id', userId)
+            .select(SupabaseConstants.colId)
+            .eq(SupabaseConstants.colUserId, userId)
             .then((r) => (r as List).length),
       ]);
       return {

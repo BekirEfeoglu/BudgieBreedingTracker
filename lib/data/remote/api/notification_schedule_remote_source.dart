@@ -38,8 +38,8 @@ class NotificationScheduleRemoteSource
   Future<List<NotificationSchedule>> fetchPending(String userId) async {
     final response = await table
         .select()
-        .eq('user_id', userId)
-        .eq('is_active', true)
+        .eq(SupabaseConstants.colUserId, userId)
+        .eq(SupabaseConstants.colIsActive, true)
         .order('scheduled_at');
     return response.map((json) => fromJson(json)).toList();
   }

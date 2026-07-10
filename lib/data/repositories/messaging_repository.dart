@@ -59,7 +59,7 @@ class MessagingRepository {
         .from(SupabaseConstants.profilesTable)
         .select('id, display_name, full_name, avatar_url')
         .or('display_name.ilike.%$sanitized%,full_name.ilike.%$sanitized%')
-        .neq('id', excludeUserId)
+        .neq(SupabaseConstants.colId, excludeUserId)
         .limit(limit);
 
     return List<Map<String, dynamic>>.from(result);
@@ -92,7 +92,7 @@ class MessagingRepository {
     try {
       final conversationId = const Uuid().v7();
       await _conversationSource.create({
-        'id': conversationId,
+        SupabaseConstants.colId: conversationId,
         'type': 'direct',
         'creator_id': userId1,
       });
@@ -100,13 +100,13 @@ class MessagingRepository {
       // Add both participants
       await _conversationSource.addParticipant({
         'conversation_id': conversationId,
-        'user_id': userId1,
-        'role': 'owner',
+        SupabaseConstants.colUserId: userId1,
+        SupabaseConstants.colRole: 'owner',
       });
       await _conversationSource.addParticipant({
         'conversation_id': conversationId,
-        'user_id': userId2,
-        'role': 'member',
+        SupabaseConstants.colUserId: userId2,
+        SupabaseConstants.colRole: 'member',
       });
 
       return conversationId;
@@ -134,9 +134,9 @@ class MessagingRepository {
   }) async {
     final conversationId = const Uuid().v7();
     await _conversationSource.create({
-      'id': conversationId,
+      SupabaseConstants.colId: conversationId,
       'type': 'group',
-      'name': name,
+      SupabaseConstants.colName: name,
       'creator_id': creatorId,
       if (imageUrl != null) 'image_url': imageUrl,
     });
@@ -144,8 +144,8 @@ class MessagingRepository {
     // Add creator as owner
     await _conversationSource.addParticipant({
       'conversation_id': conversationId,
-      'user_id': creatorId,
-      'role': 'owner',
+      SupabaseConstants.colUserId: creatorId,
+      SupabaseConstants.colRole: 'owner',
     });
 
     // Add other participants as members
@@ -153,8 +153,8 @@ class MessagingRepository {
       if (userId == creatorId) continue;
       await _conversationSource.addParticipant({
         'conversation_id': conversationId,
-        'user_id': userId,
-        'role': 'member',
+        SupabaseConstants.colUserId: userId,
+        SupabaseConstants.colRole: 'member',
       });
     }
 
@@ -234,8 +234,8 @@ class MessagingRepository {
   }) async {
     await _conversationSource.addParticipant({
       'conversation_id': conversationId,
-      'user_id': userId,
-      'role': role,
+      SupabaseConstants.colUserId: userId,
+      SupabaseConstants.colRole: role,
     });
   }
 
@@ -251,7 +251,7 @@ class MessagingRepository {
     String role,
   ) async {
     await _conversationSource.updateParticipant(conversationId, userId, {
-      'role': role,
+      SupabaseConstants.colRole: role,
     });
   }
 

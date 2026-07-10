@@ -41,7 +41,10 @@ class ProfileRemoteSource extends BaseRemoteSourceNoSoftDelete<Profile> {
       throw ArgumentError('Profile ID must match authenticated user ID');
     }
     try {
-      final response = await table.select().eq('id', userId).maybeSingle();
+      final response = await table
+          .select()
+          .eq(SupabaseConstants.colId, userId)
+          .maybeSingle();
       return response != null ? fromJson(response) : null;
     } catch (e, st) {
       throw handleError(e, st);

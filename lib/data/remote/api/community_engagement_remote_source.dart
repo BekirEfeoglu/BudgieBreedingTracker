@@ -25,9 +25,9 @@ class CommunityEngagementRemoteSource {
     try {
       final result = await _client
           .from(SupabaseConstants.communityBookmarksTable)
-          .select('post_id')
-          .eq('user_id', userId)
-          .inFilter('post_id', postIds);
+          .select(SupabaseConstants.colPostId)
+          .eq(SupabaseConstants.colUserId, userId)
+          .inFilter(SupabaseConstants.colPostId, postIds);
 
       return (result as List)
           .map((r) => r['post_id']?.toString())
@@ -44,7 +44,11 @@ class CommunityEngagementRemoteSource {
       await _client
           .from(SupabaseConstants.communityBookmarksTable)
           .upsert(
-            {'id': const Uuid().v7(), 'user_id': userId, 'post_id': postId},
+            {
+              SupabaseConstants.colId: const Uuid().v7(),
+              SupabaseConstants.colUserId: userId,
+              SupabaseConstants.colPostId: postId,
+            },
             onConflict: 'post_id,user_id',
             ignoreDuplicates: true,
           );
@@ -62,8 +66,8 @@ class CommunityEngagementRemoteSource {
       await _client
           .from(SupabaseConstants.communityBookmarksTable)
           .delete()
-          .eq('user_id', userId)
-          .eq('post_id', postId);
+          .eq(SupabaseConstants.colUserId, userId)
+          .eq(SupabaseConstants.colPostId, postId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
         'community_engagement.unbookmarkPost',
@@ -77,9 +81,9 @@ class CommunityEngagementRemoteSource {
     try {
       final result = await _client
           .from(SupabaseConstants.communityBookmarksTable)
-          .select('id')
-          .eq('user_id', userId)
-          .eq('post_id', postId)
+          .select(SupabaseConstants.colId)
+          .eq(SupabaseConstants.colUserId, userId)
+          .eq(SupabaseConstants.colPostId, postId)
           .maybeSingle();
       return result != null;
     } catch (e) {
@@ -93,8 +97,8 @@ class CommunityEngagementRemoteSource {
     try {
       final result = await _client
           .from(SupabaseConstants.communityBookmarksTable)
-          .select('post_id')
-          .eq('user_id', userId);
+          .select(SupabaseConstants.colPostId)
+          .eq(SupabaseConstants.colUserId, userId);
 
       return (result as List)
           .map((r) => r['post_id']?.toString())
@@ -132,7 +136,7 @@ class CommunityEngagementRemoteSource {
     try {
       final result = await _client
           .from(SupabaseConstants.communityFollowsTable)
-          .select('id')
+          .select(SupabaseConstants.colId)
           .eq('follower_id', userId)
           .eq('following_id', targetUserId)
           .maybeSingle();
@@ -149,7 +153,7 @@ class CommunityEngagementRemoteSource {
           .from(SupabaseConstants.communityFollowsTable)
           .upsert(
             {
-              'id': const Uuid().v7(),
+              SupabaseConstants.colId: const Uuid().v7(),
               'follower_id': userId,
               'following_id': targetUserId,
             },
@@ -270,7 +274,7 @@ class CommunityEngagementRemoteSource {
       final result = await _client
           .from(SupabaseConstants.communityMutesTable)
           .select('muted_user_id')
-          .eq('user_id', userId);
+          .eq(SupabaseConstants.colUserId, userId);
 
       return (result as List)
           .map((r) => r['muted_user_id']?.toString())
@@ -288,8 +292,8 @@ class CommunityEngagementRemoteSource {
           .from(SupabaseConstants.communityMutesTable)
           .upsert(
             {
-              'id': const Uuid().v7(),
-              'user_id': userId,
+              SupabaseConstants.colId: const Uuid().v7(),
+              SupabaseConstants.colUserId: userId,
               'muted_user_id': mutedUserId,
             },
             onConflict: 'user_id,muted_user_id',
@@ -309,7 +313,7 @@ class CommunityEngagementRemoteSource {
       await _client
           .from(SupabaseConstants.communityMutesTable)
           .delete()
-          .eq('user_id', userId)
+          .eq(SupabaseConstants.colUserId, userId)
           .eq('muted_user_id', mutedUserId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
@@ -333,8 +337,8 @@ class CommunityEngagementRemoteSource {
   }) async {
     try {
       await _client.from(SupabaseConstants.communityReportsTable).upsert({
-        'id': const Uuid().v7(),
-        'user_id': userId,
+        SupabaseConstants.colId: const Uuid().v7(),
+        SupabaseConstants.colUserId: userId,
         'target_id': targetId,
         'target_type': targetType,
         'reason': reason.toJson(),

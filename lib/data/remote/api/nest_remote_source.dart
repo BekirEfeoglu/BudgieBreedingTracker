@@ -19,10 +19,10 @@ class NestRemoteSource extends BaseRemoteSource<Nest> {
   Future<List<Nest>> fetchAvailable(String userId) async {
     final response = await table
         .select()
-        .eq('user_id', userId)
-        .eq('status', NestStatus.available.name)
-        .eq('is_deleted', false)
-        .order('name');
+        .eq(SupabaseConstants.colUserId, userId)
+        .eq(SupabaseConstants.colStatus, NestStatus.available.name)
+        .eq(SupabaseConstants.colIsDeleted, false)
+        .order(SupabaseConstants.colName);
     return response.map((json) => fromJson(json)).toList();
   }
 }

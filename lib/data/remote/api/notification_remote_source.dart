@@ -32,8 +32,8 @@ class NotificationRemoteSource extends BaseRemoteSource<AppNotification> {
     try {
       final response = await table
           .select()
-          .eq('user_id', userId)
-          .order('created_at', ascending: false)
+          .eq(SupabaseConstants.colUserId, userId)
+          .order(SupabaseConstants.colCreatedAt, ascending: false)
           .limit(_fetchAllLimit);
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {
@@ -46,9 +46,9 @@ class NotificationRemoteSource extends BaseRemoteSource<AppNotification> {
     try {
       final response = await table
           .select()
-          .eq('user_id', userId)
-          .eq('read', false)
-          .order('created_at', ascending: false);
+          .eq(SupabaseConstants.colUserId, userId)
+          .eq(SupabaseConstants.notificationColRead, false)
+          .order(SupabaseConstants.colCreatedAt, ascending: false);
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {
       throw handleError(e, st);
@@ -61,7 +61,7 @@ class NotificationRemoteSource extends BaseRemoteSource<AppNotification> {
       final response = await client
           .from(SupabaseConstants.notificationSettingsTable)
           .select()
-          .eq('user_id', userId)
+          .eq(SupabaseConstants.colUserId, userId)
           .maybeSingle();
       return response != null ? NotificationSettings.fromJson(response) : null;
     } catch (e, st) {
@@ -76,8 +76,8 @@ class NotificationRemoteSource extends BaseRemoteSource<AppNotification> {
   Future<void> upsertSettings(NotificationSettings settings) async {
     try {
       final json = settings.toJson();
-      json.remove('created_at');
-      json.remove('updated_at');
+      json.remove(SupabaseConstants.colCreatedAt);
+      json.remove(SupabaseConstants.colUpdatedAt);
       await client
           .from(SupabaseConstants.notificationSettingsTable)
           .upsert(json);

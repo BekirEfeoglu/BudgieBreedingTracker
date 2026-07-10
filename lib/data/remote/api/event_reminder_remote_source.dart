@@ -30,9 +30,9 @@ class EventReminderRemoteSource extends BaseRemoteSource<EventReminder> {
   ) async {
     final response = await table
         .select()
-        .eq('user_id', userId)
+        .eq(SupabaseConstants.colUserId, userId)
         .eq('event_id', eventId)
-        .eq('is_deleted', false)
+        .eq(SupabaseConstants.colIsDeleted, false)
         .order('minutes_before');
     return response.map((json) => fromJson(json)).toList();
   }

@@ -32,9 +32,9 @@ class PhotoRemoteSource extends BaseRemoteSourceNoSoftDelete<Photo> {
   Future<List<Photo>> fetchByEntity(String userId, String entityId) async {
     final response = await table
         .select()
-        .eq('user_id', userId)
+        .eq(SupabaseConstants.colUserId, userId)
         .eq('entity_id', entityId)
-        .order('created_at');
+        .order(SupabaseConstants.colCreatedAt);
     return response.map((json) => fromJson(json)).toList();
   }
 }

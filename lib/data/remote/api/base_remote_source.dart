@@ -83,7 +83,7 @@ abstract class BaseRemoteSource<T> {
         'fetchById',
         () => table
             .select()
-            .eq('id', id)
+            .eq(SupabaseConstants.colId, id)
             .eq(SupabaseConstants.colUserId, userId)
             .maybeSingle(),
       );
@@ -235,7 +235,7 @@ abstract class BaseRemoteSource<T> {
       await _timed('deleteById', () async {
         await table
             .delete()
-            .eq('id', id)
+            .eq(SupabaseConstants.colId, id)
             .eq(SupabaseConstants.colUserId, userId);
       });
     } catch (e, st) {
@@ -251,7 +251,7 @@ abstract class BaseRemoteSource<T> {
       await _timed('deleteByIds(${ids.length})', () async {
         await table
             .delete()
-            .inFilter('id', ids)
+            .inFilter(SupabaseConstants.colId, ids)
             .eq(SupabaseConstants.colUserId, userId);
       });
     } catch (e, st) {

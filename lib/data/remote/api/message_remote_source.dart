@@ -20,14 +20,17 @@ class MessageRemoteSource {
           .from(SupabaseConstants.messagesTable)
           .select()
           .eq('conversation_id', conversationId)
-          .eq('is_deleted', false);
+          .eq(SupabaseConstants.colIsDeleted, false);
 
       if (before != null) {
-        query = query.lt('created_at', before.toIso8601String());
+        query = query.lt(
+          SupabaseConstants.colCreatedAt,
+          before.toIso8601String(),
+        );
       }
 
       final response = await query
-          .order('created_at', ascending: false)
+          .order(SupabaseConstants.colCreatedAt, ascending: false)
           .limit(limit);
       return List<Map<String, dynamic>>.from(response);
     } catch (e, st) {
@@ -50,7 +53,11 @@ class MessageRemoteSource {
     try {
       final response = await _client
           .from(SupabaseConstants.messagesTable)
-          .upsert(data, onConflict: 'id', ignoreDuplicates: false)
+          .upsert(
+            data,
+            onConflict: SupabaseConstants.colId,
+            ignoreDuplicates: false,
+          )
           .select()
           .single();
       return response;
@@ -81,8 +88,8 @@ class MessageRemoteSource {
     try {
       await _client
           .from(SupabaseConstants.messagesTable)
-          .update({'is_deleted': true})
-          .eq('id', id)
+          .update({SupabaseConstants.colIsDeleted: true})
+          .eq(SupabaseConstants.colId, id)
           .eq('sender_id', userId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag('messaging', e, st);
@@ -103,9 +110,9 @@ class MessageRemoteSource {
     try {
       final result = await _client
           .from(SupabaseConstants.conversationParticipantsTable)
-          .select('id')
+          .select(SupabaseConstants.colId)
           .eq('conversation_id', conversationId)
-          .eq('user_id', userId)
+          .eq(SupabaseConstants.colUserId, userId)
           .eq('is_left', false)
           .maybeSingle();
       return result != null;

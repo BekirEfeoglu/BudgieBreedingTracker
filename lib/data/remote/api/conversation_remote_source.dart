@@ -23,7 +23,7 @@ class ConversationRemoteSource {
       final participantRows = await _client
           .from(SupabaseConstants.conversationParticipantsTable)
           .select('conversation_id')
-          .eq('user_id', userId)
+          .eq(SupabaseConstants.colUserId, userId)
           .eq('is_left', false);
 
       final conversationIds = List<String>.from(
@@ -35,8 +35,8 @@ class ConversationRemoteSource {
       var query = _client
           .from(SupabaseConstants.conversationsTable)
           .select()
-          .inFilter('id', conversationIds)
-          .eq('is_deleted', false);
+          .inFilter(SupabaseConstants.colId, conversationIds)
+          .eq(SupabaseConstants.colIsDeleted, false);
       if (before != null) {
         query = query.lt('last_message_at', before.toIso8601String());
       }
@@ -56,7 +56,7 @@ class ConversationRemoteSource {
       final response = await _client
           .from(SupabaseConstants.conversationsTable)
           .select()
-          .eq('id', id)
+          .eq(SupabaseConstants.colId, id)
           .maybeSingle();
       return response;
     } catch (e, st) {
@@ -68,7 +68,11 @@ class ConversationRemoteSource {
     try {
       final response = await _client
           .from(SupabaseConstants.conversationsTable)
-          .upsert(data, onConflict: 'id', ignoreDuplicates: false)
+          .upsert(
+            data,
+            onConflict: SupabaseConstants.colId,
+            ignoreDuplicates: false,
+          )
           .select()
           .single();
       return response;
@@ -82,7 +86,7 @@ class ConversationRemoteSource {
       await _client
           .from(SupabaseConstants.conversationsTable)
           .update(data)
-          .eq('id', id);
+          .eq(SupabaseConstants.colId, id);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag('conversations', e, st);
     }
@@ -127,7 +131,7 @@ class ConversationRemoteSource {
           .from(SupabaseConstants.conversationParticipantsTable)
           .update(data)
           .eq('conversation_id', conversationId)
-          .eq('user_id', userId);
+          .eq(SupabaseConstants.colUserId, userId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag('conversations', e, st);
     }
@@ -143,7 +147,7 @@ class ConversationRemoteSource {
       final user1Convos = await _client
           .from(SupabaseConstants.conversationParticipantsTable)
           .select('conversation_id')
-          .eq('user_id', userId1)
+          .eq(SupabaseConstants.colUserId, userId1)
           .eq('is_left', false);
 
       final user1ConvoIds = List<String>.from(
@@ -155,9 +159,9 @@ class ConversationRemoteSource {
       final directConversations = await _client
           .from(SupabaseConstants.conversationsTable)
           .select()
-          .inFilter('id', user1ConvoIds)
+          .inFilter(SupabaseConstants.colId, user1ConvoIds)
           .eq('type', 'direct')
-          .eq('is_deleted', false);
+          .eq(SupabaseConstants.colIsDeleted, false);
 
       for (final conversation in List<Map<String, dynamic>>.from(
         directConversations,
@@ -169,7 +173,7 @@ class ConversationRemoteSource {
             .from(SupabaseConstants.conversationParticipantsTable)
             .select('conversation_id')
             .eq('conversation_id', conversationId)
-            .eq('user_id', userId2)
+            .eq(SupabaseConstants.colUserId, userId2)
             .eq('is_left', false)
             .maybeSingle();
 

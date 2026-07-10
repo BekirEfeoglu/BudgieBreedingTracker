@@ -130,7 +130,7 @@ class CommunityProfileCache {
               'id, display_name, full_name, avatar_url, '
               'level, xp_title, is_verified_breeder',
             )
-            .inFilter('id', chunk),
+            .inFilter(SupabaseConstants.colId, chunk),
       ),
     );
 

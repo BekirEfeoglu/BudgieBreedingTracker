@@ -13,7 +13,7 @@ class MarketplaceFavoriteRemoteSource {
       final response = await _client
           .from(SupabaseConstants.marketplaceFavoritesTable)
           .select('listing_id')
-          .eq('user_id', userId);
+          .eq(SupabaseConstants.colUserId, userId);
       return List<String>.from(
         (response as List).map((r) => r['listing_id'] as String),
       );
@@ -27,7 +27,7 @@ class MarketplaceFavoriteRemoteSource {
       await _client
           .from(SupabaseConstants.marketplaceFavoritesTable)
           .upsert(
-            {'user_id': userId, 'listing_id': listingId},
+            {SupabaseConstants.colUserId: userId, 'listing_id': listingId},
             onConflict: 'user_id,listing_id',
             ignoreDuplicates: true,
           );
@@ -41,7 +41,7 @@ class MarketplaceFavoriteRemoteSource {
       await _client
           .from(SupabaseConstants.marketplaceFavoritesTable)
           .delete()
-          .eq('user_id', userId)
+          .eq(SupabaseConstants.colUserId, userId)
           .eq('listing_id', listingId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag('marketplace_favorites', e, st);

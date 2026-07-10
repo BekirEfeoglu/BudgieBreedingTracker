@@ -19,7 +19,7 @@ final isAdminProvider = FutureProvider<bool>((ref) async {
     final result = await client
         .from(SupabaseConstants.profilesTable)
         .select('role, is_active')
-        .eq('id', userId)
+        .eq(SupabaseConstants.colId, userId)
         .maybeSingle();
     final role = (result?['role'] as String?)?.toLowerCase();
     final isActive = result?['is_active'] as bool?;
@@ -41,7 +41,7 @@ final isFounderProvider = FutureProvider<bool>((ref) async {
     final result = await client
         .from(SupabaseConstants.profilesTable)
         .select('role, is_active')
-        .eq('id', userId)
+        .eq(SupabaseConstants.colId, userId)
         .maybeSingle();
     final role = (result?['role'] as String?)?.toLowerCase();
     final isActive = result?['is_active'] as bool?;

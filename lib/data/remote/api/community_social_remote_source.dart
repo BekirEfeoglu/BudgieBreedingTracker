@@ -31,9 +31,9 @@ class CommunitySocialRemoteSource {
     try {
       final result = await _client
           .from(SupabaseConstants.communityLikesTable)
-          .select('post_id')
-          .eq('user_id', userId)
-          .inFilter('post_id', postIds);
+          .select(SupabaseConstants.colPostId)
+          .eq(SupabaseConstants.colUserId, userId)
+          .inFilter(SupabaseConstants.colPostId, postIds);
 
       return (result as List)
           .map((r) => r['post_id']?.toString())
@@ -85,7 +85,11 @@ class CommunitySocialRemoteSource {
       await _client
           .from(SupabaseConstants.communityLikesTable)
           .upsert(
-            {'id': const Uuid().v7(), 'user_id': userId, 'post_id': postId},
+            {
+              SupabaseConstants.colId: const Uuid().v7(),
+              SupabaseConstants.colUserId: userId,
+              SupabaseConstants.colPostId: postId,
+            },
             onConflict: 'post_id,user_id',
             ignoreDuplicates: true,
           );
@@ -103,8 +107,8 @@ class CommunitySocialRemoteSource {
       await _client
           .from(SupabaseConstants.communityLikesTable)
           .delete()
-          .eq('user_id', userId)
-          .eq('post_id', postId);
+          .eq(SupabaseConstants.colUserId, userId)
+          .eq(SupabaseConstants.colPostId, postId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
         'community_social.unlikePost',
@@ -118,9 +122,9 @@ class CommunitySocialRemoteSource {
     try {
       final result = await _client
           .from(SupabaseConstants.communityLikesTable)
-          .select('id')
-          .eq('user_id', userId)
-          .eq('post_id', postId)
+          .select(SupabaseConstants.colId)
+          .eq(SupabaseConstants.colUserId, userId)
+          .eq(SupabaseConstants.colPostId, postId)
           .maybeSingle();
       return result != null;
     } catch (e) {
@@ -142,7 +146,7 @@ class CommunitySocialRemoteSource {
       final result = await _client
           .from(SupabaseConstants.communityCommentLikesTable)
           .select('comment_id')
-          .eq('user_id', userId)
+          .eq(SupabaseConstants.colUserId, userId)
           .inFilter('comment_id', commentIds);
 
       return (result as List)
@@ -161,8 +165,8 @@ class CommunitySocialRemoteSource {
           .from(SupabaseConstants.communityCommentLikesTable)
           .upsert(
             {
-              'id': const Uuid().v7(),
-              'user_id': userId,
+              SupabaseConstants.colId: const Uuid().v7(),
+              SupabaseConstants.colUserId: userId,
               'comment_id': commentId,
             },
             onConflict: 'comment_id,user_id',
@@ -182,7 +186,7 @@ class CommunitySocialRemoteSource {
       await _client
           .from(SupabaseConstants.communityCommentLikesTable)
           .delete()
-          .eq('user_id', userId)
+          .eq(SupabaseConstants.colUserId, userId)
           .eq('comment_id', commentId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
@@ -197,8 +201,8 @@ class CommunitySocialRemoteSource {
     try {
       final result = await _client
           .from(SupabaseConstants.communityCommentLikesTable)
-          .select('id')
-          .eq('user_id', userId)
+          .select(SupabaseConstants.colId)
+          .eq(SupabaseConstants.colUserId, userId)
           .eq('comment_id', commentId)
           .maybeSingle();
       return result != null;
