@@ -116,7 +116,7 @@ scripts/test_verify_migration_drift.py  # Tests for verify_migration_drift.py
 | Shared widgets | 35 (15 root + 4 buttons + 2 cards + 2 dialog + 1 bottom_sheet + 5 eggs) |
 | Enum files | 15 |
 | Supabase constants | 154 (tables + buckets + columns) |
-| L10n keys | ~3,123 per language, 41 categories |
+| L10n keys | ~3,124 per language, 41 categories |
 | DB schema version | 27 |
 
 ## CI/CD Pipeline

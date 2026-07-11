@@ -4,6 +4,15 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-11] docs | Premium paywall Terms (EULA) label fully localized
+
+Reconciled `ca22fed`. `premium_paywall_footer.dart` built its terms link label
+as `'${'settings.terms'.tr()} (EULA)'` — concatenating a hardcoded `(EULA)` onto
+translated text (anti-pattern #11). New `settings.terms_eula` key (tr/en/de)
+rendered directly. Managed l10n count →3,124 (CLAUDE.md + localization.md via
+`verify_rules.py --fix`); mirrored into overview.md. No contract change,
+docs/managed values only.
+
 ## [2026-07-11] fix | Auth legal-links launchUrl failure now logged + surfaced
 
 Reconciled `343b580`. The Terms/Privacy `TapGestureRecognizer`s in
@@ -161,24 +170,5 @@ unsourced `df_dominant_pied` semi-lethal warning was removed (calculationVersion
 7→8) — DF Australian Dominant Pied is viable, same class v6 dropped. Still
 deferred (chips): marketplace moderation edge fn + pagination/search, #8
 column-literal refactor.
-
-## [2026-07-10] fix | Genetics deferred decisions — ino masks melanin patterns (v7); dominant model already OK
-
-Handled the two items left for the domain owner after the v6 audit.
-**E1 (chosen: mask clear melanin cases):** Ino now masks the melanin-based
-pattern mutations Blackface/Saddleback/Mottled/Faded in the phenotype name
-(`epistasis_engine_modifiers` step 15 guarded by `!hasIno`) and reports them via
-maskedMutations. Crest stays unmasked (feather structure); Pied/Fallow/Clearbody
-left unmasked (debatable). calculationVersion v6→v7 (name + maskedMutations
-output changed). New resolution tests; version literal bumped.
-**M1 (chosen: clarify UI labels) — already implemented:** verify-don't-trust
-win. `AlleleStateBadge`/selection_summary already label AD+AID states as SF/DF
-(dosage-based) with a DF/SF tooltip, AND `mutation_chip_widgets` already defaults
-a newly-added dominant/incomplete-dominant mutation to `carrier` (= SF /
-heterozygous), so `grey × normal → 50/50` matches the guide out of the box. The
-`_getDominantAllelePair` visual=homozygous only applies when the user explicitly
-picks the clearly-labelled DF. Only enhancement: the dosage tooltip now spells
-out the breeding consequence (SF ~50% / DF 100%, default SF) in tr/en/de. No
-engine/math change, no version bump for M1.
 
 Older entries are archived in [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

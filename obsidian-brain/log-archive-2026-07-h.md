@@ -6,6 +6,25 @@ and auth legal-links syncs).
 
 ---
 
+## [2026-07-10] fix | Genetics deferred decisions — ino masks melanin patterns (v7); dominant model already OK
+
+Handled the two items left for the domain owner after the v6 audit.
+**E1 (chosen: mask clear melanin cases):** Ino now masks the melanin-based
+pattern mutations Blackface/Saddleback/Mottled/Faded in the phenotype name
+(`epistasis_engine_modifiers` step 15 guarded by `!hasIno`) and reports them via
+maskedMutations. Crest stays unmasked (feather structure); Pied/Fallow/Clearbody
+left unmasked (debatable). calculationVersion v6→v7 (name + maskedMutations
+output changed). New resolution tests; version literal bumped.
+**M1 (chosen: clarify UI labels) — already implemented:** verify-don't-trust
+win. `AlleleStateBadge`/selection_summary already label AD+AID states as SF/DF
+(dosage-based) with a DF/SF tooltip, AND `mutation_chip_widgets` already defaults
+a newly-added dominant/incomplete-dominant mutation to `carrier` (= SF /
+heterozygous), so `grey × normal → 50/50` matches the guide out of the box. The
+`_getDominantAllelePair` visual=homozygous only applies when the user explicitly
+picks the clearly-labelled DF. Only enhancement: the dosage tooltip now spells
+out the breeding consequence (SF ~50% / DF 100%, default SF) in tr/en/de. No
+engine/math change, no version bump for M1.
+
 ## [2026-07-10] fix | Genetics engine audit — viability set aligned to MUTAVI (v6)
 
 3-agent read-only audit of the genetics engine (inheritance math, mutation data,
