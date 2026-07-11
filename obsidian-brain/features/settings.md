@@ -87,6 +87,15 @@ design goal, not shipped).
   AAL2 (MFA re-challenge if 2FA enrolled), NOT a grace period (see
   [[features/profile]] for the full step order)
 
+## About
+
+Version / build / links — rate app, share app, support/contact
+(`about_section.dart`). All launch actions `await launchUrl` and, on a failed
+launch (`false` return or throw), surface `errors.cannot_open_url` ("no suitable
+app found") — parity with the More-tab About dialog `_showMoreAboutDialog`. The
+rate-app tile used `errors.unknown` until 2026-07-11; it now matches the sibling
+paths. Share is guarded the same way (awaited + logged via `AppLogger`).
+
 ## Developer Menu
 
 **Not implemented** — the "5-tap on settings header" experimental-flags menu

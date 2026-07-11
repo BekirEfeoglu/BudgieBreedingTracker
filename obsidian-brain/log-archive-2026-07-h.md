@@ -6,6 +6,20 @@ and auth legal-links syncs).
 
 ---
 
+## [2026-07-10] feat | Marketplace server-side listing moderation (chip #1)
+
+Closed the audit's marketplace gap — listing text was client-moderated only
+(a tampered/direct-REST insert bypassed it → immediately public). Added a
+`BEFORE INSERT` trigger `trg_moderate_marketplace_listing` (migration
+`20260710120000`, APPLIED TO PROD via MCP) mirroring moderate-content/moderation.ts
+`moderateText` (denylist + caps/repeat/URL heuristics) over
+title+description+species+mutation. Chose the trigger over the edge-fn+RLS-lockdown
+"recommended" fix: locking down authenticated INSERT would break old binaries
+still doing direct inserts — the trigger enforces for ALL clients, breaks none,
+reversible (`DROP TRIGGER`). Verified live (scam blocked, clean allowed, tx rolled
+back); security advisor clean. Client maps `MARKETPLACE_MODERATION_REJECTED` →
+`ValidationException('marketplace.moderation_rejected')`.
+
 ## [2026-07-10] audit | Full-scope 10-lane sweep — 12 fixes across 6 features
 
 10 parallel read-only auditors (6 specialized + 4 feature-tab lanes over all 24

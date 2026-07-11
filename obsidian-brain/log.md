@@ -4,6 +4,18 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-11] fix | About rate-app launch failure surfaces cannot_open_url
+
+Reconciled `0f4fb09`. The Settings→About "Uygulamayı Puanla" (rate-app) tile
+(`about_section.dart`) showed `errors.unknown` ("unexpected error") when the
+store-page `launchUrl` failed — in both the `!launched` branch and the catch.
+A failed store launch is a can't-open-link condition, not an unexpected crash, so
+it now surfaces `errors.cannot_open_url` ("no suitable app found"), matching the
+sibling launch paths (the More-tab About dialog `_showMoreAboutDialog` +
+`about_section`'s support/contact tile, both already on that key). Message-precision
+fix — no new l10n key, no contract/stat change; below rule granularity so
+`.claude/rules/settings.md` untouched. [[features/settings]] § About.
+
 ## [2026-07-11] fix | About dialog surfaces silent launchUrl failures
 
 `5d2f118` — the More-tab "Hakkında" dialog (`more_screen_sections.dart`
@@ -172,19 +184,5 @@ unchanged. **C — #8 refactor:** replaced hardcoded Supabase column literals wi
 `SupabaseConstants` across 16 `lib/data/` files — value-match only (every
 constant's value == the literal; table-specific `read`→`notificationColRead`;
 `listing_id` left as-is, no constant exists). No behavior change.
-
-## [2026-07-10] feat | Marketplace server-side listing moderation (chip #1)
-
-Closed the audit's marketplace gap — listing text was client-moderated only
-(a tampered/direct-REST insert bypassed it → immediately public). Added a
-`BEFORE INSERT` trigger `trg_moderate_marketplace_listing` (migration
-`20260710120000`, APPLIED TO PROD via MCP) mirroring moderate-content/moderation.ts
-`moderateText` (denylist + caps/repeat/URL heuristics) over
-title+description+species+mutation. Chose the trigger over the edge-fn+RLS-lockdown
-"recommended" fix: locking down authenticated INSERT would break old binaries
-still doing direct inserts — the trigger enforces for ALL clients, breaks none,
-reversible (`DROP TRIGGER`). Verified live (scam blocked, clean allowed, tx rolled
-back); security advisor clean. Client maps `MARKETPLACE_MODERATION_REJECTED` →
-`ValidationException('marketplace.moderation_rejected')`.
 
 Older entries are archived in [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
