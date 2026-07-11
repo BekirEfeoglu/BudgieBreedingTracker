@@ -60,7 +60,7 @@ class HealthRecordCard extends ConsumerWidget {
                       style: theme.textTheme.titleSmall,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: AppSpacing.xxs),
                     Row(
                       children: [
                         Flexible(
@@ -91,7 +91,7 @@ class HealthRecordCard extends ConsumerWidget {
                       ],
                     ),
                     if (animalName != null) ...[
-                      const SizedBox(height: 2),
+                      const SizedBox(height: AppSpacing.xxs),
                       Row(
                         children: [
                           AppIcon(
@@ -115,7 +115,7 @@ class HealthRecordCard extends ConsumerWidget {
                     ],
                     if (record.description != null &&
                         record.description!.isNotEmpty) ...[
-                      const SizedBox(height: 2),
+                      const SizedBox(height: AppSpacing.xxs),
                       Text(
                         record.description!,
                         style: theme.textTheme.bodySmall?.copyWith(
