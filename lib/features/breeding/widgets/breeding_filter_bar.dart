@@ -69,7 +69,11 @@ class _BreedingFilterBarState extends ConsumerState<BreedingFilterBar> {
     return FadeScrollableChipBar(
       children: [
         ..._activeFilters.map((f) => _buildChip(f, selected)),
-        const VerticalDivider(width: 24, indent: 8, endIndent: 8),
+        const VerticalDivider(
+          width: AppSpacing.xxl,
+          indent: AppSpacing.sm,
+          endIndent: AppSpacing.sm,
+        ),
         ..._endedFilters.map((f) => _buildChip(f, selected)),
       ],
     );
