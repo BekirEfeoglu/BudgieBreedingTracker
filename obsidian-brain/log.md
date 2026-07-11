@@ -4,6 +4,16 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-11] fix | About dialog surfaces silent launchUrl failures
+
+`5d2f118` — the More-tab "Hakkında" dialog (`more_screen_sections.dart`
+`_showMoreAboutDialog`) email + website links only handled thrown exceptions;
+`launchUrl` can return `false` (no mail app / browser) without throwing, leaving
+a tapped link a silent no-op. Now checks the bool return and shows
+`errors.cannot_open_url`, matching the settings `AboutSection` pattern. Kept bare
+`launchUrl` (no `canLaunchUrl`) — mailto false-negatives on Android 11+ without a
+`<queries>` manifest entry. No stat/contract change.
+
 ## [2026-07-11] fix | Admin moderation deletes confirm-gated, Sentry on destructive ops, SupabaseConstants
 
 Reconciled `7edf39d` (admin review fixes). **Contract change:** moderation
