@@ -56,7 +56,34 @@ class _HealthRecordFormScreenState
 
   bool get _isDirty {
     if (_savedSuccessfully) return false;
-    if (_isEdit) return true;
+    if (_isEdit) {
+      final existing = _existingRecord;
+      // Not populated yet (loading / pre post-frame) — assume dirty so a back
+      // tap can't silently drop an in-progress edit. Mirrors the bird/chick/
+      // breeding forms; once populated, real field comparison applies.
+      if (existing == null) return true;
+      // Weight/cost are compared against the same `.toString()` representation
+      // used to populate the controllers (see _populateFromExisting), so an
+      // untouched numeric field reads as clean.
+      final existingWeight = existing.weight != null
+          ? existing.weight.toString()
+          : '';
+      final existingCost = existing.cost != null
+          ? existing.cost.toString()
+          : '';
+      return _titleController.text != existing.title ||
+          _type != existing.type ||
+          _date != existing.date ||
+          _birdId != existing.birdId ||
+          _chickId != existing.chickId ||
+          _descriptionController.text != (existing.description ?? '') ||
+          _treatmentController.text != (existing.treatment ?? '') ||
+          _vetController.text != (existing.veterinarian ?? '') ||
+          _notesController.text != (existing.notes ?? '') ||
+          _weightController.text != existingWeight ||
+          _costController.text != existingCost ||
+          _followUpDate != existing.followUpDate;
+    }
     return _titleController.text.isNotEmpty ||
         _descriptionController.text.isNotEmpty ||
         _treatmentController.text.isNotEmpty ||
