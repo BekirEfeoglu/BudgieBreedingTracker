@@ -6,6 +6,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/skeleton_loader.dart';
 import 'package:budgie_breeding_tracker/features/community/widgets/community_media_gallery.dart';
 
@@ -137,14 +139,20 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byIcon(Icons.favorite_rounded), findsNothing);
+      // The double-tap flourish renders the heart via AppIcon(AppIcons.heart)
+      // (SVG), not a Material Icon — the like heart is a domain concept.
+      final heartFinder = find.byWidgetPredicate(
+        (w) => w is AppIcon && w.asset == AppIcons.heart,
+      );
+
+      expect(heartFinder, findsNothing);
 
       await doubleTapGallery(tester);
 
-      expect(find.byIcon(Icons.favorite_rounded), findsOneWidget);
+      expect(heartFinder, findsWidgets);
 
       await tester.pump(const Duration(milliseconds: 700));
-      expect(find.byIcon(Icons.favorite_rounded), findsNothing);
+      expect(heartFinder, findsNothing);
     });
 
     testWidgets('calls onOpenImage with the tapped index after timeout', (

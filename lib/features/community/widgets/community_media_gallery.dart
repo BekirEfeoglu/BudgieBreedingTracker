@@ -1,10 +1,14 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/animations/double_tap_like_animation.dart';
+import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/skeleton_loader.dart';
 
 /// Collage grid for community post media.
@@ -44,14 +48,24 @@ class CommunityMediaGallery extends StatelessWidget {
     return RepaintBoundary(
       child: DoubleTapLikeAnimation(
         onLike: onDoubleTap,
-        likeIcon: Icon(
-          Icons.favorite_rounded,
-          size: 80,
-          color: Colors.white.withValues(alpha: 0.9),
-          shadows: [
-            Shadow(
-              blurRadius: 24,
-              color: theme.shadowColor.withValues(alpha: 0.38),
+        // Soft drop shadow behind the white heart for legibility over bright
+        // photos. AppIcon (SVG) has no `shadows` param like Material's Icon,
+        // so the shadow is a blurred, offset dark copy stacked behind it.
+        likeIcon: Stack(
+          alignment: Alignment.center,
+          children: [
+            ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+              child: AppIcon(
+                AppIcons.heart,
+                size: 80,
+                color: theme.shadowColor.withValues(alpha: 0.38),
+              ),
+            ),
+            AppIcon(
+              AppIcons.heart,
+              size: 80,
+              color: Colors.white.withValues(alpha: 0.9),
             ),
           ],
         ),

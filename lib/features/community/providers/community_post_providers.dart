@@ -264,7 +264,10 @@ final followToggleProvider = NotifierProvider<FollowToggleNotifier, void>(
 // ---------------------------------------------------------------------------
 
 /// Fetches profiles of users the current user follows.
-/// Returns a list of maps with id, display_name, full_name, email, avatar_url.
+/// Returns a list of maps with public-safe fields only: `id`, `display_name`
+/// (falls back to full_name only to derive a display label, never surfaced as
+/// a separate key), and `avatar_url`. Never includes email — see the
+/// repository's `getFollowedUserSummaries`.
 final followedUsersProvider = FutureProvider<List<Map<String, dynamic>>>((
   ref,
 ) async {

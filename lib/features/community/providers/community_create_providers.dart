@@ -177,13 +177,16 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
         }
       }
 
+      // Payload for the create-community-post edge function (JSON contract
+      // keys, mirroring community_comment_repository's insert map). user_id,
+      // content_hash and is_deleted are intentionally NOT sent: the edge
+      // function derives user_id from the JWT, recomputes content_hash, and
+      // sets is_deleted itself, so sending them was dead data (Zod strips
+      // unknown keys) and needless column-name coupling.
       final data = <String, dynamic>{
         'id': postId,
-        'user_id': userId,
         'content': content.trim(),
-        'content_hash': contentHash,
         'post_type': postType.toJson(),
-        'is_deleted': false,
         if (title != null && title.trim().isNotEmpty) 'title': title.trim(),
         if (tags.isNotEmpty) 'tags': tags,
         if (imageUrls.isNotEmpty) 'image_urls': imageUrls,
