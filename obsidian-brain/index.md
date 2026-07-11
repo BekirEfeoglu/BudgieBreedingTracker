@@ -22,6 +22,7 @@ Full catalog of every page in the obsidian-brain wiki.
 | [[log-archive-2026-07-e]] | Archived July 2026 change log entries (07-04 rulebook drift sweep) |
 | [[log-archive-2026-07-f]] | Archived July 2026 change log entries (07-04/07-05 app fixes) |
 | [[log-archive-2026-07-g]] | Archived July 2026 change log entries (07-08 wiki inventory sync) |
+| [[log-archive-2026-07-h]] | Archived July 2026 change log entries (07-09 rulebook lessons) |
 | [[overview]] | High-level synthesis — what the app does, architecture diagram, key decisions |
 
 ## Architecture

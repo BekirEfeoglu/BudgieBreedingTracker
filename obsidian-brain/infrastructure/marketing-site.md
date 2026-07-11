@@ -20,8 +20,13 @@ GitHub Pages serves the public product site from `docs/` at
 - Main navigation links to in-page anchors: `#features`, `#genetics-demo`, `#screenshots`, `#pricing`, `#faq`, `#cta`.
 - Language switcher is inline JS-backed for `tr`, `en`, `de`; it updates `document.documentElement.lang`, text keys, placeholders, page title, and `aria-pressed` state.
 - Mobile menu uses explicit `aria-hidden`, `aria-expanded`, and language-aware open/close labels.
+- Mobile menu behaves as a modal dialog on narrow screens: opening it locks body
+  scroll, moves focus to the first link, traps Tab navigation, supports Escape,
+  and restores focus to the hamburger button when closed.
 - FAQ buttons use `aria-expanded` and close previously opened items.
-- Email signup posts to FormSubmit and has an accessible label for the email input.
+- Email signup posts to FormSubmit, exposes localized loading/success/error
+  status through an `aria-live` region, and never reports success when the
+  network request fails.
 
 ## Anchor Navigation
 
@@ -50,6 +55,9 @@ The demo intentionally does not mirror the full in-app genetics engine. It is a 
 - Canonical and OpenGraph URL use the trailing-slash homepage URL.
 - JSON-LD `SoftwareApplication.installUrl` must match the visible Google Play CTA package:
   `com.budgiebreeding.budgie_breeding_tracker`.
+- JSON-LD offers must match the visible pricing cards. Do not publish an
+  `aggregateRating` unless the rating value and count can be verified from a
+  public store/source.
 - App Store CTA points to App ID `6759828211`.
 
 ## Performance Notes
@@ -64,7 +72,12 @@ The demo intentionally does not mirror the full in-app genetics engine. It is a 
 - Open `https://budgiebreedingtracker.online/#genetics-demo` directly; the demo controls and result cards should be visible after load.
 - Change mother/father mutation options and verify the result grid updates.
 - Open the mobile menu and verify `aria-hidden=false`, hamburger `aria-expanded=true`.
+- While the mobile menu is open, verify focus starts on the first link, Tab is
+  trapped, Escape closes it, body scroll unlocks, and focus returns to the
+  hamburger button.
 - Toggle an FAQ item and verify `aria-expanded=true`.
+- Simulate a failed email subscription request and verify the form remains
+  available with a localized error instead of a success message.
 - Run `python3 scripts/check_remote_status.py` after push; Pages deploy status must match the exact commit.
 
 ## See Also

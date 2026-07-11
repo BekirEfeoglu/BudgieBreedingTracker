@@ -18,12 +18,14 @@
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="BudgieBreedingTracker uygulamasından kuş ve üreme takip ekranları">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="BudgieBreedingTracker">
   <meta name="twitter:description" content="Muhabbet kuşu yetiştiricileri için kapsamlı üreme takip uygulaması.">
   <meta name="twitter:image" content="https://budgiebreedingtracker.online/og-image.png">
+  <meta name="twitter:image:alt" content="BudgieBreedingTracker uygulamasından kuş ve üreme takip ekranları">
 
   <!-- Canonical & Robots -->
   <link rel="canonical" href="https://budgiebreedingtracker.online/">
@@ -49,19 +51,19 @@
       },
       {
         "@type": "Offer",
-        "price": "4.99",
+        "price": "15",
         "priceCurrency": "USD",
-        "name": "Premium",
+        "name": "Premium — 6 Aylık",
+        "description": "Sınırsız kayıt, genetik hesaplayıcı, istatistikler, soy ağacı"
+      },
+      {
+        "@type": "Offer",
+        "price": "25",
+        "priceCurrency": "USD",
+        "name": "Premium Pro — Yıllık",
         "description": "Sınırsız kayıt, genetik hesaplayıcı, istatistikler, soy ağacı"
       }
     ],
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "ratingCount": "2400",
-      "bestRating": "5",
-      "worstRating": "1"
-    },
     "description": "Muhabbet kuşu yetiştiricileri için kapsamlı üreme takip uygulaması. Kuş, yumurta, yavru, genetik hesaplama ve soy ağacı yönetimi. Offline-first mimari ile internet olmadan da çalışır.",
     "url": "https://budgiebreedingtracker.online/",
     "downloadUrl": "https://apps.apple.com/app/id6759828211",
@@ -169,7 +171,7 @@
   <link rel="preload" as="image" href="logo.png">
 
   <!-- Shared styles — render-critical, loaded synchronously -->
-  <link rel="stylesheet" href="style.css?v=20260606">
+  <link rel="stylesheet" href="style.css?v=20260711">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="logo.png">
@@ -381,7 +383,7 @@
 </head>
 <body>
 
-  <a class="skip-to-content" href="#main">İçeriğe geç</a>
+  <a class="skip-to-content" href="#main" data-i18n="skip_to_content">İçeriğe geç</a>
 
   <div class="page-curtain" aria-hidden="true"></div>
   <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
@@ -428,7 +430,7 @@
 
         <!-- Nav Links (desktop) -->
         <div class="hidden md:flex items-center gap-6">
-          <a href="/blog/" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'">Blog</a>
+          <a href="/blog/" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" data-i18n="nav_blog">Blog</a>
           <a href="#features" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_features">Özellikler</a>
           <a href="#genetics-demo" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_genetics">🧬 Genetik</a>
           <a href="#screenshots" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_screenshots">Ekran Görüntüleri</a>
@@ -439,7 +441,7 @@
 
         <!-- Language Switcher + Hamburger -->
         <div class="flex items-center gap-2">
-          <div class="flex items-center gap-1 rounded-lg p-1" style="background: rgba(20,50,100,0.4); border: 1px solid var(--glass-border);">
+          <div class="flex items-center gap-1 rounded-lg p-1" style="background: rgba(20,50,100,0.4); border: 1px solid var(--glass-border);" role="group" aria-label="Dil seçimi" data-i18n-aria-label="language_selector_aria">
             <button type="button" onclick="setLanguage('tr')" class="lang-btn active" data-lang="tr" aria-label="Türkçe dilini seç" aria-pressed="true">TR</button>
             <button type="button" onclick="setLanguage('en')" class="lang-btn" data-lang="en" aria-label="Select English language" aria-pressed="false">EN</button>
             <button type="button" onclick="setLanguage('de')" class="lang-btn" data-lang="de" aria-label="Deutsch auswählen" aria-pressed="false">DE</button>
@@ -460,10 +462,10 @@
 
   <!-- Mobile Menu Panel -->
   <div id="mobile-menu" class="fixed inset-0 z-40 hidden" aria-hidden="true">
-    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeMobileMenu()"></div>
-    <div id="mobile-panel" class="absolute top-16 left-0 right-0 shadow-xl" style="background: rgba(15,27,77,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); transform: translateY(-110%);">
+    <button id="mobile-menu-backdrop" type="button" class="absolute inset-0 bg-black/50 backdrop-blur-sm mobile-menu-backdrop" onclick="closeMobileMenu()" aria-label="Menüyü kapat" data-i18n-aria-label="menu_close_aria"></button>
+    <div id="mobile-panel" class="absolute top-16 left-0 right-0 shadow-xl" style="background: rgba(15,27,77,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); transform: translateY(-110%);" role="dialog" aria-modal="true" aria-label="Mobil menü" data-i18n-aria-label="mobile_menu_aria" tabindex="-1">
       <div class="px-4 py-4 space-y-1">
-        <a href="/blog/" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);">✍️ Blog</a>
+        <a href="/blog/" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_blog">Blog</a>
         <a href="#features" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_features">Özellikler</a>
         <a href="#genetics-demo" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_genetics">🧬 Genetik</a>
         <a href="#screenshots" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_screenshots">Ekran Görüntüleri</a>
@@ -1535,12 +1537,15 @@
             style="background: rgba(20,50,100,0.4); border: 1px solid var(--glass-border); color: var(--sage-light); outline: none;"
             data-i18n-placeholder="cta_email_placeholder"
             placeholder="e-posta@adresiniz.com"
-            aria-describedby="email-thanks"
+            autocomplete="email"
+            inputmode="email"
+            aria-describedby="email-status email-privacy"
             required
           >
           <button type="submit" class="px-6 py-3 font-semibold rounded-xl transition-all hover:shadow-lg whitespace-nowrap text-sm" style="background: linear-gradient(135deg, var(--leaf-mid), var(--leaf-dark)); color: var(--gold-light); border: 1px solid rgba(245,200,66,0.3);" data-i18n="cta_email_btn">Haberdar Et</button>
         </form>
-        <p id="email-thanks" class="text-sm font-medium mt-3 hidden" style="color: var(--leaf-light);" data-i18n="cta_email_thanks">Teşekkürler! Size haber vereceğiz 🎉</p>
+        <p id="email-status" class="email-status text-sm font-medium mt-3 hidden" role="status" aria-live="polite" aria-atomic="true"></p>
+        <p id="email-privacy" class="text-xs mt-3" style="color: var(--sage); opacity: 0.8;" data-i18n="cta_email_privacy">E-posta adresiniz yalnızca ürün güncellemeleri için kullanılır.</p>
       </div>
     </div>
   </section>
@@ -1620,6 +1625,12 @@
   <script src="js/i18n.js"></script>
   <script>
     // ─── Mobile Menu ───
+    let mobileMenuPreviousFocus = null;
+
+    function getMobileMenuFocusables() {
+      return Array.from(document.querySelectorAll('#mobile-panel a[href], #mobile-panel button:not([disabled])'));
+    }
+
     function toggleMobileMenu() {
       const menu = document.getElementById('mobile-menu');
       const panel = document.getElementById('mobile-panel');
@@ -1630,9 +1641,13 @@
       menu.setAttribute('aria-hidden', 'false');
       hamburger.setAttribute('aria-expanded', 'true');
       hamburger.setAttribute('aria-label', currentLang === 'en' ? 'Close menu' : currentLang === 'de' ? 'Menü schließen' : 'Menüyü kapat');
+      mobileMenuPreviousFocus = document.activeElement;
+      document.body.classList.add('mobile-menu-open');
       requestAnimationFrame(() => {
         menu.classList.add('open');
         panel.style.transform = 'translateY(0)';
+        const focusables = getMobileMenuFocusables();
+        (focusables[0] || panel).focus();
       });
       document.getElementById('hamburger-icon').classList.add('hidden');
       document.getElementById('close-icon').classList.remove('hidden');
@@ -1649,8 +1664,41 @@
       panel.style.transform = 'translateY(-110%)';
       document.getElementById('hamburger-icon').classList.remove('hidden');
       document.getElementById('close-icon').classList.add('hidden');
+      document.body.classList.remove('mobile-menu-open');
       setTimeout(() => menu.classList.add('hidden'), 300);
+      if (mobileMenuPreviousFocus instanceof HTMLElement) {
+        mobileMenuPreviousFocus.focus();
+      }
+      mobileMenuPreviousFocus = null;
     }
+
+    document.addEventListener('keydown', (event) => {
+      const menu = document.getElementById('mobile-menu');
+      if (!menu?.classList.contains('open')) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeMobileMenu();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusables = getMobileMenuFocusables();
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 768 && document.getElementById('mobile-menu')?.classList.contains('open')) {
+        closeMobileMenu();
+      }
+    });
 
     // ─── FAQ Accordion ───
     function toggleFaq(btn) {
@@ -1672,13 +1720,17 @@
     // ─── Email Signup ───
     function handleEmailSignup(e) {
       e.preventDefault();
-      const email = document.getElementById('email-input').value.trim();
-      if (!email) return;
       const form = document.getElementById('email-form');
+      if (!form.reportValidity()) return;
+      const email = document.getElementById('email-input').value.trim();
       const btn = form.querySelector('button[type="submit"]');
-      const originalText = btn.textContent;
+      const status = document.getElementById('email-status');
+      const t = translations[currentLang] || translations.tr;
       btn.disabled = true;
-      btn.textContent = '...';
+      btn.setAttribute('aria-busy', 'true');
+      btn.textContent = t.cta_email_sending;
+      status.classList.remove('hidden', 'email-status--success', 'email-status--error');
+      status.textContent = t.cta_email_sending;
 
       fetch('https://formsubmit.co/ajax/support@budgiebreedingtracker.online', {
         method: 'POST',
@@ -1689,19 +1741,25 @@
           _template: 'table',
         }),
       })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Subscription request failed');
+        return res.json();
+      })
       .then(data => {
+        const accepted = data?.success === true || String(data?.success).toLowerCase() === 'true';
+        if (!accepted) throw new Error('Subscription was not accepted');
         form.style.display = 'none';
-        document.getElementById('email-thanks').classList.remove('hidden');
+        status.classList.add('email-status--success');
+        status.textContent = t.cta_email_thanks;
       })
       .catch(() => {
-        // Fallback: still show success (email saved locally)
-        form.style.display = 'none';
-        document.getElementById('email-thanks').classList.remove('hidden');
+        status.classList.add('email-status--error');
+        status.textContent = t.cta_email_error;
       })
       .finally(() => {
         btn.disabled = false;
-        btn.textContent = originalText;
+        btn.removeAttribute('aria-busy');
+        btn.textContent = t.cta_email_btn;
       });
     }
 

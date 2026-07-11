@@ -4,6 +4,15 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-11] fix+docs | Marketing site trust and mobile accessibility
+
+Landing pages now expose truthful Premium offers in JSON-LD without an
+unverifiable aggregate rating, localize the skip/blog/navigation labels, and
+add social-image alt metadata. The mobile menu now locks scroll, traps focus,
+supports Escape, and restores focus on close. Email signup reports localized
+loading/success/failure states through an `aria-live` region and no longer
+shows false success after a failed request. [[infrastructure/marketing-site]]
+
 ## [2026-07-10] feat+fix+perf | Community sweep + tag discovery feed
 
 4-lane audit + tag/mutation discovery feed: local comment append,
@@ -185,16 +194,4 @@ suites; mock-based unit tests stay untagged on the PR gate; new tag-based
 exclusions fall under the skip policy) and its stale stats were refreshed
 (914/11,436 → 917/11,488).
 
-## [2026-07-09] rules | Session lessons folded into the rulebook
-
-ci-actions/release-ops/CLAUDE.md: Xcode Cloud post-clone installs Flutter via
-curl+unzip (git clone = known-flaky, flutter/flutter#163198 — the TRUE root of
-the recurring Build - iOS fail; first curl build passed in ~9 min), drift_dev
-"Circular error" is a non-fatal WARNING (simolus3/drift#3227), `>>> STEP N:`
-markers + superseded-build guidance. data-layer.md: never close a
-`.references()` cycle (customConstraint pattern). migrations.md: drift-guard
-script + ledger `statements` content-drift procedure + forward-reconcile rule.
-testing.md: tag→CI-gate table (community tag = weekly job; unit tests untagged).
-Wiki ci-cd.md Xcode Cloud section rewritten to match.
-
-Older entries are archived in [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
+Older entries are archived in [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
