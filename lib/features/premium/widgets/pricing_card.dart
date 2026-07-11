@@ -182,7 +182,9 @@ class PricingCard extends StatelessWidget {
                       gradient: const LinearGradient(
                         colors: [AppColors.accent, AppColors.accentLight],
                       ),
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.radiusFull,
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: AppColors.accent.withValues(alpha: 0.3),

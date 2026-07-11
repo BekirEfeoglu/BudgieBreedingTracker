@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';

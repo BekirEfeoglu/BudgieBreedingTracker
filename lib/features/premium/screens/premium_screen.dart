@@ -9,6 +9,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/extensions/context_extensions.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_screen_title.dart';
 import 'package:budgie_breeding_tracker/domain/services/payment/purchase_service.dart';
@@ -87,11 +88,25 @@ class PremiumScreen extends ConsumerWidget {
 
 /// Body displayed when user is already premium.
 class _ActivePremiumBody extends ConsumerWidget {
-  void _openSubscriptionManagement() {
+  Future<void> _openSubscriptionManagement(BuildContext context) async {
     final url = Platform.isIOS
         ? 'https://apps.apple.com/account/subscriptions'
         : 'https://play.google.com/store/account/subscriptions';
-    launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    // Await + handle: the store deep link can fail (no handler, restricted
+    // profile). Fire-and-forget left the user with no feedback. Mirrors
+    // _openLegalUrl's await+fallback in premium_paywall_pricing.dart.
+    var launched = false;
+    try {
+      launched = await launchUrl(
+        Uri.parse(url),
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (e) {
+      AppLogger.warning('[Premium] manage-subscription launchUrl failed: $e');
+    }
+    if (!launched && context.mounted) {
+      context.showSnackBar('errors.cannot_open_url'.tr(), isError: true);
+    }
   }
 
   @override
@@ -103,119 +118,119 @@ class _ActivePremiumBody extends ConsumerWidget {
       children: [
         const SizedBox(height: AppSpacing.xxl),
 
-          // Premium active header
-          Container(
-            width: 96,
-            height: 96,
-            decoration: BoxDecoration(
-              gradient: AppColors.premiumGradientDiagonal,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.premiumGold.withValues(alpha: 0.3),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: AppIcon(
-              AppIcons.premium,
-              size: 48,
-              color: theme.colorScheme.onPrimary,
-            ),
+        // Premium active header
+        Container(
+          width: 96,
+          height: 96,
+          decoration: BoxDecoration(
+            gradient: AppColors.premiumGradientDiagonal,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.premiumGold.withValues(alpha: 0.3),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
-          const SizedBox(height: AppSpacing.lg),
-          Text(
-            'premium.already_premium'.tr(),
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
+          child: AppIcon(
+            AppIcons.premium,
+            size: 48,
+            color: theme.colorScheme.onPrimary,
           ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'premium.already_premium_subtitle'.tr(),
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-            textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        Text(
+          'premium.already_premium'.tr(),
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
           ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          'premium.already_premium_subtitle'.tr(),
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+          textAlign: TextAlign.center,
+        ),
 
-          const SizedBox(height: AppSpacing.xxl),
+        const SizedBox(height: AppSpacing.xxl),
 
-          // Subscription info card
-          Padding(
-            padding: AppSpacing.screenPadding,
-            child: subscriptionInfoAsync.when(
-              loading: () => const LoadingState(),
-              error: (_, __) => Card(
-                child: Padding(
-                  padding: AppSpacing.cardPadding,
-                  child: Row(
-                    children: [
-                      const Icon(
-                        LucideIcons.checkCircle2,
-                        color: AppColors.success,
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: Text(
-                          'premium.active_badge'.tr(),
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+        // Subscription info card
+        Padding(
+          padding: AppSpacing.screenPadding,
+          child: subscriptionInfoAsync.when(
+            loading: () => const LoadingState(),
+            error: (_, __) => Card(
+              child: Padding(
+                padding: AppSpacing.cardPadding,
+                child: Row(
+                  children: [
+                    const Icon(
+                      LucideIcons.checkCircle2,
+                      color: AppColors.success,
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Text(
+                        'premium.active_badge'.tr(),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              data: (info) => SubscriptionInfoCard(subscriptionInfo: info),
-            ),
-          ),
-
-          const SizedBox(height: AppSpacing.lg),
-
-          // Manage subscription button
-          Padding(
-            padding: AppSpacing.screenPadding,
-            child: OutlinedButton.icon(
-              onPressed: () => _openSubscriptionManagement(),
-              icon: const Icon(LucideIcons.settings, size: 18),
-              label: Text('premium.manage_subscription'.tr()),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(
-                  double.infinity,
-                  AppSpacing.touchTargetMin,
+                    ),
+                  ],
                 ),
               ),
             ),
+            data: (info) => SubscriptionInfoCard(subscriptionInfo: info),
           ),
+        ),
 
-          const SizedBox(height: AppSpacing.xxl),
+        const SizedBox(height: AppSpacing.lg),
 
-          // Unlocked features
-          Padding(
-            padding: AppSpacing.screenPadding,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'premium.unlocked_features'.tr(),
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                ...premiumFeatures.map(
-                  (key) => PremiumFeatureItem(featureKey: key),
-                ),
-              ],
+        // Manage subscription button
+        Padding(
+          padding: AppSpacing.screenPadding,
+          child: OutlinedButton.icon(
+            onPressed: () => _openSubscriptionManagement(context),
+            icon: const Icon(LucideIcons.settings, size: 18),
+            label: Text('premium.manage_subscription'.tr()),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(
+                double.infinity,
+                AppSpacing.touchTargetMin,
+              ),
             ),
           ),
-          const SizedBox(height: AppSpacing.xxxl * 2),
-        ],
-      );
+        ),
+
+        const SizedBox(height: AppSpacing.xxl),
+
+        // Unlocked features
+        Padding(
+          padding: AppSpacing.screenPadding,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'premium.unlocked_features'.tr(),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              ...premiumFeatures.map(
+                (key) => PremiumFeatureItem(featureKey: key),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xxxl * 2),
+      ],
+    );
   }
 }
 
@@ -229,20 +244,17 @@ class _PaywallBody extends StatelessWidget {
       children: [
         PremiumHeaderSection(),
         SizedBox(height: AppSpacing.xl),
-          PremiumPricingSection(),
-          SizedBox(height: AppSpacing.xxl),
-          PremiumFeatureListSection(),
-          SizedBox(height: AppSpacing.xxl),
-          PremiumRewardedAdSection(),
-          SizedBox(height: AppSpacing.xxl),
-          Padding(
-            padding: AppSpacing.screenPadding,
-            child: FeatureComparison(),
-          ),
-          SizedBox(height: AppSpacing.xxl),
-          PremiumRestoreSection(),
-          SizedBox(height: AppSpacing.xxxl * 2),
-        ],
-      );
+        PremiumPricingSection(),
+        SizedBox(height: AppSpacing.xxl),
+        PremiumFeatureListSection(),
+        SizedBox(height: AppSpacing.xxl),
+        PremiumRewardedAdSection(),
+        SizedBox(height: AppSpacing.xxl),
+        Padding(padding: AppSpacing.screenPadding, child: FeatureComparison()),
+        SizedBox(height: AppSpacing.xxl),
+        PremiumRestoreSection(),
+        SizedBox(height: AppSpacing.xxxl * 2),
+      ],
+    );
   }
 }

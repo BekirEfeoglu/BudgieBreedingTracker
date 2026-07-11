@@ -246,7 +246,10 @@ Future<void> _openLegalUrl(
   var launched = false;
   try {
     launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-  } catch (_) {
+  } catch (e) {
+    // Expected condition (no browser / handler) — logged, not Sentry-reported;
+    // the fallback route below keeps the legal doc reachable in-app.
+    AppLogger.warning('[PremiumLegal] launchUrl failed for $url: $e');
     launched = false;
   }
 
