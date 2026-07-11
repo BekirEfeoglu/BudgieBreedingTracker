@@ -160,6 +160,10 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
           uploadedPhotoUrl = photoUrl;
         } catch (e, st) {
           AppLogger.error('[BirdFormNotifier] photo upload', e, st);
+          // Report genuinely unexpected upload failures — this early-return
+          // path bypasses the outer catch's reportIfUnexpected, so without
+          // this a non-transient storage error would never reach Sentry.
+          reportIfUnexpected(e, st);
           state = state.copyWith(
             isLoading: false,
             error: 'birds.photo_upload_error'.tr(),

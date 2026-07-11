@@ -9,6 +9,7 @@ import 'package:budgie_breeding_tracker/core/enums/photo_enums.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/utils/image_picker_guard.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/core/utils/sentry_error_filter.dart';
 import 'package:budgie_breeding_tracker/core/utils/storage_url_normalizer.dart';
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
@@ -179,6 +180,7 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
       await photoRepo.deleteStorageForPhoto(photo);
     } catch (e, st) {
       AppLogger.error('Failed to delete storage file', e, st);
+      reportUnexpectedToSentry(e, st);
     }
 
     try {
@@ -188,6 +190,7 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
       }
     } catch (e, st) {
       AppLogger.error('[BirdDetailPhotos]', e, st);
+      reportUnexpectedToSentry(e, st);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('birds.photo_delete_error'.tr())),
@@ -251,6 +254,7 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
       );
     } catch (e, st) {
       AppLogger.error('[BirdDetailPhotos]', e, st);
+      reportUnexpectedToSentry(e, st);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('birds.photo_upload_error'.tr())),
