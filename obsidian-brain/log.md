@@ -4,6 +4,17 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-11] fix | Genealogy export temp-file cleanup + localized generation badge
+
+Reconciled `cb4a71b`. `PedigreeExportButton`'s PDF/PNG export wrote a temp file to
+`getTemporaryDirectory()` and shared it but never deleted it — repeated exports
+leaked into the temp dir. Added best-effort `_deleteTempFile` in both paths'
+`finally` (mirrors `ExportActions._shareFile`, data-io.md § Share Sheet #11).
+`pedigree_node.dart` generation badge stopped rendering hardcoded `G$depth`; now
+`genealogy.generation_short`.tr (tr `J{}`, en/de `G{}`, +1 l10n key ×3 langs).
+Compliance fix to existing rules, no contract change. Managed l10n count →3,123.
+[[features/genealogy]] § PDF / Image Export. Docs only.
+
 ## [2026-07-11] docs | Statistics peak-month label localized (monthYearLabel helper)
 
 Reconciled `60b403e`. The Health Trend `HealthTrendSummaryCard` "Peak Month" row

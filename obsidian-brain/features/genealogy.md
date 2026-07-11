@@ -36,7 +36,13 @@ ancestors, maxDepth)`; file `pedigree_<safeName>_<timestamp>.pdf`, shared via th
 OS sheet. PNG export is wired in tree mode: `TreeContent` passes
 `FamilyTreeViewState.captureTreeImage()` to `PedigreeExportButton`, and the tree
 is captured from the `FamilyTreeView` `RepaintBoundary`. List mode intentionally
-hides the image option by passing `onCaptureImage: null`. See [[domain/data-io]].
+hides the image option by passing `onCaptureImage: null`. Both export paths write
+to `getTemporaryDirectory()` and best-effort delete the temp file in `finally`
+(`_deleteTempFile`) so repeated exports don't leak — mirrors `ExportActions
+._shareFile` (data-io.md § Share Sheet anti-pattern #11). See [[domain/data-io]].
+
+The pedigree node generation badge is localized via `genealogy.generation_short`
+(tr `J{}`, en/de `G{}`) — not the former hardcoded `G$depth`.
 
 ## Inbreeding Detection
 
