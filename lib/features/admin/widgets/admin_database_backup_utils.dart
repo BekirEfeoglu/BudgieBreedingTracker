@@ -63,7 +63,7 @@ Future<void> saveBackupFile(
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('admin.backup_save_error'.tr(args: [e.toString()])),
+          content: Text('admin.backup_save_error'.tr()),
           backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
         ),

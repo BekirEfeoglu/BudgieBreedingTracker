@@ -8,6 +8,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/buttons/app_icon_button.dart';
+import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/loading_state.dart';
 import '../../../data/models/community_comment_model.dart';
@@ -243,9 +244,21 @@ class _PendingPostCard extends ConsumerWidget {
                   ),
                   onPressed: isProcessing
                       ? null
-                      : () => ref
-                            .read(adminModerationProvider.notifier)
-                            .deletePost(post.id),
+                      : () async {
+                          // Destructive content removal must confirm first —
+                          // parity with every other admin destructive path
+                          // (admin.md § Destructive Guards).
+                          final confirmed = await showConfirmDialog(
+                            context,
+                            title: 'admin.moderation_delete_title'.tr(),
+                            message: 'admin.moderation_delete_confirm'.tr(),
+                            isDestructive: true,
+                          );
+                          if (confirmed != true) return;
+                          ref
+                              .read(adminModerationProvider.notifier)
+                              .deletePost(post.id);
+                        },
                 ),
               ],
             ),
@@ -386,9 +399,18 @@ class _PendingCommentCard extends ConsumerWidget {
                   ),
                   onPressed: isProcessing
                       ? null
-                      : () => ref
-                            .read(adminModerationProvider.notifier)
-                            .deleteComment(comment.id),
+                      : () async {
+                          final confirmed = await showConfirmDialog(
+                            context,
+                            title: 'admin.moderation_delete_title'.tr(),
+                            message: 'admin.moderation_delete_confirm'.tr(),
+                            isDestructive: true,
+                          );
+                          if (confirmed != true) return;
+                          ref
+                              .read(adminModerationProvider.notifier)
+                              .deleteComment(comment.id);
+                        },
                 ),
               ],
             ),

@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
@@ -62,7 +63,10 @@ class AdminUserManager {
       _updateState(isLoading: false, error: 'admin.protected_user_error'.tr());
       return AdminUserOperationResult.protected;
     } catch (e, st) {
+      // Destructive admin op: report to Sentry (parity with admin_bulk_manager)
+      // so a failed deactivate is observable, not just a breadcrumb.
       AppLogger.error('AdminUserManager.toggleUserActive', e, st);
+      Sentry.captureException(e, stackTrace: st);
       _updateState(isLoading: false, error: 'admin.action_error'.tr());
       return AdminUserOperationResult.failed;
     }
@@ -105,11 +109,14 @@ class AdminUserManager {
           error: 'admin.protected_user_premium_error'.tr(),
         );
       } else {
+        // Genuine (non-protected-role) server failure — report to Sentry.
+        Sentry.captureException(e, stackTrace: st);
         _updateState(isLoading: false, error: 'admin.action_error'.tr());
       }
       return AdminUserOperationResult.failed;
     } catch (e, st) {
       AppLogger.error('AdminUserManager.grantPremium', e, st);
+      Sentry.captureException(e, stackTrace: st);
       _updateState(isLoading: false, error: 'admin.action_error'.tr());
       return AdminUserOperationResult.failed;
     }
@@ -152,11 +159,14 @@ class AdminUserManager {
           error: 'admin.protected_user_premium_error'.tr(),
         );
       } else {
+        // Genuine (non-protected-role) server failure — report to Sentry.
+        Sentry.captureException(e, stackTrace: st);
         _updateState(isLoading: false, error: 'admin.action_error'.tr());
       }
       return AdminUserOperationResult.failed;
     } catch (e, st) {
       AppLogger.error('AdminUserManager.revokePremium', e, st);
+      Sentry.captureException(e, stackTrace: st);
       _updateState(isLoading: false, error: 'admin.action_error'.tr());
       return AdminUserOperationResult.failed;
     }
@@ -190,6 +200,7 @@ class AdminUserManager {
       return AdminUserOperationResult.protected;
     } catch (e, st) {
       AppLogger.error('AdminUserManager.forceLogout', e, st);
+      Sentry.captureException(e, stackTrace: st);
       _updateState(isLoading: false, error: 'admin.action_error'.tr());
       return AdminUserOperationResult.failed;
     }
@@ -223,6 +234,6 @@ class AdminUserManager {
     if (row == null) {
       throw Exception('admin.user_not_found'.tr());
     }
-    return row['role'] as String?;
+    return row[SupabaseConstants.colRole] as String?;
   }
 }

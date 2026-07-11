@@ -74,7 +74,10 @@ final adminUsersProvider = FutureProvider.family<List<AdminUser>, AdminUsersQuer
   var request = client
       .from(SupabaseConstants.profilesTable)
       .select(
-        'id, email, full_name, avatar_url, created_at, is_active, is_premium, role',
+        '${SupabaseConstants.colId}, ${SupabaseConstants.colEmail}, '
+        '${SupabaseConstants.colFullName}, ${SupabaseConstants.colAvatarUrl}, '
+        '${SupabaseConstants.colCreatedAt}, ${SupabaseConstants.colIsActive}, '
+        '${SupabaseConstants.colIsPremium}, ${SupabaseConstants.colRole}',
       );
 
   if (query.searchTerm.isNotEmpty) {
@@ -89,20 +92,24 @@ final adminUsersProvider = FutureProvider.family<List<AdminUser>, AdminUsersQuer
     if (sanitized.isNotEmpty) {
       // Do NOT Uri.encodeComponent — PostgREST client handles encoding.
       final filters = [
-        'email.ilike.%$sanitized%',
-        'full_name.ilike.%$sanitized%',
-        if (_isUuidSearchTerm(sanitized)) 'id.eq.$sanitized',
+        '${SupabaseConstants.colEmail}.ilike.%$sanitized%',
+        '${SupabaseConstants.colFullName}.ilike.%$sanitized%',
+        if (_isUuidSearchTerm(sanitized))
+          '${SupabaseConstants.colId}.eq.$sanitized',
       ];
       request = request.or(filters.join(','));
     }
   }
 
   if (query.isActiveFilter != null) {
-    request = request.eq('is_active', query.isActiveFilter!);
+    request = request.eq(SupabaseConstants.colIsActive, query.isActiveFilter!);
   }
 
   if (query.isPremiumFilter != null) {
-    request = request.eq('is_premium', query.isPremiumFilter!);
+    request = request.eq(
+      SupabaseConstants.colIsPremium,
+      query.isPremiumFilter!,
+    );
   }
 
   if (query.createdTodayOnly) {
@@ -141,18 +148,18 @@ final adminUsersProvider = FutureProvider.family<List<AdminUser>, AdminUsersQuer
 
   // Validate sortField against allowed columns to prevent schema probing
   const allowedSortFields = {
-    'created_at',
-    'email',
-    'full_name',
-    'is_active',
-    'is_premium',
-    'role',
+    SupabaseConstants.colCreatedAt,
+    SupabaseConstants.colEmail,
+    SupabaseConstants.colFullName,
+    SupabaseConstants.colIsActive,
+    SupabaseConstants.colIsPremium,
+    SupabaseConstants.colRole,
   };
   final sortsByLastActive =
       query.sortField == SupabaseConstants.colLastActiveAt;
   final safeSortField = allowedSortFields.contains(query.sortField)
       ? query.sortField
-      : 'created_at';
+      : SupabaseConstants.colCreatedAt;
   final requestLimit = usesSessionActivityFilter && sortsByLastActive
       ? AdminConstants.onlineUsersCandidateLimit
       : query.limit;
@@ -224,7 +231,7 @@ final adminUserCountsProvider = FutureProvider<AdminUserCounts>((ref) async {
   final Future<int> activeFuture = client
       .from(SupabaseConstants.profilesTable)
       .count()
-      .eq('is_active', true);
+      .eq(SupabaseConstants.colIsActive, true);
   final onlineActivityFuture = _loadUserActivitySince(
     client,
     onlineSince,
@@ -284,10 +291,11 @@ Future<Map<String, DateTime>> _loadUserActivitySince(
   var request = client
       .from(SupabaseConstants.userSessionsTable)
       .select(
-        'user_id, ${SupabaseConstants.colLastActiveAt}, ${SupabaseConstants.colCreatedAt}',
+        '${SupabaseConstants.colUserId}, ${SupabaseConstants.colLastActiveAt}, '
+        '${SupabaseConstants.colCreatedAt}',
       );
   if (activeOnly) {
-    request = request.eq('is_active', true);
+    request = request.eq(SupabaseConstants.colIsActive, true);
   }
 
   final rows = await request

@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
@@ -152,7 +153,10 @@ class AdminModerationNotifier extends Notifier<AdminModerationState> {
       await requireAdmin(ref);
       await action(ref.read(supabaseClientProvider));
     } catch (e, st) {
+      // Destructive moderation op (approve/remove content) — report to Sentry
+      // so a failed removal is observable, not just a breadcrumb.
       AppLogger.error('[AdminModeration] action failed for $id', e, st);
+      Sentry.captureException(e, stackTrace: st);
       state = state.copyWith(error: 'admin.action_error'.tr());
     } finally {
       state = state.copyWith(

@@ -104,9 +104,9 @@ Future<void> _sendHealthAlertToAdmins(
     final client = ref.read(supabaseClientProvider);
     final adminsResult = await client
         .from(SupabaseConstants.adminUsersTable)
-        .select('user_id');
+        .select(SupabaseConstants.colUserId);
     final adminIds = (adminsResult as List)
-        .map((row) => row['user_id'] as String)
+        .map((row) => row[SupabaseConstants.colUserId] as String)
         .toList();
 
     if (adminIds.isEmpty) return;

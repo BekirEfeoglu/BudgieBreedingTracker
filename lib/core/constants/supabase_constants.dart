@@ -115,6 +115,8 @@ abstract class SupabaseConstants {
   static const String colNeedsReview = 'needs_review';
   static const String colGender = 'gender';
   static const String colIsActive = 'is_active';
+  static const String colIsPremium = 'is_premium';
+  static const String colIsAcknowledged = 'is_acknowledged';
   static const String colPlatform = 'platform';
   static const String colToken = 'token';
   static const String colEmail = 'email';

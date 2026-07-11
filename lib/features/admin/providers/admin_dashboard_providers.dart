@@ -20,7 +20,7 @@ final adminSystemAlertsProvider = FutureProvider<List<SystemAlert>>((
       .from(SupabaseConstants.systemAlertsTable)
       .select()
       .eq(SupabaseConstants.colIsActive, true)
-      .eq('is_acknowledged', false)
+      .eq(SupabaseConstants.colIsAcknowledged, false)
       .order(SupabaseConstants.colCreatedAt, ascending: false)
       .limit(AdminConstants.maxAlertsLimit);
 
