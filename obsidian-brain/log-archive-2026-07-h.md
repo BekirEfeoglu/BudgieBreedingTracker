@@ -6,6 +6,29 @@ and auth legal-links syncs).
 
 ---
 
+## [2026-07-10] audit | Full-scope 10-lane sweep — 12 fixes across 6 features
+
+10 parallel read-only auditors (6 specialized + 4 feature-tab lanes over all 24
+tabs) from clean main; every fix shipped with tests. **more:** Statistics/Genetics
+tiles ignored the rewarded-ad providers the router honors, so a user who watched a
+reward ad was bounced back to the paywall (`navigateOrHint` now mirrors the gate).
+**health_records:** chick-linked records showed no animal name (list+detail read
+only `birdId`); reminder body used the record title not the bird's name; edit
+populate skipped `setState`; the `List`-keyed filter families leaked (→ autoDispose).
+**chicks:** `markAsWeaned`/`markAsDeceased` reported false success on a
+concurrently-deleted chick → now surface not-found. **auth:** AAL2 read-failure
+now fails closed for MFA-enrolled users; `completeAfterMfaChallenge` gained the
+symmetric pre-cleanup AAL2 gate. **observability:** Sentry user scope set on
+login / nulled on logout; offline timeout + `NetworkException` no longer captured.
+**icons:** vaccination/medication/temp → `AppIcons`. EF1 (comment cross-post
+`parent_id`) was a false positive — the DB trigger already rejects it; migration
+ledger 205=prod. **Owner then decided the two gated items:** chick promotion now
+enforces the free-tier bird limit (was a breed→promote paywall bypass); the
+unsourced `df_dominant_pied` semi-lethal warning was removed (calculationVersion
+7→8) — DF Australian Dominant Pied is viable, same class v6 dropped. Still
+deferred (chips): marketplace moderation edge fn + pagination/search, #8
+column-literal refactor.
+
 ## [2026-07-10] fix | Genetics deferred decisions — ino masks melanin patterns (v7); dominant model already OK
 
 Handled the two items left for the domain owner after the v6 audit.

@@ -4,6 +4,24 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-11] fix | Admin moderation deletes confirm-gated, Sentry on destructive ops, SupabaseConstants
+
+Reconciled `7edf39d` (admin review fixes). **Contract change:** moderation
+`deletePost`/`deleteComment` now show `showConfirmDialog(isDestructive: true)`
+(`admin.moderation_delete_title`/`_confirm`) before removing content — the last
+single-tap destructive admin path is now two-step-guarded like every other one.
+Single-user destructive ops in `admin_user_manager` (`toggleUserActive`,
+`grantPremium`, `revokePremium`, `forceLogout`) + the moderation action catch now
+`Sentry.captureException(e, stackTrace: st)` on failure, parity with
+`admin_bulk_manager` (was breadcrumb-only, anti-pattern #23). `admin_users`/
+`admin_health`/`admin_dashboard` providers moved hardcoded column literals to
+`SupabaseConstants` (+`colIsPremium`, +`colIsAcknowledged`); backup-error snackbar
+stopped interpolating raw `e.toString()` (dropped the `{}` in `admin.backup_save_error`).
+Managed counts via `verify_rules.py --fix`: Supabase constants 154→156, l10n keys
+~3,124→~3,126 (both CLAUDE.md + inline rule refs). [[features/admin]] § Moderation
+Queue / Force Logout / Current Decisions. Rotated the oldest 2026-07-10 10-lane
+audit entry into [[log-archive-2026-07-h]].
+
 ## [2026-07-11] fix | Settings sync-table map uses SupabaseConstants + guarded share
 
 Reconciled `5f9fbbf` (two settings-review fixes, no contract change).
@@ -158,28 +176,5 @@ still doing direct inserts — the trigger enforces for ALL clients, breaks none
 reversible (`DROP TRIGGER`). Verified live (scam blocked, clean allowed, tx rolled
 back); security advisor clean. Client maps `MARKETPLACE_MODERATION_REJECTED` →
 `ValidationException('marketplace.moderation_rejected')`.
-
-## [2026-07-10] audit | Full-scope 10-lane sweep — 12 fixes across 6 features
-
-10 parallel read-only auditors (6 specialized + 4 feature-tab lanes over all 24
-tabs) from clean main; every fix shipped with tests. **more:** Statistics/Genetics
-tiles ignored the rewarded-ad providers the router honors, so a user who watched a
-reward ad was bounced back to the paywall (`navigateOrHint` now mirrors the gate).
-**health_records:** chick-linked records showed no animal name (list+detail read
-only `birdId`); reminder body used the record title not the bird's name; edit
-populate skipped `setState`; the `List`-keyed filter families leaked (→ autoDispose).
-**chicks:** `markAsWeaned`/`markAsDeceased` reported false success on a
-concurrently-deleted chick → now surface not-found. **auth:** AAL2 read-failure
-now fails closed for MFA-enrolled users; `completeAfterMfaChallenge` gained the
-symmetric pre-cleanup AAL2 gate. **observability:** Sentry user scope set on
-login / nulled on logout; offline timeout + `NetworkException` no longer captured.
-**icons:** vaccination/medication/temp → `AppIcons`. EF1 (comment cross-post
-`parent_id`) was a false positive — the DB trigger already rejects it; migration
-ledger 205=prod. **Owner then decided the two gated items:** chick promotion now
-enforces the free-tier bird limit (was a breed→promote paywall bypass); the
-unsourced `df_dominant_pied` semi-lethal warning was removed (calculationVersion
-7→8) — DF Australian Dominant Pied is viable, same class v6 dropped. Still
-deferred (chips): marketplace moderation edge fn + pagination/search, #8
-column-literal refactor.
 
 Older entries are archived in [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

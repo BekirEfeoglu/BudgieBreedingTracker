@@ -30,11 +30,18 @@ community content awaiting review:
 - `AdminModerationNotifier` (`adminModerationProvider`,
   `NotifierProvider<…, Set<String>>`) exposes `approvePost` / `deletePost` /
   `approveComment` / `deleteComment`. Approve clears `needs_review`; delete
-  soft-deletes (`is_deleted = true`) and clears `needs_review`. Each guards
-  with `requireAdmin`, writes an `admin_logs` audit entry via `logAdminAction`
-  (`community_post_approved` / `community_post_deleted` / `…comment…` — added
-  2026-07-02; these decisions previously left no audit trail), and
-  invalidates the relevant list provider. Queue thumbnails use
+  soft-deletes (`is_deleted = true`) and clears `needs_review`. `deletePost` /
+  `deleteComment` are **confirm-gated** (2026-07-11): the screen shows a
+  `showConfirmDialog(isDestructive: true)` (`admin.moderation_delete_title` /
+  `admin.moderation_delete_confirm`) before removing content — previously a
+  single tap deleted, the only remaining single-confirm destructive admin path.
+  Each guards with `requireAdmin`, writes an `admin_logs` audit entry via
+  `logAdminAction` (`community_post_approved` / `community_post_deleted` /
+  `…comment…` — added 2026-07-02; these decisions previously left no audit
+  trail), and invalidates the relevant list provider. On failure the action
+  catch reports via `Sentry.captureException(e, stackTrace: st)` (2026-07-11,
+  parity with `admin_bulk_manager` / user ops — was an `AppLogger.error`
+  breadcrumb only). Queue thumbnails use
   `CachedNetworkImage` (was raw `Image.network`). State is the set of
   in-flight entity ids (2026-07-03, was a single global `AsyncNotifier<void>`
   loading flag): each card watches only its own id via
@@ -60,6 +67,12 @@ UI confirmation is two-step (confirm dialog → typed user-ID confirm via
 per `.claude/rules/admin.md`. Before 2026-07-02 this action only had the
 first step (single confirm dialog, no typed confirm) — the only destructive
 admin action missing the second step.
+
+All `AdminUserManager` destructive ops (`toggleUserActive`, `grantPremium`,
+`revokePremium`, `forceLogout`) report failures via
+`Sentry.captureException(e, stackTrace: st)` (2026-07-11) — parity with
+`admin_bulk_manager`; a failed ban/grant was previously only an
+`AppLogger.error` breadcrumb (anti-pattern #23).
 
 `admin_get_user_aggregate_detail(p_user_id)` RPC fetches the full user-detail
 payload (profile, subscription, entity counts, recent activity logs) in one
@@ -112,6 +125,8 @@ are invalidated on refresh, retry, and user mutations (bulk + detail).
 - `admin/` is the only feature allowed to call Supabase `client.from()` directly.
 - Every route is guarded by `AdminGuard`; admin/founder role is required.
 - Destructive actions use two-step confirmation and write audit entries.
+- Moderation post/comment removal is confirm-gated; no destructive admin path is single-tap.
+- Destructive admin op failures (user ops, bulk, moderation) report to Sentry, not just a breadcrumb.
 - User list summary counts come from database-wide providers, not the loaded page.
 
 ## Known Deferred Work
