@@ -73,7 +73,7 @@ class GuideTopicListItem extends StatelessWidget {
                           ],
                         ],
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: AppSpacing.xxs),
                       Text(
                         topic.subtitle,
                         style: theme.textTheme.bodySmall?.copyWith(

@@ -94,7 +94,7 @@ class _DetailHeader extends StatelessWidget {
                 ),
               ),
               if (topic.stepCount > 0) ...[
-                const SizedBox(height: 2),
+                const SizedBox(height: AppSpacing.xxs),
                 Text(
                   'user_guide.step_count'.tr(
                     args: [topic.stepCount.toString()],
