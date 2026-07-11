@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart' show visibleForTesting;
-
 /// Notification ID generation and base offsets.
 ///
 /// Partitions the ID space into categories, each with 100,000 IDs.
@@ -35,7 +33,10 @@ abstract final class NotificationIds {
   ///
   /// Partitions each 100,000-ID range into 1,000 entity "slots" of 100 IDs,
   /// preventing collisions between different entities in the same category.
-  @visibleForTesting
+  ///
+  /// Core production API: called by every scheduler path (incubation
+  /// milestones, egg turning, health/banding, event reminders) as well as
+  /// tests — it is NOT test-only, so it carries no `@visibleForTesting`.
   static int generate(int baseId, String entityId, int offset) {
     if (offset < 0 || offset >= idsPerEntitySlot) {
       throw RangeError.range(
