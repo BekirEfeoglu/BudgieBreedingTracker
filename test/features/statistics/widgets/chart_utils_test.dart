@@ -85,6 +85,80 @@ void main() {
       },
     );
   });
+  group('monthYearLabel', () {
+    testWidgets('keeps the year and localizes the month (Turkish)', (
+      tester,
+    ) async {
+      late String result;
+      await pumpTranslatedWidget(
+        tester,
+        Builder(
+          builder: (context) {
+            result = monthYearLabel(context, '2026-01');
+            return const SizedBox.shrink();
+          },
+        ),
+        locale: const Locale('tr'),
+      );
+
+      expect(result, isNot('2026-01'));
+      expect(result.toLowerCase(), contains('oca'));
+      expect(result, contains('2026'));
+    });
+
+    testWidgets('keeps the year and localizes the month (English)', (
+      tester,
+    ) async {
+      late String result;
+      await pumpTranslatedWidget(
+        tester,
+        Builder(
+          builder: (context) {
+            result = monthYearLabel(context, '2026-12');
+            return const SizedBox.shrink();
+          },
+        ),
+        locale: const Locale('en'),
+      );
+
+      expect(result.toLowerCase(), contains('dec'));
+      expect(result, contains('2026'));
+    });
+
+    testWidgets('returns the raw key unchanged when malformed', (tester) async {
+      late String result;
+      await pumpTranslatedWidget(
+        tester,
+        Builder(
+          builder: (context) {
+            result = monthYearLabel(context, 'not-a-month');
+            return const SizedBox.shrink();
+          },
+        ),
+      );
+
+      expect(result, 'not-a-month');
+    });
+
+    testWidgets('does not throw without an EasyLocalization ancestor', (
+      tester,
+    ) async {
+      late String result;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) {
+              result = monthYearLabel(context, '2026-05');
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
+
+      expect(result, isNotEmpty);
+      expect(result, contains('2026'));
+    });
+  });
   group('calcChartInterval', () {
     test('returns 1 for values <= 5', () {
       expect(calcChartInterval(0), 1);

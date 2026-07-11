@@ -4,6 +4,7 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/features/statistics/providers/statistics_highlights_providers.dart';
+import 'package:budgie_breeding_tracker/features/statistics/widgets/chart_utils.dart';
 
 /// Locale-aware "1 decimal" formatter. German users expect `12,5`, Turkish
 /// `12,5`, English `12.5` — `toStringAsFixed` always emits a dot, breaking
@@ -112,7 +113,8 @@ class HealthTrendSummaryCard extends StatelessWidget {
           label: 'statistics.health_peak_month'.tr(),
           value: trend.busiestMonthKey == null
               ? 'common.not_available'.tr()
-              : '${trend.busiestMonthKey} · ${trend.busiestMonthRecordCount}',
+              : '${monthYearLabel(context, trend.busiestMonthKey!)} · '
+                    '${trend.busiestMonthRecordCount}',
         ),
         _MetricRow(
           label: 'statistics.health_most_visited'.tr(),

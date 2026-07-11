@@ -18,6 +18,24 @@ String monthAbbreviation(BuildContext context, String monthKey) {
   return DateFormat.MMM(locale).format(DateTime(2024, month));
 }
 
+/// Locale-aware `month year` label for a `'YYYY-MM'` series key
+/// (`'2026-01'` -> `'Oca 2026'` tr / `'Jan 2026'` en). Unlike
+/// [monthAbbreviation] this keeps the year — use it for a single-point display
+/// (e.g. a peak-month highlight) where the year is not implied by a surrounding
+/// month series. Returns the raw key on a malformed input rather than crashing.
+/// Same `tr` fallback as [monthAbbreviation] when there is no
+/// `EasyLocalization` ancestor (widget tests).
+String monthYearLabel(BuildContext context, String monthKey) {
+  final parts = monthKey.split('-');
+  final year = parts.isNotEmpty ? int.tryParse(parts.first) : null;
+  final month = parts.length > 1 ? int.tryParse(parts[1]) : null;
+  if (year == null || month == null || month < 1 || month > 12) {
+    return monthKey;
+  }
+  final locale = EasyLocalization.of(context)?.locale.toString() ?? 'tr';
+  return DateFormat.yMMM(locale).format(DateTime(year, month));
+}
+
 /// Returns true when a numeric series has at least one meaningful value.
 bool hasPositiveValues(Iterable<num> values) =>
     values.any((value) => value > 0);
