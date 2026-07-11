@@ -38,6 +38,7 @@ extension ChickFormStatusActions on ChickFormNotifier {
             ? 'errors.background_tasks_partial'.tr()
             : null,
         isSuccess: true,
+        lastAction: ChickFormAction.wean,
       );
     } catch (e, st) {
       AppLogger.error('ChickFormNotifier', e, st);
@@ -82,6 +83,7 @@ extension ChickFormStatusActions on ChickFormNotifier {
             ? 'errors.background_tasks_partial'.tr()
             : null,
         isSuccess: true,
+        lastAction: ChickFormAction.deceased,
       );
     } catch (e, st) {
       AppLogger.error('ChickFormNotifier', e, st);
@@ -105,7 +107,11 @@ extension ChickFormStatusActions on ChickFormNotifier {
       final chickRepo = ref.read(chickRepositoryProvider);
 
       if (chick.birdId != null) {
-        state = state.copyWith(isLoading: false, isSuccess: true);
+        state = state.copyWith(
+          isLoading: false,
+          isSuccess: true,
+          lastAction: ChickFormAction.promote,
+        );
         return;
       }
 
@@ -195,6 +201,7 @@ extension ChickFormStatusActions on ChickFormNotifier {
             ? 'errors.background_tasks_partial'.tr()
             : null,
         isSuccess: true,
+        lastAction: ChickFormAction.promote,
       );
     } catch (e, st) {
       AppLogger.error('ChickFormNotifier', e, st);

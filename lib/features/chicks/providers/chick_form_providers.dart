@@ -22,6 +22,15 @@ import 'package:uuid/uuid.dart';
 part 'chick_form_notifier.dart';
 part 'chick_form_status_actions.dart';
 
+/// Which chick action produced the most recent state change.
+///
+/// Lets a screen listening on the shared [chickFormStateProvider] tell apart
+/// actions that already emit their own specific feedback (`wean`, `promote`)
+/// from those that rely on the detail screen's generic "saved" toast — without
+/// it, weaning/promoting fires TWO action-feedback entries (generic + specific).
+/// Mirrors `BirdFormAction`.
+enum ChickFormAction { none, save, wean, deceased, promote, delete }
+
 /// State for the chick form.
 class ChickFormState {
   // Sentinel: distinguishes "field not provided" (preserve) from
@@ -35,12 +44,14 @@ class ChickFormState {
   final String? error;
   final String? warning;
   final bool isSuccess;
+  final ChickFormAction lastAction;
 
   const ChickFormState({
     this.isLoading = false,
     this.error,
     this.warning,
     this.isSuccess = false,
+    this.lastAction = ChickFormAction.none,
   });
 
   ChickFormState copyWith({
@@ -48,12 +59,14 @@ class ChickFormState {
     Object? error = _unset,
     Object? warning = _unset,
     bool? isSuccess,
+    ChickFormAction? lastAction,
   }) {
     return ChickFormState(
       isLoading: isLoading ?? this.isLoading,
       error: identical(error, _unset) ? this.error : error as String?,
       warning: identical(warning, _unset) ? this.warning : warning as String?,
       isSuccess: isSuccess ?? this.isSuccess,
+      lastAction: lastAction ?? this.lastAction,
     );
   }
 }

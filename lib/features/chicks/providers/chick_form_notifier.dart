@@ -126,6 +126,7 @@ class ChickFormNotifier extends Notifier<ChickFormState>
             ? 'errors.background_tasks_partial'.tr()
             : null,
         isSuccess: true,
+        lastAction: ChickFormAction.save,
       );
     } catch (e, st) {
       AppLogger.error('ChickFormNotifier', e, st);
@@ -190,6 +191,7 @@ class ChickFormNotifier extends Notifier<ChickFormState>
             ? 'errors.background_tasks_partial'.tr()
             : null,
         isSuccess: true,
+        lastAction: ChickFormAction.save,
       );
     } catch (e, st) {
       AppLogger.error('ChickFormNotifier', e, st);
@@ -254,6 +256,7 @@ class ChickFormNotifier extends Notifier<ChickFormState>
         isLoading: false,
         warning: cleanupWarning,
         isSuccess: true,
+        lastAction: ChickFormAction.delete,
       );
     } catch (e, st) {
       AppLogger.error('ChickFormNotifier', e, st);

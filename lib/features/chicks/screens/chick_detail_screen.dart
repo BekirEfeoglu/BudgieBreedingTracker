@@ -96,8 +96,18 @@ class _DetailContent extends ConsumerWidget {
         );
       }
       if (state.isSuccess) {
+        // `wean` and `promote` already emit their own specific feedback
+        // (chicks.wean_success / chicks.moved_to_birds) from _handleMenuAction
+        // and _promptSaveAsBirdAfterWean. Emitting the generic "saved" here too
+        // would add a SECOND action-feedback entry for the same action — mirror
+        // bird_detail_screen's lastAction filter and suppress it for those.
+        final emitsOwnFeedback =
+            state.lastAction == ChickFormAction.wean ||
+            state.lastAction == ChickFormAction.promote;
         ref.read(chickFormStateProvider.notifier).reset();
-        ActionFeedbackService.show('common.saved_successfully'.tr());
+        if (!emitsOwnFeedback) {
+          ActionFeedbackService.show('common.saved_successfully'.tr());
+        }
       }
       if (state.error != null) {
         ScaffoldMessenger.of(
