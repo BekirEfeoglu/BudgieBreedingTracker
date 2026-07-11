@@ -355,7 +355,9 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
                         final isSelected = _selectedIds.contains(chick.id);
                         return Center(
                           child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 800),
+                            constraints: const BoxConstraints(
+                              maxWidth: AppSpacing.maxContentWidth,
+                            ),
                             child: _SelectableChickCard(
                               key: ValueKey(chick.id),
                               chick: chick,

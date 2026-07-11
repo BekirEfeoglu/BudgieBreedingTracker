@@ -77,7 +77,7 @@ class ChickCard extends ConsumerWidget {
                       style: theme.textTheme.titleMedium,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: AppSpacing.xxs),
                     Row(
                       children: [
                         if (chick.ringNumber != null) ...[
@@ -86,7 +86,7 @@ class ChickCard extends ConsumerWidget {
                             size: 16,
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
-                          const SizedBox(width: 2),
+                          const SizedBox(width: AppSpacing.xxs),
                           Flexible(
                             child: Text(
                               chick.ringNumber!,
@@ -124,7 +124,7 @@ class ChickCard extends ConsumerWidget {
                             parents.femaleName ?? 'chicks.unknown_gender'.tr();
                         final cageNumber = parents.cageNumber;
                         return Padding(
-                          padding: const EdgeInsets.only(top: 2),
+                          padding: const EdgeInsets.only(top: AppSpacing.xxs),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -138,13 +138,13 @@ class ChickCard extends ConsumerWidget {
                                     color: theme.colorScheme.onSurfaceVariant,
                                   ),
                                 ),
-                                const SizedBox(height: 2),
+                                const SizedBox(height: AppSpacing.xxs),
                               ],
                               LayoutBuilder(
                                 builder: (context, constraints) {
                                   return Wrap(
                                     spacing: AppSpacing.sm,
-                                    runSpacing: 2,
+                                    runSpacing: AppSpacing.xxs,
                                     children: [
                                       _ParentNameLabel(
                                         icon: const AppIcon(
@@ -216,7 +216,7 @@ class _ParentNameLabel extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           icon,
-          const SizedBox(width: 2),
+          const SizedBox(width: AppSpacing.xxs),
           Flexible(
             child: Text(
               label,
