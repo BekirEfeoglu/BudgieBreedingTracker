@@ -4,6 +4,20 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-11] fix+docs | Birds Sentry photo reporting, chick feedback dedup, health-record dirty check
+
+Reconciled three behavioral `main` fixes (36ad9a4…744d27f). **birds:** unexpected
+photo storage/DB errors (gallery add/delete, `createBird` inner upload catch) now
+report to Sentry via the new shared `reportUnexpectedToSentry` helper +
+`isExpectedSentryExclusion` predicate (`sentry_error_filter.dart`); transient
+network/validation stay excluded. [[features/birds]], [[patterns/observability]].
+**chicks:** `ChickFormState.lastAction` suppresses the duplicate generic
+saved-feedback bell entry on wean/promote (which emit their own). [[features/chicks]].
+**health_records:** edit form `_isDirty` is now field-level so an untouched edit
+skips the discard prompt. [[features/health_records]]. Pure style/refactor commits
+(breeding/chicks/health spacing tokens, NotificationIds `@visibleForTesting` drop)
+carry no contract change.
+
 ## [2026-07-11] fix+docs | Marketing site trust and mobile accessibility
 
 Landing pages now expose truthful Premium offers in JSON-LD without an
@@ -166,32 +180,5 @@ unknown mutations (UI scope warning). No migration (fields already existed).
 new Bird Selection Round-Trip, MUTAVI matrix) + [[domain/genetics-engine]].
 All 2005 genetics domain+feature tests + e2e green; gated items (D2/D4/Q2/I2)
 left for domain-owner/architecture decisions.
-
-## [2026-07-10] feat | Genetics roadmap D1 — typed linkage catalog + UI drift fix
-
-Executed D1 of `dev-docs/genetics-improvement-roadmap.md`. New
-`lib/domain/services/genetics/linkage_catalog.dart` (`LinkageCatalog`) is the
-single source for the 6 Z-linkage pairs: recombination rate (from
-`GeneticsConstants`), display cM (`rate*100`), and `measured|derived|estimated`
-evidence + source note. Engine (`mendelian_calculator` `tryLinkPair` →
-`recombinationRateFor`) and both UI surfaces (`z_linked_badge`,
-`mutation_detail_sheet` → `lookup`/`linkagesFor`) now read from it. Deleted the
-drifted widget-local tables — `mutation_linkage_data.dart` and the badge's
-`_linkageRates` showed Op-Cin `34`/Op-Slate `40` while the engine used
-`0.32`/`0.405`; catalog closes the drift by construction (Op-Cin 32, Op-Slate
-40.5). Ino-locus alleles normalize to one `ino` token. Derived/estimated rates
-carry an evidence label in the badge popup (`genetics.linkage_derived`/
-`linkage_estimated`, tr/en/de); unified the detail-sheet rate framing to cM.
-No `calculationVersion` bump (rates unchanged — UI drift + pure refactor).
-Updated `.claude/rules/genetics.md` § Sex-Linked Linkage and
-[[domain/genetics-engine]]. 15 new catalog tests; 1981 genetics tests green.
-
-## [2026-07-10] docs | Testing wiki caught up with the tag→CI-gate rule
-
-[[patterns/testing]] now mirrors the "Test Tags → CI Gates" table added to
-`.claude/rules/testing.md` (community tag reserved for heavy screen/widget
-suites; mock-based unit tests stay untagged on the PR gate; new tag-based
-exclusions fall under the skip policy) and its stale stats were refreshed
-(914/11,436 → 917/11,488).
 
 Older entries are archived in [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

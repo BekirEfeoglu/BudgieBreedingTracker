@@ -34,6 +34,15 @@ always cancels. Before 2026-07-02 this cancellation path did not exist —
 editing or deleting a record with a follow-up date left the old reminders
 firing (zombie notifications).
 
+## Form Dirty Check
+
+The edit form's `_isDirty` compares each field against the loaded record
+(mirroring the bird/chick/breeding forms) so backing out of an untouched edit no
+longer fires the "discard changes?" prompt. While the record is still loading
+(`_existingRecord == null`) it assumes dirty so a back tap can't silently drop an
+in-progress edit; weight/cost compare against the same `.toString()` used to
+populate the controllers.
+
 ## Rules
 
 - `.claude/rules/data-layer.md` — ValidatedSyncMixin required for FK to bird/chick

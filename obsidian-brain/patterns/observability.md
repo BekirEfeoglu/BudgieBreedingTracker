@@ -96,6 +96,22 @@ by `EventRemoteSource.subscribeToEvents` and
 `CommunityPostRemoteSource.subscribeToPostChanges` (2026-07-02, iOS Simulator
 `EADDRNOTAVAIL` reconnect-storm finding).
 
+## Filtered Sentry Reporting
+
+Not every caught error should reach Sentry. The shared exclusion set —
+`FreeTierLimitException`, `ValidationException`, `NetworkException` (offline is an
+expected user condition) — lives in one predicate `isExpectedSentryExclusion`
+(`lib/core/utils/sentry_error_filter.dart`), mirroring
+`base_repository.reportPullFailure` and § "Sentry'ye GİTMEYEN olaylar" of the
+rule. Two entry points share it:
+
+- `SentryErrorFilter` mixin → `reportIfUnexpected(error, st)` for Notifiers
+  (`sendToSentry` is split out for test override).
+- `reportUnexpectedToSentry(error, st)` top-level function for non-Notifier call
+  sites (widgets, services) — e.g. the bird photo add/delete storage catches and
+  the `createBird` inner photo-upload catch, which report genuinely unexpected
+  storage/DB failures instead of only logging.
+
 ## Anti-Patterns
 
 1. `print()` (anti-pattern #10)

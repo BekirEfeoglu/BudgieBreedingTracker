@@ -63,6 +63,11 @@ failure instead of dropping it silently — matches the breeding/egg notifier pa
   confused user retrying into a duplicate bird, and the compensating storage
   cleanup only fires when the bird row was never persisted (so it never
   deletes a photo object a saved bird's `photoUrl` still references)
+- Unexpected photo storage/DB errors (gallery add/delete in
+  `bird_detail_photos.dart`, the `createBird` inner upload catch) are reported to
+  Sentry via `reportUnexpectedToSentry` (`sentry_error_filter.dart`, see
+  [[patterns/observability]]); transient network/validation exceptions stay
+  excluded. Previously these paths only logged.
 
 ## Sensitive Field Encryption
 

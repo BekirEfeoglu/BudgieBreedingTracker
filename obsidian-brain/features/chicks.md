@@ -39,6 +39,12 @@ Manual chick creation is also supported.
 - `promoteToBird` resolves species transitively via `eggId -> incubation ->
   breeding pair`; a manually-created chick (no `eggId`) has no species
   anywhere on `Chick`, so it always promotes to `Species.unknown`.
+- `ChickFormState.lastAction` (`ChickFormAction {none,save,wean,deceased,promote,
+  delete}`, mirrors `BirdFormAction`) lets the detail listener suppress the
+  generic `common.saved_successfully` bell-feed entry for wean/promote — those
+  emit their own specific feedback (`wean_success` / `moved_to_birds`), so
+  without it one action logged twice. Edit/deceased/delete still show the generic
+  toast.
 
 ## Statistics
 
