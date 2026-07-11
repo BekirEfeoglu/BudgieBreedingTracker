@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/constants/app_icons.dart';
+import '../../../core/constants/supabase_constants.dart';
 import '../../../core/providers/action_feedback_providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -278,13 +279,13 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
 
 /// Localizes a Supabase table name to a user-friendly translated string.
 String _localizeTable(String table) => switch (table) {
-  'birds' => 'sync.table_birds'.tr(),
-  'eggs' => 'sync.table_eggs'.tr(),
-  'chicks' => 'sync.table_chicks'.tr(),
-  'breeding_pairs' => 'sync.table_breeding_pairs'.tr(),
-  'clutches' => 'sync.table_clutches'.tr(),
-  'nests' => 'sync.table_nests'.tr(),
-  'health_records' => 'sync.table_health_records'.tr(),
-  'events' => 'sync.table_events'.tr(),
+  SupabaseConstants.birdsTable => 'sync.table_birds'.tr(),
+  SupabaseConstants.eggsTable => 'sync.table_eggs'.tr(),
+  SupabaseConstants.chicksTable => 'sync.table_chicks'.tr(),
+  SupabaseConstants.breedingPairsTable => 'sync.table_breeding_pairs'.tr(),
+  SupabaseConstants.clutchesTable => 'sync.table_clutches'.tr(),
+  SupabaseConstants.nestsTable => 'sync.table_nests'.tr(),
+  SupabaseConstants.healthRecordsTable => 'sync.table_health_records'.tr(),
+  SupabaseConstants.eventsTable => 'sync.table_events'.tr(),
   _ => 'sync.table_other'.tr(),
 };

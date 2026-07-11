@@ -94,10 +94,17 @@ class AboutSection extends ConsumerWidget {
           title: 'settings.share_app'.tr(),
           subtitle: 'settings.share_app_desc'.tr(),
           icon: const AppIcon(AppIcons.share),
-          onTap: () {
-            SharePlus.instance.share(
-              ShareParams(text: 'settings.share_message'.tr()),
-            );
+          onTap: () async {
+            // Await + guard for parity with the other share/launch paths in
+            // this section; a platform-channel rejection would otherwise be an
+            // unhandled async error rather than a silent no-op.
+            try {
+              await SharePlus.instance.share(
+                ShareParams(text: 'settings.share_message'.tr()),
+              );
+            } catch (e) {
+              AppLogger.warning('[AboutSection] share app failed: $e');
+            }
           },
         ),
         SettingsNavigationTile(
