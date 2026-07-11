@@ -66,6 +66,11 @@ Comprehensive read-only audit — findings reported, most still open:
   zero-padded month digits (`keys[index].split('-')[1]` -> `"01"`..`"12"`)
   instead of a localized month name. New `monthAbbreviation(context, key)`
   helper in `chart_utils.dart` (`DateFormat.MMM(locale)`) used by all 4.
+- Fixed 2026-07-11: `HealthTrendSummaryCard`'s "Peak Month" row rendered the
+  raw `'YYYY-MM'` key (`2026-01`) as-is. New year-aware
+  `monthYearLabel(context, monthKey)` helper in `chart_utils.dart`
+  (`DateFormat.yMMM`) — kept separate from `monthAbbreviation` because a single
+  peak-month point needs the year (a 12-month period can span two years).
 - Verified 2026-07-02, not auto-fixed (needs design input, not a mechanical
   bug fix): chart series colors (`AppColors.success/warning/info` etc.) are
   fixed constants, not `Theme.of(context).colorScheme`-derived — but this is

@@ -4,6 +4,18 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-11] docs | Statistics peak-month label localized (monthYearLabel helper)
+
+Reconciled `60b403e`. The Health Trend `HealthTrendSummaryCard` "Peak Month" row
+rendered the raw SQL `strftime('%Y-%m')` key (`2026-01`) instead of a localized
+month. New year-aware `monthYearLabel(context, monthKey)` helper in
+`chart_utils.dart` (`DateFormat.yMMM`, tr fallback, raw-key on malformed) —
+separate from the month-only `monthAbbreviation` because a single peak-month
+point needs the year (a 12-month period can span two years). Brings the code
+into compliance with the already-documented locale-aware date rule
+([[patterns/datetime-format]], statistics.md) — no contract change. Recorded the
+sibling fix in [[features/statistics]] § Known Issues. Docs only.
+
 ## [2026-07-11] fix | Community review findings — domain icons, dead payload keys, stale doc
 
 Consistency/cleanup only, no contract change (d7acd75). Double-tap like heart
@@ -170,28 +182,5 @@ fires on the real diagnostic (not a mutation-count heuristic) with the discarded
 7 ≈50%). 2 l10n keys tr/en/de. Docs: genetics.md § Pruning Diagnostic +
 [[domain/genetics-engine]]. All 2018 genetics tests + e2e green. Remaining
 unblocked: T1 (property tests, depends on this). Gated: D2/D4/Q2/I2.
-
-## [2026-07-10] feat | Genetics roadmap D3 + Q3 + I1 (unblocked Phase A/B items)
-
-Continued `dev-docs/genetics-improvement-roadmap.md` after D1.
-**D3** — `mutavi_reference_regression_test.dart`: guide-traceable regression
-matrix (Blue×Blue/split, Cinnamon/Ino×normal female, Greywing×Clearwing/Dilute,
-Cinnamon+Ino→Lacewing), each fixture carrying `guideSection` + `sourceIds`
-(K1–K14), asserting the guide's ratios. Documented that AR split×split collapses
-to phenotype 25% visible / 75% normal-carrier (guide's genotype 25/50/25).
-Test-only, no drift found → no version bump.
-**Q3** — `ReverseCalculationResult.compare`: deterministic 5-key tie-break
-(maxProbability → probabilityAny → fewer states → fewer visuals → alphabetical
-signature), used in the final sort AND `dedupeAndTrim` truncation so the top-25
-is reproducible. Reverse results aren't persisted → no version bump.
-**I1** — bird-selection round-trip: `SelectedParentBird ({id,name})` replaces the
-name-only providers; save fills `GeneticsHistory.fatherBirdId`/`motherBirdId`;
-reopen restores identity; `ParentGenotypeSource {manual,fromBird,fromBirdEdited}`
-provenance badge; `BirdGenotypeMapper.birdToGenotypeMapping` excludes+reports
-unknown mutations (UI scope warning). No migration (fields already existed).
-4 new l10n keys (tr/en/de). Docs: `.claude/rules/genetics.md` (Reverse,
-new Bird Selection Round-Trip, MUTAVI matrix) + [[domain/genetics-engine]].
-All 2005 genetics domain+feature tests + e2e green; gated items (D2/D4/Q2/I2)
-left for domain-owner/architecture decisions.
 
 Older entries are archived in [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
