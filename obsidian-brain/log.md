@@ -4,6 +4,19 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-11] fix | Community review findings — domain icons, dead payload keys, stale doc
+
+Consistency/cleanup only, no contract change (d7acd75). Double-tap like heart
+(`community_media_gallery`) `Icon(Icons.favorite_rounded)` → `AppIcon(AppIcons.heart)`
+(#12, shadow kept via blurred stacked copy); swipe-left bookmark
+(`community_swipeable_post_card`) `LucideIcons.bookmark` → `AppIcon(AppIcons.bookmark)`
+(#24, unused lucide import dropped). Create-post payload stopped sending
+`user_id`/`content_hash`/`is_deleted` — the `create-community-post` edge fn derives
+all three (Zod strips unknown keys), so they were dead data (#8). Corrected stale
+`followedUsersProvider` doc comment that claimed email/full_name are returned; the
+repo returns only public-safe `id`/`display_name`/`avatar_url`. No wiki
+feature-page contract affected. [[features/community]], [[patterns/anti-patterns]]
+
 ## [2026-07-11] fix+docs | Birds Sentry photo reporting, chick feedback dedup, health-record dirty check
 
 Reconciled three behavioral `main` fixes (36ad9a4…744d27f). **birds:** unexpected
