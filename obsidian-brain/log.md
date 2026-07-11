@@ -4,6 +4,20 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-11] fix | Auth legal-links launchUrl failure now logged + surfaced
+
+Reconciled `343b580`. The Terms/Privacy `TapGestureRecognizer`s in
+`legal_links_text.dart` (auth screens) fired `launchUrl` fire-and-forget — a tap
+that couldn't open the external URL failed silently. Extracted `_openUrl(url)`:
+awaits `launchUrl`, logs failures via `AppLogger.warning`, and surfaces
+`errors.cannot_open_url` in a SnackBar when the launch returns false / throws
+(mirrors the premium paywall `_openLegalUrl` + `premium_screen`
+`_openSubscriptionManagement` handling reconciled earlier this session).
+Silent-failure → logged+feedback robustness only; no contract change.
+[[features/auth]] unchanged — the page doesn't document the legal-links widget's
+launch behavior. Docs/log only. Rotated the oldest 2026-07-10 v6 genetics-audit
+entry into [[log-archive-2026-07-h]].
+
 ## [2026-07-11] docs | Local AI rule/wiki reconciled to fail-fast reality (no retry, no client rate limit)
 
 Doc-only reconciliation — the `LocalAiService` code is authoritative for current
@@ -166,30 +180,5 @@ heterozygous), so `grey × normal → 50/50` matches the guide out of the box. T
 picks the clearly-labelled DF. Only enhancement: the dosage tooltip now spells
 out the breeding consequence (SF ~50% / DF 100%, default SF) in tr/en/de. No
 engine/math change, no version bump for M1.
-
-## [2026-07-10] fix | Genetics engine audit — viability set aligned to MUTAVI (v6)
-
-3-agent read-only audit of the genetics engine (inheritance math, mutation data,
-epistasis+viability), each finding verified against the code + the corrected
-MUTAVI guide. **Core math confirmed correct** (sex-linked genotype, AR/AID,
-allelic series incl. sex-linked hemizygous females, ino masking). Fixes landed
-(calculationVersion v5→v6, viability output changed):
-- `df_crested` severity `lethal → subVital` — the app's own cited source
-  (MUTAVI K10, "Crest: A Subvital Character") calls crest subvital, not lethal.
-- Removed false-positive sub-vital warnings on healthy homozygous pairings:
-  `df_spangle` (DF spangle is viable), `ino_x_ino` / `pallid_x_pallid` /
-  `texas_clearbody_x_texas_clearbody` (standard, healthy — the guide never
-  warned them; an old comment mis-attributed it).
-- `epistasis_engine_modifiers` no longer lists Pearly/Pallid as "masked by Ino"
-  — they are ino-locus alleles resolved by the allelic-series resolver (Pearly
-  is dominant to ino; Pallid co-expresses), so masking them contradicted the
-  phenotype name.
-Non-versioned fixes: feather_duster description `(fd/fd)`→`(fdu/fdu)` (fd is
-Faded's symbol); defensive comment on pallid's ino-locus rank. Extensive test
-updates across 8 files to the new evidence-based behavior; 1016 genetics domain
-+ 1018 feature + e2e green. Mutation catalog verified 39/39 vs the guide, all
-inheritance types/loci/sex-linkage correct. Debatable items left for the domain
-owner: AD "visual = homozygous" model (visual×normal→100% mutant vs guide 50/50
-heterozygous default); ino not masking melanin-pattern names (Blackface etc.).
 
 Older entries are archived in [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

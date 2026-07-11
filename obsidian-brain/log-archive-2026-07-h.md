@@ -2,9 +2,34 @@
 
 Archived July 2026 entries rotated out of [[log]] during the 2026-07-11
 marketing-site documentation sync (and the same-day birds/chicks/health-records
-sync).
+and auth legal-links syncs).
 
 ---
+
+## [2026-07-10] fix | Genetics engine audit — viability set aligned to MUTAVI (v6)
+
+3-agent read-only audit of the genetics engine (inheritance math, mutation data,
+epistasis+viability), each finding verified against the code + the corrected
+MUTAVI guide. **Core math confirmed correct** (sex-linked genotype, AR/AID,
+allelic series incl. sex-linked hemizygous females, ino masking). Fixes landed
+(calculationVersion v5→v6, viability output changed):
+- `df_crested` severity `lethal → subVital` — the app's own cited source
+  (MUTAVI K10, "Crest: A Subvital Character") calls crest subvital, not lethal.
+- Removed false-positive sub-vital warnings on healthy homozygous pairings:
+  `df_spangle` (DF spangle is viable), `ino_x_ino` / `pallid_x_pallid` /
+  `texas_clearbody_x_texas_clearbody` (standard, healthy — the guide never
+  warned them; an old comment mis-attributed it).
+- `epistasis_engine_modifiers` no longer lists Pearly/Pallid as "masked by Ino"
+  — they are ino-locus alleles resolved by the allelic-series resolver (Pearly
+  is dominant to ino; Pallid co-expresses), so masking them contradicted the
+  phenotype name.
+Non-versioned fixes: feather_duster description `(fd/fd)`→`(fdu/fdu)` (fd is
+Faded's symbol); defensive comment on pallid's ino-locus rank. Extensive test
+updates across 8 files to the new evidence-based behavior; 1016 genetics domain
++ 1018 feature + e2e green. Mutation catalog verified 39/39 vs the guide, all
+inheritance types/loci/sex-linkage correct. Debatable items left for the domain
+owner: AD "visual = homozygous" model (visual×normal→100% mutant vs guide 50/50
+heterozygous default); ino not masking melanin-pattern names (Blackface etc.).
 
 ## [2026-07-10] feat | Genetics roadmap Q1 — pruning diagnostic + coverage warning
 
