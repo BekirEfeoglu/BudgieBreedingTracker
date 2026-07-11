@@ -58,8 +58,13 @@ abstract final class GeneticsConstants {
   static const String locusDilution = 'dilution';
   static const String locusBlueSeries = 'blue_series';
 
-  /// Ino locus on Z chromosome (WBO/MUTAVI hierarchy):
-  /// ino+ > Texas Clearbody (tcb) > Pearly (prl) > Pallid (pal) > Ino (ino).
+  /// Ino locus on Z chromosome (WBO/MUTAVI hierarchy, guide §176-182 / K7).
+  /// SIMPLE dominance runs: ino+ > Texas Clearbody (tcb) > Pearly (prl) >
+  /// Ino (ino). Pallid (pal) is NOT a linear link in that chain — it
+  /// CO-EXPRESSES with the other alleles (pal+ino → PallidIno/Lacewing,
+  /// pal+prl → Pallid Pearly, …), resolved via explicit compound rules in
+  /// `allele_resolver_compounds.dart`; pallid's linear `dominanceRank`
+  /// (`mutation_data_sex_linked.dart`) is a fallback that is never reached.
   static const String locusIno = 'ino_locus';
 
   /// Crested locus: tufted / half-circular / full-circular alleles.
