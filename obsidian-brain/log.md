@@ -4,6 +4,17 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-11] fix | Settings sync-table map uses SupabaseConstants + guarded share
+
+Reconciled `5f9fbbf` (two settings-review fixes, no contract change).
+`sync_detail_sheet._localizeTable` switched on raw `'birds'`/`'eggs'`/... table
+string literals (anti-pattern #8) → now switches on `SupabaseConstants.*Table`
+so a schema rename tracks the display mapping instead of silently falling
+through to `sync.table_other`. `about_section`'s share-app tile fired
+`SharePlus.share` fire-and-forget (only unguarded share/launch in the section)
+→ now `await` + try/catch + `AppLogger.warning`, matching the store/support/
+export paths. Docs only, no managed count changed.
+
 ## [2026-07-11] docs | Premium paywall Terms (EULA) label fully localized
 
 Reconciled `ca22fed`. `premium_paywall_footer.dart` built its terms link label
