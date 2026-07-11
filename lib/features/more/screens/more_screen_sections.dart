@@ -100,10 +100,21 @@ void _showMoreAboutDialog(BuildContext context) {
                 const SizedBox(height: AppSpacing.sm),
                 InkWell(
                   onTap: () async {
+                    // Bare launchUrl (no canLaunchUrl): mailto false-negatives
+                    // on Android 11+ without a <queries> manifest entry.
+                    // launchUrl can still return false (no handler) without
+                    // throwing — surface that too, not just exceptions.
                     try {
-                      await launchUrl(
+                      final launched = await launchUrl(
                         Uri.parse('mailto:${AppConstants.supportEmail}'),
                       );
+                      if (!launched && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('errors.cannot_open_url'.tr()),
+                          ),
+                        );
+                      }
                     } on Exception catch (e, st) {
                       AppLogger.error('launchUrl mailto failed', e, st);
                       if (context.mounted) {
@@ -143,8 +154,18 @@ void _showMoreAboutDialog(BuildContext context) {
                 ),
                 InkWell(
                   onTap: () async {
+                    // launchUrl can return false (no browser) without throwing.
                     try {
-                      await launchUrl(Uri.parse(AppConstants.websiteUrl));
+                      final launched = await launchUrl(
+                        Uri.parse(AppConstants.websiteUrl),
+                      );
+                      if (!launched && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('errors.cannot_open_url'.tr()),
+                          ),
+                        );
+                      }
                     } on Exception catch (e, st) {
                       AppLogger.error('launchUrl website failed', e, st);
                       if (context.mounted) {
