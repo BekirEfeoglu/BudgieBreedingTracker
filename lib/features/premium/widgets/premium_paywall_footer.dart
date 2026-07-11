@@ -122,7 +122,7 @@ class _PremiumLegalLinksSection extends StatelessWidget {
                   fallbackRoute: AppRoutes.termsOfService,
                 ),
                 child: Text(
-                  '${'settings.terms'.tr()} (EULA)',
+                  'settings.terms_eula'.tr(),
                   style: linkStyle,
                 ),
               ),
