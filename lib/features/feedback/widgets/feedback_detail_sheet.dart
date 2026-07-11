@@ -19,7 +19,7 @@ class FeedbackStatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,
-        vertical: 2,
+        vertical: AppSpacing.xxs,
       ),
       decoration: BoxDecoration(
         color: status.color.withValues(alpha: 0.12),
@@ -115,7 +115,7 @@ class FeedbackDetailSheet extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.sm,
-                  vertical: 2,
+                  vertical: AppSpacing.xxs,
                 ),
                 decoration: BoxDecoration(
                   color: entry.category.color.withValues(alpha: 0.1),

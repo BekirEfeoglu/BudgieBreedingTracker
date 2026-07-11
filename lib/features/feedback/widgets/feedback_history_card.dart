@@ -114,7 +114,7 @@ class FeedbackHistoryCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.sm,
-                      vertical: 2,
+                      vertical: AppSpacing.xxs,
                     ),
                     decoration: BoxDecoration(
                       color: entry.category.color.withValues(alpha: 0.1),
