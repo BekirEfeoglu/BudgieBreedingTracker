@@ -80,7 +80,7 @@ void main() {
 
       expect(find.text(l10n('premium.account_required_title')), findsOneWidget);
       expect(find.text(l10n('settings.privacy_policy')), findsOneWidget);
-      expect(find.text('settings.terms (EULA)'), findsOneWidget);
+      expect(find.text(l10n('settings.terms_eula')), findsOneWidget);
     });
   });
 }
