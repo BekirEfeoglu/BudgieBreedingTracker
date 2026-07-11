@@ -122,6 +122,7 @@ class _PedigreeExportButtonState extends State<PedigreeExportButton> {
   Future<void> _exportPdf() async {
     setState(() => _isExporting = true);
     final messenger = ScaffoldMessenger.of(context);
+    File? tempFile;
 
     try {
       final service = PdfExportService();
@@ -137,11 +138,11 @@ class _PedigreeExportButtonState extends State<PedigreeExportButton> {
         maxDepth: widget.maxDepth,
         extension: 'pdf',
       );
-      final file = File(p.join(dir.path, metadata.fileName));
-      await file.writeAsBytes(bytes);
+      tempFile = File(p.join(dir.path, metadata.fileName));
+      await tempFile.writeAsBytes(bytes);
       await SharePlus.instance.share(
         ShareParams(
-          files: [XFile(file.path)],
+          files: [XFile(tempFile.path)],
           fileNameOverrides: [metadata.fileName],
           subject: metadata.subject,
           text: metadata.text,
@@ -155,6 +156,7 @@ class _PedigreeExportButtonState extends State<PedigreeExportButton> {
       Sentry.captureException(e, stackTrace: st);
       messenger.showSnackBar(SnackBar(content: Text('errors.unknown'.tr())));
     } finally {
+      await _deleteTempFile(tempFile);
       if (mounted) setState(() => _isExporting = false);
     }
   }
@@ -163,6 +165,7 @@ class _PedigreeExportButtonState extends State<PedigreeExportButton> {
     if (widget.onCaptureImage == null) return;
     setState(() => _isExporting = true);
     final messenger = ScaffoldMessenger.of(context);
+    File? tempFile;
 
     try {
       final image = await widget.onCaptureImage!();
@@ -177,11 +180,11 @@ class _PedigreeExportButtonState extends State<PedigreeExportButton> {
         maxDepth: widget.maxDepth,
         extension: 'png',
       );
-      final file = File(p.join(dir.path, metadata.fileName));
-      await file.writeAsBytes(byteData.buffer.asUint8List());
+      tempFile = File(p.join(dir.path, metadata.fileName));
+      await tempFile.writeAsBytes(byteData.buffer.asUint8List());
       await SharePlus.instance.share(
         ShareParams(
-          files: [XFile(file.path)],
+          files: [XFile(tempFile.path)],
           fileNameOverrides: [metadata.fileName],
           subject: metadata.subject,
           text: metadata.text,
@@ -195,7 +198,21 @@ class _PedigreeExportButtonState extends State<PedigreeExportButton> {
       Sentry.captureException(e, stackTrace: st);
       messenger.showSnackBar(SnackBar(content: Text('errors.unknown'.tr())));
     } finally {
+      await _deleteTempFile(tempFile);
       if (mounted) setState(() => _isExporting = false);
+    }
+  }
+
+  /// Best-effort cleanup of the shared temp file once the share sheet closes,
+  /// so repeated exports don't accumulate in the temp dir (data-io.md § Share
+  /// Sheet; mirrors ExportActions._shareFile). A failure here must not surface
+  /// to the user — the export already succeeded.
+  Future<void> _deleteTempFile(File? file) async {
+    if (file == null) return;
+    try {
+      if (file.existsSync()) await file.delete();
+    } catch (e) {
+      AppLogger.warning('[PedigreeExport] temp file cleanup failed: $e');
     }
   }
 }

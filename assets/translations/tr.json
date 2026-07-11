@@ -1270,6 +1270,7 @@
     "ancestors_of_possible": "{} / {} ata bulundu",
     "deepest_generation": "En Derin Jenerasyon",
     "generation_depth": "{}. jenerasyon",
+    "generation_short": "J{}",
     "total_offspring": "Toplam Yavru",
     "offspring_birds": "Kuşlar",
     "offspring_chicks": "Civcivler",

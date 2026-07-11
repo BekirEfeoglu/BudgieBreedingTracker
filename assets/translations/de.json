@@ -1270,6 +1270,7 @@
     "ancestors_of_possible": "{} / {} Vorfahren gefunden",
     "deepest_generation": "Tiefste Generation",
     "generation_depth": "{}. Generation",
+    "generation_short": "G{}",
     "total_offspring": "Gesamte Nachkommen",
     "offspring_birds": "Vögel",
     "offspring_chicks": "Küken",

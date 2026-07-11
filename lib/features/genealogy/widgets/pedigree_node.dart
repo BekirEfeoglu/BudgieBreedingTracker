@@ -188,7 +188,7 @@ class PedigreeNode extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    'G$depth',
+                    'genealogy.generation_short'.tr(args: ['$depth']),
                     style: theme.textTheme.labelSmall?.copyWith(
                       fontSize: 8,
                       fontWeight: FontWeight.bold,

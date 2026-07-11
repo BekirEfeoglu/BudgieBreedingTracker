@@ -59,15 +59,20 @@ void main() {
       await tester.pumpWidget(_wrap(PedigreeNode(bird: _testBird, depth: 2)));
       await tester.pump();
 
-      // Generation badge shows 'G2'
-      expect(find.text('G2'), findsOneWidget);
+      // Generation badge is localized (genealogy.generation_short). Without a
+      // mounted EasyLocalization ancestor .tr() renders the raw key, which is
+      // what l10n() returns here (test_support/l10n_lookup.dart convention).
+      expect(
+        find.text(l10n('genealogy.generation_short')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('hides generation badge when depth < 2', (tester) async {
       await tester.pumpWidget(_wrap(PedigreeNode(bird: _testBird, depth: 1)));
       await tester.pump();
 
-      expect(find.text('G1'), findsNothing);
+      expect(find.text(l10n('genealogy.generation_short')), findsNothing);
     });
 
     testWidgets('shows ring number when set', (tester) async {

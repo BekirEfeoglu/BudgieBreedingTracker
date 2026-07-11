@@ -1270,6 +1270,7 @@
     "ancestors_of_possible": "{} / {} ancestors found",
     "deepest_generation": "Deepest Generation",
     "generation_depth": "Generation {}",
+    "generation_short": "G{}",
     "total_offspring": "Total Offspring",
     "offspring_birds": "Birds",
     "offspring_chicks": "Chicks",
