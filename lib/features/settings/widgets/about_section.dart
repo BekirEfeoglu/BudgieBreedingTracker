@@ -68,15 +68,18 @@ class AboutSection extends ConsumerWidget {
                   await canLaunchUrl(uri) &&
                   await launchUrl(uri, mode: LaunchMode.externalApplication);
               if (!launched) {
+                // A store-page launch that fails is a "can't open link"
+                // condition, not a generic error — use the precise message,
+                // matching the About dialog + support launch paths.
                 ActionFeedbackService.show(
-                  'errors.unknown'.tr(),
+                  'errors.cannot_open_url'.tr(),
                   type: ActionFeedbackType.error,
                 );
               }
             } catch (e, st) {
               AppLogger.error('[AboutSection] store launch failed', e, st);
               ActionFeedbackService.show(
-                'errors.unknown'.tr(),
+                'errors.cannot_open_url'.tr(),
                 type: ActionFeedbackType.error,
               );
             }
