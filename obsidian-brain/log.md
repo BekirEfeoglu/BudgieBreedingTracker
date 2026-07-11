@@ -4,6 +4,22 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-11] docs | Local AI rule/wiki reconciled to fail-fast reality (no retry, no client rate limit)
+
+Doc-only reconciliation — the `LocalAiService` code is authoritative for current
+behavior and is correct; local-ai.md overstated two unshipped mechanics.
+**§ Fallback Chain:** `local_ai_transport.dart` routes to exactly ONE backend
+(`config.isOpenRouter ? OpenRouter : Ollama`) and throws a typed
+`NetworkException`/`ValidationException` (`genetics.local_ai_error_*` l10n key) on
+the FIRST failure — no retry-once, no 2s backoff, no cross-backend fallback, and
+no `AnalysisResult.unavailable()` type (models are `LocalAi{Genetics,Sex,Mutation}Insight`,
+surfaced via AsyncValue.guard → ErrorState). The helper-not-gate contract still
+holds. **§ Cost & Size Guards:** there is no client-side rate limiter (only the
+8-entry/10-min `LocalAiCache`; OpenRouter 429 is upstream) — consistent with the
+rule's own Anti-Pattern #6. Registered both as future/unshipped in [[known-gaps]]
+and mirrored the fixes into [[domain/local-ai]]. No lib/ change. Rotated the
+oldest Q1 log entry into [[log-archive-2026-07-h]].
+
 ## [2026-07-11] fix | Genealogy export temp-file cleanup + localized generation badge
 
 Reconciled `cb4a71b`. `PedigreeExportButton`'s PDF/PNG export wrote a temp file to
@@ -175,23 +191,5 @@ updates across 8 files to the new evidence-based behavior; 1016 genetics domain
 inheritance types/loci/sex-linkage correct. Debatable items left for the domain
 owner: AD "visual = homozygous" model (visual×normal→100% mutant vs guide 50/50
 heterozygous default); ino not masking melanin-pattern names (Blackface etc.).
-
-## [2026-07-10] feat | Genetics roadmap Q1 — pruning diagnostic + coverage warning
-
-Multi-locus builds drop combinations below `probabilityPruningThreshold` then
-normalize the survivors, which hides that mass was dropped (results read more
-certain than they are). New `MendelianCalculator.calculateDetailed()` returns
-`OffspringCalculation {results, PruningDiagnostics}` — wasPruned, prunedStateCount,
-discardedProbabilityMassBeforeNormalization (raw 0..1), thresholds, normalized —
-instrumented in `_crossAllLoci`'s early-pruning loop. `calculateFromGenotypes`
-still returns the identical list (`_calculate(...).results`), byte-semantics
-preserved (guarded by a test) → no calculationVersion bump. Provider chain:
-`offspringCalculationProvider` (isolate) → `offspringResultsProvider` (derived) +
-`pruningDiagnosticsProvider`; `PruningCoverageWarning` banner in the results step
-fires on the real diagnostic (not a mutation-count heuristic) with the discarded
-%. 8 new engine tests (5/6/7-locus boundaries deterministic: 6 loci ≈10.9% mass,
-7 ≈50%). 2 l10n keys tr/en/de. Docs: genetics.md § Pruning Diagnostic +
-[[domain/genetics-engine]]. All 2018 genetics tests + e2e green. Remaining
-unblocked: T1 (property tests, depends on this). Gated: D2/D4/Q2/I2.
 
 Older entries are archived in [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

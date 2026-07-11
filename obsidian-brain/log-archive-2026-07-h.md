@@ -6,6 +6,24 @@ sync).
 
 ---
 
+## [2026-07-10] feat | Genetics roadmap Q1 — pruning diagnostic + coverage warning
+
+Multi-locus builds drop combinations below `probabilityPruningThreshold` then
+normalize the survivors, which hides that mass was dropped (results read more
+certain than they are). New `MendelianCalculator.calculateDetailed()` returns
+`OffspringCalculation {results, PruningDiagnostics}` — wasPruned, prunedStateCount,
+discardedProbabilityMassBeforeNormalization (raw 0..1), thresholds, normalized —
+instrumented in `_crossAllLoci`'s early-pruning loop. `calculateFromGenotypes`
+still returns the identical list (`_calculate(...).results`), byte-semantics
+preserved (guarded by a test) → no calculationVersion bump. Provider chain:
+`offspringCalculationProvider` (isolate) → `offspringResultsProvider` (derived) +
+`pruningDiagnosticsProvider`; `PruningCoverageWarning` banner in the results step
+fires on the real diagnostic (not a mutation-count heuristic) with the discarded
+%. 8 new engine tests (5/6/7-locus boundaries deterministic: 6 loci ≈10.9% mass,
+7 ≈50%). 2 l10n keys tr/en/de. Docs: genetics.md § Pruning Diagnostic +
+[[domain/genetics-engine]]. All 2018 genetics tests + e2e green. Remaining
+unblocked: T1 (property tests, depends on this). Gated: D2/D4/Q2/I2.
+
 ## [2026-07-10] feat | Genetics roadmap D3 + Q3 + I1 (unblocked Phase A/B items)
 
 Continued `dev-docs/genetics-improvement-roadmap.md` after D1.

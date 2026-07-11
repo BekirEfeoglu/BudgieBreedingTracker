@@ -25,6 +25,8 @@ No open latent code surfaces are currently tracked.
 | Marketplace inline banner ads | Design target only; real banner call sites are home, calendar, bird/breeding/chick lists | `marketplace.md`, `ads.md` |
 | Statistics free preview / custom range / AI insight | `/statistics` is all-or-nothing gated (premium OR rewarded ad); no per-chart free tier | `statistics.md` |
 | Per-session listing in Settings → security | Only an explanation dialog + "sign out all sessions" — don't over-promise | `settings.md` |
+| Local AI retry-once + cross-backend fallback | Transport is fail-fast, single backend (`config.isOpenRouter ? OpenRouter : Ollama`); first failure throws a typed `NetworkException`/`ValidationException` — no retry, no 2s backoff, no cross-backend fallback, no `AnalysisResult.unavailable()` type. The helper-not-gate contract still holds | `local-ai.md` § Fallback Chain |
+| Local AI client-side rate limit (5/min, premium 2×) | Not client-enforced. Only bound is the `LocalAiCache` (8 entries / 10 min, a cache); OpenRouter 429 is upstream, not app-enforced. Rate limiting is future server-side work (rule's own Anti-Pattern #6) | `local-ai.md` § Cost & Size Guards |
 
 ## Genetics Roadmap — Still Open
 

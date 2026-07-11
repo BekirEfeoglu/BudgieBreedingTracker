@@ -22,8 +22,12 @@ AI çıktısı ASLA tek yetkili — kullanıcı her zaman manuel override edebil
 - Image: **max 10MB** (assets-images.md ile aynı limit) — daha büyükse reject
 - Image: önce client-side resize (max 1024px LLM için yeterli)
 - Token budget: prompt başına max 4K input / 512 output
-- Rate limit: kullanıcı başına dakikada 5 çağrı (kötüye kullanım engeli)
-- Premium: limit 2x (rate limit yumuşar, daha kaliteli model)
+- Rate limit: **client-side rate limiter YOK** (bugün). Tek gerçek sınır in-memory
+  `LocalAiCache` (8 entry / 10 dk) — bu bir cache, limiter DEĞİL. OpenRouter HTTP
+  429 `genetics.local_ai_error_rate_limit`'e eşlenir ama bu upstream sağlayıcı
+  sınırıdır, uygulama enforce etmez. "Kullanıcı başına dakikada N çağrı" + premium
+  2x yumuşatma **gelecek server-side işidir** (bu dosyanın Anti-Pattern #6'sıyla
+  tutarlı — client-side hardcode etme); shipped kabul etme (known-gaps.md)
 
 ```dart
 const maxImageBytes = 10 * 1024 * 1024;
@@ -51,14 +55,23 @@ _cache[cacheKey] = result;
 ```
 
 ## Fallback Chain
+Gerçek davranış **fail-fast, tek backend, typed error** (`local_ai_transport.dart`):
 ```
-Try primary backend (Ollama or OpenRouter)
-  -> Network/timeout error -> retry once (2s backoff)
-  -> Still failing -> try other backend if configured
-  -> All failed -> return AnalysisResult.unavailable() + show graceful UI
+Transport tek backend'e router'lanır: config.isOpenRouter ? OpenRouter : Ollama
+  -> İlk network/timeout/parse hatasında typed exception FIRLATIR:
+     NetworkException / ValidationException (genetics.local_ai_error_* l10n key ile)
+  -> retry YOK, 2s backoff YOK, diğer backend'e cross-fallback YOK
+  -> Hata local_ai_providers.dart'ta AsyncValue.guard ile AsyncError'a düşer
+     -> UI ErrorState gösterir
 ```
+- `AnalysisResult.unavailable()` diye bir tip **yoktur**; model tipleri
+  `LocalAiGeneticsInsight` / `LocalAiSexInsight` / `LocalAiMutationInsight`
+- **Sözleşme korunur:** AI başarısız olsa da **iş engellenmez** — manuel input ve
+  deterministik hesaplayıcı her zaman primary path'tir. AI yardımcıdır, gate değil.
 
-UI'da AI başarısız olduğunda **iş engellenmemeli** — manuel input her zaman primary path. AI bir yardımcıdır, gate değil.
+**Gelecek (unshipped, bkz. known-gaps.md):** retry-once + 2s backoff ve config
+edilmişse diğer backend'e cross-fallback bir gelecek iyileştirmesidir — bugün YOK.
+Eklenirse bu bölüm gerçek mekaniğiyle güncellenmeli.
 
 ## PII Redaction
 - Asla kullanıcı email, profil adı, telefon prompt'a koyma

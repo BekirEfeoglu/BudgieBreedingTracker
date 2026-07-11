@@ -22,7 +22,11 @@ LLM-based analysis for budgerigar photos (gender/mutation prediction) and text h
 - Max image: **10MB** (same limit as assets-images.md)
 - Client-side resize to max 1024px before sending (lower token cost)
 - Token budget: max 4K input / 512 output per prompt
-- Rate limit: 5 calls/min per user (premium: 2×)
+- Rate limit: **no client-side limiter today**. The only real bound is the in-memory
+  `LocalAiCache` (8 entries / 10 min) — a cache, not a limiter. OpenRouter HTTP 429
+  maps to `genetics.local_ai_error_rate_limit`, but that is the upstream provider's
+  limit, not app-enforced. "N calls/min per user" + premium 2× is future server-side
+  work (consistent with local-ai.md Anti-Pattern #6) — see [[known-gaps]]
 
 ## Caching
 
@@ -38,14 +42,23 @@ LLM-based analysis for budgerigar photos (gender/mutation prediction) and text h
 
 ## Fallback Chain
 
+Actual behavior is **fail-fast, single backend, typed error** (`local_ai_transport.dart`):
+
 ```
-Primary backend
-  → NetworkException → retry once (2s backoff)
-  → Still failing → try other backend (if configured)
-  → All failed → AnalysisResult.unavailable() + graceful UI
+Transport routes to ONE backend: config.isOpenRouter ? OpenRouter : Ollama
+  → first network/timeout/parse failure THROWS a typed exception
+    (NetworkException / ValidationException, genetics.local_ai_error_* l10n key)
+  → NO retry, NO 2s backoff, NO cross-backend fallback
+  → surfaces via AsyncValue.guard (local_ai_providers.dart) → AsyncError → UI ErrorState
 ```
 
-AI failure must **never block the user** — manual input is always the primary path.
+- There is no `AnalysisResult.unavailable()` type; models are
+  `LocalAiGeneticsInsight` / `LocalAiSexInsight` / `LocalAiMutationInsight`.
+- The contract still holds: AI failure **never blocks the user** — manual input and
+  the deterministic calculator remain the primary path.
+
+**Unshipped (see [[known-gaps]]):** retry-once + 2s backoff and cross-backend
+fallback are a future enhancement, not implemented today.
 
 ## PII Redaction
 
