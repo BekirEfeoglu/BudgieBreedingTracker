@@ -256,6 +256,14 @@ Bu göstergeler analytics hedefi değil, release acceptance ölçütüdür:
 
 ### D4 — Açık linkage fazı · P0 · L
 
+**Durum: Shipped (2026-07-12, single-pair MVP).** `LinkagePhase {auto, coupling,
+repulsion}` + `ParentGenotype.phaseOverrides` + `LinkagePhaseControl` (baba
+kolonu, tek en-sıkı çift) uygulandı; `auto` varsayılanı değişmediği için
+`calculationVersion` bump edilmedi. Residual: baba aynı anda iki bağımsız
+linked çift taşırsa yalnız en sıkısı kontrol edilir — bkz.
+`obsidian-brain/known-gaps.md`. Aşağıdaki bölüm orijinal tasarım planı olarak
+korunur.
+
 **Sorun:** Baba iki linked lokusta heterozigot olduğunda faz, iki state de `split` ise repulsion; aksi halde coupling olarak örtük seçiliyor. Kullanıcı bildiği fazı açıkça giremiyor.
 
 **Önerilen ürün modeli:** `Otomatik (mevcut davranış) | Coupling | Repulsion` üç durumlu kontrol. `Otomatik` geriye dönük davranışı korur; explicit seçim ayrı metadata olarak tutulur. `AlleleState.split` değerini daha fazla anlamla yüklemek yerine typed `LinkagePhase`/override modeli tercih edilir.
@@ -445,7 +453,7 @@ Q1 diagnostic teslim edilmeden bu özellik geliştirmeye alınmaz.
 | D1 | Linkage tek kaynak + UI drift | P0 | M | Yok | Değer değişirse bump |
 | D2 | Viability evidence/semantik audit | P0 | M | Domain owner | Sınıflandırma değişirse bump |
 | D3 | MUTAVI referans matrisi | P0 | M | Yok | Düzeltmeye bağlı |
-| D4 | Açık linkage fazı | P0 | L | D1, D3, ADR | Default değişirse bump |
+| D4 | Açık linkage fazı — **Shipped 2026-07-12 (single-pair MVP)** | P0 | L | D1, D3, ADR | Bump edilmedi (default `auto` değişmedi) |
 | Q1 | Pruning diagnostic | P1 | L | D3 | Eşik/normalize değişirse bump |
 | Q2 | Mutation evidence metadata | P1 | M | D2 ile ortak model | Model kararı değişirse bump |
 | Q3 | Reverse tie-break | P1 | S | Yok | Hayır |

@@ -30,11 +30,12 @@ No open latent code surfaces are currently tracked.
 ## Genetics Roadmap — Still Open
 
 `dev-docs/genetics-improvement-roadmap.md` is a dated plan, not a shipped-state
-source. D1/D2/D3, Q1/Q3, and I1 are implemented; the items below are not.
+source. D1/D2/D3, D4 (single-pair MVP, 2026-07-12), Q1/Q3, and I1 are
+implemented; the items below are not.
 
 | ID / design goal | Current reality | Owning contract |
 |------------------|-----------------|-----------------|
-| D4 explicit linkage phase | No `Otomatik | Coupling | Repulsion` control or persisted phase metadata; phase is inferred from allele states | `genetics.md` |
+| D4 residual: multi-pair simultaneous linkage phase | `LinkagePhaseControl` shipped (`Otomatik \| Coupling \| Repulsion`, persisted in `GeneticsHistory.fatherPhaseOverrides`, Drift schema v28) but exposes only the father's tightest active linked pair; if two independent pairs are heterozygous at once, the second stays `auto` with no control | `genetics.md` § Sex-Linked Linkage |
 | Q2 mutation evidence metadata | `BudgieMutationRecord` has no typed `evidenceLevel`/`sourceIds`; disputes remain prose | `genetics.md` |
 | I2 breeding genetics advisory | Breeding form shows inbreeding only; no combined offspring + viability card | `genetics.md`, `breeding-eggs.md` |
 | M1 stale batch recompute | History shows stale rows but has no user-approved bulk recompute | `genetics.md` |

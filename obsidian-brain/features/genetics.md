@@ -46,6 +46,16 @@ version.
   Duster (lethal); removed healthy-pair warnings must not be reintroduced
   without approved evidence.
 - 977 explicit domain `test()` declarations as of 2026-07-10.
+- **Explicit linkage phase control — shipped 2026-07-12 (roadmap D4).**
+  `LinkagePhase {auto, coupling, repulsion}` + `ParentGenotype.phaseOverrides`
+  let the user force coupling/repulsion for the father's tightest active
+  `LinkageCatalog` pair (`LinkagePhaseControl` in the father column of parent
+  selection). `auto` (default) is byte-identical to prior implicit inference,
+  so **calculation version stayed v8** — only an explicit user choice changes
+  output. Override persists through the isolate boundary into
+  `GeneticsHistory.fatherPhaseOverrides` (Drift schema v28). Single-pair MVP:
+  if the father is heterozygous across two independent linked pairs at once,
+  only the tightest is exposed for override.
 
 See [[domain/genetics-engine]] for inheritance/version details.
 
@@ -75,7 +85,8 @@ apply here.
 
 ## Known Deferred Work
 
-- Explicit linkage phase control (D4)
+- Multi-pair simultaneous linkage phase override (residual D4 gap —
+  single-pair MVP shipped 2026-07-12, see § Current Engine Contract)
 - Typed mutation evidence/confidence metadata (Q2)
 - Combined breeding-form genetics advisory (I2)
 - User-approved stale-history batch recompute (M1)

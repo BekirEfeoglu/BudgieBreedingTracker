@@ -24,6 +24,8 @@ Tüm hesap çıktıları kalıcı kaydedildiğinde `calculationVersion` alanı i
 
 Güncel değer: `GeneticsConstants.calculationVersion = 8`. `GeneticsHistory.isStale` bu sabite göre eski kayıtları işaretler; sabit değiştiğinde `genetics_constants_test.dart` literal assertion'ı ve `genetics_history_model_test.dart` isStale testleri güncellenmeli.
 
+**2026-07-12 istisna — bump edilmedi:** Explicit linkage phase kontrolü (§ Sex-Linked Linkage) `calculationVersion`'ı DEĞİŞTİRMEDİ (`8` kaldı). Bump kuralı algoritmanın *varsayılan* çıktısı değiştiğinde uygulanır; `LinkagePhase.auto` (varsayılan) byte-eşit kalır, yeni davranış yalnızca kullanıcının açıkça `coupling`/`repulsion` seçmesiyle tetiklenir — bu yeni bir GİRDİ, geriye dönük sessiz veri kayması değil. Persisted `GeneticsHistory.fatherPhaseOverrides` bu yüzden kendi `isStale` semantiğine ihtiyaç duymaz.
+
 Eski kayıtlar göründüğünde UI rozetle uyarır ("hesap eski sürüm, yeniden çalıştır"). Migration ile zorla yeniden hesaplama YOK — kullanıcı veri bütünlüğü için manuel yeniden hesap tetikler.
 
 ## Multi-Locus Combination
@@ -60,11 +62,29 @@ Z kromozomu üzerinde gen sırası: **O — C — I — Slate**
 - Baba iki linked mutasyonu heterozigot taşıyorsa `inheritance_linked_pair.dart` ile linked pair hesabı çalışır
 - Tightest linkage öncelik kazanır (en küçük cM)
 - Coupling (carrier): iki mutasyon aynı kromozomda; Repulsion (split): farklı kromozomlarda
-- Phase, mutasyon başına 3-durumlu allele state toggle'ından **örtük** çıkarılır:
-  her iki linked mutasyon `split` durumundaysa repulsion, aksi halde coupling
-  (`inheritance_linked_pair.dart`). **Ayrı/explicit bir "faz seç" UI kontrolü
-  YOKTUR** — bilinen bir UX boşluğu (bkz. Anti-Patterns #6). İki linked mutasyon
-  seçildiğinde faz seçimi netleştiren bir kontrol/tooltip eklemek açık iş.
+- Varsayılan (`LinkagePhase.auto`) davranış değişmedi: phase mutasyon başına
+  3-durumlu allele state toggle'ından **örtük** çıkarılır — her iki linked
+  mutasyon `split` durumundaysa repulsion, aksi halde coupling
+  (`inheritance_linked_pair.dart`).
+- **Explicit faz kontrolü — shipped (roadmap D4, 2026-07-12):**
+  `LinkagePhase { auto, coupling, repulsion }` (`linkage_phase.dart`) +
+  `ParentGenotype.phaseOverrides` (pair-key → phase, `linkagePairKey(id1,id2)`
+  ile normalize). `_calculateGenericLinkedPair` `auto` dışındaki bir override
+  varsa doğrudan onu kullanır, `auto` eski implicit inference'a düşer — bu
+  yüzden **`calculationVersion` bump edilmedi** (auto çıktı byte-eşit kalır;
+  yalnızca kullanıcının explicit seçimi yeni bir girdi olarak sonucu değiştirir).
+  UI: `LinkagePhaseControl` (`parent_selection_step.dart` baba kolonu) sadece
+  baba erkekken VE seçili mutasyonlar arasında `LinkageCatalog`'da bilinen,
+  her iki lokusu da heterozigot bir çift varken görünür; **tek çift (en sıkı
+  linkage) gösterilir** — MVP kapsamı. Override `FatherGenotypeNotifier.setPhaseOverride`
+  ile yazılır, isolate sınırından geçer ve `GeneticsHistory.fatherPhaseOverrides`
+  ile persist edilir (Drift `genetics_history.father_phase_overrides`, nullable
+  JSON kolon, şema v28 — bkz. § calculationVersion notu ve migrations.md).
+  **Bilinen sınır:** baba dört Z-linked token'da (opaline+cinnamon+ino+slate)
+  birlikte heterozigotsa motor İKİ bağımsız linked pair kurar (ino-slate +
+  opaline-cinnamon) ama UI yalnızca en sıkısını (ino-slate) kontrol eder;
+  ikinci çift `auto`'da kalır, ayrı kontrolü YOK (residual gap —
+  `obsidian-brain/known-gaps.md`).
 
 ## Lethal Combinations
 - `lethal_combination_database.dart` bilinen lethal/semi-lethal/sub-vital
@@ -202,9 +222,10 @@ test('slate-ino linked pair produces correct ratios', () {
 
 ## Known Unshipped Work
 
-- **Explicit linkage phase control (roadmap D4) yoktur.** Phase hâlâ allele
-  state'lerden örtük çıkarılır; ayrı `Otomatik | Coupling | Repulsion` seçimi ve
-  history/isolate round-trip metadata'sı shipped kabul edilmez.
+- **Explicit linkage phase control (roadmap D4) shipped (2026-07-12).** Bkz.
+  § Sex-Linked Linkage. Residual gap: baba aynı anda İKİ bağımsız linked pair
+  taşıdığında (örn. tüm dört Z-linked token heterozigot) UI yalnızca en sıkı
+  çifti kontrol eder — ikinci çiftin explicit override'ı YOK (single-pair MVP).
 - Diğer roadmap önerileri (`Q2`, `I2`, `M1`, `I3`–`I5`) planlama hedefidir;
   `dev-docs/genetics-improvement-roadmap.md` içinde görünmesi uygulandıkları
   anlamına gelmez. Güncel durum için `obsidian-brain/known-gaps.md` kontrol edilir.
@@ -215,7 +236,7 @@ test('slate-ino linked pair produces correct ratios', () {
 3. Locus bilgisi olmayan mutasyonu allelic series'e dahil etmek
 4. Lethal kombinasyonu toplam yüzdeye dahil etmek (kullanıcı yanılır, kafeste lethal yavru yok)
 5. Inbreeding F threshold'unu hardcode değer değil, premium override aware olmamak
-6. Sex-linked linkage'da phase varsayımını (coupling default) kullanıcıya sormamak
+6. Sex-linked linkage'da `LinkagePhaseControl`'ü atlayıp phase'i sessizce `auto`'da varsaymak (kontrol varken kullanıcıya sunmamak)
 7. Reverse calculator sonuçlarını gerçek genetik teyit etmeden önermek (false positive)
 8. Test'te MUTAVI örnek tablolarını kullanmayıp custom fixture üretmek (rehberle drift)
 9. Genetics theme renklerini ColorScheme'den almaya zorlamak (phenotype rengi sabit)

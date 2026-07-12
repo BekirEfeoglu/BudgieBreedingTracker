@@ -5,7 +5,7 @@
 ## Drift Migration (Local)
 
 ### Schema Version
-- `app_database.dart` içinde `schemaVersion = 27`
+- `app_database.dart` içinde `schemaVersion = 28`
 - Yeni table/column/index → version bump zorunlu
 - Version atlama YOK (22 → 23, asla 22 → 25)
 

@@ -107,10 +107,14 @@ List<_RawResult> _calculateGenericLinkedPair({
   final name1 = record1?.name ?? mutId1;
   final name2 = record2?.name ?? mutId2;
 
-  final fatherPhase =
+  final fatherPhase = switch (father.phaseFor(mutId1, mutId2)) {
+    LinkagePhase.coupling => _LinkedPairPhase.coupling,
+    LinkagePhase.repulsion => _LinkedPairPhase.repulsion,
+    LinkagePhase.auto =>
       fatherState1 == AlleleState.split && fatherState2 == AlleleState.split
-      ? _LinkedPairPhase.repulsion
-      : _LinkedPairPhase.coupling;
+          ? _LinkedPairPhase.repulsion
+          : _LinkedPairPhase.coupling,
+  };
   final fatherGametes = _buildFatherLinkedGametes(
     fatherState1: fatherState1,
     fatherState2: fatherState2,

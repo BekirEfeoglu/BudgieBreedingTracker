@@ -4,6 +4,7 @@ import 'package:budgie_breeding_tracker/core/constants/genetics_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/epistasis_engine.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/lethal_combination_database.dart';
+import 'package:budgie_breeding_tracker/domain/services/genetics/linkage_phase.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
@@ -30,6 +31,7 @@ OffspringCalculation _calculateDetailedInIsolate(
     String fatherGender,
     Map<String, String> mother,
     String motherGender,
+    Map<String, String> fatherPhaseOverrides,
   })
   args,
 ) {
@@ -39,11 +41,15 @@ OffspringCalculation _calculateDetailedInIsolate(
   final motherMutations = args.mother.map(
     (k, v) => MapEntry(k, AlleleState.values.byName(v)),
   );
+  final fatherPhaseOverrides = args.fatherPhaseOverrides.map(
+    (k, v) => MapEntry(k, LinkagePhase.fromJson(v)),
+  );
   const calculator = MendelianCalculator();
   return calculator.calculateDetailed(
     father: ParentGenotype(
       mutations: fatherMutations,
       gender: BirdGender.values.byName(args.fatherGender),
+      phaseOverrides: fatherPhaseOverrides,
     ),
     mother: ParentGenotype(
       mutations: motherMutations,
@@ -68,6 +74,9 @@ final offspringCalculationProvider = FutureProvider<OffspringCalculation?>((
     fatherGender: father.gender.name,
     mother: mother.mutations.map((k, v) => MapEntry(k, v.name)),
     motherGender: mother.gender.name,
+    fatherPhaseOverrides: father.phaseOverrides.map(
+      (k, v) => MapEntry(k, v.name),
+    ),
   );
 
   return compute(_calculateDetailedInIsolate, args);

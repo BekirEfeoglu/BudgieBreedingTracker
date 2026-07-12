@@ -4,6 +4,8 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-12] feat | genetics explicit linkage phase (D4) shipped — LinkagePhase override, engine consult, isolate+history persistence (Drift v28), father-column UI, single-pair MVP
+
 ## [2026-07-12] feat | gamification streak system shipped (user_streaks + record_daily_checkin RPC, tiered XP + 7/30/100 badges, home chip + celebration + 20:00 reminder)
 
 ## [2026-07-12] docs | Post-task suggestions contract — exactly 3 items

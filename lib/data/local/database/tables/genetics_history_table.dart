@@ -12,6 +12,11 @@ class GeneticsHistoryTable extends Table {
   /// JSON-encoded map: mutationId -> alleleState for mother.
   TextColumn get motherGenotype => text()();
 
+  /// JSON-encoded map: linkagePairKey -> LinkagePhase name, explicit father
+  /// linkage-phase overrides at save time. Null for entries with no override
+  /// and for pre-feature legacy entries (interpreted as all-Auto).
+  TextColumn get fatherPhaseOverrides => text().nullable()();
+
   /// Optional bird ID if father was selected from collection.
   TextColumn get fatherBirdId =>
       text().nullable().references(BirdsTable, #id)();
