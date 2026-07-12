@@ -4,6 +4,18 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-12] docs | wiki stat drift sweep — routes, tests, migrations count
+
+Reconciled managed counts drifted from authoritative root `CLAUDE.md` §
+Codebase Stats. **Routes 74→75** (index, overview, _features-index,
+folder-structure, router-navigation). **Tests 11,506→11,515** (overview,
+patterns/testing). **Migrations 206→207** in data-layer/migrations.md local
+count; the 2026-07-10 MCP prod-parity snapshot stays at 206↔206, with
+`20260710120000` marketplace-moderation trigger noted as applied to prod later
+that day (both → 207, authority-preserving). No source/contract change; verified
+no other count drift and that notification per-device-logout + marketplace
+server-side-moderation contracts were already reflected. Lint green.
+
 ## [2026-07-12] notifications | inspection: FCM-logout doc reconcile + DND settings fixes
 
 Notification-system inspection. (1) Docs: notifications.md, auth.md, and the

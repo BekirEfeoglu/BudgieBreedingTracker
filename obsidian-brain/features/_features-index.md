@@ -39,5 +39,5 @@ The `breeding` and `eggs` features own this chain. Rule: `.claude/rules/breeding
 
 ## Navigation
 
-74 routes defined in `lib/router/`. Route guards: `AdminGuard`, `FounderGuard`, `PremiumGuard`.
+75 routes defined in `lib/router/`. Route guards: `AdminGuard`, `FounderGuard`, `PremiumGuard`.
 See [[architecture/router-navigation]] and [[patterns/ui-patterns]] § GoRouter.

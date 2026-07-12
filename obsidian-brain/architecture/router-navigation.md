@@ -10,7 +10,7 @@ feature screens/providers to assemble routes and guards (see [[architecture/laye
 | File | Role |
 |------|------|
 | `lib/router/app_router.dart` | GoRouter instance, redirect chain, top-level routes |
-| `lib/router/route_names.dart` | `AppRoutes` constants — 74 route paths |
+| `lib/router/route_names.dart` | `AppRoutes` constants — 75 route paths |
 | `lib/router/route_utils.dart` | `isValidRouteId` (UUID check), `validEditIdOrNull` |
 | `lib/router/router_notifier.dart` | `RouterNotifier` — `refreshListenable`, re-runs redirect on state change |
 | `lib/router/redirect_guards.dart` | `sessionLockRedirect`, `authRedirect`, `twoFactorRedirect` |

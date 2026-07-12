@@ -81,14 +81,14 @@ Enforced by `scripts/verify_code_quality.py` (27 checker categories — 19/24 CL
 | Metric | Value |
 |--------|-------|
 | Source files (lib/) | 1018 Dart files |
-| Test files | 919 files, 11,506+ individual tests |
+| Test files | 919 files, 11,515+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
 | Remote sources | 28 `*_remote_source.dart` files + base/caches/providers |
 | Freezed models | 29 model files + statistics_models + supabase_extensions |
 | Domain services | 23 directories |
-| Routes | 74 |
+| Routes | 75 |
 | Custom SVG icons | 99 constants, 99 files on disk |
 | Shared widgets | 35 |
 | Enum files | 15 |

@@ -35,7 +35,7 @@ Full catalog of every page in the obsidian-brain wiki.
 | [[architecture/offline-first]] | Local-first philosophy, sync triggers, SyncMetadata |
 | [[architecture/online-first-exemption]] | When *Repository ≠ offline-first (Community, Messaging) |
 | [[architecture/folder-structure]] | Full lib/ and assets/ topology |
-| [[architecture/router-navigation]] | GoRouter redirect chain, guards, deep-link validation, 74 routes |
+| [[architecture/router-navigation]] | GoRouter redirect chain, guards, deep-link validation, 75 routes |
 
 ## Features (24 modules)
 

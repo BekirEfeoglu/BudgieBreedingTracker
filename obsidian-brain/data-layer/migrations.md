@@ -39,10 +39,12 @@ MigrationStrategy(
 
 Format: `YYYYMMDDHHmmss_short_description.sql`
 
-206 tracked migration files in `supabase/migrations/` — applied in lexicographic
+207 tracked migration files in `supabase/migrations/` — applied in lexicographic
 (chronological) order. **Verified against production 2026-07-10 (MCP live):**
 206 local files ↔ 206 ledger rows, version parity exact (0 duplicates), all
-recent effects confirmed in the live schema. A **content-drift** pass compared
+recent effects confirmed in the live schema; `20260710120000` (marketplace
+listing moderation trigger) was applied to prod later the same day via MCP,
+bringing both to 207. A **content-drift** pass compared
 each committed file against the ledger's `statements` column (normalized md5,
 `;`/comment-insensitive): 4 files diverged from what prod actually applied.
 `20260709113822` (gamification level-sync trigger, missing `::integer`) was a
