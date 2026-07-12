@@ -224,37 +224,6 @@ class EdgeFunctionClient {
     }
   }
 
-  /// Invoke the genetics calculation Edge Function.
-  Future<EdgeFunctionResult> calculateGenetics({
-    required List<String> fatherMutations,
-    required List<String> motherMutations,
-  }) {
-    return invoke(
-      'calculate-genetics',
-      body: {
-        'father_mutations': fatherMutations,
-        'mother_mutations': motherMutations,
-      },
-    );
-  }
-
-  /// Invoke the report generation Edge Function.
-  ///
-  /// The Edge Function extracts the user ID from the JWT token
-  /// (server-side) to prevent IDOR attacks. Do NOT send userId in body.
-  Future<EdgeFunctionResult> generateReport({
-    required String reportType,
-    Map<String, dynamic>? options,
-  }) {
-    return invoke(
-      'generate-report',
-      body: {
-        'report_type': reportType,
-        if (options != null) 'options': options,
-      },
-    );
-  }
-
   /// Invoke the system health check Edge Function.
   Future<EdgeFunctionResult> checkSystemHealth() {
     return invoke('system-health');

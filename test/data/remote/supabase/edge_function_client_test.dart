@@ -223,63 +223,6 @@ void main() {
       );
     });
 
-    test('calculateGenetics sends expected payload', () async {
-      Map<String, dynamic>? capturedBody;
-      when(
-        () => mockFunctions.invoke(
-          'calculate-genetics',
-          body: any(named: 'body'),
-          headers: _authHeader,
-        ),
-      ).thenAnswer((invocation) async {
-        capturedBody = Map<String, dynamic>.from(
-          invocation.namedArguments[#body] as Map,
-        );
-        return FunctionResponse(status: 200, data: {'ok': true});
-      });
-
-      final result = await client.calculateGenetics(
-        fatherMutations: ['spangle'],
-        motherMutations: ['opaline'],
-      );
-
-      expect(result.success, isTrue);
-      expect(capturedBody, {
-        'father_mutations': ['spangle'],
-        'mother_mutations': ['opaline'],
-      });
-    });
-
-    test(
-      'generateReport sends expected payload and optional options',
-      () async {
-        Map<String, dynamic>? capturedBody;
-        when(
-          () => mockFunctions.invoke(
-            'generate-report',
-            body: any(named: 'body'),
-            headers: _authHeader,
-          ),
-        ).thenAnswer((invocation) async {
-          capturedBody = Map<String, dynamic>.from(
-            invocation.namedArguments[#body] as Map,
-          );
-          return FunctionResponse(status: 200, data: {'report_id': 'r1'});
-        });
-
-        final result = await client.generateReport(
-          reportType: 'summary',
-          options: {'range': 'month'},
-        );
-
-        expect(result.success, isTrue);
-        expect(capturedBody, {
-          'report_type': 'summary',
-          'options': {'range': 'month'},
-        });
-      },
-    );
-
     test('checkSystemHealth invokes the system-health function', () async {
       when(
         () => mockFunctions.invoke(
