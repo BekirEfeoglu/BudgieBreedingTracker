@@ -37,7 +37,7 @@ final adminDatabaseInfoProvider = FutureProvider<List<TableInfo>>((ref) async {
   final client = ref.watch(supabaseClientProvider);
 
   try {
-    final result = await client.rpc('admin_get_table_counts');
+    final result = await client.rpc(SupabaseConstants.adminGetTableCountsRpc);
     final rows = result as List;
     return rows.map((row) {
       return TableInfo(
@@ -105,7 +105,7 @@ final serverCapacityProvider = FutureProvider<ServerCapacity>((ref) async {
   final client = ref.watch(supabaseClientProvider);
 
   try {
-    final result = await client.rpc('get_server_capacity');
+    final result = await client.rpc(SupabaseConstants.getServerCapacityRpc);
     final data = result as Map<String, dynamic>;
     final capacity = ServerCapacity.fromJson(data);
 

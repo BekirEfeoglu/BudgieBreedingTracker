@@ -33,7 +33,7 @@ class PhotoRemoteSource extends BaseRemoteSourceNoSoftDelete<Photo> {
     final response = await table
         .select()
         .eq(SupabaseConstants.colUserId, userId)
-        .eq('entity_id', entityId)
+        .eq(SupabaseConstants.colEntityId, entityId)
         .order(SupabaseConstants.colCreatedAt);
     return response.map((json) => fromJson(json)).toList();
   }

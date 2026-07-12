@@ -145,9 +145,9 @@ class CommunitySocialRemoteSource {
     try {
       final result = await _client
           .from(SupabaseConstants.communityCommentLikesTable)
-          .select('comment_id')
+          .select(SupabaseConstants.colCommentId)
           .eq(SupabaseConstants.colUserId, userId)
-          .inFilter('comment_id', commentIds);
+          .inFilter(SupabaseConstants.colCommentId, commentIds);
 
       return (result as List)
           .map((r) => r['comment_id']?.toString())
@@ -167,7 +167,7 @@ class CommunitySocialRemoteSource {
             {
               SupabaseConstants.colId: const Uuid().v7(),
               SupabaseConstants.colUserId: userId,
-              'comment_id': commentId,
+              SupabaseConstants.colCommentId: commentId,
             },
             onConflict: 'comment_id,user_id',
             ignoreDuplicates: true,
@@ -187,7 +187,7 @@ class CommunitySocialRemoteSource {
           .from(SupabaseConstants.communityCommentLikesTable)
           .delete()
           .eq(SupabaseConstants.colUserId, userId)
-          .eq('comment_id', commentId);
+          .eq(SupabaseConstants.colCommentId, commentId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
         'community_social.unlikeComment',
@@ -203,7 +203,7 @@ class CommunitySocialRemoteSource {
           .from(SupabaseConstants.communityCommentLikesTable)
           .select(SupabaseConstants.colId)
           .eq(SupabaseConstants.colUserId, userId)
-          .eq('comment_id', commentId)
+          .eq(SupabaseConstants.colCommentId, commentId)
           .maybeSingle();
       return result != null;
     } catch (e) {

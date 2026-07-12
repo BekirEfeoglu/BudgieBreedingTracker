@@ -119,8 +119,8 @@ class CommunityEngagementRemoteSource {
     try {
       final result = await _client
           .from(SupabaseConstants.communityFollowsTable)
-          .select('following_id')
-          .eq('follower_id', userId);
+          .select(SupabaseConstants.colFollowingId)
+          .eq(SupabaseConstants.colFollowerId, userId);
 
       return (result as List)
           .map((r) => r['following_id']?.toString())
@@ -137,8 +137,8 @@ class CommunityEngagementRemoteSource {
       final result = await _client
           .from(SupabaseConstants.communityFollowsTable)
           .select(SupabaseConstants.colId)
-          .eq('follower_id', userId)
-          .eq('following_id', targetUserId)
+          .eq(SupabaseConstants.colFollowerId, userId)
+          .eq(SupabaseConstants.colFollowingId, targetUserId)
           .maybeSingle();
       return result != null;
     } catch (e) {
@@ -154,8 +154,8 @@ class CommunityEngagementRemoteSource {
           .upsert(
             {
               SupabaseConstants.colId: const Uuid().v7(),
-              'follower_id': userId,
-              'following_id': targetUserId,
+              SupabaseConstants.colFollowerId: userId,
+              SupabaseConstants.colFollowingId: targetUserId,
             },
             onConflict: 'follower_id,following_id',
             ignoreDuplicates: true,
@@ -174,8 +174,8 @@ class CommunityEngagementRemoteSource {
       await _client
           .from(SupabaseConstants.communityFollowsTable)
           .delete()
-          .eq('follower_id', userId)
-          .eq('following_id', targetUserId);
+          .eq(SupabaseConstants.colFollowerId, userId)
+          .eq(SupabaseConstants.colFollowingId, targetUserId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
         'community_engagement.unfollowUser',
@@ -273,7 +273,7 @@ class CommunityEngagementRemoteSource {
     try {
       final result = await _client
           .from(SupabaseConstants.communityMutesTable)
-          .select('muted_user_id')
+          .select(SupabaseConstants.colMutedUserId)
           .eq(SupabaseConstants.colUserId, userId);
 
       return (result as List)
@@ -294,7 +294,7 @@ class CommunityEngagementRemoteSource {
             {
               SupabaseConstants.colId: const Uuid().v7(),
               SupabaseConstants.colUserId: userId,
-              'muted_user_id': mutedUserId,
+              SupabaseConstants.colMutedUserId: mutedUserId,
             },
             onConflict: 'user_id,muted_user_id',
             ignoreDuplicates: true,
@@ -314,7 +314,7 @@ class CommunityEngagementRemoteSource {
           .from(SupabaseConstants.communityMutesTable)
           .delete()
           .eq(SupabaseConstants.colUserId, userId)
-          .eq('muted_user_id', mutedUserId);
+          .eq(SupabaseConstants.colMutedUserId, mutedUserId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
         'community_engagement.unmuteUser',
