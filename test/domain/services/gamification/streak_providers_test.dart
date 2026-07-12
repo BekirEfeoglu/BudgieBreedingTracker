@@ -11,6 +11,7 @@ import 'package:budgie_breeding_tracker/data/repositories/gamification_repositor
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/gamification/streak_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_settings_providers.dart';
 
 import '../../../helpers/mocks.dart';
 
@@ -183,6 +184,51 @@ void main() {
     final last = container.read(lastStreakCheckinProvider);
     expect(last?.awardedXp, 10);
   });
+
+  test(
+    'runDailyCheckin swallows errors from reminder scheduling (never '
+    'lets them escape the fire-and-forget microtask)',
+    () async {
+      final repo = _MockRepo();
+      when(() => repo.recordDailyCheckin(any())).thenAnswer(
+        (_) async =>
+            const StreakCheckinResult(currentStreak: 5, awardedXp: 10),
+      );
+      when(() => repo.getStreak(any())).thenAnswer(
+        (_) async => const UserStreak(userId: 'u1', currentStreak: 5),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          gamificationRepositoryProvider.overrideWithValue(repo),
+          currentUserIdProvider.overrideWithValue('u1'),
+          notificationServiceProvider.overrideWithValue(notificationService),
+          notificationRepositoryProvider.overrideWithValue(
+            notificationRepository,
+          ),
+          // Force the reminder-scheduling block (post-checkIn) to throw.
+          notificationToggleSettingsReadyProvider.overrideWith(
+            (ref) async => throw Exception('settings load failed'),
+          ),
+        ],
+        // Riverpod 3 auto-retries a failed FutureProvider (exponential
+        // backoff, up to ~38s) unless the error is an Error/ProviderException.
+        // Disable that here so the deliberately-thrown Exception above fails
+        // fast instead of stalling the test.
+        retry: (_, _) => null,
+      );
+      addTearDown(container.dispose);
+
+      // Must complete normally — no unhandled throw.
+      await expectLater(
+        runDailyCheckin(container.read(_refProvider)),
+        completes,
+      );
+
+      // The check-in itself still succeeded before the failure.
+      final last = container.read(lastStreakCheckinProvider);
+      expect(last?.currentStreak, 5);
+    },
+  );
 
   test('runDailyCheckin does nothing for anonymous user', () async {
     final repo = _MockRepo();
