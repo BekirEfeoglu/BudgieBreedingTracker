@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
+import '../../models/user_streak_model.dart';
 import 'base_remote_source.dart';
 
 class GamificationRemoteSource {
@@ -225,6 +226,33 @@ class GamificationRemoteSource {
           .update({'level': level, 'xp_title': title})
           // profiles PK is `id` (= auth.users.id); no `user_id` column exists.
           .eq(SupabaseConstants.colId, userId);
+    } catch (e, st) {
+      throw BaseRemoteSource.handleErrorForTag('gamification', e, st);
+    }
+  }
+
+  Future<StreakCheckinResult> recordDailyCheckin(String timeZone) async {
+    try {
+      final response = await _client.rpc(
+        SupabaseConstants.recordDailyCheckinRpc,
+        params: {'p_time_zone': timeZone},
+      );
+      return StreakCheckinResult.fromJson(
+        Map<String, dynamic>.from(response as Map),
+      );
+    } catch (e, st) {
+      throw BaseRemoteSource.handleErrorForTag('gamification', e, st);
+    }
+  }
+
+  Future<UserStreak?> fetchStreak(String userId) async {
+    try {
+      final response = await _client
+          .from(SupabaseConstants.userStreaksTable)
+          .select()
+          .eq(SupabaseConstants.colUserId, userId)
+          .maybeSingle();
+      return response == null ? null : UserStreak.fromJson(response);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag('gamification', e, st);
     }
