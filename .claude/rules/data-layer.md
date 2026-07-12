@@ -5,7 +5,7 @@
 - **DAOs**: `lib/data/local/database/daos/` (20 DAOs)
 - **Mappers**: `lib/data/local/database/mappers/` (20 mappers)
 - **Converters**: `lib/data/local/database/converters/enum_converters.dart`
-- **Schema version**: 27
+- **Schema version**: 28
 - Import tables DIRECTLY from table file, not via `app_database.dart`
 - Use `.equalsValue()` for enum columns, not `.equals()`
 - NEVER close a `.references()` cycle between two tables (A↔B çift yönlü typed FK): tablo dosyaları birbirini import eder ve drift_dev "Circular error when deserializing drift modules" WARNING'leri üretir (non-fatal — simolus3/drift#3227). Child→parent ana FK `.references()` kalır; GERİ-referansı raw `.customConstraint('NULL REFERENCES <table> (id)')` ile bildir ve import'u kaldır — üretilen SQL FK birebir aynıdır, schema değişmez. Kanonik örnek: `incubations.clutchId` ↔ `clutches.incubationId` (2026-07-09). Detay: obsidian-brain/data-layer/drift.md § Circular FK References

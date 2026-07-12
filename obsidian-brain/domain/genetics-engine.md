@@ -32,6 +32,13 @@
   crosses from silent engine drift.
 - **Bird round-trip support** — history persists selected parent IDs and
   genotype provenance; unknown mutation IDs are excluded and surfaced.
+- **Explicit linkage phase override (shipped 2026-07-12)** — `LinkagePhase
+  {auto, coupling, repulsion}` on `ParentGenotype.phaseOverrides`;
+  `_calculateGenericLinkedPair` consults it before falling back to implicit
+  allele-state inference. `auto` output is byte-identical to prior behavior,
+  so this did **not** bump `calculationVersion`. Persists in
+  `GeneticsHistory.fatherPhaseOverrides` (Drift schema v28). Single-pair MVP —
+  see § Known Unshipped Work.
 
 ## Current Viability Set
 
@@ -67,9 +74,10 @@ Full v1–v8 history lives in `.claude/rules/genetics.md` and
 
 ## Known Unshipped Work
 
-Explicit `Otomatik | Coupling | Repulsion` phase selection is not implemented;
-phase is still inferred from allele states. Other open roadmap items are tracked
-centrally in [[known-gaps]].
+Multi-pair simultaneous phase override: when the father carries two
+independent linked pairs heterozygous at once, only the tightest pair exposes
+an `Otomatik | Coupling | Repulsion` control (residual D4 gap). Other open
+roadmap items are tracked centrally in [[known-gaps]].
 
 ## See Also
 

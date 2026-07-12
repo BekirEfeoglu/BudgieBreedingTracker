@@ -73,7 +73,7 @@ Full catalog of every page in the obsidian-brain wiki.
 
 | Page | Description |
 |------|-------------|
-| [[data-layer/drift]] | Local SQLite, 20 tables, DAOs, schema v27 |
+| [[data-layer/drift]] | Local SQLite, 20 tables, DAOs, schema v28 |
 | [[data-layer/supabase]] | Remote Postgres, SupabaseConstants, storage, .toSupabase() |
 | [[data-layer/repositories]] | BaseRepository, SyncableRepository, ValidatedSyncMixin |
 | [[data-layer/sync-strategy]] | Push/pull, idempotency, conflict resolution, retry |

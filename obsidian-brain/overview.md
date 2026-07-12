@@ -32,7 +32,7 @@
            │ DAO queries             │ remote upserts
 ┌──────────▼──────────┐  ┌──────────▼──────────────┐
 │  Drift (local SQLite)│  │  Supabase (remote Postgres)│
-│  20 tables, v27     │  │  28 remote-source files   │
+│  20 tables, v28     │  │  28 remote-source files   │
 └─────────────────────┘  └────────────────────────────┘
 ```
 
@@ -80,8 +80,8 @@ Enforced by `scripts/verify_code_quality.py` (27 checker categories — 19/24 CL
 
 | Metric | Value |
 |--------|-------|
-| Source files (lib/) | 1024 Dart files |
-| Test files | 927 files, 11,551+ individual tests |
+| Source files (lib/) | 1026 Dart files |
+| Test files | 936 files, 11,608+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -93,7 +93,7 @@ Enforced by `scripts/verify_code_quality.py` (27 checker categories — 19/24 CL
 | Shared widgets | 35 |
 | Enum files | 15 |
 | Supabase constants | 158 string constants |
-| L10n keys | 3,140 per language, 41 categories |
-| DB schema version | 27 |
+| L10n keys | 3,145 per language, 41 categories |
+| DB schema version | 28 |
 | Supabase migrations | 209 tracked SQL files |
 | Edge Functions | 12 |
