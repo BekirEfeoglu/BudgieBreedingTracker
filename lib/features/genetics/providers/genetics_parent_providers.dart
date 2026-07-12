@@ -4,6 +4,13 @@ part of 'genetics_providers.dart';
 class FatherGenotypeNotifier extends Notifier<ParentGenotype> {
   @override
   ParentGenotype build() => const ParentGenotype.empty(gender: BirdGender.male);
+
+  /// Sets the explicit recombination phase override for the linked pair
+  /// ([id1], [id2]). Passing [LinkagePhase.auto] clears any existing
+  /// override, restoring the engine's implicit inference.
+  void setPhaseOverride(String id1, String id2, LinkagePhase phase) {
+    state = state.withPhaseOverride(id1, id2, phase);
+  }
 }
 
 final fatherGenotypeProvider =
