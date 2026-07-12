@@ -150,13 +150,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
           '${AppRoutes.emailVerification}?email=${Uri.encodeComponent(_emailCtrl.text.trim())}',
         );
       }
-    } on AuthException catch (e) {
+    } on AuthException catch (e, st) {
       AppLogger.error(
         '[Register] AuthException: ${e.message} | status=${e.statusCode}',
         e,
+        st,
       );
       Sentry.captureException(
         e,
+        stackTrace: st,
         withScope: (scope) {
           scope.setTag('auth.status_code', e.statusCode ?? 'null');
           scope.setTag('auth.error_code', e.code ?? 'null');

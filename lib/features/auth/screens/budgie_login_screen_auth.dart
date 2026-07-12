@@ -127,13 +127,15 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
             context.go(AppRoutes.home);
         }
       });
-    } on AuthException catch (e) {
+    } on AuthException catch (e, st) {
       AppLogger.error(
         '[Login] AuthException: ${e.runtimeType} | message=${e.message} | status=${e.statusCode} | code=${e.code}',
         e,
+        st,
       );
       Sentry.captureException(
         e,
+        stackTrace: st,
         withScope: (scope) {
           scope.setTag('auth.status_code', e.statusCode ?? 'null');
           scope.setTag('auth.error_code', e.code ?? 'null');
