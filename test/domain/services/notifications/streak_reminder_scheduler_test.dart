@@ -86,7 +86,15 @@ void main() {
 
       expect(captured, hasLength(1));
       final scheduledDate = captured.single as DateTime;
-      final tomorrow = before.add(const Duration(days: 1));
+      // Field-addition (not `.add(Duration(days:1))`) to match the scheduler's
+      // own DST-safe computation and avoid a wall-clock day drift.
+      final tomorrow = tz.TZDateTime(
+        tz.local,
+        before.year,
+        before.month,
+        before.day + 1,
+        20,
+      );
       expect(scheduledDate.year, tomorrow.year);
       expect(scheduledDate.month, tomorrow.month);
       expect(scheduledDate.day, tomorrow.day);
