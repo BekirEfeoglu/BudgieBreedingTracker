@@ -200,6 +200,7 @@ dist/
 # --------------------------------------------------
 .claude/settings.local.json
 .claude/launch.json
+.claude/docs-preview-server.js
 .claude/scheduled_tasks.lock
 .claude/worktrees/
 .claude/.DS_Store
