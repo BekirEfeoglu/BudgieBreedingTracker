@@ -103,5 +103,62 @@ void main() {
       const father = ParentGenotype.empty(gender: BirdGender.male);
       expect(activeLinkagePairForFather(father), isNull);
     });
+
+    test(
+      'returns null when father is a compound ino-locus heterozygote '
+      '(mirrors engine exclusion, no non-ino partner)',
+      () {
+        final father = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'pallid': AlleleState.carrier,
+            'pearly': AlleleState.carrier,
+            'cinnamon': AlleleState.carrier,
+          },
+        );
+
+        expect(activeLinkagePairForFather(father), isNull);
+      },
+    );
+
+    test(
+      'returns the tightest non-ino pair when father is a compound '
+      'ino-locus heterozygote but also carries a non-ino pair',
+      () {
+        final father = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'pallid': AlleleState.carrier,
+            'pearly': AlleleState.carrier,
+            'opaline': AlleleState.carrier,
+            'slate': AlleleState.carrier,
+          },
+        );
+
+        final pair = activeLinkagePairForFather(father);
+
+        expect(pair, isNotNull);
+        expect({pair!.id1, pair.id2}, {'opaline', 'slate'});
+      },
+    );
+
+    test(
+      'still returns cinnamon-ino when father has only a single '
+      'heterozygous ino-locus allele (no over-exclusion regression)',
+      () {
+        final father = ParentGenotype(
+          gender: BirdGender.male,
+          mutations: {
+            'ino': AlleleState.carrier,
+            'cinnamon': AlleleState.carrier,
+          },
+        );
+
+        final pair = activeLinkagePairForFather(father);
+
+        expect(pair, isNotNull);
+        expect({pair!.id1, pair.id2}, {'ino', 'cinnamon'});
+      },
+    );
   });
 }
