@@ -6,6 +6,23 @@ and auth legal-links syncs).
 
 ---
 
+## [2026-07-10] feat+refactor | Marketplace pagination/search (chip #2) + #8 column constants (chip #3)
+
+Closed the last two audit chips (delivered via parallel worktree agents; diffs
+reviewed + all gates run in the main tree). **B — marketplace pagination +
+server-side search:** the feed hard-capped at 20 and search/price/gender only
+scanned those 20 (`MarketplaceRepository.search` was dead code → search found
+nothing beyond page 1). `marketplaceFeedProvider` (AsyncNotifier.family) replaces
+single-page `marketplaceListingsProvider`: `build()` loads page 1 or runs the
+query via `repo.search` (cap 50); `loadMore()` appends the next before-cursor page
+(no-op in search/while-loading/at-end/null-cursor; a failed load-more keeps the
+page, never wipes it). Both surfaces (screen ListView + tab GridView) got a
+`ScrollController` + loadMore-at-80% + a bottom spinner; `filteredMarketplaceListingsProvider`
+unchanged. **C — #8 refactor:** replaced hardcoded Supabase column literals with
+`SupabaseConstants` across 16 `lib/data/` files — value-match only (every
+constant's value == the literal; table-specific `read`→`notificationColRead`;
+`listing_id` left as-is, no constant exists). No behavior change.
+
 ## [2026-07-10] feat | Marketplace server-side listing moderation (chip #1)
 
 Closed the audit's marketplace gap — listing text was client-moderated only

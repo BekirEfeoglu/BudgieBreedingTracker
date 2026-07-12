@@ -4,6 +4,18 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-12] ads | docs/app-ads.txt for AdMob authorized-sellers verification
+
+Published `docs/app-ads.txt` (`google.com, pub-4121152941965334, DIRECT,
+f08c47fec0942fa0`) at the marketing-site root so AdMob verifies the developer
+domain and lifts "limited ad serving". Part of an external AdMob dashboard setup
+session: linked both apps to their stores (Android→Google Play
+`com.budgiebreeding.budgie_breeding_tracker`, iOS→App Store ID `6759828211`),
+verified both via the now-live file (both "under review"), and confirmed all 6
+production ad-unit IDs in `ad_service.dart` match the console. Publisher ID ==
+`ca-app-pub-4121152941965334`. Wiki: [[infrastructure/marketing-site]]. Commit
+d95e9bf.
+
 ## [2026-07-11] fix | About rate-app launch failure surfaces cannot_open_url
 
 Reconciled `0f4fb09`. The Settings→About "Uygulamayı Puanla" (rate-app) tile
@@ -167,22 +179,5 @@ semantic pass before lint. Added [[sources/agents-index]] and centralized open
 genetics roadmap items in [[known-gaps]]. Reconciled current-state drift:
 genetics v5→v8, viability set 2, schema v26→v27, test/l10n counts, and provider
 names; historical log statements remain unchanged.
-
-## [2026-07-10] feat+refactor | Marketplace pagination/search (chip #2) + #8 column constants (chip #3)
-
-Closed the last two audit chips (delivered via parallel worktree agents; diffs
-reviewed + all gates run in the main tree). **B — marketplace pagination +
-server-side search:** the feed hard-capped at 20 and search/price/gender only
-scanned those 20 (`MarketplaceRepository.search` was dead code → search found
-nothing beyond page 1). `marketplaceFeedProvider` (AsyncNotifier.family) replaces
-single-page `marketplaceListingsProvider`: `build()` loads page 1 or runs the
-query via `repo.search` (cap 50); `loadMore()` appends the next before-cursor page
-(no-op in search/while-loading/at-end/null-cursor; a failed load-more keeps the
-page, never wipes it). Both surfaces (screen ListView + tab GridView) got a
-`ScrollController` + loadMore-at-80% + a bottom spinner; `filteredMarketplaceListingsProvider`
-unchanged. **C — #8 refactor:** replaced hardcoded Supabase column literals with
-`SupabaseConstants` across 16 `lib/data/` files — value-match only (every
-constant's value == the literal; table-specific `read`→`notificationColRead`;
-`listing_id` left as-is, no constant exists). No behavior change.
 
 Older entries are archived in [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

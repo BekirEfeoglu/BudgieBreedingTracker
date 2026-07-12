@@ -13,6 +13,7 @@ GitHub Pages serves the public product site from `docs/` at
 | `docs/style.css` | Shared landing-page styles and responsive/performance rules |
 | `docs/CNAME` | Custom domain |
 | `docs/sitemap.xml` / `docs/robots.txt` | SEO discovery |
+| `docs/app-ads.txt` | AdMob authorized-sellers (IAB `app-ads.txt`) verification for the AdMob publisher |
 | `docs/support/`, `docs/user-guide/` | Support and guide landing pages |
 
 ## Landing Page Behavior
@@ -59,6 +60,12 @@ The demo intentionally does not mirror the full in-app genetics engine. It is a 
   `aggregateRating` unless the rating value and count can be verified from a
   public store/source.
 - App Store CTA points to App ID `6759828211`.
+- `docs/app-ads.txt` publishes the AdMob authorized-seller line
+  (`google.com, pub-4121152941965334, DIRECT, f08c47fec0942fa0`) at the domain
+  root. AdMob crawls `https://budgiebreedingtracker.online/app-ads.txt` to verify
+  both linked apps (Android + iOS) and lift the "limited ad serving" restriction.
+  The publisher ID must match `ca-app-pub-4121152941965334` used in
+  `lib/domain/services/ads/ad_service.dart`.
 
 ## Performance Notes
 
