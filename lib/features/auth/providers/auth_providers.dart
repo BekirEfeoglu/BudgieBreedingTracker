@@ -17,6 +17,7 @@ import '../../../domain/services/notifications/notification_providers.dart';
 import '../../../domain/services/sync/sync_orchestrator.dart';
 import '../../../domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
+import '../../gamification/providers/streak_providers.dart';
 import 'two_factor_providers.dart';
 
 // Import for internal use within this file.
@@ -178,6 +179,10 @@ final appInitializationProvider = FutureProvider<void>((ref) async {
   // Deferred to avoid blocking splash — runs in background
   Future.microtask(() => _rescheduleNotifications(ref, userId));
   Future.microtask(() => _recoverPendingNotifications(ref));
+
+  // Daily streak check-in — deferred, non-blocking. tz.local is already set
+  // by the local-notification init above, so the IANA zone is available.
+  Future.microtask(() => runDailyCheckin(ref));
 
   // Deferred: metadata backfill + FCM registration (network). Neither has a
   // guard/premium dependency, so a late completion is safe off the splash
