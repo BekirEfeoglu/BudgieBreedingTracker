@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/features/genetics/providers/genetics_pro
 import 'package:budgie_breeding_tracker/features/genetics/utils/bird_genotype_mapper.dart';
 import 'package:budgie_breeding_tracker/shared/widgets/genetics.dart';
 import 'package:budgie_breeding_tracker/features/genetics/widgets/bird_picker_dialog.dart';
+import 'package:budgie_breeding_tracker/features/genetics/widgets/linkage_phase_control.dart';
 
 /// Step 0: Parent mutation selection.
 class ParentSelectionStep extends ConsumerWidget {
@@ -177,6 +178,10 @@ class ParentSelectionStep extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.xs),
                   _ProvenanceLabel(text: fatherProvenance),
                 ],
+                // Only the father carries an explicit Z-linkage phase
+                // override (see linkage_phase.dart) — hidden when he has no
+                // eligible linked pair.
+                const LinkagePhaseControl(),
               ],
             ),
           ),

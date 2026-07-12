@@ -1,7 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/linkage_catalog.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
+import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 import 'package:budgie_breeding_tracker/features/genetics/utils/phenotype_localizer.dart';
 
 /// Localized display name for a linked mutation [id] (e.g. `'ino'`) via
@@ -22,4 +24,50 @@ String linkageEvidenceSuffix(LinkageEvidence evidence) {
     LinkageEvidence.derived => ' (${'genetics.linkage_derived'.tr()})',
     LinkageEvidence.estimated => ' (${'genetics.linkage_estimated'.tr()})',
   };
+}
+
+/// The tightest known [LinkageCatalog] pair for which [father] is a male
+/// heterozygous (carrier or split) at both loci, or `null` when no such pair
+/// exists.
+typedef ActiveLinkagePair = ({String id1, String id2, LinkagePairInfo info});
+
+/// Returns the tightest Z-linkage pair eligible for an explicit phase
+/// control on [father]'s genotype.
+///
+/// A pair is eligible when [father] is male and heterozygous
+/// ([AlleleState.carrier] or [AlleleState.split]) at both loci of a known
+/// [LinkageCatalog] pair. Mirrors the engine's own tightest-linkage
+/// selection (`mendelian_calculator.dart`'s `tryLinkPair` priority order),
+/// which always resolves to the globally tightest pair among the father's
+/// heterozygous linkage participants since only four Z-linkage tokens exist.
+/// Two heterozygous alleles at the *same* locus (e.g. `pallid` + `pearly`,
+/// both normalizing to the `ino` token) are not a linked pair and are
+/// excluded.
+ActiveLinkagePair? activeLinkagePairForFather(ParentGenotype father) {
+  if (father.gender != BirdGender.male) return null;
+
+  final heterozygousIds = father.mutations.entries
+      .where(
+        (entry) =>
+            entry.value == AlleleState.carrier ||
+            entry.value == AlleleState.split,
+      )
+      .map((entry) => entry.key)
+      .where((id) => LinkageCatalog.normalizeToken(id) != null)
+      .toList();
+
+  ActiveLinkagePair? tightest;
+  for (var i = 0; i < heterozygousIds.length; i++) {
+    for (var j = i + 1; j < heterozygousIds.length; j++) {
+      final id1 = heterozygousIds[i];
+      final id2 = heterozygousIds[j];
+      final info = LinkageCatalog.lookup(id1, id2);
+      if (info == null) continue;
+      if (tightest == null ||
+          info.recombinationRate < tightest.info.recombinationRate) {
+        tightest = (id1: id1, id2: id2, info: info);
+      }
+    }
+  }
+  return tightest;
 }
