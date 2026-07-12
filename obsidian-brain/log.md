@@ -1,5 +1,7 @@
 # Change Log
 
+## [2026-07-12] refactor | All 12 edge functions extracted to DI handler.ts pattern + request-level Deno tests (401/400/403/503/200); +39 tests (204→243). Closes audit backlog. Byte-identical behavior, config.toml/verify_jwt untouched.
+
 Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
