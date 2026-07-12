@@ -93,6 +93,44 @@ void main() {
       expect(find.text('07:00'), findsOneWidget);
     });
 
+    testWidgets('displays persisted DnD hours loaded from preferences', (
+      tester,
+    ) async {
+      // Regression: the section used to read the rate limiter in initState,
+      // racing its async loadFromPrefs() and freezing on 00:00/default values.
+      // With persisted hours present, the tiles must reflect the loaded values.
+      SharedPreferences.setMockInitialValues({
+        'notification_dnd_start_hour': 21,
+        'notification_dnd_end_hour': 6,
+      });
+
+      await tester.pumpWidget(createSubject());
+      await tester.pumpAndSettle();
+      await scrollToDndSection(tester);
+
+      expect(find.text('21:00'), findsOneWidget);
+      expect(find.text('06:00'), findsOneWidget);
+      expect(find.text('23:00'), findsNothing);
+    });
+
+    testWidgets('DnD time tiles expose semantic button labels', (tester) async {
+      await tester.pumpWidget(createSubject());
+      await tester.pumpAndSettle();
+      await scrollToDndSection(tester);
+
+      // Each tile combines its label and time into one semantic button so a
+      // screen reader announces "<label> <time>, button" instead of a bare
+      // "07:00" with no role/context.
+      expect(
+        find.bySemanticsLabel('${l10n('notifications.dnd_start')} 23:00'),
+        findsOneWidget,
+      );
+      expect(
+        find.bySemanticsLabel('${l10n('notifications.dnd_end')} 07:00'),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('DnD time tiles contain InkWell for tap interaction', (
       tester,
     ) async {

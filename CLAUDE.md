@@ -104,7 +104,7 @@ scripts/test_verify_migration_drift.py  # Tests for verify_migration_drift.py
 | Metric | Value |
 | --- | --- |
 | Source files (lib/) | 1018 Dart files |
-| Test files (test/) | 919 test files, 11,513+ individual tests |
+| Test files (test/) | 919 test files, 11,515+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
