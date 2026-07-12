@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/domain/services/genetics/linkage_phase.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
@@ -75,10 +76,20 @@ bool _hasLegacyCarrierSuffix(String phenotype) {
 ///
 /// Resolves legacy mutation IDs (lutino→ino, albino→ino, etc.)
 /// for backward compatibility with saved history entries.
+///
+/// [storedPhaseOverrides] is the optional persisted
+/// `GeneticsHistory.fatherPhaseOverrides` map (pairKey -> [LinkagePhase]
+/// name; father only — mother never carries overrides). Each pair key's two
+/// id halves are independently resolved through [MutationDatabase.resolveId]
+/// before the canonical [linkagePairKey] is rebuilt, so a legacy id stored on
+/// either side of the key (e.g. `'lutino|slate'`) still resolves to the
+/// current canonical pair (`'ino|slate'`). Null/absent input yields empty
+/// overrides (auto) — covers legacy entries saved before this field existed.
 ParentGenotype parseStoredGenotype(
   Map<String, String> stored,
-  BirdGender gender,
-) {
+  BirdGender gender, {
+  Map<String, String>? storedPhaseOverrides,
+}) {
   final mutations = <String, AlleleState>{};
   for (final entry in stored.entries) {
     final resolvedId = MutationDatabase.resolveId(entry.key);
@@ -90,5 +101,23 @@ ParentGenotype parseStoredGenotype(
     };
     mutations[resolvedId] = state;
   }
-  return ParentGenotype(mutations: mutations, gender: gender);
+
+  final phaseOverrides = <String, LinkagePhase>{};
+  if (storedPhaseOverrides != null) {
+    for (final entry in storedPhaseOverrides.entries) {
+      final halves = entry.key.split('|');
+      if (halves.length != 2) continue;
+      final resolvedKey = linkagePairKey(
+        MutationDatabase.resolveId(halves[0]),
+        MutationDatabase.resolveId(halves[1]),
+      );
+      phaseOverrides[resolvedKey] = LinkagePhase.fromJson(entry.value);
+    }
+  }
+
+  return ParentGenotype(
+    mutations: mutations,
+    gender: gender,
+    phaseOverrides: phaseOverrides,
+  );
 }

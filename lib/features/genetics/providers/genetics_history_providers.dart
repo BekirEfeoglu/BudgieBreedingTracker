@@ -57,6 +57,9 @@ class GeneticsHistorySaveNotifier extends Notifier<AsyncValue<void>> {
         motherGenotype: _genotypeToMap(mother),
         fatherBirdId: fatherBird?.id,
         motherBirdId: motherBird?.id,
+        fatherPhaseOverrides: father.phaseOverrides.isEmpty
+            ? null
+            : father.phaseOverrides.map((k, v) => MapEntry(k, v.name)),
         resultsJson: jsonEncode(_resultsToJson(results)),
         calculationVersion: GeneticsConstants.calculationVersion,
         notes: notes,

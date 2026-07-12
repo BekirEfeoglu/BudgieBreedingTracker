@@ -252,7 +252,11 @@ class GeneticsHistoryCard extends ConsumerWidget {
   }
 
   void _showDetail(BuildContext context, WidgetRef ref) {
-    final father = parseStoredGenotype(entry.fatherGenotype, BirdGender.male);
+    final father = parseStoredGenotype(
+      entry.fatherGenotype,
+      BirdGender.male,
+      storedPhaseOverrides: entry.fatherPhaseOverrides,
+    );
     final mother = parseStoredGenotype(entry.motherGenotype, BirdGender.female);
 
     ref.read(fatherGenotypeProvider.notifier).state = father;

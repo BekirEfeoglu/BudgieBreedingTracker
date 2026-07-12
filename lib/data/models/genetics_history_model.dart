@@ -24,6 +24,12 @@ abstract class GeneticsHistory with _$GeneticsHistory {
     /// Optional bird ID if mother was selected from collection.
     String? motherBirdId,
 
+    /// Explicit linkage phase overrides on the father's genotype at save
+    /// time: [linkagePairKey] -> [LinkagePhase] name. Only the father carries
+    /// overrides (male-only feature — see `ParentGenotype.phaseOverrides`).
+    /// Null for entries with no override and for pre-feature legacy entries.
+    Map<String, String>? fatherPhaseOverrides,
+
     /// JSON-encoded list of offspring results.
     required String resultsJson,
 
