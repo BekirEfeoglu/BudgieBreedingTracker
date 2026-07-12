@@ -30,11 +30,18 @@ void main() {
     );
 
     test(
-      'every gameplay XpAction (excluding unknown/unlockBadge) is mapped',
+      'every gameplay XpAction (excluding server-only actions) is mapped',
       () {
         // Catches regression where a new gameplay action is added to the enum
         // but its XP reward is forgotten in xpConstants.
-        const excluded = {XpAction.unlockBadge, XpAction.unknown};
+        // unlockBadge and streakBonus are server-authoritative (amount is
+        // decided by the DB/RPC, not the client xpValues map), so they are
+        // intentionally absent from xpValues.
+        const excluded = {
+          XpAction.unlockBadge,
+          XpAction.streakBonus,
+          XpAction.unknown,
+        };
         for (final action in XpAction.values) {
           if (excluded.contains(action)) continue;
           expect(
