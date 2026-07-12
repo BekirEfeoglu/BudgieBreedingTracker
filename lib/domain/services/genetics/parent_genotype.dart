@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/domain/services/genetics/linkage_phase.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
 
 /// Allele state for a single mutation locus in a parent bird.
@@ -35,14 +36,24 @@ class ParentGenotype {
   /// Gender of the parent bird.
   final BirdGender gender;
 
+  /// Explicit recombination phase overrides for linked mutation pairs.
+  ///
+  /// Keyed by [linkagePairKey]. Absence of a key means [LinkagePhase.auto]
+  /// (the engine's implicit inference — current default behavior).
+  final Map<String, LinkagePhase> phaseOverrides;
+
   /// Creates a genotype wrapping the given mutations in an unmodifiable view.
   ParentGenotype({
     required Map<String, AlleleState> mutations,
     required this.gender,
-  }) : mutations = UnmodifiableMapView(Map.of(mutations));
+    Map<String, LinkagePhase> phaseOverrides = const {},
+  }) : mutations = UnmodifiableMapView(Map.of(mutations)),
+       phaseOverrides = UnmodifiableMapView(Map.of(phaseOverrides));
 
   /// Creates an empty genotype for the given gender.
-  const ParentGenotype.empty({required this.gender}) : mutations = const {};
+  const ParentGenotype.empty({required this.gender})
+    : mutations = const {},
+      phaseOverrides = const {};
 
   /// Whether this parent has any mutations selected.
   bool get isEmpty => mutations.isEmpty;
@@ -96,6 +107,7 @@ class ParentGenotype {
     return ParentGenotype(
       mutations: {...mutations, mutationId: state},
       gender: gender,
+      phaseOverrides: phaseOverrides,
     );
   }
 
@@ -108,10 +120,18 @@ class ParentGenotype {
   }
 
   /// Returns a copy with the given mutation removed.
+  ///
+  /// Also drops any phase override whose pair key references [mutationId].
   ParentGenotype withoutMutation(String mutationId) {
     final updated = Map<String, AlleleState>.from(mutations)
       ..remove(mutationId);
-    return ParentGenotype(mutations: updated, gender: gender);
+    final updatedOverrides = Map<String, LinkagePhase>.from(phaseOverrides)
+      ..removeWhere((key, _) => key.split('|').contains(mutationId));
+    return ParentGenotype(
+      mutations: updated,
+      gender: gender,
+      phaseOverrides: updatedOverrides,
+    );
   }
 
   /// Returns a copy with the allele state toggled for the given mutation.
@@ -156,6 +176,31 @@ class ParentGenotype {
 
   /// Returns a copy with all mutations cleared.
   ParentGenotype clear() => ParentGenotype.empty(gender: gender);
+
+  /// Returns a copy with the recombination phase for the linked pair
+  /// ([id1], [id2]) set to [phase].
+  ///
+  /// Passing [LinkagePhase.auto] removes the override (auto means "no
+  /// override" — falls back to the engine's implicit inference).
+  ParentGenotype withPhaseOverride(String id1, String id2, LinkagePhase phase) {
+    final key = linkagePairKey(id1, id2);
+    final updatedOverrides = Map<String, LinkagePhase>.from(phaseOverrides);
+    if (phase == LinkagePhase.auto) {
+      updatedOverrides.remove(key);
+    } else {
+      updatedOverrides[key] = phase;
+    }
+    return ParentGenotype(
+      mutations: mutations,
+      gender: gender,
+      phaseOverrides: updatedOverrides,
+    );
+  }
+
+  /// Returns the explicit recombination phase for the linked pair
+  /// ([id1], [id2]), or [LinkagePhase.auto] if no override is set.
+  LinkagePhase phaseFor(String id1, String id2) =>
+      phaseOverrides[linkagePairKey(id1, id2)] ?? LinkagePhase.auto;
 
   /// Returns the mutation IDs belonging to the given allelic series [locusId].
   /// Useful for checking how many alleles the user selected at one locus.
