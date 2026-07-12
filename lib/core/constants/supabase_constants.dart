@@ -152,6 +152,19 @@ abstract class SupabaseConstants {
   static const String colCity = 'city';
   static const String colListingType = 'listing_type';
   static const String colPrice = 'price';
+  static const String colListingId = 'listing_id';
+  static const String colFollowerId = 'follower_id';
+  static const String colFollowingId = 'following_id';
+  static const String colMutedUserId = 'muted_user_id';
+  static const String colConversationId = 'conversation_id';
+  static const String colIsLeft = 'is_left';
+  static const String colLastMessageAt = 'last_message_at';
+  static const String colType = 'type';
+  static const String colSenderId = 'sender_id';
+  static const String colCommentId = 'comment_id';
+  static const String colEventId = 'event_id';
+  static const String colEntityId = 'entity_id';
+  static const String colAction = 'action';
 
   // Feedback columns
   static const String feedbackColId = 'id';
@@ -184,6 +197,22 @@ abstract class SupabaseConstants {
 
   // RPC names
   static const String recordDailyCheckinRpc = 'record_daily_checkin';
+  static const String markMessageReadRpc = 'mark_message_read';
+  static const String getLeaderboardRpc = 'get_leaderboard';
+  // Admin RPCs (admin feature uses client.rpc directly, but names via constants)
+  static const String adminExportAllTablesRpc = 'admin_export_all_tables';
+  static const String adminResetAllUserDataRpc = 'admin_reset_all_user_data';
+  static const String verifyMonitoringCronJobsRpc = 'verify_monitoring_cron_jobs';
+  static const String adminGetTableCountsRpc = 'admin_get_table_counts';
+  static const String getServerCapacityRpc = 'get_server_capacity';
+  static const String adminCountOrphanEggsRpc = 'admin_count_orphan_eggs';
+  static const String adminCountOrphanChicksRpc = 'admin_count_orphan_chicks';
+  static const String adminCountOrphanRemindersRpc = 'admin_count_orphan_reminders';
+  static const String adminCountOrphanHealthRecordsRpc =
+      'admin_count_orphan_health_records';
+  static const String adminResetStuckSyncRecordsRpc =
+      'admin_reset_stuck_sync_records';
+  static const String adminGetStatsRpc = 'admin_get_stats';
 
   // Storage Buckets
   static const String birdPhotosBucket = 'bird-photos';

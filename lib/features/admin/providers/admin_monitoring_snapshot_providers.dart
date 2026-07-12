@@ -196,7 +196,9 @@ final cronJobStatusProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   await requireAdmin(ref);
   final client = ref.watch(supabaseClientProvider);
   try {
-    final result = await client.rpc('verify_monitoring_cron_jobs');
+    final result = await client.rpc(
+      SupabaseConstants.verifyMonitoringCronJobsRpc,
+    );
     // Guard the cast: a server-side schema regression or `null` RPC
     // return value would otherwise throw inside the try and surface as
     // a generic network error, masking the real problem.

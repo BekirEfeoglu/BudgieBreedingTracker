@@ -19,7 +19,7 @@ class MessageRemoteSource {
       var query = _client
           .from(SupabaseConstants.messagesTable)
           .select()
-          .eq('conversation_id', conversationId)
+          .eq(SupabaseConstants.colConversationId, conversationId)
           .eq(SupabaseConstants.colIsDeleted, false);
 
       if (before != null) {
@@ -70,7 +70,7 @@ class MessageRemoteSource {
     try {
       // Append userId to read_by array if not already present
       await _client.rpc(
-        'mark_message_read',
+        SupabaseConstants.markMessageReadRpc,
         params: {'p_message_id': messageId, 'p_user_id': userId},
       );
     } catch (e, st) {
@@ -90,7 +90,7 @@ class MessageRemoteSource {
           .from(SupabaseConstants.messagesTable)
           .update({SupabaseConstants.colIsDeleted: true})
           .eq(SupabaseConstants.colId, id)
-          .eq('sender_id', userId);
+          .eq(SupabaseConstants.colSenderId, userId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag('messaging', e, st);
     }
@@ -111,9 +111,9 @@ class MessageRemoteSource {
       final result = await _client
           .from(SupabaseConstants.conversationParticipantsTable)
           .select(SupabaseConstants.colId)
-          .eq('conversation_id', conversationId)
+          .eq(SupabaseConstants.colConversationId, conversationId)
           .eq(SupabaseConstants.colUserId, userId)
-          .eq('is_left', false)
+          .eq(SupabaseConstants.colIsLeft, false)
           .maybeSingle();
       return result != null;
     } catch (e, st) {
@@ -139,7 +139,7 @@ class MessageRemoteSource {
           table: SupabaseConstants.messagesTable,
           filter: PostgresChangeFilter(
             type: PostgresChangeFilterType.eq,
-            column: 'conversation_id',
+            column: SupabaseConstants.colConversationId,
             value: conversationId,
           ),
           callback: (payload) {

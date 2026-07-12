@@ -1,5 +1,7 @@
 # Change Log
 
+## [2026-07-12] refactor | SupabaseConstants #8 coverage — 26 new col/RPC constants, 44 literals replaced across 8 remote sources + admin providers (chore/supabase-constants-coverage). No wire-value change.
+
 Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---

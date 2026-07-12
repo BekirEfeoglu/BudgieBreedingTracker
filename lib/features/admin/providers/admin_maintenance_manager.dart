@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/constants/supabase_constants.dart';
 import '../../../core/utils/logger.dart';
 import '../../../shared/providers/auth.dart';
 import 'admin_auth_utils.dart';
@@ -83,7 +84,7 @@ class AdminMaintenanceManager {
     try {
       await requireAdmin(_ref);
       final client = _ref.read(supabaseClientProvider);
-      await client.rpc('admin_reset_stuck_sync_records');
+      await client.rpc(SupabaseConstants.adminResetStuckSyncRecordsRpc);
 
       _updateState(
         isLoading: false,

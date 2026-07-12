@@ -104,10 +104,10 @@ final orphanDataProvider = FutureProvider<OrphanDataSummary>((ref) async {
       orphanReminders,
       orphanHealthRecords,
     ) = await (
-      client.rpc('admin_count_orphan_eggs'),
-      client.rpc('admin_count_orphan_chicks'),
-      client.rpc('admin_count_orphan_reminders'),
-      client.rpc('admin_count_orphan_health_records'),
+      client.rpc(SupabaseConstants.adminCountOrphanEggsRpc),
+      client.rpc(SupabaseConstants.adminCountOrphanChicksRpc),
+      client.rpc(SupabaseConstants.adminCountOrphanRemindersRpc),
+      client.rpc(SupabaseConstants.adminCountOrphanHealthRecordsRpc),
     ).wait;
 
     return OrphanDataSummary(
