@@ -50,7 +50,12 @@ void main() {
     });
 
     test('has expected value count', () {
-      expect(XpAction.values.length, 13);
+      expect(XpAction.values.length, 14);
+    });
+
+    test('streakBonus round-trips through json', () {
+      expect(XpAction.streakBonus.toJson(), 'streakBonus');
+      expect(XpAction.fromJson('streakBonus'), XpAction.streakBonus);
     });
   });
 }

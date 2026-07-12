@@ -38,6 +38,25 @@ The leaderboard shows real display names. It was anonymous-only before, because
 - Statistics personal records expose milestone candidates: best season, top pair, and longest-lived bird.
 - Badge triggering is not wired yet; future gamification work can consume `personalRecordsProvider(userId)` instead of recalculating the same aggregates.
 
+## Daily Streak (shipped 2026-07-12)
+
+`StreakChip` (`lib/features/home/widgets/streak_chip.dart`) on the home
+dashboard shows the current streak count (flame icon, hidden when 0). Tapping
+opens the badges screen. Backed by `streakProvider`
+(`domain/services/gamification/streak_providers.dart`), which reads
+`GamificationRepository.getStreak` — server-authoritative, no local Drift
+mirror (same online-first exemption as the rest of gamification).
+
+Check-in fires once per app session via `runDailyCheckin`, called as a
+deferred microtask after `InitStep.ready` in `appInitializationProvider`
+(non-blocking, uses `tz.local.name`). On a real check-in (`awardedXp > 0`),
+`lastStreakCheckinProvider` holds the result once so the home screen shows a
+one-shot `showStreakCelebration` SnackBar (`lib/shared/widgets/gamification.dart`
+facade) — milestone / grace-saved / plain variant — then clears it.
+
+Full RPC/grace/bonus-tier contract lives in `.claude/rules/gamification.md`
+§ Streak Sistemi (authoritative — this page only covers the UI surface).
+
 ## See Also
 
 - [[features/statistics]]

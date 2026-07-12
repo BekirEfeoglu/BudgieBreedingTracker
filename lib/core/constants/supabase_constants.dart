@@ -70,6 +70,7 @@ abstract class SupabaseConstants {
   static const String userBadgesTable = 'user_badges';
   static const String userLevelsTable = 'user_levels';
   static const String xpTransactionsTable = 'xp_transactions';
+  static const String userStreaksTable = 'user_streaks';
 
   static const String calendarTable = 'calendar';
   static const String deletedEggsTable = 'deleted_eggs';
@@ -180,6 +181,9 @@ abstract class SupabaseConstants {
   static const String notificationColReferenceType = 'reference_type';
   static const String notificationColCreatedAt = 'created_at';
   static const String notificationColUpdatedAt = 'updated_at';
+
+  // RPC names
+  static const String recordDailyCheckinRpc = 'record_daily_checkin';
 
   // Storage Buckets
   static const String birdPhotosBucket = 'bird-photos';

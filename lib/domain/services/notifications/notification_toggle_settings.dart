@@ -13,6 +13,7 @@ class NotificationToggleSettings {
     this.chickCare = true,
     this.healthCheck = true,
     this.banding = true,
+    this.streakReminder = true,
     this.cleanupDaysOld = 30,
   });
 
@@ -37,6 +38,9 @@ class NotificationToggleSettings {
   /// Whether banding reminder notifications are enabled.
   final bool banding;
 
+  /// Whether the smart daily-streak reminder notification is enabled.
+  final bool streakReminder;
+
   /// Number of days after which read notifications are automatically deleted.
   final int cleanupDaysOld;
 
@@ -53,6 +57,7 @@ class NotificationToggleSettings {
     bool? chickCare,
     bool? healthCheck,
     bool? banding,
+    bool? streakReminder,
     int? cleanupDaysOld,
   }) {
     return NotificationToggleSettings(
@@ -63,6 +68,7 @@ class NotificationToggleSettings {
       chickCare: chickCare ?? this.chickCare,
       healthCheck: healthCheck ?? this.healthCheck,
       banding: banding ?? this.banding,
+      streakReminder: streakReminder ?? this.streakReminder,
       cleanupDaysOld: cleanupDaysOld ?? this.cleanupDaysOld,
     );
   }

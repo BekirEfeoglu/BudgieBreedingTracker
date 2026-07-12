@@ -10,6 +10,7 @@ Stack: Flutter/Dart, Riverpod 3, GoRouter 17, Drift, Supabase, Freezed, easy_loc
 
 - Reply to the user in Turkish unless they explicitly ask for another language.
 - Be direct and implementation-focused.
+- After completing a real task (code change, audit, fix, research), end the reply with exactly 3 specific, task-relevant next-step suggestions (see `.claude/rules/chat.md` § Post-Coding Suggestions).
 - If the worktree is dirty, preserve existing changes and avoid unrelated rewrites.
 - Treat `AGENTS.md` as the compact agent contract. Use `CLAUDE.md` and `.claude/rules/*.md` as the detailed development rulebook when a task touches architecture, data, UI, security, CI, release flow, or domain-specific breeding/egg lifecycle behavior.
 - All information is available in the `obsidian-brain` directory. Consult the wiki files inside `obsidian-brain` for comprehensive context, architecture rules, features, data layer documentation, and overall synthesis.

@@ -95,8 +95,19 @@ await flutterLocalNotifications.zonedSchedule(
 | `marketplace` | İlan eşleşme/mesaj | High |
 | `community` | Mention, reply | Default |
 | `system` | Bakım, güncelleme | Low |
+| `streak` | Akıllı günlük streak hatırlatması | Default |
 
 Channel'lar `lib/domain/services/notifications/notification_service.dart` içinde initialize edilir.
+
+### Streak Reminder (`streak` kanalı)
+`StreakReminderScheduler` (`lib/domain/services/notifications/streak_reminder_scheduler.dart`)
+her `runDailyCheckin` sonrası (no-op check-in dahil) yeniden koşar: `NotificationToggleSettings.streakReminder`
+toggle'ı açık VE kullanıcının güncel streak'i **≥3** ise, deterministik ID'yle
+(`NotificationIds.streakReminderBaseId = 900000`) **tek** bir hatırlatmayı yarın
+saat **20:00 local**'e (`tz.TZDateTime`, field-addition gün offset'i — datetime-format.md)
+schedule eder; her seferinde önce cancel sonra (koşullu) schedule — kullanıcı
+uygulamayı bugün açtıysa yarının reminder'ı otomatik günceli yansıtır. Toggle
+`allEnabled`'a DAHİL DEĞİL (opt-out, varsayılan açık). Detay: gamification.md § Streak Sistemi.
 
 ## Quiet Hours / Preferences
 **Server-side enforcement eklendi (2026-07-03, §5.2):** `send-push` artık alıcının
@@ -137,4 +148,4 @@ güvenlik ve hesap kritik bildirimleri flag'i set etmemeli.
 7. Send-push edge fn'i atlayıp doğrudan FCM REST çağrısı (JWT verify bypass)
 8. Bildirim içeriğinde PII (kuş adı OK, doğum tarihi NO)
 
-> **İlgili**: edge-functions.md (send-push), security.md (FCM token), datetime-format.md (timezone), localization.md (notification copy)
+> **İlgili**: edge-functions.md (send-push), security.md (FCM token), datetime-format.md (timezone), localization.md (notification copy), gamification.md (streak sistemi, streak reminder tetikleme)

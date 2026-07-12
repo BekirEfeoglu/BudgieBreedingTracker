@@ -20,13 +20,17 @@ import 'package:budgie_breeding_tracker/features/home/widgets/grace_period_banne
 import 'package:budgie_breeding_tracker/features/home/widgets/limit_approaching_banner.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/quick_actions_row.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/recent_chicks_section.dart';
+import 'package:budgie_breeding_tracker/features/home/widgets/streak_chip.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/sync_status_bar.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/unweaned_alert_banner.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/welcome_header.dart';
+import 'package:budgie_breeding_tracker/data/models/user_streak_model.dart';
+import 'package:budgie_breeding_tracker/domain/services/gamification/streak_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart'
     show SyncResult;
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
+import 'package:budgie_breeding_tracker/shared/widgets/gamification.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_brand_title.dart';
 import 'package:budgie_breeding_tracker/shared/widgets/app_shell.dart';
 import 'package:budgie_breeding_tracker/core/widgets/ad_banner_widget.dart';
@@ -61,6 +65,17 @@ class HomeScreen extends ConsumerWidget {
         _homeWidgetService.syncDashboardSnapshot(next.requireValue);
       },
     );
+
+    // Launch celebration: show once for the most recent daily check-in,
+    // then clear so it doesn't re-fire on rebuild.
+    ref.listen<StreakCheckinResult?>(lastStreakCheckinProvider, (prev, next) {
+      if (next != null) {
+        showStreakCelebration(context, next);
+        Future.microtask(
+          () => ref.read(lastStreakCheckinProvider.notifier).state = null,
+        );
+      }
+    });
 
     return Scaffold(
       body: RefreshIndicator(
@@ -139,6 +154,7 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.lg),
                   const WelcomeHeader(),
                   const SizedBox(height: AppSpacing.md),
+                  const StreakChip(),
                   _UnweanedSection(userId: userId),
                   LimitApproachingBanner(userId: userId),
                   const GracePeriodBanner(),

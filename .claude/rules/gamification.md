@@ -22,9 +22,12 @@ Sabit XP miktarları `xp_constants.dart` içinde tanımlı. Her aksiyon trigger 
 | İlk başarılı kuluçka | 100 | bir kez |
 | Topluluk post (moderation passed) | 5 | günde max 10 |
 | Helpful comment (like > N) | 15 | günde max 3 |
-| Daily login streak | 5 + bonus | günlük |
+| Daily login streak (dailyLogin) | 5 | günde max 1 |
+| Streak-tier bonus (streakBonus) | +2/+5/+7/+10/+12 | `record_daily_checkin` RPC-only, bkz. § Streak Sistemi |
 | Profile completion | 20 | bir kez |
 | Genetics calculator kullanım | 2 | günde max 5 |
+
+`streakBonus` için `private.xp_action_amount('streakBonus')` kasıtlı olarak `NULL` döner — istemcinin doğrudan `xp_transactions` insert'i RLS `WITH CHECK` tarafından reddedilir (`unlockBadge` ile aynı desen); tek yazma yolu DEFINER RPC'dir.
 
 Cooldown'lar farm/spam engellemek için. Server-side enforce (`xp_transactions` table + unique constraint).
 
@@ -82,12 +85,51 @@ istemci remapped seviyede eski anahtar yazarsa o tek XP yazımı reddedilir
 - Self rank: kullanıcı kendi konumunu görür (top 100 dışında bile)
 - Update frequency: 5dk cache (real-time gereksiz, cost)
 
-## Streak Mantığı
-**Henüz implement edilmedi (2026-07-02 audit):** miss-tolerance, gün bazlı bonus
-(7/30/100 gün), IP bazlı anti-fraud detection kod tabanında YOKTUR — bu bölüm
-gelecek tasarım hedefidir. Bugün var olan tek şey: `xp_constants.dart`'ta düz
-`dailyLogin: 5` XP değeri + `dailyLimit: 1` (streak/consecutive-day takibi
-yok). Eklenirse bu bölüm gerçek implementasyonla güncellenmelidir.
+## Streak Sistemi
+**Shipped (2026-07-12), server-authoritative.** `public.user_streaks` tablosu
+(`current_streak, longest_streak, last_check_in_date, grace_used_this_month,
+grace_month`) — owner-scope SELECT-only RLS, tek yazıcı `public.record_daily_checkin(p_time_zone)`
+RPC'si (`SECURITY INVOKER` wrapper → `private.record_daily_checkin` `SECURITY
+DEFINER`, migration `20260712100000_gamification_streaks.sql`, prod'a
+uygulandı).
+
+- **Tetikleme:** İstemci `runDailyCheckin` (`streak_providers.dart`) app-init'te
+  `InitStep.ready` sonrası deferred microtask'te çalışır — `tz.local.name`
+  (bildirim servisinin set ettiği IANA zone) ile RPC'yi çağırır, kritik yolu
+  bloklamaz (performance.md § Startup)
+- **Local gün hesabı:** RPC `now() AT TIME ZONE p_time_zone` ile kullanıcının
+  yerel gününü hesaplar (geçersiz tz → UTC fallback); aynı gün ikinci
+  check-in no-op (`awarded_xp: 0`, streak değişmez)
+- **Grace (otomatik affetme):** Ay başına **2 grace günü**. Tek günlük boşluk
+  (`gap = 2`) grace hakkı varken affedilir (streak devam, `grace_consumed: true`);
+  `gap >= 3` veya grace tükenmişse streak **1**'e resetlenir. Ay değişince
+  grace sayacı sıfırlanır (`grace_month`)
+- **XP ödülü:** Her check-in temel `dailyLogin` (5 XP, günlük limit 1 zaten
+  var) + kademeli `streakBonus` (`private.streak_bonus_for`: `≥3→+2 · ≥7→+5 ·
+  ≥14→+7 · ≥30→+10 · ≥60→+12`) — RPC içinde iki ayrı `xp_transactions` insert'i,
+  var olan `AFTER INSERT` trigger `user_levels`/`profiles`'i SUM'dan senkronlar
+  (bkz. § Server-Side Write Enforcement → Atomik level türetme)
+- **UTC-cap toleransı (migration `20260712140000`):** RPC no-op guard'ı **yerel
+  gün**le, `dailyLogin` günlük-limit trigger'ı **UTC gün**le çalışır. İki yerel
+  check-in günü aynı UTC güne düşerse (offset zone'da akşam + ertesi sabah) ikinci
+  `dailyLogin` insert'i `check_violation` fırlatır; RPC bunu **yutar** (streak yine
+  ilerler, o UTC günü ikinci base XP verilmez, `streakBonus` korunur, `awarded_xp`
+  base'i düşer). Bu insert'i guard'sız bırakma — tüm RPC abort edip streak/grace kaybettirir
+- **Milestone rozetler:** streak tam 7/30/100'e ulaştığında `streak_7`
+  (bronze, 30 XP) / `streak_30` (gold, 100 XP) / `streak_100` (platinum, 250 XP)
+  `user_badges`'a idempotent upsert edilir (`ON CONFLICT (user_id, badge_id)`)
+  + karşılık gelen `unlockBadge` XP'si (duplicate-guard'lı)
+- **UI:** `StreakChip` (`lib/features/home/widgets/streak_chip.dart`) ana
+  ekranda aktif streak'i gösterir (streak 0 ise gizli); launch sonrası
+  `showStreakCelebration` (`lib/shared/widgets/gamification.dart` facade) bir
+  kerelik SnackBar gösterir (milestone / grace-saved / normal varyant),
+  `lastStreakCheckinProvider` temizlenince tekrar tetiklenmez
+- **Bildirim:** `StreakReminderScheduler` her check-in sonrası (no-op dahil)
+  yeniden koşar — toggle açık VE `currentStreak >= 3` ise **tek** hatırlatmayı
+  yarın 20:00 local'e (`tz.TZDateTime`, field-addition gün offset'i) schedule
+  eder; her zaman önce cancel-then-schedule. Kanal + toggle: bkz. notifications.md
+  § Notification Categories ve `NotificationToggleSettings.streakReminder`
+  (opt-out, `allEnabled`'a DAHİL DEĞİL)
 
 ## Anti-Gambling Pattern
 - XP **shown but never spent** (loot box, gacha pattern YOK)
@@ -123,7 +165,7 @@ Migration'lar: `20260702175125_gamification_server_side_helpers.sql`, `202607021
 - Level up: in-app + opsiyonel push
 - Badge unlock: in-app sadece (push gürültüsü)
 - Leaderboard top 10 giriş: opt-in push
-- Streak miss uyarısı: 22 saat sonra "Bugün giriş yap" (anti-pattern: aşırı push)
+- Streak hatırlatması: **shipped** — her check-in sonrası tek reminder yarın 20:00 local'e schedule edilir, sadece streak≥3 VE toggle açıksa (§ Streak Sistemi); günde birden fazla veya kısa-aralıklı "bugün giriş yap" nag'i EKLEME (aşırı push anti-pattern'i geçerli kalır)
 
 ## Free vs Premium
 - XP earn rate aynı (premium accelerator YOK — pay-to-win engeli)
@@ -157,5 +199,6 @@ test('badge unlock fires on threshold', () async {
 5. Leaderboard'a opt-out koymamak (privacy)
 6. Badge unlock'ı her widget rebuild'de check (perf — trigger-time only)
 7. Level up push'unu zorunlu yapmak (anti-pattern: notification fatigue)
+8. Streak mantığını istemciye taşımak (`user_streaks`'e client insert/update denemek — RLS SELECT-only reddeder; `record_daily_checkin` RPC dışında yazma yolu YOK)
 
-> **İlgili**: premium-revenuecat.md (premium cosmetic badge), community.md (verified badge gösterim), architecture.md (§ Online-First Exemption), notifications.md (level up push)
+> **İlgili**: premium-revenuecat.md (premium cosmetic badge), community.md (verified badge gösterim), architecture.md (§ Online-First Exemption), notifications.md (level up push, streak kanalı)

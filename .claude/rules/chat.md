@@ -12,11 +12,13 @@
 - Emin degilsen sor, tahminle ilerleme
 
 ## Post-Coding Suggestions
-Bir ozellik implement edildikten sonra onerilerde bulun:
+Bir islem/gorev tamamlandiktan sonra, yanitin sonunda **tam 3 adet** mantikli oneride bulun. Oneriler o gorevle dogrudan alakali, spesifik ve uygulanabilir olmali (genel/dolgu oneri verme). Salt-sohbet turlarinda degil, gercek bir islem (kod degisikligi, audit, fix, arastirma vb.) bittiginde uygula. Ornek oneri kategorileri:
 - Test yazma veya guncelleme
 - Performans optimizasyonu
 - Anti-pattern kontrolu
 - Ilgili quality script'leri calistirma
+- Ilgili sibling path kontrolu
+- Dokumantasyon senkronu
 
 ## Task Completion
 Is tamamlandi demeden once kalite kapilarini calistir (bkz. ai-workflow.md § Quality Gates).

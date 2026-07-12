@@ -92,6 +92,12 @@ Validate type before navigating. Unknown type → `AppLogger.warning` + home fal
 | `marketplace` | Listing matches | High |
 | `community` | Mentions, replies | Default |
 | `system` | Maintenance | Low |
+| `streak` | Smart daily-streak reminder | Default |
+
+`streak` (shipped 2026-07-12): `StreakReminderScheduler` re-schedules a single
+next-day 20:00-local reminder after every check-in call, only when the
+`streakReminder` toggle is on (opt-out, not in `allEnabled`) and the current
+streak is `>= 3`. See [[domain/gamification-service]] § Daily Streak.
 
 ## Current Decisions
 

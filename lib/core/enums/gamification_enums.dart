@@ -49,6 +49,7 @@ enum XpAction {
   createListing,
   sendMessage,
   unlockBadge,
+  streakBonus,
   unknown;
 
   String toJson() => name;

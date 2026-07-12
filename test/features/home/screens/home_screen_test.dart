@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
+import 'package:budgie_breeding_tracker/data/models/user_streak_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/entity_count_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
+import 'package:budgie_breeding_tracker/domain/services/gamification/streak_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
@@ -185,6 +187,40 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(RefreshIndicator), findsOneWidget);
+    });
+
+    testWidgets('shows streak celebration once then clears without re-firing', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createSubject(statsAsync: const AsyncData(DashboardStats())),
+      );
+      await tester.pumpAndSettle();
+
+      // No celebration yet — lastStreakCheckinProvider starts null.
+      expect(find.byType(SnackBar), findsNothing);
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(HomeScreen)),
+      );
+
+      container.read(lastStreakCheckinProvider.notifier).state =
+          const StreakCheckinResult(currentStreak: 8, awardedXp: 10);
+      await tester.pump();
+
+      // The ref.listen fired and showed the one-shot celebration SnackBar.
+      expect(find.byType(SnackBar), findsOneWidget);
+
+      // Let the Future.microtask that clears the provider run.
+      await tester.pump();
+      expect(container.read(lastStreakCheckinProvider), isNull);
+
+      // Further rebuilds with the state still null must not re-invoke the
+      // listener (Riverpod only calls ref.listen on a value transition,
+      // and null -> null is not one) — still exactly the one SnackBar.
+      await tester.pump();
+      await tester.pump();
+      expect(find.byType(SnackBar), findsOneWidget);
     });
   });
 }

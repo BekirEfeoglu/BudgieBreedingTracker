@@ -1156,7 +1156,11 @@
     "battery_steps_huawei": "Huawei: Ayarlar > Pil > Uygulama baslatma > BudgieTrack icin otomatik yonetimi kapatin",
     "battery_steps_oppo": "OPPO/Realme/OnePlus: Ayarlar > Pil > Daha fazla pil ayari > Uyku modundayken bildirimlere izin verin",
     "battery_steps_vivo": "Vivo: Ayarlar > Pil > Yuksek arka plan guc tuketimi > BudgieTrack'i ekleyin",
-    "egg_label": "Yumurta {}"
+    "egg_label": "Yumurta {}",
+    "channel_streak_name": "Seri Hatırlatması",
+    "channel_streak_desc": "Günlük giriş serisi hatırlatmaları",
+    "streak_reminder_title": "Serini koru 🔥",
+    "streak_reminder_body": "{count} günlük serini kaybetme — bugün henüz giriş yapmadın."
   },
   "premium": {
     "title": "Premium",
@@ -3158,7 +3162,13 @@
     "verified_breeder_lost": "Doğrulanmış yetiştirici rozetiniz geri alındı",
     "detail": "Rozet Detayı",
     "showcase": "Rozet Vitrini",
-    "showcase_hint": "Profilinizde gösterilecek rozetleri seçin"
+    "showcase_hint": "Profilinizde gösterilecek rozetleri seçin",
+    "streak_7": "İstikrarlı",
+    "streak_7_desc": "7 gün üst üste giriş yaptın",
+    "streak_30": "Sadık",
+    "streak_30_desc": "30 gün üst üste giriş yaptın",
+    "streak_100": "Efsane",
+    "streak_100_desc": "100 gün üst üste giriş yaptın"
   },
   "gamification": {
     "level": "Seviye {}",
@@ -3189,7 +3199,11 @@
     "title_legendary": "Efsanevi Yetiştirici",
     "title_enthusiast": "Hevesli Yetiştirici",
     "title_champion": "Şampiyon Yetiştirici",
-    "title_bird_whisperer": "Kuş Fısıldayan"
+    "title_bird_whisperer": "Kuş Fısıldayan",
+    "streak_chip_label": "{count} günlük seri",
+    "streak_celebration": "Seri {count} güne çıktı! +{xp} XP",
+    "streak_grace_saved": "Serini koruduk 🛡️ {count} gün",
+    "streak_milestone": "{count} günlük seri kilometre taşı! 🔥"
   },
   "leaderboard": {
     "title": "Liderlik Tablosu",
