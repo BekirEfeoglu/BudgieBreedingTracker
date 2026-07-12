@@ -1,0 +1,210 @@
+import { corsPreflightResponse, getCorsHeaders } from "../_shared/cors.ts";
+import {
+  createSupabaseAdmin,
+  getAuthenticatedUserId,
+  getAuthenticatorAssuranceLevel,
+} from "../_shared/auth.ts";
+import {
+  createRateLimiter,
+  createSupabaseRateLimitStore,
+  rateLimitedResponse,
+} from "../_shared/rate-limit.ts";
+import { z } from "npm:zod@3.24.4";
+import { parseRequestBody } from "../_shared/validation.ts";
+import {
+  computeFailureUpdate,
+  computeResetCount,
+  isLockedOut,
+  type LockoutRow,
+} from "./lockout_core.ts";
+
+const rateLimiter = createRateLimiter({
+  windowMs: 60_000,
+  maxCalls: 30,
+  store: createSupabaseRateLimitStore("mfa-lockout"),
+});
+
+const mfaSchema = z.object({
+  action: z.enum(["check", "record-failure", "reset"]),
+});
+
+type SupabaseAdminClient = any;
+
+export type MfaLockoutDeps = {
+  getAuthenticatedUserId(req: Request): Promise<string | null>;
+  getAuthenticatorAssuranceLevel(req: Request): string | null;
+  checkRateLimit(userId: string): boolean | Promise<boolean>;
+  createAdminClient(): SupabaseAdminClient;
+  now(): Date;
+};
+
+const defaultDeps: MfaLockoutDeps = {
+  getAuthenticatedUserId,
+  getAuthenticatorAssuranceLevel,
+  checkRateLimit: (userId) => rateLimiter.check(userId),
+  createAdminClient: createSupabaseAdmin,
+  now: () => new Date(),
+};
+
+async function getOrCreateLockout(
+  supabase: SupabaseAdminClient,
+  userId: string,
+): Promise<LockoutRow | null> {
+  const { data } = await supabase
+    .from("mfa_lockouts")
+    .select(
+      "user_id, failed_attempts, locked_until, last_attempt_at, lockout_count",
+    )
+    .eq("user_id", userId)
+    .single();
+
+  if (data) return data as LockoutRow;
+
+  const { data: created } = await supabase
+    .from("mfa_lockouts")
+    .upsert(
+      { user_id: userId, failed_attempts: 0, lockout_count: 0 },
+      { onConflict: "user_id" },
+    )
+    .select()
+    .single();
+
+  return (created ?? null) as LockoutRow | null;
+}
+
+export function createMfaLockoutHandler(
+  deps: MfaLockoutDeps = defaultDeps,
+) {
+  return async (req: Request): Promise<Response> => {
+    if (req.method === "OPTIONS") return corsPreflightResponse(req);
+
+    const headers = getCorsHeaders(req);
+
+    try {
+      const userId = await deps.getAuthenticatedUserId(req);
+      if (!userId) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers },
+        );
+      }
+
+      if (!(await deps.checkRateLimit(userId))) {
+        return rateLimitedResponse(headers);
+      }
+
+      const parsed = await parseRequestBody(req, mfaSchema, headers);
+      if (!parsed.success) return parsed.response;
+
+      const { action } = parsed.data;
+
+      const supabase = deps.createAdminClient();
+      const lockout = await getOrCreateLockout(supabase, userId);
+
+      if (!lockout) {
+        return new Response(
+          JSON.stringify({ error: "Failed to retrieve lockout state" }),
+          { status: 500, headers },
+        );
+      }
+
+      if (action === "check") {
+        const status = isLockedOut(lockout);
+        return new Response(
+          JSON.stringify(status),
+          { status: status.locked ? 429 : 200, headers },
+        );
+      }
+
+      if (action === "record-failure") {
+        const status = isLockedOut(lockout);
+        if (status.locked) {
+          return new Response(
+            JSON.stringify({
+              locked: true,
+              remaining_seconds: status.remaining_seconds,
+            }),
+            { status: 429, headers },
+          );
+        }
+
+        const now = deps.now();
+        const outcome = computeFailureUpdate(lockout, now);
+
+        const update: Record<string, any> = {
+          failed_attempts: outcome.failed_attempts,
+          last_attempt_at: now.toISOString(),
+        };
+        if (outcome.locked) {
+          update.locked_until = outcome.locked_until;
+          update.lockout_count = outcome.lockout_count;
+        }
+
+        await supabase.from("mfa_lockouts").update(update).eq(
+          "user_id",
+          userId,
+        );
+
+        if (outcome.locked) {
+          return new Response(
+            JSON.stringify({
+              locked: true,
+              remaining_seconds: outcome.remaining_seconds,
+            }),
+            { status: 429, headers },
+          );
+        }
+
+        return new Response(
+          JSON.stringify({
+            locked: false,
+            remaining_seconds: 0,
+            failed_attempts: outcome.failed_attempts,
+          }),
+          { status: 200, headers },
+        );
+      }
+
+      if (action === "reset") {
+        if (deps.getAuthenticatorAssuranceLevel(req) !== "aal2") {
+          return new Response(
+            JSON.stringify({ error: "mfa_verification_required" }),
+            { status: 403, headers },
+          );
+        }
+
+        // Decay policy: only drop lockout_count after a full week of inactivity.
+        // Shorter windows (e.g. 24h) would let an attacker alternate wait/brute
+        // attempts and keep the tier low; see lockout_core.ts.
+        const now = deps.now();
+        const newLockoutCount = computeResetCount(lockout, now);
+
+        await supabase
+          .from("mfa_lockouts")
+          .update({
+            failed_attempts: 0,
+            locked_until: null,
+            last_attempt_at: now.toISOString(),
+            lockout_count: newLockoutCount,
+          })
+          .eq("user_id", userId);
+
+        return new Response(
+          JSON.stringify({ locked: false, remaining_seconds: 0 }),
+          { status: 200, headers },
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ error: "Unhandled action" }),
+        { status: 400, headers },
+      );
+    } catch (_error) {
+      console.error("[mfa-lockout] Error:", _error);
+      return new Response(
+        JSON.stringify({ error: "Internal server error" }),
+        { status: 500, headers },
+      );
+    }
+  };
+}
