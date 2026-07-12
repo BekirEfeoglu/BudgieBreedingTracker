@@ -14,24 +14,25 @@ void showStreakCelebration(BuildContext context, StreakCheckinResult result) {
 
   final String message;
   if (result.milestoneUnlocked != null) {
-    message = 'gamification.streak_milestone'
-        .tr(namedArgs: {'count': '${result.currentStreak}'});
+    message = 'gamification.streak_milestone'.tr(
+      namedArgs: {'count': '${result.currentStreak}'},
+    );
   } else if (result.graceConsumed) {
-    message = 'gamification.streak_grace_saved'
-        .tr(namedArgs: {'count': '${result.currentStreak}'});
+    message = 'gamification.streak_grace_saved'.tr(
+      namedArgs: {'count': '${result.currentStreak}'},
+    );
   } else {
-    message = 'gamification.streak_celebration'.tr(namedArgs: {
-      'count': '${result.currentStreak}',
-      'xp': '${result.awardedXp}',
-    });
+    message = 'gamification.streak_celebration'.tr(
+      namedArgs: {
+        'count': '${result.currentStreak}',
+        'xp': '${result.awardedXp}',
+      },
+    );
   }
 
   messenger
     ..hideCurrentSnackBar()
     ..showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-      ),
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
     );
 }

@@ -26,8 +26,9 @@ class StreakChip extends ConsumerWidget {
         alignment: Alignment.centerLeft,
         child: Semantics(
           button: true,
-          label:
-              'gamification.streak_chip_label'.tr(namedArgs: {'count': '$count'}),
+          label: 'gamification.streak_chip_label'.tr(
+            namedArgs: {'count': '$count'},
+          ),
           child: Material(
             color: theme.colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
@@ -49,8 +50,9 @@ class StreakChip extends ConsumerWidget {
                     ),
                     const SizedBox(width: AppSpacing.xs),
                     Text(
-                      'gamification.streak_chip_label'
-                          .tr(namedArgs: {'count': '$count'}),
+                      'gamification.streak_chip_label'.tr(
+                        namedArgs: {'count': '$count'},
+                      ),
                       style: theme.textTheme.labelLarge?.copyWith(
                         color: theme.colorScheme.onPrimaryContainer,
                         fontWeight: FontWeight.w600,

@@ -15,9 +15,8 @@ void main() {
       routes: [
         GoRoute(
           path: '/',
-          pageBuilder: (_, __) => const NoTransitionPage(
-            child: Scaffold(body: StreakChip()),
-          ),
+          pageBuilder: (_, __) =>
+              const NoTransitionPage(child: Scaffold(body: StreakChip())),
         ),
         GoRoute(
           path: '/badges',
@@ -28,9 +27,7 @@ void main() {
     );
 
     return ProviderScope(
-      overrides: [
-        streakProvider.overrideWith((ref) async => streak),
-      ],
+      overrides: [streakProvider.overrideWith((ref) async => streak)],
       child: MaterialApp.router(routerConfig: router),
     );
   }
@@ -38,9 +35,7 @@ void main() {
   group('StreakChip', () {
     testWidgets('shows streak count when > 0', (tester) async {
       await tester.pumpWidget(
-        createSubject(
-          streak: const UserStreak(userId: 'u1', currentStreak: 8),
-        ),
+        createSubject(streak: const UserStreak(userId: 'u1', currentStreak: 8)),
       );
       await tester.pumpAndSettle();
 
@@ -61,9 +56,7 @@ void main() {
 
     testWidgets('hidden when streak count is 0', (tester) async {
       await tester.pumpWidget(
-        createSubject(
-          streak: const UserStreak(userId: 'u1'),
-        ),
+        createSubject(streak: const UserStreak(userId: 'u1')),
       );
       await tester.pumpAndSettle();
 
@@ -72,9 +65,7 @@ void main() {
 
     testWidgets('tapping chip navigates to badges route', (tester) async {
       await tester.pumpWidget(
-        createSubject(
-          streak: const UserStreak(userId: 'u1', currentStreak: 3),
-        ),
+        createSubject(streak: const UserStreak(userId: 'u1', currentStreak: 3)),
       );
       await tester.pumpAndSettle();
 
