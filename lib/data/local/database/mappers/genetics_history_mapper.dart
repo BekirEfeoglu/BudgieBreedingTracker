@@ -10,6 +10,7 @@ extension GeneticsHistoryRowMapper on GeneticsHistoryRow {
     userId: userId,
     fatherGenotype: _decodeStringMap(fatherGenotype),
     motherGenotype: _decodeStringMap(motherGenotype),
+    fatherPhaseOverrides: _decodeNullableStringMap(fatherPhaseOverrides),
     fatherBirdId: fatherBirdId,
     motherBirdId: motherBirdId,
     resultsJson: resultsJson,
@@ -29,6 +30,16 @@ extension GeneticsHistoryRowMapper on GeneticsHistoryRow {
       return {};
     }
   }
+
+  static Map<String, String>? _decodeNullableStringMap(String? json) {
+    if (json == null) return null;
+    try {
+      final decoded = jsonDecode(json);
+      return decoded is Map ? decoded.cast<String, String>() : null;
+    } catch (_) {
+      return null;
+    }
+  }
 }
 
 extension GeneticsHistoryModelMapper on GeneticsHistory {
@@ -37,6 +48,9 @@ extension GeneticsHistoryModelMapper on GeneticsHistory {
     userId: Value(userId),
     fatherGenotype: Value(jsonEncode(fatherGenotype)),
     motherGenotype: Value(jsonEncode(motherGenotype)),
+    fatherPhaseOverrides: Value(
+      fatherPhaseOverrides == null ? null : jsonEncode(fatherPhaseOverrides),
+    ),
     fatherBirdId: Value(fatherBirdId),
     motherBirdId: Value(motherBirdId),
     resultsJson: Value(resultsJson),

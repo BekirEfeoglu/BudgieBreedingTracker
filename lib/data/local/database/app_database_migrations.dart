@@ -446,6 +446,23 @@ Future<void> _migrateV26ToV27(AppDatabase db, Migrator m) async {
   await _createPerformanceIndexes(db);
 }
 
+/// Migration v27 -> v28: Adds optional father linkage-phase overrides to
+/// genetics history (JSON map of linkage-pair-key -> phase). Existing rows
+/// keep NULL (interpreted as all-Auto).
+Future<void> _migrateV27ToV28(AppDatabase db, Migrator m) async {
+  final hasColumn = await _tableHasColumn(
+    db,
+    'genetics_history',
+    'father_phase_overrides',
+  );
+  if (!hasColumn) {
+    await m.addColumn(
+      db.geneticsHistoryTable,
+      db.geneticsHistoryTable.fatherPhaseOverrides,
+    );
+  }
+}
+
 /// Checks whether [tableName] has a column named [columnName] via PRAGMA.
 ///
 /// Internal migration helper only — [tableName] and [columnName] must be
