@@ -4,6 +4,16 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-12] docs | Post-task suggestions contract — exactly 3 items
+
+Clarified the agent communication contract at user request: after completing a
+real task (code change, audit, fix, research), replies must end with **exactly 3**
+specific, task-relevant next-step suggestions. Updated `.claude/rules/chat.md`
+§ Post-Coding Suggestions (single authority, was unquantified) and mirrored a
+compact line into `AGENTS.md` § Communication (a59251c, f2641be). Prose only, no
+count/inline-ref drift; `chat.md` has no wiki page (rules-index: response-style,
+no page needed). [[sources/rules-index]]
+
 ## [2026-07-12] docs | wiki stat drift sweep — routes, tests, migrations count
 
 Reconciled managed counts drifted from authoritative root `CLAUDE.md` §
@@ -187,13 +197,4 @@ skips the discard prompt. [[features/health_records]]. Pure style/refactor commi
 (breeding/chicks/health spacing tokens, NotificationIds `@visibleForTesting` drop)
 carry no contract change.
 
-## [2026-07-11] fix+docs | Marketing site trust and mobile accessibility
-
-Landing pages now expose truthful Premium offers in JSON-LD without an
-unverifiable aggregate rating, localize the skip/blog/navigation labels, and
-add social-image alt metadata. The mobile menu now locks scroll, traps focus,
-supports Escape, and restores focus on close. Email signup reports localized
-loading/success/failure states through an `aria-live` region and no longer
-shows false success after a failed request. [[infrastructure/marketing-site]]
-
-Older entries are archived in [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
+Older entries are archived in [[log-archive-2026-07-i]], [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
