@@ -20,6 +20,7 @@ import 'package:budgie_breeding_tracker/features/home/widgets/grace_period_banne
 import 'package:budgie_breeding_tracker/features/home/widgets/limit_approaching_banner.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/quick_actions_row.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/recent_chicks_section.dart';
+import 'package:budgie_breeding_tracker/features/home/widgets/streak_chip.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/sync_status_bar.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/unweaned_alert_banner.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/welcome_header.dart';
@@ -139,6 +140,7 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.lg),
                   const WelcomeHeader(),
                   const SizedBox(height: AppSpacing.md),
+                  const StreakChip(),
                   _UnweanedSection(userId: userId),
                   LimitApproachingBanner(userId: userId),
                   const GracePeriodBanner(),
