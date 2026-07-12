@@ -27,6 +27,9 @@ abstract final class NotificationIds {
   /// Base ID offset for foreground push display notifications. Range: 800000-899999
   static const pushDisplayBaseId = 800000;
 
+  /// Base ID offset for the smart daily-streak reminder. Range: 900000-999999
+  static const streakReminderBaseId = 900000;
+
   static const idsPerEntitySlot = 100;
 
   /// Generates a stable notification ID for an entity within a category.

@@ -20,12 +20,16 @@ abstract final class NotificationChannelConfig {
   /// Notification channel ID for health check reminders.
   static const healthCheckChannelId = 'health_check';
 
+  /// Notification channel ID for the smart daily-streak reminder.
+  static const streakChannelId = 'streak';
+
   /// Returns the localized channel name for Android notification settings.
   static String channelName(String channelId) => switch (channelId) {
     eggTurningChannelId => 'notifications.channel_egg_turning_name'.tr(),
     incubationChannelId => 'notifications.channel_incubation_name'.tr(),
     chickCareChannelId => 'notifications.channel_chick_care_name'.tr(),
     healthCheckChannelId => 'notifications.channel_health_check_name'.tr(),
+    streakChannelId => 'notifications.channel_streak_name'.tr(),
     _ => 'notifications.channel_default_name'.tr(),
   };
 
@@ -35,6 +39,7 @@ abstract final class NotificationChannelConfig {
     incubationChannelId => 'notifications.channel_incubation_desc'.tr(),
     chickCareChannelId => 'notifications.channel_chick_care_desc'.tr(),
     healthCheckChannelId => 'notifications.channel_health_check_desc'.tr(),
+    streakChannelId => 'notifications.channel_streak_desc'.tr(),
     _ => 'notifications.channel_default_desc'.tr(),
   };
 

@@ -47,6 +47,7 @@ class NotificationService with NotificationPermissionHandler {
       NotificationChannelConfig.chickCareChannelId;
   static const healthCheckChannelId =
       NotificationChannelConfig.healthCheckChannelId;
+  static const streakChannelId = NotificationChannelConfig.streakChannelId;
 
   /// Parses a payload string into a route path for deep-link navigation.
   ///

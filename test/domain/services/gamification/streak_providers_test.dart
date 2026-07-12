@@ -10,6 +10,9 @@ import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart
 import 'package:budgie_breeding_tracker/data/repositories/gamification_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/gamification/streak_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
+
+import '../../../helpers/mocks.dart';
 
 class _MockRepo extends Mock implements GamificationRepository {}
 
@@ -24,11 +27,38 @@ void main() {
     tz_data.initializeTimeZones();
   });
 
+  // runDailyCheckin also reschedules the streak reminder, which reads
+  // notificationToggleSettingsReadyProvider (backed by the Drift-based
+  // NotificationRepository) and notificationServiceProvider. Both are
+  // mocked (via setUp, so every test gets a fresh instance) so
+  // authenticated-user tests don't hit real DB/plugin code.
+  late MockNotificationService notificationService;
+  late MockNotificationRepository notificationRepository;
+
+  setUp(() {
+    notificationService = MockNotificationService();
+    notificationRepository = MockNotificationRepository();
+    when(() => notificationService.cancel(any())).thenAnswer((_) async {});
+    when(
+      () => notificationService.scheduleNotification(
+        id: any(named: 'id'),
+        title: any(named: 'title'),
+        body: any(named: 'body'),
+        scheduledDate: any(named: 'scheduledDate'),
+        channelId: any(named: 'channelId'),
+        payload: any(named: 'payload'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => notificationRepository.getSettings(any()),
+    ).thenAnswer((_) async => null);
+  });
+
   test('streakProvider returns repo streak', () async {
     final repo = _MockRepo();
-    when(() => repo.getStreak(any())).thenAnswer(
-      (_) async => const UserStreak(userId: 'u1', currentStreak: 6),
-    );
+    when(
+      () => repo.getStreak(any()),
+    ).thenAnswer((_) async => const UserStreak(userId: 'u1', currentStreak: 6));
     final container = ProviderContainer(
       overrides: [
         gamificationRepositoryProvider.overrideWithValue(repo),
@@ -41,35 +71,35 @@ void main() {
     expect(streak?.currentStreak, 6);
   });
 
-  test('streakProvider returns null for anonymous user without calling repo', () async {
-    final repo = _MockRepo();
-    final container = ProviderContainer(
-      overrides: [
-        gamificationRepositoryProvider.overrideWithValue(repo),
-        currentUserIdProvider.overrideWithValue('anonymous'),
-      ],
-    );
-    addTearDown(container.dispose);
-
-    final streak = await container.read(streakProvider.future);
-    expect(streak, isNull);
-    verifyNever(() => repo.getStreak(any()));
-  });
-
   test(
-    'lastStreakCheckinProvider defaults to null and can be updated',
-    () {
-      final container = ProviderContainer();
+    'streakProvider returns null for anonymous user without calling repo',
+    () async {
+      final repo = _MockRepo();
+      final container = ProviderContainer(
+        overrides: [
+          gamificationRepositoryProvider.overrideWithValue(repo),
+          currentUserIdProvider.overrideWithValue('anonymous'),
+        ],
+      );
       addTearDown(container.dispose);
 
-      expect(container.read(lastStreakCheckinProvider), isNull);
-
-      const result = StreakCheckinResult(currentStreak: 3, awardedXp: 5);
-      container.read(lastStreakCheckinProvider.notifier).state = result;
-
-      expect(container.read(lastStreakCheckinProvider), result);
+      final streak = await container.read(streakProvider.future);
+      expect(streak, isNull);
+      verifyNever(() => repo.getStreak(any()));
     },
   );
+
+  test('lastStreakCheckinProvider defaults to null and can be updated', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    expect(container.read(lastStreakCheckinProvider), isNull);
+
+    const result = StreakCheckinResult(currentStreak: 3, awardedXp: 5);
+    container.read(lastStreakCheckinProvider.notifier).state = result;
+
+    expect(container.read(lastStreakCheckinProvider), result);
+  });
 
   test(
     'runDailyCheckin sets lastStreakCheckinProvider when streak is positive',
@@ -85,6 +115,10 @@ void main() {
         overrides: [
           gamificationRepositoryProvider.overrideWithValue(repo),
           currentUserIdProvider.overrideWithValue('u1'),
+          notificationServiceProvider.overrideWithValue(notificationService),
+          notificationRepositoryProvider.overrideWithValue(
+            notificationRepository,
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -96,74 +130,73 @@ void main() {
     },
   );
 
-  test(
-    'runDailyCheckin does not set lastStreakCheckinProvider when '
-    'awardedXp is 0 (same-day no-op)',
-    () async {
-      final repo = _MockRepo();
-      // Same-day RPC no-op: currentStreak stays positive but no XP awarded.
-      when(() => repo.recordDailyCheckin(any())).thenAnswer(
-        (_) async => const StreakCheckinResult(currentStreak: 4, awardedXp: 0),
-      );
-      when(() => repo.getStreak(any())).thenAnswer(
-        (_) async => const UserStreak(userId: 'u1', currentStreak: 4),
-      );
-      final container = ProviderContainer(
-        overrides: [
-          gamificationRepositoryProvider.overrideWithValue(repo),
-          currentUserIdProvider.overrideWithValue('u1'),
-        ],
-      );
-      addTearDown(container.dispose);
+  test('runDailyCheckin does not set lastStreakCheckinProvider when '
+      'awardedXp is 0 (same-day no-op)', () async {
+    final repo = _MockRepo();
+    // Same-day RPC no-op: currentStreak stays positive but no XP awarded.
+    when(() => repo.recordDailyCheckin(any())).thenAnswer(
+      (_) async => const StreakCheckinResult(currentStreak: 4, awardedXp: 0),
+    );
+    when(
+      () => repo.getStreak(any()),
+    ).thenAnswer((_) async => const UserStreak(userId: 'u1', currentStreak: 4));
+    final container = ProviderContainer(
+      overrides: [
+        gamificationRepositoryProvider.overrideWithValue(repo),
+        currentUserIdProvider.overrideWithValue('u1'),
+        notificationServiceProvider.overrideWithValue(notificationService),
+        notificationRepositoryProvider.overrideWithValue(
+          notificationRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      await runDailyCheckin(container.read(_refProvider));
+    await runDailyCheckin(container.read(_refProvider));
 
-      expect(container.read(lastStreakCheckinProvider), isNull);
-    },
-  );
+    expect(container.read(lastStreakCheckinProvider), isNull);
+  });
 
-  test(
-    'runDailyCheckin sets lastStreakCheckinProvider when awardedXp is '
-    'positive (real check-in)',
-    () async {
-      final repo = _MockRepo();
-      when(() => repo.recordDailyCheckin(any())).thenAnswer(
-        (_) async => const StreakCheckinResult(currentStreak: 5, awardedXp: 10),
-      );
-      when(() => repo.getStreak(any())).thenAnswer(
-        (_) async => const UserStreak(userId: 'u1', currentStreak: 5),
-      );
-      final container = ProviderContainer(
-        overrides: [
-          gamificationRepositoryProvider.overrideWithValue(repo),
-          currentUserIdProvider.overrideWithValue('u1'),
-        ],
-      );
-      addTearDown(container.dispose);
+  test('runDailyCheckin sets lastStreakCheckinProvider when awardedXp is '
+      'positive (real check-in)', () async {
+    final repo = _MockRepo();
+    when(() => repo.recordDailyCheckin(any())).thenAnswer(
+      (_) async => const StreakCheckinResult(currentStreak: 5, awardedXp: 10),
+    );
+    when(
+      () => repo.getStreak(any()),
+    ).thenAnswer((_) async => const UserStreak(userId: 'u1', currentStreak: 5));
+    final container = ProviderContainer(
+      overrides: [
+        gamificationRepositoryProvider.overrideWithValue(repo),
+        currentUserIdProvider.overrideWithValue('u1'),
+        notificationServiceProvider.overrideWithValue(notificationService),
+        notificationRepositoryProvider.overrideWithValue(
+          notificationRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      await runDailyCheckin(container.read(_refProvider));
+    await runDailyCheckin(container.read(_refProvider));
 
-      final last = container.read(lastStreakCheckinProvider);
-      expect(last?.awardedXp, 10);
-    },
-  );
+    final last = container.read(lastStreakCheckinProvider);
+    expect(last?.awardedXp, 10);
+  });
 
-  test(
-    'runDailyCheckin does nothing for anonymous user',
-    () async {
-      final repo = _MockRepo();
-      final container = ProviderContainer(
-        overrides: [
-          gamificationRepositoryProvider.overrideWithValue(repo),
-          currentUserIdProvider.overrideWithValue('anonymous'),
-        ],
-      );
-      addTearDown(container.dispose);
+  test('runDailyCheckin does nothing for anonymous user', () async {
+    final repo = _MockRepo();
+    final container = ProviderContainer(
+      overrides: [
+        gamificationRepositoryProvider.overrideWithValue(repo),
+        currentUserIdProvider.overrideWithValue('anonymous'),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      await runDailyCheckin(container.read(_refProvider));
+    await runDailyCheckin(container.read(_refProvider));
 
-      expect(container.read(lastStreakCheckinProvider), isNull);
-      verifyNever(() => repo.recordDailyCheckin(any()));
-    },
-  );
+    expect(container.read(lastStreakCheckinProvider), isNull);
+    verifyNever(() => repo.recordDailyCheckin(any()));
+  });
 }
