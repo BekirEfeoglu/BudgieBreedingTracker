@@ -3,6 +3,7 @@ import '../../domain/services/gamification/gamification_service.dart';
 import '../models/badge_model.dart';
 import '../models/user_badge_model.dart';
 import '../models/user_level_model.dart';
+import '../models/user_streak_model.dart';
 import '../models/xp_transaction_model.dart';
 import '../remote/api/gamification_remote_source.dart';
 
@@ -61,5 +62,13 @@ class GamificationRepository {
 
   Future<void> checkVerifiedBreeder(String userId) async {
     await _service.checkVerifiedBreeder(userId);
+  }
+
+  Future<StreakCheckinResult> recordDailyCheckin(String timeZone) {
+    return _remoteSource.recordDailyCheckin(timeZone);
+  }
+
+  Future<UserStreak?> getStreak(String userId) {
+    return _remoteSource.fetchStreak(userId);
   }
 }
