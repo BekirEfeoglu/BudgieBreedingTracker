@@ -129,6 +129,44 @@ private.xp_title_for_level(level)`) rejects mismatched XP/level writes. Changing
 bands/keys means Dart + SQL migration + l10n (tr/en/de) together, plus a backfill
 of existing `user_levels.title` and `profiles.xp_title`.
 
+## Daily Streak (shipped 2026-07-12)
+
+`public.user_streaks` (owner-scope SELECT-only RLS) + `public.record_daily_checkin(p_time_zone)`
+RPC (`SECURITY INVOKER` wrapper → `private.record_daily_checkin` `SECURITY
+DEFINER`, migration `20260712100000_gamification_streaks.sql`, applied to
+prod). The RPC is the **only** writer — unlike the rest of gamification
+(client-initiated writes validated by `WITH CHECK`), streaks are fully
+server-computed because the streak math (gap detection, grace, tier bonus)
+cannot be expressed as a per-row check constraint.
+
+- **Local-day resolution**: `now() AT TIME ZONE p_time_zone` (falls back to
+  UTC on an invalid IANA name). Same local day as last check-in → no-op
+  (`awarded_xp: 0`, no streak change)
+- **Grace**: 2 grace days per calendar month (`grace_used_this_month`,
+  reset when `grace_month` rolls over). `gap = 1` → streak+1 normally;
+  `gap = 2` with grace remaining → streak+1 + `grace_consumed: true`;
+  `gap >= 3` or grace exhausted → streak resets to 1
+- **XP**: base `dailyLogin` (5, daily-cap 1 already enforced) + tiered
+  `streakBonus` via `private.streak_bonus_for(streak)` — step function
+  `≥3→+2 · ≥7→+5 · ≥14→+7 · ≥30→+10 · ≥60→+12`. `private.xp_action_amount('streakBonus')`
+  returns `NULL` so a direct client `xp_transactions` insert with this action
+  is rejected by the existing `WITH CHECK` (same pattern as `unlockBadge`) —
+  the RPC is DEFINER so it bypasses that check legitimately
+- **Milestones**: streak exactly 7/30/100 idempotently upserts
+  `streak_7`/`streak_30`/`streak_100` into `user_badges`
+  (`ON CONFLICT (user_id, badge_id)`) plus the matching `unlockBadge` XP
+  (duplicate-guarded by an `EXISTS` check on `reference_id`)
+- **Client**: `StreakService`/`streak_providers.dart` call the RPC via
+  `GamificationRepository.recordDailyCheckin` from a deferred app-init
+  microtask; failures are caught and logged as warnings (non-fatal — a
+  missed check-in is not a blocking error). `StreakReminderScheduler`
+  (notification domain) re-schedules a single next-day 20:00 reminder after
+  every check-in call (including no-ops) when the toggle is on and
+  `currentStreak >= 3`.
+
+Full behavioral contract (including the exact XP table and anti-patterns):
+`.claude/rules/gamification.md` § Streak Sistemi.
+
 ## Provider Wiring
 
 `gamificationServiceProvider` is consumed via `ref.read()` in domain

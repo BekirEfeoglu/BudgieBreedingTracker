@@ -76,24 +76,24 @@ Enforced by `scripts/verify_code_quality.py` (27 checker categories — 19/24 CL
 - Rule files document both shipped behavior AND unshipped design targets
 - Before assuming a surface works end-to-end, check [[known-gaps]]
 
-## Codebase Stats (as of 2026-07-10, kept in sync via `verify_rules.py --strict`)
+## Codebase Stats (as of 2026-07-12, kept in sync via `verify_rules.py --strict`)
 
 | Metric | Value |
 |--------|-------|
-| Source files (lib/) | 1018 Dart files |
-| Test files | 919 files, 11,515+ individual tests |
+| Source files (lib/) | 1024 Dart files |
+| Test files | 927 files, 11,551+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
 | Remote sources | 28 `*_remote_source.dart` files + base/caches/providers |
-| Freezed models | 29 model files + statistics_models + supabase_extensions |
+| Freezed models | 30 model files + statistics_models + supabase_extensions |
 | Domain services | 23 directories |
 | Routes | 75 |
 | Custom SVG icons | 99 constants, 99 files on disk |
 | Shared widgets | 35 |
 | Enum files | 15 |
-| Supabase constants | 156 string constants |
-| L10n keys | 3,126 per language, 41 categories |
+| Supabase constants | 158 string constants |
+| L10n keys | 3,140 per language, 41 categories |
 | DB schema version | 27 |
-| Supabase migrations | 207 tracked SQL files |
+| Supabase migrations | 208 tracked SQL files |
 | Edge Functions | 12 |
