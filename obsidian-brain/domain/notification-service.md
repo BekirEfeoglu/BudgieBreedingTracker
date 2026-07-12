@@ -40,7 +40,7 @@ Hours).
 
 - Tokens stored in Supabase `fcm_tokens` table (multi-device)
 - Token refresh: delete old, register new
-- Logout: delete all device tokens
+- Logout: deactivate ONLY the current device's active token (`deactivateCurrentToken` → `FcmTokenRemoteSource.deactivateToken`) — per-device, not `unregisterAll`; other logged-in devices keep their tokens
 
 ## Foreground / Background / Terminated
 
@@ -112,6 +112,8 @@ Validate type before navigating. Unknown type → `AppLogger.warning` + home fal
 - Do not use raw `DateTime` for scheduled notifications.
 - Do not rely on Dart `hashCode` for notification IDs.
 - Do not read default toggle values synchronously before Drift settings load.
+- Do not "fix" logout to `unregisterAll` / delete-all-device-tokens — per-device
+  `deactivateCurrentToken` is intentional so other logged-in devices keep push.
 
 ## Anti-Patterns
 

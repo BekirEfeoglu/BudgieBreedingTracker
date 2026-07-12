@@ -56,7 +56,7 @@ AAL2 kontrolü HER destructive adımdan ÖNCE koşar — hesap silmede storage t
 ```
 1. revoke-oauth-token edge fn (best-effort — Google/Apple)
 2. Supabase signOut()
-3. FCM token'ları sil — fcmTokenService.unregisterAll() (notifications.md: eski hesaba bildirim gitmesin)
+3. Bu cihazın FCM token'ını deaktive et — pushNotificationService.deactivateCurrentToken() (notifications.md: bu cihaza eski hesabın bildirimi gitmesin; per-device, diğer cihaz oturumları korunur)
 4. Presence temizle — clearPresence() (presence.md: sticky online engeli)
 5. Sentry user scope null (observability.md: PII)
 6. Session/secure storage temizliği + provider invalidation

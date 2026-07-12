@@ -4,6 +4,25 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-12] notifications | inspection: FCM-logout doc reconcile + DND settings fixes
+
+Notification-system inspection. (1) Docs: notifications.md, auth.md, and the
+notification-service/auth-service wiki pages all claimed logout does
+`unregisterAll()` / "delete all device tokens"; actual code
+(`PushNotificationService.deactivateCurrentToken` →
+`FcmTokenRemoteSource.deactivateToken`) deactivates ONLY the current device's
+active token (and nulls `_currentUserId`) — per-device, not cross-device. Fixed
+all 5 doc spots to the real (and correct: other logged-in devices keep push)
+behavior. (2) Code: `_DndSection` read the rate limiter in initState, racing its
+async `loadFromPrefs()` and freezing tiles on default hours over persisted
+values — now watches `rateLimiterReadyProvider` and reads the limiter reactively;
+`_DndTimeTile` gained a `Semantics(button)` combined label + 48dp minHeight
+(a11y). 2 regression tests added. Investigated but NOT changed (not defects):
+reschedule "cancel-before-add" is already handled at call sites
+(breeding-form cancels previous species; egg-actions cancels all-species; reboot
+starts clean); scheduled notifications bypassing client DND is by-design
+(notifications.md: client DND = immediate only).
+
 ## [2026-07-12] ads | docs/app-ads.txt for AdMob authorized-sellers verification
 
 Published `docs/app-ads.txt` (`google.com, pub-4121152941965334, DIRECT,
@@ -164,20 +183,5 @@ add social-image alt metadata. The mobile menu now locks scroll, traps focus,
 supports Escape, and restores focus on close. Email signup reports localized
 loading/success/failure states through an `aria-live` region and no longer
 shows false success after a failed request. [[infrastructure/marketing-site]]
-
-## [2026-07-10] feat+fix+perf | Community sweep + tag discovery feed
-
-4-lane audit + tag/mutation discovery feed: local comment append,
-server-authoritative block/mute `load()`, no keepAlive / newest re-sort, single
-like haptic, `get_community_posts_by_tag` RPC (migration `20260710160000`). [[features/community]]
-
-## [2026-07-10] docs | Claim authority, agent routing, and semantic drift repair
-
-Documentation governance now resolves authority by claim type instead of one
-global hierarchy; doc-sync/review/genetics agents and the stop hook perform a
-semantic pass before lint. Added [[sources/agents-index]] and centralized open
-genetics roadmap items in [[known-gaps]]. Reconciled current-state drift:
-genetics v5→v8, viability set 2, schema v26→v27, test/l10n counts, and provider
-names; historical log statements remain unchanged.
 
 Older entries are archived in [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

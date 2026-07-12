@@ -6,6 +6,21 @@ and auth legal-links syncs).
 
 ---
 
+## [2026-07-10] feat+fix+perf | Community sweep + tag discovery feed
+
+4-lane audit + tag/mutation discovery feed: local comment append,
+server-authoritative block/mute `load()`, no keepAlive / newest re-sort, single
+like haptic, `get_community_posts_by_tag` RPC (migration `20260710160000`). [[features/community]]
+
+## [2026-07-10] docs | Claim authority, agent routing, and semantic drift repair
+
+Documentation governance now resolves authority by claim type instead of one
+global hierarchy; doc-sync/review/genetics agents and the stop hook perform a
+semantic pass before lint. Added [[sources/agents-index]] and centralized open
+genetics roadmap items in [[known-gaps]]. Reconciled current-state drift:
+genetics v5→v8, viability set 2, schema v26→v27, test/l10n counts, and provider
+names; historical log statements remain unchanged.
+
 ## [2026-07-10] feat+refactor | Marketplace pagination/search (chip #2) + #8 column constants (chip #3)
 
 Closed the last two audit chips (delivered via parallel worktree agents; diffs

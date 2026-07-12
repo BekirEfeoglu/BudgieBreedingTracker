@@ -30,7 +30,7 @@ Source: `.claude/rules/auth.md`, `.claude/rules/security.md`
 ```
 1. Revoke OAuth token (revoke-oauth-token Edge Function)
 2. Supabase signOut()
-3. Delete all FCM tokens (`FcmTokenRemoteSource`, `lib/data/remote/api/fcm_token_remote_source.dart`)
+3. Deactivate this device's FCM token (`PushNotificationService.deactivateCurrentToken` → `FcmTokenRemoteSource.deactivateToken`, `lib/data/remote/api/fcm_token_remote_source.dart`) — per-device, not all tokens
 4. Clear local Sentry user scope
 5. Invalidate all providers
 6. Navigate to auth

@@ -29,18 +29,19 @@ Domain event (egg hatching, marketplace sale)
 ## FCM Token Management
 - Token Supabase'de `fcm_tokens` tablosuna kaydedilir (multi-device)
 - Token refresh'te eski token'ı sil, yeniyi ekle
-- Logout'ta tüm cihaz token'larını sil (cross-device security)
+- Logout'ta yalnız BU cihazın aktif token'ı deaktive edilir (`PushNotificationService.deactivateCurrentToken` → `FcmTokenRemoteSource.deactivateToken`) — per-device, `unregisterAll` DEĞİL. Diğer cihazların oturumu açıksa onların token'ı korunur; deaktive edilen cihaz artık eski hesabın push'unu almaz. `deactivateCurrentToken` ayrıca `_currentUserId`'yi null'lar, böylece geç gelen `onTokenRefresh` token'ı eski kullanıcıya yeniden yazmaz
 - iOS APNs token + FCM token eşleştirmesi otomatik
 - FCM kaydı splash'i BLOKLAMAZ: `appInitializationProvider` local kanal init + rate limiter'ı await eder, `pushNotificationService.init` (token fetch/register, ağ) `InitStep.ready` sonrası deferred microtask'te koşar — kalıcı `onTokenRefresh` dinleyicisi geç kaydı telafi eder. Bu init'i kritik yola geri TAŞIMA
 
 ```dart
-// Token registration
+// Token register/refresh — dinleyici PushNotificationService.init içinde bağlanır;
+// refresh'te token _currentUserId için fcm_tokens'a upsert edilir (_upsertToken)
 FirebaseMessaging.instance.onTokenRefresh.listen((token) {
-  ref.read(fcmTokenServiceProvider).register(token);
+  // service._upsertToken(_currentUserId, token)
 });
 
-// Logout cleanup
-await ref.read(fcmTokenServiceProvider).unregisterAll();
+// Logout cleanup — yalnız bu cihazın aktif token'ı deaktive edilir
+await ref.read(pushNotificationServiceProvider).deactivateCurrentToken();
 ```
 
 ## Foreground / Background / Terminated
