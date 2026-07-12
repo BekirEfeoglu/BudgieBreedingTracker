@@ -109,6 +109,12 @@ uygulandı).
   ≥14→+7 · ≥30→+10 · ≥60→+12`) — RPC içinde iki ayrı `xp_transactions` insert'i,
   var olan `AFTER INSERT` trigger `user_levels`/`profiles`'i SUM'dan senkronlar
   (bkz. § Server-Side Write Enforcement → Atomik level türetme)
+- **UTC-cap toleransı (migration `20260712140000`):** RPC no-op guard'ı **yerel
+  gün**le, `dailyLogin` günlük-limit trigger'ı **UTC gün**le çalışır. İki yerel
+  check-in günü aynı UTC güne düşerse (offset zone'da akşam + ertesi sabah) ikinci
+  `dailyLogin` insert'i `check_violation` fırlatır; RPC bunu **yutar** (streak yine
+  ilerler, o UTC günü ikinci base XP verilmez, `streakBonus` korunur, `awarded_xp`
+  base'i düşer). Bu insert'i guard'sız bırakma — tüm RPC abort edip streak/grace kaybettirir
 - **Milestone rozetler:** streak tam 7/30/100'e ulaştığında `streak_7`
   (bronze, 30 XP) / `streak_30` (gold, 100 XP) / `streak_100` (platinum, 250 XP)
   `user_badges`'a idempotent upsert edilir (`ON CONFLICT (user_id, badge_id)`)
