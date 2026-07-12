@@ -1156,7 +1156,11 @@
     "battery_steps_huawei": "Huawei: Settings > Battery > App launch > Disable automatic management for BudgieTrack",
     "battery_steps_oppo": "OPPO/Realme/OnePlus: Settings > Battery > More battery settings > Allow notifications while in sleep mode",
     "battery_steps_vivo": "Vivo: Settings > Battery > High background power consumption > Add BudgieTrack",
-    "egg_label": "Egg {}"
+    "egg_label": "Egg {}",
+    "channel_streak_name": "Streak Reminder",
+    "channel_streak_desc": "Daily login streak reminders",
+    "streak_reminder_title": "Keep your streak alive 🔥",
+    "streak_reminder_body": "Don't lose your {count}-day streak — you haven't logged in today yet."
   },
   "premium": {
     "title": "Premium",
@@ -3158,7 +3162,13 @@
     "verified_breeder_lost": "Your verified breeder badge has been revoked",
     "detail": "Badge Detail",
     "showcase": "Badge Showcase",
-    "showcase_hint": "Select badges to display on your profile"
+    "showcase_hint": "Select badges to display on your profile",
+    "streak_7": "Consistent",
+    "streak_7_desc": "Logged in 7 days in a row",
+    "streak_30": "Dedicated",
+    "streak_30_desc": "Logged in 30 days in a row",
+    "streak_100": "Legendary",
+    "streak_100_desc": "Logged in 100 days in a row"
   },
   "gamification": {
     "level": "Level {}",
@@ -3189,7 +3199,11 @@
     "title_legendary": "Legendary Breeder",
     "title_enthusiast": "Enthusiast Breeder",
     "title_champion": "Champion Breeder",
-    "title_bird_whisperer": "Bird Whisperer"
+    "title_bird_whisperer": "Bird Whisperer",
+    "streak_chip_label": "{count}-day streak",
+    "streak_celebration": "Streak up to {count} days! +{xp} XP",
+    "streak_grace_saved": "We kept your streak 🛡️ {count} days",
+    "streak_milestone": "{count}-day streak milestone! 🔥"
   },
   "leaderboard": {
     "title": "Leaderboard",

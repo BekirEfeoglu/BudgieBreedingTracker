@@ -1156,7 +1156,11 @@
     "battery_steps_huawei": "Huawei: Einstellungen > Akku > App-Start > Automatische Verwaltung fuer BudgieTrack deaktivieren",
     "battery_steps_oppo": "OPPO/Realme/OnePlus: Einstellungen > Akku > Weitere Akkueinstellungen > Benachrichtigungen im Ruhemodus zulassen",
     "battery_steps_vivo": "Vivo: Einstellungen > Akku > Hoher Hintergrund-Stromverbrauch > BudgieTrack hinzufuegen",
-    "egg_label": "Ei {}"
+    "egg_label": "Ei {}",
+    "channel_streak_name": "Serien-Erinnerung",
+    "channel_streak_desc": "Erinnerungen an deine tägliche Login-Serie",
+    "streak_reminder_title": "Halte deine Serie am Leben 🔥",
+    "streak_reminder_body": "Verliere nicht deine {count}-Tage-Serie — du hast dich heute noch nicht eingeloggt."
   },
   "premium": {
     "title": "Premium",
@@ -3158,7 +3162,13 @@
     "verified_breeder_lost": "Ihr Abzeichen als verifizierter Züchter wurde widerrufen",
     "detail": "Abzeichen-Detail",
     "showcase": "Abzeichen-Vitrine",
-    "showcase_hint": "Wählen Sie Abzeichen für Ihr Profil aus"
+    "showcase_hint": "Wählen Sie Abzeichen für Ihr Profil aus",
+    "streak_7": "Beständig",
+    "streak_7_desc": "7 Tage in Folge eingeloggt",
+    "streak_30": "Treu",
+    "streak_30_desc": "30 Tage in Folge eingeloggt",
+    "streak_100": "Legendär",
+    "streak_100_desc": "100 Tage in Folge eingeloggt"
   },
   "gamification": {
     "level": "Stufe {}",
@@ -3189,7 +3199,11 @@
     "title_legendary": "Legendärer Züchter",
     "title_enthusiast": "Begeisterter Züchter",
     "title_champion": "Champion-Züchter",
-    "title_bird_whisperer": "Vogelflüsterer"
+    "title_bird_whisperer": "Vogelflüsterer",
+    "streak_chip_label": "{count}-Tage-Serie",
+    "streak_celebration": "Serie auf {count} Tage! +{xp} XP",
+    "streak_grace_saved": "Serie gesichert 🛡️ {count} Tage",
+    "streak_milestone": "{count}-Tage-Meilenstein! 🔥"
   },
   "leaderboard": {
     "title": "Bestenliste",
