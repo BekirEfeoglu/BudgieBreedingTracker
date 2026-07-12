@@ -1,10 +1,12 @@
 # Change Log
 
-## [2026-07-12] refactor | SupabaseConstants #8 coverage — 26 new col/RPC constants, 44 literals replaced across 8 remote sources + admin providers (chore/supabase-constants-coverage). No wire-value change.
-
 Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
+
+## [2026-07-12] refactor | All 12 edge functions extracted to DI handler.ts pattern + request-level Deno tests (401/400/403/503/200); +39 tests (204→243). Closes audit backlog. Byte-identical behavior, config.toml/verify_jwt untouched.
+
+## [2026-07-12] refactor | SupabaseConstants #8 coverage — 26 new col/RPC constants, 44 literals replaced across 8 remote sources + admin providers (chore/supabase-constants-coverage). No wire-value change.
 
 ## [2026-07-12] feat | genetics explicit linkage phase (D4) shipped — LinkagePhase override, engine consult, isolate+history persistence (Drift v28), father-column UI, single-pair MVP
 

@@ -94,6 +94,8 @@ Each function needs integration tests for:
 3. Schema validation (malformed body)
 4. Business logic edge cases
 
+**All 12 functions now use the dependency-injected handler pattern** (2026-07-12): `index.ts` is just `Deno.serve(createXHandler())`; `handler.ts` exports `createXHandler(deps = defaultDeps)` with injectable external calls (`getAuthenticatedUserId`, `createSupabaseAdmin`, env getters, `now`, external fetches); `handler_test.ts` injects mock deps and asserts real `Response.status` for the auth→ratelimit→parse→DB wiring (401/400/403/503/200), catching a future reorder that pure `*_core.ts` logic tests would miss. `*_core.ts` still holds pure logic + its own tests. Model: `create-community-comment/handler.ts`.
+
 ## CI Deploy
 
 `deploy-edge-functions` job (main only, needs analyze+test+edge-functions-test). Function names are passed as raw string literals at call sites in `lib/data/remote/supabase/edge_function_client.dart` — there is no `EdgeFunctionName` constants class; names must still match exactly across workflow, function folder, and call sites.
