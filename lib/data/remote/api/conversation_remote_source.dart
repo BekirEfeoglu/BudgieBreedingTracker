@@ -22,9 +22,9 @@ class ConversationRemoteSource {
       // Get conversation IDs where user is a participant
       final participantRows = await _client
           .from(SupabaseConstants.conversationParticipantsTable)
-          .select('conversation_id')
+          .select(SupabaseConstants.colConversationId)
           .eq(SupabaseConstants.colUserId, userId)
-          .eq('is_left', false);
+          .eq(SupabaseConstants.colIsLeft, false);
 
       final conversationIds = List<String>.from(
         (participantRows as List).map((r) => r['conversation_id'] as String),
@@ -38,11 +38,18 @@ class ConversationRemoteSource {
           .inFilter(SupabaseConstants.colId, conversationIds)
           .eq(SupabaseConstants.colIsDeleted, false);
       if (before != null) {
-        query = query.lt('last_message_at', before.toIso8601String());
+        query = query.lt(
+          SupabaseConstants.colLastMessageAt,
+          before.toIso8601String(),
+        );
       }
 
       final response = await query
-          .order('last_message_at', ascending: false, nullsFirst: false)
+          .order(
+            SupabaseConstants.colLastMessageAt,
+            ascending: false,
+            nullsFirst: false,
+          )
           .limit(limit);
 
       return List<Map<String, dynamic>>.from(response);
@@ -99,8 +106,8 @@ class ConversationRemoteSource {
       final response = await _client
           .from(SupabaseConstants.conversationParticipantsTable)
           .select()
-          .eq('conversation_id', conversationId)
-          .eq('is_left', false);
+          .eq(SupabaseConstants.colConversationId, conversationId)
+          .eq(SupabaseConstants.colIsLeft, false);
       return List<Map<String, dynamic>>.from(response);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag('conversations', e, st);
@@ -130,7 +137,7 @@ class ConversationRemoteSource {
       await _client
           .from(SupabaseConstants.conversationParticipantsTable)
           .update(data)
-          .eq('conversation_id', conversationId)
+          .eq(SupabaseConstants.colConversationId, conversationId)
           .eq(SupabaseConstants.colUserId, userId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag('conversations', e, st);
@@ -146,9 +153,9 @@ class ConversationRemoteSource {
       // Find conversations where both users are participants and type is direct
       final user1Convos = await _client
           .from(SupabaseConstants.conversationParticipantsTable)
-          .select('conversation_id')
+          .select(SupabaseConstants.colConversationId)
           .eq(SupabaseConstants.colUserId, userId1)
-          .eq('is_left', false);
+          .eq(SupabaseConstants.colIsLeft, false);
 
       final user1ConvoIds = List<String>.from(
         (user1Convos as List).map((r) => r['conversation_id'] as String),
@@ -160,7 +167,7 @@ class ConversationRemoteSource {
           .from(SupabaseConstants.conversationsTable)
           .select()
           .inFilter(SupabaseConstants.colId, user1ConvoIds)
-          .eq('type', 'direct')
+          .eq(SupabaseConstants.colType, 'direct')
           .eq(SupabaseConstants.colIsDeleted, false);
 
       for (final conversation in List<Map<String, dynamic>>.from(
@@ -171,10 +178,10 @@ class ConversationRemoteSource {
 
         final user2Check = await _client
             .from(SupabaseConstants.conversationParticipantsTable)
-            .select('conversation_id')
-            .eq('conversation_id', conversationId)
+            .select(SupabaseConstants.colConversationId)
+            .eq(SupabaseConstants.colConversationId, conversationId)
             .eq(SupabaseConstants.colUserId, userId2)
-            .eq('is_left', false)
+            .eq(SupabaseConstants.colIsLeft, false)
             .maybeSingle();
 
         if (user2Check != null) return conversation;

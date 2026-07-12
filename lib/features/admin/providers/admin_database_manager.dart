@@ -107,7 +107,7 @@ class AdminDatabaseManager {
 
       dynamic result;
       try {
-        result = await client.rpc('admin_export_all_tables');
+        result = await client.rpc(SupabaseConstants.adminExportAllTablesRpc);
       } catch (rpcError) {
         // RPC not available — fall back to exporting each table individually
         AppLogger.error(
@@ -207,7 +207,9 @@ class AdminDatabaseManager {
       await requireFounder(_ref);
       final client = _ref.read(supabaseClientProvider);
 
-      final result = await client.rpc('admin_reset_all_user_data');
+      final result = await client.rpc(
+        SupabaseConstants.adminResetAllUserDataRpc,
+      );
       final totalDeleted = result is Map<String, dynamic>
           ? (result['total_rows_deleted'] as num?)?.toInt() ?? 0
           : 0;

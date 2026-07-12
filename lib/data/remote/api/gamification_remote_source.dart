@@ -101,7 +101,7 @@ class GamificationRemoteSource {
       // A direct table select cannot read other users' profiles under the
       // restrictive profiles RLS, which is why this is an RPC and not a join.
       final response = await _client.rpc(
-        'get_leaderboard',
+        SupabaseConstants.getLeaderboardRpc,
         params: {'p_limit': limit},
       );
       return List<Map<String, dynamic>>.from(response as List);
@@ -120,7 +120,7 @@ class GamificationRemoteSource {
           .from(SupabaseConstants.xpTransactionsTable)
           .select(SupabaseConstants.colId)
           .eq(SupabaseConstants.colUserId, userId)
-          .eq('action', action)
+          .eq(SupabaseConstants.colAction, action)
           .gte(SupabaseConstants.colCreatedAt, startOfDay.toIso8601String());
       return (response as List).length;
     } catch (e, st) {

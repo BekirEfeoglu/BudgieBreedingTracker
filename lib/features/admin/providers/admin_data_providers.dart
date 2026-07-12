@@ -76,7 +76,7 @@ final adminStatsProvider = FutureProvider<AdminStats>((ref) async {
   final client = ref.watch(supabaseClientProvider);
 
   try {
-    final result = await client.rpc('admin_get_stats');
+    final result = await client.rpc(SupabaseConstants.adminGetStatsRpc);
     final data = result as Map<String, dynamic>;
     return AdminStats.fromJson(data);
   } catch (e, st) {
