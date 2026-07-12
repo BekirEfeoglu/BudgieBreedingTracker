@@ -4,7 +4,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../../../data/models/user_streak_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
-import '../../../domain/services/gamification/streak_service.dart';
+import 'streak_service.dart';
 
 final streakServiceProvider = Provider<StreakService>((ref) {
   return StreakService(ref.watch(gamificationRepositoryProvider));
@@ -34,7 +34,7 @@ Future<void> runDailyCheckin(Ref ref) async {
   final userId = ref.read(currentUserIdProvider);
   final tzName = tz.local.name;
   final result = await ref.read(streakServiceProvider).checkIn(userId, tzName);
-  if (result != null && result.currentStreak > 0) {
+  if (result != null && result.awardedXp > 0) {
     ref.read(lastStreakCheckinProvider.notifier).state = result;
     ref.invalidate(streakProvider);
   }

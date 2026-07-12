@@ -9,7 +9,7 @@ import 'package:budgie_breeding_tracker/data/models/user_streak_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/data/repositories/gamification_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
-import 'package:budgie_breeding_tracker/features/gamification/providers/streak_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/gamification/streak_providers.dart';
 
 class _MockRepo extends Mock implements GamificationRepository {}
 
@@ -93,6 +93,58 @@ void main() {
 
       final last = container.read(lastStreakCheckinProvider);
       expect(last?.currentStreak, 2);
+    },
+  );
+
+  test(
+    'runDailyCheckin does not set lastStreakCheckinProvider when '
+    'awardedXp is 0 (same-day no-op)',
+    () async {
+      final repo = _MockRepo();
+      // Same-day RPC no-op: currentStreak stays positive but no XP awarded.
+      when(() => repo.recordDailyCheckin(any())).thenAnswer(
+        (_) async => const StreakCheckinResult(currentStreak: 4, awardedXp: 0),
+      );
+      when(() => repo.getStreak(any())).thenAnswer(
+        (_) async => const UserStreak(userId: 'u1', currentStreak: 4),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          gamificationRepositoryProvider.overrideWithValue(repo),
+          currentUserIdProvider.overrideWithValue('u1'),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await runDailyCheckin(container.read(_refProvider));
+
+      expect(container.read(lastStreakCheckinProvider), isNull);
+    },
+  );
+
+  test(
+    'runDailyCheckin sets lastStreakCheckinProvider when awardedXp is '
+    'positive (real check-in)',
+    () async {
+      final repo = _MockRepo();
+      when(() => repo.recordDailyCheckin(any())).thenAnswer(
+        (_) async => const StreakCheckinResult(currentStreak: 5, awardedXp: 10),
+      );
+      when(() => repo.getStreak(any())).thenAnswer(
+        (_) async => const UserStreak(userId: 'u1', currentStreak: 5),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          gamificationRepositoryProvider.overrideWithValue(repo),
+          currentUserIdProvider.overrideWithValue('u1'),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await runDailyCheckin(container.read(_refProvider));
+
+      final last = container.read(lastStreakCheckinProvider);
+      expect(last?.awardedXp, 10);
     },
   );
 
