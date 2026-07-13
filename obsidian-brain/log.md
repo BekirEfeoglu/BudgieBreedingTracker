@@ -4,6 +4,8 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-13] ci-deps | actions/setup-java 4.8.0→5.5.0 merged (#146, 8e37f39) — SHA-pinned, Android Build validated v5.5.0 green on the PR. supabase/setup-cli v3.0.0 (#147) HELD: its only consumer `deploy-edge-functions` is main-only so PR CI skipped it (green = false comfort) + tag-pinned not SHA. Added `dev-docs/dependency-upgrade-notes.md` (cb002d1/9956f88) recording drift-2.34 hard-block preconditions, supabase_flutter/sentry holds, setup-cli hold, and the purchases_flutter landing pattern. Local Flutter `[user-branch]` = detached HEAD at exact 3.41.4 tag (not an SDK mismatch — no action).
+
 ## [2026-07-13] deps | purchases_flutter 10.3.0→10.4.1 (#148, f92fda6). 10.4.x exports its own SubscriptionInfo → ambiguous_import vs app's SubscriptionInfo; fixed with `hide SubscriptionInfo` on all purchases_flutter imports (5 lib + 13 test) + pod update PurchasesHybridCommon 18.15.1→18.19.0 (ios/Podfile.lock). Constraint ^10.2.3→^10.4.1 synced across CLAUDE.md, tech-stack, premium-revenuecat.md, premium-service.md. Held: drift 2.34.1 (analyzer 13 vs riverpod_generator/SDK conflict), supabase_flutter 2.16 (iOS cap), sentry alpha.
 
 ## [2026-07-13] chore | audit follow-ups: #8 now CI-enforced via new check_remote_hardcoded_columns checker (28 total, 10 extras; scans lib/data/remote/ for column literals in .order/.eq/.gte/.lte/.match + inline .update/.upsert/.insert keys; 7 unit tests, 99% cov). Removed @Tags(['gamification']) from 2 fast mock unit tests (+dropped unused dart_test.yaml tag) so they stay on the PR gate.
