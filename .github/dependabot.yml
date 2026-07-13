@@ -30,8 +30,12 @@ updates:
         versions: [">=2.34.0"]
       # Hold the 10.x line (incl. pre-releases) until a stable 10.x ships; the
       # 9 -> 10 migration is its own task.
+      # Hold the 9.x -> 10.x major (incl. 10.0.0-alpha pre-releases) until a
+      # stable 10.x ships; the 9->10 migration is its own task. A `>=10.0.0-0`
+      # version rule does NOT catch the alpha (Dependabot treats it as >=10.0.0
+      # stable), so ignore the major update-type instead.
       - dependency-name: "sentry_flutter"
-        versions: [">=10.0.0-0"]
+        update-types: ["version-update:semver-major"]
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
