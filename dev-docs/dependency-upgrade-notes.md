@@ -30,9 +30,13 @@ Pinned `>=2.5.0 <2.13.0` for iOS CI. 2.13+ pulls passkeys →
 is not locally reproducible. See the `pubspec.yaml` comment + memory
 `project_supabase_flutter_ios_cap`. Do NOT bump past the cap.
 
-### sentry_flutter `10.0.0-alpha.2` (Dependabot #152) — SKIP (pre-release)
+### sentry_flutter `10.x` (Dependabot #152) — HELD via major-ignore
 Alpha of a major (9.x → 10.x). Hold until a stable 10.x ships, then evaluate the
-9→10 migration as its own task.
+9→10 migration as its own task. **Ignore-rule gotcha:** a `versions: [">=10.0.0-0"]`
+rule does NOT close the alpha — Dependabot treats it as `>=10.0.0` (stable) and the
+pre-release `10.0.0-alpha.2` sorts *below* 10.0.0, so it doesn't match. Use
+`update-types: ["version-update:semver-major"]` instead (blocks the whole 9→10 major
+incl. pre-releases). #152 auto-closed once that rule landed.
 
 ### supabase/setup-cli `v3.0.0` — LANDED (SHA-pinned, 2026-07-13)
 Original Dependabot PR #147 was held (main-only `deploy-edge-functions` job never
@@ -45,7 +49,25 @@ PR; the `deploy-edge-functions` job (main-only) validates it on the merge push �
 watch that run; revert if the deploy step breaks (prod edge functions stay as-is on
 a failed deploy).
 
+### firebase_messaging `16.4.2` (Dependabot #154) — IGNORED (upstream broken)
+16.4.2 references `FirebasePlugin` / `pluginConstants`, which `firebase_core 4.12.0`
+removed → Android/iOS build fails and every firebase-importing test (sync,
+notifications, import) fails to load. An upstream lockstep bug in 16.4.2, not fixable
+here. Ignored **just** `16.4.2` (`versions: ["16.4.2"]`) so 16.4.3+ picks up when a
+compatible release ships. firebase_core and firebase_messaging move in lockstep — a
+messaging-only bump referencing a core-removed symbol is the tell.
+
 ## Landed (kept for context)
+
+### firebase_core `4.11.0 → 4.12.0` (Dependabot #155) — DONE
+Green on its own (compatible with the current firebase_messaging 16.4.1). Firebase iOS
+SDK unchanged (12.15.0), so `pod install` only rewrote the `firebase_core` pod version
+string — `ios/Podfile.lock` synced in the same PR (per architecture.md § iOS Pods Sync).
+
+### softprops/action-gh-release `v2 → v3.0.2` (Dependabot #153) — DONE (release.yml)
+v3.0.0 is a pure Node 20 → Node 24 action-runtime bump — zero input/API change
+(verified via the v3 `action.yml`). Safe even though the PR CI never exercised it
+(release.yml runs only on releases). SHA-pinned.
 
 ### purchases_flutter `10.3.0 → 10.4.1` — DONE (main `f92fda6`, 2026-07-13)
 Bump was CI-red on the raw Dependabot PR. Root cause: purchases_flutter 10.4.x
