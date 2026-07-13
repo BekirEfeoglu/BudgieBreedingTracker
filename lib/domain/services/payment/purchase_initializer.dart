@@ -1,4 +1,4 @@
-import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:purchases_flutter/purchases_flutter.dart' hide SubscriptionInfo;
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
