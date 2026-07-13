@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
-import 'package:budgie_breeding_tracker/features/admin/constants/admin_constants.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_capacity_providers.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_monitoring_snapshot_providers.dart';
@@ -307,30 +306,10 @@ void main() {
       expect(find.byType(MonitoringContent), findsOneWidget);
     });
 
-    testWidgets(
-      'shows Free plan database limit when provider returns free cap',
-      (tester) async {
-        await pumpTranslatedWidget(
-          tester,
-          ProviderScope(
-            overrides: [
-              monitoringSnapshotsProvider.overrideWith(
-                (_) async => const MonitoringTrend(),
-              ),
-              dbSizeLimitProvider.overrideWith(
-                (_) async => AdminConstants.dbSizeLimitForPlan('free'),
-              ),
-            ],
-            child: const MonitoringContent(
-              capacity: ServerCapacity(databaseSizeBytes: 25 * 1024 * 1024),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        expect(find.text('/ 500 MB'), findsOneWidget);
-        expect(find.text('/ 8.0 GB'), findsNothing);
-      },
-    );
+    // NOTE: the "shows Free plan database limit" test moved to
+    // admin_monitoring_content_translated_test.dart — it needs REAL translations
+    // (pumpTranslatedWidget), which pollute easy_localization's process-static
+    // per-locale cache and would break the raw-key l10n assertions above under a
+    // shuffled test order. A separate file = separate isolate = no leak.
   });
 }

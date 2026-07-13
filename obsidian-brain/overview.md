@@ -81,7 +81,7 @@ Enforced by `scripts/verify_code_quality.py` (28 checker categories — 19/24 CL
 | Metric | Value |
 |--------|-------|
 | Source files (lib/) | 1026 Dart files |
-| Test files | 936 files, 11,608+ individual tests |
+| Test files | 937 files, 11,608+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
