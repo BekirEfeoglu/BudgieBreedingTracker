@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_pull_handler.dart';
+import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart'
+    show syncClockProvider;
 
 import '../../../helpers/mocks.dart';
 

@@ -15,6 +15,14 @@ import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart
 export 'package:budgie_breeding_tracker/domain/services/sync/sync_scheduling_providers.dart';
 export 'package:budgie_breeding_tracker/domain/services/sync/sync_conflict_providers.dart';
 
+/// Injectable wall clock for the sync subsystem (pull handler + orchestrator).
+///
+/// Defaults to the real clock. Tests override this to make near-`now` boundary
+/// logic (clock-skew detection, sync-checkpoint timestamps) deterministic
+/// instead of racing `DateTime.now()` across an async gap
+/// (test-stability.md § Triage #3 — canonical near-`now` boundary seam).
+final syncClockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
+
 /// Provider for the [SyncOrchestrator] singleton.
 final syncOrchestratorProvider = Provider<SyncOrchestrator>((ref) {
   return SyncOrchestrator(ref);

@@ -37,6 +37,8 @@ class SyncOrchestrator {
   }
 
   final Ref _ref;
+
+  DateTime _now() => _ref.read(syncClockProvider)();
   final SyncPushHandler _pushHandler;
   final SyncPullHandler _pullHandler;
   late final SyncErrorHandler _errorHandler;
@@ -159,7 +161,7 @@ class SyncOrchestrator {
       if (pullSuccess) {
         // Only advance sync checkpoint when pull fully succeeded.
         // Partial failures retry from the same point on next cycle.
-        final now = DateTime.now();
+        final now = _now();
         await _persistLastSyncTime(now);
         _ref.read(lastSyncTimeProvider.notifier).state = now;
 
@@ -205,7 +207,7 @@ class SyncOrchestrator {
 
     // Throttle rapid consecutive calls
     if (_lastForceFullSyncAt != null &&
-        DateTime.now().difference(_lastForceFullSyncAt!) <
+        _now().difference(_lastForceFullSyncAt!) <
             _forceFullSyncCooldown) {
       AppLogger.info('[SyncOrchestrator] Force full sync skipped (cooldown)');
       return Future.value(SyncResult.throttled);
@@ -255,7 +257,7 @@ class SyncOrchestrator {
       await _migrateEncryptedPayloads();
 
       if (pullSuccess) {
-        final now = DateTime.now();
+        final now = _now();
         _lastForceFullSyncAt = now;
         await _persistLastSyncTime(now);
         if (pushSuccess) {

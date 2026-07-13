@@ -14,13 +14,6 @@ import 'package:budgie_breeding_tracker/data/repositories/repository_providers.d
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_telemetry.dart';
 
-/// Injectable wall clock for [SyncPullHandler].
-///
-/// Defaults to the real clock. Tests override this to make clock-skew
-/// detection deterministic instead of racing `DateTime.now()` across the
-/// async gap (test-stability.md § flaky time-dependent assertions).
-final syncClockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
-
 /// Handles pulling remote changes from Supabase into local DB.
 ///
 /// Uses incremental sync (only fetch records updated after last successful

@@ -209,9 +209,15 @@ void main() {
     ).thenAnswer((_) async => 0);
   }
 
-  ProviderContainer createContainer() {
+  // Deterministic clock so the persisted-checkpoint assertion doesn't race a
+  // re-sampled DateTime.now() across the fullSync() await (test-stability.md
+  // § Triage #3 — syncClockProvider is the canonical near-`now` boundary seam).
+  final fixedNow = DateTime.utc(2026, 7, 13, 12);
+
+  ProviderContainer createContainer({DateTime Function()? clock}) {
     return ProviderContainer(
       overrides: [
+        if (clock != null) syncClockProvider.overrideWithValue(clock),
         currentUserIdProvider.overrideWithValue(_userId),
         birdRepositoryProvider.overrideWithValue(mockBirdRepository),
         eggRepositoryProvider.overrideWithValue(mockEggRepository),
@@ -282,7 +288,7 @@ void main() {
 
   group('Sync time persistence', () {
     test('fullSync persists lastSyncedAt to SharedPreferences', () async {
-      final container = createContainer();
+      final container = createContainer(clock: () => fixedNow);
       addTearDown(container.dispose);
       final orchestrator = container.read(syncOrchestratorProvider);
 
@@ -294,8 +300,10 @@ void main() {
       final raw = prefs.getString(AppPreferences.keyLastSyncedAt);
       expect(raw, isNotNull);
 
+      // Deterministic: the checkpoint is stamped from the injected clock, so it
+      // is exactly fixedNow — no 5s wall-clock margin needed.
       final persisted = DateTime.parse(raw!);
-      expect(persisted.difference(DateTime.now()).inSeconds.abs(), lessThan(5));
+      expect(persisted.isAtSameMomentAs(fixedNow), isTrue);
     });
 
     test('fullSync updates lastSyncTimeProvider after success', () async {
