@@ -11,7 +11,7 @@ All scripts in `scripts/` directory.
 | `check_l10n_sync.py` | Verify tr/en/de translation keys are in sync |
 | `check_platform_targets.py` | Verify unsupported Flutter web target is absent |
 | `check_obsidian_brain.py` | Verify wiki index, wikilinks, inline file refs, overview metrics, decision sections, log pressure, and 200-line limit |
-| `verify_code_quality.py` | Anti-pattern scan (27 checker categories: 19/24 CLAUDE.md anti-patterns + 9 documented extras; some overlap) |
+| `verify_code_quality.py` | Anti-pattern scan (28 checker categories: 19/24 CLAUDE.md anti-patterns + 10 documented extras; some overlap) |
 | `verify_rules.py` | Validate CLAUDE.md stats against codebase |
 | `verify_rules.py --fix` | Auto-fix CLAUDE.md stats + inline rule references |
 | `check_remote_status.py` | Verify exact commit SHA GitHub status/check-run summary |
@@ -68,9 +68,9 @@ scripts/run_local_quality_gate.sh
 
 ## Anti-Pattern Checkers (`verify_code_quality.py`)
 
-27 checker categories total:
+28 checker categories total:
 - Covers 19/24 CLAUDE.md anti-patterns list
-- 9 documented extras: `Spacing` (hardcoded → `AppSpacing`), `Freezed3`, `Layer`, `Loading` (ad-hoc `CircularProgressIndicator`), `TapTarget` (IconButton 48dp), `Container` (ProviderContainer teardown), `Upsert` (insert vs upsert), `Boundary` (feature → `client.from()`), `ImageCache` (`CachedNetworkImage` cache size)
+- 10 documented extras: `Spacing` (hardcoded → `AppSpacing`), `Freezed3`, `Layer`, `Loading` (ad-hoc `CircularProgressIndicator`), `TapTarget` (IconButton 48dp), `Container` (ProviderContainer teardown), `Upsert` (insert vs upsert), `SupaCol` (remote column literal → `SupabaseConstants`, #8), `Boundary` (feature → `client.from()`), `ImageCache` (`CachedNetworkImage` cache size)
 - Scans `lib/` and `test/` directories
 
 ## See Also

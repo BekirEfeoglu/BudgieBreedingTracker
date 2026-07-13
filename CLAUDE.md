@@ -57,7 +57,7 @@ dart fix --apply
 python3 scripts/check_l10n_sync.py       # Verify tr/en/de translation keys are in sync
 python3 scripts/check_platform_targets.py # Verify unsupported Flutter web target is absent
 python3 scripts/check_obsidian_brain.py  # Verify obsidian-brain links, refs, metrics, decisions, log pressure
-python3 scripts/verify_code_quality.py    # Anti-pattern scan (27 checkers, 19/24 CLAUDE.md patterns + 9 extra documented scanners)
+python3 scripts/verify_code_quality.py    # Anti-pattern scan (28 checkers, 19/24 CLAUDE.md patterns + 10 extra documented scanners)
 python3 scripts/verify_rules.py          # Validate CLAUDE.md stats against codebase (single source of truth)
 python3 scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats + rule inline references
 python3 scripts/verify_migration_drift.py # Migration structure guard (dup versions, malformed names); --online adds prod ledger parity

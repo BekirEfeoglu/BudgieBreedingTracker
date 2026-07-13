@@ -59,7 +59,7 @@ final [birds, eggs] = await Future.wait([
 
 ## 24 Critical Anti-Patterns
 Full list with explanations: CLAUDE.md § "Critical Anti-Patterns (24 rules)"
-Enforced by: `verify_code_quality.py` — 27 checker kategorisi; 19/24 CLAUDE.md kuralı + 9 ek dokümante scanner.
+Enforced by: `verify_code_quality.py` — 28 checker kategorisi; 19/24 CLAUDE.md kuralı + 10 ek dokümante scanner.
 Statik tarayıcı dışı (manuel review): #8, #9, #13, #23 (kısmi), #24.
 
 **Top 10 most common:**

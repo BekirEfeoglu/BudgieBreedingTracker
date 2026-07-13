@@ -39,6 +39,7 @@ from verify_code_quality import (
     check_provider_container_dispose,
     check_print_statements,
     check_ref_watch_in_callback,
+    check_remote_hardcoded_columns,
     check_route_ordering,
     check_switch_unknown_case,
     check_with_opacity,
@@ -334,6 +335,51 @@ class TestCheckPrintStatements(unittest.TestCase):
         # 'print(' kelime sinirinda eslesir; ayni satirda debugPrint var → continue
         lines = ["  debugPrint('x'); print('y');"]
         cat = _run_checker(check_print_statements, lines)
+        self.assertEqual(len(cat.findings), 0)
+
+
+class TestCheckRemoteHardcodedColumns(unittest.TestCase):
+    _remote = Path("lib/data/remote/api/event_remote_source.dart")
+
+    def test_flags_order_literal(self):
+        lines = ["      .order('event_date');"]
+        cat = _run_checker(check_remote_hardcoded_columns, lines, self._remote)
+        self.assertEqual(len(cat.findings), 1)
+        self.assertIn("event_date", cat.findings[0].suggestion)
+
+    def test_flags_filter_literal(self):
+        lines = ["      .gte('event_date', start);"]
+        cat = _run_checker(check_remote_hardcoded_columns, lines, self._remote)
+        self.assertEqual(len(cat.findings), 1)
+
+    def test_flags_inline_update_key(self):
+        lines = ["      .update({'is_pinned': value})"]
+        cat = _run_checker(check_remote_hardcoded_columns, lines, self._remote)
+        self.assertEqual(len(cat.findings), 1)
+        self.assertIn("is_pinned", cat.findings[0].suggestion)
+
+    def test_ignores_supabase_constants(self):
+        lines = ["      .order(SupabaseConstants.colEventDate);"]
+        cat = _run_checker(check_remote_hardcoded_columns, lines, self._remote)
+        self.assertEqual(len(cat.findings), 0)
+
+    def test_ignores_contains_rpc_filter(self):
+        lines = ["      .contains('p_sort_by', ['created_at'])"]
+        cat = _run_checker(check_remote_hardcoded_columns, lines, self._remote)
+        self.assertEqual(len(cat.findings), 0)
+
+    def test_ignores_non_remote_file(self):
+        lines = ["      .order('event_date');"]
+        cat = _run_checker(
+            check_remote_hardcoded_columns,
+            lines,
+            Path("lib/features/calendar/providers/calendar_providers.dart"),
+        )
+        self.assertEqual(len(cat.findings), 0)
+
+    def test_ignores_comment_line(self):
+        lines = ["      // .order('event_date');"]
+        cat = _run_checker(check_remote_hardcoded_columns, lines, self._remote)
         self.assertEqual(len(cat.findings), 0)
 
 

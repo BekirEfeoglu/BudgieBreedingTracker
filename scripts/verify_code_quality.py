@@ -108,6 +108,7 @@ EXTRA_CHECKERS = {
     "check_iconbutton_constraints": "IconButton 48dp tap target (a11y, WCAG 2.1 AA)",
     "check_provider_container_dispose": "ProviderContainer dispose missing in test/ (test-stability.md)",
     "check_remote_supabase_insert": "Supabase remote writes must use upsert for retry-safe idempotency",
+    "check_remote_hardcoded_columns": "Supabase column names in remote sources must use SupabaseConstants (#8)",
     "check_feature_supabase_access": "Feature/UI Supabase table access boundary (architecture.md)",
     "check_cached_network_image_cache_size": "CachedNetworkImage memCacheWidth guard (performance.md)",
 }
@@ -1084,6 +1085,37 @@ def check_remote_supabase_insert(lines: List[str], filepath: Path, cat: Category
         ))
 
 
+def check_remote_hardcoded_columns(lines: List[str], filepath: Path, cat: Category):
+    """#8: Supabase column names in remote sources must use SupabaseConstants.
+
+    Scans lib/data/remote/ for raw snake_case string literals passed as the
+    COLUMN argument of a filter/order call (.order/.eq/.neq/.gte/.lte/.match)
+    or as an inline map KEY in a write (.update/.upsert/.insert). RPC array
+    filters (.contains) and value arguments are intentionally out of scope.
+    """
+    rel = relative_path(filepath).replace("\\", "/")
+    if not rel.startswith("lib/data/remote/"):
+        return
+
+    # First argument is the column for these; catch a bare '<snake_case>' literal.
+    filter_re = re.compile(r"\.(?:order|eq|neq|gte|lte|match)\(\s*'([a-z][a-z0-9_]*)'")
+    # Inline map literal write whose first key is a bare string literal.
+    write_re = re.compile(r"\.(?:update|upsert|insert)\(\s*\{\s*'([a-z][a-z0-9_]*)'")
+
+    for i, line in enumerate(lines, 1):
+        if is_comment_line(line):
+            continue
+        m = filter_re.search(line) or write_re.search(line)
+        if not m:
+            continue
+        cat.findings.append(Finding(
+            file=relative_path(filepath),
+            line_num=i,
+            line_text=line.rstrip(),
+            suggestion=f"'{m.group(1)}' -> SupabaseConstants sabiti kullan (#8)",
+        ))
+
+
 def check_feature_supabase_access(lines: List[str], filepath: Path, cat: Category):
     """Feature/UI layer must not query Supabase tables directly.
 
@@ -1172,6 +1204,7 @@ def main():
         Category("IconButton 48dp Constraint Eksik", "[TapTarget]", "IconButton -> AppIconButton kullan (a11y)"),
         Category("ProviderContainer Dispose Eksik", "[Container]", "ProviderContainer -> addTearDown(container.dispose) ekle (test/)"),
         Category("Remote Supabase insert() Kullanimi", "[Upsert]", "Remote source .insert() -> .upsert(..., onConflict)"),
+        Category("Remote Hardcoded Kolon", "[SupaCol]", "Remote source'ta kolon literali -> SupabaseConstants kullan (#8)"),
         Category("Feature Supabase Table Access", "[Boundary]", "Feature/UI direct Supabase table access -> repository/provider kullan"),
         Category("CachedNetworkImage Cache Size Eksik", "[ImageCache]", "CachedNetworkImage -> memCacheWidth ekle"),
     ]
@@ -1202,6 +1235,7 @@ def main():
         check_iconbutton_constraints,
         check_provider_container_dispose,  # test/ only
         check_remote_supabase_insert,
+        check_remote_hardcoded_columns,
         check_feature_supabase_access,
         check_cached_network_image_cache_size,
     ]

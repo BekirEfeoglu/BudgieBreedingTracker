@@ -58,7 +58,7 @@
 - See [[patterns/security]]
 
 ### 4. 24 Anti-Patterns
-Enforced by `scripts/verify_code_quality.py` (27 checker categories — 19/24 CLAUDE.md anti-patterns + 9 documented extras; some overlap). Key ones:
+Enforced by `scripts/verify_code_quality.py` (28 checker categories — 19/24 CLAUDE.md anti-patterns + 10 documented extras; some overlap). Key ones:
 - `withOpacity()` → `withValues(alpha: x)`
 - `context.go()` forward nav → `context.push()`
 - `ref.watch()` in callbacks → `ref.read()`

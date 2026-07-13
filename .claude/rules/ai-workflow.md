@@ -81,7 +81,7 @@ The complete catalog and routing notes live in
 - Never import across feature modules — use `shared/`, `core/`, `domain/`, or `data/providers` facades
 
 ## Anti-Pattern Enforcement
-- `verify_code_quality.py` scans with 27 checkers (19/24 CLAUDE.md patterns plus 9 documented extra scanners; some scanners overlap)
+- `verify_code_quality.py` scans with 28 checkers (19/24 CLAUDE.md patterns plus 10 documented extra scanners; some scanners overlap)
 - CI `code-quality` job blocks PRs with violations
 - Full list: CLAUDE.md § "Critical Anti-Patterns (24 rules)"
 
