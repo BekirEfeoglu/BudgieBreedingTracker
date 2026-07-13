@@ -24,8 +24,10 @@ const rateLimiter = createRateLimiter({
 });
 
 const moderateSchema = z.object({
-  text: z.string().optional(),
-  type: z.string().optional(),
+  // Cap field length as a DoS guard (edge-functions.md § Input Validation);
+  // the shared 256KB body cap is not a per-field bound.
+  text: z.string().max(10000).optional(),
+  type: z.string().max(100).optional(),
 });
 
 export type ModerateContentDeps = {

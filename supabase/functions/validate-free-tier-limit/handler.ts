@@ -59,11 +59,8 @@ export function createValidateFreeTierLimitHandler(
     }
 
     try {
-      const parsed = await parseRequestBody(req, freeTierSchema, headers);
-      if (!parsed.success) return parsed.response;
-
-      const { table } = parsed.data;
-
+      // Auth first (consistent with the other handlers): an unauthenticated
+      // caller gets 401, not a 400 leaking body-shape details.
       const userId = await deps.getAuthenticatedUserId(req);
       if (!userId) {
         return new Response(
@@ -71,6 +68,11 @@ export function createValidateFreeTierLimitHandler(
           { status: 401, headers },
         );
       }
+
+      const parsed = await parseRequestBody(req, freeTierSchema, headers);
+      if (!parsed.success) return parsed.response;
+
+      const { table } = parsed.data;
 
       if (!isAllowedTable(table)) {
         // Fail-closed: an attacker could otherwise bypass free-tier enforcement
