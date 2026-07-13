@@ -35,10 +35,10 @@ class EventRemoteSource extends BaseRemoteSource<Event> {
       final response = await table
           .select()
           .eq(SupabaseConstants.colUserId, userId)
-          .gte('event_date', start.toUtc().toIso8601String())
-          .lte('event_date', end.toUtc().toIso8601String())
+          .gte(SupabaseConstants.colEventDate, start.toUtc().toIso8601String())
+          .lte(SupabaseConstants.colEventDate, end.toUtc().toIso8601String())
           .eq(SupabaseConstants.colIsDeleted, false)
-          .order('event_date');
+          .order(SupabaseConstants.colEventDate);
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag('events', e, st);
@@ -53,7 +53,7 @@ class EventRemoteSource extends BaseRemoteSource<Event> {
           .eq(SupabaseConstants.colUserId, userId)
           .eq(SupabaseConstants.colBirdId, birdId)
           .eq(SupabaseConstants.colIsDeleted, false)
-          .order('event_date', ascending: false);
+          .order(SupabaseConstants.colEventDate, ascending: false);
       return response.map((json) => fromJson(json)).toList();
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag('events', e, st);

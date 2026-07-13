@@ -15,7 +15,7 @@ class GamificationRemoteSource {
       final response = await _client
           .from(SupabaseConstants.badgesTable)
           .select()
-          .order('sort_order');
+          .order(SupabaseConstants.colSortOrder);
       return List<Map<String, dynamic>>.from(response);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag('gamification', e, st);
@@ -140,9 +140,9 @@ class GamificationRemoteSource {
       await _client
           .from(SupabaseConstants.profilesTable)
           .update({
-            'is_verified_breeder': isVerified,
-            'level': level,
-            'xp_title': title,
+            SupabaseConstants.colIsVerifiedBreeder: isVerified,
+            SupabaseConstants.colLevel: level,
+            SupabaseConstants.colXpTitle: title,
           })
           // profiles PK is `id` (= auth.users.id); there is no `user_id`
           // column, so filtering on it 400s and silently drops the sync.
@@ -223,7 +223,10 @@ class GamificationRemoteSource {
     try {
       await _client
           .from(SupabaseConstants.profilesTable)
-          .update({'level': level, 'xp_title': title})
+          .update({
+            SupabaseConstants.colLevel: level,
+            SupabaseConstants.colXpTitle: title,
+          })
           // profiles PK is `id` (= auth.users.id); no `user_id` column exists.
           .eq(SupabaseConstants.colId, userId);
     } catch (e, st) {

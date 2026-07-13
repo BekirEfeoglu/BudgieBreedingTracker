@@ -40,7 +40,7 @@ class NotificationScheduleRemoteSource
         .select()
         .eq(SupabaseConstants.colUserId, userId)
         .eq(SupabaseConstants.colIsActive, true)
-        .order('scheduled_at');
+        .order(SupabaseConstants.colScheduledAt);
     return response.map((json) => fromJson(json)).toList();
   }
 }

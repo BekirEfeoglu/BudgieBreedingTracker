@@ -230,7 +230,7 @@ class CommunityPostRemoteSource {
     try {
       await _client
           .from(SupabaseConstants.communityPostsTable)
-          .update({'is_pinned': isPinned})
+          .update({SupabaseConstants.colIsPinned: isPinned})
           .eq(SupabaseConstants.colId, postId);
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(

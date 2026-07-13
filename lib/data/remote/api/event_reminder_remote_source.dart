@@ -33,7 +33,7 @@ class EventReminderRemoteSource extends BaseRemoteSource<EventReminder> {
         .eq(SupabaseConstants.colUserId, userId)
         .eq(SupabaseConstants.colEventId, eventId)
         .eq(SupabaseConstants.colIsDeleted, false)
-        .order('minutes_before');
+        .order(SupabaseConstants.colMinutesBefore);
     return response.map((json) => fromJson(json)).toList();
   }
 }

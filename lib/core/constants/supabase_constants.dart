@@ -127,6 +127,14 @@ abstract class SupabaseConstants {
   static const String colEventType = 'event_type';
   static const String colSnapshotType = 'snapshot_type';
   static const String colData = 'data';
+  static const String colLevel = 'level';
+  static const String colXpTitle = 'xp_title';
+  static const String colIsVerifiedBreeder = 'is_verified_breeder';
+  static const String colIsPinned = 'is_pinned';
+  static const String colEventDate = 'event_date';
+  static const String colSortOrder = 'sort_order';
+  static const String colMinutesBefore = 'minutes_before';
+  static const String colScheduledAt = 'scheduled_at';
 
   // Foreign-key columns (shared across multiple tables)
   static const String colBlockedUserId = 'blocked_user_id';
