@@ -14,6 +14,24 @@ updates:
       prefix: "chore(deps)"
     reviewers:
       - "BekirEfeoglu"
+    # Deliberately held bumps — see dev-docs/dependency-upgrade-notes.md.
+    # Remove the matching entry when its precondition clears.
+    ignore:
+      # iOS CI cap: 2.13+ pulls passkeys -> device_info_plus visionOS selector
+      # which breaks the iOS build (architecture.md; pubspec pins <2.13.0).
+      - dependency-name: "supabase_flutter"
+        versions: [">=2.13.0"]
+      # drift 2.34 -> analyzer ^13 conflicts with riverpod_generator (analyzer ^12)
+      # and the Flutter SDK's flutter_test meta 1.17 pin. Needs a coordinated
+      # riverpod_generator + Flutter SDK upgrade first.
+      - dependency-name: "drift"
+        versions: [">=2.34.0"]
+      - dependency-name: "drift_dev"
+        versions: [">=2.34.0"]
+      # Hold the 10.x line (incl. pre-releases) until a stable 10.x ships; the
+      # 9 -> 10 migration is its own task.
+      - dependency-name: "sentry_flutter"
+        versions: [">=10.0.0-0"]
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
