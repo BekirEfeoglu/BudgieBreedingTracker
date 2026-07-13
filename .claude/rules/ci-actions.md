@@ -13,7 +13,7 @@
 | Job | Gate | Blocker |
 |-----|------|---------|
 | `analyze` | `flutter analyze --no-fatal-infos` | PR merge |
-| `test` | Unit + widget tests, optional Codecov when `CODECOV_TOKEN` exists | PR merge |
+| `test` | Unit + widget tests (random order via `--test-randomize-ordering-seed random`), optional Codecov when `CODECOV_TOKEN` exists | PR merge |
 | `golden-test` | Visual regression (Linux) | PR merge |
 | `edge-functions-test` | `deno test --allow-env --allow-net supabase/functions` | PR merge + Edge deploy |
 | `scripts-test` | Python script tests (>=98% cov) | PR merge |
@@ -44,6 +44,11 @@
 - Tum job'lar 0-5 saniyede dusuyorsa: Actions account durumunu kontrol et
 - Annotation'larda `billing issue`, `account is locked` ara
 - Billing kilidi varken scheduled workflow'lari gecici disable et
+
+## Random Test Ordering
+- The `test` job runs with `--test-randomize-ordering-seed random` (enabled 2026-07-13 after the suite was verified order-independent). Each `flutter test` file runs in its own isolate, so leaks are WITHIN-file (test order in one `main()`).
+- A red `test` job printing `Some tests failed` under a shuffled order (the log's `Shuffling test order with --test-randomize-ordering-seed=NNNN` line names the seed) is a **new order-dependency, not flakiness** — reproduce locally with `flutter test <file> --test-randomize-ordering-seed <NNNN>` and fix the shared state (test-stability.md #2/#3/#9). Do NOT disable random ordering to go green.
+- Common cause: a test that loads real l10n (`pumpTranslatedWidget` / `RealTestAssetLoader`) sharing a file with raw-key assertions — easy_localization caches translations in a process-static per-locale. Fix by moving the real-translation test to its own file (separate isolate). Canonical example: `admin_monitoring_content_translated_test.dart`.
 
 ## Workflow Hygiene
 - Workflow YAML'i push oncesi local parse et: `ruby -e 'require "yaml"; YAML.load_file(ARGV.fetch(0))' .github/workflows/<file>.yml`

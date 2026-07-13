@@ -93,10 +93,15 @@ jobs:
         # the same commit, leaving < 2 min margin. 5 min headroom keeps
         # main flake-free without masking a real regression.
         run: |
+          # Random test ordering surfaces hidden inter-test state leaks early.
+          # The suite was verified order-independent (2026-07-13) after isolating
+          # the admin-monitoring real-translation test; a failure here means a NEW
+          # order-dependency, not flakiness — fix the shared state (test-stability.md).
           flutter test \
             --exclude-tags "golden || e2e || community" \
             --coverage \
             --concurrency=4 \
+            --test-randomize-ordering-seed random \
             --dart-define=SUPABASE_URL=https://placeholder.supabase.co \
             --dart-define=SUPABASE_ANON_KEY=placeholder_key
         timeout-minutes: 30
