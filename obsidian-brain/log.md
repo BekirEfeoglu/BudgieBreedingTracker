@@ -4,6 +4,10 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-13] docs | 4-lane doc-drift sweep: rules + wiki reconciled to code, skills-index added
+
+Comprehensive `.claude` + `obsidian-brain` improvement pass (4 parallel read-only audit lanes, all findings code-verified before applying). **Aspirational-rules class (largest):** `presence.md` rewritten to reality — no `clearPresence`/`invisible`/`away`/visibility modes; boolean active/inactive sessions, `markInactive()→endSession()`, admin panel is the ONLY consumer (auth.md logout chain + presence-service/messaging wiki mirrors synced). `data-io.md` backup sections rewritten — single `.json`/`.enc.json` file (no zip/manifest/attachments), runtime `EncryptionService` key (no PBKDF2 → encrypted backups not portable), restore is merge-upsert (no wipe/preview). `forms-validation.md`: `ValidationException` has NO `fieldErrors` map; `PrimaryButton.isLoading`; no `intl_phone_field`; ring-unique check unshipped (birds.md sibling fixed). `home-widget.md`: real API is `syncDashboardSnapshot` + typed `AppHomeWidgetConstants` keys, system-locale widgets, no 00:01 refresh. `background-sync.md`/`domain/sync-service.md`: fictional `SyncService.syncAll/syncEntity/validateParents/conflictNotifierProvider` → real `SyncOrchestrator.fullSync/pushChanges/pullChanges`, `validateForeignKeys` (`Future<String?>`), `conflictHistoryProvider`, `SyncDisplayStatus`. **Wiki lag on shipped features:** settings.md auto-backup (shipped 2026-07-09), messaging.md read-receipt reciprocal opt-out, gamification-service trigger-derived level (no `_updateUserLevel`/`gamificationServiceProvider`), community `communityProfileProvider` removed. **Recency sync:** ci-cd + testing pages document random test ordering + order-dependency triage + `syncClockProvider` clock-seam; anti-patterns page: #7 statically checked, #8 partially CI-enforced (`check_remote_hardcoded_columns`); tech-stack versions (firebase_core ^4.12.0, image_picker ^1.2.3, build_runner ^2.15.1); migrations count 210; sync-strategy 13+photo repos; environment.md +`REVENUECAT_WEBHOOK_AUTH_TOKEN`; overview 3,146 l10n / 11,607+ tests; EmptyState `subtitle` (not `message`) + SkeletonLoader no-`count` fixed across rules+wiki; `performance.md` `forceFullSync()`. **New:** [[sources/skills-index]] (catalogs `.claude/skills`, registered in index/cheat-sheet/agents-index + documentation-sync.md row); known-gaps +7 rows (DM card producers latent, presence UI, PBKDF2 backup, restore preview, fieldErrors, ring-unique, chat-attachments) + orphan-photo GC deliberate absence; cheat-sheet +3 how-do-I rows +streak fire row. Rotated all 2026-07-11 entries into [[log-archive-2026-07-j]].
+
 ## [2026-07-13] test-fix | Root-caused + fixed the order-dependent failures. Reproduced with seed `1053617534` (full suite `+11658 -5`; all 5 in ONE file, `admin_monitoring_content_test.dart`). Cause: 20 raw-key l10n assertion tests (`pumpLocalizedApp` → `TestAssetLoader`, keys) shared the file with ONE `pumpTranslatedWidget` test that loads REAL 'tr' translations; easy_localization caches translations in a process-static per-locale, so when the real-translation test ran first under a shuffle, the raw-key tests saw translated text and `find.text('<key>')` found 0. Fix: moved the single real-translation test to its own file `admin_monitoring_content_translated_test.dart` (separate isolate ⇒ no static leak); the raw-key file is now order-independent (`+20` pass across 5 seeds incl. the repro seed). No production change.
 
 ## [2026-07-13] ci-hardening | Enabled `--test-randomize-ordering-seed random` in the `test` job. Validation first surfaced order-dependent failures (`+11658 -5` on a random seed; fixed seed `20260713` passed clean → seed-specific), all 5 root-caused to the admin-monitoring l10n leak (see fix entry) and isolated. After the fix, 4 full random-order passes (seeds 1661166742 / 2225109751 / 110335361 / 3601774480) all clean ⇒ suite order-independent. Enabled the flag + documented the "red = new order-dependency, not flakiness; reproduce with the logged seed" contract in ci-actions.md § Random Test Ordering.
@@ -84,95 +88,5 @@ verified both via the now-live file (both "under review"), and confirmed all 6
 production ad-unit IDs in `ad_service.dart` match the console. Publisher ID ==
 `ca-app-pub-4121152941965334`. Wiki: [[infrastructure/marketing-site]]. Commit
 d95e9bf.
-
-## [2026-07-11] fix | About rate-app launch failure surfaces cannot_open_url
-
-Reconciled `0f4fb09`. The Settings→About "Uygulamayı Puanla" (rate-app) tile
-(`about_section.dart`) showed `errors.unknown` ("unexpected error") when the
-store-page `launchUrl` failed — in both the `!launched` branch and the catch.
-A failed store launch is a can't-open-link condition, not an unexpected crash, so
-it now surfaces `errors.cannot_open_url` ("no suitable app found"), matching the
-sibling launch paths (the More-tab About dialog `_showMoreAboutDialog` +
-`about_section`'s support/contact tile, both already on that key). Message-precision
-fix — no new l10n key, no contract/stat change; below rule granularity so
-`.claude/rules/settings.md` untouched. [[features/settings]] § About.
-
-## [2026-07-11] fix | About dialog surfaces silent launchUrl failures
-
-`5d2f118` — the More-tab "Hakkında" dialog (`more_screen_sections.dart`
-`_showMoreAboutDialog`) email + website links only handled thrown exceptions;
-`launchUrl` can return `false` (no mail app / browser) without throwing, leaving
-a tapped link a silent no-op. Now checks the bool return and shows
-`errors.cannot_open_url`, matching the settings `AboutSection` pattern. Kept bare
-`launchUrl` (no `canLaunchUrl`) — mailto false-negatives on Android 11+ without a
-`<queries>` manifest entry. No stat/contract change.
-
-## [2026-07-11] fix | Admin moderation deletes confirm-gated, Sentry on destructive ops, SupabaseConstants
-
-Reconciled `7edf39d` (admin review fixes). **Contract change:** moderation
-`deletePost`/`deleteComment` now show `showConfirmDialog(isDestructive: true)`
-(`admin.moderation_delete_title`/`_confirm`) before removing content — the last
-single-tap destructive admin path is now two-step-guarded like every other one.
-Single-user destructive ops in `admin_user_manager` (`toggleUserActive`,
-`grantPremium`, `revokePremium`, `forceLogout`) + the moderation action catch now
-`Sentry.captureException(e, stackTrace: st)` on failure, parity with
-`admin_bulk_manager` (was breadcrumb-only, anti-pattern #23). `admin_users`/
-`admin_health`/`admin_dashboard` providers moved hardcoded column literals to
-`SupabaseConstants` (+`colIsPremium`, +`colIsAcknowledged`); backup-error snackbar
-stopped interpolating raw `e.toString()` (dropped the `{}` in `admin.backup_save_error`).
-Managed counts via `verify_rules.py --fix`: Supabase constants 154→156, l10n keys
-~3,124→~3,126 (both CLAUDE.md + inline rule refs). [[features/admin]] § Moderation
-Queue / Force Logout / Current Decisions. Rotated the oldest 2026-07-10 10-lane
-audit entry into [[log-archive-2026-07-h]].
-
-## [2026-07-11] fix | Settings sync-table map uses SupabaseConstants + guarded share
-
-Reconciled `5f9fbbf` (two settings-review fixes, no contract change).
-`sync_detail_sheet._localizeTable` switched on raw `'birds'`/`'eggs'`/... table
-string literals (anti-pattern #8) → now switches on `SupabaseConstants.*Table`
-so a schema rename tracks the display mapping instead of silently falling
-through to `sync.table_other`. `about_section`'s share-app tile fired
-`SharePlus.share` fire-and-forget (only unguarded share/launch in the section)
-→ now `await` + try/catch + `AppLogger.warning`, matching the store/support/
-export paths. Docs only, no managed count changed.
-
-## [2026-07-11] docs | Premium paywall Terms (EULA) label fully localized
-
-Reconciled `ca22fed`. `premium_paywall_footer.dart` built its terms link label
-as `'${'settings.terms'.tr()} (EULA)'` — concatenating a hardcoded `(EULA)` onto
-translated text (anti-pattern #11). New `settings.terms_eula` key (tr/en/de)
-rendered directly. Managed l10n count →3,124 (CLAUDE.md + localization.md via
-`verify_rules.py --fix`); mirrored into overview.md. No contract change,
-docs/managed values only.
-
-## [2026-07-11] fix | Auth legal-links launchUrl failure now logged + surfaced
-
-Reconciled `343b580`. The Terms/Privacy `TapGestureRecognizer`s in
-`legal_links_text.dart` (auth screens) fired `launchUrl` fire-and-forget — a tap
-that couldn't open the external URL failed silently. Extracted `_openUrl(url)`:
-awaits `launchUrl`, logs failures via `AppLogger.warning`, and surfaces
-`errors.cannot_open_url` in a SnackBar when the launch returns false / throws
-(mirrors the premium paywall `_openLegalUrl` + `premium_screen`
-`_openSubscriptionManagement` handling reconciled earlier this session).
-Silent-failure → logged+feedback robustness only; no contract change.
-[[features/auth]] unchanged — the page doesn't document the legal-links widget's
-launch behavior. Docs/log only. Rotated the oldest 2026-07-10 v6 genetics-audit
-entry into [[log-archive-2026-07-h]].
-
-## [2026-07-11] docs | Local AI rule/wiki reconciled to fail-fast reality (no retry, no client rate limit)
-
-Doc-only reconciliation — the `LocalAiService` code is authoritative for current
-behavior and is correct; local-ai.md overstated two unshipped mechanics.
-**§ Fallback Chain:** `local_ai_transport.dart` routes to exactly ONE backend
-(`config.isOpenRouter ? OpenRouter : Ollama`) and throws a typed
-`NetworkException`/`ValidationException` (`genetics.local_ai_error_*` l10n key) on
-the FIRST failure — no retry-once, no 2s backoff, no cross-backend fallback, and
-no `AnalysisResult.unavailable()` type (models are `LocalAi{Genetics,Sex,Mutation}Insight`,
-surfaced via AsyncValue.guard → ErrorState). The helper-not-gate contract still
-holds. **§ Cost & Size Guards:** there is no client-side rate limiter (only the
-8-entry/10-min `LocalAiCache`; OpenRouter 429 is upstream) — consistent with the
-rule's own Anti-Pattern #6. Registered both as future/unshipped in [[known-gaps]]
-and mirrored the fixes into [[domain/local-ai]]. No lib/ change. Rotated the
-oldest Q1 log entry into [[log-archive-2026-07-h]].
 
 Older entries are archived in [[log-archive-2026-07-j]], [[log-archive-2026-07-i]], [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

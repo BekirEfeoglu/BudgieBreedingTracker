@@ -8,7 +8,7 @@ Source: `.claude/rules/empty-loading-error-states.md`
 
 | Widget | Usage | Real constructor |
 |--------|-------|-------------------|
-| `EmptyState` | No results, no error (empty list, filter mismatch) | `{icon: Widget, title, message, actionLabel: String?, onAction: VoidCallback?}` |
+| `EmptyState` | No results, no error (empty list, filter mismatch) | `{icon: Widget, title, subtitle: String?, actionLabel: String?, onAction: VoidCallback?}` — second text param is `subtitle`, NOT `message` |
 | `LoadingState` | Initial fetch, manual refresh | `{message}` |
 | `SkeletonLoader` | Single shimmer placeholder box | `{width, height, borderRadius}` — no `count`/`itemBuilder` |
 | `ErrorState` | Network/server error + retry CTA | `{message, onRetry: VoidCallback?}` — no `icon` param |
@@ -29,7 +29,7 @@ asyncValue.when(
       ? EmptyState(
           icon: AppIcon(AppIcons.bird),
           title: 'birds.no_birds_title'.tr(),
-          message: 'birds.no_birds_hint'.tr(),
+          subtitle: 'birds.no_birds_hint'.tr(),
           actionLabel: 'birds.add_first'.tr(),
           onAction: () => context.push(AppRoutes.birdForm),
         )

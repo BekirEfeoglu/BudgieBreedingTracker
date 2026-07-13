@@ -10,7 +10,12 @@ Source: `.claude/rules/testing.md`, `.claude/rules/test-stability.md`
 ## Test Tags → CI Gates
 
 The PR `test` job runs with `--exclude-tags "golden || e2e || community"` — a
-tagged test drops off the PR gate entirely.
+tagged test drops off the PR gate entirely — plus
+`--test-randomize-ordering-seed random` (enabled 2026-07-13): a failure that
+appears only under a shuffled order is a NEW order-dependency, not flakiness.
+Reproduce with `flutter test <file> --test-randomize-ordering-seed <NNNN>`
+(the CI log's "Shuffling test order" line names the seed); never disable
+random ordering to go green.
 
 | Tag | Runs in | Reserved for |
 |-----|---------|--------------|
@@ -159,6 +164,14 @@ test('should throw NetworkException when offline', () { ... });
 5. Resource leak? → `addTearDown`
 6. `CircularProgressIndicator` with `pumpAndSettle`? → timeout
 7. Platform-specific? → `@TestOn('linux')` pin
+8. Fails only under shuffled order? → order-dependency: reproduce with
+   `flutter test <file> --test-randomize-ordering-seed <NNNN>`, fix the shared
+   state (classic cause: a real-l10n test sharing a file with raw-key asserts —
+   easy_localization caches per-locale in a process-static; split it into its
+   own file/isolate)
+9. Near-`DateTime.now()` boundary assert (skew/expiry/TTL)? → inject a clock
+   seam (`syncClockProvider` pattern in `sync_providers.dart`) and override it
+   in the test; do NOT widen the margin to seconds
 
 If unresolvable: `skip: 'flaky — see issue #X'`. Never delete without finding root cause.
 

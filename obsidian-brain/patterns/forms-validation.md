@@ -25,7 +25,7 @@ class _BirdFormState extends ConsumerState<BirdFormScreen> {
       context.pop();
     } on ValidationException catch (e) {
       if (!mounted) return;
-      _showFieldErrors(e.fieldErrors);
+      _showErrorSnackBar(e.message.tr()); // message is an l10n key — no fieldErrors map
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -39,20 +39,23 @@ class _BirdFormState extends ConsumerState<BirdFormScreen> {
 |-------|------|--------|
 | Sync field validator | `TextFormField.validator` | Empty check, format |
 | Form-level validator | Submit, cross-field | "Passwords don't match" |
-| Async unique check | onChange debounced | DB query (ring number taken?) |
-| Server validation | Submit response | `ValidationException` field map |
+| Async unique check | onChange debounced | Generic pattern below — no shipped ring-unique check exists ([[known-gaps]]) |
+| Server validation | Submit response | `ValidationException(message: l10nKey, code?)` — no per-field error map |
 
 ## Async Validator (Race-Safe)
 
+GENERIC pattern — note: a ring-number unique check is NOT shipped
+(`ringNumberExists` / `validation.ring_taken` don't exist — [[known-gaps]]):
+
 ```dart
 int _requestId = 0;
-Future<void> _checkRingNumberUnique(String value) async {
+Future<void> _checkUnique(String value) async {
   final id = ++_requestId;
   await Future.delayed(const Duration(milliseconds: 400));
   if (id != _requestId) return;  // Stale request
-  final exists = await ref.read(birdRepositoryProvider).ringNumberExists(value);
+  final exists = await ref.read(myRepositoryProvider).fieldExists(value);
   if (id != _requestId || !mounted) return;
-  setState(() => _ringNumberError = exists ? 'validation.ring_taken'.tr() : null);
+  setState(() => _fieldError = exists ? 'validation.already_taken'.tr() : null);
 }
 ```
 
@@ -61,7 +64,7 @@ Future<void> _checkRingNumberUnique(String value) async {
 ```dart
 PrimaryButton(
   onPressed: _submitting ? null : _onSubmit,  // null = disabled
-  loading: _submitting,
+  isLoading: _submitting,  // param name is isLoading (primary_button.dart)
   label: 'common.save'.tr(),
 )
 ```
@@ -85,8 +88,7 @@ All in `validation.` namespace:
     "required": "Bu alan zorunlu",
     "min_length": "En az {n} karakter",
     "max_length": "En fazla {n} karakter",
-    "email_invalid": "Geçerli bir email girin",
-    "ring_taken": "Bu halka numarası kullanımda"
+    "email_invalid": "Geçerli bir email girin"
   }
 }
 ```

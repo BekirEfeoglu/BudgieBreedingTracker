@@ -39,8 +39,9 @@ MigrationStrategy(
 
 Format: `YYYYMMDDHHmmss_short_description.sql`
 
-207 tracked migration files in `supabase/migrations/` — applied in lexicographic
-(chronological) order. **Verified against production 2026-07-10 (MCP live):**
+210 tracked migration files in `supabase/migrations/` — applied in lexicographic
+(chronological) order (parity last verified at 207 on 2026-07-10; the three
+2026-07-12 streak migrations were applied to prod via MCP the same day). **Verified against production 2026-07-10 (MCP live):**
 206 local files ↔ 206 ledger rows, version parity exact (0 duplicates), all
 recent effects confirmed in the live schema; `20260710120000` (marketplace
 listing moderation trigger) was applied to prod later the same day via MCP,

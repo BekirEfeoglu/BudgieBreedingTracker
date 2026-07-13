@@ -21,7 +21,8 @@ Source: `CLAUDE.md` § Environment Variables
 
 | Secret | Purpose |
 |--------|---------|
-| `REVENUECAT_SECRET_API_KEY` | sync-premium-status RevenueCat verification |
+| `REVENUECAT_SECRET_API_KEY` | sync-premium-status + revenuecat-webhook RevenueCat verification |
+| `REVENUECAT_WEBHOOK_AUTH_TOKEN` | revenuecat-webhook shared secret (32+ random bytes; set in Supabase secrets AND RevenueCat webhook Authorization header) |
 | `SUPABASE_ACCESS_TOKEN` | Edge Function deployment (CI) |
 | `SUPABASE_PROJECT_REF` | Edge Function deployment (CI) |
 

@@ -95,8 +95,8 @@ onPressed: () { final x = ref.read(provider); }
 
 ## Static vs Manual Review
 
-- **Statically checked** (verify_code_quality.py): #1–6, #10–12, #15–17, #19–22, A1, A5, others
-- **Manual review only**: #7, #8, #9, #13, #23 (partial), #24
+- **Statically checked** (verify_code_quality.py): #1–7, #10–12, #15–17, #19–22, A1, A5, others; #8 partially (`check_remote_hardcoded_columns` scans `lib/data/remote/` column literals)
+- **Manual review only**: #8 (outside remote sources), #9, #13, #23 (partial), #24
 
 ## See Also
 

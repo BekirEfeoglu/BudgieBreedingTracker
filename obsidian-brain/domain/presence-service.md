@@ -1,15 +1,16 @@
 # Presence Service
 
-Source: `.claude/rules/presence.md` (primary — TTL, heartbeat schedule, privacy visibility modes, multi-device session limit, battery/realtime budget)
+Source: `.claude/rules/presence.md` (primary — TTL, heartbeat schedule, battery budget; privacy visibility modes are UNSHIPPED design targets, see [[known-gaps]])
 
 **Location**: `lib/domain/services/presence/`
 
 ## Responsibility
 
-Tracks per-device session activity in `user_sessions` Supabase table so the
-community + messaging UIs can show "online now" indicators and the server
-can scope realtime broadcasts. Lifecycle is driven by app foreground /
-background events and a heartbeat timer.
+Tracks per-device session activity in the `user_sessions` Supabase table.
+**The only shipped consumer is the admin panel** (online-user visibility,
+`admin_users_providers.dart`) — community/messaging "online now" badges are
+unshipped design targets ([[known-gaps]]). Lifecycle is driven by app
+foreground / background events and a heartbeat timer.
 
 ## Components
 
@@ -81,7 +82,8 @@ data is not part of this service's footprint.
 
 ## See Also
 
-- [[features/community]] — online indicator consumer
-- [[features/messaging]] — realtime presence
+- [[features/admin]] — the only shipped presence consumer (online-user visibility)
+- [[features/messaging]] — typing indicator (messaging-owned, not presence)
+- [[known-gaps]] — visibility modes + user-facing badges (unshipped)
 - [[patterns/datetime-format]] — UTC at boundary
 - [[domain/services-index]]

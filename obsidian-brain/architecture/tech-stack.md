@@ -28,7 +28,7 @@ Source: `pubspec.yaml`, `.claude/rules/architecture.md`
 | Package | Purpose |
 |---------|---------|
 | supabase_flutter >=2.5.0 <2.13.0 | Postgres + Auth + Storage + Realtime (capped below 2.13.0 — 2.13+ pulls the passkeys → device_info_plus 12.4.0 chain whose visionOS `isiOSAppOnVision` selector fails to compile on CI macos-latest Xcode SDK) |
-| firebase_core ^4.1.1 | FCM prerequisite |
+| firebase_core ^4.12.0 | FCM prerequisite |
 | firebase_messaging ^16.2.2 | Push notifications (FCM) |
 | purchases_flutter ^10.4.1 | RevenueCat in-app purchases |
 | sentry_flutter ^9.0.0 | Error tracking + performance |
@@ -43,7 +43,7 @@ Source: `pubspec.yaml`, `.claude/rules/architecture.md`
 | cached_network_image ^3.3.0 | Network image + cache |
 | photo_view ^0.15.0 | Zoomable image viewer |
 | flutter_displaymode ^0.6.0 | Request Android panel high refresh rate (90/120Hz) at startup |
-| image_picker ^1.0.0 | Camera + gallery picker |
+| image_picker ^1.2.3 | Camera + gallery picker |
 | fl_chart ^1.2.0 | Statistics charts |
 | google_mobile_ads ^9.0.0 | AdMob ads (free tier) — iOS GMA SDK 13.3.0 + UMP 3.1.0 |
 
@@ -87,7 +87,7 @@ Source: `pubspec.yaml`, `.claude/rules/architecture.md`
 
 | Package | Purpose |
 |---------|---------|
-| build_runner ^2.13.0 | Code generation runner |
+| build_runner ^2.15.1 | Code generation runner |
 | riverpod_generator ^4.0.0 | Riverpod code gen |
 | freezed ^3.0.0 | Freezed code gen |
 | json_serializable ^6.13.0 | JSON code gen |

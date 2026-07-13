@@ -21,24 +21,22 @@ iOS WidgetKit ve Android App Widgets üzerinden home screen + lock screen widget
 
 ## Data Flow
 ```
-Flutter app -> HomeWidgetService.write(key, value)
-  -> Shared UserDefaults (iOS) / SharedPreferences (Android)
-  -> Native widget reads on refresh
+Flutter app -> HomeWidgetService.syncDashboardSnapshot(HomeWidgetDashboardSnapshot)
+  -> HomeWidgetGateway.saveInt/saveString/saveBool (tipli key-value)
+  -> Shared UserDefaults (iOS app group) / SharedPreferences (Android)
+  -> gateway.updateWidget(...) native refresh tetikler
   -> Renders SwiftUI / RemoteViews
 ```
 
-- Bridge sadece KEY-VALUE storage (JSON serialize edilebilir primitive)
+- Tek public API `syncDashboardSnapshot` — serbest `write(key, value)` YOK; key'ler `AppHomeWidgetConstants` sabitleridir
 - Native widget kendi UI'ını çizer (SwiftUI iOS, RemoteViews Android)
 - Async fetch widget'ta YOK (sync read from shared storage)
+- Sync hatası best-effort: `AppLogger.error`, app akışını bozmaz
 
-## Refresh Triggers
-- iOS: `WidgetCenter.shared.reloadAllTimelines()` — app içinden çağrı
-- Android: `HomeWidget.updateWidget()` — broadcast intent
-- Trigger noktaları:
-  - Yeni kuluçka başlatma
-  - Egg status değişimi
-  - App resume (önemli değişiklik varsa)
-  - Daily scheduled refresh (00:01 local time — gün geçişi)
+## Refresh Triggers (gerçek)
+- Flutter tarafı: `home_screen.dart`'taki `ref.listen(homeWidgetDashboardSnapshotProvider(userId))` — snapshot değişince `syncDashboardSnapshot` çağrılır (o da native `updateWidget`'ı tetikler)
+- iOS ayrıca timeline self-refresh: `nextRefreshDate()` ~+30 dk (`BudgieDashboardWidget.swift`)
+- "00:01 daily scheduled refresh" diye ayrı bir zamanlayıcı YOK
 
 ## Update Frequency
 - iOS WidgetKit budget: ~40 timeline update/day (Apple limit)
@@ -46,31 +44,26 @@ Flutter app -> HomeWidgetService.write(key, value)
 - Over-refresh anti-pattern: her data change'de refresh ETME (battery + budget)
 - Debounce: 1 dakika minimum interval
 
-## Shared Storage Schema
-```json
-{
-  "activeIncubationCount": 3,
-  "nextHatchDate": "2026-05-30T08:00:00Z",
-  "nextHatchBird": "Maviş",
-  "todayEvents": [
-    {"time": "10:00", "label": "Egg turn"},
-    {"time": "18:00", "label": "Health check"}
-  ],
-  "syncStatus": "synced" // synced | syncing | offline
-}
-```
+## Shared Storage Schema (gerçek — `AppHomeWidgetConstants`, tipli key-value)
+| Key | Tip | İçerik |
+|-----|-----|--------|
+| `egg_turning_count` | int | Bugün çevrilecek yumurta sayısı |
+| `active_breedings_count` | int | Aktif kuluçka/çift sayısı |
+| `next_turning_label` | string | Sıradaki çevirme etiketi |
+| `has_work_today` | bool | Bugün iş var mı |
+| `last_updated_label` | string | Son güncelleme etiketi |
+| `last_updated_epoch_seconds` | int | Son güncelleme zamanı |
 
-Native side aynı schema'yı parse eder. Field ekleme: hem Flutter hem native side update (release strategy).
+JSON blob YOK — her alan ayrı tipli key. Field ekleme: `AppHomeWidgetConstants` + `HomeWidgetDashboardSnapshot` + native side (Swift/Kotlin) birlikte güncellenir (release strategy).
 
 ## Empty State
 - Aktif kuluçka yok: "Yeni kuluçka başlat" CTA → deeplink
 - Tap → deeplink `/breeding/new` (router'da handle edilmeli)
 - Network olmadan da görünür (cached data)
 
-## Localization
-- Native widget kendi locale'inden okur (iOS `Locale.current`, Android `Resources.getSystem().getConfiguration().locale`)
-- Flutter app dili native'e push edilir (shared storage `locale` key)
-- Çakışma: app dili sistem dilinden farklıysa app dili tercih
+## Localization (gerçek — sistem locale)
+- Native widget SİSTEM dilini kullanır (iOS `NSLocalizedString` — `BudgieDashboardWidget.swift` `WidgetCopy.t`; Android resources)
+- Shared storage'a `locale` key'i YAZILMAZ — app-dili push mekanizması yok. App dili sistem dilinden farklıysa widget sistem dilinde kalır (bilinen sınırlama); app-locale push eklenirse bu bölüm + snapshot şeması birlikte güncellenmeli
 
 ## Performance
 - Shared storage write < 10ms
@@ -100,7 +93,7 @@ Native side aynı schema'yı parse eder. Field ekleme: hem Flutter hem native si
 1. Her data change'de widget refresh (timeline budget tükenir)
 2. Async fetch widget render'da (UI bloklar, Apple reject)
 3. Flutter asset'i native widget'ta erişmeye çalışmak (bundle ayrı)
-4. Locale'i shared storage'a yazmayı unutmak (widget yanlış dil)
+4. Widget metnini Flutter'dan localize edilmiş string olarak yollarken sistem-locale ayrımını unutmak (label snapshot'ta app dilinde, statik copy native'de sistem dilinde — karışım tutarsız dil üretir)
 5. Tap deeplink'i validate etmeden navigate (crash riski, notifications.md aynı kural)
 6. Lock screen widget'a hassas bilgi yazmak (PII — locked phone'da görünür)
 7. Widget refresh'i background sync olmadan yapmak (offline'da stale data)

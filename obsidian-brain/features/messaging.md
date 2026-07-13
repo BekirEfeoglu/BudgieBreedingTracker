@@ -85,9 +85,13 @@ There is no generic `chat-attachments` bucket.
 
 Tracked via `messages.read_by` (JSONB array of user IDs) +
 `conversation_participants.last_read_at` — **not** a Drift mirror (this
-repository has no local table, see § Online-First Exception). **No opt-out
-exists yet (2026-07-02 audit):** every read is recorded unconditionally;
-there is no privacy setting to disable it.
+repository has no local table, see § Online-First Exception).
+**Reciprocal opt-out shipped (2026-07-09):** `readReceiptsEnabledProvider`
+(`lib/data/providers/read_receipts_provider.dart`, default `true`), toggled in
+Settings → Privacy & Security. When off: `_markVisibleAsRead` skips the
+`markAsRead` RPC (the user's reads are never recorded) AND `MessageBubble`
+caps its indicator at "delivered" (the user also stops seeing others' read
+status) — reciprocal by design.
 
 ## Block Enforcement
 
@@ -118,7 +122,7 @@ admin review queue.
 ## Rules
 
 - `.claude/rules/messaging.md` — online-first DM, conversation model, delivery status, read receipts, typing, attachments, block sync
-- `.claude/rules/presence.md` — typing indicator + online badge integration
+- `.claude/rules/presence.md` — session tracking (admin-only consumer; user-facing online badges are unshipped, see [[known-gaps]])
 - `.claude/rules/notifications.md` — foreground/background handling
 - `.claude/rules/assets-images.md` — attachment upload
 - `.claude/rules/security.md` — RLS, JWT, member-scoped access

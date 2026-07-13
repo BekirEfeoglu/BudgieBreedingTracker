@@ -31,6 +31,7 @@ change code merely to make a stale wiki sentence true.
 | CI / release / deploy flow | Owning rule file + `CLAUDE.md` + workflow comments together (release-ops.md § Documentation Drift) |
 | A new wiki page | Register it in `obsidian-brain/index.md` (check_obsidian_brain enforces reachability) |
 | A first-party `.claude/agents/*.md` profile or hook | Owning workflow rule + `obsidian-brain/sources/agents-index.md`; update the wiki log when routing/capability changed |
+| A `.claude/skills/*/SKILL.md` skill added/removed/renamed | `obsidian-brain/sources/skills-index.md` (+ agents-index if routing changed); update the wiki log |
 
 ## obsidian-brain Ingest Contract
 From `obsidian-brain/CLAUDE.md`. After a significant code or rule change:

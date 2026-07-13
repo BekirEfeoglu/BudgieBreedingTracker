@@ -26,7 +26,7 @@ class _BirdFormState extends ConsumerState<BirdFormScreen> {
       context.pop();
     } on ValidationException catch (e) {
       if (!mounted) return;
-      _showFieldErrors(e.fieldErrors);
+      _showErrorSnackBar(e.message.tr()); // message bir l10n key'idir
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -39,8 +39,8 @@ class _BirdFormState extends ConsumerState<BirdFormScreen> {
 |--------|----------|--------------|
 | Sync field validator | `TextFormField.validator` | Boş kontrol, format (email, length) |
 | Form-level validator | Submit öncesi cross-field | "Şifre eşleşmiyor", "Tarih aralığı" |
-| Async unique check | onChange debounced | "Ring number kullanılıyor mu?" (DB query) |
-| Server validation | Submit sonrası | `ValidationException` ile döner, field map'le |
+| Async unique check | onChange debounced | Aşağıdaki pattern — ÖRNEKTİR; ring-unique kontrolü shipped DEĞİL (known-gaps.md) |
+| Server validation | Submit sonrası | `ValidationException(message: l10nKey, code?)` ile döner |
 
 ```dart
 // Sync validator
@@ -50,26 +50,32 @@ validator: (value) {
   return null;
 }
 
-// Async (debounced + race-safe)
+// Async (debounced + race-safe) — GENERIC PATTERN örneği.
+// Not: ring-number unique check bugün implement EDİLMEMİŞTİR
+// (repository'de ringNumberExists yok, validation.ring_taken key'i yok —
+// known-gaps.md); eklenirse bu pattern kullanılmalı.
 int _requestId = 0;
-Future<void> _checkRingNumberUnique(String value) async {
+Future<void> _checkUnique(String value) async {
   final id = ++_requestId;
   await Future.delayed(const Duration(milliseconds: 400));
   if (id != _requestId) return;
-  final exists = await ref.read(birdRepositoryProvider).ringNumberExists(value);
+  final exists = await ref.read(myRepositoryProvider).fieldExists(value);
   if (id != _requestId || !mounted) return;
-  setState(() => _ringNumberError = exists ? 'validation.ring_taken'.tr() : null);
+  setState(() => _fieldError = exists ? 'validation.already_taken'.tr() : null);
 }
 ```
 
 ## ValidationException Mapping
-Server `ValidationException` field-bazlı hata döner:
+Gerçek imza (`app_exception.dart`) — field-bazlı `fieldErrors` map'i YOKTUR:
 ```dart
 class ValidationException extends AppException {
-  final Map<String, String> fieldErrors;
+  const ValidationException(super.message, {super.code, super.originalError});
 }
 ```
-UI tarafı `fieldErrors` map'ini ilgili `TextFormField` `errorText`'ine bağlar (controller-based hata göstermek için `InputDecoration.errorText` veya custom state).
+`message` bir l10n key'i taşır; UI `.tr()` ile snackbar/inline banner'da gösterir.
+Field-bazlı server hata haritası bir tasarım hedefidir (known-gaps.md) — eklenirse
+bu bölüm + `AppException` hiyerarşisi (error-handling.md) birlikte güncellenmeli.
+Field-level hatalar bugün SYNC validator'larla üretilir (`TextFormField.validator`).
 
 ## Error Display
 - Field-level: `TextFormField.decoration.errorText`
@@ -101,7 +107,7 @@ Tüm validation mesajları `validation.` namespace altında:
 ```dart
 PrimaryButton(
   onPressed: _submitting ? null : _onSubmit,
-  loading: _submitting,
+  isLoading: _submitting,   // parametre adı isLoading (primary_button.dart)
   label: 'common.save'.tr(),
 )
 ```
@@ -116,7 +122,7 @@ PrimaryButton(
 | Tip | Widget | Validator notu |
 |-----|--------|----------------|
 | Email | `TextFormField` + `TextInputType.emailAddress` | Regex: `RegExp(r'^[^@]+@[^@]+\.[^@]+')` |
-| Phone | `TextFormField` + intl_phone_field | E.164 format zorunlu |
+| Phone | Uygulama telefon alanı içermiyor (`intl_phone_field` pubspec'te YOK) | Eklenirse E.164 format + paket kararı gerekir |
 | Date | `showDatePicker` | DateTime null check |
 | Image | Custom picker + `scan-image-safety` | 10MB guard, NSFW reject |
 | Dropdown | `DropdownButtonFormField(initialValue: ...)` | NOT `value:` (deprecated) |

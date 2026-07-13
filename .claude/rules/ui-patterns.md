@@ -98,15 +98,20 @@ RefreshIndicator(
   ),
 )
 
-// Empty state
+// Empty state — ikinci metin parametresi subtitle (message DEĞİL)
 if (items.isEmpty) EmptyState(
   icon: AppIcon(AppIcons.bird),
-  message: 'birds.no_birds_found'.tr(),
+  title: 'birds.no_birds_found'.tr(),
 )
 
-// Skeleton loading
+// Skeleton loading — SkeletonLoader tek shimmer kutusudur (count parametresi YOK)
 asyncValue.when(
-  loading: () => SkeletonLoader(count: 5),
+  loading: () => Column(
+    children: List.generate(
+      5,
+      (_) => const SkeletonLoader(width: double.infinity, height: 72),
+    ),
+  ),
   // ...
 )
 ```

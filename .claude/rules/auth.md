@@ -57,7 +57,7 @@ AAL2 kontrolü HER destructive adımdan ÖNCE koşar — hesap silmede storage t
 1. revoke-oauth-token edge fn (best-effort — Google/Apple)
 2. Supabase signOut()
 3. Bu cihazın FCM token'ını deaktive et — pushNotificationService.deactivateCurrentToken() (notifications.md: bu cihaza eski hesabın bildirimi gitmesin; per-device, diğer cihaz oturumları korunur)
-4. Presence temizle — clearPresence() (presence.md: sticky online engeli)
+4. Presence temizle — UserPresenceController.markInactive() → endSession() (presence.md: sticky online engeli)
 5. Sentry user scope null (observability.md: PII)
 6. Session/secure storage temizliği + provider invalidation
 ```
@@ -79,4 +79,4 @@ Best-effort adımların hatası zinciri DURDURMAZ (log + devam). Hesap silme bu 
 8. Raw auth hata metnini kullanıcıya göstermek (error mapper + l10n)
 9. Router'ı auth state değişiminde yeniden oluşturmak (`RouterNotifier` refreshListenable tek yol)
 
-> **İlgili**: security.md (secure storage, MFA lockout, OAuth topolojisi), profile.md (hesap silme, AAL2), edge-functions.md (mfa-lockout, revoke-oauth-token), notifications.md (FCM token temizliği), presence.md (logout clearPresence), observability.md (Sentry user scope), performance.md (startup kritik yolu)
+> **İlgili**: security.md (secure storage, MFA lockout, OAuth topolojisi), profile.md (hesap silme, AAL2), edge-functions.md (mfa-lockout, revoke-oauth-token), notifications.md (FCM token temizliği), presence.md (logout markInactive/endSession), observability.md (Sentry user scope), performance.md (startup kritik yolu)

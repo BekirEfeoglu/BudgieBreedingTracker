@@ -13,7 +13,9 @@ decision; the owning rule file says what closing them requires.
 
 ## Latent Code Surfaces (code exists, doesn't work end-to-end)
 
-No open latent code surfaces are currently tracked.
+| Surface | Reality | Owning rule |
+|---------|---------|-------------|
+| DM `MessageType.birdCard` / `listingCard` | Model getters exist (`message_model.dart`) and `MessageBubble._buildReferenceCard` renders both, but there is NO producer UI — the attachment sheet offers only photo. Deliberately hidden until real producers exist (`lib/core/constants/feature_flags.dart` comment) | `messaging.md` § Attachments |
 
 ## Designed But Never Built
 
@@ -26,6 +28,12 @@ No open latent code surfaces are currently tracked.
 | Per-session listing in Settings → security | Only an explanation dialog + "sign out all sessions" — don't over-promise | `settings.md` |
 | Local AI retry-once + cross-backend fallback | Transport is fail-fast, single backend (`config.isOpenRouter ? OpenRouter : Ollama`); first failure throws a typed `NetworkException`/`ValidationException` — no retry, no 2s backoff, no cross-backend fallback, no `AnalysisResult.unavailable()` type. The helper-not-gate contract still holds | `local-ai.md` § Fallback Chain |
 | Local AI client-side rate limit (5/min, premium 2×) | Not client-enforced. Only bound is the `LocalAiCache` (8 entries / 10 min, a cache); OpenRouter 429 is upstream, not app-enforced. Rate limiting is future server-side work (rule's own Anti-Pattern #6) | `local-ai.md` § Cost & Size Guards |
+| DM general file/audio attachments (`chat-attachments` bucket) | Not shipped; no such bucket exists. Only photo attachments via `message-photos` | `messaging.md` § Attachments |
+| Presence visibility modes + user-facing online UI | No `presence_visibility` setting, no `invisible`/`away` states, no conversation-list dot / profile last-seen. Presence is a boolean active/inactive session tracker whose ONLY consumer is the admin panel | `presence.md` § Unshipped Tasarım Hedefleri |
+| User-password portable backup (PBKDF2) | Backup encrypts with the runtime device key (`EncryptionService`) — encrypted backups are NOT portable to another device; no PBKDF2/user-password flow exists | `data-io.md` § Encryption |
+| Restore preview / wipe-and-restore | Restore is merge-upsert only — no record-count preview, no wipe option, no skip/overwrite/rename conflict UI | `data-io.md` § Restore Flow |
+| `ValidationException.fieldErrors` field map | Exception carries only `(message, code?, originalError?)`; field-level errors come from sync validators, not the server | `forms-validation.md` § ValidationException Mapping |
+| Ring-number async unique check | No `ringNumberExists` repository method, no `validation.ring_taken` key — duplicate rings are not validated | `birds.md` § Liste & Detay, `forms-validation.md` |
 
 ## Genetics Roadmap — Still Open
 
@@ -52,6 +60,7 @@ implemented; the items below are not.
 - **Manual timezone profile field** — device timezone only (`datetime-format.md`)
 - **IP geolocation in marketplace** — privacy; user enters city manually (`marketplace.md`)
 - **GDPR export behind premium** — data ownership: always free (`settings.md`)
+- **DM orphan-photo GC job** — abandoned failed-photo uploads may leave small orphan objects in the private `message-photos` bucket; accepted, GC scheduled job is out of scope (`messaging.md` § Attachments retry/orphan contract)
 
 ## See Also
 

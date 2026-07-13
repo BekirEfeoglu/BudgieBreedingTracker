@@ -140,3 +140,4 @@ Full catalog of every page in the obsidian-brain wiki.
 |------|-------------|
 | [[sources/rules-index]] | Map of .claude/rules/*.md files → wiki pages |
 | [[sources/agents-index]] | Project-local agent profiles, triggers, and read/write modes |
+| [[sources/skills-index]] | Project-local skills (.claude/skills), triggers, and write posture |

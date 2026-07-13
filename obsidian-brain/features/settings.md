@@ -69,10 +69,14 @@ See [[domain/data-io]] for the underlying services.
 - Remote backup upload (Supabase Storage)
 - Remote backup list + restore
 
-`BackupScheduler` (`lib/domain/services/backup/backup_scheduler.dart`) is
-defined but **not wired into `BackupScreen`** — there is no scheduled-backup
-toggle in the UI yet (the periodic auto-backup in [[domain/data-io]] is a
-design goal, not shipped).
+**Auto-backup is shipped (2026-07-09):** `_AutoBackupSection` in
+`backup_screen.dart` offers a premium-gated frequency selector (daily/weekly/
+monthly/off) + last-auto-backup time, backed by
+`backupScheduleControllerProvider` / `backupSchedulerProvider`
+(`backup_schedule_providers.dart`). The backup itself runs from `app.dart`
+`_onAppResumed` via `BackupScheduler.runIfScheduled` (6h throttle + interval
+gate), encrypted with the runtime `EncryptionService` (device-local, no user
+password). Free users see an upsell tile.
 
 ## Security Settings
 

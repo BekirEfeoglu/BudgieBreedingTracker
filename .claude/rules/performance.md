@@ -69,7 +69,7 @@ AppLogger.debug('perf getAllBirds: ${sw.elapsed}');
 | Warm start (resume→ready) | < 500ms | App lifecycle log |
 | List scroll FPS (1000 items) | sustained 60fps | DevTools |
 | Image decode (list item) | < 50ms | DevTools timeline |
-| Sync (10 entities, online) | < 3s | Stopwatch around `syncAll()` |
+| Sync (10 entities, online) | < 3s | Stopwatch around `SyncOrchestrator.forceFullSync()` |
 | Photo upload (1MB) | < 5s | Stopwatch + bytes/sec |
 
 Budget aşıldığında: profile et, optimize et, gerekirse feature scope kıs. Production'da bu metric'lerin regression alert'i Sentry performance veya manuel review ile takip.

@@ -14,7 +14,7 @@ breeding start, chick hatch, post create) via `recordAction(userId, action)`.
 
 | File | Purpose |
 |------|---------|
-| `gamification_service.dart` | `recordAction`, `_updateUserLevel`, `_updateBadgeProgress`, `checkVerifiedBreeder` |
+| `gamification_service.dart` | `recordAction`, `_updateBadgeProgress`, `checkVerifiedBreeder` (no `_updateUserLevel` — level is trigger-derived since 2026-07-09) |
 | `level_calculator.dart` | XP → level curve |
 | `xp_constants.dart` | Per-action XP values + daily caps |
 
@@ -24,8 +24,8 @@ breeding start, chick hatch, post create) via `recordAction(userId, action)`.
 recordAction(userId, action)
   ├── per-(user, action) isolate lock (Mutex) — serialize same-isolate concurrent calls
   ├── check daily cap for this action
-  ├── insert xp_event row (audit trail)
-  ├── _updateUserLevel(userId, addedXp)
+  ├── insertXpTransaction → xp_transactions row (audit trail)
+  │     └── server AFTER-INSERT trigger derives user_levels + profiles from SUM
   └── _updateBadgeProgress(userId, action)
 ```
 
@@ -169,8 +169,9 @@ Full behavioral contract (including the exact XP table and anti-patterns):
 
 ## Provider Wiring
 
-`gamificationServiceProvider` is consumed via `ref.read()` in domain
-flows. UI surfaces `badgesProvider` (earned + locked badges),
+There is no `gamificationServiceProvider` — `GamificationService` is
+instantiated inside `GamificationRepository`; domain flows go through
+`gamificationRepositoryProvider`. UI surfaces `badgesProvider` (earned + locked badges),
 `userLevelProvider`, and `leaderboardProvider`. The leaderboard read goes
 through the `get_leaderboard` `SECURITY DEFINER` RPC (display names +
 `show_in_leaderboard` opt-out), not a direct table select — see
@@ -181,7 +182,7 @@ through the `get_leaderboard` `SECURITY DEFINER` RPC (display names +
 1. Calling `recordAction` from inside a tight loop without the per-action mutex (double-award race)
 2. Hardcoding XP values outside `xp_constants.dart` (cap drift across features)
 3. Treating the isolate lock as authoritative (multi-device unprotected)
-4. Updating level outside `_updateUserLevel` (badge unlock + leaderboard go stale)
+4. Re-adding client-side level writes (`upsertUserLevel` / incremental `total_xp`) — level derives ONLY from the server AFTER-INSERT trigger
 5. Forgetting daily cap on a new action (XP farming exploit)
 
 ## See Also

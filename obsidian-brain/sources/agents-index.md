@@ -55,6 +55,7 @@ deployment, or approval rules.
 ## See Also
 
 - [[sources/rules-index]]
+- [[sources/skills-index]] — skills that dispatch these profiles
 - [[infrastructure/branch-workflow]]
 - [[CLAUDE.md]]
 - [[index]]

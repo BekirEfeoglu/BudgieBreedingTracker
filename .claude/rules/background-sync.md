@@ -6,10 +6,10 @@ Offline-first mimari: kullanıcı her zaman local Drift DB'ye yazar, sync servic
 ```
 Local write (Drift) -> SyncMetadata dirty flag
   -> ConnectivityService online algılar
-  -> SyncService entity tipini sıraya alır
-  -> Repository.syncToRemote() -> upsert (idempotent)
-  -> SyncMetadata clean flag + lastSyncedAt
-  -> Conflict varsa lastPullConflicts'a yaz, UI banner göster
+  -> SyncOrchestrator (syncOrchestratorProvider) push/pull başlatır
+  -> SyncableRepository.pushPendingBatched() -> upsert (idempotent)
+  -> Başarılı push SyncMetadata satırını siler
+  -> Conflict varsa lastPullConflicts -> conflict_history'ye yaz, UI'da göster
 ```
 
 ## Sync Triggers
@@ -77,9 +77,12 @@ Bird repository root entity, mixin'e gerek yok.
 class EggRepository extends BaseRepository<Egg>
     with ValidatedSyncMixin<Egg> {
   @override
-  Future<bool> validateParents(Egg entity) async {
-    final pair = await breedingPairDao.findById(entity.breedingPairId);
-    return pair != null;
+  Future<String?> validateForeignKeys(Egg egg) async {
+    if (egg.incubationId != null) {
+      final incubation = await _incubationsDao.getById(egg.incubationId!);
+      if (incubation == null) return 'orphaned egg: incubation missing';
+    }
+    return null; // null = geçerli, push devam eder
   }
 }
 ```
@@ -87,15 +90,15 @@ class EggRepository extends BaseRepository<Egg>
 ## Conflict Resolution
 - Last-write-wins via `updated_at` timestamp (server klock)
 - Conflict tespiti: local `dirty=true` + remote `updated_at > localPullTimestamp`
-- Server kazanır, local edit `lastPullConflicts` listesine eklenir
-- Provider `conflictNotifierProvider` UI banner gösterir, kullanıcı edit'i geri yükleyebilir
+- Server kazanır, local edit `lastPullConflicts` -> `conflict_history` (30 gün) kaydına eklenir
+- UI `conflictHistoryProvider` / `persistedConflictCountProvider` (`sync_conflict_providers.dart`) üzerinden gösterir — kullanıcı atılan edit'i inceleyebilir
 - Sessiz overwrite YOK — her conflict kullanıcıya bildirilir
 
 ```dart
 if (remote.updatedAt.isAfter(local.lastPullAt) && local.dirty) {
   await _conflictStore.addConflict(local, remote);
   await dao.upsertFromRemote(remote);
-  ref.read(conflictNotifierProvider.notifier).notify(entityType);
+  // kayıt conflict_history'ye düşer; UI conflictHistoryProvider'dan okur
 }
 ```
 
@@ -153,16 +156,16 @@ test('retries network failure with backoff', () async {
     return;
   });
 
-  await syncService.syncEntity('birds');
+  await birdRepository.pushPendingBatched();
   expect(attempts, 3);
 });
 
 test('marks conflict when remote newer than local edit', () async {
   // ... fixture: local dirty bird with updatedAt = T1
   //              remote bird with updatedAt = T2 > T1
-  await syncService.pull('birds');
-  final conflicts = container.read(conflictNotifierProvider);
-  expect(conflicts, contains('birds'));
+  await syncOrchestrator.pullChanges();
+  final conflicts = container.read(conflictHistoryProvider);
+  expect(conflicts.map((c) => c.tableName), contains('birds'));
 });
 ```
 

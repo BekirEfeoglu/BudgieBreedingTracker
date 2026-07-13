@@ -35,6 +35,9 @@ start from.
 | Pick a project-local review/implementation agent? | [[sources/agents-index]] — trigger and read/write mode |
 | Resolve a code/rule/wiki/source conflict? | [[CLAUDE.md]] — classify authority by claim type before editing |
 | Verify code quality before commit? | [[infrastructure/scripts]] — quality gates |
+| Triage a `test` job red under shuffled order? | [[infrastructure/ci-cd]] + [[patterns/testing]] — order-dependency, NOT flakiness; reproduce with the logged seed, split shared state (classic: real-l10n test in a raw-key file) |
+| Fix a near-`DateTime.now()` flaky boundary test? | [[patterns/testing]] — inject a clock seam (`syncClockProvider` pattern), never widen the margin to seconds |
+| Add a scheduled / streak notification? | [[domain/notification-service]] + [[domain/gamification-service]] — deterministic `NotificationIds`, `tz.TZDateTime`, cancel-then-schedule |
 
 ## "Where does X live?"
 
@@ -56,6 +59,7 @@ start from.
 | Migrations | `supabase/migrations/` — [[data-layer/migrations]] |
 | Rules (source of truth for policy) | `.claude/rules/` — [[sources/rules-index]] |
 | Agent profiles | `.claude/agents/` — [[sources/agents-index]] |
+| Project-local skills | `.claude/skills/` — [[sources/skills-index]] |
 | Quality scripts | `scripts/` — [[infrastructure/scripts]] |
 
 ## "When does X fire?"
@@ -69,7 +73,8 @@ start from.
 | All eggs in incubation terminal | Auto-close incubation + maybe pair ([[domain/eggs-service]]) |
 | Bird / breeding / chick added | XP awarded + badge progress + verified-breeder check ([[domain/gamification-service]]) |
 | Photo uploaded | 10 MB guard → compress → `scan-image-safety` → bucket upload ([[patterns/assets-images]]) |
-| Message received | FCM push + deeplink + read receipt ([[features/messaging]]) |
+| Message received | FCM push + deeplink + read receipt if enabled — reciprocal opt-out ([[features/messaging]]) |
+| App cold start reaches `InitStep.ready` | Deferred: daily streak check-in (`record_daily_checkin` RPC, local-day), FCM registration, full sync ([[domain/gamification-service]]) |
 | Sync conflict detected | `conflictNotifierProvider` notify + UI banner ([[data-layer/sync-strategy]]) |
 | Migration runs | Drift `onUpgrade` (local) or Supabase SQL (remote) ([[data-layer/migrations]]) |
 | `min_supported_build` bump | All users below version see non-dismissible blocking dialog ([[features/app_update]]) |

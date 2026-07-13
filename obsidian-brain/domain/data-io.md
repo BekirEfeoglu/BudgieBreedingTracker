@@ -1,6 +1,6 @@
 # Data I/O: Backup, Import, Export
 
-Source: `.claude/rules/data-io.md` (primary — backup format, PBKDF2 backup key, Excel i18n headers, PDF pedigree builders, free vs premium gating)
+Source: `.claude/rules/data-io.md` (primary — backup format, runtime-key encryption, Excel i18n headers, PDF pedigree builders, free vs premium gating)
 
 **Locations**:
 - `lib/domain/services/backup/`
@@ -24,7 +24,7 @@ get `.enc.json` extension and auto-detect on restore.
 | Method | Purpose |
 |--------|---------|
 | `createBackup(userId, {encrypt})` | Full snapshot → local JSON file |
-| `restoreBackup(userId, filePath)` | Inverse — clears and rehydrates user data |
+| `restoreBackup(userId, filePath)` | Inverse — merge-upserts backup rows by id (no wipe/preview); rejects other users' backups and newer backup versions |
 | `uploadBackup(userId, file)` | Push to `backups` Supabase Storage bucket |
 | `listBackups(userId)` | Remote backup index, user-scoped |
 

@@ -12,7 +12,8 @@
 ## Key Providers
 
 - `communityFeedProvider` — paginated post stream (online-first)
-- `communityProfileProvider(userId)`
+- Author enrichment via `CommunityProfileCache` (no per-user provider); own
+  profile reads use `userProfileProvider`
 
 ## Online-First Exception
 

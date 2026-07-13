@@ -60,11 +60,12 @@ maxRetries = 7
   remote under device-vs-server clock skew (the silent-overwrite the rulebook
   forbids); widened 2026-07-04.
 - Shared `detectPullConflicts` (`base_repository.dart`) is the single source of
-  this rule for all 14 syncable repos + the custom `PhotoRepository` (previously
+  this rule for all 13 syncable repos + the custom `PhotoRepository` (previously
   14 divergent inline copies — the exact drift that let the gap rot unnoticed)
 - Server still wins the data; only conflict RECORDING widened. The discarded
   local edit is stored in `lastPullConflicts` → `conflict_history` (30-day)
-- `conflictNotifierProvider` shows a UI banner with a "View conflicts" CTA
+- `conflictHistoryProvider` (`sync_conflict_providers.dart`) feeds the settings
+  sync-detail sheet + data-storage section; a "View conflicts" CTA surfaces there
 - **Never silent overwrite**
 
 ## Incremental Pull Cursor

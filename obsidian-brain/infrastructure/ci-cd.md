@@ -9,7 +9,7 @@ Runs on PRs and main pushes.
 | Job | Purpose | Blocker |
 |-----|---------|---------|
 | `analyze` | `flutter analyze --no-fatal-infos` | PR merge |
-| `test` | Unit + widget tests (step timeout 30m, job-level 40m) | PR merge |
+| `test` | Unit + widget tests, shuffled via `--test-randomize-ordering-seed random`; a shuffled-order red = new order-dependency, NOT flakiness — reproduce with the logged seed, never disable ordering (ci-actions.md § Random Test Ordering). Step timeout 30m, job-level 40m | PR merge |
 | `golden-test` | Visual regression (Linux baseline) | PR merge |
 | `edge-functions-test` | `deno test` on `supabase/functions` | PR merge + Edge deploy gate |
 | `e2e-community-test` | E2E + community tagged tests | `workflow_dispatch`/`schedule` |

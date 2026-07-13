@@ -110,7 +110,7 @@ MigrationStrategy get migration => MigrationStrategy(
 - Indexed columns for frequently filtered fields (gender, species, breeding pair ID)
 - Use `.watch()` streams for reactive UI — avoid polling
 - Batch inserts/updates in transactions
-- Profile with `Stopwatch()..start()` + `AppLogger.debug('perf', '...')`
+- Profile with `Stopwatch()..start()` + `AppLogger.debug('perf query: ${sw.elapsed}')` (single message arg — no tag param)
 
 ## Code Generation
 

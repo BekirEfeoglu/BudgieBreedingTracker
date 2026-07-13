@@ -12,14 +12,17 @@ Source: `.claude/rules/observability.md`
 
 ## AppLogger API
 
+All methods take a SINGLE `message` string — there is no separate `tag` parameter:
+
 ```dart
-AppLogger.debug(tag, message);                  // Dev only — hidden in production
-AppLogger.info(tag, message);                   // Operational
+AppLogger.debug(message);                       // Dev only — hidden in production
+AppLogger.info(message);                        // Operational
 AppLogger.warning(message);                     // Degraded state
 AppLogger.error(message, error, stackTrace);    // Auto Sentry breadcrumb
 ```
 
-**Tag convention**: source class name — `'BirdRepository'`, `'SyncService'`
+**Source convention**: `[Bracket]` prefix embedded in the message —
+`AppLogger.warning('[SyncService] retry attempt failed')`
 
 ## Sentry Sample Rate Budget
 

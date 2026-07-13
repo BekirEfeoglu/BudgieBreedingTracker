@@ -6,7 +6,7 @@ Veri olmayan üç durum hep var: **boş**, **yükleniyor**, **hata**. UX kalites
 `lib/core/widgets/` altında (`OfflineBanner` istisna — `lib/shared/widgets/`):
 | Widget | Kullanım | Gerçek constructor |
 |--------|----------|---------------------|
-| `EmptyState` | Sonuç yok ama hata da yok (boş liste, filtre eşleşmedi) | `{icon: Widget, title, message, actionLabel: String?, onAction: VoidCallback?}` |
+| `EmptyState` | Sonuç yok ama hata da yok (boş liste, filtre eşleşmedi) | `{icon: Widget, title, subtitle: String?, actionLabel: String?, onAction: VoidCallback?}` — ikinci metin parametresi `subtitle`, `message` DEĞİL |
 | `LoadingState` | Initial fetch, manuel refresh — spinner + label | `{message}` |
 | `SkeletonLoader` | Tek shimmer placeholder kutusu | `{width, height, borderRadius}` — liste için tek tek örneklenir, `count`/`itemBuilder` parametresi YOK |
 | `ErrorState` | Network/server hatası + retry CTA | `{message, onRetry: VoidCallback?}` — `icon` parametresi YOK (ikon dahili sabit) |
@@ -26,7 +26,7 @@ asyncValue.when(
       ? EmptyState(
           icon: AppIcon(AppIcons.bird),
           title: 'birds.no_birds_title'.tr(),
-          message: 'birds.no_birds_hint'.tr(),
+          subtitle: 'birds.no_birds_hint'.tr(),
           actionLabel: 'birds.add_first'.tr(),
           onAction: () => context.push(AppRoutes.birdForm),
         )
@@ -64,7 +64,7 @@ Boş durum sadece "hiç veri yok" demek değil — kullanıcıya **next action**
 EmptyState(
   icon: AppIcon(AppIcons.bird, size: 64),
   title: 'birds.no_birds_title'.tr(),
-  message: 'birds.no_birds_hint'.tr(),
+  subtitle: 'birds.no_birds_hint'.tr(),
   actionLabel: 'birds.add_first'.tr(),
   onAction: () => context.push(AppRoutes.birdForm),
 )
@@ -94,7 +94,7 @@ Boş listeden farklı: kullanıcının veri var ama filtre eşleşmiyor.
 
 ## Skeleton Loader
 - `SkeletonLoader` tek bir shimmer kutusu (`width`/`height`/`borderRadius`) — liste görünümü için birden fazla örnek elle diz (bkz. `lib/features/statistics/widgets/chart_skeletons.dart`)
-- Shimmer animasyonu (built-in `LinearGradient` ile)
+- Shimmer animasyonu `shimmer` paketiyle (`Shimmer.fromColors` — `skeleton_loader.dart`)
 - ListView item template ile aynı boyut/padding (jank-free transition)
 
 ```dart

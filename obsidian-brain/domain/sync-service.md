@@ -6,39 +6,50 @@ Source: `.claude/rules/background-sync.md`
 
 ## Responsibility
 
-Orchestrates all background synchronization between Drift (local) and Supabase (remote). Called by connectivity events, app lifecycle hooks, and periodic timers.
+Orchestrates all background synchronization between Drift (local) and Supabase (remote). Called by connectivity events, app lifecycle hooks, and periodic timers. Entry point: `SyncOrchestrator` via `syncOrchestratorProvider` (`sync_orchestrator.dart`).
 
-## Core Method
+## Core Methods
 
 ```
-SyncService.syncAll()
-  ├── pullAll()   — fetch remote changes newer than lastPulledAt
-  └── pushAll()   — push all dirty local records
+SyncOrchestrator.fullSync()        — pullChanges() + pushChanges()
+SyncOrchestrator.forceFullSync()   — user-triggered retry (OfflineBanner CTA), cooldown-guarded
+SyncOrchestrator.pushChanges()     — push all dirty local records (batched, 100/chunk)
+SyncOrchestrator.pullChanges()     — fetch remote changes newer than the checkpoint
 ```
 
-## Per-Entity Sync
+All `DateTime.now()` reads go through a `_now()` seam backed by
+`syncClockProvider` (`sync_providers.dart`) — the canonical injectable clock
+for near-`now` boundary tests (test-stability.md § Triage #3).
 
-`syncEntity(entityType)` runs through `RetryScheduler` (`45s * 2^retryCount` + 20% jitter, capped at 10 min, max 7 retries). After exhaustion the error persists in `SyncMetadata` and the global `OfflineBanner` exposes a retry CTA.
+## Retry
+
+Per-record retry lives in `RetryScheduler` applied from `base_repository.dart`
+(`45s * 2^retryCount` + 20% jitter, capped at 10 min, max 7 retries). After
+exhaustion the error persists in `SyncMetadata` and the global `OfflineBanner`
+exposes a retry CTA (`forceFullSync()`).
 
 Auth/validation errors abort immediately (no retry).
 
 ## ValidatedSyncMixin Integration
 
-Before pushing an entity, `SyncService` calls `validateParents()` on repos that implement `ValidatedSyncMixin`. Orphan records are skipped and cleaned up locally.
+Before pushing an entity, repos that implement `ValidatedSyncMixin` run
+`validateForeignKeys()`. Orphan records (deleted parent) are skipped and
+cleaned up locally.
 
 ## Conflict Accounting
 
-When pull detects server record is newer than a local dirty record:
+When pull detects a server record newer than a local dirty record:
 1. Server record written to Drift
-2. Local edit stored in `lastPullConflicts`
-3. `conflictNotifierProvider.notify(entityType)`
-4. UI banner shown — user can restore their edit
+2. Local edit stored in `lastPullConflicts` → `conflict_history` (30-day)
+3. UI surfaces it via `conflictHistoryProvider` / `persistedConflictCountProvider`
+   (`sync_conflict_providers.dart`) — user can inspect the discarded edit
 
 ## Sync Indicators
 
-Provided to UI via providers:
-- `syncStatusProvider` — `SyncStatus` (idle/syncing/conflict/failed/offline)
-- `conflictNotifierProvider` — list of conflicted entity types
+Provided to UI via providers (`sync_providers.dart`):
+- `syncStatusProvider` — `SyncDisplayStatus` (`synced` / `syncing` / `offline` / `error`)
+- `pendingSyncCountProvider` — pending record count for the OfflineBanner
+- `conflictHistoryProvider` — recorded pull conflicts
 
 ## Background Sync Limitations
 

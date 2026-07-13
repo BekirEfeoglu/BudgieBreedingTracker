@@ -1,122 +1,65 @@
 # Presence (Online / Last-Seen)
 
-`UserPresenceService` (`lib/domain/services/presence/`) kullanıcıların online durumunu, son görülme zamanını ve aktif oturum sayısını yönetir. Messaging'de typing indikator + online rozetinin kaynağı.
+`UserPresenceService` (`lib/domain/services/presence/`) kullanıcı oturumlarının aktiflik durumunu `user_sessions` tablosu üzerinden yönetir. **Bugünkü tek tüketici admin panelidir** (online kullanıcı görünürlüğü — `admin_users_providers.dart`); kullanıcı-yüzü online rozeti / last-seen UI'ı SHIPPED DEĞİLDİR (bkz. § Unshipped Tasarım Hedefleri). Typing indicator presence'ın değil messaging'in parçasıdır (`typingIndicatorProvider`, messaging.md).
 
-## Stack
+## Stack (gerçek)
 | Katman | Bileşen |
 |--------|---------|
-| Service | `UserPresenceService` |
-| Providers | `user_presence_providers.dart` |
-| Constants | `user_presence_constants.dart` (TTL, heartbeat interval) |
-| Storage | Supabase realtime channels + `user_sessions` table |
-| Integration | messaging (typing), community (online badge), profile (last-seen) |
+| Service | `UserPresenceService` — `startSession` / `heartbeat` / `endSession` |
+| Controller | `UserPresenceController` (`user_presence_providers.dart`) — `markActive(userId)` / `markInactive()` |
+| Constants | `user_presence_constants.dart` (heartbeat/threshold/TTL) |
+| Storage | `user_sessions` tablosu — düz PostgREST upsert (realtime channel/`track` YOK) |
+| Tüketici | SADECE admin panel (`admin_users_providers.dart`, `admin_models.dart` threshold kontrolü) |
 
-## Presence Model
-| Durum | Anlam |
-|-------|-------|
-| `online` | Heartbeat son N saniye içinde + foreground |
-| `away` | App background veya idle > 5dk |
-| `offline` | Heartbeat TTL doldu, son görülme görünür |
-| `invisible` | Privacy: online'ken offline gibi görün |
+## Presence Model (gerçek)
+State boolean'dır: **active / inactive** (`UserPresenceState`). `away`, `invisible` gibi ara durumlar YOKTUR. "Online" türetilmiş bir değerdir: son heartbeat `onlineThreshold` içindeyse online sayılır (query-time hesap, `admin_models.dart`).
 
 ## Heartbeat
-- Gerçek API session-tabanlı: `startSession(userId)` → periyodik `heartbeat(...)` → `endSession(...)` (`user_presence_service.dart`)
+- Session-tabanlı: `startSession(userId)` → periyodik `heartbeat(...)` (Timer, `UserPresenceController`) → `endSession(...)`
 - Gerçek sabitler `user_presence_constants.dart`: `heartbeatInterval = 2 dk` · `onlineThreshold = 5 dk` · `sessionTtl = 10 dk` — dokümanda süre yazarken BU sabitlere bak, ezbere değer yazma
-- Mekanizma: Supabase realtime `track` payload + `user_sessions` table upsert
-- App background → heartbeat dur, `away` state'e geç
-- App foreground → heartbeat resume + immediate update
-- Network kopukluğunda: `onlineThreshold` (5 dk) aşılınca `offline`
+- Mekanizma: `user_sessions` upsert (PostgREST) — Supabase realtime `track` payload'ı KULLANILMAZ
+- App background → `markInactive()` (session biter); foreground → `markActive(userId)` + immediate update
+- Logout: `markInactive()` → `endSession()` zinciri (auth.md logout zinciri adım 4 — sticky online engeli)
 
 ## TTL & Cleanup
 - Son heartbeat `onlineThreshold`'dan (5 dk) eskiyse offline say; session satırı `sessionTtl` (10 dk) sonra temizlenebilir
-- Cleanup cron veya query-time filter (threshold sabitleriyle — hardcoded saniye YOK)
-- Realtime channel disconnect server tarafında otomatik temizlik
-- Logout: explicit `clearPresence()` çağrısı (sticky online engeli)
-
-## Privacy Settings
-- `profile.presence_visibility`: `everyone` | `contacts` | `nobody`
-- `nobody` mode: kullanıcı `invisible` görünür, last-seen kimseye yansımaz
-- `contacts`: sadece daha önce DM yaptığın kişiler görür
-- Settings ekranı opt-in, default `everyone`
-
-## Typing Indicator (Messaging)
-- Sender input event → debounced 500ms → realtime broadcast `typing_<conversation_id>`
-- Receiver "yazıyor..." 3s timeout
-- Ephemeral — DB'ye yazılmaz, sadece realtime payload
-- Multiple typing event reset timer
-
-## Last-Seen Format
-- < 1dk: "Az önce"
-- < 1 saat: "5dk önce"
-- < 24 saat: "3 saat önce"
-- < 7 gün: "Dün" / "3 gün önce"
-- > 7 gün: "Geçen ay" / tarih
-- L10n: relative time anahtarları `common.minutes_ago` / `common.hours_ago` / `common.days_ago` (ayrı `time` kategorisi yok)
-
-## UI Indicators
-| Yer | Gösterim |
-|-----|----------|
-| Conversation list | Yeşil nokta avatar köşesinde |
-| Profile screen | "Çevrimiçi" / "Az önce görüldü" |
-| Message thread header | Status + typing |
-| Community feed | (Online badge GÖSTERME — privacy) |
-
-Privacy: feed'de online badge YOK (passive scrolling kullanıcıyı outvalue eder, izinsiz tracking hissi).
+- Cleanup query-time filter ile (threshold sabitleriyle — hardcoded saniye YOK)
 
 ## Battery Optimization
 - Heartbeat sadece foreground (background'da bandwidth + battery israfı)
 - Background fetch ile presence sync YAPMA (iOS BGTaskScheduler farklı amaçla)
-- Realtime channel sayısı sınırlı (Supabase free tier 200 concurrent) — sadece aktif conversation'da subscribe
 - Throttle: heartbeat aralığı `heartbeatInterval` (2 dk) altına düşürülmez (rapid foreground/background toggle koruması)
 
 ## Edge Cases
-- iOS app suspended (background 30s+): realtime socket düşer, server `offline` görür
-- Push notification ile app açılırsa: presence resume edilmeli, otomatik değil
+- iOS app suspended: heartbeat durur, threshold dolunca offline görünür
+- Push notification ile app açılırsa: presence resume `markActive` ile (app lifecycle hook)
 - Multi-device: en son heartbeat eden cihaz "online" sayılır
-- Concurrent session: 5 cihaz limiti (security.md MFA policy ile uyumlu)
 
-## Performance
-- Heartbeat overhead: < 1KB / 2 dk (heartbeatInterval) — ihmal edilebilir
-- Realtime channel: 1 global presence channel + 1 per active conversation
-- Last-seen render: cached değer (5sn TTL), her rebuild server fetch YAPMA
-- Bulk profile lookup: batch (`profileLookupProvider`) — N+1 query engeli
+## Unshipped Tasarım Hedefleri (known-gaps.md'de kayıtlı — shipped sanma)
+- **Privacy/visibility ayarı** (`presence_visibility`: everyone/contacts/nobody, `invisible` modu, `setVisibility()`) — kod tabanında YOK
+- **Kullanıcı-yüzü UI göstergeleri** (conversation list yeşil nokta, profile "Çevrimiçi / Az önce görüldü", thread header status) — YOK; tek görünürlük admin paneli
+- **Last-seen relative-format yüzeyi** — presence'a bağlı last-seen UI yok (relative-time l10n anahtarları `common.*` başka yüzeylerde kullanılıyor)
+- Bunlardan biri eklenirse: bu rule + known-gaps.md + messaging.md birlikte güncellenmeli; `invisible` modu eklenirse server-side yazımın da susturulması ZORUNLU (client-only flag = leak)
 
 ## Testing
-- Unit: TTL hesabı (`isOnline(lastHeartbeat, now)`), state transitions
-- Integration: heartbeat send + presence read round-trip
-- Privacy: `invisible` mode → server presence yazmıyor mu? (RLS test)
-- Edge: background → online transition (lifecycle event mock)
-
-```dart
-test('reports offline after TTL expires', () {
-  final lastBeat = DateTime.now().subtract(const Duration(minutes: 6)); // > onlineThreshold (5 dk)
-  expect(UserPresenceService.isOnline(lastBeat), isFalse);
-});
-
-test('respects invisible privacy mode', () async {
-  await service.setVisibility(PresenceVisibility.nobody);
-  await service.heartbeat();
-  final reported = await fetchPresence(myUserId);
-  expect(reported.status, PresenceStatus.offline);
-});
-```
+- Unit: threshold hesabı (son heartbeat + `onlineThreshold` karşılaştırması), `markActive`/`markInactive` state geçişleri
+- Integration: heartbeat send + admin presence read round-trip
+- Edge: background → foreground transition (lifecycle event mock)
 
 ## Sentry & Logging
 - Presence update event'leri Sentry'ye GİTMEZ (gürültü)
 - Heartbeat fail (network) → `AppLogger.debug` (üretimde gizli)
-- Realtime subscribe fail → `AppLogger.warning` + retry
-- Privacy ihlali (yanlış visibility) → `AppLogger.error` + Sentry
+- `endSession` hatası → `AppLogger.error` (tek log — double-log etme, 2026-07-13 fix)
 
 ## Anti-Patterns
 1. Background'da heartbeat (battery drain, iOS API misuse)
-2. Realtime channel'ı dispose etmemek (concurrent limit dolar)
-3. Last-seen'i client clock'tan hesaplamak (timezone bug — server timestamp)
-4. `invisible` modu client-only flag yapmak (server presence yazmaya devam ederse leak)
-5. Feed'de online badge göstermek (privacy)
-6. Heartbeat'i `setState` ile UI thread'inde hesaplamak (jank)
-7. Logout'ta explicit clearPresence atlamak (sticky online görünür)
-8. Online eşiğini heartbeat aralığından kısa yapmak (flicker — gerçek oran: 2 dk beat / 5 dk threshold, `user_presence_constants.dart`)
-9. Multi-device'ta tüm session'ları "online" saymak (en son heartbeat tek doğru)
-10. Typing indicator'ı DB'ye yazmak (anti-pattern: messaging.md ile çelişir)
+2. Last-seen'i client clock'tan hesaplamak (timezone bug — server timestamp)
+3. Feed'de online badge göstermek (privacy — tasarım kararı)
+4. Logout'ta `markInactive()`/`endSession()` atlamak (sticky online görünür)
+5. Heartbeat'i `setState` ile UI thread'inde hesaplamak (jank)
+6. Online eşiğini heartbeat aralığından kısa yapmak (flicker — gerçek oran: 2 dk beat / 5 dk threshold, `user_presence_constants.dart`)
+7. Multi-device'ta tüm session'ları "online" saymak (en son heartbeat tek doğru)
+8. Typing indicator'ı DB'ye yazmak (messaging.md — realtime ephemeral)
+9. Unshipped visibility/UI hedeflerini shipped varsayıp üzerine kod kurmak (known-gaps.md kontrolü zorunlu)
 
-> **İlgili**: messaging.md (typing, online status), community.md (privacy), notifications.md (push wake → presence resume), security.md (session limit)
+> **İlgili**: messaging.md (typing, DM), admin.md (online kullanıcı görünürlüğü), auth.md (logout zinciri), notifications.md (push wake → presence resume), obsidian-brain/known-gaps.md

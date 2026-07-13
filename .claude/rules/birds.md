@@ -45,7 +45,7 @@ Sözleşme (breeding-eggs.md ile aynı): side effect'ler **best-effort, asla ret
 
 ## Liste & Detay
 - Filtre: cinsiyet + durum (`alive/dead/sold/gifted`); ring number aranabilir, doğal sıralı (natural sort), boş ring'ler her iki yönde de sonda
-- Ring number benzersizliği: form'da debounced async check (forms-validation.md `ring_taken` pattern'i)
+- Ring number benzersizliği: async unique check SHIPPED DEĞİL (repository'de `ringNumberExists` yok, `validation.ring_taken` key'i yok — known-gaps.md); eklenirse forms-validation.md'deki debounced+race-safe pattern kullanılmalı
 - Detay timeline'ı mevcut local verilerden derlenir (doğum, durum geçişi, eşleşme, yumurta özeti, sağlık) — ayrı timeline tablosu YOK, ekleme
 
 ## Testing
