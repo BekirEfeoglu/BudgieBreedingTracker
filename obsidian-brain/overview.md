@@ -92,8 +92,8 @@ Enforced by `scripts/verify_code_quality.py` (27 checker categories — 19/24 CL
 | Custom SVG icons | 99 constants, 99 files on disk |
 | Shared widgets | 35 |
 | Enum files | 15 |
-| Supabase constants | 184 string constants |
-| L10n keys | 3,145 per language, 41 categories |
+| Supabase constants | 192 string constants |
+| L10n keys | 3,146 per language, 41 categories |
 | DB schema version | 28 |
 | Supabase migrations | 210 tracked SQL files |
 | Edge Functions | 12 |

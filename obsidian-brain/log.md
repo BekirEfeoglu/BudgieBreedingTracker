@@ -4,6 +4,8 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-13] audit | 6-lane comprehensive sweep (anti-pattern/PII/edge/migration/genetics/test-stability). Baseline clean; 6 small fixes: #8 residual col literals (8 new SupabaseConstants: level/xp_title/is_verified_breeder/is_pinned/event_date/sort_order/minutes_before/scheduled_at across 5 remote sources incl. updateProfileVerification sibling), backup_restorer wrong-password/corruption Sentry discrimination (+backup.error_decrypt_failed l10n), moderate-content text .max(10000) DoS cap, validate-free-tier-limit auth-before-parse, presence endSession double-log, streak reminder scheduler injectable clock (midnight-race). Migration prod-parity verified via MCP (5 recent applied). 11,663 tests green.
+
 ## [2026-07-12] refactor | All 12 edge functions extracted to DI handler.ts pattern + request-level Deno tests (401/400/403/503/200); +39 tests (204→243). Closes audit backlog. Byte-identical behavior, config.toml/verify_jwt untouched.
 
 ## [2026-07-12] refactor | SupabaseConstants #8 coverage — 26 new col/RPC constants, 44 literals replaced across 8 remote sources + admin providers (chore/supabase-constants-coverage). No wire-value change.
