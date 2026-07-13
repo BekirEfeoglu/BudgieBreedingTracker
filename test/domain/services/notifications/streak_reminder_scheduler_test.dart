@@ -69,9 +69,15 @@ void main() {
   test(
     'schedules a single reminder for tomorrow 20:00 local when streak >= 3 and enabled',
     () async {
-      final before = tz.TZDateTime.now(tz.local);
+      // Fixed clock shared with the assertion — no wall-clock now() means no
+      // midnight-straddle flake (test-stability.md § Flaky Triage #3).
+      final fixedNow = tz.TZDateTime(tz.local, 2026, 7, 12, 9, 30);
+      final fixedScheduler = StreakReminderScheduler(
+        service,
+        clock: () => fixedNow,
+      );
 
-      await scheduler.scheduleNext(currentStreak: 5, enabled: true);
+      await fixedScheduler.scheduleNext(currentStreak: 5, enabled: true);
 
       final captured = verify(
         () => service.scheduleNotification(
@@ -87,12 +93,12 @@ void main() {
       expect(captured, hasLength(1));
       final scheduledDate = captured.single as DateTime;
       // Field-addition (not `.add(Duration(days:1))`) to match the scheduler's
-      // own DST-safe computation and avoid a wall-clock day drift.
+      // own DST-safe computation. Derived from the same fixed clock, so exact.
       final tomorrow = tz.TZDateTime(
         tz.local,
-        before.year,
-        before.month,
-        before.day + 1,
+        fixedNow.year,
+        fixedNow.month,
+        fixedNow.day + 1,
         20,
       );
       expect(scheduledDate.year, tomorrow.year);

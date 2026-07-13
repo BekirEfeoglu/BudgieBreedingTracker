@@ -12,9 +12,14 @@ import 'package:budgie_breeding_tracker/domain/services/notifications/notificati
 /// reschedule overwrites the prior pending notification via a deterministic
 /// ID, so it only ever fires on a day the user has NOT opened the app.
 class StreakReminderScheduler {
-  StreakReminderScheduler(this._service);
+  StreakReminderScheduler(this._service, {tz.TZDateTime Function()? clock})
+    : _clock = clock ?? (() => tz.TZDateTime.now(tz.local));
 
   final NotificationService _service;
+
+  /// Injectable "now" so tests share one deterministic clock with the assertion
+  /// and cannot flake on a midnight straddle (test-stability.md § Flaky Triage).
+  final tz.TZDateTime Function() _clock;
 
   static const _reminderHour = 20;
 
@@ -36,7 +41,7 @@ class StreakReminderScheduler {
 
     // Field addition (not `.add(Duration(days: 1))`) so the calendar day
     // advances correctly across DST boundaries (datetime-format.md).
-    final now = tz.TZDateTime.now(tz.local);
+    final now = _clock();
     final when = tz.TZDateTime(
       tz.local,
       now.year,

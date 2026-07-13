@@ -82,8 +82,7 @@ class UserPresenceService {
         },
       );
     } catch (e, st) {
-      AppLogger.warning('[UserPresence] endSession failed: $e');
-      AppLogger.error('[UserPresence] endSession stack', e, st);
+      AppLogger.error('[UserPresence] endSession failed', e, st);
     }
   }
 
