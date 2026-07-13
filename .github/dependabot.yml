@@ -36,6 +36,11 @@ updates:
       # stable), so ignore the major update-type instead.
       - dependency-name: "sentry_flutter"
         update-types: ["version-update:semver-major"]
+      # firebase_messaging 16.4.2 references FirebasePlugin/pluginConstants that
+      # firebase_core 4.12.0 removed -> broken build (upstream lockstep bug).
+      # Ignore just this version; 16.4.3+ should pick up cleanly.
+      - dependency-name: "firebase_messaging"
+        versions: ["16.4.2"]
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
