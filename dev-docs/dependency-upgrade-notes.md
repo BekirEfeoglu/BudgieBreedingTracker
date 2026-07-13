@@ -34,18 +34,16 @@ is not locally reproducible. See the `pubspec.yaml` comment + memory
 Alpha of a major (9.x → 10.x). Hold until a stable 10.x ships, then evaluate the
 9→10 migration as its own task.
 
-### supabase/setup-cli `v3.0.0` (Dependabot #147) — HOLD, do not merge as-is
-CI-action major bump (v1.6.0 → v3.0.0). Two problems:
-1. **PR CI never exercised it.** setup-cli is only used in the `deploy-edge-functions`
-   job, which is `main`-only (`if: github.ref == 'refs/heads/main'`) and therefore
-   SKIPS on the PR. The PR's green checks are a false comfort — the first real run
-   of v3.0.0 would be on `main`, where a break blocks edge-function deployment.
-2. **Pinned by tag, not SHA** (`@v3.0.0`), violating the repo convention
-   (`.claude/rules/ci-actions.md`: pin actions by commit SHA).
-To land safely: verify supabase/setup-cli v3 CLI-version compatibility with the
-`supabase functions deploy` step, re-pin to the v3.0.0 commit SHA, and validate on
-a throwaway `main`-targeting run (or accept the risk and watch the next `main`
-deploy closely). Until then, hold #147.
+### supabase/setup-cli `v3.0.0` — LANDED (SHA-pinned, 2026-07-13)
+Original Dependabot PR #147 was held (main-only `deploy-edge-functions` job never
+exercised it on the PR; tag-pinned not SHA). De-risked by inspecting the action's
+v3.0.0 `action.yml` directly: it **still accepts `version: latest`**, and the job
+already installs the latest CLI regardless of action version — so the v1→v3 action
+bump is behavior-neutral for our usage. Landed via our own SHA-pinned commit
+(`46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0`) rather than merging the tag
+PR; the `deploy-edge-functions` job (main-only) validates it on the merge push —
+watch that run; revert if the deploy step breaks (prod edge functions stay as-is on
+a failed deploy).
 
 ## Landed (kept for context)
 
