@@ -152,9 +152,15 @@ void main() {
     when(() => mockEventReminderRepository.lastPullConflicts).thenReturn([]);
   }
 
-  ProviderContainer createContainer() {
+  // Deterministic clock for the skew-boundary tests. Overriding syncClockProvider
+  // (instead of racing DateTime.now() across the async gap) makes the 1ms
+  // future/past boundaries non-flaky (test-stability.md anti-pattern #8).
+  final fixedNow = DateTime.utc(2026, 7, 13, 12);
+
+  ProviderContainer createContainer({DateTime Function()? clock}) {
     return ProviderContainer(
       overrides: [
+        if (clock != null) syncClockProvider.overrideWithValue(clock),
         birdRepositoryProvider.overrideWithValue(mockBirdRepository),
         nestRepositoryProvider.overrideWithValue(mockNestRepository),
         breedingPairRepositoryProvider.overrideWithValue(
@@ -249,12 +255,12 @@ void main() {
     test(
       'clock skew: future since is reset to null (full reconciliation)',
       () async {
-        final container = createContainer();
+        final container = createContainer(clock: () => fixedNow);
         addTearDown(container.dispose);
         final handler = container.read(_syncPullHandlerProvider);
 
         // since is set to 1 hour in the future — clock skew scenario
-        final futureTime = DateTime.now().add(const Duration(hours: 1));
+        final futureTime = fixedNow.add(const Duration(hours: 1));
         await handler.pullChanges(_userId, since: futureTime);
 
         // Repos should receive null, not the future timestamp
@@ -273,14 +279,12 @@ void main() {
     );
 
     test('clock skew boundary: 1ms future is treated as clock skew', () async {
-      final container = createContainer();
+      final container = createContainer(clock: () => fixedNow);
       addTearDown(container.dispose);
       final handler = container.read(_syncPullHandlerProvider);
 
       // Even 1 ms in the future triggers clock skew protection
-      final slightlyFuture = DateTime.now().add(
-        const Duration(milliseconds: 1),
-      );
+      final slightlyFuture = fixedNow.add(const Duration(milliseconds: 1));
       await handler.pullChanges(_userId, since: slightlyFuture);
 
       final captured = verify(
@@ -299,14 +303,12 @@ void main() {
     test(
       'clock skew boundary: 1ms past is NOT treated as clock skew',
       () async {
-        final container = createContainer();
+        final container = createContainer(clock: () => fixedNow);
         addTearDown(container.dispose);
         final handler = container.read(_syncPullHandlerProvider);
 
         // 1 ms in the past — should NOT be affected by clock skew protection
-        final slightlyPast = DateTime.now().subtract(
-          const Duration(milliseconds: 1),
-        );
+        final slightlyPast = fixedNow.subtract(const Duration(milliseconds: 1));
         await handler.pullChanges(_userId, since: slightlyPast);
 
         final captured = verify(

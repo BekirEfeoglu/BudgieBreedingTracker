@@ -14,6 +14,13 @@ import 'package:budgie_breeding_tracker/data/repositories/repository_providers.d
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_telemetry.dart';
 
+/// Injectable wall clock for [SyncPullHandler].
+///
+/// Defaults to the real clock. Tests override this to make clock-skew
+/// detection deterministic instead of racing `DateTime.now()` across the
+/// async gap (test-stability.md § flaky time-dependent assertions).
+final syncClockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
+
 /// Handles pulling remote changes from Supabase into local DB.
 ///
 /// Uses incremental sync (only fetch records updated after last successful
@@ -24,12 +31,15 @@ class SyncPullHandler {
 
   final Ref _ref;
 
+  DateTime _now() => _ref.read(syncClockProvider)();
+
   /// Pulls remote changes from Supabase into local DB.
   ///
   /// Uses [since] for incremental sync. Pass `null` for full reconciliation.
   Future<bool> pullChanges(String userId, {DateTime? since}) async {
     // Clock skew protection: if since is in the future, force full reconciliation
-    if (since != null && since.isAfter(DateTime.now())) {
+    final now = _now();
+    if (since != null && since.isAfter(now)) {
       AppLogger.warning(
         '[SyncOrchestrator] Clock skew detected: since ($since) is in the future. '
         'Forcing full reconciliation.',
@@ -37,7 +47,7 @@ class SyncPullHandler {
       _ref.read(clockSkewWarningProvider.notifier).setWarning(since);
       SyncTelemetry.event(
         'clock_skew_detected',
-        data: {'secondsAhead': since.difference(DateTime.now()).inSeconds},
+        data: {'secondsAhead': since.difference(now).inSeconds},
         level: SentryLevel.warning,
       );
       since = null;
@@ -247,7 +257,7 @@ class SyncPullHandler {
         SyncConflict(
           table: tableName,
           recordId: c.recordId,
-          detectedAt: DateTime.now(),
+          detectedAt: _now(),
           description: c.detail,
         ),
       );
@@ -262,7 +272,7 @@ class SyncPullHandler {
             recordId: c.recordId,
             description: c.detail,
             conflictType: ConflictType.serverWins,
-            createdAt: DateTime.now(),
+            createdAt: _now(),
           ),
         ),
       );
