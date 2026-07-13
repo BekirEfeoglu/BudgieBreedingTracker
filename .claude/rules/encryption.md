@@ -110,7 +110,7 @@ test('detects ciphertext tampering', () async {
 1. Aynı IV ile birden fazla encrypt (ECB-equivalent leak)
 2. MAC verify atlayıp doğrudan decrypt (tampering algılanmaz)
 3. Master key'i log/Sentry/error message'a koymak
-4. `==` ile MAC compare (timing attack — `constantTimeBytesEquals` kullan)
+4. `==` ile MAC compare (timing attack — `_constantTimeEquals` kullan, `encryption_payload_codec.dart`)
 5. Encryption key'i SharedPreferences'ta tutmak (secure storage zorunlu)
 6. Rotation'da eski key'i silmek (eski yedek geri yüklenemez)
 7. Encrypted field'ı düz string gibi indexlemek (SQL LIKE çalışmaz — server-side query yapısı plan edilmeli)

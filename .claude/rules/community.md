@@ -38,7 +38,7 @@ Compose -> Client moderation -> Edge create-community-post
   -> Failure: l10n error, feed'e post eklenmez
 ```
 
-- **Post create optimistic DEĞİL** (2026-07-05 doğrulaması): `CommunityCreateNotifier` başarıda `communityFeedProvider.refresh()` çağırır — client-UUID optimistic append/revert YOK. Bilinçli: server moderation/guard sonrası authoritative satır tek kaynak. (Like/bookmark/follow/comment-like ise optimistic + rollback — aşağıya bkz.)
+- **Post create optimistic DEĞİL** (2026-07-05 doğrulaması): `CreatePostNotifier` (`community_create_providers.dart`) başarıda `communityFeedProvider.refresh()` çağırır — client-UUID optimistic append/revert YOK. Bilinçli: server moderation/guard sonrası authoritative satır tek kaynak. (Like/bookmark/follow/comment-like ise optimistic + rollback — aşağıya bkz.)
 - **Post edit — implement edildi + prod'da (`main`, 2026-07-03):** İçerik-yalnızca düzenleme 5 dk pencerede. `CommunityPostRepository.update({postId, content})` → `CommunityPostRemoteSource.updateContent` → `create-community-post` edge fn `mode:'update'` (moderation yeniden çalışır, fail-closed). Pencere edge fn'de (`EDIT_WINDOW_MS`) + `community_posts` authenticated UPDATE grant'i `(is_deleted, needs_review)` kolonlarına daraltılarak (migration `20260703120000`, prod'a uygulandı) enforce edilir — content doğrudan client `.update()` ile değişemez. `edited_at` kolonu + UI'da `edited` rozeti (edit sheet `showAppBottomSheet`); "Düzenle" yalnız kendi postunda + pencere içinde. (Yazarın kendi `needs_review`'ünü temizleyebilmesi bilinçli kapsam dışı. `clearReviewFlag`'in var olmayan `reviewed_by` yazımı 2026-07-03'te kaldırıldı.)
 - Delete: soft delete (`is_deleted = true` kolonu — `deleted_at` DEĞİL), feed query filter
 

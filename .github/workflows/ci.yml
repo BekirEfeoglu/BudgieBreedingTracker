@@ -314,6 +314,9 @@ jobs:
       - name: Migration drift (structure)
         run: python scripts/verify_migration_drift.py
 
+      - name: Rule symbol drift (aspirational-contract guard)
+        run: python scripts/check_rule_symbol_drift.py --strict
+
   rules-sync:
     name: Rules Sync
     runs-on: ubuntu-24.04

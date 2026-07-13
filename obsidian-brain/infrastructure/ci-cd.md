@@ -15,7 +15,7 @@ Runs on PRs and main pushes.
 | `e2e-community-test` | E2E + community tagged tests | `workflow_dispatch`/`schedule` |
 | `scripts-test` | Python script tests (≥98% coverage) | PR merge |
 | `l10n-sync` | Translation key parity (--strict-keys) | PR merge |
-| `code-quality` | Anti-pattern scan + platform target policy + wiki lint + migration structure drift (`verify_migration_drift.py`) | PR merge |
+| `code-quality` | Anti-pattern scan + platform target policy + wiki lint + migration structure drift (`verify_migration_drift.py`) + rule symbol drift (`check_rule_symbol_drift.py --strict`) | PR merge |
 | `rules-sync` | CLAUDE.md stats verification | PR merge |
 | `security-audit` | `python scripts/verify_security.py` — cert pinning, secrets | PR merge |
 | `auto-fix-stats` | Auto-PR for CLAUDE.md drift | main only |

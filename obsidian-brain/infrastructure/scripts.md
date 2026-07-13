@@ -16,6 +16,7 @@ All scripts in `scripts/` directory.
 | `verify_rules.py --fix` | Auto-fix CLAUDE.md stats + inline rule references |
 | `check_remote_status.py` | Verify exact commit SHA GitHub status/check-run summary |
 | `verify_migration_drift.py` | Migration structure guard: duplicate version prefixes + malformed filenames (offline, in the `code-quality` CI job); `--online` adds prod-ledger version parity via `supabase migration list --linked` |
+| `check_rule_symbol_drift.py --strict` | Aspirational-contract guard (blocking in `code-quality`): every `xProvider` token and `.dart` path named in `.claude/rules/` must resolve in code. Low-noise by design (only Provider/`.dart` shapes); PascalCase classes/methods stay in the manual semantic sweep. Legitimately-removed symbols documented in prose go in the script's allowlist |
 
 ## Pre-Commit Gate
 
@@ -47,6 +48,7 @@ scripts/run_local_quality_gate.sh
 | `test_check_obsidian_brain.py` | Tests for wiki lint |
 | `test_verify_security.py` | Tests for verify_security.py |
 | `test_verify_migration_drift.py` | Tests for verify_migration_drift.py (27 tests, 100% cov) |
+| `test_check_rule_symbol_drift.py` | Tests for check_rule_symbol_drift.py (18 tests, 100% cov) |
 
 ## Internal Modules
 

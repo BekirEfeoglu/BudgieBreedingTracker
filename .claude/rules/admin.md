@@ -49,7 +49,7 @@ EXECUTE FUNCTION audit_admin_action('ban_user');
 |-------|--------------|---------|
 | User stats | `admin_get_stats` RPC | Manuel + 5dk auto |
 | System health | `system-health` edge fn | 30s polling (focused screen) |
-| Moderation queue | `community_reports` table | Realtime + manuel |
+| Moderation queue | `community_reports` table | Manuel + aksiyon sonrası `invalidate` (realtime YOK) |
 | Edge function logs | Supabase Dashboard link | External |
 
 - Refresh tetikleyici: pull-to-refresh + manual button
@@ -75,10 +75,10 @@ EXECUTE FUNCTION audit_admin_action('ban_user');
 - Audit log'a action + target ID yazılır, payload sadece non-PII
 - Admin'in kendi yaptığı işlemi `audit_logs`'tan silmesi engellenir (RLS policy)
 
-## Realtime Updates
-- Yeni rapor geldiğinde realtime channel `admin_reports` event
-- Toast bildirimi (badge artar)
-- Admin ekran kapalıysa: push DEĞİL, sadece app açıldığında badge
+## Queue Refresh (pull-based — realtime YOK)
+- Admin panelinde realtime subscription YOK: moderasyon kuyruğu `adminPendingPostsProvider`/`adminPendingCommentsProvider` (`FutureProvider.autoDispose`, `admin_moderation_providers.dart`) ile çekilir
+- Yeni içerik görmek için pull-to-refresh veya aksiyon sonrası `ref.invalidate(adminPendingPostsProvider)` (`AdminModerationNotifier` her onay/silme sonrası invalidate eder)
+- Canlı `admin_reports` channel / toast / otomatik badge artışı SHIPPED DEĞİL — tasarım hedefi (known-gaps.md). Eklenirse bu bölüm + monitoring tablosu gerçek mekanizmayla güncellenmeli
 
 ## Empty / Error State
 - Boş queue: "Bekleyen rapor yok" + güneş ikonu (pozitif feedback)
@@ -124,7 +124,7 @@ test('ban user requires type-to-confirm', () async {
 4. Admin'in kendi audit log'unu silebilmesi (RLS yetersiz)
 5. Sentry'ye admin işlem payload'ı (PII leak)
 6. Bulk operation'ı 100+ entity'de tek transaction (timeout + lock)
-7. Realtime queue badge'i push'a bağlamak (admin uyandırma)
+7. Realtime queue badge'i shipped varsaymak (kuyruk pull/invalidate tabanlı — canlı channel yok; eklenirse push'a bağlama, admin uyandırma)
 8. Concurrent action'da race condition (audit history fix)
 9. Type-to-confirm input'unu locale-sensitive yapmak (Almanca'da çalışmaz)
 10. Reset password gibi sensitive aksiyonu admin client'tan tetiklemek yerine server-side trigger ile yapmamak

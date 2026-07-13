@@ -61,6 +61,7 @@ python3 scripts/verify_code_quality.py    # Anti-pattern scan (28 checkers, 19/2
 python3 scripts/verify_rules.py          # Validate CLAUDE.md stats against codebase (single source of truth)
 python3 scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats + rule inline references
 python3 scripts/verify_migration_drift.py # Migration structure guard (dup versions, malformed names); --online adds prod ledger parity
+python3 scripts/check_rule_symbol_drift.py --strict # Aspirational-contract guard: every `xProvider`/`.dart` path named in .claude/rules/ must exist in code
 ```
 
 ### Other Scripts
@@ -97,6 +98,7 @@ scripts/test_check_remote_status.py     # Tests for check_remote_status.py
 scripts/test_verify_security.py         # Tests for verify_security.py
 scripts/test_app_store_config.py        # App Store config consistency tests
 scripts/test_verify_migration_drift.py  # Tests for verify_migration_drift.py
+scripts/test_check_rule_symbol_drift.py # Tests for check_rule_symbol_drift.py
 ```
 
 ## Codebase Stats
@@ -131,7 +133,7 @@ scripts/test_verify_migration_drift.py  # Tests for verify_migration_drift.py
 | `e2e-community-test` | E2E + community tagged tests |
 | `scripts-test` | Python script tests (>=98% coverage) |
 | `l10n-sync` | Translation key parity (--strict-keys) |
-| `code-quality` | Anti-pattern scan + platform target policy + obsidian-brain lint + migration drift structure guard (depends on scripts-test) |
+| `code-quality` | Anti-pattern scan + platform target policy + obsidian-brain lint + migration drift structure guard + rule symbol drift guard (depends on scripts-test) |
 | `rules-sync` | CLAUDE.md stats verification (--strict) |
 | `security-audit` | Security posture verification (cert pinning, secrets) |
 | `auto-fix-stats` | Auto-PR for CLAUDE.md drift (main only) |
