@@ -813,6 +813,7 @@
     "export_error": "Fehler beim Export",
     "error_invalid_format": "Sicherungsdatei ist beschädigt oder in einem unbekannten Format",
     "error_unsupported_version": "Diese Sicherung wurde mit einer neueren App-Version erstellt (Sicherung: v{}, unterstützt max: v{}). Bitte aktualisieren Sie die App.",
+    "error_decrypt_failed": "Sicherung konnte nicht entschlüsselt werden — falsches Passwort oder beschädigte Datei",
     "last_export": "Letzter Export",
     "never": "Noch kein Export durchgeführt",
     "import_data": "Datenimport",

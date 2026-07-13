@@ -813,6 +813,7 @@
     "export_error": "Aktarım sırasında hata oluştu",
     "error_invalid_format": "Yedek dosyası bozuk veya bilinmeyen format",
     "error_unsupported_version": "Bu yedek daha yeni bir uygulama sürümüyle oluşturulmuş (yedek: v{}, desteklenen max: v{}). Uygulamayı güncelleyin.",
+    "error_decrypt_failed": "Yedek çözülemedi — şifre yanlış veya dosya bozuk",
     "last_export": "Son Aktarım",
     "never": "Henüz aktarım yapılmadı",
     "import_data": "Veri İçeri Aktarımı",

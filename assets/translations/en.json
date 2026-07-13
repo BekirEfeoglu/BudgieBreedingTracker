@@ -813,6 +813,7 @@
     "export_error": "An error occurred during export",
     "error_invalid_format": "Backup file is corrupt or in an unknown format",
     "error_unsupported_version": "This backup was created with a newer app version (backup: v{}, supported max: v{}). Please update the app.",
+    "error_decrypt_failed": "Could not decrypt backup — wrong password or corrupt file",
     "last_export": "Last Export",
     "never": "No export yet",
     "import_data": "Import Data",

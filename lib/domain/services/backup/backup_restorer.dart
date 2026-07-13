@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
@@ -59,7 +60,14 @@ class BackupRestorer {
             'Encryption service required to restore encrypted backup',
           );
         }
-        content = await _encryptionService.decrypt(content);
+        try {
+          content = await _encryptionService.decrypt(content);
+        } on FormatException catch (e) {
+          // Wrong password or tampered payload — an expected user-facing
+          // condition, NOT a Sentry-worthy corruption/DB failure.
+          AppLogger.warning('$_tag Backup decrypt failed (wrong password?): $e');
+          return BackupResult.failure('backup.error_decrypt_failed'.tr());
+        }
         AppLogger.info('$_tag Backup content decrypted');
       }
 
@@ -117,7 +125,11 @@ class BackupRestorer {
         recordCount: result.total,
       );
     } catch (e, st) {
+      // Reaching here means a genuine corruption / DB / partial-restore
+      // failure (the expected wrong-password decrypt case returned above),
+      // so it warrants Sentry visibility on this destructive path.
       AppLogger.error('$_tag Backup restore failed', e, st);
+      await Sentry.captureException(e, stackTrace: st);
       return BackupResult.failure(e.toString());
     }
   }

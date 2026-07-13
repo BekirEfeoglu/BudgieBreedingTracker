@@ -512,6 +512,34 @@ void main() {
         },
       );
 
+      test(
+        'returns graceful failure (not throw) when decrypt fails on wrong password',
+        () async {
+          final encryptionService = _MockEncryptionService();
+          when(() => encryptionService.decrypt('ciphertext')).thenThrow(
+            const FormatException('Invalid ciphertext: integrity check failed'),
+          );
+
+          final encryptedRestorer = BackupRestorer(
+            repos: repos,
+            encryptionService: encryptionService,
+          );
+
+          final file = await writeRawFile('wrongpw.enc.json', 'ciphertext');
+
+          final result = await encryptedRestorer.restoreBackup(
+            'user-1',
+            file.path,
+          );
+
+          // Wrong-password decrypt is an expected user error: it must surface a
+          // failure result, not bubble the FormatException.
+          expect(result.success, isFalse);
+          expect(result.error, isNotNull);
+          verify(() => encryptionService.decrypt('ciphertext')).called(1);
+        },
+      );
+
       test('returns success with correct filePath', () async {
         final file = await writeBackupFile('path_check.json', {
           'version': 2,
