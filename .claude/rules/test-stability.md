@@ -156,7 +156,7 @@ Light + dark her ikisi de snapshot. Theme switch widget değişiyorsa golden iki
 Test ara sıra başarısız oluyorsa:
 1. **Hard wait var mı?** `sleep`, `Future.delayed` — kaldır, `pump`/`pumpAndSettle` ile değiştir
 2. **Race condition?** Async operasyon sıralaması, request ID pattern eksik
-3. **Time-dependent?** `DateTime.now()` kullanan kod — fake clock veya fixed time inject
+3. **Time-dependent?** `DateTime.now()` kullanan kod — fake clock veya fixed time inject. **Near-`now` boundary tests** (bir timestamp'i `DateTime.now().add/subtract(küçük Duration)` ile kurup, production'ın SONRADAN yeniden örneklediği `DateTime.now()`'a karşı kıyaslayan; örn. clock-skew / expiry / cooldown / TTL) inherently flaky'dir — async gap içinde ms-mertebeli margin bayatlar. **Margin'i saniyeye genişletme** (boundary semantiğini bozar); bunun yerine production'a bir clock seam enjekte et ve testte override et. Kanonik örnek: `syncClockProvider` (`sync_pull_handler.dart`) + `createContainer({clock})` — 1ms future/past boundary testleri sabit `DateTime.utc(...)` saatiyle deterministik (2026-07-13 fix)
 4. **Shared state?** Static field, global provider — `setUp`/`tearDown` izolasyonu
 5. **Resource leak?** Controller/Stream dispose unutulmuş — `addTearDown`
 6. **Animation infinite?** `CircularProgressIndicator` ile `pumpAndSettle` → timeout
