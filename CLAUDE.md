@@ -13,7 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Comprehensive Flutter breeding tracker app for budgie breeders.
 Flutter 3.41+ / Dart >=3.8.0 <4.0.0 / Riverpod 3 / GoRouter 17+ / Supabase / Drift 2.31+ / Freezed 3
 
-Key deps: `supabase_flutter >=2.5.0 <2.13.0` (iOS CI cap — do NOT lift, see pubspec comment) · `sentry_flutter ^9.0.0` · `fl_chart ^1.2.0` · `purchases_flutter ^10.2.3`
+Key deps: `supabase_flutter >=2.5.0 <2.13.0` (iOS CI cap — do NOT lift, see pubspec comment) · `sentry_flutter ^9.0.0` · `fl_chart ^1.2.0` · `purchases_flutter ^10.4.1`
 
 ## Build & Development Commands
 

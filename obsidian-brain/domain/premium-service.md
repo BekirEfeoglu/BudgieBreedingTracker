@@ -9,7 +9,7 @@ Source: `.claude/rules/premium-revenuecat.md`
 | Layer | Tool |
 |-------|------|
 | Store | App Store + Google Play |
-| Aggregator | RevenueCat (`purchases_flutter ^10.0.2`) |
+| Aggregator | RevenueCat (`purchases_flutter ^10.4.1`) |
 | Server verify | `sync-premium-status` Edge Function |
 | Client state | `isPremiumProvider` / `premiumGracePeriodProvider` / `effectivePremiumProvider` (`lib/domain/services/premium/premium_providers.dart`) |
 | Route guard | `PremiumGuard` (`lib/router/guards/premium_guard.dart`, `static String? redirect(bool hasEffectiveAccess)`) |

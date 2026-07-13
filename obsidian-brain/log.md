@@ -4,6 +4,8 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-13] deps | purchases_flutter 10.3.0→10.4.1 (#148, f92fda6). 10.4.x exports its own SubscriptionInfo → ambiguous_import vs app's SubscriptionInfo; fixed with `hide SubscriptionInfo` on all purchases_flutter imports (5 lib + 13 test) + pod update PurchasesHybridCommon 18.15.1→18.19.0 (ios/Podfile.lock). Constraint ^10.2.3→^10.4.1 synced across CLAUDE.md, tech-stack, premium-revenuecat.md, premium-service.md. Held: drift 2.34.1 (analyzer 13 vs riverpod_generator/SDK conflict), supabase_flutter 2.16 (iOS cap), sentry alpha.
+
 ## [2026-07-13] chore | audit follow-ups: #8 now CI-enforced via new check_remote_hardcoded_columns checker (28 total, 10 extras; scans lib/data/remote/ for column literals in .order/.eq/.gte/.lte/.match + inline .update/.upsert/.insert keys; 7 unit tests, 99% cov). Removed @Tags(['gamification']) from 2 fast mock unit tests (+dropped unused dart_test.yaml tag) so they stay on the PR gate.
 
 ## [2026-07-13] audit | 6-lane comprehensive sweep (anti-pattern/PII/edge/migration/genetics/test-stability). Baseline clean; 6 small fixes: #8 residual col literals (8 new SupabaseConstants: level/xp_title/is_verified_breeder/is_pinned/event_date/sort_order/minutes_before/scheduled_at across 5 remote sources incl. updateProfileVerification sibling), backup_restorer wrong-password/corruption Sentry discrimination (+backup.error_decrypt_failed l10n), moderate-content text .max(10000) DoS cap, validate-free-tier-limit auth-before-parse, presence endSession double-log, streak reminder scheduler injectable clock (midnight-race). Migration prod-parity verified via MCP (5 recent applied). 11,663 tests green.

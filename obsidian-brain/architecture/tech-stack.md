@@ -30,7 +30,7 @@ Source: `pubspec.yaml`, `.claude/rules/architecture.md`
 | supabase_flutter >=2.5.0 <2.13.0 | Postgres + Auth + Storage + Realtime (capped below 2.13.0 — 2.13+ pulls the passkeys → device_info_plus 12.4.0 chain whose visionOS `isiOSAppOnVision` selector fails to compile on CI macos-latest Xcode SDK) |
 | firebase_core ^4.1.1 | FCM prerequisite |
 | firebase_messaging ^16.2.2 | Push notifications (FCM) |
-| purchases_flutter ^10.2.3 | RevenueCat in-app purchases |
+| purchases_flutter ^10.4.1 | RevenueCat in-app purchases |
 | sentry_flutter ^9.0.0 | Error tracking + performance |
 
 ## UI & UX
