@@ -173,7 +173,7 @@ extension _SyncTimeHelpers on SyncOrchestrator {
       if (value == null) return true; // Never reconciled
       final lastReconcile = DateTime.tryParse(value);
       if (lastReconcile == null) return true;
-      return DateTime.now().difference(lastReconcile) >=
+      return _now().difference(lastReconcile) >=
           SyncOrchestrator._reconcileInterval;
     } catch (_) {
       return true;
