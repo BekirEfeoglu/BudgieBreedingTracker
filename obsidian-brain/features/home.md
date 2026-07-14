@@ -21,7 +21,7 @@ mounted at `AppRoutes.home` (`/`).
 | `todaysEggTurningSummaryProvider(userId)` | `FutureProvider.family` | Eggs needing turn today + next slot |
 | `homeWidgetDashboardSnapshotProvider(userId)` | `Provider.family<AsyncValue<…>>` | Combines providers into the iOS/Android widget snapshot |
 | `profileSyncProvider(userId)` | `FutureProvider.family` | Background profile refresh on resume |
-| `connectivityProvider` | `Provider` | Drives offline banner |
+| `syncStatusProvider` | `Provider` | Drives offline banner |
 | `conflictNotifierProvider` | `Notifier` | Drives sync conflict banner |
 
 ## Widgets

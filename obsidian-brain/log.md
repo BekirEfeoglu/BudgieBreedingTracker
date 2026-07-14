@@ -4,6 +4,33 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-14] ci | Drift guard extended to wiki + class names; wiki symbol drift fixed
+
+Executed the three follow-up suggestions. **#3 (obfuscation debunk):** `git grep`
+found 135 `*Notifier` / 29 `*Service` / 492 `*Provider` readable names — the
+subagent "source is minified" claim was an artifact; disregarded. **#1 + #2
+(extend the checker):** `check_rule_symbol_drift.py` gained `--target
+{rules,wiki,all}` (wiki scan excludes `log.md`/`log-archive-*` — chronological
+history legitimately names removed symbols) and `--classes` (opt-in check of
+`*Service`/`*Notifier`/`*Repository` — measured LOW noise: every finding was
+genuine drift or documented-non-existence prose). Both surfaces + classes now
+gated via `--target all --classes` in the `code-quality` CI job +
+`run_local_quality_gate.sh`. **Wiki drift fixed (11):** breeding
+`breedingPairListProvider`→`filteredBreedingPairsProvider` +
+`activeIncubationsProvider`→`allIncubationsStreamProvider`; chicks
+`chickListProvider`→`filteredChicksProvider`; eggs `eggs_mapper.dart`→`egg_mapper.dart`;
+profile `currentUserProfileProvider`→`userProfileProvider`; home
+`connectivityProvider`→`syncStatusProvider`; admin+more
+`userRoleProvider`→`isAdminProvider`/`isFounderProvider`; data-io
+`adsServiceProvider`→`adServiceProvider`; premium ×2
+`freeTierUsageProvider`→`freeTierLimitServiceProvider`. **Class drift fixed:**
+background-sync.md + data-flow.md `ConnectivityService`→`networkStatusProvider`
+(the real `connectivity_plus` wrapper; no such class exists). Allowlisted the
+documented-non-existence prose (premiumStatusProvider, genealogyTreeProvider,
+MarketplaceListingRepository anti-pattern name, CalendarService,
+IncubationReminderService). Test suite 18→23 (100% cov). Docs synced across
+CLAUDE.md/ci-actions.md/documentation-sync.md/wiki.
+
 ## [2026-07-14] ci | Aspirational-contract guard shipped + full rule sweep (all 56 rules)
 
 Followed up the 07-13 sweep with the remaining ~45 rules (6 parallel lanes, user-prioritized genetics/moderation/community first) AND automated the drift class. **Rule fixes (3 genuine):** community.md `CommunityCreateNotifier`→`CreatePostNotifier` (real class in `community_create_providers.dart`); admin.md § Realtime Updates rewrote — admin has ZERO realtime code (`lib/features/admin/` grep clean), moderation queue is `FutureProvider.autoDispose` + pull-to-refresh + post-action `ref.invalidate`, so the live-`admin_reports`-channel/toast/badge section was never-built → now § Queue Refresh (pull-based) + monitoring table row + anti-pattern #7 corrected + known-gaps row added; encryption.md anti-pattern `constantTimeBytesEquals`→`_constantTimeEquals`. auth.md `clearPresence` already fixed in 9756905 (agent read stale); genealogy `ancestorsProvider` location verified correct. 47 other rules verified clean symbol-by-symbol. **New CI gate:** `scripts/check_rule_symbol_drift.py` (+ 18-test suite, 100% cov) — for every `.claude/rules/*.md`, each `xProvider` token and `.dart` path must resolve in code; the two near-zero-false-positive shapes that caught the 07-13 drift (`conflictNotifierProvider`, etc.). Wired blocking into `code-quality` CI job + `run_local_quality_gate.sh`; allowlist escape hatch for prose that documents removed symbols. Documented across CLAUDE.md (Quality Scripts + Script Tests + CI table), ci-actions.md, documentation-sync.md § Verification, and wiki scripts.md/ci-cd.md. Known-gaps +1 (admin realtime queue). Task 3: the 07-13 known-gaps rows were all already marked unshipped in their owning rules — no inconsistency.

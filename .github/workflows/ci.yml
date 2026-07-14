@@ -315,7 +315,7 @@ jobs:
         run: python scripts/verify_migration_drift.py
 
       - name: Rule symbol drift (aspirational-contract guard)
-        run: python scripts/check_rule_symbol_drift.py --strict
+        run: python scripts/check_rule_symbol_drift.py --target all --classes --strict
 
   rules-sync:
     name: Rules Sync

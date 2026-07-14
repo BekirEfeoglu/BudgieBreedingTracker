@@ -46,7 +46,7 @@ incubations) — see [[domain/eggs-service]].
 |-------|------|
 | Drift table | `eggs_table.dart` |
 | Repository | `egg_repository.dart` — uses `ValidatedSyncMixin` (FK parent: incubation → breeding_pair) |
-| Mapper | `eggs_mapper.dart` |
+| Mapper | `egg_mapper.dart` |
 | DAO | `eggs_dao.dart` |
 
 ## Service

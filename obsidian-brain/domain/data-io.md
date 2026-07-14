@@ -100,7 +100,7 @@ See [[domain/encryption-service]].
 ## Premium Gating
 
 Backup, full export, and PDF share are entitlement-gated through
-`adsServiceProvider` reward states (`isExportRewardActiveProvider`) and
+`adServiceProvider` reward states (`isExportRewardActiveProvider`) and
 premium check. Free-tier users get ad-rewarded one-shot exports; premium
 users skip the ad gate. See [[domain/premium-service]].
 

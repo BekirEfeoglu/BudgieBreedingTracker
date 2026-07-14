@@ -29,7 +29,7 @@ User purchases (RevenueCat SDK)
 
 - `isPremiumProvider`, `premiumGracePeriodProvider`, `effectivePremiumProvider` (`premiumStatusProvider` does not exist)
 - `GracePeriodStatus` values: `active`, `gracePeriod`, `expired`, `free`, `unknown` (`lib/core/enums/subscription_enums.dart` — NOT `none`)
-- `freeTierUsageProvider` — current entity counts
+- `freeTierLimitServiceProvider` — client-side free-tier limit check (server-authoritative via `validate-free-tier-limit`)
 - `isStatisticsRewardActiveProvider` / `isGeneticsRewardActiveProvider` — temporary rewarded-ad exemption from the premium gate for those two routes
 - `PremiumGuard.redirect` is currently only wired to the `/genealogy` route; `/statistics` and `/genetics` gate inline in `app_router.dart` via `effectivePremiumProvider` OR the reward providers above
 

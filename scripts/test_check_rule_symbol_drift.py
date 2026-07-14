@@ -27,6 +27,10 @@ class TestRegexes(unittest.TestCase):
         found = crsd.DART_PATH_RE.findall("`foo_bar.dart` and `lib/a/b.dart`")
         self.assertEqual(found, ["foo_bar.dart", "lib/a/b.dart"])
 
+    def test_class_regex_matches_high_confidence_suffixes(self):
+        found = crsd.CLASS_RE.findall("`FooService` `BarNotifier` `BazRepository` `Plain`")
+        self.assertEqual(found, ["FooService", "BarNotifier", "BazRepository"])
+
 
 class TestRg(unittest.TestCase):
     def test_rg_success(self):
@@ -79,8 +83,30 @@ class TestDartPathExists(unittest.TestCase):
 class TestProviderExists(unittest.TestCase):
     def test_delegates_to_rg_on_lib(self):
         with patch.object(crsd, "_rg", return_value=True) as rg:
-            self.assertTrue(crsd._provider_exists("xProvider"))
+            self.assertTrue(crsd._symbol_exists("xProvider"))
             rg.assert_called_once_with("xProvider", "lib")
+
+
+class TestTargetFiles(unittest.TestCase):
+    def test_wiki_excludes_log_and_archives(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            rules = root / ".claude" / "rules"
+            wiki = root / "obsidian-brain"
+            rules.mkdir(parents=True)
+            (wiki / "features").mkdir(parents=True)
+            (rules / "a.md").write_text("x", encoding="utf-8")
+            (wiki / "log.md").write_text("x", encoding="utf-8")
+            (wiki / "log-archive-2026-05.md").write_text("x", encoding="utf-8")
+            (wiki / "features" / "birds.md").write_text("x", encoding="utf-8")
+            with patch.object(crsd, "RULES_DIR", rules), \
+                 patch.object(crsd, "WIKI_DIR", wiki):
+                rules_files = [lbl for lbl, _ in crsd._target_files("rules")]
+                wiki_files = [lbl for lbl, _ in crsd._target_files("wiki")]
+                all_files = [lbl for lbl, _ in crsd._target_files("all")]
+            self.assertEqual(rules_files, ["a.md"])
+            self.assertEqual(wiki_files, ["features/birds.md"])  # log + archive excluded
+            self.assertEqual(len(all_files), 2)
 
 
 class TestScan(unittest.TestCase):
@@ -95,7 +121,7 @@ class TestScan(unittest.TestCase):
             root = Path(d)
             rules = self._rules_dir(root, "See `ghostProvider` now.")
             with patch.object(crsd, "RULES_DIR", rules), \
-                 patch.object(crsd, "_provider_exists", return_value=False), \
+                 patch.object(crsd, "_symbol_exists", return_value=False), \
                  patch.object(crsd, "_dart_path_exists", return_value=True):
                 findings = crsd.scan()
             self.assertEqual(findings, [("sample.md", "provider", "ghostProvider")])
@@ -105,7 +131,7 @@ class TestScan(unittest.TestCase):
             root = Path(d)
             rules = self._rules_dir(root, "Example `myProvider` here.")
             with patch.object(crsd, "RULES_DIR", rules), \
-                 patch.object(crsd, "_provider_exists", return_value=False):
+                 patch.object(crsd, "_symbol_exists", return_value=False):
                 self.assertEqual(crsd.scan(), [])
 
     def test_flags_missing_dart_path_and_skips_allowlisted(self):
@@ -124,7 +150,7 @@ class TestScan(unittest.TestCase):
                 root, "`ghostProvider` `ghostProvider` `g.dart` `g.dart`"
             )
             with patch.object(crsd, "RULES_DIR", rules), \
-                 patch.object(crsd, "_provider_exists", return_value=False), \
+                 patch.object(crsd, "_symbol_exists", return_value=False), \
                  patch.object(crsd, "_dart_path_exists", return_value=False):
                 findings = crsd.scan()
             # each distinct token reported once despite two occurrences
@@ -141,9 +167,43 @@ class TestScan(unittest.TestCase):
             root = Path(d)
             rules = self._rules_dir(root, "`realProvider` and `real.dart`.")
             with patch.object(crsd, "RULES_DIR", rules), \
-                 patch.object(crsd, "_provider_exists", return_value=True), \
+                 patch.object(crsd, "_symbol_exists", return_value=True), \
                  patch.object(crsd, "_dart_path_exists", return_value=True):
                 self.assertEqual(crsd.scan(), [])
+
+    def test_classes_flagged_only_when_enabled(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            rules = self._rules_dir(root, "Use `GhostService` here.")
+            with patch.object(crsd, "RULES_DIR", rules), \
+                 patch.object(crsd, "_symbol_exists", return_value=False):
+                # default: classes not checked
+                self.assertEqual(crsd.scan(), [])
+                # opt-in: flagged
+                self.assertEqual(
+                    crsd.scan(check_classes=True),
+                    [("sample.md", "class", "GhostService")],
+                )
+
+    def test_allowlisted_class_skipped(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            rules = self._rules_dir(root, "Anti-pattern `MarketplaceListingRepository`.")
+            with patch.object(crsd, "RULES_DIR", rules), \
+                 patch.object(crsd, "_symbol_exists", return_value=False):
+                self.assertEqual(crsd.scan(check_classes=True), [])
+
+    def test_duplicate_class_deduped(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            rules = self._rules_dir(root, "`GhostService` again `GhostService`.")
+            with patch.object(crsd, "RULES_DIR", rules), \
+                 patch.object(crsd, "_symbol_exists", return_value=False):
+                # second occurrence hits the `name in seen` continue branch
+                self.assertEqual(
+                    crsd.scan(check_classes=True),
+                    [("sample.md", "class", "GhostService")],
+                )
 
 
 class TestMain(unittest.TestCase):

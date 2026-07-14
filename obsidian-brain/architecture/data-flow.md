@@ -32,7 +32,7 @@ Widget
 
 ```
 1. App start / foreground resume
-2. ConnectivityService detects online
+2. networkStatusProvider detects online
 3. SyncService.syncAll()
    ├─ Pull: fetch remote changes newer than lastPulledAt
    │    └─ dao.upsertFromRemote(remoteEntity)

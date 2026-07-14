@@ -12,7 +12,7 @@
 
 - `isPremiumProvider`, `premiumGracePeriodProvider`, `effectivePremiumProvider` (`premiumStatusProvider` does not exist)
 - `GracePeriodStatus` values: `active`/`gracePeriod`/`expired`/`free`/`unknown` (NOT `none`)
-- `freeTierUsageProvider` — entity counts for UX display
+- `freeTierLimitServiceProvider` — client-side free-tier limit check for UX (server-authoritative via `validate-free-tier-limit`)
 
 ## Premium Flow
 

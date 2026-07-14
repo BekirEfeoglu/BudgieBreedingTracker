@@ -45,7 +45,7 @@ route to `AppRoutes.premium` on tap when entitlement is missing.
 
 ## Admin Entry
 
-When `userRoleProvider` is `admin` or `founder`, an additional Admin link
+When `isAdminProvider` / `isFounderProvider` is true, an additional Admin link
 appears at the bottom of the list, routing to `AppRoutes.admin`.
 
 ## L10n

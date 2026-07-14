@@ -17,7 +17,7 @@ Manual chick creation is also supported.
 
 ## Key Providers
 
-- `chickListProvider` — StreamProvider
+- `filteredChicksProvider` — chick list (filter/search/sort derived)
 - `chickDetailProvider(id)` — StreamProvider.family
 - `growthMeasurementsByChickProvider(chickId)` — chick weight/growth history
 

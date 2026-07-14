@@ -19,8 +19,8 @@ Breeding creates the pair + incubation as one atomic operation. Pair/incubation 
 
 ## Key Providers
 
-- `breedingPairListProvider` — StreamProvider
-- `activeIncubationsProvider` — live incubation streams
+- `filteredBreedingPairsProvider` — pair list (filter/search/sort derived)
+- `allIncubationsStreamProvider` — live incubation streams
 - `breedingSeasonSummaryProvider` — egg/chick outcome summary per incubation
 - Breeding notifier (handles create, cancel, complete, rollback)
 

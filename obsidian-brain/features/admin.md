@@ -93,8 +93,9 @@ direct `client.from()` calls outside `admin/`.
 
 ## Guarding
 
-`AdminGuard` (in `lib/router/guards/`) reads `userRoleProvider` and
-redirects non-admin/founder users to `AppRoutes.home`. Every admin route
+`AdminGuard` (in `lib/router/guards/`) reads `isAdminProvider` / `isFounderProvider`
+(`lib/data/providers/user_role_providers.dart`) and redirects non-admin/founder
+users to `AppRoutes.home`. Every admin route
 is guarded — there is no "soft" admin surface.
 
 Roles (from `lib/data/providers/user_role_providers.dart`):

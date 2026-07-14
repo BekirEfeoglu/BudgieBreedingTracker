@@ -5,7 +5,7 @@ Offline-first mimari: kullanıcı her zaman local Drift DB'ye yazar, sync servic
 ## Akış
 ```
 Local write (Drift) -> SyncMetadata dirty flag
-  -> ConnectivityService online algılar
+  -> networkStatusProvider online algılar
   -> SyncOrchestrator (syncOrchestratorProvider) push/pull başlatır
   -> SyncableRepository.pushPendingBatched() -> upsert (idempotent)
   -> Başarılı push SyncMetadata satırını siler
@@ -103,7 +103,7 @@ if (remote.updatedAt.isAfter(local.lastPullAt) && local.dirty) {
 ```
 
 ## Connectivity-Aware
-- `ConnectivityService` `connectivity_plus` üzerine wrap
+- `networkStatusProvider` (`network_status_provider.dart`) `connectivity_plus` üzerine wrap
 - Online geldiğinde otomatik sync kick
 - Offline modda global `OfflineBanner` gösterilir; banner
   `syncStatusProvider`, `pendingSyncCountProvider`,

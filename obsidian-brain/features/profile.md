@@ -18,7 +18,7 @@ or routed sub-screens (`twoFactorSetup`, `twoFactorVerify`).
 
 | Provider | Type | Purpose |
 |----------|------|---------|
-| `currentUserProfileProvider` | `StreamProvider` | Live profile from Drift |
+| `userProfileProvider` | `StreamProvider` | Live profile from Drift |
 | `avatarUploadStateProvider` | `NotifierProvider<AvatarUploadNotifier, …>` | Upload pipeline state |
 | `passwordChangeStateProvider` | `NotifierProvider<PasswordChangeNotifier, …>` | Password change state |
 | `profileStatsProvider(userId)` | `Provider.family<AsyncValue<ProfileStats>, …>` | Aggregated counts (birds, pairs, chicks) |
