@@ -28,8 +28,16 @@ class TestRegexes(unittest.TestCase):
         self.assertEqual(found, ["foo_bar.dart", "lib/a/b.dart"])
 
     def test_class_regex_matches_high_confidence_suffixes(self):
-        found = crsd.CLASS_RE.findall("`FooService` `BarNotifier` `BazRepository` `Plain`")
-        self.assertEqual(found, ["FooService", "BarNotifier", "BazRepository"])
+        found = crsd.CLASS_RE.findall(
+            "`FooService` `BarNotifier` `BazRepository` `Qux Dao` `XDao` `YMapper` `ZGuard` `Plain`"
+        )
+        self.assertEqual(
+            found, ["FooService", "BarNotifier", "BazRepository", "XDao", "YMapper", "ZGuard"]
+        )
+
+    def test_bare_class_regex_matches_prose_word(self):
+        found = crsd.BARE_CLASS_RE.findall("The FooService drives it, not aFooServiceX.")
+        self.assertEqual(found, ["FooService"])
 
 
 class TestRg(unittest.TestCase):
@@ -205,6 +213,61 @@ class TestScan(unittest.TestCase):
                     [("sample.md", "class", "GhostService")],
                 )
 
+    def test_bare_prose_class_flagged(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            rules = self._rules_dir(root, "The GhostService detects online.")
+            with patch.object(crsd, "RULES_DIR", rules), \
+                 patch.object(crsd, "_symbol_exists", return_value=False):
+                self.assertEqual(
+                    crsd.scan(check_classes=True),
+                    [("sample.md", "class", "GhostService")],
+                )
+
+    def test_fenced_code_class_not_scanned(self):
+        content = "```dart\nclass GhostService {}\n```\nProse mentions `RealService`."
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            rules = self._rules_dir(root, content)
+            with patch.object(crsd, "RULES_DIR", rules), \
+                 patch.object(crsd, "_symbol_exists", return_value=True):
+                # GhostService is inside a fenced block → never scanned;
+                # RealService (backtick) resolves → clean.
+                self.assertEqual(crsd.scan(check_classes=True), [])
+
+
+class TestAuditAllowlist(unittest.TestCase):
+    def _wiki_with(self, root: Path, text: str) -> tuple[Path, Path]:
+        rules = root / ".claude" / "rules"
+        wiki = root / "obsidian-brain"
+        rules.mkdir(parents=True)
+        wiki.mkdir(parents=True)
+        (rules / "a.md").write_text(text, encoding="utf-8")
+        return rules, wiki
+
+    def test_reports_uncited_entries(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            rules, wiki = self._wiki_with(root, "Only `keptProvider` is cited here.")
+            with patch.object(crsd, "RULES_DIR", rules), \
+                 patch.object(crsd, "WIKI_DIR", wiki), \
+                 patch.object(crsd, "PROVIDER_ALLOWLIST", {"keptProvider", "deadProvider"}), \
+                 patch.object(crsd, "DART_PATH_ALLOWLIST", set()), \
+                 patch.object(crsd, "CLASS_ALLOWLIST", set()):
+                stale = crsd.audit_allowlist()
+            self.assertEqual(stale, [("PROVIDER_ALLOWLIST", "deadProvider")])
+
+    def test_clean_when_all_cited(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            rules, wiki = self._wiki_with(root, "Cite `keptProvider` and `kept.dart`.")
+            with patch.object(crsd, "RULES_DIR", rules), \
+                 patch.object(crsd, "WIKI_DIR", wiki), \
+                 patch.object(crsd, "PROVIDER_ALLOWLIST", {"keptProvider"}), \
+                 patch.object(crsd, "DART_PATH_ALLOWLIST", {"kept.dart"}), \
+                 patch.object(crsd, "CLASS_ALLOWLIST", set()):
+                self.assertEqual(crsd.audit_allowlist(), [])
+
 
 class TestMain(unittest.TestCase):
     def test_main_clean_returns_0(self):
@@ -220,6 +283,21 @@ class TestMain(unittest.TestCase):
     def test_main_findings_strict_returns_1(self):
         with patch.object(crsd, "scan", return_value=[("r.md", "provider", "xProvider")]), \
              patch.object(sys, "argv", ["prog", "--strict"]):
+            self.assertEqual(crsd.main(), 1)
+
+    def test_main_audit_clean_returns_0(self):
+        with patch.object(crsd, "audit_allowlist", return_value=[]), \
+             patch.object(sys, "argv", ["prog", "--audit-allowlist"]):
+            self.assertEqual(crsd.main(), 0)
+
+    def test_main_audit_stale_advisory_returns_0(self):
+        with patch.object(crsd, "audit_allowlist", return_value=[("PROVIDER_ALLOWLIST", "deadProvider")]), \
+             patch.object(sys, "argv", ["prog", "--audit-allowlist"]):
+            self.assertEqual(crsd.main(), 0)
+
+    def test_main_audit_stale_strict_returns_1(self):
+        with patch.object(crsd, "audit_allowlist", return_value=[("PROVIDER_ALLOWLIST", "deadProvider")]), \
+             patch.object(sys, "argv", ["prog", "--audit-allowlist", "--strict"]):
             self.assertEqual(crsd.main(), 1)
 
 

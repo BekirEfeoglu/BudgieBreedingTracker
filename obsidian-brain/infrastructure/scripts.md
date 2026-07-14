@@ -16,7 +16,7 @@ All scripts in `scripts/` directory.
 | `verify_rules.py --fix` | Auto-fix CLAUDE.md stats + inline rule references |
 | `check_remote_status.py` | Verify exact commit SHA GitHub status/check-run summary |
 | `verify_migration_drift.py` | Migration structure guard: duplicate version prefixes + malformed filenames (offline, in the `code-quality` CI job); `--online` adds prod-ledger version parity via `supabase migration list --linked` |
-| `check_rule_symbol_drift.py --target all --classes --strict` | Aspirational-contract guard (blocking in `code-quality`): every `xProvider` token, `.dart` path, and `*Service`/`*Notifier`/`*Repository` class named in `.claude/rules/` AND `obsidian-brain/` (excl. log/archives) must resolve in code. Low-noise by design (only those three high-confidence shapes); other class/method names stay in the manual semantic sweep. Legitimately-removed symbols documented in prose go in the script's allowlists |
+| `check_rule_symbol_drift.py --target all --classes --strict` | Aspirational-contract guard (blocking in `code-quality`): every `xProvider` token, `.dart` path, and `*Service`/`*Notifier`/`*Repository`/`*Dao`/`*Mapper`/`*Guard` class named in `.claude/rules/` AND `obsidian-brain/` (excl. log/archives) must resolve in code. Class names checked in backticks AND bare in prose (outside fenced code). Low-noise by design; other class/method names stay in the manual semantic sweep. Removed symbols cited in prose go in the allowlists. `--audit-allowlist` (periodic, not gated) reports uncited allowlist cruft |
 
 ## Pre-Commit Gate
 
@@ -48,7 +48,7 @@ scripts/run_local_quality_gate.sh
 | `test_check_obsidian_brain.py` | Tests for wiki lint |
 | `test_verify_security.py` | Tests for verify_security.py |
 | `test_verify_migration_drift.py` | Tests for verify_migration_drift.py (27 tests, 100% cov) |
-| `test_check_rule_symbol_drift.py` | Tests for check_rule_symbol_drift.py (23 tests, 100% cov) |
+| `test_check_rule_symbol_drift.py` | Tests for check_rule_symbol_drift.py (31 tests, 100% cov) |
 
 ## Internal Modules
 

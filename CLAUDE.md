@@ -61,7 +61,8 @@ python3 scripts/verify_code_quality.py    # Anti-pattern scan (28 checkers, 19/2
 python3 scripts/verify_rules.py          # Validate CLAUDE.md stats against codebase (single source of truth)
 python3 scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats + rule inline references
 python3 scripts/verify_migration_drift.py # Migration structure guard (dup versions, malformed names); --online adds prod ledger parity
-python3 scripts/check_rule_symbol_drift.py --target all --classes --strict # Aspirational-contract guard: every `xProvider`/`.dart` path/`*Service|*Notifier|*Repository` class named in .claude/rules/ + obsidian-brain/ must exist in code
+python3 scripts/check_rule_symbol_drift.py --target all --classes --strict # Aspirational-contract guard: every `xProvider`/`.dart` path/`*Service|*Notifier|*Repository|*Dao|*Mapper|*Guard` class (backtick + bare prose) named in .claude/rules/ + obsidian-brain/ must exist in code
+python3 scripts/check_rule_symbol_drift.py --audit-allowlist # Periodic (not gated): report allowlist entries no longer cited by any doc
 ```
 
 ### Other Scripts

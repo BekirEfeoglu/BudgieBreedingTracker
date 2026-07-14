@@ -4,6 +4,22 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-14] ci | Drift guard: +Dao/Mapper/Guard, bare-prose scan, allowlist audit
+
+Third round of drift-guard hardening (measured before wiring, per the
+suggestions). **Suffix expansion:** `--classes` now also checks
+`*Dao`/`*Mapper`/`*Guard` (measured 8 tokens, 0 unresolved → zero-noise).
+**Bare-prose scan:** class-suffix names are now checked outside backticks too
+(fenced code blocks + inline-backtick spans stripped first) — closes the gap
+that let the `ConnectivityService` sibling in data-flow.md slip past a
+backtick-only scan (20 bare pairs measured, 0 unresolved). **Allowlist audit:**
+new `--audit-allowlist` mode (periodic, NOT gated) flags allowlist entries no
+longer cited by any doc; ran it and pruned 8 dead placeholders (`exampleProvider`,
+`myAsyncProvider`, `someProvider`, `bar.dart`, `example.dart`, `foo.dart`,
+`my_form.dart`, `my_screen.dart`). Both the `--target all --classes` gate and
+the audit are clean. Test suite 23→31 (100% cov). Docs synced (CLAUDE.md
+Quality Scripts, documentation-sync.md, wiki scripts.md).
+
 ## [2026-07-14] ci | Drift guard extended to wiki + class names; wiki symbol drift fixed
 
 Executed the three follow-up suggestions. **#3 (obfuscation debunk):** `git grep`

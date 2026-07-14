@@ -12,11 +12,16 @@ exist:
 
   1. Provider tokens  — `xxxProvider` (camelCase, ends in Provider)        [always]
   2. Dart file paths  — `foo_bar.dart` or `lib/.../foo.dart`               [always]
-  3. Class names      — `FooNotifier`/`FooService`/`FooRepository`         [--classes]
+  3. Class names      — Foo{Notifier,Service,Repository,Dao,Mapper,Guard}  [--classes]
+                        checked BOTH in backticks and bare in prose (outside
+                        fenced code) — measured zero-noise on both surfaces.
 
-Shapes 1-2 are near-zero false-positive and gated in CI. Shape 3 is opt-in
-(advisory) because PascalCase names are noisier; measure before wiring. Prose
-words, l10n keys, and table/column literals are never checked (too noisy).
+Shapes 1-2 are near-zero false-positive and gated in CI. Shape 3 (--classes) is
+also gated once measured clean. Other class/method names, l10n keys, and
+table/column literals are never checked (too noisy).
+
+--audit-allowlist reports allowlist entries no longer cited by any doc (periodic
+cruft check; not gated).
 
 Targets:
   --target rules  (default)  .claude/rules/*.md
@@ -43,13 +48,10 @@ PROVIDER_ALLOWLIST: set[str] = {
     "myProvider",
     "fooProvider",
     "xProvider",
-    "someProvider",
     "myRepositoryProvider",
     "repositoryProvider",
     "xRepositoryProvider",
     "birdProvider",  # generic example notifier in provider/form skeletons
-    "myAsyncProvider",
-    "exampleProvider",
     "conflictNotifierProvider",  # documented-as-removed in prose that names the real one
     "commentsForPostProvider",   # community.md: prose documenting its 2026-07-05 removal
     "gamificationServiceProvider",  # documentation-sync.md: prose example of a never-built symbol
@@ -59,11 +61,6 @@ PROVIDER_ALLOWLIST: set[str] = {
 
 # Illustrative placeholder / documented-as-removed .dart file names.
 DART_PATH_ALLOWLIST: set[str] = {
-    "my_form.dart",
-    "foo.dart",
-    "bar.dart",
-    "example.dart",
-    "my_screen.dart",
     "_extensions.dart",           # coding-standards.md: generic "dedicated _extensions.dart" example
     "mutation_linkage_data.dart",  # genetics.md: prose documenting the pre-2026-07-10 superseded file
 }
@@ -73,13 +70,22 @@ CLASS_ALLOWLIST: set[str] = {
     "MarketplaceListingRepository",  # marketplace.md anti-pattern #1: a FORBIDDEN name, cited as what-not-to-use
     "CalendarService",           # calendar-service wiki: prose stating no such class exists (real: CalendarEventGenerator)
     "IncubationReminderService",  # calendar/notification wiki: prose stating no such class exists (real: NotificationScheduler)
+    "ConnectivityService",       # documentation-sync.md: cited as the canonical bare-prose drift example (real: networkStatusProvider)
 }
 
 PROVIDER_RE = re.compile(r"`([a-z][A-Za-z0-9]*Provider)`")
 # Backtick token that ends in .dart; may be a bare basename or a path.
 DART_PATH_RE = re.compile(r"`([A-Za-z0-9_./-]+\.dart)`")
-# High-confidence class suffixes — always defined as a `class X` in lib/.
-CLASS_RE = re.compile(r"`([A-Z][A-Za-z0-9]*(?:Notifier|Service|Repository))`")
+# High-confidence class suffixes — always defined as a `class X` in lib/, stable
+# names (measured zero-noise across both doc surfaces 2026-07-14).
+_CLASS_SUFFIX = r"(?:Notifier|Service|Repository|Dao|Mapper|Guard)"
+CLASS_RE = re.compile(rf"`([A-Z][A-Za-z0-9]*{_CLASS_SUFFIX})`")
+# Same shape but BARE (prose, outside backticks) — catches the sibling that a
+# backtick-only scan misses (e.g. the ConnectivityService drift in data-flow.md).
+BARE_CLASS_RE = re.compile(rf"(?<![`\w])([A-Z][A-Za-z0-9]*{_CLASS_SUFFIX})(?![`\w])")
+# Fenced code blocks + inline backtick spans are illustrative / already covered.
+_FENCED_RE = re.compile(r"```.*?```", re.S)
+_INLINE_BT_RE = re.compile(r"`[^`]*`")
 
 
 def _rg(pattern: str, *paths: str) -> bool:
@@ -165,14 +171,42 @@ def scan(target: str = "rules", check_classes: bool = False) -> list[tuple[str, 
             if not _dart_path_exists(token):
                 findings.append((label, "dart-path", token))
         if check_classes:
-            for m in CLASS_RE.finditer(text):
-                name = m.group(1)
+            def _check_class(name: str) -> None:
                 if name in CLASS_ALLOWLIST or name in seen:
-                    continue
+                    return
                 seen.add(name)
                 if not _symbol_exists(name):
                     findings.append((label, "class", name))
+
+            for m in CLASS_RE.finditer(text):
+                _check_class(m.group(1))
+            # Bare prose occurrences (strip fenced code + inline backtick spans).
+            prose = _INLINE_BT_RE.sub("", _FENCED_RE.sub("", text))
+            for m in BARE_CLASS_RE.finditer(prose):
+                _check_class(m.group(1))
     return findings
+
+
+def audit_allowlist() -> list[tuple[str, str]]:
+    """Return (bucket, name) for allowlist entries no longer cited by any doc.
+
+    A stale entry is dead cruft — the prose that justified it was removed. Run
+    periodically (not gated) to keep the allowlists from bloating.
+    """
+    all_text = "\n".join(p.read_text(encoding="utf-8") for _, p in _target_files("all"))
+    stale: list[tuple[str, str]] = []
+    buckets = [
+        ("PROVIDER_ALLOWLIST", PROVIDER_ALLOWLIST),
+        ("DART_PATH_ALLOWLIST", DART_PATH_ALLOWLIST),
+        ("CLASS_ALLOWLIST", CLASS_ALLOWLIST),
+    ]
+    for bucket, names in buckets:
+        for name in sorted(names):
+            # Word-boundary match; citations live inside backticks, so backtick
+            # must NOT be excluded from the boundary (it is a non-word char).
+            if not re.search(rf"(?<!\w){re.escape(name)}(?!\w)", all_text):
+                stale.append((bucket, name))
+    return stale
 
 
 def main() -> int:
@@ -189,11 +223,26 @@ def main() -> int:
         help="Also check PascalCase *Notifier/*Service/*Repository names (advisory).",
     )
     parser.add_argument(
+        "--audit-allowlist",
+        action="store_true",
+        help="Report allowlist entries no longer cited by any doc (periodic cruft check).",
+    )
+    parser.add_argument(
         "--strict",
         action="store_true",
         help="Exit 1 on any finding (CI-gate mode).",
     )
     args = parser.parse_args()
+
+    if args.audit_allowlist:
+        stale = audit_allowlist()
+        if not stale:
+            print("Allowlist audit OK — every entry is still cited by a doc.")
+            return 0
+        print("Stale allowlist entries (no doc cites them — remove from the script):")
+        for bucket, name in stale:
+            print(f"  [{bucket}] {name}")
+        return 1 if args.strict else 0
 
     findings = scan(target=args.target, check_classes=args.classes)
     if not findings:
