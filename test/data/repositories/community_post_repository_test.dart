@@ -126,6 +126,35 @@ void main() {
       expect(posts[1].isFollowingAuthor, isFalse);
     });
 
+    test(
+      'trusts is_following_author from the feed RPC without a second query',
+      () async {
+        when(
+          () => postSource.fetchFeed(
+            currentUserId: 'u1',
+            limit: 20,
+            before: null,
+            beforeId: null,
+          ),
+        ).thenAnswer(
+          (_) async => [
+            _makePostRow(id: 'p1', userId: 'followed-author')
+              ..['is_following_author'] = true,
+            _makePostRow(id: 'p2', userId: 'stranger-author')
+              ..['is_following_author'] = false,
+          ],
+        );
+        stubSocialEmpty();
+
+        final posts = await repository.getFeed(currentUserId: 'u1');
+
+        expect(posts[0].isFollowingAuthor, isTrue);
+        expect(posts[1].isFollowingAuthor, isFalse);
+        // The RPC already carries the flag — no extra round-trip.
+        verifyNever(() => socialSource.fetchFollowedUserIds(any()));
+      },
+    );
+
     test('does not fetch follow state for anonymous users', () async {
       when(
         () => postSource.fetchFeed(
@@ -313,23 +342,26 @@ void main() {
   });
 
   group('getByTag', () {
-    test('fetches tag feed and enriches with current-user social state', () async {
-      when(() => postSource.fetchByTag('opaline', limit: 30)).thenAnswer(
-        (_) async => [
-          _makePostRow(id: 'p1', userId: 'u2'),
-          _makePostRow(id: 'p2', userId: 'u3'),
-        ],
-      );
-      stubSocialEmpty();
+    test(
+      'fetches tag feed and enriches with current-user social state',
+      () async {
+        when(() => postSource.fetchByTag('opaline', limit: 30)).thenAnswer(
+          (_) async => [
+            _makePostRow(id: 'p1', userId: 'u2'),
+            _makePostRow(id: 'p2', userId: 'u3'),
+          ],
+        );
+        stubSocialEmpty();
 
-      final posts = await repository.getByTag(
-        tag: 'opaline',
-        currentUserId: 'u1',
-      );
+        final posts = await repository.getByTag(
+          tag: 'opaline',
+          currentUserId: 'u1',
+        );
 
-      expect(posts.map((p) => p.id), ['p1', 'p2']);
-      verify(() => postSource.fetchByTag('opaline', limit: 30)).called(1);
-    });
+        expect(posts.map((p) => p.id), ['p1', 'p2']);
+        verify(() => postSource.fetchByTag('opaline', limit: 30)).called(1);
+      },
+    );
   });
 
   group('getBookmarked', () {

@@ -259,17 +259,22 @@ class CommunityPostRepository {
     Set<String> followedAuthorIds = {};
 
     if (currentUserId != 'anonymous' && postIds.isNotEmpty) {
-      // Single RPC call replaces the previous pair of parallel queries
-      // against community_likes and community_bookmarks.
-      //
-      // Follow state comes from a second query on purpose: `fetch_community_feed`
-      // (and every other post fetch path) never returns `is_following_author`,
-      // so without this the field stayed false forever — the follow button never
-      // showed the followed state and the "following" feed filter was always
-      // empty.
+      // `fetch_community_feed` emits `is_following_author` itself, so feed rows
+      // need no follow lookup. The other paths (fetchById / fetchByUser /
+      // fetchByTag / fetchByIds) are plain selects that do not carry the column,
+      // so for those we still resolve the viewer's follows here — otherwise the
+      // flag would silently stay false, which is exactly how the follow button
+      // and the "following" filter were dead before 2026-07-14.
+      final needsFollowLookup = rows.any(
+        (row) => !row.containsKey('is_following_author'),
+      );
+
       final results = await Future.wait([
         _socialSource.fetchPostSocialState(currentUserId, postIds),
-        _socialSource.fetchFollowedUserIds(currentUserId),
+        if (needsFollowLookup)
+          _socialSource.fetchFollowedUserIds(currentUserId)
+        else
+          Future.value(<String>{}),
       ]);
       final socialState =
           results[0] as ({Set<String> liked, Set<String> bookmarked});
