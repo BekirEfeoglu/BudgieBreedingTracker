@@ -243,6 +243,10 @@ class FollowToggleNotifier extends Notifier<void> {
       final repo = ref.read(communitySocialRepositoryProvider);
       await repo.toggleFollow(userId: userId, targetUserId: targetUserId);
       ref.read(communityPostRepositoryProvider).invalidateFeedCache();
+      // The public-profile screen derives its follow button state from
+      // followedUsersProvider, not from the feed — without this invalidation it
+      // keeps rendering the pre-toggle state until a manual pull-to-refresh.
+      ref.invalidate(followedUsersProvider);
     } catch (e, st) {
       ref
           .read(communityFeedProvider.notifier)

@@ -256,20 +256,32 @@ class CommunityPostRepository {
 
     Set<String> likedIds = {};
     Set<String> bookmarkedIds = {};
+    Set<String> followedAuthorIds = {};
 
     if (currentUserId != 'anonymous' && postIds.isNotEmpty) {
       // Single RPC call replaces the previous pair of parallel queries
       // against community_likes and community_bookmarks.
-      final socialState = await _socialSource.fetchPostSocialState(
-        currentUserId,
-        postIds,
-      );
+      //
+      // Follow state comes from a second query on purpose: `fetch_community_feed`
+      // (and every other post fetch path) never returns `is_following_author`,
+      // so without this the field stayed false forever — the follow button never
+      // showed the followed state and the "following" feed filter was always
+      // empty.
+      final results = await Future.wait([
+        _socialSource.fetchPostSocialState(currentUserId, postIds),
+        _socialSource.fetchFollowedUserIds(currentUserId),
+      ]);
+      final socialState =
+          results[0] as ({Set<String> liked, Set<String> bookmarked});
       likedIds = socialState.liked;
       bookmarkedIds = socialState.bookmarked;
+      followedAuthorIds = results[1] as Set<String>;
     }
 
     return rows
-        .map((row) => _parsePost(row, likedIds, bookmarkedIds))
+        .map(
+          (row) => _parsePost(row, likedIds, bookmarkedIds, followedAuthorIds),
+        )
         .whereType<CommunityPost>()
         .toList();
   }
@@ -278,6 +290,7 @@ class CommunityPostRepository {
     Map<String, dynamic> row,
     Set<String> likedIds,
     Set<String> bookmarkedIds,
+    Set<String> followedAuthorIds,
   ) {
     final id = _asString(row['id']);
     final userId = _asString(row['user_id']);
@@ -327,7 +340,9 @@ class CommunityPostRepository {
           _asInt(row['comment_count']) ?? _asInt(row['comments_count']) ?? 0,
       isLikedByMe: likedIds.contains(id),
       isBookmarkedByMe: bookmarkedIds.contains(id),
-      isFollowingAuthor: _asBool(row['is_following_author']) ?? false,
+      isFollowingAuthor:
+          _asBool(row['is_following_author']) ??
+          followedAuthorIds.contains(userId),
       isPinned: _asBool(row['is_pinned']) ?? false,
       editedAt: _asDateTime(row['edited_at']),
       createdAt: _asDateTime(row['created_at']),

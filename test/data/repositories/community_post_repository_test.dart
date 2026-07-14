@@ -56,6 +56,10 @@ void main() {
       postSource: postSource,
       socialSource: socialSource,
     );
+
+    when(
+      () => socialSource.fetchFollowedUserIds(any()),
+    ).thenAnswer((_) async => <String>{});
   });
 
   void stubSocialEmpty() {
@@ -95,6 +99,47 @@ void main() {
       expect(posts[1].id, 'p2');
       expect(posts[1].isLikedByMe, isFalse);
       expect(posts[1].isBookmarkedByMe, isTrue);
+    });
+
+    test('marks posts whose author the current user follows', () async {
+      when(
+        () => postSource.fetchFeed(
+          currentUserId: 'u1',
+          limit: 20,
+          before: null,
+          beforeId: null,
+        ),
+      ).thenAnswer(
+        (_) async => [
+          _makePostRow(id: 'p1', userId: 'followed-author'),
+          _makePostRow(id: 'p2', userId: 'stranger-author'),
+        ],
+      );
+      stubSocialEmpty();
+      when(
+        () => socialSource.fetchFollowedUserIds('u1'),
+      ).thenAnswer((_) async => {'followed-author'});
+
+      final posts = await repository.getFeed(currentUserId: 'u1');
+
+      expect(posts[0].isFollowingAuthor, isTrue);
+      expect(posts[1].isFollowingAuthor, isFalse);
+    });
+
+    test('does not fetch follow state for anonymous users', () async {
+      when(
+        () => postSource.fetchFeed(
+          currentUserId: 'anonymous',
+          limit: 20,
+          before: null,
+          beforeId: null,
+        ),
+      ).thenAnswer((_) async => [_makePostRow(id: 'p1')]);
+
+      final posts = await repository.getFeed(currentUserId: 'anonymous');
+
+      expect(posts.single.isFollowingAuthor, isFalse);
+      verifyNever(() => socialSource.fetchFollowedUserIds(any()));
     });
 
     test('parses schema image_urls from feed rows', () async {

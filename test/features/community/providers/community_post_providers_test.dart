@@ -3,11 +3,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/data/models/community_post_model.dart';
+import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/repositories/community_social_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_feed_providers.dart';
 import 'package:budgie_breeding_tracker/features/community/providers/community_post_providers.dart';
 
 import '../../../helpers/mocks.dart';
+
+class _MockCommunitySocialRepository extends Mock
+    implements CommunitySocialRepository {}
 
 const _testPosts = [
   CommunityPost(
@@ -163,6 +168,54 @@ void main() {
       final posts = container.read(communityFeedProvider).posts;
       expect(posts.first.id, 'p1');
       expect(posts.first.isPinned, isTrue);
+    });
+  });
+
+  group('FollowToggleNotifier', () {
+    test('refreshes the followed-users list after a successful toggle', () async {
+      final social = _MockCommunitySocialRepository();
+      final repo = MockCommunityPostRepository();
+      when(
+        () => social.toggleFollow(
+          userId: any(named: 'userId'),
+          targetUserId: any(named: 'targetUserId'),
+        ),
+      ).thenAnswer((_) async {});
+      when(repo.invalidateFeedCache).thenAnswer((_) {});
+      when(
+        () => repo.getFollowedUserSummaries(
+          currentUserId: any(named: 'currentUserId'),
+        ),
+      ).thenAnswer((_) async => const <Map<String, dynamic>>[]);
+
+      final container = ProviderContainer(
+        overrides: [
+          currentUserIdProvider.overrideWithValue('me'),
+          communitySocialRepositoryProvider.overrideWithValue(social),
+          communityPostRepositoryProvider.overrideWithValue(repo),
+          communityFeedProvider.overrideWith(
+            () => _FakeFeedNotifier(posts: _testPosts),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.read(communityFeedProvider);
+
+      // Prime the followed-users list (1st fetch).
+      await container.read(followedUsersProvider.future);
+
+      await container.read(followToggleProvider.notifier).toggleFollow('u1');
+
+      // The profile screen's follow button reads followedUsersProvider — without
+      // an invalidation it keeps serving the pre-toggle snapshot.
+      await container.read(followedUsersProvider.future);
+
+      verify(
+        () => social.toggleFollow(userId: 'me', targetUserId: 'u1'),
+      ).called(1);
+      verify(
+        () => repo.getFollowedUserSummaries(currentUserId: 'me'),
+      ).called(2);
     });
   });
 
