@@ -147,14 +147,16 @@ void main() {
     });
 
     testWidgets(
-      'non-owner does not see message seller when messaging disabled',
+      'non-owner sees message seller (messaging enabled) but no owner actions',
       (tester) async {
         await pumpLocalizedApp(
           tester,
           buildSubject(listingAsync: const AsyncData(_sampleListing)),
         );
 
-        expect(find.text('marketplace.message_seller'), findsNothing);
+        // FeatureFlags.messagingEnabled has been true since 2026-07-10, so the
+        // contact CTA is live for non-owners; owner-only actions stay hidden.
+        expect(find.text('marketplace.message_seller'), findsOneWidget);
         expect(find.text('marketplace.edit_listing'), findsNothing);
       },
     );
