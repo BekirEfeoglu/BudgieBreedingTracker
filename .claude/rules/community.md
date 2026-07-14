@@ -54,6 +54,12 @@ Compose -> Client moderation -> Edge create-community-post
 - Race-safe: client `requestId` pattern, server unique constraint `(post_id, user_id)`
 - Count cache: 30sn TTL, optimistic increment
 
+## Follow
+- Yazma yolu: `CommunitySocialRepository.toggleFollow` → `community_follows` (`follower_id`/`following_id`, unique pair). RLS: kendi `follower_id`'nle insert/delete
+- **Takip DURUMU feed satırından GELMEZ:** `fetch_community_feed` RPC'si `is_following_author` döndürmez (RETURNS TABLE'da yok). `CommunityPostRepository._enrichPosts` bu alanı `fetchFollowedUserIds` ile ayrıca çeker ve `isFollowingAuthor`'ı doldurur — tüm fetch yollarını (feed, detail, user posts, tag, bookmark) tek noktadan kapsar. 2026-07-14 öncesi bu yapılmıyordu: alan sabit `false` kalıyordu, buton hiç "Takip Ediliyor"a geçmiyordu ve **"Takip Edilenler" filtre sekmesi hep boştu**
+- `FollowToggleNotifier` başarıdan sonra ÜÇ şeyi de yapmalı: feed optimistic toggle + `invalidateFeedCache()` + `ref.invalidate(followedUsersProvider)`. Sonuncusu atlanırsa public profil ekranının takip butonu (state'i `followedUsersProvider`'dan türetir) pull-to-refresh'e kadar eski durumda kalır
+- Yeni bir "takip durumu" tüketicisi eklerken: kaynağı `isFollowingAuthor` (post bazlı) mı `followedUsersProvider` (kullanıcı listesi) mi — İKİSİ de invalidate edilmeli
+
 ## Report Flow
 - User reports post → `community_reports` table
 - Threshold (3 unique reporter) → auto-hide pending review
@@ -121,5 +127,7 @@ Compose -> Client moderation -> Edge create-community-post
 9. Moderation atlayıp publish (release-blocker — moderation.md fail-closed)
 10. Public bucket'ta kullanıcı kimliği tahmin edilebilir path (`<email>/...` gibi)
 11. `_feedColumns`'a kolon eklerken/çıkarırken prod şema ile senkron olmamak (kolon prod'da yokken query 400 döner — `bird_id`/`mutation_tags` 2026-07-08 drift'i; migration ÖNCE deploy edilmeli, migrations.md deploy sırası)
+12. Model alanının (`isFollowingAuthor` gibi) sadece parse edilmesine bakıp veri kaynağının onu GERÇEKTEN döndürdüğünü doğrulamamak — `_parsePost` alanı okuyordu ama RPC hiç göndermiyordu; alan sessizce hep `false` kaldı (§ Follow)
+13. Optimistic toggle'ı "yazma başarılı" sanıp durumu okuyan İKİNCİ yüzeyi (public profil butonu) invalidate etmemek (§ Follow)
 
 > **İlgili**: architecture.md § Online-First Exemption, moderation.md (`moderate-content`), messaging.md (DM CTA + block sync), gamification.md (verified badge), edge-functions.md (`create-community-post`, `create-community-comment`, `upload-community-photo`), assets-images.md (post images)

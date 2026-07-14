@@ -4,6 +4,36 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-14] fix | Community follow + DM were dead: RLS recursion & missing follow state
+
+User report: "topluluk sekmesinde takip ve kişisel mesaj çalışmıyor". Three
+root causes, all proven against prod before touching code.
+
+**DM (hard failure, server).** `participants_insert`'s `WITH CHECK` contained an
+unconditional raw `NOT EXISTS (SELECT … FROM conversation_participants …)`
+(added by the 2026-07-02 block-hardening migration, which silently reverted
+`20260402130000_fix_participants_rls_recursion.sql`). Reading the table from
+inside its own policy → `42P17 infinite recursion` on EVERY participant insert.
+DM never worked in prod (conversations/participants/messages = 0 rows).
+Fix + applied to prod: `20260714181422_fix_conversation_participants_rls_recursion.sql`
+routes the owner/admin and block checks through `private.is_conversation_manager`
+/ `private.conversation_has_block_with` (SECURITY DEFINER). Verified end-to-end
+as a real authenticated user (create → 2 participants → message → read cursor →
+recipient reads); block rejection still fires (42501). Advisors: 0 new findings.
+
+**Follow (client).** `fetch_community_feed` never returns `is_following_author`,
+so `CommunityPost.isFollowingAuthor` was permanently `false` — the button never
+showed the followed state and the "following" filter tab was always empty.
+`_enrichPosts` now fetches `fetchFollowedUserIds` alongside the social-state RPC
+(covers feed/detail/user-posts/tag/bookmark in one place). `FollowToggleNotifier`
+now also invalidates `followedUsersProvider`, which the public-profile follow
+button reads — without it that button ignored taps until pull-to-refresh.
+
+Also: the community-tagged marketplace test still asserted the pre-2026-07-10
+"messaging disabled" contract and had been red in the weekly suite; updated.
+Rules updated: community.md (§ Follow + 2 anti-patterns), messaging.md (recursion
+regression + anti-pattern #12).
+
 ## [2026-07-14] ci | Drift guard: +Dao/Mapper/Guard, bare-prose scan, allowlist audit
 
 Third round of drift-guard hardening (measured before wiring, per the

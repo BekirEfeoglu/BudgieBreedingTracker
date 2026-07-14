@@ -107,6 +107,23 @@ continuing to send) was added in migration
 production 2026-07-02 (via Supabase MCP `apply_migration`; `security`
 advisor showed 0 new findings after applying).
 
+**RLS recursion regression (fixed 2026-07-14).** That migration wrote the
+block check as a raw, unconditional `NOT EXISTS (SELECT … FROM
+conversation_participants …)` inside `participants_insert`'s `WITH CHECK`.
+Reading `conversation_participants` from within its own policy re-enters that
+policy, so Postgres aborted **every** participant insert with `42P17: infinite
+recursion detected in policy`. DM was therefore 100% broken from 2026-07-02
+until 2026-07-14 (prod evidence: `conversations`/`conversation_participants`/
+`messages` all 0 rows). It also silently undid
+`20260402130000_fix_participants_rls_recursion.sql`, which had removed exactly
+this shape. Fix: `20260714181422_fix_conversation_participants_rls_recursion.sql`
+moves the owner/admin check and the block check into SECURITY DEFINER helpers
+(`private.is_conversation_manager`, `private.conversation_has_block_with`),
+mirroring `private.is_conversation_member`. Semantics unchanged; block
+rejection verified to still fire (42501). **Never put a bare subquery over
+`conversation_participants` inside a `conversation_participants` policy — route
+it through a `private.*` SECURITY DEFINER helper.**
+
 ## Group Chats
 
 `group_form_screen.dart` manages create/edit. Membership stored

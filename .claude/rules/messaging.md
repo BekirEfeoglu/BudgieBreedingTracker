@@ -89,6 +89,7 @@ Shipped: `Message.deliveryStatus` local-only (`@JsonKey(includeFromJson: false, 
 - Block: `community_blocks` tablosu (community.md ile paylaşılan, `conversation_blocked` diye ayrı bir flag YOK)
 - Client-side: `blockedUsersProvider` yeni DM başlatmayı engeller ve UI'da bloklu kullanıcıyı gizler
 - Server-side RLS (`messages_insert`, `participants_insert` policy'leri, migration `20260702174304_block_messages_from_blocked_users.sql`): gönderen ile conversation'daki herhangi bir aktif katılımcı arasında (iki yönde) block ilişkisi varsa insert reddedilir. **2026-07-02'de production'a deploy edildi** (Supabase MCP `apply_migration`, `security` advisor 0 yeni bulgu).
+- **RLS recursion regresyonu (2026-07-14'te düzeltildi):** o migration block kontrolünü `participants_insert`'in `WITH CHECK`'ine **koşulsuz ham alt-sorgu** (`NOT EXISTS (… FROM conversation_participants …)`) olarak yazdı. Tablo kendi policy'si içinden okunduğu için Postgres HER katılımcı insert'ini `42P17: infinite recursion detected in policy` ile reddetti → **DM 2026-07-02'den 2026-07-14'e kadar tamamen çalışmadı** (prod kanıtı: conversations/participants/messages = 0). Bu, `20260402130000_fix_participants_rls_recursion.sql`'in aynı hatayı temizleyen düzeltmesini sessizce geri aldı. Fix: `20260714181422_fix_conversation_participants_rls_recursion.sql` — owner/admin ve block kontrolleri `private.is_conversation_manager` / `private.conversation_has_block_with` SECURITY DEFINER helper'larına taşındı (`private.is_conversation_member` deseni). Semantik korundu; block reddi hâlâ 42501 ile ateşliyor. **Kural: `conversation_participants` policy'sinin içine bu tabloyu okuyan çıplak alt-sorgu YAZMA — `private.*` SECURITY DEFINER helper üzerinden geç.**
 - Block sonrası geçmiş mesaj görünür (delete edilmez)
 - Report: tek mesaj → `community_reports` (contextType: 'message')
 
@@ -129,5 +130,6 @@ Shipped: `Message.deliveryStatus` local-only (`@JsonKey(includeFromJson: false, 
 9. Yeni 1-1 conversation oluştururken duplicate-check atlamak (aynı iki kullanıcı için birden fazla conversation row'u)
 10. Block'lu user'ın geçmiş mesajlarını silmek (kullanıcı kendi history'sine erişemez)
 11. RLS block-check migration'ını deploy etmeden "blocking server-side enforce ediliyor" varsaymak (bkz. § Block & Report deploy notu)
+12. `conversation_participants` policy'sine bu tabloyu okuyan çıplak alt-sorgu koymak (42P17 recursion — TÜM insert'ler patlar, DM ölür; `private.*` SECURITY DEFINER helper zorunlu). Yeni bir messaging RLS policy'si yazdıktan sonra gerçek bir authenticated insert simülasyonuyla (rollback'li) doğrula — policy "mantıken doğru" görünse de recursion'a girebilir
 
 > **İlgili**: architecture.md § Online-First Exemption, presence.md (typing + online), community.md (block sync, profile lookup), notifications.md (push), moderation.md (DM threshold), assets-images.md (attachment)
