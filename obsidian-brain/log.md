@@ -4,6 +4,26 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-14] perf | Feed RPC emits is_following_author; messages_insert uses definer helpers
+
+Two follow-ups. **`20260714200510`**: `fetch_community_feed` now returns
+`is_following_author` (EXISTS over `community_follows`, both sort branches,
+SECURITY INVOKER — `community_follows_select` already exposes the follower's own
+rows), so the feed is one round-trip again. RETURNS TABLE changed => DROP+CREATE,
+grants (`authenticated`, `service_role`, no PUBLIC) restored explicitly; the
+parameter list is unchanged so older binaries keep working. `_enrichPosts` now
+only does the `fetchFollowedUserIds` lookup when the rows lack the column — the
+non-RPC paths (fetchById/ByUser/ByTag/ByIds) still need it.
+
+**`20260714200511`**: `messages_insert` moved off its two inlined subqueries onto
+`private.is_conversation_member` + a new `private.sender_blocked_in_conversation`.
+Note the new helper deliberately does NOT reuse `conversation_has_block_with`:
+that one filters `is_left = false`, while the original messages_insert counted
+blocks against LEFT participants too — semantics preserved exactly.
+
+Verified in prod: 0 posts flagged before following, 9 after (both newest and
+trending branches); message send OK, rejected 42501 once a block exists.
+
 ## [2026-07-14] security | Scope participants_insert self-join to the conversation creator
 
 Follow-up to the DM recursion fix. `participants_insert` still allowed an
@@ -150,36 +170,5 @@ count; the 2026-07-10 MCP prod-parity snapshot stays at 206↔206, with
 that day (both → 207, authority-preserving). No source/contract change; verified
 no other count drift and that notification per-device-logout + marketplace
 server-side-moderation contracts were already reflected. Lint green.
-
-## [2026-07-12] notifications | inspection: FCM-logout doc reconcile + DND settings fixes
-
-Notification-system inspection. (1) Docs: notifications.md, auth.md, and the
-notification-service/auth-service wiki pages all claimed logout does
-`unregisterAll()` / "delete all device tokens"; actual code
-(`PushNotificationService.deactivateCurrentToken` →
-`FcmTokenRemoteSource.deactivateToken`) deactivates ONLY the current device's
-active token (and nulls `_currentUserId`) — per-device, not cross-device. Fixed
-all 5 doc spots to the real (and correct: other logged-in devices keep push)
-behavior. (2) Code: `_DndSection` read the rate limiter in initState, racing its
-async `loadFromPrefs()` and freezing tiles on default hours over persisted
-values — now watches `rateLimiterReadyProvider` and reads the limiter reactively;
-`_DndTimeTile` gained a `Semantics(button)` combined label + 48dp minHeight
-(a11y). 2 regression tests added. Investigated but NOT changed (not defects):
-reschedule "cancel-before-add" is already handled at call sites
-(breeding-form cancels previous species; egg-actions cancels all-species; reboot
-starts clean); scheduled notifications bypassing client DND is by-design
-(notifications.md: client DND = immediate only).
-
-## [2026-07-12] ads | docs/app-ads.txt for AdMob authorized-sellers verification
-
-Published `docs/app-ads.txt` (`google.com, pub-4121152941965334, DIRECT,
-f08c47fec0942fa0`) at the marketing-site root so AdMob verifies the developer
-domain and lifts "limited ad serving". Part of an external AdMob dashboard setup
-session: linked both apps to their stores (Android→Google Play
-`com.budgiebreeding.budgie_breeding_tracker`, iOS→App Store ID `6759828211`),
-verified both via the now-live file (both "under review"), and confirmed all 6
-production ad-unit IDs in `ad_service.dart` match the console. Publisher ID ==
-`ca-app-pub-4121152941965334`. Wiki: [[infrastructure/marketing-site]]. Commit
-d95e9bf.
 
 Older entries are archived in [[log-archive-2026-07-j]], [[log-archive-2026-07-i]], [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
