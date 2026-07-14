@@ -124,6 +124,21 @@ rejection verified to still fire (42501). **Never put a bare subquery over
 `conversation_participants` inside a `conversation_participants` policy — route
 it through a `private.*` SECURITY DEFINER helper.**
 
+**Self-join scoped to the creator (2026-07-14, migration `20260714192445`).**
+`participants_insert` still carried an unscoped `user_id = auth.uid()` branch:
+any authenticated user who learned a conversation UUID (deeplink, push payload,
+log) could insert themselves as a participant, and every read policy downstream
+is membership-based — so that one row handed them the whole thread history. The
+branch only exists to bootstrap (the creator must add themselves before any
+owner/admin row exists), and every shipped insert path is creator-driven, so it
+is now `user_id = auth.uid() AND private.is_conversation_creator(...)`. The
+creator check MUST be a SECURITY DEFINER helper: a bare subquery over
+`public.conversations` would run under the caller's RLS, where
+`conversations_participant_read` requires membership that does not exist yet at
+bootstrap time — the check would always be false and DM creation would deadlock.
+Verified in prod: DM create + group invite still work; a non-creator self-join is
+rejected (42501) and sees 0 messages; the block guard still fires.
+
 ## Group Chats
 
 `group_form_screen.dart` manages create/edit. Membership stored

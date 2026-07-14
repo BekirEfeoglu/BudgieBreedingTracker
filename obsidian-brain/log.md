@@ -4,6 +4,22 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-14] security | Scope participants_insert self-join to the conversation creator
+
+Follow-up to the DM recursion fix. `participants_insert` still allowed an
+unscoped self-join (`user_id = auth.uid()` into ANY conversation): anyone who
+learned a conversation UUID could add themselves and — since every read policy
+is membership-based — read the entire thread. Migration `20260714192445` adds
+`private.is_conversation_creator` (SECURITY DEFINER; a bare subquery over
+`public.conversations` would deadlock bootstrap, because
+`conversations_participant_read` demands membership that does not exist yet) and
+scopes the branch to the creator. Owner/admin invites unchanged.
+
+Verified in prod as real authenticated users: DM create end-to-end OK, group
+owner invite OK, non-creator self-join into someone else's DM **and** group both
+rejected (42501) with 0 messages visible, block guard still fires (42501).
+Security advisor: no new findings. Applied via Supabase MCP.
+
 ## [2026-07-14] fix | Community follow + DM were dead: RLS recursion & missing follow state
 
 User report: "topluluk sekmesinde takip ve kişisel mesaj çalışmıyor". Three
