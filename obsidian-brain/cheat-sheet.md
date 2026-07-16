@@ -20,7 +20,8 @@ start from.
 | Gate a feature behind premium? | [[domain/premium-service]] — `effectivePremiumProvider`, `PremiumGuard` |
 | Add a Riverpod provider? | [[patterns/providers]] — pick the right type, `ref.watch` vs `read` rules |
 | Handle an error in UI? | [[patterns/error-handling]] + [[patterns/empty-loading-error-states]] |
-| Upload a photo? | [[patterns/assets-images]] — 10 MB guard, `scan-image-safety`, compress |
+| Upload a photo? | [[patterns/assets-images]] — picker sizing, guard/magic bytes, 2 MB effective scan cap, `scan-image-safety` |
+| Validate a bird ring number? | [[features/birds]] + [[patterns/forms-validation]] — debounced early check plus submit-time fallback |
 | Write a widget test? | [[patterns/testing]] — pump helpers, `addTearDown(container.dispose)` |
 | Style with theme? | [[patterns/ui-patterns]] — `Theme.of(context)`, `AppSpacing`, `withValues(alpha:)` |
 | Avoid an anti-pattern? | [[patterns/anti-patterns]] — 24 rules + audit-flagged extras |
@@ -67,15 +68,15 @@ start from.
 | Trigger | What runs |
 |---------|-----------|
 | App cold start | Splash → session refresh → deep link → home / auth ([[features/splash]]) |
-| App resume (foreground) | Sync pull, profile refresh, presence heartbeat ([[domain/sync-service]] + [[domain/presence-service]]) |
-| Connectivity online | Sync push pending dirty records ([[data-layer/sync-strategy]]) |
+| App resume (foreground) | Lightweight sync push, profile/premium refresh, presence active, realtime resubscribe ([[domain/sync-service]] + [[domain/presence-service]]) |
+| Connectivity online | `forceFullSync()` after auto-sync/Wi-Fi guards ([[data-layer/sync-strategy]]) |
 | Egg → hatched | Auto-create chick + reminder reschedule + incubation closure check ([[domain/eggs-service]]) |
 | All eggs in incubation terminal | Auto-close incubation + maybe pair ([[domain/eggs-service]]) |
 | Bird / breeding / chick added | XP awarded + badge progress + verified-breeder check ([[domain/gamification-service]]) |
-| Photo uploaded | 10 MB guard → compress → `scan-image-safety` → bucket upload ([[patterns/assets-images]]) |
+| Photo selected/uploaded | picker resize/quality → size guard → magic bytes → `scan-image-safety` → bucket ([[patterns/assets-images]]) |
 | Message received | FCM push + deeplink + read receipt if enabled — reciprocal opt-out ([[features/messaging]]) |
 | App cold start reaches `InitStep.ready` | Deferred: daily streak check-in (`record_daily_checkin` RPC, local-day), FCM registration, full sync ([[domain/gamification-service]]) |
-| Sync conflict detected | `conflictNotifierProvider` notify + UI banner ([[data-layer/sync-strategy]]) |
+| Sync conflict detected | persist `conflict_history` → `conflictHistoryProvider` + recent-count banner/chip/detail sheet ([[data-layer/sync-strategy]]) |
 | Migration runs | Drift `onUpgrade` (local) or Supabase SQL (remote) ([[data-layer/migrations]]) |
 | `min_supported_build` bump | All users below version see non-dismissible blocking dialog ([[features/app_update]]) |
 

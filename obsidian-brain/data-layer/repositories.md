@@ -6,20 +6,24 @@ Source: `.claude/rules/data-layer.md`, `.claude/rules/background-sync.md`
 
 - 23 entity repositories + `BaseRepository` + `sync_metadata_repository`
 - All registered in `lib/data/repositories/repository_providers.dart`
-- Follow offline-first contract (see [[architecture/offline-first]])
+- Offline-first by default; six cross-user/server-authoritative repositories
+  are cataloged in [[architecture/online-first-exemption]]
 
 ## BaseRepository
 
 All entity repos extend `BaseRepository<T>`. Provides:
 - Standard CRUD operations
 - SyncMetadata integration
-- Dirty flag management
+- Per-record pending/error metadata management
 
 ## SyncableRepository
 
 Mixin for repos that sync to Supabase. Adds:
-- `syncToRemote()` — pushes dirty local records
-- `pullFromRemote()` — fetches remote changes
+- `pull(userId, lastSyncedAt:)` — fetches remote changes into Drift
+- `push(item)` / `pushAll(userId)` — pushes pending local records
+- `markPending()` / `markError()` / `tryImmediatePush()` — per-record metadata
+  and best-effort immediate delivery
+- `pushPendingBatched()` — shared 100-row chunking + poison-row isolation
 
 ### Pull failure reporting
 
@@ -38,27 +42,42 @@ swallowed offline failures out of Sentry). All 15 `pull()` sites call it.
 
 ## ValidatedSyncMixin
 
-Required for repos with FK parent entities. Before pushing, validates parent exists:
+Required for repos with FK parent entities. `validateForeignKeys()` returns
+`null` when valid, or a reason string when the record must wait/fail:
 
 ```dart
 class EggRepository extends BaseRepository<Egg>
-    with ValidatedSyncMixin<Egg> {
+    with SyncableRepository<Egg>, ValidatedSyncMixin<Egg> {
   @override
-  Future<bool> validateParents(Egg entity) async {
-    final pair = await breedingPairDao.findById(entity.breedingPairId);
-    return pair != null;  // false → skip push, delete orphan
+  Future<String?> validateForeignKeys(Egg egg) async {
+    final incubation = egg.incubationId == null
+        ? null
+        : await incubationsDao.getById(egg.incubationId!);
+    if (egg.incubationId != null && incubation == null) {
+      return 'Referenced incubation not found locally';
+    }
+    return null;
   }
 }
 ```
 
 **Repos that require ValidatedSyncMixin:**
-- `egg_repository.dart` (parents: incubation, clutch)
-- `chick_repository.dart` (parent: egg)
-- `health_record_repository.dart` (parent: bird)
-- `breeding_pair_repository.dart` (parent: bird × 2)
-- `event_reminder_repository.dart` (parent: event)
+- `breeding_pair_repository.dart` — male/female birds
+- `clutch_repository.dart` — pair, birds, nest
+- `incubation_repository.dart` — pair, clutch
+- `egg_repository.dart` — incubation, clutch
+- `chick_repository.dart` — egg, clutch, bird
+- `health_record_repository.dart` — bird, chick
+- `event_repository.dart` — bird/pair/chick/egg/incubation links
+- `event_reminder_repository.dart` — event
+- `growth_measurement_repository.dart` — chick
 
 Bird is a root entity — no ValidatedSyncMixin needed.
+
+The mixin distinguishes three cases: missing local record metadata is cleaned;
+a true missing FK parent is marked as a sync error; a parent still pending or
+waiting for tombstone sync defers the child to the next round. It does not
+silently delete a child merely because validation failed.
 
 ## Batch Push & Cascade Deletes
 
@@ -85,7 +104,9 @@ A class named `*Repository` MUST:
 3. Write local-first, then sync to remote
 4. Return local streams (not remote futures) to providers
 
-**Exceptions**: `CommunityPostRepository`, `MessagingRepository` (see [[architecture/online-first-exemption]])
+**Exceptions**: `CommunityPostRepository`, `CommunityCommentRepository`,
+`CommunitySocialRepository`, `MessagingRepository`, `MarketplaceRepository`,
+and `GamificationRepository` (see [[architecture/online-first-exemption]])
 
 ## Naming Rule
 
@@ -97,19 +118,16 @@ Online-only, non-cross-user classes must NOT be named `*Repository`. Use `*Remot
 // Registered via Provider<XRepository>
 final birdRepositoryProvider = Provider<BirdRepository>((ref) {
   return BirdRepository(
-    dao: ref.read(birdsDaoProvider),
-    remoteSource: ref.read(birdRemoteSourceProvider),
-    syncMetadataRepo: ref.read(syncMetadataRepositoryProvider),
+    localDao: ref.watch(birdsDaoProvider),
+    remoteSource: ref.watch(birdRemoteSourceProvider),
+    syncDao: ref.watch(syncMetadataDaoProvider),
   );
 });
 
-// Consumed in feature providers
-class BirdListNotifier extends AsyncNotifier<List<Bird>> {
-  @override
-  Future<List<Bird>> build() {
-    return ref.read(birdRepositoryProvider).watchAll().first;
-  }
-}
+// Simplified consumption shape (production also resolves storage URLs)
+final birdsStreamProvider = StreamProvider.family<List<Bird>, String>(
+  (ref, userId) => ref.watch(birdRepositoryProvider).watchAll(userId),
+);
 ```
 
 ## See Also

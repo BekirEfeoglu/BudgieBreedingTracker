@@ -44,9 +44,12 @@ CachedNetworkImage(
 
 ```
 User selects photo (ImagePicker)
-  → Local validation (size, dimension, format)
-  → Compress + resize (max 1920px, JPEG q85)
-  → scan-image-safety Edge Function (NSFW + malware)
+  → Picker-side resize / quality (surface-specific)
+  → ImagePickerGuard size pre-check
+  → Storage validation (limit, extension, magic bytes)
+  → Safety moderation (raw 2 MB cap, OpenAI categories)
+      ├─ most flows: ImageSafetyService → scan-image-safety
+      └─ community: upload-community-photo validates + moderates + stores
   → Reject if unsafe + show l10n error
   → Upload to Supabase Storage (bucket-specific)
   → Save signed URL or path in DB
@@ -56,30 +59,30 @@ User selects photo (ImagePicker)
 ## File Size Guard
 
 ```dart
-const maxImageBytes = 10 * 1024 * 1024;  // 10MB
-
-if (await file.length() > maxImageBytes) {
-  throw ValidationException(
-    'errors.image_too_large',
-    fieldErrors: {'image': 'errors.image_too_large'},
-  );
-}
+final accepted = await ImagePickerGuard.ensureWithinSizeLimit(context, file);
+if (!accepted || !context.mounted) return;
 ```
 
-Also enforced server-side by `scan-image-safety`.
+The picker guard is UX-only. `StorageService` (and the marketplace remote
+source) re-checks the byte limit, allowed extension, and magic bytes before the
+fail-closed safety scan/upload. `ValidationException` has no `fieldErrors` map.
 
-## Compression
+For scanned UGC, the client/Edge moderation paths reject raw images above 2 MB.
+Most pickers still advertise/guard 10 MB (avatar already uses 2 MB), so 2 MB is
+the effective end-to-end limit until the mismatch in [[known-gaps]] is resolved.
 
-```dart
-final compressed = await FlutterImageCompress.compressWithFile(
-  file.path,
-  minWidth: 1920, minHeight: 1920,
-  quality: 85,
-  format: CompressFormat.jpeg,
-);
-```
+## Picker-Side Resize / Quality
 
-Run in isolate with `compute()` — never block UI thread.
+There is no separate `flutter_image_compress` or isolate stage. Each flow passes
+limits directly to `ImagePicker`:
+
+| Surface | Current picker contract |
+|---------|-------------------------|
+| Bird + DM photo | 1920×1920, quality 85 |
+| Community post | 1200×1200, quality 85 |
+| Marketplace | max width 1200, quality 80 |
+| Avatar | 512×512, quality 80; 2 MB guard |
+| Local AI | 1024×1024, quality 85 |
 
 ## Storage Buckets
 
@@ -101,12 +104,13 @@ Real buckets (`lib/core/constants/supabase_constants.dart`): `bird-photos`, `egg
 
 1. `Image.network` (no cache, no retry)
 2. No `memCacheWidth`/`memCacheHeight` in list items (memory spike)
-3. No compression before upload (10MB storage cost)
+3. Missing picker resize/quality parameters (oversized payload)
 4. PNG for photos (5× larger than JPEG)
 5. `Icon(Icons.pets)` for domain icon (#12)
 6. SVG path hardcoded (#13)
-7. Skipping `scan-image-safety`
-8. Compress on UI thread (jank)
+7. Skipping the mandatory safety path (`scan-image-safety`, or
+   `upload-community-photo` for community)
+8. Reusing the 1920px bird/DM sizing for avatar or marketplace
 
 ## See Also
 

@@ -4,7 +4,7 @@ Offline-first mimari: kullanıcı her zaman local Drift DB'ye yazar, sync servic
 
 ## Akış
 ```
-Local write (Drift) -> SyncMetadata dirty flag
+Local write (Drift) -> per-record SyncMetadata pending row
   -> networkStatusProvider online algılar
   -> SyncOrchestrator (syncOrchestratorProvider) push/pull başlatır
   -> SyncableRepository.pushPendingBatched() -> upsert (idempotent)
@@ -15,12 +15,12 @@ Local write (Drift) -> SyncMetadata dirty flag
 ## Sync Triggers
 | Trigger | Hedef |
 |---------|-------|
-| App start (online) | Full pull + push pending |
-| Connectivity online geldi | Push pending + light pull |
-| App resume (foreground) | Last-modified pull |
-| Manual refresh (pull-to-refresh) | Entity-spesifik pull |
-| Realtime event (Supabase) | Tek entity pull |
-| Periodic (15dk timer) | Light pull, sadece online + foreground |
+| Auth init | `fullSync()` = push → incremental/reconcile pull; error'da 3sn sonra tek retry |
+| Connectivity online geldi | Auto-sync/Wi-Fi guard sonrası `forceFullSync()` |
+| App resume (foreground) | Aktif sync yoksa lightweight `pushChanges()` |
+| Home/manual refresh | `forceFullSync()` + derived provider refresh |
+| Realtime allowlist event | Son 5 dakikayı kapsayan incremental `pullChanges()` |
+| Periodic (15dk timer) | Retry-ready error kayıtları, sonra `fullSync()` |
 
 ## SyncMetadata Tablosu
 Bekleyen KAYIT başına bir satır — entity-tipi başına değil. `UNIQUE(table_name, record_id)` kısıtı var; başarılı push satırı SİLER (gerçek model: `lib/data/models/sync_metadata_model.dart`):
@@ -62,14 +62,21 @@ ve `retryCount >= RetryScheduler.maxRetries` kayıtlar için
 - Detay: data-layer.md § Write Safety
 
 ## ValidatedSyncMixin
-FK parent'lı entity'ler (egg → breeding_pair, chick → egg) push öncesi parent var mı kontrol eder. Parent silinmişse orphan push engellenir, local row da silinir.
+FK parent'lı entity'ler push öncesi `validateForeignKeys()` çağırır. Local entity
+zaten yoksa yalnız orphan sync metadata temizlenir. FK parent gerçekten yoksa
+child sync-error olarak işaretlenip atlanır; parent pending/tombstone ise child
+sonraki round'a ertelenir. Validation hatası child local satırını sessizce silmez.
 
 **Zorunlu kullanım:**
 - `egg_repository.dart`
 - `chick_repository.dart`
 - `health_record_repository.dart`
 - `breeding_pair_repository.dart`
+- `clutch_repository.dart`
+- `incubation_repository.dart`
+- `event_repository.dart`
 - `event_reminder_repository.dart`
+- `growth_measurement_repository.dart`
 
 Bird repository root entity, mixin'e gerek yok.
 
@@ -88,18 +95,29 @@ class EggRepository extends BaseRepository<Egg>
 ```
 
 ## Conflict Resolution
-- Last-write-wins via `updated_at` timestamp (server klock)
-- Conflict tespiti: local `dirty=true` + remote `updated_at > localPullTimestamp`
-- Server kazanır, local edit `lastPullConflicts` -> `conflict_history` (30 gün) kaydına eklenir
-- UI `conflictHistoryProvider` / `persistedConflictCountProvider` (`sync_conflict_providers.dart`) üzerinden gösterir — kullanıcı atılan edit'i inceleyebilir
+- Pull'da server-wins uygulanır
+- Conflict tespiti: incoming remote batch locally-PENDING bir satırın üstüne
+  yazıyorsa conflict'tir; remote newer/equal/older olması sonucu değiştirmez
+- Shared `detectPullConflicts` sonucu `lastPullConflicts` -> `conflict_history`
+  (30 gün) kaydına eklenir
+- UI `conflictHistoryProvider` / `persistedConflictCountProvider`
+  (`sync_conflict_providers.dart`) üzerinden yalnız table/record description/time
+  metadata'sını gösterir. `conflict_history` local payload snapshot'ı tutmaz;
+  server-wins overwrite sonrası `_retryLocal` mevcut (artık remote) satırı yeniden
+  queue eder, kaybedilen alan değerlerini restore edemez. Bu latent UI aksiyonu
+  `obsidian-brain/known-gaps.md` içinde açıkça izlenir.
 - Sessiz overwrite YOK — her conflict kullanıcıya bildirilir
 
 ```dart
-if (remote.updatedAt.isAfter(local.lastPullAt) && local.dirty) {
-  await _conflictStore.addConflict(local, remote);
-  await dao.upsertFromRemote(remote);
-  // kayıt conflict_history'ye düşer; UI conflictHistoryProvider'dan okur
-}
+final conflicts = detectPullConflicts(
+  remote: remote,
+  localMap: localMap,
+  pendingIds: pendingIds,
+  idOf: (item) => item.id,
+  detailOf: (item) => item.name,
+);
+await dao.insertAll(remote); // server-wins
+// SyncPullHandler conflicts'i persist eder ve conflictHistoryProvider'a ekler.
 ```
 
 ## Connectivity-Aware
@@ -109,7 +127,8 @@ if (remote.updatedAt.isAfter(local.lastPullAt) && local.dirty) {
   `syncStatusProvider`, `pendingSyncCountProvider`,
   `pendingDeletionSyncErrorsProvider` ve retry için
   `syncOrchestratorProvider.forceFullSync()` kullanır
-- Sync sadece foreground + online — background sync iOS'ta sınırlı
+- Foreground scheduler ana güvence; opsiyonel OS background sync best-effort ve
+  iOS'ta sınırlıdır
 
 ```dart
 child: AppUpdatePrompt(
@@ -160,9 +179,9 @@ test('retries network failure with backoff', () async {
   expect(attempts, 3);
 });
 
-test('marks conflict when remote newer than local edit', () async {
-  // ... fixture: local dirty bird with updatedAt = T1
-  //              remote bird with updatedAt = T2 > T1
+test('marks conflict on any incoming overwrite of a pending local edit', () async {
+  // ... fixture: pending local bird + incoming remote row;
+  // remote timestamp order conflict kaydını bastırmamalı
   await syncOrchestrator.pullChanges();
   final conflicts = container.read(conflictHistoryProvider);
   expect(conflicts.map((c) => c.tableName), contains('birds'));
@@ -177,6 +196,6 @@ test('marks conflict when remote newer than local edit', () async {
 5. Background sync'e kritik veri güvenmek (iOS engelleyebilir)
 6. Sync state'i UI'a göstermemek (kullanıcı belirsizlikte)
 7. Periodic sync timer'ı offline'da çalıştırmak (battery drain)
-8. Local timestamp ile sunucu timestamp karşılaştırması (clock skew — server `updated_at` zorunlu)
+8. Conflict kaydını local/server timestamp sırasına bağlamak (clock skew sessiz overwrite üretir; pending overwrite her zaman kaydedilir)
 
 > **İlgili**: data-layer.md (Drift + Supabase), error-handling.md (NetworkException, retry), observability.md (sync logging), performance.md (batch)

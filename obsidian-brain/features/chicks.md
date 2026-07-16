@@ -25,7 +25,8 @@ Manual chick creation is also supported.
 
 - **Table**: `chicks_table.dart`
 - **Growth table**: `growth_measurements_table.dart` (`chickId`, `weight`, `measurementDate`)
-- **Repository**: `chick_repository.dart` — requires `ValidatedSyncMixin` (parent: egg)
+- **Repository**: `chick_repository.dart` — requires `ValidatedSyncMixin`
+  (optional parents: egg, clutch, bird)
 
 ## Detail UX
 

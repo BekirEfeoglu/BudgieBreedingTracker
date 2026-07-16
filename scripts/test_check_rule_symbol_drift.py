@@ -196,7 +196,7 @@ class TestScan(unittest.TestCase):
     def test_allowlisted_class_skipped(self):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
-            rules = self._rules_dir(root, "Anti-pattern `MarketplaceListingRepository`.")
+            rules = self._rules_dir(root, "There is no `CalendarService` class.")
             with patch.object(crsd, "RULES_DIR", rules), \
                  patch.object(crsd, "_symbol_exists", return_value=False):
                 self.assertEqual(crsd.scan(check_classes=True), [])

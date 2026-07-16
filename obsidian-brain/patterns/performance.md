@@ -57,9 +57,12 @@ final name = ref.watch(birdProvider.select((b) => b.value?.name));
 ## Image Handling
 
 - `CachedNetworkImage` always (never `Image.network`)
-- Resize before upload (max 1920px, JPEG q85)
+- Resize/quality at `ImagePicker`; limits are surface-specific (bird/DM 1920×
+  1920 q85, community 1200×1200 q85, marketplace width 1200 q80, avatar
+  512×512 q80, local AI 1024×1024 q85)
 - `memCacheWidth`/`memCacheHeight` in list items
-- `flutter_image_compress` in isolate (not UI thread)
+- Apply `ImagePickerGuard` before upload; storage repeats size/extension/magic
+  byte validation and image safety scanning
 
 ## Network & Sync
 
@@ -80,7 +83,7 @@ final name = ref.watch(birdProvider.select((b) => b.value?.name));
 3. Rebuilding entire screen for one widget's state change
 4. All providers kept alive indefinitely
 5. Synchronous heavy computation on UI thread
-6. Uncompressed image uploads
+6. Image upload without surface-specific picker sizing/quality
 7. Deep provider chains causing cascade rebuilds
 
 ## See Also

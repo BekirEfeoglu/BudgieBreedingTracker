@@ -15,12 +15,15 @@ class NetworkException extends AppException {}
 class AuthException extends AppException {}
 class StorageException extends AppException {}
 class DatabaseException extends AppException {}
-class ValidationException extends AppException {
-  final Map<String, String> fieldErrors;
-}
+class ValidationException extends AppException {}
 class PermissionException extends AppException {}
 class FreeTierLimitException extends AppException {}
+class NotFoundException extends AppException {}
 ```
+
+`ValidationException` carries only `message`, optional `code`, and optional
+`originalError`; there is no `fieldErrors` map. Field-level messages come from
+form validators today (see [[patterns/forms-validation]] and [[known-gaps]]).
 
 ## Error Flow
 
@@ -35,12 +38,13 @@ Service throws AppException
 
 | Level | Usage |
 |-------|-------|
-| `AppLogger.debug(tag, msg)` | Development, temporary tracing |
-| `AppLogger.info(tag, msg)` | Operational info |
+| `AppLogger.debug(message)` | Development, temporary tracing |
+| `AppLogger.info(message)` | Operational info |
 | `AppLogger.warning(msg)` | Degraded state, retry expected |
 | `AppLogger.error(msg, error, st)` | Errors (auto Sentry breadcrumb) |
 
-Tag: source class name — `'BirdRepository'`, `'SyncService'`, `'AuthProvider'`
+There is no separate tag argument. Embed the source in the message:
+`AppLogger.warning('[SyncOrchestrator] retry attempt failed')`.
 
 ## Sentry
 
@@ -71,16 +75,14 @@ try {
 
 ## Retry Strategy
 
-```
-NetworkException (transient):
-  Attempt 1 → immediately
-  Attempt 2 → 2s
-  Attempt 3 → 4s (max 3 attempts default)
-  → rethrow
+There is no universal retry schedule; the owning subsystem decides:
 
-AuthException, ValidationException, PermissionException:
-  → rethrow immediately (no retry)
-```
+- Offline sync: `RetryScheduler`, `45s * 2^retryCount` ±20% jitter, capped at
+  10 minutes and 7 retries ([[data-layer/sync-strategy]])
+- Initial auth data sync: one retry after 3 seconds
+- Local AI transport: fail-fast, single backend, no automatic retry
+- `AuthException`, `ValidationException`, and `PermissionException`: do not
+  blindly retry
 
 ## User-Facing Messages
 

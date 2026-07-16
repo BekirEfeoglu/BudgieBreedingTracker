@@ -48,7 +48,6 @@ PROVIDER_ALLOWLIST: set[str] = {
     "myProvider",
     "fooProvider",
     "xProvider",
-    "myRepositoryProvider",
     "repositoryProvider",
     "xRepositoryProvider",
     "birdProvider",  # generic example notifier in provider/form skeletons
@@ -67,7 +66,6 @@ DART_PATH_ALLOWLIST: set[str] = {
 
 # PascalCase class names cited in prose that are illustrative or documented-removed.
 CLASS_ALLOWLIST: set[str] = {
-    "MarketplaceListingRepository",  # marketplace.md anti-pattern #1: a FORBIDDEN name, cited as what-not-to-use
     "CalendarService",           # calendar-service wiki: prose stating no such class exists (real: CalendarEventGenerator)
     "IncubationReminderService",  # calendar/notification wiki: prose stating no such class exists (real: NotificationScheduler)
     "ConnectivityService",       # documentation-sync.md: cited as the canonical bare-prose drift example (real: networkStatusProvider)

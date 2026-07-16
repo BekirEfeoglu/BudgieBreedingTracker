@@ -8,74 +8,92 @@ Source: `.claude/rules/architecture.md`, `.claude/rules/background-sync.md`
 
 ## Local as Source of Truth
 
-- Drift SQLite is the **only** source UI reads from
-- All providers stream from DAOs, not from Supabase
-- The app is fully functional offline (read + write)
+- Drift SQLite is the source of truth for breeder-owned syncable entities
+- Their providers stream from DAOs, not directly from Supabase
+- Bird/breeding/incubation/egg/chick/health/calendar data supports offline read
+  and local-first write
+- Community posts/comments/social graph, messaging, marketplace, and the
+  server-authoritative gamification ledger are documented online-first
+  repository exceptions
 
 ## Write Flow (offline-safe)
 
 ```
-User action → local Drift write → SyncMetadata dirty flag
+User action → local Drift write → SyncMetadata pending row
                                       ↓ (when online)
-                              SyncService push → Supabase upsert
+                       SyncOrchestrator push → Supabase upsert
 ```
 
 ## Sync Triggers
 
 | Trigger | Action |
 |---------|--------|
-| App start (online) | Full pull + push pending |
-| Connectivity restored | Push pending + light pull |
-| App resume (foreground) | Last-modified pull |
-| Pull-to-refresh | Entity-specific pull |
-| Realtime Supabase event | Single entity pull |
-| Periodic timer (15 min) | Light pull (online+foreground only) |
+| Auth initialization | `fullSync()` (push, then pull); one 3s retry on error |
+| Connectivity restored | `forceFullSync()` with Wi-Fi-only/auto-sync guards |
+| App resume | Lightweight `pushChanges()` if no sync is active |
+| Home/manual refresh | `forceFullSync()` + derived-provider refresh |
+| Realtime event | 5-minute incremental pull for the rollout allowlist |
+| Periodic timer (15 min) | Retry ready errors, then `fullSync()` |
 
 ## SyncMetadata
 
-Every syncable entity has a row in `sync_metadata` table:
+`sync_metadata` has one row per pending record, not one row per entity type.
+Successful push deletes the row; `UNIQUE(table_name, record_id)` prevents
+duplicates:
 
 ```dart
 class SyncMetadata {
-  String entityType;     // 'birds', 'eggs', etc.
+  String id;             // client UUID
+  String table;          // 'birds', 'eggs', etc.
+  String userId;
+  SyncStatus status;     // pending | pendingDelete | error
+  String? recordId;
+  String? errorMessage;
+  int? retryCount;
   DateTime? lastSyncedAt;
-  DateTime? lastPulledAt;
-  int dirtyCount;
-  String? lastError;
-  int retryCount;
+  DateTime? createdAt;
+  DateTime? updatedAt;
 }
 ```
 
 ## Idempotency
 
-All remote writes use `.upsert()` with client-generated UUIDs — safe to replay on retry.
+Syncable entity remote writes use `.upsert()` with client-generated UUIDs —
+safe to replay on retry.
 
 ## Conflict Resolution
 
-- Last-write-wins via server `updated_at` timestamp
-- Conflicted local edits stored in `lastPullConflicts`
-- `conflictNotifierProvider` surfaces UI banner for user review
+- Server wins on pull
+- Every incoming overwrite of a locally pending record is recorded, regardless
+  of remote/local timestamp order
+- Repository `lastPullConflicts` is persisted to `conflict_history` (30 days)
+- `conflictHistoryProvider` and `persistedConflictCountProvider` surface the
+  detail sheet, global banner, home chip, and per-record badges
 
 ## ValidatedSyncMixin
 
-Entities with FK parents (egg → breeding_pair, chick → egg) check parent exists before pushing. If parent was deleted, the orphaned local record is also removed rather than pushed.
+Entities with FK parents call `validateForeignKeys()` before pushing. Missing
+sync metadata is cleaned when the local record itself is gone; a child whose FK
+parent is missing is marked as a sync error and skipped rather than silently
+deleted. Pending parent/tombstone records defer the child to a later round.
 
-Required on: `egg_repository`, `chick_repository`, `health_record_repository`, `breeding_pair_repository`, `event_reminder_repository`
+Current coverage is cataloged once in [[data-layer/repositories]]: breeding
+pair, clutch, incubation, egg, chick, health record, event, event reminder, and
+growth measurement. Bird and nest are roots.
 
 ## Online-First Exemptions
 
-Two repositories are intentionally **not** offline-first:
-- `CommunityPostRepository` — cross-user public feed
-- `MessagingRepository` — realtime multi-party conversations
-
-See [[architecture/online-first-exemption]]
+Six repositories intentionally have no Drift mirror: community posts,
+community comments, community social actions, messaging, marketplace, and
+gamification. Their reasons and mandatory class-doc contract live in
+[[architecture/online-first-exemption]].
 
 ## UI Indicators
 
 | State | Display |
 |-------|---------|
 | Syncing | Header spinner + "Senkronize ediliyor" |
-| Conflict | Banner + "Çakışmaları gör" CTA |
+| Conflict | Global banner + home chip + sync-detail sheet / record badge |
 | Sync failed (after retries) | Error banner + retry button |
 | Offline | "Çevrimdışı — değişiklikleriniz kaydedildi" |
 

@@ -62,6 +62,8 @@ Before the commands above, inspect changed claims manually:
 3. Verify named providers/classes/routes still exist; a valid Markdown link does not prove a symbol is current.
 4. Check `known-gaps.md`: shipped work must leave the registry, newly documented unshipped work must enter it.
 5. Read each edited paragraph against the authority table above. A green linter cannot validate biological evidence, production state, or contradictory prose.
+6. Treat absence as a behavior claim: search the UI→provider→repository path, tests, synonyms, and `git log -S`; a missing guessed symbol is not proof that the feature is missing.
+7. Audit every current-page occurrence of an allowlisted symbol. Allowlists are global/context-blind and can hide a removed name presented incorrectly as live behavior.
 
 ## CI Enforcement
 - `rules-sync` job → `verify_rules.py --strict` (blocks PR on CLAUDE.md stat/cross-ref drift)

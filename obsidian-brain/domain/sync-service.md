@@ -11,7 +11,7 @@ Orchestrates all background synchronization between Drift (local) and Supabase (
 ## Core Methods
 
 ```
-SyncOrchestrator.fullSync()        — pullChanges() + pushChanges()
+SyncOrchestrator.fullSync()        — pushChanges() then incremental/reconcile pullChanges()
 SyncOrchestrator.forceFullSync()   — user-triggered retry (OfflineBanner CTA), cooldown-guarded
 SyncOrchestrator.pushChanges()     — push all dirty local records (batched, 100/chunk)
 SyncOrchestrator.pullChanges()     — fetch remote changes newer than the checkpoint
@@ -38,11 +38,16 @@ cleaned up locally.
 
 ## Conflict Accounting
 
-When pull detects a server record newer than a local dirty record:
+When an incoming remote row overwrites any locally pending record (remote may be
+newer, equal, or older):
 1. Server record written to Drift
-2. Local edit stored in `lastPullConflicts` → `conflict_history` (30-day)
+2. Conflict metadata stored in `lastPullConflicts` → `conflict_history` (30-day)
 3. UI surfaces it via `conflictHistoryProvider` / `persistedConflictCountProvider`
-   (`sync_conflict_providers.dart`) — user can inspect the discarded edit
+   (`sync_conflict_providers.dart`) — user sees table/record description/time
+
+Only conflict metadata is retained, not the overwritten local payload. The
+current "retry local" action therefore cannot reconstruct discarded field
+values; see [[known-gaps]].
 
 ## Sync Indicators
 

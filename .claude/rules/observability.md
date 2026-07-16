@@ -19,7 +19,7 @@ AppLogger.warning(message);                      // Bozulmuş durum, retry edile
 AppLogger.error(message, error, stackTrace);    // Otomatik Sentry breadcrumb
 ```
 
-Kaynak tanımlama kuralı: `[Bracket]` prefix'i mesajın İÇİNE göm — `AppLogger.warning('[SyncService] retry attempt failed')`. Ayrı bir `tag` argümanı geçirme (derleme hatası verir).
+Kaynak tanımlama kuralı: `[Bracket]` prefix'i mesajın İÇİNE göm — `AppLogger.warning('[SyncOrchestrator] retry attempt failed')`. Ayrı bir `tag` argümanı geçirme (derleme hatası verir).
 
 ## Hangi Seviye Ne Zaman?
 | Senaryo | Seviye |
@@ -31,7 +31,7 @@ Kaynak tanımlama kuralı: `[Bracket]` prefix'i mesajın İÇİNE göm — `AppL
 | Auth token refresh fail | `error` + Sentry |
 | Validation hata (kullanıcı kaynaklı) | `warning` (Sentry'ye gitme) |
 | Beklenmeyen exception | `error` + Sentry |
-| Performance ölçümü | `debug('perf', ...)` |
+| Performance ölçümü | `debug('[Perf] operation: ${elapsed}ms')` |
 
 ## Sentry Kullanımı
 ```dart
@@ -163,7 +163,7 @@ test('sync failure logs and reports to sentry', () async {
   when(() => mockRemote.upsert(any())).thenThrow(Exception('boom'));
 
   await expectLater(
-    repository.syncToRemote(),
+    repository.push(item),
     throwsA(isA<Exception>()),
   );
 

@@ -11,23 +11,24 @@ Source: `.claude/rules/background-sync.md`, `.claude/rules/data-layer.md`
 ```
 1. User action → Drift write (immediate)
 2. markPending(recordId, userId) — sync_metadata upsert (pending)
-3. (async, when online) SyncService.pushPending()
-4. For each dirty record:
-   a. ValidatedSyncMixin.validateParents() → skip if parent missing
-   b. remoteSource.upsert(entity.toSupabase())
-   c. syncMetadata.markClean(id) + update lastSyncedAt
+3. `tryImmediatePush(item)` attempts one best-effort remote write
+4. Scheduled/manual sync → `SyncOrchestrator.fullSync()`
+   a. push first via `pushPendingBatched()` (100/chunk)
+   b. `ValidatedSyncMixin.validateForeignKeys()` where required
+   c. success deletes the per-record sync_metadata row
+   d. pull second using the checkpoint/skew margin
 ```
 
 ## Sync Triggers
 
 | Trigger | Action |
 |---------|--------|
-| App start (online) | Full pull + push pending |
-| Connectivity restored | Push pending + light pull |
-| App resume (foreground) | Last-modified pull |
-| Pull-to-refresh | Entity-specific pull |
-| Realtime Supabase event | Single entity pull |
-| Periodic timer (15 min) | Light pull (online + foreground only) |
+| Auth initialization | `fullSync()` (push → pull), one 3s retry on error |
+| Connectivity restored | `forceFullSync()` after auto-sync/Wi-Fi guards |
+| App resume | `pushChanges()` only when idle |
+| Home/manual refresh | `forceFullSync()` |
+| Realtime allowlist event | Incremental pull with 5-minute reconcile window |
+| Periodic timer (15 min) | Retry ready errors, then `fullSync()` |
 
 ## Idempotency
 
@@ -62,10 +63,13 @@ maxRetries = 7
 - Shared `detectPullConflicts` (`base_repository.dart`) is the single source of
   this rule for all 13 syncable repos + the custom `PhotoRepository` (previously
   14 divergent inline copies — the exact drift that let the gap rot unnoticed)
-- Server still wins the data; only conflict RECORDING widened. The discarded
-  local edit is stored in `lastPullConflicts` → `conflict_history` (30-day)
+- Server still wins the data; only conflict RECORDING widened. Conflict metadata
+  (table, record ID, description, time/type) flows through `lastPullConflicts`
+  → `conflict_history` (30-day); the discarded field values are not snapshotted
 - `conflictHistoryProvider` (`sync_conflict_providers.dart`) feeds the settings
   sync-detail sheet + data-storage section; a "View conflicts" CTA surfaces there
+- The current "retry local" action cannot reconstruct the overwritten payload;
+  this latent surface is tracked in [[known-gaps]]
 - **Never silent overwrite**
 
 ## Incremental Pull Cursor

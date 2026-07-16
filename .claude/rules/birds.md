@@ -30,7 +30,10 @@ Sözleşme (breeding-eggs.md ile aynı): side effect'ler **best-effort, asla ret
 `BirdsDao` `ringNumber`, `notes`, `genotypeInfo` alanlarını at-rest şifreler — alan şifrelemesini yapan TEK DAO budur (encryption.md). Decrypt hatasında (yanlış/rotate edilmiş anahtar, corruption): `AppLogger.error` + `Sentry.captureException` + o alan için `null` döner — ciphertext'i ASLA plaintext gibi döndürme. `ringNumber` içeriğini log/Sentry'ye yazma (PII, observability.md).
 
 ## Foto Pipeline
-- 10MB guard → compress → `scan-image-safety` → `bird-photos` bucket (private, user-scoped RLS) — assets-images.md pipeline'ı; scan `StorageService.uploadBirdPhoto` yolunda default AÇIK
+- `ImagePicker` 1920×1920/q85 → 10MB UX guard → extension/magic bytes →
+  `scan-image-safety` → `bird-photos` (private, user-scoped RLS). Scan
+  `StorageService.uploadBirdPhoto` yolunda default AÇIK; scanner raw 2MB üstünü
+  fail-closed reddettiği için 10MB guard end-to-end limit değildir (known-gaps)
 - **Kısmi başarısızlık sözleşmesi** (`createBird`): kuş satırı persist olduktan SONRAKİ hata (galeri satırı, free-tier sayımı) non-blocking `warning`'dir (`birds.photo_gallery_save_partial`) — hard error kullanıcıyı retry'a itip duplicate kuş üretir. Compensating storage cleanup YALNIZ kuş satırı hiç persist olmadıysa koşar (kayıtlı kuşun `photoUrl`'inin işaret ettiği objeyi silmesin)
 - Sağlık kaydı fotoğrafları da `bird-photos` altındadır — ayrı bucket İCAT ETME
 
@@ -45,13 +48,19 @@ Sözleşme (breeding-eggs.md ile aynı): side effect'ler **best-effort, asla ret
 
 ## Liste & Detay
 - Filtre: cinsiyet + durum (`alive/dead/sold/gifted`); ring number aranabilir, doğal sıralı (natural sort), boş ring'ler her iki yönde de sonda
-- Ring number benzersizliği: async unique check SHIPPED DEĞİL (repository'de `ringNumberExists` yok, `validation.ring_taken` key'i yok — known-gaps.md); eklenirse forms-validation.md'deki debounced+race-safe pattern kullanılmalı
+- Ring number benzersizliği shipped'dir: `BirdFormIdentitySection` yazarken
+  400ms debounce + monotonik request ID + `mounted` guard ile
+  `BirdRepository.hasRingNumber(userId, value, excludeId:)` çağırır. Bu erken
+  geri bildirim best-effort'tur; create/update submit yolları ayrıca normalize
+  edilmiş değeri yeniden kontrol eder ve çakışmada
+  `birds.ring_number_not_unique` gösterip `save()` çağırmaz. Boş ring serbesttir;
+  edit sırasında mevcut kuş `excludeId` ile dışlanır.
 - Detay timeline'ı mevcut local verilerden derlenir (doğum, durum geçişi, eşleşme, yumurta özeti, sağlık) — ayrı timeline tablosu YOK, ekleme
 
 ## Testing
 - Lifecycle: sold/gifted/dead/delete → pair+incubation iptal + reminder cancel assert'leri
 - DAO: encrypt/decrypt round-trip + decrypt-failure null dönüşü
-- Form: free-tier limit aşımı `FreeTierLimitException` → upsell; kısmi foto hatası → warning (hard error değil)
+- Form: free-tier limit aşımı `FreeTierLimitException` → upsell; kısmi foto hatası → warning (hard error değil); ring check debounce/race + submit-time fallback + edit `excludeId`
 - Provider container'larda `addTearDown(container.dispose)` (test-stability.md)
 
 ## Anti-Patterns

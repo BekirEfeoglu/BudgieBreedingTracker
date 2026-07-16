@@ -7,8 +7,9 @@ Topluluk feed, marketplace, mesajlaşma ve photo upload akışlarında **fail-cl
 |--------|--------|-------|
 | Client text filter | `ContentModerationService._checkClientSide` | `lib/domain/services/moderation/content_moderation_service.dart` |
 | Server text moderation | Edge function `moderate-content` | `supabase/functions/moderate-content/` |
-| Client image guard | `ImageSafetyService` (size, format) | `lib/domain/services/moderation/image_safety_service.dart` |
+| Client image bridge | `ImageSafetyService` (raw 2MB cap + fail-closed Edge call) | `lib/domain/services/moderation/image_safety_service.dart` |
 | Server image safety | Edge function `scan-image-safety` | `supabase/functions/scan-image-safety/` |
+| Community image upload | Edge function `upload-community-photo` | Validates + moderates + stores atomically |
 
 ## Two-Layer Text Pipeline
 ```
@@ -42,21 +43,26 @@ User submits content
 ## Image Safety Pipeline
 ```
 User picks image
-  -> Client guard:
-     - Size <= 10MB (anti-pattern: assets-images.md)
-     - Format JPEG/PNG/HEIC
-     - Dimension sanity (min 64px, max 8000px)
-  -> Resize + compress (1920px max, quality 85)
-  -> Server scan-image-safety:
-     - NSFW model (Hive, AWS Rekognition equivalent)
-     - Malware/EXIF strip
-     - Content hash duplicate check
+  -> ImagePicker surface-specific resize/quality
+  -> ImagePickerGuard UX cap (general 10MB; avatar 2MB)
+  -> Storage/remote source: extension + magic bytes
+  -> Bird/avatar/egg/chick/DM/marketplace:
+     ImageSafetyService raw <= 2MB -> scan-image-safety
+  -> Community:
+     upload-community-photo validates + moderates + stores server-side
+  -> Edge path: MIME + estimated decoded bytes + OpenAI categories
   -> Reject -> show l10n error, do not upload to Storage
   -> Allow -> upload to Storage bucket
   -> DB write with storage path
 ```
 
 Server scan FAIL → upload yapılmaz. Storage'da unscanned dosya bulunmaz (zero unsafe content invariant).
+
+**Limit drift (tracked):** scanned UGC pickers advertise/guard 10MB, but both
+`ImageSafetyService` and the Edge Function reject raw images above 2MB. Picker
+resize often lowers the payload but does not guarantee it. Until unified, the
+effective end-to-end scanned-upload cap is 2MB; see
+`obsidian-brain/known-gaps.md`.
 
 ## Context-Aware Rules
 | Context | Threshold | Override |
@@ -107,7 +113,7 @@ olduğu için sadece keyword/heuristic (moderateText) uygular, HTTP/AI çağrıs
 ## Testing
 - Unit: bilinen kötü kelime → reject, edge case (kelime parçası) → allow
 - Integration: edge function happy path + auth fail + network timeout (fail-closed verify)
-- Image: 10MB+, wrong format, NSFW sample (test fixture) → reject
+- Image: raw 2MB+, wrong magic bytes/MIME, flagged sample → reject
 - E2E: post → moderate → publish full flow
 
 ```dart

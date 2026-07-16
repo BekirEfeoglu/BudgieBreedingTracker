@@ -21,8 +21,8 @@ mounted at `AppRoutes.home` (`/`).
 | `todaysEggTurningSummaryProvider(userId)` | `FutureProvider.family` | Eggs needing turn today + next slot |
 | `homeWidgetDashboardSnapshotProvider(userId)` | `Provider.family<AsyncValue<…>>` | Combines providers into the iOS/Android widget snapshot |
 | `profileSyncProvider(userId)` | `FutureProvider.family` | Background profile refresh on resume |
-| `syncStatusProvider` | `Provider` | Drives offline banner |
-| `conflictNotifierProvider` | `Notifier` | Drives sync conflict banner |
+| `syncStatusProvider` | `Provider<SyncDisplayStatus>` | Drives status bar + global offline/error banner |
+| `persistedConflictCountProvider(userId)` | `StreamProvider.family<int, String>` | Recent conflict count for status chip/global banner |
 
 ## Widgets
 
@@ -30,11 +30,12 @@ mounted at `AppRoutes.home` (`/`).
 - Bird count summary
 - Upcoming incubation milestones strip
 - **Today's egg-turning routine card** (added 2026-05-15, sources `todaysEggTurningSummaryProvider`)
+- `SyncStatusBar` (tap-to-sync; conflict chip opens the sync-detail sheet)
 - OfflineBanner (global, mounted at the router shell, see [[patterns/empty-loading-error-states]])
 
 ## Performance Notes
 
-- All providers use `.select()` to narrow rebuild scope (audit 2026-04-19)
+- Sync/error consumers use `.select()` where only a derived count is needed
 - StreamProvider over polling — drift `.watch()` reactive queries
 - Limited (`incubatingEggsLimitedProvider`) prevents unbounded list churn
   on power-users with 100+ active eggs
@@ -49,7 +50,8 @@ count, active breeding count, next turn label, and a stale-after epoch.
 ## Empty / Loading / Error
 
 - Empty state: "Start your first breeding" CTA → `AppRoutes.breedingForm`
-- Loading: `SkeletonLoader(count: 3)` per section
+- Loading: explicit `SkeletonLoader(width:/height:)` placeholders matching each
+  dashboard card; `SkeletonLoader` has no `count` parameter
 - Error: per-section `ErrorState` with retry — section failures isolated,
   don't blank the whole dashboard
 

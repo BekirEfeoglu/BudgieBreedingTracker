@@ -31,9 +31,8 @@ Pipeline (`avatar_picker_sheet.dart` → `AvatarUploadNotifier` →
 `ProfileRepository.uploadAvatar` → `StorageService`):
 
 1. `ImagePicker` with `maxWidth/maxHeight: 512`, `imageQuality: 80` (downscale
-   happens at pick time — this is the avatar-specific sizing, NOT the general
-   1920px/q85 photo pipeline)
-2. 10 MB guard (rejects before network)
+   happens at pick time; every upload surface owns its own picker limits)
+2. 2 MB avatar guard (rejects before network; matches the safety-scan cap)
 3. Upload to the **`avatars`** Supabase Storage bucket (path
    `avatars/{userId}/avatar.{ext}`, RLS user-scoped). `StorageService` holds an
    optional `ImageSafetyService` for uploads (see [[domain/moderation-service]]).

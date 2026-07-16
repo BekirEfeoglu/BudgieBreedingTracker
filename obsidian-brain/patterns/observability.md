@@ -22,7 +22,7 @@ AppLogger.error(message, error, stackTrace);    // Auto Sentry breadcrumb
 ```
 
 **Source convention**: `[Bracket]` prefix embedded in the message —
-`AppLogger.warning('[SyncService] retry attempt failed')`
+`AppLogger.warning('[SyncOrchestrator] retry attempt failed')`
 
 ## Sentry Sample Rate Budget
 

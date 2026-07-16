@@ -129,7 +129,7 @@ Full catalog of every page in the obsidian-brain wiki.
 | [[patterns/performance]] | Performance budgets, Drift, Riverpod, images |
 | [[patterns/security]] | Auth, RLS, secure storage, MFA lockout |
 | [[patterns/datetime-format]] | UTC at boundary, tz.TZDateTime, incubation day math |
-| [[patterns/assets-images]] | Photo pipeline, SVG icons, 10MB guard, CachedNetworkImage |
+| [[patterns/assets-images]] | Photo pipeline, picker/storage guards, effective scan cap, SVG/cache rules |
 | [[patterns/forms-validation]] | Form skeleton, validators, ValidationException |
 | [[patterns/empty-loading-error-states]] | EmptyState/LoadingState/ErrorState/SkeletonLoader |
 | [[patterns/feature-flags]] | Compile-time / runtime / entitlement / kill switch |

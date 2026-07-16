@@ -83,6 +83,17 @@ The linter proves structure, links, selected metrics, and required sections. It
 does not prove that provider names exist, two paragraphs agree, or a biological
 claim has adequate evidence; those require the semantic pass above.
 
+Two recurring semantic traps require an explicit manual check:
+
+- **Missing-name != missing-feature.** Before adding an item to
+  `known-gaps.md`, trace the user action through UI/provider/repository/tests,
+  search behavior synonyms, and inspect `git log -S`. A guessed symbol that is
+  absent (for example `ringNumberExists`) does not prove an equivalent shipped
+  API (for example `hasRingNumber`) is absent.
+- **Allowlists are context-blind.** A symbol-drift allowlist only permits a name
+  to be mentioned as removed or illustrative. Search every current-page
+  occurrence and verify none presents that name as live behavior.
+
 ## Update Discipline
 
 - **Do not modify** logo/icon files (`assets/images/app_icon*`) — finalized 2026-04-06

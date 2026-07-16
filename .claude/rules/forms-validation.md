@@ -21,7 +21,7 @@ class _BirdFormState extends ConsumerState<BirdFormScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _submitting = true);
     try {
-      await ref.read(birdProvider.notifier).save(/* ... */);
+      await ref.read(birdFormStateProvider.notifier).createBird(/* ... */);
       if (!mounted) return;
       context.pop();
     } on ValidationException catch (e) {
@@ -39,7 +39,7 @@ class _BirdFormState extends ConsumerState<BirdFormScreen> {
 |--------|----------|--------------|
 | Sync field validator | `TextFormField.validator` | Boş kontrol, format (email, length) |
 | Form-level validator | Submit öncesi cross-field | "Şifre eşleşmiyor", "Tarih aralığı" |
-| Async unique check | onChange debounced | Aşağıdaki pattern — ÖRNEKTİR; ring-unique kontrolü shipped DEĞİL (known-gaps.md) |
+| Async unique check | onChange debounced | Halka numarası için shipped; submit-time kontrol ikinci savunmadır |
 | Server validation | Submit sonrası | `ValidationException(message: l10nKey, code?)` ile döner |
 
 ```dart
@@ -50,20 +50,24 @@ validator: (value) {
   return null;
 }
 
-// Async (debounced + race-safe) — GENERIC PATTERN örneği.
-// Not: ring-number unique check bugün implement EDİLMEMİŞTİR
-// (repository'de ringNumberExists yok, validation.ring_taken key'i yok —
-// known-gaps.md); eklenirse bu pattern kullanılmalı.
+// Shipped ring-number pattern (BirdFormIdentitySection sadeleştirilmiş hali).
 int _requestId = 0;
 Future<void> _checkUnique(String value) async {
   final id = ++_requestId;
   await Future.delayed(const Duration(milliseconds: 400));
   if (id != _requestId) return;
-  final exists = await ref.read(myRepositoryProvider).fieldExists(value);
+  final exists = await ref
+      .read(birdRepositoryProvider)
+      .hasRingNumber(userId, value, excludeId: editBirdId);
   if (id != _requestId || !mounted) return;
-  setState(() => _fieldError = exists ? 'validation.already_taken'.tr() : null);
+  setState(() => _fieldError =
+      exists ? 'birds.ring_number_not_unique'.tr() : null);
 }
 ```
+
+Debounced kontrol yalnız erken UX geri bildirimidir. Lookup hatası loglanır ve
+kullanıcı bloklanmaz; `BirdFormNotifier` create/update submit akışı aynı
+benzersizliği yeniden kontrol ederek yarış/bypass durumunda kaydı engeller.
 
 ## ValidationException Mapping
 Gerçek imza (`app_exception.dart`) — field-bazlı `fieldErrors` map'i YOKTUR:
@@ -92,12 +96,14 @@ Tüm validation mesajları `validation.` namespace altında:
     "min_length": "En az {n} karakter",
     "max_length": "En fazla {n} karakter",
     "email_invalid": "Geçerli bir email girin",
-    "ring_taken": "Bu halka numarası kullanımda",
     "date_in_future": "Tarih gelecekte olmalı",
     "date_in_past": "Tarih geçmişte olmalı"
   }
 }
 ```
+
+Halka çakışması genel `validation.*` yerine mevcut
+`birds.ring_number_not_unique` anahtarını kullanır.
 
 ## Disabled / Loading State
 - Submit sırasında button disable, loading indicator
@@ -124,7 +130,7 @@ PrimaryButton(
 | Email | `TextFormField` + `TextInputType.emailAddress` | Regex: `RegExp(r'^[^@]+@[^@]+\.[^@]+')` |
 | Phone | Uygulama telefon alanı içermiyor (`intl_phone_field` pubspec'te YOK) | Eklenirse E.164 format + paket kararı gerekir |
 | Date | `showDatePicker` | DateTime null check |
-| Image | Custom picker + `scan-image-safety` | 10MB guard, NSFW reject |
+| Image | Custom picker + `scan-image-safety` | Surface guard (general 10MB/avatar 2MB); scanned UGC effective raw cap 2MB |
 | Dropdown | `DropdownButtonFormField(initialValue: ...)` | NOT `value:` (deprecated) |
 
 ## Form Testing
@@ -151,7 +157,7 @@ testWidgets('submits when valid', (tester) async {
 3. Server hatası için `ValidationException` yerine generic `Exception` fırlatmak
 4. Validation mesajını hardcode (her şey `.tr()`)
 5. Submit button'unu disable etmeden çift-submit'e izin vermek
-6. Async validator'da race condition (request ID pattern eksik)
+6. Async validator'da race condition (request ID/mounted guard eksik) veya submit-time tekrar kontrolü olmaması
 7. Multi-step form'da `WillPopScope` ile veri kaybı uyarısı vermemek
 8. `DropdownButtonFormField` üzerinde `value:` kullanmak (`initialValue:` zorunlu, anti-pattern #2)
 

@@ -54,25 +54,39 @@ await client.from(SupabaseConstants.birdsTable).upsert(bird.toSupabase());
 - UI never calls `client.from()` directly (exception: admin/)
 
 ### Offline-First Classification (mandatory)
-A class named `*Repository` MUST be offline-first:
+A class named `*Repository` MUST be offline-first unless it is a documented
+cross-user, fresh-data exception:
 - Has Drift table + DAO
 - Has `SyncMetadata` entry
 - Writes go local-first, then `.upsert()` (never raw `.insert()`) to remote
 - Reads return local streams, not remote futures
 
-If a class is online-only (no local mirror), DO NOT name it `Repository`. Use `*RemoteService` or `*OnlineSource` instead. Lying with the name breaks the offline-first contract — user creates data offline, app crashes on resume, silent data loss.
+An ordinary online-only class with no cross-user repository semantics must use
+`*RemoteService` or `*OnlineSource`. Cross-user exceptions must explain the
+absence of a Drift mirror in their class doc and remain behind the repository
+boundary so feature code never imports remote sources directly.
 
-Audit-flagged offender needing rename or offline-first implementation: none currently. `messaging_repository.dart` and `community_post_repository.dart` are exempt under the online-first rule (see architecture.md § Online-First Exemption — cross-user feeds). `marketplace_listing_remote_source.dart` already uses the correct `*RemoteSource` naming.
+Current exceptions: `CommunityPostRepository`, `CommunityCommentRepository`,
+`CommunitySocialRepository`, `MessagingRepository`, `MarketplaceRepository`,
+and `GamificationRepository` (see architecture.md § Online-First Exemption).
+Each wraps remote sources behind a repository boundary; feature code must not
+import those sources directly.
 
 ### Sync Strategy
 - Offline-first: local Drift DB is source of truth for UI
 - Background sync: repositories push local changes to Supabase when online
-- `SyncMetadata` table tracks per-entity sync state (last sync time, dirty flag)
-- Use `ref.invalidate()` after sync completes to refresh UI providers
-- Syncable repos with FK parents MUST use `ValidatedSyncMixin` to prevent orphan pushes after parent delete. Current coverage: egg, chick, health_record, breeding_pair, event_reminder ✓. Bird is a root entity (no FK parent) and does not require the mixin.
+- `SyncMetadata` tracks one row per pending record (`table_name`, `record_id`,
+  status/error/retry timestamps); successful push deletes the row
+- Drift streams refresh UI reactively; invalidate only derived/FutureProvider
+  snapshots that do not observe the changed DAO stream
+- Syncable repos with FK parents MUST use `ValidatedSyncMixin`. Current
+  coverage: breeding_pair, clutch, incubation, egg, chick, health_record,
+  event, event_reminder, growth_measurement. Bird is a root entity and does not
+  require the mixin.
 
 ### Write Safety
-- ALWAYS `.upsert()` for idempotent writes — `.insert()` causes duplicates on retry/sync replay
+- Syncable entity replay paths ALWAYS use `.upsert()` for idempotency — raw
+  `.insert()` causes duplicates on retry/sync replay
 - Use stable client-generated UUIDs as primary keys, not server-assigned IDs. **Prefer `const Uuid().v7()`** — time-orderable, better B-tree index locality, easier debugging. `Uuid().v4()` remains acceptable for non-entity identifiers (transient request tokens, etc.) but new entity creation paths should use v7 for consistency with the rest of the codebase.
 - Batch writes in Drift transactions; batch remote writes where API supports
 
@@ -95,8 +109,10 @@ await db.batch((batch) {
 ```
 
 ### Conflict Resolution
-- Last-write-wins via `updated_at` timestamp (server wins when remote newer)
-- Discarded local edits MUST NOT be silent: track in `lastPullConflicts`, surface via provider, show UI banner
+- Pull is server-wins; any incoming overwrite of a locally pending row is a
+  conflict regardless of timestamp order
+- Discarded local edits MUST NOT be silent: shared `detectPullConflicts` →
+  `lastPullConflicts` → `conflict_history` + providers/banner/detail sheet
 - Never overwrite local dirty rows without conflict accounting
 
 ## Cache

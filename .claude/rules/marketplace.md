@@ -7,10 +7,10 @@ Kullanıcılar kuş satılık ilanları yayınlar, iletişim kurar, premium ile 
 |--------|---------|
 | Feature | `lib/features/marketplace/` |
 | Repository | `MarketplaceRepository` (`lib/data/repositories/marketplace_repository.dart`) — online-first, wraps `MarketplaceListingRemoteSource` + `MarketplaceFavoriteRemoteSource` |
-| Storage | `marketplace-listings` bucket (public read) |
+| Storage | `photos` bucket / `marketplace-images/...` prefix (public read) |
 | Moderation | `moderate-content` strict + `scan-image-safety` |
 | Premium gates | `PremiumGuard` belirli aksiyonlarda |
-| Ads | `AdService` free user'a inline banner |
+| Ads | Inline banner tasarım hedefi; marketplace call site henüz yok |
 
 ## Naming Convention
 - `MarketplaceRepository` — cross-user public listing feed olduğu için architecture.md § Online-First Exemption'a dahil (`*Repository` adı burada DOĞRU — doc-block'ta "Online-first: cross-user public listings. No local Drift mirror by design." zorunlu)
@@ -88,10 +88,11 @@ Limit ihlali: `validate-free-tier-limit` edge fn server-side enforce.
 - IP-based geolocation YOK (privacy + accuracy)
 
 ## Storage Path
-`marketplace-listings/<user_id>/<listing_id>/<index>.jpg`
+`photos` bucket içinde `marketplace-images/<user_id>/<listing_id>/<index>.<ext>`
 - Public bucket (CDN cache 7 gün)
 - Listing silindiğinde Storage cleanup async job
-- 10MB image guard (assets-images.md)
+- 10MB picker/storage guard; safety scan raw 2MB üstünü fail-closed reddeder
+  (limit drift: assets-images.md + known-gaps)
 
 ## RLS Policy
 - SELECT: herkes (public feed)
@@ -117,7 +118,7 @@ Limit ihlali: `validate-free-tier-limit` edge fn server-side enforce.
 - Asla listing content Sentry'ye
 
 ## Anti-Patterns
-1. `MarketplaceListingRepository` adı (online-only, `*RemoteSource` zorunlu — architecture.md)
+1. Feature/provider katmanının `MarketplaceRepository` yerine remote source'ları doğrudan import etmesi (online-first repository exception'ı sınır olarak korunur)
 2. Free tier limit'i client-only kontrol (edge fn server-side enforce)
 3. Telefon görünürlüğünü premium check'siz yapmak (paywall bypass)
 4. Premium user'a ad göstermek (entitlement aware değil)

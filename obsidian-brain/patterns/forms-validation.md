@@ -20,7 +20,7 @@ class _BirdFormState extends ConsumerState<BirdFormScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _submitting = true);
     try {
-      await ref.read(birdProvider.notifier).save(/* ... */);
+      await ref.read(birdFormStateProvider.notifier).createBird(/* ... */);
       if (!mounted) return;  // ALWAYS check mounted
       context.pop();
     } on ValidationException catch (e) {
@@ -39,13 +39,13 @@ class _BirdFormState extends ConsumerState<BirdFormScreen> {
 |-------|------|--------|
 | Sync field validator | `TextFormField.validator` | Empty check, format |
 | Form-level validator | Submit, cross-field | "Passwords don't match" |
-| Async unique check | onChange debounced | Generic pattern below — no shipped ring-unique check exists ([[known-gaps]]) |
+| Async unique check | onChange debounced | Ring number: shipped early check + submit-time fallback |
 | Server validation | Submit response | `ValidationException(message: l10nKey, code?)` — no per-field error map |
 
 ## Async Validator (Race-Safe)
 
-GENERIC pattern — note: a ring-number unique check is NOT shipped
-(`ringNumberExists` / `validation.ring_taken` don't exist — [[known-gaps]]):
+`BirdFormIdentitySection` runs the shipped ring-number check with a 400ms
+debounce, monotonic request ID, `mounted` guard, and edit-row exclusion:
 
 ```dart
 int _requestId = 0;
@@ -53,11 +53,18 @@ Future<void> _checkUnique(String value) async {
   final id = ++_requestId;
   await Future.delayed(const Duration(milliseconds: 400));
   if (id != _requestId) return;  // Stale request
-  final exists = await ref.read(myRepositoryProvider).fieldExists(value);
+  final exists = await ref
+      .read(birdRepositoryProvider)
+      .hasRingNumber(userId, value, excludeId: editBirdId);
   if (id != _requestId || !mounted) return;
-  setState(() => _fieldError = exists ? 'validation.already_taken'.tr() : null);
+  setState(() => _fieldError =
+      exists ? 'birds.ring_number_not_unique'.tr() : null);
 }
 ```
+
+Lookup failure is logged but does not block typing. Create/update submission
+re-checks the normalized ring before `save()`, so the debounced UI check is not
+the only defense. Empty rings are allowed; edit excludes the current bird.
 
 ## Submit Button State
 
@@ -75,7 +82,7 @@ PrimaryButton(
 |------|--------|------|
 | Email | `TextFormField` + `TextInputType.emailAddress` | Regex validation |
 | Date | `showDatePicker` | Check for null return |
-| Image | Custom picker | 10MB guard + scan-image-safety |
+| Image | Custom picker | Surface guard; scanned UGC effective raw cap is 2MB ([[known-gaps]]) |
 | Dropdown | `DropdownButtonFormField(initialValue: ...)` | NOT `value:` (anti-pattern #2) |
 
 ## Validation L10n Keys
@@ -93,6 +100,9 @@ All in `validation.` namespace:
 }
 ```
 
+Ring conflict uses `birds.ring_number_not_unique`, not a nonexistent
+`validation.ring_taken` key.
+
 ## Anti-Patterns
 
 1. `controller.dispose()` missing (memory leak)
@@ -100,7 +110,7 @@ All in `validation.` namespace:
 3. Generic `Exception` instead of `ValidationException`
 4. Hardcoded validation messages (use `.tr()`)
 5. Double-submit allowed (no disabled state)
-6. Async validator without race condition guard
+6. Async validator without request-ID/mounted guards or submit-time fallback
 7. `DropdownButtonFormField` with `value:` instead of `initialValue:`
 
 ## See Also

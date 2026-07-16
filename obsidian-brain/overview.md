@@ -39,13 +39,16 @@
 ## Key Design Decisions
 
 ### 1. Offline-First
-- Drift local SQLite is the **source of truth for all UI reads**
-- Network is never required to display data — all reads go through local DAOs
+- Drift local SQLite is the source of truth for breeder-owned syncable entities
+- Bird/breeding/egg/chick/health/calendar reads go through local DAOs
+- Community/social, messaging, marketplace, and gamification repositories are
+  explicit online-first cross-user/server-authoritative exceptions (see
+  [[architecture/online-first-exemption]])
 - Background sync pushes dirty records to Supabase when online
 - See [[architecture/offline-first]]
 
 ### 2. Idempotent Writes
-- All remote writes use `.upsert()` (never `.insert()`)
+- Syncable entity remote writes use `.upsert()` (never `.insert()`)
 - Primary keys are client-generated UUIDs (`const Uuid().v7()` for new entity creation paths)
 - Safe to replay on retry or sync conflict
 - See [[data-layer/sync-strategy]]
@@ -76,12 +79,12 @@ Enforced by `scripts/verify_code_quality.py` (28 checker categories — 19/24 CL
 - Rule files document both shipped behavior AND unshipped design targets
 - Before assuming a surface works end-to-end, check [[known-gaps]]
 
-## Codebase Stats (as of 2026-07-12, kept in sync via `verify_rules.py --strict`)
+## Codebase Stats (verified 2026-07-16 via `verify_rules.py --strict`)
 
 | Metric | Value |
 |--------|-------|
 | Source files (lib/) | 1026 Dart files |
-| Test files | 937 files, 11,607+ individual tests |
+| Test files | 937 files, 11,611+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |

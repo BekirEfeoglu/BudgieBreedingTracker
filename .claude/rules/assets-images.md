@@ -44,8 +44,8 @@ CachedNetworkImage(
 ```
 User selects photo (ImagePicker)
   -> Local validation (size, dimension, format)
-  -> Compress + resize (max 1920px, JPEG q85)
-  -> Call scan-image-safety edge fn (NSFW + malware check)
+  -> Picker-side resize/quality (surface-specific)
+  -> Safety moderation (scan-image-safety; community: upload-community-photo)
   -> Reject if unsafe + show l10n error
   -> Upload to Supabase Storage (bucket-specific)
   -> Save signed URL or storage path in DB
@@ -54,40 +54,34 @@ User selects photo (ImagePicker)
 
 ## File Size Guard
 - **10MB üst limit** — istemci tarafında ön kontrol (network'e atmadan reddet)
-- Compress sonrası genelde 1MB altı (1920px JPEG q85)
-- Edge function `scan-image-safety` ayrıca server-side guard yapar
+- Picker resize/quality ayarları upload öncesi payload'ı küçültür
+- Scanned UGC için client/Edge moderation path'leri raw 2MB'de fail-closed
+  reject eder; bu 10MB picker/storage sınırıyla uyumsuzdur (known-gaps)
 - L10n: `errors.image_too_large` (namedArgs: max=10MB)
 
 ```dart
-const maxImageBytes = 10 * 1024 * 1024;  // 10MB
-
-Future<File> validateImage(File file) async {
-  final size = await file.length();
-  if (size > maxImageBytes) {
-    throw ValidationException(
-      'errors.image_too_large',
-      fieldErrors: {'image': 'errors.image_too_large'},
-    );
-  }
-  return file;
-}
+final accepted = await ImagePickerGuard.ensureWithinSizeLimit(context, file);
+if (!accepted || !context.mounted) return;
 ```
 
-## Image Compression
-- `flutter_image_compress` paketi
-- Max boyut: 1920px (uzun kenar)
-- Format: JPEG quality 85 (PNG sadece transparency varsa)
-- Compress UI thread'i bloklar — `compute()` veya isolate kullan
+`StorageService` / marketplace remote source aynı 10MB sınırını, izinli uzantıyı
+ve magic-byte eşleşmesini tekrar doğrular; picker guard yalnız UX katmanıdır.
+Görsel safety scan'i kullanan akışlarda efektif üst sınır 2MB raw byte'tır;
+picker resize bunu çoğunlukla düşürür ama garanti etmez. Avatar zaten 2MB guard
+kullanır; diğer scanned UGC yüzeylerindeki 10MB↔2MB farkı açık bir gap'tir.
 
-```dart
-final compressed = await FlutterImageCompress.compressWithFile(
-  file.path,
-  minWidth: 1920,
-  minHeight: 1920,
-  quality: 85,
-  format: CompressFormat.jpeg,
-);
-```
+## Picker-Side Resize / Quality
+
+Projede ayrı bir `flutter_image_compress` / isolate aşaması yoktur. Boyut ve
+kalite doğrudan `ImagePicker` parametreleriyle yüzeye göre ayarlanır:
+
+| Surface | Picker contract |
+|---------|-----------------|
+| Bird + DM photo | `maxWidth/maxHeight: 1920`, `imageQuality: 85` |
+| Community post | `maxWidth/maxHeight: 1200`, `imageQuality: 85` |
+| Marketplace | `maxWidth: 1200`, `imageQuality: 80` |
+| Avatar | `maxWidth/maxHeight: 512`, `imageQuality: 80`, 2MB guard |
+| Local AI | `maxWidth/maxHeight: 1024`, `imageQuality: 85` |
 
 ## Storage Buckets
 - Bucket isimleri `SupabaseConstants` içinde sabit
@@ -127,22 +121,19 @@ Gerçek bucket'lar (`lib/core/constants/supabase_constants.dart`): `bird-photos`
 ## Performance Anti-Patterns
 1. `Image.network` doğrudan (cache yok, retry yok)
 2. List item'larda decode boyut limiti olmamak (memory shoot)
-3. Compress'siz upload (10MB ham foto, Storage maliyeti)
+3. Picker resize/quality parametresi olmadan upload (ham foto, Storage maliyeti)
 4. PNG ile fotoğraf kaydetmek (JPEG'in 5x'i boyut)
 5. `Icon(Icons.pets)` domain ikonu için (anti-pattern #12)
 6. SVG path hardcode (anti-pattern #13 — `AppIcons` sabitleri zorunlu)
-7. `scan-image-safety` edge fn'i atlayıp doğrudan upload
-8. Compress'i UI thread'inde yapmak (jank)
+7. Zorunlu safety path'i atlayıp doğrudan upload (`scan-image-safety`;
+   community için `upload-community-photo`)
+8. Yüzeye özel picker limitini atlamak (avatar/marketplace için gereksiz büyük payload)
 9. Signed URL'i cache etmeden her widget rebuild'de yeniden istemek
 
 ## Test
 ```dart
-test('rejects image larger than 10MB', () async {
-  final file = MockFile(size: 11 * 1024 * 1024);
-  expect(
-    () => validateImage(file),
-    throwsA(isA<ValidationException>()),
-  );
+testWidgets('rejects image larger than 10MB', (tester) async {
+  // ImagePickerGuard false döner ve localized snackbar gösterir.
 });
 
 testWidgets('shows placeholder while loading', (tester) async {

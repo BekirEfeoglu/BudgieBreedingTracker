@@ -77,6 +77,10 @@ client guard runs before upload, `StorageService.uploadMessagePhoto` scans with
 bucket created by migration `20260709120000_add_message_photos_storage_bucket.sql`.
 Fetched image message URLs are refreshed by `StorageUrlResolver`.
 
+The safety service rejects raw payloads above 2MB, so the advertised 10MB guard
+is not the effective end-to-end limit; this mismatch is tracked in
+[[known-gaps]].
+
 `birdCard` and `listingCard` render paths still exist, but there is no producer
 UI yet; do not show those bottom-sheet options until a real selector flow ships.
 There is no generic `chat-attachments` bucket.

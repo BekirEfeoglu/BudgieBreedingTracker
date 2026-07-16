@@ -29,7 +29,7 @@ See [[architecture/online-first-exemption]]
 
 - Reports trigger `moderate-content` Edge Function
 - Threshold-based auto-flag + human review queue
-- Photos scanned by `scan-image-safety` Edge Function before upload
+- Photos use `upload-community-photo` for server-side validation, moderation, and storage; the client never uploads directly to the bucket
 
 ## Comment Replies (one-level, shipped 2026-07-07)
 

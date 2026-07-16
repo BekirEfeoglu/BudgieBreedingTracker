@@ -16,6 +16,8 @@ decision; the owning rule file says what closing them requires.
 | Surface | Reality | Owning rule |
 |---------|---------|-------------|
 | DM `MessageType.birdCard` / `listingCard` | Model getters exist (`message_model.dart`) and `MessageBubble._buildReferenceCard` renders both, but there is NO producer UI — the attachment sheet offers only photo. Deliberately hidden until real producers exist (`lib/core/constants/feature_flags.dart` comment) | `messaging.md` § Attachments |
+| Sync conflict "retry local" / payload inspection | `conflict_history` stores only table, record ID, description, type, and timestamps. Pull has already overwritten Drift before the user acts; `_retryLocal` merely marks the current server-wins row pending, so it cannot show or restore the discarded field values | `background-sync.md` § Conflict Resolution |
+| Scanned photo 10MB vs 2MB limit | General pickers/storage advertise and guard 10MB, but the generic `ImageSafetyService`/`scan-image-safety` path and community's `upload-community-photo` path reject raw bytes above 2MB. Picker resizing often helps but does not guarantee ≤2MB; avatar alone already uses a matching 2MB guard | `assets-images.md`, `moderation.md` § Image Safety Pipeline |
 
 ## Designed But Never Built
 
@@ -34,7 +36,6 @@ decision; the owning rule file says what closing them requires.
 | User-password portable backup (PBKDF2) | Backup encrypts with the runtime device key (`EncryptionService`) — encrypted backups are NOT portable to another device; no PBKDF2/user-password flow exists | `data-io.md` § Encryption |
 | Restore preview / wipe-and-restore | Restore is merge-upsert only — no record-count preview, no wipe option, no skip/overwrite/rename conflict UI | `data-io.md` § Restore Flow |
 | `ValidationException.fieldErrors` field map | Exception carries only `(message, code?, originalError?)`; field-level errors come from sync validators, not the server | `forms-validation.md` § ValidationException Mapping |
-| Ring-number async unique check | No `ringNumberExists` repository method, no `validation.ring_taken` key — duplicate rings are not validated | `birds.md` § Liste & Detay, `forms-validation.md` |
 
 ## Genetics Roadmap — Still Open
 

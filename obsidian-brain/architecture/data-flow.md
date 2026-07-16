@@ -6,54 +6,70 @@ Source: `.claude/rules/architecture.md`, `.claude/rules/data-layer.md`
 
 ```
 Widget (ConsumerWidget)
-  └─ ref.watch(birdListProvider)           ← StreamProvider<List<Bird>>
+  └─ ref.watch(birdsStreamProvider(userId)) ← StreamProvider<List<Bird>>
        └─ birdRepositoryProvider           ← Provider<BirdRepository>
-            └─ birdDao.watchAll()          ← Drift stream (reactive)
+            └─ BirdRepository.watchAll()   ← BirdsDao.watchAll() (reactive)
                  └─ SQLite (local, device)
 ```
 
-UI **always** reads from local Drift — never directly from Supabase.
+Offline-first entity UI reads from local Drift. Community posts/comments/social,
+messaging, marketplace, and the server-authoritative gamification ledger are
+explicit online-first repository exceptions; see
+[[architecture/online-first-exemption]].
 
 ## Runtime Write Path
 
 ```
-Widget
-  └─ ref.read(birdProvider.notifier).save(bird)
-       └─ BirdRepository.insert(bird)
-            ├─ birdDao.insert(bird.toCompanion())   ← local first
-            └─ SyncMetadata.markDirty('bird', id)  ← queue for sync
-                 └─ (background) SyncService
-                      └─ supabaseClient
-                           .from(SupabaseConstants.birdsTable)
-                           .upsert(bird.toSupabase())
+Widget callback
+  └─ ref.read(birdFormStateProvider.notifier).createBird/updateBird(...)
+       └─ BirdRepository.save(bird)
+            ├─ BirdsDao.insertItem(bird)             ← local first
+            ├─ markPending(bird.id, bird.userId)     ← sync_metadata row
+            └─ tryImmediatePush(bird)                ← best effort
+                 └─ BirdRemoteSource.upsert(bird)
+                      ├─ success → delete sync_metadata row
+                      └─ failure → pending/error metadata survives for retry
 ```
 
 ## Sync Cycle
 
 ```
-1. App start / foreground resume
-2. networkStatusProvider detects online
-3. SyncService.syncAll()
-   ├─ Pull: fetch remote changes newer than lastPulledAt
-   │    └─ dao.upsertFromRemote(remoteEntity)
-   └─ Push: query dirty local records
-        └─ For each dirty record:
-             ├─ ValidatedSyncMixin.validateParents() (if FK parent)
-             ├─ remoteSource.upsert(entity.toSupabase())
-             └─ dao.markClean(id) + syncMetadata.update()
+1. Auth initialization / periodic scheduler / manual trigger
+2. syncOrchestratorProvider → SyncOrchestrator.fullSync()
+3. Push first: SyncPushHandler queries pending records
+   └─ pushAll() → pushPendingBatched() (100/chunk)
+      ├─ ValidatedSyncMixin.validateForeignKeys() where required
+      ├─ remoteSource.upsertAll(...)
+      └─ success deletes the per-record sync_metadata row
+4. Pull second: SyncPullHandler.pullChanges(since: checkpoint - 5min skew)
+   └─ repository.pull() → Drift upsert (server-wins)
+5. Every 6h (or forceFullSync): full reconciliation removes clean local orphans
 ```
+
+Push-before-pull protects unsynced local records. If push fails, reconciliation
+falls back to an incremental pull instead of deleting records that only exist
+locally.
 
 ## Conflict Resolution
 
-- Server `updated_at` wins when remote is newer than local `lastPulledAt`
-- Discarded local edits → `lastPullConflicts` → `conflictNotifierProvider` → UI banner
+- Any incoming remote row that overwrites a locally pending row is a conflict;
+  timestamp order does not suppress it
+- `detectPullConflicts` → repository `lastPullConflicts` →
+  `conflict_history` + `conflictHistoryProvider`
+- `persistedConflictCountProvider` drives the global banner/home status chip;
+  the Settings sync-detail sheet shows table/record description/time metadata
 - Never silent overwrite
+
+The original local payload is not snapshotted, so the current history can prove
+an overwrite occurred but cannot display or restore the discarded field values;
+see [[known-gaps]].
 
 ## Provider Invalidation
 
-After writes or sync completion:
+Drift streams normally update UI without manual invalidation. Invalidation is
+reserved for FutureProvider/derived snapshots or an explicit refresh:
 ```dart
-ref.invalidate(birdListProvider);  // force re-fetch from Drift
+ref.invalidate(incubatingEggsSummaryProvider(userId));
 ```
 
 ## Edge Function Calls

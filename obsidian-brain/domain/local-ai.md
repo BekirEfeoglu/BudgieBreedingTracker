@@ -80,6 +80,6 @@ Gates heavy AI features to founder/admin accounts only in development. Always re
 ## See Also
 
 - [[domain/genetics-engine]] — AI confidence integration
-- [[patterns/assets-images]] — 10MB guard, image resize
+- [[patterns/assets-images]] — picker sizing and file guard patterns
 - [[patterns/observability]] — PII rules
 - [[domain/services-index]]

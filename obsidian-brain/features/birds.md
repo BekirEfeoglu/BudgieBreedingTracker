@@ -51,8 +51,9 @@ failure instead of dropping it silently — matches the breeding/egg notifier pa
 
 ## Photo Upload
 
-- Max 10MB file size guard
-- `scan-image-safety` Edge Function for NSFW/malware check (wired through
+- Picker: 1920×1920/q85; 10MB UX/storage guard, but mandatory safety scan
+  rejects raw payloads above 2MB (effective-limit mismatch: [[known-gaps]])
+- `scan-image-safety` Edge Function for objectionable-content checks (wired through
   `StorageService.uploadBirdPhoto` → `_uploadFile` → `_uploadBinary` →
   `_readValidatedUpload`, scan defaults on for `birdPhotosBucket`)
 - Stored in `bird-photos` bucket (private, user-scoped RLS)
@@ -85,6 +86,15 @@ gender and status; status supports `alive`, `dead`, `sold`, and `gifted`.
 Ring numbers are searchable and sortable with natural ordering; empty ring numbers stay
 last in both ascending and descending ring sorts.
 
+## Ring Number Uniqueness
+
+`BirdFormIdentitySection` checks `BirdRepository.hasRingNumber` after a 400ms
+debounce while the user types. A monotonic request ID drops stale async results,
+`mounted` guards disposal, and `excludeId` prevents the edited bird from
+matching itself. The lookup is best-effort for early feedback; both create and
+update submit paths normalize and re-check the ring before saving, then surface
+`birds.ring_number_not_unique` on conflict. Empty ring numbers remain valid.
+
 ## Cage Ledger
 
 Bird records already carry `cageNumber`; no separate `Cage` table exists yet.
@@ -107,6 +117,7 @@ records. No separate timeline table exists.
 - `.claude/rules/data-layer.md` — Bird is a root entity (no ValidatedSyncMixin needed)
 - `.claude/rules/assets-images.md` — photo upload pipeline
 - `.claude/rules/breeding-eggs.md` — Bird as head of entity chain
+- `.claude/rules/forms-validation.md` — async validation + submit fallback
 
 ## See Also
 

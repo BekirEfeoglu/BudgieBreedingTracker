@@ -4,6 +4,15 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-16] docs | Semantic sync/forms/image reconciliation
+
+Reconciled current wiki claims against production paths: `SyncOrchestrator`
+push→pull flow, per-record metadata, nine FK-validating repositories, six
+online-first exceptions, conflict surfaces, ring uniqueness, picker-specific
+image sizing, marketplace storage, and 11,611 tests. Removed the false ring
+gap; added real conflict-payload and 10MB-vs-2MB scan-limit gaps. Hardened the
+absence/allowlist review contract and pruned two obsolete drift allowlist items.
+
 ## [2026-07-14] perf | Feed RPC emits is_following_author; messages_insert uses definer helpers
 
 Two follow-ups. **`20260714200510`**: `fetch_community_feed` now returns

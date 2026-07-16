@@ -16,7 +16,8 @@ allowed. App Store + Play Store policy hinges on this contract.
 | File | Purpose |
 |------|---------|
 | `content_moderation_service.dart` | Text checks: local pattern allowlist + `moderate-content` Edge Function |
-| `image_safety_service.dart` | Photo NSFW/CSAM scan via `scan-image-safety` Edge Function |
+| `image_safety_service.dart` | Most photo flows: fail-closed `scan-image-safety` client bridge |
+| `upload-community-photo` | Community-specific Edge path: validate + moderate + store |
 | `moderation_providers.dart` | Riverpod wiring for both services |
 
 ## Text Moderation
@@ -36,14 +37,23 @@ classification (e.g. self-harm intent). Rejection reasons map to localized
 
 ```
 ImageSafetyService.scanImage({bytes, mimeType})
-  ├── Pre-check: bytes <= 2 MB after base64 (server budget)
+  ├── Client pre-check: raw bytes <= 2 MB (before base64)
   ├── POST to scan-image-safety Edge Function (JWT verified)
+  ├── Edge validates MIME + estimated decoded bytes <= 2 MB
   ├── Decode response → ImageSafetyResult
   └── Network/parse failure → unsafe (fail-closed)
 ```
 
 `ImageSafetyResult.safe` / `.unsafe(reason)` are both consumed by photo
 upload flows. Reasons feed localized rejection UI.
+
+Community deliberately bypasses the generic client bridge: `StorageService`
+calls `upload-community-photo`, whose handler performs the same size/MIME/magic
+byte and OpenAI-category checks before server-side storage.
+
+Most UGC pickers use a 10 MB UX/storage guard, while this mandatory scan rejects
+raw payloads above 2 MB. Picker-side resizing may reduce them but is not a hard
+2 MB guarantee; the effective limit mismatch is tracked in [[known-gaps]].
 
 ## Fail-Closed Behavior
 
@@ -64,7 +74,7 @@ Local pattern checks are convenience, not security:
 ## Anti-Patterns
 
 1. Failing open when the Edge Function times out (App Store compliance break)
-2. Skipping `scan-image-safety` because "the user is premium" (no exemption)
+2. Skipping the mandatory safety path because "the user is premium" (no exemption)
 3. Hardcoded English-only patterns (tr + de coverage required)
 4. Passing raw `text` to Sentry on rejection (PII leak)
 5. Storing the photo before scan completes (unsafe content on disk)

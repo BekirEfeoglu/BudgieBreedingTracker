@@ -25,9 +25,11 @@ original card layout unchanged.
 
 ## Online-First by Design
 
-`marketplace_listing_remote_source.dart` follows the `*RemoteSource`
-naming (NOT `*Repository`) — listings are cross-user content where local
-mirror would not help UX (see [[architecture/online-first-exemption]]).
+`MarketplaceRepository` is a documented online-first repository exception. It
+wraps `MarketplaceListingRemoteSource` and `MarketplaceFavoriteRemoteSource`
+without a Drift mirror because listings are cross-user fresh data (see
+[[architecture/online-first-exemption]]). Feature code consumes the repository,
+not the remote sources directly.
 
 | Surface | Read | Write |
 |---------|------|-------|
@@ -38,11 +40,13 @@ mirror would not help UX (see [[architecture/online-first-exemption]]).
 
 Listing photos go through the full upload pipeline:
 
-1. `ImagePicker` → file
+1. `ImagePicker.pickMultiImage(maxWidth: 1200, imageQuality: 80)`
 2. 10 MB guard
-3. Compress → 1920px JPEG q85
-4. `scan-image-safety` Edge Function (fail-closed — App Store policy)
-5. Upload to `marketplace-listings` Supabase Storage bucket
+3. Extension + magic-byte validation
+4. `scan-image-safety` via `ImageSafetyService` (fail-closed; raw 2 MB scan cap,
+   so the 10 MB UX/storage limit is not end-to-end — [[known-gaps]])
+5. Upload to public `photos` bucket at
+   `marketplace-images/{userId}/{listingId}/{index}.{ext}`
 
 Multi-photo listings reorder via drag, primary photo first.
 
