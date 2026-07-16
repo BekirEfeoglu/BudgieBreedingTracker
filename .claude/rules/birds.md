@@ -30,10 +30,10 @@ Sözleşme (breeding-eggs.md ile aynı): side effect'ler **best-effort, asla ret
 `BirdsDao` `ringNumber`, `notes`, `genotypeInfo` alanlarını at-rest şifreler — alan şifrelemesini yapan TEK DAO budur (encryption.md). Decrypt hatasında (yanlış/rotate edilmiş anahtar, corruption): `AppLogger.error` + `Sentry.captureException` + o alan için `null` döner — ciphertext'i ASLA plaintext gibi döndürme. `ringNumber` içeriğini log/Sentry'ye yazma (PII, observability.md).
 
 ## Foto Pipeline
-- `ImagePicker` 1920×1920/q85 → 10MB UX guard → extension/magic bytes →
-  `scan-image-safety` → `bird-photos` (private, user-scoped RLS). Scan
-  `StorageService.uploadBirdPhoto` yolunda default AÇIK; scanner raw 2MB üstünü
-  fail-closed reddettiği için 10MB guard end-to-end limit değildir (known-gaps)
+- `ImagePicker` 1920×1920/q85 → picker sonrası 2 MiB raw UX guard →
+  extension/magic bytes → `scan-image-safety` → `bird-photos` (private,
+  user-scoped RLS). `StorageService.uploadBirdPhoto`, scanner ve bucket limiti
+  aynı 2 MiB raw sözleşmesini fail-closed uygular
 - **Kısmi başarısızlık sözleşmesi** (`createBird`): kuş satırı persist olduktan SONRAKİ hata (galeri satırı, free-tier sayımı) non-blocking `warning`'dir (`birds.photo_gallery_save_partial`) — hard error kullanıcıyı retry'a itip duplicate kuş üretir. Compensating storage cleanup YALNIZ kuş satırı hiç persist olmadıysa koşar (kayıtlı kuşun `photoUrl`'inin işaret ettiği objeyi silmesin)
 - Sağlık kaydı fotoğrafları da `bird-photos` altındadır — ayrı bucket İCAT ETME
 

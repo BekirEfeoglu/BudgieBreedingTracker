@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/enums/community_enums.dart';
 import '../../../core/enums/gamification_enums.dart';
 import '../../../core/utils/logger.dart';
@@ -152,6 +153,15 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
         final imageSafety = ref.read(imageSafetyServiceProvider);
 
         for (final image in images) {
+          // UI guard normally catches this. Recheck metadata before allocating
+          // bytes so direct notifier callers cannot amplify client memory.
+          if (await image.length() > AppConstants.maxScannedImageBytes) {
+            state = state.copyWith(
+              isLoading: false,
+              error: 'errors.image_too_large'.tr(args: ['2']),
+            );
+            return;
+          }
           final bytes = await image.readAsBytes();
           final mimeType = _getMimeType(image.name);
           final safetyResult = await imageSafety.scanImage(

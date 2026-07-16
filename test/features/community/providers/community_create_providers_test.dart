@@ -266,6 +266,51 @@ void main() {
       verifyNever(() => repo.create(any()));
     });
 
+    test('rejects oversized image before reading or scanning it', () async {
+      final repo = MockCommunityPostRepository();
+      final imageSafety = RejectingSecondImageSafetyService();
+      when(
+        () => repo.checkPostAllowed(any()),
+      ).thenAnswer((_) async => {'allowed': true});
+      final oversized = XFile.fromData(
+        Uint8List(2 * 1024 * 1024 + 1),
+        name: 'oversized.jpg',
+        mimeType: 'image/jpeg',
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          currentUserIdProvider.overrideWithValue('user-1'),
+          communityPostRepositoryProvider.overrideWithValue(repo),
+          contentModerationServiceProvider.overrideWithValue(
+            const AllowedContentModerationService(),
+          ),
+          imageSafetyServiceProvider.overrideWithValue(imageSafety),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container
+          .read(createPostProvider.notifier)
+          .createPost(
+            content: 'Oversized photo',
+            postType: CommunityPostType.photo,
+            images: [oversized],
+          );
+
+      expect(imageSafety.scanCount, 0);
+      expect(container.read(createPostProvider).isSuccess, isFalse);
+      expect(container.read(createPostProvider).error, isNotNull);
+      verifyNever(
+        () => repo.uploadPhoto(
+          userId: any(named: 'userId'),
+          postId: any(named: 'postId'),
+          file: any(named: 'file'),
+        ),
+      );
+      verifyNever(() => repo.create(any()));
+    });
+
     test('cleans up uploaded images when post insert fails', () async {
       final repo = MockCommunityPostRepository();
       var uploadIndex = 0;

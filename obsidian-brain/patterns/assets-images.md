@@ -63,13 +63,16 @@ final accepted = await ImagePickerGuard.ensureWithinSizeLimit(context, file);
 if (!accepted || !context.mounted) return;
 ```
 
-The picker guard is UX-only. `StorageService` (and the marketplace remote
-source) re-checks the byte limit, allowed extension, and magic bytes before the
-fail-closed safety scan/upload. `ValidationException` has no `fieldErrors` map.
+The picker guard is UX-only. For scanned UGC it measures the post-picker output
+against a raw 2 MiB limit. `StorageService` (and the marketplace remote source),
+`ImageSafetyService`, both Edge paths, and all scanned image bucket limits
+re-check the same contract before the fail-closed upload. Exactly 2 MiB passes;
+one byte above is rejected. `ValidationException` has no `fieldErrors` map.
 
-For scanned UGC, the client/Edge moderation paths reject raw images above 2 MB.
-Most pickers still advertise/guard 10 MB (avatar already uses 2 MB), so 2 MB is
-the effective end-to-end limit until the mismatch in [[known-gaps]] is resolved.
+Picker resizing is best-effort. The 2 MiB server cap is intentionally not raised
+to the separate 10 MiB Local AI/general processing budget: base64 adds about 33%
+and Edge parsing, community decoding, and provider serialization create multiple
+transient copies, increasing memory/CPU and payload-amplification abuse risk.
 
 ## Picker-Side Resize / Quality
 
@@ -80,13 +83,19 @@ limits directly to `ImagePicker`:
 |---------|-------------------------|
 | Bird + DM photo | 1920×1920, quality 85 |
 | Community post | 1200×1200, quality 85 |
-| Marketplace | max width 1200, quality 80 |
-| Avatar | 512×512, quality 80; 2 MB guard |
+| Marketplace | 1200×1200, quality 80 |
+| Avatar | 512×512, quality 80 |
 | Local AI | 1024×1024, quality 85 |
+
+Every safety-scanned row uses the same post-picker raw 2 MiB guard; Local AI
+uses its separate 10 MiB processing contract.
 
 ## Storage Buckets
 
 Real buckets (`lib/core/constants/supabase_constants.dart`): `bird-photos`, `egg-photos`, `chick-photos`, `avatars`, `backups`, `community-photos`, `photos` (marketplace, constant `marketplacePhotosBucket`), `message-photos`. There is no separate `health-records` or `chat-attachments` bucket — health record photos live in `bird-photos`; DM photo messages live in `message-photos`.
+
+The seven scanned image buckets enforce a 2 MiB raw `file_size_limit` via
+migration `20260717120000`; `backups` keeps its separate 50 MiB limit.
 
 | Bucket | Access | Content |
 |--------|--------|---------|

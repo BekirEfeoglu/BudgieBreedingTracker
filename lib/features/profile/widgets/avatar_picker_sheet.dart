@@ -136,8 +136,7 @@ class _AvatarPickerContent extends StatelessWidget {
       messenger.showSnackBar(
         SnackBar(
           content: Text(
-            e.code == 'camera_access_denied' ||
-                    e.code == 'photo_access_denied'
+            e.code == 'camera_access_denied' || e.code == 'photo_access_denied'
                 ? 'profile.avatar_permission_denied'.tr()
                 : 'profile.avatar_pick_failed'.tr(),
           ),
@@ -150,7 +149,7 @@ class _AvatarPickerContent extends StatelessWidget {
     final ok = await ImagePickerGuard.ensureWithinSizeLimitVia(
       messenger,
       file,
-      maxBytes: AppConstants.maxAvatarUploadSizeBytes,
+      maxBytes: AppConstants.maxScannedImageBytes,
     );
     if (!ok) return;
 

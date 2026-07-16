@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/marketplace_listing_remote_source.dart';
 import 'package:budgie_breeding_tracker/domain/services/moderation/image_safety_service.dart';
@@ -326,6 +327,39 @@ void main() {
         );
       },
     );
+
+    test('uploadImages rejects photos above the scanned limit', () async {
+      final scanner = MockImageSafetyService();
+      final uploadSource = MarketplaceListingRemoteSource(
+        MockSupabaseClient(),
+        imageSafetyService: scanner,
+      );
+      final file = await _writeTempImage(
+        'photo.jpg',
+        _magicBytesFor('jpg', AppConstants.maxScannedImageBytes + 1),
+      );
+
+      await expectLater(
+        () => uploadSource.uploadImages(
+          userId: 'user-1',
+          listingId: 'listing-1',
+          localPaths: [file.path],
+        ),
+        throwsA(
+          isA<StorageException>().having(
+            (e) => e.message,
+            'message',
+            contains('2 MB'),
+          ),
+        ),
+      );
+      verifyNever(
+        () => scanner.scanImage(
+          bytes: any(named: 'bytes'),
+          mimeType: any(named: 'mimeType'),
+        ),
+      );
+    });
 
     test('uploadImages rejects more than three images', () async {
       await expectLater(

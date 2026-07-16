@@ -73,7 +73,7 @@ Shipped: `Message.deliveryStatus` local-only (`@JsonKey(includeFromJson: false, 
 
 ## Attachments
 - `messages.message_type` şeması `image`/`birdCard`/`listingCard`'ı destekler (`image_url` kolonu mevcut)
-- Shipped photo flow: `MessageInputBar` ek butonu yalnız fotoğraf seçeneğini gösterir; `MessageAttachmentService` `ImagePicker` ile 1920px / JPEG q85 seçer, `ImagePickerGuard` 10MB UX ön kontrolü yapar, `StorageService.uploadMessagePhoto` `scan-image-safety` sonrası `message-photos/{userId}/{conversationId}/...` path'ine yükler ve `MessagingFormNotifier.sendMessage(messageType: image, imageUrl: ...)` ile optimistic gönderir. Scanner raw 2MB üstünü fail-closed reddeder; 10MB↔2MB limit farkı known-gaps'te izlenir.
+- Shipped photo flow: `MessageInputBar` ek butonu yalnız fotoğraf seçeneğini gösterir; `MessageAttachmentService` `ImagePicker` ile 1920px / JPEG q85 seçer, `ImagePickerGuard` picker sonrası raw 2 MiB UX ön kontrolü yapar, `StorageService.uploadMessagePhoto` aynı sınırı tekrar doğrulayıp `scan-image-safety` sonrası `message-photos/{userId}/{conversationId}/...` path'ine yükler ve `MessagingFormNotifier.sendMessage(messageType: image, imageUrl: ...)` ile optimistic gönderir. Bucket `file_size_limit` de 2 MiB'dir.
 - `message-photos` bucket/policy migration'ı: `20260709120000_add_message_photos_storage_bucket.sql`. Fetch edilen image mesajlarında `MessagingRepository` eski signed URL'leri `StorageUrlResolver` ile tazeler.
 - `birdCard`/`listingCard` render desteği var, ancak üretici UI henüz yok; gerçek seçici/producer eklenmeden bottom-sheet seçeneği gösterme.
 - Genel dosya/audio attachment ve `chat-attachments` bucket tasarımı shipped değil; `chat-attachments` diye bucket yok.

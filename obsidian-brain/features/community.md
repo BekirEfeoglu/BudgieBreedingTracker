@@ -30,6 +30,7 @@ See [[architecture/online-first-exemption]]
 - Reports trigger `moderate-content` Edge Function
 - Threshold-based auto-flag + human review queue
 - Photos use `upload-community-photo` for server-side validation, moderation, and storage; the client never uploads directly to the bucket
+- Picker sonrası client guard, Edge decoded-size doğrulaması ve `community-photos` bucket limiti raw 2 MiB sözleşmesinde hizalıdır
 
 ## Comment Replies (one-level, shipped 2026-07-07)
 
@@ -160,8 +161,7 @@ Cross-validated 4-lane audit (bugs / a11y / UI-UX / perf):
 - Hardcoded Supabase column strings in community remain a manual-review follow-up.
 - Multi-device block/mute union staleness is known but not blocking current UX.
 - `edited_at` optimistic clock behavior is noted for later polish.
-- Global pinned-first pagination is a backend follow-up; shipped behavior pins
-  only within the loaded feed window to preserve the `(created_at, id)` cursor.
+- Global pinned-first pagination is a backend follow-up; shipped behavior pins only within the loaded feed window to preserve the `(created_at, id)` cursor.
 
 ## Pinned Posts
 

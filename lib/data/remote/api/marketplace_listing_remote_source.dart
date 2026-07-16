@@ -297,9 +297,15 @@ class MarketplaceListingRemoteSource {
           throw const StorageException('Marketplace image type is not allowed');
         }
 
+        // Avoid allocating an oversized image before the safety boundary.
+        // Recheck the loaded bytes below to cover file replacement races.
+        if (await file.length() > AppConstants.maxScannedImageBytes) {
+          throw const StorageException('File size exceeds 2 MB limit');
+        }
+
         final bytes = await file.readAsBytes();
-        if (bytes.length > AppConstants.maxUploadSizeBytes) {
-          throw const StorageException('File size exceeds 10 MB limit');
+        if (bytes.length > AppConstants.maxScannedImageBytes) {
+          throw const StorageException('File size exceeds 2 MB limit');
         }
         if (!StorageUtils.validateMagicBytes(bytes, ext)) {
           throw StorageException('File content does not match .$ext format');

@@ -84,7 +84,7 @@ Enforced by `scripts/verify_code_quality.py` (28 checker categories — 19/24 CL
 | Metric | Value |
 |--------|-------|
 | Source files (lib/) | 1026 Dart files |
-| Test files | 937 files, 11,611+ individual tests |
+| Test files | 937 files, 11,621+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -98,5 +98,5 @@ Enforced by `scripts/verify_code_quality.py` (28 checker categories — 19/24 CL
 | Supabase constants | 192 string constants |
 | L10n keys | 3,146 per language, 41 categories |
 | DB schema version | 28 |
-| Supabase migrations | 214 tracked SQL files |
+| Supabase migrations | 215 tracked SQL files |
 | Edge Functions | 12 |

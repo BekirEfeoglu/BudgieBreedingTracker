@@ -71,6 +71,19 @@ void main() {
   });
 
   group('ImageSafetyService - large image', () {
+    test('allows exactly 2MB to reach the edge function', () async {
+      final fakeClient = _FakeEdgeFunctionClient();
+      final service = ImageSafetyService(edgeFunctionClient: fakeClient);
+
+      final result = await service.scanImage(
+        bytes: Uint8List(2 * 1024 * 1024),
+        mimeType: testMimeType,
+      );
+
+      expect(result.isSafe, isTrue);
+      expect(fakeClient.lastImageBase64, isNotNull);
+    });
+
     test(
       'rejects images exceeding 2MB without calling edge function',
       () async {
@@ -171,24 +184,27 @@ void main() {
   });
 
   group('ImageSafetyService - null fields in response', () {
-    test('rejects when safe field is missing from response (fail-closed)', () async {
-      final fakeClient = _FakeEdgeFunctionClient(
-        fixedResult: const EdgeFunctionResult(
-          success: true,
-          data: {'some_other_field': 'value'},
-        ),
-      );
-      final service = ImageSafetyService(edgeFunctionClient: fakeClient);
+    test(
+      'rejects when safe field is missing from response (fail-closed)',
+      () async {
+        final fakeClient = _FakeEdgeFunctionClient(
+          fixedResult: const EdgeFunctionResult(
+            success: true,
+            data: {'some_other_field': 'value'},
+          ),
+        );
+        final service = ImageSafetyService(edgeFunctionClient: fakeClient);
 
-      final result = await service.scanImage(
-        bytes: testBytes,
-        mimeType: testMimeType,
-      );
+        final result = await service.scanImage(
+          bytes: testBytes,
+          mimeType: testMimeType,
+        );
 
-      // safe field missing → fail-closed via ?? false, not treated as safe
-      expect(result.isSafe, isFalse);
-      expect(result.rejectionReason, 'image_flagged');
-    });
+        // safe field missing → fail-closed via ?? false, not treated as safe
+        expect(result.isSafe, isFalse);
+        expect(result.rejectionReason, 'image_flagged');
+      },
+    );
 
     test('uses default reason when reason field is null', () async {
       final fakeClient = _FakeEdgeFunctionClient(

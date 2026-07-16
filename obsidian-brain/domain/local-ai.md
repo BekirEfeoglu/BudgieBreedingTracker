@@ -19,7 +19,8 @@ LLM-based analysis for budgerigar photos (gender/mutation prediction) and text h
 
 ## Size & Cost Guards
 
-- Max image: **10MB** (same limit as assets-images.md)
+- Max image: **10MB** Local AI processing budget (separate from the 2 MiB raw
+  safety-scanned upload contract in assets-images.md)
 - Client-side resize to max 1024px before sending (lower token cost)
 - Token budget: max 4K input / 512 output per prompt
 - Rate limit: **no client-side limiter today**. The only real bound is the in-memory

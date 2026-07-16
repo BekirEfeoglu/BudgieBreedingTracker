@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_icons.dart';
 import '../../../core/enums/community_enums.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -189,6 +190,7 @@ class _CommunityCreatePostScreenState
     final filtered = await ImagePickerGuard.filterWithinSizeLimit(
       context,
       images,
+      maxBytes: AppConstants.maxScannedImageBytes,
     );
     if (filtered.isEmpty || !mounted) return;
 

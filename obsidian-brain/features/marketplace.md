@@ -40,13 +40,14 @@ not the remote sources directly.
 
 Listing photos go through the full upload pipeline:
 
-1. `ImagePicker.pickMultiImage(maxWidth: 1200, imageQuality: 80)`
-2. 10 MB guard
+1. `ImagePicker.pickMultiImage(maxWidth/maxHeight: 1200, imageQuality: 80)`
+2. Picker sonrası raw 2 MiB guard
 3. Extension + magic-byte validation
-4. `scan-image-safety` via `ImageSafetyService` (fail-closed; raw 2 MB scan cap,
-   so the 10 MB UX/storage limit is not end-to-end — [[known-gaps]])
+4. `scan-image-safety` via `ImageSafetyService` (fail-closed, same raw cap)
 5. Upload to public `photos` bucket at
    `marketplace-images/{userId}/{listingId}/{index}.{ext}`
+
+Remote source doğrulaması ve `photos` bucket `file_size_limit` da 2 MiB'dir.
 
 Multi-photo listings reorder via drag, primary photo first.
 

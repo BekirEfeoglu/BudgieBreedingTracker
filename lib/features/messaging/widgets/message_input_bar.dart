@@ -11,6 +11,7 @@ import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/profile_stream_providers.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/enums/messaging_enums.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/buttons/app_icon_button.dart';
@@ -253,6 +254,7 @@ class _MessageInputBarState extends ConsumerState<MessageInputBar> {
       final withinSize = await ImagePickerGuard.ensureWithinSizeLimitVia(
         messenger,
         picked,
+        maxBytes: AppConstants.maxScannedImageBytes,
       );
       if (!mounted || !withinSize) return;
 

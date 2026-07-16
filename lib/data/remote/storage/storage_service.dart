@@ -110,7 +110,7 @@ class StorageService {
       bucket: _avatarsBucket,
       file: file,
       ext: ext,
-      maxBytes: AppConstants.maxAvatarUploadSizeBytes,
+      maxBytes: AppConstants.maxScannedImageBytes,
       maxSizeLabel: '2 MB',
     );
     await _removeStaleAvatarFiles(userId: userId, keepPath: path);
@@ -203,8 +203,8 @@ class StorageService {
       bucket: _communityPhotosBucket,
       file: file,
       ext: ext,
-      maxBytes: AppConstants.maxUploadSizeBytes,
-      maxSizeLabel: '10 MB',
+      maxBytes: AppConstants.maxScannedImageBytes,
+      maxSizeLabel: '2 MB',
       scanImage: false,
     );
     final result = await edgeClient.uploadCommunityPhoto(
@@ -352,8 +352,8 @@ class StorageService {
       bucket: bucket,
       file: file,
       ext: ext,
-      maxBytes: AppConstants.maxUploadSizeBytes,
-      maxSizeLabel: '10 MB',
+      maxBytes: AppConstants.maxScannedImageBytes,
+      maxSizeLabel: '2 MB',
     );
     await _uploadPreparedBinary(
       bucket: bucket,
@@ -376,6 +376,12 @@ class StorageService {
         'File type .$ext is not allowed. '
         'Allowed: ${_allowedExtensions.join(', ')}',
       );
+    }
+
+    // Reject from file metadata before allocating the full byte buffer. Keep
+    // the post-read check below as the authoritative TOCTOU-safe backstop.
+    if (await file.length() > maxBytes) {
+      throw StorageException('File size exceeds $maxSizeLabel limit');
     }
 
     final bytes = await file.readAsBytes();

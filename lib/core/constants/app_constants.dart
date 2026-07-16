@@ -31,8 +31,10 @@ abstract class AppConstants {
   static const Duration syncInterval = Duration(minutes: 15);
   static const int maxPhotosPerBird = 10;
   static const int maxEggsPerClutch = 12;
+  // Non-moderated/local processing budget. Scanned UGC must use the tighter
+  // raw-byte contract below because it is base64-encoded for Edge moderation.
   static const int maxUploadSizeBytes = 10 * 1024 * 1024; // 10 MB
-  static const int maxAvatarUploadSizeBytes = 2 * 1024 * 1024; // 2 MB
+  static const int maxScannedImageBytes = 2 * 1024 * 1024; // 2 MiB raw
   static const int maxLocalAiImageBytes = 10 * 1024 * 1024; // 10 MB
   static const int freeTierMaxBirds = 15;
   static const int freeTierMaxBreedingPairs = 5;

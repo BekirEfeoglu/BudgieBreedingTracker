@@ -150,6 +150,10 @@ void main() {
     test('maxUploadSizeBytes is positive', () {
       expect(AppConstants.maxUploadSizeBytes, greaterThan(0));
     });
+
+    test('maxScannedImageBytes is 2 MB raw', () {
+      expect(AppConstants.maxScannedImageBytes, 2 * 1024 * 1024);
+    });
   });
 
   group('AppConstants — free tier limits', () {

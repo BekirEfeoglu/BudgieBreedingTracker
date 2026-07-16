@@ -23,6 +23,8 @@ Kullanıcının kendi profili: kimlik alanları, avatar, güvenlik bölümü, is
 ImagePicker (max 512px, quality 80) -> StorageService.uploadAvatar -> avatars bucket
   -> local profile update + sync pending -> AvatarWidget (CachedNetworkImage)
 ```
+- Picker sonrası raw 2 MiB guard, `StorageService`, safety scan ve avatar bucket
+  `file_size_limit` ile aynıdır; picker resize/quality tek başına boyut garantisi değildir
 - Kaldırma: `deleteAvatar()` + `avatarUrl` temizle
 - `showAvatarPickerSheet`: galeri/kamera/kaldır; `ScaffoldMessenger` pop'tan ÖNCE yakalanır ki izin hatası SnackBar'ı kaybolmasın — bu sırayı bozma
 - Bucket private (assets-images.md § Storage Buckets)

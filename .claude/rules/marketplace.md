@@ -91,8 +91,8 @@ Limit ihlali: `validate-free-tier-limit` edge fn server-side enforce.
 `photos` bucket içinde `marketplace-images/<user_id>/<listing_id>/<index>.<ext>`
 - Public bucket (CDN cache 7 gün)
 - Listing silindiğinde Storage cleanup async job
-- 10MB picker/storage guard; safety scan raw 2MB üstünü fail-closed reddeder
-  (limit drift: assets-images.md + known-gaps)
+- Picker sonrası raw 2 MiB guard; remote source, safety scan ve bucket limiti aynı
+  sınırı fail-closed uygular. Picker `maxWidth/maxHeight: 1200`, q80'dir
 
 ## RLS Policy
 - SELECT: herkes (public feed)

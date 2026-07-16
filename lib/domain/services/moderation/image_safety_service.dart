@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
 
@@ -28,8 +29,8 @@ class ImageSafetyService {
   final EdgeFunctionClient? _edgeFunctionClient;
   static const _tag = '[ImageSafety]';
 
-  /// Maximum image size to scan (2 MB base64). Larger images are rejected.
-  static const _maxScanSizeBytes = 2 * 1024 * 1024;
+  /// Maximum raw image size. Base64 transport overhead is budgeted server-side.
+  static const _maxScanSizeBytes = AppConstants.maxScannedImageBytes;
 
   const ImageSafetyService({EdgeFunctionClient? edgeFunctionClient})
     : _edgeFunctionClient = edgeFunctionClient;

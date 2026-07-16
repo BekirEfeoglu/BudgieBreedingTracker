@@ -252,6 +252,27 @@ void main() {
         reason: 'direct report inserts must reject self-reporting',
       );
     });
+
+    test('all scanned image buckets enforce the 2 MB raw contract', () {
+      final sql = File(
+        'supabase/migrations/'
+        '20260717120000_align_scanned_image_upload_limits.sql',
+      ).readAsStringSync();
+
+      expect(sql, contains('file_size_limit = 2097152'));
+      for (final bucket in [
+        'bird-photos',
+        'egg-photos',
+        'chick-photos',
+        'avatars',
+        'community-photos',
+        'photos',
+        'message-photos',
+      ]) {
+        expect(sql, contains("'$bucket'"));
+      }
+      expect(sql, isNot(contains("'backups'")));
+    });
   });
 }
 

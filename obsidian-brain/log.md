@@ -4,6 +4,17 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-17] fix | Scanned image upload size contract unified at 2 MiB raw
+
+Aligned bird, community, marketplace, DM, avatar, egg, and chick upload
+boundaries: post-picker guard, repository/storage validation, image safety
+service, both Edge paths, and all seven image bucket limits now enforce 2 MiB
+raw. Kept the lower cap to bound base64/parser/decode memory and abuse; fixed
+base64 padding off-by-one so exact-limit payloads pass. Added boundary,
+post-compression, multi-surface, Edge, and migration coverage; retained the
+existing corrupt-image regression coverage and removed the closed 10MB-vs-2MB
+known gap.
+
 ## [2026-07-16] docs | Semantic sync/forms/image reconciliation
 
 Reconciled current wiki claims against production paths: `SyncOrchestrator`

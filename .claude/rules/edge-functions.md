@@ -58,6 +58,15 @@ Current webhook receivers: `revenuecat-webhook` (shared secret via `REVENUECAT_W
 | `create-community-comment` | Server-side moderation + reciprocal block check before insert | Comment publish cannot bypass moderation or block privacy |
 | `upload-community-photo` | Server-side image moderation before Storage write | Unsafe community media must never land in Storage |
 
+`scan-image-safety` ve `upload-community-photo` raw 2 MiB görsel sınırını
+paylaşır. Base64 envelope `ceil(2 MiB / 3) * 4 + 1024` byte'tır; son 1024 byte
+JSON key/MIME/UUID/filename overhead'idir. Decoded-size hesabı base64 padding'ini
+düşürür; tam 2 MiB kabul, bir byte üstü 413'tür. 10 MiB'ye yükseltme yapılmaz:
+request parser body'yi kopyalar, community decode buffer'ı ayırır ve moderasyon
+isteği yeniden serialize edilir; daha büyük sınır Edge resource/abuse riskidir.
+Bu karar hosted Supabase Edge'in güncel function başına **256 MB memory** ve
+**2 s CPU time** sınırlarını da hesaba katar ([official limits, 2026-07-17](https://supabase.com/docs/guides/functions/limits)).
+
 ## Testing Requirements
 - Every edge function MUST have integration tests covering:
   1. Happy path (valid JWT + valid payload)

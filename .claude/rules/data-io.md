@@ -69,7 +69,7 @@ birdSheet.appendRow([
 - Sheet import SIRASI FK'ye duyarlı: `importAllFromExcel` birds → breeding_pairs → **incubations → eggs** → chicks → health_records sırasında koşar (egg'in `incubationId`'si önce import edilen incubation'a çözülsün)
 - Sheet başına all-or-nothing: `saveAll` tek Drift transaction'dır — ortada patlarsa kısmi import KALMAZ; `ImportResult` `importedCount: 0` + sheet-level hata döner
 - Duplicate check: ring_number unique → conflict resolution
-- Max file size: 10MB (assets-images.md limit consistency)
+- Max file size: 10MB backup contract (separate from safety-scanned images' 2 MiB raw limit)
 - Background isolate: 1000+ row parse UI bloklar
 
 ## PDF Export — Pedigree
@@ -158,4 +158,4 @@ test('backup-restore round trip preserves all entities', () async {
 10. Düz `.json` backup'ı hassas veri içerdiğini söylemeden share etmek (şifreleme opsiyonel — kullanıcı bilgilendirmesi zorunlu)
 11. Share sheet sonrası temp file cleanup atlamak (cihaz alanı dolar)
 
-> **İlgili**: encryption.md (AES-256-CBC + HMAC, runtime anahtar), data-layer.md (Drift export schema), assets-images.md (10MB limit), premium-revenuecat.md (premium gating), localization.md (Excel header i18n), migrations.md (backup schema compatibility), obsidian-brain/known-gaps.md (PBKDF2 taşınabilir backup — unshipped)
+> **İlgili**: encryption.md (AES-256-CBC + HMAC, runtime anahtar), data-layer.md (Drift export schema), assets-images.md (separate image size contract), premium-revenuecat.md (premium gating), localization.md (Excel header i18n), migrations.md (backup schema compatibility), obsidian-brain/known-gaps.md (PBKDF2 taşınabilir backup — unshipped)

@@ -53,22 +53,33 @@ User selects photo (ImagePicker)
 ```
 
 ## File Size Guard
-- **10MB üst limit** — istemci tarafında ön kontrol (network'e atmadan reddet)
-- Picker resize/quality ayarları upload öncesi payload'ı küçültür
-- Scanned UGC için client/Edge moderation path'leri raw 2MB'de fail-closed
-  reject eder; bu 10MB picker/storage sınırıyla uyumsuzdur (known-gaps)
-- L10n: `errors.image_too_large` (namedArgs: max=10MB)
+- **2 MiB raw üst limit** — safety scan kullanan tüm upload yüzeylerinde picker
+  sonrası istemci ön kontrolü, repository/storage doğrulaması, Edge doğrulaması ve
+  bucket `file_size_limit` aynı sözleşmeyi uygular
+- Picker resize/quality payload'ı çoğunlukla küçültür fakat format/cihaz davranışı
+  nedeniyle 2 MiB garantisi vermez; guard her zaman picker sonucunun boyutunu ölçer
+- 10 MiB `maxUploadSizeBytes` scanned UGC için kullanılmaz; Local AI gibi ayrı,
+  tarama-dışı işleme bütçeleri kendi açık sabitini kullanır
+- L10n: `errors.image_too_large` (`args: ['2']`); mesaj ölçümün picker işlemi
+  sonrasındaki dosyaya uygulandığını açıklar
 
 ```dart
 final accepted = await ImagePickerGuard.ensureWithinSizeLimit(context, file);
 if (!accepted || !context.mounted) return;
 ```
 
-`StorageService` / marketplace remote source aynı 10MB sınırını, izinli uzantıyı
-ve magic-byte eşleşmesini tekrar doğrular; picker guard yalnız UX katmanıdır.
-Görsel safety scan'i kullanan akışlarda efektif üst sınır 2MB raw byte'tır;
-picker resize bunu çoğunlukla düşürür ama garanti etmez. Avatar zaten 2MB guard
-kullanır; diğer scanned UGC yüzeylerindeki 10MB↔2MB farkı açık bir gap'tir.
+`StorageService` / marketplace remote source aynı 2 MiB raw sınırını, izinli
+uzantıyı ve magic-byte eşleşmesini tekrar doğrular; picker guard yalnız UX
+katmanıdır. `ImageSafetyService`, `scan-image-safety` ve
+`upload-community-photo` aynı sınırı fail-closed uygular. Tam 2 MiB kabul edilir;
+bir byte üstü reddedilir.
+
+2 MiB seçimi bilinçlidir: raw veri base64 ile yaklaşık %33 büyür; 10 MiB raw
+yaklaşık 13.33 MiB base64 alanı üretir. Edge request parser body chunk'larını
+tutup JSON parse öncesi tek buffer'a kopyalar, community handler ayrıca decode
+buffer'ı üretir ve moderasyon isteği payload'ı yeniden serileştirir. Bu nedenle
+10 MiB'ye yükseltmek transient bellek/CPU ile authenticated payload-amplification
+abuse yüzeyini gereksiz büyütür; picker/client/bucket sınırı 2 MiB'ye indirilir.
 
 ## Picker-Side Resize / Quality
 
@@ -79,9 +90,13 @@ kalite doğrudan `ImagePicker` parametreleriyle yüzeye göre ayarlanır:
 |---------|-----------------|
 | Bird + DM photo | `maxWidth/maxHeight: 1920`, `imageQuality: 85` |
 | Community post | `maxWidth/maxHeight: 1200`, `imageQuality: 85` |
-| Marketplace | `maxWidth: 1200`, `imageQuality: 80` |
-| Avatar | `maxWidth/maxHeight: 512`, `imageQuality: 80`, 2MB guard |
+| Marketplace | `maxWidth/maxHeight: 1200`, `imageQuality: 80` |
+| Avatar | `maxWidth/maxHeight: 512`, `imageQuality: 80` |
 | Local AI | `maxWidth/maxHeight: 1024`, `imageQuality: 85` |
+
+Tablodaki safety-scanned yüzeylerin tamamında picker sonrası 2 MiB raw guard
+zorunludur; çözünürlük/quality değerleri sadece bu limite ulaşma olasılığını
+iyileştiren yüzeye özel optimizasyonlardır.
 
 ## Storage Buckets
 - Bucket isimleri `SupabaseConstants` içinde sabit
@@ -92,6 +107,10 @@ kalite doğrudan `ImagePicker` parametreleriyle yüzeye göre ayarlanır:
 - Public bucket için CDN URL, private için signed URL (TTL 1h)
 
 Gerçek bucket'lar (`lib/core/constants/supabase_constants.dart`): `bird-photos`, `egg-photos`, `chick-photos`, `avatars`, `backups`, `community-photos`, `photos` (marketplace, sabit adı `marketplacePhotosBucket`), `message-photos`. `health-records` ve `chat-attachments` diye ayrı bucket'lar YOK — sağlık kayıt fotoğrafı `bird-photos` altında, DM fotoğrafları `message-photos` altında saklanır.
+
+Safety-scanned yedi image bucket'ının (`bird/egg/chick/avatars/community/photos/message`)
+`file_size_limit` değeri migration `20260717120000` ile 2 MiB'dir. `backups`
+ayrı 50 MiB sözleşmesindedir ve bu limite dahil değildir.
 
 | Bucket | Erişim | İçerik |
 |--------|--------|--------|
@@ -132,7 +151,7 @@ Gerçek bucket'lar (`lib/core/constants/supabase_constants.dart`): `bird-photos`
 
 ## Test
 ```dart
-testWidgets('rejects image larger than 10MB', (tester) async {
+testWidgets('rejects scanned image larger than 2 MiB after picker processing', (tester) async {
   // ImagePickerGuard false döner ve localized snackbar gösterir.
 });
 

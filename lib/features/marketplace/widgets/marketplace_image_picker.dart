@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/image_picker_guard.dart';
 
@@ -27,16 +28,18 @@ class MarketplaceImagePicker extends StatelessWidget {
 
     final picked = await picker.pickMultiImage(
       maxWidth: 1200,
+      maxHeight: 1200,
       imageQuality: 80,
     );
     if (picked.isEmpty) return;
 
-    // Apply the 10MB client-side guard before upload so users don't wait
-    // for a network round-trip just to get rejected by the storage limit.
+    // Picker resizing is best-effort. Enforce the post-picker raw-byte scan
+    // contract before any moderation or Storage network round-trip.
     if (!context.mounted) return;
     final filtered = await ImagePickerGuard.filterWithinSizeLimit(
       context,
       picked.take(remaining).toList(),
+      maxBytes: AppConstants.maxScannedImageBytes,
     );
     if (filtered.isEmpty) return;
 

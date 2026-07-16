@@ -70,16 +70,16 @@ See [[domain/notification-service]].
 ## Attachments
 
 Photo attachments are wired end-to-end. `MessageInputBar` shows a single photo
-option, `MessageAttachmentService` picks a compressed gallery image, the 10MB
-client guard runs before upload, `StorageService.uploadMessagePhoto` scans with
+option, `MessageAttachmentService` picks a compressed gallery image, the raw
+2 MiB post-picker guard runs before upload, `StorageService.uploadMessagePhoto`
+revalidates the same limit and scans with
 `scan-image-safety`, and `MessagingFormNotifier.sendMessage` persists an
 `image` message with `image_url`. `message-photos` is a private user-scoped
 bucket created by migration `20260709120000_add_message_photos_storage_bucket.sql`.
 Fetched image message URLs are refreshed by `StorageUrlResolver`.
 
-The safety service rejects raw payloads above 2MB, so the advertised 10MB guard
-is not the effective end-to-end limit; this mismatch is tracked in
-[[known-gaps]].
+The safety service and `message-photos` bucket limit are also 2 MiB raw; the
+picker dimensions/quality are best-effort compression, not the size authority.
 
 `birdCard` and `listingCard` render paths still exist, but there is no producer
 UI yet; do not show those bottom-sheet options until a real selector flow ships.

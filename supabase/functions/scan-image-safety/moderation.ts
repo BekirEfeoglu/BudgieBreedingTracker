@@ -1,4 +1,17 @@
+// Keep scanned uploads at 2 MiB raw. Raising this to the general 10 MiB upload
+// budget would create a 13.33 MiB base64 field. `parseRequestBody` retains the
+// incoming chunks and copies them into a contiguous body before JSON parsing;
+// community upload then allocates decoded bytes, and the OpenAI request is
+// serialized again. The tighter cap bounds transient Edge memory/CPU and
+// authenticated payload-amplification abuse without weakening fail-closed scan.
+// Hosted runtime constraints are tracked in `.claude/rules/edge-functions.md`.
 export const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+export const MAX_IMAGE_BASE64_CHARS = Math.ceil(MAX_IMAGE_BYTES / 3) * 4;
+
+// JSON keys, MIME, UUID, and the maximum 180-character filename stay well
+// below this explicit envelope. It admits the exact raw limit after base64
+// inflation while rejecting materially oversized bodies during streaming read.
+export const MAX_IMAGE_REQUEST_BODY_BYTES = MAX_IMAGE_BASE64_CHARS + 1024;
 
 export interface ImageModerationResult {
   safe: boolean;
@@ -36,7 +49,8 @@ const BLOCKED_CATEGORY_REASONS: Record<string, string> = {
 };
 
 export function estimateBase64Bytes(base64: string): number {
-  return Math.floor((base64.length * 3) / 4);
+  const padding = base64.endsWith("==") ? 2 : base64.endsWith("=") ? 1 : 0;
+  return Math.floor((base64.length * 3) / 4) - padding;
 }
 
 export function validateImageInput(

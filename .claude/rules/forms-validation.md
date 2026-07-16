@@ -130,7 +130,7 @@ PrimaryButton(
 | Email | `TextFormField` + `TextInputType.emailAddress` | Regex: `RegExp(r'^[^@]+@[^@]+\.[^@]+')` |
 | Phone | Uygulama telefon alanı içermiyor (`intl_phone_field` pubspec'te YOK) | Eklenirse E.164 format + paket kararı gerekir |
 | Date | `showDatePicker` | DateTime null check |
-| Image | Custom picker + `scan-image-safety` | Surface guard (general 10MB/avatar 2MB); scanned UGC effective raw cap 2MB |
+| Image | Custom picker + `scan-image-safety` | Safety-scanned yüzeylerde picker sonrası raw 2 MiB; client/server/bucket aynı limit |
 | Dropdown | `DropdownButtonFormField(initialValue: ...)` | NOT `value:` (deprecated) |
 
 ## Form Testing

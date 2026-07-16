@@ -11,13 +11,13 @@ import { corsPreflightResponse, getCorsHeaders } from "../_shared/cors.ts";
 import { parseRequestBody, z } from "../_shared/validation.ts";
 import {
   ImageModerationResult,
+  MAX_IMAGE_REQUEST_BODY_BYTES,
   moderateImageWithOpenAI,
   validateImageInput,
 } from "../scan-image-safety/moderation.ts";
 
 const BUCKET = "community-photos";
 const SIGNED_URL_EXPIRY_SECONDS = 60 * 60 * 24 * 7;
-const MAX_BODY_BYTES = 4 * 1024 * 1024;
 
 const rateLimiter = createRateLimiter({
   windowMs: 60_000,
@@ -157,7 +157,7 @@ export function uploadCommunityPhotoHandler(
         req,
         uploadSchema,
         headers,
-        MAX_BODY_BYTES,
+        MAX_IMAGE_REQUEST_BODY_BYTES,
       );
       if (!parsed.success) return parsed.response;
 

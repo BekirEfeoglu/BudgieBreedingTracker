@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
@@ -312,7 +313,11 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
         imageQuality: 85,
       );
       if (!mounted || picked == null) return;
-      final ok = await ImagePickerGuard.ensureWithinSizeLimit(context, picked);
+      final ok = await ImagePickerGuard.ensureWithinSizeLimit(
+        context,
+        picked,
+        maxBytes: AppConstants.maxScannedImageBytes,
+      );
       if (!ok || !mounted) return;
       setState(() => _photoFile = picked);
     } catch (e, st) {

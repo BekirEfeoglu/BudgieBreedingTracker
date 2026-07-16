@@ -1,6 +1,4 @@
-import {
-  assertEquals,
-} from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
   estimateBase64Bytes,
   interpretOpenAIModerationResponse,
@@ -9,8 +7,11 @@ import {
   validateImageInput,
 } from "./moderation.ts";
 
-Deno.test("estimateBase64Bytes returns approximate byte count", () => {
-  assertEquals(estimateBase64Bytes("QUJDRA=="), 6);
+Deno.test("estimateBase64Bytes accounts for base64 padding", () => {
+  assertEquals(estimateBase64Bytes("QQ=="), 1);
+  assertEquals(estimateBase64Bytes("QUI="), 2);
+  assertEquals(estimateBase64Bytes("QUJD"), 3);
+  assertEquals(estimateBase64Bytes("QUJDRA=="), 4);
 });
 
 Deno.test("validateImageInput rejects missing image", () => {
@@ -28,12 +29,25 @@ Deno.test("validateImageInput rejects invalid mime type", () => {
 });
 
 Deno.test("validateImageInput rejects oversized image", () => {
-  const oversizedBase64 = "a".repeat(
-    Math.floor((MAX_IMAGE_BYTES * 4) / 3) + 8,
-  );
+  const encodedLength = Math.ceil(MAX_IMAGE_BYTES / 3) * 4;
+  const oversizedBase64 = "A".repeat(encodedLength);
   assertEquals(
     validateImageInput(oversizedBase64, "image/png"),
     { safe: false, reason: "image_too_large" },
+  );
+});
+
+Deno.test("validateImageInput allows exactly the raw byte limit", () => {
+  const encodedLength = Math.ceil(MAX_IMAGE_BYTES / 3) * 4;
+  const exactLimitBase64 = `${"A".repeat(encodedLength - 1)}=`;
+
+  assertEquals(
+    estimateBase64Bytes(exactLimitBase64),
+    MAX_IMAGE_BYTES,
+  );
+  assertEquals(
+    validateImageInput(exactLimitBase64, "image/png"),
+    null,
   );
 });
 

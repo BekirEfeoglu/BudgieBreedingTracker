@@ -20,7 +20,7 @@ start from.
 | Gate a feature behind premium? | [[domain/premium-service]] — `effectivePremiumProvider`, `PremiumGuard` |
 | Add a Riverpod provider? | [[patterns/providers]] — pick the right type, `ref.watch` vs `read` rules |
 | Handle an error in UI? | [[patterns/error-handling]] + [[patterns/empty-loading-error-states]] |
-| Upload a photo? | [[patterns/assets-images]] — picker sizing, guard/magic bytes, 2 MB effective scan cap, `scan-image-safety` |
+| Upload a photo? | [[patterns/assets-images]] — picker sizing, guard/magic bytes, unified 2 MiB raw scan cap, `scan-image-safety` |
 | Validate a bird ring number? | [[features/birds]] + [[patterns/forms-validation]] — debounced early check plus submit-time fallback |
 | Write a widget test? | [[patterns/testing]] — pump helpers, `addTearDown(container.dispose)` |
 | Style with theme? | [[patterns/ui-patterns]] — `Theme.of(context)`, `AppSpacing`, `withValues(alpha:)` |

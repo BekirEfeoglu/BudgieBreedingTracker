@@ -51,8 +51,8 @@ failure instead of dropping it silently — matches the breeding/egg notifier pa
 
 ## Photo Upload
 
-- Picker: 1920×1920/q85; 10MB UX/storage guard, but mandatory safety scan
-  rejects raw payloads above 2MB (effective-limit mismatch: [[known-gaps]])
+- Picker: 1920×1920/q85; picker sonrası raw 2 MiB guard. `StorageService`,
+  safety scan ve `bird-photos` bucket limiti aynı sınırı uygular
 - `scan-image-safety` Edge Function for objectionable-content checks (wired through
   `StorageService.uploadBirdPhoto` → `_uploadFile` → `_uploadBinary` →
   `_readValidatedUpload`, scan defaults on for `birdPhotosBucket`)

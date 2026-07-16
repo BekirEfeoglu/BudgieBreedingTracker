@@ -51,9 +51,16 @@ Community deliberately bypasses the generic client bridge: `StorageService`
 calls `upload-community-photo`, whose handler performs the same size/MIME/magic
 byte and OpenAI-category checks before server-side storage.
 
-Most UGC pickers use a 10 MB UX/storage guard, while this mandatory scan rejects
-raw payloads above 2 MB. Picker-side resizing may reduce them but is not a hard
-2 MB guarantee; the effective limit mismatch is tracked in [[known-gaps]].
+All safety-scanned UGC pickers now measure the post-picker file against the same
+raw 2 MiB limit as repositories, both Edge paths, and Storage buckets. Picker
+resize/quality remains best-effort; exact raw byte length is authoritative.
+Base64 padding is subtracted from decoded-size estimation, so exactly 2 MiB is
+accepted and one byte above is rejected.
+
+The server limit remains 2 MiB because 10 MiB raw inflates to 13.33 MiB base64;
+the Edge parser copies the request body, community upload additionally decodes
+it, and the provider request is serialized again. Raising the cap would increase
+transient memory/CPU and authenticated payload-amplification risk.
 
 ## Fail-Closed Behavior
 

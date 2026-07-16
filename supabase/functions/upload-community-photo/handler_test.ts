@@ -1,5 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { uploadCommunityPhotoHandler } from "./handler.ts";
+import { MAX_IMAGE_BYTES } from "../scan-image-safety/moderation.ts";
 
 const postId = "00000000-0000-7000-8000-000000000333";
 const tinyJpegBase64 = btoa(
@@ -86,6 +87,37 @@ Deno.test("upload-community-photo rejects invalid image bytes", async () => {
   assertEquals(await response.json(), {
     safe: false,
     reason: "invalid_image_bytes",
+  });
+  assertEquals(uploaded.length, 0);
+});
+
+Deno.test("upload-community-photo accepts exactly 2MB raw", async () => {
+  const encodedLength = Math.ceil(MAX_IMAGE_BYTES / 3) * 4;
+  const exactLimitJpegBase64 = `/9j/${"A".repeat(encodedLength - 5)}=`;
+  const { deps, uploaded } = baseDeps();
+
+  const response = await uploadCommunityPhotoHandler(deps)(
+    jsonRequest(validBody({ image_base64: exactLimitJpegBase64 })),
+  );
+
+  assertEquals(response.status, 200);
+  assertEquals(uploaded.length, 1);
+  assertEquals((uploaded[0].bytes as Uint8Array).length, MAX_IMAGE_BYTES);
+});
+
+Deno.test("upload-community-photo rejects one raw byte above 2MB", async () => {
+  const encodedLength = Math.ceil(MAX_IMAGE_BYTES / 3) * 4;
+  const oversizedJpegBase64 = `/9j/${"A".repeat(encodedLength - 4)}`;
+  const { deps, uploaded } = baseDeps();
+
+  const response = await uploadCommunityPhotoHandler(deps)(
+    jsonRequest(validBody({ image_base64: oversizedJpegBase64 })),
+  );
+
+  assertEquals(response.status, 413);
+  assertEquals(await response.json(), {
+    safe: false,
+    reason: "image_too_large",
   });
   assertEquals(uploaded.length, 0);
 });

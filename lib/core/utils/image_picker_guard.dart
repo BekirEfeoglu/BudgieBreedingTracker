@@ -4,15 +4,18 @@ import 'package:image_picker/image_picker.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 
-/// Client-side image size guard used by photo pickers.
+/// Client-side raw image size guard used after picker resize/compression.
 ///
 /// Rejects images that exceed the upload limit before the upload pipeline reads
 /// the full bytes. Without this guard, on low-bandwidth connections users would
 /// wait for the upload to start, only to be rejected after the server-side limit
 /// check.
 ///
-/// Server-side enforcement (StorageService / marketplace remote source) remains
-/// the source of truth — the client-side check is UX-only.
+/// Scanned uploads default to the same 2 MiB raw-byte contract enforced by
+/// StorageService, marketplace, Supabase Storage, and the moderation Edge
+/// Functions. Picker resize/quality is best-effort and cannot guarantee a file
+/// size, so this post-picker check remains required. Server-side size
+/// enforcement is authoritative; the client-side check is UX-only.
 abstract final class ImagePickerGuard {
   /// Returns true if [file] is within the size limit; otherwise shows a
   /// localized snackbar via [context] and returns false.
@@ -22,7 +25,7 @@ abstract final class ImagePickerGuard {
   static Future<bool> ensureWithinSizeLimit(
     BuildContext context,
     XFile file, {
-    int maxBytes = AppConstants.maxUploadSizeBytes,
+    int maxBytes = AppConstants.maxScannedImageBytes,
   }) async {
     final bytes = await file.length();
     if (bytes <= maxBytes) return true;
@@ -43,7 +46,7 @@ abstract final class ImagePickerGuard {
   static Future<bool> ensureWithinSizeLimitVia(
     ScaffoldMessengerState messenger,
     XFile file, {
-    int maxBytes = AppConstants.maxUploadSizeBytes,
+    int maxBytes = AppConstants.maxScannedImageBytes,
   }) async {
     final bytes = await file.length();
     if (bytes <= maxBytes) return true;
@@ -60,20 +63,21 @@ abstract final class ImagePickerGuard {
   /// files in their original order.
   static Future<List<XFile>> filterWithinSizeLimit(
     BuildContext context,
-    List<XFile> files,
-  ) async {
+    List<XFile> files, {
+    int maxBytes = AppConstants.maxScannedImageBytes,
+  }) async {
     final accepted = <XFile>[];
     var rejectedAny = false;
     for (final file in files) {
       final bytes = await file.length();
-      if (bytes <= AppConstants.maxUploadSizeBytes) {
+      if (bytes <= maxBytes) {
         accepted.add(file);
       } else {
         rejectedAny = true;
       }
     }
     if (rejectedAny && context.mounted) {
-      const mb = AppConstants.maxUploadSizeBytes ~/ (1024 * 1024);
+      final mb = maxBytes ~/ (1024 * 1024);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('errors.image_too_large'.tr(args: ['$mb']))),
       );

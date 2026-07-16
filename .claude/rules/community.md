@@ -83,6 +83,8 @@ Compose -> Client moderation -> Edge create-community-post
 - Post fotoğrafları: `community-photos` bucket
 - Upload: `upload-community-photo` Edge Function içinde server-side image moderation zorunlu
 - Client direct Storage insert/update kapalı; Edge Function service-role ile yükler
+- Picker sonrası raw boyut en fazla 2 MiB'dir; client guard, Edge decoded-size
+  doğrulaması ve bucket `file_size_limit` aynı sınırı uygular
 - Okuma: post payload'ında signed URL; URL path'i `user_id/post_id` ile eşleşmeli
 - Storage path: `community-photos/<user_id>/<post_id>/<timestamp>-<uuid>.<ext>`
 

@@ -52,6 +52,14 @@ Current webhook receivers: `revenuecat-webhook` (shared secret via `REVENUECAT_W
 | `create-community-comment` | Server-side moderation + reciprocal block check before insert |
 | `upload-community-photo` | Server-side image moderation before Storage write |
 
+Image Edge paths share a raw 2 MiB cap. The request envelope budgets base64 as
+`ceil(raw/3)*4 + 1024` bytes, including JSON metadata; decoded-size calculation
+subtracts `=` padding, so the exact boundary is accepted. The cap stays below
+the general 10 MiB processing budget to bound parser copy + community decode +
+provider reserialization memory and payload-amplification abuse.
+This also preserves headroom under hosted Supabase Edge's current per-function
+256 MB memory and 2-second CPU limits ([official limits, checked 2026-07-17](https://supabase.com/docs/guides/functions/limits)).
+
 ## Input Validation Rules
 
 - Parse all request bodies with schema validator (Zod preferred)

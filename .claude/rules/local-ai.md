@@ -19,7 +19,8 @@ Routing logic: kullanıcı Ollama endpoint set ettiyse Ollama, yoksa OpenRouter.
 AI çıktısı ASLA tek yetkili — kullanıcı her zaman manuel override edebilmeli (confidence düşükse default).
 
 ## Cost & Size Guards
-- Image: **max 10MB** (assets-images.md ile aynı limit) — daha büyükse reject
+- Image: **max 10MB** kendi işleme bütçesi — safety-scanned UGC'nin 2 MiB raw
+  upload sözleşmesinden ayrıdır; daha büyükse reject
 - Image: önce client-side resize (max 1024px LLM için yeterli)
 - Token budget: prompt başına max 4K input / 512 output
 - Rate limit: **client-side rate limiter YOK** (bugün). Tek gerçek sınır in-memory
@@ -134,4 +135,4 @@ test('caches identical prompts', () async {
 8. Temperature yüksek (genetik tahmin için non-deterministic)
 9. Pay-per-token endpoint'i test'te canlı çağırmak (faturalı sürpriz)
 
-> **İlgili**: assets-images.md (resize, 10MB), observability.md (PII), edge-functions.md (server-side AI varsa), architecture.md (online-only naming — *Service)
+> **İlgili**: assets-images.md (resize, scanned vs Local AI size contracts), observability.md (PII), edge-functions.md (server-side AI varsa), architecture.md (online-only naming — *Service)

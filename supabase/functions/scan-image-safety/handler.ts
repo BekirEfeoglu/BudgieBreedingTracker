@@ -8,6 +8,7 @@ import {
 import { parseRequestBody, z } from "../_shared/validation.ts";
 import {
   ImageModerationResult,
+  MAX_IMAGE_REQUEST_BODY_BYTES,
   moderateImageWithOpenAI as defaultModerateImage,
   validateImageInput as defaultValidateImageInput,
 } from "./moderation.ts";
@@ -17,7 +18,6 @@ const rateLimiter = createRateLimiter({
   maxCalls: 10,
   store: createSupabaseRateLimitStore("scan-image-safety"),
 });
-const MAX_BODY_BYTES = 4 * 1024 * 1024;
 
 const scanSchema = z.object({
   image_base64: z.string().optional(),
@@ -74,7 +74,7 @@ export function createScanImageSafetyHandler(
         req,
         scanSchema,
         headers,
-        MAX_BODY_BYTES,
+        MAX_IMAGE_REQUEST_BODY_BYTES,
       );
       if (!parsed.success) {
         const status = parsed.response.status === 413 ? 413 : 400;

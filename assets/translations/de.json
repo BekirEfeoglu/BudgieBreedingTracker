@@ -2484,7 +2484,7 @@
     "chick_cleanup_partial": "Küken gelöscht, aber einige Gewichtseinträge konnten nicht entfernt werden. Sie werden bei der nächsten Synchronisierung automatisch bereinigt.",
     "not_found": "Nicht gefunden",
     "unknown_error": "Ein unbekannter Fehler ist aufgetreten",
-    "image_too_large": "Bildgröße überschreitet das {} MB-Limit. Bitte wählen Sie ein kleineres Foto.",
+    "image_too_large": "Das ausgewählte Bild überschreitet nach der Verarbeitung das Limit von {} MB. Bitte wählen Sie ein kleineres Foto.",
     "chick_auto_create_failed": "Ei ist geschlüpft, aber der Kükeneintrag konnte nicht erstellt werden. Bitte fügen Sie das Küken manuell hinzu."
   },
   "validation": {

@@ -17,7 +17,6 @@ decision; the owning rule file says what closing them requires.
 |---------|---------|-------------|
 | DM `MessageType.birdCard` / `listingCard` | Model getters exist (`message_model.dart`) and `MessageBubble._buildReferenceCard` renders both, but there is NO producer UI — the attachment sheet offers only photo. Deliberately hidden until real producers exist (`lib/core/constants/feature_flags.dart` comment) | `messaging.md` § Attachments |
 | Sync conflict "retry local" / payload inspection | `conflict_history` stores only table, record ID, description, type, and timestamps. Pull has already overwritten Drift before the user acts; `_retryLocal` merely marks the current server-wins row pending, so it cannot show or restore the discarded field values | `background-sync.md` § Conflict Resolution |
-| Scanned photo 10MB vs 2MB limit | General pickers/storage advertise and guard 10MB, but the generic `ImageSafetyService`/`scan-image-safety` path and community's `upload-community-photo` path reject raw bytes above 2MB. Picker resizing often helps but does not guarantee ≤2MB; avatar alone already uses a matching 2MB guard | `assets-images.md`, `moderation.md` § Image Safety Pipeline |
 
 ## Designed But Never Built
 

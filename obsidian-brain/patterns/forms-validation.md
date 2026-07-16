@@ -82,7 +82,7 @@ PrimaryButton(
 |------|--------|------|
 | Email | `TextFormField` + `TextInputType.emailAddress` | Regex validation |
 | Date | `showDatePicker` | Check for null return |
-| Image | Custom picker | Surface guard; scanned UGC effective raw cap is 2MB ([[known-gaps]]) |
+| Image | Custom picker | Safety-scanned UGC: picker sonrası raw 2 MiB; client/server/bucket aligned |
 | Dropdown | `DropdownButtonFormField(initialValue: ...)` | NOT `value:` (anti-pattern #2) |
 
 ## Validation L10n Keys

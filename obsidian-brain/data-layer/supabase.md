@@ -6,7 +6,7 @@ Source: `.claude/rules/data-layer.md`, `.claude/rules/security.md`
 
 - **Package**: `supabase_flutter >=2.5.0 <2.13.0` — iOS CI cap, do NOT lift (2.13+ pulls a `device_info_plus` with a visionOS selector that breaks the iOS CI build; see pubspec comment)
 - **Remote sources**: 28 `*_remote_source.dart` files (entity + base/caches/providers)
-- **Migrations**: 197 tracked SQL files in `supabase/migrations/`
+- **Migrations**: 215 tracked SQL files in `supabase/migrations/`
 - **Edge Functions**: 12 (see [[infrastructure/edge-functions]])
 - **Supabase constants**: 151 string constants (tables + buckets + columns)
 
@@ -88,6 +88,10 @@ All 8 bucket names live in `SupabaseConstants` (lines ~179-188):
 | `message-photos` | Private (user-scoped RLS), signed URL read | DM photo messages |
 
 There are NO `health-records` or `chat-attachments` buckets — health photos go to `bird-photos`; DM photo messages go to `message-photos`.
+
+All seven safety-scanned image buckets (`bird/egg/chick/avatars/community/photos/message`)
+enforce a 2 MiB raw `file_size_limit` via migration `20260717120000`; `backups`
+retains its separate 50 MiB contract. Existing path/RLS contracts are unchanged.
 
 - Private: signed URL (1h TTL)
 - Public: CDN URL

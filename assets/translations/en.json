@@ -2484,7 +2484,7 @@
     "chick_cleanup_partial": "Chick deleted, but some weight records could not be removed. They will be cleaned up automatically on the next sync.",
     "not_found": "Not found",
     "unknown_error": "An unknown error occurred",
-    "image_too_large": "Image size exceeds the {} MB limit. Please select a smaller photo.",
+    "image_too_large": "The selected image exceeds the {} MB limit after processing. Please choose a smaller photo.",
     "chick_auto_create_failed": "Egg hatched but the chick record could not be created. Please add the chick manually."
   },
   "validation": {

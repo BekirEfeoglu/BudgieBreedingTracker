@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/data/remote/storage/storage_service.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
@@ -132,6 +131,7 @@ void main() {
     when(() => file.name).thenReturn(name);
     final ext = name.split('.').last.toLowerCase();
     final data = magicBytesFor(ext, bytes);
+    when(() => file.length()).thenAnswer((_) async => bytes);
     when(() => file.readAsBytes()).thenAnswer((_) async => data);
     return file;
   }
@@ -163,8 +163,8 @@ void main() {
         verifyNever(() => mockFileApi.getPublicUrl(any()));
       });
 
-      test('throws StorageException when file exceeds 10 MB', () async {
-        final largeFile = makeXFile(bytes: AppConstants.maxUploadSizeBytes + 1);
+      test('rejects bird photos above 2 MB before safety scan', () async {
+        final largeFile = makeXFile(bytes: 2 * 1024 * 1024 + 1);
 
         await expectLater(
           () => service.uploadBirdPhoto(
@@ -172,8 +172,21 @@ void main() {
             birdId: 'b1',
             file: largeFile,
           ),
-          throwsA(isA<StorageException>()),
+          throwsA(
+            isA<StorageException>().having(
+              (e) => e.message,
+              'message',
+              contains('2 MB'),
+            ),
+          ),
         );
+        verifyNever(
+          () => mockImageSafety.scanImage(
+            bytes: any(named: 'bytes'),
+            mimeType: any(named: 'mimeType'),
+          ),
+        );
+        verifyNever(() => largeFile.readAsBytes());
       });
 
       test('rethrows StorageException from uploadBinary', () async {
@@ -359,6 +372,34 @@ void main() {
 
     // -----------------------------------------------------------------------
     group('uploadCommunityPhoto', () {
+      test('rejects photos above 2 MB before the Edge Function', () async {
+        final file = makeXFile(bytes: 2 * 1024 * 1024 + 1);
+
+        await expectLater(
+          () => service.uploadCommunityPhoto(
+            userId: 'u1',
+            postId: 'post-1',
+            file: file,
+          ),
+          throwsA(
+            isA<StorageException>().having(
+              (e) => e.message,
+              'message',
+              contains('2 MB'),
+            ),
+          ),
+        );
+        verifyNever(
+          () => mockEdgeClient.uploadCommunityPhoto(
+            postId: any(named: 'postId'),
+            filename: any(named: 'filename'),
+            imageBase64: any(named: 'imageBase64'),
+            mimeType: any(named: 'mimeType'),
+          ),
+        );
+        verifyNever(() => file.readAsBytes());
+      });
+
       test(
         'uses upload-community-photo Edge Function instead of Storage API',
         () async {
@@ -429,6 +470,32 @@ void main() {
 
     // -----------------------------------------------------------------------
     group('uploadMessagePhoto', () {
+      test('rejects photos above 2 MB before safety scan', () async {
+        final file = makeXFile(name: 'dm.jpg', bytes: 2 * 1024 * 1024 + 1);
+
+        await expectLater(
+          () => service.uploadMessagePhoto(
+            userId: 'u1',
+            conversationId: 'conv-1',
+            file: file,
+          ),
+          throwsA(
+            isA<StorageException>().having(
+              (e) => e.message,
+              'message',
+              contains('2 MB'),
+            ),
+          ),
+        );
+        verifyNever(
+          () => mockImageSafety.scanImage(
+            bytes: any(named: 'bytes'),
+            mimeType: any(named: 'mimeType'),
+          ),
+        );
+        verifyNever(() => file.readAsBytes());
+      });
+
       test('uploads to message-photos bucket and returns signed URL', () async {
         final file = makeXFile(name: 'dm.jpg');
         String? capturedPath;

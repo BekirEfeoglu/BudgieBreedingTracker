@@ -44,7 +44,7 @@ User submits content
 ```
 User picks image
   -> ImagePicker surface-specific resize/quality
-  -> ImagePickerGuard UX cap (general 10MB; avatar 2MB)
+  -> ImagePickerGuard raw <= 2 MiB UX cap (post-picker bytes)
   -> Storage/remote source: extension + magic bytes
   -> Bird/avatar/egg/chick/DM/marketplace:
      ImageSafetyService raw <= 2MB -> scan-image-safety
@@ -58,11 +58,17 @@ User picks image
 
 Server scan FAIL → upload yapılmaz. Storage'da unscanned dosya bulunmaz (zero unsafe content invariant).
 
-**Limit drift (tracked):** scanned UGC pickers advertise/guard 10MB, but both
-`ImageSafetyService` and the Edge Function reject raw images above 2MB. Picker
-resize often lowers the payload but does not guarantee it. Until unified, the
-effective end-to-end scanned-upload cap is 2MB; see
-`obsidian-brain/known-gaps.md`.
+**Unified size contract (2026-07-17):** scanned UGC picker guard'ları,
+`StorageService`/marketplace remote validation, `ImageSafetyService`, her iki
+Edge path ve yedi image bucket'ı raw 2 MiB sınırında hizalıdır. Tam sınır kabul,
+bir byte üstü reject edilir. Base64 decoded-size hesabı `=` padding'ini düşer;
+body envelope `ceil(raw/3)*4 + 1024` ile JSON overhead'i açıkça bütçeler.
+
+2 MiB server sınırı yükseltilmedi: 10 MiB raw payload 13.33 MiB base64 üretir;
+streaming body reader chunk'ları tutup contiguous buffer'a kopyalar, community
+yolu ayrıca decode eder ve provider request'i tekrar serialize eder. Daha büyük
+sınır Edge bellek/CPU ve payload-amplification abuse riskini artırır. Picker
+resize/quality best-effort kalır; authoritative kontrol picker sonrası raw byte'tır.
 
 ## Context-Aware Rules
 | Context | Threshold | Override |
@@ -113,7 +119,8 @@ olduğu için sadece keyword/heuristic (moderateText) uygular, HTTP/AI çağrıs
 ## Testing
 - Unit: bilinen kötü kelime → reject, edge case (kelime parçası) → allow
 - Integration: edge function happy path + auth fail + network timeout (fail-closed verify)
-- Image: raw 2MB+, wrong magic bytes/MIME, flagged sample → reject
+- Image: raw sınır-altı/tam-sınır/sınır-üstü, picker sonrası compressed boyut,
+  wrong magic bytes/MIME ve flagged sample
 - E2E: post → moderate → publish full flow
 
 ```dart
@@ -138,4 +145,4 @@ test('rejects content when edge function returns 5xx', () async {
 9. DM'i public içerik gibi strict moderate etmek (engagement düşüşü, P2P unrealistic)
 10. Marketplace listing'i post threshold'unda bırakmak (premium içerik daha strict)
 
-> **İlgili**: edge-functions.md (`moderate-content`, `scan-image-safety`), assets-images.md (10MB guard, image pipeline), community.md (feed integration), security.md (UGC policy), observability.md (Sentry PII)
+> **İlgili**: edge-functions.md (`moderate-content`, `scan-image-safety`), assets-images.md (2 MiB scanned-image guard, image pipeline), community.md (feed integration), security.md (UGC policy), observability.md (Sentry PII)
