@@ -17,6 +17,7 @@ class NotificationRepository extends BaseRepository<AppNotification>
   final NotificationsDao _localDao;
   final NotificationRemoteSource _remoteSource;
   final SyncMetadataDao _syncDao;
+  final PullConflictSink? _conflictSink;
 
   static const _uuid = Uuid();
 
@@ -24,9 +25,11 @@ class NotificationRepository extends BaseRepository<AppNotification>
     required NotificationsDao localDao,
     required NotificationRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
+    PullConflictSink? conflictSink,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
-       _syncDao = syncDao;
+       _syncDao = syncDao,
+       _conflictSink = conflictSink;
 
   static const _table = SupabaseConstants.notificationsTable;
   static const _settingsTable = SupabaseConstants.notificationSettingsTable;
@@ -109,7 +112,7 @@ class NotificationRepository extends BaseRepository<AppNotification>
   Future<void> hardRemove(String id) => _localDao.hardDelete(id);
 
   /// Conflicts detected during the last [pull] operation.
-  final List<({String recordId, String detail})> lastPullConflicts = [];
+  final List<PullConflict> lastPullConflicts = [];
 
   @override
   Future<void> pull(String userId, {DateTime? lastSyncedAt}) async {
@@ -129,7 +132,14 @@ class NotificationRepository extends BaseRepository<AppNotification>
             pendingIds: pendingIds,
             idOf: (e) => e.id,
             detailOf: (e) => e.title.isNotEmpty ? e.title : e.id,
+            payloadOf: (e) => e.toJson(),
           ),
+        );
+        await persistPullConflicts(
+          sink: _conflictSink,
+          userId: userId,
+          tableName: _table,
+          conflicts: lastPullConflicts,
         );
         await _localDao.insertAll(remote);
       }

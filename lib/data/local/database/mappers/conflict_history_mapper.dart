@@ -10,6 +10,9 @@ extension ConflictHistoryRowMapper on ConflictHistoryRow {
     recordId: recordId,
     description: description,
     conflictType: conflictType,
+    localPayload: localPayload,
+    serverPayload: serverPayload,
+    payloadVersion: payloadVersion,
     resolvedAt: resolvedAt?.toUtc(),
     createdAt: createdAt?.toUtc(),
   );
@@ -23,6 +26,9 @@ extension ConflictHistoryModelMapper on ConflictHistory {
     recordId: Value(recordId),
     description: Value(description),
     conflictType: Value(conflictType),
+    localPayload: Value(localPayload),
+    serverPayload: Value(serverPayload),
+    payloadVersion: Value(payloadVersion),
     resolvedAt: Value(resolvedAt?.toUtc()),
     createdAt: Value((createdAt ?? DateTime.now()).toUtc()),
   );

@@ -24,6 +24,7 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
   final GrowthMeasurementRemoteSource _remoteSource;
   final SyncMetadataDao _syncDao;
   final ChicksDao _chicksDao;
+  final PullConflictSink? _conflictSink;
 
   static const _uuid = Uuid();
 
@@ -32,10 +33,12 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
     required GrowthMeasurementRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
     required ChicksDao chicksDao,
+    PullConflictSink? conflictSink,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
        _syncDao = syncDao,
-       _chicksDao = chicksDao;
+       _chicksDao = chicksDao,
+       _conflictSink = conflictSink;
 
   static const _table = SupabaseConstants.growthMeasurementsTable;
 
@@ -158,7 +161,7 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
   /// orchestrator consumes this so the user can be told about local
   /// pending edits that were silently overwritten by a fresher remote
   /// row.
-  final List<({String recordId, String detail})> lastPullConflicts = [];
+  final List<PullConflict> lastPullConflicts = [];
 
   @override
   Future<void> pull(String userId, {DateTime? lastSyncedAt}) async {
@@ -183,7 +186,15 @@ class GrowthMeasurementRepository extends BaseRepository<GrowthMeasurement>
             pendingIds: pendingIds,
             idOf: (e) => e.id,
             detailOf: (e) => e.id,
+            payloadOf: (e) => e.toJson(),
           ),
+        );
+
+        await persistPullConflicts(
+          sink: _conflictSink,
+          userId: userId,
+          tableName: _table,
+          conflicts: lastPullConflicts,
         );
 
         await _localDao.insertAll(remote);

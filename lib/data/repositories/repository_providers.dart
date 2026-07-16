@@ -17,6 +17,8 @@ import 'package:budgie_breeding_tracker/data/repositories/nest_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/photo_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/event_reminder_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/notification_schedule_repository.dart';
+import 'package:budgie_breeding_tracker/data/repositories/sync_conflict_payload_codec.dart';
+import 'package:budgie_breeding_tracker/data/repositories/sync_conflict_store.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/community_post_cache.dart';
 import 'package:budgie_breeding_tracker/data/repositories/community_post_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/community_comment_repository.dart';
@@ -25,6 +27,7 @@ import 'package:budgie_breeding_tracker/data/repositories/feedback_repository.da
 import 'package:budgie_breeding_tracker/data/repositories/marketplace_repository.dart';
 import 'package:budgie_breeding_tracker/data/remote/storage/storage_providers.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/supabase_client.dart';
+import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_providers.dart';
 import 'messaging_repository.dart';
 import 'gamification_repository.dart';
 
@@ -33,11 +36,25 @@ import 'gamification_repository.dart';
 /// Each repository receives its DAO, remote source, and sync DAO via
 /// dependency injection from other providers.
 
+final syncConflictPayloadCodecProvider = Provider<SyncConflictPayloadCodec>((
+  ref,
+) {
+  return SyncConflictPayloadCodec(ref.watch(encryptionServiceProvider));
+});
+
+final syncConflictStoreProvider = Provider<SyncConflictStore>((ref) {
+  return SyncConflictStore(
+    dao: ref.watch(conflictHistoryDaoProvider),
+    codec: ref.watch(syncConflictPayloadCodecProvider),
+  );
+});
+
 final birdRepositoryProvider = Provider<BirdRepository>((ref) {
   return BirdRepository(
     localDao: ref.watch(birdsDaoProvider),
     remoteSource: ref.watch(birdRemoteSourceProvider),
     syncDao: ref.watch(syncMetadataDaoProvider),
+    conflictSink: ref.watch(syncConflictStoreProvider),
   );
 });
 
@@ -48,6 +65,7 @@ final eggRepositoryProvider = Provider<EggRepository>((ref) {
     syncDao: ref.watch(syncMetadataDaoProvider),
     incubationsDao: ref.watch(incubationsDaoProvider),
     clutchesDao: ref.watch(clutchesDaoProvider),
+    conflictSink: ref.watch(syncConflictStoreProvider),
   );
 });
 
@@ -59,6 +77,7 @@ final chickRepositoryProvider = Provider<ChickRepository>((ref) {
     eggsDao: ref.watch(eggsDaoProvider),
     clutchesDao: ref.watch(clutchesDaoProvider),
     birdsDao: ref.watch(birdsDaoProvider),
+    conflictSink: ref.watch(syncConflictStoreProvider),
   );
 });
 
@@ -69,6 +88,7 @@ final incubationRepositoryProvider = Provider<IncubationRepository>((ref) {
     syncDao: ref.watch(syncMetadataDaoProvider),
     breedingPairsDao: ref.watch(breedingPairsDaoProvider),
     clutchesDao: ref.watch(clutchesDaoProvider),
+    conflictSink: ref.watch(syncConflictStoreProvider),
   );
 });
 
@@ -78,6 +98,7 @@ final breedingPairRepositoryProvider = Provider<BreedingPairRepository>((ref) {
     remoteSource: ref.watch(breedingPairRemoteSourceProvider),
     syncDao: ref.watch(syncMetadataDaoProvider),
     birdsDao: ref.watch(birdsDaoProvider),
+    conflictSink: ref.watch(syncConflictStoreProvider),
   );
 });
 
@@ -88,6 +109,7 @@ final healthRecordRepositoryProvider = Provider<HealthRecordRepository>((ref) {
     syncDao: ref.watch(syncMetadataDaoProvider),
     birdsDao: ref.watch(birdsDaoProvider),
     chicksDao: ref.watch(chicksDaoProvider),
+    conflictSink: ref.watch(syncConflictStoreProvider),
   );
 });
 
@@ -98,6 +120,7 @@ final growthMeasurementRepositoryProvider =
         remoteSource: ref.watch(growthMeasurementRemoteSourceProvider),
         syncDao: ref.watch(syncMetadataDaoProvider),
         chicksDao: ref.watch(chicksDaoProvider),
+        conflictSink: ref.watch(syncConflictStoreProvider),
       );
     });
 
@@ -111,6 +134,7 @@ final eventRepositoryProvider = Provider<EventRepository>((ref) {
     chicksDao: ref.watch(chicksDaoProvider),
     eggsDao: ref.watch(eggsDaoProvider),
     incubationsDao: ref.watch(incubationsDaoProvider),
+    conflictSink: ref.watch(syncConflictStoreProvider),
   );
 });
 
@@ -119,6 +143,7 @@ final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
     localDao: ref.watch(notificationsDaoProvider),
     remoteSource: ref.watch(notificationRemoteSourceProvider),
     syncDao: ref.watch(syncMetadataDaoProvider),
+    conflictSink: ref.watch(syncConflictStoreProvider),
   );
 });
 
@@ -144,6 +169,7 @@ final clutchRepositoryProvider = Provider<ClutchRepository>((ref) {
     breedingPairsDao: ref.watch(breedingPairsDaoProvider),
     birdsDao: ref.watch(birdsDaoProvider),
     nestsDao: ref.watch(nestsDaoProvider),
+    conflictSink: ref.watch(syncConflictStoreProvider),
   );
 });
 
@@ -152,6 +178,7 @@ final nestRepositoryProvider = Provider<NestRepository>((ref) {
     localDao: ref.watch(nestsDaoProvider),
     remoteSource: ref.watch(nestRemoteSourceProvider),
     syncDao: ref.watch(syncMetadataDaoProvider),
+    conflictSink: ref.watch(syncConflictStoreProvider),
   );
 });
 
@@ -161,6 +188,7 @@ final photoRepositoryProvider = Provider<PhotoRepository>((ref) {
     remoteSource: ref.watch(photoRemoteSourceProvider),
     syncDao: ref.watch(syncMetadataDaoProvider),
     storageService: ref.watch(storageServiceProvider),
+    conflictSink: ref.watch(syncConflictStoreProvider),
   );
 });
 
@@ -172,6 +200,7 @@ final eventReminderRepositoryProvider = Provider<EventReminderRepository>((
     remoteSource: ref.watch(eventReminderRemoteSourceProvider),
     syncDao: ref.watch(syncMetadataDaoProvider),
     eventsDao: ref.watch(eventsDaoProvider),
+    conflictSink: ref.watch(syncConflictStoreProvider),
   );
 });
 
@@ -181,6 +210,7 @@ final notificationScheduleRepositoryProvider =
         localDao: ref.watch(notificationSchedulesDaoProvider),
         remoteSource: ref.watch(notificationScheduleRemoteSourceProvider),
         syncDao: ref.watch(syncMetadataDaoProvider),
+        conflictSink: ref.watch(syncConflictStoreProvider),
       );
     });
 

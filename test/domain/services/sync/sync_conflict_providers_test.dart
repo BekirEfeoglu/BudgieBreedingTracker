@@ -18,12 +18,14 @@ SyncConflict _conflict({
   String recordId = 'r1',
   String description = 'server wins',
   DateTime? detectedAt,
+  DateTime? resolvedAt,
 }) {
   return SyncConflict(
     table: table,
     recordId: recordId,
     detectedAt: detectedAt ?? DateTime(2025, 1, 1),
     description: description,
+    resolvedAt: resolvedAt,
   );
 }
 
@@ -161,6 +163,8 @@ void main() {
               recordId: 'b1',
               description: 'server wins',
               conflictType: ConflictType.serverWins,
+              localPayload: 'encrypted-local',
+              payloadVersion: 1,
               createdAt: DateTime(2025, 1, 2),
             ),
             ConflictHistory(
@@ -197,8 +201,11 @@ void main() {
         expect(state[0].recordId, 'b1');
         expect(state[0].description, 'server wins');
         expect(state[0].detectedAt, DateTime(2025, 1, 2));
+        expect(state[0].hasLocalSnapshot, isTrue);
+        expect(state[0].canRetryLocal, isTrue);
         expect(state[1].table, 'eggs');
         expect(state[1].recordId, 'e1');
+        expect(state[1].hasLocalSnapshot, isFalse);
         verify(() => mockDao.watchAll('user-1')).called(1);
       },
     );
@@ -259,6 +266,31 @@ void main() {
       expect(state.length, 2);
       expect(state[0].recordId, 'r2');
       expect(state[1].recordId, 'r1');
+    });
+
+    test('addConflict deduplicates only unresolved table-record pairs', () {
+      final container = ProviderContainer(
+        overrides: [
+          currentUserIdProvider.overrideWithValue('anonymous'),
+          conflictHistoryDaoProvider.overrideWithValue(mockDao),
+        ],
+      );
+      addTearDown(container.dispose);
+      final notifier = container.read(conflictHistoryProvider.notifier);
+
+      notifier.addConflict(_conflict(recordId: 'r1'));
+      notifier.addConflict(_conflict(recordId: 'r1'));
+
+      expect(container.read(conflictHistoryProvider), hasLength(1));
+
+      notifier.clear();
+      notifier.addConflict(
+        _conflict(recordId: 'r1', resolvedAt: DateTime.utc(2026, 7, 17)),
+      );
+      notifier.addConflict(_conflict(recordId: 'r1'));
+
+      expect(container.read(conflictHistoryProvider), hasLength(2));
+      expect(container.read(conflictHistoryProvider).first.resolvedAt, isNull);
     });
 
     test('addConflict caps at 50 entries (FIFO)', () {

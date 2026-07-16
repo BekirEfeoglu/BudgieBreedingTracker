@@ -109,6 +109,9 @@ void main() {
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
     ).thenAnswer((_) async {});
+    when(
+      () => mockGrowthMeasurementRepository.lastPullConflicts,
+    ).thenReturn([]);
 
     when(
       () => mockEventRepository.pull(
@@ -127,6 +130,7 @@ void main() {
     when(
       () => mockNotificationRepository.pullSettings(any()),
     ).thenAnswer((_) async {});
+    when(() => mockNotificationRepository.lastPullConflicts).thenReturn([]);
 
     when(
       () => mockNotificationScheduleRepository.pull(
@@ -144,6 +148,7 @@ void main() {
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
     ).thenAnswer((_) async {});
+    when(() => mockPhotoRepository.lastPullConflicts).thenReturn([]);
 
     when(
       () => mockEventReminderRepository.pull(

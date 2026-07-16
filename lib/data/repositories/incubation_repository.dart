@@ -25,6 +25,7 @@ class IncubationRepository extends BaseRepository<Incubation>
   final SyncMetadataDao _syncDao;
   final BreedingPairsDao _breedingPairsDao;
   final ClutchesDao _clutchesDao;
+  final PullConflictSink? _conflictSink;
 
   static const _uuid = Uuid();
 
@@ -34,17 +35,19 @@ class IncubationRepository extends BaseRepository<Incubation>
     required SyncMetadataDao syncDao,
     required BreedingPairsDao breedingPairsDao,
     required ClutchesDao clutchesDao,
+    PullConflictSink? conflictSink,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
        _syncDao = syncDao,
        _breedingPairsDao = breedingPairsDao,
-       _clutchesDao = clutchesDao;
+       _clutchesDao = clutchesDao,
+       _conflictSink = conflictSink;
 
   static const _table = SupabaseConstants.incubationsTable;
 
   /// Conflicts detected during the last [pull] operation.
-  final List<({String recordId, String detail})> _lastPullConflicts = [];
-  List<({String recordId, String detail})> get lastPullConflicts =>
+  final List<PullConflict> _lastPullConflicts = [];
+  List<PullConflict> get lastPullConflicts =>
       List.unmodifiable(_lastPullConflicts);
 
   // ── SyncableRepository / ValidatedSyncMixin overrides ────────────────
@@ -176,7 +179,15 @@ class IncubationRepository extends BaseRepository<Incubation>
             pendingIds: pendingIds,
             idOf: (e) => e.id,
             detailOf: (e) => e.id,
+            payloadOf: (e) => e.toJson(),
           ),
+        );
+
+        await persistPullConflicts(
+          sink: _conflictSink,
+          userId: userId,
+          tableName: _table,
+          conflicts: _lastPullConflicts,
         );
 
         await _localDao.insertAll(remote);

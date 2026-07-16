@@ -63,13 +63,30 @@ maxRetries = 7
 - Shared `detectPullConflicts` (`base_repository.dart`) is the single source of
   this rule for all 13 syncable repos + the custom `PhotoRepository` (previously
   14 divergent inline copies — the exact drift that let the gap rot unnoticed)
-- Server still wins the data; only conflict RECORDING widened. Conflict metadata
-  (table, record ID, description, time/type) flows through `lastPullConflicts`
-  → `conflict_history` (30-day); the discarded field values are not snapshotted
+- Server still wins initially, but local/server model JSON snapshots are captured
+  by `detectPullConflicts`, authenticated-encrypted by `SyncConflictStore`, and
+  persisted to `conflict_history` **before** the remote Drift upsert. Failure to
+  encrypt/persist aborts that repository pull, so an unsnapshotted local edit is
+  never overwritten. Each snapshot is capped at 64 KiB and follows the existing
+  30-day history retention.
 - `conflictHistoryProvider` (`sync_conflict_providers.dart`) feeds the settings
   sync-detail sheet + data-storage section; a "View conflicts" CTA surfaces there
-- The current "retry local" action cannot reconstruct the overwritten payload;
-  this latent surface is tracked in [[known-gaps]]
+- "Retry local" uses `SyncConflictRecoveryService` to decrypt and identity-check
+  the v1 local snapshot, parse and upsert it through the typed DAO, collapse and
+  reset metadata with `syncMetadataDao.markPendingByRecords`, and set
+  `resolved_at` in one Drift transaction. Racing retries coalesce. Legacy v28
+  payload-less rows and corrupt/unsupported payloads stay unresolved and produce
+  localized fallback warnings without changing the entity.
+- After `fullSync`, retry success is confirmed by grouping the restored keys per
+  table and batch-checking that their sync metadata has been removed. A remaining
+  marker is reported as unverified, keeps the detail sheet open, and conflict
+  state is reloaded after pull has finished.
+- Repeated pulls for one unresolved `(user, table, record)` keep the oldest
+  recoverable local snapshot and skip later history rows. The in-memory notifier
+  mirrors that deduplication; a resolved older history row does not suppress a
+  later real conflict.
+- Snapshot contents never enter logs/Sentry/telemetry; only sanitized error codes,
+  obfuscated IDs, and aggregate outcomes are emitted.
 - **Never silent overwrite**
 
 ## Incremental Pull Cursor

@@ -9,6 +9,9 @@ class ConflictHistoryTable extends Table {
   TextColumn get recordId => text()();
   TextColumn get description => text()();
   TextColumn get conflictType => text().map(conflictTypeConverter)();
+  TextColumn get localPayload => text().nullable()();
+  TextColumn get serverPayload => text().nullable()();
+  IntColumn get payloadVersion => integer().nullable()();
   DateTimeColumn get resolvedAt => dateTime().nullable()();
   DateTimeColumn get createdAt => dateTime().nullable()();
 

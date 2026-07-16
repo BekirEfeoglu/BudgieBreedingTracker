@@ -14,6 +14,7 @@ class NestRepository extends BaseRepository<Nest>
   final NestsDao _localDao;
   final NestRemoteSource _remoteSource;
   final SyncMetadataDao _syncDao;
+  final PullConflictSink? _conflictSink;
 
   static const _uuid = Uuid();
 
@@ -21,14 +22,16 @@ class NestRepository extends BaseRepository<Nest>
     required NestsDao localDao,
     required NestRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
+    PullConflictSink? conflictSink,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
-       _syncDao = syncDao;
+       _syncDao = syncDao,
+       _conflictSink = conflictSink;
 
   static const _table = SupabaseConstants.nestsTable;
 
   /// Conflicts detected during the last [pull] operation.
-  final List<({String recordId, String detail})> lastPullConflicts = [];
+  final List<PullConflict> lastPullConflicts = [];
 
   // ── SyncableRepository overrides ─────────────────────────────────────
   @override
@@ -114,7 +117,15 @@ class NestRepository extends BaseRepository<Nest>
             pendingIds: pendingIds,
             idOf: (e) => e.id,
             detailOf: (e) => e.name ?? e.id,
+            payloadOf: (e) => e.toJson(),
           ),
+        );
+
+        await persistPullConflicts(
+          sink: _conflictSink,
+          userId: userId,
+          tableName: _table,
+          conflicts: lastPullConflicts,
         );
 
         await _localDao.insertAll(remote);

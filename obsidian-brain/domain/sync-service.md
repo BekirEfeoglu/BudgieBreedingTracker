@@ -40,14 +40,21 @@ cleaned up locally.
 
 When an incoming remote row overwrites any locally pending record (remote may be
 newer, equal, or older):
-1. Server record written to Drift
-2. Conflict metadata stored in `lastPullConflicts` → `conflict_history` (30-day)
-3. UI surfaces it via `conflictHistoryProvider` / `persistedConflictCountProvider`
-   (`sync_conflict_providers.dart`) — user sees table/record description/time
+1. `detectPullConflicts` captures local + server typed JSON snapshots
+2. `SyncConflictStore` encrypts and persists both to `conflict_history` before
+   the server record is allowed to overwrite Drift; repeated unresolved keys
+   preserve the oldest recoverable local snapshot
+3. UI surfaces history via `conflictHistoryProvider` /
+   `persistedConflictCountProvider`
+4. "Retry local" delegates to `SyncConflictRecoveryService`: decrypt/validate,
+   typed DAO upsert, `markPendingByRecords` metadata collapse/reset, and conflict
+   resolution run atomically
+5. The settings UI treats retry as synced only when `fullSync` succeeds and a
+   batched metadata lookup finds none of the restored keys; it then reloads
+   conflict state after pull before deciding whether to close
 
-Only conflict metadata is retained, not the overwritten local payload. The
-current "retry local" action therefore cannot reconstruct discarded field
-values; see [[known-gaps]].
+Legacy payload-less history and corrupt payloads remain visible but are not
+mutated or retried. Payload values are never logged or sent to Sentry.
 
 ## Sync Indicators
 

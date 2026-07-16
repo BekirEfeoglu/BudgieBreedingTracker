@@ -14,6 +14,7 @@ import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart
 // Re-export split provider files for backwards compatibility
 export 'package:budgie_breeding_tracker/domain/services/sync/sync_scheduling_providers.dart';
 export 'package:budgie_breeding_tracker/domain/services/sync/sync_conflict_providers.dart';
+export 'package:budgie_breeding_tracker/domain/services/sync/sync_conflict_recovery_service.dart';
 
 /// Injectable wall clock for the sync subsystem (pull handler + orchestrator).
 ///

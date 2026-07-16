@@ -16,7 +16,6 @@ decision; the owning rule file says what closing them requires.
 | Surface | Reality | Owning rule |
 |---------|---------|-------------|
 | DM `MessageType.birdCard` / `listingCard` | Model getters exist (`message_model.dart`) and `MessageBubble._buildReferenceCard` renders both, but there is NO producer UI — the attachment sheet offers only photo. Deliberately hidden until real producers exist (`lib/core/constants/feature_flags.dart` comment) | `messaging.md` § Attachments |
-| Sync conflict "retry local" / payload inspection | `conflict_history` stores only table, record ID, description, type, and timestamps. Pull has already overwritten Drift before the user acts; `_retryLocal` merely marks the current server-wins row pending, so it cannot show or restore the discarded field values | `background-sync.md` § Conflict Resolution |
 
 ## Designed But Never Built
 

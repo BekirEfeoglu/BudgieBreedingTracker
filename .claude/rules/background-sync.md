@@ -100,12 +100,36 @@ class EggRepository extends BaseRepository<Egg>
   yazıyorsa conflict'tir; remote newer/equal/older olması sonucu değiştirmez
 - Shared `detectPullConflicts` sonucu `lastPullConflicts` -> `conflict_history`
   (30 gün) kaydına eklenir
+- `detectPullConflicts` hem local hem server model JSON snapshot'ını yakalar.
+  `SyncConflictStore`, her snapshot'ı `SyncConflictPayloadCodec` ile mevcut
+  cihaz anahtarından authenticated-encrypt eder ve server-wins Drift upsert'inden
+  **önce** await ederek `conflict_history`'ye yazar. Codec zarfı v1'dir; kimlik
+  (`table_name`/`record_id`/`user_id`) doğrular ve snapshot başına 64 KiB sınırı
+  uygular. Şifreleme/boyut/DB hatasında pull overwrite'a devam etmez.
+- Aynı `(user, table, record)` için recoverable unresolved snapshot zaten varsa
+  tekrar pull yeni history eklemez; en eski local snapshot korunur. In-memory
+  notifier da aynı unresolved anahtarı deduplicate eder. Resolved eski kayıt,
+  sonraki gerçek conflict'i engellemez.
+- v29 `conflict_history.local_payload`, `server_payload`, `payload_version`
+  nullable kolonlarını ekler. Eski satırlar bilinçli olarak NULL kalır; geçmişte
+  kaybedilen alanlar uydurma backfill ile yeniden üretilemez.
+- `SyncConflictRecoveryService.retryLocal()` local payload'ı decrypt + kimlik +
+  typed model parse ile doğrular; entity'yi typed DAO ile upsert eder,
+  `syncMetadataDao.markPendingByRecords` ile metadata'yı tam bir pending satıra
+  collapse/reset eder ve conflict `resolved_at` işaretini aynı Drift
+  transaction'ında tamamlar. Duplicate/racing retry çağrıları tek active
+  future'da birleşir.
+- Retry UI, `fullSync()` sonucu success olsa bile restore edilen anahtarları
+  tablo bazında `SyncMetadataDao.getByRecords` ile batch doğrular. Tüm metadata
+  işaretleri silinmeden "senkronize edildi" göstermez veya sheet'i kapatmaz;
+  conflict provider'ı full sync sonrasında yeniden yükler.
+- Eski payload'sız veya bozuk/unsupported payload kayıtları local satırı ya da
+  resolution durumunu değiştirmez; UI lokalize unavailable/failed/partial uyarısı
+  gösterir. Payload içeriği log/Sentry/telemetry'ye gönderilmez; yalnız tablo,
+  obfuscated record ID, sonuç kodu ve aggregate sayılar kullanılabilir.
 - UI `conflictHistoryProvider` / `persistedConflictCountProvider`
-  (`sync_conflict_providers.dart`) üzerinden yalnız table/record description/time
-  metadata'sını gösterir. `conflict_history` local payload snapshot'ı tutmaz;
-  server-wins overwrite sonrası `_retryLocal` mevcut (artık remote) satırı yeniden
-  queue eder, kaybedilen alan değerlerini restore edemez. Bu latent UI aksiyonu
-  `obsidian-brain/known-gaps.md` içinde açıkça izlenir.
+  (`sync_conflict_providers.dart`) üzerinden history/resolution durumunu gösterir;
+  resolved conflict recent-count banner'ına dahil edilmez.
 - Sessiz overwrite YOK — her conflict kullanıcıya bildirilir
 
 ```dart
@@ -115,9 +139,16 @@ final conflicts = detectPullConflicts(
   pendingIds: pendingIds,
   idOf: (item) => item.id,
   detailOf: (item) => item.name,
+  payloadOf: (item) => item.toJson(),
+);
+await persistPullConflicts(
+  sink: _conflictSink,
+  userId: userId,
+  tableName: syncTableName,
+  conflicts: conflicts,
 );
 await dao.insertAll(remote); // server-wins
-// SyncPullHandler conflicts'i persist eder ve conflictHistoryProvider'a ekler.
+// SyncPullHandler persisted conflict'i in-memory provider'a yansıtır.
 ```
 
 ## Connectivity-Aware

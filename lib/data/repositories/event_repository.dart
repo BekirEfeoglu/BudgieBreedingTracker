@@ -32,6 +32,7 @@ class EventRepository extends BaseRepository<Event>
   final ChicksDao _chicksDao;
   final EggsDao _eggsDao;
   final IncubationsDao _incubationsDao;
+  final PullConflictSink? _conflictSink;
 
   static const _uuid = Uuid();
 
@@ -44,6 +45,7 @@ class EventRepository extends BaseRepository<Event>
     required ChicksDao chicksDao,
     required EggsDao eggsDao,
     required IncubationsDao incubationsDao,
+    PullConflictSink? conflictSink,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
        _syncDao = syncDao,
@@ -51,12 +53,13 @@ class EventRepository extends BaseRepository<Event>
        _breedingPairsDao = breedingPairsDao,
        _chicksDao = chicksDao,
        _eggsDao = eggsDao,
-       _incubationsDao = incubationsDao;
+       _incubationsDao = incubationsDao,
+       _conflictSink = conflictSink;
 
   static const _table = SupabaseConstants.eventsTable;
 
   /// Conflicts detected during the last [pull] operation.
-  final List<({String recordId, String detail})> lastPullConflicts = [];
+  final List<PullConflict> lastPullConflicts = [];
 
   // ── SyncableRepository / ValidatedSyncMixin overrides ────────────────
   @override
@@ -288,7 +291,9 @@ class EventRepository extends BaseRepository<Event>
     );
     for (final event in events) {
       await markPending(event.id, event.userId);
-      await tryImmediatePush(event.copyWith(isDeleted: true, updatedAt: DateTime.now()));
+      await tryImmediatePush(
+        event.copyWith(isDeleted: true, updatedAt: DateTime.now()),
+      );
       await _localDao.hardDelete(event.id);
     }
     return events.length;
@@ -321,7 +326,15 @@ class EventRepository extends BaseRepository<Event>
             pendingIds: pendingIds,
             idOf: (e) => e.id,
             detailOf: (e) => e.title,
+            payloadOf: (e) => e.toJson(),
           ),
+        );
+
+        await persistPullConflicts(
+          sink: _conflictSink,
+          userId: userId,
+          tableName: _table,
+          conflicts: lastPullConflicts,
         );
 
         await _localDao.insertAll(remote);

@@ -16,6 +16,7 @@ class NotificationScheduleRepository
   final NotificationSchedulesDao _localDao;
   final NotificationScheduleRemoteSource _remoteSource;
   final SyncMetadataDao _syncDao;
+  final PullConflictSink? _conflictSink;
 
   static const _uuid = Uuid();
 
@@ -23,14 +24,16 @@ class NotificationScheduleRepository
     required NotificationSchedulesDao localDao,
     required NotificationScheduleRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
+    PullConflictSink? conflictSink,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
-       _syncDao = syncDao;
+       _syncDao = syncDao,
+       _conflictSink = conflictSink;
 
   static const _table = SupabaseConstants.notificationSchedulesTable;
 
   /// Conflicts detected during the last [pull] operation.
-  final List<({String recordId, String detail})> lastPullConflicts = [];
+  final List<PullConflict> lastPullConflicts = [];
 
   // ── SyncableRepository overrides ─────────────────────────────────────
   @override
@@ -131,7 +134,15 @@ class NotificationScheduleRepository
             pendingIds: pendingIds,
             idOf: (e) => e.id,
             detailOf: (e) => e.title,
+            payloadOf: (e) => e.toJson(),
           ),
+        );
+
+        await persistPullConflicts(
+          sink: _conflictSink,
+          userId: userId,
+          tableName: _table,
+          conflicts: lastPullConflicts,
         );
 
         // Resolve conflicts: server-wins — remote data overwrites via insertAll

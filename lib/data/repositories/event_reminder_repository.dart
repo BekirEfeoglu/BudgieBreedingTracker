@@ -19,6 +19,7 @@ class EventReminderRepository extends BaseRepository<EventReminder>
   final EventReminderRemoteSource _remoteSource;
   final SyncMetadataDao _syncDao;
   final EventsDao _eventsDao;
+  final PullConflictSink? _conflictSink;
 
   static const _uuid = Uuid();
 
@@ -27,15 +28,17 @@ class EventReminderRepository extends BaseRepository<EventReminder>
     required EventReminderRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
     required EventsDao eventsDao,
+    PullConflictSink? conflictSink,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
        _syncDao = syncDao,
-       _eventsDao = eventsDao;
+       _eventsDao = eventsDao,
+       _conflictSink = conflictSink;
 
   static const _table = SupabaseConstants.eventRemindersTable;
 
   /// Conflicts detected during the last [pull] operation.
-  final List<({String recordId, String detail})> lastPullConflicts = [];
+  final List<PullConflict> lastPullConflicts = [];
 
   // ── ValidatedSyncMixin overrides ──────────────────────────────────────
 
@@ -167,7 +170,15 @@ class EventReminderRepository extends BaseRepository<EventReminder>
             pendingIds: pendingIds,
             idOf: (e) => e.id,
             detailOf: (e) => e.eventId,
+            payloadOf: (e) => e.toJson(),
           ),
+        );
+
+        await persistPullConflicts(
+          sink: _conflictSink,
+          userId: userId,
+          tableName: _table,
+          conflicts: lastPullConflicts,
         );
 
         await _localDao.insertAll(remote);

@@ -1,15 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:uuid/uuid.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
-import 'package:budgie_breeding_tracker/core/enums/sync_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
-import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart'
-    show conflictHistoryDaoProvider;
-import 'package:budgie_breeding_tracker/data/models/conflict_history_model.dart';
-import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/data/repositories/base_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_telemetry.dart';
@@ -162,9 +155,14 @@ class SyncPullHandler {
             SupabaseConstants.healthRecordsTable,
           );
         },
-        () => _ref
-            .read(growthMeasurementRepositoryProvider)
-            .pull(userId, lastSyncedAt: since),
+        () async {
+          final gmRepo = _ref.read(growthMeasurementRepositoryProvider);
+          await gmRepo.pull(userId, lastSyncedAt: since);
+          _reportPullConflicts(
+            gmRepo.lastPullConflicts,
+            SupabaseConstants.growthMeasurementsTable,
+          );
+        },
         () async {
           await eventRepo.pull(userId, lastSyncedAt: since);
           _reportPullConflicts(
@@ -174,6 +172,10 @@ class SyncPullHandler {
         },
         () async {
           await notificationRepo.pull(userId, lastSyncedAt: since);
+          _reportPullConflicts(
+            notificationRepo.lastPullConflicts,
+            SupabaseConstants.notificationsTable,
+          );
           await notificationRepo.pullSettings(userId);
         },
         () async {
@@ -183,9 +185,14 @@ class SyncPullHandler {
             SupabaseConstants.notificationSchedulesTable,
           );
         },
-        () => _ref
-            .read(photoRepositoryProvider)
-            .pull(userId, lastSyncedAt: since),
+        () async {
+          final photoRepo = _ref.read(photoRepositoryProvider);
+          await photoRepo.pull(userId, lastSyncedAt: since);
+          _reportPullConflicts(
+            photoRepo.lastPullConflicts,
+            SupabaseConstants.photosTable,
+          );
+        },
       ], 'L6 (leaf entities)');
       layerErrors += errors;
     }
@@ -231,42 +238,21 @@ class SyncPullHandler {
     }
   }
 
-  /// Reports detected pull conflicts to [conflictHistoryProvider] and persists
-  /// them to the local [ConflictHistoryDao] for offline history.
-  void _reportPullConflicts(
-    List<({String recordId, String detail})> conflicts,
-    String tableName,
-  ) {
+  /// Mirrors already-persisted pull conflicts into the in-memory provider.
+  /// Repositories persist encrypted snapshots before applying server-wins.
+  void _reportPullConflicts(List<PullConflict> conflicts, String tableName) {
     if (conflicts.isEmpty) return;
 
     final notifier = _ref.read(conflictHistoryProvider.notifier);
-    final dao = _ref.read(conflictHistoryDaoProvider);
-    final userId = _ref.read(currentUserIdProvider);
-    const uuid = Uuid();
 
     for (final c in conflicts) {
-      // In-memory (existing behavior)
       notifier.addConflict(
         SyncConflict(
           table: tableName,
           recordId: c.recordId,
           detectedAt: _now(),
           description: c.detail,
-        ),
-      );
-
-      // Persist to DB
-      unawaited(
-        dao.insert(
-          ConflictHistory(
-            id: uuid.v7(),
-            userId: userId,
-            tableName: tableName,
-            recordId: c.recordId,
-            description: c.detail,
-            conflictType: ConflictType.serverWins,
-            createdAt: _now(),
-          ),
+          hasLocalSnapshot: true,
         ),
       );
     }

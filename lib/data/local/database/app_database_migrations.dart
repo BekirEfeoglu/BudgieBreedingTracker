@@ -463,6 +463,30 @@ Future<void> _migrateV27ToV28(AppDatabase db, Migrator m) async {
   }
 }
 
+/// Migration v28 -> v29: Adds encrypted, versioned local/server snapshots to
+/// sync conflict history. Existing history rows intentionally remain NULL:
+/// the discarded values cannot be reconstructed after the fact.
+Future<void> _migrateV28ToV29(AppDatabase db, Migrator m) async {
+  if (!await _tableHasColumn(db, 'conflict_history', 'local_payload')) {
+    await m.addColumn(
+      db.conflictHistoryTable,
+      db.conflictHistoryTable.localPayload,
+    );
+  }
+  if (!await _tableHasColumn(db, 'conflict_history', 'server_payload')) {
+    await m.addColumn(
+      db.conflictHistoryTable,
+      db.conflictHistoryTable.serverPayload,
+    );
+  }
+  if (!await _tableHasColumn(db, 'conflict_history', 'payload_version')) {
+    await m.addColumn(
+      db.conflictHistoryTable,
+      db.conflictHistoryTable.payloadVersion,
+    );
+  }
+}
+
 /// Checks whether [tableName] has a column named [columnName] via PRAGMA.
 ///
 /// Internal migration helper only — [tableName] and [columnName] must be

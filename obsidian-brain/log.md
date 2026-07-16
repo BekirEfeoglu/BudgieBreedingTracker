@@ -4,16 +4,19 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-17] sync | Conflict retry now restores encrypted local snapshots
+
+Drift v29 stores encrypted local/server snapshots before server-wins overwrite.
+Retry validates and restores through typed DAOs, preserves one pending metadata
+row and the oldest unresolved snapshot, and fails closed for legacy/corrupt
+payloads. UI success additionally requires restored metadata to leave the queue.
+
 ## [2026-07-17] fix | Scanned image upload size contract unified at 2 MiB raw
 
-Aligned bird, community, marketplace, DM, avatar, egg, and chick upload
-boundaries: post-picker guard, repository/storage validation, image safety
-service, both Edge paths, and all seven image bucket limits now enforce 2 MiB
-raw. Kept the lower cap to bound base64/parser/decode memory and abuse; fixed
-base64 padding off-by-one so exact-limit payloads pass. Added boundary,
-post-compression, multi-surface, Edge, and migration coverage; retained the
-existing corrupt-image regression coverage and removed the closed 10MB-vs-2MB
-known gap.
+Bird, community, marketplace, DM, avatar, egg, and chick upload boundaries now
+enforce 2 MiB raw from post-picker guards through storage, Edge scans, and seven
+bucket limits. The lower cap bounds base64/decode cost; exact-limit padding,
+multi-surface, Edge, and migration regressions are covered.
 
 ## [2026-07-16] docs | Semantic sync/forms/image reconciliation
 

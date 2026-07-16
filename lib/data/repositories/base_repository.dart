@@ -9,6 +9,28 @@ import 'package:uuid/uuid.dart';
 /// Statistics returned by [SyncableRepository.pushAll].
 typedef PushStats = ({int pushed, int orphansCleaned});
 
+/// Immutable local/server snapshots captured immediately before a pull would
+/// overwrite a locally pending row.
+typedef PullConflict = ({
+  String recordId,
+  String detail,
+  Map<String, dynamic> localPayload,
+  Map<String, dynamic> serverPayload,
+});
+
+/// Persists pull conflicts before server-wins data is written to Drift.
+///
+/// Production repositories receive the encrypted implementation from
+/// `repository_providers.dart`. The nullable repository constructor seam is
+/// retained for narrow unit tests that do not exercise conflict persistence.
+abstract interface class PullConflictSink {
+  Future<void> persist({
+    required String userId,
+    required String tableName,
+    required List<PullConflict> conflicts,
+  });
+}
+
 /// Empty push stats constant for convenience.
 const PushStats emptyPushStats = (pushed: 0, orphansCleaned: 0);
 
@@ -57,21 +79,52 @@ abstract class BaseRepository<T> {
 /// equal/older remote (e.g. under device-vs-server clock skew), which is exactly
 /// the silent-overwrite the rulebook forbids. Shared by every syncable repo
 /// (and the custom [PhotoRepository]) so the rule can't drift per-entity again.
-List<({String recordId, String detail})> detectPullConflicts<T>({
+List<PullConflict> detectPullConflicts<T>({
   required List<T> remote,
   required Map<String, T> localMap,
   required Set<String> pendingIds,
   required String Function(T item) idOf,
   required String Function(T item) detailOf,
+  required Map<String, dynamic> Function(T item) payloadOf,
 }) {
-  final conflicts = <({String recordId, String detail})>[];
+  final conflicts = <PullConflict>[];
   for (final item in remote) {
     final id = idOf(item);
     if (!pendingIds.contains(id)) continue;
-    if (!localMap.containsKey(id)) continue;
-    conflicts.add((recordId: id, detail: detailOf(item)));
+    final local = localMap[id];
+    if (local == null) continue;
+    conflicts.add((
+      recordId: id,
+      detail: detailOf(item),
+      localPayload: Map<String, dynamic>.unmodifiable(payloadOf(local)),
+      serverPayload: Map<String, dynamic>.unmodifiable(payloadOf(item)),
+    ));
   }
   return conflicts;
+}
+
+/// Persists detected conflicts before the caller applies server-wins rows.
+///
+/// A missing sink or any codec/database failure is surfaced as an
+/// [AppException] and the caller must not continue to its local overwrite.
+Future<void> persistPullConflicts({
+  required PullConflictSink? sink,
+  required String userId,
+  required String tableName,
+  required List<PullConflict> conflicts,
+}) async {
+  if (conflicts.isEmpty) return;
+  if (sink == null) {
+    throw const DatabaseException(
+      'Sync conflict snapshot sink is unavailable',
+      code: 'conflict_snapshot_sink_unavailable',
+    );
+  }
+  await sink.persist(
+    userId: userId,
+    tableName: tableName,
+    conflicts: conflicts,
+  );
 }
 
 /// Logs a repository `pull()` failure and reports UNEXPECTED errors to Sentry.

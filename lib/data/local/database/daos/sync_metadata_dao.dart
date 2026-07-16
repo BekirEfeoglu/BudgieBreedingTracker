@@ -246,10 +246,12 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
         .go();
   }
 
-  /// Batch equivalent of the repository-level markPending upsert dance:
-  /// existing (tableName, recordId) rows keep their primary key and are
-  /// reset to pending; missing ones are inserted. Runs as one batch so a
-  /// 100-row cascade marks sync state with 2 statements instead of 200.
+  /// Batch equivalent of the repository-level markPending upsert dance.
+  ///
+  /// Existing `(tableName, recordId)` rows keep their primary key and are reset
+  /// to pending; missing rows are inserted. Deleting and reinserting the target
+  /// keys in one batch guarantees exactly one pending row per record and stays
+  /// compatible with the v12 unique index.
   Future<void> markPendingByRecords(
     String tableName,
     Map<String, String> recordIdToUserId,
@@ -260,11 +262,18 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
       tableName,
       recordIdToUserId.keys.toList(),
     );
-    final existingByRecordId = {for (final m in existing) m.recordId: m};
+    final existingByRecordId = <String, SyncMetadata>{};
+    for (final metadata in existing) {
+      final recordId = metadata.recordId;
+      if (recordId != null) {
+        existingByRecordId.putIfAbsent(recordId, () => metadata);
+      }
+    }
     final entries = recordIdToUserId.entries.map((e) {
       final current = existingByRecordId[e.key];
       if (current != null) {
         return current.copyWith(
+          userId: e.value,
           status: SyncStatus.pending,
           errorMessage: null,
           retryCount: 0,
@@ -278,7 +287,17 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
         recordId: e.key,
       );
     }).toList();
-    await insertAll(entries);
+    final recordIds = recordIdToUserId.keys.toList();
+    await batch((b) {
+      b.deleteWhere(
+        syncMetadataTable,
+        (t) => t.tableName_.equals(tableName) & t.recordId.isIn(recordIds),
+      );
+      b.insertAllOnConflictUpdate(
+        syncMetadataTable,
+        entries.map((metadata) => metadata.toCompanion()).toList(),
+      );
+    });
   }
 
   Stream<int> watchPendingCount(String userId) {

@@ -21,6 +21,7 @@ class EggRepository extends BaseRepository<Egg>
   final SyncMetadataDao _syncDao;
   final IncubationsDao _incubationsDao;
   final ClutchesDao _clutchesDao;
+  final PullConflictSink? _conflictSink;
 
   static const _uuid = Uuid();
 
@@ -30,16 +31,18 @@ class EggRepository extends BaseRepository<Egg>
     required SyncMetadataDao syncDao,
     required IncubationsDao incubationsDao,
     required ClutchesDao clutchesDao,
+    PullConflictSink? conflictSink,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
        _syncDao = syncDao,
        _incubationsDao = incubationsDao,
-       _clutchesDao = clutchesDao;
+       _clutchesDao = clutchesDao,
+       _conflictSink = conflictSink;
 
   static const _table = SupabaseConstants.eggsTable;
 
   /// Conflicts detected during the last [pull] operation.
-  final List<({String recordId, String detail})> lastPullConflicts = [];
+  final List<PullConflict> lastPullConflicts = [];
 
   // ── ValidatedSyncMixin overrides ──────────────────────────────────────
 
@@ -195,7 +198,15 @@ class EggRepository extends BaseRepository<Egg>
             pendingIds: pendingIds,
             idOf: (e) => e.id,
             detailOf: (e) => e.eggNumber?.toString() ?? e.id,
+            payloadOf: (e) => e.toJson(),
           ),
+        );
+
+        await persistPullConflicts(
+          sink: _conflictSink,
+          userId: userId,
+          tableName: _table,
+          conflicts: lastPullConflicts,
         );
 
         await _localDao.insertAll(remote);

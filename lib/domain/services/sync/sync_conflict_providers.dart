@@ -36,35 +36,46 @@ class ConflictHistoryNotifier extends Notifier<List<SyncConflict>> {
 
   @override
   List<SyncConflict> build() {
-    _restoreFromDb();
+    reload();
     return [];
   }
 
-  Future<void> _restoreFromDb() async {
+  Future<void> reload() async {
     try {
       final userId = ref.read(currentUserIdProvider);
       if (userId == 'anonymous') return;
       final dao = ref.read(conflictHistoryDaoProvider);
       final persisted = await dao.watchAll(userId).first;
-      if (persisted.isNotEmpty) {
-        state = persisted
-            .map(
-              (c) => SyncConflict(
-                table: c.tableName,
-                recordId: c.recordId,
-                detectedAt: c.createdAt ?? DateTime.now(),
-                description: c.description,
-              ),
-            )
-            .take(_maxEntries)
-            .toList();
-      }
+      state = persisted
+          .map(
+            (c) => SyncConflict(
+              table: c.tableName,
+              recordId: c.recordId,
+              detectedAt: c.createdAt ?? DateTime.now(),
+              description: c.description,
+              historyId: c.id,
+              hasLocalSnapshot:
+                  c.localPayload != null && c.payloadVersion != null,
+              resolvedAt: c.resolvedAt,
+            ),
+          )
+          .take(_maxEntries)
+          .toList();
     } catch (e) {
       AppLogger.debug('[ConflictHistory] Restore failed: $e');
     }
   }
 
   void addConflict(SyncConflict conflict) {
+    if (conflict.resolvedAt == null &&
+        state.any(
+          (existing) =>
+              existing.resolvedAt == null &&
+              existing.table == conflict.table &&
+              existing.recordId == conflict.recordId,
+        )) {
+      return;
+    }
     state = [conflict, ...state].take(_maxEntries).toList();
   }
 

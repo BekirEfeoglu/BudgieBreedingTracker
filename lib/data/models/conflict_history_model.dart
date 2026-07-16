@@ -16,6 +16,9 @@ abstract class ConflictHistory with _$ConflictHistory {
     required String description,
     @JsonKey(unknownEnumValue: ConflictType.unknown)
     required ConflictType conflictType,
+    String? localPayload,
+    String? serverPayload,
+    int? payloadVersion,
     DateTime? resolvedAt,
     DateTime? createdAt,
   }) = _ConflictHistory;

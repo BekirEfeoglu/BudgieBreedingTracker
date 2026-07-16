@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/base_repository.dart';
@@ -350,28 +351,34 @@ void main() {
     ({String id, String name}) rec(String id, String name) =>
         (id: id, name: name);
 
-    test('flags a pending local row overwritten by remote regardless of order', () {
-      final remote = [rec('a', 'RA'), rec('b', 'RB'), rec('c', 'RC')];
-      final localMap = {
-        'a': rec('a', 'LA'),
-        'b': rec('b', 'LB'),
-        // 'c' is NOT present locally.
-      };
+    test(
+      'flags a pending local row overwritten by remote regardless of order',
+      () {
+        final remote = [rec('a', 'RA'), rec('b', 'RB'), rec('c', 'RC')];
+        final localMap = {
+          'a': rec('a', 'LA'),
+          'b': rec('b', 'LB'),
+          // 'c' is NOT present locally.
+        };
 
-      final conflicts = detectPullConflicts<({String id, String name})>(
-        remote: remote,
-        localMap: localMap,
-        pendingIds: {'a', 'b', 'c'},
-        idOf: (e) => e.id,
-        detailOf: (e) => e.name,
-      );
+        final conflicts = detectPullConflicts<({String id, String name})>(
+          remote: remote,
+          localMap: localMap,
+          pendingIds: {'a', 'b', 'c'},
+          idOf: (e) => e.id,
+          detailOf: (e) => e.name,
+          payloadOf: (e) => {'id': e.id, 'name': e.name},
+        );
 
-      // a + b are pending AND present locally → conflict, timestamp-agnostic
-      // (the whole point: an unpushed edit is discarded on ANY overwrite).
-      // c is pending but absent locally → nothing to discard → no conflict.
-      expect(conflicts.map((c) => c.recordId), ['a', 'b']);
-      expect(conflicts.first.detail, 'RA');
-    });
+        // a + b are pending AND present locally → conflict, timestamp-agnostic
+        // (the whole point: an unpushed edit is discarded on ANY overwrite).
+        // c is pending but absent locally → nothing to discard → no conflict.
+        expect(conflicts.map((c) => c.recordId), ['a', 'b']);
+        expect(conflicts.first.detail, 'RA');
+        expect(conflicts.first.localPayload['name'], 'LA');
+        expect(conflicts.first.serverPayload['name'], 'RA');
+      },
+    );
 
     test('ignores rows that are not pending even if present locally', () {
       final conflicts = detectPullConflicts<({String id, String name})>(
@@ -380,9 +387,35 @@ void main() {
         pendingIds: const {},
         idOf: (e) => e.id,
         detailOf: (e) => e.name,
+        payloadOf: (e) => {'id': e.id, 'name': e.name},
       );
 
       expect(conflicts, isEmpty);
     });
+  });
+
+  test('conflicts fail closed when the snapshot sink is unavailable', () async {
+    await expectLater(
+      persistPullConflicts(
+        sink: null,
+        userId: _userId,
+        tableName: _tableName,
+        conflicts: const [
+          (
+            recordId: 'entity-1',
+            detail: 'remote detail',
+            localPayload: {'id': 'entity-1'},
+            serverPayload: {'id': 'entity-1'},
+          ),
+        ],
+      ),
+      throwsA(
+        isA<DatabaseException>().having(
+          (error) => error.code,
+          'code',
+          'conflict_snapshot_sink_unavailable',
+        ),
+      ),
+    );
   });
 }

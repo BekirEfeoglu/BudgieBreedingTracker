@@ -26,6 +26,7 @@ class ChickRepository extends BaseRepository<Chick>
   final EggsDao _eggsDao;
   final ClutchesDao _clutchesDao;
   final BirdsDao _birdsDao;
+  final PullConflictSink? _conflictSink;
 
   static const _uuid = Uuid();
 
@@ -36,17 +37,19 @@ class ChickRepository extends BaseRepository<Chick>
     required EggsDao eggsDao,
     required ClutchesDao clutchesDao,
     required BirdsDao birdsDao,
+    PullConflictSink? conflictSink,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
        _syncDao = syncDao,
        _eggsDao = eggsDao,
        _clutchesDao = clutchesDao,
-       _birdsDao = birdsDao;
+       _birdsDao = birdsDao,
+       _conflictSink = conflictSink;
 
   static const _table = SupabaseConstants.chicksTable;
 
   /// Conflicts detected during the last [pull] operation.
-  final List<({String recordId, String detail})> lastPullConflicts = [];
+  final List<PullConflict> lastPullConflicts = [];
 
   // ── ValidatedSyncMixin overrides ──────────────────────────────────────
 
@@ -227,7 +230,15 @@ class ChickRepository extends BaseRepository<Chick>
             pendingIds: pendingIds,
             idOf: (e) => e.id,
             detailOf: (e) => e.name ?? e.ringNumber ?? e.id,
+            payloadOf: (e) => e.toJson(),
           ),
+        );
+
+        await persistPullConflicts(
+          sink: _conflictSink,
+          userId: userId,
+          tableName: _table,
+          conflicts: lastPullConflicts,
         );
 
         await _localDao.insertAll(remote);

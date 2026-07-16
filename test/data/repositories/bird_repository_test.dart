@@ -9,6 +9,7 @@ import 'package:budgie_breeding_tracker/data/local/database/daos/birds_dao.dart'
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/bird_remote_source.dart';
+import 'package:budgie_breeding_tracker/data/repositories/base_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/bird_repository.dart';
 
 import '../../helpers/mocks.dart';
@@ -18,10 +19,13 @@ class MockBirdsDao extends Mock implements BirdsDao {}
 
 class MockBirdRemoteSource extends Mock implements BirdRemoteSource {}
 
+class MockPullConflictSink extends Mock implements PullConflictSink {}
+
 void main() {
   late MockBirdsDao localDao;
   late MockBirdRemoteSource remoteSource;
   late MockSyncMetadataDao syncDao;
+  late MockPullConflictSink conflictSink;
   late BirdRepository repository;
 
   const userId = 'user-1';
@@ -37,12 +41,22 @@ void main() {
     localDao = MockBirdsDao();
     remoteSource = MockBirdRemoteSource();
     syncDao = MockSyncMetadataDao();
+    conflictSink = MockPullConflictSink();
 
     repository = BirdRepository(
       localDao: localDao,
       remoteSource: remoteSource,
       syncDao: syncDao,
+      conflictSink: conflictSink,
     );
+
+    when(
+      () => conflictSink.persist(
+        userId: any(named: 'userId'),
+        tableName: any(named: 'tableName'),
+        conflicts: any(named: 'conflicts'),
+      ),
+    ).thenAnswer((_) async {});
 
     when(() => localDao.insertItem(any())).thenAnswer((_) async {});
     when(() => localDao.insertAll(any())).thenAnswer((_) async {});
@@ -324,8 +338,9 @@ void main() {
 
         // Batched path: the one valid bird is pushed via upsertAll (transport
         // verb changed; the "valid pending row is pushed" behavior is identical).
-        final captured =
-            verify(() => remoteSource.upsertAll(captureAny())).captured;
+        final captured = verify(
+          () => remoteSource.upsertAll(captureAny()),
+        ).captured;
         expect(captured, hasLength(1));
         expect((captured.single as List), [bird1]);
       },
@@ -341,7 +356,8 @@ void main() {
             TestFixtures.sampleBird(id: 'b3'),
           ];
           when(
-            () => syncDao.getPendingByTable(userId, SupabaseConstants.birdsTable),
+            () =>
+                syncDao.getPendingByTable(userId, SupabaseConstants.birdsTable),
           ).thenAnswer(
             (_) async => [
               for (final b in birds)
@@ -361,8 +377,9 @@ void main() {
           final stats = await repository.pushAll(userId);
 
           expect(stats.pushed, 3);
-          final captured =
-              verify(() => remoteSource.upsertAll(captureAny())).captured;
+          final captured = verify(
+            () => remoteSource.upsertAll(captureAny()),
+          ).captured;
           expect(captured, hasLength(1)); // 3 records = 1 HTTP call
           expect((captured.single as List).length, 3);
           verify(
@@ -386,7 +403,8 @@ void main() {
             TestFixtures.sampleBird(id: 'b2'),
           ];
           when(
-            () => syncDao.getPendingByTable(userId, SupabaseConstants.birdsTable),
+            () =>
+                syncDao.getPendingByTable(userId, SupabaseConstants.birdsTable),
           ).thenAnswer(
             (_) async => [
               for (final b in birds)
@@ -403,10 +421,14 @@ void main() {
           ).thenThrow(const NetworkException('errors.network_unavailable'));
           // Fallback path: b1 succeeds, b2 fails.
           when(
-            () => remoteSource.upsert(any(that: predicate<Bird>((b) => b.id == 'b1'))),
+            () => remoteSource.upsert(
+              any(that: predicate<Bird>((b) => b.id == 'b1')),
+            ),
           ).thenAnswer((_) async {});
           when(
-            () => remoteSource.upsert(any(that: predicate<Bird>((b) => b.id == 'b2'))),
+            () => remoteSource.upsert(
+              any(that: predicate<Bird>((b) => b.id == 'b2')),
+            ),
           ).thenThrow(const NetworkException('errors.network_unavailable'));
           when(
             () => syncDao.deleteByRecord(any(), any()),
@@ -443,7 +465,8 @@ void main() {
         'should clean orphan metadata without remote call when local row missing',
         () async {
           when(
-            () => syncDao.getPendingByTable(userId, SupabaseConstants.birdsTable),
+            () =>
+                syncDao.getPendingByTable(userId, SupabaseConstants.birdsTable),
           ).thenAnswer(
             (_) async => [TestFixtures.sampleSyncMetadata(recordId: 'ghost')],
           );
@@ -517,6 +540,66 @@ void main() {
 
           expect(repository.lastPullConflicts, hasLength(1));
           expect(repository.lastPullConflicts.first.recordId, 'bird-1');
+          expect(
+            repository.lastPullConflicts.first.localPayload['name'],
+            'Local Edit',
+          );
+          expect(
+            repository.lastPullConflicts.first.serverPayload['name'],
+            'Remote Edit',
+          );
+          verifyInOrder([
+            () => conflictSink.persist(
+              userId: userId,
+              tableName: SupabaseConstants.birdsTable,
+              conflicts: any(named: 'conflicts'),
+            ),
+            () => localDao.insertAll([remoteBird]),
+          ]);
+        },
+      );
+
+      test(
+        'pull does not overwrite local row when snapshot persistence fails',
+        () async {
+          final localBird = createTestBird(
+            id: 'bird-1',
+            name: 'Local Edit',
+            userId: userId,
+          );
+          final remoteBird = createTestBird(
+            id: 'bird-1',
+            name: 'Remote Edit',
+            userId: userId,
+          );
+          when(
+            () => remoteSource.fetchUpdatedSince(userId, any()),
+          ).thenAnswer((_) async => [remoteBird]);
+          when(
+            () => localDao.getAll(userId),
+          ).thenAnswer((_) async => [localBird]);
+          when(
+            () => syncDao.getPendingRecordIds(userId),
+          ).thenAnswer((_) async => {'bird-1'});
+          when(
+            () => conflictSink.persist(
+              userId: any(named: 'userId'),
+              tableName: any(named: 'tableName'),
+              conflicts: any(named: 'conflicts'),
+            ),
+          ).thenThrow(
+            const DatabaseException(
+              'snapshot failed',
+              code: 'conflict_snapshot_persistence_failed',
+            ),
+          );
+
+          await expectLater(
+            repository.pull(userId, lastSyncedAt: DateTime(2024, 5, 1)),
+            throwsA(isA<DatabaseException>()),
+          );
+
+          verifyNever(() => localDao.insertAll(any()));
         },
       );
 

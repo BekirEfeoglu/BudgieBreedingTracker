@@ -8,7 +8,7 @@ Two parallel migration systems: **Drift** (local SQLite) and **Supabase SQL** (r
 
 ### Schema Version
 
-`schemaVersion = 28` in `app_database.dart`. Must be incremented sequentially — no skipping. (v25 added `profiles.show_in_leaderboard` via `_migrateV24ToV25`; v26 added the `idx_conflict_history_user_table_record` composite index via `_migrateV25ToV26`; v27 added `events.chick_id` (+ backfill NULL-ing orphaned refs) via `_migrateV26ToV27`, paired with Supabase `20260709103045`; v28 added the nullable `genetics_history.father_phase_overrides` JSON column via `_migrateV27ToV28`, for the explicit linkage-phase override feature — no paired Supabase migration since `genetics_history` is local-only.)
+`schemaVersion = 29` in `app_database.dart`. Must be incremented sequentially — no skipping. (v25 added `profiles.show_in_leaderboard` via `_migrateV24ToV25`; v26 added the `idx_conflict_history_user_table_record` composite index via `_migrateV25ToV26`; v27 added `events.chick_id` (+ backfill NULL-ing orphaned refs) via `_migrateV26ToV27`, paired with Supabase `20260709103045`; v28 added `genetics_history.father_phase_overrides`; v29 adds nullable encrypted snapshot columns `conflict_history.local_payload`, `server_payload`, and `payload_version` via `_migrateV28ToV29`. Existing rows remain NULL because discarded values cannot be reconstructed. v28/v29 are local-only, so neither has a paired Supabase migration.)
 
 ### Pattern
 
@@ -150,7 +150,7 @@ Never delete or rename migration files. If a mistake exists, create a new migrat
 
 ## Current Decisions
 
-- Drift schema is v28 and must advance one version at a time.
+- Drift schema is v29 and must advance one version at a time.
 - Supabase SQL migrations are forward-only and tracked in chronological filenames.
 - Privileged RPCs use `private` `SECURITY DEFINER` implementations plus public invoker wrappers.
 - Production drift verification (version + content) is required after deploying newer local migrations; the ledger's `statements` column is the source for content-drift md5 checks.

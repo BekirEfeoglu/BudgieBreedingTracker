@@ -23,7 +23,7 @@ Verified against the Drift tables and repository validators (2026-07-16):
 | `growth_measurements_table.dart` | GrowthMeasurement | Chick |
 | `genetics_history_table.dart` | GeneticsHistory | Bird × 2 (father_id, mother_id) |
 | `sync_metadata_table.dart` | SyncMetadata | — |
-| `conflict_history_table.dart` | ConflictHistory | — |
+| `conflict_history_table.dart` | ConflictHistory | — (v29 encrypted/versioned local+server sync snapshots; legacy rows nullable) |
 | `notifications_table.dart` | Notification | — |
 | `notification_schedules_table.dart` | NotificationSchedule | — |
 | `notification_settings_table.dart` | NotificationSettings | — |

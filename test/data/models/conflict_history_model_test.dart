@@ -13,6 +13,9 @@ void main() {
           recordId: 'bird-123',
           description: 'Server overwrote local',
           conflictType: ConflictType.serverWins,
+          localPayload: 'encrypted-local',
+          serverPayload: 'encrypted-server',
+          payloadVersion: 1,
           resolvedAt: DateTime(2024, 6, 1),
           createdAt: DateTime(2024, 5, 1),
         );
@@ -26,6 +29,9 @@ void main() {
         expect(restored.recordId, model.recordId);
         expect(restored.description, model.description);
         expect(restored.conflictType, model.conflictType);
+        expect(restored.localPayload, model.localPayload);
+        expect(restored.serverPayload, model.serverPayload);
+        expect(restored.payloadVersion, 1);
         expect(restored.resolvedAt, model.resolvedAt);
         expect(restored.createdAt, model.createdAt);
       });

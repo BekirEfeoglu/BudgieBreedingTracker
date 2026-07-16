@@ -11,10 +11,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/widgets/app_icon.dart';
-import '../../../data/local/database/dao_providers.dart';
 import '../../../data/local/database/daos/sync_metadata_dao.dart'
     show SyncErrorDetail;
-import '../../../data/models/sync_metadata_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../domain/services/sync/sync_orchestrator.dart';
 import '../../../domain/services/sync/sync_providers.dart';
@@ -91,6 +89,9 @@ class SyncDetailSheet extends ConsumerWidget {
                     const SizedBox(height: AppSpacing.lg),
                     _ActionButtons(
                       hasConflicts: conflicts.isNotEmpty,
+                      hasUnresolvedConflicts: conflicts.any(
+                        (conflict) => conflict.resolvedAt == null,
+                      ),
                       userId: userId,
                     ),
                     const SizedBox(height: AppSpacing.xxxl),
@@ -153,9 +154,14 @@ class _SheetHeader extends StatelessWidget {
 }
 
 class _ActionButtons extends ConsumerStatefulWidget {
-  const _ActionButtons({required this.hasConflicts, required this.userId});
+  const _ActionButtons({
+    required this.hasConflicts,
+    required this.hasUnresolvedConflicts,
+    required this.userId,
+  });
 
   final bool hasConflicts;
+  final bool hasUnresolvedConflicts;
   final String userId;
 
   @override
@@ -206,20 +212,51 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
   });
 
   Future<void> _retryLocal() => _run(() async {
-    final conflicts = ref.read(conflictHistoryProvider);
-    final syncDao = ref.read(syncMetadataDaoProvider);
-    for (final conflict in conflicts) {
-      final metadata = await syncDao.getByRecord(
-        conflict.table,
-        conflict.recordId,
+    final recovery = ref.read(syncConflictRecoveryServiceProvider);
+    final retry = await recovery.retryLocal(widget.userId);
+
+    SyncResult? syncResult;
+    var restoredRecordsSynced = false;
+    if (retry.restored > 0) {
+      syncResult = await ref.read(syncOrchestratorProvider).fullSync();
+      restoredRecordsSynced = await recovery.areRestoredRecordsSynced(
+        retry.restoredRecords,
       );
-      if (metadata != null) {
-        await syncDao.updateStatus(metadata.id, SyncStatus.pending);
-      }
     }
-    await ref.read(syncOrchestratorProvider).forceFullSync();
-    SyncTelemetry.event('conflict_resolved', data: {'strategy': 'local_retry'});
-    if (mounted) Navigator.of(context).pop();
+    // Pull can create a new conflict for the same record when its restored
+    // metadata remains queued, so refresh only after the entire sync attempt.
+    await ref.read(conflictHistoryProvider.notifier).reload();
+    SyncTelemetry.event(
+      'conflict_resolved',
+      data: {
+        'strategy': 'local_retry',
+        'restored': retry.restored,
+        'unavailable': retry.unavailable,
+        'failed': retry.failed,
+        'restoredRecordsSynced': restoredRecordsSynced,
+      },
+    );
+    if (!mounted) return;
+
+    final messageKey = switch ((
+      retry.restored,
+      retry.unavailable,
+      retry.failed,
+      syncResult,
+      restoredRecordsSynced,
+    )) {
+      (> 0, 0, 0, SyncResult.success, true) => 'sync.retry_local_success',
+      (0, > 0, 0, _, _) => 'sync.retry_local_unavailable',
+      (0, _, > 0, _, _) => 'sync.retry_local_failed',
+      (> 0, 0, 0, _, false) => 'sync.retry_local_queued',
+      _ => 'sync.retry_local_partial',
+    };
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(messageKey.tr())));
+    if (messageKey == 'sync.retry_local_success') {
+      Navigator.of(context).pop();
+    }
   });
 
   Future<void> _clearHistory() async {
@@ -253,15 +290,17 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          OutlinedButton.icon(
-            onPressed: _busy ? null : _retryLocal,
-            icon: const Icon(LucideIcons.uploadCloud, size: 18),
-            label: Text('sync.retry_local_action'.tr()),
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size.fromHeight(AppSpacing.touchTargetMd),
+          if (widget.hasUnresolvedConflicts) ...[
+            OutlinedButton.icon(
+              onPressed: _busy ? null : _retryLocal,
+              icon: const Icon(LucideIcons.uploadCloud, size: 18),
+              label: Text('sync.retry_local_action'.tr()),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(AppSpacing.touchTargetMd),
+              ),
             ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.sm),
+          ],
           OutlinedButton.icon(
             onPressed: _busy ? null : _clearHistory,
             icon: const Icon(LucideIcons.trash2, size: 18),

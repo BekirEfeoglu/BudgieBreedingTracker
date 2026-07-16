@@ -5,7 +5,7 @@
 - **DAOs**: `lib/data/local/database/daos/` (20 DAOs)
 - **Mappers**: `lib/data/local/database/mappers/` (20 mappers)
 - **Converters**: `lib/data/local/database/converters/enum_converters.dart`
-- **Schema version**: 28
+- **Schema version**: 29
 - Import tables DIRECTLY from table file, not via `app_database.dart`
 - Use `.equalsValue()` for enum columns, not `.equals()`
 - NEVER close a `.references()` cycle between two tables (A↔B çift yönlü typed FK): tablo dosyaları birbirini import eder ve drift_dev "Circular error when deserializing drift modules" WARNING'leri üretir (non-fatal — simolus3/drift#3227). Child→parent ana FK `.references()` kalır; GERİ-referansı raw `.customConstraint('NULL REFERENCES <table> (id)')` ile bildir ve import'u kaldır — üretilen SQL FK birebir aynıdır, schema değişmez. Kanonik örnek: `incubations.clutchId` ↔ `clutches.incubationId` (2026-07-09). Detay: obsidian-brain/data-layer/drift.md § Circular FK References
@@ -113,6 +113,24 @@ await db.batch((batch) {
   conflict regardless of timestamp order
 - Discarded local edits MUST NOT be silent: shared `detectPullConflicts` →
   `lastPullConflicts` → `conflict_history` + providers/banner/detail sheet
+- Local/server snapshots MUST be authenticated-encrypted and persisted before
+  the remote row overwrites Drift. Snapshot failure aborts that repository pull.
+- One recoverable unresolved snapshot is kept per `(user, table, record)`;
+  repeated pulls preserve the oldest local payload and must not append a later
+  server-wins copy. In-memory conflict state follows the same unresolved-key
+  deduplication; resolved history does not suppress a new conflict.
+- "Retry local" MUST decode/validate the versioned snapshot, restore the typed
+  model through its DAO, reset the existing metadata through
+  `markPendingByRecords`, and resolve history in one Drift transaction. Exactly
+  one pending metadata row must remain. Payload-less v28 history and
+  corrupt/unsupported payloads remain unresolved and must surface a localized
+  fallback without mutating entity data.
+- A retry is UI-successful only when `fullSync` succeeds and batched
+  `getByRecords` checks find no metadata for every restored `(table, record)`
+  key. Remaining metadata is a partial/unverified result; reload conflict state
+  after the sync attempt and keep the detail sheet open.
+- Conflict payloads are capped at 64 KiB per snapshot, retained with history for
+  30 days, and never included in logs, Sentry events, or telemetry.
 - Never overwrite local dirty rows without conflict accounting
 
 ## Cache

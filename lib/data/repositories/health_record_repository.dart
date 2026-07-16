@@ -24,6 +24,7 @@ class HealthRecordRepository extends BaseRepository<HealthRecord>
   final SyncMetadataDao _syncDao;
   final BirdsDao _birdsDao;
   final ChicksDao _chicksDao;
+  final PullConflictSink? _conflictSink;
 
   static const _uuid = Uuid();
 
@@ -33,16 +34,18 @@ class HealthRecordRepository extends BaseRepository<HealthRecord>
     required SyncMetadataDao syncDao,
     required BirdsDao birdsDao,
     required ChicksDao chicksDao,
+    PullConflictSink? conflictSink,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
        _syncDao = syncDao,
        _birdsDao = birdsDao,
-       _chicksDao = chicksDao;
+       _chicksDao = chicksDao,
+       _conflictSink = conflictSink;
 
   static const _table = SupabaseConstants.healthRecordsTable;
 
   /// Conflicts detected during the last [pull] operation.
-  final List<({String recordId, String detail})> lastPullConflicts = [];
+  final List<PullConflict> lastPullConflicts = [];
 
   // ── ValidatedSyncMixin overrides ─────────────────────────────────────
   @override
@@ -197,7 +200,15 @@ class HealthRecordRepository extends BaseRepository<HealthRecord>
             pendingIds: pendingIds,
             idOf: (e) => e.id,
             detailOf: (e) => e.title,
+            payloadOf: (e) => e.toJson(),
           ),
+        );
+
+        await persistPullConflicts(
+          sink: _conflictSink,
+          userId: userId,
+          tableName: _table,
+          conflicts: lastPullConflicts,
         );
 
         await _localDao.insertAll(remote);

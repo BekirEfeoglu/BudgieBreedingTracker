@@ -20,6 +20,7 @@ class BirdRepository extends BaseRepository<Bird>
   final BirdsDao _localDao;
   final BirdRemoteSource _remoteSource;
   final SyncMetadataDao _syncDao;
+  final PullConflictSink? _conflictSink;
 
   static const _uuid = Uuid();
 
@@ -27,16 +28,18 @@ class BirdRepository extends BaseRepository<Bird>
     required BirdsDao localDao,
     required BirdRemoteSource remoteSource,
     required SyncMetadataDao syncDao,
+    PullConflictSink? conflictSink,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
-       _syncDao = syncDao;
+       _syncDao = syncDao,
+       _conflictSink = conflictSink;
 
   static const _table = SupabaseConstants.birdsTable;
 
   /// Conflicts detected during the last [pull] operation.
   /// Each entry has the overwritten record's id and the bird name for display.
   /// Cleared at the start of every pull.
-  final List<({String recordId, String detail})> lastPullConflicts = [];
+  final List<PullConflict> lastPullConflicts = [];
 
   // ── SyncableRepository overrides ─────────────────────────────────────
   @override
@@ -138,7 +141,15 @@ class BirdRepository extends BaseRepository<Bird>
             pendingIds: pendingIds,
             idOf: (b) => b.id,
             detailOf: (b) => b.name,
+            payloadOf: (b) => b.toJson(),
           ),
+        );
+
+        await persistPullConflicts(
+          sink: _conflictSink,
+          userId: userId,
+          tableName: _table,
+          conflicts: lastPullConflicts,
         );
 
         await _localDao.insertAll(remote);

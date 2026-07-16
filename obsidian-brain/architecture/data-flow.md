@@ -58,11 +58,10 @@ locally.
   `conflict_history` + `conflictHistoryProvider`
 - `persistedConflictCountProvider` drives the global banner/home status chip;
   the Settings sync-detail sheet shows table/record description/time metadata
+- Versioned local/server snapshots are encrypted and persisted before the
+  server-wins upsert; failure blocks overwrite. `SyncConflictRecoveryService`
+  restores a validated local snapshot + pending metadata transactionally.
 - Never silent overwrite
-
-The original local payload is not snapshotted, so the current history can prove
-an overwrite occurred but cannot display or restore the discarded field values;
-see [[known-gaps]].
 
 ## Provider Invalidation
 

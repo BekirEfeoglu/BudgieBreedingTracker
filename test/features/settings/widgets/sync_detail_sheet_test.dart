@@ -3,17 +3,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart'
     show SyncErrorDetail;
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/sync/sync_orchestrator.dart';
 import 'package:budgie_breeding_tracker/domain/services/sync/sync_providers.dart';
 import 'package:budgie_breeding_tracker/features/settings/widgets/sync_detail_sheet.dart';
 
 import '../../../helpers/test_localization.dart';
+import '../../../helpers/mocks.dart';
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(<RestoredSyncRecordKey>[]);
+  });
+
   setUp(() {
     SharedPreferences.setMockInitialValues({});
   });
@@ -22,6 +29,9 @@ void main() {
     List<SyncErrorDetail> pending = const [],
     List<SyncErrorDetail> errors = const [],
     List<SyncConflict> conflicts = const [],
+    SyncConflictRecoveryService? recoveryService,
+    MockSyncOrchestrator? orchestrator,
+    _FakeConflictNotifier? conflictNotifier,
   }) {
     return ProviderScope(
       overrides: [
@@ -33,8 +43,14 @@ void main() {
           'user-1',
         ).overrideWith((_) => Stream.value(errors)),
         conflictHistoryProvider.overrideWith(
-          () => _FakeConflictNotifier(conflicts),
+          () => conflictNotifier ?? _FakeConflictNotifier(conflicts),
         ),
+        if (recoveryService != null)
+          syncConflictRecoveryServiceProvider.overrideWithValue(
+            recoveryService,
+          ),
+        if (orchestrator != null)
+          syncOrchestratorProvider.overrideWithValue(orchestrator),
       ],
       child: MaterialApp(
         home: Scaffold(
@@ -119,7 +135,85 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text(l10n('sync.clear_conflict_history')), findsOneWidget);
+      expect(find.text(l10n('sync.retry_local_action')), findsOneWidget);
     });
+
+    testWidgets('hides local retry when all conflicts are resolved', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
+        buildSubject(
+          conflicts: [
+            SyncConflict(
+              table: 'birds',
+              recordId: 'r-1',
+              detectedAt: DateTime.now(),
+              description: 'Resolved local bird',
+              hasLocalSnapshot: true,
+              resolvedAt: DateTime.now(),
+            ),
+          ],
+        ),
+      );
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('sync.retry_local_action')), findsNothing);
+      expect(find.text(l10n('sync.conflict_local_restored')), findsOneWidget);
+    });
+
+    testWidgets(
+      'keeps sheet open when sync reports success but restored metadata remains',
+      (tester) async {
+        final recovery = _MockConflictRecoveryService();
+        final orchestrator = MockSyncOrchestrator();
+        final notifier = _FakeConflictNotifier([
+          SyncConflict(
+            table: 'birds',
+            recordId: 'r-1',
+            detectedAt: DateTime.utc(2026, 7, 17),
+            description: 'Server overwrote local bird',
+            hasLocalSnapshot: true,
+          ),
+        ]);
+        when(() => recovery.retryLocal('user-1')).thenAnswer(
+          (_) async => SyncConflictRetryResult(
+            restored: 1,
+            restoredRecords: [(tableName: 'birds', recordId: 'r-1')],
+          ),
+        );
+        when(
+          () => orchestrator.fullSync(),
+        ).thenAnswer((_) async => SyncResult.success);
+        when(
+          () => recovery.areRestoredRecordsSynced(any()),
+        ).thenAnswer((_) async => false);
+
+        await pumpLocalizedApp(
+          tester,
+          buildSubject(
+            conflicts: notifier.initial,
+            recoveryService: recovery,
+            orchestrator: orchestrator,
+            conflictNotifier: notifier,
+          ),
+        );
+        await tester.tap(find.text('Open'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text(l10n('sync.retry_local_action')));
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n('sync.error_details_title')), findsOneWidget);
+        expect(find.text(l10n('sync.retry_local_success')), findsNothing);
+        expect(find.text(l10n('sync.retry_local_queued')), findsOneWidget);
+        expect(notifier.reloadCount, 1);
+        verify(() => orchestrator.fullSync()).called(1);
+        verify(() => recovery.areRestoredRecordsSynced(any())).called(1);
+      },
+    );
 
     testWidgets('shows pending section when pending records exist', (
       tester,
@@ -244,6 +338,17 @@ class _FakeConflictNotifier extends ConflictHistoryNotifier {
   final List<SyncConflict> _initial;
   _FakeConflictNotifier(this._initial);
 
+  List<SyncConflict> get initial => _initial;
+  int reloadCount = 0;
+
   @override
   List<SyncConflict> build() => _initial;
+
+  @override
+  Future<void> reload() async {
+    reloadCount++;
+  }
 }
+
+class _MockConflictRecoveryService extends Mock
+    implements SyncConflictRecoveryService {}

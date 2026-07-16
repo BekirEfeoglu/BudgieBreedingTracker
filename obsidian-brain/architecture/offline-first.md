@@ -69,6 +69,9 @@ safe to replay on retry.
 - Repository `lastPullConflicts` is persisted to `conflict_history` (30 days)
 - `conflictHistoryProvider` and `persistedConflictCountProvider` surface the
   detail sheet, global banner, home chip, and per-record badges
+- Local/server snapshots are encrypted before the initial server-wins overwrite;
+  retry-local restores the typed local row and pending metadata in one Drift
+  transaction. Old payload-less or corrupt history remains read-only/unresolved.
 
 ## ValidatedSyncMixin
 

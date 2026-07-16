@@ -5,7 +5,7 @@ Source: `.claude/rules/data-layer.md`, `.claude/rules/migrations.md`
 ## Overview
 
 - **Package**: drift ^2.31.0 (type-safe SQLite ORM)
-- **Schema version**: 28 (in `app_database.dart`)
+- **Schema version**: 29 (in `app_database.dart`; v29 adds nullable encrypted conflict snapshot columns)
 - **Tables**: 20
 - **DAOs**: 20
 - **Mappers**: 20

@@ -31,6 +31,7 @@ class ClutchRepository extends BaseRepository<Clutch>
   final BreedingPairsDao _breedingPairsDao;
   final BirdsDao _birdsDao;
   final NestsDao _nestsDao;
+  final PullConflictSink? _conflictSink;
 
   static const _uuid = Uuid();
 
@@ -41,17 +42,19 @@ class ClutchRepository extends BaseRepository<Clutch>
     required BreedingPairsDao breedingPairsDao,
     required BirdsDao birdsDao,
     required NestsDao nestsDao,
+    PullConflictSink? conflictSink,
   }) : _localDao = localDao,
        _remoteSource = remoteSource,
        _syncDao = syncDao,
        _breedingPairsDao = breedingPairsDao,
        _birdsDao = birdsDao,
-       _nestsDao = nestsDao;
+       _nestsDao = nestsDao,
+       _conflictSink = conflictSink;
 
   static const _table = SupabaseConstants.clutchesTable;
 
   /// Conflicts detected during the last [pull] operation.
-  final List<({String recordId, String detail})> lastPullConflicts = [];
+  final List<PullConflict> lastPullConflicts = [];
 
   // ── SyncableRepository / ValidatedSyncMixin overrides ────────────────
   @override
@@ -231,7 +234,15 @@ class ClutchRepository extends BaseRepository<Clutch>
             pendingIds: pendingIds,
             idOf: (e) => e.id,
             detailOf: (e) => e.name ?? e.id,
+            payloadOf: (e) => e.toJson(),
           ),
+        );
+
+        await persistPullConflicts(
+          sink: _conflictSink,
+          userId: userId,
+          tableName: _table,
+          conflicts: lastPullConflicts,
         );
 
         await _localDao.insertAll(remote);

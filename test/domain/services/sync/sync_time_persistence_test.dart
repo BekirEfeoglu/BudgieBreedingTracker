@@ -63,7 +63,7 @@ void main() {
   void stubPushAndPull({
     required Future<PushStats> Function() pushAll,
     required Future<void> Function() pull,
-    List<({String recordId, String detail})> Function()? lastPullConflicts,
+    List<PullConflict> Function()? lastPullConflicts,
   }) {
     when(pushAll).thenAnswer((_) async => emptyPushStats);
     when(pull).thenAnswer((_) async {});
@@ -173,6 +173,8 @@ void main() {
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
+      lastPullConflicts: () =>
+          mockGrowthMeasurementRepository.lastPullConflicts,
     );
     stubPushAndPull(
       pushAll: () => mockNotificationRepository.pushAll(any()),
@@ -180,6 +182,7 @@ void main() {
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
+      lastPullConflicts: () => mockNotificationRepository.lastPullConflicts,
     );
     when(
       () => mockNotificationRepository.pushSettings(any()),
@@ -193,6 +196,7 @@ void main() {
         any(),
         lastSyncedAt: any(named: 'lastSyncedAt'),
       ),
+      lastPullConflicts: () => mockPhotoRepository.lastPullConflicts,
     );
 
     when(
