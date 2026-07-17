@@ -28,11 +28,21 @@
 - `--dart-define` ile gelen runtime config'i kodda fallback secret gibi kullanma
 - `.env` dosyasini source of truth kabul etme; release'de secrets manager kullan
 - Eksik env varsa fail-fast davran; sessiz fallback ile production degistirme
+- Production Android/iOS release'leri `SENTRY_DSN` olmadan uretilmemeli;
+  GitHub Actions secret'i ile Codemagic `app_env_vars` grubu senkron kalmali
+- Obfuscated release build'i `obfuscation.map.json` uretmeli ve
+  `sentry_dart_plugin` ile symbol upload tamamlanmadan publish'e gecmemeli;
+  `SENTRY_AUTH_TOKEN` yalniz `org:ci` kapsamli organizasyon token'i olmali
+- Symbol upload `SENTRY_RELEASE`/`SENTRY_DIST` degerleri runtime
+  `PackageInfo` adlandirmasiyla ayni package/bundle ID ve gercek build numarasini
+  kullanmali; Dart package name varsayimina birakma
 - Edge Function deployment secret'lari sadece CI ortaminda
 - Edge Function deploy'u Edge source/config/deploy-workflow path guard'i ile
   sinirla; `docs/**`-only main push'ta production function'larini yeniden deploy etme
 
 ## Supabase Operations
+- Yerel e-posta yakalama ayari `[local_smtp]` bolumunu kullanmali;
+  Supabase CLI'nin deprecated `[inbucket]` alias'ini geri getirme
 - Edge Function isimleri workflow ve kod referanslarinda birebir tutarli olmali
 - Yeni function eklenirse:
   1. `supabase/functions/<name>/` altina kod ekle

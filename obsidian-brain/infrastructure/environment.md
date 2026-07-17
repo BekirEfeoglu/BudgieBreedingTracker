@@ -8,7 +8,7 @@ Source: `CLAUDE.md` § Environment Variables
 |----------|---------|---------|---------|
 | `SUPABASE_URL` | Yes | — | Supabase project URL |
 | `SUPABASE_ANON_KEY` | Yes | — | Supabase anonymous key |
-| `SENTRY_DSN` | No | — | Sentry error tracking DSN |
+| `SENTRY_DSN` | Yes for production releases | — | Sentry error tracking DSN |
 | `SENTRY_ENVIRONMENT` | No | `production` | Sentry environment tag |
 | `REVENUECAT_API_KEY_IOS` | No | — | RevenueCat iOS |
 | `REVENUECAT_API_KEY_ANDROID` | No | — | RevenueCat Android |
@@ -28,13 +28,22 @@ Source: `CLAUDE.md` § Environment Variables
 
 **Never put Edge Function secrets in client code.**
 
+## Release-Only Secrets
+
+| Secret | Purpose |
+|--------|---------|
+| `SENTRY_AUTH_TOKEN` | `org:ci` organization token used by `sentry_dart_plugin` to upload release symbols; GitHub Actions + Codemagic only |
+
+Never pass `SENTRY_AUTH_TOKEN` through `--dart-define`; it must not ship in the
+application binary.
+
 ## Config Methods
 
 | Context | Method |
 |---------|--------|
 | Local development | `.env` + `--dart-define-from-file=.env` |
 | GitHub Actions | GitHub Secrets |
-| Codemagic | Environment groups |
+| Codemagic | Environment groups (`app_env_vars` includes `SENTRY_DSN`) |
 | Edge Functions | Supabase Dashboard → Secrets |
 
 ## `.env` Rules
@@ -45,7 +54,9 @@ Source: `CLAUDE.md` § Environment Variables
 
 ## Fail-Fast
 
-If `SUPABASE_URL` or `SUPABASE_ANON_KEY` missing → app fails at init. No silent fallback to hardcoded values.
+If `SUPABASE_URL` or `SUPABASE_ANON_KEY` is missing, cloud initialization
+fails. Production release workflows also fail fast when `SENTRY_DSN` is
+missing so store binaries cannot silently ship without crash reporting.
 
 ## See Also
 

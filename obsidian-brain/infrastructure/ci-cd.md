@@ -54,10 +54,17 @@ keeps `web/` absent so the static `docs/` site remains the only web surface.
 Production releases:
 - `android-release`: AAB → Google Play (alpha track)
 - `ios-release`: IPA → App Store TestFlight (App ID: 6759828211)
+- Both workflows require `SENTRY_DSN` in `app_env_vars`; missing monitoring
+  configuration fails before the store build starts.
+- Both workflows require the `org:ci`-scoped `SENTRY_AUTH_TOKEN`, generate the
+  Dart obfuscation map, and run `sentry_dart_plugin` before publishing.
 
 ## Release Ready (`release-ready.yml`)
 
-Manual workflow for signed AAB readiness. Does not run on main push (to avoid slowing CI).
+Manual workflow for signed AAB readiness. Does not run on main push (to avoid
+slowing CI). It requires the GitHub Actions `SENTRY_DSN` secret and injects the
+`production` environment into the release build. Its `SENTRY_AUTH_TOKEN` is
+used only for symbol upload and is never passed into the app binary.
 
 ## Xcode Cloud
 

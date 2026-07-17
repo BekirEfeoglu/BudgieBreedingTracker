@@ -29,6 +29,11 @@
 - `release-ready.yml` manuel calisir; main push CI'sini store artifact uretimiyle yavaslatma
 - `Release Ready Plan` no-op guard job'i workflow_dispatch eventinde en az bir job'in calismasini garanti eder
 - `Android Release (AAB)` sadece manuel release hazirlik kontrolunde signed AAB ve Dart symbol artifact uretir
+- `Android Release (AAB)` `SENTRY_DSN` secret'i yoksa fail-fast durur ve
+  production build'e `SENTRY_ENVIRONMENT=production` ile DSN enjekte eder
+- `SENTRY_AUTH_TOKEN` yalniz Sentry `org:ci` token'idir; release build
+  `obfuscation.map.json` uretir ve `sentry_dart_plugin` symbol upload adimi
+  basarisizsa artifact/publish akisi durur
 - Main push icin `android-build` debug APK smoke gate olarak kalir; store'a gidecek AAB icin release-ready veya Codemagic kullan
 
 ## Dependabot Rules

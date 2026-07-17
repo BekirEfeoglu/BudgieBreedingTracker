@@ -71,15 +71,45 @@ jobs:
           storeFile=budgie-release-key.jks
           EOF
 
+      - name: Verify production observability
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+        run: |
+          if [ -z "$SENTRY_DSN" ]; then
+            echo "ERROR: SENTRY_DSN GitHub Actions secret is missing."
+            exit 1
+          fi
+          if [ -z "$SENTRY_AUTH_TOKEN" ]; then
+            echo "ERROR: SENTRY_AUTH_TOKEN GitHub Actions secret is missing."
+            exit 1
+          fi
+          echo "Sentry production monitoring and symbol upload are configured."
+
       - name: Build Android App Bundle (release)
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
         run: |
           flutter build appbundle --release \
             --obfuscate \
             --split-debug-info=build/symbols/android \
+            --extra-gen-snapshot-options=--save-obfuscation-map=build/app/obfuscation.map.json \
             --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
             --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
+            --dart-define=SENTRY_DSN="$SENTRY_DSN" \
+            --dart-define=SENTRY_ENVIRONMENT=production \
             --dart-define=GOOGLE_WEB_CLIENT_ID=${{ secrets.GOOGLE_WEB_CLIENT_ID }} \
             --dart-define=GOOGLE_IOS_CLIENT_ID=${{ secrets.GOOGLE_IOS_CLIENT_ID }}
+
+      - name: Upload Android debug symbols to Sentry
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: |
+          APP_VERSION="$(sed -n 's/^version: //p' pubspec.yaml | head -1)"
+          SENTRY_DIST="${APP_VERSION##*+}"
+          export SENTRY_RELEASE="com.budgiebreeding.budgie_breeding_tracker@${APP_VERSION}"
+          export SENTRY_DIST
+          dart run sentry_dart_plugin
 
       - name: Upload AAB artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

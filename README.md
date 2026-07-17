@@ -242,7 +242,7 @@ flutter run \
 | --- | --- | --- |
 | `SUPABASE_URL` | Yes for cloud features | Supabase project URL |
 | `SUPABASE_ANON_KEY` | Yes for cloud features | Supabase anon key |
-| `SENTRY_DSN` | No | Sentry DSN |
+| `SENTRY_DSN` | Optional locally; required for production releases | Sentry DSN |
 | `SENTRY_ENVIRONMENT` | No | Sentry environment label |
 | `REVENUECAT_API_KEY_IOS` | No | RevenueCat iOS API key |
 | `REVENUECAT_API_KEY_ANDROID` | No | RevenueCat Android API key |
@@ -250,6 +250,10 @@ flutter run \
 | `OPENAI_API_KEY` | Required for `scan-image-safety` Edge Function | OpenAI API key used for image moderation |
 
 The app can still boot without Supabase credentials, but authentication, sync, and other cloud-backed flows will be unavailable.
+
+Production release automation also requires `SENTRY_AUTH_TOKEN` as a masked CI
+secret. It is used only to upload obfuscation maps and debug symbols; never add
+the token to `.env` or a client `--dart-define`.
 
 ### Common Commands
 

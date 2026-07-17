@@ -5,7 +5,7 @@ workflows:
     environment:
       flutter: stable
       groups:
-        - app_env_vars        # SUPABASE_URL, SUPABASE_ANON_KEY, REVENUECAT_API_KEY_ANDROID, GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
+        - app_env_vars        # SUPABASE_URL, SUPABASE_ANON_KEY, SENTRY_DSN, SENTRY_AUTH_TOKEN, REVENUECAT_API_KEY_ANDROID, GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
         - android_signing     # CM_KEYSTORE, CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_PASSWORD
       vars:
         GOOGLE_PLAY_PACKAGE_NAME: com.budgiebreeding.budgie_breeding_tracker
@@ -28,6 +28,18 @@ workflows:
           else
             echo "SUPABASE_ANON_KEY is set (length: ${#SUPABASE_ANON_KEY})"
           fi
+          if [ -z "$SENTRY_DSN" ]; then
+            echo "ERROR: SENTRY_DSN is not set or empty"
+            MISSING=1
+          else
+            echo "SENTRY_DSN is set (length: ${#SENTRY_DSN})"
+          fi
+          if [ -z "$SENTRY_AUTH_TOKEN" ]; then
+            echo "ERROR: SENTRY_AUTH_TOKEN is not set or empty"
+            MISSING=1
+          else
+            echo "SENTRY_AUTH_TOKEN is set (length: ${#SENTRY_AUTH_TOKEN})"
+          fi
           if [ -z "$REVENUECAT_API_KEY_ANDROID" ]; then
             echo "ERROR: REVENUECAT_API_KEY_ANDROID is not set or empty"
             MISSING=1
@@ -42,8 +54,8 @@ workflows:
           fi
           if [ "$MISSING" -eq 1 ]; then
             echo ""
-            echo "Add SUPABASE_URL, SUPABASE_ANON_KEY, REVENUECAT_API_KEY_ANDROID,"
-            echo "and GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS"
+            echo "Add SUPABASE_URL, SUPABASE_ANON_KEY, SENTRY_DSN, SENTRY_AUTH_TOKEN,"
+            echo "REVENUECAT_API_KEY_ANDROID, and GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS"
             echo "to the 'app_env_vars' group in Codemagic."
             exit 1
           fi
@@ -128,11 +140,19 @@ workflows:
             --build-number=$ANDROID_BUILD_NUMBER \
             --obfuscate \
             --split-debug-info=build/symbols/android \
+            --extra-gen-snapshot-options=--save-obfuscation-map=build/app/obfuscation.map.json \
             --dart-define=SUPABASE_URL="$SUPABASE_URL" \
             --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
-            --dart-define=SENTRY_DSN="${SENTRY_DSN:-}" \
+            --dart-define=SENTRY_DSN="$SENTRY_DSN" \
             --dart-define=SENTRY_ENVIRONMENT=production \
             --dart-define=REVENUECAT_API_KEY_ANDROID="$REVENUECAT_API_KEY_ANDROID"
+
+      - name: Upload Android debug symbols to Sentry
+        script: |
+          APP_VERSION="$(sed -n 's/^version: \([^+]*\).*/\1/p' pubspec.yaml | head -1)"
+          export SENTRY_RELEASE="com.budgiebreeding.budgie_breeding_tracker@${APP_VERSION}+${ANDROID_BUILD_NUMBER}"
+          export SENTRY_DIST="$ANDROID_BUILD_NUMBER"
+          dart run sentry_dart_plugin
 
     artifacts:
       - build/**/outputs/**/*.aab
@@ -152,7 +172,7 @@ workflows:
     environment:
       flutter: stable
       groups:
-        - app_env_vars        # SUPABASE_URL, SUPABASE_ANON_KEY, REVENUECAT_API_KEY_IOS
+        - app_env_vars        # SUPABASE_URL, SUPABASE_ANON_KEY, SENTRY_DSN, SENTRY_AUTH_TOKEN, REVENUECAT_API_KEY_IOS
       vars:
         APP_STORE_APPLE_ID: 6759828211
     integrations:
@@ -175,6 +195,18 @@ workflows:
           else
             echo "SUPABASE_ANON_KEY is set (length: ${#SUPABASE_ANON_KEY})"
           fi
+          if [ -z "$SENTRY_DSN" ]; then
+            echo "ERROR: SENTRY_DSN is not set or empty"
+            MISSING=1
+          else
+            echo "SENTRY_DSN is set (length: ${#SENTRY_DSN})"
+          fi
+          if [ -z "$SENTRY_AUTH_TOKEN" ]; then
+            echo "ERROR: SENTRY_AUTH_TOKEN is not set or empty"
+            MISSING=1
+          else
+            echo "SENTRY_AUTH_TOKEN is set (length: ${#SENTRY_AUTH_TOKEN})"
+          fi
           if [ -z "$REVENUECAT_API_KEY_IOS" ]; then
             echo "ERROR: REVENUECAT_API_KEY_IOS is not set or empty"
             MISSING=1
@@ -183,7 +215,7 @@ workflows:
           fi
           if [ "$MISSING" -eq 1 ]; then
             echo ""
-            echo "Add SUPABASE_URL, SUPABASE_ANON_KEY, and REVENUECAT_API_KEY_IOS"
+            echo "Add SUPABASE_URL, SUPABASE_ANON_KEY, SENTRY_DSN, SENTRY_AUTH_TOKEN, and REVENUECAT_API_KEY_IOS"
             echo "to the 'app_env_vars' group in Codemagic."
             exit 1
           fi
@@ -263,11 +295,19 @@ workflows:
             --export-options-plist="$EXPORT_PLIST" \
             --obfuscate \
             --split-debug-info=build/symbols/ios \
+            --extra-gen-snapshot-options=--save-obfuscation-map=build/app/obfuscation.map.json \
             --dart-define=SUPABASE_URL="$SUPABASE_URL" \
             --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
-            --dart-define=SENTRY_DSN="${SENTRY_DSN:-}" \
+            --dart-define=SENTRY_DSN="$SENTRY_DSN" \
             --dart-define=SENTRY_ENVIRONMENT=production \
             --dart-define=REVENUECAT_API_KEY_IOS="$REVENUECAT_API_KEY_IOS"
+
+      - name: Upload iOS debug symbols to Sentry
+        script: |
+          APP_VERSION="$(sed -n 's/^version: \([^+]*\).*/\1/p' pubspec.yaml | head -1)"
+          export SENTRY_RELEASE="com.budgiebreeding.tracker@${APP_VERSION}+${IOS_BUILD_NUMBER}"
+          export SENTRY_DIST="$IOS_BUILD_NUMBER"
+          dart run sentry_dart_plugin
 
     artifacts:
       - build/ios/ipa/*.ipa

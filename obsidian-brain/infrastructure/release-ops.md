@@ -47,9 +47,19 @@ Signed AAB only from Codemagic or `release-ready.yml`. CI main push produces deb
 - Never use `.env` as production source of truth
 - Secrets: GitHub Secrets (CI) / Codemagic env groups (release)
 - Missing env → fail-fast; no silent fallback
+- `SENTRY_DSN` is required for production Android/iOS releases and must remain
+  synchronized between GitHub Actions and Codemagic `app_env_vars`.
+- Obfuscated builds generate `build/app/obfuscation.map.json`; the
+  `sentry_dart_plugin` upload uses the masked, `org:ci`-only
+  `SENTRY_AUTH_TOKEN` and blocks publishing on failure. Source upload stays off.
+- Symbol upload exports the same platform package/bundle ID and actual build
+  number that `SentryFlutter` obtains from `PackageInfo`, keeping release/dist
+  association exact for dynamic Codemagic builds.
 
 ## Supabase Ops
 
+- Local email capture uses `[local_smtp]`; the deprecated `[inbucket]` alias is
+  forbidden so CI/deploy commands stay warning-free.
 - Migration: `supabase db push` (manual, staging first, then prod)
 - Edge Function deploy: `deploy-edge-functions` CI job (main only; Edge
   source/config/deploy-workflow path-gated, so docs-only pushes skip it)

@@ -114,6 +114,9 @@ dev_dependencies:
   # Icon Generation
   flutter_launcher_icons: ^0.14.4
 
+  # Release Observability
+  sentry_dart_plugin: ^3.4.0
+
 dependency_overrides:
   # path_provider_foundation 2.6.0 switched iOS/macOS path resolution to a
   # direct FFI Foundation implementation. On this simulator/runtime
@@ -132,6 +135,20 @@ flutter_launcher_icons:
   remove_alpha_ios: true
   adaptive_icon_background: "#0C1624"
   adaptive_icon_foreground: "assets/images/app_icon.png"
+
+sentry:
+  org: budgiebreedingtracker
+  project: budgie-breeding-tracker
+  upload_debug_symbols: true
+  upload_source_maps: false
+  # Keep application source private; uploaded symbols are sufficient for
+  # native/Dart stack trace symbolication in this mobile-only project.
+  upload_sources: false
+  dart_symbol_map_path: build/app/obfuscation.map.json
+  symbols_path: build
+  wait_for_processing: true
+  # Sentry has no SCM repository integration yet; symbolication uses debug IDs.
+  commits: false
 
 flutter:
   uses-material-design: true
