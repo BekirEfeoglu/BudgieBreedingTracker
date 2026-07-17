@@ -70,7 +70,7 @@ python3 scripts/check_rule_symbol_drift.py --audit-allowlist # Periodic (not gat
 scripts/run_local_quality_gate.sh        # Canonical pre-commit gate (diff, rules, quality, conditional l10n/script tests)
 scripts/check_remote_status.py           # Post-push: exact-SHA GitHub status + check-run verification
 scripts/verify_security.py               # Security posture (cert pinning wired, secrets, webhook JWT exemptions)
-scripts/install_git_hooks.sh             # Install local git hooks
+scripts/install_git_hooks.sh             # Install worktree-relative local git hooks
 scripts/run_breeding_egg_regression.sh   # Focused breeding/egg lifecycle regression suite
 scripts/generate_ios_env.sh              # Generate iOS environment config from dart-defines
 scripts/setup_push_env.sh               # Setup FCM push notification environment

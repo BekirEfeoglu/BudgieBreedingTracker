@@ -10,6 +10,8 @@ Run before every commit when the changed surface is broad. CI enforces analysis,
 
 Rule/docs/CI changes are not "just docs": run `scripts/run_local_quality_gate.sh` before commit/push, then use the smallest extra command that proves the changed contract. If a rule update changes codebase metrics or inline references, run `python3 scripts/verify_rules.py --fix` first, then `python3 scripts/verify_rules.py --strict`.
 
+Install the tracked hooks with `scripts/install_git_hooks.sh`; `core.hooksPath` must remain worktree-relative (`.githooks`). The pre-commit hook removes repository-local `GIT_*` variables only around Flutter subprocesses so the SDK can resolve its own Git version instead of reporting `0.0.0-unknown`.
+
 ## Code Generation
 Run after modifying Freezed models, Drift tables, or Riverpod providers:
 ```bash

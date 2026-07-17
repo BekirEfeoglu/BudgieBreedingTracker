@@ -106,7 +106,12 @@ void main() {
         ci,
         contains('deno test --allow-env --allow-net supabase/functions'),
       );
-      expect(ci, contains('needs: [analyze, test, edge-functions-test]'));
+      expect(
+        ci,
+        contains(
+          'needs: [analyze, test, edge-functions-test, edge-function-changes]',
+        ),
+      );
     });
 
     test('every Edge Function is configured, deployed, and tested', () {

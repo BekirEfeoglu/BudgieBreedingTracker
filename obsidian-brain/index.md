@@ -25,6 +25,7 @@ Full catalog of every page in the obsidian-brain wiki.
 | [[log-archive-2026-07-h]] | Archived July 2026 change log entries (07-09 rulebook lessons) |
 | [[log-archive-2026-07-i]] | Archived July 2026 change log entries (07-11 marketing-site) |
 | [[log-archive-2026-07-j]] | Archived July 2026 change log entries (07-11 birds/community/genealogy/statistics fixes) |
+| [[log-archive-2026-07-k]] | Archived July 2026 change log entries (07-12 Edge/constants/genetics/gamification/docs) |
 | [[overview]] | High-level synthesis — what the app does, architecture diagram, key decisions |
 
 ## Architecture

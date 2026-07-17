@@ -16,6 +16,16 @@ cd "$REPO_ROOT"
 
 CHANGED=$(git diff --cached --name-only)
 
+# Flutter determines its SDK version through Git. Repository-local GIT_* values
+# exported to hooks must not redirect those SDK queries back to this app repo.
+run_without_repo_git_env() (
+  while IFS= read -r variable; do
+    unset "$variable"
+  done < <(git rev-parse --local-env-vars)
+
+  "$@"
+)
+
 # ── 1. Script testleri ─────────────────────────────────────────────────────
 CHANGED_SCRIPTS=$(echo "$CHANGED" | grep '^scripts/' || true)
 if [ -n "$CHANGED_SCRIPTS" ]; then
@@ -44,10 +54,10 @@ CHANGED_DART=$(echo "$CHANGED" | grep '\.dart$' || true)
 if [ -n "$CHANGED_DART" ]; then
   echo "==> Dart degisikligi tespit edildi, flutter analyze calistiriliyor..."
 
-  if ! flutter --version &>/dev/null; then
+  if ! run_without_repo_git_env flutter --version &>/dev/null; then
     echo "  [UYARI] flutter komutu bulunamadi. Analyze atlaniyor."
   else
-    flutter analyze --no-fatal-infos
+    run_without_repo_git_env flutter analyze --no-fatal-infos
     echo "==> Flutter analyze basarili."
   fi
 fi

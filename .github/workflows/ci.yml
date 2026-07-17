@@ -430,6 +430,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     # Deploy only for Edge source/config/workflow changes after tests pass.
+    # Keep `test` in needs: a positive path guard must never bypass a red suite.
     if: >-
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&

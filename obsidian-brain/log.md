@@ -4,6 +4,14 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-17] ci-fix | Hook Flutter environment and Edge deploy regression repaired
+
+The pre-commit hook now removes repository-local Git variables only for Flutter
+subprocesses, preventing the SDK version from degrading to `0.0.0-unknown` in a
+hook. Hook installation is worktree-relative and executable-safe. The Edge
+deploy dependency regression now asserts the path guard alongside analyze,
+Flutter, and Edge tests; a real hook-environment test covers the failure mode.
+
 ## [2026-07-17] ci-fix | Edge deploy is path-gated; marketplace moderation rejection now logs safely
 Docs-only main pushes no longer redeploy unchanged Edge Functions; source/config/workflow changes remain test-gated. Expected server moderation rejections emit a non-sensitive warning before the localized validation error, with workflow and remote-source regressions.
 
@@ -179,22 +187,4 @@ Comprehensive `.claude` + `obsidian-brain` improvement pass (4 parallel read-onl
 
 ## [2026-07-13] audit | 6-lane comprehensive sweep (anti-pattern/PII/edge/migration/genetics/test-stability). Baseline clean; 6 small fixes: #8 residual col literals (8 new SupabaseConstants: level/xp_title/is_verified_breeder/is_pinned/event_date/sort_order/minutes_before/scheduled_at across 5 remote sources incl. updateProfileVerification sibling), backup_restorer wrong-password/corruption Sentry discrimination (+backup.error_decrypt_failed l10n), moderate-content text .max(10000) DoS cap, validate-free-tier-limit auth-before-parse, presence endSession double-log, streak reminder scheduler injectable clock (midnight-race). Migration prod-parity verified via MCP (5 recent applied). 11,663 tests green.
 
-## [2026-07-12] refactor | All 12 edge functions extracted to DI handler.ts pattern + request-level Deno tests (401/400/403/503/200); +39 tests (204→243). Closes audit backlog. Byte-identical behavior, config.toml/verify_jwt untouched.
-
-## [2026-07-12] refactor | SupabaseConstants #8 coverage — 26 new col/RPC constants, 44 literals replaced across 8 remote sources + admin providers (chore/supabase-constants-coverage). No wire-value change.
-
-## [2026-07-12] feat | genetics explicit linkage phase (D4) shipped — LinkagePhase override, engine consult, isolate+history persistence (Drift v28), father-column UI, single-pair MVP
-
-## [2026-07-12] feat | gamification streak system shipped (user_streaks + record_daily_checkin RPC, tiered XP + 7/30/100 badges, home chip + celebration + 20:00 reminder)
-
-## [2026-07-12] docs | Post-task suggestions contract — exactly 3 items
-
-Clarified the agent communication contract at user request: after completing a
-real task (code change, audit, fix, research), replies must end with **exactly 3**
-specific, task-relevant next-step suggestions. Updated `.claude/rules/chat.md`
-§ Post-Coding Suggestions (single authority, was unquantified) and mirrored a
-compact line into `AGENTS.md` § Communication (a59251c, f2641be). Prose only, no
-count/inline-ref drift; `chat.md` has no wiki page (rules-index: response-style,
-no page needed). [[sources/rules-index]]
-
-Older entries are archived in [[log-archive-2026-07-j]], [[log-archive-2026-07-i]], [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
+Older entries are archived in [[log-archive-2026-07-k]], [[log-archive-2026-07-j]], [[log-archive-2026-07-i]], [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

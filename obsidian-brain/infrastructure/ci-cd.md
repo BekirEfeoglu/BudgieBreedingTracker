@@ -45,6 +45,9 @@ keeps `web/` absent so the static `docs/` site remains the only web surface.
 - Edge deploy runs only for `supabase/functions/**`, `supabase/config.toml`, or
   `.github/workflows/ci.yml`; documentation-only pushes skip production deploy.
 - Workflow YAML must be locally parsed before push: `ruby -e 'require "yaml"; YAML.load_file(ARGV[0])' .github/workflows/ci.yml`
+- Install hooks through `scripts/install_git_hooks.sh` so `core.hooksPath` stays
+  worktree-relative. The pre-commit hook clears repository-local Git variables
+  for Flutter subprocesses, allowing the SDK to resolve its own version.
 
 ## Codemagic (`codemagic.yaml`)
 
