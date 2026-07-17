@@ -83,9 +83,22 @@ The GitHub Pages site in `docs/` also follows WCAG-oriented state rules:
 
 - Language buttons set `aria-pressed` and have language-specific labels.
 - Mobile navigation keeps `aria-hidden` on the panel and `aria-expanded` on the hamburger in sync with visual state.
-- FAQ toggles expose `aria-expanded` on each question button.
+- FAQ toggles expose `aria-expanded` on each question button and keep the
+  controlled answer's `aria-hidden` synchronized with its visual state; the
+  no-JS fallback expands answers instead of leaving unreachable content.
+- Infinite visual carousels hide duplicate tracks from assistive technology so
+  meaningful items are announced once.
+- Marketing-site header, language, demo, pricing, footer, and social controls
+  follow the same minimum 48x48 target contract as app controls.
 - Form inputs have explicit labels even when the visible design relies on placeholder text.
 - Direct anchor links such as `#genetics-demo` must land on visible, active content and not leave reveal/GSAP inline opacity state hiding controls.
+- User-guide topic cards and screenshots are native buttons. Its nested detail
+  and screenshot dialogs close one layer at a time on Escape, restore focus to
+  their opener, and localize all breadcrumb/search/dialog ARIA labels in
+  Turkish, English, and German.
+- Localized legal pages give language buttons 48px targets, synchronize
+  `aria-pressed`, translate shell ARIA labels, and keep explicit `/en/` or
+  `/de/` URL locale authoritative over saved language preferences.
 
 See [[infrastructure/marketing-site]] for web-specific QA steps.
 

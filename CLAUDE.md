@@ -100,6 +100,7 @@ scripts/test_verify_security.py         # Tests for verify_security.py
 scripts/test_app_store_config.py        # App Store config consistency tests
 scripts/test_verify_migration_drift.py  # Tests for verify_migration_drift.py
 scripts/test_check_rule_symbol_drift.py # Tests for check_rule_symbol_drift.py
+scripts/test_marketing_site.py          # Public-site assets, semantics, responsive, and cross-page security-copy contracts
 ```
 
 ## Codebase Stats

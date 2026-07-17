@@ -13,6 +13,7 @@
       --glass-bg: rgba(25, 55, 120, 0.35);
       --glass-border: rgba(160, 200, 240, 0.2);
       --glass-border-hover: rgba(245, 200, 66, 0.45);
+      --touch-target-size: 48px;
     }
 
     html {
@@ -49,6 +50,10 @@
       font-weight: 700;
       text-decoration: none;
       transition: transform 0.18s ease;
+      min-width: var(--touch-target-size);
+      min-height: var(--touch-target-size);
+      display: inline-flex;
+      align-items: center;
     }
     .skip-link:focus {
       transform: translateY(0);
@@ -70,7 +75,9 @@
 
     a:focus-visible,
     button:focus-visible,
-    input:focus-visible {
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
       outline: 3px solid rgba(255, 217, 90, 0.55);
       outline-offset: 3px;
     }
@@ -387,6 +394,15 @@
       text-decoration: none;
     }
 
+    #navbar a,
+    #hamburger-btn {
+      min-width: var(--touch-target-size);
+      min-height: var(--touch-target-size);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     .nav-link {
       color: var(--sage);
       text-decoration: none;
@@ -406,12 +422,14 @@
     .footer-forest a:focus-visible {
       color: var(--gold-light);
     }
-    /* Footer text links were ~20px tall — below the WCAG 2.5.8 (AA) 24px
-       touch-target minimum on mobile. Add vertical padding so each link is a
-       comfortable tap target. Social icons keep their own (44px) sizing. */
+    /* The app accessibility contract uses 48x48 targets. Keep the visible
+       footer typography compact while expanding each link's hit area. */
     .footer-forest a:not(.social-icon) {
-      padding-top: 0.35rem;
-      padding-bottom: 0.35rem;
+      min-width: var(--touch-target-size);
+      min-height: var(--touch-target-size);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .hero-cta-secondary {
@@ -462,9 +480,9 @@
       color: var(--sage);
       cursor: pointer;
       letter-spacing: 0.03em;
-      /* Larger mobile tap target (WCAG 2.5.5) without changing visual weight */
-      min-width: 44px;
-      min-height: 44px;
+      /* Match the project's 48x48 accessibility target without changing text size. */
+      min-width: var(--touch-target-size);
+      min-height: var(--touch-target-size);
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -586,7 +604,10 @@
     #mobile-menu { opacity: 0; transition: opacity 0.25s ease; }
     #mobile-menu.open { opacity: 1; }
     #mobile-panel { transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-    #hamburger-btn { min-width: 44px; min-height: 44px; }
+    #hamburger-btn {
+      min-width: var(--touch-target-size);
+      min-height: var(--touch-target-size);
+    }
     .mobile-menu-backdrop {
       width: 100%;
       height: 100%;
@@ -1526,9 +1547,9 @@
     /* ─── FOOTER SOCIAL ICONS ─── */
     .social-icon {
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      /* 44x44 tap target (WCAG 2.5.8) — icon stays small, hit area grows */
-      min-width: 44px;
-      min-height: 44px;
+      /* Icon stays visually small while its hit area matches the 48px contract. */
+      min-width: var(--touch-target-size);
+      min-height: var(--touch-target-size);
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -1549,7 +1570,7 @@
       background: var(--forest-deep);
       z-index: 9999;
       pointer-events: none;
-      animation: curtainReveal 0.6s cubic-bezier(0.65, 0, 0.35, 1) 0.1s forwards;
+      animation: curtainReveal 0.18s ease-out forwards;
     }
     @keyframes curtainReveal {
       0% { opacity: 1; }
@@ -1840,8 +1861,9 @@
 #gd-mother, #gd-father {
   cursor: pointer;
   transition: border-color 0.2s ease;
+  min-height: var(--touch-target-size);
 }
-#gd-mother:focus, #gd-father:focus {
+#gd-mother:focus-visible, #gd-father:focus-visible {
   border-color: var(--gold) !important;
   box-shadow: 0 0 0 3px rgba(245,200,66,0.2);
 }
@@ -2176,4 +2198,36 @@ section {
 .blog-search-premium:focus {
   border-color: rgba(245, 200, 66, 0.5) !important;
   box-shadow: 0 0 20px rgba(80, 140, 220, 0.2), inset 0 2px 10px rgba(0,0,0,0.1) !important;
+}
+
+/* ─── LANDING PAGE RESPONSIVE & ACCESSIBILITY CONTRACT ─── */
+#genetics-demo a,
+#pricing a {
+  min-width: var(--touch-target-size);
+  min-height: var(--touch-target-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The localized desktop navigation has no safe spacing at tablet widths.
+   Switch only the header navigation below 1200px; the page's existing 768px
+   content breakpoints remain unchanged. Keep this value in sync with the
+   resize guard in docs/index.html. */
+@media (max-width: 1199px) {
+  .site-desktop-nav {
+    display: none !important;
+  }
+
+  .site-mobile-menu-toggle {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 1200px) {
+  .site-mobile-menu-toggle {
+    display: none !important;
+  }
 }

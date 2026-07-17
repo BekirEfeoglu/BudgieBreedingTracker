@@ -21,14 +21,14 @@
 <meta content="Privacy Policy" name="twitter:title"/>
 <meta content="Comprehensive breeding tracker app for budgie breeders." name="twitter:description"/>
 <meta content="https://budgiebreedingtracker.online/og-image.png" name="twitter:image"/>
- canonical 
+<!-- Canonical -->
 <link href="https://budgiebreedingtracker.online/en/privacy-policy.html" rel="canonical"/>
 <meta content="index, follow" name="robots"/>
- fonts 
+<!-- Fonts -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&amp;family=DM+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
- favicon 
+<!-- Favicon -->
 <link href="../logo.png" rel="icon" type="image/png"/>
 <link href="../logo.png" rel="apple-touch-icon"/>
 <style>
@@ -738,7 +738,7 @@ a[href^="mailto:"] {
   <meta name="view-transition" content="same-origin">
 </head>
 <body>
-<a class="skip-to-content" href="#main">Skip to content</a>
+<a class="skip-to-content" data-i18n="skip" href="#main">Skip to content</a>
 <div class="page-curtain"></div>
 <div class="scroll-progress" id="scrollProgress"></div>
 <div class="cursor-glow" id="cursorGlow"></div>
@@ -773,7 +773,7 @@ a[href^="mailto:"] {
 <!-- Header -->
 <header>
 <div class="header-inner">
-<a aria-label="BudgieBreedingTracker — ana sayfa" class="logo-link" href="/">
+<a aria-label="BudgieBreedingTracker — home page" class="logo-link" data-i18n-aria-label="home_aria" href="/">
 <img alt="BudgieBreedingTracker" class="logo-img" src="../logo.png"/>
 <span class="logo-text">BudgieBreedingTracker</span>
 </a>
@@ -852,10 +852,10 @@ a[href^="mailto:"] {
 <p class="section-intro" data-i18n="s4_intro">Verileriniz iki katmanlı bir yapıda saklanır:</p>
 <div data-i18n-html="s4_list">
 <ul class="policy-list">
-<li><strong>Local storage:</strong> Your data is stored in an encrypted SQLite database on your device (AES-256-CBC encryption).</li>
-<li><strong>Cloud storage:</strong> Supabase (PostgreSQL) infrastructure is used for synchronization. Data is protected by row-level security policies (RLS).</li>
-<li><strong>Photos:</strong> It is stored in secure cloud storage and can only be accessed by the account owner.</li>
-<li><strong>Backups:</strong> It is created encrypted and stored securely.</li>
+<li><strong>Local storage:</strong> App data is stored in an SQLite database on your device. Sensitive bird fields such as ring number, genotype information, and notes are protected with AES-256-CBC and HMAC.</li>
+<li><strong>Cloud storage:</strong> Supabase (PostgreSQL) infrastructure is used for synchronization. Access is restricted through account- and role-based Row Level Security (RLS) policies.</li>
+<li><strong>Photos:</strong> Photos are stored in cloud storage. Access is restricted through account- and role-based storage policies.</li>
+<li><strong>Backups:</strong> Optional backups can be protected with AES-256-CBC and HMAC using the device key.</li>
 </ul>
 </div>
 <p class="section-text" data-i18n="s4_tls" style="margin-top: 14px;">Tüm veri iletişimi HTTPS/TLS protokolü üzerinden şifrelenerek gerçekleştirilir.</p>
@@ -915,6 +915,7 @@ a[href^="mailto:"] {
 <p class="section-text" data-i18n="s10_text">Bu gizlilik politikasını zaman zaman güncelleyebiliriz. Önemli değişiklikler yapıldığında, uygulama içi bildirim veya e-posta yoluyla sizi bilgilendireceğiz. Güncellenmiş politika bu sayfada yayınlandığı anda yürürlüğe girer.</p>
 </section>
 <hr class="section-divider"/>
+<div data-i18n-html="supplemental_sections">
 <section aria-labelledby="community-data" class="policy-section section-reveal">
 <h2 class="section-h2" id="community-data">Community Data</h2>
 <p class="section-intro">The following data is processed when you use community features:</p>
@@ -952,9 +953,9 @@ a[href^="mailto:"] {
 <h2 class="section-h2" id="local-ai-data">Local AI Analysis</h2>
 <p class="section-intro">While the genetic prediction AI analyzes your bird photo:</p>
 <ul class="policy-list">
-<li><strong>Ollama (local model):</strong> The photo does not leave your device; The analysis is done entirely on the local network.</li>
-<li><strong>OpenRouter (optional):</strong> If the user explicitly chooses, the photo is sent via encrypted HTTPS to the OpenRouter API and deleted after processing — it is not stored as training data by the provider (OpenRouter privacy agreement).</li>
-<li><strong>Storage:</strong> Analysis results are stored only on your device and/or account sync; A 10MB file size limit applies.</li>
+<li><strong>Ollama (local model):</strong> The photo is sent only to the Ollama endpoint you configure on your local network; it is not sent to the BudgieBreedingTracker cloud.</li>
+<li><strong>OpenRouter (optional):</strong> When explicitly selected, the photo is sent to the OpenRouter API over HTTPS; provider-side processing and retention are governed by OpenRouter policies.</li>
+<li><strong>Storage and size:</strong> Analysis results are stored on your device and/or in account sync; scanned images have a 2 MiB raw-file limit.</li>
 </ul>
 </section>
 <hr class="section-divider"/>
@@ -976,19 +977,20 @@ a[href^="mailto:"] {
 <li>Right to object to processing (Article 21 GDPR).</li>
 <li>The right to be informed about automated decision-making and profiling.</li>
 </ul>
-<p class="section-text" style="margin-top: 14px;">your demands <a class="contact-link" href="mailto:privacy@budgiebreedingtracker.online">privacy@budgiebreedingtracker.online</a> You can send it to the address. Data Controller: Bekir Efeoğlu.</p>
+<p class="section-text" style="margin-top: 14px;">Send requests to <a class="contact-link" href="mailto:privacy@budgiebreedingtracker.online">privacy@budgiebreedingtracker.online</a>. Data Controller: Bekir Efeoğlu.</p>
 </section>
+</div>
 <hr class="section-divider"/>
 <section class="policy-section section-reveal">
 <h2 class="section-h2" data-i18n="s11_title">11. İletişim</h2>
 <p class="section-text" data-i18n="s11_text">Gizlilik politikamız hakkında sorularınız veya talepleriniz için bizimle iletişime geçebilirsiniz:</p>
 <div class="contact-card">
 <div class="contact-row">
-<strong>Email:</strong>
+<strong data-i18n="contact_email">Email:</strong>
 <a class="contact-link" href="mailto:support@budgiebreedingtracker.online">support@budgiebreedingtracker.online</a>
 </div>
 <div class="contact-row">
-<strong>Web:</strong>
+<strong data-i18n="contact_web">Web:</strong>
 <a class="contact-link" href="https://budgiebreedingtracker.online">budgiebreedingtracker.online</a>
 </div>
 </div>
@@ -1000,11 +1002,12 @@ a[href^="mailto:"] {
 <footer>
 <p>
 <span data-i18n="footer">© 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</span>
-<span aria-label="Uygulama sürümü" class="version-badge">
+<span aria-label="App version" class="version-badge" data-i18n-aria-label="version_aria">
         v1.1.2 · <time datetime="2026-06-06">2026-06-06</time>
 </span>
 </p>
 </footer>
+<script src="../js/privacy-extra-i18n.js?v=20260717"></script>
 <script>
     const translations = {
       tr: {
@@ -1024,7 +1027,7 @@ a[href^="mailto:"] {
         s3_list: '<ul class="policy-list"><li>Kullanıcı hesabı oluşturma ve kimlik doğrulama</li><li>Kuş üreme verilerinizi kaydetme ve senkronize etme</li><li>Genetik hesaplamalar ve soy ağacı oluşturma</li><li>Kuluçka hatırlatıcıları ve bildirimler gönderme</li><li>Veri yedekleme ve geri yükleme</li><li>Uygulama hatalarını tespit etme ve düzeltme</li><li>Uygulama performansını iyileştirme</li></ul>',
         s4_title: '4. Veri Saklama ve Güvenlik',
         s4_intro: 'Verileriniz iki katmanlı bir yapıda saklanır:',
-        s4_list: '<ul class="policy-list"><li><strong>Yerel depolama:</strong> Verileriniz cihazınızda şifrelenmiş SQLite veritabanında saklanır (AES-256-CBC şifreleme).</li><li><strong>Bulut depolama:</strong> Senkronizasyon için Supabase (PostgreSQL) altyapısı kullanılır. Veriler satır düzeyinde güvenlik politikaları (RLS) ile korunur.</li><li><strong>Fotoğraflar:</strong> Güvenli bulut depolama alanında saklanır ve yalnızca hesap sahibi tarafından erişilebilir.</li><li><strong>Yedeklemeler:</strong> Şifrelenmiş olarak oluşturulur ve güvenli şekilde saklanır.</li></ul>',
+        s4_list: '<ul class="policy-list"><li><strong>Yerel depolama:</strong> Uygulama verileri cihazınızdaki SQLite veritabanında saklanır. Ring numarası, genotip bilgisi ve notlar gibi hassas kuş alanları AES-256-CBC ve HMAC ile korunur.</li><li><strong>Bulut depolama:</strong> Senkronizasyon için Supabase (PostgreSQL) altyapısı kullanılır. Verilere erişim hesap ve rol tabanlı satır düzeyinde güvenlik (RLS) politikalarıyla sınırlandırılır.</li><li><strong>Fotoğraflar:</strong> Bulut depolama alanında saklanır. Erişim hesap ve rol tabanlı depolama politikalarıyla sınırlandırılır.</li><li><strong>Yedeklemeler:</strong> İsteğe bağlı yedekler cihaz anahtarı kullanılarak AES-256-CBC ve HMAC ile korunabilir.</li></ul>',
         s4_tls: 'Tüm veri iletişimi HTTPS/TLS protokolü üzerinden şifrelenerek gerçekleştirilir.',
         s5_title: '5. Veri Paylaşımı',
         s5_intro: 'Kişisel verilerinizi üçüncü taraflarla <strong>satmaz veya kiralamayız</strong>. Verileriniz yalnızca aşağıdaki durumlarda paylaşılabilir:',
@@ -1061,7 +1064,7 @@ a[href^="mailto:"] {
         s3_list: '<ul class="policy-list"><li>Creating user accounts and authentication</li><li>Saving and syncing your bird breeding data</li><li>Genetics calculations and pedigree creation</li><li>Sending incubation reminders and notifications</li><li>Data backup and restore</li><li>Detecting and fixing app errors</li><li>Improving app performance</li></ul>',
         s4_title: '4. Data Storage and Security',
         s4_intro: 'Your data is stored in a two-layer architecture:',
-        s4_list: '<ul class="policy-list"><li><strong>Local storage:</strong> Your data is stored in an encrypted SQLite database on your device (AES-256-CBC encryption).</li><li><strong>Cloud storage:</strong> Supabase (PostgreSQL) infrastructure is used for synchronization. Data is protected with Row Level Security (RLS) policies.</li><li><strong>Photos:</strong> Stored in secure cloud storage and accessible only by the account owner.</li><li><strong>Backups:</strong> Created encrypted and stored securely.</li></ul>',
+        s4_list: '<ul class="policy-list"><li><strong>Local storage:</strong> App data is stored in an SQLite database on your device. Sensitive bird fields such as ring number, genotype information, and notes are protected with AES-256-CBC and HMAC.</li><li><strong>Cloud storage:</strong> Supabase (PostgreSQL) infrastructure is used for synchronization. Access is restricted through account- and role-based Row Level Security (RLS) policies.</li><li><strong>Photos:</strong> Photos are stored in cloud storage. Access is restricted through account- and role-based storage policies.</li><li><strong>Backups:</strong> Optional backups can be protected with AES-256-CBC and HMAC using the device key.</li></ul>',
         s4_tls: 'All data communication is encrypted via HTTPS/TLS protocol.',
         s5_title: '5. Data Sharing',
         s5_intro: 'We <strong>do not sell or rent</strong> your personal data to third parties. Your data may only be shared in the following cases:',
@@ -1098,7 +1101,7 @@ a[href^="mailto:"] {
         s3_list: '<ul class="policy-list"><li>Erstellung von Benutzerkonten und Authentifizierung</li><li>Speichern und Synchronisieren Ihrer Vogelzuchtdaten</li><li>Genetische Berechnungen und Stammbaumerstellung</li><li>Senden von Bruterinnerungen und Benachrichtigungen</li><li>Datensicherung und -wiederherstellung</li><li>Erkennung und Behebung von App-Fehlern</li><li>Verbesserung der App-Leistung</li></ul>',
         s4_title: '4. Datenspeicherung und Sicherheit',
         s4_intro: 'Ihre Daten werden in einer zweischichtigen Architektur gespeichert:',
-        s4_list: '<ul class="policy-list"><li><strong>Lokale Speicherung:</strong> Ihre Daten werden in einer verschlüsselten SQLite-Datenbank auf Ihrem Gerät gespeichert (AES-256-CBC-Verschlüsselung).</li><li><strong>Cloud-Speicherung:</strong> Supabase (PostgreSQL) wird für die Synchronisierung verwendet. Daten werden durch Row Level Security (RLS) geschützt.</li><li><strong>Fotos:</strong> Werden in sicherem Cloud-Speicher aufbewahrt und sind nur für den Kontoinhaber zugänglich.</li><li><strong>Backups:</strong> Werden verschlüsselt erstellt und sicher gespeichert.</li></ul>',
+        s4_list: '<ul class="policy-list"><li><strong>Lokale Speicherung:</strong> App-Daten werden in einer SQLite-Datenbank auf Ihrem Gerät gespeichert. Sensible Vogeldaten wie Ringnummer, Genotypinformationen und Notizen werden mit AES-256-CBC und HMAC geschützt.</li><li><strong>Cloud-Speicherung:</strong> Supabase (PostgreSQL) wird für die Synchronisierung verwendet. Der Zugriff wird durch konto- und rollenbasierte Row-Level-Security-Richtlinien (RLS) beschränkt.</li><li><strong>Fotos:</strong> Fotos werden im Cloud-Speicher gespeichert. Der Zugriff wird durch konto- und rollenbasierte Speicherrichtlinien beschränkt.</li><li><strong>Backups:</strong> Optionale Backups können mit dem Geräteschlüssel durch AES-256-CBC und HMAC geschützt werden.</li></ul>',
         s4_tls: 'Die gesamte Datenkommunikation wird über das HTTPS/TLS-Protokoll verschlüsselt.',
         s5_title: '5. Datenweitergabe',
         s5_intro: 'Wir <strong>verkaufen oder vermieten</strong> Ihre personenbezogenen Daten nicht an Dritte. Ihre Daten können nur in folgenden Fällen weitergegeben werden:',
@@ -1120,6 +1123,11 @@ a[href^="mailto:"] {
       },
     };
 
+    const extraTranslations = window.bbtPrivacyExtraTranslations || {};
+    Object.keys(translations).forEach(lang => {
+      Object.assign(translations[lang], extraTranslations[lang] || {});
+    });
+
     let currentLang = 'tr';
 
     function setLanguage(lang) {
@@ -1136,6 +1144,13 @@ a[href^="mailto:"] {
         const key = el.getAttribute('data-i18n-html');
         if (t[key]) el.innerHTML = t[key];
       });
+      document.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+        const key = el.getAttribute('data-i18n-aria-label');
+        if (t[key]) el.setAttribute('aria-label', t[key]);
+      });
+      document.querySelectorAll('.section-reveal:not(.visible)').forEach(el => {
+        revealObs.observe(el);
+      });
 
       const titles = {
         tr: 'Gizlilik Politikası — BudgieBreedingTracker',
@@ -1150,6 +1165,12 @@ a[href^="mailto:"] {
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      const pathLocaleMatch = window.location.pathname.match(/\/(en|de)\/privacy-policy\.html$/);
+      if (pathLocaleMatch && translations[pathLocaleMatch[1]]) {
+        setLanguage(pathLocaleMatch[1]);
+        return;
+      }
+
       const saved = localStorage.getItem('bbt-lang');
       if (saved && translations[saved]) {
         setLanguage(saved);

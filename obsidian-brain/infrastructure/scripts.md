@@ -49,6 +49,7 @@ scripts/run_local_quality_gate.sh
 | `test_verify_security.py` | Tests for verify_security.py |
 | `test_verify_migration_drift.py` | Tests for verify_migration_drift.py (27 tests, 100% cov) |
 | `test_check_rule_symbol_drift.py` | Tests for check_rule_symbol_drift.py (31 tests, 100% cov) |
+| `test_marketing_site.py` | All-public-HTML asset/ID checks plus JSON-LD, heading, accessibility, responsive navigation, user-guide dialog/focus, legal-page locale, and cross-page security-copy contracts |
 
 ## Internal Modules
 

@@ -673,9 +673,18 @@ a[href^="mailto:"] {
   word-break: break-word;
 }
 
+.logo-link,
+.back-link {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+}
+.lang-btn { min-width: 48px; min-height: 48px; }
+
 @media (max-width: 480px) {
   /* Mobile header: wrap so logo + lang switcher + back link never overflow */
   .header-inner { flex-wrap: wrap; height: auto; row-gap: 8px; padding-top: 8px; padding-bottom: 8px; }
+  .header-right { max-width: 100%; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
   .lang-btn { padding: 7px 10px; }
 }
 </style>
@@ -687,7 +696,7 @@ a[href^="mailto:"] {
   <meta name="view-transition" content="same-origin">
 </head>
 <body>
-  <a class="skip-to-content" href="#main">İçeriğe geç</a>
+  <a class="skip-to-content" href="#main" data-i18n="skip">İçeriğe geç</a>
   <div class="page-curtain"></div>
   <div class="scroll-progress" id="scrollProgress"></div>
   <div class="cursor-glow" id="cursorGlow"></div>
@@ -725,16 +734,16 @@ a[href^="mailto:"] {
   <!-- Header -->
   <header class="site-header">
     <div class="header-inner">
-      <a href="/" class="logo-link" aria-label="BudgieBreedingTracker — ana sayfa">
-        <img src="logo.png" alt="BudgieBreedingTracker" class="logo-img">
+      <a href="/" class="logo-link" aria-label="BudgieBreedingTracker — ana sayfa" data-i18n-aria-label="home_aria">
+        <img src="logo.png" alt="" aria-hidden="true" class="logo-img">
         <span class="logo-name">BudgieBreedingTracker</span>
       </a>
       <div class="header-right">
         <!-- Language Switcher -->
-        <div class="lang-switcher">
-          <button onclick="setLanguage('tr')" class="lang-btn active" data-lang="tr">TR</button>
-          <button onclick="setLanguage('en')" class="lang-btn" data-lang="en">EN</button>
-          <button onclick="setLanguage('de')" class="lang-btn" data-lang="de">DE</button>
+        <div class="lang-switcher" role="group" aria-label="Dil seçimi" data-i18n-aria-label="language_aria">
+          <button type="button" onclick="setLanguage('tr')" class="lang-btn active" data-lang="tr" aria-pressed="true">TR</button>
+          <button type="button" onclick="setLanguage('en')" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+          <button type="button" onclick="setLanguage('de')" class="lang-btn" data-lang="de" aria-pressed="false">DE</button>
         </div>
         <a href="index.html" class="back-link" data-i18n="back">&larr; Ana Sayfa</a>
       </div>
@@ -835,7 +844,7 @@ a[href^="mailto:"] {
           <h2 class="section-heading" data-i18n="s10_title">10. Gizlilik</h2>
           <p class="section-text" data-i18n="s10_text">Kişisel verilerinizin toplanması, kullanılması ve korunması hakkında detaylı bilgi için Gizlilik Politikamızı inceleyiniz:</p>
           <p class="privacy-link-wrap">
-            <a href="privacy-policy.html" class="content-link">Gizlilik Politikası</a>
+            <a href="/privacy-policy.html" class="content-link" data-privacy-link>Gizlilik Politikası</a>
           </p>
         </section>
 
@@ -895,7 +904,7 @@ a[href^="mailto:"] {
     <div class="footer-inner">
       <p class="footer-text">
         <span data-i18n="footer">&copy; 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</span>
-        <span class="version-badge" aria-label="Uygulama sürümü">
+        <span class="version-badge" aria-label="Uygulama sürümü" data-i18n-aria-label="version_aria">
           v1.1.2 · <time datetime="2026-06-06">2026-06-06</time>
         </span>
       </p>
@@ -905,6 +914,10 @@ a[href^="mailto:"] {
   <script>
     const translations = {
       tr: {
+        skip: '\u0130\u00e7eri\u011fe ge\u00e7',
+        home_aria: 'BudgieBreedingTracker \u2014 ana sayfa',
+        language_aria: 'Dil se\u00e7imi',
+        version_aria: 'Uygulama s\u00fcr\u00fcm\u00fc',
         back: '\u2190 Ana Sayfa',
         title: 'Kullan\u0131m Ko\u015fullar\u0131 (EULA)',
         last_updated: 'Son g\u00fcncelleme: 19 Nisan 2026',
@@ -946,6 +959,10 @@ a[href^="mailto:"] {
         footer: '\u00a9 2025-2026 BudgieBreedingTracker. T\u00fcm haklar\u0131 sakl\u0131d\u0131r.',
       },
       en: {
+        skip: 'Skip to content',
+        home_aria: 'BudgieBreedingTracker \u2014 home page',
+        language_aria: 'Language selection',
+        version_aria: 'App version',
         back: '\u2190 Home',
         title: 'Terms of Use (EULA)',
         last_updated: 'Last updated: April 19, 2026',
@@ -987,6 +1004,10 @@ a[href^="mailto:"] {
         footer: '\u00a9 2025-2026 BudgieBreedingTracker. All rights reserved.',
       },
       de: {
+        skip: 'Zum Inhalt springen',
+        home_aria: 'BudgieBreedingTracker \u2014 Startseite',
+        language_aria: 'Sprachauswahl',
+        version_aria: 'App-Version',
         back: '\u2190 Startseite',
         title: 'Nutzungsbedingungen (EULA)',
         last_updated: 'Letzte Aktualisierung: 19. April 2026',
@@ -1045,6 +1066,10 @@ a[href^="mailto:"] {
         const key = el.getAttribute('data-i18n-html');
         if (t[key]) el.innerHTML = t[key];
       });
+      document.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+        const key = el.getAttribute('data-i18n-aria-label');
+        if (t[key]) el.setAttribute('aria-label', t[key]);
+      });
 
       const titles = {
         tr: 'Kullan\u0131m Ko\u015fullar\u0131 \u2014 BudgieBreedingTracker',
@@ -1054,18 +1079,29 @@ a[href^="mailto:"] {
       document.title = titles[lang];
 
       document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+        const isActive = btn.getAttribute('data-lang') === lang;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-pressed', String(isActive));
       });
 
-      // Update privacy policy link text
-      const privacyLink = document.querySelector('a[href="privacy-policy.html"]');
+      // Keep the linked legal page in the language selected on this page.
+      const privacyLink = document.querySelector('[data-privacy-link]');
       if (privacyLink) {
         const linkTexts = { tr: 'Gizlilik Politikas\u0131', en: 'Privacy Policy', de: 'Datenschutzrichtlinie' };
         privacyLink.textContent = linkTexts[lang];
+        privacyLink.href = lang === 'tr' ? '/privacy-policy.html' : `/${lang}/privacy-policy.html`;
       }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      // An explicit localized URL is authoritative; a stale saved preference
+      // must not silently switch /en/ or /de/ legal pages to another language.
+      const pathLocaleMatch = window.location.pathname.match(/\/(en|de)\/terms-of-use\.html$/);
+      if (pathLocaleMatch && translations[pathLocaleMatch[1]]) {
+        setLanguage(pathLocaleMatch[1]);
+        return;
+      }
+
       const saved = localStorage.getItem('bbt-lang');
       if (saved && translations[saved]) {
         setLanguage(saved);

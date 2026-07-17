@@ -176,6 +176,7 @@
     @media (min-width: 640px) { .header-inner { padding: 16px 32px; } }
 
     .logo-link {
+      min-height: 48px;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -220,6 +221,11 @@
       white-space: nowrap;
     }
     .back-link:hover { color: var(--gold-light); }
+    .back-link {
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+    }
 
     .lang-group {
       display: flex;
@@ -231,6 +237,8 @@
     }
 
     .lang-btn {
+      min-width: 48px;
+      min-height: 48px;
       padding: 5px 12px;
       border-radius: 8px;
       font-family: 'DM Sans', sans-serif;
@@ -352,6 +360,7 @@
       margin-bottom: 32px;
     }
     .category-chip {
+      min-height: 48px;
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -397,7 +406,8 @@
 
     .search-input {
       width: 100%;
-      padding: 14px 20px 14px 48px;
+      min-height: 48px;
+      padding: 14px 52px 14px 48px;
       font-family: 'DM Sans', sans-serif;
       font-size: 15px;
       color: var(--sage-light);
@@ -428,11 +438,11 @@
 
     .search-clear {
       position: absolute;
-      right: 14px;
+      right: 0;
       top: 50%;
       transform: translateY(-50%);
-      width: 20px;
-      height: 20px;
+      width: 48px;
+      height: 48px;
       color: var(--sage);
       cursor: pointer;
       display: none;
@@ -515,6 +525,11 @@
     @media (min-width: 900px) { .topics-grid { grid-template-columns: repeat(3, 1fr); } }
 
     .topic-card {
+      width: 100%;
+      appearance: none;
+      color: inherit;
+      font: inherit;
+      text-align: left;
       position: relative;
       background: var(--glass-bg);
       backdrop-filter: blur(16px);
@@ -568,6 +583,7 @@
     }
 
     .topic-title {
+      display: block;
       font-family: 'Outfit', sans-serif;
       font-weight: 700;
       font-size: 15px;
@@ -577,6 +593,7 @@
     }
 
     .topic-subtitle {
+      display: block;
       font-size: 13px;
       color: var(--sage);
       line-height: 1.5;
@@ -673,8 +690,8 @@
       position: absolute;
       top: 16px;
       right: 16px;
-      width: 36px;
-      height: 36px;
+      width: 48px;
+      height: 48px;
       border: 1px solid var(--glass-border);
       border-radius: 10px;
       background: rgba(20, 50, 100, 0.4);
@@ -801,8 +818,8 @@
       position: absolute;
       top: 20px;
       right: 24px;
-      width: 40px;
-      height: 40px;
+      width: 48px;
+      height: 48px;
       border: none;
       background: rgba(255,255,255,0.1);
       color: #fff;
@@ -935,6 +952,7 @@
     }
 
     .related-chip {
+      min-height: 48px;
       font-size: 13px;
       font-weight: 500;
       color: var(--sage);
@@ -988,7 +1006,17 @@
     }
     @media (max-width: 639px) { .detail-breadcrumb { padding-left: 0; } }
     .detail-breadcrumb-sep { color: var(--sage); opacity: 0.5; }
-    .detail-breadcrumb-cat { color: var(--gold); font-weight: 600; cursor: pointer; transition: color 0.2s; }
+    .detail-breadcrumb-cat {
+      min-height: 48px;
+      padding: 0 4px;
+      border: 0;
+      background: transparent;
+      color: var(--gold);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
     .detail-breadcrumb-cat:hover { color: var(--gold-light); }
     .detail-breadcrumb-current { color: var(--sage-light); font-weight: 500; }
 
@@ -1015,6 +1043,7 @@
       gap: 8px;
     }
     .detail-nav-btn {
+      min-height: 48px;
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -1045,8 +1074,8 @@
       position: fixed;
       bottom: 28px;
       right: 28px;
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
       border-radius: 14px;
       background: rgba(20, 50, 100, 0.7);
       backdrop-filter: blur(12px);
@@ -1162,6 +1191,23 @@
       outline: 2px solid var(--gold-light);
       outline-offset: 2px;
     }
+
+    .logo-link:focus-visible,
+    .back-link:focus-visible,
+    .lang-btn:focus-visible,
+    .category-chip:focus-visible,
+    .search-clear:focus-visible,
+    .topic-card:focus-visible,
+    .detail-close:focus-visible,
+    .screenshot-frame:focus-visible,
+    .lightbox-close:focus-visible,
+    .related-chip:focus-visible,
+    .detail-breadcrumb-cat:focus-visible,
+    .detail-nav-btn:focus-visible,
+    .scroll-top:focus-visible {
+      outline: 3px solid var(--gold-light);
+      outline-offset: 3px;
+    }
   
 /* Mobile touch targets (WCAG 2.5.8 AA): short secondary nav / footer / back
    links were ~17-23px tall — give them >=24px tap height. */
@@ -1195,14 +1241,14 @@ a[href^="mailto:"] {
 </head>
 <body>
 
-  <a class="skip-to-content" href="#main">İçeriğe geç</a>
+  <a class="skip-to-content" href="#main" data-i18n="skip">İçeriğe geç</a>
 
   <div class="bg-layer"></div>
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
   <div class="orb orb-3"></div>
 
-  <div class="particles">
+  <div class="particles" aria-hidden="true">
     <div class="particle leaf"></div>
     <div class="particle"></div>
     <div class="particle leaf"></div>
@@ -1218,16 +1264,16 @@ a[href^="mailto:"] {
   <!-- Header -->
   <header>
     <div class="header-inner">
-      <a href="../" class="logo-link">
-        <img src="../logo.png" alt="BudgieBreedingTracker" class="logo-img">
+      <a href="../" class="logo-link" aria-label="BudgieBreedingTracker — ana sayfa" data-i18n-aria-label="home_aria">
+        <img src="../logo.png" alt="" aria-hidden="true" class="logo-img">
         <span class="logo-text">BudgieBreedingTracker</span>
       </a>
       <div class="header-right">
         <a href="../" class="back-link" data-i18n="back">&larr; Ana Sayfa</a>
         <div class="lang-group">
-          <button class="lang-btn active" onclick="setLanguage('tr')">TR</button>
-          <button class="lang-btn" onclick="setLanguage('en')">EN</button>
-          <button class="lang-btn" onclick="setLanguage('de')">DE</button>
+          <button type="button" class="lang-btn active" data-lang="tr" aria-pressed="true" onclick="setLanguage('tr')">TR</button>
+          <button type="button" class="lang-btn" data-lang="en" aria-pressed="false" onclick="setLanguage('en')">EN</button>
+          <button type="button" class="lang-btn" data-lang="de" aria-pressed="false" onclick="setLanguage('de')">DE</button>
         </div>
       </div>
     </div>
@@ -1235,10 +1281,10 @@ a[href^="mailto:"] {
 
   <!-- Main Content -->
   <main id="main">
-    <nav aria-label="Breadcrumb" class="breadcrumb-nav" style="padding: 1rem 1.5rem;">
-      <a href="/" style="color: var(--sage); text-decoration: none;">← Ana Sayfa</a>
+    <nav aria-label="Sayfa yolu" data-i18n-aria-label="breadcrumb_label" class="breadcrumb-nav" style="padding: 1rem 1.5rem;">
+      <a href="/" class="back-link" data-i18n="back" style="color: var(--sage); text-decoration: none;">← Ana Sayfa</a>
       <span aria-hidden="true" style="margin: 0 0.5rem; color: var(--sage); opacity: 0.5;">/</span>
-      <span style="color: var(--sage-light);">Kullanım Kılavuzu</span>
+      <span data-i18n="breadcrumb_current" style="color: var(--sage-light);">Kullanım Kılavuzu</span>
     </nav>
     <div class="container">
 
@@ -1261,8 +1307,8 @@ a[href^="mailto:"] {
         <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
-        <input type="text" class="search-input" id="searchInput" data-i18n-placeholder="search_hint" placeholder="Konularda ara...">
-        <button class="search-clear" id="searchClear" aria-label="Clear search">
+        <input type="search" class="search-input" id="searchInput" data-i18n-placeholder="search_hint" data-i18n-aria-label="search_label" aria-label="Konularda ara" placeholder="Konularda ara...">
+        <button type="button" class="search-clear" id="searchClear" data-i18n-aria-label="clear_search" aria-label="Aramayı temizle">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
@@ -1284,9 +1330,9 @@ a[href^="mailto:"] {
   </main>
 
   <!-- Detail Overlay -->
-  <div class="detail-overlay" id="detailOverlay" role="dialog" aria-modal="true" aria-labelledby="detailTitleId">
+  <div class="detail-overlay" id="detailOverlay" role="dialog" aria-modal="true" aria-labelledby="detailTitleId" aria-hidden="true">
     <div class="detail-panel" id="detailPanel">
-      <button class="detail-close" id="detailClose" aria-label="Close" tabindex="0">
+      <button type="button" class="detail-close" id="detailClose" data-i18n-aria-label="close_detail" aria-label="Detayı kapat">
         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
       <div id="detailContent"></div>
@@ -1294,26 +1340,26 @@ a[href^="mailto:"] {
   </div>
 
   <!-- Scroll to Top -->
-  <button class="scroll-top" id="scrollTop" aria-label="Scroll to top">
+  <button type="button" class="scroll-top" id="scrollTop" data-i18n-aria-label="scroll_top" aria-label="Sayfanın başına dön" aria-hidden="true" tabindex="-1">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
   </button>
 
   <!-- Lightbox -->
-  <div class="screenshot-lightbox" id="screenshotLightbox" role="dialog" aria-modal="true" aria-label="Screenshot preview" onclick="closeLightbox()">
-    <button class="lightbox-close" onclick="closeLightbox()" aria-label="Close preview">&times;</button>
-    <img loading="lazy" decoding="async" id="lightboxImg" src="" alt="Enlarged app screenshot">
+  <div class="screenshot-lightbox" id="screenshotLightbox" role="dialog" aria-modal="true" data-i18n-aria-label="screenshot_preview" aria-label="Ekran görüntüsü önizlemesi" aria-hidden="true" onclick="closeLightbox()">
+    <button type="button" class="lightbox-close" data-i18n-aria-label="close_preview" onclick="event.stopPropagation(); closeLightbox()" aria-label="Önizlemeyi kapat">&times;</button>
+    <img loading="lazy" decoding="async" id="lightboxImg" data-i18n-alt="enlarged_screenshot" alt="Büyütülmüş uygulama ekran görüntüsü">
   </div>
 
   <!-- Footer -->
   <footer>
     <div class="footer-inner">
       <div class="footer-logo">
-        <img src="../logo.png" alt="Logo">
+        <img src="../logo.png" alt="" aria-hidden="true">
         <span class="footer-logo-text">BudgieBreedingTracker</span>
       </div>
       <p class="footer-copy">
         <span data-i18n="footer">&copy; 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</span>
-        <span class="version-badge" aria-label="Uygulama sürümü">
+        <span class="version-badge" aria-label="Uygulama sürümü" data-i18n-aria-label="version_aria">
           v1.1.2 · <time datetime="2026-06-06">2026-06-06</time>
         </span>
       </p>
@@ -1323,19 +1369,19 @@ a[href^="mailto:"] {
   <script>
     // ─── GUIDE DATA ───
     const categories = [
-      { id: 'gettingStarted', icon: '&#x1F680;', tr: 'Başlangıç', en: 'Getting Started', de: 'Erste Schritte' },
-      { id: 'birdManagement', icon: '&#x1F426;', tr: 'Kuş Yönetimi', en: 'Bird Management', de: 'Vogelverwaltung' },
-      { id: 'breedingProcess', icon: '&#x1F48C;', tr: 'Üreme Süreci', en: 'Breeding Process', de: 'Zuchtprozess' },
-      { id: 'tools', icon: '&#x1F6E0;', tr: 'Araçlar', en: 'Tools', de: 'Werkzeuge' },
-      { id: 'dataManagement', icon: '&#x1F4BE;', tr: 'Veri Yönetimi', en: 'Data Management', de: 'Datenverwaltung' },
-      { id: 'accountSettings', icon: '&#x2699;', tr: 'Hesap ve Ayarlar', en: 'Account & Settings', de: 'Konto & Einstellungen' },
+      { id: 'gettingStarted', icon: '🚀', tr: 'Başlangıç', en: 'Getting Started', de: 'Erste Schritte' },
+      { id: 'birdManagement', icon: '🐦', tr: 'Kuş Yönetimi', en: 'Bird Management', de: 'Vogelverwaltung' },
+      { id: 'breedingProcess', icon: '💌', tr: 'Üreme Süreci', en: 'Breeding Process', de: 'Zuchtprozess' },
+      { id: 'tools', icon: '🛠️', tr: 'Araçlar', en: 'Tools', de: 'Werkzeuge' },
+      { id: 'dataManagement', icon: '💾', tr: 'Veri Yönetimi', en: 'Data Management', de: 'Datenverwaltung' },
+      { id: 'accountSettings', icon: '⚙️', tr: 'Hesap ve Ayarlar', en: 'Account & Settings', de: 'Konto & Einstellungen' },
     ];
 
     const topics = [
       {
         id: 'registration',
         category: 'gettingStarted',
-        icon: '&#x1F464;',
+        icon: '👤',
         isPremium: false,
         screenshots: [],
         related: [1, 2],
@@ -1373,7 +1419,7 @@ a[href^="mailto:"] {
       {
         id: 'dashboard',
         category: 'gettingStarted',
-        icon: '&#x1F3E0;',
+        icon: '🏠',
         isPremium: false,
         screenshots: [{ src: '../screenshots/1.png', tr: 'Toplam ku\u015f, aktif \u00fcreme, yavru ve yumurta say\u0131lar\u0131n\u0131 g\u00f6steren dashboard ekran\u0131', en: 'Dashboard showing total birds, active breeding, chicks and egg counts', de: 'Dashboard mit Gesamt-V\u00f6geln, aktiver Zucht, K\u00fcken- und Eierz\u00e4hlung' }],
         related: [0, 2],
@@ -1411,7 +1457,7 @@ a[href^="mailto:"] {
       {
         id: 'navigation',
         category: 'gettingStarted',
-        icon: '&#x1F9ED;',
+        icon: '🧭',
         isPremium: false,
         screenshots: [{ src: '../screenshots/1.png', tr: 'Ana Sayfa, Ku\u015flar, \u00dcreme, Takvim ve Daha Fazla sekmelerini g\u00f6steren alt navigasyon \u00e7ubu\u011fu', en: 'Bottom navigation bar with Home, Birds, Breeding, Calendar and More tabs', de: 'Untere Navigationsleiste mit Startseite, V\u00f6gel, Zucht, Kalender und Mehr' }],
         related: [1],
@@ -1449,7 +1495,7 @@ a[href^="mailto:"] {
       {
         id: 'bird_management',
         category: 'birdManagement',
-        icon: '&#x1F426;',
+        icon: '🐦',
         isPremium: false,
         screenshots: [{ src: '../screenshots/2.png', tr: 'Erkek/Di\u015fi filtresi, arama \u00e7ubu\u011fu ve ku\u015f kartlar\u0131yla ku\u015f listesi ekran\u0131', en: 'Bird list screen with gender filters, search bar and bird cards', de: 'Vogelliste mit Geschlechtsfiltern, Suchleiste und Vogelkarten' }],
         related: [4, 5],
@@ -1487,7 +1533,7 @@ a[href^="mailto:"] {
       {
         id: 'filtering',
         category: 'birdManagement',
-        icon: '&#x1F50D;',
+        icon: '🔍',
         isPremium: false,
         screenshots: [{ src: '../screenshots/2.png', tr: 'T\u00fcm\u00fc, Erkek, Di\u015fi, Ya\u015fayan filtre se\u00e7enekleri ve isim/ring no ile arama', en: 'All, Male, Female, Alive filter options with name/ring number search', de: 'Alle, M\u00e4nnlich, Weiblich, Lebend Filteroptionen mit Name/Ringnummer-Suche' }],
         related: [3],
@@ -1525,7 +1571,7 @@ a[href^="mailto:"] {
       {
         id: 'health_records',
         category: 'birdManagement',
-        icon: '&#x1FA7A;',
+        icon: '🩺',
         isPremium: false,
         screenshots: [{ src: '../screenshots/6.png', tr: 'Kontrol, hastal\u0131k ve yaralanma t\u00fcr filtreli sa\u011fl\u0131k kay\u0131tlar\u0131 listesi', en: 'Health records list with checkup, illness and injury type filters', de: 'Gesundheitsaufzeichnungen mit Kontroll-, Krankheits- und Verletzungsfiltern' }],
         related: [3],
@@ -1560,7 +1606,7 @@ a[href^="mailto:"] {
       {
         id: 'breeding_pair',
         category: 'breedingProcess',
-        icon: '&#x1F48C;',
+        icon: '💌',
         isPremium: false,
         screenshots: [{ src: '../screenshots/3.png', tr: '\u00c7ift bilgisi, kulu\u00e7ka g\u00fcn say\u0131s\u0131 ve durum \u00e7ubu\u011fu ile \u00fcreme takibi ekran\u0131', en: 'Breeding tracking screen with pair info, incubation day count and progress bar', de: 'Zuchtverfolgungs-Bildschirm mit Paarinfo, Bruttage und Fortschrittsbalken' }],
         related: [7, 8],
@@ -1598,7 +1644,7 @@ a[href^="mailto:"] {
       {
         id: 'eggs_incubation',
         category: 'breedingProcess',
-        icon: '&#x1F95A;',
+        icon: '🥚',
         isPremium: false,
         screenshots: [{ src: '../screenshots/3.png', tr: 'Yumurta say\u0131s\u0131, \u00e7\u0131kan yavru ve 18 g\u00fcnl\u00fck kulu\u00e7ka s\u00fcreci takibi', en: 'Egg count, hatched chicks and 18-day incubation period tracking', de: 'Eierz\u00e4hlung, geschl\u00fcpfte K\u00fcken und 18-t\u00e4gige Brutzeitverfolgung' }],
         related: [6, 8],
@@ -1636,7 +1682,7 @@ a[href^="mailto:"] {
       {
         id: 'chick_tracking',
         category: 'breedingProcess',
-        icon: '&#x1F423;',
+        icon: '🐣',
         isPremium: false,
         screenshots: [{ src: '../screenshots/4.png', tr: 'Sa\u011fl\u0131k durumu, ya\u015f bilgisi ve yuva ata\u011f\u0131 ile yavru listesi', en: 'Chick list with health status, age info and nest assignment', de: 'K\u00fckenliste mit Gesundheitsstatus, Altersinfo und Nestzuweisung' }],
         related: [6, 7],
@@ -1674,7 +1720,7 @@ a[href^="mailto:"] {
       {
         id: 'calendar_notifications',
         category: 'tools',
-        icon: '&#x1F4C5;',
+        icon: '📅',
         isPremium: false,
         screenshots: [{ src: '../screenshots/5.png', tr: 'Ay/Hafta/G\u00fcn g\u00f6r\u00fcn\u00fcml\u00fc takvim, kulu\u00e7ka ve kontrol etkinlikleri', en: 'Calendar with Month/Week/Day views, incubation and checkup events', de: 'Kalender mit Monats-/Wochen-/Tagesansicht, Brut- und Kontrollereignissen' }],
         related: [],
@@ -1712,7 +1758,7 @@ a[href^="mailto:"] {
       {
         id: 'genealogy_genetics',
         category: 'tools',
-        icon: '&#x1F9EC;',
+        icon: '🧬',
         isPremium: true,
         screenshots: [
           { src: '../screenshots/8.png', tr: 'Anne-baba d\u00fc\u011f\u00fcmleri ve akrabal\u0131k ba\u011flant\u0131lar\u0131yla soy a\u011fac\u0131 g\u00f6r\u00fcn\u00fcm\u00fc', en: 'Family tree view with parent nodes and lineage connections', de: 'Stammbaumansicht mit Elternknoten und Abstammungsverbindungen' },
@@ -1756,7 +1802,7 @@ a[href^="mailto:"] {
       {
         id: 'backup_export',
         category: 'dataManagement',
-        icon: '&#x1F4E6;',
+        icon: '📦',
         isPremium: false,
         screenshots: [],
         related: [12],
@@ -1794,7 +1840,7 @@ a[href^="mailto:"] {
       {
         id: 'sync',
         category: 'dataManagement',
-        icon: '&#x1F504;',
+        icon: '🔄',
         isPremium: false,
         screenshots: [{ src: '../screenshots/1.png', tr: 'Dashboard \u00fcst\u00fcnde "Senkronize edildi" durum \u00e7ubu\u011fu ile bulut senkronizasyonu', en: 'Cloud sync with "Synchronized" status bar at the top of dashboard', de: 'Cloud-Synchronisation mit "Synchronisiert" Statusleiste oben auf dem Dashboard' }],
         related: [11],
@@ -1835,7 +1881,7 @@ a[href^="mailto:"] {
       {
         id: 'profile_settings',
         category: 'accountSettings',
-        icon: '&#x2699;',
+        icon: '⚙️',
         isPremium: false,
         screenshots: [{ src: '../screenshots/10.png', tr: 'Tema, dil, tarih format\u0131, yaz\u0131 boyutu ve bildirim tercihlerini g\u00f6steren ayarlar ekran\u0131', en: 'Settings screen showing theme, language, date format, font size and notification preferences', de: 'Einstellungen mit Design, Sprache, Datumsformat, Schriftgr\u00f6\u00dfe und Benachrichtigungen' }],
         related: [14],
@@ -1873,7 +1919,7 @@ a[href^="mailto:"] {
       {
         id: 'premium',
         category: 'accountSettings',
-        icon: '&#x1F451;',
+        icon: '👑',
         isPremium: false,
         screenshots: [{ src: '../screenshots/7.png', tr: 'Toplam ku\u015f, d\u00f6ll\u00fclük oran\u0131, hayatta kalma ve sa\u011fl\u0131k istatistikleri grafikleri', en: 'Statistics charts with total birds, fertility rate, survival and health metrics', de: 'Statistikdiagramme mit Gesamtv\u00f6geln, Fruchtbarkeitsrate, \u00dcberlebens- und Gesundheitskennzahlen' }],
         related: [13],
@@ -1913,11 +1959,17 @@ a[href^="mailto:"] {
     // ─── UI TRANSLATIONS ───
     const uiTranslations = {
       tr: {
+        skip: 'İçeriğe geç',
+        home_aria: 'BudgieBreedingTracker — ana sayfa',
+        breadcrumb_label: 'Sayfa yolu',
+        breadcrumb_current: 'Kullanım Kılavuzu',
         back: '\u2190 Ana Sayfa',
         badge: 'Kullan\u0131m K\u0131lavuzu',
         title: 'Uygulamay\u0131 Ke\u015ffedin',
         subtitle: 'Ku\u015f kay\u0131tlar\u0131ndan genetik hesaplamalara kadar t\u00fcm \u00f6zellikleri ad\u0131m ad\u0131m \u00f6\u011frenin.',
         search_hint: 'Konularda ara...',
+        search_label: 'Kılavuz konularında ara',
+        clear_search: 'Aramayı temizle',
         no_results: 'Sonu\u00e7 bulunamad\u0131',
         no_results_hint: 'Arama kriterlerini de\u011fi\u015ftirin',
         step_count: '{} ad\u0131m',
@@ -1935,13 +1987,25 @@ a[href^="mailto:"] {
         last_updated: 'Son g\u00fcncelleme: Mart 2026',
         prev_topic: '\u00d6nceki',
         next_topic: 'Sonraki',
+        close_detail: 'Detayı kapat',
+        scroll_top: 'Sayfanın başına dön',
+        screenshot_preview: 'Ekran görüntüsü önizlemesi',
+        close_preview: 'Önizlemeyi kapat',
+        enlarged_screenshot: 'Büyütülmüş uygulama ekran görüntüsü',
+        version_aria: 'Uygulama sürümü',
       },
       en: {
+        skip: 'Skip to content',
+        home_aria: 'BudgieBreedingTracker — home page',
+        breadcrumb_label: 'Breadcrumb',
+        breadcrumb_current: 'User Guide',
         back: '\u2190 Home',
         badge: 'User Guide',
         title: 'Explore the App',
         subtitle: 'Learn all features step by step, from bird records to genetic calculations.',
         search_hint: 'Search topics...',
+        search_label: 'Search guide topics',
+        clear_search: 'Clear search',
         no_results: 'No results found',
         no_results_hint: 'Try different search criteria',
         step_count: '{} steps',
@@ -1959,13 +2023,25 @@ a[href^="mailto:"] {
         last_updated: 'Last updated: March 2026',
         prev_topic: 'Previous',
         next_topic: 'Next',
+        close_detail: 'Close details',
+        scroll_top: 'Back to top',
+        screenshot_preview: 'Screenshot preview',
+        close_preview: 'Close preview',
+        enlarged_screenshot: 'Enlarged app screenshot',
+        version_aria: 'App version',
       },
       de: {
+        skip: 'Zum Inhalt springen',
+        home_aria: 'BudgieBreedingTracker — Startseite',
+        breadcrumb_label: 'Brotkrümelnavigation',
+        breadcrumb_current: 'Benutzerhandbuch',
         back: '\u2190 Startseite',
         badge: 'Benutzerhandbuch',
         title: 'Entdecken Sie die App',
         subtitle: 'Lernen Sie alle Funktionen Schritt f\u00fcr Schritt, von Vogeldatens\u00e4tzen bis zu genetischen Berechnungen.',
         search_hint: 'Themen durchsuchen...',
+        search_label: 'Handbuchthemen durchsuchen',
+        clear_search: 'Suche löschen',
         no_results: 'Keine Ergebnisse gefunden',
         no_results_hint: 'Versuchen Sie andere Suchbegriffe',
         step_count: '{} Schritte',
@@ -1983,6 +2059,12 @@ a[href^="mailto:"] {
         last_updated: 'Letzte Aktualisierung: M\u00e4rz 2026',
         prev_topic: 'Zur\u00fcck',
         next_topic: 'Weiter',
+        close_detail: 'Details schließen',
+        scroll_top: 'Zum Seitenanfang',
+        screenshot_preview: 'Screenshot-Vorschau',
+        close_preview: 'Vorschau schließen',
+        enlarged_screenshot: 'Vergrößerter App-Screenshot',
+        version_aria: 'App-Version',
       },
     };
 
@@ -2021,10 +2103,10 @@ a[href^="mailto:"] {
 
     function renderCategoryChips() {
       const t = uiTranslations[currentLang];
-      let html = `<button class="category-chip ${activeCategory === null ? 'active' : ''}" onclick="filterCategory(null)"><span>${escapeHtml(t.all_categories)}</span><span class="category-chip-count">${topics.length}</span></button>`;
+      let html = `<button type="button" class="category-chip ${activeCategory === null ? 'active' : ''}" aria-pressed="${activeCategory === null}" onclick="filterCategory(null)"><span>${escapeHtml(t.all_categories)}</span><span class="category-chip-count">${topics.length}</span></button>`;
       categories.forEach(cat => {
         const count = topics.filter(t => t.category === cat.id).length;
-        html += `<button class="category-chip ${activeCategory === cat.id ? 'active' : ''}" onclick="filterCategory('${cat.id}')"><span class="category-chip-icon">${escapeHtml(cat.icon)}</span><span>${escapeHtml(cat[currentLang])}</span><span class="category-chip-count">${count}</span></button>`;
+        html += `<button type="button" class="category-chip ${activeCategory === cat.id ? 'active' : ''}" aria-pressed="${activeCategory === cat.id}" onclick="filterCategory('${cat.id}')"><span class="category-chip-icon" aria-hidden="true">${escapeHtml(cat.icon)}</span><span>${escapeHtml(cat[currentLang])}</span><span class="category-chip-count">${count}</span></button>`;
       });
       document.getElementById('categoryChips').innerHTML = html;
     }
@@ -2161,23 +2243,26 @@ a[href^="mailto:"] {
       }
 
       return `
-        <div class="topic-card fade-up delay-${Math.min(delay, 3)}" onclick="openDetail(${index})">
-          <div class="topic-card-header">
-            <div class="topic-icon-wrap">${escapeHtml(topic.icon)}</div>
-            <div>
-              <div class="topic-title">${title}</div>
-              <div class="topic-subtitle">${subtitle}</div>
-            </div>
-          </div>
-          ${meta ? `<div class="topic-meta">${meta}</div>` : ''}
-          <svg class="topic-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-        </div>
+        <button type="button" class="topic-card fade-up delay-${Math.min(delay, 3)}" onclick="openDetail(${index})">
+          <span class="topic-card-header">
+            <span class="topic-icon-wrap" aria-hidden="true">${escapeHtml(topic.icon)}</span>
+            <span>
+              <span class="topic-title">${title}</span>
+              <span class="topic-subtitle">${subtitle}</span>
+            </span>
+          </span>
+          ${meta ? `<span class="topic-meta">${meta}</span>` : ''}
+          <svg class="topic-chevron" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
       `;
     }
 
     // ─── DETAIL ───
     function openDetail(index) {
-      _previousFocus = document.activeElement;
+      const overlay = document.getElementById('detailOverlay');
+      if (!overlay.classList.contains('active')) {
+        _previousFocus = document.activeElement;
+      }
       const topic = topics[index];
       const data = topic[currentLang];
       const t = uiTranslations[currentLang];
@@ -2227,7 +2312,7 @@ a[href^="mailto:"] {
         topic.related.forEach(ri => {
           if (ri >= 0 && ri < topics.length) {
             const rt = topics[ri][currentLang];
-            relatedHtml += `<button class="related-chip" onclick="openDetail(${ri})">${topics[ri].icon} ${rt.title}</button>`;
+            relatedHtml += `<button type="button" class="related-chip" onclick="openDetail(${ri})">${topics[ri].icon} ${rt.title}</button>`;
           }
         });
         relatedHtml += `</div></div>`;
@@ -2236,7 +2321,7 @@ a[href^="mailto:"] {
       // Breadcrumb
       const breadcrumbHtml = `
         <div class="detail-breadcrumb">
-          <span class="detail-breadcrumb-cat" onclick="closeDetail(); filterCategory('${topic.category}')">${cat ? cat.icon + ' ' + cat[currentLang] : ''}</span>
+          <button type="button" class="detail-breadcrumb-cat" onclick="closeDetail(); filterCategory('${topic.category}')">${cat ? cat.icon + ' ' + cat[currentLang] : ''}</button>
           <span class="detail-breadcrumb-sep">›</span>
           <span class="detail-breadcrumb-current">${data.title}</span>
         </div>`;
@@ -2251,11 +2336,11 @@ a[href^="mailto:"] {
         <div class="detail-footer">
           <span class="detail-updated">${t.last_updated}</span>
           <div class="detail-nav">
-            <button class="detail-nav-btn" ${prevIdx === null ? 'disabled' : `onclick="openDetail(${prevIdx})"`} title="${prevLabel}">
+            <button type="button" class="detail-nav-btn" ${prevIdx === null ? 'disabled' : `onclick="openDetail(${prevIdx})"`} title="${prevLabel}">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
               ${t.prev_topic}
             </button>
-            <button class="detail-nav-btn" ${nextIdx === null ? 'disabled' : `onclick="openDetail(${nextIdx})"`} title="${nextLabel}">
+            <button type="button" class="detail-nav-btn" ${nextIdx === null ? 'disabled' : `onclick="openDetail(${nextIdx})"`} title="${nextLabel}">
               ${t.next_topic}
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </button>
@@ -2272,10 +2357,10 @@ a[href^="mailto:"] {
           const caption = ss[currentLang] || '';
           const altText = `${data.title} \u2014 ${caption}`;
           screenshotHtml += `
-            <div class="screenshot-frame" role="button" tabindex="0" aria-label="${caption}. ${zoomLabel[currentLang] || zoomLabel.en}" onclick="openLightbox('${ss.src}')" onkeydown="if(event.key==='Enter')openLightbox('${ss.src}')">
+            <button type="button" class="screenshot-frame" aria-label="${caption}. ${zoomLabel[currentLang] || zoomLabel.en}" onclick="openLightbox(event, '${ss.src}')">
               <img src="${ss.src}" alt="${altText}" loading="lazy">
-              <div class="screenshot-caption">${caption}</div>
-            </div>`;
+              <span class="screenshot-caption">${caption}</span>
+            </button>`;
         });
         screenshotHtml += '</div>';
       }
@@ -2292,8 +2377,8 @@ a[href^="mailto:"] {
         ${navHtml}
       `;
 
-      const overlay = document.getElementById('detailOverlay');
       overlay.classList.add('active');
+      overlay.setAttribute('aria-hidden', 'false');
       overlay.scrollTop = 0;
       document.body.style.overflow = 'hidden';
 
@@ -2306,33 +2391,41 @@ a[href^="mailto:"] {
     let _previousFocus = null;
 
     function closeDetail() {
-      document.getElementById('detailOverlay').classList.remove('active');
+      const overlay = document.getElementById('detailOverlay');
+      overlay.classList.remove('active');
+      overlay.setAttribute('aria-hidden', 'true');
       document.body.style.overflow = '';
       if (_previousFocus) { _previousFocus.focus(); _previousFocus = null; }
     }
 
-    function openLightbox(src) {
+    let _previousLightboxFocus = null;
+
+    function openLightbox(event, src) {
       event.stopPropagation();
+      _previousLightboxFocus = event.currentTarget;
       const lb = document.getElementById('screenshotLightbox');
       const img = document.getElementById('lightboxImg');
       // Find the clicked frame's alt text for the lightbox image
       const frame = document.querySelector(`.screenshot-frame img[src="${src}"]`);
-      img.alt = frame ? frame.alt : 'Enlarged app screenshot';
+      img.alt = frame ? frame.alt : uiTranslations[currentLang].enlarged_screenshot;
       img.src = src;
       lb.classList.add('active');
+      lb.setAttribute('aria-hidden', 'false');
+      document.getElementById('detailOverlay').setAttribute('aria-hidden', 'true');
       document.querySelector('.lightbox-close').focus();
     }
 
     function closeLightbox() {
-      document.getElementById('screenshotLightbox').classList.remove('active');
-    }
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        const lb = document.getElementById('screenshotLightbox');
-        if (lb.classList.contains('active')) { closeLightbox(); e.stopPropagation(); }
+      const lb = document.getElementById('screenshotLightbox');
+      if (!lb.classList.contains('active')) return;
+      lb.classList.remove('active');
+      lb.setAttribute('aria-hidden', 'true');
+      document.getElementById('detailOverlay').setAttribute('aria-hidden', 'false');
+      if (_previousLightboxFocus) {
+        _previousLightboxFocus.focus();
+        _previousLightboxFocus = null;
       }
-    });
+    }
 
     // ─── LANGUAGE ───
     function setLanguage(lang) {
@@ -2352,6 +2445,16 @@ a[href^="mailto:"] {
         if (t[key]) el.placeholder = t[key];
       });
 
+      document.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+        const key = el.getAttribute('data-i18n-aria-label');
+        if (t[key]) el.setAttribute('aria-label', t[key]);
+      });
+
+      document.querySelectorAll('[data-i18n-alt]').forEach(el => {
+        const key = el.getAttribute('data-i18n-alt');
+        if (t[key]) el.alt = t[key];
+      });
+
       const titles = {
         tr: 'Kullan\u0131m K\u0131lavuzu \u2014 BudgieBreedingTracker',
         en: 'User Guide \u2014 BudgieBreedingTracker',
@@ -2360,7 +2463,9 @@ a[href^="mailto:"] {
       document.title = titles[lang];
 
       document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === lang);
+        const isActive = btn.dataset.lang === lang;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-pressed', String(isActive));
       });
 
       renderStats();
@@ -2391,7 +2496,22 @@ a[href^="mailto:"] {
       if (e.target === document.getElementById('detailOverlay')) closeDetail();
     });
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeDetail();
+      if (e.key === 'Escape') {
+        const lightbox = document.getElementById('screenshotLightbox');
+        if (lightbox.classList.contains('active')) {
+          closeLightbox();
+          return;
+        }
+        if (document.getElementById('detailOverlay').classList.contains('active')) {
+          closeDetail();
+        }
+      }
+
+      if (e.key === 'Tab' && document.getElementById('screenshotLightbox').classList.contains('active')) {
+        e.preventDefault();
+        document.querySelector('.lightbox-close').focus();
+        return;
+      }
 
       // Focus trap within detail panel
       if (e.key === 'Tab' && document.getElementById('detailOverlay').classList.contains('active')) {
@@ -2411,7 +2531,10 @@ a[href^="mailto:"] {
     // ─── SCROLL TO TOP ───
     const scrollTopBtn = document.getElementById('scrollTop');
     window.addEventListener('scroll', () => {
-      scrollTopBtn.classList.toggle('visible', window.scrollY > 400);
+      const isVisible = window.scrollY > 400;
+      scrollTopBtn.classList.toggle('visible', isVisible);
+      scrollTopBtn.setAttribute('aria-hidden', String(!isVisible));
+      scrollTopBtn.tabIndex = isVisible ? 0 : -1;
     }, { passive: true });
     scrollTopBtn.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });

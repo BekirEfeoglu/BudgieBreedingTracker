@@ -4,6 +4,18 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-17] fix | Marketing site tablet navigation and accessibility
+
+Live-tested at 375/768/1024/1440 widths. The landing header now uses the
+hamburger below 1200px; 48px targets, FAQ/carousel semantics, focus, and heading
+order are corrected. TR/EN/DE security copy scopes AES-256 to implemented
+fields/backups and retains the 2 MiB scan boundary. Genetics output no longer
+leaks Turkish. The user guide uses native buttons, localized ARIA, correct emoji,
+layered Escape/focus restoration, and 48px controls. Terms pages remove leaked
+annotations and mobile overflow; explicit EN/DE URLs remain authoritative and
+privacy links stay in-language. Shared locale scripts are cache-versioned. All
+64 public HTML files have asset/ID coverage plus guide/legal regression tests.
+
 ## [2026-07-17] sync | Conflict retry now restores encrypted local snapshots
 
 Drift v29 stores encrypted local/server snapshots before server-wins overwrite.
@@ -181,17 +193,5 @@ specific, task-relevant next-step suggestions. Updated `.claude/rules/chat.md`
 compact line into `AGENTS.md` § Communication (a59251c, f2641be). Prose only, no
 count/inline-ref drift; `chat.md` has no wiki page (rules-index: response-style,
 no page needed). [[sources/rules-index]]
-
-## [2026-07-12] docs | wiki stat drift sweep — routes, tests, migrations count
-
-Reconciled managed counts drifted from authoritative root `CLAUDE.md` §
-Codebase Stats. **Routes 74→75** (index, overview, _features-index,
-folder-structure, router-navigation). **Tests 11,506→11,515** (overview,
-patterns/testing). **Migrations 206→207** in data-layer/migrations.md local
-count; the 2026-07-10 MCP prod-parity snapshot stays at 206↔206, with
-`20260710120000` marketplace-moderation trigger noted as applied to prod later
-that day (both → 207, authority-preserving). No source/contract change; verified
-no other count drift and that notification per-device-logout + marketplace
-server-side-moderation contracts were already reflected. Lint green.
 
 Older entries are archived in [[log-archive-2026-07-j]], [[log-archive-2026-07-i]], [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

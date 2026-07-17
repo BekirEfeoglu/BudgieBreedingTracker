@@ -34,7 +34,7 @@
         phone_chicks: 'Yavrular',
         sync_badge_label: 'Senkron',
         sync_badge_status: 'Çevrimiçi ✓',
-        trust_1: 'AES-256 Şifreleme',
+        trust_1: 'AES-256 Şifreli Yedekler',
         trust_2: 'iOS & Android',
         trust_3: '3 Dil Desteği',
         trust_4: 'Offline Çalışır',
@@ -61,11 +61,11 @@
         benefit_2_title: 'Anında Senkronizasyon',
         benefit_2_desc: 'Offline çalışın, online olunca otomatik senkronize edin. Veri kaybı yok.',
         benefit_3_title: 'Güvende',
-        benefit_3_desc: 'AES-256 şifreleme ile yedekleme. Verileriniz sadece sizin kontrolünüzde.',
+        benefit_3_desc: 'İsteğe bağlı yedekler AES-256-CBC ve HMAC ile korunur. Bulut erişimi hesap ve sunucu politikalarıyla sınırlandırılır.',
         stat_1: 'Veri Kategorisi',
         stat_2: 'Dil Desteği',
         stat_3: 'Offline Çalışma',
-        stat_4: 'AES Şifreleme',
+        stat_4: 'AES Yedekleme',
         cta_title: 'Hemen Başlayın',
         cta_subtitle: 'Kuşlarınızın bakımını profesyonel seviyeye taşıyın. Ücretsiz indirin, hemen kullanmaya başlayın.',
         cta_google_label: "Google Play'den",
@@ -117,13 +117,13 @@
         feature_9_title: 'Takvim & Hatırlatıcılar',
         feature_9_desc: 'Kuluçka tarihleri, veteriner randevuları ve tüm etkinlikleri takvimde görün. Akıllı hatırlatıcılarla hiçbir şeyi kaçırmayın.',
         feature_10_title: 'Yedekleme & Dışa Aktarma',
-        feature_10_desc: 'Verilerinizi PDF ve Excel olarak dışa aktarın. AES-256 şifreli yedeklerle veri güvenliğinizi sağlayın.',
+        feature_10_desc: 'Verilerinizi PDF ve Excel olarak dışa aktarın. İsteğe bağlı AES-256-CBC ve HMAC korumalı yedekler oluşturun.',
         faq_badge: 'SSS',
         faq_title: 'Sık Sorulan Sorular',
         faq_q1: 'Uygulama ücretsiz mi?',
         faq_a1: 'Evet, temel özellikler tamamen ücretsizdir. Genetik hesaplayıcı, istatistikler ve soy ağacı gibi gelişmiş özellikler için premium abonelik gereklidir.',
         faq_q2: 'Verilerim güvende mi?',
-        faq_a2: 'Evet. Verileriniz AES-256 şifreleme ile korunur ve yalnızca sizin hesabınızla erişilebilir. Yedeklemeler de şifreli olarak saklanır.',
+        faq_a2: 'Evet. Hassas kuş alanları cihaz anahtarıyla şifrelenir; yedekler için AES-256 şifreleme seçeneği sunulur. Bulut verilerine erişim hesabınız ve sunucu tarafı politikalarla sınırlandırılır.',
         faq_q3: 'Offline çalışıyor mu?',
         faq_a3: 'Evet! Uygulama offline-first mimarisine sahiptir. İnternet olmadan tüm özelliklerden yararlanabilir, bağlantı geldiğinde verileriniz otomatik senkronize edilir.',
         faq_q4: 'Kaç kuş kaydedebilirim?',
@@ -198,6 +198,11 @@
         genetics_mut_pied: 'Alacalı (Pied)',
         genetics_mut_spangle: 'Spangle',
         genetics_mut_opaline: 'Opalin',
+        genetics_note_lutino: 'Cinsiyet bağlantılı — dişilerde tek kopya fenotip gösterir',
+        genetics_note_albino: 'Lutino + Ino kombinasyonu (tam albino nadir)',
+        genetics_note_pied: 'Resesif — her iki ebeveynden gen gerekir',
+        genetics_note_spangle: 'Dominant — tek kopyada fenotip görülür',
+        genetics_note_opaline: 'Cinsiyet bağlantılı resesif mutasyon',
         offline_badge: '☁️ Offline-First',
         offline_title: 'Cebinde Çalışır, Bulutta Yedeklenir',
         offline_subtitle: 'İnternet yokken bile veri kaybı yok. Bağlantı geldiğinde tüm değişiklikler otomatik senkronize edilir.',
@@ -206,8 +211,8 @@
         offline_point1_desc: 'Tüm veriler önce cihazındaki SQLite\'a yazılır. UI her zaman yerel veritabanından okur.',
         offline_point2_title: 'Otomatik Senkronizasyon',
         offline_point2_desc: 'İnternet bağlantısı geldiğinde değişiklikler otomatik olarak bulutla uzlaştırılır.',
-        offline_point3_title: 'AES-256 Şifreleme',
-        offline_point3_desc: 'Bulut yedekleri şifreli. Verilerinize sadece siz erişebilirsiniz.',
+        offline_point3_title: 'AES-256 Şifreli Yedekler',
+        offline_point3_desc: 'İsteğe bağlı yedekler AES-256 ile şifrelenir; hassas kuş alanları cihaz anahtarıyla korunur.',
       },
       en: {
         offline_svg_phone: '📱 App',
@@ -243,7 +248,7 @@
         phone_chicks: 'Chicks',
         sync_badge_label: 'Sync',
         sync_badge_status: 'Online ✓',
-        trust_1: 'AES-256 Encryption',
+        trust_1: 'AES-256 Encrypted Backups',
         trust_2: 'iOS & Android',
         trust_3: '3 Languages',
         trust_4: 'Works Offline',
@@ -270,11 +275,11 @@
         benefit_2_title: 'Instant Sync',
         benefit_2_desc: 'Work offline, sync automatically when back online. No data loss.',
         benefit_3_title: 'Secure',
-        benefit_3_desc: 'AES-256 encrypted backups. Your data stays under your control only.',
+        benefit_3_desc: 'Optional backups use AES-256-CBC with HMAC. Cloud access is restricted by account and server-side policies.',
         stat_1: 'Data Categories',
         stat_2: 'Languages',
         stat_3: 'Offline Support',
-        stat_4: 'AES Encryption',
+        stat_4: 'AES Backup',
         cta_title: 'Get Started Now',
         cta_subtitle: 'Take your bird care to a professional level. Download for free and start using today.',
         cta_google_label: 'GET IT ON',
@@ -326,13 +331,13 @@
         feature_9_title: 'Calendar & Reminders',
         feature_9_desc: 'View incubation dates, vet appointments, and all events on the calendar. Never miss anything with smart reminders.',
         feature_10_title: 'Backup & Export',
-        feature_10_desc: 'Export your data as PDF and Excel. Secure your data with AES-256 encrypted backups.',
+        feature_10_desc: 'Export your data as PDF and Excel. Create optional backups protected with AES-256-CBC and HMAC.',
         faq_badge: 'FAQ',
         faq_title: 'Frequently Asked Questions',
         faq_q1: 'Is the app free?',
         faq_a1: 'Yes, the core features are completely free. Advanced features like the genetics calculator, statistics, and family tree require a premium subscription.',
         faq_q2: 'Is my data secure?',
-        faq_a2: 'Yes. Your data is protected with AES-256 encryption and is only accessible with your account. Backups are also stored in encrypted form.',
+        faq_a2: 'Yes. Sensitive bird fields are encrypted with a device key, and AES-256 encryption is available for backups. Cloud access is restricted by your account and server-side policies.',
         faq_q3: 'Does it work offline?',
         faq_a3: 'Yes! The app has an offline-first architecture. You can use all features without internet, and your data syncs automatically when connection is restored.',
         faq_q4: 'How many birds can I record?',
@@ -407,6 +412,11 @@
         genetics_mut_pied: 'Pied',
         genetics_mut_spangle: 'Spangle',
         genetics_mut_opaline: 'Opaline',
+        genetics_note_lutino: 'Sex-linked — females express the phenotype with a single copy',
+        genetics_note_albino: 'Lutino + Ino combination (fully albino offspring are rare)',
+        genetics_note_pied: 'Recessive — the gene is required from both parents',
+        genetics_note_spangle: 'Dominant — a single copy expresses the phenotype',
+        genetics_note_opaline: 'Sex-linked recessive mutation',
         offline_badge: '☁️ Offline-First',
         offline_title: 'Works in Your Pocket, Backed by the Cloud',
         offline_subtitle: 'No data loss even without internet. Changes sync automatically when you come back online.',
@@ -415,8 +425,8 @@
         offline_point1_desc: 'All data is written first to SQLite on your device. The UI always reads from the local database.',
         offline_point2_title: 'Automatic Sync',
         offline_point2_desc: 'When internet is available, changes are automatically reconciled with the cloud.',
-        offline_point3_title: 'AES-256 Encryption',
-        offline_point3_desc: 'Cloud backups are encrypted. Only you can access your data.',
+        offline_point3_title: 'AES-256 Encrypted Backups',
+        offline_point3_desc: 'Optional backups use AES-256 encryption, while sensitive bird fields are protected with a device key.',
       },
       de: {
         offline_svg_phone: '📱 App',
@@ -452,7 +462,7 @@
         phone_chicks: 'Küken',
         sync_badge_label: 'Sync',
         sync_badge_status: 'Online ✓',
-        trust_1: 'AES-256 Verschlüsselung',
+        trust_1: 'AES-256-verschlüsselte Backups',
         trust_2: 'iOS & Android',
         trust_3: '3 Sprachen',
         trust_4: 'Offline-fähig',
@@ -479,11 +489,11 @@
         benefit_2_title: 'Sofortige Synchronisation',
         benefit_2_desc: 'Offline arbeiten, automatisch synchronisieren. Kein Datenverlust.',
         benefit_3_title: 'Sicher',
-        benefit_3_desc: 'AES-256 verschlüsselte Backups. Ihre Daten bleiben unter Ihrer Kontrolle.',
+        benefit_3_desc: 'Optionale Backups nutzen AES-256-CBC mit HMAC. Der Cloud-Zugriff wird durch Konto- und Serverrichtlinien beschränkt.',
         stat_1: 'Datenkategorien',
         stat_2: 'Sprachen',
         stat_3: 'Offline-Betrieb',
-        stat_4: 'AES-Verschlüsselung',
+        stat_4: 'AES-Backup',
         cta_title: 'Jetzt loslegen',
         cta_subtitle: 'Bringen Sie Ihre Vogelpflege auf professionelles Niveau. Kostenlos herunterladen und sofort nutzen.',
         cta_google_label: 'JETZT BEI',
@@ -535,13 +545,13 @@
         feature_9_title: 'Kalender & Erinnerungen',
         feature_9_desc: 'Brutdaten, Tierarzttermine und alle Ereignisse im Kalender anzeigen. Mit intelligenten Erinnerungen nichts verpassen.',
         feature_10_title: 'Backup & Export',
-        feature_10_desc: 'Exportieren Sie Ihre Daten als PDF und Excel. Sichern Sie Ihre Daten mit AES-256 verschlüsselten Backups.',
+        feature_10_desc: 'Exportieren Sie Ihre Daten als PDF und Excel. Erstellen Sie optionale Backups mit AES-256-CBC- und HMAC-Schutz.',
         faq_badge: 'FAQ',
         faq_title: 'Häufig gestellte Fragen',
         faq_q1: 'Ist die App kostenlos?',
         faq_a1: 'Ja, die Kernfunktionen sind völlig kostenlos. Erweiterte Funktionen wie der Genetikrechner, Statistiken und der Stammbaum erfordern ein Premium-Abonnement.',
         faq_q2: 'Sind meine Daten sicher?',
-        faq_a2: 'Ja. Ihre Daten sind mit AES-256-Verschlüsselung geschützt und nur mit Ihrem Konto zugänglich. Backups werden ebenfalls verschlüsselt gespeichert.',
+        faq_a2: 'Ja. Sensible Vogeldaten werden mit einem Geräteschlüssel verschlüsselt; für Backups ist AES-256-Verschlüsselung verfügbar. Der Cloud-Zugriff wird durch Ihr Konto und serverseitige Richtlinien beschränkt.',
         faq_q3: 'Funktioniert es offline?',
         faq_a3: 'Ja! Die App verfügt über eine Offline-First-Architektur. Sie können alle Funktionen ohne Internet nutzen, und Ihre Daten werden automatisch synchronisiert, wenn die Verbindung wiederhergestellt ist.',
         faq_q4: 'Wie viele Vögel kann ich erfassen?',
@@ -616,6 +626,11 @@
         genetics_mut_pied: 'Gescheckt (Pied)',
         genetics_mut_spangle: 'Spangle',
         genetics_mut_opaline: 'Opalin',
+        genetics_note_lutino: 'Geschlechtsgebunden — Weibchen zeigen den Phänotyp mit einer Kopie',
+        genetics_note_albino: 'Lutino + Ino-Kombination (vollständig albino-farbene Nachkommen sind selten)',
+        genetics_note_pied: 'Rezessiv — das Gen muss von beiden Eltern stammen',
+        genetics_note_spangle: 'Dominant — eine Kopie zeigt den Phänotyp',
+        genetics_note_opaline: 'Geschlechtsgebundene rezessive Mutation',
         offline_badge: '☁️ Offline-First',
         offline_title: 'In der Tasche, gesichert in der Cloud',
         offline_subtitle: 'Kein Datenverlust ohne Internet. Änderungen werden automatisch synchronisiert, wenn Sie wieder online sind.',
@@ -624,8 +639,8 @@
         offline_point1_desc: 'Alle Daten werden zuerst in SQLite auf Ihrem Gerät gespeichert. Die UI liest immer aus der lokalen Datenbank.',
         offline_point2_title: 'Automatische Synchronisierung',
         offline_point2_desc: 'Sobald Internet verfügbar ist, werden Änderungen automatisch mit der Cloud abgeglichen.',
-        offline_point3_title: 'AES-256-Verschlüsselung',
-        offline_point3_desc: 'Cloud-Backups sind verschlüsselt. Nur Sie haben Zugriff auf Ihre Daten.',
+        offline_point3_title: 'AES-256-verschlüsselte Backups',
+        offline_point3_desc: 'Optionale Backups werden mit AES-256 verschlüsselt; sensible Vogeldaten schützt ein Geräteschlüssel.',
       },
     };
 
@@ -670,7 +685,9 @@
       ];
       
       let path = window.location.pathname;
-      const isI18nPath = i18nPaths.some(p => path === p || (p !== '/' && path.includes(p)));
+      const isLocalizedHomepage = /^\/(en|de)\/?$/.test(path);
+      const isI18nPath = isLocalizedHomepage ||
+        i18nPaths.some(p => path === p || (p !== '/' && path.includes(p)));
 
       if (_allowRedirect && isI18nPath) {
         // Strip out existing language prefix if any
@@ -756,11 +773,9 @@
     }
 
 
-// Language may switch freely (and trigger a folder redirect) only after the
-// page has fully loaded — i.e. in response to a real user click on .lang-btn.
-// Until then setLanguage() derives the locale from the URL and never redirects
-// away from an explicit /en/ or /de/ page.
-window.addEventListener('load', () => { window.__bbtUserReady = true; });
+// Language may switch freely (and trigger a folder redirect) after the initial
+// DOM locale pass. Waiting for window.load made the visible buttons ignore
+// early clicks when fonts/CDN scripts were slow.
 
 // ─── Init Language ───
 document.addEventListener('DOMContentLoaded', () => {
@@ -775,6 +790,14 @@ document.addEventListener('DOMContentLoaded', () => {
       setLanguage('tr'); // Default
     }
   }
+  // Some legacy page-local DOMContentLoaded handlers still call setLanguage
+  // with navigator.language. Keep initialization mode through the complete
+  // DOMContentLoaded dispatch so those calls cannot override an explicit
+  // /en/ or /de/ path. The zero-delay task still enables real button clicks
+  // immediately after the page becomes interactive.
+  window.setTimeout(() => {
+    window.__bbtUserReady = true;
+  }, 0);
 });
 
 // ─── Screenshot carousel: eager-load once visible ───

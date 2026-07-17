@@ -2,9 +2,22 @@
 
 Archived July 2026 entries rotated out of [[log]] during the 2026-07-12
 gamification streak system documentation sync and the
-2026-07-13 wiki maintenance sweep.
+2026-07-13 wiki maintenance sweep, with the 2026-07-17 marketing-site sync
+performing the latest pressure rotation.
 
 ---
+
+## [2026-07-12] docs | wiki stat drift sweep — routes, tests, migrations count
+
+Reconciled managed counts drifted from authoritative root `CLAUDE.md` §
+Codebase Stats. **Routes 74→75** (index, overview, _features-index,
+folder-structure, router-navigation). **Tests 11,506→11,515** (overview,
+patterns/testing). **Migrations 206→207** in data-layer/migrations.md local
+count; the 2026-07-10 MCP prod-parity snapshot stays at 206↔206, with
+`20260710120000` marketplace-moderation trigger noted as applied to prod later
+that day (both → 207, authority-preserving). No source/contract change; verified
+no other count drift and that notification per-device-logout + marketplace
+server-side-moderation contracts were already reflected. Lint green.
 
 ## [2026-07-12] notifications | inspection: FCM-logout doc reconcile + DND settings fixes
 
