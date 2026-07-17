@@ -396,13 +396,45 @@ jobs:
             --base main \
             --head "$BRANCH"
 
+  edge-function-changes:
+    name: Edge Function Changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    outputs:
+      should-deploy: ${{ steps.changes.outputs.should-deploy }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+
+      - name: Detect Edge Function deployment changes
+        id: changes
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          CURRENT_SHA: ${{ github.sha }}
+        run: |
+          if [[ "$BEFORE_SHA" =~ ^0+$ ]]; then
+            echo "should-deploy=true" >> "$GITHUB_OUTPUT"
+          elif git diff --quiet "$BEFORE_SHA" "$CURRENT_SHA" -- \
+            supabase/functions/ \
+            supabase/config.toml \
+            .github/workflows/ci.yml; then
+            echo "should-deploy=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "should-deploy=true" >> "$GITHUB_OUTPUT"
+          fi
+
   deploy-edge-functions:
     name: Deploy Edge Functions
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-    # Only deploy on main branch pushes, after tests pass
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [analyze, test, edge-functions-test]
+    # Deploy only for Edge source/config/workflow changes after tests pass.
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.edge-function-changes.outputs.should-deploy == 'true'
+    needs: [analyze, test, edge-functions-test, edge-function-changes]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 

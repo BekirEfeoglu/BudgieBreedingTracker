@@ -51,7 +51,8 @@ Signed AAB only from Codemagic or `release-ready.yml`. CI main push produces deb
 ## Supabase Ops
 
 - Migration: `supabase db push` (manual, staging first, then prod)
-- Edge Function deploy: `deploy-edge-functions` CI job (main only)
+- Edge Function deploy: `deploy-edge-functions` CI job (main only; Edge
+  source/config/deploy-workflow path-gated, so docs-only pushes skip it)
 - RLS changes via migration files only — never console-only
 
 ## Operational Anti-Patterns

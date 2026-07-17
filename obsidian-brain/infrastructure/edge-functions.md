@@ -106,7 +106,14 @@ Each function needs integration tests for:
 
 ## CI Deploy
 
-`deploy-edge-functions` job (main only, needs analyze+test+edge-functions-test). Function names are passed as raw string literals at call sites in `lib/data/remote/supabase/edge_function_client.dart` — there is no `EdgeFunctionName` constants class; names must still match exactly across workflow, function folder, and call sites.
+`deploy-edge-functions` job (main only, needs analyze+test+edge-functions-test)
+is gated by `edge-function-changes`. It deploys only when
+`supabase/functions/**`, `supabase/config.toml`, or `.github/workflows/ci.yml`
+changes; documentation-only pushes skip production deployment. Function names
+are passed as raw string literals at call sites in
+`lib/data/remote/supabase/edge_function_client.dart` — there is no
+`EdgeFunctionName` constants class; names must still match exactly across
+workflow, function folder, and call sites.
 
 ## Anti-Patterns
 

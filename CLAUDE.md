@@ -108,7 +108,7 @@ scripts/test_marketing_site.py          # Public-site assets, semantics, respons
 | Metric | Value |
 | --- | --- |
 | Source files (lib/) | 1029 Dart files |
-| Test files (test/) | 941 test files, 11,640+ individual tests |
+| Test files (test/) | 941 test files, 11,641+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -139,7 +139,8 @@ scripts/test_marketing_site.py          # Public-site assets, semantics, respons
 | `rules-sync` | CLAUDE.md stats verification (--strict) |
 | `security-audit` | Security posture verification (cert pinning, secrets) |
 | `auto-fix-stats` | Auto-PR for CLAUDE.md drift (main only) |
-| `deploy-edge-functions` | Supabase Edge Function deployment (main only, needs analyze+test+edge-functions-test) |
+| `edge-function-changes` | Main-push path guard for Edge source/config/deploy-workflow changes |
+| `deploy-edge-functions` | Supabase Edge Function deployment (main only, path-gated, needs analyze+test+edge-functions-test) |
 | `android-build` | Debug APK build |
 | `ios-build` | iOS build (no code signing) |
 

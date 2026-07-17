@@ -166,6 +166,9 @@ class MarketplaceListingRemoteSource {
       // marker — surface a moderation message rather than a generic DB error.
       if (e is PostgrestException &&
           e.message.contains('MARKETPLACE_MODERATION_REJECTED')) {
+        AppLogger.warning(
+          '[marketplace_listings] Listing rejected by server moderation',
+        );
         throw const app_exc.ValidationException(
           'marketplace.moderation_rejected',
           code: 'marketplace_moderation_rejected',

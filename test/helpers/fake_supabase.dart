@@ -85,6 +85,16 @@ class FakeFilterBuilder<T> extends Fake implements PostgrestFilterBuilder<T> {
   }
 
   @override
+  PostgrestTransformBuilder<PostgrestList> select([String columns = '*']) {
+    return FakeFilterBuilder<PostgrestList>(result: const [], error: error);
+  }
+
+  @override
+  PostgrestTransformBuilder<PostgrestMap> single() {
+    return FakeFilterBuilder<PostgrestMap>(result: const {}, error: error);
+  }
+
+  @override
   PostgrestFilterBuilder<T> or(String filters, {String? referencedTable}) {
     orCalls.add(filters);
     return this;

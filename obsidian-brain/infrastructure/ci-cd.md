@@ -19,7 +19,8 @@ Runs on PRs and main pushes.
 | `rules-sync` | CLAUDE.md stats verification | PR merge |
 | `security-audit` | `python scripts/verify_security.py` — cert pinning, secrets | PR merge |
 | `auto-fix-stats` | Auto-PR for CLAUDE.md drift | main only |
-| `deploy-edge-functions` | Supabase Edge Function deploy | main only, needs analyze+test+edge-functions-test |
+| `edge-function-changes` | Edge source/config/deploy-workflow path guard | main push |
+| `deploy-edge-functions` | Supabase Edge Function deploy | main only, path-gated, needs analyze+test+edge-functions-test |
 | `android-build` | Debug APK smoke gate | main |
 | `android-release` | Signed AAB (`release-ready.yml`) | manual trigger only |
 | `ios-build` | iOS build (no code signing) | main |
@@ -41,6 +42,8 @@ keeps `web/` absent so the static `docs/` site remains the only web surface.
 - `pull_request` for code-running validation; `pull_request_target` for bot/fork metadata
 - Minimum permissions: `contents: read`, `pull-requests: read`
 - Secret-requiring jobs: main push only
+- Edge deploy runs only for `supabase/functions/**`, `supabase/config.toml`, or
+  `.github/workflows/ci.yml`; documentation-only pushes skip production deploy.
 - Workflow YAML must be locally parsed before push: `ruby -e 'require "yaml"; YAML.load_file(ARGV[0])' .github/workflows/ci.yml`
 
 ## Codemagic (`codemagic.yaml`)

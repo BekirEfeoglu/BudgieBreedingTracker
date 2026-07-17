@@ -7,6 +7,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
+import 'package:budgie_breeding_tracker/core/errors/app_exception.dart'
+    show ValidationException;
 import 'package:budgie_breeding_tracker/data/remote/api/marketplace_listing_remote_source.dart';
 import 'package:budgie_breeding_tracker/domain/services/moderation/image_safety_service.dart';
 
@@ -216,6 +218,30 @@ void main() {
           .map((e) => '${e.key}:${e.value}')
           .toList();
       expect(eqKeys, containsAll(['user_id:user-1', 'is_deleted:false']));
+    });
+
+    test('insert maps server moderation rejection to validation error', () {
+      queryBuilder.upsertBuilder.error = const PostgrestException(
+        message: 'MARKETPLACE_MODERATION_REJECTED: unsafe listing content',
+        code: 'P0001',
+      );
+
+      expect(
+        () => source.insert({'id': 'listing-1'}),
+        throwsA(
+          isA<ValidationException>()
+              .having(
+                (error) => error.message,
+                'message',
+                'marketplace.moderation_rejected',
+              )
+              .having(
+                (error) => error.code,
+                'code',
+                'marketplace_moderation_rejected',
+              ),
+        ),
+      );
     });
 
     test('softDelete sets is_deleted to true', () async {

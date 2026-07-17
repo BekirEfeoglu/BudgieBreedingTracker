@@ -22,7 +22,8 @@
 | `rules-sync` | CLAUDE.md stats verification | PR merge |
 | `security-audit` | `python scripts/verify_security.py` — cert pinning, secrets posture | PR merge |
 | `auto-fix-stats` | Auto-PR for stats drift | main only |
-| `deploy-edge-functions` | Supabase Edge Function deploy | main only, needs analyze+test+edge-functions-test |
+| `edge-function-changes` | Edge source/config/deploy-workflow path guard | main push |
+| `deploy-edge-functions` | Supabase Edge Function deploy | main only, path-gated, needs analyze+test+edge-functions-test |
 
 ## Release-Ready Workflow
 - `release-ready.yml` manuel calisir; main push CI'sini store artifact uretimiyle yavaslatma
@@ -59,6 +60,9 @@
 - Debug araclari: `gh run list`, `gh run view`, `gh api .../check-runs/.../annotations`
 - CI job isimleri degisirse branch protection / required checks'i guncelle
 - Supabase Edge Function deploy job'u `edge-functions-test` sonucuna bagli kalmali; function source veya shared helper degistiginde Deno testleri deploy oncesi kosmali
+- `deploy-edge-functions` yalniz `supabase/functions/**`, `supabase/config.toml`
+  veya `.github/workflows/ci.yml` degistiginde calismali. `docs/**`-only push
+  production Edge Function'larini yeniden deploy etmemeli.
 - Codecov upload token gerektiriyorsa test job'unu kirmiziya dusurme; `CODECOV_TOKEN` yokken upload adimini intentional skip/no-op yap
 
 ## Post-Push Verification

@@ -4,6 +4,9 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-17] ci-fix | Edge deploy is path-gated; marketplace moderation rejection now logs safely
+Docs-only main pushes no longer redeploy unchanged Edge Functions; source/config/workflow changes remain test-gated. Expected server moderation rejections emit a non-sensitive warning before the localized validation error, with workflow and remote-source regressions.
+
 ## [2026-07-17] fix | Marketing site tablet navigation and accessibility
 
 Live-tested at 375/768/1024/1440 widths. The landing header now uses the

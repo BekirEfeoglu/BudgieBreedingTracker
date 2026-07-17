@@ -44,6 +44,7 @@
 - [ ] Lokalizasyon değiştiyse `python3 scripts/check_l10n_sync.py` geçti
 - [ ] Kural/metrik değiştiyse `python3 scripts/verify_rules.py --strict` geçti
 - [ ] CI/workflow değiştiyse `.claude/rules/ci-actions.md` ve `.github/pull_request_template.md` güncellendi
+- [ ] Edge deploy akışı değiştiyse source/config/workflow path guard'ı korunuyor; `docs/**`-only push deploy etmiyor
 - [ ] CI coverage upload değiştiyse token olmayan ortamda job bilinçli skip/no-op davranıyor
 - [ ] CI/workflow değiştiyse workflow YAML parse edildi ve push sonrası `python3 scripts/check_remote_status.py` ile exact commit doğrulandı
 - [ ] Release artifact davranışı değiştiyse `release-ready.yml`, `CLAUDE.md`, `.claude/rules/release-ops.md` birlikte güncellendi

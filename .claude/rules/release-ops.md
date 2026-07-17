@@ -29,6 +29,8 @@
 - `.env` dosyasini source of truth kabul etme; release'de secrets manager kullan
 - Eksik env varsa fail-fast davran; sessiz fallback ile production degistirme
 - Edge Function deployment secret'lari sadece CI ortaminda
+- Edge Function deploy'u Edge source/config/deploy-workflow path guard'i ile
+  sinirla; `docs/**`-only main push'ta production function'larini yeniden deploy etme
 
 ## Supabase Operations
 - Edge Function isimleri workflow ve kod referanslarinda birebir tutarli olmali

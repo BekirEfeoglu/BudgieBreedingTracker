@@ -76,10 +76,15 @@ Bu karar hosted Supabase Edge'in güncel function başına **256 MB memory** ve
 - Tests live next to the function as `supabase/functions/<name>/*_test.ts` using Deno test runner
 - CI `deploy-edge-functions` job must depend on `edge-functions-test`, which
   runs `deno test --allow-env --allow-net supabase/functions` before deploy
+- Main-push deployment is path-gated to `supabase/functions/**`,
+  `supabase/config.toml`, or the deploy contract in `.github/workflows/ci.yml`;
+  documentation-only pushes must not redeploy unchanged functions.
 - Dart-side test of HTTP wrapper ≠ edge function test — both required
 
 ## Deployment
 - Function names must match exactly across: workflow, function folder, and raw string literal call sites in `lib/data/remote/supabase/edge_function_client.dart` (no `EdgeFunctionName` constants class exists)
+- Keep the `edge-function-changes` guard in the deploy job dependency chain so
+  unrelated main pushes cannot consume deploy credentials or runtime quota.
 - New function checklist:
   1. Create `supabase/functions/<name>/index.ts`
   2. Add Deno tests: `supabase/functions/<name>/*_test.ts`
