@@ -225,27 +225,15 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     });
 
-    testWidgets('calls signInAnonymously on guest button tap', (tester) async {
-      when(
-        () => mockAuth.signInAnonymously(),
-      ).thenAnswer((_) async => AuthResponse());
-
+    testWidgets('hides guest action while anonymous auth is disabled', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
 
-      final guestBtn = find.text(l10n('auth.continue_as_guest'));
-      await tester.ensureVisible(guestBtn);
-      await tester.pump(const Duration(milliseconds: 100));
-      await tester.tap(guestBtn);
-      await tester.pump(const Duration(milliseconds: 500));
-
-      verify(() => mockAuth.signInAnonymously()).called(1);
-
-      await tester.pump(const Duration(seconds: 2));
-      await tester.pump();
-      await tester.pump();
-      await tester.pump(const Duration(seconds: 3));
-      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.text(l10n('auth.continue_as_guest')), findsNothing);
+      expect(find.text(l10n('auth.guest_limitation_hint')), findsNothing);
+      verifyNever(() => mockAuth.signInAnonymously());
     });
 
     testWidgets('falls back to browser OAuth when native Google fails', (
@@ -393,27 +381,6 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       // If we reach here without an exception, the mounted guard works.
-    });
-
-    testWidgets('guest login error shows snackbar', (tester) async {
-      when(
-        () => mockAuth.signInAnonymously(),
-      ).thenThrow(const AuthException('Anonymous sign-ins are disabled'));
-
-      await tester.pumpWidget(buildSubject());
-      await tester.pump(const Duration(milliseconds: 500));
-
-      final guestBtn = find.text(l10n('auth.continue_as_guest'));
-      await tester.ensureVisible(guestBtn);
-      await tester.pump(const Duration(milliseconds: 100));
-      await tester.tap(guestBtn);
-      await tester.pump(const Duration(milliseconds: 500));
-
-      // Error snackbar should appear
-      expect(find.byType(SnackBar), findsOneWidget);
-
-      await tester.pump(const Duration(seconds: 5));
-      await tester.pump(const Duration(milliseconds: 500));
     });
   });
 }

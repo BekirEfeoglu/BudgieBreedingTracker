@@ -3,6 +3,10 @@ import 'package:budgie_breeding_tracker/core/constants/feature_flags.dart';
 
 void main() {
   group('FeatureFlags', () {
+    test('anonymous sign-in stays disabled until a coordinated rollout', () {
+      expect(FeatureFlags.anonymousSignInEnabled, isFalse);
+    });
+
     test('social and gamification feature flags match production rollout', () {
       expect(FeatureFlags.communityEnabled, isTrue);
       expect(FeatureFlags.marketplaceEnabled, isTrue);

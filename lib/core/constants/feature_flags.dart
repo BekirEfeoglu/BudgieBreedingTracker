@@ -2,6 +2,11 @@
 /// Set a flag to `true` and rebuild to enable the feature.
 /// Tree-shaking removes dead code when a flag is `false`.
 abstract final class FeatureFlags {
+  /// Supabase anonymous auth is deliberately disabled for account-scoped data.
+  /// Keep the login CTA hidden until the server setting and its RLS/data model
+  /// have been reviewed and enabled in the same rollout.
+  static const bool anonymousSignInEnabled = false;
+
   static const bool communityEnabled = true;
   static const bool marketplaceEnabled = true;
   // Enabled 2026-07-10: the messaging feature is fully built (conversation

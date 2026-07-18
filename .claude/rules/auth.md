@@ -52,6 +52,17 @@ AAL2 kontrolü HER destructive adımdan ÖNCE koşar — hesap silmede storage t
 - Raw Supabase/GoogleSignIn hataları `auth_error_mapper.dart` + `native_google_auth_errors.dart` ile l10n anahtarına çevrilir
 - UI'ya asla raw exception metni gösterme (error-handling.md); auth hataları `auth.*`/`errors.*` kategorisinde
 
+## Anonymous / Guest Policy
+- Anonymous Supabase sign-in account-scoped veri modeli için kapalıdır:
+  `supabase/config.toml` ve `FeatureFlags.anonymousSignInEnabled` birlikte
+  `false` kalır.
+- Login kartı guest callback'i `null` aldığında CTA ve "limited features"
+  açıklamasını tamamen gizler; kullanıcıya yalnızca hata verecek bir yol
+  gösterilmez.
+- Guest rollout ancak RLS/account-scoped veri etkisi incelenip Supabase ayarı,
+  client flag'i ve iki yüzeyin kontrat testleri aynı değişiklikte açılırsa
+  yapılabilir. Client flag authorization yerine geçmez.
+
 ## Logout Zinciri (sıra önemli)
 ```
 1. revoke-oauth-token edge fn (best-effort — Google/Apple)
@@ -78,5 +89,7 @@ Best-effort adımların hatası zinciri DURDURMAZ (log + devam). Hesap silme bu 
 7. Logout'ta FCM/presence/Sentry temizliğini atlamak (cross-device bildirim sızıntısı, sticky online, PII)
 8. Raw auth hata metnini kullanıcıya göstermek (error mapper + l10n)
 9. Router'ı auth state değişiminde yeniden oluşturmak (`RouterNotifier` refreshListenable tek yol)
+10. Anonymous auth server'da kapalıyken guest CTA göstermek (başarısız ağ
+    isteği + yanlış kullanıcı vaadi)
 
 > **İlgili**: security.md (secure storage, MFA lockout, OAuth topolojisi), profile.md (hesap silme, AAL2), edge-functions.md (mfa-lockout, revoke-oauth-token), notifications.md (FCM token temizliği), presence.md (logout markInactive/endSession), observability.md (Sentry user scope), performance.md (startup kritik yolu)

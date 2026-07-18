@@ -23,6 +23,16 @@
 | Google OAuth | google_sign_in ^7.2.0 |
 | Apple Sign-In | sign_in_with_apple ^8.0.0 |
 | MFA (TOTP) | Supabase Auth + `mfa-lockout` Edge Function |
+| Guest / anonymous | Disabled in Supabase and `FeatureFlags`; login CTA hidden |
+
+## Guest Policy
+
+Account-scoped data and RLS have not been approved for Supabase anonymous
+users, so `enable_anonymous_sign_ins=false` remains fail-closed. The login
+screen passes no guest callback while `FeatureFlags.anonymousSignInEnabled` is
+false; `BudgieLoginCard` therefore omits both the CTA and limitation copy
+instead of issuing a request that can only fail. Enabling guest access requires
+one coordinated server + client rollout with matching contract tests.
 
 ## Session Management
 

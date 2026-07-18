@@ -4,6 +4,14 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-18] auth-fix | Disabled guest CTA now matches server policy
+
+Release-emulator verification found that the login screen advertised guest
+access even though Supabase anonymous sign-ins are deliberately disabled.
+Production now hides the guest CTA and limitation copy behind the matching
+static client flag; card-level opt-in support remains for a future coordinated
+server/RLS rollout, with client/server contract and widget regressions.
+
 ## [2026-07-18] ci-fix | Codemagic release SDK drift pinned to verified Flutter
 
 The first store-free Android verification build reached signed AAB compilation
@@ -167,32 +175,5 @@ longer cited by any doc; ran it and pruned 8 dead placeholders (`exampleProvider
 `my_form.dart`, `my_screen.dart`). Both the `--target all --classes` gate and
 the audit are clean. Test suite 23→31 (100% cov). Docs synced (CLAUDE.md
 Quality Scripts, documentation-sync.md, wiki scripts.md).
-
-## [2026-07-14] ci | Drift guard extended to wiki + class names; wiki symbol drift fixed
-
-Executed the three follow-up suggestions. **#3 (obfuscation debunk):** `git grep`
-found 135 `*Notifier` / 29 `*Service` / 492 `*Provider` readable names — the
-subagent "source is minified" claim was an artifact; disregarded. **#1 + #2
-(extend the checker):** `check_rule_symbol_drift.py` gained `--target
-{rules,wiki,all}` (wiki scan excludes `log.md`/`log-archive-*` — chronological
-history legitimately names removed symbols) and `--classes` (opt-in check of
-`*Service`/`*Notifier`/`*Repository` — measured LOW noise: every finding was
-genuine drift or documented-non-existence prose). Both surfaces + classes now
-gated via `--target all --classes` in the `code-quality` CI job +
-`run_local_quality_gate.sh`. **Wiki drift fixed (11):** breeding
-`breedingPairListProvider`→`filteredBreedingPairsProvider` +
-`activeIncubationsProvider`→`allIncubationsStreamProvider`; chicks
-`chickListProvider`→`filteredChicksProvider`; eggs `eggs_mapper.dart`→`egg_mapper.dart`;
-profile `currentUserProfileProvider`→`userProfileProvider`; home
-`connectivityProvider`→`syncStatusProvider`; admin+more
-`userRoleProvider`→`isAdminProvider`/`isFounderProvider`; data-io
-`adsServiceProvider`→`adServiceProvider`; premium ×2
-`freeTierUsageProvider`→`freeTierLimitServiceProvider`. **Class drift fixed:**
-background-sync.md + data-flow.md `ConnectivityService`→`networkStatusProvider`
-(the real `connectivity_plus` wrapper; no such class exists). Allowlisted the
-documented-non-existence prose (premiumStatusProvider, genealogyTreeProvider,
-MarketplaceListingRepository anti-pattern name, CalendarService,
-IncubationReminderService). Test suite 18→23 (100% cov). Docs synced across
-CLAUDE.md/ci-actions.md/documentation-sync.md/wiki.
 
 Older entries are archived in [[log-archive-2026-07-l]], [[log-archive-2026-07-k]], [[log-archive-2026-07-j]], [[log-archive-2026-07-i]], [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

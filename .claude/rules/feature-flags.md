@@ -18,6 +18,14 @@ if (debugRoute.isNotEmpty) {
 }
 ```
 
+### Static Production Rollout Flags
+
+`FeatureFlags` içindeki statik flag'ler binary derlenirken sabitlenir ve root
+yüzeyden alt widget'a prop olarak geçirilir. `anonymousSignInEnabled=false`,
+Supabase `enable_anonymous_sign_ins=false` kontratını yansıtır; login kartı
+guest callback'i almadığında bozuk CTA'yı render etmez. Bu flag tek başına
+security boundary değildir ve server ayarı/RLS incelemesi olmadan açılamaz.
+
 ### dart-define-from-file
 Local development'ta `.env` dosyası kullanılır:
 ```bash

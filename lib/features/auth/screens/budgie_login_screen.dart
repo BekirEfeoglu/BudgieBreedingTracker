@@ -10,6 +10,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../bootstrap.dart';
+import '../../../core/constants/feature_flags.dart';
 import '../../../core/extensions/context_extensions.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -216,7 +217,9 @@ class _BudgieLoginScreenState extends _BudgieLoginAuthBase {
                                     _handleOAuth(OAuthProvider.google),
                                 onAppleTap: () =>
                                     _handleOAuth(OAuthProvider.apple),
-                                onGuestTap: _handleGuestLogin,
+                                onGuestTap: FeatureFlags.anonymousSignInEnabled
+                                    ? _handleGuestLogin
+                                    : null,
                                 onForgotPassword: () =>
                                     context.push(AppRoutes.forgotPassword),
                                 onRegister: () =>

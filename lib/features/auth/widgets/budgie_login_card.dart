@@ -26,7 +26,7 @@ class BudgieLoginCard extends StatelessWidget {
   final VoidCallback onSubmit;
   final VoidCallback onGoogleTap;
   final VoidCallback onAppleTap;
-  final VoidCallback onGuestTap;
+  final VoidCallback? onGuestTap;
   final VoidCallback onForgotPassword;
   final VoidCallback onRegister;
 
@@ -41,7 +41,7 @@ class BudgieLoginCard extends StatelessWidget {
     required this.onSubmit,
     required this.onGoogleTap,
     required this.onAppleTap,
-    required this.onGuestTap,
+    this.onGuestTap,
     required this.onForgotPassword,
     required this.onRegister,
   });
@@ -214,7 +214,10 @@ class BudgieLoginCard extends StatelessWidget {
                         key: ValueKey('success'),
                         LucideIcons.check,
                       ),
-                      _ => Text(key: const ValueKey('label'), 'auth.login'.tr()),
+                      _ => Text(
+                        key: const ValueKey('label'),
+                        'auth.login'.tr(),
+                      ),
                     },
                   ),
                 ),
@@ -230,19 +233,23 @@ class BudgieLoginCard extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
 
-            // Misafir Girisi
-            TextButton(
-              onPressed: _isLoading ? null : onGuestTap,
-              child: Text('auth.continue_as_guest'.tr()),
-            ),
-            Text(
-              'auth.guest_limitation_hint'.tr(),
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+            // Anonymous auth is server-controlled. When it is disabled, omit
+            // the entire guest affordance instead of advertising a path that
+            // can only fail after a network request.
+            if (onGuestTap != null) ...[
+              TextButton(
+                onPressed: _isLoading ? null : onGuestTap,
+                child: Text('auth.continue_as_guest'.tr()),
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.lg),
+              Text(
+                'auth.guest_limitation_hint'.tr(),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+            ],
 
             // Legal links (Privacy Policy & Terms of Service)
             const LegalLinksText(),

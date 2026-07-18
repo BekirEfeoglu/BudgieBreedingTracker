@@ -42,7 +42,10 @@ void main() {
       passwordFocusNode.dispose();
     });
 
-    Widget buildSubject({LoginState loginState = LoginState.idle}) {
+    Widget buildSubject({
+      LoginState loginState = LoginState.idle,
+      bool guestEnabled = false,
+    }) {
       return SingleChildScrollView(
         child: BudgieLoginCard(
           formKey: formKey,
@@ -54,7 +57,7 @@ void main() {
           onSubmit: () => submitCalled = true,
           onGoogleTap: () {},
           onAppleTap: () {},
-          onGuestTap: () => guestCalled = true,
+          onGuestTap: guestEnabled ? () => guestCalled = true : null,
           onForgotPassword: () => forgotPasswordCalled = true,
           onRegister: () => registerCalled = true,
         ),
@@ -168,15 +171,21 @@ void main() {
       expect(find.byType(LegalLinksText), findsOneWidget);
     });
 
-    testWidgets('shows guest login button', (tester) async {
+    testWidgets('hides guest login when no callback is provided', (
+      tester,
+    ) async {
       await pumpWidgetSimple(tester, buildSubject());
 
-      expect(find.text(l10n('auth.continue_as_guest')), findsOneWidget);
+      expect(find.text(l10n('auth.continue_as_guest')), findsNothing);
+      expect(find.text(l10n('auth.guest_limitation_hint')), findsNothing);
     });
 
-    testWidgets('shows guest limitation hint', (tester) async {
-      await pumpWidgetSimple(tester, buildSubject());
+    testWidgets('shows guest action and limitation when enabled', (
+      tester,
+    ) async {
+      await pumpWidgetSimple(tester, buildSubject(guestEnabled: true));
 
+      expect(find.text(l10n('auth.continue_as_guest')), findsOneWidget);
       expect(find.text(l10n('auth.guest_limitation_hint')), findsOneWidget);
     });
 
@@ -253,7 +262,7 @@ void main() {
     });
 
     testWidgets('calls onGuestTap when guest button tapped', (tester) async {
-      await pumpWidgetSimple(tester, buildSubject());
+      await pumpWidgetSimple(tester, buildSubject(guestEnabled: true));
 
       await tester.ensureVisible(find.text(l10n('auth.continue_as_guest')));
       await tester.pump();
@@ -266,7 +275,7 @@ void main() {
     testWidgets('disables buttons in loading state', (tester) async {
       await pumpWidgetSimple(
         tester,
-        buildSubject(loginState: LoginState.loading),
+        buildSubject(loginState: LoginState.loading, guestEnabled: true),
       );
 
       // The submit FilledButton keeps a non-null no-op handler while loading

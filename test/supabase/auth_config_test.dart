@@ -1,9 +1,10 @@
 import 'dart:io';
 
+import 'package:budgie_breeding_tracker/core/constants/feature_flags.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('anonymous sign-ins are disabled for account-scoped data', () {
+  test('anonymous sign-ins are disabled in client and Supabase', () {
     final config = File('supabase/config.toml').readAsStringSync();
     final disabled = RegExp(
       r'^\s*enable_anonymous_sign_ins\s*=\s*false\s*$',
@@ -11,6 +12,7 @@ void main() {
     ).hasMatch(config);
 
     expect(disabled, isTrue);
+    expect(FeatureFlags.anonymousSignInEnabled, isFalse);
   });
 
   test('local email capture uses the supported local_smtp config section', () {
