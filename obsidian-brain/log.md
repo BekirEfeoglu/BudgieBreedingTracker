@@ -4,6 +4,14 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-18] db-fix | Historical health-record migration no longer indexes a future column
+
+Release-emulator Sentry verification exposed a v25 upgrade failure: the shared
+performance-index helper attempted to index `health_records.chick_id` before
+v27 added that column. The two chick indexes now use a schema-presence guard;
+v27 invokes the helper again after adding the column. A file-backed sequential
+v25→v29 regression preserves a legacy row and verifies the column plus indexes.
+
 ## [2026-07-18] auth-fix | Disabled guest CTA now matches server policy
 
 Release-emulator verification found that the login screen advertised guest

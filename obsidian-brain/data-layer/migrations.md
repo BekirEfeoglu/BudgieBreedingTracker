@@ -8,7 +8,7 @@ Two parallel migration systems: **Drift** (local SQLite) and **Supabase SQL** (r
 
 ### Schema Version
 
-`schemaVersion = 29` in `app_database.dart`. Must be incremented sequentially — no skipping. (v25 added `profiles.show_in_leaderboard` via `_migrateV24ToV25`; v26 added the `idx_conflict_history_user_table_record` composite index via `_migrateV25ToV26`; v27 added `events.chick_id` (+ backfill NULL-ing orphaned refs) via `_migrateV26ToV27`, paired with Supabase `20260709103045`; v28 added `genetics_history.father_phase_overrides`; v29 adds nullable encrypted snapshot columns `conflict_history.local_payload`, `server_payload`, and `payload_version` via `_migrateV28ToV29`. Existing rows remain NULL because discarded values cannot be reconstructed. v28/v29 are local-only, so neither has a paired Supabase migration.)
+`schemaVersion = 29` in `app_database.dart`. Must be incremented sequentially — no skipping. (v25 added `profiles.show_in_leaderboard` via `_migrateV24ToV25`; v26 added the `idx_conflict_history_user_table_record` composite index via `_migrateV25ToV26`; v27 added nullable `health_records.chick_id` via `_migrateV26ToV27`, paired with Supabase `20260709103045`; v28 added `genetics_history.father_phase_overrides`; v29 adds nullable encrypted snapshot columns `conflict_history.local_payload`, `server_payload`, and `payload_version` via `_migrateV28ToV29`. Existing rows remain NULL because discarded values cannot be reconstructed. v28/v29 are local-only, so neither has a paired Supabase migration.)
 
 ### Pattern
 
@@ -32,6 +32,12 @@ MigrationStrategy(
 - [ ] Index added for filtered columns
 - [ ] Test: fresh DB + upgrade-from-previous
 - [ ] `.g.dart` regenerated
+
+Shared index helpers that run from historical migrations must guard columns
+introduced by later schema versions with `PRAGMA table_info`. `IF NOT EXISTS`
+only guards duplicate index names; it does not make a missing column safe. The
+column-adding migration must call the helper again, and a regression must open
+the oldest affected schema version through the real sequential upgrade path.
 
 ## Supabase SQL Migrations
 
@@ -155,6 +161,9 @@ Never delete or rename migration files. If a mistake exists, create a new migrat
 - Privileged RPCs use `private` `SECURITY DEFINER` implementations plus public invoker wrappers.
 - Production drift verification (version + content) is required after deploying newer local migrations; the ledger's `statements` column is the source for content-drift md5 checks.
 - Structural drift (duplicate version prefixes, malformed filenames — the 2026-05-29 collision class) is now auto-guarded every PR by `scripts/verify_migration_drift.py` in the `code-quality` job; its `--online` mode adds prod-ledger version parity when a token is present. Content-drift (file vs applied `statements`) remains a manual MCP procedure.
+- Historical shared index helpers guard later-added columns and are tested from
+  the earliest affected local schema version; `IF NOT EXISTS` alone is not a
+  missing-column guard.
 - Committed migration files that drift from the ledger but are superseded by a later drift-free migration are left as-is (final schema reproduces prod); only a file that determines the *final* state and diverges gets a forward reconciliation migration.
 
 ## Known Deferred Work

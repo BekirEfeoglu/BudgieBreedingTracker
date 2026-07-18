@@ -15,6 +15,9 @@
 - **Table**: `health_records_table.dart` (types: checkup, illness, injury, vaccination, medication, death, unknown; optional `birdId`/`chickId`)
 - **Repository**: `health_record_repository.dart` — requires `ValidatedSyncMixin` (optional parents: bird/chick)
 - **Statistics**: `HealthRecordsDao.watchCountsByTypeInRange` (SQL-aggregated) feeds `healthRecordTypeDistributionProvider` → `HealthRecordTypeChart`
+- **Local migration**: `chickId` arrives in v27. The shared performance-index
+  helper is also called by older migrations, so chick indexes are column-gated
+  until v27 adds the field and invokes the helper again.
 
 ## Attachments
 

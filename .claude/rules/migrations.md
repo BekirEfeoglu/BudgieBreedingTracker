@@ -56,6 +56,12 @@ Drift test helper `setSchemaVersion(int)` ile geçmiş versiyondan upgrade simü
 - [ ] Test: fresh DB + upgrade-from-previous
 - [ ] Companion `.g.dart` regenerated
 
+Tarihsel birden fazla migration adımından çağrılan ortak index yardımcıları,
+daha yeni sürümde eklenen kolonlara koşulsuz referans veremez. `CREATE INDEX IF
+NOT EXISTS` eksik kolonu tolere etmez; kolon varlığını `PRAGMA table_info` ile
+guard et ve kolonu ekleyen migration'da helper'ı yeniden çağır. Her böyle
+değişiklikte helper'ın çağrıldığı en eski sürümden upgrade regresyonu ekle.
+
 ## Supabase SQL Migration (Remote)
 
 ### Dosya Naming
@@ -177,5 +183,7 @@ Not: `CONCURRENTLY` transaction içinde çalışmaz, migration runner'ı buna g�
 8. Rollback migration yazmak (forward-only philosophy)
 9. Drift schema değişikliği için Supabase migration unutmak
 10. Sensitive default value (`'temp@test.com'` gibi) — production'a sızar
+11. Tarihsel migration'ın ortak index helper'ına gelecekte eklenen kolonu
+    guardsız eklemek (`IF NOT EXISTS` eksik kolon koruması değildir)
 
 > **İlgili**: data-layer.md (Drift + Supabase), security.md (RLS), release-ops.md (deploy), edge-functions.md (deploy ayrı pipeline)

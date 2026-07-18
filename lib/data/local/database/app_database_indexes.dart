@@ -142,14 +142,20 @@ Future<void> _createPerformanceIndexes(AppDatabase db) async {
     'CREATE INDEX IF NOT EXISTS idx_health_records_bird_deleted '
     'ON health_records (bird_id, is_deleted)',
   );
-  await db.customStatement(
-    'CREATE INDEX IF NOT EXISTS idx_health_records_chick '
-    'ON health_records (chick_id)',
-  );
-  await db.customStatement(
-    'CREATE INDEX IF NOT EXISTS idx_health_records_chick_deleted '
-    'ON health_records (chick_id, is_deleted)',
-  );
+  // This shared helper also runs in historical v23/v26 upgrade steps, while
+  // health_records.chick_id is introduced only in v27. IF NOT EXISTS does not
+  // protect against a missing indexed column, so keep pre-v27 upgrades safe;
+  // the v27 migration calls this helper again after adding the column.
+  if (await _tableHasColumn(db, 'health_records', 'chick_id')) {
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_health_records_chick '
+      'ON health_records (chick_id)',
+    );
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_health_records_chick_deleted '
+      'ON health_records (chick_id, is_deleted)',
+    );
+  }
   await db.customStatement(
     'CREATE INDEX IF NOT EXISTS idx_growth_measurements_chick '
     'ON growth_measurements (chick_id)',
