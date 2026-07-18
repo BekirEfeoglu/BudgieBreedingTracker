@@ -67,18 +67,25 @@ class TestCiWorkflowContract(unittest.TestCase):
         self.assertIn('SENTRY_DIST="${APP_VERSION##*+}"', release)
 
     def test_codemagic_releases_fail_fast_without_sentry_dsn(self):
+        verify_only = _job_block(self.codemagic, "android-verify-only")
+
         self.assertEqual(2, self.codemagic.count('if [ -z "$SENTRY_DSN" ]'))
+        self.assertIn(
+            "for VAR_NAME in SUPABASE_URL SUPABASE_ANON_KEY SENTRY_DSN "
+            "SENTRY_AUTH_TOKEN REVENUECAT_API_KEY_ANDROID",
+            verify_only,
+        )
         self.assertEqual(
             2,
             self.codemagic.count('if [ -z "$SENTRY_AUTH_TOKEN" ]'),
         )
         self.assertEqual(
-            2,
+            3,
             self.codemagic.count('--dart-define=SENTRY_DSN="$SENTRY_DSN"'),
         )
-        self.assertEqual(2, self.codemagic.count("dart run sentry_dart_plugin"))
+        self.assertEqual(3, self.codemagic.count("dart run sentry_dart_plugin"))
         self.assertEqual(
-            2,
+            3,
             self.codemagic.count(
                 "--save-obfuscation-map=build/app/obfuscation.map.json"
             ),
@@ -94,6 +101,35 @@ class TestCiWorkflowContract(unittest.TestCase):
         self.assertIn('export SENTRY_DIST="$ANDROID_BUILD_NUMBER"', self.codemagic)
         self.assertIn('export SENTRY_DIST="$IOS_BUILD_NUMBER"', self.codemagic)
         self.assertNotIn("${SENTRY_DSN:-}", self.codemagic)
+
+    def test_codemagic_android_verify_only_cannot_publish_to_store(self):
+        verify_only = _job_block(self.codemagic, "android-verify-only")
+
+        self.assertIn(
+            "name: Android Verify Only (No Store Publishing)",
+            verify_only,
+        )
+        self.assertNotIn("publishing:", verify_only)
+        self.assertNotIn("google_play", verify_only)
+        self.assertNotIn("google-play", verify_only)
+        self.assertNotIn("GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS", verify_only)
+        self.assertIn(
+            "VERSION_LINE=\"$(sed -n 's/^version: //p' pubspec.yaml | head -1)\"",
+            verify_only,
+        )
+        self.assertIn("ANDROID_BUILD_NUMBER=\"${VERSION_LINE##*+}\"", verify_only)
+        self.assertIn("''|*[!0-9]*)", verify_only)
+        self.assertIn(
+            'echo "ANDROID_BUILD_NUMBER=$ANDROID_BUILD_NUMBER" >> "$CM_ENV"',
+            verify_only,
+        )
+        self.assertIn("--build-name=\"$APP_VERSION\"", verify_only)
+        self.assertIn("--build-number=\"$ANDROID_BUILD_NUMBER\"", verify_only)
+        self.assertIn("--obfuscate", verify_only)
+        self.assertIn("--split-debug-info=build/symbols/android", verify_only)
+        self.assertIn("dart run sentry_dart_plugin", verify_only)
+        self.assertIn("build/**/outputs/**/*.aab", verify_only)
+        self.assertIn("build/symbols/android/**", verify_only)
 
     def test_sentry_dart_plugin_keeps_source_upload_disabled(self):
         self.assertIn("sentry_dart_plugin: ^3.4.0", self.pubspec)

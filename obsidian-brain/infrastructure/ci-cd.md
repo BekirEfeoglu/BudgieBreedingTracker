@@ -51,12 +51,14 @@ keeps `web/` absent so the static `docs/` site remains the only web surface.
 
 ## Codemagic (`codemagic.yaml`)
 
-Production releases:
+Release and verification workflows:
 - `android-release`: AAB → Google Play (alpha track)
+- `android-verify-only`: signed AAB + Sentry symbols → Codemagic artifacts only;
+  no `publishing` block, Google Play credential, or latest-build query
 - `ios-release`: IPA → App Store TestFlight (App ID: 6759828211)
-- Both workflows require `SENTRY_DSN` in `app_env_vars`; missing monitoring
+- All three workflows require `SENTRY_DSN` in `app_env_vars`; missing monitoring
   configuration fails before the store build starts.
-- Both workflows require the `org:ci`-scoped `SENTRY_AUTH_TOKEN`, generate the
+- All three workflows require the `org:ci`-scoped `SENTRY_AUTH_TOKEN`, generate the
   Dart obfuscation map, and run `sentry_dart_plugin` before publishing.
 
 ## Release Ready (`release-ready.yml`)

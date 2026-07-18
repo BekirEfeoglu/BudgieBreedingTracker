@@ -35,6 +35,10 @@
   `obfuscation.map.json` uretir ve `sentry_dart_plugin` symbol upload adimi
   basarisizsa artifact/publish akisi durur
 - Main push icin `android-build` debug APK smoke gate olarak kalir; store'a gidecek AAB icin release-ready veya Codemagic kullan
+- Codemagic `android-verify-only` manuel signed AAB + Sentry symbol artifact uretir;
+  `publishing` blogu ve Google Play credential referansi tasimaz
+- Verify-only build numarasini `pubspec.yaml` icindeki `X.Y.Z+build` degerinden
+  alir; Google Play latest-build sorgusu yapmaz ve dis store state'ini degistirmez
 
 ## Dependabot Rules
 - Auto-merge veya label yazma islemlerine guvenme

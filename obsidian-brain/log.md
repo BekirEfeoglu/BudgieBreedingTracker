@@ -4,6 +4,14 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-18] ci | Codemagic Android verification separated from store publishing
+
+Added a manual `android-verify-only` workflow that produces a signed,
+obfuscated AAB, uploads Dart symbols to Sentry, and retains both artifacts
+without referencing Google Play credentials or declaring a publishing block.
+Its version/build comes from the committed `pubspec.yaml`, so verification does
+not query or mutate external store state; a static CI contract locks this down.
+
 ## [2026-07-17] ops | Production release Sentry monitoring enforced
 
 Created the `budgie-breeding-tracker` Flutter project in the production Sentry

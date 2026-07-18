@@ -9,6 +9,7 @@ Source: `.claude/rules/release-ops.md`
 | GitHub Actions `ci.yml` | — | Validation, smoke builds |
 | `release-ready.yml` | Android | Manual signed AAB readiness |
 | Codemagic | App Store / Google Play | Production releases |
+| Codemagic `android-verify-only` | Android | Signed verification artifact without store publishing |
 | Xcode Cloud | iOS | Build status (build-only) |
 | GitHub Pages | Web | `docs/` deployment |
 
@@ -28,12 +29,15 @@ Current version: `1.1.5+52` (verify against `pubspec.yaml` — this drifts every
 
 1. `python3 scripts/check_remote_status.py` — main must be green
 2. Manual trigger `release-ready.yml` — produces signed AAB + Dart symbols
-3. Codemagic: `android-release` → Google Play alpha, `ios-release` → TestFlight
-4. Promote in store console after QA
+3. Optional Codemagic `android-verify-only` — proves signing + Sentry upload without store mutation
+4. Codemagic: `android-release` → Google Play alpha, `ios-release` → TestFlight
+5. Promote in store console after QA
 
 ## Android AAB
 
 Signed AAB only from Codemagic or `release-ready.yml`. CI main push produces debug APK only (smoke gate). Never send debug APK to store.
+`android-verify-only` reads the committed `pubspec.yaml` version/build, uploads
+artifacts and Sentry symbols, and deliberately has no store publishing block.
 
 ## iOS
 

@@ -6,11 +6,15 @@
 | GitHub Actions | CI | Dogrulama, hafif deployment |
 | Xcode Cloud | iOS | App Store Connect build/status check |
 | Codemagic | App Store / Google Play | Production release |
+| Codemagic `android-verify-only` | Android | Manual signed verification artifact; no store publishing |
 | GitHub Actions `release-ready.yml` | Android | Manual signed AAB readiness artifact |
 | GitHub Pages | Web | `docs/` deployment |
 
 - App Store / Google Play publish mantigini GitHub Actions'a tasima
 - Main push CI'si release artifact uretmemeli; signed AAB icin manuel `Release Ready` workflow'u veya Codemagic kullan
+- Store state'ini degistirmeden Codemagic signing/Sentry hattini kanitlamak icin
+  yalniz `android-verify-only` kullan; bu workflow'a `publishing` blogu veya
+  Google Play credential referansi ekleme
 - `docs/` deployment mobil app release'lerinden ayri deger
 - Xcode Cloud Flutter build temiz clone'da `ios/ci_scripts/ci_post_clone.sh` ile hazirlanir; script Flutter SDK'yi pinned zip'in curl+unzip'i ile kurar (`git clone flutter/flutter` DEGIL — Xcode Cloud'da bilinen flaky, ci-actions.md § Deployment Safety) ve her adimdan once `>>> STEP N:` marker basar
 - Xcode Cloud main workflow build-only olmalidir; archive/TestFlight/App Store export ancak Apple signing hesabi, Development/Ad Hoc profil ihtiyaci ve kayitli fiziksel cihazlar hazirsa acilir
