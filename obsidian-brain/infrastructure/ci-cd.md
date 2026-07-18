@@ -53,6 +53,9 @@ keeps `web/` absent so the static `docs/` site remains the only web surface.
 
 Release and verification workflows:
 - `android-release`: AAB → Google Play (alpha track)
+- `android-release` next build number is based on the package-wide Google Play
+  maximum. Play version codes are global across tracks and uploaded artifacts,
+  so the latest-build query must not be scoped to `alpha`.
 - `android-verify-only`: signed AAB + Sentry symbols → Codemagic artifacts only;
   no `publishing` block, Google Play credential, or latest-build query
 - `ios-release`: IPA → App Store TestFlight (App ID: 6759828211)

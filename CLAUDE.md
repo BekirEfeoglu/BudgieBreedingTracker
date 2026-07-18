@@ -151,7 +151,9 @@ Workflow changes must be validated locally before push: parse the edited YAML, q
 Xcode Cloud is separate from GitHub Actions. Its Flutter iOS setup lives in `ios/ci_scripts/ci_post_clone.sh`; the script must remain executable, retry network-dependent setup, preserve real command exit codes, and fail fast if `Generated.xcconfig` or `Pods-Runner-*.xcfilelist` files are not generated. It installs Flutter via curl+unzip of the pinned SDK archive — never `git clone flutter/flutter`, which is known-flaky on Xcode Cloud (flutter/flutter#163198) — and prints `>>> STEP N:` markers so a failure log names the failing step.
 
 ### Codemagic (`codemagic.yaml`) — release and verification workflows
-- `android-release`: AAB → Google Play (alpha track)
+- `android-release`: AAB → Google Play (alpha track); resolves the next Android
+  build number from the package-wide Play maximum because version codes are
+  globally unique across tracks and the artifact library
 - `android-verify-only`: signed AAB + Sentry symbols → Codemagic artifacts only; no store publishing block or Google Play credential reference
 - `ios-release`: IPA → App Store TestFlight (App ID: 6759828211)
 - All three use pinned Flutter `3.41.4`, matching GitHub Actions and Xcode Cloud;

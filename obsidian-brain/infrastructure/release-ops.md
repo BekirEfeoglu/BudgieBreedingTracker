@@ -33,6 +33,10 @@ Current version: `1.1.5+52` (verify against `pubspec.yaml` — this drifts every
 4. Codemagic: `android-release` → Google Play alpha, `ios-release` → TestFlight
 5. Promote in store console after QA
 
+`android-release` resolves its version code from the package-wide Google Play
+maximum before adding one. Track-scoped latest-build queries are unsafe because
+Play reserves version codes globally, including codes uploaded outside alpha.
+
 ## Android AAB
 
 Signed AAB only from Codemagic or `release-ready.yml`. CI main push produces debug APK only (smoke gate). Never send debug APK to store.

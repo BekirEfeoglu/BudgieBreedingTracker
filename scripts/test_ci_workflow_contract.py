@@ -131,6 +131,18 @@ class TestCiWorkflowContract(unittest.TestCase):
         self.assertIn("build/**/outputs/**/*.aab", verify_only)
         self.assertIn("build/symbols/android/**", verify_only)
 
+    def test_codemagic_android_release_uses_package_wide_build_number(self):
+        release = _job_block(self.codemagic, "android-release")
+        resolver_start = release.index("- name: Resolve Android build number")
+        resolver_end = release.index("- name: Build Android App Bundle")
+        resolver = release[resolver_start:resolver_end]
+
+        self.assertIn("google-play get-latest-build-number", resolver)
+        self.assertIn('--package-name "$GOOGLE_PLAY_PACKAGE_NAME"', resolver)
+        self.assertNotIn("--tracks=", resolver)
+        self.assertIn("ANDROID_BUILD_NUMBER=$((LATEST_BUILD_NUMBER + 1))", resolver)
+        self.assertIn("track: $GOOGLE_PLAY_TRACK", release)
+
     def test_codemagic_release_builders_pin_the_verified_flutter_sdk(self):
         expected_version = "3.41.4"
 

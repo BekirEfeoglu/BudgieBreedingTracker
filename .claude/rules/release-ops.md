@@ -19,6 +19,10 @@
   SDK'sini GitHub Actions/Xcode Cloud ile ayni `3.41.4` surumune pinler;
   `stable` kanal drift'ini release aninda kabul etme. SDK ve locked dependency
   uyumlulugunu koordine edip tum builder'lari birlikte yukselt.
+- Google Play version code paket genelinde benzersizdir. `android-release` yeni
+  build numarasini yalniz hedef `alpha` track'inden degil, package-wide en yuksek
+  Play build numarasindan turetmeli; track filtresiyle kullanilmis kodu yeniden
+  secme.
 - `docs/` deployment mobil app release'lerinden ayri deger
 - Xcode Cloud Flutter build temiz clone'da `ios/ci_scripts/ci_post_clone.sh` ile hazirlanir; script Flutter SDK'yi pinned zip'in curl+unzip'i ile kurar (`git clone flutter/flutter` DEGIL — Xcode Cloud'da bilinen flaky, ci-actions.md § Deployment Safety) ve her adimdan once `>>> STEP N:` marker basar
 - Xcode Cloud main workflow build-only olmalidir; archive/TestFlight/App Store export ancak Apple signing hesabi, Development/Ad Hoc profil ihtiyaci ve kayitli fiziksel cihazlar hazirsa acilir
@@ -94,5 +98,7 @@
 7. Version bump yapmadan store release gondermek
 8. Eski commit/run yesil oldugu icin yeni commit'i dogrulanmis saymak
 9. Xcode Cloud `action_required` durumunu warning kabul edip kapatmak
+10. Android build numarasini tek track'ten okuyup baska track/artifact'ta
+    kullanilmis version code'u yeniden secmek
 
 > **Ilgili**: ci-actions.md (workflow detaylari), branch-workflow.md (merge policy), ai-workflow.md (kalite kapilari)

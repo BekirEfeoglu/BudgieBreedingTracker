@@ -4,6 +4,14 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-18] ci-fix | Android release build numbers are package-global
+
+A signed Codemagic alpha release proved that Google Play reserves version codes
+across tracks and uploaded artifacts: the alpha-scoped latest-build query chose
+an already-used code. Android release versioning now queries the package-wide
+Play maximum before incrementing, while the publishing destination remains the
+alpha track. A static workflow contract prevents track-scoped regression.
+
 ## [2026-07-18] db-fix | Historical health-record migration no longer indexes a future column
 
 Release-emulator Sentry verification exposed a v25 upgrade failure: the shared

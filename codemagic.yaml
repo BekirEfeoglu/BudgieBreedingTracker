@@ -119,9 +119,11 @@ workflows:
       - name: Resolve Android build number
         script: |
           set -e
+          # Google Play version codes are package-global, even when a release is
+          # published to a single track. Querying only alpha can reuse a code
+          # already present in another track or the artifact library.
           if ! LATEST_BUILD_NUMBER="$(google-play get-latest-build-number \
-            --package-name "$GOOGLE_PLAY_PACKAGE_NAME" \
-            --tracks="$GOOGLE_PLAY_TRACK" 2>/dev/null)"; then
+            --package-name "$GOOGLE_PLAY_PACKAGE_NAME" 2>/dev/null)"; then
             LATEST_BUILD_NUMBER=0
           fi
           case "$LATEST_BUILD_NUMBER" in

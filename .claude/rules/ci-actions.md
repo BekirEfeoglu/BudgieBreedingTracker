@@ -44,6 +44,9 @@
   Codemagic 3.44.6'ya kayarak locked `lucide_icons 0.257.0` ile release compile'i
   bozdu. SDK upgrade'i dependency uyumlulugu ve tum builder'lar birlikte
   dogrulanarak yapilir.
+- Codemagic `android-release` build numarasini Google Play package-wide maksimum
+  version code'dan uretir. `--tracks` filtresi release hedefini sinirlamak icin
+  publishing'de kalabilir, ancak latest-build sorgusunda kullanilamaz.
 
 ## Dependabot Rules
 - Auto-merge veya label yazma islemlerine guvenme
