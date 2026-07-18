@@ -70,6 +70,7 @@
 
 ## Release Verification Closure
 - Release/CI duzeltmesi ancak exact commit uzerinde GitHub status `success` ve check-run ozeti tamamen `completed:success` veya kabul edilen `completed:skipped` ise kapanmis sayilir
+- Path-gated `Deploy Edge Functions` skip'i yalniz ayni committeki `Edge Function Changes` dedektoru basariliysa kabul edilir; exact-SHA script'i bu kosulu dogrular
 - Xcode Cloud icin App Store Connect status context'i ve `BudgieBreedingTracker | Default | Build - iOS` check-run'i ayni committe `success` olmali
 - Main-only deploy/build job'lari sonradan tetiklenebilir; final durum icin tum gec gelen check-run'lar da tamamlanana kadar bekle
 - Bir run'da export/provisioning hatasi gorulurse build-only workflow ayarini degistirme; once fiziksel cihaz/profil hazirligini kanitla

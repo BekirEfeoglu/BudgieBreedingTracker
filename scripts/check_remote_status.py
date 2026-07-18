@@ -13,7 +13,12 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_REPO = "BekirEfeoglu/BudgieBreedingTracker"
-DEFAULT_ALLOWED_SKIPPED = {"E2E and Community Test"}
+DEFAULT_ALLOWED_SKIPPED = {"Deploy Edge Functions", "E2E and Community Test"}
+
+# A path-gated production deploy is safe to skip only when its detector ran and
+# succeeded on the same commit. This keeps docs/CI-only pushes from redeploying
+# unchanged functions without weakening the exact-SHA verification contract.
+SKIP_SUCCESS_DEPENDENCIES = {"Deploy Edge Functions": "Edge Function Changes"}
 
 
 @dataclass(frozen=True)
@@ -67,6 +72,28 @@ def _run_key(run: dict[str, Any]) -> str:
     return f"{run.get('status')}:{run.get('conclusion') or 'none'}"
 
 
+def _is_allowed_skip(
+    run: dict[str, Any],
+    *,
+    check_runs: list[dict[str, Any]],
+    allowed_skipped: set[str],
+) -> bool:
+    name = run.get("name")
+    if run.get("conclusion") != "skipped" or name not in allowed_skipped:
+        return False
+
+    required_success = SKIP_SUCCESS_DEPENDENCIES.get(str(name))
+    if required_success is None:
+        return True
+
+    return any(
+        candidate.get("name") == required_success
+        and candidate.get("status") == "completed"
+        and candidate.get("conclusion") == "success"
+        for candidate in check_runs
+    )
+
+
 def evaluate_remote_state(
     *,
     status_payload: dict[str, Any],
@@ -102,9 +129,10 @@ def evaluate_remote_state(
         if run.get("status") == "completed"
         and (
             run.get("conclusion") != "success"
-            and not (
-                run.get("conclusion") == "skipped"
-                and run.get("name") in allowed_skipped
+            and not _is_allowed_skip(
+                run,
+                check_runs=check_runs,
+                allowed_skipped=allowed_skipped,
             )
         )
     ]

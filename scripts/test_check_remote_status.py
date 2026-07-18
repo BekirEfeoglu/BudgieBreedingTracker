@@ -75,6 +75,59 @@ class TestRemoteStatusParsing(unittest.TestCase):
         self.assertEqual(result.failed[0]["name"], "Security Audit")
         self.assertEqual(result.failed[0]["conclusion"], "skipped")
 
+    def test_allows_path_gated_deploy_skip_when_detector_succeeds(self):
+        import check_remote_status as crs
+
+        result = crs.evaluate_remote_state(
+            status_payload={"state": "success", "statuses": []},
+            check_runs_payload={
+                "check_runs": [
+                    {
+                        "name": "Edge Function Changes",
+                        "status": "completed",
+                        "conclusion": "success",
+                    },
+                    {
+                        "name": "Deploy Edge Functions",
+                        "status": "completed",
+                        "conclusion": "skipped",
+                    },
+                ],
+            },
+            allowed_skipped=crs.DEFAULT_ALLOWED_SKIPPED,
+        )
+
+        self.assertTrue(result.is_clean)
+        self.assertEqual(result.failed, [])
+
+    def test_rejects_deploy_skip_when_detector_did_not_succeed(self):
+        import check_remote_status as crs
+
+        result = crs.evaluate_remote_state(
+            status_payload={"state": "success", "statuses": []},
+            check_runs_payload={
+                "check_runs": [
+                    {
+                        "name": "Edge Function Changes",
+                        "status": "completed",
+                        "conclusion": "failure",
+                    },
+                    {
+                        "name": "Deploy Edge Functions",
+                        "status": "completed",
+                        "conclusion": "skipped",
+                    },
+                ],
+            },
+            allowed_skipped=crs.DEFAULT_ALLOWED_SKIPPED,
+        )
+
+        self.assertFalse(result.is_clean)
+        self.assertEqual(
+            [run["name"] for run in result.failed],
+            ["Edge Function Changes", "Deploy Edge Functions"],
+        )
+
     def test_marks_failed_and_unfinished_runs_as_not_clean(self):
         import check_remote_status as crs
 
@@ -176,7 +229,10 @@ class TestRemoteStatusCli(unittest.TestCase):
         args = crs.parse_args([])
 
         self.assertEqual(args.repo, crs.DEFAULT_REPO)
-        self.assertEqual(args.allow_skipped, ["E2E and Community Test"])
+        self.assertEqual(
+            args.allow_skipped,
+            ["Deploy Edge Functions", "E2E and Community Test"],
+        )
 
     def test_print_result_includes_clean_message(self):
         import check_remote_status as crs

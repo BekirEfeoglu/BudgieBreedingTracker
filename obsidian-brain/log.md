@@ -4,6 +4,13 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-18] ci | Exact-SHA verifier recognizes only proven path-gated deploy skips
+
+The remote status verifier now accepts a skipped `Deploy Edge Functions` job
+only when `Edge Function Changes` completed successfully on the same commit.
+This closes the false-negative for CI/docs-only pushes while preserving the
+fail-closed behavior when the deployment detector fails or is missing.
+
 ## [2026-07-18] ci | Codemagic Android verification separated from store publishing
 
 Added a manual `android-verify-only` workflow that produces a signed,

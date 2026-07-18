@@ -96,6 +96,12 @@ push. Do not chase it or count it against the push. Stale green from an earlier
 commit is not evidence. (Rule: `ci-actions.md` § Non-Required / Transient
 Checks.)
 
+One intentional main-CI skip has an additional safety dependency:
+`Deploy Edge Functions` may be `completed:skipped` for a path-gated push only
+when `Edge Function Changes` is `completed:success` on the same exact commit.
+`check_remote_status.py` enforces this pairing; a failed or missing detector
+keeps the remote state unclean.
+
 ## See Also
 
 - [[infrastructure/edge-functions]] — deploy pipeline

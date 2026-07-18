@@ -14,7 +14,7 @@ All scripts in `scripts/` directory.
 | `verify_code_quality.py` | Anti-pattern scan (28 checker categories: 19/24 CLAUDE.md anti-patterns + 10 documented extras; some overlap) |
 | `verify_rules.py` | Validate CLAUDE.md stats against codebase |
 | `verify_rules.py --fix` | Auto-fix CLAUDE.md stats + inline rule references |
-| `check_remote_status.py` | Verify exact commit SHA GitHub status/check-run summary |
+| `check_remote_status.py` | Verify exact commit SHA GitHub status/check-run summary; an Edge deploy skip is accepted only with a successful path detector |
 | `verify_migration_drift.py` | Migration structure guard: duplicate version prefixes + malformed filenames (offline, in the `code-quality` CI job); `--online` adds prod-ledger version parity via `supabase migration list --linked` |
 | `check_rule_symbol_drift.py --target all --classes --strict` | Aspirational-contract guard (blocking in `code-quality`): every `xProvider` token, `.dart` path, and `*Service`/`*Notifier`/`*Repository`/`*Dao`/`*Mapper`/`*Guard` class named in `.claude/rules/` AND `obsidian-brain/` (excl. log/archives) must resolve in code. Class names checked in backticks AND bare in prose (outside fenced code). Low-noise by design; other class/method names stay in the manual semantic sweep. Removed symbols cited in prose go in the allowlists. `--audit-allowlist` (periodic, not gated) reports uncited allowlist cruft |
 
