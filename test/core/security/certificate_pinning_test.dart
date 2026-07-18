@@ -99,6 +99,15 @@ void main() {
       );
     });
 
+    test('trusts the current Supabase RSA fallback leaf certificate', () {
+      expect(
+        CertificatePinning.isTrustedFingerprint(
+          '49:95:95:15:BE:EF:E1:09:41:5C:D8:8D:74:A9:49:CD:69:6D:55:E8:E4:B5:2A:07:6A:F3:51:3D:78:00:67:89',
+        ),
+        isTrue,
+      );
+    });
+
     test('trusts the previous Supabase leaf certificate (rotation overlap)', () {
       expect(
         CertificatePinning.isTrustedFingerprint(

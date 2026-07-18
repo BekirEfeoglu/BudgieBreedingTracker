@@ -4,6 +4,17 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-18] security-fix | Supabase RSA TLS fallback added to pin allowlist
+
+Sentry release-54 telemetry from an Android 11 device exposed a false pinning
+rejection while newer clients remained healthy. Live TLS reproduction showed
+that the Supabase/Cloudflare endpoint serves the pinned ECDSA leaf to default
+clients but a distinct Google Trust Services RSA leaf to RSA/TLS 1.2 clients.
+The verified RSA fingerprint is now allowlisted alongside the ECDSA and
+rotation-overlap pins; unknown certificates and production proxy connections
+remain rejected. The rotation rule now requires checking both certificate
+variants, with a focused regression for the RSA fallback.
+
 ## [2026-07-18] ci-fix | Android release build numbers are package-global
 
 A signed Codemagic alpha release proved that Google Play reserves version codes
@@ -175,21 +186,5 @@ Also: the community-tagged marketplace test still asserted the pre-2026-07-10
 "messaging disabled" contract and had been red in the weekly suite; updated.
 Rules updated: community.md (§ Follow + 2 anti-patterns), messaging.md (recursion
 regression + anti-pattern #12).
-
-## [2026-07-14] ci | Drift guard: +Dao/Mapper/Guard, bare-prose scan, allowlist audit
-
-Third round of drift-guard hardening (measured before wiring, per the
-suggestions). **Suffix expansion:** `--classes` now also checks
-`*Dao`/`*Mapper`/`*Guard` (measured 8 tokens, 0 unresolved → zero-noise).
-**Bare-prose scan:** class-suffix names are now checked outside backticks too
-(fenced code blocks + inline-backtick spans stripped first) — closes the gap
-that let the `ConnectivityService` sibling in data-flow.md slip past a
-backtick-only scan (20 bare pairs measured, 0 unresolved). **Allowlist audit:**
-new `--audit-allowlist` mode (periodic, NOT gated) flags allowlist entries no
-longer cited by any doc; ran it and pruned 8 dead placeholders (`exampleProvider`,
-`myAsyncProvider`, `someProvider`, `bar.dart`, `example.dart`, `foo.dart`,
-`my_form.dart`, `my_screen.dart`). Both the `--target all --classes` gate and
-the audit are clean. Test suite 23→31 (100% cov). Docs synced (CLAUDE.md
-Quality Scripts, documentation-sync.md, wiki scripts.md).
 
 Older entries are archived in [[log-archive-2026-07-l]], [[log-archive-2026-07-k]], [[log-archive-2026-07-j]], [[log-archive-2026-07-i]], [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

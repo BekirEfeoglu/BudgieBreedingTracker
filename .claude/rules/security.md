@@ -91,8 +91,8 @@ Aktif: `CertificatePinning.install()` bootstrap'ta `Supabase.initialize()`
 uygular.
 
 Rotation prosedürü:
-1. Supabase leaf certificate expiry tarihinden en az 14 gün önce yeni
-   fingerprint'i üret.
+1. Supabase leaf certificate expiry tarihinden en az 14 gün önce ECDSA ve RSA
+   TLS istemci profilleriyle sunulan tüm geçerli leaf fingerprint'lerini üret.
 2. Eski ve yeni fingerprint'i aynı release'te allowlist'te tut.
 3. Release adoption yeterli olduktan sonra eski fingerprint'i kaldır.
 4. `scripts/verify_security.py` ile pinning modülünün bootstrap'a bağlı

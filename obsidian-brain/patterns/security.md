@@ -100,7 +100,8 @@ The Android SHA-1 `4b:50:9f:a3:…` is registered against BOTH OAuth clients dur
 
 - Active: `CertificatePinning.install()` runs before `Supabase.initialize()` in bootstrap
 - SHA-256 fingerprint allowlist for `*.supabase.co`
-- Rotation procedure: produce new fingerprint ≥14 days before leaf cert expiry, keep both old + new in one release, drop old after adoption
+- Rotation procedure: produce all ECDSA and RSA leaf fingerprints ≥14 days
+  before expiry, keep old + new variants in one release, drop old after adoption
 - Emergency proxy/debug: `--dart-define=ALLOW_PROXY=true` only — never in release builds
 - Verification: `scripts/verify_security.py` confirms pinning module is wired in bootstrap
 

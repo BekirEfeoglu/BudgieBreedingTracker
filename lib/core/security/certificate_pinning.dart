@@ -18,9 +18,14 @@ import '../utils/logger.dart';
 /// ```
 ///
 /// To update pins when backend certificates rotate, replace the SHA-256
-/// fingerprints in [_pinnedHosts]. Obtain new fingerprints via:
+/// fingerprints in [_trustedFingerprints]. Obtain new fingerprints via:
 /// ```bash
+/// # Default/ECDSA certificate
 /// openssl s_client -connect <host>:443 -servername <host> < /dev/null 2>/dev/null \
+///   | openssl x509 -noout -fingerprint -sha256
+/// # RSA fallback certificate
+/// openssl s_client -connect <host>:443 -servername <host> -tls1_2 \
+///   -cipher ECDHE-RSA-AES128-GCM-SHA256 < /dev/null 2>/dev/null \
 ///   | openssl x509 -noout -fingerprint -sha256
 /// ```
 class CertificatePinning {
@@ -40,11 +45,19 @@ class CertificatePinning {
 
   /// SHA-256 fingerprints of trusted certificates for pinned domains.
   ///
-  /// Pins the currently deployed Supabase leaf certificate. Update this before
-  /// the certificate expires or when Supabase rotates certificates.
+  /// Pins the currently deployed Supabase leaf certificates. Cloudflare may
+  /// serve different valid leaf certificates based on the client's supported
+  /// signature algorithms, so both ECDSA and RSA variants must be present.
+  /// Update these before expiry or when Supabase rotates certificates.
   /// Obtain new fingerprints via:
   /// ```bash
-  /// openssl s_client -connect <host>:443 2>/dev/null | openssl x509 -noout -fingerprint -sha256
+  /// # Default/ECDSA certificate
+  /// openssl s_client -connect <host>:443 -servername <host> 2>/dev/null \
+  ///   | openssl x509 -noout -fingerprint -sha256
+  /// # RSA fallback certificate
+  /// openssl s_client -connect <host>:443 -servername <host> -tls1_2 \
+  ///   -cipher ECDHE-RSA-AES128-GCM-SHA256 2>/dev/null \
+  ///   | openssl x509 -noout -fingerprint -sha256
   /// ```
   static const _trustedFingerprints = <String>{
     // Supabase leaf certificate, valid 2026-06-28 through 2026-09-26
@@ -52,6 +65,10 @@ class CertificatePinning {
     // 2026-06-28, ahead of the previous leaf's 2026-07-29 expiry, which left
     // pinned clients unable to reach the backend until this pin was added.
     'E4:89:07:23:60:38:C7:FE:B0:5C:D8:62:E4:1C:D7:FC:57:28:F2:8D:A6:1B:95:E6:76:1D:9C:29:5C:5B:32:98',
+    // Supabase RSA fallback leaf certificate, valid 2026-06-28 through
+    // 2026-09-26 (Google Trust Services CN=WR1). Older/compatibility TLS
+    // clients can negotiate this certificate instead of the ECDSA leaf above.
+    '49:95:95:15:BE:EF:E1:09:41:5C:D8:8D:74:A9:49:CD:69:6D:55:E8:E4:B5:2A:07:6A:F3:51:3D:78:00:67:89',
     // Previous Supabase leaf certificate, valid 2026-04-30 through 2026-07-29.
     // Kept for rotation overlap / rollback; remove once the new cert is stable.
     'B9:B8:F4:CE:6C:86:1D:3D:D1:67:87:08:FA:4A:40:62:10:7E:E7:05:0B:52:82:0F:99:10:50:F1:2E:B2:91:00',
