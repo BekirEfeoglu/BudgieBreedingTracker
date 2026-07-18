@@ -4,6 +4,14 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-18] ci-fix | Codemagic release SDK drift pinned to verified Flutter
+
+The first store-free Android verification build reached signed AAB compilation
+but Codemagic's moving `stable` channel had advanced to Flutter 3.44.6, where
+locked `lucide_icons 0.257.0` no longer compiles because `IconData` is final.
+All three Codemagic release workflows now pin Flutter 3.41.4, matching GitHub
+Actions and Xcode Cloud; a static contract prevents silent channel drift.
+
 ## [2026-07-18] ci | Exact-SHA verifier recognizes only proven path-gated deploy skips
 
 The remote status verifier now accepts a skipped `Deploy Edge Functions` job

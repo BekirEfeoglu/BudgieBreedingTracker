@@ -15,6 +15,10 @@
 - Store state'ini degistirmeden Codemagic signing/Sentry hattini kanitlamak icin
   yalniz `android-verify-only` kullan; bu workflow'a `publishing` blogu veya
   Google Play credential referansi ekleme
+- Codemagic `android-release`, `android-verify-only` ve `ios-release` Flutter
+  SDK'sini GitHub Actions/Xcode Cloud ile ayni `3.41.4` surumune pinler;
+  `stable` kanal drift'ini release aninda kabul etme. SDK ve locked dependency
+  uyumlulugunu koordine edip tum builder'lari birlikte yukselt.
 - `docs/` deployment mobil app release'lerinden ayri deger
 - Xcode Cloud Flutter build temiz clone'da `ios/ci_scripts/ci_post_clone.sh` ile hazirlanir; script Flutter SDK'yi pinned zip'in curl+unzip'i ile kurar (`git clone flutter/flutter` DEGIL — Xcode Cloud'da bilinen flaky, ci-actions.md § Deployment Safety) ve her adimdan once `>>> STEP N:` marker basar
 - Xcode Cloud main workflow build-only olmalidir; archive/TestFlight/App Store export ancak Apple signing hesabi, Development/Ad Hoc profil ihtiyaci ve kayitli fiziksel cihazlar hazirsa acilir

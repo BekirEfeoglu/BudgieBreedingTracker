@@ -154,6 +154,8 @@ Xcode Cloud is separate from GitHub Actions. Its Flutter iOS setup lives in `ios
 - `android-release`: AAB → Google Play (alpha track)
 - `android-verify-only`: signed AAB + Sentry symbols → Codemagic artifacts only; no store publishing block or Google Play credential reference
 - `ios-release`: IPA → App Store TestFlight (App ID: 6759828211)
+- All three use pinned Flutter `3.41.4`, matching GitHub Actions and Xcode Cloud;
+  do not use the moving `stable` channel for release artifacts.
 
 ## Environment Variables (dart-define)
 

@@ -131,6 +131,23 @@ class TestCiWorkflowContract(unittest.TestCase):
         self.assertIn("build/**/outputs/**/*.aab", verify_only)
         self.assertIn("build/symbols/android/**", verify_only)
 
+    def test_codemagic_release_builders_pin_the_verified_flutter_sdk(self):
+        expected_version = "3.41.4"
+
+        self.assertNotIn("flutter: stable", self.codemagic)
+        self.assertEqual(
+            3,
+            self.codemagic.count(f"flutter: {expected_version}"),
+        )
+        self.assertIn(
+            f"flutter-version: {expected_version}",
+            self.release_ready,
+        )
+        self.assertIn(
+            f"flutter-version: {expected_version}",
+            self.workflow,
+        )
+
     def test_sentry_dart_plugin_keeps_source_upload_disabled(self):
         self.assertIn("sentry_dart_plugin: ^3.4.0", self.pubspec)
         self.assertIn("org: budgiebreedingtracker", self.pubspec)

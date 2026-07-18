@@ -50,4 +50,5 @@
 - [ ] Release artifact davranışı değiştiyse `release-ready.yml`, `CLAUDE.md`, `.claude/rules/release-ops.md` birlikte güncellendi
 - [ ] Release secret sözleşmesi değiştiyse GitHub Actions ve Codemagic env grupları senkron, eksik-secret fail-fast kontrolü test edildi
 - [ ] Codemagic verify-only değiştiyse `publishing`/Google Play credential içermediği ve `pubspec.yaml` build numarasını kullandığı sözleşme testiyle doğrulandı
+- [ ] Codemagic Flutter SDK ayarı değiştiyse üç workflow, GitHub Actions ve Xcode Cloud aynı doğrulanmış sürüme pinli; `stable` kanal drift'i yok
 - [ ] Xcode Cloud/iOS workflow değiştiyse `ios/ci_scripts/ci_post_clone.sh` executable/retry-aware, Pods filelist fail-fast doğrulaması korunuyor ve `.claude/rules/release-ops.md` güncel

@@ -38,6 +38,8 @@ Current version: `1.1.5+52` (verify against `pubspec.yaml` — this drifts every
 Signed AAB only from Codemagic or `release-ready.yml`. CI main push produces debug APK only (smoke gate). Never send debug APK to store.
 `android-verify-only` reads the committed `pubspec.yaml` version/build, uploads
 artifacts and Sentry symbols, and deliberately has no store publishing block.
+Codemagic's Android/iOS workflows pin Flutter `3.41.4` to match GitHub Actions
+and Xcode Cloud; a moving `stable` release toolchain is not accepted.
 
 ## iOS
 

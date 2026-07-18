@@ -60,6 +60,11 @@ Release and verification workflows:
   configuration fails before the store build starts.
 - All three workflows require the `org:ci`-scoped `SENTRY_AUTH_TOKEN`, generate the
   Dart obfuscation map, and run `sentry_dart_plugin` before publishing.
+- All three pin Flutter `3.41.4`, matching GitHub Actions and Xcode Cloud.
+  Codemagic's moving `stable` channel resolved to 3.44.6 on 2026-07-18 and broke
+  release compilation against locked `lucide_icons 0.257.0` (`IconData` became
+  final). Upgrade the SDK only together with dependency compatibility and all
+  release builders.
 
 ## Release Ready (`release-ready.yml`)
 

@@ -39,6 +39,11 @@
   `publishing` blogu ve Google Play credential referansi tasimaz
 - Verify-only build numarasini `pubspec.yaml` icindeki `X.Y.Z+build` degerinden
   alir; Google Play latest-build sorgusu yapmaz ve dis store state'ini degistirmez
+- Codemagic'in uc release/verification workflow'u `flutter: 3.41.4` ile GitHub
+  Actions ve Xcode Cloud'a pinned kalmali. `stable` kullanma: 2026-07-18'de
+  Codemagic 3.44.6'ya kayarak locked `lucide_icons 0.257.0` ile release compile'i
+  bozdu. SDK upgrade'i dependency uyumlulugu ve tum builder'lar birlikte
+  dogrulanarak yapilir.
 
 ## Dependabot Rules
 - Auto-merge veya label yazma islemlerine guvenme

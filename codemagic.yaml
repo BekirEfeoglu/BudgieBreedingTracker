@@ -3,7 +3,10 @@ workflows:
     name: Android Release
     max_build_duration: 60
     environment:
-      flutter: stable
+      # Keep release builders aligned with GitHub Actions/Xcode Cloud. Codemagic
+      # stable moved to 3.44.6 before the locked lucide_icons version supported
+      # final IconData, breaking release compilation while pinned CI stayed green.
+      flutter: 3.41.4
       groups:
         - app_env_vars        # SUPABASE_URL, SUPABASE_ANON_KEY, SENTRY_DSN, SENTRY_AUTH_TOKEN, REVENUECAT_API_KEY_ANDROID, GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
         - android_signing     # CM_KEYSTORE, CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_PASSWORD
@@ -170,7 +173,9 @@ workflows:
     name: Android Verify Only (No Store Publishing)
     max_build_duration: 60
     environment:
-      flutter: stable
+      # See android-release: SDK upgrades are coordinated with dependencies and
+      # every release builder, never inherited implicitly from the stable channel.
+      flutter: 3.41.4
       groups:
         - app_env_vars        # SUPABASE_URL, SUPABASE_ANON_KEY, SENTRY_DSN, SENTRY_AUTH_TOKEN, REVENUECAT_API_KEY_ANDROID
         - android_signing     # CM_KEYSTORE, CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_PASSWORD
@@ -289,7 +294,8 @@ workflows:
     name: iOS Release
     max_build_duration: 60
     environment:
-      flutter: stable
+      # Keep Android/iOS artifacts on the same verified Flutter toolchain.
+      flutter: 3.41.4
       groups:
         - app_env_vars        # SUPABASE_URL, SUPABASE_ANON_KEY, SENTRY_DSN, SENTRY_AUTH_TOKEN, REVENUECAT_API_KEY_IOS
       vars:
