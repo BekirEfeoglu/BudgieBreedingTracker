@@ -127,10 +127,12 @@ void main() {
       await disposeCleanly(tester);
     });
 
-    testWidgets('renders guest login button and hint', (tester) async {
+    testWidgets('hides guest login button and hint while server disabled', (
+      tester,
+    ) async {
       await pumpLogin(tester);
-      expect(find.text(l10n('auth.continue_as_guest')), findsOneWidget);
-      expect(find.text(l10n('auth.guest_limitation_hint')), findsOneWidget);
+      expect(find.text(l10n('auth.continue_as_guest')), findsNothing);
+      expect(find.text(l10n('auth.guest_limitation_hint')), findsNothing);
       await disposeCleanly(tester);
     });
 
@@ -362,16 +364,11 @@ void main() {
       await disposeCleanly(tester);
     });
 
-    testWidgets('guest button is disabled during loading', (tester) async {
+    testWidgets('guest action stays hidden during loading', (tester) async {
       final completer = await triggerLoading(tester);
 
-      final guestBtn = find.widgetWithText(
-        TextButton,
-        l10n('auth.continue_as_guest'),
-      );
-      expect(guestBtn, findsOneWidget);
-      final guestWidget = tester.widget<TextButton>(guestBtn);
-      expect(guestWidget.onPressed, isNull);
+      expect(find.text(l10n('auth.continue_as_guest')), findsNothing);
+      expect(find.text(l10n('auth.guest_limitation_hint')), findsNothing);
 
       completer.completeError(
         const AuthException('test cancel', statusCode: '499'),
