@@ -21,6 +21,15 @@ Redirect zincirindeki auth katmanları `lib/router/redirect_guards.dart`'ta, sı
 
 `RouterNotifier` bu provider'ları dinler ve TEK notify ile redirect'i yeniden koşturur — router'ı yeniden OLUŞTURMA. Guard'lar stateless'tır; provider state'inden türetilir.
 
+Korunan bir deep link oturumsuz açılırsa hedef, yalnız uygulama içi mutlak
+path kabul eden `validPostAuthDestination()` ile doğrulanır ve
+`/login?returnTo=...` üzerinden taşınır. Hedef email/native OAuth, browser
+OAuth callback, MFA ve splash initialization zincirinin tamamından sonra
+geri yüklenir. Browser OAuth turunda hedef
+`PostAuthDestinationStore` ile SharedPreferences'a geçici olarak yazılır ve
+başarılı callback/MFA sonunda tek kullanımlı olarak tüketilir; dış URL, auth
+route, fragment, control karakteri ve protocol-relative değerler reddedilir.
+
 ## Session
 - Token'lar secure storage'da (SDK yönetir) — SharedPreferences ASLA (security.md tablosu)
 - SDK otomatik refresh (expire'dan 5dk önce); refresh fail → `AuthException` → login redirect
@@ -47,6 +56,24 @@ AAL2 kontrolü HER destructive adımdan ÖNCE koşar — hesap silmede storage t
 - Password-reset / e-posta istekleri: **2 dakika cooldown** (`auth_actions.dart`) — email bombing engeli
 - Cooldown SharedPreferences'a persist edilir (app restart bypass'ı kapatıldı, 2026-05-19 audit)
 - Şifre kuralları `password_policy.dart` tek kaynak — UI'da ayrı regex kopyalama
+- Login formu mevcut şifreyi yalnız boş olmama açısından doğrular. Minimum
+  uzunluk/karmaşıklık politikası yalnız şifre oluşturma ve güncelleme
+  akışlarına aittir; aksi halde geçerli legacy hesaplar istemcide kilitlenir.
+
+## Password Recovery Deep Link
+- Supabase'in `AuthChangeEvent.passwordRecovery` olayı
+  `passwordRecoveryPendingProvider` ile tutulur. Recovery session normal bir
+  login gibi home'a gönderilmez; router `/forgot-password` üzerindeki yeni
+  şifre formuna zorlar ve startup/MFA redirect'leri bu tek kullanımlık akışı
+  kesmez.
+- Yeni şifre yalnız recovery session içinde
+  `AuthActions.updatePasswordAfterRecovery()` → `auth.updateUser()` ile
+  yazılır. Eski şifre istenmez; e-posta linki mevcut hesabın kontrol kanıtıdır.
+- Başarıdan sonra pending flag temizlenir ve normal app initialization başlar.
+- Confirm Email açıkken mevcut kullanıcıya tekrar `signUp()` obfuscated `200`
+  döndürebilir ve mail göndermez. Kayıt/doğrulama metinleri hesap varlığını
+  ifşa etmeyen nötr dil kullanmalı; doğrulama ekranı password-reset yolunu da
+  göstermelidir.
 
 ## Hata Eşleme
 - Raw Supabase/GoogleSignIn hataları `auth_error_mapper.dart` + `native_google_auth_errors.dart` ile l10n anahtarına çevrilir
@@ -91,5 +118,7 @@ Best-effort adımların hatası zinciri DURDURMAZ (log + devam). Hesap silme bu 
 9. Router'ı auth state değişiminde yeniden oluşturmak (`RouterNotifier` refreshListenable tek yol)
 10. Anonymous auth server'da kapalıyken guest CTA göstermek (başarısız ağ
     isteği + yanlış kullanıcı vaadi)
+11. Recovery session'ı normal `signedIn` kabul edip home'a göndermek (kullanıcı yeni şifre belirleyemez)
+12. Login sırasında kayıt/yeni şifre minimum uzunluk politikasını uygulamak veya doğrulanmamış `returnTo` değerini router'a vermek
 
 > **İlgili**: security.md (secure storage, MFA lockout, OAuth topolojisi), profile.md (hesap silme, AAL2), edge-functions.md (mfa-lockout, revoke-oauth-token), notifications.md (FCM token temizliği), presence.md (logout markInactive/endSession), observability.md (Sentry user scope), performance.md (startup kritik yolu)

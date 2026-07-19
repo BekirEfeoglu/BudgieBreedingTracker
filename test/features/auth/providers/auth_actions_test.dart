@@ -139,6 +139,28 @@ void main() {
     });
   });
 
+  group('AuthActions.updatePasswordAfterRecovery', () {
+    test('updates the active recovery session password', () async {
+      when(() => mockAuth.updateUser(any())).thenAnswer(
+        (_) async => UserResponse.fromJson({
+          'id': 'u1',
+          'email': 'user@example.com',
+          'app_metadata': <String, dynamic>{},
+          'user_metadata': <String, dynamic>{},
+          'aud': 'authenticated',
+          'created_at': '2026-07-18T00:00:00Z',
+        }),
+      );
+
+      await actions.updatePasswordAfterRecovery('NewSecure123!');
+
+      final attributes =
+          verify(() => mockAuth.updateUser(captureAny())).captured.single
+              as UserAttributes;
+      expect(attributes.password, 'NewSecure123!');
+    });
+  });
+
   group('AuthActions.resendVerification', () {
     test('calls client.auth.resend with signup OTP type', () async {
       final resendResponse = ResendResponse();

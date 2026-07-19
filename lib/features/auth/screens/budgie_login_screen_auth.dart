@@ -24,14 +24,46 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
   Timer? _blinkResetTimer;
   Timer? _errorResetTimer;
   Timer? _oAuthTimeoutTimer;
+  Timer? _slowLoginTimer;
   bool _isPeeking = false;
   bool _isBlinking = false;
+  bool _showSlowLoginMessage = false;
+  bool _reduceMotion = false;
+  bool _motionPreferenceInitialized = false;
+
+  String get _postAuthDestination =>
+      validPostAuthDestination(widget.returnTo) ?? AppRoutes.home;
+
+  void _beginLoading() {
+    _slowLoginTimer?.cancel();
+    setState(() {
+      _loginState = LoginState.loading;
+      _showSlowLoginMessage = false;
+      if (!_reduceMotion) {
+        _eggWobbleCtrl
+          ..duration = const Duration(milliseconds: 600)
+          ..repeat(reverse: true);
+      }
+    });
+    _slowLoginTimer = Timer(const Duration(seconds: 5), () {
+      if (mounted && _loginState == LoginState.loading) {
+        setState(() => _showSlowLoginMessage = true);
+      }
+    });
+  }
+
+  void _stopLoadingFeedback() {
+    _slowLoginTimer?.cancel();
+    _showSlowLoginMessage = false;
+  }
 
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final deadline = DateTime.now().add(const Duration(seconds: 30));
+    _beginLoading();
+
     if (!ref.read(supabaseInitializedProvider)) {
-      setState(() => _loginState = LoginState.loading);
       final initialized = await ensureSupabaseInitialized(
         timeout: const Duration(seconds: 12),
       );
@@ -50,13 +82,11 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
     _emailFocus.unfocus();
     _passwordFocus.unfocus();
 
-    setState(() {
-      _loginState = LoginState.loading;
-      _eggWobbleCtrl.duration = const Duration(milliseconds: 600);
-      _eggWobbleCtrl.repeat(reverse: true);
-    });
-
     try {
+      final remaining = deadline.difference(DateTime.now());
+      if (remaining <= Duration.zero) {
+        throw const SocketException('Connection timed out');
+      }
       final auth = ref.read(authActionsProvider);
       await auth
           .signInWithEmail(
@@ -64,7 +94,7 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
             password: _passwordCtrl.text,
           )
           .timeout(
-            const Duration(seconds: 30),
+            remaining,
             onTimeout: () =>
                 throw const SocketException('Connection timed out'),
           );
@@ -74,60 +104,76 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
         _loginState = LoginState.success;
         _isPeeking = true;
         _eggWobbleCtrl.stop();
+        _stopLoadingFeedback();
       });
-      _hopCtrl.forward(from: 0).then((_) => _hopCtrl.reverse());
+      if (!_reduceMotion) {
+        _hopCtrl.forward(from: 0).then((_) => _hopCtrl.reverse());
+      }
 
-      Future.delayed(const Duration(milliseconds: 1200), () async {
-        if (!mounted) return;
+      Future.delayed(
+        _reduceMotion ? Duration.zero : const Duration(milliseconds: 1200),
+        () async {
+          if (!mounted) return;
 
-        final checker = PostLoginMfaChecker(
-          twoFactorService: ref.read(twoFactorServiceProvider),
-          authActions: ref.read(authActionsProvider),
-        );
-        final result = await checker.check();
-        if (!mounted) return;
+          final checker = PostLoginMfaChecker(
+            twoFactorService: ref.read(twoFactorServiceProvider),
+            authActions: ref.read(authActionsProvider),
+          );
+          final result = await checker.check();
+          if (!mounted) return;
 
-        switch (result) {
-          case MfaVerificationNeeded(:final factorId):
-            ref.read(pendingMfaFactorIdProvider.notifier).state = factorId;
-            // Defensive query-component encoding even though factorId is
-            // a UUID — keeps the contract consistent if future factor IDs
-            // ever change format.
-            context.go(
-              '${AppRoutes.twoFactorVerify}'
-              '?factorId=${Uri.encodeQueryComponent(factorId)}',
-            );
-            return;
-          case MfaCheckFailed(:final didSignOut):
-            setState(() {
-              _loginState = LoginState.idle;
-              _isPeeking = false;
-            });
-            if (!didSignOut) {
-              // Sign-out failed during MFA check — retry to avoid
-              // leaving the user in a half-authenticated state.
-              try {
-                await ref.read(authActionsProvider).signOut();
-              } catch (e, st) {
-                // Half-authenticated state with sign-out failure twice
-                // is a security-relevant condition — surface to Sentry
-                // so we learn about provider outages or auth bugs.
-                AppLogger.error('[Login] Retry sign-out also failed', e, st);
-                await Sentry.captureException(
-                  e,
-                  stackTrace: st,
-                  withScope: (scope) =>
-                      scope.setTag('feature', 'auth.mfa_signout'),
-                );
+          switch (result) {
+            case MfaVerificationNeeded(:final factorId):
+              ref.read(pendingMfaFactorIdProvider.notifier).state = factorId;
+              // Defensive query-component encoding even though factorId is
+              // a UUID — keeps the contract consistent if future factor IDs
+              // ever change format.
+              context.go(
+                twoFactorVerificationLocation(
+                  factorId,
+                  destination: widget.returnTo,
+                ),
+              );
+              return;
+            case MfaCheckFailed(:final didSignOut):
+              setState(() {
+                _loginState = LoginState.idle;
+                _isPeeking = false;
+              });
+              if (!didSignOut) {
+                // Sign-out failed during MFA check — retry to avoid
+                // leaving the user in a half-authenticated state.
+                try {
+                  await ref.read(authActionsProvider).signOut();
+                } catch (e, st) {
+                  // Half-authenticated state with sign-out failure twice
+                  // is a security-relevant condition — surface to Sentry
+                  // so we learn about provider outages or auth bugs.
+                  AppLogger.error('[Login] Retry sign-out also failed', e, st);
+                  await Sentry.captureException(
+                    e,
+                    stackTrace: st,
+                    withScope: (scope) =>
+                        scope.setTag('feature', 'auth.mfa_signout'),
+                  );
+                }
               }
-            }
-            if (!mounted) return;
-            _showError('auth.error_2fa_check_failed'.tr());
-          case MfaNotRequired():
-            context.go(AppRoutes.home);
-        }
-      });
+              if (!mounted) return;
+              _showError('auth.error_2fa_check_failed'.tr());
+            case MfaNotRequired():
+              context.go(_postAuthDestination);
+          }
+        },
+      );
     } on AuthException catch (e, st) {
+      if (e is AuthRetryableFetchException) {
+        AppLogger.warning(
+          '[Login] Email sign-in unavailable due to a retryable network error',
+        );
+        if (!mounted) return;
+        _showError('auth.error_network'.tr());
+        return;
+      }
       AppLogger.error(
         '[Login] AuthException: ${e.runtimeType} | message=${e.message} | status=${e.statusCode} | code=${e.code}',
         e,
@@ -144,23 +190,28 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
       if (!mounted) return;
       _showError(mapAuthError(e));
     } catch (e, st) {
-      AppLogger.error(
-        '[Login] signInWithEmail failed: ${e.runtimeType}: $e',
-        e,
-        st,
-      );
-      Sentry.captureException(e, stackTrace: st);
       if (!mounted) return;
       if (e is SocketException || e is HandshakeException) {
+        AppLogger.warning(
+          '[Login] Email sign-in unavailable due to network: '
+          '${e.runtimeType}',
+        );
         _showError('auth.error_network'.tr());
       } else {
+        AppLogger.error(
+          '[Login] signInWithEmail failed: ${e.runtimeType}: $e',
+          e,
+          st,
+        );
+        await Sentry.captureException(e, stackTrace: st);
+        if (!mounted) return;
         _showError('auth.error_unknown'.tr());
       }
     }
   }
 
   Future<void> _handleGuestLogin() async {
-    setState(() => _loginState = LoginState.loading);
+    _beginLoading();
     try {
       if (!ref.read(supabaseInitializedProvider)) {
         final initialized = await ensureSupabaseInitialized(
@@ -196,15 +247,22 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
       _loginState = LoginState.success;
       _isPeeking = true;
       _eggWobbleCtrl.stop();
+      _stopLoadingFeedback();
     });
-    _hopCtrl.forward(from: 0).then((_) => _hopCtrl.reverse());
-    Future.delayed(const Duration(milliseconds: 1200), () {
-      if (!mounted) return;
-      context.go(AppRoutes.home);
-    });
+    if (!_reduceMotion) {
+      _hopCtrl.forward(from: 0).then((_) => _hopCtrl.reverse());
+    }
+    Future.delayed(
+      _reduceMotion ? Duration.zero : const Duration(milliseconds: 1200),
+      () {
+        if (!mounted) return;
+        context.go(_postAuthDestination);
+      },
+    );
   }
 
   void _showError(String message) {
+    _stopLoadingFeedback();
     setState(() {
       _loginState = LoginState.error;
       _eggWobbleCtrl
@@ -217,16 +275,18 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
       if (mounted && _loginState == LoginState.error) {
         setState(() {
           _loginState = LoginState.idle;
-          _birdWobbleCtrl.repeat(reverse: true);
-          _eggWobbleCtrl.repeat(reverse: true);
-          _wingFlapCtrl.repeat(reverse: true);
+          if (!_reduceMotion) {
+            _birdWobbleCtrl.repeat(reverse: true);
+            _eggWobbleCtrl.repeat(reverse: true);
+            _wingFlapCtrl.repeat(reverse: true);
+          }
         });
       }
     });
   }
 
   Future<void> _handleOAuth(OAuthProvider provider) async {
-    setState(() => _loginState = LoginState.loading);
+    _beginLoading();
     try {
       if (!ref.read(supabaseInitializedProvider)) {
         final initialized = await ensureSupabaseInitialized(
@@ -286,24 +346,32 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
 
       // Browser-based OAuth (fallback or primary for other providers)
       if (!mounted) return;
+      final destinationStore = ref.read(postAuthDestinationStoreProvider);
+      await destinationStore.save(widget.returnTo);
+      if (!mounted) return;
       final launched = await auth.signInWithOAuth(provider);
       if (!launched && mounted) {
+        await destinationStore.clear();
+        if (!mounted) return;
         _resetToIdle();
       } else if (launched && mounted) {
         _oAuthTimeoutTimer?.cancel();
         _oAuthTimeoutTimer = Timer(const Duration(seconds: 30), () {
           if (mounted && _loginState == LoginState.loading) {
-            _resetToIdle();
+            unawaited(destinationStore.clear());
+            _showError('auth.error_oauth_timeout'.tr());
           }
         });
       }
     } on AuthException catch (e) {
+      unawaited(ref.read(postAuthDestinationStoreProvider).clear());
       if (e.message == 'Canceled') {
         if (mounted) _resetToIdle();
         return;
       }
       if (mounted) _showError(mapAuthError(e));
     } catch (e, st) {
+      unawaited(ref.read(postAuthDestinationStoreProvider).clear());
       AppLogger.error('[Login] OAuth failed', e, st);
       Sentry.captureException(e, stackTrace: st);
       if (mounted) _showError('auth.error_unknown'.tr());
@@ -311,10 +379,13 @@ abstract class _BudgieLoginAuthBase extends ConsumerState<BudgieLoginScreen>
   }
 
   void _resetToIdle() {
+    _stopLoadingFeedback();
     setState(() {
       _loginState = LoginState.idle;
-      _birdWobbleCtrl.repeat(reverse: true);
-      _wingFlapCtrl.repeat(reverse: true);
+      if (!_reduceMotion) {
+        _birdWobbleCtrl.repeat(reverse: true);
+        _wingFlapCtrl.repeat(reverse: true);
+      }
     });
   }
 }

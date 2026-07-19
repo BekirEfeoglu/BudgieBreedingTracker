@@ -296,6 +296,33 @@ void main() {
     });
   });
 
+  group('password recovery session state', () {
+    test('tracks passwordRecovery until completion', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final notifier = container.read(passwordRecoveryPendingProvider.notifier);
+
+      notifier.handleAuthEvent(AuthChangeEvent.passwordRecovery);
+
+      expect(container.read(passwordRecoveryPendingProvider), isTrue);
+
+      notifier.complete();
+
+      expect(container.read(passwordRecoveryPendingProvider), isFalse);
+    });
+
+    test('clears pending password recovery on sign-out', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final notifier = container.read(passwordRecoveryPendingProvider.notifier);
+      notifier.handleAuthEvent(AuthChangeEvent.passwordRecovery);
+
+      notifier.handleAuthEvent(AuthChangeEvent.signedOut);
+
+      expect(container.read(passwordRecoveryPendingProvider), isFalse);
+    });
+  });
+
   group('appInitializationProvider', () {
     late MockProfileRepository mockProfileRepository;
     late MockNotificationService mockNotificationService;
@@ -482,43 +509,40 @@ void main() {
       },
     );
 
-    test(
-      'still initializes push in background after ready',
-      () async {
-        when(() => mockAuth.currentUser).thenReturn(null);
+    test('still initializes push in background after ready', () async {
+      when(() => mockAuth.currentUser).thenReturn(null);
 
-        final container = ProviderContainer(
-          overrides: [
-            currentUserIdProvider.overrideWithValue('user-1'),
-            profileRepositoryProvider.overrideWithValue(mockProfileRepository),
-            notificationServiceProvider.overrideWithValue(
-              mockNotificationService,
-            ),
-            notificationProcessorProvider.overrideWithValue(
-              mockNotificationProcessor,
-            ),
-            notificationReschedulerProvider.overrideWithValue(
-              mockNotificationRescheduler,
-            ),
-            pushNotificationServiceProvider.overrideWithValue(
-              mockPushNotificationService,
-            ),
-            rateLimiterReadyProvider.overrideWith((_) async {}),
-            supabaseClientProvider.overrideWithValue(mockClient),
-            supabaseInitializedProvider.overrideWithValue(true),
-            twoFactorServiceProvider.overrideWithValue(mockTwoFactorService),
-          ],
-        );
-        addTearDown(container.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          currentUserIdProvider.overrideWithValue('user-1'),
+          profileRepositoryProvider.overrideWithValue(mockProfileRepository),
+          notificationServiceProvider.overrideWithValue(
+            mockNotificationService,
+          ),
+          notificationProcessorProvider.overrideWithValue(
+            mockNotificationProcessor,
+          ),
+          notificationReschedulerProvider.overrideWithValue(
+            mockNotificationRescheduler,
+          ),
+          pushNotificationServiceProvider.overrideWithValue(
+            mockPushNotificationService,
+          ),
+          rateLimiterReadyProvider.overrideWith((_) async {}),
+          supabaseClientProvider.overrideWithValue(mockClient),
+          supabaseInitializedProvider.overrideWithValue(true),
+          twoFactorServiceProvider.overrideWithValue(mockTwoFactorService),
+        ],
+      );
+      addTearDown(container.dispose);
 
-        await container.read(appInitializationProvider.future);
-        await Future<void>.delayed(Duration.zero);
+      await container.read(appInitializationProvider.future);
+      await Future<void>.delayed(Duration.zero);
 
-        verify(
-          () => mockPushNotificationService.init(userId: 'user-1'),
-        ).called(1);
-      },
-    );
+      verify(
+        () => mockPushNotificationService.init(userId: 'user-1'),
+      ).called(1);
+    });
 
     test('stops initialization when MFA verification check fails', () async {
       when(

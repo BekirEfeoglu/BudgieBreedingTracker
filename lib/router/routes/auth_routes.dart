@@ -12,7 +12,9 @@ import '../route_utils.dart';
 List<GoRoute> buildAuthRoutes() => [
   GoRoute(
     path: AppRoutes.login,
-    builder: (context, state) => const BudgieLoginScreen(),
+    builder: (context, state) => BudgieLoginScreen(
+      returnTo: validPostAuthDestination(state.uri.queryParameters['returnTo']),
+    ),
   ),
   GoRoute(
     path: AppRoutes.register,
@@ -20,11 +22,15 @@ List<GoRoute> buildAuthRoutes() => [
   ),
   GoRoute(
     path: AppRoutes.authCallback,
-    builder: (context, state) => const AuthCallbackScreen(),
+    builder: (context, state) => AuthCallbackScreen(
+      returnTo: validPostAuthDestination(state.uri.queryParameters['returnTo']),
+    ),
   ),
   GoRoute(
     path: AppRoutes.oauthCallback,
-    builder: (context, state) => const AuthCallbackScreen(),
+    builder: (context, state) => AuthCallbackScreen(
+      returnTo: validPostAuthDestination(state.uri.queryParameters['returnTo']),
+    ),
   ),
   GoRoute(
     path: AppRoutes.emailVerification,
@@ -37,6 +43,11 @@ List<GoRoute> buildAuthRoutes() => [
   ),
   GoRoute(
     path: AppRoutes.forgotPassword,
-    builder: (context, state) => const ForgotPasswordScreen(),
+    builder: (context, state) {
+      final email = state.uri.queryParameters['email'];
+      return ForgotPasswordScreen(
+        initialEmail: isValidRouteEmail(email) ? email : null,
+      );
+    },
   ),
 ];

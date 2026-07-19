@@ -41,6 +41,30 @@ final sessionLockedProvider = NotifierProvider<SessionLockedNotifier, bool>(
   SessionLockedNotifier.new,
 );
 
+/// Whether the active Supabase session came from a password-recovery link.
+///
+/// While true, routing keeps the user on the reset form instead of treating
+/// the temporary recovery session as a normal completed sign-in.
+class PasswordRecoveryPendingNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void handleAuthEvent(AuthChangeEvent event) {
+    if (event == AuthChangeEvent.passwordRecovery) {
+      state = true;
+    } else if (event == AuthChangeEvent.signedOut) {
+      state = false;
+    }
+  }
+
+  void complete() => state = false;
+}
+
+final passwordRecoveryPendingProvider =
+    NotifierProvider<PasswordRecoveryPendingNotifier, bool>(
+      PasswordRecoveryPendingNotifier.new,
+    );
+
 /// Current Supabase [User] or null.
 /// Returns null if Supabase is not initialized.
 final currentUserProvider = Provider<User?>((ref) {
@@ -82,6 +106,13 @@ final initSkippedProvider = NotifierProvider<InitSkippedNotifier, bool>(
 final authSessionSideEffectsProvider = Provider<void>((ref) {
   ref.listen<AsyncValue<AuthState>>(authStateProvider, (previous, next) {
     next.whenData((authState) {
+      ref
+          .read(passwordRecoveryPendingProvider.notifier)
+          .handleAuthEvent(authState.event);
+      if (authState.event == AuthChangeEvent.passwordRecovery) {
+        ref.read(sessionLockedProvider.notifier).state = false;
+      }
+
       if (authState.event == AuthChangeEvent.signedIn ||
           authState.event == AuthChangeEvent.initialSession ||
           authState.event == AuthChangeEvent.tokenRefreshed) {

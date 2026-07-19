@@ -48,7 +48,12 @@ void main() {
     return GoRouter(
       initialLocation: initialLocation ?? '/login',
       routes: [
-        GoRoute(path: '/login', builder: (_, __) => const BudgieLoginScreen()),
+        GoRoute(
+          path: '/login',
+          builder: (_, state) => BudgieLoginScreen(
+            returnTo: state.uri.queryParameters['returnTo'],
+          ),
+        ),
         GoRoute(
           path: '/register',
           builder: (_, __) => const Scaffold(body: Text('RegisterScreen')),
@@ -61,6 +66,10 @@ void main() {
         GoRoute(
           path: '/',
           builder: (_, __) => const Scaffold(body: Text('Home')),
+        ),
+        GoRoute(
+          path: '/settings',
+          builder: (_, __) => const Scaffold(body: Text('Settings')),
         ),
         GoRoute(
           path: '/auth/2fa/verify',
@@ -81,11 +90,11 @@ void main() {
     );
   }
 
-  // Helper to pump and let initial animations run without pumpAndSettle
-  // (repeating animations prevent pumpAndSettle from completing).
+  // Global test accessibility enables reduced motion, so the login screen
+  // must settle without perpetual decorative animation frames.
   Future<void> pumpLogin(WidgetTester tester, {GoRouter? router}) async {
     await tester.pumpWidget(buildSubject(router: router));
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
   }
 
   // Helper to dispose cleanly — advances past blink/peek timers.
@@ -224,7 +233,9 @@ void main() {
       await disposeCleanly(tester);
     });
 
-    testWidgets('shows password too short error for < 8 chars', (tester) async {
+    testWidgets('accepts a non-empty legacy password shorter than 8 chars', (
+      tester,
+    ) async {
       await pumpLogin(tester);
 
       final textFields = find.byType(TextFormField);
@@ -235,13 +246,13 @@ void main() {
       await tester.tap(find.byType(FilledButton));
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text(l10n('common.password_short')), findsOneWidget);
-      verifyNever(
+      expect(find.text(l10n('common.password_short')), findsNothing);
+      verify(
         () => mockAuth.signInWithEmail(
-          email: any(named: 'email'),
-          password: any(named: 'password'),
+          email: 'test@example.com',
+          password: 'short',
         ),
-      );
+      ).called(1);
       await disposeCleanly(tester);
     });
 
@@ -327,8 +338,8 @@ void main() {
     ) async {
       final completer = await triggerLoading(tester);
 
-      // While loading the submit button keeps a non-null no-op handler (so it
-      // does not grey out) and shows a spinner instead of its label.
+      final button = tester.widget<FilledButton>(find.byType(FilledButton));
+      expect(button.onPressed, isNull);
       expect(
         find.descendant(
           of: find.byType(FilledButton),
@@ -377,9 +388,62 @@ void main() {
       await tester.pump(const Duration(seconds: 4));
       await disposeCleanly(tester);
     });
+
+    testWidgets('announces loading and shows slow-connection guidance', (
+      tester,
+    ) async {
+      final completer = await triggerLoading(tester);
+
+      final loadingSemantics = find.byWidgetPredicate(
+        (widget) =>
+            widget is Semantics &&
+            widget.properties.label == l10n('auth.logging_in') &&
+            widget.properties.enabled == false &&
+            widget.properties.liveRegion == true,
+      );
+      expect(loadingSemantics, findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 5));
+      expect(find.text(l10n('auth.login_taking_longer')), findsOneWidget);
+
+      completer.completeError(
+        const AuthException('test cancel', statusCode: '499'),
+      );
+      await tester.pump();
+      await disposeCleanly(tester);
+    });
+  });
+
+  group('BudgieLoginScreen — accessibility', () {
+    testWidgets('settles when reduced motion is enabled', (tester) async {
+      await tester.pumpWidget(buildSubject());
+
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BudgieLoginScreen), findsOneWidget);
+      expect(tester.binding.hasScheduledFrame, isFalse);
+      await disposeCleanly(tester);
+    });
   });
 
   group('BudgieLoginScreen — navigation', () {
+    testWidgets('restores returnTo after successful email login', (
+      tester,
+    ) async {
+      final router = buildRouter(
+        initialLocation: '/login?returnTo=%2Fsettings',
+      );
+      await pumpLogin(tester, router: router);
+
+      final textFields = find.byType(TextFormField);
+      await tester.enterText(textFields.first, 'user@example.com');
+      await tester.enterText(textFields.last, 'legacy');
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Settings'), findsOneWidget);
+    });
+
     testWidgets('tapping register navigates to register screen', (
       tester,
     ) async {
@@ -464,6 +528,54 @@ void main() {
   });
 
   group('BudgieLoginScreen — error handling', () {
+    testWidgets('retryable Supabase network error shows offline guidance', (
+      tester,
+    ) async {
+      when(
+        () => mockAuth.signInWithEmail(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenThrow(AuthRetryableFetchException(message: 'offline'));
+
+      await pumpLogin(tester);
+      final textFields = find.byType(TextFormField);
+      await tester.enterText(textFields.first, 'test@example.com');
+      await tester.enterText(textFields.last, 'password123');
+      await tester.tap(find.byType(FilledButton));
+      await tester.pump();
+
+      expect(find.text(l10n('auth.error_network')), findsOneWidget);
+      await disposeCleanly(tester);
+    });
+
+    testWidgets('caps the full email login attempt at 30 seconds', (
+      tester,
+    ) async {
+      final pending = Completer<AuthResponse>();
+      when(
+        () => mockAuth.signInWithEmail(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenAnswer((_) => pending.future);
+
+      await pumpLogin(tester);
+      final textFields = find.byType(TextFormField);
+      await tester.enterText(textFields.first, 'test@example.com');
+      await tester.enterText(textFields.last, 'password123');
+      await tester.tap(find.byType(FilledButton));
+      await tester.pump(const Duration(seconds: 30));
+      await tester.pump();
+
+      expect(find.text(l10n('auth.error_network')), findsOneWidget);
+      expect(
+        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        isNotNull,
+      );
+      await disposeCleanly(tester);
+    });
+
     testWidgets('network error shows error snackbar', (tester) async {
       when(
         () => mockAuth.signInWithEmail(

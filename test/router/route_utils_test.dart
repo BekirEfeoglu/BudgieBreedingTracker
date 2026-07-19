@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/router/route_utils.dart';
+import 'package:budgie_breeding_tracker/router/route_names.dart';
 
 void main() {
   group('isValidRouteId', () {
@@ -419,6 +420,65 @@ void main() {
 
     test('returns null for empty value', () {
       expect(validEditIdFromQuery({'editId': ''}), isNull);
+    });
+  });
+
+  group('post-auth destination helpers', () {
+    test('accepts local paths and preserves their query parameters', () {
+      expect(
+        validPostAuthDestination('/birds/123?tab=health'),
+        '/birds/123?tab=health',
+      );
+      expect(validPostAuthDestination(AppRoutes.home), AppRoutes.home);
+    });
+
+    test('rejects external, protocol-relative, and malformed destinations', () {
+      expect(validPostAuthDestination('https://evil.example'), isNull);
+      expect(validPostAuthDestination('//evil.example/path'), isNull);
+      expect(validPostAuthDestination(r'/birds\evil'), isNull);
+      expect(validPostAuthDestination('/birds\nInjected'), isNull);
+      expect(validPostAuthDestination('/birds#fragment'), isNull);
+      expect(validPostAuthDestination('birds'), isNull);
+      expect(validPostAuthDestination(''), isNull);
+      expect(validPostAuthDestination('x' * 2049), isNull);
+    });
+
+    test('rejects auth and infrastructure routes to prevent loops', () {
+      expect(validPostAuthDestination(AppRoutes.login), isNull);
+      expect(validPostAuthDestination(AppRoutes.register), isNull);
+      expect(validPostAuthDestination(AppRoutes.authCallback), isNull);
+      expect(validPostAuthDestination(AppRoutes.oauthCallback), isNull);
+      expect(validPostAuthDestination(AppRoutes.twoFactorVerify), isNull);
+      expect(validPostAuthDestination(AppRoutes.splash), isNull);
+    });
+
+    test('login location safely encodes and restores returnTo', () {
+      final location = loginLocationFor('/birds/123?tab=health');
+
+      expect(location, startsWith('${AppRoutes.login}?'));
+      expect(
+        postAuthDestinationFromLocation(location),
+        '/birds/123?tab=health',
+      );
+    });
+
+    test('home does not add a redundant returnTo query', () {
+      expect(loginLocationFor(AppRoutes.home), AppRoutes.login);
+    });
+
+    test('MFA location carries a validated destination', () {
+      final location = twoFactorVerificationLocation(
+        '550e8400-e29b-41d4-a716-446655440000',
+        destination: '/settings',
+      );
+      final uri = Uri.parse(location);
+
+      expect(uri.path, AppRoutes.twoFactorVerify);
+      expect(
+        uri.queryParameters['factorId'],
+        '550e8400-e29b-41d4-a716-446655440000',
+      );
+      expect(uri.queryParameters['returnTo'], '/settings');
     });
   });
 }

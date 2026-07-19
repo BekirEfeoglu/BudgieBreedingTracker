@@ -6,10 +6,21 @@ import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/screens/auth_callback_screen.dart';
+import 'package:budgie_breeding_tracker/router/post_auth_destination_store.dart';
+
+class _TestPasswordRecoveryNotifier extends PasswordRecoveryPendingNotifier {
+  _TestPasswordRecoveryNotifier(this.initialValue);
+
+  final bool initialValue;
+
+  @override
+  bool build() => initialValue;
+}
 
 void main() {
   Widget createSubject({
     bool isAuthenticated = false,
+    bool recoveryPending = false,
     AuthCallbackScreen callbackScreen = const AuthCallbackScreen(),
   }) {
     // NoTransitionPage prevents animation timers from running during tests
@@ -27,14 +38,43 @@ void main() {
         ),
         GoRoute(
           path: '/login',
+          pageBuilder: (_, state) => NoTransitionPage(
+            child: Scaffold(
+              body: Column(
+                children: [
+                  const Text('Login'),
+                  Text(state.uri.queryParameters['returnTo'] ?? ''),
+                ],
+              ),
+            ),
+          ),
+        ),
+        GoRoute(
+          path: '/birds',
           pageBuilder: (_, __) =>
-              const NoTransitionPage(child: Scaffold(body: Text('Login'))),
+              const NoTransitionPage(child: Scaffold(body: Text('Birds'))),
+        ),
+        GoRoute(
+          path: '/settings',
+          pageBuilder: (_, __) =>
+              const NoTransitionPage(child: Scaffold(body: Text('Settings'))),
+        ),
+        GoRoute(
+          path: '/forgot-password',
+          pageBuilder: (_, __) => const NoTransitionPage(
+            child: Scaffold(body: Text('PasswordRecovery')),
+          ),
         ),
       ],
     );
 
     return ProviderScope(
-      overrides: [isAuthenticatedProvider.overrideWithValue(isAuthenticated)],
+      overrides: [
+        isAuthenticatedProvider.overrideWithValue(isAuthenticated),
+        passwordRecoveryPendingProvider.overrideWith(
+          () => _TestPasswordRecoveryNotifier(recoveryPending),
+        ),
+      ],
       child: MaterialApp.router(routerConfig: router),
     );
   }
@@ -85,6 +125,60 @@ void main() {
       await tester.pump(const Duration(seconds: 2));
 
       expect(find.text('Login'), findsOneWidget);
+    });
+
+    testWidgets('restores constructor returnTo when authenticated', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createSubject(
+          isAuthenticated: true,
+          callbackScreen: const AuthCallbackScreen(returnTo: '/birds'),
+        ),
+      );
+      await tester.pump();
+
+      await tester.pump(const Duration(seconds: 2));
+
+      expect(find.text('Birds'), findsOneWidget);
+    });
+
+    testWidgets('restores a destination persisted before browser OAuth', (
+      tester,
+    ) async {
+      await SharedPreferencesPostAuthDestinationStore().save('/settings');
+      await tester.pumpWidget(createSubject(isAuthenticated: true));
+      await tester.pump();
+
+      await tester.pump(const Duration(seconds: 2));
+
+      expect(find.text('Settings'), findsOneWidget);
+    });
+
+    testWidgets('preserves returnTo when callback authentication fails', (
+      tester,
+    ) async {
+      await SharedPreferencesPostAuthDestinationStore().save('/birds');
+      await tester.pumpWidget(createSubject());
+      await tester.pump();
+
+      await tester.pump(const Duration(seconds: 2));
+
+      expect(find.text('Login'), findsOneWidget);
+      expect(find.text('/birds'), findsOneWidget);
+    });
+
+    testWidgets('navigates recovery sessions to the password form', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createSubject(isAuthenticated: true, recoveryPending: true),
+      );
+      await tester.pump();
+
+      await tester.pump(const Duration(seconds: 2));
+
+      expect(find.text('PasswordRecovery'), findsOneWidget);
     });
 
     testWidgets('shows Scaffold as root widget', (tester) async {

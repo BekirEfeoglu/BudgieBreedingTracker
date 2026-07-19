@@ -79,24 +79,51 @@ final routerProvider = Provider<GoRouter>((ref) {
       final sessionLock = sessionLockRedirect(ref, location);
       if (sessionLock != null) return sessionLock;
 
-      final auth = authRedirect(ref, location);
+      final requestedLocation = state.uri.toString();
+      final auth = authRedirect(
+        ref,
+        location,
+        requestedLocation: requestedLocation,
+      );
       if (auth != null) return auth;
 
-      final twoFactor = twoFactorRedirect(ref, location);
+      final twoFactor = twoFactorRedirect(
+        ref,
+        location,
+        requestedLocation: requestedLocation,
+      );
       if (twoFactor != null) return twoFactor;
 
       // Initialization guard: show splash while profile syncs from Supabase
       final isLoggedIn = ref.read(isAuthenticatedProvider);
+      final isPasswordRecovery =
+          ref.read(passwordRecoveryPendingProvider) &&
+          location == AppRoutes.forgotPassword;
       final appInit = ref.read(appInitializationProvider);
       final initSkipped = ref.read(initSkippedProvider);
       final isAppReady = appInit.hasValue || initSkipped;
       final isSplashRoute = location == AppRoutes.splash;
+      final isAuthCallbackRoute =
+          location == AppRoutes.authCallback ||
+          location == AppRoutes.oauthCallback;
+      final isMfaVerificationRoute = location == AppRoutes.twoFactorVerify;
 
       final isInitError = appInit.hasError && !initSkipped;
-      if (isLoggedIn && !isAppReady && !isSplashRoute) return AppRoutes.splash;
+      if (isLoggedIn &&
+          !isAppReady &&
+          !isSplashRoute &&
+          !isPasswordRecovery &&
+          !isAuthCallbackRoute &&
+          !isMfaVerificationRoute) {
+        final returnTo =
+            postAuthDestinationFromLocation(requestedLocation) ??
+            validPostAuthDestination(requestedLocation);
+        return routeWithPostAuthDestination(AppRoutes.splash, returnTo);
+      }
       if (isSplashRoute && isAppReady && !isInitError) {
         if (kDebugMode && hasDebugStartRoute) return normalizedDebugStartRoute;
-        return AppRoutes.home;
+        return postAuthDestinationFromLocation(requestedLocation) ??
+            AppRoutes.home;
       }
 
       // Genetics reward route tracking

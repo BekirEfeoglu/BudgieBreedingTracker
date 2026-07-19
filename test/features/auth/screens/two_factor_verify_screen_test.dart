@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:go_router/go_router.dart';
@@ -9,14 +10,40 @@ import 'package:budgie_breeding_tracker/data/providers/edge_function_provider.da
 import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/screens/two_factor_verify_screen.dart';
+import 'package:budgie_breeding_tracker/router/post_auth_destination_store.dart';
 
 import '../../../helpers/e2e_test_harness.dart';
 
+class _MemoryPostAuthDestinationStore implements PostAuthDestinationStore {
+  _MemoryPostAuthDestinationStore(this.destination);
+
+  String? destination;
+
+  @override
+  Future<void> clear() async => destination = null;
+
+  @override
+  Future<void> save(String? destination) async =>
+      this.destination = destination;
+
+  @override
+  Future<String?> take() async {
+    final value = destination;
+    destination = null;
+    return value;
+  }
+}
+
 void main() {
+  const secureStorageChannel = MethodChannel(
+    'plugins.it_nomads.com/flutter_secure_storage',
+  );
   late MockTwoFactorService mockTwoFactor;
   late MockEdgeFunctionClient mockEdgeFunctionClient;
 
   setUp(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(secureStorageChannel, (call) async => null);
     mockTwoFactor = MockTwoFactorService();
     mockEdgeFunctionClient = MockEdgeFunctionClient();
     when(
@@ -31,19 +58,36 @@ void main() {
         data: {'locked': false, 'remaining_seconds': 0},
       ),
     );
+    when(() => mockEdgeFunctionClient.resetMfaLockout()).thenAnswer(
+      (_) async => const EdgeFunctionResult(success: true, data: {}),
+    );
   });
 
-  Widget createSubject({String factorId = 'test-factor-id'}) {
+  tearDown(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(secureStorageChannel, null);
+  });
+
+  Widget createSubject({
+    String factorId = 'test-factor-id',
+    String? returnTo,
+    String? storedDestination,
+  }) {
     final router = GoRouter(
       initialLocation: '/2fa-verify',
       routes: [
         GoRoute(
           path: '/2fa-verify',
-          builder: (_, __) => TwoFactorVerifyScreen(factorId: factorId),
+          builder: (_, __) =>
+              TwoFactorVerifyScreen(factorId: factorId, returnTo: returnTo),
         ),
         GoRoute(
           path: '/',
           builder: (_, __) => const Scaffold(body: Text('Home')),
+        ),
+        GoRoute(
+          path: '/settings',
+          builder: (_, __) => const Scaffold(body: Text('Settings')),
         ),
       ],
     );
@@ -52,6 +96,9 @@ void main() {
       overrides: [
         twoFactorServiceProvider.overrideWithValue(mockTwoFactor),
         edgeFunctionClientProvider.overrideWithValue(mockEdgeFunctionClient),
+        postAuthDestinationStoreProvider.overrideWithValue(
+          _MemoryPostAuthDestinationStore(storedDestination),
+        ),
       ],
       child: MaterialApp.router(routerConfig: router),
     );
@@ -128,9 +175,43 @@ void main() {
       );
 
       await tester.pumpWidget(createSubject());
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
 
       expect(find.text(l10n('auth.2fa_server_unavailable')), findsOneWidget);
+    });
+
+    testWidgets('restores persisted returnTo after successful verification', (
+      tester,
+    ) async {
+      when(
+        () => mockTwoFactor.challengeAndVerify(
+          factorId: any(named: 'factorId'),
+          code: any(named: 'code'),
+        ),
+      ).thenAnswer((_) async => true);
+
+      await tester.pumpWidget(createSubject(storedDestination: '/settings'));
+      await tester.pumpAndSettle();
+
+      for (final field in find.byType(TextFormField).evaluate()) {
+        await tester.enterText(find.byWidget(field.widget), '1');
+        await tester.pump();
+      }
+      verify(
+        () => mockTwoFactor.challengeAndVerify(
+          factorId: 'test-factor-id',
+          code: '111111',
+        ),
+      ).called(1);
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 10)),
+      );
+      for (var i = 0; i < 20 && find.text('Settings').evaluate().isEmpty; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+
+      expect(find.text('Settings'), findsOneWidget);
     });
   });
 }

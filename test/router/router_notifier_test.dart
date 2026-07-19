@@ -102,6 +102,22 @@ void main() {
       // Should be coalesced to a single notification (or a small number)
       expect(notifyCount, lessThanOrEqualTo(3));
     });
+
+    testWidgets('notifies listeners when password recovery starts', (
+      tester,
+    ) async {
+      await tester.pumpWidget(const SizedBox());
+
+      final notifier = container.read(routerNotifierProvider);
+      var notified = false;
+      notifier.addListener(() => notified = true);
+
+      container.read(passwordRecoveryPendingProvider.notifier).state = true;
+      WidgetsBinding.instance.scheduleFrame();
+      await tester.pumpAndSettle();
+
+      expect(notified, isTrue);
+    });
   });
 
   group('Navigator keys', () {

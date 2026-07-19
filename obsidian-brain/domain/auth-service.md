@@ -25,6 +25,20 @@ Source: `.claude/rules/auth.md`, `.claude/rules/security.md`
 - Refresh fail → `AuthException` → login redirect
 - Offline: local session used, refresh on reconnect
 
+## Password Recovery
+
+Password-reset links pass through the hosted `/auth/callback/` page and deep
+link back into the app. Supabase emits `AuthChangeEvent.passwordRecovery`;
+`passwordRecoveryPendingProvider` then keeps the temporary authenticated
+session on `/forgot-password` instead of allowing the normal auth guard to
+send it to home. The screen switches from the email-request form to a
+new-password + confirmation form and calls
+`AuthActions.updatePasswordAfterRecovery()`. On success the pending flag is
+cleared and normal app initialization resumes. Existing confirmed accounts can
+return an obfuscated successful response to repeated `signUp()` calls without
+sending verification mail, so signup/verification copy stays enumeration-safe
+and offers the password-reset path.
+
 ## Logout Flow
 
 ```

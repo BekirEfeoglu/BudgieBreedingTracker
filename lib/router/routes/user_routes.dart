@@ -159,7 +159,12 @@ List<RouteBase> buildUserRoutes() => [
       if (!isValidRouteId(factorId)) {
         return const NotFoundScreen();
       }
-      return TwoFactorVerifyScreen(factorId: factorId!);
+      return TwoFactorVerifyScreen(
+        factorId: factorId!,
+        returnTo: validPostAuthDestination(
+          state.uri.queryParameters['returnTo'],
+        ),
+      );
     },
   ),
 

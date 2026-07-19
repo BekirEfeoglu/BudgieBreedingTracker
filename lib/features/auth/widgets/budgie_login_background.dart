@@ -16,77 +16,95 @@ class BudgieLoginBackground extends StatefulWidget {
 }
 
 class _BudgieLoginBackgroundState extends State<BudgieLoginBackground>
-    with TickerProviderStateMixin {
-  late final AnimationController _blob1Ctrl;
-  late final AnimationController _blob2Ctrl;
-  late final AnimationController _blob3Ctrl;
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _motionController;
+  bool _reduceMotion = false;
 
   @override
   void initState() {
     super.initState();
-    _blob1Ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 6),
-    )..repeat(reverse: true);
-    _blob2Ctrl = AnimationController(
+    _motionController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 8),
-    )..repeat(reverse: true);
-    _blob3Ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 7),
-    )..repeat(reverse: true);
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    if (reduceMotion == _reduceMotion &&
+        (_motionController.isAnimating || reduceMotion)) {
+      return;
+    }
+    _reduceMotion = reduceMotion;
+    if (_reduceMotion) {
+      _motionController
+        ..stop()
+        ..value = 0;
+    } else {
+      _motionController.repeat();
+    }
   }
 
   @override
   void dispose() {
-    _blob1Ctrl.dispose();
-    _blob2Ctrl.dispose();
-    _blob3Ctrl.dispose();
+    _motionController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: Listenable.merge([_blob1Ctrl, _blob2Ctrl, _blob3Ctrl]),
-      builder: (context, _) {
-        final b1y = sin(_blob1Ctrl.value * pi) * 15.0;
-        final b2x = sin(_blob2Ctrl.value * pi) * 12.0;
-        final b3y = sin(_blob3Ctrl.value * pi) * 10.0;
+    return Stack(
+      children: [
+        PositionedDirectional(
+          top: -60,
+          start: -50,
+          child: _animatedBlob(
+            offsetForValue: (value) => Offset(0, sin(value * 2 * pi) * 15),
+            size: 200,
+            color: BudgieLoginPalette.blobGreen.withValues(alpha: 0.45),
+          ),
+        ),
+        PositionedDirectional(
+          top: -30,
+          end: -40,
+          child: _animatedBlob(
+            offsetForValue: (value) =>
+                Offset(sin((value + 0.2) * 2 * pi) * 12, 0),
+            size: 160,
+            color: BudgieLoginPalette.blobBlue.withValues(alpha: 0.35),
+          ),
+        ),
+        PositionedDirectional(
+          bottom: -40,
+          start: 60,
+          child: _animatedBlob(
+            offsetForValue: (value) =>
+                Offset(0, sin((value + 0.4) * 2 * pi) * 10),
+            size: 120,
+            color: BudgieLoginPalette.blobGreen.withValues(alpha: 0.3),
+          ),
+        ),
+      ],
+    );
+  }
 
-        return Stack(
-          children: [
-            // Sol ust yesil blob
-            Positioned(
-              top: -60 + b1y,
-              left: -50,
-              child: _blob(
-                200,
-                BudgieLoginPalette.blobGreen.withValues(alpha: 0.45),
-              ),
-            ),
-            // Sag ust mavi blob
-            Positioned(
-              top: -30,
-              right: -40 + b2x,
-              child: _blob(
-                160,
-                BudgieLoginPalette.blobBlue.withValues(alpha: 0.35),
-              ),
-            ),
-            // Alt ortada kucuk yesil blob
-            Positioned(
-              bottom: -40 + b3y,
-              left: 60,
-              child: _blob(
-                120,
-                BudgieLoginPalette.blobGreen.withValues(alpha: 0.3),
-              ),
-            ),
-          ],
-        );
-      },
+  Widget _animatedBlob({
+    required Offset Function(double value) offsetForValue,
+    required double size,
+    required Color color,
+  }) {
+    final blob = RepaintBoundary(child: _blob(size, color));
+    if (_reduceMotion) return blob;
+    return AnimatedBuilder(
+      animation: _motionController,
+      child: blob,
+      builder: (context, child) => Transform.translate(
+        offset: offsetForValue(_motionController.value),
+        child: child,
+      ),
     );
   }
 

@@ -7,15 +7,21 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/app_icons.dart';
+import '../../../core/providers/action_feedback_providers.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/widgets/app_icon.dart';
+import '../../../domain/services/auth/password_policy.dart';
+import '../../../router/route_names.dart';
 import '../providers/auth_providers.dart';
 import '../widgets/auth_form_field.dart';
+import '../widgets/password_strength_meter.dart';
 
 /// Forgot password screen -- sends a reset link via Supabase.
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
-  const ForgotPasswordScreen({super.key});
+  const ForgotPasswordScreen({super.key, this.initialEmail});
+
+  final String? initialEmail;
 
   @override
   ConsumerState<ForgotPasswordScreen> createState() =>
@@ -24,13 +30,24 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _recoveryFormKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
+  final _newPasswordCtrl = TextEditingController();
+  final _confirmPasswordCtrl = TextEditingController();
   bool _loading = false;
   bool _sent = false;
 
   @override
+  void initState() {
+    super.initState();
+    _emailCtrl.text = widget.initialEmail ?? '';
+  }
+
+  @override
   void dispose() {
     _emailCtrl.dispose();
+    _newPasswordCtrl.dispose();
+    _confirmPasswordCtrl.dispose();
     super.dispose();
   }
 
@@ -76,21 +93,163 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     }
   }
 
+  Future<void> _updatePassword() async {
+    if (!_recoveryFormKey.currentState!.validate() || _loading) return;
+    setState(() => _loading = true);
+
+    try {
+      await ref
+          .read(authActionsProvider)
+          .updatePasswordAfterRecovery(_newPasswordCtrl.text);
+      if (!mounted) return;
+
+      ActionFeedbackService.show('auth.update_password_success'.tr());
+      ref.read(passwordRecoveryPendingProvider.notifier).complete();
+      context.go(AppRoutes.home);
+    } on AuthException catch (e) {
+      AppLogger.warning(
+        '[ForgotPassword] Recovery password update failed: ${e.message}',
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(mapAuthError(e))));
+      }
+    } catch (e, st) {
+      AppLogger.error(
+        '[ForgotPassword] Unexpected recovery update error',
+        e,
+        st,
+      );
+      await Sentry.captureException(
+        e,
+        stackTrace: st,
+        withScope: (scope) =>
+            scope.setTag('feature', 'auth.password_recovery_update'),
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('auth.error_unknown'.tr())));
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isPasswordRecovery = ref.watch(passwordRecoveryPendingProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text('auth.reset_password'.tr())),
+      appBar: AppBar(
+        title: Text(
+          (isPasswordRecovery
+                  ? 'auth.update_password_title'
+                  : 'auth.reset_password')
+              .tr(),
+        ),
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.xxl),
-            child: _sent ? _buildSuccess(theme) : _buildForm(theme),
+            child: isPasswordRecovery
+                ? _buildRecoveryForm(theme)
+                : (_sent ? _buildSuccess(theme) : _buildForm(theme)),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildRecoveryForm(ThemeData theme) {
+    return Form(
+      key: _recoveryFormKey,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppIcon(
+            AppIcons.password,
+            size: 48,
+            color: theme.colorScheme.primary,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            'auth.update_password_desc'.tr(),
+            style: theme.textTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+          AuthFormField(
+            controller: _newPasswordCtrl,
+            label: 'auth.new_password'.tr(),
+            prefixIcon: const AppIcon(AppIcons.password),
+            isPassword: true,
+            textInputAction: TextInputAction.next,
+            autofillHints: const [AutofillHints.newPassword],
+            enabled: !_loading,
+            validator: _validateNewPassword,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          ListenableBuilder(
+            listenable: _newPasswordCtrl,
+            builder: (context, _) =>
+                PasswordStrengthMeter(password: _newPasswordCtrl.text),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          AuthFormField(
+            controller: _confirmPasswordCtrl,
+            label: 'auth.confirm_new_password'.tr(),
+            prefixIcon: const AppIcon(AppIcons.password),
+            isPassword: true,
+            textInputAction: TextInputAction.done,
+            onFieldSubmitted: (_) => _updatePassword(),
+            autofillHints: const [AutofillHints.newPassword],
+            enabled: !_loading,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'common.required_field'.tr();
+              }
+              if (value != _newPasswordCtrl.text) {
+                return 'common.password_mismatch'.tr();
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+          FilledButton(
+            onPressed: _loading ? null : _updatePassword,
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(double.infinity, 48),
+            ),
+            child: _loading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text('auth.update_password_action'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String? _validateNewPassword(String? value) {
+    if (value == null || value.isEmpty) return 'common.required_field'.tr();
+    final validation = PasswordPolicy.validate(value);
+    if (!validation.hasMinLength) return 'common.password_short'.tr();
+    if (!validation.isWithinMaxLength) {
+      return 'auth.password_too_long'.tr();
+    }
+    if (!validation.hasUppercase) return 'auth.rule_uppercase'.tr();
+    if (!validation.hasLowercase) return 'auth.rule_lowercase'.tr();
+    if (!validation.hasDigit) return 'auth.rule_digit'.tr();
+    if (!validation.hasSpecialChar) return 'auth.rule_special_char'.tr();
+    return null;
   }
 
   Widget _buildSuccess(ThemeData theme) {

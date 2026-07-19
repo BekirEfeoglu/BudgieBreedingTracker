@@ -15,26 +15,45 @@ String? sessionLockRedirect(Ref ref, String location) {
 
 /// Auth guard — redirects unauthenticated users to login, and
 /// authenticated users away from auth screens.
-String? authRedirect(Ref ref, String location) {
+String? authRedirect(Ref ref, String location, {String? requestedLocation}) {
   final isLoggedIn = ref.read(isAuthenticatedProvider);
   final isAuthRoute = _isAuthRoute(location);
+  final isPasswordRecovery = ref.read(passwordRecoveryPendingProvider);
+  final returnTo =
+      postAuthDestinationFromLocation(requestedLocation) ??
+      validPostAuthDestination(requestedLocation ?? location);
 
   if (!isLoggedIn && !isAuthRoute && !isAnonymousAllowedRoute(location)) {
-    return AppRoutes.login;
+    return loginLocationFor(returnTo);
+  }
+  if (isLoggedIn && isPasswordRecovery) {
+    return location == AppRoutes.forgotPassword
+        ? null
+        : AppRoutes.forgotPassword;
   }
   final isSessionLocked = ref.read(sessionLockedProvider);
+  final isAuthCallback =
+      location == AppRoutes.authCallback || location == AppRoutes.oauthCallback;
+  final hasPendingMfa = ref.read(pendingMfaFactorIdProvider) != null;
   if (isLoggedIn &&
       isAuthRoute &&
       !isSessionLocked &&
+      !isAuthCallback &&
+      !hasPendingMfa &&
       location != AppRoutes.twoFactorVerify) {
-    return AppRoutes.home;
+    return returnTo ?? AppRoutes.home;
   }
   return null;
 }
 
 /// 2FA guard — redirects to verify screen if MFA verification is pending.
-String? twoFactorRedirect(Ref ref, String location) {
+String? twoFactorRedirect(
+  Ref ref,
+  String location, {
+  String? requestedLocation,
+}) {
   final isLoggedIn = ref.read(isAuthenticatedProvider);
+  if (ref.read(passwordRecoveryPendingProvider)) return null;
   final pendingFactorId = ref.read(pendingMfaFactorIdProvider);
   if (isLoggedIn &&
       pendingFactorId != null &&
@@ -48,8 +67,13 @@ String? twoFactorRedirect(Ref ref, String location) {
     if (!isValidRouteId(pendingFactorId)) {
       return AppRoutes.login;
     }
-    return '${AppRoutes.twoFactorVerify}?factorId='
-        '${Uri.encodeQueryComponent(pendingFactorId)}';
+    final returnTo =
+        postAuthDestinationFromLocation(requestedLocation) ??
+        validPostAuthDestination(requestedLocation ?? location);
+    return twoFactorVerificationLocation(
+      pendingFactorId,
+      destination: returnTo,
+    );
   }
   return null;
 }

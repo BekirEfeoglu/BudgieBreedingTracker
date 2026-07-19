@@ -70,9 +70,8 @@ void main() {
   }
 
   group('BudgieLoginScreen', () {
-    // Note: BudgieLoginScreen has repeating AnimationControllers and
-    // periodic timers, so pumpAndSettle will never complete.
-    // Use pump() with a duration instead to let the widget tree build.
+    // The shared test config enables reduced motion, so decorative animations
+    // and their periodic timers remain static throughout this suite.
 
     testWidgets('renders without crashing', (tester) async {
       await tester.pumpWidget(buildSubject());
@@ -174,8 +173,10 @@ void main() {
       expect(find.byType(SignInWithAppleButton), findsOneWidget);
       // Verify Google label (key returned in test context)
       expect(find.text(l10n('auth.sign_in_with_google')), findsOneWidget);
-      // Note: SignInWithAppleButton renders its own internal label,
-      // not our localized 'auth.sign_in_with_apple' text.
+      final appleButton = tester.widget<SignInWithAppleButton>(
+        find.byType(SignInWithAppleButton),
+      );
+      expect(appleButton.text, l10n('auth.sign_in_with_apple'));
     });
 
     testWidgets('calls signInWithGoogle on Google button tap', (tester) async {
@@ -257,6 +258,7 @@ void main() {
       verify(() => mockAuth.signInWithOAuth(OAuthProvider.google)).called(1);
 
       await tester.pump(const Duration(seconds: 31));
+      expect(find.text(l10n('auth.error_oauth_timeout')), findsOneWidget);
       await tester.pump(const Duration(seconds: 5));
       await tester.pump(const Duration(milliseconds: 500));
     });

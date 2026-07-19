@@ -15,6 +15,8 @@ import '../../../core/extensions/context_extensions.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../router/route_names.dart';
+import '../../../router/post_auth_destination_store.dart';
+import '../../../router/route_utils.dart';
 import '../providers/native_google_auth_errors.dart';
 import '../providers/auth_providers.dart';
 import '../providers/post_login_mfa_checker.dart';
@@ -30,7 +32,9 @@ part 'budgie_login_screen_auth.dart';
 enum LoginState { idle, emailFocus, passwordFocus, loading, success, error }
 
 class BudgieLoginScreen extends ConsumerStatefulWidget {
-  const BudgieLoginScreen({super.key});
+  const BudgieLoginScreen({super.key, this.returnTo});
+
+  final String? returnTo;
 
   @override
   ConsumerState<BudgieLoginScreen> createState() => _BudgieLoginScreenState();
@@ -46,11 +50,11 @@ class _BudgieLoginScreenState extends _BudgieLoginAuthBase {
     _birdWobbleCtrl = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
-    )..repeat(reverse: true);
+    );
     _eggWobbleCtrl = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 4),
-    )..repeat(reverse: true);
+    );
     _hopCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 350),
@@ -58,14 +62,22 @@ class _BudgieLoginScreenState extends _BudgieLoginAuthBase {
     _wingFlapCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
-    )..repeat(reverse: true);
+    );
     _cardEnterCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
-    )..forward();
+    );
+  }
 
-    _startPeekTimer();
-    _startBlinkTimer();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    if (_motionPreferenceInitialized && reduceMotion == _reduceMotion) return;
+    _motionPreferenceInitialized = true;
+    _reduceMotion = reduceMotion;
+    _syncMotionPreference();
   }
 
   @override
@@ -87,10 +99,38 @@ class _BudgieLoginScreenState extends _BudgieLoginAuthBase {
     _blinkResetTimer?.cancel();
     _errorResetTimer?.cancel();
     _oAuthTimeoutTimer?.cancel();
+    _slowLoginTimer?.cancel();
     super.dispose();
   }
 
+  void _syncMotionPreference() {
+    if (_reduceMotion) {
+      _birdWobbleCtrl.stop();
+      _eggWobbleCtrl.stop();
+      _wingFlapCtrl.stop();
+      _hopCtrl.stop();
+      _cardEnterCtrl.value = 1;
+      _peekTimer?.cancel();
+      _peekResetTimer?.cancel();
+      _blinkTimer?.cancel();
+      _blinkResetTimer?.cancel();
+      _isPeeking = false;
+      _isBlinking = false;
+      return;
+    }
+
+    if (_loginState == LoginState.idle) {
+      _birdWobbleCtrl.repeat(reverse: true);
+      _eggWobbleCtrl.repeat(reverse: true);
+      _wingFlapCtrl.repeat(reverse: true);
+    }
+    if (_cardEnterCtrl.value == 0) _cardEnterCtrl.forward();
+    _startPeekTimer();
+    _startBlinkTimer();
+  }
+
   void _startPeekTimer() {
+    if (_reduceMotion) return;
     _peekTimer?.cancel();
     _peekResetTimer?.cancel();
     _peekTimer = Timer.periodic(const Duration(seconds: 7), (_) {
@@ -105,6 +145,7 @@ class _BudgieLoginScreenState extends _BudgieLoginAuthBase {
   }
 
   void _startBlinkTimer() {
+    if (_reduceMotion) return;
     _blinkTimer?.cancel();
     _blinkResetTimer?.cancel();
     void scheduleBlink() {
@@ -139,8 +180,10 @@ class _BudgieLoginScreenState extends _BudgieLoginAuthBase {
         _wingFlapCtrl.stop();
       } else {
         _loginState = LoginState.idle;
-        _birdWobbleCtrl.repeat(reverse: true);
-        _wingFlapCtrl.repeat(reverse: true);
+        if (!_reduceMotion) {
+          _birdWobbleCtrl.repeat(reverse: true);
+          _wingFlapCtrl.repeat(reverse: true);
+        }
       }
     });
   }
@@ -156,7 +199,7 @@ class _BudgieLoginScreenState extends _BudgieLoginAuthBase {
       body: SafeArea(
         child: Stack(
           children: [
-            const BudgieLoginBackground(),
+            const RepaintBoundary(child: BudgieLoginBackground()),
             SingleChildScrollView(
               child: ConstrainedBox(
                 constraints: BoxConstraints(
@@ -212,6 +255,7 @@ class _BudgieLoginScreenState extends _BudgieLoginAuthBase {
                                 emailFocusNode: _emailFocus,
                                 passwordFocusNode: _passwordFocus,
                                 loginState: _loginState,
+                                showSlowLoginMessage: _showSlowLoginMessage,
                                 onSubmit: _handleLogin,
                                 onGoogleTap: () =>
                                     _handleOAuth(OAuthProvider.google),

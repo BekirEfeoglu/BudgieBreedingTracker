@@ -23,6 +23,7 @@ class BudgieLoginCard extends StatelessWidget {
   final FocusNode emailFocusNode;
   final FocusNode passwordFocusNode;
   final LoginState loginState;
+  final bool showSlowLoginMessage;
   final VoidCallback onSubmit;
   final VoidCallback onGoogleTap;
   final VoidCallback onAppleTap;
@@ -38,6 +39,7 @@ class BudgieLoginCard extends StatelessWidget {
     required this.emailFocusNode,
     required this.passwordFocusNode,
     required this.loginState,
+    this.showSlowLoginMessage = false,
     required this.onSubmit,
     required this.onGoogleTap,
     required this.onAppleTap,
@@ -58,6 +60,11 @@ class BudgieLoginCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final transitionDuration = reduceMotion
+        ? Duration.zero
+        : const Duration(milliseconds: 300);
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.xxl),
@@ -79,7 +86,7 @@ class BudgieLoginCard extends StatelessWidget {
           children: [
             // Baslik (duruma gore animasyonlu gecis)
             AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
+              duration: transitionDuration,
               transitionBuilder: (child, animation) => FadeTransition(
                 opacity: animation,
                 child: SlideTransition(
@@ -102,15 +109,14 @@ class BudgieLoginCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
 
             // Kayit linki
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            Wrap(
+              alignment: WrapAlignment.center,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Flexible(
-                  child: Text(
-                    'auth.no_account'.tr(),
-                    style: theme.textTheme.bodyMedium,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                Text(
+                  'auth.no_account'.tr(),
+                  style: theme.textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
                 ),
                 TextButton(
                   onPressed: _isLoading ? null : onRegister,
@@ -151,7 +157,7 @@ class BudgieLoginCard extends StatelessWidget {
               controller: passwordController,
               focusNode: passwordFocusNode,
               label: 'auth.password'.tr(),
-              hint: 'auth.password_hint'.tr(),
+              hint: 'auth.login_password_hint'.tr(),
               prefixIcon: const AppIcon(AppIcons.password),
               isPassword: true,
               textInputAction: TextInputAction.done,
@@ -161,9 +167,6 @@ class BudgieLoginCard extends StatelessWidget {
               validator: (v) {
                 if (v == null || v.isEmpty) {
                   return 'common.required_field'.tr();
-                }
-                if (v.length < 8) {
-                  return 'common.password_short'.tr();
                 }
                 return null;
               },
@@ -180,16 +183,21 @@ class BudgieLoginCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.md),
 
             Semantics(
+              container: true,
+              excludeSemantics: true,
               button: true,
-              label: 'auth.login'.tr(),
+              enabled: !_isLoading,
+              liveRegion: _isLoading,
+              label: _isLoading ? 'auth.logging_in'.tr() : 'auth.login'.tr(),
               child: ShimmerShineAnimation(
                 isActive: _isLoading,
                 duration: const Duration(milliseconds: 1200),
                 shineColor: theme.colorScheme.onPrimary.withValues(alpha: 0.5),
                 child: FilledButton(
-                  // Butonun grileşmesini engellemek için isLoading durumunda boş lambda veriyoruz
-                  onPressed: _isLoading ? () {} : onSubmit,
+                  onPressed: _isLoading ? null : onSubmit,
                   style: FilledButton.styleFrom(
+                    disabledBackgroundColor: theme.colorScheme.primary,
+                    disabledForegroundColor: theme.colorScheme.onPrimary,
                     minimumSize: const Size(
                       double.infinity,
                       AppSpacing.touchTargetMd,
@@ -199,7 +207,9 @@ class BudgieLoginCard extends StatelessWidget {
                     ),
                   ),
                   child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 250),
+                    duration: reduceMotion
+                        ? Duration.zero
+                        : const Duration(milliseconds: 250),
                     child: switch (loginState) {
                       LoginState.loading => SizedBox(
                         key: const ValueKey('loading'),
@@ -223,6 +233,21 @@ class BudgieLoginCard extends StatelessWidget {
                 ),
               ),
             ),
+            if (showSlowLoginMessage) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Semantics(
+                container: true,
+                liveRegion: true,
+                label: 'auth.login_taking_longer'.tr(),
+                child: Text(
+                  'auth.login_taking_longer'.tr(),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
             const SizedBox(height: AppSpacing.lg),
 
             // Sosyal giris

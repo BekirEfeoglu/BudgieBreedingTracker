@@ -56,7 +56,6 @@ class _SocialLoginButtonsState extends State<SocialLoginButtons> {
               ? null
               : () => setState(() => _googlePressed = true),
           onTapUp: () => setState(() => _googlePressed = false),
-          onTap: widget.isLoading ? null : widget.onGoogleTap,
           child: OutlinedButton.icon(
             onPressed: widget.isLoading ? null : widget.onGoogleTap,
             icon: SvgPicture.asset(AppIcons.googleLogo, width: 18, height: 18),
@@ -83,6 +82,7 @@ class _SocialLoginButtonsState extends State<SocialLoginButtons> {
           width: double.infinity,
           child: SignInWithAppleButton(
             onPressed: widget.isLoading ? null : widget.onAppleTap,
+            text: 'auth.sign_in_with_apple'.tr(),
             height: AppSpacing.touchTargetMd,
             style: theme.brightness == Brightness.dark
                 ? SignInWithAppleButtonStyle.white
@@ -99,27 +99,28 @@ class _PressScaleButton extends StatelessWidget {
   const _PressScaleButton({
     required this.isPressed,
     required this.child,
-    required this.onTap,
     this.onTapDown,
     this.onTapUp,
   });
 
   final bool isPressed;
   final Widget child;
-  final VoidCallback? onTap;
   final VoidCallback? onTapDown;
   final VoidCallback? onTapUp;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: onTapDown != null ? (_) => onTapDown!() : null,
-      onTapUp: onTapUp != null ? (_) => onTapUp!() : null,
-      onTapCancel: onTapUp,
-      onTap: onTap,
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    return Listener(
+      onPointerDown: onTapDown != null ? (_) => onTapDown!() : null,
+      onPointerUp: onTapUp != null ? (_) => onTapUp!() : null,
+      onPointerCancel: onTapUp != null ? (_) => onTapUp!() : null,
       child: AnimatedScale(
         scale: isPressed ? 0.96 : 1.0,
-        duration: const Duration(milliseconds: 100),
+        duration: reduceMotion
+            ? Duration.zero
+            : const Duration(milliseconds: 100),
         curve: Curves.easeInOut,
         child: child,
       ),

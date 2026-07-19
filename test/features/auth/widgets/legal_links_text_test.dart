@@ -1,92 +1,68 @@
-import 'package:budgie_breeding_tracker/features/auth/widgets/legal_links_text.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:budgie_breeding_tracker/features/auth/widgets/legal_links_text.dart';
+
 import '../../../helpers/pump_helpers.dart';
+import '../../../helpers/test_localization.dart';
 
 void main() {
   group('LegalLinksText', () {
-    testWidgets('renders without error', (tester) async {
+    testWidgets('renders legal copy and two explicit link controls', (
+      tester,
+    ) async {
       await pumpWidgetSimple(tester, const LegalLinksText());
 
       expect(find.byType(LegalLinksText), findsOneWidget);
-      expect(find.byType(RichText), findsOneWidget);
+      expect(find.byType(TextButton), findsNWidgets(2));
+      expect(find.text('auth.agree_terms_prefix'), findsOneWidget);
+      expect(find.text('auth.terms_of_service'), findsOneWidget);
+      expect(find.text('auth.agree_terms_and'), findsOneWidget);
+      expect(find.text('auth.privacy_policy'), findsOneWidget);
+      expect(find.text('auth.agree_terms_suffix'), findsOneWidget);
     });
 
-    testWidgets('shows legal text content with all spans', (tester) async {
+    testWidgets('legal links expose link semantics', (tester) async {
       await pumpWidgetSimple(tester, const LegalLinksText());
 
-      final richText = tester.widget<RichText>(find.byType(RichText).first);
-      final textSpan = richText.text as TextSpan;
-
-      // RichText contains 5 children spans
-      expect(textSpan.children, hasLength(5));
-
-      // In test context .tr() returns the key itself
-      final spanTexts = textSpan.children!
-          .map((s) => (s as TextSpan).text)
-          .toList();
-      expect(spanTexts[0], 'auth.agree_terms_prefix');
-      expect(spanTexts[1], 'auth.terms_of_service');
-      expect(spanTexts[2], 'auth.agree_terms_and');
-      expect(spanTexts[3], 'auth.privacy_policy');
-      expect(spanTexts[4], 'auth.agree_terms_suffix');
+      final linkSemantics = find.byWidgetPredicate(
+        (widget) => widget is Semantics && widget.properties.link == true,
+      );
+      expect(linkSemantics, findsNWidgets(2));
     });
 
-    testWidgets('contains tappable terms of service link', (tester) async {
+    testWidgets('legal links meet the 48dp project touch target', (
+      tester,
+    ) async {
       await pumpWidgetSimple(tester, const LegalLinksText());
 
-      final richText = tester.widget<RichText>(find.byType(RichText).first);
-      final textSpan = richText.text as TextSpan;
-
-      // Find the terms of service span (second child)
-      final termsSpan = textSpan.children![1] as TextSpan;
-
-      // Verify it has a tap recognizer
-      expect(termsSpan.recognizer, isA<TapGestureRecognizer>());
+      for (final element in find.byType(TextButton).evaluate()) {
+        final size = tester.getSize(find.byWidget(element.widget));
+        expect(size.width, greaterThanOrEqualTo(48));
+        expect(size.height, greaterThanOrEqualTo(48));
+      }
     });
 
-    testWidgets('contains tappable privacy policy link', (tester) async {
-      await pumpWidgetSimple(tester, const LegalLinksText());
+    for (final locale in const ['tr', 'en', 'de']) {
+      testWidgets('wraps without overflow at 200% text scale in $locale', (
+        tester,
+      ) async {
+        await pumpTranslatedWidget(
+          tester,
+          const MediaQuery(
+            data: MediaQueryData(
+              size: Size(320, 800),
+              textScaler: TextScaler.linear(2),
+              disableAnimations: true,
+            ),
+            child: SizedBox(width: 320, child: LegalLinksText()),
+          ),
+          locale: Locale(locale),
+        );
 
-      final richText = tester.widget<RichText>(find.byType(RichText).first);
-      final textSpan = richText.text as TextSpan;
-
-      // Find the privacy policy span (fourth child)
-      final privacySpan = textSpan.children![3] as TextSpan;
-
-      // Verify it has a tap recognizer
-      expect(privacySpan.recognizer, isA<TapGestureRecognizer>());
-    });
-
-    testWidgets('link spans have underline decoration', (tester) async {
-      await pumpWidgetSimple(tester, const LegalLinksText());
-
-      final richText = tester.widget<RichText>(find.byType(RichText).first);
-      final textSpan = richText.text as TextSpan;
-
-      final termsSpan = textSpan.children![1] as TextSpan;
-      final privacySpan = textSpan.children![3] as TextSpan;
-
-      expect(termsSpan.style?.decoration, TextDecoration.underline);
-      expect(privacySpan.style?.decoration, TextDecoration.underline);
-    });
-
-    testWidgets('non-link spans have no tap recognizer', (tester) async {
-      await pumpWidgetSimple(tester, const LegalLinksText());
-
-      final richText = tester.widget<RichText>(find.byType(RichText).first);
-      final textSpan = richText.text as TextSpan;
-
-      // Prefix (index 0), "and" (index 2), suffix (index 4) should have no recognizer
-      final prefixSpan = textSpan.children![0] as TextSpan;
-      final andSpan = textSpan.children![2] as TextSpan;
-      final suffixSpan = textSpan.children![4] as TextSpan;
-
-      expect(prefixSpan.recognizer, isNull);
-      expect(andSpan.recognizer, isNull);
-      expect(suffixSpan.recognizer, isNull);
-    });
+        expect(tester.takeException(), isNull);
+        expect(find.byType(TextButton), findsNWidgets(2));
+      });
+    }
   });
 }

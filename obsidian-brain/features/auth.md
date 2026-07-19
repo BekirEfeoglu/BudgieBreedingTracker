@@ -8,6 +8,7 @@
 - Registration screen
 - MFA enrollment and challenge screen
 - Password reset
+- Password recovery deep link and new-password form
 - OAuth redirect handler
 
 ## Key Providers
@@ -40,6 +41,15 @@ one coordinated server + client rollout with matching contract tests.
 - Supabase SDK auto-refreshes tokens 5min before expiry
 - Refresh fail → `AuthException` → login redirect
 - Logout: revoke OAuth tokens (`revoke-oauth-token` edge fn) + clear session + invalidate providers
+- Recovery sessions are held on `/forgot-password` until a new password is
+  saved; they are not treated as completed normal sign-ins
+- Protected deep links carry a validated local `returnTo` path through login,
+  browser/native OAuth, MFA, and splash initialization. Browser OAuth stores
+  the target temporarily in `PostAuthDestinationStore` so an app restart does
+  not drop the destination; the value is consumed after successful auth.
+- Login validates only that the existing password is non-empty. Password
+  length and complexity belong to registration/recovery/update flows so
+  legacy accounts are not rejected before Supabase authenticates them.
 
 ## Startup Init (`appInitializationProvider`)
 

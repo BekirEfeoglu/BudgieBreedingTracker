@@ -4,13 +4,15 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-19] auth | Preserve post-login destinations and complete password recovery
+
+Protected deep links survive OAuth, MFA, and startup through validated one-shot `returnTo` state. Recovery sessions stay on the new-password form until Supabase updates the password;
+login UX adds bounded feedback, reduced motion, accessible controls, localized Apple labels, and four golden baselines.
+
 ## [2026-07-19] guard | Freeze the applied migration chain in a separate baseline fixture
 
-Added an immutable filename/SHA-256 baseline through canonical migration
-`20260714200511` and recorded nine production apply-time version aliases without
-renaming or rewriting historical SQL. The online drift guard now parses only
-the remote ledger column; it exposes `20260717120000` as the remaining explicit
-local-only migration instead of masking local versions from CLI JSON output.
+Added an immutable filename/SHA-256 baseline through canonical `20260714200511` and recorded nine apply-time aliases without rewriting historical SQL.
+The online guard parses only the remote ledger column and exposes `20260717120000` as the remaining explicit local-only migration.
 
 ## [2026-07-18] security-fix | Supabase RSA TLS fallback added to pin allowlist
 

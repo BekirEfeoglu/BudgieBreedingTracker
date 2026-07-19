@@ -133,6 +133,15 @@ class AuthActions with _AuthOAuthMixin, _AuthAccountMixin {
     );
   }
 
+  /// Updates the password for a session created by a recovery deep link.
+  ///
+  /// Call this only after Supabase emits [AuthChangeEvent.passwordRecovery].
+  /// The recovery session already proves control of the email link, so asking
+  /// for the previous password here would make account recovery impossible.
+  Future<UserResponse> updatePasswordAfterRecovery(String newPassword) {
+    return _client.auth.updateUser(UserAttributes(password: newPassword));
+  }
+
   /// Resend email verification with rate limiting.
   ///
   /// Enforces a 2-minute cooldown between requests to prevent abuse.

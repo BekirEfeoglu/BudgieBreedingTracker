@@ -209,15 +209,18 @@ void main() {
       expect(find.text(l10n('common.email_invalid')), findsOneWidget);
     });
 
-    testWidgets('validates short password', (tester) async {
+    testWidgets('accepts a non-empty legacy password shorter than 8 chars', (
+      tester,
+    ) async {
       await pumpWidgetSimple(tester, buildSubject());
 
       emailController.text = 'test@example.com';
       passwordController.text = '1234567'; // Less than 8 chars
-      formKey.currentState!.validate();
+      final isValid = formKey.currentState!.validate();
       await tester.pump();
 
-      expect(find.text(l10n('common.password_short')), findsOneWidget);
+      expect(isValid, isTrue);
+      expect(find.text(l10n('common.password_short')), findsNothing);
     });
 
     testWidgets('passes validation with valid credentials', (tester) async {
@@ -278,8 +281,10 @@ void main() {
         buildSubject(loginState: LoginState.loading, guestEnabled: true),
       );
 
-      // The submit FilledButton keeps a non-null no-op handler while loading
-      // (so it does not grey out) and shows a spinner instead of its label.
+      final submitButton = tester.widget<FilledButton>(
+        find.byType(FilledButton),
+      );
+      expect(submitButton.onPressed, isNull);
       expect(
         find.descendant(
           of: find.byType(FilledButton),
@@ -322,6 +327,26 @@ void main() {
               w is Semantics &&
               w.properties.label == 'auth.login' &&
               w.properties.button == true,
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('loading semantics reports disabled busy state', (
+      tester,
+    ) async {
+      await pumpWidgetSimple(
+        tester,
+        buildSubject(loginState: LoginState.loading),
+      );
+
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is Semantics &&
+              widget.properties.label == l10n('auth.logging_in') &&
+              widget.properties.enabled == false &&
+              widget.properties.liveRegion == true,
         ),
         findsOneWidget,
       );

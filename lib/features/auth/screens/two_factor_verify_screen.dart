@@ -14,12 +14,19 @@ import 'package:budgie_breeding_tracker/features/auth/providers/two_factor_provi
 import 'package:budgie_breeding_tracker/features/auth/widgets/otp_input_field.dart';
 import 'package:budgie_breeding_tracker/features/auth/widgets/recovery_codes_dialog.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
+import 'package:budgie_breeding_tracker/router/post_auth_destination_store.dart';
+import 'package:budgie_breeding_tracker/router/route_utils.dart';
 
 /// Screen for verifying 2FA during login.
 class TwoFactorVerifyScreen extends ConsumerStatefulWidget {
   final String factorId;
+  final String? returnTo;
 
-  const TwoFactorVerifyScreen({super.key, required this.factorId});
+  const TwoFactorVerifyScreen({
+    super.key,
+    required this.factorId,
+    this.returnTo,
+  });
 
   @override
   ConsumerState<TwoFactorVerifyScreen> createState() =>
@@ -80,6 +87,13 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
 
   bool get _isLockedOut =>
       _lockoutUntil != null && DateTime.now().isBefore(_lockoutUntil!);
+
+  Future<String> _takePostAuthDestination() async {
+    final directDestination = validPostAuthDestination(widget.returnTo);
+    if (directDestination != null) return directDestination;
+    return await ref.read(postAuthDestinationStoreProvider).take() ??
+        AppRoutes.home;
+  }
 
   @override
   void initState() {
@@ -217,7 +231,9 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
       ..showSnackBar(
         SnackBar(content: Text('auth.recovery_code_redeemed'.tr())),
       );
-    context.go(AppRoutes.home);
+    final destination = await _takePostAuthDestination();
+    if (!mounted) return;
+    context.go(destination);
   }
 
   Future<void> _handleSuccess() async {
@@ -234,7 +250,9 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
     await _persistLocalLockoutState();
     if (!mounted) return;
     ref.read(pendingMfaFactorIdProvider.notifier).state = null;
-    context.go(AppRoutes.home);
+    final destination = await _takePostAuthDestination();
+    if (!mounted) return;
+    context.go(destination);
   }
 
   Future<void> _handleFailure() async {

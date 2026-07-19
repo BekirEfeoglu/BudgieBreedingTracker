@@ -5,6 +5,7 @@ import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../../helpers/pump_helpers.dart';
+import '../../../helpers/test_localization.dart';
 
 void main() {
   group('SocialLoginButtons', () {
@@ -49,6 +50,10 @@ void main() {
       await pumpWidgetSimple(tester, buildSubject());
 
       expect(find.byType(SignInWithAppleButton), findsOneWidget);
+      final appleButton = tester.widget<SignInWithAppleButton>(
+        find.byType(SignInWithAppleButton),
+      );
+      expect(appleButton.text, l10n('auth.sign_in_with_apple'));
     });
 
     testWidgets('calls onGoogleTap when Google button is tapped', (
@@ -115,7 +120,7 @@ void main() {
 
       // AnimatedScale is used by _PressScaleButton
       expect(find.byType(AnimatedScale), findsOneWidget);
-      expect(find.byType(GestureDetector), findsWidgets);
+      expect(find.byType(Listener), findsWidgets);
     });
 
     testWidgets('Google button shows scale animation on tap down', (
@@ -181,5 +186,27 @@ void main() {
       await pumpWidgetSimple(tester, buildSubject(isLoading: true));
       expect(find.byType(SocialLoginButtons), findsOneWidget);
     });
+
+    for (final locale in const ['tr', 'en', 'de']) {
+      testWidgets('fits Apple and Google labels at 200% in $locale', (
+        tester,
+      ) async {
+        await pumpTranslatedWidget(
+          tester,
+          MediaQuery(
+            data: const MediaQueryData(
+              size: Size(320, 800),
+              textScaler: TextScaler.linear(2),
+              disableAnimations: true,
+            ),
+            child: SizedBox(width: 320, child: buildSubject()),
+          ),
+          locale: Locale(locale),
+        );
+
+        expect(tester.takeException(), isNull);
+        expect(find.byType(SignInWithAppleButton), findsOneWidget);
+      });
+    }
   });
 }

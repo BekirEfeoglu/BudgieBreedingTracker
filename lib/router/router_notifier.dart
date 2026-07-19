@@ -23,6 +23,7 @@ class RouterNotifier extends ChangeNotifier {
     _ref.listen(appInitializationProvider, (_, __) => _scheduleNotify());
     _ref.listen(initSkippedProvider, (_, __) => _scheduleNotify());
     _ref.listen(pendingMfaFactorIdProvider, (_, __) => _scheduleNotify());
+    _ref.listen(passwordRecoveryPendingProvider, (_, __) => _scheduleNotify());
   }
 
   final Ref _ref;
