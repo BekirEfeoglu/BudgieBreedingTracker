@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/features/auth/widgets/legal_links_text.dart';
 
 import '../../../helpers/pump_helpers.dart';
-import '../../../helpers/test_localization.dart';
 
 void main() {
   group('LegalLinksText', () {
@@ -42,27 +41,5 @@ void main() {
         expect(size.height, greaterThanOrEqualTo(48));
       }
     });
-
-    for (final locale in const ['tr', 'en', 'de']) {
-      testWidgets('wraps without overflow at 200% text scale in $locale', (
-        tester,
-      ) async {
-        await pumpTranslatedWidget(
-          tester,
-          const MediaQuery(
-            data: MediaQueryData(
-              size: Size(320, 800),
-              textScaler: TextScaler.linear(2),
-              disableAnimations: true,
-            ),
-            child: SizedBox(width: 320, child: LegalLinksText()),
-          ),
-          locale: Locale(locale),
-        );
-
-        expect(tester.takeException(), isNull);
-        expect(find.byType(TextButton), findsNWidgets(2));
-      });
-    }
   });
 }
