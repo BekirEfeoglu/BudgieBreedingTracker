@@ -46,7 +46,7 @@ the oldest affected schema version through the real sequential upgrade path.
 Format: `YYYYMMDDHHmmss_short_description.sql`
 
 217 tracked migration files are applied lexicographically. The 2026-07-19 linked-ledger check freezes 214 canonical files through `20260714200511` with nine apply-time aliases.
-`20260718203416` and `20260719012443` are applied remotely; `20260717120000` remains local-only and is reported by the online drift check.
+The three post-baseline deltas (`20260717120000`, `20260718203416`, and `20260719012443`) are applied remotely; the online drift check reports full prod parity.
 **Historical 2026-07-10 audit:**
 206 local files ↔ 206 ledger rows, version parity exact (0 duplicates), all
 recent effects confirmed in the live schema; `20260710120000` (marketplace
@@ -162,13 +162,13 @@ Never delete or rename migration files. If a mistake exists, create a new migrat
 - Production drift verification (version + content) is required after deploying newer local migrations; the ledger's `statements` column is the source for content-drift md5 checks.
 - Structural drift (duplicate version prefixes, malformed filenames — the 2026-05-29 collision class) is auto-guarded every PR by `scripts/verify_migration_drift.py` in the `code-quality` job. The immutable `scripts/fixtures/supabase_applied_migration_baseline.txt` freezes the applied chain through canonical version `20260714200511` by filename + SHA-256; later migrations stay append-only deltas.
 - `--online` reads only the remote column from Supabase CLI JSON/table output and maps nine historical apply-time version aliases through that baseline fixture. The aliases reconcile ledger identity without renaming or rewriting applied SQL; any new mismatch remains a failure. Content drift (file vs applied `statements`) remains a manual MCP procedure.
+- `20260717120000_align_scanned_image_upload_limits.sql` was applied to production through an alias-mapped temporary CLI fixture, preserving its exact local version and statement in the remote ledger without editing applied migration files. All seven safety-scanned image buckets enforce 2 MiB; `backups` remains 50 MiB.
 - Historical shared index helpers guard later-added columns and are tested from the earliest affected local schema version; `IF NOT EXISTS` alone is not a missing-column guard.
 - Committed migration files that drift from the ledger but are superseded by a later drift-free migration are left as-is (final schema reproduces prod); only a file that determines the *final* state and diverges gets a forward reconciliation migration.
 
 ## Known Deferred Work
 
 - `20260403140000`, `20260413100000`, `20260430130000` committed files still differ from their ledger `statements` (intermediate versions superseded later); benign for final schema, not reconciled to avoid rewriting applied history.
-- `20260717120000_align_scanned_image_upload_limits.sql` is still local-only as of the 2026-07-19 linked-ledger check; applying it requires an explicit staging/production migration operation and is not hidden by the baseline aliases.
 - Large-table index work should be split into dedicated concurrent-index migrations.
 
 ## Do Not Reintroduce

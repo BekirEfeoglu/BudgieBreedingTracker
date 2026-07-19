@@ -4,6 +4,10 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-19] deploy | Enforce the scanned-image upload cap in production
+
+Applied `20260717120000_align_scanned_image_upload_limits.sql` through an alias-mapped temporary CLI fixture so the remote ledger keeps the exact local version and SQL without rewriting historical migrations. Production now enforces 2 MiB on all seven safety-scanned image buckets, keeps `backups` at 50 MiB, and passes the online migration parity check.
+
 ## [2026-07-19] auth | Preserve post-login destinations and complete password recovery
 
 Protected deep links survive OAuth, MFA, and startup through validated one-shot `returnTo` state. Recovery sessions stay on the new-password form until Supabase updates the password;
@@ -166,35 +170,5 @@ Verified in prod as real authenticated users: DM create end-to-end OK, group
 owner invite OK, non-creator self-join into someone else's DM **and** group both
 rejected (42501) with 0 messages visible, block guard still fires (42501).
 Security advisor: no new findings. Applied via Supabase MCP.
-
-## [2026-07-14] fix | Community follow + DM were dead: RLS recursion & missing follow state
-
-User report: "topluluk sekmesinde takip ve kişisel mesaj çalışmıyor". Three
-root causes, all proven against prod before touching code.
-
-**DM (hard failure, server).** `participants_insert`'s `WITH CHECK` contained an
-unconditional raw `NOT EXISTS (SELECT … FROM conversation_participants …)`
-(added by the 2026-07-02 block-hardening migration, which silently reverted
-`20260402130000_fix_participants_rls_recursion.sql`). Reading the table from
-inside its own policy → `42P17 infinite recursion` on EVERY participant insert.
-DM never worked in prod (conversations/participants/messages = 0 rows).
-Fix + applied to prod: `20260714181422_fix_conversation_participants_rls_recursion.sql`
-routes the owner/admin and block checks through `private.is_conversation_manager`
-/ `private.conversation_has_block_with` (SECURITY DEFINER). Verified end-to-end
-as a real authenticated user (create → 2 participants → message → read cursor →
-recipient reads); block rejection still fires (42501). Advisors: 0 new findings.
-
-**Follow (client).** `fetch_community_feed` never returns `is_following_author`,
-so `CommunityPost.isFollowingAuthor` was permanently `false` — the button never
-showed the followed state and the "following" filter tab was always empty.
-`_enrichPosts` now fetches `fetchFollowedUserIds` alongside the social-state RPC
-(covers feed/detail/user-posts/tag/bookmark in one place). `FollowToggleNotifier`
-now also invalidates `followedUsersProvider`, which the public-profile follow
-button reads — without it that button ignored taps until pull-to-refresh.
-
-Also: the community-tagged marketplace test still asserted the pre-2026-07-10
-"messaging disabled" contract and had been red in the weekly suite; updated.
-Rules updated: community.md (§ Follow + 2 anti-patterns), messaging.md (recursion
-regression + anti-pattern #12).
 
 Older entries are archived in [[log-archive-2026-07-l]], [[log-archive-2026-07-k]], [[log-archive-2026-07-j]], [[log-archive-2026-07-i]], [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
