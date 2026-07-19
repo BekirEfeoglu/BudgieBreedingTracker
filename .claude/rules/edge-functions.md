@@ -52,11 +52,17 @@ Current webhook receivers: `revenuecat-webhook` (shared secret via `REVENUECAT_W
 |----------|--------|-----------|
 | `mfa-lockout` | 5 fails → lockout, 7-day decay | Prevent slow brute force (prior 24h decay allowed 1 try/day forever) |
 | `validate-free-tier-limit` | Server-side enforcement, client cannot bypass | Free tier limits must not depend on client trust |
-| `sync-premium-status` | RevenueCat checked server-side with secret key | Premium access must not depend on client assertions |
+| `sync-premium-status` | Admin `provider=manual` override varsa onu korur; yoksa RevenueCat'i secret key ile server-side doğrular | Premium access must not depend on client assertions |
 | `moderate-content` | Threshold-based auto-flag + human review queue | Scalable moderation, low false-positive risk |
 | `create-community-post` | Server-side moderation + post guard before insert | Public UGC publish cannot trust client validation |
 | `create-community-comment` | Server-side moderation + reciprocal block check before insert | Comment publish cannot bypass moderation or block privacy |
 | `upload-community-photo` | Server-side image moderation before Storage write | Unsafe community media must never land in Storage |
+
+Premium sync yazımları doğrudan tablo update/upsert yapmaz. `sync-premium-status`
+ve `revenuecat-webhook`, service-role-only `apply_verified_premium_status` RPC'sini
+çağırır. RPC, admin grant/revoke ile aynı kullanıcı-bazlı advisory lock altında
+manuel override'ı tekrar kontrol eder ve yalnızca hâlâ RevenueCat-yönetimli olan
+kaydı atomik olarak günceller.
 
 `scan-image-safety` ve `upload-community-photo` raw 2 MiB görsel sınırını
 paylaşır. Base64 envelope `ceil(2 MiB / 3) * 4 + 1024` byte'tır; son 1024 byte
@@ -102,5 +108,6 @@ Bu karar hosted Supabase Edge'in güncel function başına **256 MB memory** ve
 5. Returning raw Postgres errors to client (leaks schema)
 6. Hardcoding secrets in function source
 7. Short decay/cooldown windows that enable slow brute force
+8. Premium sync'te `user_subscriptions.provider = manual` override'ını ezmek
 
 > **Related**: security.md (JWT, MFA policy), release-ops.md (deploy pipeline), data-layer.md (remote source wrapping)

@@ -31,6 +31,9 @@ class _AdminUserDetailScreenState extends ConsumerState<AdminUserDetailScreen> {
   Widget build(BuildContext context) {
     final detailAsync = ref.watch(adminUserDetailProvider(widget.userId));
     final contentAsync = ref.watch(adminUserContentProvider(widget.userId));
+    final isActionLoading = ref.watch(
+      adminActionsProvider.select((state) => state.isLoading),
+    );
 
     ref.listen<AdminActionState>(adminActionsProvider, (_, state) {
       if (!mounted) return;
@@ -63,6 +66,7 @@ class _AdminUserDetailScreenState extends ConsumerState<AdminUserDetailScreen> {
         title: Text('admin.user_detail'.tr()),
         actions: [
           PopupMenuButton<String>(
+            enabled: !isActionLoading,
             onSelected: (value) => _handleAction(value),
             itemBuilder: (context) {
               final detail = ref
@@ -104,6 +108,7 @@ class _AdminUserDetailScreenState extends ConsumerState<AdminUserDetailScreen> {
           data: (detail) => UserDetailContent(
             detail: detail,
             contentAsync: contentAsync,
+            isPremiumActionLoading: isActionLoading,
             onGrantPremium: () => _handleGrantPremium(),
             onRevokePremium: () => _handleRevokePremium(),
           ),

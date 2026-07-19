@@ -280,6 +280,48 @@ void main() {
     });
 
     test(
+      'admin premium overrides serialize with service-role sync writes',
+      () {
+        final sql = File(
+          'supabase/migrations/'
+          '20260718203416_persist_admin_premium_overrides.sql',
+        ).readAsStringSync();
+
+        expect(
+          sql,
+          contains(
+            'CREATE OR REPLACE FUNCTION private.admin_grant_premium',
+          ),
+        );
+        expect(
+          sql,
+          contains(
+            'CREATE OR REPLACE FUNCTION private.admin_revoke_premium',
+          ),
+        );
+        expect(sql, contains("'manual'"));
+        expect(sql, contains('pg_catalog.pg_advisory_xact_lock'));
+        expect(
+          sql,
+          contains(
+            'CREATE OR REPLACE FUNCTION public.apply_verified_premium_status',
+          ),
+        );
+        expect(sql, contains('SECURITY INVOKER'));
+        expect(
+          sql,
+          contains("(SELECT auth.role()) IS DISTINCT FROM 'service_role'"),
+        );
+        expect(sql, contains("IF v_provider = 'manual' THEN"));
+        expect(
+          sql,
+          contains('FROM PUBLIC, anon, authenticated'),
+        );
+        expect(sql, contains(') TO service_role;'));
+      },
+    );
+
+    test(
       'daily check-in wrapper crosses the private privilege boundary safely',
       () {
         final sql = _migrationSqlAfter(

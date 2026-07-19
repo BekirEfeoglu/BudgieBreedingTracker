@@ -81,10 +81,12 @@ class AdminActionsNotifier extends Notifier<AdminActionState> {
   }
 
   Future<void> grantPremium(String targetUserId) async {
+    if (state.isLoading) return;
     await _userManager.grantPremium(targetUserId);
   }
 
   Future<void> revokePremium(String targetUserId) async {
+    if (state.isLoading) return;
     await _userManager.revokePremium(targetUserId);
   }
 

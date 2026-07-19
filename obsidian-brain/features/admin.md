@@ -74,6 +74,14 @@ All `AdminUserManager` destructive ops (`toggleUserActive`, `grantPremium`,
 `admin_bulk_manager`; a failed ban/grant was previously only an
 `AppLogger.error` breadcrumb (anti-pattern #23).
 
+Premium access is controlled from the user-detail subscription card with an
+adaptive switch. The switch is replaced by a progress indicator while the RPC
+is in flight, and the notifier rejects a second premium mutation. Grant and
+revoke remain confirm-gated (revoke also uses typed user-ID confirmation).
+Both RPCs record `user_subscriptions.provider = manual`; RevenueCat pull and
+webhook syncs preserve that decision. Revoking access does not cancel App
+Store/Google Play billing, which the confirmation copy states explicitly.
+
 `admin_get_user_aggregate_detail(p_user_id)` RPC fetches the full user-detail
 payload (profile, subscription, entity counts, recent activity logs) in one
 round-trip. It is `SECURITY INVOKER` + `is_admin()`-gated and relies on the
@@ -129,6 +137,8 @@ are invalidated on refresh, retry, and user mutations (bulk + detail).
 - Moderation post/comment removal is confirm-gated; no destructive admin path is single-tap.
 - Destructive admin op failures (user ops, bulk, moderation) report to Sentry, not just a breadcrumb.
 - User list summary counts come from database-wide providers, not the loaded page.
+- Manual premium grants/revocations are authoritative until another admin
+  changes them; RevenueCat sync does not replace `provider=manual` records.
 
 ## Known Deferred Work
 

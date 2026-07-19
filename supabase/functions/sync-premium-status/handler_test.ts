@@ -23,16 +23,34 @@ function authedRequest(
 function makeAdmin(overrides: {
   profile?: Record<string, unknown> | null;
   profileLookupError?: { message: string } | null;
-  profileUpdateError?: { message: string } | null;
-  subscriptionError?: { message: string } | null;
-  updated?: Record<string, unknown>[];
+  subscription?: Record<string, unknown> | null;
+  subscriptionLookupError?: { message: string } | null;
+  applyError?: { message: string } | null;
+  applyResult?: Record<string, unknown> | null;
+  applied?: Record<string, unknown>[];
 } = {}) {
-  const updated = overrides.updated ?? [];
+  const applied = overrides.applied ?? [];
   const profile = overrides.profile === undefined
     ? { role: null }
     : overrides.profile;
 
   return {
+    rpc: (fn: string, params: Record<string, unknown>) => {
+      if (fn !== "apply_verified_premium_status") {
+        throw new Error(`unexpected rpc ${fn}`);
+      }
+      applied.push(params);
+      return Promise.resolve({
+        data: overrides.applyResult ?? {
+          manual_override: false,
+          is_premium: params.p_is_premium,
+          subscription_status: params.p_subscription_status,
+          premium_expires_at: params.p_premium_expires_at,
+          grace_period_until: params.p_grace_period_until,
+        },
+        error: overrides.applyError ?? null,
+      });
+    },
     from: (table: string) => {
       if (table === "profiles") {
         return {
@@ -45,33 +63,18 @@ function makeAdmin(overrides: {
                 }),
             }),
           }),
-          update: (row: Record<string, unknown>) => ({
-            eq: () => ({
-              select: () => ({
-                single: () => {
-                  updated.push(row);
-                  if (overrides.profileUpdateError) {
-                    return Promise.resolve({
-                      data: null,
-                      error: overrides.profileUpdateError,
-                    });
-                  }
-                  return Promise.resolve({ data: row, error: null });
-                },
-              }),
-            }),
-          }),
         };
       }
       if (table === "user_subscriptions") {
         return {
-          upsert: () =>
-            Promise.resolve({ error: overrides.subscriptionError ?? null }),
-          update: () => ({
-            eq: () =>
-              Promise.resolve({
-                error: overrides.subscriptionError ?? null,
-              }),
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () =>
+                Promise.resolve({
+                  data: overrides.subscription ?? null,
+                  error: overrides.subscriptionLookupError ?? null,
+                }),
+            }),
           }),
         };
       }
@@ -150,9 +153,9 @@ Deno.test("sync-premium-status returns 500 when profile lookup fails", async () 
 });
 
 Deno.test("sync-premium-status syncs premium status on happy path", async () => {
-  const updated: Record<string, unknown>[] = [];
+  const applied: Record<string, unknown>[] = [];
   const response = await createSyncPremiumStatusHandler(
-    baseDeps({ createAdminClient: () => makeAdmin({ updated }) }),
+    baseDeps({ createAdminClient: () => makeAdmin({ applied }) }),
   )(authedRequest());
 
   assertEquals(response.status, 200);
@@ -163,6 +166,122 @@ Deno.test("sync-premium-status syncs premium status on happy path", async () => 
     premium_expires_at: "2026-02-01T00:00:00Z",
     grace_period_until: null,
   });
-  assertEquals(updated.length, 1);
-  assertEquals(updated[0].is_premium, true);
+  assertEquals(applied.length, 1);
+  assertEquals(applied[0].p_is_premium, true);
+  assertEquals(applied[0].p_subscription_status, "premium");
+});
+
+Deno.test("sync-premium-status preserves an active manual premium override", async () => {
+  let revenueCatCalls = 0;
+  const response = await createSyncPremiumStatusHandler(
+    baseDeps({
+      createAdminClient: () =>
+        makeAdmin({
+          subscription: {
+            plan: "premium",
+            status: "active",
+            provider: "manual",
+          },
+        }),
+      fetchSubscriber: () => {
+        revenueCatCalls++;
+        return Promise.resolve({});
+      },
+    }),
+  )(authedRequest());
+
+  assertEquals(response.status, 200);
+  assertEquals(await response.json(), {
+    success: true,
+    is_premium: true,
+    subscription_status: "premium",
+    premium_expires_at: null,
+    grace_period_until: null,
+    manual_override: true,
+  });
+  assertEquals(revenueCatCalls, 0);
+});
+
+Deno.test("sync-premium-status preserves a revoked manual premium override", async () => {
+  let revenueCatCalls = 0;
+  const response = await createSyncPremiumStatusHandler(
+    baseDeps({
+      createAdminClient: () =>
+        makeAdmin({
+          subscription: {
+            plan: "premium",
+            status: "canceled",
+            provider: "manual",
+          },
+        }),
+      fetchSubscriber: () => {
+        revenueCatCalls++;
+        return Promise.resolve({});
+      },
+    }),
+  )(authedRequest());
+
+  assertEquals(response.status, 200);
+  assertEquals(await response.json(), {
+    success: true,
+    is_premium: false,
+    subscription_status: "free",
+    premium_expires_at: null,
+    grace_period_until: null,
+    manual_override: true,
+  });
+  assertEquals(revenueCatCalls, 0);
+});
+
+Deno.test("sync-premium-status fails closed when manual override lookup fails", async () => {
+  const response = await createSyncPremiumStatusHandler(
+    baseDeps({
+      createAdminClient: () =>
+        makeAdmin({
+          subscriptionLookupError: { message: "lookup failed" },
+        }),
+    }),
+  )(authedRequest());
+
+  assertEquals(response.status, 500);
+  assertEquals((await response.json()).error, "Internal server error");
+});
+
+Deno.test("sync-premium-status preserves an override created during RevenueCat fetch", async () => {
+  const response = await createSyncPremiumStatusHandler(
+    baseDeps({
+      createAdminClient: () =>
+        makeAdmin({
+          applyResult: {
+            manual_override: true,
+            is_premium: false,
+            subscription_status: "free",
+            premium_expires_at: null,
+            grace_period_until: null,
+          },
+        }),
+    }),
+  )(authedRequest());
+
+  assertEquals(response.status, 200);
+  assertEquals(await response.json(), {
+    success: true,
+    is_premium: false,
+    subscription_status: "free",
+    premium_expires_at: null,
+    grace_period_until: null,
+    manual_override: true,
+  });
+});
+
+Deno.test("sync-premium-status returns 500 when atomic apply fails", async () => {
+  const response = await createSyncPremiumStatusHandler(
+    baseDeps({
+      createAdminClient: () =>
+        makeAdmin({ applyError: { message: "rpc failed" } }),
+    }),
+  )(authedRequest());
+
+  assertEquals(response.status, 500);
+  assertEquals((await response.json()).error, "Internal server error");
 });

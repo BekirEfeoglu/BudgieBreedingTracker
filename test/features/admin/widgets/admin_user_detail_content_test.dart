@@ -273,7 +273,9 @@ void main() {
       expect(find.text(l10n('common.active')), findsOneWidget);
     });
 
-    testWidgets('shows revoke_premium button for premium user', (tester) async {
+    testWidgets('shows active premium access switch for premium user', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrap(
           UserDetailSubscriptionSection(
@@ -283,10 +285,15 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text(l10n('admin.revoke_premium')), findsOneWidget);
+      final toggle = tester.widget<Switch>(
+        find.byKey(const Key('admin_premium_access_switch')),
+      );
+      expect(toggle.value, isTrue);
     });
 
-    testWidgets('shows grant_premium button for free user', (tester) async {
+    testWidgets('shows inactive premium access switch for free user', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrap(
           UserDetailSubscriptionSection(
@@ -296,10 +303,15 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text(l10n('admin.grant_premium')), findsOneWidget);
+      final toggle = tester.widget<Switch>(
+        find.byKey(const Key('admin_premium_access_switch')),
+      );
+      expect(toggle.value, isFalse);
     });
 
-    testWidgets('triggers onGrantPremium callback', (tester) async {
+    testWidgets('triggers onGrantPremium when switch is enabled', (
+      tester,
+    ) async {
       var granted = false;
       await tester.pumpWidget(
         _wrap(
@@ -310,11 +322,13 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.tap(find.text(l10n('admin.grant_premium')));
+      await tester.tap(find.byKey(const Key('admin_premium_access_switch')));
       expect(granted, isTrue);
     });
 
-    testWidgets('triggers onRevokePremium callback', (tester) async {
+    testWidgets('triggers onRevokePremium when switch is disabled', (
+      tester,
+    ) async {
       var revoked = false;
       await tester.pumpWidget(
         _wrap(
@@ -325,7 +339,7 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.tap(find.text(l10n('admin.revoke_premium')));
+      await tester.tap(find.byKey(const Key('admin_premium_access_switch')));
       expect(revoked, isTrue);
     });
 
@@ -345,7 +359,7 @@ void main() {
       expect(find.text(l10n('admin.role_based_premium')), findsOneWidget);
     });
 
-    testWidgets('hides grant/revoke buttons for founder', (tester) async {
+    testWidgets('hides premium access switch for founder', (tester) async {
       await tester.pumpWidget(
         _wrap(
           UserDetailSubscriptionSection(
@@ -356,8 +370,10 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text(l10n('admin.grant_premium')), findsNothing);
-      expect(find.text(l10n('admin.revoke_premium')), findsNothing);
+      expect(
+        find.byKey(const Key('admin_premium_access_switch')),
+        findsNothing,
+      );
     });
 
     testWidgets('shows founder status label for founder user', (tester) async {
@@ -414,6 +430,58 @@ void main() {
       );
       await tester.pump();
       expect(find.byType(Card), findsOneWidget);
+    });
+
+    testWidgets('shows manual override notice for mutable users', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(UserDetailSubscriptionSection(detail: _freeUserDetail)),
+      );
+      await tester.pump();
+
+      expect(find.text(l10n('admin.manual_premium_notice')), findsOneWidget);
+    });
+
+    testWidgets('switch keeps a minimum 48dp touch target', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          UserDetailSubscriptionSection(
+            detail: _freeUserDetail,
+            onGrantPremium: () {},
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final size = tester.getSize(
+        find.byKey(const Key('admin_premium_access_switch')),
+      );
+      expect(size.width, greaterThanOrEqualTo(48));
+      expect(size.height, greaterThanOrEqualTo(48));
+    });
+
+    testWidgets('shows progress and blocks a second premium action', (
+      tester,
+    ) async {
+      var grants = 0;
+      await tester.pumpWidget(
+        _wrap(
+          UserDetailSubscriptionSection(
+            detail: _freeUserDetail,
+            isActionLoading: true,
+            onGrantPremium: () => grants++,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(
+        find.byKey(const Key('admin_premium_access_switch')),
+        findsNothing,
+      );
+      expect(grants, 0);
     });
   });
 

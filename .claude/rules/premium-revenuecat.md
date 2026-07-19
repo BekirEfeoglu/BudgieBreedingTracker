@@ -21,6 +21,25 @@ User purchases (RevenueCat) -> RevenueCat webhook -> sync-premium-status edge fn
 
 İstemci RevenueCat SDK'sını **sadece purchase UX'i için** kullanır. Premium gate kararı her zaman sunucu kaynaklı (`profiles.is_premium`) okumadan verilir.
 
+### Admin Manual Override
+- `user_subscriptions.provider = 'manual'`, admin tarafından verilmiş açık bir
+  premium kararıdır. `status = active|trial` premium açık; diğer durumlar kapalıdır.
+- `sync-premium-status` ve `revenuecat-webhook`, founder/admin rol kontrolünden
+  sonra bu kaydı RevenueCat'e gitmeden okur ve manuel kararı korur.
+- RevenueCat kaynaklı upsert/update'ler `provider = 'revenuecat'` yazar; kaynak
+  belirsiz bırakılmaz.
+- `admin_grant_premium` ve `admin_revoke_premium` profile + subscription + audit
+  değişikliklerini tek server-side RPC içinde yapar. Kapatma RPC'si satır olmasa
+  bile `provider = manual`, `status = canceled` kaydı upsert ederek kararı kalıcı
+  hale getirir.
+- RevenueCat pull/webhook sonucu yalnızca service-role erişimli
+  `apply_verified_premium_status` RPC'siyle yazılır. Bu RPC admin grant/revoke ile
+  aynı kullanıcı-bazlı advisory lock'u alır ve kilit altında `provider = manual`
+  kontrolünü tekrarlar; uzun RevenueCat isteği sırasında gelen admin kararı bu
+  nedenle yarışta kaybolmaz.
+- Admin kapatması store aboneliğini veya billing'i iptal etmez. UI confirm metni
+  bunu bildirir; gerçek mağaza iptali kullanıcı/store yönetim akışındadır.
+
 ## Grace Period
 - `premiumGracePeriodProvider` ödeme yenileme hatası sonrası kısa süreli erişim verir
 - Guard'lar `GracePeriodStatus.gracePeriod` durumunu **passing** kabul etmelidir, sadece `isPremium == true` değil
@@ -102,5 +121,6 @@ class PremiumGuard {
 5. Restore Purchases butonunu kaldırmak (App Store rejection)
 6. Eski plan'lara sahip kullanıcı için kod path'i hemen silmek (entitlement bitimine kadar bekle)
 7. RevenueCat webhook'unu test edip edge function'ı atlatmak (race condition)
+8. `provider = manual` admin kararını RevenueCat pull/webhook sonucuyla ezmek
 
 > **İlgili**: security.md (env vars), edge-functions.md (sync-premium-status, validate-free-tier-limit), error-handling.md (FreeTierLimitException), release-ops.md (store policies)

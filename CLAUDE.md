@@ -108,7 +108,7 @@ scripts/test_marketing_site.py          # Public-site assets, semantics, respons
 | Metric | Value |
 | --- | --- |
 | Source files (lib/) | 1030 Dart files |
-| Test files (test/) | 943 test files, 11,681+ individual tests |
+| Test files (test/) | 944 test files, 11,686+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -207,7 +207,7 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 | `validate-free-tier-limit` | Free tier entity limit enforcement |
 
 ### Migrations
-216 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
+217 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
 
 ## Rules
 
@@ -383,7 +383,7 @@ Security:      lib/core/security/
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
-Migrations:    supabase/migrations/ (216 files)
+Migrations:    supabase/migrations/ (217 files)
 Scripts:       scripts/
 CI:            .github/workflows/ + codemagic.yaml
 ```

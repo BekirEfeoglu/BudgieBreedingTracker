@@ -105,7 +105,9 @@ void main() {
       expect(find.byType(UserDetailSubscriptionSection), findsOneWidget);
     });
 
-    testWidgets('shows grant_premium button for free user', (tester) async {
+    testWidgets('shows disabled premium access switch for free user', (
+      tester,
+    ) async {
       await pumpLocalizedApp(
         tester,
         _wrap(
@@ -116,10 +118,15 @@ void main() {
           ),
         ),
       );
-      expect(find.text(l10n('admin.grant_premium')), findsOneWidget);
+      final toggle = tester.widget<Switch>(
+        find.byKey(const Key('admin_premium_access_switch')),
+      );
+      expect(toggle.value, isFalse);
     });
 
-    testWidgets('shows revoke_premium button for premium user', (tester) async {
+    testWidgets('shows enabled premium access switch for premium user', (
+      tester,
+    ) async {
       await pumpLocalizedApp(
         tester,
         _wrap(
@@ -130,12 +137,13 @@ void main() {
           ),
         ),
       );
-      expect(find.text(l10n('admin.revoke_premium')), findsOneWidget);
+      final toggle = tester.widget<Switch>(
+        find.byKey(const Key('admin_premium_access_switch')),
+      );
+      expect(toggle.value, isTrue);
     });
 
-    testWidgets('calls onGrantPremium when grant button tapped', (
-      tester,
-    ) async {
+    testWidgets('calls onGrantPremium when switch is enabled', (tester) async {
       var tapped = false;
       await pumpLocalizedApp(
         tester,
@@ -147,13 +155,13 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.byType(FilledButton));
+      await tester.tap(find.byKey(const Key('admin_premium_access_switch')));
       await tester.pump();
 
       expect(tapped, isTrue);
     });
 
-    testWidgets('calls onRevokePremium when revoke button tapped', (
+    testWidgets('calls onRevokePremium when switch is disabled', (
       tester,
     ) async {
       var tapped = false;
@@ -167,7 +175,7 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.byType(OutlinedButton));
+      await tester.tap(find.byKey(const Key('admin_premium_access_switch')));
       await tester.pump();
 
       expect(tapped, isTrue);
@@ -188,7 +196,7 @@ void main() {
     });
 
     testWidgets(
-      'hides premium action buttons for founder/admin role-based premium',
+      'hides premium access switch for founder/admin role-based premium',
       (tester) async {
         await pumpLocalizedApp(
           tester,
@@ -203,11 +211,36 @@ void main() {
             ),
           ),
         );
-        expect(find.byType(FilledButton), findsNothing);
-        expect(find.byType(OutlinedButton), findsNothing);
+        expect(
+          find.byKey(const Key('admin_premium_access_switch')),
+          findsNothing,
+        );
         expect(find.text(l10n('admin.role_based_premium')), findsOneWidget);
       },
     );
+
+    testWidgets('shows progress and disables switch while action is loading', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
+        _wrap(
+          UserDetailSubscriptionSection(
+            detail: _makeDetail(subscriptionPlan: 'free'),
+            isActionLoading: true,
+            onGrantPremium: () {},
+          ),
+        ),
+        settle: false,
+      );
+      await tester.pump();
+
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(
+        find.byKey(const Key('admin_premium_access_switch')),
+        findsNothing,
+      );
+    });
   });
 
   group('UserDetailStatsRow', () {

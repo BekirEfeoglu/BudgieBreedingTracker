@@ -25,6 +25,19 @@ User purchases (RevenueCat SDK)
   → Client refreshes premium providers
 ```
 
+Before fetching RevenueCat, both sync paths check `user_subscriptions.provider`.
+`manual` means an explicit audited admin override: `active|trial` grants access,
+while `canceled|expired|past_due` removes it. `admin_revoke_premium` upserts a
+manual canceled row even when no prior subscription exists, so app-resume sync
+cannot silently reactivate the user. This access change does not cancel store
+billing.
+
+Verified RevenueCat results are written only through the service-role-only
+`apply_verified_premium_status` RPC. It shares a per-user advisory lock with the
+admin grant/revoke RPCs and rechecks `provider = manual` while holding that lock,
+so an admin override arriving during a RevenueCat request cannot be overwritten
+by the stale result.
+
 ## Key Providers
 
 - `isPremiumProvider`, `premiumGracePeriodProvider`, `effectivePremiumProvider` (`premiumStatusProvider` does not exist)

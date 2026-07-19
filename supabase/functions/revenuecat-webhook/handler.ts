@@ -1,6 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { corsPreflightResponse, getCorsHeaders } from "../_shared/cors.ts";
 import { createSupabaseAdmin } from "../_shared/auth.ts";
+import { resolveManualPremiumOverride } from "../_shared/premium_override.ts";
 import { fetchRevenueCatSubscriber } from "../_shared/revenuecat.ts";
 import {
   DEFAULT_ENTITLEMENT_ID,
@@ -46,8 +47,9 @@ const defaultDeps: RevenueCatWebhookDeps = {
  *   1. Verify shared secret (constant-time)
  *   2. Parse event { type, app_user_id }
  *   3. If test event, ack with 200 (lets RC dashboard verify reachability)
- *   4. Refetch full subscriber state from RC REST API
- *   5. resolvePremiumStatus + write to profiles + user_subscriptions
+ *   4. Preserve any explicit admin-managed premium override
+ *   5. Otherwise refetch full subscriber state from RC REST API
+ *   6. resolvePremiumStatus + write to profiles + user_subscriptions
  *      (mirrors sync-premium-status so client pull and server push converge)
  *
  * Errors are logged but the response is always 200 unless auth fails,
@@ -163,6 +165,32 @@ export function createRevenueCatWebhookHandler(
         );
       }
 
+      const { data: subscription, error: subscriptionLookupError } =
+        await supabase
+          .from("user_subscriptions")
+          .select("plan, status, provider")
+          .eq("user_id", event.appUserId)
+          .maybeSingle();
+
+      if (subscriptionLookupError) {
+        throw new Error(
+          `Subscription lookup failed: ${subscriptionLookupError.message}`,
+        );
+      }
+
+      const manualOverride = resolveManualPremiumOverride(subscription);
+      if (manualOverride) {
+        return new Response(
+          JSON.stringify({
+            success: true,
+            type: event.type,
+            is_premium: manualOverride.isPremium,
+            manual_override: true,
+          }),
+          { status: 200, headers },
+        );
+      }
+
       const entitlementId = deps.getEntitlementId();
       const revenueCatPayload = await deps.fetchSubscriber(event.appUserId);
       const nowDate = deps.now();
@@ -171,68 +199,40 @@ export function createRevenueCatWebhookHandler(
         nowDate,
         entitlementId,
       );
-      const now = nowDate.toISOString();
 
-      const { data: syncedProfile, error: profileUpdateError } =
-        await supabase
-          .from("profiles")
-          .update({
-            is_premium: status.isPremium,
-            subscription_status: status.subscriptionStatus,
-            premium_expires_at: status.expiresAt,
-            grace_period_until: status.gracePeriodUntil,
-            updated_at: now,
-          })
-          .eq("id", event.appUserId)
-          .select(
-            "is_premium, subscription_status, premium_expires_at, grace_period_until",
-          )
-          .single();
+      const { data: appliedStatus, error: applyError } = await supabase.rpc(
+        "apply_verified_premium_status",
+        {
+          p_user_id: event.appUserId,
+          p_is_premium: status.isPremium,
+          p_subscription_status: status.subscriptionStatus,
+          p_premium_expires_at: status.expiresAt,
+          p_grace_period_until: status.gracePeriodUntil,
+          p_plan: status.productIdentifier ?? "premium",
+          p_subscription_record_status: status.subscriptionRecordStatus,
+        },
+      );
 
-      if (profileUpdateError) {
+      if (applyError) {
         throw new Error(
-          `Profile premium sync failed: ${profileUpdateError.message}`,
+          `Atomic premium sync failed: ${applyError.message}`,
         );
       }
 
-      if (!profileMatchesPremiumStatus(syncedProfile, status)) {
-        throw new Error("Profile premium sync verification failed");
+      if (appliedStatus?.manual_override === true) {
+        return new Response(
+          JSON.stringify({
+            success: true,
+            type: event.type,
+            is_premium: appliedStatus.is_premium === true,
+            manual_override: true,
+          }),
+          { status: 200, headers },
+        );
       }
 
-      if (status.isPremium) {
-        const { error: upsertError } = await supabase
-          .from("user_subscriptions")
-          .upsert(
-            {
-              user_id: event.appUserId,
-              plan: status.productIdentifier ?? "premium",
-              status: "active",
-              current_period_end: status.expiresAt,
-              updated_at: now,
-            },
-            { onConflict: "user_id" },
-          );
-
-        if (upsertError) {
-          throw new Error(
-            `Subscription upsert failed: ${upsertError.message}`,
-          );
-        }
-      } else {
-        const { error: subscriptionUpdateError } = await supabase
-          .from("user_subscriptions")
-          .update({
-            status: status.subscriptionRecordStatus,
-            current_period_end: status.expiresAt,
-            updated_at: now,
-          })
-          .eq("user_id", event.appUserId);
-
-        if (subscriptionUpdateError) {
-          throw new Error(
-            `Subscription status sync failed: ${subscriptionUpdateError.message}`,
-          );
-        }
+      if (!profileMatchesPremiumStatus(appliedStatus, status)) {
+        throw new Error("Profile premium sync verification failed");
       }
 
       return new Response(

@@ -22,6 +22,7 @@ part 'admin_user_detail_content_security.dart';
 class UserDetailContent extends StatelessWidget {
   final AdminUserDetail detail;
   final AsyncValue<AdminUserContent>? contentAsync;
+  final bool isPremiumActionLoading;
   final VoidCallback? onGrantPremium;
   final VoidCallback? onRevokePremium;
 
@@ -29,6 +30,7 @@ class UserDetailContent extends StatelessWidget {
     super.key,
     required this.detail,
     this.contentAsync,
+    this.isPremiumActionLoading = false,
     this.onGrantPremium,
     this.onRevokePremium,
   });
@@ -45,6 +47,7 @@ class UserDetailContent extends StatelessWidget {
           const SizedBox(height: AppSpacing.lg),
           UserDetailSubscriptionSection(
             detail: detail,
+            isActionLoading: isPremiumActionLoading,
             onGrantPremium: onGrantPremium,
             onRevokePremium: onRevokePremium,
           ),
@@ -275,15 +278,17 @@ class UserDetailProfileHeader extends StatelessWidget {
   }
 }
 
-/// Subscription section with plan info and grant/revoke buttons.
+/// Subscription section with plan info and a guarded premium access switch.
 class UserDetailSubscriptionSection extends StatelessWidget {
   final AdminUserDetail detail;
+  final bool isActionLoading;
   final VoidCallback? onGrantPremium;
   final VoidCallback? onRevokePremium;
 
   const UserDetailSubscriptionSection({
     super.key,
     required this.detail,
+    this.isActionLoading = false,
     this.onGrantPremium,
     this.onRevokePremium,
   });
@@ -367,35 +372,54 @@ class UserDetailSubscriptionSection extends StatelessWidget {
               ),
             ] else ...[
               const SizedBox(height: AppSpacing.md),
-              SizedBox(
-                width: double.infinity,
-                child: isPremium
-                    ? OutlinedButton.icon(
-                        onPressed: onRevokePremium,
-                        icon: Semantics(
-                          label: 'admin.revoke_premium'.tr(),
-                          child: const Icon(LucideIcons.xCircle, size: 18),
-                        ),
-                        label: Text('admin.revoke_premium'.tr()),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.error,
-                          side: BorderSide(
-                            color: AppColors.error.withValues(alpha: 0.5),
-                          ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                minVerticalPadding: AppSpacing.sm,
+                title: Text(
+                  'admin.premium_access'.tr(),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: Text(
+                  (isPremium
+                          ? 'admin.premium_access_active'
+                          : 'admin.premium_access_inactive')
+                      .tr(),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                trailing: isActionLoading
+                    ? Semantics(
+                        label: 'common.loading'.tr(),
+                        child: const SizedBox.square(
+                          dimension: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2.5),
                         ),
                       )
-                    : FilledButton.icon(
-                        onPressed: onGrantPremium,
-                        icon: AppIcon(
-                          AppIcons.premium,
-                          size: 18,
-                          semanticsLabel: 'admin.grant_premium'.tr(),
-                        ),
-                        label: Text('admin.grant_premium'.tr()),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.success,
-                        ),
+                    : Switch.adaptive(
+                        key: const Key('admin_premium_access_switch'),
+                        value: isPremium,
+                        onChanged:
+                            (isPremium ? onRevokePremium : onGrantPremium) ==
+                                null
+                            ? null
+                            : (enabled) {
+                                if (enabled) {
+                                  onGrantPremium?.call();
+                                } else {
+                                  onRevokePremium?.call();
+                                }
+                              },
                       ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                'admin.manual_premium_notice'.tr(),
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ],

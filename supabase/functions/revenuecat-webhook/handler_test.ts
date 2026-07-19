@@ -29,16 +29,34 @@ function webhookRequest(
 function makeAdmin(overrides: {
   profile?: Record<string, unknown> | null;
   profileLookupError?: { message: string } | null;
-  profileUpdateError?: { message: string } | null;
-  subscriptionError?: { message: string } | null;
-  updated?: Record<string, unknown>[];
+  subscription?: Record<string, unknown> | null;
+  subscriptionLookupError?: { message: string } | null;
+  applyError?: { message: string } | null;
+  applyResult?: Record<string, unknown> | null;
+  applied?: Record<string, unknown>[];
 } = {}) {
-  const updated = overrides.updated ?? [];
+  const applied = overrides.applied ?? [];
   const profile = overrides.profile === undefined
     ? { id: APP_USER_ID, role: null }
     : overrides.profile;
 
   return {
+    rpc: (fn: string, params: Record<string, unknown>) => {
+      if (fn !== "apply_verified_premium_status") {
+        throw new Error(`unexpected rpc ${fn}`);
+      }
+      applied.push(params);
+      return Promise.resolve({
+        data: overrides.applyResult ?? {
+          manual_override: false,
+          is_premium: params.p_is_premium,
+          subscription_status: params.p_subscription_status,
+          premium_expires_at: params.p_premium_expires_at,
+          grace_period_until: params.p_grace_period_until,
+        },
+        error: overrides.applyError ?? null,
+      });
+    },
     from: (table: string) => {
       if (table === "profiles") {
         return {
@@ -51,33 +69,18 @@ function makeAdmin(overrides: {
                 }),
             }),
           }),
-          update: (row: Record<string, unknown>) => ({
-            eq: () => ({
-              select: () => ({
-                single: () => {
-                  updated.push(row);
-                  if (overrides.profileUpdateError) {
-                    return Promise.resolve({
-                      data: null,
-                      error: overrides.profileUpdateError,
-                    });
-                  }
-                  return Promise.resolve({ data: row, error: null });
-                },
-              }),
-            }),
-          }),
         };
       }
       if (table === "user_subscriptions") {
         return {
-          upsert: () =>
-            Promise.resolve({ error: overrides.subscriptionError ?? null }),
-          update: () => ({
-            eq: () =>
-              Promise.resolve({
-                error: overrides.subscriptionError ?? null,
-              }),
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () =>
+                Promise.resolve({
+                  data: overrides.subscription ?? null,
+                  error: overrides.subscriptionLookupError ?? null,
+                }),
+            }),
           }),
         };
       }
@@ -166,7 +169,7 @@ Deno.test("revenuecat-webhook returns 200 success:false on internal error (no re
     baseDeps({
       createAdminClient: () =>
         makeAdmin({
-          profileUpdateError: { message: "db exploded" },
+          applyError: { message: "db exploded" },
         }),
     }),
   )(
@@ -185,9 +188,9 @@ Deno.test("revenuecat-webhook returns 200 success:false on internal error (no re
 });
 
 Deno.test("revenuecat-webhook syncs premium status on happy path", async () => {
-  const updated: Record<string, unknown>[] = [];
+  const applied: Record<string, unknown>[] = [];
   const response = await createRevenueCatWebhookHandler(
-    baseDeps({ createAdminClient: () => makeAdmin({ updated }) }),
+    baseDeps({ createAdminClient: () => makeAdmin({ applied }) }),
   )(
     webhookRequest({
       body: {
@@ -202,6 +205,131 @@ Deno.test("revenuecat-webhook syncs premium status on happy path", async () => {
     type: "RENEWAL",
     is_premium: true,
   });
-  assertEquals(updated.length, 1);
-  assertEquals(updated[0].is_premium, true);
+  assertEquals(applied.length, 1);
+  assertEquals(applied[0].p_is_premium, true);
+  assertEquals(applied[0].p_subscription_status, "premium");
+});
+
+Deno.test("revenuecat-webhook preserves an active manual premium override", async () => {
+  let revenueCatCalls = 0;
+  const response = await createRevenueCatWebhookHandler(
+    baseDeps({
+      createAdminClient: () =>
+        makeAdmin({
+          subscription: {
+            plan: "premium",
+            status: "active",
+            provider: "manual",
+          },
+        }),
+      fetchSubscriber: () => {
+        revenueCatCalls++;
+        return Promise.resolve({});
+      },
+    }),
+  )(
+    webhookRequest({
+      body: {
+        event: { type: "RENEWAL", app_user_id: APP_USER_ID, id: "evt-1" },
+      },
+    }),
+  );
+
+  assertEquals(response.status, 200);
+  assertEquals(await response.json(), {
+    success: true,
+    type: "RENEWAL",
+    is_premium: true,
+    manual_override: true,
+  });
+  assertEquals(revenueCatCalls, 0);
+});
+
+Deno.test("revenuecat-webhook preserves a revoked manual premium override", async () => {
+  let revenueCatCalls = 0;
+  const response = await createRevenueCatWebhookHandler(
+    baseDeps({
+      createAdminClient: () =>
+        makeAdmin({
+          subscription: {
+            plan: "premium",
+            status: "canceled",
+            provider: "manual",
+          },
+        }),
+      fetchSubscriber: () => {
+        revenueCatCalls++;
+        return Promise.resolve({});
+      },
+    }),
+  )(
+    webhookRequest({
+      body: {
+        event: { type: "RENEWAL", app_user_id: APP_USER_ID, id: "evt-1" },
+      },
+    }),
+  );
+
+  assertEquals(response.status, 200);
+  assertEquals(await response.json(), {
+    success: true,
+    type: "RENEWAL",
+    is_premium: false,
+    manual_override: true,
+  });
+  assertEquals(revenueCatCalls, 0);
+});
+
+Deno.test("revenuecat-webhook fails closed when manual override lookup fails", async () => {
+  const response = await createRevenueCatWebhookHandler(
+    baseDeps({
+      createAdminClient: () =>
+        makeAdmin({
+          subscriptionLookupError: { message: "lookup failed" },
+        }),
+    }),
+  )(
+    webhookRequest({
+      body: {
+        event: { type: "RENEWAL", app_user_id: APP_USER_ID, id: "evt-1" },
+      },
+    }),
+  );
+
+  assertEquals(response.status, 200);
+  assertEquals(await response.json(), {
+    success: false,
+    error: "internal_error",
+  });
+});
+
+Deno.test("revenuecat-webhook preserves an override created during RevenueCat fetch", async () => {
+  const response = await createRevenueCatWebhookHandler(
+    baseDeps({
+      createAdminClient: () =>
+        makeAdmin({
+          applyResult: {
+            manual_override: true,
+            is_premium: false,
+            subscription_status: "free",
+            premium_expires_at: null,
+            grace_period_until: null,
+          },
+        }),
+    }),
+  )(
+    webhookRequest({
+      body: {
+        event: { type: "RENEWAL", app_user_id: APP_USER_ID, id: "evt-1" },
+      },
+    }),
+  );
+
+  assertEquals(response.status, 200);
+  assertEquals(await response.json(), {
+    success: true,
+    type: "RENEWAL",
+    is_premium: false,
+    manual_override: true,
+  });
 });

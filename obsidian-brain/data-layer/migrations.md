@@ -45,9 +45,9 @@ the oldest affected schema version through the real sequential upgrade path.
 
 Format: `YYYYMMDDHHmmss_short_description.sql`
 
-210 tracked migration files in `supabase/migrations/` — applied in lexicographic
-(chronological) order (parity last verified at 207 on 2026-07-10; the three
-2026-07-12 streak migrations were applied to prod via MCP the same day). **Verified against production 2026-07-10 (MCP live):**
+217 tracked migration files are applied lexicographically. The 2026-07-19 linked-ledger check freezes 214 canonical files through `20260714200511` with nine apply-time aliases.
+`20260718203416` and `20260719012443` are applied remotely; `20260717120000` remains local-only and is reported by the online drift check.
+**Historical 2026-07-10 audit:**
 206 local files ↔ 206 ledger rows, version parity exact (0 duplicates), all
 recent effects confirmed in the live schema; `20260710120000` (marketplace
 listing moderation trigger) was applied to prod later the same day via MCP,
@@ -162,9 +162,7 @@ Never delete or rename migration files. If a mistake exists, create a new migrat
 - Production drift verification (version + content) is required after deploying newer local migrations; the ledger's `statements` column is the source for content-drift md5 checks.
 - Structural drift (duplicate version prefixes, malformed filenames — the 2026-05-29 collision class) is auto-guarded every PR by `scripts/verify_migration_drift.py` in the `code-quality` job. The immutable `scripts/fixtures/supabase_applied_migration_baseline.txt` freezes the applied chain through canonical version `20260714200511` by filename + SHA-256; later migrations stay append-only deltas.
 - `--online` reads only the remote column from Supabase CLI JSON/table output and maps nine historical apply-time version aliases through that baseline fixture. The aliases reconcile ledger identity without renaming or rewriting applied SQL; any new mismatch remains a failure. Content drift (file vs applied `statements`) remains a manual MCP procedure.
-- Historical shared index helpers guard later-added columns and are tested from
-  the earliest affected local schema version; `IF NOT EXISTS` alone is not a
-  missing-column guard.
+- Historical shared index helpers guard later-added columns and are tested from the earliest affected local schema version; `IF NOT EXISTS` alone is not a missing-column guard.
 - Committed migration files that drift from the ledger but are superseded by a later drift-free migration are left as-is (final schema reproduces prod); only a file that determines the *final* state and diverges gets a forward reconciliation migration.
 
 ## Known Deferred Work

@@ -9,6 +9,7 @@ import 'package:budgie_breeding_tracker/features/admin/providers/admin_data_prov
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_content_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/screens/admin_user_detail_screen.dart';
+import 'package:budgie_breeding_tracker/features/admin/widgets/admin_user_detail_content.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 
@@ -19,6 +20,7 @@ const _testUserId = 'test-user-id';
 /// Fake notifier: avoids real Supabase calls during rendering.
 class _FakeAdminActionsNotifier extends AdminActionsNotifier {
   int toggleCalls = 0;
+  int grantCalls = 0;
   int revokeCalls = 0;
 
   @override
@@ -27,6 +29,11 @@ class _FakeAdminActionsNotifier extends AdminActionsNotifier {
   @override
   Future<void> toggleUserActive(String targetUserId, bool isActive) async {
     toggleCalls++;
+  }
+
+  @override
+  Future<void> grantPremium(String targetUserId) async {
+    grantCalls++;
   }
 
   @override
@@ -39,15 +46,25 @@ class _FakeAdminActionsNotifier extends AdminActionsNotifier {
   }
 }
 
+class _FakeLoadingAdminActionsNotifier extends _FakeAdminActionsNotifier {
+  @override
+  AdminActionState build() => const AdminActionState(isLoading: true);
+}
+
 Widget _createSubject({
   AsyncValue<AdminUserDetail> detailAsync = const AsyncLoading(),
   AsyncValue<AdminUserContent> contentAsync = const AsyncLoading(),
+  bool actionLoading = false,
 }) {
   return ProviderScope(
     overrides: [
       adminUserDetailProvider(_testUserId).overrideWithValue(detailAsync),
       adminUserContentProvider(_testUserId).overrideWithValue(contentAsync),
-      adminActionsProvider.overrideWith(_FakeAdminActionsNotifier.new),
+      adminActionsProvider.overrideWith(
+        actionLoading
+            ? _FakeLoadingAdminActionsNotifier.new
+            : _FakeAdminActionsNotifier.new,
+      ),
     ],
     child: const MaterialApp(home: AdminUserDetailScreen(userId: _testUserId)),
   );
@@ -121,6 +138,45 @@ void main() {
       await pumpLocalizedApp(tester, _createSubject(), settle: false);
       await tester.pump();
       expect(find.byType(PopupMenuButton<String>), findsOneWidget);
+    });
+
+    testWidgets('blocks premium and menu actions while a mutation is loading', (
+      tester,
+    ) async {
+      final detail = AdminUserDetail(
+        id: _testUserId,
+        email: 'user@example.com',
+        createdAt: DateTime(2024, 1, 15),
+        subscriptionPlan: 'free',
+        subscriptionStatus: 'free',
+      );
+
+      await pumpLocalizedApp(
+        tester,
+        _createSubject(
+          detailAsync: AsyncData(detail),
+          contentAsync: const AsyncData(AdminUserContent()),
+          actionLoading: true,
+        ),
+        settle: false,
+      );
+      await tester.pump();
+
+      final menu = tester.widget<PopupMenuButton<String>>(
+        find.byType(PopupMenuButton<String>),
+      );
+      expect(menu.enabled, isFalse);
+      expect(
+        find.descendant(
+          of: find.byType(UserDetailSubscriptionSection),
+          matching: find.byType(CircularProgressIndicator),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('admin_premium_access_switch')),
+        findsNothing,
+      );
     });
 
     testWidgets('deactivate action requires typed user id confirmation', (

@@ -67,7 +67,15 @@ EXECUTE FUNCTION audit_admin_action('ban_user');
 - Search: email, display name, user ID
 - Pagination: 50/page, cursor-based
 - Detay sayfası: bird count, last login, premium status, ban history
-- Aksiyonlar: reset password (email tetikle), force MFA, ban, premium grant (debug only)
+- Aksiyonlar: reset password (email tetikle), force MFA, ban, premium erişimini
+  admin kararıyla aktif/deaktif etme
+- Kullanıcı detayındaki premium anahtarı işlem sırasında spinner gösterir ve ikinci
+  gönderimi kilitler. Founder/admin rolüyle gelen premium erişimi değiştirilemez.
+- `admin_grant_premium` / `admin_revoke_premium` kararları
+  `user_subscriptions.provider = 'manual'` ile atomik ve audit'li yazılır.
+  `sync-premium-status` ile `revenuecat-webhook` bu manuel kararı RevenueCat
+  sonucuyla ezmez. Premium deaktif etme mağaza aboneliğini veya ödemeyi iptal
+  etmez; confirm metni bunu açıkça bildirir.
 
 ## Data Privacy
 - Admin **kullanıcı şifresi, MFA secret, encrypted field plaintext** görmez (zero-knowledge)

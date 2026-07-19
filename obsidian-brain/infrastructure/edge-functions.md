@@ -45,12 +45,18 @@ Current webhook receivers: `revenuecat-webhook` (shared secret via `REVENUECAT_W
 |----------|--------|
 | `mfa-lockout` | 5 fails → lockout, 7-day decay |
 | `validate-free-tier-limit` | Server-side enforcement; client cannot bypass |
-| `sync-premium-status` | RevenueCat checked with secret key; client assertions not trusted |
-| `revenuecat-webhook` | Refetches full subscriber on every event; converges with `sync-premium-status` on identical state. TEST events ack 200 without DB writes. Unknown event types still refetch defensively. Founder/admin short-circuit mirrors `sync-premium-status`. |
+| `sync-premium-status` | Preserves audited `provider=manual` admin overrides; otherwise RevenueCat is checked with the secret key and client assertions are not trusted |
+| `revenuecat-webhook` | Preserves audited `provider=manual` admin overrides; otherwise refetches the full subscriber and converges with `sync-premium-status`. TEST events ack 200 without DB writes. Unknown event types still refetch defensively. Founder/admin short-circuit mirrors `sync-premium-status`. |
 | `moderate-content` | Threshold auto-flag + human review queue |
 | `create-community-post` | Server-side moderation + post guard before insert; also `mode:'update'` edit-window path. `image_urls` Zod cap is **10** (the premium max) — through 2026-07-09 it was `6`, which deterministically 400'd premium 7–10-photo posts after upload. |
 | `create-community-comment` | Server-side moderation + reciprocal block check before insert |
 | `upload-community-photo` | Server-side image moderation before Storage write |
+
+Both premium sync paths persist verified RevenueCat state through the
+service-role-only `apply_verified_premium_status` RPC rather than direct table
+writes. The RPC shares a per-user advisory lock with admin grant/revoke and
+rechecks the manual provider under that lock, preventing a stale RevenueCat
+response from winning a concurrent admin override.
 
 Image Edge paths share a raw 2 MiB cap. The request envelope budgets base64 as
 `ceil(raw/3)*4 + 1024` bytes, including JSON metadata; decoded-size calculation
