@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Unit tests for verify_migration_drift.py."""
 
+from __future__ import annotations
+
+import hashlib
 import sys
 import unittest
 from io import StringIO
@@ -17,6 +20,24 @@ def _write(tmp: Path, *names: str) -> Path:
     for name in names:
         (tmp / name).write_text("-- noop\n", encoding="utf-8")
     return tmp
+
+
+def _write_baseline(
+    tmp: Path,
+    filename: str,
+    *,
+    remote_version: str | None = None,
+) -> Path:
+    migration = tmp / filename
+    digest = hashlib.sha256(migration.read_bytes()).hexdigest()
+    local_version = vmd.parse_version(filename)
+    assert local_version is not None
+    baseline = tmp / "applied_baseline.txt"
+    baseline.write_text(
+        f"{digest}\t{filename}\t{remote_version or local_version}\n",
+        encoding="utf-8",
+    )
+    return baseline
 
 
 class TestParsing(unittest.TestCase):
@@ -86,16 +107,32 @@ class TestListMigrationFiles(unittest.TestCase):
 
 
 class TestLedgerParsing(unittest.TestCase):
-    def test_parse_ledger_versions_extracts_version_tokens(self):
+    def test_parse_ledger_versions_extracts_remote_table_column_only(self):
         text = (
             "  Local          | Remote         | Time\n"
             "  ---------------|----------------|------\n"
             "  20260709180636 | 20260709180636 | ...\n"
-            "  20260309       | 20260309       | ...\n"
+            "  20260710120000 |                | ...\n"
+            "                 | 20260710123653 | ...\n"
             "  noise line without a version\n"
         )
         self.assertEqual(
-            vmd.parse_ledger_versions(text), {"20260709180636", "20260309"}
+            vmd.parse_ledger_versions(text),
+            {"20260709180636", "20260710123653"},
+        )
+
+    def test_parse_ledger_versions_extracts_remote_json_field_only(self):
+        text = (
+            '{"migrations":['
+            '{"local":"20260710120000","remote":""},'
+            '{"local":"","remote":"20260710123653"},'
+            '{"local":"20260709180636","remote":"20260709180636"}'
+            "]}"
+        )
+
+        self.assertEqual(
+            vmd.parse_ledger_versions(text),
+            {"20260710123653", "20260709180636"},
         )
 
     def test_parse_ledger_versions_empty(self):
@@ -107,6 +144,84 @@ class TestLedgerParsing(unittest.TestCase):
         local_only, remote_only = vmd.compare_versions(local, remote)
         self.assertEqual(local_only, ["20260709180636"])
         self.assertEqual(remote_only, ["20260709180638"])
+
+    def test_compare_versions_resolves_documented_apply_time_alias(self):
+        local = ["20260710120000_feature.sql"]
+        remote = {"20260710123653"}
+
+        self.assertEqual(
+            vmd.compare_versions(
+                local,
+                remote,
+                aliases={"20260710120000": "20260710123653"},
+            ),
+            ([], []),
+        )
+
+
+class TestAppliedBaseline(unittest.TestCase):
+    def _dir(self, *names: str) -> Path:
+        import tempfile
+
+        raw = tempfile.mkdtemp()
+        self.addCleanup(__import__("shutil").rmtree, raw)
+        return _write(Path(raw), *names)
+
+    def test_loads_hash_and_remote_alias(self):
+        tmp = self._dir("20260710120000_feature.sql")
+        baseline = _write_baseline(
+            tmp,
+            "20260710120000_feature.sql",
+            remote_version="20260710123653",
+        )
+
+        entries = vmd.load_applied_baseline(baseline)
+
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries[0].local_version, "20260710120000")
+        self.assertEqual(entries[0].remote_version, "20260710123653")
+
+    def test_flags_changed_applied_migration(self):
+        filename = "20260710120000_feature.sql"
+        tmp = self._dir(filename)
+        baseline = _write_baseline(tmp, filename)
+        (tmp / filename).write_text("-- changed\n", encoding="utf-8")
+
+        problems = vmd.check(tmp, baseline_path=baseline)
+
+        self.assertIn(f"applied baseline migration changed: {filename}", problems)
+
+    def test_flags_removed_applied_migration(self):
+        filename = "20260710120000_feature.sql"
+        tmp = self._dir(filename)
+        baseline = _write_baseline(tmp, filename)
+        (tmp / filename).unlink()
+
+        problems = vmd.check(tmp, baseline_path=baseline)
+
+        self.assertIn(f"applied baseline migration missing: {filename}", problems)
+
+    def test_rejects_duplicate_remote_alias(self):
+        tmp = self._dir(
+            "20260710120000_first.sql",
+            "20260710160000_second.sql",
+        )
+        first = hashlib.sha256(
+            (tmp / "20260710120000_first.sql").read_bytes()
+        ).hexdigest()
+        second = hashlib.sha256(
+            (tmp / "20260710160000_second.sql").read_bytes()
+        ).hexdigest()
+        baseline = tmp / "applied_baseline.txt"
+        baseline.write_text(
+            f"{first}\t20260710120000_first.sql\t20260710123653\n"
+            f"{second}\t20260710160000_second.sql\t20260710123653\n",
+            encoding="utf-8",
+        )
+
+        problems = vmd.check(tmp, baseline_path=baseline)
+
+        self.assertTrue(any("baseline invalid" in problem for problem in problems))
 
 
 class TestSupabaseCli(unittest.TestCase):
@@ -153,14 +268,64 @@ class TestCheck(unittest.TestCase):
     def test_online_clean_when_parity(self):
         tmp = self._dir("20260709180636_a.sql")
         with patch.object(
-            vmd, "run_supabase_migration_list", return_value="20260709180636"
+            vmd,
+            "run_supabase_migration_list",
+            return_value='{"migrations":[{"remote":"20260709180636"}]}',
         ):
             self.assertEqual(vmd.check(tmp, online=True), [])
+
+    def test_online_clean_with_applied_baseline_alias(self):
+        filename = "20260710120000_feature.sql"
+        tmp = self._dir(filename)
+        baseline = _write_baseline(
+            tmp,
+            filename,
+            remote_version="20260710123653",
+        )
+        ledger = '{"migrations":[{"local":"","remote":"20260710123653"}]}'
+        with patch.object(
+            vmd,
+            "run_supabase_migration_list",
+            return_value=ledger,
+        ):
+            self.assertEqual(
+                vmd.check(tmp, online=True, baseline_path=baseline),
+                [],
+            )
+
+    def test_online_flags_canonical_and_alias_both_applied(self):
+        filename = "20260710120000_feature.sql"
+        tmp = self._dir(filename)
+        baseline = _write_baseline(
+            tmp,
+            filename,
+            remote_version="20260710123653",
+        )
+        ledger = (
+            '{"migrations":['
+            '{"remote":"20260710120000"},'
+            '{"remote":"20260710123653"}'
+            "]}"
+        )
+        with patch.object(
+            vmd,
+            "run_supabase_migration_list",
+            return_value=ledger,
+        ):
+            problems = vmd.check(
+                tmp,
+                online=True,
+                baseline_path=baseline,
+            )
+
+        self.assertTrue(any("both canonical and aliased" in p for p in problems))
 
     def test_online_flags_missing_and_extra(self):
         tmp = self._dir("20260709180636_a.sql")
         with patch.object(
-            vmd, "run_supabase_migration_list", return_value="20260709180699"
+            vmd,
+            "run_supabase_migration_list",
+            return_value='{"migrations":[{"remote":"20260709180699"}]}',
         ):
             problems = vmd.check(tmp, online=True)
             self.assertTrue(any("never applied to prod" in p for p in problems))
@@ -211,7 +376,9 @@ class TestMain(unittest.TestCase):
         tmp = self._dir("20260709180636_a.sql")
         out = StringIO()
         with patch.object(
-            vmd, "run_supabase_migration_list", return_value="20260709180636"
+            vmd,
+            "run_supabase_migration_list",
+            return_value='{"migrations":[{"remote":"20260709180636"}]}',
         ):
             with patch("sys.stdout", out):
                 code = vmd.main(["--dir", str(tmp), "--online"])

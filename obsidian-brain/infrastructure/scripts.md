@@ -15,7 +15,7 @@ All scripts in `scripts/` directory.
 | `verify_rules.py` | Validate CLAUDE.md stats against codebase |
 | `verify_rules.py --fix` | Auto-fix CLAUDE.md stats + inline rule references |
 | `check_remote_status.py` | Verify exact commit SHA GitHub status/check-run summary; an Edge deploy skip is accepted only with a successful path detector |
-| `verify_migration_drift.py` | Migration structure guard: duplicate version prefixes + malformed filenames (offline, in the `code-quality` CI job); `--online` adds prod-ledger version parity via `supabase migration list --linked` |
+| `verify_migration_drift.py` | Migration structure guard: duplicate/malformed filenames plus immutable applied-chain SHA-256 baseline (offline, in `code-quality`); `--online` parses only remote ledger versions and resolves the nine documented apply-time aliases from the fixture before checking parity |
 | `check_rule_symbol_drift.py --target all --classes --strict` | Aspirational-contract guard (blocking in `code-quality`): every `xProvider` token, `.dart` path, and `*Service`/`*Notifier`/`*Repository`/`*Dao`/`*Mapper`/`*Guard` class named in `.claude/rules/` AND `obsidian-brain/` (excl. log/archives) must resolve in code. Class names checked in backticks AND bare in prose (outside fenced code). Low-noise by design; other class/method names stay in the manual semantic sweep. Removed symbols cited in prose go in the allowlists. `--audit-allowlist` (periodic, not gated) reports uncited allowlist cruft |
 
 ## Pre-Commit Gate
@@ -47,7 +47,7 @@ scripts/run_local_quality_gate.sh
 | `test_check_platform_targets.py` | Tests for platform target policy |
 | `test_check_obsidian_brain.py` | Tests for wiki lint |
 | `test_verify_security.py` | Tests for verify_security.py |
-| `test_verify_migration_drift.py` | Tests for verify_migration_drift.py (27 tests, 100% cov) |
+| `test_verify_migration_drift.py` | Tests for verify_migration_drift.py (35 tests, including JSON/table remote parsing, baseline hashes, and alias conflicts) |
 | `test_check_rule_symbol_drift.py` | Tests for check_rule_symbol_drift.py (31 tests, 100% cov) |
 | `test_marketing_site.py` | All-public-HTML asset/ID checks plus JSON-LD, heading, accessibility, responsive navigation, user-guide dialog/focus, legal-page locale, and cross-page security-copy contracts |
 

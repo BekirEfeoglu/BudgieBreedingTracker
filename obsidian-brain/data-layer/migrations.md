@@ -160,7 +160,8 @@ Never delete or rename migration files. If a mistake exists, create a new migrat
 - Supabase SQL migrations are forward-only and tracked in chronological filenames.
 - Privileged RPCs use `private` `SECURITY DEFINER` implementations plus public invoker wrappers.
 - Production drift verification (version + content) is required after deploying newer local migrations; the ledger's `statements` column is the source for content-drift md5 checks.
-- Structural drift (duplicate version prefixes, malformed filenames — the 2026-05-29 collision class) is now auto-guarded every PR by `scripts/verify_migration_drift.py` in the `code-quality` job; its `--online` mode adds prod-ledger version parity when a token is present. Content-drift (file vs applied `statements`) remains a manual MCP procedure.
+- Structural drift (duplicate version prefixes, malformed filenames — the 2026-05-29 collision class) is auto-guarded every PR by `scripts/verify_migration_drift.py` in the `code-quality` job. The immutable `scripts/fixtures/supabase_applied_migration_baseline.txt` freezes the applied chain through canonical version `20260714200511` by filename + SHA-256; later migrations stay append-only deltas.
+- `--online` reads only the remote column from Supabase CLI JSON/table output and maps nine historical apply-time version aliases through that baseline fixture. The aliases reconcile ledger identity without renaming or rewriting applied SQL; any new mismatch remains a failure. Content drift (file vs applied `statements`) remains a manual MCP procedure.
 - Historical shared index helpers guard later-added columns and are tested from
   the earliest affected local schema version; `IF NOT EXISTS` alone is not a
   missing-column guard.
@@ -169,6 +170,7 @@ Never delete or rename migration files. If a mistake exists, create a new migrat
 ## Known Deferred Work
 
 - `20260403140000`, `20260413100000`, `20260430130000` committed files still differ from their ledger `statements` (intermediate versions superseded later); benign for final schema, not reconciled to avoid rewriting applied history.
+- `20260717120000_align_scanned_image_upload_limits.sql` is still local-only as of the 2026-07-19 linked-ledger check; applying it requires an explicit staging/production migration operation and is not hidden by the baseline aliases.
 - Large-table index work should be split into dedicated concurrent-index migrations.
 
 ## Do Not Reintroduce

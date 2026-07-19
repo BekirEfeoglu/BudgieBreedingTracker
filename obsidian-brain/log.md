@@ -4,6 +4,14 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-19] guard | Freeze the applied migration chain in a separate baseline fixture
+
+Added an immutable filename/SHA-256 baseline through canonical migration
+`20260714200511` and recorded nine production apply-time version aliases without
+renaming or rewriting historical SQL. The online drift guard now parses only
+the remote ledger column; it exposes `20260717120000` as the remaining explicit
+local-only migration instead of masking local versions from CLI JSON output.
+
 ## [2026-07-18] security-fix | Supabase RSA TLS fallback added to pin allowlist
 
 Sentry release-54 telemetry from an Android 11 device exposed a false pinning

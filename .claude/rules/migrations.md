@@ -162,7 +162,8 @@ Not: `CONCURRENTLY` transaction içinde çalışmaz, migration runner'ı buna g�
 - `supabase migration list` ile state kontrol
 
 ### Drift Guard (otomatik + derin kontrol)
-- `python3 scripts/verify_migration_drift.py` her PR'da `code-quality` job'unda koşar: duplicate version prefix'i + malformed dosya adı (2026-05-29 collision sınıfı). `--online` bayrağı `supabase migration list --linked` ile prod parity ekler (token gerekir)
+- `python3 scripts/verify_migration_drift.py` her PR'da `code-quality` job'unda koşar: duplicate version prefix'i + malformed dosya adı (2026-05-29 collision sınıfı) yanında `scripts/fixtures/supabase_applied_migration_baseline.txt` içindeki uygulanmış zincirin SHA-256 bütünlüğünü doğrular. Baseline sonrasındaki migration'lar yalnız append edilir; baseline dosyası geçmiş SQL'i yeniden adlandırmak/düzenlemek için kullanılmaz.
+- `--online` bayrağı `supabase migration list --linked` ile prod parity ekler (token gerekir). CLI JSON/table çıktısında yalnız remote sütunu ledger kabul edilir. Üretimde uygulama anında farklı sürümle kaydedilmiş dokuz tarih, baseline fixture'daki explicit local→remote alias ile eşlenir; yeni eşleşmezlikler fixture'a eklenerek gizlenmez, araştırılır.
 - **İçerik-drift** (committed dosya ≠ uygulanan SQL) derin kontrolü manueldir: prod ledger'ın `supabase_migrations.schema_migrations.statements` kolonunu Supabase MCP `execute_sql` ile çek, normalize edip (yorum/whitespace/`;` strip) local dosya md5'iyle karşılaştır — 2026-07-09 audit'i bu yöntemle 4 drift buldu (1 gerçek davranışsal: policy `public.is_admin` vs `private.is_admin`)
 - Drift bulunursa: prod authoritative — eski dosyayı DÜZENLEME (forward-only + apply-order riski); en yeni self-contained migration'ı yerinde reconcile et ya da prod tanımını yeniden assert eden idempotent bir **forward migration** ekle (örnek: `20260709180636_reconcile_system_settings_select_policy_is_admin.sql`)
 
