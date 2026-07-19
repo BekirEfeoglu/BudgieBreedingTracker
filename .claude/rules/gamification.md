@@ -89,9 +89,16 @@ istemci remapped seviyede eski anahtar yazarsa o tek XP yazımı reddedilir
 **Shipped (2026-07-12), server-authoritative.** `public.user_streaks` tablosu
 (`current_streak, longest_streak, last_check_in_date, grace_used_this_month,
 grace_month`) — owner-scope SELECT-only RLS, tek yazıcı `public.record_daily_checkin(p_time_zone)`
-RPC'si (`SECURITY INVOKER` wrapper → `private.record_daily_checkin` `SECURITY
-DEFINER`, migration `20260712100000_gamification_streaks.sql`, prod'a
-uygulandı).
+RPC'si (`SECURITY INVOKER` public wrapper → `private.record_daily_checkin`
+`SECURITY DEFINER`, migrations `20260712100000_gamification_streaks.sql` +
+`20260719012443_fix_streak_checkin_wrapper_privilege.sql`). Public wrapper
+yalnızca `auth.uid()` ile çağıran kullanıcıyı türetir. REST'e kapalı private
+core ve public wrapper `authenticated`/`service_role` için executable'dır;
+`PUBLIC`/`anon` kapalı kalır. İlk migration private core'a authenticated
+`EXECUTE` vermediği için prod'da `42501 permission denied` veriyordu.
+Hotfix 2026-07-19'da production'a uygulandı; authenticated-role canlı çağrısı
+`current_streak=1, awarded_xp=5` döndürdü ve simülatör yeniden başlatması
+sonrasında aynı gün `dailyLogin` XP satırının tekil kaldığı doğrulandı.
 
 - **Tetikleme:** İstemci `runDailyCheckin` (`streak_providers.dart`) app-init'te
   `InitStep.ready` sonrası deferred microtask'te çalışır — `tz.local.name`

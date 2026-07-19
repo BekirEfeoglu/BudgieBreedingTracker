@@ -133,8 +133,15 @@ of existing `user_levels.title` and `profiles.xp_title`.
 
 `public.user_streaks` (owner-scope SELECT-only RLS) + `public.record_daily_checkin(p_time_zone)`
 RPC (`SECURITY INVOKER` wrapper → `private.record_daily_checkin` `SECURITY
-DEFINER`, migration `20260712100000_gamification_streaks.sql`, applied to
-prod). The RPC is the **only** writer — unlike the rest of gamification
+DEFINER`, migrations `20260712100000_gamification_streaks.sql` and
+`20260719012443_fix_streak_checkin_wrapper_privilege.sql`). The public wrapper
+derives the caller only from `auth.uid()`. Both functions are executable by
+`authenticated`/`service_role`, while the private schema remains outside the
+REST-exposed schema list and `PUBLIC`/`anon` stay revoked. The original migration
+forgot the authenticated grant on the private core, so delegation returned
+PostgreSQL `42501`. The fix was applied to production on 2026-07-19 and verified
+with an authenticated-role check-in (`awarded_xp=5`, streak row persisted) plus
+an app relaunch that kept the UTC-day `dailyLogin` XP row unique. The RPC is the **only** writer — unlike the rest of gamification
 (client-initiated writes validated by `WITH CHECK`), streaks are fully
 server-computed because the streak math (gap detection, grace, tier bonus)
 cannot be expressed as a per-row check constraint.

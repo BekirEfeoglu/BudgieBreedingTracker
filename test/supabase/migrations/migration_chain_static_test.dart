@@ -278,6 +278,48 @@ void main() {
       }
       expect(sql, isNot(contains("'backups'")));
     });
+
+    test(
+      'daily check-in wrapper crosses the private privilege boundary safely',
+      () {
+        final sql = _migrationSqlAfter(
+          '20260712160000',
+          requiredText:
+              'ALTER FUNCTION public.record_daily_checkin(text) '
+              'SECURITY INVOKER',
+        );
+
+        expect(
+          sql,
+          contains(
+            'ALTER FUNCTION public.record_daily_checkin(text) '
+            'SECURITY INVOKER',
+          ),
+        );
+        expect(sql, contains("SET search_path = ''"));
+        expect(
+          sql,
+          contains(
+            'REVOKE ALL ON FUNCTION private.record_daily_checkin(uuid, text)\n'
+            '  FROM PUBLIC, anon, authenticated',
+          ),
+        );
+        expect(
+          sql,
+          contains(
+            'GRANT EXECUTE ON FUNCTION private.record_daily_checkin(uuid, text)\n'
+            '  TO authenticated, service_role',
+          ),
+        );
+        expect(
+          sql,
+          contains(
+            'GRANT EXECUTE ON FUNCTION public.record_daily_checkin(text)\n'
+            '  TO authenticated, service_role',
+          ),
+        );
+      },
+    );
   });
 }
 
