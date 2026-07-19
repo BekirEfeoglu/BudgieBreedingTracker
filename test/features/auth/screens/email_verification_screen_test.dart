@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -32,6 +34,14 @@ void main() {
         GoRoute(
           path: '/login',
           builder: (_, __) => const Scaffold(body: Text('Login')),
+        ),
+        GoRoute(
+          path: '/forgot-password',
+          builder: (_, state) => Scaffold(
+            body: Text(
+              'Reset:${state.uri.queryParameters['email'] ?? 'empty'}',
+            ),
+          ),
         ),
       ],
     );
@@ -123,6 +133,33 @@ void main() {
       await tester.pump();
 
       verify(() => mockAuth.resendVerification('test@example.com')).called(1);
+    });
+
+    testWidgets('shows network guidance when resend times out', (tester) async {
+      final pending = Completer<ResendResponse>();
+      when(
+        () => mockAuth.resendVerification(any()),
+      ).thenAnswer((_) => pending.future);
+
+      await tester.pumpWidget(createSubject(email: 'test@example.com'));
+      await tester.pump();
+
+      await tester.tap(find.text(l10n('auth.resend_email')));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 30));
+      await tester.pump();
+
+      expect(find.text(l10n('auth.error_network')), findsOneWidget);
+    });
+
+    testWidgets('opens password reset with the provided email', (tester) async {
+      await tester.pumpWidget(createSubject(email: 'test@example.com'));
+      await tester.pump();
+
+      await tester.tap(find.text(l10n('auth.forgot_password')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Reset:test@example.com'), findsOneWidget);
     });
   });
 }

@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/theme/app_spacing.dart';
@@ -28,6 +30,9 @@ class EmailVerificationScreen extends ConsumerStatefulWidget {
 
 class _EmailVerificationScreenState
     extends ConsumerState<EmailVerificationScreen> {
+  static const _resendCooldown = Duration(minutes: 2);
+  static const _requestTimeout = Duration(seconds: 30);
+
   Timer? _cooldownTimer;
   int _cooldownSeconds = 0;
   bool _resending = false;
@@ -39,7 +44,7 @@ class _EmailVerificationScreenState
   }
 
   void _startCooldown() {
-    setState(() => _cooldownSeconds = 60);
+    setState(() => _cooldownSeconds = _resendCooldown.inSeconds);
     _cooldownTimer?.cancel();
     _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
@@ -62,10 +67,36 @@ class _EmailVerificationScreenState
     setState(() => _resending = true);
     try {
       final auth = ref.read(authActionsProvider);
-      await auth.resendVerification(email);
+      await auth
+          .resendVerification(email)
+          .timeout(
+            _requestTimeout,
+            onTimeout: () => throw const SocketException('Request timed out'),
+          );
       if (mounted) {
         ActionFeedbackService.show('auth.resend_success'.tr());
         _startCooldown();
+      }
+    } on AuthRetryableFetchException catch (e) {
+      AppLogger.warning('[EmailVerification] Resend network failure: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('auth.error_network'.tr())));
+      }
+    } on SocketException catch (e) {
+      AppLogger.warning('[EmailVerification] Resend network failure: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('auth.error_network'.tr())));
+      }
+    } on HandshakeException catch (e) {
+      AppLogger.warning('[EmailVerification] Resend TLS failure: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('auth.error_network'.tr())));
       }
     } on AuthException catch (e) {
       AppLogger.warning('[EmailVerification] Resend failed: ${e.message}');
@@ -74,9 +105,25 @@ class _EmailVerificationScreenState
           context,
         ).showSnackBar(SnackBar(content: Text(mapAuthError(e))));
       }
+    } catch (e, st) {
+      AppLogger.error('[EmailVerification] Unexpected resend failure', e, st);
+      await Sentry.captureException(e, stackTrace: st);
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('auth.error_unknown'.tr())));
+      }
     } finally {
       if (mounted) setState(() => _resending = false);
     }
+  }
+
+  void _openPasswordReset() {
+    final email = widget.email;
+    final location = email != null && isValidRouteEmail(email)
+        ? '${AppRoutes.forgotPassword}?email=${Uri.encodeComponent(email)}'
+        : AppRoutes.forgotPassword;
+    context.push(location);
   }
 
   @override
@@ -131,6 +178,12 @@ class _EmailVerificationScreenState
                     minimumSize: const Size(double.infinity, 48),
                   ),
                   child: Text('auth.back_to_login'.tr()),
+                ),
+
+                const SizedBox(height: AppSpacing.sm),
+                TextButton(
+                  onPressed: _openPasswordReset,
+                  child: Text('auth.forgot_password'.tr()),
                 ),
 
                 // Resend email button
