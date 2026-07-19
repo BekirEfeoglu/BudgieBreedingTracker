@@ -4,6 +4,12 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-19] release | Bump the app version to 1.1.7+54
+
+Updated the Flutter release version and runtime app metadata together. Android,
+iOS Runner, and the dashboard widget continue to inherit the shared Flutter
+build name and number.
+
 ## [2026-07-19] deploy | Enforce the scanned-image upload cap in production
 
 Applied `20260717120000_align_scanned_image_upload_limits.sql` through an alias-mapped temporary CLI fixture so the remote ledger keeps the exact local version and SQL without rewriting historical migrations. Production now enforces 2 MiB on all seven safety-scanned image buckets, keeps `backups` at 50 MiB, and passes the online migration parity check.

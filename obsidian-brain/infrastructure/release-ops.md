@@ -23,7 +23,7 @@ Source: `.claude/rules/release-ops.md`
 - Build number: increment every release
 - iOS and Android build numbers must be consistent
 
-Current version: `1.1.5+52` (verify against `pubspec.yaml` — this drifts every release, treat as a snapshot not a live value)
+Current version: `1.1.7+54` (verify against `pubspec.yaml` — this drifts every release, treat as a snapshot not a live value)
 
 ## Store Release Flow
 
