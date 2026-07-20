@@ -26,7 +26,7 @@ dependencies:
   # Xcode SDK. Revisit when CI Xcode is bumped or passkeys is actually needed.
   supabase_flutter: '>=2.5.0 <2.13.0'
   firebase_core: ^4.12.0
-  firebase_messaging: ^16.2.2
+  firebase_messaging: ^16.4.3
 
   # Local Database
   drift: ^2.31.0
