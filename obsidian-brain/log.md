@@ -4,6 +4,11 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-22] docs | Synchronize release and dependency snapshots
+
+Updated the current build snapshot to `1.1.7+56` and aligned the Firebase Core
+and RevenueCat package references with `pubspec.yaml` across rules and wiki pages.
+
 ## [2026-07-19] release | Bump the app version to 1.1.7+54
 
 Updated the Flutter release version and runtime app metadata together. Android,

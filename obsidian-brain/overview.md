@@ -79,7 +79,7 @@ Enforced by `scripts/verify_code_quality.py` (28 checker categories — 19/24 CL
 - Rule files document both shipped behavior AND unshipped design targets
 - Before assuming a surface works end-to-end, check [[known-gaps]]
 
-## Codebase Stats (verified 2026-07-19 via `verify_rules.py --strict`)
+## Codebase Stats (verified 2026-07-22 via `verify_rules.py --strict`)
 
 | Metric | Value |
 |--------|-------|
