@@ -54,10 +54,10 @@ PODS:
   - Firebase/Messaging (12.15.0):
     - Firebase/CoreOnly
     - FirebaseMessaging (~> 12.15.0)
-  - firebase_core (4.12.0):
+  - firebase_core (4.12.1):
     - Firebase/CoreOnly (= 12.15.0)
     - Flutter
-  - firebase_messaging (16.4.1):
+  - firebase_messaging (16.4.3):
     - Firebase/Messaging (= 12.15.0)
     - firebase_core
     - Flutter
@@ -160,13 +160,13 @@ PODS:
   - PromisesObjC (2.4.1)
   - PromisesSwift (2.4.1):
     - PromisesObjC (= 2.4.1)
-  - purchases_flutter (10.4.1):
+  - purchases_flutter (10.4.2):
     - Flutter
-    - PurchasesHybridCommon (= 18.19.0)
-  - PurchasesHybridCommon (18.19.0):
-    - RevenueCat (= 5.80.2)
+    - PurchasesHybridCommon (= 18.22.1)
+  - PurchasesHybridCommon (18.22.1):
+    - RevenueCat (= 5.81.0)
   - RecaptchaInterop (101.0.0)
-  - RevenueCat (5.80.2)
+  - RevenueCat (5.81.0)
   - SDWebImage (5.21.7):
     - SDWebImage/Core (= 5.21.7)
   - SDWebImage/Core (5.21.7)
@@ -340,8 +340,8 @@ SPEC CHECKSUMS:
   DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
   file_picker: b159e0c068aef54932bb15dc9fd1571818edaf49
   Firebase: a8539b633d474fbeb654c7043f9c1649e274045b
-  firebase_core: 4d9f4584629ebabedcf18f20cade820c3915ff81
-  firebase_messaging: c8d9730ad2cf85f50f1e16be82ffebcb9a20a792
+  firebase_core: ee2e6c050e05882c2453c21efd082627351c9d38
+  firebase_messaging: 98a853b361e297a7825720ea9ab3e98a9cb55536
   FirebaseCore: 2e86a4ea1684d4381707069e4a6d89ac808e901e
   FirebaseCoreInternal: 6ab6a02c94446c026d2cf35cf5383842ebaa4992
   FirebaseInstallations: eb29ccbf64eaedf86fd5b2ccc7fabde567660b52
@@ -367,10 +367,10 @@ SPEC CHECKSUMS:
   path_provider_foundation: 0b743cbb62d8e47eab856f09262bb8c1ddcfe6ba
   PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
   PromisesSwift: 217dea0fd5d2ad65222a109c48698add13cc1c5b
-  purchases_flutter: b234a4bcb9faa754dd87a81dfd1ca3aa98de2333
-  PurchasesHybridCommon: 1eb67a6c8997233b35ed9b4eee8205dd8dd92890
+  purchases_flutter: dc0631634f73d8824943cc6ba596c399d43beb79
+  PurchasesHybridCommon: 5759975e7b63c093772fd92d8a9e5edbc6a809a8
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
-  RevenueCat: b772273e51fa103a2ecc644439dd54a5dec199f3
+  RevenueCat: c692d9b9d123ce98acea28796abcd81f63e9f34a
   SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   Sentry: 108fdbb76299c4189af12246bf0308c09c278922
   sentry_flutter: 23107cf6ac9e0b93600711a4a3ae3d4c1de01b9e
