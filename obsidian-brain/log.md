@@ -4,6 +4,14 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-23] audit | Full-scope sweep: saveAll metadata collision, Sentry filter, deflake, #8 constants
+7-lane read-only audit from a pristine baseline (all scripts + CI green). Four fixes landed:
+- **P2 correctness (offline):** `SyncMetadataDao.insertAll` built each row with a FRESH v7 PK but targeted an existing `(table_name, record_id)`; `insertAllOnConflictUpdate` conflicts on the PK only, so the fresh PK fell through to the `UNIQUE(table_name, record_id)` index and threw. Broke offline breeding cancel/complete (`closeActiveIncubations` → `incubationRepo.saveAll` on an incubation that still had a pending row) mid-cleanup → zombie reminders + false `errors.unknown`, and genealogy orphan repair. Fixed at the DAO (one place, all 14 `saveAll` callers) to be records-aware: reuse each existing PK, preserve `createdAt`, status-agnostic (pending saves + `pendingDelete` tombstones). Real-DB regression test added.
+- **Observability:** community post/comment mutators (Like/Bookmark/Delete/Edit/Pin/Follow/CommentForm/CommentDelete/CommentLike + 2 report widgets) and `FeedbackFormNotifier` called `Sentry.captureException` directly, flooding Sentry with expected `Validation`/`Network` exceptions. Routed through the existing `SentryErrorFilter` (`reportIfUnexpected` / `reportUnexpectedToSentry`). Sibling hunt found 2 extra sites in `community_create_providers` (guard-RPC + image-cleanup).
+- **Test deflake:** `premium_sync_rpc_test` `Future.delayed(3s)` raced a real 2s backoff on the PR gate. Added `premiumSyncBackoffProvider` seam (prod default `Future.delayed`), test overrides to instant — ~6s wall-clock removed.
+- **#8 SupabaseConstants:** onConflict composite strings + auth-role/messaging-search column literals → `SupabaseConstants` (added `colTargetId/colTargetType/colBadgeId/colDisplayName`). Remaining free-text `.or()` search literals (title/description/content, admin `details::text` cast) left as documented #8 remainder.
+Migration prod-parity confirmed via Supabase MCP (3 post-baseline migrations applied; ledger clean). Security advisors: 2 known non-blocking (private-schema RLS INFO by-design, leaked-password dashboard toggle). Genetics/edge-functions clean.
+
 ## [2026-07-22] docs | Synchronize release and dependency snapshots
 
 Updated the current build snapshot to `1.1.7+56` and aligned the Firebase Core
