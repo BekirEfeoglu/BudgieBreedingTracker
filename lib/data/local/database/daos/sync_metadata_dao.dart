@@ -54,12 +54,71 @@ class SyncMetadataDao extends DatabaseAccessor<AppDatabase>
     ).insertOnConflictUpdate(metadata.toCompanion());
   }
 
-  Future<void> insertAll(List<SyncMetadata> items) {
-    return batch((b) {
-      b.insertAllOnConflictUpdate(
-        syncMetadataTable,
-        items.map((m) => m.toCompanion()).toList(),
-      );
+  /// Bulk upsert of sync metadata keyed on the logical record, not the PK.
+  ///
+  /// Callers (repository `saveAll`, cascade-delete tombstones) build each row
+  /// with a FRESH `_uuid.v7()` primary key but target an existing
+  /// `(tableName, recordId)`. A plain [batch.insertAllOnConflictUpdate] conflicts
+  /// on the primary key only (Drift's default target), so a fresh PK for a
+  /// record that already has a pending/error row falls through to the separate
+  /// `UNIQUE(table_name, record_id)` index and throws
+  /// `UNIQUE constraint failed: sync_metadata.table_name, sync_metadata.record_id`.
+  ///
+  /// Mirror [markPendingByRecords]: for each incoming `(tableName, recordId)`
+  /// look up the existing row, reuse its primary key and preserve its
+  /// `createdAt` (so stale-error cleanup timing is not reset), then delete the
+  /// target keys and insert the merged rows in one batch — exactly one row per
+  /// record. Status-agnostic: honors each item's status, so it is correct for
+  /// both `pending` saves and `pendingDelete` tombstones. Rows with a null
+  /// `recordId` never collide on the unique index (SQLite treats NULLs as
+  /// distinct) and are inserted as-is.
+  Future<void> insertAll(List<SyncMetadata> items) async {
+    if (items.isEmpty) return;
+    final itemsByTable = <String, List<SyncMetadata>>{};
+    for (final item in items) {
+      itemsByTable.putIfAbsent(item.table, () => <SyncMetadata>[]).add(item);
+    }
+    final companions = <SyncMetadataTableCompanion>[];
+    final deleteByTable = <String, List<String>>{};
+    for (final entry in itemsByTable.entries) {
+      final table = entry.key;
+      final recordIds = entry.value
+          .map((m) => m.recordId)
+          .whereType<String>()
+          .toList();
+      final existingByRecordId = <String, SyncMetadata>{};
+      if (recordIds.isNotEmpty) {
+        for (final existing in await getByRecords(table, recordIds)) {
+          final recordId = existing.recordId;
+          if (recordId != null) {
+            existingByRecordId.putIfAbsent(recordId, () => existing);
+          }
+        }
+        deleteByTable[table] = recordIds;
+      }
+      for (final item in entry.value) {
+        final current = item.recordId == null
+            ? null
+            : existingByRecordId[item.recordId];
+        companions.add(
+          (current == null
+                  ? item
+                  : item.copyWith(
+                      id: current.id,
+                      createdAt: current.createdAt,
+                    ))
+              .toCompanion(),
+        );
+      }
+    }
+    await batch((b) {
+      deleteByTable.forEach((table, recordIds) {
+        b.deleteWhere(
+          syncMetadataTable,
+          (t) => t.tableName_.equals(table) & t.recordId.isIn(recordIds),
+        );
+      });
+      b.insertAllOnConflictUpdate(syncMetadataTable, companions);
     });
   }
 

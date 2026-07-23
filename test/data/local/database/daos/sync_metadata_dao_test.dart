@@ -86,6 +86,118 @@ void main() {
       final all = await dao.getAll(userId);
       expect(all, isEmpty);
     });
+
+    // Regression: a repository saveAll builds SyncMetadata with a FRESH v7 PK
+    // but recordId of an existing record. A plain insertAllOnConflictUpdate
+    // conflicts on the PK only, so the fresh PK falls through to the separate
+    // UNIQUE(table_name, record_id) index and throws — breaking offline breeding
+    // cancel/complete (saveAll on an incubation that still has a pending row)
+    // and genealogy orphan repair. insertAll must dedup on the logical record.
+    test(
+      'does not throw and keeps exactly one row when a record already has '
+      'metadata (fresh-PK collision on UNIQUE(table_name, record_id))',
+      () async {
+        await dao.insertItem(
+          makeEntry(
+            id: 'existing',
+            recordId: 'bird-1',
+            status: SyncStatus.pending,
+          ),
+        );
+
+        // saveAll would otherwise throw here with the pre-fix insertAll.
+        await dao.insertAll([
+          makeEntry(
+            id: 'fresh-pk',
+            recordId: 'bird-1',
+            status: SyncStatus.pending,
+          ),
+        ]);
+
+        final rows = await dao.getByRecords('birds', ['bird-1']);
+        expect(rows, hasLength(1)); // no duplicate, no throw
+        expect(rows.first.id, 'existing'); // existing PK reused
+      },
+    );
+
+    test(
+      'reuses the existing PK and preserves createdAt on re-save',
+      () async {
+        final originalCreatedAt = DateTime(2024, 6, 1);
+        await dao.insertItem(
+          makeEntry(
+            id: 'existing',
+            recordId: 'bird-1',
+            createdAt: originalCreatedAt,
+          ),
+        );
+
+        // Incoming fresh-PK row carries a different createdAt (makeEntry
+        // default 2024-01-01) — the stale-cleanup anchor must NOT be reset.
+        await dao.insertAll([makeEntry(id: 'fresh-pk', recordId: 'bird-1')]);
+
+        final row = (await dao.getByRecords('birds', ['bird-1'])).single;
+        expect(row.id, 'existing');
+        // Mapper converts createdAt to UTC on read; the preserved value is the
+        // existing row's anchor (2024-06-01 local), NOT the incoming default.
+        expect(row.createdAt, originalCreatedAt.toUtc());
+      },
+    );
+
+    test(
+      'is status-agnostic: a pendingDelete tombstone replaces an existing '
+      'pending row for the same record (growth_measurements cascade delete)',
+      () async {
+        await dao.insertItem(
+          makeEntry(
+            id: 'existing',
+            table: 'growth_measurements',
+            recordId: 'gm-1',
+            status: SyncStatus.pending,
+          ),
+        );
+
+        await dao.insertAll([
+          makeEntry(
+            id: 'fresh-pk',
+            table: 'growth_measurements',
+            recordId: 'gm-1',
+            status: SyncStatus.pendingDelete,
+          ),
+        ]);
+
+        final rows = await dao.getByRecords('growth_measurements', ['gm-1']);
+        expect(rows, hasLength(1));
+        expect(rows.first.id, 'existing');
+        expect(rows.first.status, SyncStatus.pendingDelete);
+      },
+    );
+
+    test(
+      'handles a mixed batch of new and existing records across tables',
+      () async {
+        await dao.insertItem(
+          makeEntry(id: 'e1', table: 'birds', recordId: 'bird-1'),
+        );
+        await dao.insertItem(
+          makeEntry(id: 'e2', table: 'eggs', recordId: 'egg-1'),
+        );
+
+        await dao.insertAll([
+          makeEntry(id: 'new-1', table: 'birds', recordId: 'bird-1'), // existing
+          makeEntry(id: 'new-2', table: 'birds', recordId: 'bird-2'), // new
+          makeEntry(id: 'new-3', table: 'eggs', recordId: 'egg-1'), // existing
+        ]);
+
+        expect((await dao.getByRecords('birds', ['bird-1'])).single.id, 'e1');
+        expect(
+          (await dao.getByRecords('birds', ['bird-2'])).single.id,
+          'new-2',
+        );
+        expect((await dao.getByRecords('eggs', ['egg-1'])).single.id, 'e2');
+        expect(await dao.getAll(userId), hasLength(3));
+      },
+    );
   });
 
   group('getAll', () {
