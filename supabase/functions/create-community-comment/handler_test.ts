@@ -86,6 +86,33 @@ Deno.test("create-community-comment rejects missing authentication", async () =>
   assertEquals(await response.json(), { error: "unauthorized" });
 });
 
+Deno.test("create-community-comment rejects a non-uuid post_id (schema validation)", async () => {
+  const inserted: Record<string, unknown>[] = [];
+  const response = await createCommunityCommentHandler(
+    baseDeps({ createAdminClient: () => makeAdmin({ inserted }) }),
+  )(jsonRequest({ post_id: "not-a-uuid", content: "Merhaba" }));
+
+  assertEquals(response.status, 400);
+  assertEquals((await response.json()).error, "Validation failed");
+  assertEquals(inserted.length, 0);
+});
+
+Deno.test("create-community-comment rejects a malformed JSON body", async () => {
+  const inserted: Record<string, unknown>[] = [];
+  const response = await createCommunityCommentHandler(
+    baseDeps({ createAdminClient: () => makeAdmin({ inserted }) }),
+  )(
+    new Request("https://example.com/create-community-comment", {
+      method: "POST",
+      body: "this is not json",
+    }),
+  );
+
+  assertEquals(response.status, 400);
+  assertEquals((await response.json()).error, "Invalid JSON body");
+  assertEquals(inserted.length, 0);
+});
+
 Deno.test("create-community-comment rejects moderated content before insert", async () => {
   const inserted: Record<string, unknown>[] = [];
   const response = await createCommunityCommentHandler(
