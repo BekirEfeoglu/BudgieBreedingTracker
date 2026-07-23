@@ -268,7 +268,10 @@ class MarketplaceListingRemoteSource {
           .select(_selectColumns)
           .eq(SupabaseConstants.colIsDeleted, false)
           .eq(SupabaseConstants.colStatus, 'active')
-          .or('title.ilike.%$sanitized%,description.ilike.%$sanitized%')
+          .or(
+            '${SupabaseConstants.colTitle}.ilike.%$sanitized%,'
+            '${SupabaseConstants.colDescription}.ilike.%$sanitized%',
+          )
           .order(SupabaseConstants.colCreatedAt, ascending: false)
           .limit(limit);
       return List<Map<String, dynamic>>.from(response);

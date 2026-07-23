@@ -13,12 +13,12 @@ final maintenanceModeProvider = FutureProvider<bool>((ref) async {
     final client = ref.watch(supabaseClientProvider);
     final row = await client
         .from(SupabaseConstants.systemSettingsTable)
-        .select('value')
-        .eq('key', 'maintenance_mode')
+        .select(SupabaseConstants.colValue)
+        .eq(SupabaseConstants.colKey, 'maintenance_mode')
         .maybeSingle();
 
     if (row == null) return false;
-    return parseMaintenanceModeValue(row['value']);
+    return parseMaintenanceModeValue(row[SupabaseConstants.colValue]);
   } catch (e, st) {
     AppLogger.warning(
       '[MaintenanceMode] Check failed, continuing normally: $e',

@@ -22,8 +22,8 @@ final appUpdateStatusProvider = FutureProvider<AppUpdateStatus?>((ref) async {
     final client = ref.watch(supabaseClientProvider);
     final row = await client
         .from(SupabaseConstants.systemSettingsTable)
-        .select('value')
-        .eq('key', 'app_version')
+        .select(SupabaseConstants.colValue)
+        .eq(SupabaseConstants.colKey, 'app_version')
         .maybeSingle();
 
     // App Store version lookup is iOS-only (iTunes API). Android optional
@@ -35,7 +35,7 @@ final appUpdateStatusProvider = FutureProvider<AppUpdateStatus?>((ref) async {
           )
         : null;
     final info = resolveAppUpdateInfo(
-      settingValue: row?['value'],
+      settingValue: row?[SupabaseConstants.colValue],
       appStoreListing: appStoreListing,
       platform: platform,
       defaultStoreUrl: defaultStoreUrl,

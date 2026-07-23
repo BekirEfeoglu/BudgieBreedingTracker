@@ -177,6 +177,12 @@ abstract class SupabaseConstants {
   static const String colTargetType = 'target_type';
   static const String colBadgeId = 'badge_id';
   static const String colDisplayName = 'display_name';
+  static const String colTitle = 'title';
+  static const String colDescription = 'description';
+  static const String colContent = 'content';
+  static const String colDetails = 'details';
+  static const String colKey = 'key';
+  static const String colValue = 'value';
 
   // Feedback columns
   static const String feedbackColId = 'id';

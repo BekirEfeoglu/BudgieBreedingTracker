@@ -304,7 +304,10 @@ class CommunityPostRemoteSource {
           .select(_feedColumns)
           .eq(SupabaseConstants.colIsDeleted, false)
           .eq(SupabaseConstants.colNeedsReview, false)
-          .or('content.ilike.%$sanitized%,title.ilike.%$sanitized%')
+          .or(
+            '${SupabaseConstants.colContent}.ilike.%$sanitized%,'
+            '${SupabaseConstants.colTitle}.ilike.%$sanitized%',
+          )
           .order(SupabaseConstants.colCreatedAt, ascending: false)
           .limit(limit);
 

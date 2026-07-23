@@ -161,7 +161,10 @@ final adminAuditLogsProvider = FutureProvider.autoDispose<List<AdminLog>>((
   if (rawQuery.isNotEmpty) {
     final q = _sanitizeSearchQuery(rawQuery);
     if (q.isNotEmpty) {
-      query = query.or('action.ilike.%$q%,details::text.ilike.%$q%');
+      query = query.or(
+        '${SupabaseConstants.colAction}.ilike.%$q%,'
+        '${SupabaseConstants.colDetails}::text.ilike.%$q%',
+      );
     }
   }
 
