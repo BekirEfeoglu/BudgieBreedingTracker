@@ -63,6 +63,9 @@ void main() {
         currentUserIdProvider.overrideWithValue(userId),
         purchaseServiceProvider.overrideWithValue(service),
         edgeFunctionClientProvider.overrideWithValue(edgeClient),
+        // Skip the real exponential backoff wait so retry/increment behavior is
+        // asserted deterministically instead of racing a real 2s timer.
+        premiumSyncBackoffProvider.overrideWithValue((_) async {}),
         if (profile != null)
           userProfileProvider.overrideWith((_) => Stream.value(profile)),
       ],
@@ -161,8 +164,9 @@ void main() {
 
       container.read(localPremiumProvider);
       await waitUntil(() => service.isPremiumCallCount > 0);
-      // Extra time for exponential backoff (2s for retryCount=1)
-      await Future<void>.delayed(const Duration(seconds: 3));
+      // Backoff is stubbed to instant via premiumSyncBackoffProvider; flush the
+      // retry chain's microtasks instead of racing a real 2s timer.
+      await _flushAsync();
       await _flushAsync();
 
       final prefs = await SharedPreferences.getInstance();
@@ -258,8 +262,8 @@ void main() {
 
       container.read(localPremiumProvider);
       await waitUntil(() => service.isPremiumCallCount > 0);
-      // Wait for exponential backoff (2s for retryCount=1) + async chain
-      await Future<void>.delayed(const Duration(seconds: 3));
+      // Backoff is stubbed to instant via premiumSyncBackoffProvider; flush the
+      // retry chain's microtasks instead of racing a real 2s timer.
       for (var i = 0; i < 5; i++) {
         await _flushAsync();
       }

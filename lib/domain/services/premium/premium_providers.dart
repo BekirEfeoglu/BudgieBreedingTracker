@@ -79,6 +79,18 @@ final premiumSyncProvider = Provider<void>((ref) {
   });
 });
 
+/// Test seam for the pending-sync retry backoff wait.
+///
+/// Production waits the real exponential backoff (`2^retryCount` seconds,
+/// capped) before retrying a failed premium sync. Tests override this to skip
+/// real wall-clock waits — asserting the retry/increment behavior deterministically
+/// instead of racing a real timer (see test-stability.md § Flaky Triage #3,
+/// the `syncClockProvider` pattern). The production default is a plain
+/// `Future.delayed`, so behavior is unchanged.
+final premiumSyncBackoffProvider = Provider<Future<void> Function(Duration)>(
+  (ref) => (duration) => Future<void>.delayed(duration),
+);
+
 /// Local premium cache backed by SharedPreferences + RevenueCat.
 /// Used by premium screen for purchase/restore actions.
 final localPremiumProvider = NotifierProvider<PremiumNotifier, bool>(

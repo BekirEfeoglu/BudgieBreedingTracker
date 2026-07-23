@@ -174,7 +174,7 @@ extension _PremiumSyncHelpers on PremiumNotifier {
         '[PremiumNotifier] Backoff ${delay.inSeconds}s before retry '
         '${retryCount + 1}/${PremiumNotifier._maxSyncRetries}',
       );
-      await Future<void>.delayed(delay);
+      await ref.read(premiumSyncBackoffProvider)(delay);
       if (!ref.mounted) return;
     }
 
