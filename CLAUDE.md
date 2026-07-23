@@ -119,7 +119,7 @@ scripts/test_marketing_site.py          # Public-site assets, semantics, respons
 | Custom SVG icons | 99 constants, 99 files on disk |
 | Shared widgets | 35 (15 root + 4 buttons + 2 cards + 2 dialog + 1 bottom_sheet + 5 eggs) |
 | Enum files | 15 |
-| Supabase constants | 196 (tables + buckets + columns) |
+| Supabase constants | 202 (tables + buckets + columns) |
 | L10n keys | ~3,166 per language, 41 categories |
 | DB schema version | 29 |
 
