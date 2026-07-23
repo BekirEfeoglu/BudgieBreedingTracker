@@ -35,25 +35,43 @@ MigrationStrategy get migration => MigrationStrategy(
 - **Rename**: yeni column ekle, eski'yi UPDATE ile kopyala, eski'yi drop
 - **Type değişikliği**: yeni column ekle, convert + copy, eski'yi drop (atomic değil, multi-step)
 
-### Test Migration
+### Test Migration (gerçek harness — `test/data/local/database/migration_test.dart`)
+Harness **self-contained schema-consistency** testidir; `drift_dev schema` ile
+üretilen cross-version verifier KULLANILAMAZ: snapshot üreteci `sync_metadata` ve
+`conflict_history`'deki `table_name` kolonunu `tableName` Dart alanına çevirir ve
+bu drift `Table.tableName` getter'ıyla çakışıp derlenmez. Bu yüzden test taze bir
+DB'yi `sqlite_master`/`PRAGMA` ile doğrular:
 ```dart
-test('migrates from v21 to v22 preserving data', () async {
-  final db = await TestDatabase.atVersion(21);
-  await db.into(db.birds).insert(legacyBird);
-  await db.migrateTo(22);
-  final migrated = await db.select(db.birds).getSingle();
-  expect(migrated.ringNumber, isNotNull);
+test('sync_metadata carries the UNIQUE(table_name, record_id) index', () async {
+  final db = AppDatabase.forTesting(NativeDatabase.memory());
+  addTearDown(db.close);
+  final indexes = await db
+      .customSelect("SELECT name FROM sqlite_master WHERE type = 'index'")
+      .get();
+  expect(
+    indexes.map((r) => r.read<String>('name')),
+    contains('idx_sync_metadata_table_record_unique'),
+  );
 });
 ```
+Guard ettikleri: `schemaVersion == 29`, kayıtlı 20 tablonun onCreate ile
+materyalize olması, `sync_metadata` benzersizlik index'i (saveAll metadata
+collision fix'inin değişmezi — `SyncMetadataDao.insertAll`), beforeOpen FK
+enforcement.
 
-Drift test helper `setSchemaVersion(int)` ile geçmiş versiyondan upgrade simüle edilir.
+**Bilinen sınır:** Tarihsel per-version snapshot'lar hiç alınmadı ve geriye
+dönük yeniden üretilemez — bu yüzden cross-version veri-migration testi (v_n →
+v_n+1 data preservation) henüz YOK. Yeni bir schema sürümü inince: `dart run
+drift_dev schema dump` ile snapshot al ve o sürümden itibaren ileri yönlü
+data-preservation testi eklenebilir (`table_name` collision'ı için üretilen
+verifier'ı elle düzeltmek gerekebilir).
 
 ### Drift Migration Checklist
 - [ ] `schemaVersion` arttı (sıralı)
 - [ ] `onUpgrade` handler eklendi
 - [ ] Default value verildi (NOT NULL eklenirse)
 - [ ] Index gerekli mi (filtre column'ları)
-- [ ] Test: fresh DB + upgrade-from-previous
+- [ ] Test: `migration_test.dart` schema invariant'ları güncel (tablo sayısı, yeni index'ler)
 - [ ] Companion `.g.dart` regenerated
 
 Tarihsel birden fazla migration adımından çağrılan ortak index yardımcıları,

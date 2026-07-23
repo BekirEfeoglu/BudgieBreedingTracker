@@ -108,7 +108,7 @@ scripts/test_marketing_site.py          # Public-site assets, semantics, respons
 | Metric | Value |
 | --- | --- |
 | Source files (lib/) | 1030 Dart files |
-| Test files (test/) | 946 test files, 11,690+ individual tests |
+| Test files (test/) | 947 test files, 11,694+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |

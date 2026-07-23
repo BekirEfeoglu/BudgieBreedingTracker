@@ -165,11 +165,13 @@ Never delete or rename migration files. If a mistake exists, create a new migrat
 - `20260717120000_align_scanned_image_upload_limits.sql` was applied to production through an alias-mapped temporary CLI fixture, preserving its exact local version and statement in the remote ledger without editing applied migration files. All seven safety-scanned image buckets enforce 2 MiB; `backups` remains 50 MiB.
 - Historical shared index helpers guard later-added columns and are tested from the earliest affected local schema version; `IF NOT EXISTS` alone is not a missing-column guard.
 - Committed migration files that drift from the ledger but are superseded by a later drift-free migration are left as-is (final schema reproduces prod); only a file that determines the *final* state and diverges gets a forward reconciliation migration.
+- Drift schema is guarded at HEAD by a self-contained consistency test (`test/data/local/database/migration_test.dart`): schemaVersion, all 20 registered tables materialized by onCreate, the `sync_metadata` `UNIQUE(table_name, record_id)` index, and beforeOpen FK enforcement. It uses `sqlite_master`/`PRAGMA`, not the `drift_dev schema` generated verifier (which cannot compile — the `table_name` column dartifies to a `tableName` field that collides with `Table.tableName`).
 
 ## Known Deferred Work
 
 - `20260403140000`, `20260413100000`, `20260430130000` committed files still differ from their ledger `statements` (intermediate versions superseded later); benign for final schema, not reconciled to avoid rewriting applied history.
 - Large-table index work should be split into dedicated concurrent-index migrations.
+- No cross-version Drift data-migration test (v_n → v_n+1 data preservation): historical per-version schema snapshots were never captured and cannot be reconstructed. Only the HEAD schema-consistency test exists; see `known-gaps.md`.
 
 ## Do Not Reintroduce
 

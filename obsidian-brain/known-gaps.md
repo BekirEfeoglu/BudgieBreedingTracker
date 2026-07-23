@@ -34,6 +34,7 @@ decision; the owning rule file says what closing them requires.
 | User-password portable backup (PBKDF2) | Backup encrypts with the runtime device key (`EncryptionService`) — encrypted backups are NOT portable to another device; no PBKDF2/user-password flow exists | `data-io.md` § Encryption |
 | Restore preview / wipe-and-restore | Restore is merge-upsert only — no record-count preview, no wipe option, no skip/overwrite/rename conflict UI | `data-io.md` § Restore Flow |
 | `ValidationException.fieldErrors` field map | Exception carries only `(message, code?, originalError?)`; field-level errors come from sync validators, not the server | `forms-validation.md` § ValidationException Mapping |
+| Cross-version Drift data-migration tests | Only a HEAD schema-consistency harness exists (`test/data/local/database/migration_test.dart`: version, 20 tables, sync_metadata unique index, FK). No per-version data-preservation test — historical snapshots were never captured, and `drift_dev schema`'s generated verifier fails to compile (`table_name` column → `tableName` field collides with `Table.tableName`) | `migrations.md` § Test Migration |
 
 ## Genetics Roadmap — Still Open
 
