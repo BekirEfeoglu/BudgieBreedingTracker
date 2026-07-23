@@ -57,8 +57,14 @@ class MessagingRepository {
 
     final result = await _client
         .from(SupabaseConstants.profilesTable)
-        .select('id, display_name, full_name, avatar_url')
-        .or('display_name.ilike.%$sanitized%,full_name.ilike.%$sanitized%')
+        .select(
+          '${SupabaseConstants.colId}, ${SupabaseConstants.colDisplayName}, '
+          '${SupabaseConstants.colFullName}, ${SupabaseConstants.colAvatarUrl}',
+        )
+        .or(
+          '${SupabaseConstants.colDisplayName}.ilike.%$sanitized%,'
+          '${SupabaseConstants.colFullName}.ilike.%$sanitized%',
+        )
         .neq(SupabaseConstants.colId, excludeUserId)
         .limit(limit);
 

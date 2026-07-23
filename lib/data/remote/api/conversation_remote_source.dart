@@ -120,7 +120,8 @@ class ConversationRemoteSource {
           .from(SupabaseConstants.conversationParticipantsTable)
           .upsert(
             data,
-            onConflict: 'conversation_id,user_id',
+            onConflict: '${SupabaseConstants.colConversationId},'
+                '${SupabaseConstants.colUserId}',
             ignoreDuplicates: true,
           );
     } catch (e, st) {

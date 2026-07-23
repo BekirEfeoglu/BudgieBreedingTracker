@@ -90,7 +90,8 @@ class CommunitySocialRemoteSource {
               SupabaseConstants.colUserId: userId,
               SupabaseConstants.colPostId: postId,
             },
-            onConflict: 'post_id,user_id',
+            onConflict: '${SupabaseConstants.colPostId},'
+                '${SupabaseConstants.colUserId}',
             ignoreDuplicates: true,
           );
     } catch (e, st) {
@@ -169,7 +170,8 @@ class CommunitySocialRemoteSource {
               SupabaseConstants.colUserId: userId,
               SupabaseConstants.colCommentId: commentId,
             },
-            onConflict: 'comment_id,user_id',
+            onConflict: '${SupabaseConstants.colCommentId},'
+                '${SupabaseConstants.colUserId}',
             ignoreDuplicates: true,
           );
     } catch (e, st) {

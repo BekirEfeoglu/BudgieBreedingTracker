@@ -38,7 +38,11 @@ class GamificationRemoteSource {
     try {
       await _client
           .from(SupabaseConstants.userBadgesTable)
-          .upsert(data, onConflict: 'user_id,badge_id');
+          .upsert(
+            data,
+            onConflict: '${SupabaseConstants.colUserId},'
+                '${SupabaseConstants.colBadgeId}',
+          );
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag('gamification', e, st);
     }

@@ -49,7 +49,8 @@ class CommunityEngagementRemoteSource {
               SupabaseConstants.colUserId: userId,
               SupabaseConstants.colPostId: postId,
             },
-            onConflict: 'post_id,user_id',
+            onConflict: '${SupabaseConstants.colPostId},'
+                '${SupabaseConstants.colUserId}',
             ignoreDuplicates: true,
           );
     } catch (e, st) {
@@ -157,7 +158,8 @@ class CommunityEngagementRemoteSource {
               SupabaseConstants.colFollowerId: userId,
               SupabaseConstants.colFollowingId: targetUserId,
             },
-            onConflict: 'follower_id,following_id',
+            onConflict: '${SupabaseConstants.colFollowerId},'
+                '${SupabaseConstants.colFollowingId}',
             ignoreDuplicates: true,
           );
     } catch (e, st) {
@@ -296,7 +298,8 @@ class CommunityEngagementRemoteSource {
               SupabaseConstants.colUserId: userId,
               SupabaseConstants.colMutedUserId: mutedUserId,
             },
-            onConflict: 'user_id,muted_user_id',
+            onConflict: '${SupabaseConstants.colUserId},'
+                '${SupabaseConstants.colMutedUserId}',
             ignoreDuplicates: true,
           );
     } catch (e, st) {
@@ -343,7 +346,8 @@ class CommunityEngagementRemoteSource {
         'target_type': targetType,
         'reason': reason.toJson(),
         if (description != null) 'description': description,
-      }, onConflict: 'user_id,target_id,target_type');
+      }, onConflict: '${SupabaseConstants.colUserId},'
+          '${SupabaseConstants.colTargetId},${SupabaseConstants.colTargetType}');
     } catch (e, st) {
       throw BaseRemoteSource.handleErrorForTag(
         'community_engagement.reportContent',

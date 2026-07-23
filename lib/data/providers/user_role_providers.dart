@@ -18,11 +18,11 @@ final isAdminProvider = FutureProvider<bool>((ref) async {
   try {
     final result = await client
         .from(SupabaseConstants.profilesTable)
-        .select('role, is_active')
+        .select('${SupabaseConstants.colRole}, ${SupabaseConstants.colIsActive}')
         .eq(SupabaseConstants.colId, userId)
         .maybeSingle();
-    final role = (result?['role'] as String?)?.toLowerCase();
-    final isActive = result?['is_active'] as bool?;
+    final role = (result?[SupabaseConstants.colRole] as String?)?.toLowerCase();
+    final isActive = result?[SupabaseConstants.colIsActive] as bool?;
     return isActive == true && (role == 'admin' || role == 'founder');
   } catch (e, st) {
     AppLogger.error('isAdminProvider', e, st);
@@ -40,11 +40,11 @@ final isFounderProvider = FutureProvider<bool>((ref) async {
   try {
     final result = await client
         .from(SupabaseConstants.profilesTable)
-        .select('role, is_active')
+        .select('${SupabaseConstants.colRole}, ${SupabaseConstants.colIsActive}')
         .eq(SupabaseConstants.colId, userId)
         .maybeSingle();
-    final role = (result?['role'] as String?)?.toLowerCase();
-    final isActive = result?['is_active'] as bool?;
+    final role = (result?[SupabaseConstants.colRole] as String?)?.toLowerCase();
+    final isActive = result?[SupabaseConstants.colIsActive] as bool?;
     return isActive == true && role == 'founder';
   } catch (e, st) {
     AppLogger.error('isFounderProvider', e, st);

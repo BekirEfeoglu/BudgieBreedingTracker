@@ -31,7 +31,8 @@ class MarketplaceFavoriteRemoteSource {
               SupabaseConstants.colUserId: userId,
               SupabaseConstants.colListingId: listingId,
             },
-            onConflict: 'user_id,listing_id',
+            onConflict: '${SupabaseConstants.colUserId},'
+                '${SupabaseConstants.colListingId}',
             ignoreDuplicates: true,
           );
     } catch (e, st) {
