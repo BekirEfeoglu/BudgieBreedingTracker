@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/enums/gamification_enums.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/utils/sentry_error_filter.dart';
 import '../../../data/models/community_post_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../data/repositories/repository_providers.dart';
@@ -30,7 +30,7 @@ final communityPostByIdProvider = FutureProvider.family<CommunityPost?, String>(
 // Like toggle
 // ---------------------------------------------------------------------------
 
-class LikeToggleNotifier extends Notifier<void> {
+class LikeToggleNotifier extends Notifier<void> with SentryErrorFilter {
   @override
   void build() {}
 
@@ -66,7 +66,7 @@ class LikeToggleNotifier extends Notifier<void> {
     } catch (e, st) {
       ref.read(communityFeedProvider.notifier).optimisticLikeToggle(postId);
       AppLogger.error('LikeToggleNotifier', e, st);
-      Sentry.captureException(e, stackTrace: st);
+      reportIfUnexpected(e, st);
     } finally {
       _inFlight.remove(postId);
     }
@@ -81,7 +81,7 @@ final likeToggleProvider = NotifierProvider<LikeToggleNotifier, void>(
 // Bookmark toggle
 // ---------------------------------------------------------------------------
 
-class BookmarkToggleNotifier extends Notifier<void> {
+class BookmarkToggleNotifier extends Notifier<void> with SentryErrorFilter {
   @override
   void build() {}
 
@@ -101,7 +101,7 @@ class BookmarkToggleNotifier extends Notifier<void> {
     } catch (e, st) {
       ref.read(communityFeedProvider.notifier).optimisticBookmarkToggle(postId);
       AppLogger.error('BookmarkToggleNotifier', e, st);
-      Sentry.captureException(e, stackTrace: st);
+      reportIfUnexpected(e, st);
     } finally {
       _inFlight.remove(postId);
     }
@@ -116,7 +116,7 @@ final bookmarkToggleProvider = NotifierProvider<BookmarkToggleNotifier, void>(
 // Post delete
 // ---------------------------------------------------------------------------
 
-class PostDeleteNotifier extends Notifier<void> {
+class PostDeleteNotifier extends Notifier<void> with SentryErrorFilter {
   @override
   void build() {}
 
@@ -131,7 +131,7 @@ class PostDeleteNotifier extends Notifier<void> {
       return true;
     } catch (e, st) {
       AppLogger.error('PostDeleteNotifier', e, st);
-      Sentry.captureException(e, stackTrace: st);
+      reportIfUnexpected(e, st);
       return false;
     }
   }
@@ -145,7 +145,7 @@ final postDeleteProvider = NotifierProvider<PostDeleteNotifier, void>(
 // Post edit
 // ---------------------------------------------------------------------------
 
-class PostEditNotifier extends Notifier<void> {
+class PostEditNotifier extends Notifier<void> with SentryErrorFilter {
   @override
   void build() {}
 
@@ -164,7 +164,7 @@ class PostEditNotifier extends Notifier<void> {
       return null;
     } catch (e, st) {
       AppLogger.error('PostEditNotifier.editPost', e, st);
-      await Sentry.captureException(e, stackTrace: st);
+      reportIfUnexpected(e, st);
       return e.toString().contains('edit_window_expired')
           ? 'community.edit_window_expired'
           : 'community.edit_error';
@@ -180,7 +180,7 @@ final postEditProvider = NotifierProvider<PostEditNotifier, void>(
 // Post pin toggle
 // ---------------------------------------------------------------------------
 
-class PostPinToggleNotifier extends Notifier<void> {
+class PostPinToggleNotifier extends Notifier<void> with SentryErrorFilter {
   @override
   void build() {}
 
@@ -208,7 +208,7 @@ class PostPinToggleNotifier extends Notifier<void> {
             .applyPinState(postId, isPinned: previous.isPinned);
       }
       AppLogger.error('PostPinToggleNotifier.togglePin', e, st);
-      await Sentry.captureException(e, stackTrace: st);
+      reportIfUnexpected(e, st);
       return false;
     } finally {
       _inFlight.remove(postId);
@@ -224,7 +224,7 @@ final postPinToggleProvider = NotifierProvider<PostPinToggleNotifier, void>(
 // Follow toggle
 // ---------------------------------------------------------------------------
 
-class FollowToggleNotifier extends Notifier<void> {
+class FollowToggleNotifier extends Notifier<void> with SentryErrorFilter {
   @override
   void build() {}
 
@@ -252,7 +252,7 @@ class FollowToggleNotifier extends Notifier<void> {
           .read(communityFeedProvider.notifier)
           .optimisticFollowToggle(targetUserId);
       AppLogger.error('FollowToggleNotifier', e, st);
-      Sentry.captureException(e, stackTrace: st);
+      reportIfUnexpected(e, st);
     } finally {
       _inFlight.remove(targetUserId);
     }

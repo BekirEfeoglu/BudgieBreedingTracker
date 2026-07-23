@@ -2,13 +2,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
 import '../../../core/constants/feature_flags.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/enums/community_enums.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/utils/sentry_error_filter.dart';
 import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../../../data/models/community_post_model.dart';
 import '../../../data/models/profile_model.dart';
@@ -234,7 +234,7 @@ class _CommunityPostCardState extends ConsumerState<CommunityPostCard> {
       }
     } catch (e, st) {
       AppLogger.error('CommunityPostCard._handleReport', e, st);
-      Sentry.captureException(e, stackTrace: st);
+      reportUnexpectedToSentry(e, st);
       if (mounted) {
         ScaffoldMessenger.of(
           context,

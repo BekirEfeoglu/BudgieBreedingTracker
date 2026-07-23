@@ -3,12 +3,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/core/utils/sentry_error_filter.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 
@@ -184,7 +184,8 @@ class FeedbackFormState {
 }
 
 /// Notifier that handles feedback submission to Supabase.
-class FeedbackFormNotifier extends Notifier<FeedbackFormState> {
+class FeedbackFormNotifier extends Notifier<FeedbackFormState>
+    with SentryErrorFilter {
   @override
   FeedbackFormState build() => const FeedbackFormState();
 
@@ -230,7 +231,7 @@ class FeedbackFormNotifier extends Notifier<FeedbackFormState> {
         );
         return;
       }
-      Sentry.captureException(e, stackTrace: st);
+      reportIfUnexpected(e, st);
       // Map raw exception to a localizable error key so the UI never
       // surfaces vendor / Postgres text. Network failures route to a
       // specific message; everything else falls through to generic.

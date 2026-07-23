@@ -1,10 +1,10 @@
 import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/core/utils/sentry_error_filter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
@@ -237,7 +237,7 @@ class CommunityCommentTile extends ConsumerWidget {
       }
     } catch (e, st) {
       AppLogger.error('CommunityCommentTile._showReportDialog', e, st);
-      Sentry.captureException(e, stackTrace: st);
+      reportUnexpectedToSentry(e, st);
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,

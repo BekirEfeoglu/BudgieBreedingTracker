@@ -4,13 +4,13 @@ import 'package:crypto/crypto.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/enums/community_enums.dart';
 import '../../../core/enums/gamification_enums.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/utils/sentry_error_filter.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../data/repositories/community_post_repository.dart';
 import '../../../data/repositories/repository_providers.dart';
@@ -47,7 +47,8 @@ class CreatePostState {
 // Notifier
 // ---------------------------------------------------------------------------
 
-class CreatePostNotifier extends Notifier<CreatePostState> {
+class CreatePostNotifier extends Notifier<CreatePostState>
+    with SentryErrorFilter {
   /// Minimum interval between post creations to prevent spam.
   static const _postCooldown = Duration(seconds: 30);
   DateTime? _lastPostAt;
@@ -126,7 +127,7 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
         // Non-fatal: if guard RPC fails (e.g. offline), allow post through
         // — client-side throttle and moderation still apply.
         AppLogger.warning('Community post guard RPC failed, continuing: $e');
-        Sentry.captureException(e, stackTrace: st);
+        reportIfUnexpected(e, st);
       }
 
       // Content moderation check (Apple Guideline 1.2)
@@ -222,7 +223,7 @@ class CreatePostNotifier extends Notifier<CreatePostState> {
         await _deleteUploadedImages(repo, imageUrls);
       }
       AppLogger.error('CreatePostNotifier', e, st);
-      Sentry.captureException(e, stackTrace: st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: 'errors.unknown'.tr());
     }
   }
@@ -244,7 +245,7 @@ Future<void> _deleteUploadedImages(
       await repo.deleteUploadedPhoto(url);
     } catch (e, st) {
       AppLogger.warning('Failed to clean up community image upload: $e');
-      Sentry.captureException(e, stackTrace: st);
+      reportUnexpectedToSentry(e, st);
     }
   }
 }

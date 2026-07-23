@@ -1,10 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/enums/gamification_enums.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/utils/sentry_error_filter.dart';
 import '../../../data/models/community_comment_model.dart';
 import '../../../data/providers/auth_state_providers.dart';
 import '../../../data/providers/profile_stream_providers.dart';
@@ -177,7 +177,8 @@ class CommentFormState {
   }
 }
 
-class CommentFormNotifier extends Notifier<CommentFormState> {
+class CommentFormNotifier extends Notifier<CommentFormState>
+    with SentryErrorFilter {
   @override
   CommentFormState build() => const CommentFormState();
 
@@ -290,7 +291,7 @@ class CommentFormNotifier extends Notifier<CommentFormState> {
       return true;
     } catch (e, st) {
       AppLogger.error('CommentFormNotifier', e, st);
-      Sentry.captureException(e, stackTrace: st);
+      reportIfUnexpected(e, st);
       state = state.copyWith(isLoading: false, error: _commentErrorMessage(e));
       return false;
     }
@@ -354,7 +355,7 @@ final commentFormProvider =
 // Comment delete
 // ---------------------------------------------------------------------------
 
-class CommentDeleteNotifier extends Notifier<void> {
+class CommentDeleteNotifier extends Notifier<void> with SentryErrorFilter {
   @override
   void build() {}
 
@@ -374,7 +375,7 @@ class CommentDeleteNotifier extends Notifier<void> {
       return true;
     } catch (e, st) {
       AppLogger.error('CommentDeleteNotifier', e, st);
-      Sentry.captureException(e, stackTrace: st);
+      reportIfUnexpected(e, st);
       return false;
     }
   }
@@ -388,7 +389,7 @@ final commentDeleteProvider = NotifierProvider<CommentDeleteNotifier, void>(
 // Comment like toggle
 // ---------------------------------------------------------------------------
 
-class CommentLikeToggleNotifier extends Notifier<void> {
+class CommentLikeToggleNotifier extends Notifier<void> with SentryErrorFilter {
   /// Per-comment in-flight set so a rapid double-tap doesn't fire two
   /// toggles against the same row (audit L13). Mirrors the existing
   /// `LikeToggleNotifier` post-likes pattern in this file.
@@ -415,7 +416,7 @@ class CommentLikeToggleNotifier extends Notifier<void> {
     } catch (e, st) {
       listNotifier.applyLikeToggle(commentId);
       AppLogger.error('CommentLikeToggleNotifier', e, st);
-      Sentry.captureException(e, stackTrace: st);
+      reportIfUnexpected(e, st);
     } finally {
       _inFlight.remove(commentId);
     }
