@@ -9,26 +9,39 @@ import 'package:budgie_breeding_tracker/features/settings/providers/settings_pro
 
 import '../helpers/e2e_test_harness.dart';
 
-Future<void> _waitForLocale(dynamic container, AppLocale expected) async {
-  final deadline = DateTime.now().add(const Duration(seconds: 2));
-  while (DateTime.now().isBefore(deadline)) {
-    if (container.read(appLocaleProvider) == expected) return;
-    await Future<void>.delayed(const Duration(milliseconds: 25));
+/// Waits for a [PrefNotifier]-backed provider to hydrate from SharedPreferences
+/// (a fire-and-forget async load started in `build()`).
+///
+/// Bounds the wait by event-loop yields, NOT by a `DateTime.now()` wall-clock
+/// deadline: under CI load the loop simply runs a few more zero-delay turns
+/// instead of expiring on real time (which is the classic near-now flake). The
+/// value-equality check is the real readiness condition; the cap only guards a
+/// genuine never-arrives bug.
+Future<void> _waitForValue<T>(
+  T Function() read,
+  T expected,
+  String label,
+) async {
+  for (var i = 0; i < 200; i++) {
+    if (read() == expected) return;
+    await Future<void>.delayed(Duration.zero);
   }
-  throw StateError('Locale did not become $expected');
+  throw StateError('$label did not become $expected');
 }
 
-Future<void> _waitForDateFormat(
-  dynamic container,
-  AppDateFormat expected,
-) async {
-  final deadline = DateTime.now().add(const Duration(seconds: 2));
-  while (DateTime.now().isBefore(deadline)) {
-    if (container.read(dateFormatProvider) == expected) return;
-    await Future<void>.delayed(const Duration(milliseconds: 25));
-  }
-  throw StateError('Date format did not become $expected');
-}
+Future<void> _waitForLocale(dynamic container, AppLocale expected) =>
+    _waitForValue(
+      () => container.read(appLocaleProvider),
+      expected,
+      'Locale',
+    );
+
+Future<void> _waitForDateFormat(dynamic container, AppDateFormat expected) =>
+    _waitForValue(
+      () => container.read(dateFormatProvider),
+      expected,
+      'Date format',
+    );
 
 void main() {
   ensureE2EBinding();
