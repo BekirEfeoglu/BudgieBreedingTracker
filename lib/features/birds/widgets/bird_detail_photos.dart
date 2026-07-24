@@ -166,8 +166,15 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
       // The gallery showed a URL with no matching Photo row — surface a brief
       // error instead of silently doing nothing, so the user isn't left
       // wondering why the delete tap had no effect.
+      // Never log `url`: it is a signed URL for a private, user-scoped bucket
+      // and carries a 7-day bearer token plus the raw user id in its path.
+      // AppLogger.warning writes a Sentry breadcrumb in release builds, so the
+      // token would stay readable from Sentry until it expires. Log the bird id
+      // and the bare object file name instead — enough to diagnose the mismatch.
+      final targetFile = targetPath?.path.split('/').last;
       AppLogger.warning(
-        '[BirdDetailPhotos] no Photo row matched url for delete: $url',
+        '[BirdDetailPhotos] no Photo row matched for delete '
+        '(bird=${widget.bird.id}, object=${targetFile ?? '<unparsable>'})',
       );
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

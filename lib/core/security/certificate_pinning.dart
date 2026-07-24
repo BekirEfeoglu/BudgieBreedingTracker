@@ -83,7 +83,12 @@ class CertificatePinning {
   /// `Supabase.initialize()` in `bootstrap.dart`).
   /// Whether to allow all certificates (for proxy debugging).
   /// Controlled explicitly via `--dart-define=ALLOW_PROXY=true`.
-  static const _allowProxy = bool.fromEnvironment('ALLOW_PROXY');
+  ///
+  /// Ignored in release builds: security.md states this escape hatch is never
+  /// used in production, so a release binary built with the define must still
+  /// pin rather than silently disable TLS validation.
+  static const _allowProxy =
+      !kReleaseMode && bool.fromEnvironment('ALLOW_PROXY');
 
   static void install() {
     if (_allowProxy) {
