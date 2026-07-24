@@ -142,6 +142,13 @@ Future<void> _migrateV15ToV16(AppDatabase db, Migrator m) async {
     'CREATE INDEX IF NOT EXISTS idx_conflict_history_user_created '
     'ON conflict_history (user_id, created_at)',
   );
+  // Created here as well as in _createPerformanceIndexes: that shared helper
+  // skips this index when the table does not exist yet (pre-v16 upgrade
+  // steps), so this step is what guarantees v16+ upgraders still get it.
+  await db.customStatement(
+    'CREATE INDEX IF NOT EXISTS idx_conflict_history_user_table_record '
+    'ON conflict_history (user_id, table_name, record_id)',
+  );
 }
 
 /// Migration v16 -> v17: Add bandingEnabled column to notification_settings
@@ -500,6 +507,23 @@ Future<bool> _tableHasColumn(
   assertSafeIdentifier(columnName);
   final result = await db.customSelect("PRAGMA table_info('$tableName')").get();
   return result.any((row) => row.data['name'] == columnName);
+}
+
+/// Whether [tableName] exists in the current schema.
+///
+/// Companion to [_tableHasColumn] for shared index helpers that run from
+/// several historical upgrade steps: `CREATE INDEX IF NOT EXISTS` guards the
+/// index name only and still throws `no such table` when the target table has
+/// not been created yet at that point in the upgrade chain.
+Future<bool> _tableExists(AppDatabase db, String tableName) async {
+  assertSafeIdentifier(tableName);
+  final result = await db
+      .customSelect(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?1",
+        variables: [Variable<String>(tableName)],
+      )
+      .get();
+  return result.isNotEmpty;
 }
 
 // Performance indexes are in app_database_indexes.dart (part file)

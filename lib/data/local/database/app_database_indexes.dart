@@ -221,8 +221,17 @@ Future<void> _createPerformanceIndexes(AppDatabase db) async {
   // record-existence lookups (watchExistsForRecord/existsForRecord). The
   // pre-existing idx_conflict_history_user_created index only covers
   // (user_id, created_at) and doesn't help these filters.
-  await db.customStatement(
-    'CREATE INDEX IF NOT EXISTS idx_conflict_history_user_table_record '
-    'ON conflict_history (user_id, table_name, record_id)',
-  );
+  //
+  // This shared helper also runs in the historical v8->v9 upgrade step, while
+  // conflict_history is only created in v15->v16. IF NOT EXISTS guards the
+  // index name, NOT a missing table, so an unguarded statement here aborts the
+  // whole onUpgrade transaction for anyone upgrading from schema <= 8 and the
+  // database never opens. The v15->v16 migration creates this index itself, so
+  // v16+ upgraders are unaffected by the guard.
+  if (await _tableExists(db, 'conflict_history')) {
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_conflict_history_user_table_record '
+      'ON conflict_history (user_id, table_name, record_id)',
+    );
+  }
 }
