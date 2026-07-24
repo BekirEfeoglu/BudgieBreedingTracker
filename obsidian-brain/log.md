@@ -4,6 +4,20 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-24] ci | check_remote_status.py distinguishes Xcode-Cloud-pending from real pending
+
+`check_remote_status.py` reported a bare `commit status is pending` for any
+non-success aggregate state, conflating a genuinely running check with the
+common benign case where every ci.yml check-run is complete and green but the
+commit has zero legacy status contexts (Xcode Cloud posts `BudgieBreedingTracker
+| Default` up to ~1h late, push tip only). When state is pending, contexts are
+zero, and all check-runs are complete with none failed, it now emits an
+explanatory reason (still `is_clean=False` — verification waits for the context);
+a still-running check keeps the generic pending. Two tests added
+(`check_remote_status.py` 99%). Documented in ci-actions.md § Xcode Cloud status
+context. Also rotated the two oldest (2026-07-14) entries into
+[[log-archive-2026-07-l]] to stay under the 200-line cap.
+
 ## [2026-07-23] audit | Full-scope sweep: saveAll metadata collision, Sentry filter, deflake, #8 constants
 7-lane read-only audit from a pristine baseline (all scripts + CI green). Four fixes landed:
 - **P2 correctness (offline):** `SyncMetadataDao.insertAll` built each row with a FRESH v7 PK but targeted an existing `(table_name, record_id)`; `insertAllOnConflictUpdate` conflicts on the PK only, so the fresh PK fell through to the `UNIQUE(table_name, record_id)` index and threw. Broke offline breeding cancel/complete (`closeActiveIncubations` → `incubationRepo.saveAll` on an incubation that still had a pending row) mid-cleanup → zombie reminders + false `errors.unknown`, and genealogy orphan repair. Fixed at the DAO (one place, all 14 `saveAll` callers) to be records-aware: reuse each existing PK, preserve `createdAt`, status-agnostic (pending saves + `pendingDelete` tombstones). Real-DB regression test added.
