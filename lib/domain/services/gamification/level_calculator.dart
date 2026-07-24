@@ -28,7 +28,7 @@ abstract final class LevelCalculator {
   /// Maps a level to its rank title l10n key.
   ///
   /// MUST stay byte-for-byte identical to the SQL `private.xp_title_for_level`
-  /// (migration `20260705120000_expand_rank_ladder`) — the gamification RLS
+  /// (migration `20260705165421_expand_rank_ladder`) — the gamification RLS
   /// `WITH CHECK` enforces `xp_title = private.xp_title_for_level(level)`, so a
   /// divergence silently rejects XP/level writes. Change both together.
   static String titleForLevel(int level) => switch (level) {

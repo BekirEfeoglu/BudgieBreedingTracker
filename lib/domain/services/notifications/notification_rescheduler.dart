@@ -125,16 +125,28 @@ class NotificationRescheduler {
         '[NotificationRescheduler] Rescheduling ${eggs.length} incubating egg(s)',
       );
 
+      // Resolve each incubation at most once: a clutch's eggs all share one
+      // incubation, so a per-egg getById is an N+1 over a fully redundant
+      // lookup on a path that runs at every app start and after every reboot.
+      final speciesByIncubation = <String, Species>{};
+      for (final egg in eggs) {
+        final incubationId = egg.incubationId;
+        if (incubationId == null ||
+            speciesByIncubation.containsKey(incubationId)) {
+          continue;
+        }
+        final incubation = await _incubationsDao.getById(incubationId);
+        speciesByIncubation[incubationId] =
+            incubation?.species ?? Species.unknown;
+      }
+
       for (final egg in eggs) {
         final eggLabel = 'Egg ${egg.eggNumber ?? ''}';
-        final incubation = egg.incubationId == null
-            ? null
-            : await _incubationsDao.getById(egg.incubationId!);
         await _scheduler.scheduleEggTurningReminders(
           eggId: egg.id,
           startDate: egg.layDate,
           eggLabel: eggLabel,
-          species: incubation?.species ?? Species.unknown,
+          species: speciesByIncubation[egg.incubationId] ?? Species.unknown,
           settings: settings,
         );
       }
