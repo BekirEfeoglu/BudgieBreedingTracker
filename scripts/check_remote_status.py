@@ -139,7 +139,24 @@ def evaluate_remote_state(
 
     reasons: list[str] = []
     if status_state != "success":
-        reasons.append(f"commit status is {status_state}")
+        # A commit with zero legacy status contexts reports aggregate `pending`
+        # by GitHub default. When every check-run is already complete and green,
+        # this is not a failure or a genuinely running check — it is waiting on a
+        # late legacy status context (Xcode Cloud posts `BudgieBreedingTracker |
+        # Default` up to ~1h after Actions finish, and only for the push tip).
+        # Distinguish it so a docs/test-only push is not misread as broken or as
+        # a skipped Xcode Cloud run (see ci-actions.md § Xcode Cloud status
+        # context). Still not clean — verification waits for that context.
+        status_contexts = status_payload.get("statuses", [])
+        actions_settled = bool(check_runs) and not unfinished and not failed
+        if status_state == "pending" and not status_contexts and actions_settled:
+            reasons.append(
+                "commit status pending with 0 status contexts — awaiting a "
+                "legacy status context (e.g. Xcode Cloud); all check-runs "
+                "complete, not a failure"
+            )
+        else:
+            reasons.append(f"commit status is {status_state}")
     if unfinished:
         reasons.append(f"{len(unfinished)} check-run(s) unfinished")
     if failed:

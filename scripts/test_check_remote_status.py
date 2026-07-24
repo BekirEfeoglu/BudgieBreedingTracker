@@ -54,6 +54,63 @@ class TestRemoteStatusParsing(unittest.TestCase):
         self.assertFalse(result.is_clean)
         self.assertIn("commit status is pending", result.reasons)
 
+    def test_pending_with_zero_contexts_but_green_runs_is_annotated(self):
+        import check_remote_status as crs
+
+        # Real "waiting on Xcode Cloud" shape: GitHub Actions all completed and
+        # green, but the commit has zero legacy status contexts so the aggregate
+        # state defaults to pending.
+        result = crs.evaluate_remote_state(
+            status_payload={"state": "pending", "statuses": []},
+            check_runs_payload={
+                "check_runs": [
+                    {
+                        "name": "Flutter Test",
+                        "status": "completed",
+                        "conclusion": "success",
+                    },
+                    {
+                        "name": "iOS Build",
+                        "status": "completed",
+                        "conclusion": "success",
+                    },
+                ]
+            },
+            allowed_skipped=set(),
+        )
+
+        self.assertFalse(result.is_clean)
+        self.assertNotIn("commit status is pending", result.reasons)
+        self.assertTrue(
+            any("0 status contexts" in reason for reason in result.reasons),
+            result.reasons,
+        )
+        self.assertEqual(result.unfinished, [])
+        self.assertEqual(result.failed, [])
+
+    def test_pending_with_zero_contexts_and_unfinished_run_stays_generic(self):
+        import check_remote_status as crs
+
+        # If a check-run is still running, it is a genuine pending — not the
+        # Xcode-Cloud-only wait — so keep the generic reason.
+        result = crs.evaluate_remote_state(
+            status_payload={"state": "pending", "statuses": []},
+            check_runs_payload={
+                "check_runs": [
+                    {
+                        "name": "Flutter Test",
+                        "status": "in_progress",
+                        "conclusion": None,
+                    },
+                ]
+            },
+            allowed_skipped=set(),
+        )
+
+        self.assertFalse(result.is_clean)
+        self.assertIn("commit status is pending", result.reasons)
+        self.assertEqual(result.unfinished[0]["name"], "Flutter Test")
+
     def test_marks_unexpected_skipped_run_as_failed(self):
         import check_remote_status as crs
 
