@@ -157,40 +157,4 @@ image sizing, marketplace storage, and 11,611 tests. Removed the false ring
 gap; added real conflict-payload and 10MB-vs-2MB scan-limit gaps. Hardened the
 absence/allowlist review contract and pruned two obsolete drift allowlist items.
 
-## [2026-07-14] perf | Feed RPC emits is_following_author; messages_insert uses definer helpers
-
-Two follow-ups. **`20260714200510`**: `fetch_community_feed` now returns
-`is_following_author` (EXISTS over `community_follows`, both sort branches,
-SECURITY INVOKER — `community_follows_select` already exposes the follower's own
-rows), so the feed is one round-trip again. RETURNS TABLE changed => DROP+CREATE,
-grants (`authenticated`, `service_role`, no PUBLIC) restored explicitly; the
-parameter list is unchanged so older binaries keep working. `_enrichPosts` now
-only does the `fetchFollowedUserIds` lookup when the rows lack the column — the
-non-RPC paths (fetchById/ByUser/ByTag/ByIds) still need it.
-
-**`20260714200511`**: `messages_insert` moved off its two inlined subqueries onto
-`private.is_conversation_member` + a new `private.sender_blocked_in_conversation`.
-Note the new helper deliberately does NOT reuse `conversation_has_block_with`:
-that one filters `is_left = false`, while the original messages_insert counted
-blocks against LEFT participants too — semantics preserved exactly.
-
-Verified in prod: 0 posts flagged before following, 9 after (both newest and
-trending branches); message send OK, rejected 42501 once a block exists.
-
-## [2026-07-14] security | Scope participants_insert self-join to the conversation creator
-
-Follow-up to the DM recursion fix. `participants_insert` still allowed an
-unscoped self-join (`user_id = auth.uid()` into ANY conversation): anyone who
-learned a conversation UUID could add themselves and — since every read policy
-is membership-based — read the entire thread. Migration `20260714192445` adds
-`private.is_conversation_creator` (SECURITY DEFINER; a bare subquery over
-`public.conversations` would deadlock bootstrap, because
-`conversations_participant_read` demands membership that does not exist yet) and
-scopes the branch to the creator. Owner/admin invites unchanged.
-
-Verified in prod as real authenticated users: DM create end-to-end OK, group
-owner invite OK, non-creator self-join into someone else's DM **and** group both
-rejected (42501) with 0 messages visible, block guard still fires (42501).
-Security advisor: no new findings. Applied via Supabase MCP.
-
 Older entries are archived in [[log-archive-2026-07-l]], [[log-archive-2026-07-k]], [[log-archive-2026-07-j]], [[log-archive-2026-07-i]], [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
