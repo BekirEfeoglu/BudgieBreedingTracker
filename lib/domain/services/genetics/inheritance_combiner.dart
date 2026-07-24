@@ -108,11 +108,8 @@ _combineMultiLocus(Map<String, List<_RawResult>> perLocusResults) {
 
 /// Builds the Cartesian product of per-locus results, multiplying
 /// probabilities across loci and merging phenotype/genotype metadata.
-({
-  List<_MultiLocusResult> results,
-  int prunedStateCount,
-  double discardedMass,
-}) _crossAllLoci(Map<String, List<_RawResult>> perLocusResults) {
+({List<_MultiLocusResult> results, int prunedStateCount, double discardedMass})
+_crossAllLoci(Map<String, List<_RawResult>> perLocusResults) {
   var prunedStateCount = 0;
   var discardedMass = 0.0;
   final loci = perLocusResults.keys.toList();
@@ -270,9 +267,21 @@ Map<String, OffspringResult> _resolveEpistasisForCombined(
     // and over-attribute a lethal to offspring that aren't actually homozygous
     // for it (e.g. an Aa dominant-pied × bb blue group being tagged
     // dominant_pied because it shares the base label with the AA×bb group).
+    // The visual/masked sets are part of the result's identity, not just
+    // decoration. The epistasis compound name is built AFTER masking, so two
+    // genotypically different states can share one label — e.g. under a visual
+    // ino cross, a heterozygous dominant Blackface (masked: [blackface]) and
+    // the plain wild-type (masked: []) both resolve to "Lutino" with an empty
+    // DF set and no carried mutations. Keying on the label alone collapsed them
+    // and the merge branch then OVERWROTE visualMutations/maskedMutations with
+    // whichever state iterated last, so the persisted hidden-gene readout was
+    // wrong for part of the group. Key on the full identity and union on merge.
+    final identity =
+        '${(visualMutIds.toList()..sort()).join(",")}'
+        '/${(maskedMuts.toList()..sort()).join(",")}';
     final key = doubleFactorIds.isEmpty
-        ? '$phenotypeLabel|${c.sex.name}'
-        : '$phenotypeLabel|${c.sex.name}'
+        ? '$phenotypeLabel|${c.sex.name}|$identity'
+        : '$phenotypeLabel|${c.sex.name}|$identity'
               '|${(doubleFactorIds.toList()..sort()).join(",")}';
 
     if (resultMap.containsKey(key)) {
@@ -283,13 +292,16 @@ Map<String, OffspringResult> _resolveEpistasisForCombined(
         sex: c.sex,
         isCarrier: uniqueCarried.isNotEmpty,
         genotype: existing.genotype,
-        visualMutations: visualMutIds.toList(),
+        visualMutations: {
+          ...existing.visualMutations,
+          ...visualMutIds,
+        }.toList(),
         compoundPhenotype: compoundName,
         carriedMutations: {
           ...existing.carriedMutations,
           ...uniqueCarried,
         }.toList(),
-        maskedMutations: maskedMuts,
+        maskedMutations: {...existing.maskedMutations, ...maskedMuts}.toList(),
         doubleFactorIds: {...existing.doubleFactorIds, ...doubleFactorIds},
       );
     } else {

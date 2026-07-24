@@ -204,7 +204,7 @@ void main() {
       test('is the current engine version (bump when engine logic changes)', () {
         // Guards against an accidental revert/drift of the version constant,
         // which GeneticsHistory.isStale relies on to flag stale saved results.
-        expect(GeneticsConstants.calculationVersion, 8);
+        expect(GeneticsConstants.calculationVersion, 9);
       });
 
       test('is a positive integer', () {

@@ -179,7 +179,20 @@ abstract final class GeneticsConstants {
   /// "reduced viability" warning was unsourced and failed the same v6 criterion
   /// applied to DF Spangle / Ino×Ino / Pallid / Texas Clearbody — the cited
   /// MUTAVI guide does NOT flag it. Changes the viability warning set.
-  static const int calculationVersion = 8;
+  ///
+  /// v9 (2026-07-25): multi-locus combiner no longer collapses genotypically
+  /// different states that happen to share a post-masking compound name. The
+  /// grouping key now carries the exact visual/masked identity (alongside the
+  /// v5 double-factor set), and merges union `visualMutations` /
+  /// `maskedMutations` instead of letting the last-iterated state overwrite
+  /// them. Previously e.g. a heterozygous dominant Blackface and plain
+  /// wild-type both resolved to "Lutino" under a visual-ino cross, merged into
+  /// one group, and the persisted hidden-gene readout was whichever state came
+  /// last. Probabilities and phenotype names were already correct; this changes
+  /// the reported visual/masked mutation lists and can split one merged group
+  /// into its distinct hidden-gene states. The single-locus path was never
+  /// affected (it keys on the raw phenotype and already unioned the lists).
+  static const int calculationVersion = 9;
 
   // ── ReverseCalculator limits ──
   /// Maximum parent genotype options evaluated per locus in reverse calculation.
