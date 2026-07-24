@@ -201,9 +201,13 @@ final premiumGracePeriodProvider = Provider<GracePeriodStatus>((ref) {
 /// Use this provider for:
 /// - Free tier limit checks in form notifiers
 /// - Premium route guards
+/// - Ad visibility (banners and interstitials): a subscriber whose renewal is
+///   still retrying inside the grace window is a paying customer and must not
+///   see ads. This previously said the opposite, which left three of the five
+///   ad surfaces on [isPremiumProvider] and showed ads to grace-period
+///   subscribers on Birds/Breeding/Calendar but not on Chicks/More.
 ///
 /// Do NOT use for:
-/// - Ad visibility (use [isPremiumProvider] — grace period shows ads)
 /// - Subscription info display (use [premiumGracePeriodProvider])
 final effectivePremiumProvider = Provider<bool>((ref) {
   final status = ref.watch(premiumGracePeriodProvider);

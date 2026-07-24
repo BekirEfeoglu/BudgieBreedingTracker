@@ -78,7 +78,9 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
   void _navigateWithAd(String route) {
     if (_isNavigatingWithAd) return;
     _isNavigatingWithAd = true;
-    final isPremium = ref.read(isPremiumProvider);
+    // effectivePremiumProvider, not isPremiumProvider: grace-period
+    // subscribers are still paying customers and must not see the ad.
+    final isPremium = ref.read(effectivePremiumProvider);
     if (isPremium) {
       _isNavigatingWithAd = false;
       context.push(route);
@@ -383,7 +385,7 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
                     const SizedBox(height: AppSpacing.sm),
                     Center(
                       child: AdBannerWidget(
-                        isPremiumProvider: isPremiumProvider,
+                        premiumAccessProvider: effectivePremiumProvider,
                         adBannerLoader: () => defaultAdBannerLoader(ref),
                       ),
                     ),

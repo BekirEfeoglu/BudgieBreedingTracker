@@ -6,14 +6,19 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 typedef AdBannerLoader = Future<String> Function();
 
 /// Displays a banner ad for free-tier users.
-/// Renders [SizedBox.shrink] when the user is premium or ad fails to load.
+/// Renders [SizedBox.shrink] when the user has premium access or the ad fails
+/// to load.
 ///
-/// Premium status is injected via [isPremiumProvider] to avoid
-/// core/ -> features/ layer violation.
+/// Premium status is injected via [premiumAccessProvider] to avoid a
+/// core/ -> features/ layer violation. Callers must pass a grace-period-aware
+/// provider (`effectivePremiumProvider`), not a raw entitlement flag: a
+/// subscriber whose renewal is still retrying is a paying customer and must
+/// not see ads. The parameter is deliberately NOT named `isPremiumProvider`
+/// so it cannot be satisfied by same-named-variable autocomplete.
 /// Ad loading is driven by [adBannerLoader] to avoid core/ -> domain/ import.
 class AdBannerWidget extends ConsumerStatefulWidget {
   final AdSize adSize;
-  final Provider<bool> isPremiumProvider;
+  final Provider<bool> premiumAccessProvider;
 
   /// Callback that ensures the ad SDK is initialized and returns the banner
   /// ad unit ID. Injected by the caller to keep core/ free of domain/ imports.
@@ -22,7 +27,7 @@ class AdBannerWidget extends ConsumerStatefulWidget {
   const AdBannerWidget({
     super.key,
     this.adSize = AdSize.banner,
-    required this.isPremiumProvider,
+    required this.premiumAccessProvider,
     required this.adBannerLoader,
   });
 
@@ -76,7 +81,7 @@ class _AdBannerWidgetState extends ConsumerState<AdBannerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final isPremium = ref.watch(widget.isPremiumProvider);
+    final isPremium = ref.watch(widget.premiumAccessProvider);
     if (isPremium || !_isAdLoaded || _bannerAd == null) {
       return const SizedBox.shrink();
     }

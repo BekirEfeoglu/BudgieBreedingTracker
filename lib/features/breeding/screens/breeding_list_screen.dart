@@ -39,7 +39,9 @@ class BreedingListScreen extends ConsumerWidget {
     final pairsAsync = ref.watch(breedingPairsStreamProvider(userId));
 
     void navigateWithAd(String route) {
-      final isPremium = ref.read(isPremiumProvider);
+      // effectivePremiumProvider, not isPremiumProvider: grace-period
+      // subscribers are still paying customers and must not see the ad.
+      final isPremium = ref.read(effectivePremiumProvider);
       if (isPremium) {
         context.push(route);
         return;
@@ -104,7 +106,7 @@ class BreedingListScreen extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.sm),
                   Center(
                     child: AdBannerWidget(
-                      isPremiumProvider: isPremiumProvider,
+                      premiumAccessProvider: effectivePremiumProvider,
                       adBannerLoader: () => defaultAdBannerLoader(ref),
                     ),
                   ),

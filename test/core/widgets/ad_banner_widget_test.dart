@@ -18,7 +18,7 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: AdBannerWidget(
-                isPremiumProvider: isPremiumProvider,
+                premiumAccessProvider: isPremiumProvider,
                 adBannerLoader: _testAdBannerLoader,
               ),
             ),
@@ -40,7 +40,7 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: AdBannerWidget(
-                isPremiumProvider: isPremiumProvider,
+                premiumAccessProvider: isPremiumProvider,
                 adBannerLoader: _testAdBannerLoader,
               ),
             ),
@@ -61,7 +61,7 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: AdBannerWidget(
-                isPremiumProvider: isPremiumProvider,
+                premiumAccessProvider: isPremiumProvider,
                 adBannerLoader: _testAdBannerLoader,
               ),
             ),

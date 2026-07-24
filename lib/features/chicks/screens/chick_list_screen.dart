@@ -291,7 +291,7 @@ class _ChickListScreenState extends ConsumerState<ChickListScreen> {
                     const SizedBox(height: AppSpacing.sm),
                     Center(
                       child: AdBannerWidget(
-                        isPremiumProvider: isPremiumProvider,
+                        premiumAccessProvider: effectivePremiumProvider,
                         adBannerLoader: () => defaultAdBannerLoader(ref),
                       ),
                     ),

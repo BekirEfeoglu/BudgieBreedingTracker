@@ -173,7 +173,7 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.lg),
                   Center(
                     child: AdBannerWidget(
-                      isPremiumProvider: isPremiumProvider,
+                      premiumAccessProvider: effectivePremiumProvider,
                       adBannerLoader: () => defaultAdBannerLoader(ref),
                     ),
                   ),

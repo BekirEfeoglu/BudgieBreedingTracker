@@ -184,7 +184,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         children: [
           Center(
             child: AdBannerWidget(
-              isPremiumProvider: isPremiumProvider,
+              premiumAccessProvider: effectivePremiumProvider,
               adBannerLoader: () => defaultAdBannerLoader(ref),
             ),
           ),
@@ -313,7 +313,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   }
 
   void _showEventDetail(Event event) {
-    final isPremium = ref.read(isPremiumProvider);
+    // effectivePremiumProvider, not isPremiumProvider: grace-period
+    // subscribers are still paying customers and must not see the ad.
+    final isPremium = ref.read(effectivePremiumProvider);
     if (isPremium) {
       _openEventDetail(event);
       return;
