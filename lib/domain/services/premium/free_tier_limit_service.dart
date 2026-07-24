@@ -40,7 +40,7 @@ class FreeTierLimitService {
     final count = await _birdRepo.getCount(userId);
     if (count >= AppConstants.freeTierMaxBirds) {
       AppLogger.warning(
-        '[FreeTier] Bird limit reached for $userId: '
+        '[FreeTier] Bird limit reached for ${AppLogger.obfuscate(userId)}: '
         '$count/${AppConstants.freeTierMaxBirds}',
       );
       throw FreeTierLimitException('bird', AppConstants.freeTierMaxBirds);
@@ -53,7 +53,7 @@ class FreeTierLimitService {
     final activeCount = await _breedingPairRepo.getActiveCount(userId);
     if (activeCount >= AppConstants.freeTierMaxBreedingPairs) {
       AppLogger.warning(
-        '[FreeTier] Breeding pair limit reached for $userId: '
+        '[FreeTier] Breeding pair limit reached for ${AppLogger.obfuscate(userId)}: '
         '$activeCount/${AppConstants.freeTierMaxBreedingPairs}',
       );
       throw FreeTierLimitException(
@@ -69,7 +69,7 @@ class FreeTierLimitService {
     final activeCount = await _incubationRepo.getActiveCount(userId);
     if (activeCount >= AppConstants.freeTierMaxActiveIncubations) {
       AppLogger.warning(
-        '[FreeTier] Incubation limit reached for $userId: '
+        '[FreeTier] Incubation limit reached for ${AppLogger.obfuscate(userId)}: '
         '$activeCount/${AppConstants.freeTierMaxActiveIncubations}',
       );
       throw FreeTierLimitException(

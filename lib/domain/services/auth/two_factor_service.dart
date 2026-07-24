@@ -101,7 +101,20 @@ class TwoFactorService {
       final response = await _client.auth.mfa.listFactors();
       return response.totp;
     } catch (e, st) {
+      // Fails open to "no MFA": every caller (post-login MFA check, the AAL2
+      // destructive-action guard, the security-score and profile surfaces)
+      // reads an empty list as "this user has no second factor". A transient
+      // listFactors() error therefore weakens an auth control silently, which
+      // observability.md classifies as Sentry-bound (Auth/MFA failure).
       AppLogger.error('Failed to list MFA factors', e, st);
+      Sentry.captureException(
+        e,
+        stackTrace: st,
+        withScope: (scope) {
+          scope.setTag('feature', 'auth');
+          scope.setTag('auth_method', 'mfa');
+        },
+      );
       return [];
     }
   }

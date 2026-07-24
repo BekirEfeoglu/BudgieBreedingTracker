@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
@@ -136,11 +137,30 @@ class EncryptionService {
       }
     }
 
-    // All keys exhausted — throw original error
+    // All keys exhausted — throw original error.
+    //
+    // encryption.md § Sentry & Logging makes this mandatory: exhausting every
+    // key version means either at-rest data corruption or a failed HMAC
+    // verification (tampering). Both are silent data-loss signals that must
+    // reach Sentry — only the failure mode is reported, never the ciphertext
+    // or any decrypted value.
     AppLogger.error(
       'Decryption failed with all key versions',
       firstError,
       firstStack,
+    );
+    unawaited(
+      Sentry.captureException(
+        firstError,
+        stackTrace: firstStack,
+        withScope: (scope) {
+          scope.setTag('feature', 'encryption');
+          scope.setContexts('encryption', {
+            'payloadLength': cipherText.length,
+            'previousKeyCount': previousKeys.length,
+          });
+        },
+      ),
     );
     Error.throwWithStackTrace(firstError, firstStack);
   }

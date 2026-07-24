@@ -97,7 +97,7 @@ extension _PremiumSyncHelpers on PremiumNotifier {
     });
     await prefs.setString(PremiumNotifier._pendingSyncKey(userId), data);
     AppLogger.info(
-      '[PremiumNotifier] Saved pending sync for user $userId '
+      '[PremiumNotifier] Saved pending sync for user ${AppLogger.obfuscate(userId)} '
       '(retryCount: $retryCount)',
     );
   }
@@ -151,7 +151,7 @@ extension _PremiumSyncHelpers on PremiumNotifier {
 
     if (retryCount >= PremiumNotifier._maxSyncRetries) {
       AppLogger.warning(
-        '[PremiumNotifier] Max sync retries ($retryCount) reached for $userId',
+        '[PremiumNotifier] Max sync retries ($retryCount) reached for ${AppLogger.obfuscate(userId)}',
       );
       Sentry.captureException(
         Exception(
