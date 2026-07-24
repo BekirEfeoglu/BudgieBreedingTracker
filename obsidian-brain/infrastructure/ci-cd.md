@@ -85,6 +85,10 @@ used only for symbol upload and is never passed into the app binary.
 - drift_dev's "Circular error when deserializing drift modules" is a **non-fatal WARNING** (simolus3/drift#3227) — it never fails `build_runner`; do not chase it as a post-clone failure cause. The clean-and-retry loop (cap 8) remains as belt-and-braces.
 - The script prints `>>> STEP N:` markers before every step; Xcode Cloud only surfaces a generic "script failed (exited with code 1)", so the LAST marker in the log names the failing step. Keep the markers.
 - Rapid successive main pushes can make Xcode Cloud supersede intermediate builds (`action_required` on middle commits) — judge only the newest commit's build.
+- Xcode Cloud reports as a **legacy commit status context** (`BudgieBreedingTracker | Default`), not a `ci.yml` check-run — so it alone drives the "Status:" line in `check_remote_status.py`.
+- It builds **only the push tip**. Intermediate commits of a multi-commit push never get a context, and GitHub returns `state: pending` for any commit with zero status contexts (`total_count: 0`) — so those middle commits stay `pending` forever. Chase only the tip SHA.
+- The context can land **~1 hour after** every GitHub Actions job is already green. All check-runs `completed:success` with `in_progress: 0` and only the commit status `pending` = waiting on Xcode Cloud, not a failure.
+- There is **no path filter**: docs-only and test-only push tips trigger builds too. Do not conclude "no source changed, so Xcode Cloud skipped it" (a 2026-07-23 sweep formed exactly that wrong theory; a 20-commit scan refuted it — the non-triggering commits were all push intermediates, and a 0-`lib/` tip still built). The workflow definition lives in App Store Connect, not the repo, so this is empirical, not config-read.
 
 ## Post-Push Verification
 

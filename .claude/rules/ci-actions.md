@@ -90,9 +90,18 @@
   ```
 - Basari saymak icin: commit **status `success`** VE tum **required `ci.yml` check-run'lari** `completed:success` olmali (bilinen/intentional skipped kabul). Branch UI rozeti (`17/19` gibi) required-olmayan bir check patlayinca da kirmizi olur — tek basina "basarisiz" sayma (bkz. § Non-Required / Transient Checks)
 - `Deploy Edge Functions` path guard nedeniyle `skipped` ise bu ancak ayni exact committe `Edge Function Changes` `completed:success` oldugunda intentional kabul edilir; `check_remote_status.py` bu bagimliligi zorunlu tutar. Dedektor fail/missing iken deploy skip'i temiz sayma.
-- Main-only deploy veya Xcode Cloud gibi gec gelen check-run'lar sonradan baslayabilir; ilk `success` durumundan sonra script hala unfinished check gosteriyorsa kapanis yapma, poll etmeye devam et
+- Main-only deploy veya Xcode Cloud gibi gec gelen check-run'lar sonradan baslayabilir; ilk `success` durumundan sonra script hala unfinished check gosteriyorsa kapanis yapma, poll etmeye devam et (bkz. § Xcode Cloud status context)
 - `in_progress`, `queued`, `failure`, `error`, `action_required` veya conclusion'siz check varken "temiz" ya da "cozuldu" deme
 - Workflow UI degisikligi yapildiysa once yeni commit veya clean rebuild ile yeni run baslat; eski run sonucunu yeni ayarin kaniti sayma
+
+### Xcode Cloud status context (`BudgieBreedingTracker | Default`)
+Xcode Cloud bir `ci.yml` check-run'i DEGILDIR; commit'e **legacy status context** olarak raporlar. `check_remote_status.py` ciktisindaki "Status:" satirini pratikte tek basina bu belirler — tum check-run'lar yesilken bile `pending` gorunmesinin en sik nedeni budur.
+- **Sadece push TIP'ini build eder.** Cok-commit'li push'ta ara commit'ler hic context almaz ve aggregate status'lari **kalici olarak** `pending` kalir. Ara commit'in `pending`'ini kovalama; yalniz push tip'inin SHA'sini dogrula.
+- **Zero status context = aggregate `pending`.** GitHub, hic status context'i olmayan commit icin `total_count: 0` + `state: pending` doner. Bu bir bekleyen/basarisiz kontrol degil, bos listenin varsayilanidir.
+- **Cok gec gelebilir.** GitHub Actions'in tamami bittikten ~1 saat sonra dusebilir. Tum check-run'lar `completed:success` + `in_progress: 0` iken tek eksik commit status ise: bu Xcode Cloud'u bekliyor demektir, poll etmeye devam et.
+- **Path filtresi YOK — "kaynak degismedi, o yuzden kosmadi" cikarimini YAPMA.** docs-only ve test-only push tip'leri de build tetikler.
+
+Kanit (2026-07-23, 20 commit'lik ampirik tarama): context alan commit'ler tam olarak push tip'leriydi (`fa89233`, `654c05a`, `d915e13`, `82e91ba`, `2670251`, `40d55dc` dahil — sonuncu ikisi docs/test-only); context ALMAYAN sekiz commit'in tamami ayni uc push'un ara commit'leriydi. `lib/` degisikligiyle korelasyon YOK (`d915e13` 0 `lib/` dosyasiyla build tetikledi, context `00:54:37Z`'de `success` dustu). Not: App Store Connect'teki workflow tanimi repoda olmadigi icin bu sonuc ampiriktir (config okunarak degil, gozlemle dogrulandi); `ios/ci_scripts/ci_post_clone.sh` disinda yerel Xcode Cloud konfigurasyonu bulunmuyor.
 
 ### Non-Required / Transient Checks (GitHub Pages `deploy`)
 `main` push'unda en sik "sahte kirmizi" kaynagi budur; kod hatasiyla karistirma.
