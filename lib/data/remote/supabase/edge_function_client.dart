@@ -351,4 +351,27 @@ class EdgeFunctionClient {
   Future<EdgeFunctionResult> resetMfaLockout() {
     return invoke('mfa-lockout', body: {'action': 'reset'});
   }
+
+  /// Revoke the user's Google/Apple OAuth token during sign-out.
+  ///
+  /// Must go through [invoke] rather than `functions.invoke` directly: this
+  /// runs during logout, exactly when the access token is most likely to be
+  /// stale, so it needs both the `functions.setAuth` refresh above and the
+  /// 401 retry. A direct call silently 401s and leaves the provider-side
+  /// refresh token live.
+  Future<EdgeFunctionResult> revokeOAuthToken({
+    required String provider,
+    String? providerToken,
+    String? providerRefreshToken,
+  }) {
+    return invoke(
+      'revoke-oauth-token',
+      body: {
+        'provider': provider,
+        if (providerToken != null) 'provider_token': providerToken,
+        if (providerRefreshToken != null)
+          'provider_refresh_token': providerRefreshToken,
+      },
+    );
+  }
 }

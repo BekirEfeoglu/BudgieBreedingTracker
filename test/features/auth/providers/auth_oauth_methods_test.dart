@@ -21,13 +21,39 @@ void main() {
     registerFallbackValue(LaunchMode.inAppBrowserView);
   });
 
+  // Revocation goes through an injected callback rather than
+  // `client.functions.invoke` so `features/` does not import `data/remote/`
+  // and so the call picks up EdgeFunctionClient's stale-token refresh + 401
+  // retry. These record what the mixin would send.
+  late List<Map<String, String?>> revokeCalls;
+  Object? revokeThrows;
+
   setUp(() {
     mockClient = MockSupabaseClient();
     mockAuth = MockGoTrueClient();
     mockFunctions = MockFunctionsClient();
     when(() => mockClient.auth).thenReturn(mockAuth);
     when(() => mockClient.functions).thenReturn(mockFunctions);
-    actions = AuthActions(mockClient);
+    revokeCalls = [];
+    revokeThrows = null;
+    actions = AuthActions(
+      mockClient,
+      revokeOAuthToken:
+          ({
+            required String provider,
+            String? providerToken,
+            String? providerRefreshToken,
+          }) async {
+            revokeCalls.add({
+              'provider': provider,
+              if (providerToken != null) 'provider_token': providerToken,
+              if (providerRefreshToken != null)
+                'provider_refresh_token': providerRefreshToken,
+            });
+            final failure = revokeThrows;
+            if (failure != null) throw failure;
+          },
+    );
   });
 
   group('_AuthOAuthMixin.revokeOAuthToken', () {
@@ -72,22 +98,15 @@ void main() {
       when(() => session.providerRefreshToken).thenReturn('google-refresh');
       when(() => mockAuth.currentUser).thenReturn(user);
       when(() => user.appMetadata).thenReturn({'provider': 'google'});
-      when(
-        () => mockFunctions.invoke(any(), body: any(named: 'body')),
-      ).thenAnswer((_) async => FunctionResponse(status: 200, data: {}));
-
       await actions.revokeOAuthToken();
 
-      verify(
-        () => mockFunctions.invoke(
-          'revoke-oauth-token',
-          body: {
-            'provider': 'google',
-            'provider_token': 'google-token',
-            'provider_refresh_token': 'google-refresh',
-          },
-        ),
-      ).called(1);
+      expect(revokeCalls, [
+        {
+          'provider': 'google',
+          'provider_token': 'google-token',
+          'provider_refresh_token': 'google-refresh',
+        },
+      ]);
     });
 
     test('invokes edge function for apple provider', () async {
@@ -98,18 +117,11 @@ void main() {
       when(() => session.providerRefreshToken).thenReturn(null);
       when(() => mockAuth.currentUser).thenReturn(user);
       when(() => user.appMetadata).thenReturn({'provider': 'apple'});
-      when(
-        () => mockFunctions.invoke(any(), body: any(named: 'body')),
-      ).thenAnswer((_) async => FunctionResponse(status: 200, data: {}));
-
       await actions.revokeOAuthToken();
 
-      verify(
-        () => mockFunctions.invoke(
-          'revoke-oauth-token',
-          body: {'provider': 'apple', 'provider_token': 'apple-token'},
-        ),
-      ).called(1);
+      expect(revokeCalls, [
+        {'provider': 'apple', 'provider_token': 'apple-token'},
+      ]);
     });
 
     test('includes only non-null tokens in request body', () async {
@@ -120,21 +132,11 @@ void main() {
       when(() => session.providerRefreshToken).thenReturn('refresh-only');
       when(() => mockAuth.currentUser).thenReturn(user);
       when(() => user.appMetadata).thenReturn({'provider': 'google'});
-      when(
-        () => mockFunctions.invoke(any(), body: any(named: 'body')),
-      ).thenAnswer((_) async => FunctionResponse(status: 200, data: {}));
-
       await actions.revokeOAuthToken();
 
-      verify(
-        () => mockFunctions.invoke(
-          'revoke-oauth-token',
-          body: {
-            'provider': 'google',
-            'provider_refresh_token': 'refresh-only',
-          },
-        ),
-      ).called(1);
+      expect(revokeCalls, [
+        {'provider': 'google', 'provider_refresh_token': 'refresh-only'},
+      ]);
     });
 
     test('silently handles edge function errors', () async {
@@ -145,16 +147,12 @@ void main() {
       when(() => session.providerRefreshToken).thenReturn(null);
       when(() => mockAuth.currentUser).thenReturn(user);
       when(() => user.appMetadata).thenReturn({'provider': 'google'});
-      when(
-        () => mockFunctions.invoke(any(), body: any(named: 'body')),
-      ).thenThrow(Exception('Edge function unavailable'));
+      revokeThrows = Exception('Edge function unavailable');
 
       // Should NOT throw — errors are caught and logged
       await actions.revokeOAuthToken();
 
-      verify(
-        () => mockFunctions.invoke(any(), body: any(named: 'body')),
-      ).called(1);
+      expect(revokeCalls, hasLength(1));
     });
 
     test('does nothing when provider is null in metadata', () async {

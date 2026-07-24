@@ -17,6 +17,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/utils/logger.dart';
 import '../../../core/utils/safe_cast.dart';
+import '../../../data/providers/edge_function_provider.dart';
 import '../../../data/providers/supabase_client_provider.dart';
 import '../../../domain/services/notifications/notification_providers.dart';
 import 'native_google_auth_errors.dart';
@@ -32,6 +33,18 @@ final authActionsProvider = Provider<AuthActions>((ref) {
     client,
     deactivateFcmToken: () =>
         ref.read(pushNotificationServiceProvider).deactivateCurrentToken(),
+    revokeOAuthToken:
+        ({
+          required String provider,
+          String? providerToken,
+          String? providerRefreshToken,
+        }) => ref
+            .read(edgeFunctionClientProvider)
+            .revokeOAuthToken(
+              provider: provider,
+              providerToken: providerToken,
+              providerRefreshToken: providerRefreshToken,
+            ),
   );
 });
 
@@ -41,8 +54,10 @@ class AuthActions with _AuthOAuthMixin, _AuthAccountMixin {
     this._client, {
     Future<SharedPreferences> Function()? prefsFactory,
     Future<void> Function()? deactivateFcmToken,
+    RevokeOAuthTokenCallback? revokeOAuthToken,
   }) : _prefsFactory = prefsFactory ?? SharedPreferences.getInstance,
-       _deactivateFcmToken = deactivateFcmToken;
+       _deactivateFcmToken = deactivateFcmToken,
+       _revokeOAuthToken = revokeOAuthToken;
 
   @override
   final SupabaseClient _client;
@@ -54,6 +69,14 @@ class AuthActions with _AuthOAuthMixin, _AuthAccountMixin {
   /// token UPDATE silently fails and the device keeps receiving pushes
   /// addressed to the previous user.
   final Future<void> Function()? _deactivateFcmToken;
+
+  /// Injected so this feature never imports `data/remote/` directly (layer
+  /// rule). Wired to `edgeFunctionClientProvider`, whose `invoke` applies the
+  /// `functions.setAuth` refresh and 401 retry that a bare
+  /// `client.functions.invoke` skips — which matters here because revocation
+  /// runs during sign-out, when the access token is most likely stale.
+  @override
+  final RevokeOAuthTokenCallback? _revokeOAuthToken;
 
   static const _oAuthRedirectTo =
       'io.supabase.budgiebreeding://login-callback/';

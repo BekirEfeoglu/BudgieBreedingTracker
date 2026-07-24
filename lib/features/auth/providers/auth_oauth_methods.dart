@@ -1,8 +1,20 @@
 part of 'auth_actions.dart';
 
+/// Revokes a Google/Apple OAuth token via the `revoke-oauth-token` Edge
+/// Function. Injected rather than called directly so `features/` does not
+/// import `data/remote/`.
+typedef RevokeOAuthTokenCallback =
+    Future<void> Function({
+      required String provider,
+      String? providerToken,
+      String? providerRefreshToken,
+    });
+
 /// OAuth sign-in methods for [AuthActions].
 mixin _AuthOAuthMixin {
   SupabaseClient get _client;
+
+  RevokeOAuthTokenCallback? get _revokeOAuthToken;
 
   bool _isGoogleInitialized = false;
 
@@ -207,15 +219,19 @@ mixin _AuthOAuthMixin {
     }
     if (provider != 'google' && provider != 'apple') return;
 
+    final revoke = _revokeOAuthToken;
+    if (revoke == null) {
+      AppLogger.warning(
+        '[AuthActions] OAuth revoke skipped: no revoke callback wired',
+      );
+      return;
+    }
+
     try {
-      await _client.functions.invoke(
-        'revoke-oauth-token',
-        body: {
-          'provider': provider,
-          if (providerToken != null) 'provider_token': providerToken,
-          if (providerRefreshToken != null)
-            'provider_refresh_token': providerRefreshToken,
-        },
+      await revoke(
+        provider: provider,
+        providerToken: providerToken,
+        providerRefreshToken: providerRefreshToken,
       );
       AppLogger.info('[AuthActions] OAuth token revoked for $provider');
     } catch (e) {
