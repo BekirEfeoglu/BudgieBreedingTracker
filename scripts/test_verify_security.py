@@ -20,23 +20,32 @@ def _write(path: Path, body: str) -> None:
     path.write_text(body, encoding="utf-8")
 
 
-def _good_codemagic_yaml() -> str:
+def _good_release_script() -> str:
+    """Minimal stand-in for scripts/build_release.sh.
+
+    Codemagic was removed 2026-07-25; the release-obfuscation contract moved
+    to this script, so the fixture models it instead of codemagic.yaml.
+    """
     return """
-workflows:
-  android-release:
-    scripts:
-      - name: Build Android
-        script: |
-          flutter build appbundle --release \\
-            --obfuscate \\
-            --split-debug-info=build/symbols/android
-  ios-release:
-    scripts:
-      - name: Build iOS
-        script: |
-          flutter build ipa --release \\
-            --obfuscate \\
-            --split-debug-info=build/symbols/ios
+set -euo pipefail
+grep -qE '^SENTRY_DSN=.+' "$ENV_FILE" || missing+=("SENTRY_DSN")
+[[ -n "${SENTRY_AUTH_TOKEN:-}" ]] || missing+=("SENTRY_AUTH_TOKEN")
+echo "ERROR: release build refused, missing:" >&2
+exit 1
+
+flutter build ipa --release \\
+  --dart-define-from-file="$ENV_FILE" \\
+  --obfuscate \\
+  --split-debug-info=build/symbols/ios
+
+dart run sentry_dart_plugin
+
+flutter build appbundle --release \\
+  --dart-define-from-file="$ENV_FILE" \\
+  --obfuscate \\
+  --split-debug-info=build/symbols/android
+
+dart run sentry_dart_plugin
 """
 
 
@@ -60,7 +69,7 @@ class TestReleaseObfuscation(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
-            _write(root / "codemagic.yaml", _good_codemagic_yaml())
+            _write(root / "scripts" / "build_release.sh", _good_release_script())
             _write(
                 root / ".github" / "workflows" / "ci.yml",
                 "name: CI\njobs:\n  android-build:\n    steps: []\n",
@@ -84,7 +93,7 @@ class TestReleaseObfuscation(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
-            _write(root / "codemagic.yaml", _good_codemagic_yaml())
+            _write(root / "scripts" / "build_release.sh", _good_release_script())
             _write(
                 root / ".github" / "workflows" / "release-ready.yml",
                 """
@@ -115,7 +124,7 @@ jobs:
 
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
-            _write(root / "codemagic.yaml", _good_codemagic_yaml())
+            _write(root / "scripts" / "build_release.sh", _good_release_script())
 
             with patch.object(vs, "ROOT", root):
                 results = vs.check_release_obfuscation()

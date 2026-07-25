@@ -84,36 +84,59 @@ def check_release_obfuscation() -> List[Tuple[str, bool, str]]:
     """Release flutter builds must obfuscate Dart symbols."""
     results: List[Tuple[str, bool, str]] = []
 
-    codemagic = read(ROOT / "codemagic.yaml")
-    if not codemagic:
-        results.append(fail("codemagic.yaml", "file missing"))
+    # Codemagic was removed 2026-07-25; scripts/build_release.sh is now the
+    # canonical release build for iOS and the local Android equivalent, so it
+    # carries the obfuscation contract that codemagic.yaml used to.
+    build_script = read(ROOT / "scripts" / "build_release.sh")
+    if not build_script:
+        results.append(fail("scripts/build_release.sh", "file missing"))
     else:
-        # Both android-release and ios-release should obfuscate.
         for build_kind, build_cmd in (
-            ("android-release", "flutter build appbundle --release"),
-            ("ios-release", "flutter build ipa --release"),
+            ("android", "flutter build appbundle --release"),
+            ("ios", "flutter build ipa --release"),
         ):
             block = re.search(
-                re.escape(build_cmd) + r"[\s\S]*?(?=\n\s{0,4}- name:|\Z)",
-                codemagic,
+                re.escape(build_cmd) + r"[\s\S]*?(?=\n\n|\Z)",
+                build_script,
             )
             if not block:
                 results.append(
-                    fail(f"codemagic {build_kind}", "build block not found")
+                    fail(f"build_release.sh {build_kind}", "build block not found")
                 )
                 continue
             obf = "--obfuscate" in block.group(0)
             split = "--split-debug-info" in block.group(0)
             if obf and split:
-                results.append(ok(f"codemagic {build_kind}", "obfuscation enabled"))
+                results.append(
+                    ok(f"build_release.sh {build_kind}", "obfuscation enabled")
+                )
             else:
                 results.append(
                     fail(
-                        f"codemagic {build_kind}",
+                        f"build_release.sh {build_kind}",
                         f"missing --obfuscate or --split-debug-info "
                         f"(obfuscate={obf}, split={split})",
                     )
                 )
+
+        # A release build that silently ships without a DSN or without symbol
+        # upload is the exact failure mode losing Codemagic could reintroduce.
+        if "SENTRY_DSN" in build_script and "exit 1" in build_script:
+            results.append(
+                ok("build_release.sh sentry", "fails fast without DSN/auth token")
+            )
+        else:
+            results.append(
+                fail("build_release.sh sentry", "missing DSN/auth-token fail-fast")
+            )
+        if build_script.count("dart run sentry_dart_plugin") >= 2:
+            results.append(
+                ok("build_release.sh symbols", "uploads symbols on both platforms")
+            )
+        else:
+            results.append(
+                fail("build_release.sh symbols", "missing sentry_dart_plugin upload")
+            )
 
     release_ready = read(ROOT / ".github" / "workflows" / "release-ready.yml")
     if not release_ready:

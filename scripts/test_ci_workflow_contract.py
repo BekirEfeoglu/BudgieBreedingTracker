@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 RELEASE_READY_WORKFLOW = ROOT / ".github" / "workflows" / "release-ready.yml"
-CODEMAGIC_CONFIG = ROOT / "codemagic.yaml"
+RELEASE_SCRIPT = ROOT / "scripts" / "build_release.sh"
 PUBSPEC = ROOT / "pubspec.yaml"
 
 
@@ -24,7 +24,7 @@ class TestCiWorkflowContract(unittest.TestCase):
     def setUpClass(cls):
         cls.workflow = CI_WORKFLOW.read_text(encoding="utf-8")
         cls.release_ready = RELEASE_READY_WORKFLOW.read_text(encoding="utf-8")
-        cls.codemagic = CODEMAGIC_CONFIG.read_text(encoding="utf-8")
+        cls.release_script = RELEASE_SCRIPT.read_text(encoding="utf-8")
         cls.pubspec = PUBSPEC.read_text(encoding="utf-8")
 
     def test_edge_change_detector_ignores_documentation_only_pushes(self):
@@ -66,99 +66,61 @@ class TestCiWorkflowContract(unittest.TestCase):
         )
         self.assertIn('SENTRY_DIST="${APP_VERSION##*+}"', release)
 
-    def test_codemagic_releases_fail_fast_without_sentry_dsn(self):
-        verify_only = _job_block(self.codemagic, "android-verify-only")
+    def test_release_script_refuses_to_build_without_sentry_credentials(self):
+        """Codemagic used to fail fast on a missing DSN/auth token.
 
-        self.assertEqual(2, self.codemagic.count('if [ -z "$SENTRY_DSN" ]'))
-        self.assertIn(
-            "for VAR_NAME in SUPABASE_URL SUPABASE_ANON_KEY SENTRY_DSN "
-            "SENTRY_AUTH_TOKEN REVENUECAT_API_KEY_ANDROID",
-            verify_only,
-        )
+        It was removed 2026-07-25 and scripts/build_release.sh inherited that
+        contract. Both values are silent failures if unchecked: no DSN ships a
+        release with no crash reporting, and no auth token ships obfuscated
+        stack traces nobody can read.
+        """
+        script = self.release_script
+
+        self.assertIn("SENTRY_DSN", script)
+        self.assertIn("SENTRY_AUTH_TOKEN", script)
+        self.assertIn("set -euo pipefail", script)
+        self.assertIn("release build refused, missing:", script)
+        self.assertIn("exit 1", script)
+
+    def test_release_script_obfuscates_and_uploads_symbols_on_both_platforms(self):
+        script = self.release_script
+
+        # Count the actual flag line, not the prose in the header comment.
+        self.assertEqual(2, script.count("\n    --obfuscate \\"))
+        self.assertIn("--split-debug-info=build/symbols/ios", script)
+        self.assertIn("--split-debug-info=build/symbols/android", script)
         self.assertEqual(
             2,
-            self.codemagic.count('if [ -z "$SENTRY_AUTH_TOKEN" ]'),
+            script.count("--save-obfuscation-map=build/app/obfuscation.map.json"),
         )
-        self.assertEqual(
-            3,
-            self.codemagic.count('--dart-define=SENTRY_DSN="$SENTRY_DSN"'),
-        )
-        self.assertEqual(3, self.codemagic.count("dart run sentry_dart_plugin"))
-        self.assertEqual(
-            3,
-            self.codemagic.count(
-                "--save-obfuscation-map=build/app/obfuscation.map.json"
-            ),
+        self.assertEqual(2, script.count("dart run sentry_dart_plugin"))
+        # SENTRY_RELEASE must match runtime PackageInfo naming, per platform.
+        self.assertIn(
+            'SENTRY_RELEASE="com.budgiebreeding.tracker@${APP_VERSION}',
+            script,
         )
         self.assertIn(
-            "com.budgiebreeding.budgie_breeding_tracker@${APP_VERSION}+${ANDROID_BUILD_NUMBER}",
-            self.codemagic,
+            'SENTRY_RELEASE="com.budgiebreeding.budgie_breeding_tracker@${APP_VERSION}',
+            script,
         )
-        self.assertIn(
-            "com.budgiebreeding.tracker@${APP_VERSION}+${IOS_BUILD_NUMBER}",
-            self.codemagic,
-        )
-        self.assertIn('export SENTRY_DIST="$ANDROID_BUILD_NUMBER"', self.codemagic)
-        self.assertIn('export SENTRY_DIST="$IOS_BUILD_NUMBER"', self.codemagic)
-        self.assertNotIn("${SENTRY_DSN:-}", self.codemagic)
+        self.assertIn('SENTRY_DIST="$BUILD_NUMBER"', script)
 
-    def test_codemagic_android_verify_only_cannot_publish_to_store(self):
-        verify_only = _job_block(self.codemagic, "android-verify-only")
+    def test_release_script_uses_env_file_rather_than_default_dart_defines(self):
+        """A raw Xcode Archive reads a stale gitignored DartDefines.xcconfig.
 
-        self.assertIn(
-            "name: Android Verify Only (No Store Publishing)",
-            verify_only,
-        )
-        self.assertNotIn("publishing:", verify_only)
-        self.assertNotIn("google_play", verify_only)
-        self.assertNotIn("google-play", verify_only)
-        self.assertNotIn("GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS", verify_only)
-        self.assertIn(
-            "VERSION_LINE=\"$(sed -n 's/^version: //p' pubspec.yaml | head -1)\"",
-            verify_only,
-        )
-        self.assertIn("ANDROID_BUILD_NUMBER=\"${VERSION_LINE##*+}\"", verify_only)
-        self.assertIn("''|*[!0-9]*)", verify_only)
-        self.assertIn(
-            'echo "ANDROID_BUILD_NUMBER=$ANDROID_BUILD_NUMBER" >> "$CM_ENV"',
-            verify_only,
-        )
-        self.assertIn("--build-name=\"$APP_VERSION\"", verify_only)
-        self.assertIn("--build-number=\"$ANDROID_BUILD_NUMBER\"", verify_only)
-        self.assertIn("--obfuscate", verify_only)
-        self.assertIn("--split-debug-info=build/symbols/android", verify_only)
-        self.assertIn("dart run sentry_dart_plugin", verify_only)
-        self.assertIn("build/**/outputs/**/*.aab", verify_only)
-        self.assertIn("build/symbols/android/**", verify_only)
+        Going through `flutter build ... --dart-define-from-file` is what
+        rewrites that file, so the script must never be reduced to a plain
+        build invocation.
+        """
+        script = self.release_script
 
-    def test_codemagic_android_release_uses_package_wide_build_number(self):
-        release = _job_block(self.codemagic, "android-release")
-        resolver_start = release.index("- name: Resolve Android build number")
-        resolver_end = release.index("- name: Build Android App Bundle")
-        resolver = release[resolver_start:resolver_end]
+        self.assertEqual(2, script.count('--dart-define-from-file="$ENV_FILE"'))
+        self.assertIn("generate_ios_env.sh", script)
+        self.assertIn("DartDefines.xcconfig", script)
 
-        self.assertIn("google-play get-latest-build-number", resolver)
-        self.assertIn('--package-name "$GOOGLE_PLAY_PACKAGE_NAME"', resolver)
-        self.assertNotIn("--tracks=", resolver)
-        self.assertIn("ANDROID_BUILD_NUMBER=$((LATEST_BUILD_NUMBER + 1))", resolver)
-        self.assertIn("track: $GOOGLE_PLAY_TRACK", release)
-
-    def test_codemagic_release_builders_pin_the_verified_flutter_sdk(self):
-        expected_version = "3.41.4"
-
-        self.assertNotIn("flutter: stable", self.codemagic)
-        self.assertEqual(
-            3,
-            self.codemagic.count(f"flutter: {expected_version}"),
-        )
-        self.assertIn(
-            f"flutter-version: {expected_version}",
-            self.release_ready,
-        )
-        self.assertIn(
-            f"flutter-version: {expected_version}",
-            self.workflow,
-        )
+    def test_no_codemagic_configuration_remains(self):
+        """Codemagic was removed; a stray config would resurrect a dead path."""
+        self.assertFalse((ROOT / "codemagic.yaml").exists())
 
     def test_sentry_dart_plugin_keeps_source_upload_disabled(self):
         self.assertIn("sentry_dart_plugin: ^3.4.0", self.pubspec)

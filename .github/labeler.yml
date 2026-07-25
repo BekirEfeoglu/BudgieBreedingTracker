@@ -98,7 +98,6 @@
   - changed-files:
       - any-glob-to-any-file:
           - ".github/**"
-          - "codemagic.yaml"
           - "scripts/**"
 
 "type: docs":
