@@ -50,7 +50,13 @@ List<OffspringResult> _combineResults(List<_RawResult> rawResults) {
   // Resolve compound phenotype names via EpistasisEngine
   const epistasis = EpistasisEngine();
 
-  return sorted.where((r) => r.probability * normalizer > 0.001).map((r) {
+  return sorted
+      .where(
+        (r) =>
+            r.probability * normalizer >
+            GeneticsConstants.probabilityMinThreshold,
+      )
+      .map((r) {
     final visualIds = r.expressedMutationIds.toSet();
 
     // Derive doubleFactorIds from structural allelic-series tagging plus the

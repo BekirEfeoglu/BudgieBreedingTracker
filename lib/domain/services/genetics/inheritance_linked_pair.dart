@@ -136,7 +136,7 @@ List<_RawResult> _calculateGenericLinkedPair({
   for (final fg in fatherGametes) {
     for (final mg in motherGametes) {
       final prob = fg.prob * mg.prob;
-      if (prob < 0.0001) continue;
+      if (prob < GeneticsConstants.linkedPairMinThreshold) continue;
 
       final sex = mg.isW ? OffspringSex.female : OffspringSex.male;
 

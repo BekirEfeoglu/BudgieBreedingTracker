@@ -220,4 +220,10 @@ abstract final class GeneticsConstants {
   /// Minimum probability for an offspring result to appear in the final list.
   /// Below this, results are filtered as numerical noise.
   static const double probabilityMinThreshold = 0.001;
+
+  /// Minimum probability for a linked-pair gamete branch to be kept.
+  /// An order of magnitude below [probabilityMinThreshold] because these are
+  /// intermediate gamete combinations, not final results — they still have to
+  /// combine with the other parent before being filtered for display.
+  static const double linkedPairMinThreshold = 0.0001;
 }

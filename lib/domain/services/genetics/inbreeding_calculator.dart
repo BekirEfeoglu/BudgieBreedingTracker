@@ -77,13 +77,18 @@ class InbreedingCalculator {
     final memo = <String, double>{};
     double coefficient = 0.0;
     for (final ancestorId in commonAncestors) {
-      final fA = _inbreedingOf(ancestorId, ancestors, memo, <String>{});
+      final fA = _inbreedingOf(
+        ancestorId,
+        ancestors,
+        memo,
+        <String>{},
+        onDepthLimit: onDepthLimit,
+      );
       for (final pf in fatherPaths[ancestorId]!) {
         for (final pm in motherPaths[ancestorId]!) {
           if (_sharesOnly(pf, pm, ancestorId)) {
             coefficient +=
-                math.pow(0.5, (pf.length - 1) + (pm.length - 1) + 1) *
-                (1 + fA);
+                math.pow(0.5, (pf.length - 1) + (pm.length - 1) + 1) * (1 + fA);
           }
         }
       }
@@ -155,8 +160,9 @@ class InbreedingCalculator {
     String id,
     Map<String, Bird> ancestors,
     Map<String, double> memo,
-    Set<String> computing,
-  ) {
+    Set<String> computing, {
+    void Function()? onDepthLimit,
+  }) {
     final cached = memo[id];
     if (cached != null) return cached;
     if (computing.contains(id)) return 0.0; // cycle guard
@@ -170,18 +176,40 @@ class InbreedingCalculator {
     computing.add(id);
     final fatherPaths = <String, List<Set<String>>>{};
     final motherPaths = <String, List<Set<String>>>{};
-    _collectPaths(bird.fatherId!, ancestors, fatherPaths, const {}, 0);
-    _collectPaths(bird.motherId!, ancestors, motherPaths, const {}, 0);
+    // Propagate the truncation signal: an ancestor whose own pedigree exceeds
+    // maxAncestorDepth under-estimates F_A in the (1 + F_A) term, so the
+    // subject's coefficient is a lower bound and must be reported as such.
+    _collectPaths(
+      bird.fatherId!,
+      ancestors,
+      fatherPaths,
+      const {},
+      0,
+      onDepthLimit: onDepthLimit,
+    );
+    _collectPaths(
+      bird.motherId!,
+      ancestors,
+      motherPaths,
+      const {},
+      0,
+      onDepthLimit: onDepthLimit,
+    );
 
     double f = 0.0;
     for (final ancestorId in fatherPaths.keys.where(motherPaths.containsKey)) {
-      final fA = _inbreedingOf(ancestorId, ancestors, memo, computing);
+      final fA = _inbreedingOf(
+        ancestorId,
+        ancestors,
+        memo,
+        computing,
+        onDepthLimit: onDepthLimit,
+      );
       for (final pf in fatherPaths[ancestorId]!) {
         for (final pm in motherPaths[ancestorId]!) {
           if (_sharesOnly(pf, pm, ancestorId)) {
             f +=
-                math.pow(0.5, (pf.length - 1) + (pm.length - 1) + 1) *
-                (1 + fA);
+                math.pow(0.5, (pf.length - 1) + (pm.length - 1) + 1) * (1 + fA);
           }
         }
       }
