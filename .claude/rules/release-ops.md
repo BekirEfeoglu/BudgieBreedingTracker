@@ -20,6 +20,12 @@ Store yuklemesi her iki platformda da manuel bir kullanici islemidir.
 - `release-ready.yml` signed AAB + Sentry symbol'lerini **artifact** olarak
   uretir; publishing blogu veya Google Play credential referansi EKLEME —
   artifact'i indirip Play'e kendin yuklersin
+- `android-symbols-<sha>` artifact'i native debug symbol'lerinin YANINDA
+  `build/app/obfuscation.map.json`'u da tasir; `flutter symbolize` Dart
+  frame'lerini bu harita olmadan cozemez (Sentry kendi kopyasini plugin
+  uzerinden alir, bu artifact local/offline yol icin). Iki path verildigi icin
+  artifact koku `build/`'dir: girdiler `symbols/android/...` ve
+  `app/obfuscation.map.json` olarak acilir
 - `release-ready.yml` ve Xcode Cloud Flutter SDK'sini `3.41.4`'e pinli tutar;
   `stable` kanal drift'ini release aninda kabul etme. 2026-07-18'de bir release
   builder `stable` uzerinden 3.44.6'ya kaydi ve locked `lucide_icons 0.257.0`

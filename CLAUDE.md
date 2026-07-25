@@ -156,7 +156,7 @@ There is no hosted release pipeline. Nothing publishes to a store automatically.
 
 | Platform | Path | Produces |
 | --- | --- | --- |
-| Android | `release-ready.yml` (manual `workflow_dispatch`) | Signed AAB + Sentry symbols as **artifacts**; publishes nothing — download and upload to Play yourself |
+| Android | `release-ready.yml` (manual `workflow_dispatch`) | Signed AAB + debug symbols **and** `build/app/obfuscation.map.json` as **artifacts**; publishes nothing — download and upload to Play yourself |
 | Android (local) | `scripts/build_release.sh android` | Same build locally, for verification |
 | iOS | `scripts/build_release.sh ios` | `build/ios/archive/Runner.xcarchive` — the build stops at the archive (nothing generates an export-options plist locally); distribute with Distribute App from Xcode Organizer |
 

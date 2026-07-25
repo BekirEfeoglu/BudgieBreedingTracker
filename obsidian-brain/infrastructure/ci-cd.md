@@ -56,7 +56,7 @@ to a store automatically; every upload is a manual user action.
 
 | Platform | Path | Produces |
 |----------|------|----------|
-| Android | `release-ready.yml` (manual) | Signed AAB + Sentry symbols as artifacts |
+| Android | `release-ready.yml` (manual) | Signed AAB + debug symbols and the Dart obfuscation map as artifacts |
 | Android (local) | `scripts/build_release.sh android` | Same build, for verification |
 | iOS | `scripts/build_release.sh ios` | `build/ios/archive/Runner.xcarchive` |
 

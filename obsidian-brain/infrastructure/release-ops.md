@@ -9,7 +9,7 @@ Source: `.claude/rules/release-ops.md`
 | GitHub Actions `ci.yml` | — | Validation, smoke builds |
 | `release-ready.yml` | Android | Manual signed AAB + symbols as artifacts; publishes nothing |
 | `scripts/build_release.sh android` | Android | Local equivalent, for verification |
-| `scripts/build_release.sh ios` | iOS | IPA; distributed manually via Xcode Organizer / `xcrun altool` |
+| `scripts/build_release.sh ios` | iOS | `build/ios/archive/Runner.xcarchive`; distributed manually via Xcode Organizer's Distribute App |
 | Xcode Cloud | iOS | Build status (build-only) — not a release path |
 | GitHub Pages | Web | `docs/` deployment |
 
@@ -34,10 +34,12 @@ Current version: `1.1.7+56` (verify against `pubspec.yaml` — this drifts every
 1. `python3 scripts/check_remote_status.py` — main must be green
 2. Bump `pubspec.yaml`; for Android confirm the build number beats the
    package-wide Play maximum (see below)
-3. Android: manual trigger `release-ready.yml` → signed AAB + Dart symbols as
-   artifacts. iOS: `scripts/build_release.sh ios` → IPA
-4. Upload manually — Play Console for the AAB, Xcode Organizer / `xcrun altool`
-   for the IPA
+3. Android: manual trigger `release-ready.yml` → signed AAB, debug symbols and
+   the Dart obfuscation map as artifacts. iOS: `scripts/build_release.sh ios` →
+   `build/ios/archive/Runner.xcarchive` (the build stops at the archive; no
+   export-options plist is generated locally)
+4. Upload manually — Play Console for the AAB, Xcode Organizer's Distribute App
+   for the archive
 5. Promote in store console after QA
 
 **Play version codes are package-global**, reserved across tracks and the
