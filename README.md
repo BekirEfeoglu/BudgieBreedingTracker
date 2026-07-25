@@ -301,11 +301,11 @@ GitHub Actions CI pipeline runs on every PR:
 | Check | Description |
 | --- | --- |
 | Flutter Analyze | Static analysis with `--no-fatal-infos` |
-| Flutter Test | 8,930+ tests with coverage upload to Codecov |
+| Flutter Test | 11,700+ tests with coverage upload to Codecov |
 | Golden Tests | Pixel-level widget regression checks |
-| Scripts Test | Python script tests (>=98% coverage) |
+| Scripts Test | Python script tests (>=99% coverage) |
 | L10n Sync | Verifies TR/EN/DE translation key parity |
-| Code Quality | Anti-pattern scan across 21 categories |
+| Code Quality | Anti-pattern scan across 28 checker categories |
 | Rules Sync | CLAUDE.md stats verification against codebase |
 | Android Build | Debug APK build verification |
 | iOS Build | No-codesign build verification |
