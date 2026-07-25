@@ -82,6 +82,27 @@ class TestCheckObsidianBrain(unittest.TestCase):
             with patch.object(cob, "ROOT", root), patch.object(cob, "WIKI_DIR", wiki):
                 self.assertEqual(cob.main(), 1)
 
+    def test_allows_gitignored_generated_file_references(self):
+        """Generated, gitignored paths are absent from a fresh checkout.
+
+        They are still worth documenting — ios/Flutter/DartDefines.xcconfig is
+        named in the release docs precisely because it goes stale and can ship a
+        DSN-less build. Without this allowance the lint passes locally (where
+        the file exists) and fails in CI, which is how it was found.
+        """
+        import check_obsidian_brain as cob
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            wiki = _write_valid_wiki(root)
+            (wiki / "topic.md").write_text(
+                "# Topic\n\nXcode reads `ios/Flutter/DartDefines.xcconfig`.\n",
+                encoding="utf-8",
+            )
+
+            with patch.object(cob, "ROOT", root), patch.object(cob, "WIKI_DIR", wiki):
+                self.assertEqual(cob.main(), 0)
+
     def test_returns_0_when_inline_file_reference_exists(self):
         import check_obsidian_brain as cob
 

@@ -28,6 +28,20 @@ FILE_REF_PREFIXES = (
     "test/",
 )
 FILE_REF_SKIP_MARKERS = ("*", "...", "<", ">", "{", "}", "YYYY", "path/")
+
+# Paths that exist at runtime but are deliberately gitignored, so they are
+# absent from a fresh checkout. They are worth documenting precisely because
+# they are generated and can go stale — ios/Flutter/DartDefines.xcconfig held a
+# four-month-old legacy OAuth client ID and no SENTRY_DSN, which is why the
+# release docs name it. Rewording the docs to dodge this check would delete the
+# warning rather than fix it, so allow the path instead.
+GITIGNORED_FILE_REFS = frozenset(
+    {
+        "ios/Flutter/DartDefines.xcconfig",
+        "ios/Flutter/Env.xcconfig",
+        "ios/Flutter/Generated.xcconfig",
+    }
+)
 REQUIRED_DECISION_SECTIONS = {
     "features/community.md": (
         "## Current Decisions",
@@ -118,6 +132,8 @@ def _candidate_file_refs(text: str) -> list[str]:
             if not token.startswith(FILE_REF_PREFIXES):
                 continue
             if any(marker in token for marker in FILE_REF_SKIP_MARKERS):
+                continue
+            if token in GITIGNORED_FILE_REFS:
                 continue
             refs.append(token)
     return refs
