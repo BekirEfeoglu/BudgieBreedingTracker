@@ -777,3 +777,53 @@ class TestCertificatePinFreshness(unittest.TestCase):
             with patch.object(vs, "ROOT", root):
                 results = vs.check_certificate_pin_freshness(today=date(2026, 9, 20))
             self.assertFalse(any(passed for _, passed, _ in results), results)
+
+
+class TestChecksFailClosedOnMissingFiles(unittest.TestCase):
+    """Bir kontrolun inceledigi dosya YOKKEN sessizce gecmesi en pahali hata
+    bicimidir: dosya tasinir, kontrol hicbir sey bulamaz, `security-audit`
+    yesil kalir.
+
+    Ayrim kasitli. Bir dosyanin ICERIGINI iddia eden kontroller (release
+    script'i, edge header'lari, JWT config, pin listesi, .gitignore, pgaudit,
+    premium dogrulama, auth sertlestirme) dosya yoksa BASARISIZ olmali.
+    Bir seyin YOKLUGUNU iddia eden kontrol (client'ta service-role anahtari)
+    bos agacta hakli olarak gecer — sizacak kod yoktur.
+    """
+
+    CONTENT_CHECKS = (
+        "check_release_obfuscation",
+        "check_edge_function_security_headers",
+        "check_edge_function_jwt_verification",
+        "check_certificate_pinning",
+        "check_gitignore_secrets",
+        "check_no_secrets_committed",
+        "check_pgaudit_migration",
+        "check_premium_sync_server_verified",
+        "check_supabase_auth_hardening",
+    )
+    ABSENCE_CHECKS = ("check_no_service_role_in_client",)
+
+    def test_content_checks_fail_when_their_subject_is_missing(self):
+        import verify_security as vs
+
+        with tempfile.TemporaryDirectory() as d:
+            with patch.object(vs, "ROOT", Path(d)):
+                for name in self.CONTENT_CHECKS:
+                    with self.subTest(check=name):
+                        results = getattr(vs, name)()
+                        self.assertTrue(results, f"{name} returned no results")
+                        self.assertTrue(
+                            any(not ok for _, ok, _ in results),
+                            f"{name} passed with nothing to inspect",
+                        )
+
+    def test_absence_checks_pass_on_an_empty_tree(self):
+        import verify_security as vs
+
+        with tempfile.TemporaryDirectory() as d:
+            with patch.object(vs, "ROOT", Path(d)):
+                for name in self.ABSENCE_CHECKS:
+                    with self.subTest(check=name):
+                        results = getattr(vs, name)()
+                        self.assertTrue(all(ok for _, ok, _ in results))
