@@ -4,6 +4,35 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-26] infrastructure | Gate parity guarded, test noise silenced, security script measured
+
+**Gate parity** — eighth family, and it reproduces a bug that was real
+yesterday: `verify_migration_drift.py` ran in CI's `code-quality` but not in
+`run_local_quality_gate.sh`, so a migration structure problem only surfaced
+after push. Nothing tied the two lists together. Now compared one-way (the gate
+may run more — `verify_rules.py` lives in `rules-sync`). Verified non-vacuous by
+deleting the line again and watching it go red.
+
+**Test stdout: 5,161 lines → 49.** Three suites drive scripts whose whole job is
+printing a report, so the pre-commit gate log ended with a fixture run's
+legitimate `HATA: ... bulunamadi` — a red-looking line under a green gate.
+Silenced per module; unittest writes results to stderr, and the tests that
+assert on output still capture into their own buffer.
+
+**`verify_security.py` is now measured** instead of excluded. Its exclusion
+comment claimed "not unit-testable business logic"; it has 31 unit tests. The
+new test asserts a real property rather than chasing lines: every check that
+asserts a file's CONTENT must fail when that file is missing — the expensive
+failure mode is a moved file leaving `security-audit` green. Deliberately split
+out the one check that asserts an *absence* (`no_service_role_in_client`), which
+correctly passes on an empty tree. 89% → 92%, and the total still clears 99%
+with it included.
+
+Also corrected in the public README: the coverage threshold (98→99), the test
+count (8,930+ → 11,700+) and the anti-pattern category count (21 → 28). The
+98→99 sweep had missed it because the search was scoped to CLAUDE.md,
+`.claude/rules` and the wiki — never the repo root.
+
 ## [2026-07-25] infrastructure | Spacing scale derived, local gate matched to CI, coverage 100%
 
 **The Spacing scanner now derives its scale from `AppSpacing`** instead of
@@ -159,24 +188,4 @@ it came from, so collapsing this to one upload would break de-obfuscation on the
 other two ABIs. Do not "optimize" it. The 64-byte size difference was chased in
 the entry above and is explained: the plugin prepends a debug-id marker pair to
 the JSON array.
-
-## [2026-07-25] infrastructure | Storage bucket ids guarded; migration-drift coverage 93% → 100%
-
-Third member of the repeated-literal family after release artifacts and Edge
-Function names. A bucket id is written in `SupabaseConstants`, provisioned by a
-migration, and described in `assets-images.md`, with nothing tying the three
-together — and a constant naming an unprovisioned bucket fails at *upload* time,
-not at build time. `verify_rules.py` § Storage Buckets now compares constants ↔
-migrations two-way (reading both real shapes: `storage.buckets` DDL/DML and
-`bucket_id = '…'` in objects policies) and requires every constant to appear in
-`assets-images.md`. The doc direction is one-way on purpose: that rule
-deliberately names `health-records` and `chat-attachments` as buckets that do
-NOT exist, so a reverse check would flag its own warnings. All three surfaces
-currently agree on exactly eight buckets; both checks verified non-vacuous.
-
-`verify_migration_drift.py` went 93% → 100% with tests for every
-`load_applied_baseline` rejection branch (field count, sha256 shape, malformed
-filename, remote-version shape, duplicate local, duplicate remote), the
-malformed-JSON ledger fallback, and both `main()` baseline-path branches. Script
-total holds at 98%.
 

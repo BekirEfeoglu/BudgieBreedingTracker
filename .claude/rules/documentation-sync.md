@@ -73,6 +73,7 @@ together. Direction matters: **two-way** means both sides must match exactly;
 | Route Targets | `AppRoutes` path values unique; string `context.push`/`go` targets → a declared route | one-way | when a user taps it (404) |
 | Supabase Tables | `*Table` constants → a `create table` in migrations | one-way | query time (Postgres error) |
 | Supabase Columns | `*Col<Name>` constants → a column declared in migrations | one-way | query time (Postgres error) |
+| Quality Gate Parity | CI `code-quality` steps → `run_local_quality_gate.sh` | one-way | after push — the pre-commit gate is blind to it |
 
 Two deliberate non-rules, both instances of missing-name != missing-feature:
 - Route constants are NOT required to be referenced. GoRouter composes nested

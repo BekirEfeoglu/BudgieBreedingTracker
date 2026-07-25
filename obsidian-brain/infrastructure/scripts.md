@@ -36,7 +36,9 @@ baseline problem only surfaced after push.
 
 `scripts/verify_security.py` (backs the `security-audit` CI job), `scripts/test_app_store_config.py`, `scripts/install_git_hooks.sh`, `scripts/run_breeding_egg_regression.sh` also exist on disk.
 
-`verify_security.py` covers **40 controls**. Two are time- or release-path
+`verify_security.py` covers **40 controls** and is measured by the coverage
+gate like every other script (it was excluded as "not unit-testable" until
+2026-07-25; it has 31 unit tests). Two controls are time- or release-path
 dependent and worth knowing about:
 
 - `check_release_obfuscation` — since Codemagic was removed (2026-07-25) the

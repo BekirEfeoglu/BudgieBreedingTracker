@@ -6,6 +6,26 @@ TLS pin freshness gate.
 
 ---
 
+## [2026-07-25] infrastructure | Storage bucket ids guarded; migration-drift coverage 93% → 100%
+
+Third member of the repeated-literal family after release artifacts and Edge
+Function names. A bucket id is written in `SupabaseConstants`, provisioned by a
+migration, and described in `assets-images.md`, with nothing tying the three
+together — and a constant naming an unprovisioned bucket fails at *upload* time,
+not at build time. `verify_rules.py` § Storage Buckets now compares constants ↔
+migrations two-way (reading both real shapes: `storage.buckets` DDL/DML and
+`bucket_id = '…'` in objects policies) and requires every constant to appear in
+`assets-images.md`. The doc direction is one-way on purpose: that rule
+deliberately names `health-records` and `chat-attachments` as buckets that do
+NOT exist, so a reverse check would flag its own warnings. All three surfaces
+currently agree on exactly eight buckets; both checks verified non-vacuous.
+
+`verify_migration_drift.py` went 93% → 100% with tests for every
+`load_applied_baseline` rejection branch (field count, sha256 shape, malformed
+filename, remote-version shape, duplicate local, duplicate remote), the
+malformed-JSON ledger fallback, and both `main()` baseline-path branches. Script
+total holds at 98%.
+
 ## [2026-07-25] infrastructure | Edge Function names guarded, obfuscation map shipped, --fix hint made honest
 
 Three follow-ups to the entry below. (1) `release-ready.yml` now uploads
