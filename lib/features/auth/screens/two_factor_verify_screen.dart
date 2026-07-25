@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
+import 'package:budgie_breeding_tracker/core/utils/sentry_error_filter.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/auth/mfa_lockout_service.dart';
@@ -80,6 +82,31 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
   static bool _shouldLockout(int attempts) =>
       attempts >= 5 && attempts % 5 == 0;
 
+  /// Reports an unreachable/failing `mfa-lockout` Edge Function to Sentry.
+  ///
+  /// Both call sites already fail closed with a short cooldown, so the user is
+  /// not let through — but the SERVER-side `failed_attempts` counter is the
+  /// control that makes a 6-digit TOTP (~1M space) infeasible to brute force,
+  /// and while this fails it never increments (the local counter resets across
+  /// reinstalls). An auth control degrading silently is exactly what
+  /// observability.md routes to Sentry as an Auth/MFA failure, not a
+  /// breadcrumb. Expected user conditions (offline) are dropped by the
+  /// centralized filter; no code, attempt count or user id is attached.
+  static void _reportLockoutServiceFailure(
+    Object error,
+    StackTrace stackTrace,
+  ) {
+    if (isExpectedSentryExclusion(error)) return;
+    Sentry.captureException(
+      error,
+      stackTrace: stackTrace,
+      withScope: (scope) {
+        scope.setTag('feature', 'auth');
+        scope.setTag('auth_method', 'mfa');
+      },
+    );
+  }
+
   bool _isVerifying = false;
   String? _error;
   int _failedAttempts = 0;
@@ -139,6 +166,7 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
         e,
         st,
       );
+      _reportLockoutServiceFailure(e, st);
       if (mounted) {
         setState(() {
           _error = 'auth.2fa_server_unavailable'.tr();
@@ -274,6 +302,7 @@ class _TwoFactorVerifyScreenState extends ConsumerState<TwoFactorVerifyScreen> {
     } catch (e, st) {
       serverContactFailed = true;
       AppLogger.error('$_tag Server failure recording failed: $e', e, st);
+      _reportLockoutServiceFailure(e, st);
     }
 
     if (!mounted) return;

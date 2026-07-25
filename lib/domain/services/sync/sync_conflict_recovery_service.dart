@@ -20,10 +20,27 @@ import 'package:budgie_breeding_tracker/data/models/notification_schedule_model.
 import 'package:budgie_breeding_tracker/data/models/photo_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/data/repositories/sync_conflict_payload_codec.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 /// Non-payload identity used to verify that a restored record left the sync
 /// queue. Record values never cross this boundary.
 typedef RestoredSyncRecordKey = ({String tableName, String recordId});
+
+/// Payload-free marker exception used to surface "retry local" restore
+/// failures to Sentry.
+///
+/// The raw decrypt/parse/Drift error is deliberately NOT reported: those
+/// messages can contain values from the decrypted payload. Only the outcome
+/// code travels, per background-sync.md ("tablo, obfuscated record ID, sonuç
+/// kodu ve aggregate sayılar").
+class SyncConflictRestoreFailure implements Exception {
+  const SyncConflictRestoreFailure(this.code);
+
+  final String code;
+
+  @override
+  String toString() => 'SyncConflictRestoreFailure($code)';
+}
 
 /// Aggregate outcome for a bulk "retry local" request.
 class SyncConflictRetryResult {
@@ -154,10 +171,15 @@ class SyncConflictRecoveryService {
             recordId: conflict.recordId,
             userId: userId,
           );
-    } on SyncConflictPayloadException catch (e) {
+    } on SyncConflictPayloadException catch (e, st) {
       AppLogger.warning(
         '[ConflictRecovery] Snapshot rejected (${e.code}) for '
         '${conflict.tableName}/${AppLogger.obfuscate(conflict.recordId)}',
+      );
+      _reportRestoreFailure(
+        code: e.code,
+        conflict: conflict,
+        stackTrace: st,
       );
       return _RestoreOutcome.failed;
     }
@@ -189,15 +211,60 @@ class SyncConflictRecoveryService {
         if (updated != 1) return _RestoreOutcome.alreadyResolved;
         return _RestoreOutcome.restored;
       });
-    } catch (_) {
+    } on SyncConflictPayloadException catch (e, st) {
+      // Identity mismatch / unsupported table thrown inside the transaction.
+      // Kept separate from the generic catch below so the code — the only
+      // signal allowed out — stays specific.
+      AppLogger.warning(
+        '[ConflictRecovery] Restore rejected (${e.code}) for '
+        '${conflict.tableName}/${AppLogger.obfuscate(conflict.recordId)}',
+      );
+      _reportRestoreFailure(code: e.code, conflict: conflict, stackTrace: st);
+      return _RestoreOutcome.failed;
+    } catch (_, st) {
       // Never attach the raw exception: model parsing/database messages can
       // contain values from the decrypted payload.
       AppLogger.warning(
         '[ConflictRecovery] Restore failed for '
         '${conflict.tableName}/${AppLogger.obfuscate(conflict.recordId)}',
       );
+      _reportRestoreFailure(
+        code: 'restore_transaction_failed',
+        conflict: conflict,
+        stackTrace: st,
+      );
       return _RestoreOutcome.failed;
     }
+  }
+
+  /// Reports a failed "retry local" restore — a data-loss class event.
+  ///
+  /// This is the user's explicit last chance to recover an edit that
+  /// server-wins already discarded from Drift. When the snapshot is rejected
+  /// (decrypt/decode/identity) or the restore transaction fails, that local
+  /// edit is gone for good and the UI only shows a soft warning, so the cause
+  /// must be visible in production monitoring.
+  ///
+  /// Only non-payload identity crosses this boundary: table name, obfuscated
+  /// record id and the outcome code.
+  void _reportRestoreFailure({
+    required String code,
+    required ConflictHistory conflict,
+    required StackTrace stackTrace,
+  }) {
+    Sentry.captureException(
+      SyncConflictRestoreFailure(code),
+      stackTrace: stackTrace,
+      withScope: (scope) {
+        scope.setTag('feature', 'sync');
+        scope.setTag('sync_phase', 'merge');
+        scope.setContexts('sync_conflict', {
+          'table': conflict.tableName,
+          'recordId': AppLogger.obfuscate(conflict.recordId),
+          'code': code,
+        });
+      },
+    );
   }
 
   Future<void> _saveLocal({

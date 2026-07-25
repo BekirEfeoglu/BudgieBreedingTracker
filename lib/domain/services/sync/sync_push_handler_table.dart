@@ -40,11 +40,16 @@ Future<void> _pushSingleTable(Ref ref, String userId, String table) async {
         AppLogger.warning('[SyncOrchestrator] Unknown table for retry: $table');
     }
   } catch (e, st) {
-    AppLogger.error('[SyncOrchestrator] Retry push failed for $table', e, st);
+    reportPushFailure('SyncOrchestrator retry $table', e, st);
   }
 }
 
 /// Runs push operations in parallel with individual error isolation.
+///
+/// This is the ONLY catch for the parallel layers (L1 birds/nests, L3
+/// clutches/incubations, L6 leaf entities) — those `_pushLayerN` methods have
+/// no try/catch of their own — so it must report through [reportPushFailure]
+/// like the sequential layers do, or most tables would stay silent.
 Future<List<PushStats>> _safeParallelPush(
   List<Future<PushStats> Function()> tasks,
   String layerLabel,
@@ -54,11 +59,7 @@ Future<List<PushStats>> _safeParallelPush(
     try {
       return await task();
     } catch (e, st) {
-      AppLogger.error(
-        '[SyncOrchestrator] Push $layerLabel partial failure',
-        e,
-        st,
-      );
+      reportPushFailure('SyncOrchestrator $layerLabel', e, st);
       return null;
     }
   });

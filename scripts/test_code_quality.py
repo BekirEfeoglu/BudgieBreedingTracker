@@ -983,6 +983,44 @@ class TestCheckBareCatch(unittest.TestCase):
         cat = _run_checker(check_bare_catch, lines, self.NORMAL_PATH)
         self.assertEqual(len(cat.findings), 0)
 
+    def test_no_finding_when_report_push_failure(self):
+        """reportPushFailure() is the push-phase twin of reportPullFailure."""
+        lines = [
+            "  } catch (e, st) {",
+            "    ctx.layerErrors++;",
+            "    reportPushFailure('SyncOrchestrator L4 (eggs)', e, st);",
+            "  }",
+        ]
+        cat = _run_checker(check_bare_catch, lines, self.NORMAL_PATH)
+        self.assertEqual(len(cat.findings), 0)
+
+    def test_no_finding_when_private_report_failure_helper(self):
+        """A private `_report<X>Failure(...)` sink counts too: conflict paths
+        must report a payload-free synthetic exception, so they cannot call
+        Sentry.captureException inline with the raw error."""
+        lines = [
+            "  } on SyncConflictPayloadException catch (e, st) {",
+            "    _reportSnapshotFailure(",
+            "      code: e.code,",
+            "      tableName: tableName,",
+            "      stackTrace: st,",
+            "    );",
+            "    throw DatabaseException('nope', code: e.code);",
+            "  }",
+        ]
+        cat = _run_checker(check_bare_catch, lines, self.NORMAL_PATH)
+        self.assertEqual(len(cat.findings), 0)
+
+    def test_finding_when_report_helper_is_not_a_failure_sink(self):
+        """The convention is narrow: a plain `report(...)` call is not a sink."""
+        lines = [
+            "  } catch (e, st) {",
+            "    analytics.report(e);",
+            "  }",
+        ]
+        cat = _run_checker(check_bare_catch, lines, self.NORMAL_PATH)
+        self.assertEqual(len(cat.findings), 1)
+
     def test_no_finding_when_applogger_after_rollback_within_window(self):
         """Rollback-then-log body: AppLogger.error trails the rollback but
         still falls inside the 8-line lookahead window."""

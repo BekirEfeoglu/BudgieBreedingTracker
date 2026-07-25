@@ -49,9 +49,24 @@ mixin _AuthAccountMixin {
         hasVerifiedFactor = factors.totp.any(
           (f) => f.status == FactorStatus.verified,
         );
-      } catch (inner) {
+      } catch (inner, innerSt) {
         AppLogger.warning(
           '[Auth] MFA factor fallback failed after AAL read error: $inner',
+        );
+        // Double failure: neither the assurance level NOR the enrolled-factor
+        // list could be read, so this branch falls through to the legacy path
+        // and lets an MFA-enrolled user's account deletion / password change
+        // proceed without a second factor. It is the branch that decides
+        // whether we fail closed, so a silent warning is not enough —
+        // observability.md routes a fail-open catch that weakens an auth
+        // control to Sentry.
+        Sentry.captureException(
+          inner,
+          stackTrace: innerSt,
+          withScope: (scope) {
+            scope.setTag('feature', 'auth');
+            scope.setTag('auth_method', 'mfa');
+          },
         );
       }
       if (hasVerifiedFactor) {

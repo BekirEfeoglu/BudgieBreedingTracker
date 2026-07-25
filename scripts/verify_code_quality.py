@@ -731,9 +731,13 @@ def check_bare_catch(lines: List[str], filepath: Path, cat: Category):
             continue
         if "handleError" in lookahead or "markError" in lookahead or "markSyncError" in lookahead:
             continue
-        # reportPullFailure() (base_repository.dart) already does both
-        # AppLogger.error + Sentry.captureException — recognize it as a sink.
-        if "reportPullFailure" in lookahead:
+        # `report<Something>Failure(...)` is the project's delegating-sink
+        # naming convention: the helper itself does AppLogger.error and/or
+        # Sentry.captureException. Covers reportPullFailure/reportPushFailure
+        # (base_repository.dart) and the conflict store/recovery
+        # _reportSnapshotFailure/_reportRestoreFailure helpers, which must
+        # report a payload-free synthetic exception instead of the raw error.
+        if re.search(r'report\w*Failure\s*\(', lookahead):
             continue
         # Skip short rethrow/return/state patterns (common in Notifiers)
         short_body = "".join(lines[i:min(i + 5, len(lines))]).strip()

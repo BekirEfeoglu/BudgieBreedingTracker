@@ -47,7 +47,7 @@ class SyncPushHandler {
       await _ref.read(profileRepositoryProvider).pushPending(userId);
     } catch (e, st) {
       ctx.layerErrors++;
-      AppLogger.error('[SyncOrchestrator] Push L0 (profile) failed', e, st);
+      reportPushFailure('SyncOrchestrator L0 (profile)', e, st);
     }
   }
 
@@ -100,11 +100,7 @@ class SyncPushHandler {
     } catch (e, st) {
       ctx.layerErrors++;
       ctx.l2Failed = true;
-      AppLogger.error(
-        '[SyncOrchestrator] Push L2 (breeding_pairs) failed',
-        e,
-        st,
-      );
+      reportPushFailure('SyncOrchestrator L2 (breeding_pairs)', e, st);
     }
   }
 
@@ -162,7 +158,7 @@ class SyncPushHandler {
     } catch (e, st) {
       ctx.layerErrors++;
       ctx.l4Failed = true;
-      AppLogger.error('[SyncOrchestrator] Push L4 (eggs) failed', e, st);
+      reportPushFailure('SyncOrchestrator L4 (eggs)', e, st);
     }
   }
 
@@ -182,7 +178,7 @@ class SyncPushHandler {
       ctx.addResult(await _ref.read(chickRepositoryProvider).pushAll(userId));
     } catch (e, st) {
       ctx.layerErrors++;
-      AppLogger.error('[SyncOrchestrator] Push L5 (chicks) failed', e, st);
+      reportPushFailure('SyncOrchestrator L5 (chicks)', e, st);
     }
   }
 
@@ -246,11 +242,7 @@ class SyncPushHandler {
       );
     } catch (e, st) {
       ctx.layerErrors++;
-      AppLogger.error(
-        '[SyncOrchestrator] Push L7 (event_reminders) failed',
-        e,
-        st,
-      );
+      reportPushFailure('SyncOrchestrator L7 (event_reminders)', e, st);
     }
   }
 

@@ -148,6 +148,29 @@ void reportPullFailure(String logTag, Object error, StackTrace stackTrace) {
   );
 }
 
+/// Push-phase counterpart to [reportPullFailure]: logs the failure and reports
+/// UNEXPECTED errors to Sentry with `sync_phase: 'push'`.
+///
+/// Same [AppException] filter — a transient `NetworkException` or a per-row
+/// validation error is ordinary sync noise that the retry/backoff machinery
+/// already owns. What this exists for is the class the filter lets through:
+/// `TypeError`, serialization faults, Drift corruption. [pushPendingBatched]
+/// catches only `on AppException`, so such an error escapes to the push
+/// handler's layer catches, which used to swallow it into a bare
+/// `AppLogger.error`. A deterministic corruption-class push failure then loops
+/// silently for 24h/7 retries until [ValidatedSyncMixin.clearStaleErrors]
+/// discards the rows — previously the DISCARD was the first and only Sentry
+/// signal, long after the data was unrecoverable.
+void reportPushFailure(String logTag, Object error, StackTrace stackTrace) {
+  AppLogger.error('[$logTag] Push failed', error, stackTrace);
+  if (error is AppException) return;
+  Sentry.captureException(
+    error,
+    stackTrace: stackTrace,
+    withScope: (scope) => scope.setTag('sync_phase', 'push'),
+  );
+}
+
 mixin SyncableRepository<T> on BaseRepository<T> {
   static const _uuid = Uuid();
 
