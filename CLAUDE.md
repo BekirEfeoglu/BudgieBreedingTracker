@@ -88,7 +88,7 @@ scripts/_rules_fixers.py                 # Auto-fix logic for verify_rules.py --
 scripts/_rules_utils.py                  # Shared utilities for rules scripts
 ```
 
-### Script Tests (CI: scripts-test job, >=98% coverage)
+### Script Tests (CI: scripts-test job, >=99% coverage)
 ```bash
 scripts/test_l10n_sync.py               # Tests for check_l10n_sync.py
 scripts/test_l10n_sync_main.py          # Main entry tests for l10n sync
@@ -135,7 +135,7 @@ scripts/test_marketing_site.py          # Public-site assets, semantics, respons
 | `golden-test` | Visual regression on Linux baseline |
 | `edge-functions-test` | `deno test --allow-env --allow-net supabase/functions` (deploy gate) |
 | `e2e-community-test` | E2E + community tagged tests |
-| `scripts-test` | Python script tests (>=98% coverage) |
+| `scripts-test` | Python script tests (>=99% coverage; all 11 scripts currently 100%) |
 | `l10n-sync` | Translation key parity (--strict-keys) |
 | `code-quality` | Anti-pattern scan + platform target policy + obsidian-brain lint + migration drift structure guard + rule symbol drift guard (depends on scripts-test) |
 | `rules-sync` | CLAUDE.md stats verification (--strict) |

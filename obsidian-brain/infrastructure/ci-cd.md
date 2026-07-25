@@ -13,7 +13,7 @@ Runs on PRs and main pushes.
 | `golden-test` | Visual regression (Linux baseline) | PR merge |
 | `edge-functions-test` | `deno test` on `supabase/functions` | PR merge + Edge deploy gate |
 | `e2e-community-test` | E2E + community tagged tests | `workflow_dispatch`/`schedule` |
-| `scripts-test` | Python script tests (≥98% coverage) | PR merge |
+| `scripts-test` | Python script tests (≥99% coverage) | PR merge |
 | `l10n-sync` | Translation key parity (--strict-keys) | PR merge |
 | `code-quality` | Anti-pattern scan + platform target policy + wiki lint + migration structure drift (`verify_migration_drift.py`) + rule symbol drift (`check_rule_symbol_drift.py --target all --classes --strict`, rules + wiki) | PR merge |
 | `rules-sync` | CLAUDE.md stats verification | PR merge |

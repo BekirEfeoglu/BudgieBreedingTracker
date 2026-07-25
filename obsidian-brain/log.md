@@ -4,6 +4,26 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-25] infrastructure | Spacing scale derived, local gate matched to CI, coverage 100%
+
+**The Spacing scanner now derives its scale from `AppSpacing`** instead of
+hardcoding it — and it had already drifted: `AppSpacing.xxs = 2` existed while
+the scanner's set stopped at `4.0`, so a hardcoded `2.0` was never reported.
+Deriving removes the drift class rather than guarding it, which is the better
+answer when two surfaces *can* be unified. The old set stays as a floor: a parse
+failure must never shrink the set and silently switch the scanner off. Adding
+`2.0` produced zero new violations, verified before the change.
+
+**The local gate was missing a CI check.** `run_local_quality_gate.sh` ran four
+of `code-quality`'s five checks; `verify_migration_drift.py` was CI-only, so a
+migration structure or baseline problem only surfaced after push. Added. The
+guards themselves were already covered locally via `verify_rules.py --strict` —
+that half of the suspicion was wrong.
+
+**Script coverage is 100% across all eleven files** and the CI threshold moves
+98 → 99. Not 100: leaving one line of headroom means a single new branch does
+not turn the build red before its test lands.
+
 ## [2026-07-25] infrastructure | Column guard, quality-scanner coverage, guards tabulated
 
 **Column names** — eighth check, seventh family. A `*Col<Name>` constant naming
@@ -159,35 +179,4 @@ currently agree on exactly eight buckets; both checks verified non-vacuous.
 filename, remote-version shape, duplicate local, duplicate remote), the
 malformed-JSON ledger fallback, and both `main()` baseline-path branches. Script
 total holds at 98%.
-
-## [2026-07-25] infrastructure | Edge Function names guarded, obfuscation map shipped, --fix hint made honest
-
-Three follow-ups to the entry below. (1) `release-ready.yml` now uploads
-`build/app/obfuscation.map.json` alongside the native debug symbols. **The
-justification first committed here was wrong** and is corrected in a follow-up:
-`flutter symbolize` does NOT consume the map — `flutter symbolize --help` shows
-it takes only `--debug-info` (the split-debug-info symbols file) and `--input`.
-The map is the separate identifier name-mapping Sentry reads via
-`sentry: dart_symbol_map_path`; it ships in the artifact because it is the only
-build output carrying that mapping and would otherwise be discarded after the
-upload. Two paths make `build/` the artifact root — **verified by running
-`release-ready.yml`** rather than reasoning about it: the artifact holds exactly
-`app/obfuscation.map.json` (2.1 MB, 133,110 entries) plus the three ABI symbol
-files at `symbols/android/`, so the map ships and the root change did not drop
-the symbols.
-(2) `verify_rules.py` gained an **Edge Functions** section: directories under
-`supabase/functions/` ↔ `config.toml` `[functions.*]` ↔ the `ci.yml` deploy list
-compared two-way, plus every name literal in `edge_function_client.dart`
-(including `_rateLimitExempt`, where a stale entry fails silently by just not
-exempting) resolving to a real function. Client direction is one-way — webhook /
-trigger / cron functions have no client caller by design. Each of the three
-checks was verified non-vacuous by mutating its surface. (3) The summary no
-longer suggests `--fix` for cross-surface failures, which `--fix` cannot repair;
-those now print a "sync the surfaces by hand" hint instead.
-
-Sweeping for the same drift class found two more stale iOS claims this wiki
-still carried — `build_release.sh ios → IPA` and `xcrun altool` distribution —
-now corrected to the archive. Note the limit of the new guard: it compares path
-*tokens*, so it catches a wrong path but not a wrong prose claim about what a
-script produces. Those still need the manual semantic pass.
 

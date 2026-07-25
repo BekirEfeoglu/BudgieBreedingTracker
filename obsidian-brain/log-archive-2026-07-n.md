@@ -6,6 +6,37 @@ TLS pin freshness gate.
 
 ---
 
+## [2026-07-25] infrastructure | Edge Function names guarded, obfuscation map shipped, --fix hint made honest
+
+Three follow-ups to the entry below. (1) `release-ready.yml` now uploads
+`build/app/obfuscation.map.json` alongside the native debug symbols. **The
+justification first committed here was wrong** and is corrected in a follow-up:
+`flutter symbolize` does NOT consume the map — `flutter symbolize --help` shows
+it takes only `--debug-info` (the split-debug-info symbols file) and `--input`.
+The map is the separate identifier name-mapping Sentry reads via
+`sentry: dart_symbol_map_path`; it ships in the artifact because it is the only
+build output carrying that mapping and would otherwise be discarded after the
+upload. Two paths make `build/` the artifact root — **verified by running
+`release-ready.yml`** rather than reasoning about it: the artifact holds exactly
+`app/obfuscation.map.json` (2.1 MB, 133,110 entries) plus the three ABI symbol
+files at `symbols/android/`, so the map ships and the root change did not drop
+the symbols.
+(2) `verify_rules.py` gained an **Edge Functions** section: directories under
+`supabase/functions/` ↔ `config.toml` `[functions.*]` ↔ the `ci.yml` deploy list
+compared two-way, plus every name literal in `edge_function_client.dart`
+(including `_rateLimitExempt`, where a stale entry fails silently by just not
+exempting) resolving to a real function. Client direction is one-way — webhook /
+trigger / cron functions have no client caller by design. Each of the three
+checks was verified non-vacuous by mutating its surface. (3) The summary no
+longer suggests `--fix` for cross-surface failures, which `--fix` cannot repair;
+those now print a "sync the surfaces by hand" hint instead.
+
+Sweeping for the same drift class found two more stale iOS claims this wiki
+still carried — `build_release.sh ios → IPA` and `xcrun altool` distribution —
+now corrected to the archive. Note the limit of the new guard: it compares path
+*tokens*, so it catches a wrong path but not a wrong prose claim about what a
+script produces. Those still need the manual semantic pass.
+
 ## [2026-07-25] infrastructure | Release artifact paths are now a CI-enforced cross-surface check
 
 Follow-up to the entry below. Correcting the iOS artifact path updated

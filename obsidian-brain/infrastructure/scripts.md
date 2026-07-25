@@ -22,15 +22,15 @@ All scripts in `scripts/` directory.
 ## Pre-Commit Gate
 
 ```bash
-flutter analyze --no-fatal-infos && \
-python3 scripts/verify_code_quality.py && \
-python3 scripts/check_l10n_sync.py
-```
-
-Or the combined script:
-```bash
 scripts/run_local_quality_gate.sh
 ```
+
+The canonical gate. It runs the same five checks as CI's `code-quality`
+(anti-pattern scan, platform targets, wiki lint, **migration drift**, symbol
+drift) plus `verify_rules.py --strict`, and conditionally the l10n parity check
+and the script unit tests when the relevant paths changed. `verify_migration_drift.py`
+was missing here until 2026-07-25 while CI ran it — a migration structure or
+baseline problem only surfaced after push.
 
 ## Other Scripts (not in the quality-gate list above)
 
@@ -47,7 +47,7 @@ dependent and worth knowing about:
   can go red without any code change, purely because time passed; see
   [[patterns/security]] § Certificate Pinning for the rotation steps.
 
-## Test Scripts (CI: scripts-test job, ≥98% coverage)
+## Test Scripts (CI: scripts-test job, ≥99% coverage)
 
 | Script | Tests |
 |--------|-------|
