@@ -362,6 +362,63 @@ def collect_supabase_table_surfaces(root: Path) -> dict:
     return {"constants": in_constants, "created": created}
 
 
+def collect_supabase_column_surfaces(root: Path) -> dict:
+    """Collect `*Col<Name>` constant values and columns declared by migrations.
+
+    Column names are not table-scoped here: the same `user_id` constant is
+    reused across tables, so this only answers "does this column exist
+    anywhere". That still catches the typo class, which is the failure that
+    reaches production as a Postgres error.
+    """
+    consts_file = root / "lib" / "core" / "constants" / "supabase_constants.dart"
+    in_constants = None
+    if consts_file.exists():
+        in_constants = {
+            value
+            for _, value in re.findall(
+                r"static const String (\w*[Cc]ol[A-Z]\w*) = '([^']+)'",
+                consts_file.read_text(encoding="utf-8"),
+            )
+        }
+
+    migrations_dir = root / "supabase" / "migrations"
+    declared = None
+    if migrations_dir.exists():
+        declared = set()
+        for sql_file in migrations_dir.glob("*.sql"):
+            text = sql_file.read_text(encoding="utf-8", errors="ignore")
+            for body in re.findall(
+                r"create table[^(]*\((.*?)\);", text, re.IGNORECASE | re.DOTALL
+            ):
+                declared |= {
+                    name.lower()
+                    for name in re.findall(
+                        r'^\s*"?([a-z_][a-z0-9_]*)"?\s+[a-z]',
+                        body,
+                        re.IGNORECASE | re.MULTILINE,
+                    )
+                }
+            declared |= {
+                name.lower()
+                for name in re.findall(
+                    r'add column (?:if not exists )?"?([a-z_][a-z0-9_]*)',
+                    text,
+                    re.IGNORECASE,
+                )
+            }
+
+    return {"constants": in_constants, "declared": declared}
+
+
+def undeclared_columns(surfaces: dict) -> list:
+    """Column constants that no migration declares anywhere."""
+    constants = surfaces["constants"] or set()
+    declared = surfaces["declared"]
+    if declared is None:
+        return []
+    return sorted(value for value in constants if value.lower() not in declared)
+
+
 def unprovisioned_tables(surfaces: dict) -> list:
     """Table constants that no migration creates.
 

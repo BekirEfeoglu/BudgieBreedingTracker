@@ -33,7 +33,7 @@ import 'package:budgie/data/local/database/tables/birds_table.dart';
 - **Edge Functions**: 12 in `supabase/functions/`
 - **Migrations**: 219 SQL files in `supabase/migrations/`
 - Always use `SupabaseConstants` for table/column names — never hardcode
-- `verify_rules.py` § Supabase Tables (`rules-sync`) rejects a `*Table` constant that no migration creates — that failure otherwise surfaces as a Postgres error at query time, not at build time
+- `verify_rules.py` § Supabase Tables (`rules-sync`) rejects a `*Table` constant that no migration creates, and a `*Col<Name>` constant no migration declares — both otherwise surface as a Postgres error at query time, not at build time. Column names are not table-scoped (the same `user_id` constant is reused everywhere), so the column check answers "does this exist anywhere" — enough for the typo class
 - Use `.toSupabase()` extension — never send `created_at`/`updated_at` manually
 
 ### Remote Source Pattern

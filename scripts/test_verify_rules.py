@@ -32,6 +32,7 @@ from _rules_collectors import (
     collect_storage_bucket_surfaces,
     collect_supabase_table_surfaces,
     duplicate_route_values,
+    undeclared_columns,
     unprovisioned_tables,
     unresolved_route_targets,
     collect_data_layer,
@@ -2243,6 +2244,10 @@ class TestSupabaseTableSurfaces(unittest.TestCase):
         self.assertEqual(
             unprovisioned_tables({"constants": {"x"}, "created": None}), [])
 
+    def test_undeclared_columns_returns_empty_without_migrations(self):
+        self.assertEqual(
+            undeclared_columns({"constants": {"user_idd"}, "declared": None}), [])
+
     def test_migrations_may_create_tables_the_client_never_names(self):
         """Tek yonlu: trigger'in yazdigi audit tablolari sabit istemez."""
         surfaces = {"constants": {"birds"}, "created": {"birds", "audit_logs"}}
@@ -2281,6 +2286,15 @@ class TestSupabaseTableCheck(unittest.TestCase):
             result = self._run(Path(d),
                                constants={"birdsTable": "birds",
                                           "ghostTable": "ghost_records"},
+                               created=["birds"])
+        self.assertEqual(result, 1)
+
+    def test_fails_on_a_column_constant_no_migration_declares(self):
+        """Kolon adi tablo-kapsamli degil; yine de typo sinifini yakalar."""
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d),
+                               constants={"birdsTable": "birds",
+                                          "colTypoed": "user_idd"},
                                created=["birds"])
         self.assertEqual(result, 1)
 

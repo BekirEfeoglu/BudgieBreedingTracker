@@ -26,12 +26,14 @@ from _rules_collectors import (
     collect_l10n_category_surfaces,
     collect_route_surfaces,
     collect_storage_bucket_surfaces,
+    collect_supabase_column_surfaces,
     collect_supabase_table_surfaces,
     count_json_leaf_keys,
     duplicate_route_values,
     extract_first_number,
     extract_markdown_section,
     extract_release_artifact_paths,
+    undeclared_columns,
     unprovisioned_tables,
     unresolved_route_targets,
 )
@@ -381,6 +383,18 @@ def main():
         for name in missing:
             print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: sabit var, hicbir migration bu tabloyu yaratmiyor")
         track_manual(check("Tablo sabitleri migration'larda yaratiliyor", 0, len(missing)))
+
+    # Columns are not table-scoped here — the same `user_id` constant is reused
+    # across tables — so this answers "does this column exist anywhere". That
+    # still catches the typo class, which reaches production as a query error.
+    columns = collect_supabase_column_surfaces(ROOT)
+    if columns["constants"] is None or columns["declared"] is None:
+        print(f"  {Colors.YELLOW}SKIP{Colors.RESET} kolon sabitleri veya migrations/ bulunamadi")
+    else:
+        undeclared = undeclared_columns(columns)
+        for name in undeclared:
+            print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: kolon sabiti var, hicbir migration bu kolonu tanimlamiyor")
+        track_manual(check("Kolon sabitleri migration'larda tanimli", 0, len(undeclared)))
 
     # ── Summary ──
     pass_count = sum(results)
