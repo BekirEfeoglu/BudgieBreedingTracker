@@ -25,7 +25,7 @@ change code merely to make a stale wiki sentence true.
 | You changed… | Update these, same change |
 |--------------|---------------------------|
 | Feature/service/entity behavior | The matching `obsidian-brain/features/*` or `domain/*` wiki page + owning `.claude/rules/*.md` if the contract changed |
-| A count (files, tests, routes, l10n keys, tables, icons, migrations, constants) | `CLAUDE.md` stats via `verify_rules.py --fix` (NEVER hand-edit) — mirror into the relevant wiki page if it quotes the number |
+| A count (files, tests, routes, l10n keys, tables, icons, migrations, constants) | `CLAUDE.md` stats via `verify_rules.py --fix` (NEVER hand-edit) — mirror into the relevant wiki page if it quotes the number, and check `README.md` § Project at a Glance, which uses its OWN row labels and is therefore invisible to the inline fixer (guarded separately) |
 | Added a new `.claude/rules/*.md` file | `CLAUDE.md` § Rules table row + `obsidian-brain/sources/rules-index.md` row + `obsidian-brain/log.md` entry |
 | Added a new anti-pattern | `CLAUDE.md` § Critical Anti-Patterns numbered list + the owning rule file (keep both in sync) |
 | CI / release / deploy flow | Owning rule file + `CLAUDE.md` + workflow comments together (release-ops.md § Documentation Drift) |
@@ -74,6 +74,7 @@ together. Direction matters: **two-way** means both sides must match exactly;
 | Supabase Tables | `*Table` constants → a `create table` in migrations | one-way | query time (Postgres error) |
 | Supabase Columns | `*Col<Name>` constants → a column declared in migrations | one-way | query time (Postgres error) |
 | Quality Gate Parity | CI `code-quality` steps → `run_local_quality_gate.sh` | one-way | after push — the pre-commit gate is blind to it |
+| README Metrics | README § Project at a Glance → the collected codebase values | one-way | never — the public-facing table just rots |
 
 Two deliberate non-rules, both instances of missing-name != missing-feature:
 - Route constants are NOT required to be referenced. GoRouter composes nested

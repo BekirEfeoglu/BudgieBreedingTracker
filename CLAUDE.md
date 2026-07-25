@@ -59,7 +59,7 @@ python3 scripts/check_platform_targets.py # Verify unsupported Flutter web targe
 python3 scripts/check_obsidian_brain.py  # Verify obsidian-brain links, refs, metrics, decisions, log pressure
 python3 scripts/check_obsidian_brain.py --rotate # Move oldest log.md entries into the newest archive (widens its date range + index row), then lint
 python3 scripts/verify_code_quality.py    # Anti-pattern scan (28 checkers, 19/24 CLAUDE.md patterns + 10 extra documented scanners)
-python3 scripts/verify_rules.py          # CLAUDE.md stats vs codebase + cross-surface guards (release artifacts, Edge fn names, buckets, l10n, icons, routes, tables/columns, gate parity) — see documentation-sync.md table
+python3 scripts/verify_rules.py          # CLAUDE.md stats vs codebase + 9 cross-surface guard families (incl. README metrics, gate parity) — see documentation-sync.md table
 python3 scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats + rule inline references
 python3 scripts/verify_migration_drift.py # Migration structure guard (dup versions, malformed names); --online adds prod ledger parity
 python3 scripts/check_rule_symbol_drift.py --target all --classes --strict # Aspirational-contract guard: every `xProvider`/`.dart` path/`*Service|*Notifier|*Repository|*Dao|*Mapper|*Guard` class (backtick + bare prose) named in .claude/rules/ + obsidian-brain/ must exist in code

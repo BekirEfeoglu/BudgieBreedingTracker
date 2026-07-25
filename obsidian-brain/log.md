@@ -28,10 +28,16 @@ out the one check that asserts an *absence* (`no_service_role_in_client`), which
 correctly passes on an empty tree. 89% → 92%, and the total still clears 99%
 with it included.
 
-Also corrected in the public README: the coverage threshold (98→99), the test
-count (8,930+ → 11,700+) and the anti-pattern category count (21 → 28). The
-98→99 sweep had missed it because the search was scoped to CLAUDE.md,
-`.claude/rules` and the wiki — never the repo root.
+**README had rotted by up to 40%** and nothing could see it. Its "Project at a
+Glance" table uses its OWN row labels ("Test suite", "Localization keys"), so
+the inline fixer — which keys on CLAUDE.md's labels and prose phrasings — never
+touched it: 826 vs 1030 source files, ~2,243 vs ~3,167 l10n keys, schema 20 vs
+29, eight rows in all, on the one surface outsiders read. Corrected from the
+live collector, then guarded as a ninth family so it cannot silently rot again.
+The CI-pipeline table in the same file was stale too (98→99 coverage, 8,930+ →
+11,700+ tests, 21 → 28 checkers); the 98→99 sweep had missed the file entirely
+because the search was scoped to CLAUDE.md, `.claude/rules` and the wiki —
+never the repo root.
 
 ## [2026-07-25] infrastructure | Spacing scale derived, local gate matched to CI, coverage 100%
 
