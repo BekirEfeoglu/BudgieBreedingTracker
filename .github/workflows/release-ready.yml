@@ -118,12 +118,15 @@ jobs:
           path: build/app/outputs/bundle/release/app-release.aab
           retention-days: 30
 
-      # The Dart obfuscation map ships alongside the native debug symbols:
-      # `flutter symbolize` needs it to de-obfuscate a Dart stack trace, and
-      # without it this artifact is only sufficient for native frames. Sentry
-      # gets its own copy via sentry_dart_plugin above; this is the local /
-      # offline path. Two paths make `build/` the artifact root, so entries
-      # land at `symbols/android/...` and `app/obfuscation.map.json`.
+      # The Dart obfuscation map ships alongside the native debug symbols.
+      # It is NOT what `flutter symbolize` consumes — that takes only the
+      # --split-debug-info symbols file (`flutter symbolize --help`). The map
+      # is the separate identifier name-mapping that Sentry reads via
+      # pubspec's `sentry: dart_symbol_map_path`, and it is the only build
+      # output carrying it. Keeping it here means an offline copy survives if
+      # the Sentry upload is ever lost. Two paths make `build/` the artifact
+      # root, so entries land at `symbols/android/...` and
+      # `app/obfuscation.map.json`.
       - name: Upload Android debug symbols
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:

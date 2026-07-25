@@ -7,9 +7,14 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 ## [2026-07-25] infrastructure | Edge Function names guarded, obfuscation map shipped, --fix hint made honest
 
 Three follow-ups to the entry below. (1) `release-ready.yml` now uploads
-`build/app/obfuscation.map.json` alongside the native debug symbols — Sentry got
-its copy via the plugin, but the downloadable artifact could not de-obfuscate a
-Dart frame with `flutter symbolize`. Two paths make `build/` the artifact root.
+`build/app/obfuscation.map.json` alongside the native debug symbols. **The
+justification first committed here was wrong** and is corrected in a follow-up:
+`flutter symbolize` does NOT consume the map — `flutter symbolize --help` shows
+it takes only `--debug-info` (the split-debug-info symbols file) and `--input`.
+The map is the separate identifier name-mapping Sentry reads via
+`sentry: dart_symbol_map_path`; it ships in the artifact because it is the only
+build output carrying that mapping and would otherwise be discarded after the
+upload. Two paths make `build/` the artifact root.
 (2) `verify_rules.py` gained an **Edge Functions** section: directories under
 `supabase/functions/` ↔ `config.toml` `[functions.*]` ↔ the `ci.yml` deploy list
 compared two-way, plus every name literal in `edge_function_client.dart`
