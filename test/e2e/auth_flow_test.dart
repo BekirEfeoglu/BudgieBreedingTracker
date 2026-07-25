@@ -23,9 +23,24 @@ import '../helpers/e2e_test_harness.dart';
 
 class _MockEdgeFunctionClient extends Mock implements EdgeFunctionClient {}
 
+/// Sizes the test surface like a portrait phone.
+///
+/// The default 800x600 landscape surface is shorter than the register form, so
+/// its submit button lands at y=682 — outside the viewport and clipped, which
+/// makes tap() derive an offset that hit-tests the scrollable instead of the
+/// button. Real devices are portrait and taller, so this is the representative
+/// geometry rather than a workaround.
+void _usePortraitSurface(WidgetTester tester) {
+  const size = Size(420, 960);
+  tester.view.physicalSize = size * tester.view.devicePixelRatio;
+  addTearDown(tester.view.resetPhysicalSize);
+}
+
 Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
   await tester.ensureVisible(finder);
-  await tester.pump(const Duration(milliseconds: 50));
+  // pumpAndSettle is unusable on the auth screens — they run looping bird
+  // animations that never settle — so waits here are bounded pumps.
+  await tester.pump(const Duration(milliseconds: 300));
   await tester.tap(finder);
   await tester.pump(const Duration(milliseconds: 500));
 }
@@ -37,6 +52,7 @@ void main() {
     testWidgets(
       'GIVEN first launch and unauthenticated WHEN register succeeds THEN email verification is shown and signUp called once',
       (tester) async {
+        _usePortraitSurface(tester);
         final mockAuthActions = MockAuthActions();
         when(
           () => mockAuthActions.signUpWithEmail(
@@ -117,6 +133,7 @@ void main() {
     testWidgets(
       'GIVEN register screen WHEN password is weak THEN validation error is shown and signUp is not called',
       (tester) async {
+        _usePortraitSurface(tester);
         final mockAuthActions = MockAuthActions();
         when(
           () => mockAuthActions.signUpWithEmail(
