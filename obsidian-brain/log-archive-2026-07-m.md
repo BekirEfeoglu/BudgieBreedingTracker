@@ -1,9 +1,34 @@
 # Change Log Archive — July 2026 M
 
-Archived July 2026 entries (07-17 to 07-18) rotated out of [[log]] during the
+Archived July 2026 entries (07-17 to 07-22) rotated out of [[log]] during the
 2026-07-25 Codemagic-removal documentation sync.
 
 ---
+
+## [2026-07-22] docs | Synchronize release and dependency snapshots
+
+Updated the current build snapshot to `1.1.7+56` and aligned the Firebase Core
+and RevenueCat package references with `pubspec.yaml` across rules and wiki pages.
+
+## [2026-07-19] release | Bump the app version to 1.1.7+54
+
+Updated the Flutter release version and runtime app metadata together. Android,
+iOS Runner, and the dashboard widget continue to inherit the shared Flutter
+build name and number.
+
+## [2026-07-19] deploy | Enforce the scanned-image upload cap in production
+
+Applied `20260717120000_align_scanned_image_upload_limits.sql` through an alias-mapped temporary CLI fixture so the remote ledger keeps the exact local version and SQL without rewriting historical migrations. Production now enforces 2 MiB on all seven safety-scanned image buckets, keeps `backups` at 50 MiB, and passes the online migration parity check.
+
+## [2026-07-19] auth | Preserve post-login destinations and complete password recovery
+
+Protected deep links survive OAuth, MFA, and startup through validated one-shot `returnTo` state. Recovery sessions stay on the new-password form until Supabase updates the password;
+login UX adds bounded feedback, reduced motion, accessible controls, localized Apple labels, and four golden baselines.
+
+## [2026-07-19] guard | Freeze the applied migration chain in a separate baseline fixture
+
+Added an immutable filename/SHA-256 baseline through canonical `20260714200511` and recorded nine apply-time aliases without rewriting historical SQL.
+The online guard parses only the remote ledger column and exposes `20260717120000` as the remaining explicit local-only migration.
 
 ## [2026-07-18] security-fix | Supabase RSA TLS fallback added to pin allowlist
 

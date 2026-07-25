@@ -4,6 +4,28 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-25] infrastructure | Edge Function names guarded, obfuscation map shipped, --fix hint made honest
+
+Three follow-ups to the entry below. (1) `release-ready.yml` now uploads
+`build/app/obfuscation.map.json` alongside the native debug symbols — Sentry got
+its copy via the plugin, but the downloadable artifact could not de-obfuscate a
+Dart frame with `flutter symbolize`. Two paths make `build/` the artifact root.
+(2) `verify_rules.py` gained an **Edge Functions** section: directories under
+`supabase/functions/` ↔ `config.toml` `[functions.*]` ↔ the `ci.yml` deploy list
+compared two-way, plus every name literal in `edge_function_client.dart`
+(including `_rateLimitExempt`, where a stale entry fails silently by just not
+exempting) resolving to a real function. Client direction is one-way — webhook /
+trigger / cron functions have no client caller by design. Each of the three
+checks was verified non-vacuous by mutating its surface. (3) The summary no
+longer suggests `--fix` for cross-surface failures, which `--fix` cannot repair;
+those now print a "sync the surfaces by hand" hint instead.
+
+Sweeping for the same drift class found two more stale iOS claims this wiki
+still carried — `build_release.sh ios → IPA` and `xcrun altool` distribution —
+now corrected to the archive. Note the limit of the new guard: it compares path
+*tokens*, so it catches a wrong path but not a wrong prose claim about what a
+script produces. Those still need the manual semantic pass.
+
 ## [2026-07-25] infrastructure | Release artifact paths are now a CI-enforced cross-surface check
 
 Follow-up to the entry below. Correcting the iOS artifact path updated
@@ -161,28 +183,3 @@ context. Also rotated the two oldest (2026-07-14) entries into
 Migration prod-parity confirmed via Supabase MCP (3 post-baseline migrations applied; ledger clean). Security advisors: 2 known non-blocking (private-schema RLS INFO by-design, leaked-password dashboard toggle). Genetics clean; edge functions re-verified (all 12 pass JWT/validation/tests/deploy-registration/no-orphan — the lane's first run had not completed).
 Also documented Xcode Cloud's post-push status semantics after a wrong theory ("no `lib/` change → no build") was formed and then refuted by a 20-commit scan: it reports as a legacy status context, builds only the push tip (intermediates stay `pending` forever on zero contexts), can land ~1h after Actions are green, and has no path filter — see ci-actions.md § Xcode Cloud status context.
 Backlog follow-up: added create-community-comment malformed-body/invalid-uuid deno cases (suite 255→257); introduced the first Drift schema-consistency test (`migration_test.dart`: version + 20 tables + sync_metadata unique index + FK) — the `drift_dev schema` generated verifier can't compile (`table_name` → `tableName` field collides with `Table.tableName`), so it uses `sqlite_master`/`PRAGMA`. migrations.md's fictional `TestDatabase.atVersion`/`migrateTo` harness replaced with the real one; cross-version data-migration coverage recorded as a known gap.
-
-## [2026-07-22] docs | Synchronize release and dependency snapshots
-
-Updated the current build snapshot to `1.1.7+56` and aligned the Firebase Core
-and RevenueCat package references with `pubspec.yaml` across rules and wiki pages.
-
-## [2026-07-19] release | Bump the app version to 1.1.7+54
-
-Updated the Flutter release version and runtime app metadata together. Android,
-iOS Runner, and the dashboard widget continue to inherit the shared Flutter
-build name and number.
-
-## [2026-07-19] deploy | Enforce the scanned-image upload cap in production
-
-Applied `20260717120000_align_scanned_image_upload_limits.sql` through an alias-mapped temporary CLI fixture so the remote ledger keeps the exact local version and SQL without rewriting historical migrations. Production now enforces 2 MiB on all seven safety-scanned image buckets, keeps `backups` at 50 MiB, and passes the online migration parity check.
-
-## [2026-07-19] auth | Preserve post-login destinations and complete password recovery
-
-Protected deep links survive OAuth, MFA, and startup through validated one-shot `returnTo` state. Recovery sessions stay on the new-password form until Supabase updates the password;
-login UX adds bounded feedback, reduced motion, accessible controls, localized Apple labels, and four golden baselines.
-
-## [2026-07-19] guard | Freeze the applied migration chain in a separate baseline fixture
-
-Added an immutable filename/SHA-256 baseline through canonical `20260714200511` and recorded nine apply-time aliases without rewriting historical SQL.
-The online guard parses only the remote ledger column and exposes `20260717120000` as the remaining explicit local-only migration.
