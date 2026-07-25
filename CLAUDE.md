@@ -68,6 +68,7 @@ python3 scripts/check_rule_symbol_drift.py --audit-allowlist # Periodic (not gat
 ### Other Scripts
 ```bash
 scripts/run_local_quality_gate.sh        # Canonical pre-commit gate (diff, rules, quality, conditional l10n/script tests)
+scripts/build_release.sh <ios|android>   # Canonical release build: DSN/token fail-fast, obfuscate + Sentry symbol upload
 scripts/check_remote_status.py           # Post-push: exact-SHA status/check-runs; path-gated Edge deploy skip requires successful detector
 scripts/verify_security.py               # Security posture (cert pinning wired, secrets, webhook JWT exemptions)
 scripts/install_git_hooks.sh             # Install worktree-relative local git hooks
@@ -150,14 +151,33 @@ Workflow changes must be validated locally before push: parse the edited YAML, q
 
 Xcode Cloud is separate from GitHub Actions. Its Flutter iOS setup lives in `ios/ci_scripts/ci_post_clone.sh`; the script must remain executable, retry network-dependent setup, preserve real command exit codes, and fail fast if `Generated.xcconfig` or `Pods-Runner-*.xcfilelist` files are not generated. It installs Flutter via curl+unzip of the pinned SDK archive — never `git clone flutter/flutter`, which is known-flaky on Xcode Cloud (flutter/flutter#163198) — and prints `>>> STEP N:` markers so a failure log names the failing step.
 
-### Codemagic (`codemagic.yaml`) — release and verification workflows
-- `android-release`: AAB → Google Play (alpha track); resolves the next Android
-  build number from the package-wide Play maximum because version codes are
-  globally unique across tracks and the artifact library
-- `android-verify-only`: signed AAB + Sentry symbols → Codemagic artifacts only; no store publishing block or Google Play credential reference
-- `ios-release`: IPA → App Store TestFlight (App ID: 6759828211)
-- All three use pinned Flutter `3.41.4`, matching GitHub Actions and Xcode Cloud;
-  do not use the moving `stable` channel for release artifacts.
+### Release Builds (Codemagic removed 2026-07-25)
+There is no hosted release pipeline. Nothing publishes to a store automatically.
+
+| Platform | Path | Produces |
+| --- | --- | --- |
+| Android | `release-ready.yml` (manual `workflow_dispatch`) | Signed AAB + Sentry symbols as **artifacts**; publishes nothing — download and upload to Play yourself |
+| Android (local) | `scripts/build_release.sh android` | Same build locally, for verification |
+| iOS | `scripts/build_release.sh ios` | `build/ios/ipa/*.ipa` — distribute via Xcode Organizer or `xcrun altool` |
+
+`scripts/build_release.sh <ios|android>` is the canonical release build. It fails
+fast when `SENTRY_DSN` (`.env`) or `SENTRY_AUTH_TOKEN` (environment) is missing,
+builds with `--obfuscate --split-debug-info --save-obfuscation-map`, then uploads
+symbols via `dart run sentry_dart_plugin` with a per-platform `SENTRY_RELEASE`
+matching runtime `PackageInfo` naming. iOS re-runs `scripts/generate_ios_env.sh` first.
+
+**Do NOT Archive from Xcode without running the script first.**
+`ios/Flutter/DartDefines.xcconfig` is gitignored and only rewritten by a
+`flutter build`; a stale copy was found carrying the legacy Google web client ID
+and **no** `SENTRY_DSN` — i.e. a release shipped with no crash reporting at all.
+The script exists to prevent exactly that.
+
+**Google Play version codes are package-global.** The build number in
+`pubspec.yaml` must exceed the highest code across ALL tracks and the artifact
+library. Codemagic used to resolve this automatically; it is now a **manual**
+responsibility before every Android release.
+
+Xcode Cloud stays **build-only** and is NOT a release path.
 
 ## Environment Variables (dart-define)
 
@@ -175,7 +195,7 @@ Xcode Cloud is separate from GitHub Actions. Its Flutter iOS setup lives in `ios
 | `DEBUG_START_ROUTE` | No | — | Debug: open at specific route |
 | `DEBUG_GENETICS_FIXTURE` | No | — | Debug: preset genetics state |
 
-Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI) · Codemagic env groups (release)
+Config methods: `.env` + `--dart-define-from-file` (local and release builds via `scripts/build_release.sh`) · GitHub Secrets (CI + `release-ready.yml`)
 
 ### CI-Only Secrets (GitHub Actions)
 
@@ -183,8 +203,8 @@ Config methods: `.env` + `--dart-define-from-file` (local) · GitHub Secrets (CI
 | --- | --- | --- |
 | `SUPABASE_ACCESS_TOKEN` | Edge Function deployment | Supabase Dashboard → Account → Access Tokens |
 | `SUPABASE_PROJECT_REF` | Edge Function deployment | Supabase Dashboard URL project reference ID |
-| `SENTRY_DSN` | Manual Android release monitoring | Sentry → Project Settings → Client Keys (DSN); mirror in Codemagic `app_env_vars` |
-| `SENTRY_AUTH_TOKEN` | Release debug-symbol upload | Sentry organization token with fixed `org:ci` scope; mirror in Codemagic `app_env_vars` |
+| `SENTRY_DSN` | Manual Android release monitoring | Sentry → Project Settings → Client Keys (DSN); also required in local `.env` for `scripts/build_release.sh` |
+| `SENTRY_AUTH_TOKEN` | Release debug-symbol upload | Sentry organization token with fixed `org:ci` scope; export in-shell for `scripts/build_release.sh` |
 | `REVENUECAT_SECRET_API_KEY` | `sync-premium-status` + `revenuecat-webhook` Edge Function runtime | RevenueCat Dashboard → Project settings → API keys → Secret API keys |
 | `REVENUECAT_WEBHOOK_AUTH_TOKEN` | `revenuecat-webhook` shared secret | Generated by you (32+ random bytes), set in Supabase Edge Function secrets AND in RevenueCat → Integrations → Webhooks → Authorization header |
 
@@ -385,5 +405,6 @@ EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
 Migrations:    supabase/migrations/ (219 files)
 Scripts:       scripts/
-CI:            .github/workflows/ + codemagic.yaml
+CI:            .github/workflows/
+Release build:  scripts/build_release.sh
 ```

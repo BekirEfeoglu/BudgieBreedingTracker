@@ -66,7 +66,7 @@ All guards in `lib/router/guards/`. Never skip for "quick testing".
 - Supabase URL/anon key: `--dart-define` or `.env` (never hardcoded)
 - RevenueCat secret key: Edge Function secret only (never client)
 - Never commit `.env`, `credentials.json`, key files
-- CI: GitHub Secrets; Codemagic: env groups
+- CI: GitHub Secrets; local release builds read `.env` via `scripts/build_release.sh` (`SENTRY_AUTH_TOKEN` exported in-shell, never written to `.env`)
 
 ## OAuth Token Management
 
@@ -85,13 +85,13 @@ State as of 2026-05-26: OAuth clients exist in BOTH legacy GCP project (number `
 New iOS Client: `720334450619-oacalc9gn0sg986d16it34jr4th6bkf4.apps.googleusercontent.com`.
 New Web Client: `720334450619-kvo5m738euj98t4qmmqeabmmd48ma0tl.apps.googleusercontent.com`, redirect `https://lmqkwgitzvpacycujzgc.supabase.co/auth/v1/callback`.
 
-`ios/Runner/Info.plist` `CFBundleURLSchemes` and `.env.example` updated. `GOOGLE_*_CLIENT_ID` env vars must be set to the new values in local `.env`, Codemagic env groups, and CI secrets before the next signed release. Old installed binaries still authenticate via legacy IDs — Supabase accepts both audiences.
+`ios/Runner/Info.plist` `CFBundleURLSchemes` and `.env.example` updated. `GOOGLE_*_CLIENT_ID` env vars must be set to the new values in local `.env` and CI secrets before the next signed release. Old installed binaries still authenticate via legacy IDs — Supabase accepts both audiences.
 
 The Android SHA-1 `4b:50:9f:a3:…` is registered against BOTH OAuth clients during the rollout. **Do not delete from Firebase.**
 
 **Rollout state**:
 
-- New Client IDs committed in `.env.example`; local `.env`, Codemagic env groups, and CI secrets must use the new values before the next signed release build
+- New Client IDs committed in `.env.example`; local `.env` and CI secrets must use the new values before the next signed release build. A stale gitignored `ios/Flutter/DartDefines.xcconfig` was found still holding the LEGACY web client ID (and no `SENTRY_DSN`) — only a `flutter build` rewrites it, so run `scripts/build_release.sh ios` rather than Archiving from Xcode
 - Old installed binaries authenticate via legacy IDs (compiled in at build time) — Supabase accepts both audiences, no breakage
 - A misconfigured iOS reversed client ID breaks Sign-In for every iOS user until binary rebuild + store re-review (~24h)
 - Test new IDs in a debug build before shipping a signed release

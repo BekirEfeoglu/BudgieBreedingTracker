@@ -69,6 +69,7 @@ implemented; the items below are not.
 - **IP geolocation in marketplace** — privacy; user enters city manually (`marketplace.md`)
 - **GDPR export behind premium** — data ownership: always free (`settings.md`)
 - **DM orphan-photo GC job** — abandoned failed-photo uploads may leave small orphan objects in the private `message-photos` bucket; accepted, GC scheduled job is out of scope (`messaging.md` § Attachments retry/orphan contract)
+- **Hosted release pipeline / automatic store publishing** — Codemagic was removed 2026-07-25 (`codemagic.yaml` deleted). `release-ready.yml` and `scripts/build_release.sh` deliberately produce **artifacts only**; every store upload is a manual user action. Do not re-add a publishing block or Play credential. Consequence to remember: Play version codes are package-global and are no longer resolved automatically — the `pubspec.yaml` build number must be checked against the package-wide Play maximum by hand (`release-ops.md` § Release Channels)
 
 ## See Also
 

@@ -49,32 +49,50 @@ keeps `web/` absent so the static `docs/` site remains the only web surface.
   worktree-relative. The pre-commit hook clears repository-local Git variables
   for Flutter subprocesses, allowing the SDK to resolve its own version.
 
-## Codemagic (`codemagic.yaml`)
+## Release Builds (no hosted pipeline)
 
-Release and verification workflows:
-- `android-release`: AAB → Google Play (alpha track)
-- `android-release` next build number is based on the package-wide Google Play
-  maximum. Play version codes are global across tracks and uploaded artifacts,
-  so the latest-build query must not be scoped to `alpha`.
-- `android-verify-only`: signed AAB + Sentry symbols → Codemagic artifacts only;
-  no `publishing` block, Google Play credential, or latest-build query
-- `ios-release`: IPA → App Store TestFlight (App ID: 6759828211)
-- All three workflows require `SENTRY_DSN` in `app_env_vars`; missing monitoring
-  configuration fails before the store build starts.
-- All three workflows require the `org:ci`-scoped `SENTRY_AUTH_TOKEN`, generate the
-  Dart obfuscation map, and run `sentry_dart_plugin` before publishing.
-- All three pin Flutter `3.41.4`, matching GitHub Actions and Xcode Cloud.
-  Codemagic's moving `stable` channel resolved to 3.44.6 on 2026-07-18 and broke
-  release compilation against locked `lucide_icons 0.257.0` (`IconData` became
-  final). Upgrade the SDK only together with dependency compatibility and all
-  release builders.
+Codemagic was removed 2026-07-25 (`codemagic.yaml` deleted). Nothing publishes
+to a store automatically; every upload is a manual user action.
 
-## Release Ready (`release-ready.yml`)
+| Platform | Path | Produces |
+|----------|------|----------|
+| Android | `release-ready.yml` (manual) | Signed AAB + Sentry symbols as artifacts |
+| Android (local) | `scripts/build_release.sh android` | Same build, for verification |
+| iOS | `scripts/build_release.sh ios` | `build/ios/ipa/*.ipa` |
 
-Manual workflow for signed AAB readiness. Does not run on main push (to avoid
-slowing CI). It requires the GitHub Actions `SENTRY_DSN` secret and injects the
-`production` environment into the release build. Its `SENTRY_AUTH_TOKEN` is
-used only for symbol upload and is never passed into the app binary.
+### `scripts/build_release.sh <ios|android>`
+
+Canonical release build. Fails fast when `SENTRY_DSN` (in `.env`) or the
+`org:ci`-scoped `SENTRY_AUTH_TOKEN` (environment) is missing — neither absence
+breaks the build, so both would otherwise ship silently broken: no DSN means a
+release with no crash reporting, no token means unreadable obfuscated stack
+traces. It then builds with `--obfuscate --split-debug-info
+--save-obfuscation-map` and uploads symbols via `dart run sentry_dart_plugin`
+with a per-platform `SENTRY_RELEASE` matching runtime `PackageInfo` naming. iOS
+re-runs `scripts/generate_ios_env.sh` first.
+
+**Never Archive straight from Xcode.** `ios/Flutter/DartDefines.xcconfig` is
+gitignored and only a `flutter build` rewrites it; Archive reads whatever is
+there. A stale copy was found carrying the legacy Google web client ID and no
+`SENTRY_DSN` — an Archive at that moment would have shipped a release with zero
+crash reporting. Running the script regenerates that file from `.env`.
+
+**Play version codes are package-global.** The `pubspec.yaml` build number must
+exceed the highest code across ALL tracks and the artifact library. Codemagic
+resolved this automatically; it is now a manual pre-release check.
+
+### Release Ready (`release-ready.yml`)
+
+Manual workflow (`workflow_dispatch`) for signed AAB readiness. Does not run on
+main push (to avoid slowing CI). It requires the GitHub Actions `SENTRY_DSN`
+secret and injects the `production` environment into the release build; its
+`SENTRY_AUTH_TOKEN` is used only for symbol upload and never passed into the
+app binary. It carries no `publishing` block or Google Play credential — you
+download the artifact and upload it yourself. It pins Flutter `3.41.4` to match
+GitHub Actions and Xcode Cloud: on 2026-07-18 a release builder on the moving
+`stable` channel resolved to 3.44.6 and broke release compilation against
+locked `lucide_icons 0.257.0` (`IconData` became final). Upgrade the SDK only
+together with dependency compatibility and all release builders.
 
 ## Xcode Cloud
 

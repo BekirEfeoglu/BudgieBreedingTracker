@@ -19,7 +19,7 @@
 
 **New Web Client ID**: `720334450619-kvo5m738euj98t4qmmqeabmmd48ma0tl.apps.googleusercontent.com` (redirect URI: `https://lmqkwgitzvpacycujzgc.supabase.co/auth/v1/callback`). Web Client Secret is stored only in Supabase Edge Function secrets / RC dashboard, never in this repo.
 
-**App code state**: `ios/Runner/Info.plist` `CFBundleURLSchemes` and `.env.example` updated to the NEW iOS reversed client ID. `GOOGLE_*_CLIENT_ID` env vars need to be set to the new values in local `.env`, Codemagic env groups, and any GitHub Actions secrets BEFORE the next signed release build. Old binaries still installed on user devices continue to use the legacy project's IDs (compiled in at build time) and Supabase accepts both audiences during the rollout window.
+**App code state**: `ios/Runner/Info.plist` `CFBundleURLSchemes` and `.env.example` updated to the NEW iOS reversed client ID. `GOOGLE_*_CLIENT_ID` env vars need to be set to the new values in local `.env` (which `scripts/build_release.sh` reads via `--dart-define-from-file`) and in GitHub Actions secrets BEFORE the next signed release build. Old binaries still installed on user devices continue to use the legacy project's IDs (compiled in at build time) and Supabase accepts both audiences during the rollout window.
 
 The Android SHA-1 fingerprint `4b:50:9f:a3:...` shows a duplicate-registration warning in Firebase because that fingerprint is registered against BOTH OAuth clients (legacy + new). **Do not delete it from Firebase** — it is the production app signature for both clients during the migration.
 
@@ -34,7 +34,7 @@ Then:
 - **Never delete the legacy GCP project** itself if any unrelated services still reference it — only remove the OAuth client
 
 **Rollout state**:
-- New Web Client ID is committed in `.env.example`. Local `.env`, Codemagic env groups, and CI secrets must use the new `GOOGLE_WEB_CLIENT_ID` + `GOOGLE_IOS_CLIENT_ID` values before the next signed release build.
+- New Web Client ID is committed in `.env.example`. Local `.env` and CI secrets must use the new `GOOGLE_WEB_CLIENT_ID` + `GOOGLE_IOS_CLIENT_ID` values before the next signed release build. A stale gitignored `ios/Flutter/DartDefines.xcconfig` was found still carrying the LEGACY web client ID (and no `SENTRY_DSN`), which a raw Xcode Archive would have shipped — run `scripts/build_release.sh ios`, which regenerates that file from `.env` (release-ops.md § Release Build).
 - Old installed binaries still authenticate via the legacy project's IDs (compiled in at build time). Supabase accepts both audiences during this rollout, so old binaries do NOT break.
 - A misconfigured iOS reversed client ID breaks Sign-In for every iOS user until a binary rebuild + store re-review (~24h minimum). Test new IDs in a debug build before shipping a signed release.
 
@@ -144,7 +144,7 @@ Emergency unpin:
 - Supabase URL/anon key via `--dart-define` or `.env` file
 - NEVER hardcode credentials in source code
 - NEVER commit `.env`, `credentials.json`, or key files
-- CI secrets stored in GitHub Secrets / Codemagic env groups
+- CI secrets stored in GitHub Secrets; local release builds read `.env` via `scripts/build_release.sh` (`SENTRY_AUTH_TOKEN` is exported in-shell, never written to `.env`)
 - RevenueCat API keys via dart-define, not in code
 
 ## Data Protection

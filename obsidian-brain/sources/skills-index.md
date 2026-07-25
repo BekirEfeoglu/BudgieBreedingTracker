@@ -11,7 +11,7 @@ beyond the user's request. Complement to [[sources/agents-index]] — skills
 |-------|----------|---------|
 | `audit` | Comprehensive multi-agent audit sweep (the 2026-07-02/07-04 ritual): parallel read-only lanes → sibling-path hunt → fix → gates → commit → push → exact-SHA verify | Yes (fixes) |
 | `screenshot-debug` | User sends a simulator/device screenshot of a bug (their standard bug-report channel); traces UI → Provider → Repository → DAO/Remote, hunts siblings before fixing | Yes (fix) |
-| `store-release` | Cut a store release: version-bump consistency, 3-language release notes for `system_settings.app_version`, GO/NO-GO gate, Codemagic/Release-Ready checklist. Gates and prepares; never signs/publishes | Yes (prep) |
+| `store-release` | Cut a store release: version-bump consistency, 3-language release notes for `system_settings.app_version`, GO/NO-GO gate, `build_release.sh`/Release-Ready checklist. Gates and prepares; never signs/publishes | Yes (prep) |
 | `mobile-design` | Mobile-first design decisions (touch, platform conventions, perf patterns) while building Flutter UI | No |
 | `ui-ux-pro-max` | UI/UX design intelligence: styles, palettes, font pairings, review/fix passes on visual work | No |
 | `supabase-postgres-best-practices` | Writing/reviewing/optimizing Postgres queries, schema, or config | No |

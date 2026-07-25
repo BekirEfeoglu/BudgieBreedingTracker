@@ -34,19 +34,23 @@
 - `SENTRY_AUTH_TOKEN` yalniz Sentry `org:ci` token'idir; release build
   `obfuscation.map.json` uretir ve `sentry_dart_plugin` symbol upload adimi
   basarisizsa artifact/publish akisi durur
-- Main push icin `android-build` debug APK smoke gate olarak kalir; store'a gidecek AAB icin release-ready veya Codemagic kullan
-- Codemagic `android-verify-only` manuel signed AAB + Sentry symbol artifact uretir;
-  `publishing` blogu ve Google Play credential referansi tasimaz
-- Verify-only build numarasini `pubspec.yaml` icindeki `X.Y.Z+build` degerinden
-  alir; Google Play latest-build sorgusu yapmaz ve dis store state'ini degistirmez
-- Codemagic'in uc release/verification workflow'u `flutter: 3.41.4` ile GitHub
-  Actions ve Xcode Cloud'a pinned kalmali. `stable` kullanma: 2026-07-18'de
-  Codemagic 3.44.6'ya kayarak locked `lucide_icons 0.257.0` ile release compile'i
-  bozdu. SDK upgrade'i dependency uyumlulugu ve tum builder'lar birlikte
-  dogrulanarak yapilir.
-- Codemagic `android-release` build numarasini Google Play package-wide maksimum
-  version code'dan uretir. `--tracks` filtresi release hedefini sinirlamak icin
-  publishing'de kalabilir, ancak latest-build sorgusunda kullanilamaz.
+- Main push icin `android-build` debug APK smoke gate olarak kalir; store'a gidecek AAB icin `release-ready.yml` kullan
+- `release-ready.yml` **hicbir seyi publish etmez**: signed AAB + symbol'leri
+  artifact olarak birakir, `publishing` blogu ve Google Play credential
+  referansi tasimaz. Play'e yukleme manuel bir kullanici islemidir
+- Build numarasini `pubspec.yaml` icindeki `X.Y.Z+build` degerinden alir; Google
+  Play latest-build sorgusu yapmaz ve dis store state'ini degistirmez. Bu yuzden
+  **package-wide** benzersiz version code'u saglamak release oncesi elle yapilir
+  (release-ops.md § Release Channels)
+- `release-ready.yml` Flutter SDK'sini GitHub Actions ve Xcode Cloud ile ayni
+  `3.41.4` surumune pinli tutar. `stable` kullanma: 2026-07-18'de bir release
+  builder `stable` uzerinden 3.44.6'ya kayarak locked `lucide_icons 0.257.0`
+  ile release compile'ini bozdu (`IconData` final oldu). SDK upgrade'i
+  dependency uyumlulugu ve tum builder'lar birlikte dogrulanarak yapilir.
+- **Codemagic 2026-07-25'te kaldirildi** (`codemagic.yaml` silindi). Hosted
+  release pipeline'i yok; iOS icin `scripts/build_release.sh ios` + manuel
+  dagitim, Android icin `release-ready.yml` (veya local dogrulama icin
+  `scripts/build_release.sh android`). Detay: release-ops.md § Release Build
 
 ## Dependabot Rules
 - Auto-merge veya label yazma islemlerine guvenme

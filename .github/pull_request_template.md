@@ -48,8 +48,9 @@
 - [ ] CI coverage upload değiştiyse token olmayan ortamda job bilinçli skip/no-op davranıyor
 - [ ] CI/workflow değiştiyse workflow YAML parse edildi ve push sonrası `python3 scripts/check_remote_status.py` ile exact commit doğrulandı
 - [ ] Release artifact davranışı değiştiyse `release-ready.yml`, `CLAUDE.md`, `.claude/rules/release-ops.md` birlikte güncellendi
-- [ ] Release secret sözleşmesi değiştiyse GitHub Actions ve Codemagic env grupları senkron, eksik-secret fail-fast kontrolü test edildi
-- [ ] Codemagic verify-only değiştiyse `publishing`/Google Play credential içermediği ve `pubspec.yaml` build numarasını kullandığı sözleşme testiyle doğrulandı
-- [ ] Codemagic Android release sürümlemesi değiştiyse latest-build sorgusu package-wide ve publishing track seçimi ayrı; kullanılmış Play version code yeniden seçilmiyor
-- [ ] Codemagic Flutter SDK ayarı değiştiyse üç workflow, GitHub Actions ve Xcode Cloud aynı doğrulanmış sürüme pinli; `stable` kanal drift'i yok
+- [ ] Release secret sözleşmesi değiştiyse GitHub Actions secret'ları ve `.env` senkron, eksik-secret fail-fast kontrolü test edildi
+- [ ] `scripts/build_release.sh` değiştiyse DSN/token fail-fast, `--obfuscate`/`--split-debug-info` ve `sentry_dart_plugin` symbol upload sözleşmesi `scripts/test_ci_workflow_contract.py` + `scripts/verify_security.py` ile doğrulandı
+- [ ] `release-ready.yml` değiştiyse `publishing`/Google Play credential içermediği ve `pubspec.yaml` build numarasını kullandığı korunuyor (store'a publish eden job EKLENMEDİ)
+- [ ] Android sürümlemesi değiştiyse `pubspec.yaml` build numarasının package-wide Play maksimumunu aştığı elle doğrulandı (otomatik çözüm yok)
+- [ ] Flutter SDK ayarı değiştiyse `release-ready.yml`, GitHub Actions ve Xcode Cloud aynı doğrulanmış sürüme pinli; `stable` kanal drift'i yok
 - [ ] Xcode Cloud/iOS workflow değiştiyse `ios/ci_scripts/ci_post_clone.sh` executable/retry-aware, Pods filelist fail-fast doğrulaması korunuyor ve `.claude/rules/release-ops.md` güncel

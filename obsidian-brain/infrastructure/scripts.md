@@ -63,6 +63,7 @@ scripts/run_local_quality_gate.sh
 
 | Script | Purpose |
 |--------|---------|
+| `build_release.sh <ios\|android>` | Canonical release build — fails fast without `SENTRY_DSN`/`SENTRY_AUTH_TOKEN`, obfuscates, uploads Sentry symbols ([[infrastructure/release-ops]]) |
 | `generate_ios_env.sh` | Generate iOS environment config from dart-defines |
 | `setup_push_env.sh` | Setup FCM push notification environment |
 | `monitor_pg_performance.sql` | PostgreSQL performance monitoring queries |

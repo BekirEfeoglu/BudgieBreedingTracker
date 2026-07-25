@@ -4,25 +4,32 @@
 | Channel | Platform | Purpose |
 |---------|----------|---------|
 | GitHub Actions | CI | Dogrulama, hafif deployment |
-| Xcode Cloud | iOS | App Store Connect build/status check |
-| Codemagic | App Store / Google Play | Production release |
-| Codemagic `android-verify-only` | Android | Manual signed verification artifact; no store publishing |
-| GitHub Actions `release-ready.yml` | Android | Manual signed AAB readiness artifact |
+| Xcode Cloud | iOS | Build-only status check — release yolu DEGIL |
+| GitHub Actions `release-ready.yml` | Android | Manual signed AAB + Sentry symbol artifact; store'a hicbir sey publish ETMEZ |
+| `scripts/build_release.sh android` | Android | Ayni build'in local karsiligi (dogrulama) |
+| `scripts/build_release.sh ios` | iOS | `build/ios/ipa/*.ipa`; dagitim Xcode Organizer / `xcrun altool` ile manuel |
 | GitHub Pages | Web | `docs/` deployment |
 
+**Codemagic 2026-07-25'te kaldirildi** (`codemagic.yaml` silindi). Artik hosted
+bir release pipeline'i YOK; hicbir sey otomatik olarak store'a publish etmez.
+Store yuklemesi her iki platformda da manuel bir kullanici islemidir.
+
 - App Store / Google Play publish mantigini GitHub Actions'a tasima
-- Main push CI'si release artifact uretmemeli; signed AAB icin manuel `Release Ready` workflow'u veya Codemagic kullan
-- Store state'ini degistirmeden Codemagic signing/Sentry hattini kanitlamak icin
-  yalniz `android-verify-only` kullan; bu workflow'a `publishing` blogu veya
-  Google Play credential referansi ekleme
-- Codemagic `android-release`, `android-verify-only` ve `ios-release` Flutter
-  SDK'sini GitHub Actions/Xcode Cloud ile ayni `3.41.4` surumune pinler;
-  `stable` kanal drift'ini release aninda kabul etme. SDK ve locked dependency
+- Main push CI'si release artifact uretmemeli; signed AAB icin manuel
+  `Release Ready` workflow'unu kullan
+- `release-ready.yml` signed AAB + Sentry symbol'lerini **artifact** olarak
+  uretir; publishing blogu veya Google Play credential referansi EKLEME —
+  artifact'i indirip Play'e kendin yuklersin
+- `release-ready.yml` ve Xcode Cloud Flutter SDK'sini `3.41.4`'e pinli tutar;
+  `stable` kanal drift'ini release aninda kabul etme. 2026-07-18'de bir release
+  builder `stable` uzerinden 3.44.6'ya kaydi ve locked `lucide_icons 0.257.0`
+  (`IconData` final oldu) release compile'ini bozdu. SDK ve locked dependency
   uyumlulugunu koordine edip tum builder'lari birlikte yukselt.
-- Google Play version code paket genelinde benzersizdir. `android-release` yeni
-  build numarasini yalniz hedef `alpha` track'inden degil, package-wide en yuksek
-  Play build numarasindan turetmeli; track filtresiyle kullanilmis kodu yeniden
-  secme.
+- **Google Play version code paket genelinde benzersizdir.** `pubspec.yaml`
+  build numarasi TUM track'ler ve artifact library'deki en yuksek koddan buyuk
+  olmali. Bu eskiden Codemagic tarafindan otomatik cozuluyordu; artik release
+  oncesi **manuel** sorumluluktur — hedef track'e bakip kullanilmis bir kodu
+  yeniden secme.
 - `docs/` deployment mobil app release'lerinden ayri deger
 - Xcode Cloud Flutter build temiz clone'da `ios/ci_scripts/ci_post_clone.sh` ile hazirlanir; script Flutter SDK'yi pinned zip'in curl+unzip'i ile kurar (`git clone flutter/flutter` DEGIL — Xcode Cloud'da bilinen flaky, ci-actions.md § Deployment Safety) ve her adimdan once `>>> STEP N:` marker basar
 - Xcode Cloud main workflow build-only olmalidir; archive/TestFlight/App Store export ancak Apple signing hesabi, Development/Ad Hoc profil ihtiyaci ve kayitli fiziksel cihazlar hazirsa acilir
@@ -35,13 +42,42 @@
   - **patch**: bug fix
 - Build number her release'de arttirilmali
 - iOS ve Android build numaralari tutarli olmali
+- Android'de build numarasi package-wide Play maksimumundan buyuk olmali
+  (§ Release Channels — artik otomatik cozulmuyor)
+
+## Release Build (`scripts/build_release.sh`)
+Kanonik release build'i: `scripts/build_release.sh <ios|android>`.
+
+Sirasiyla: `.env` icinde `SENTRY_DSN` ve ortamda `SENTRY_AUTH_TOKEN` yoksa
+**fail-fast** -> `flutter pub get` + `build_runner` -> (iOS'ta ayrica
+`scripts/generate_ios_env.sh`) -> `flutter build ipa|appbundle --release
+--dart-define-from-file=.env --obfuscate --split-debug-info=...
+--save-obfuscation-map=...` -> `dart run sentry_dart_plugin` ile symbol upload.
+`SENTRY_RELEASE` platform basina runtime `PackageInfo` adlandirmasini birebir
+yansitir (`com.budgiebreeding.tracker` / `com.budgiebreeding.budgie_breeding_tracker`).
+
+Iki degerin eksikligi build'i KIRMAZ, sessizce bozuk bir release uretir — bu
+yuzden script'te loud fail-fast'tirlar:
+- `SENTRY_DSN` yoksa: crash reporting'i hic olmayan bir release
+- `SENTRY_AUTH_TOKEN` yoksa: kimsenin okuyamadigi obfuscated stack trace'ler
+
+**Xcode'dan dogrudan Archive ALMA.** `ios/Flutter/DartDefines.xcconfig`
+gitignored'dir ve yalnizca bir `flutter build` tarafindan yeniden yazilir;
+Archive ne bulursa onu okur. Repo'da bulunan bayat bir kopya legacy Google web
+client ID'sini tasiyordu ve `SENTRY_DSN` HIC yoktu — yani Archive o an
+tamamen crash-reporting'siz bir release uretirdi. Script'i once calistirmak bu
+dosyayi `.env`'den yeniden uretir; hazard'in tek yapisal savunmasi budur.
+
+Dagitim: iOS'ta `build/ios/ipa/*.ipa` -> Xcode Organizer veya `xcrun altool`.
+Android'de tercih `release-ready.yml` (temiz checkout); script local dogrulama icin.
 
 ## Environment Discipline
 - `--dart-define` ile gelen runtime config'i kodda fallback secret gibi kullanma
 - `.env` dosyasini source of truth kabul etme; release'de secrets manager kullan
 - Eksik env varsa fail-fast davran; sessiz fallback ile production degistirme
 - Production Android/iOS release'leri `SENTRY_DSN` olmadan uretilmemeli;
-  GitHub Actions secret'i ile Codemagic `app_env_vars` grubu senkron kalmali
+  GitHub Actions secret'i (`release-ready.yml`) ile local `.env` senkron kalmali
+  ve `scripts/build_release.sh` bunu fail-fast kontrol eder
 - Obfuscated release build'i `obfuscation.map.json` uretmeli ve
   `sentry_dart_plugin` ile symbol upload tamamlanmadan publish'e gecmemeli;
   `SENTRY_AUTH_TOKEN` yalniz `org:ci` kapsamli organizasyon token'i olmali
@@ -99,6 +135,12 @@
 8. Eski commit/run yesil oldugu icin yeni commit'i dogrulanmis saymak
 9. Xcode Cloud `action_required` durumunu warning kabul edip kapatmak
 10. Android build numarasini tek track'ten okuyup baska track/artifact'ta
-    kullanilmis version code'u yeniden secmek
+    kullanilmis version code'u yeniden secmek (artik otomatik cozum yok —
+    package-wide maksimumu elle dogrula)
+11. `scripts/build_release.sh`'i atlayip Xcode'dan dogrudan Archive almak
+    (bayat `DartDefines.xcconfig` -> DSN'siz/yanlis client ID'li release,
+    § Release Build)
+12. Store'a publish eden bir job/pipeline geri eklemek — release-ready.yml
+    ve script bilincli olarak yalniz artifact uretir; yukleme manuel
 
 > **Ilgili**: ci-actions.md (workflow detaylari), branch-workflow.md (merge policy), ai-workflow.md (kalite kapilari)
