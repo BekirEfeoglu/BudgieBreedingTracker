@@ -35,7 +35,11 @@ Store yuklemesi her iki platformda da manuel bir kullanici islemidir.
   `sentry_dart_plugin` haritayi her ABI sembol dosyasiyla eslestirip o binary'nin
   kendi debug id'si altinda kaydeder (`attempted=3, succeeded=3`). Crash hangi
   mimariden geldiyse o debug id'yi tasir; tek yuklemeye indirmek diger iki
-  ABI'de de-obfuscation'i bozar. "Optimize" etme
+  ABI'de de-obfuscation'i bozar. "Optimize" etme. Yuklenen dosya yerel
+  haritanin birebir ayni degildir: plugin JSON dizisinin basina iki girdi
+  ekler — `"SENTRY_DEBUG_ID_MARKER"` ve eslesen binary'nin debug id'si (compact
+  25 + 39 = tam 64 bayt; Sentry'nin bildirdigi boyut farkinin kaynagi budur).
+  Kalan girdiler yerel dosyayla bayt bayt aynidir
 - `release-ready.yml` ve Xcode Cloud Flutter SDK'sini `3.41.4`'e pinli tutar;
   `stable` kanal drift'ini release aninda kabul etme. 2026-07-18'de bir release
   builder `stable` uzerinden 3.44.6'ya kaydi ve locked `lucide_icons 0.257.0`

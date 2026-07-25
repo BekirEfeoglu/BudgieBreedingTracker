@@ -56,7 +56,7 @@ Generated/managed values (CLAUDE.md stats, the `verify_code_quality` checker-cou
 
 **Cross-surface guards** (`verify_rules.py`, blocking in `rules-sync`): counts
 cannot catch a *half-landed* update — one surface corrected, its twin left
-stale, every count still right. Five sections cover the cases where the same
+stale, every count still right. Six sections cover the cases where the same
 literal is repeated across files with nothing tying them together:
 - **Release Artifacts** — every `build/…` path in CLAUDE.md § Release Builds
   must appear in `release-ops.md` AND in a real producer
@@ -80,6 +80,14 @@ literal is repeated across files with nothing tying them together:
   two counts were already compared (99 == 99); *which* constant points at
   *which* file was not, so a renamed asset kept both counts right and failed
   only at runtime, where flutter_svg renders nothing rather than throwing.
+- **Route Targets** — the odd one out: NOT a bijection. GoRouter composes nested
+  paths from relative literals (`path: ':id'`), so `/chicks/:id` is never a
+  `path:` value and 12 constants are legitimately never referenced by name —
+  they are reached by `context.push('/chicks/$id')`. Requiring every constant to
+  be referenced would flag every detail route. Two sound checks instead: no two
+  constants may share a path value (ambiguous routing), and every navigation
+  target written as a string literal must resolve to a declared route
+  (`context.push('/typo')` compiles and 404s only at runtime).
 
 None of these are auto-fixable, and the summary says so instead of pointing at
 `--fix`. A red here means two surfaces disagree — go read the WARN lines and

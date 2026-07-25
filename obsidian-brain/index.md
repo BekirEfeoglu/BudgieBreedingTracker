@@ -28,6 +28,7 @@ Full catalog of every page in the obsidian-brain wiki.
 | [[log-archive-2026-07-k]] | Archived July 2026 change log entries (07-12 Edge/constants/genetics/gamification/docs) |
 | [[log-archive-2026-07-l]] | Archived July 2026 change log entries (07-13/07-14 CI, docs, and dependency maintenance) |
 | [[log-archive-2026-07-m]] | Archived July 2026 change log entries (07-17 to 07-25 release, CI, and security hardening) |
+| [[log-archive-2026-07-n]] | Archived July 2026 change log entries (07-25 Codemagic removal and TLS pin gate) |
 | [[overview]] | High-level synthesis — what the app does, architecture diagram, key decisions |
 
 ## Architecture

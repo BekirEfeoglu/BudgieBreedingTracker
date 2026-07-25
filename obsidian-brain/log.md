@@ -4,6 +4,30 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-25] infrastructure | 64-byte map mystery closed; route targets guarded
+
+**The 64-byte difference is solved by downloading the file.** The map Sentry
+stores is not the local map: `sentry_dart_plugin` prepends two entries to the
+JSON array — `"SENTRY_DEBUG_ID_MARKER"` and the paired binary's debug id.
+Compact that is 25 + 39 = exactly 64 bytes, and entries 3..133,112 are identical
+to the local array. This independently confirms the triple upload is structural:
+each copy carries a *different* debug id, so they are three distinct files.
+
+**Route targets** — sixth guard, and the first that is deliberately NOT a
+bijection. GoRouter composes nested paths from relative literals, so
+`/chicks/:id` is never a `path:` value and 12 constants are never referenced by
+name; they are reached by `context.push('/chicks/$id')`. A "every constant must
+be referenced" rule would flag all 12 — the missing-name != missing-feature trap
+this wiki's contract warns about. Two sound checks instead: no two constants may
+share a path value, and every string navigation target must resolve to a
+declared route (a typo'd `context.push` compiles and 404s only at runtime).
+Both verified non-vacuous; the repo is currently clean on both.
+
+`check_obsidian_brain.py` reached 100% — and writing the tests found dead code:
+the `if not moved` guard in `rotate_log` is unreachable, because the caps were
+already checked against the same text. Removed rather than left untestable.
+Scripts total 99%.
+
 ## [2026-07-25] infrastructure | Icon bijection guarded; the triple map upload is correct, not waste
 
 **Chased the triple obfuscation-map upload and the suggestion was wrong.** The
@@ -12,7 +36,13 @@ and registers it under that binary's own debug id — three uploads, three debug
 ids, `attempted=3, succeeded=3`. A crash carries the debug id of the
 architecture it came from, so collapsing to one upload would break
 de-obfuscation on the other two ABIs. Recorded in release-ops.md as a
-do-not-optimize. The 64-byte size difference remains unexplained and unchased.
+do-not-optimize. **The 64-byte size difference is now explained too**, by
+downloading the uploaded file: `sentry_dart_plugin` prepends two entries to the
+JSON array — the literal `"SENTRY_DEBUG_ID_MARKER"` and the paired binary's
+debug id. Compact, that is 25 + 39 = exactly 64 bytes, and the remaining 133,110
+entries are byte-identical to the local map. This independently proves the
+triple upload is structural: each copy embeds a *different* debug id, so they
+are three distinct files, not three copies of one.
 
 **SVG icon bijection** — fifth cross-surface family. The two counts were already
 compared (99 constants == 99 files), but *which* constant points at *which* file
@@ -54,9 +84,9 @@ waste. **It is not** — the CI log settles it: `sentry_dart_plugin` pairs the m
 with each ABI symbol file and registers it under that binary's own debug id
 (`attempted=3, succeeded=3`). A crash carries the debug id of the architecture
 it came from, so collapsing this to one upload would break de-obfuscation on the
-other two ABIs. Do not "optimize" it. Still unexplained and not chased: Sentry
-reports the map 64 bytes larger than the local file while all three symbol files
-match byte-for-byte.
+other two ABIs. Do not "optimize" it. The 64-byte size difference was chased in
+the entry above and is explained: the plugin prepends a debug-id marker pair to
+the JSON array.
 
 ## [2026-07-25] infrastructure | Storage bucket ids guarded; migration-drift coverage 93% → 100%
 
@@ -148,41 +178,3 @@ is there. Found only by running it — every static check passed while the guida
 was wrong. CLAUDE.md was missed in the first pass and corrected in a follow-up:
 release/deploy changes must land the owning rule AND CLAUDE.md together
 (documentation-sync.md).
-
-## [2026-07-25] security | TLS pin rotation lead time is now a CI gate
-
-`security.md` required replacement fingerprints ≥14 days before expiry, but
-nothing enforced it — a lapsed pin set leaves the app unable to reach the
-backend at all, fixable only by a store release. `check_certificate_pin_freshness`
-reads the earliest `valid <start> through <end>` comment above the pins and
-fails `security-audit` inside that window (harsher message once expired);
-39 → 40 controls. Writing the tests exposed a bug in the check itself: those
-comments wrap, so the RSA leaf's date sits behind a `//` on the next line and
-the first regex skipped it — both pins share an expiry, so the output looked
-right while only one was read. Comment markers are now stripped before
-whitespace is collapsed. Also audited GitHub secrets after the Codemagic
-removal: all 12 are still referenced by workflows, nothing orphaned (the Play
-credential lived in Codemagic's own env group, never on GitHub).
-
-## [2026-07-25] release-ops | Codemagic removed; docs moved to script + artifact-only releases
-
-Docs-only. `codemagic.yaml` was deleted (user decision), so all three workflows
-it described (`android-release` → Play alpha, `android-verify-only`,
-`ios-release` → TestFlight) are gone and **no hosted release pipeline remains** —
-nothing publishes to a store automatically. Rewrote the release surface across
-13 files: iOS is now `scripts/build_release.sh ios` + manual Organizer/`altool`
-distribution; Android is `release-ready.yml` (artifact-only) with
-`scripts/build_release.sh android` as the local equivalent. Documented the new
-script's contract (fail-fast on `SENTRY_DSN` in `.env` / exported
-`SENTRY_AUTH_TOKEN`, obfuscation + `sentry_dart_plugin` symbol upload with a
-per-platform `SENTRY_RELEASE` matching `PackageInfo`) and the hazard it exists
-for: `ios/Flutter/DartDefines.xcconfig` is gitignored and only a `flutter build`
-rewrites it, so a raw Xcode Archive can ship a stale config — a found copy had
-the legacy Google web client ID and **no** `SENTRY_DSN`. Called out that Play
-version codes are package-global and are no longer resolved automatically
-(now a manual pre-release check). Preserved the Flutter `3.41.4` pin rationale
-(2026-07-18 `stable` drift to 3.44.6 broke locked `lucide_icons`) where it still
-applies, on `release-ready.yml` + Xcode Cloud. Security controls 37→39.
-known-gaps: artifact-only publishing recorded as a deliberate absence. Rotated
-ten 07-17/07-18 entries into [[log-archive-2026-07-m]].
-
