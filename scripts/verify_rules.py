@@ -22,6 +22,7 @@ from pathlib import Path
 from _rules_collectors import (
     collect_actual_values,
     collect_edge_function_surfaces,
+    collect_storage_bucket_surfaces,
     count_json_leaf_keys,
     extract_first_number,
     extract_markdown_section,
@@ -274,6 +275,37 @@ def main():
             for name in unknown:
                 print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: client literali, boyle bir fonksiyon yok")
             track_manual(check("Client literalleri gercek fonksiyona isaret ediyor", 0, len(unknown)))
+
+    print(section("Storage Buckets"))
+    # Third repeated-literal surface: a bucket id lives in SupabaseConstants,
+    # is provisioned by a migration, and is described in assets-images.md.
+    # A constant naming an unprovisioned bucket fails at upload, not at build.
+    buckets = collect_storage_bucket_surfaces(ROOT)
+    constants = buckets["constants"]
+    if not constants:
+        print(f"  {Colors.YELLOW}SKIP{Colors.RESET} SupabaseConstants bucket sabiti bulunamadi")
+    else:
+        if buckets["migrations"] is None:
+            print(f"  {Colors.YELLOW}SKIP{Colors.RESET} supabase/migrations/ bulunamadi")
+        else:
+            for name in sorted(constants - buckets["migrations"]):
+                print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: sabit var, hicbir migration provision etmiyor")
+            for name in sorted(buckets["migrations"] - constants):
+                print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: migration'da var, SupabaseConstants'ta sabiti yok")
+            track_manual(check(
+                "Bucket sabitleri migration'larla ayni", 0,
+                len(constants ^ buckets["migrations"]),
+            ))
+
+        # One-way only: the rule deliberately names buckets that do NOT exist
+        # (`chat-attachments`, `health-records`) to stop them being invented.
+        if buckets["doc_text"] is None:
+            print(f"  {Colors.YELLOW}SKIP{Colors.RESET} assets-images.md bulunamadi")
+        else:
+            undocumented = sorted(n for n in constants if f"`{n}`" not in buckets["doc_text"])
+            for name in undocumented:
+                print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: assets-images.md'de belgelenmemis")
+            track_manual(check("Bucket sabitleri assets-images.md'de belgeli", 0, len(undocumented)))
 
     # ── Summary ──
     pass_count = sum(results)

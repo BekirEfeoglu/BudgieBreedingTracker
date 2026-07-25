@@ -92,7 +92,7 @@ uses its separate 10 MiB processing contract.
 
 ## Storage Buckets
 
-Real buckets (`lib/core/constants/supabase_constants.dart`): `bird-photos`, `egg-photos`, `chick-photos`, `avatars`, `backups`, `community-photos`, `photos` (marketplace, constant `marketplacePhotosBucket`), `message-photos`. There is no separate `health-records` or `chat-attachments` bucket — health record photos live in `bird-photos`; DM photo messages live in `message-photos`.
+Real buckets (`lib/core/constants/supabase_constants.dart`): `bird-photos`, `egg-photos`, `chick-photos`, `avatars`, `backups`, `community-photos`, `photos` (marketplace, constant `marketplacePhotosBucket`), `message-photos`. There is no separate `health-records` or `chat-attachments` bucket — health record photos live in `bird-photos`; DM photo messages live in `message-photos`. `verify_rules.py` § Storage Buckets enforces this list in `rules-sync`: every `*Bucket` constant must be provisioned by a migration (two-way) and named in `assets-images.md` (one-way, since that rule deliberately mentions the two buckets that do not exist).
 
 The seven scanned image buckets enforce a 2 MiB raw `file_size_limit` via
 migration `20260717120000`; `backups` keeps its separate 50 MiB limit.

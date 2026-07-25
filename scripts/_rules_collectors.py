@@ -157,6 +157,54 @@ def collect_edge_function_surfaces(root: Path) -> dict:
     }
 
 
+# ── Storage bucket names across surfaces ─────────────────────────────
+# Third member of the repeated-literal family. A bucket id is written in
+# SupabaseConstants, provisioned in a migration, and described in
+# assets-images.md; nothing ties the three together. A constant naming an
+# unprovisioned bucket fails at upload time, not at build time.
+
+
+def collect_storage_bucket_surfaces(root: Path) -> dict:
+    """Collect storage bucket ids from constants, migrations and the rule doc.
+
+    ``None`` means that surface is absent (skip rather than report drift).
+    """
+    consts_file = root / "lib" / "core" / "constants" / "supabase_constants.dart"
+    in_constants = None
+    if consts_file.exists():
+        in_constants = set(
+            re.findall(
+                r"static const String \w*Bucket = '([^']+)'",
+                consts_file.read_text(encoding="utf-8"),
+            )
+        )
+
+    migrations_dir = root / "supabase" / "migrations"
+    in_migrations = None
+    if migrations_dir.exists():
+        in_migrations = set()
+        for sql_file in migrations_dir.glob("*.sql"):
+            text = sql_file.read_text(encoding="utf-8")
+            # storage.objects policies reference the bucket by column...
+            in_migrations |= set(
+                re.findall(r"bucket_id\s*=\s*'([a-z0-9][a-z0-9-]*)'", text)
+            )
+            # ...and bucket DDL/DML names it inside a storage.buckets statement.
+            for statement in re.findall(r"storage\.buckets[^;]*", text, re.IGNORECASE):
+                in_migrations |= set(
+                    re.findall(r"'([a-z0-9][a-z0-9-]*)'", statement)
+                )
+
+    doc_file = root / ".claude" / "rules" / "assets-images.md"
+    doc_text = doc_file.read_text(encoding="utf-8") if doc_file.exists() else None
+
+    return {
+        "constants": in_constants,
+        "migrations": in_migrations,
+        "doc_text": doc_text,
+    }
+
+
 def count_route_consts(filepath: Path) -> int:
     if not filepath.exists():
         return 0

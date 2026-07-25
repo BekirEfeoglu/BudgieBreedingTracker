@@ -26,6 +26,7 @@ from _rules_collectors import (
     _count_indexes,
     collect_edge_function_surfaces,
     collect_quality_checker_counts,
+    collect_storage_bucket_surfaces,
     collect_data_layer,
     collect_repos_and_remotes,
     collect_source_file_count,
@@ -1763,6 +1764,124 @@ class TestEdgeFunctionCheck(unittest.TestCase):
         self.assertEqual(result, 1)
         self.assertIn("--fix' ile otomatik duzelt", out)
         self.assertNotIn("capraz-yuzey hatasi", out)
+
+
+# ── Storage bucket ad tutarliligi ─────────────────────────────────────────────
+
+
+def _write_bucket_fixture(root: Path, *, constants, migrations, doc, omit=()) -> None:
+    """Uc bucket yuzeyini gecici bir kok altinda olustur."""
+    if "constants" not in omit:
+        d = root / "lib" / "core" / "constants"
+        d.mkdir(parents=True, exist_ok=True)
+        body = "\n".join(
+            f"  static const String {n.replace('-', '_')}Bucket = '{n}';" for n in constants
+        )
+        (d / "supabase_constants.dart").write_text(
+            f"class SupabaseConstants {{\n{body}\n}}\n", encoding="utf-8")
+    if "migrations" not in omit:
+        d = root / "supabase" / "migrations"
+        d.mkdir(parents=True, exist_ok=True)
+        for i, name in enumerate(migrations):
+            # Alternate the two real-world shapes: bucket DDL and an
+            # objects-policy bucket_id reference.
+            sql = (
+                f"insert into storage.buckets (id, public) values ('{name}', false);"
+                if i % 2 == 0
+                else f"create policy p on storage.objects using (bucket_id = '{name}');"
+            )
+            (d / f"2026010100000{i}_bucket_{i}.sql").write_text(sql, encoding="utf-8")
+    if "doc" not in omit:
+        d = root / ".claude" / "rules"
+        d.mkdir(parents=True, exist_ok=True)
+        body = "\n".join(f"| `{n}` | Private | notes |" for n in doc)
+        (d / "assets-images.md").write_text(f"# Assets\n{body}\n", encoding="utf-8")
+
+
+class TestCollectStorageBucketSurfaces(unittest.TestCase):
+    """collect_storage_bucket_surfaces: sabit / migration / dokuman."""
+
+    def test_reads_both_migration_shapes(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write_bucket_fixture(root, constants=["bird-photos", "avatars"],
+                                  migrations=["bird-photos", "avatars"],
+                                  doc=["bird-photos", "avatars"])
+            surfaces = collect_storage_bucket_surfaces(root)
+        self.assertEqual(surfaces["constants"], {"bird-photos", "avatars"})
+        self.assertEqual(surfaces["migrations"], {"bird-photos", "avatars"})
+        self.assertIn("`bird-photos`", surfaces["doc_text"])
+
+    def test_missing_surfaces_yield_none(self):
+        with tempfile.TemporaryDirectory() as d:
+            surfaces = collect_storage_bucket_surfaces(Path(d))
+        self.assertIsNone(surfaces["constants"])
+        self.assertIsNone(surfaces["migrations"])
+        self.assertIsNone(surfaces["doc_text"])
+
+
+class TestStorageBucketCheck(unittest.TestCase):
+    """main() icindeki Storage Buckets bolumu."""
+
+    def _run(self, root: Path, *, constants, migrations, doc, omit=()):
+        import verify_rules as vr
+
+        assets = root / "assets" / "translations"
+        assets.mkdir(parents=True)
+        data = {f"k{i}": f"v{i}" for i in range(3)}
+        for lang in ("tr", "en", "de"):
+            (assets / f"{lang}.json").write_text(json.dumps(data), encoding="utf-8")
+        tmp_md = root / "CLAUDE.md"
+        tmp_md.write_text(_make_claude_md_content(tr_keys=3), encoding="utf-8")
+        _write_bucket_fixture(root, constants=constants, migrations=migrations,
+                              doc=doc, omit=omit)
+
+        actual = _make_sample_actual({"tr_keys": 3, "categories": 35})
+        with patch.object(vr, "CLAUDE_MD", tmp_md), \
+             patch.object(vr, "ASSETS", root / "assets"), \
+             patch.object(vr, "ROOT", root), \
+             patch.object(vr, "collect_actual_values", return_value=actual):
+            return vr.main()
+
+    def test_passes_when_all_surfaces_agree(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d), constants=["bird-photos"],
+                               migrations=["bird-photos"], doc=["bird-photos"])
+        self.assertEqual(result, 0)
+
+    def test_fails_when_constant_is_never_provisioned(self):
+        """En pahali hali: upload aninda patlar, build'de degil."""
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d), constants=["bird-photos", "receipts"],
+                               migrations=["bird-photos"],
+                               doc=["bird-photos", "receipts"])
+        self.assertEqual(result, 1)
+
+    def test_fails_when_migration_bucket_has_no_constant(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d), constants=["bird-photos"],
+                               migrations=["bird-photos", "orphan-bucket"],
+                               doc=["bird-photos"])
+        self.assertEqual(result, 1)
+
+    def test_fails_when_bucket_is_undocumented(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d), constants=["bird-photos", "avatars"],
+                               migrations=["bird-photos", "avatars"],
+                               doc=["bird-photos"])
+        self.assertEqual(result, 1)
+
+    def test_skips_when_constants_absent(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d), constants=[], migrations=["x"], doc=["x"],
+                               omit=("constants",))
+        self.assertEqual(result, 0)
+
+    def test_skips_when_migrations_and_doc_absent(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d), constants=["bird-photos"], migrations=[],
+                               doc=[], omit=("migrations", "doc"))
+        self.assertEqual(result, 0)
 
 
 # ── Script entrypoint (satir 207) ─────────────────────────────────────────────

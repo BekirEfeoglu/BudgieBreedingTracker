@@ -66,6 +66,11 @@ literal is repeated across files with nothing tying them together:
   list two-way; every name literal in `edge_function_client.dart` (including
   `_rateLimitExempt`) must resolve to a real function. One-way on the client
   side only: a webhook/trigger/cron function legitimately has no client caller.
+- **Storage Buckets** — every `*Bucket` constant in `SupabaseConstants` must be
+  provisioned by a migration (two-way) and documented in `assets-images.md`
+  (one-way — that rule deliberately names buckets that do NOT exist, so the
+  reverse direction would flag its own warnings). A constant naming an
+  unprovisioned bucket fails at upload time, not at build time.
 
 Neither is auto-fixable, and the summary says so instead of pointing at
 `--fix`. A red here means two surfaces disagree — go read the WARN lines and

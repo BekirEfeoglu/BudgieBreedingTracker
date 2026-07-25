@@ -108,6 +108,12 @@ iyileştiren yüzeye özel optimizasyonlardır.
 
 Gerçek bucket'lar (`lib/core/constants/supabase_constants.dart`): `bird-photos`, `egg-photos`, `chick-photos`, `avatars`, `backups`, `community-photos`, `photos` (marketplace, sabit adı `marketplacePhotosBucket`), `message-photos`. `health-records` ve `chat-attachments` diye ayrı bucket'lar YOK — sağlık kayıt fotoğrafı `bird-photos` altında, DM fotoğrafları `message-photos` altında saklanır.
 
+Bu liste CI'da zorlanır: `verify_rules.py` § Storage Buckets her `*Bucket`
+sabitinin bir migration tarafından provision edildiğini (çift yönlü) ve bu
+dosyada backtick'li geçtiğini (tek yönlü) doğrular. Yeni bucket eklerken üçü
+birlikte gider: sabit + migration + bu satır. Tek yönlü olmasının sebebi
+yukarıdaki "YOK" cümlesi — var olmayan bucket adlarını bilerek anıyoruz.
+
 Safety-scanned yedi image bucket'ının (`bird/egg/chick/avatars/community/photos/message`)
 `file_size_limit` değeri migration `20260717120000` ile 2 MiB'dir. `backups`
 ayrı 50 MiB sözleşmesindedir ve bu limite dahil değildir.
