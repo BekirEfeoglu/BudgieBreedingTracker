@@ -34,7 +34,11 @@ it takes only `--debug-info` (the split-debug-info symbols file) and `--input`.
 The map is the separate identifier name-mapping Sentry reads via
 `sentry: dart_symbol_map_path`; it ships in the artifact because it is the only
 build output carrying that mapping and would otherwise be discarded after the
-upload. Two paths make `build/` the artifact root.
+upload. Two paths make `build/` the artifact root — **verified by running
+`release-ready.yml`** rather than reasoning about it: the artifact holds exactly
+`app/obfuscation.map.json` (2.1 MB, 133,110 entries) plus the three ABI symbol
+files at `symbols/android/`, so the map ships and the root change did not drop
+the symbols.
 (2) `verify_rules.py` gained an **Edge Functions** section: directories under
 `supabase/functions/` ↔ `config.toml` `[functions.*]` ↔ the `ci.yml` deploy list
 compared two-way, plus every name literal in `edge_function_client.dart`
