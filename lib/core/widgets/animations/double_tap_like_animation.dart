@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+
+import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 
 class DoubleTapLikeAnimation extends StatefulWidget {
   final Widget child;
@@ -11,8 +13,12 @@ class DoubleTapLikeAnimation extends StatefulWidget {
     super.key,
     required this.child,
     this.onLike,
-    this.likeIcon = const Icon(
-      LucideIcons.heart,
+    // "Like" is a domain concept, so the default must be the SVG AppIcon, not
+    // LucideIcons (anti-pattern #24). Every other like/heart render in the app
+    // already uses AppIcons.like; this default is what a new call site
+    // inherits when it does not pass likeIcon.
+    this.likeIcon = const AppIcon(
+      AppIcons.like,
       color: Colors.white,
       size: 100,
     ),
