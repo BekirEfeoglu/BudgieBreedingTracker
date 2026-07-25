@@ -158,7 +158,7 @@ There is no hosted release pipeline. Nothing publishes to a store automatically.
 | --- | --- | --- |
 | Android | `release-ready.yml` (manual `workflow_dispatch`) | Signed AAB + Sentry symbols as **artifacts**; publishes nothing — download and upload to Play yourself |
 | Android (local) | `scripts/build_release.sh android` | Same build locally, for verification |
-| iOS | `scripts/build_release.sh ios` | `build/ios/ipa/*.ipa` — distribute via Xcode Organizer or `xcrun altool` |
+| iOS | `scripts/build_release.sh ios` | `build/ios/archive/Runner.xcarchive` — the build stops at the archive (nothing generates an export-options plist locally); distribute with Distribute App from Xcode Organizer |
 
 `scripts/build_release.sh <ios|android>` is the canonical release build. It fails
 fast when `SENTRY_DSN` (`.env`) or `SENTRY_AUTH_TOKEN` (environment) is missing,

@@ -12,10 +12,13 @@ upload works: 127 debug files + the Dart obfuscation map uploaded, release
 at `build/ios/archive/Runner.xcarchive` — `flutter build ipa` cannot export an
 IPA without an export-options plist, which Codemagic used to generate via
 `xcode-project use-profiles` and nothing replaces locally. The script (and
-release-ops.md, ci-cd.md, the store-release skill) claimed `build/ios/ipa/*.ipa`,
-a path that does not exist in this setup; the script now reports whichever
-artifact was actually produced and fails if neither is there. Found only by
-running it — every static check passed while the guidance was wrong.
+release-ops.md, ci-cd.md, the store-release skill, CLAUDE.md § Release Builds)
+claimed `build/ios/ipa/*.ipa`, a path that does not exist in this setup; the
+script now reports whichever artifact was actually produced and fails if neither
+is there. Found only by running it — every static check passed while the guidance
+was wrong. CLAUDE.md was missed in the first pass and corrected in a follow-up:
+release/deploy changes must land the owning rule AND CLAUDE.md together
+(documentation-sync.md).
 
 ## [2026-07-25] security | TLS pin rotation lead time is now a CI gate
 
