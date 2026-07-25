@@ -4,6 +4,21 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-25] audit-followup2 | Founder demotion-to-NULL failed open
+
+Verifying the founder promotion fix end-to-end (rollback-wrapped simulation on
+prod) surfaced a second, worse bug in the same trigger: demoting a privileged
+user by setting `profiles.role = NULL` did NOT revoke their `admin_users` row.
+`NEW.role NOT IN ('admin','founder')` is NULL — not TRUE — when NEW.role is
+NULL, and NULL is the ordinary-member role here (162 of 164 profiles), so this
+is the normal demotion path, not an edge case. The pre-existing
+`NEW.role <> 'admin'` had the same hole, meaning revocation this way never
+worked. Unlike 20260725043351 (failed closed) this fails OPEN. Fixed with
+COALESCE in migration `20260725060242`; all four transitions re-verified by
+simulation; zero stranded rows needed backfill. Also updated the GitHub
+`GOOGLE_*_CLIENT_ID` secrets to the new OAuth project and closed issues
+#25/#28/#29 as already-fixed.
+
 ## [2026-07-25] audit-followup | Closed the audit's deferred items
 
 Second batch after the aspirational-contract sweep. Founder role never synced
@@ -173,20 +188,3 @@ subprocesses, preventing the SDK version from degrading to `0.0.0-unknown` in a
 hook. Hook installation is worktree-relative and executable-safe. The Edge
 deploy dependency regression now asserts the path guard alongside analyze,
 Flutter, and Edge tests; a real hook-environment test covers the failure mode.
-
-## [2026-07-17] ci-fix | Edge deploy is path-gated; marketplace moderation rejection now logs safely
-Docs-only main pushes no longer redeploy unchanged Edge Functions; source/config/workflow changes remain test-gated. Expected server moderation rejections emit a non-sensitive warning before the localized validation error, with workflow and remote-source regressions.
-
-## [2026-07-17] fix | Marketing site tablet navigation and accessibility
-
-Live-tested at 375/768/1024/1440 widths. The landing header now uses the
-hamburger below 1200px; 48px targets, FAQ/carousel semantics, focus, and heading
-order are corrected. TR/EN/DE security copy scopes AES-256 to implemented
-fields/backups and retains the 2 MiB scan boundary. Genetics output no longer
-leaks Turkish. The user guide uses native buttons, localized ARIA, correct emoji,
-layered Escape/focus restoration, and 48px controls. Terms pages remove leaked
-annotations and mobile overflow; explicit EN/DE URLs remain authoritative and
-privacy links stay in-language. Shared locale scripts are cache-versioned. All
-64 public HTML files have asset/ID coverage plus guide/legal regression tests.
-
-Older entries are archived in [[log-archive-2026-07-l]], [[log-archive-2026-07-k]], [[log-archive-2026-07-j]], [[log-archive-2026-07-i]], [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

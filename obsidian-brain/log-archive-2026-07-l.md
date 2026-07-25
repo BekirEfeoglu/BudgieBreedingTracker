@@ -5,6 +5,23 @@ production Sentry release-monitoring work.
 
 ---
 
+## [2026-07-17] ci-fix | Edge deploy is path-gated; marketplace moderation rejection now logs safely
+Docs-only main pushes no longer redeploy unchanged Edge Functions; source/config/workflow changes remain test-gated. Expected server moderation rejections emit a non-sensitive warning before the localized validation error, with workflow and remote-source regressions.
+
+## [2026-07-17] fix | Marketing site tablet navigation and accessibility
+
+Live-tested at 375/768/1024/1440 widths. The landing header now uses the
+hamburger below 1200px; 48px targets, FAQ/carousel semantics, focus, and heading
+order are corrected. TR/EN/DE security copy scopes AES-256 to implemented
+fields/backups and retains the 2 MiB scan boundary. Genetics output no longer
+leaks Turkish. The user guide uses native buttons, localized ARIA, correct emoji,
+layered Escape/focus restoration, and 48px controls. Terms pages remove leaked
+annotations and mobile overflow; explicit EN/DE URLs remain authoritative and
+privacy links stay in-language. Shared locale scripts are cache-versioned. All
+64 public HTML files have asset/ID coverage plus guide/legal regression tests.
+
+Older entries are archived in [[log-archive-2026-07-l]], [[log-archive-2026-07-k]], [[log-archive-2026-07-j]], [[log-archive-2026-07-i]], [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
+
 ## [2026-07-17] sync | Conflict retry now restores encrypted local snapshots
 
 Drift v29 stores encrypted local/server snapshots before server-wins overwrite.
