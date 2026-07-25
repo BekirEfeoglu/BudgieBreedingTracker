@@ -56,43 +56,31 @@ Generated/managed values (CLAUDE.md stats, the `verify_code_quality` checker-cou
 
 **Cross-surface guards** (`verify_rules.py`, blocking in `rules-sync`): counts
 cannot catch a *half-landed* update — one surface corrected, its twin left
-stale, every count still right. Seven sections cover the cases where the same
-literal is repeated across files with nothing tying them together:
-- **Release Artifacts** — every `build/…` path in CLAUDE.md § Release Builds
-  must appear in `release-ops.md` AND in a real producer
-  (`build_release.sh` / `release-ready.yml`). Added after 067aa2f corrected the
-  iOS artifact path in the rule, the wiki and the skill but not in CLAUDE.md.
-- **Edge Functions** — the function directories under `supabase/functions/`
-  must match `config.toml`'s `[functions.*]` entries and the `ci.yml` deploy
-  list two-way; every name literal in `edge_function_client.dart` (including
-  `_rateLimitExempt`) must resolve to a real function. One-way on the client
-  side only: a webhook/trigger/cron function legitimately has no client caller.
-- **Storage Buckets** — every `*Bucket` constant in `SupabaseConstants` must be
-  provisioned by a migration (two-way) and documented in `assets-images.md`
-  (one-way — that rule deliberately names buckets that do NOT exist, so the
-  reverse direction would flag its own warnings). A constant naming an
-  unprovisioned bucket fails at upload time, not at build time.
-- **L10n Categories** — the top-level keys of `tr.json` must match the category
-  list in `localization.md` two-way. The category *count* was already checked;
-  the *names* were not, so a rename kept the count right while the list rotted.
-- **SVG Icons Bijection** — every `AppIcons` constant must point at a real file
-  under `assets/icons/` and every such file must have a constant, two-way. The
-  two counts were already compared (99 == 99); *which* constant points at
-  *which* file was not, so a renamed asset kept both counts right and failed
-  only at runtime, where flutter_svg renders nothing rather than throwing.
-- **Route Targets** — the odd one out: NOT a bijection. GoRouter composes nested
-  paths from relative literals (`path: ':id'`), so `/chicks/:id` is never a
-  `path:` value and 12 constants are legitimately never referenced by name —
-  they are reached by `context.push('/chicks/$id')`. Requiring every constant to
-  be referenced would flag every detail route. Two sound checks instead: no two
-  constants may share a path value (ambiguous routing), and every navigation
-  target written as a string literal must resolve to a declared route
-  (`context.push('/typo')` compiles and 404s only at runtime).
-- **Supabase Tables** — every `*Table` constant must name a table some migration
-  creates. One-way: migrations legitimately create tables the client never names
-  (`private.*` helpers, trigger-written audit tables). Keyed on the constant
-  NAME suffix, not its value — `adminExportAllTablesRpc` holds
-  `'admin_export_all_tables'`, which is an RPC.
+stale, every count still right. Eight checks over seven families, covering the
+places where the same literal is repeated with nothing tying the copies
+together. Direction matters: **two-way** means both sides must match exactly;
+**one-way** means the second surface may legitimately hold extras.
+
+| Family | Surfaces | Dir. | When it would otherwise fail |
+|---|---|---|---|
+| Release Artifacts | CLAUDE.md § Release Builds ↔ `release-ops.md` ↔ a real producer (`build_release.sh` / `release-ready.yml`) | one-way ×2 | never — silent wrong guidance |
+| Edge Functions | `supabase/functions/` dirs ↔ `config.toml` `[functions.*]` ↔ `ci.yml` deploy list | two-way ×2 | deploy, or runtime 404 |
+| Edge Fn client literals | `edge_function_client.dart` (incl. `_rateLimitExempt`) → real function | one-way | runtime 404, or *silently* no rate-limit exemption |
+| Storage Buckets | `*Bucket` constants ↔ provisioning migration | two-way | upload time |
+| Storage Buckets (docs) | `*Bucket` constants → `assets-images.md` | one-way | never — that rule deliberately names buckets that do NOT exist |
+| L10n Categories | `tr.json` top-level keys ↔ `localization.md` list | two-way | never — a rename keeps the count right |
+| SVG Icons | `AppIcons` constants ↔ files under `assets/icons/` | two-way | runtime, silently rendering nothing |
+| Route Targets | `AppRoutes` path values unique; string `context.push`/`go` targets → a declared route | one-way | when a user taps it (404) |
+| Supabase Tables | `*Table` constants → a `create table` in migrations | one-way | query time (Postgres error) |
+| Supabase Columns | `*Col<Name>` constants → a column declared in migrations | one-way | query time (Postgres error) |
+
+Two deliberate non-rules, both instances of missing-name != missing-feature:
+- Route constants are NOT required to be referenced. GoRouter composes nested
+  paths from relative literals, so `/chicks/:id` is never a `path:` value and 12
+  constants are reached only by interpolation.
+- Column names are NOT table-scoped. The same `user_id` constant is reused
+  everywhere, so the check answers "does this column exist anywhere" — enough
+  for the typo class, which is the part that reaches production.
 
 None of these are auto-fixable, and the summary says so instead of pointing at
 `--fix`. A red here means two surfaces disagree — go read the WARN lines and

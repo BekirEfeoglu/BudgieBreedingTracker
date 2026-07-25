@@ -13,7 +13,7 @@ All scripts in `scripts/` directory.
 | `check_obsidian_brain.py` | Verify wiki index, wikilinks, inline file refs, overview metrics, decision sections, log pressure, and 200-line limit |
 | `check_obsidian_brain.py --rotate` | Move the oldest `log.md` entries into the newest archive (chosen by content, not filename), widen its `(MM-DD to MM-DD)` range and the index row, then lint |
 | `verify_code_quality.py` | Anti-pattern scan (28 checker categories: 19/24 CLAUDE.md anti-patterns + 10 documented extras; some overlap) |
-| `verify_rules.py` | CLAUDE.md stats vs codebase + 7 cross-surface guards (release artifacts, Edge fn names, bucket ids, l10n categories, icons, route targets, table names) |
+| `verify_rules.py` | CLAUDE.md stats vs codebase + cross-surface guards over 7 families (release artifacts, Edge fn names, buckets, l10n categories, icons, routes, tables/columns); the direction of each is tabulated in `documentation-sync.md` |
 | `verify_rules.py --fix` | Auto-fix CLAUDE.md stats + inline rule references |
 | `check_remote_status.py` | Verify exact commit SHA GitHub status/check-run summary; an Edge deploy skip is accepted only with a successful path detector |
 | `verify_migration_drift.py` | Migration structure guard: duplicate/malformed filenames plus immutable applied-chain SHA-256 baseline (offline, in `code-quality`); `--online` parses only remote ledger versions and resolves the nine documented apply-time aliases from the fixture before checking parity |
