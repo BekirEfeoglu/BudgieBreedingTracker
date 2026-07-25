@@ -290,6 +290,20 @@ class _PushContext {
   int totalPushed = 0;
   int totalOrphans = 0;
 
+  /// Layer short-circuit flags — set only when a layer failed *entirely*
+  /// (`_safeParallelPush` returned no successes), never on a partial failure.
+  ///
+  /// That asymmetry is deliberate, not an oversight. These flags are a
+  /// throughput optimization: if no parent in a layer landed, pushing its
+  /// children is guaranteed wasted work. Per-record correctness is owned by
+  /// [ValidatedSyncMixin], which checks each child's FK parent and defers the
+  /// child while that parent is still pending. Widening the flags to fire on
+  /// partial failure would skip children whose own parents *did* succeed,
+  /// costing throughput without adding any guarantee the mixin does not
+  /// already provide.
+  ///
+  /// Partial failures are not silent: `_safeParallelPush` reports each one via
+  /// `reportPushFailure`.
   bool l1Failed = false;
   bool l2Failed = false;
   bool l3Failed = false;
