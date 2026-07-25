@@ -22,15 +22,21 @@ surface for what the app can interrupt them about.
 
 ## Channels / Categories
 
-| ID | Purpose | Importance |
-|----|---------|------------|
-| `incubation` | Hatching reminders, egg turning | High |
-| `breeding` | Breeding events | Default |
-| `marketplace` | Listing matches | High |
-| `community` | Mentions, replies | Default |
-| `system` | Maintenance, updates | Low |
+| ID | Purpose |
+|----|---------|
+| `egg_turning` | Egg-turning reminders |
+| `incubation` | Incubation milestones |
+| `chick_care` | Chick care/weighing + banding |
+| `health_check` | Health-record follow-ups |
+| `streak` | Smart daily-streak reminder |
+| `default` | Fallback for unmapped notification types |
 
-Channel definitions live in [[domain/notification-service]] (`notification_service.dart`).
+No `breeding` / `marketplace` / `community` / `system` channel exists (design
+target, never built), and there is no per-channel importance — every
+notification posts with `Importance.high` (no `AndroidNotificationChannel` is
+ever constructed). IDs are declared in `NotificationChannelConfig`
+(`lib/domain/services/notifications/notification_channel_config.dart`); see
+[[domain/notification-service]] § Channels / Categories.
 
 ## Permission Flow
 

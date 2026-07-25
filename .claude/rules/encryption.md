@@ -52,7 +52,7 @@ Sub-key hesabı her encrypt/decrypt'te tekrar edilmez — bir kere hesaplanıp `
 - IV random per encrypt (asla reuse)
 
 ## Sentry & Logging
-- Encrypt/decrypt hata: `Sentry.captureException` zorunlu (data corruption sinyali)
+- Encrypt/decrypt hata: `Sentry.captureException` zorunlu (data corruption sinyali). `EncryptionService.decrypt` TÜM key sürümleri tükendiğinde bunu yapar (2026-07-25) ve yalnız **metadata** gönderir: `payloadLength` + `previousKeyCount` — ciphertext veya çözülmüş değer ASLA
 - Asla plaintext'i log'lama — sadece byte length + magic verify result
 - Key rotation event'i: `AppLogger.info('Encryption', 'rotated key v$old → v$new')`
 - PII log etme: ring_number, pedigree içeriği Sentry'ye GİTMEZ

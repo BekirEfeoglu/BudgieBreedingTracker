@@ -20,7 +20,11 @@ incubations, clutches, eggs, and chicks.
 - Ignore duplicate create/update/delete actions while notifier state is loading
 
 ## Egg Status Transitions
-- `laid`, `fertile`, `incubating`, `hatched`, `damaged`, `discarded`, and `unknown` paths must remain explicit in model/provider logic
+- `EggStatus` (`lib/core/enums/egg_enums.dart`) has **9** members — every `switch`
+  must stay exhaustive over all of them (CLAUDE.md anti-pattern #16):
+  `unknown`, `laid`, `fertile`, `infertile`, `hatched`, `empty`, `damaged`,
+  `discarded`, `incubating`. `infertile` and `empty` are real statuses, not
+  synonyms of `discarded`/`unknown` — do not drop them from a status list
 - Marking an egg `hatched` must set `hatchDate`
 - Marking an egg `fertile` must set `fertileCheckDate`
 - Marking an egg `discarded` must set `discardDate`

@@ -1,6 +1,6 @@
 # Gamification Service
 
-Source: `.claude/rules/gamification.md` (primary — XP table, level curve, badge tiers, anti-gambling, streak math, leaderboard privacy, verified breeder manual approval)
+Source: `.claude/rules/gamification.md` (primary — XP table, level curve, badge tiers, anti-gambling, streak math, leaderboard privacy, verified breeder). Verified breeder is **automatic** (`checkVerifiedBreeder` criteria below) — there is no admin-approval step; the older "manual approval" wording contradicted this page's own § Verified Breeder and was wrong.
 
 **Location**: `lib/domain/services/gamification/`
 
@@ -91,7 +91,7 @@ cap with `check_violation`. Limits mirror `XpConstants.dailyLimits` via
 `sendMessage: 5`; all other actions uncapped = NULL). Rejections are caught
 by `recordAction`'s try/catch (XP is an optional side effect), so the
 trigger never breaks a user-facing write. Migration
-`20260702234529_xp_daily_limit_enforcement.sql`; verified live with a
+`20260702234608_xp_daily_limit_enforcement.sql`; verified live with a
 rolled-back transaction (5 `sendMessage` allowed, 6th rejected, uncapped
 `addBird` allowed).
 

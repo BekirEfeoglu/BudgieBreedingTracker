@@ -13,27 +13,33 @@ XP, level, badge, leaderboard, verified breeder sistemi. `GamificationService` (
 | Badge metadata | Server-driven (`GamificationRemoteSource.fetchBadges()`) + model `lib/data/models/badge_model.dart` |
 
 ## XP Award Mantığı
-Sabit XP miktarları `xp_constants.dart` içinde tanımlı. Her aksiyon trigger edildiğinde service tarafından yazılır:
+Sabit XP miktarları `XpConstants.xpValues` (`xp_constants.dart`) içinde tanımlı — **11 giriş**, aşağıdaki tablo o map'in birebir kopyasıdır. Günlük limit sütunu `XpConstants.dailyLimits`'ten gelir ve **yalnız 3 action** için tanımlıdır; geri kalanlar XP tarafında kasıtlı olarak capsizdir (bkz. Anti-Pattern #4).
 
-| Aksiyon | XP | Cooldown |
-|---------|----|---------:|
-| Kuş ekle | 10 | yok |
-| Yumurta lifecycle complete | 50 | yok |
-| İlk başarılı kuluçka | 100 | bir kez |
-| Topluluk post (moderation passed) | 5 | günde max 10 |
-| Helpful comment (like > N) | 15 | günde max 3 |
-| Daily login streak (dailyLogin) | 5 | günde max 1 |
-| Streak-tier bonus (streakBonus) | +2/+5/+7/+10/+12 | `record_daily_checkin` RPC-only, bkz. § Streak Sistemi |
-| Profile completion | 20 | bir kez |
-| Genetics calculator kullanım | 2 | günde max 5 |
+| `XpAction` | XP | Günlük limit |
+|------------|---:|-------------:|
+| `dailyLogin` | 5 | 1 |
+| `addBird` | 10 | yok |
+| `createBreeding` | 15 | yok |
+| `recordChick` | 10 | yok |
+| `addHealthRecord` | 5 | yok |
+| `completeProfile` | 20 | 1 |
+| `sharePost` | 5 | yok |
+| `addComment` | 3 | yok |
+| `receiveLike` | 1 | yok |
+| `createListing` | 10 | yok |
+| `sendMessage` | 2 | 5 |
 
-`streakBonus` için `private.xp_action_amount('streakBonus')` kasıtlı olarak `NULL` döner — istemcinin doğrudan `xp_transactions` insert'i RLS `WITH CHECK` tarafından reddedilir (`unlockBadge` ile aynı desen); tek yazma yolu DEFINER RPC'dir.
+İki `XpAction` değeri `xpValues`'ta YOKTUR, miktarı başka yerden gelir:
+- `unlockBadge` → `badges.xp_reward` (rozet tanımından)
+- `streakBonus` → `private.streak_bonus_for` (+2/+5/+7/+10/+12), yalnız `record_daily_checkin` RPC'si yazar (§ Streak Sistemi)
 
-Cooldown'lar farm/spam engellemek için. Server-side enforce (`xp_transactions` table + unique constraint).
+Her ikisi için `private.xp_action_amount(...)` kasıtlı olarak `NULL` döner — istemcinin doğrudan `xp_transactions` insert'i RLS `WITH CHECK` tarafından reddedilir; tek yazma yolu DEFINER RPC/trigger'dır.
+
+Günlük limitler farm/spam engellemek için; `GamificationService.recordAction` client-side ön-kontrol yapar, `private.enforce_xp_daily_limit` `BEFORE INSERT` trigger'ı server-side zorlar (§ Server-Side Write Enforcement → Günlük limit).
 
 ## Level Curve
 - Formül: `LevelCalculator.xpForLevel(level) = level * 100` (lineer) — `lib/domain/services/gamification/level_calculator.dart`
-- Max level: 100 (cap, sonrası "Master Breeder" cosmetic)
+- **Level cap YOK.** `calculateLevel` sınırsız bir `while (remaining >= xpForLevel(level))` döngüsüdür; clamp/max sabiti yok, "Master Breeder" diye bir kademe de yok. Üst kademe rütbe merdiveninin son bandıdır (`≥75 → title_bird_whisperer`) ve o da bir cap değil, açık uçlu bir aralıktır
 - Level-up notification: in-app banner + opsiyonel push (settings'te kapatılabilir)
 
 ### Rütbe Merdiveni (10 kademe)
@@ -60,7 +66,7 @@ aynı** olmak zorunda — gamification RLS `WITH CHECK` `title =
 private.xp_title_for_level(level)` zorlar, ayrışma XP/level yazımını sessizce
 reddeder. Bandları/anahtarları değiştirmek üçünü (Dart + SQL migration + l10n
 tr/en/de) BİRLİKTE değiştirmeyi + mevcut satırların backfill'ini gerektirir
-(bkz. migration `20260705120000_expand_rank_ladder`, prod'a uygulandı).
+(bkz. migration `20260705165421_expand_rank_ladder`, prod'a uygulandı).
 Rollout: SQL migration istemci sürümüyle birlikte gitmeli; güncellenmemiş
 istemci remapped seviyede eski anahtar yazarsa o tek XP yazımı reddedilir
 (recordAction yutar, veri kaybı yok).
@@ -79,11 +85,11 @@ istemci remapped seviyede eski anahtar yazarsa o tek XP yazımı reddedilir
 - 6 ay aktiflik, kuluçka sayısı eşiği veya KYC şu an kod tabanında YOK — bu bölüm önceki bir tasarım hedefiydi, gerçek implementasyonla eşleşmiyordu
 
 ## Leaderboard
-- Global: tüm zaman XP toplamı (cap top 100)
-- Aylık: bu ay kazanılan XP (resetlenir)
-- Privacy: opt-out var (`profile.show_in_leaderboard`)
-- Self rank: kullanıcı kendi konumunu görür (top 100 dışında bile)
-- Update frequency: 5dk cache (real-time gereksiz, cost)
+Shipped kapsam **tek bir tablo**: tüm-zaman XP sıralamasının ilk 100'ü.
+- Kaynak: `public.get_leaderboard(p_limit)` (INVOKER wrapper → `private.get_leaderboard`, SECURITY DEFINER) — `user_levels`'i `total_xp DESC` sıralar, `LIMIT GREATEST(1, LEAST(p_limit, 100))` ile clamp'ler
+- Privacy: opt-out var (`profiles.show_in_leaderboard`); RPC opt-out'ları WHERE ile eler. `anon` grant'ı revoke edilmiştir, yalnız `authenticated` çağırabilir
+- İstemci: `leaderboardProvider` (`gamification_providers.dart`) düz bir `FutureProvider` — TTL/`keepAlive` YOK. Tazeleme yalnız `LeaderboardScreen`'in pull-to-refresh'i (`ref.invalidate(leaderboardProvider)`) ile olur
+- **Aylık board, self-rank (top 100 dışı konum) ve 5dk cache SHIPPED DEĞİL** — tasarım hedefi (`obsidian-brain/known-gaps.md`). Eklenirse RPC + provider + bu bölüm birlikte güncellenir
 
 ## Streak Sistemi
 **Shipped (2026-07-12), server-authoritative.** `public.user_streaks` tablosu
@@ -160,13 +166,12 @@ Migration'lar: `20260702175125_gamification_server_side_helpers.sql`, `202607021
 
 **Atomik level türetme (audit K12/G2) — 2026-07-09'da kapatıldı:** `user_levels` artık **her zaman** `SUM(xp_transactions.amount)`'tan türetilir. `xp_transactions`'a bir `AFTER INSERT` trigger (`private.sync_user_level_from_xp`, SECURITY DEFINER + `search_path=''`) aynı transaction içinde SUM'ı yeniden hesaplar, `user_levels`'i upsert eder ve `profiles.level`/`xp_title`'ı senkronlar. Client **artık `total_xp` hesaplamaz/yazmaz** — eski artımlı yol (`existing + addedXp` → `upsertUserLevel`) kaldırıldı. Bu, önceki "brick" hatasını yapısal olarak imkânsız kılar: insert ile level-upsert arasında bir istek düşse bile `user_levels` bir sonraki insert'te SUM'a hizalanır (eskiden kalıcı desync → RLS WITH CHECK her level yazımını sessizce reddediyordu). Migration `20260709113822_gamification_atomic_level_sync.sql` mevcut drift'li satırları da SUM'dan yeniden hesaplayarak iyileştirir (backfill). RLS WITH CHECK kısıtları defense-in-depth olarak kalır (doğrudan client yazım denemesi hâlâ reddedilir). `GamificationService._updateUserLevel` ve badge-bonus manuel level upsert bloğu silindi; badge bonus XP'si de aynı trigger'la türetilir.
 
-**Günlük limit (audit K12) — 2026-07-03'te kapatıldı:** `XpConstants.dailyLimits` artık server-side de zorlanıyor. WITH CHECK per-row olduğu için aggregate/count bazlı günlük limiti uygulayamaz; bu yüzden ayrı bir `BEFORE INSERT` trigger (`private.enforce_xp_daily_limit`, SECURITY DEFINER + `search_path=''`) UTC-günü içindeki aynı-action satır sayısını sayar ve limiti aşan insert'i `check_violation` ile reddeder. Limitler `private.xp_daily_limit()` ile mirror'lanır (`dailyLogin: 1`, `completeProfile: 1`, `sendMessage: 5`; diğerleri capsiz = NULL). Reddedilen insert client'ta `GamificationService.recordAction`'ın try/catch'iyle yutulur (XP opsiyonel yan etki) — happy path zaten client-side ön-kontrolle erken döndüğü için trigger yalnızca doğrudan-API kötüye kullanımında veya nadir race'te ateşler. Migration: `20260702234529_xp_daily_limit_enforcement.sql`. Canlıda rollback'li transaction ile doğrulandı (5 `sendMessage` kabul, 6. reddedildi, capsiz `addBird` kabul; test satırları rollback edildi, `security` advisor yeni bulgu 0).
+**Günlük limit (audit K12) — 2026-07-03'te kapatıldı:** `XpConstants.dailyLimits` artık server-side de zorlanıyor. WITH CHECK per-row olduğu için aggregate/count bazlı günlük limiti uygulayamaz; bu yüzden ayrı bir `BEFORE INSERT` trigger (`private.enforce_xp_daily_limit`, SECURITY DEFINER + `search_path=''`) UTC-günü içindeki aynı-action satır sayısını sayar ve limiti aşan insert'i `check_violation` ile reddeder. Limitler `private.xp_daily_limit()` ile mirror'lanır (`dailyLogin: 1`, `completeProfile: 1`, `sendMessage: 5`; diğerleri capsiz = NULL). Reddedilen insert client'ta `GamificationService.recordAction`'ın try/catch'iyle yutulur (XP opsiyonel yan etki) — happy path zaten client-side ön-kontrolle erken döndüğü için trigger yalnızca doğrudan-API kötüye kullanımında veya nadir race'te ateşler. Migration: `20260702234608_xp_daily_limit_enforcement.sql`. Canlıda rollback'li transaction ile doğrulandı (5 `sendMessage` kabul, 6. reddedildi, capsiz `addBird` kabul; test satırları rollback edildi, `security` advisor yeni bulgu 0).
 
 ## Performance
-- XP award < 50ms (local Drift write)
-- Leaderboard fetch p95 < 1s (server materialized view)
+- XP award = **ağ yazımı** (`xp_transactions` insert), local Drift yazımı DEĞİL — bu repo online-first (§ Sync Strategy). Bu yüzden latency ağa bağlıdır ve XP her zaman opsiyonel bir yan etkidir: `recordAction` hatayı yutar, kullanıcı akışını bloklamaz
+- Leaderboard fetch: tek `get_leaderboard` RPC çağrısı (`user_levels` + `profiles` join, `LIMIT 100`). Materialized view YOK — repoda hiç `MATERIALIZED VIEW` tanımı bulunmuyor
 - Badge unlock check: trigger-time evaluation, polling YOK
-- Cache: kullanıcı progress 1dk TTL
 
 ## Notification
 - Level up: in-app + opsiyonel push

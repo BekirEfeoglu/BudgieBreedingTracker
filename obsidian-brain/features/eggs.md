@@ -16,11 +16,18 @@ the egg list stays visible (rapid entry during a clutch).
 
 ## Status Transitions
 
+`EggStatus` has 9 members; `IncubationCalculator.getValidStatusTransitions`
+is the source of truth:
+
 ```
-laid → fertile → incubating → hatched
-             ↘              ↘ damaged
-              → discarded
+unknown|laid → fertile | infertile | damaged | discarded
+fertile       → incubating | damaged | discarded
+incubating    → hatched | damaged | discarded
+hatched | damaged | discarded | infertile | empty → (terminal, no transitions)
 ```
+
+`infertile` and `empty` are terminal statuses too — don't omit them from a
+status list (see [[domain/eggs-service]] § Terminal Status).
 
 | Target status | Side effect |
 |---------------|-------------|

@@ -15,7 +15,9 @@ Source: `.claude/rules/notifications.md`
 
 ```
 Domain event (egg hatching, marketplace sale)
-  → send-push Edge Function (JWT, batch 500 tokens)
+  → send-push Edge Function (JWT)
+  → tokens deduped + clamped to MAX_TOKENS = 500 (total recipient cap)
+  → sent to FCM REST in groups of BATCH_SIZE = 50 (push_core.ts)
   → FCM → devices
   → App handles foreground/background/terminated
 ```
@@ -52,11 +54,27 @@ Hours).
 
 ## Deeplink Payload
 
-```json
-{ "type": "egg_hatching", "entity_id": "uuid", "route": "/eggs/uuid" }
-```
+The payload is a single `'<type>:<id>'` **string**, not a JSON object, and it
+carries no `route` — the route is derived client-side by
+`NotificationChannelConfig.payloadToRoute`.
+`PushNotificationService._payloadFromMessage` builds it from FCM `data`:
+`data['payload']` verbatim if present, otherwise
+`'${type|reference_type}:${entity_id|related_entity_id|reference_id|id}'`
+(null if either half is missing).
 
-Validate type before navigating. Unknown type → `AppLogger.warning` + home fallback.
+Real schedulers emit `incubation:<id>`, `egg_turning:<id>`, `chick_care:<id>`,
+`banding:<id>`, `health_check:<birdId>`, `streak:reminder`.
+
+Mapping: `breeding|incubation → /breeding/<id>` · `bird → /birds/<id>` ·
+`chick|chick_care|banding → /chicks/<id>` · `egg|egg_turning → /breeding`
+(id intentionally dropped — these carry an egg id, not a pair id, and no
+`/eggs/<id>` route exists) · `health_check → /health-records/<id>` ·
+`event|event_reminder|calendar → /calendar` · `notification → /notifications` ·
+anything else → `null`.
+
+Ids destined for a path segment are validated with `isValidRouteId`; an invalid
+id rejects the payload (`AppLogger.warning`) so a crafted payload cannot flash a
+NotFound screen. Unknown type → `null`, no navigation.
 
 ## Local Scheduling (NotificationScheduler)
 
@@ -85,14 +103,28 @@ Validate type before navigating. Unknown type → `AppLogger.warning` + home fal
 
 ## Channels / Categories
 
-| ID | Purpose | Importance |
-|----|---------|-----------|
-| `incubation` | Hatch reminders | High |
-| `breeding` | Breeding events | Default |
-| `marketplace` | Listing matches | High |
-| `community` | Mentions, replies | Default |
-| `system` | Maintenance | Low |
-| `streak` | Smart daily-streak reminder | Default |
+Single source: `NotificationChannelConfig`
+(`lib/domain/services/notifications/notification_channel_config.dart`) — five
+declared constants plus the literal `'default'` produced by its `_ =>` branch.
+
+| ID | Constant | Used by |
+|----|----------|---------|
+| `egg_turning` | `eggTurningChannelId` | `NotificationScheduler` egg-turning reminders |
+| `incubation` | `incubationChannelId` | `NotificationScheduler` incubation milestones |
+| `chick_care` | `chickCareChannelId` | Chick care/weighing + banding reminders |
+| `health_check` | `healthCheckChannelId` | Health-record follow-up reminders |
+| `streak` | `streakChannelId` | `StreakReminderScheduler` |
+| `default` | (literal) | `NotificationProcessor` fallback for unmapped types |
+
+There are **no** `breeding` / `marketplace` / `community` / `system` channels —
+those were a design target, never built.
+
+**No per-channel importance.** The repo contains no `AndroidNotificationChannel`
+construction at all; channels are created implicitly at post time from
+`AndroidNotificationDetails`, and `NotificationService._buildNotificationDetails`
+hardcodes `importance: Importance.high` + `priority: Priority.high` for every
+channel. Differentiated importance would require adding real channel creation
+first (Android will not let code lower an already-created channel's importance).
 
 `streak` (shipped 2026-07-12): `StreakReminderScheduler` re-schedules a single
 next-day 20:00-local reminder after every check-in call, only when the

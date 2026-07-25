@@ -37,7 +37,10 @@ version.
 
 ## Current Engine Contract
 
-- Calculation version: **v8**.
+- Calculation version: **v9** (multi-locus combiner no longer merges
+  genotypically distinct states sharing one post-masking compound name; the
+  reported visual/masked lists changed — see [[domain/genetics-engine]]
+  § Version History).
 - Linkage rate/evidence/display metadata comes from one `LinkageCatalog`.
 - Derived/estimated linkage values are labeled in the UI.
 - Reverse results use a deterministic five-key comparator.
@@ -45,13 +48,14 @@ version.
 - Viability warnings currently cover DF Crest (sub-vital) and DF Feather
   Duster (lethal); removed healthy-pair warnings must not be reintroduced
   without approved evidence.
-- 977 explicit domain `test()` declarations as of 2026-07-10.
+- ~1,001 explicit domain `test()` declarations as of 2026-07-25.
 - **Explicit linkage phase control — shipped 2026-07-12 (roadmap D4).**
   `LinkagePhase {auto, coupling, repulsion}` + `ParentGenotype.phaseOverrides`
   let the user force coupling/repulsion for the father's tightest active
   `LinkageCatalog` pair (`LinkagePhaseControl` in the father column of parent
   selection). `auto` (default) is byte-identical to prior implicit inference,
-  so **calculation version stayed v8** — only an explicit user choice changes
+  so it did **not** bump the calculation version (it stayed v8 that day) — only
+  an explicit user choice changes
   output. Override persists through the isolate boundary into
   `GeneticsHistory.fatherPhaseOverrides` (Drift schema v28). Single-pair MVP:
   if the father is heterozygous across two independent linked pairs at once,

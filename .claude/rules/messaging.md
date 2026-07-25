@@ -26,10 +26,18 @@ Direkt mesajlaşma. **Online-first** (`*Repository` exemption — architecture.m
 
 ## Conversation Model
 ```
-conversations: (id, type ['direct'|'group'], last_message_at, ...)
-conversation_participants: (conversation_id, user_id, role ['owner'|'admin'|'member'], is_left, ...)
-messages: (id, conversation_id, sender_id, body, sent_at, ...)
+conversations: (id, type ['direct'|'group'], creator_id, name, image_url,
+                last_message_content, last_message_at, last_message_user_id,
+                participant_count, is_deleted, created_at, updated_at)
+conversation_participants: (conversation_id, user_id, role ['owner'|'admin'|'member'],
+                joined_at, last_read_at, is_muted, is_left)  -- PK (conversation_id, user_id)
+messages: (id, conversation_id, sender_id, sender_name, sender_avatar_url,
+                content, message_type ['text'|'image'|'birdCard'|'listingCard'],
+                image_url, reference_id, reference_data, read_by, is_deleted,
+                created_at)
 ```
+Mesaj gövdesi kolonu **`content`**, zaman damgası **`created_at`**'tir —
+`body`/`sent_at` diye kolon YOKTUR (`20260402110000_create_messaging_tables.sql`).
 
 - Conversation ID: rastgele `Uuid().v7()` (participant çiftinden deterministik türetilmiyor)
 - 1-1 conversation duplicate engeli: lookup-then-create-with-retry (mevcut conversation var mı önce sorgula, yoksa oluştur)
@@ -48,7 +56,7 @@ User types -> Send button
 ```
 
 - Optimistic ID client UUID
-- Mesaj sırası: `sent_at` server timestamp authoritative
+- Mesaj sırası: `created_at` server timestamp authoritative (index: `(conversation_id, created_at DESC)`)
 - Failure'da local kuyruğa koy, connectivity dönünce auto-retry (max 3)
 
 ## Delivery Status
@@ -74,16 +82,21 @@ Shipped: `Message.deliveryStatus` local-only (`@JsonKey(includeFromJson: false, 
 ## Attachments
 - `messages.message_type` şeması `image`/`birdCard`/`listingCard`'ı destekler (`image_url` kolonu mevcut)
 - Shipped photo flow: `MessageInputBar` ek butonu yalnız fotoğraf seçeneğini gösterir; `MessageAttachmentService` `ImagePicker` ile 1920px / JPEG q85 seçer, `ImagePickerGuard` picker sonrası raw 2 MiB UX ön kontrolü yapar, `StorageService.uploadMessagePhoto` aynı sınırı tekrar doğrulayıp `scan-image-safety` sonrası `message-photos/{userId}/{conversationId}/...` path'ine yükler ve `MessagingFormNotifier.sendMessage(messageType: image, imageUrl: ...)` ile optimistic gönderir. Bucket `file_size_limit` de 2 MiB'dir.
-- `message-photos` bucket/policy migration'ı: `20260709120000_add_message_photos_storage_bucket.sql`. Fetch edilen image mesajlarında `MessagingRepository` eski signed URL'leri `StorageUrlResolver` ile tazeler.
+- `message-photos` bucket/policy migration'ı: `20260709103112_add_message_photos_storage_bucket.sql`. Fetch edilen image mesajlarında `MessagingRepository` eski signed URL'leri `StorageUrlResolver` ile tazeler.
 - `birdCard`/`listingCard` render desteği var, ancak üretici UI henüz yok; gerçek seçici/producer eklenmeden bottom-sheet seçeneği gösterme.
 - Genel dosya/audio attachment ve `chat-attachments` bucket tasarımı shipped değil; `chat-attachments` diye bucket yok.
 - **Retry/orphan sözleşmesi (2026-07-09):** Foto yükleme `sendMessage`'den ÖNCE olduğu için gönderim reddedilirse (özellikle **cooldown**, sonraki başarılı gönderimin ardından 2 sn) Storage objesi orphan kalır. İki savunma: (1) `MessageInputBar._sendPhotoAttachment` yüklemeden ÖNCE `MessagingFormNotifier.isWithinSendCooldown` kontrol eder — cooldown'da hiç yüklemez; (2) SnackBar "tekrar dene" artık son gönderimi (`_pendingSend`) **replay eder** — fotoğraf ise **aynı yüklü URL'i reuse eder (yeniden yüklemez)** ve aynı client message id ile başarısız optimistic baloncuğu değiştirir. Ürün kararı: **reuse** (re-upload değil). Kalan sınırlı boşluk: kullanıcı başarısız fotoyu hiç retry etmeyip vazgeçerse yüklenmiş obje orphan kalır (küçük, private bucket; kabul edilir — GC scheduled job scope dışı).
 
-## Pagination
-- Initial load: son 30 mesaj
-- Scroll up'ta önceki 30 fetch (cursor: oldest message sent_at)
+## Pagination — tek sayfa (scroll-up SHIPPED DEĞİL)
+- Initial load: **son 50 mesaj** (`MessagingRepository.getMessages(limit: 50)` /
+  `MessageRemoteSource.fetchMessages(limit: 50)`)
+- **Scroll-up ile eski mesaj yükleme YOK.** `getMessages`'ın `before` cursor
+  parametresi mevcut ama hiçbir çağıran onu geçmiyor
+  (`messaging_providers.dart:70` → `repo.getMessages(conversationId)`), ve
+  `MessageDetailScreen._scrollController`'a `addListener` bağlanmıyor. 50'den
+  eski mesajlar konuşmada erişilemez (`obsidian-brain/known-gaps.md`)
 - Newest at bottom (WhatsApp UX)
-- Long conversation: virtualized list (ListView.builder), memory budget
+- Long conversation: virtualized list (ListView.builder)
 
 ## Block & Report
 - Block: `community_blocks` tablosu (community.md ile paylaşılan, `conversation_blocked` diye ayrı bir flag YOK)
@@ -95,12 +108,19 @@ Shipped: `Message.deliveryStatus` local-only (`@JsonKey(includeFromJson: false, 
 - Block sonrası geçmiş mesaj görünür (delete edilmez)
 - Report: tek mesaj → `community_reports` (contextType: 'message')
 
-## Notification Integration
-- Yeni mesaj → FCM push (`notifications.md`)
-- Push payload: `{ type: 'message', conversation_id, sender_name, preview }`
-- Receiver app foreground'da: in-app banner, push silenced (notification.md kuralı)
-- Quiet hours: `profile.notification_preferences` honored
-- Group muted conversation: badge artar, push gelmez
+## Notification Integration — DM push SHIPPED DEĞİL
+- Yeni mesaj için FCM push **gönderilmiyor**. `send-push`'ın uygulama içindeki
+  tek çağıranı admin paneli (`admin_notification_manager.dart`,
+  `admin_health_providers.dart`); `messages` tablosunda push tetikleyen bir
+  trigger/cron da yok
+- `type: 'message'` payload'ı üreten kod yok; `payloadToRoute`'ta `message`
+  dalı da yok — böyle bir payload gelse `null` döner, hiçbir yere gitmez
+  (notifications.md § Deeplink Payload)
+- Sonuç: alıcı yalnız uygulama açıkken (realtime subscription) yeni mesajı görür
+- Eklenirse: `send-push` çağıran taraf + `payloadToRoute`'a `message` dalı +
+  `/messages/:id` rotası doğrulaması + quiet-hours `respectQuietHours: true`
+  (non-kritik) + mute kontrolü birlikte gerekir; bu bölüm o zaman güncellenir
+  (`obsidian-brain/known-gaps.md`)
 
 ## Empty / Error State
 - Empty conversation list: "Henüz mesajınız yok" + community → DM CTA
@@ -111,8 +131,11 @@ Shipped: `Message.deliveryStatus` local-only (`@JsonKey(includeFromJson: false, 
 - Initial conversation load p95 < 1s
 - Send latency (optimistic UI) < 50ms
 - Realtime message receive < 200ms (region-dependent)
-- Memory: aktif conversation max 200 mesaj in-memory
-- Idle conversation list: 30sn TTL refresh
+- Memory: **açık bir 200-mesaj in-memory cap'i YOK** — pratik sınır tek-sayfa
+  fetch'in kendisidir (50 mesaj, § Pagination). Cap eklenirse burayı ve
+  known-gaps'ı birlikte güncelle
+- Idle conversation list: TTL'li otomatik refresh YOK; liste provider invalidate
+  / pull-to-refresh ile tazelenir
 
 ## Privacy & Security
 - E2E encryption YOK (bilinçli tercih — moderation gerekli)

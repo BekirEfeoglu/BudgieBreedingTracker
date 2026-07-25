@@ -47,14 +47,16 @@ EXECUTE FUNCTION audit_admin_action('ban_user');
 ## Monitoring Dashboard
 | Bölüm | Veri kaynağı | Refresh |
 |-------|--------------|---------|
-| User stats | `admin_get_stats` RPC | Manuel + 5dk auto |
-| System health | `system-health` edge fn | 30s polling (focused screen) |
+| User stats | `admin_get_stats` RPC (`adminStatsProvider`) | Yalnız manuel — düz `FutureProvider`, timer YOK |
+| System health | `system-health` edge fn (`systemHealthProvider`) | `ref.keepAlive()` + tek `Timer(Duration(minutes: 5))` → `invalidateSelf` |
 | Moderation queue | `community_reports` table | Manuel + aksiyon sonrası `invalidate` (realtime YOK) |
 | Edge function logs | Supabase Dashboard link | External |
 
-- Refresh tetikleyici: pull-to-refresh + manual button
-- Background polling: sadece focused screen aktifken (battery + cost)
-- Bekleyen rapor sayısı badge: cache 60s TTL
+- Refresh tetikleyici: pull-to-refresh + manual button + aksiyon sonrası `invalidate`
+- **30 saniyelik polling YOKTUR** ve system-health timer'ı `keepAlive` sayesinde
+  ekran odakta olmasa da koşar — "sadece focused screen" varsayma
+- Bekleyen rapor/feedback rozeti için TTL'li bir cache YOK; sayaç ilgili provider
+  invalidate edilince tazelenir
 
 ## Moderation Queue
 - Bekleyen `community_reports` listesi (status: pending)

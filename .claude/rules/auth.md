@@ -91,15 +91,31 @@ AAL2 kontrolü HER destructive adımdan ÖNCE koşar — hesap silmede storage t
   yapılabilir. Client flag authorization yerine geçmez.
 
 ## Logout Zinciri (sıra önemli)
+`AuthActions.signOut()` (`auth_actions.dart`) — sıra bilinçlidir:
 ```
-1. revoke-oauth-token edge fn (best-effort — Google/Apple)
-2. Supabase signOut()
-3. Bu cihazın FCM token'ını deaktive et — pushNotificationService.deactivateCurrentToken() (notifications.md: bu cihaza eski hesabın bildirimi gitmesin; per-device, diğer cihaz oturumları korunur)
-4. Presence temizle — UserPresenceController.markInactive() → endSession() (presence.md: sticky online engeli)
-5. Sentry user scope null (observability.md: PII)
-6. Session/secure storage temizliği + provider invalidation
+1. Bu cihazın FCM token'ını deaktive et — pushNotificationService.deactivateCurrentToken()
+   ⟵ MUTLAKA signOut'tan ÖNCE: `fcm_tokens` UPDATE'i RLS'ten geçmek için geçerli bir
+     auth.uid() ister. signOut sonrasına alınırsa UPDATE sessizce başarısız olur ve
+     cihaz eski hesabın push'unu almaya devam eder (per-device; diğer cihaz oturumları korunur)
+2. revoke-oauth-token edge fn (best-effort — Google/Apple); bu da signOut'tan ÖNCE,
+   access token hâlâ geçerliyken
+3. Supabase signOut() — session yok edilir
 ```
-Best-effort adımların hatası zinciri DURDURMAZ (log + devam). Hesap silme bu zincirin üstünde ek adımlar içerir — profile.md sahibidir.
+`signedOut` auth event'i tetiklendikten sonra `authStateProvider` listener'ı
+(`auth_providers.dart`) temizliği tamamlar:
+```
+4. Sentry user scope null (observability.md: PII)
+5. sessionLocked reset + purchaseService.logout() + localPremium false
+6. deactivateCurrentToken() tekrar (idempotent ikinci savunma — 1. adım
+   atlanmışsa bu çağrı RLS nedeniyle artık YAZAMAZ, o yüzden 1. adım zorunlu)
+```
+Presence temizliği ayrı bir yüzeydir: `app.dart` lifecycle hook'u
+`UserPresenceController.markInactive()` → `endSession()` çağırır (presence.md:
+sticky online engeli).
+
+Best-effort adımların (1 ve 2) hatası zinciri DURDURMAZ — `AppLogger.warning` +
+`Sentry.captureException` sonrası devam edilir. Hesap silme bu zincirin üstünde
+ek adımlar içerir — profile.md sahibidir.
 
 ## Testing
 - Guard redirect testleri: `test/router/` (oturumsuz → login, MFA pending → verify)
@@ -113,7 +129,7 @@ Best-effort adımların hatası zinciri DURDURMAZ (log + devam). Hesap silme bu 
 4. MFA-required durumu password re-auth ile çözmeye çalışmak (AAL1'e düşürür — challenge dialog kullan)
 5. Recovery-code redeem'i client-side unenroll ile çözmeye çalışmak (AAL1'de kullanıcı verified factor'ı silemez — server-side `redeem_mfa_recovery_code` RPC zorunlu); veya kodu plaintext saklamak (yalnız SHA-256 hash)
 6. Cooldown'ı yalnız bellekte tutmak (restart bypass — persist zorunlu)
-7. Logout'ta FCM/presence/Sentry temizliğini atlamak (cross-device bildirim sızıntısı, sticky online, PII)
+7. Logout'ta FCM/presence/Sentry temizliğini atlamak (cross-device bildirim sızıntısı, sticky online, PII). Özellikle: FCM deaktivasyonunu `signOut()`'tan SONRAYA taşımak — `auth.uid()` null olduğu için `fcm_tokens` UPDATE'i RLS'e takılır ve sessizce hiçbir şey yapmaz (§ Logout Zinciri adım 1)
 8. Raw auth hata metnini kullanıcıya göstermek (error mapper + l10n)
 9. Router'ı auth state değişiminde yeniden oluşturmak (`RouterNotifier` refreshListenable tek yol)
 10. Anonymous auth server'da kapalıyken guest CTA göstermek (başarısız ağ

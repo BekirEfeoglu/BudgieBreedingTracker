@@ -13,15 +13,31 @@ Etkinlik takvimi: kuluçka milestone'ları, yumurta çevirme hatırlatması, bre
 | Sync | ValidatedSyncMixin ile parent FK kontrol |
 
 ## Event Tipleri
-| Tip | Kaynak | Otomatik mi? |
-|-----|--------|--------------|
-| `incubation_start` | Kuluçka başlatma | Otomatik |
-| `egg_turn` | Yumurta çevirme | Otomatik (incubation tarihi + species config) |
-| `incubation_milestone` | Fertile check, hatch day | Otomatik |
-| `breeding_pair_introduction` | Pair oluşturma | Otomatik |
-| `chick_milestone` | Yavru gelişim aşamaları | Otomatik |
-| `health_check` | Kullanıcı tarafından | Manuel |
-| `custom` | Kullanıcı | Manuel |
+Tek kaynak `EventType` (`lib/core/enums/event_enums.dart`) — **18 üye**:
+`unknown, custom, breeding, health, feeding, cleaning, mating, egg, chick,
+hatching, eggLaying, healthCheck, medication, vaccination, weightCheck,
+cageChange, banding, other`.
+
+Serileştirme `toJson() => name` / `fromJson => values.byName(...)` olduğu için
+değerler **camelCase**'tir; `health_check`/`egg_turn` gibi snake_case bir string
+`byName` ile eşleşmez ve `EventType.unknown`'a düşer. Doküman/payload yazarken
+enum adını birebir kullan.
+
+`CalendarEventGenerator`'ın gerçekten ürettiği tipler:
+
+| `EventType` | Kaynak | Otomatik mi? |
+|-------------|--------|--------------|
+| `breeding` | Kuluçka milestone'ları (fertile check, hatch day — `incubationId` FK'siyle) | Otomatik |
+| `eggLaying` | Yumurta kaydı | Otomatik |
+| `hatching` | Beklenen çıkım tarihi | Otomatik |
+| `chick` | Yavru gelişim aşamaları (1. hafta, sütten kesme) | Otomatik |
+| `banding` | Halkalama günü (`chickId` FK'siyle) | Otomatik |
+| Form'da seçilen herhangi bir `EventType` | `EventFormNotifier.createEvent` | Manuel |
+
+`incubation_start`, `egg_turn`, `incubation_milestone`,
+`breeding_pair_introduction`, `chick_milestone` diye tip YOKTUR — bunlar önceki
+bir tasarım adlandırmasıydı. Yumurta çevirme takvim event'i değil, ayrı bir
+local-notification akışıdır (`NotificationScheduler`, `egg_turning` kanalı).
 
 ## Generation Logic
 - Otomatik event'ler `species_incubation_config.dart` species'e göre offset hesaplar
@@ -73,17 +89,21 @@ Future<void> reschedule(Incubation incubation) async {
 ```
 
 ## Deeplink Payload
-Notification tap → app open + route:
-```json
-{
-  "type": "egg_turn",
-  "entity_id": "uuid",
-  "route": "/eggs/uuid",
-  "extra": "{\"action\":\"mark_turned\"}"
-}
-```
+Payload bir **`type:id` string**'idir (JSON DEĞİL) ve rota
+`NotificationChannelConfig.payloadToRoute` ile ÇÖZÜLÜR — payload'da `route`
+alanı taşınmaz. Takvim/kuluçka tarafının ürettiği gerçek payload'lar:
+`'incubation:$incubationId'`, `'egg_turning:$eggId'`, `'chick_care:$chickId'`,
+`'banding:$chickId'`, `'health_check:$birdId'`.
 
-Validation zorunlu (notifications.md): unknown type → warning + home fallback.
+Eşleme (`payloadToRoute`): `breeding|incubation → /breeding/<id>` ·
+`bird → /birds/<id>` · `chick|chick_care|banding → /chicks/<id>` ·
+`egg|egg_turning → /breeding` (id'siz — bu payload'lar egg ID'si taşır, pair
+ID'si değil; `/eggs/<id>` diye bir rota yoktur) ·
+`health_check → /health-records/<id>` · `event|event_reminder|calendar →
+/calendar` · `notification → /notifications` · diğer → `null`.
+
+Validation zorunlu (notifications.md): id-enjekte eden rotalarda
+`isValidRouteId` kontrolü; bilinmeyen tip → `null` + `AppLogger.warning`.
 
 ## Calendar View
 - Month view: `CalendarGrid` (custom `lib/features/calendar/widgets/calendar_grid.dart`, 7-column grid — NOT the `table_calendar` package, not a dependency)
@@ -98,10 +118,20 @@ Validation zorunlu (notifications.md): unknown type → warning + home fallback.
 - Network error (Supabase offline): cached events göster + offline banner (sync)
 
 ## Performance
-- Month view fetch: tek query (range filter on `start_at`)
-- Caching: 5dk TTL per month
+- **Gerçek okuma yolu: range query DEĞİL.** `eventsStreamProvider` kullanıcının
+  TÜM event'lerini `EventRepository.watchAll(userId)` Drift stream'iyle çeker;
+  ay/gün süzmesi `filteredCalendarEventsProvider` → `eventsForMonthProvider` /
+  `eventsForSelectedDateProvider` içinde bellekte yapılır
+- Tarih kolonu **`eventDate`** (Supabase `event_date`) — `start_at` diye bir
+  kolon yoktur
+- `EventRepository.watchByDateRange` / `EventsDao.watchByDateRange` mevcuttur
+  ama calendar feature'ında **çağıranı yoktur** (yalnız DAO testleri kullanır).
+  Ay bazlı sorguya geçilecekse bu metoda bağlan ve burayı güncelle
+- Filtre tek geçiş: `filteredCalendarEventsProvider` (bkz. § Calendar View) —
+  view provider'larına inline filtre EKLEME
+- TTL'li ay cache'i ve "30 günden eski event lazy load" **shipped DEĞİL**
+  (`obsidian-brain/known-gaps.md`); tüm event'ler stream'de tutulur
 - Notification schedule: batch (10+ event tek loop)
-- Memory: 30 günden eski event'ler lazy load
 
 ## Sync Integration
 - `event_reminders` ValidatedSyncMixin → parent (incubation, breeding_pair) silinmişse push iptal

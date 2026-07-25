@@ -112,14 +112,22 @@ a rolled-back transaction simulating a non-admin authenticated user: direct
 one), and `verified_breeder` badge self-unlock were all rejected; the
 legitimate self-service insert/update path (consistent values) still
 succeeded. See `.claude/rules/gamification.md` § Server-Side Write
-Enforcement for the full constraint list and the one remaining known gap
-(daily XP cooldown is still client-only — a `WITH CHECK` can't do
-aggregate/count validation per row).
+Enforcement for the full constraint list. The daily-XP-cap gap noted here
+originally (a `WITH CHECK` can't do aggregate/count validation per row) was
+closed on 2026-07-03 by a separate `BEFORE INSERT` trigger,
+`private.enforce_xp_daily_limit` (migration
+`20260702234608_xp_daily_limit_enforcement.sql`).
 
 ## Premium
 
-Premium users get bumps (higher list position) and extended listing
-duration. Free users limited by `validate-free-tier-limit` Edge Function —
+The only shipped premium difference is the **active-listing cap**. Free users
+are limited to 3 active listings by the `validate-free-tier-limit` Edge
+Function (`LIMITS.marketplace_listings = 3`); premium/admin/founder profiles
+are exempt entirely (`isExemptProfile`), i.e. uncapped. There is no listing
+"bump"/higher list position and no listing duration/expiry — the feed sorts
+purely by `created_at DESC` and listings never expire. Photo count is a hard
+`MarketplaceImagePicker.maxImages = 3` for everyone. See
+[[known-gaps]] for the unbuilt monetization tier. Historical note —
 **this was a real gap until 2026-07-02**: `createListing()` never actually
 called the Edge Function (a comment claimed it did) and
 `FreeTierLimitService`'s `_validTables` didn't include

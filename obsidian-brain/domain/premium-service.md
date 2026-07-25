@@ -50,6 +50,11 @@ by the stale result.
 
 Guards must accept `GracePeriodStatus.gracePeriod` as passing (payment renewal failures). Never gate on `isPremium` alone.
 
+This includes ad visibility: a grace-period subscriber is a paying customer and
+must not see ads. Since 2026-07-25 all nine ad surfaces read
+`effectivePremiumProvider` (see [[domain/ads-service]] § Premium Interaction);
+the provider's doc comment previously said the opposite and has been corrected.
+
 ## Free Tier Limits
 
 - Server-authoritative via `validate-free-tier-limit` Edge Function

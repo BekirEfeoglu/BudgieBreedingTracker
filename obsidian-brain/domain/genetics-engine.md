@@ -2,7 +2,7 @@
 
 **Location**: `lib/domain/services/genetics/`
 
-**Current calculation version**: `v8`
+**Current calculation version**: `v9`
 
 **Contract**: `.claude/rules/genetics.md`
 
@@ -59,15 +59,24 @@ for phenotype/genotype correctness even when no viability warning applies.
 - **v7**: Ino masks Blackface/Saddleback/Mottled/Faded names and reports them in
   `maskedMutations`; Crest remains visible.
 - **v8**: removed unsupported DF Dominant Pied semi-lethal warning.
+- **v9** (2026-07-25): the multi-locus combiner stopped collapsing genotypically
+  distinct states that share a post-masking compound phenotype name. The
+  grouping key now carries the exact visual/masked identity alongside the v5
+  double-factor set, and the merge branch unions `visualMutations` /
+  `maskedMutations` instead of last-writer-wins. Probabilities and phenotype
+  names were already correct — what changes is the reported visual/masked lists,
+  and one merged group can now split into its distinct hidden-gene states. The
+  single-locus path was unaffected. Test:
+  `test/domain/services/genetics/multi_locus_masking_test.dart`.
 
-Full v1–v8 history lives in `.claude/rules/genetics.md` and
+Full v1–v9 history lives in `.claude/rules/genetics.md` and
 `lib/core/constants/genetics_constants.dart`.
 
 ## Testing
 
-- 977 explicit `test()` declarations under `test/domain/services/genetics/` as
-  of 2026-07-10 (parameterized expansion excluded; count is inventory, not a
-  quality target).
+- ~1,001 explicit `test()` declarations across 52 files under
+  `test/domain/services/genetics/` as of 2026-07-25 (parameterized expansion
+  excluded; count is inventory, not a quality target).
 - Six linkage pairs cover coupling + repulsion with `closeTo` assertions.
 - Viability changes require per-combination and real-engine DF tests.
 - Output-semantic changes require version/stale assertions and regression tests.

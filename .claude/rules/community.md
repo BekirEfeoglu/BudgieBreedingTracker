@@ -7,7 +7,7 @@ Public feed, post + comment + like + report akışı. **Online-first** (`*Reposi
 |--------|---------|
 | Feature | `lib/features/community/` (providers, screens, widgets) |
 | Repository | `CommunityPostRepository` (online-first, no Drift table) |
-| Cache | `community_post_cache.dart` (in-memory + 1h TTL) |
+| Cache | `community_post_cache.dart` (in-memory, `_defaultTtl = Duration(minutes: 5)`) |
 | Profile cache | `community_profile_cache.dart` (post author lookup) |
 | Moderation | `create-community-post` / `create-community-comment` Edge Functions |
 | Storage | `community-photos` bucket (server upload, signed URL read) |
@@ -16,7 +16,7 @@ Public feed, post + comment + like + report akışı. **Online-first** (`*Reposi
 - `CommunityPostRepository` Drift table'ı YOK
 - Read: Supabase realtime query veya pagination
 - Write: `create-community-post` ve `create-community-comment` Edge Functions; client doğrudan tablo insert yapmaz
-- Cache: read latency için 1h in-memory, dirty bilgi yok
+- Cache: read latency için in-memory **5 dk** TTL (`CommunityPostCache._defaultTtl`), dirty bilgi yok
 - Offline'da feed görünmez (cached snapshot OK, mutations engellenir)
 - Repository class doc'unda exemption ifadesi zorunlu:
   ```dart
@@ -25,8 +25,9 @@ Public feed, post + comment + like + report akışı. **Online-first** (`*Reposi
 
 ## Feed Pagination
 - Cursor-based (timestamp + id, ascending stable order)
-- Page size: 20 post (default), 50 max
-- Infinite scroll: scroll position 80%'e ulaşınca next page fetch
+- Page size: 20 post (`CommunityFeedNotifier._pageSize`)
+- Infinite scroll: **piksel** eşiği — `currentScroll >= maxScrollExtent - 200`
+  (`community_feed_list.dart::_onScroll`). Yüzde tabanlı (%80) bir eşik YOK
 - Pull-to-refresh: cursor reset, en yeniden başlat
 - Loading state: skeleton 3 item, hata: ErrorState + retry
 
@@ -39,7 +40,7 @@ Compose -> Client moderation -> Edge create-community-post
 ```
 
 - **Post create optimistic DEĞİL** (2026-07-05 doğrulaması): `CreatePostNotifier` (`community_create_providers.dart`) başarıda `communityFeedProvider.refresh()` çağırır — client-UUID optimistic append/revert YOK. Bilinçli: server moderation/guard sonrası authoritative satır tek kaynak. (Like/bookmark/follow/comment-like ise optimistic + rollback — aşağıya bkz.)
-- **Post edit — implement edildi + prod'da (`main`, 2026-07-03):** İçerik-yalnızca düzenleme 5 dk pencerede. `CommunityPostRepository.update({postId, content})` → `CommunityPostRemoteSource.updateContent` → `create-community-post` edge fn `mode:'update'` (moderation yeniden çalışır, fail-closed). Pencere edge fn'de (`EDIT_WINDOW_MS`) + `community_posts` authenticated UPDATE grant'i `(is_deleted, needs_review)` kolonlarına daraltılarak (migration `20260703120000`, prod'a uygulandı) enforce edilir — content doğrudan client `.update()` ile değişemez. `edited_at` kolonu + UI'da `edited` rozeti (edit sheet `showAppBottomSheet`); "Düzenle" yalnız kendi postunda + pencere içinde. (Yazarın kendi `needs_review`'ünü temizleyebilmesi bilinçli kapsam dışı. `clearReviewFlag`'in var olmayan `reviewed_by` yazımı 2026-07-03'te kaldırıldı.)
+- **Post edit — implement edildi + prod'da (`main`, 2026-07-03):** İçerik-yalnızca düzenleme 5 dk pencerede. `CommunityPostRepository.update({postId, content})` → `CommunityPostRemoteSource.updateContent` → `create-community-post` edge fn `mode:'update'` (moderation yeniden çalışır, fail-closed). Pencere edge fn'de (`EDIT_WINDOW_MS`) + `community_posts` authenticated UPDATE grant'i `(is_deleted, needs_review)` kolonlarına daraltılarak (migration `20260703093817`, prod'a uygulandı) enforce edilir — content doğrudan client `.update()` ile değişemez. `edited_at` kolonu + UI'da `edited` rozeti (edit sheet `showAppBottomSheet`); "Düzenle" yalnız kendi postunda + pencere içinde. (Yazarın kendi `needs_review`'ünü temizleyebilmesi bilinçli kapsam dışı. `clearReviewFlag`'in var olmayan `reviewed_by` yazımı 2026-07-03'te kaldırıldı.)
 - Delete: soft delete (`is_deleted = true` kolonu — `deleted_at` DEĞİL), feed query filter
 
 ## Comment
@@ -52,7 +53,10 @@ Compose -> Client moderation -> Edge create-community-post
 - Tek tip like (Twitter heart benzeri, multi-emoji YOK)
 - Toggle: `community_post_likes` junction table
 - Race-safe: client `requestId` pattern, server unique constraint `(post_id, user_id)`
-- Count cache: 30sn TTL, optimistic increment
+- Sayaç: **cache YOK.** `likeCount` post satırıyla birlikte gelir;
+  `CommunityFeedNotifier` optimistic olarak `±1` yapar ve hata durumunda geri
+  alır. TTL'li ayrı bir like-count cache'i yoktur (post satırının kendisi
+  `CommunityPostCache`'in 5 dk TTL'ine tabidir)
 
 ## Follow
 - Yazma yolu: `CommunitySocialRepository.toggleFollow` → `community_follows` (`follower_id`/`following_id`, unique pair). RLS: kendi `follower_id`'nle insert/delete
@@ -103,7 +107,7 @@ Compose -> Client moderation -> Edge create-community-post
 
 ## Block / Mute
 - Block: karşılıklı feed gizleme, DM engelleme
-- **Mute — implement edildi + prod'da (`main`, 2026-07-03):** Tek yönlü, görünürlük-yalnızca yumuşak block. **Ayrı** `community_mutes` tablosu (migration `20260703121000`) — `community_blocks`'a kolon EKLENMEDİ, çünkü messaging block-RLS'i (`20260702174304`) `community_blocks` okur; mute DM'i etkilememeli. RLS SELECT **owner-only** (`auth.uid() = user_id`) — mute'lanan kişi öğrenemez (block'un iki-yönlü SELECT'inden farklı). Client: `CommunitySocialRepository.{muteUser,unmuteUser,fetchMutedUserIds}` + `mutedUsersProvider` (block stack'inin aynası, optimistic+rollback). Feed filtresi muted'ı blocked'dan sonra tüm tab'lerde uygular; `visibleCommentsProvider` yorumları da filtreler. Light action (confirm yok, toast) — community-only, messaging'e wire EDİLMEDİ.
+- **Mute — implement edildi + prod'da (`main`, 2026-07-03):** Tek yönlü, görünürlük-yalnızca yumuşak block. **Ayrı** `community_mutes` tablosu (migration `20260703093916`) — `community_blocks`'a kolon EKLENMEDİ, çünkü messaging block-RLS'i (`20260702174304`) `community_blocks` okur; mute DM'i etkilememeli. RLS SELECT **owner-only** (`auth.uid() = user_id`) — mute'lanan kişi öğrenemez (block'un iki-yönlü SELECT'inden farklı). Client: `CommunitySocialRepository.{muteUser,unmuteUser,fetchMutedUserIds}` + `mutedUsersProvider` (block stack'inin aynası, optimistic+rollback). Feed filtresi muted'ı blocked'dan sonra tüm tab'lerde uygular; `visibleCommentsProvider` yorumları da filtreler. Light action (confirm yok, toast) — community-only, messaging'e wire EDİLMEDİ.
 - Block list cache: 5dk TTL, mutation sonrası invalidate
 - Engellenen kullanıcının postları feed query'sinde filter
 

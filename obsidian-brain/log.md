@@ -4,6 +4,29 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-25] audit | Aspirational-contract sweep: rules/wiki reconciled to code
+
+Docs-only. Rewrote claims that asserted current behavior the code never had:
+gamification XP table (real 11-entry `xpValues` + 3 daily caps), no level cap,
+leaderboard is all-time top-100 only (no monthly/self-rank/TTL/materialized
+view), XP award is a network write; marketplace monetization tier (boost, renew,
+expiry, 7-day edit window, premium photo quota, phone opt-in) does not exist and
+soft-delete is `is_deleted`; notification channels are the five
+`NotificationChannelConfig` ids + `default` with no per-channel importance, and
+send-push is `BATCH_SIZE=50` within `MAX_TOKENS=500`; deeplink payload is a
+`'<type>:<id>'` string resolved by `payloadToRoute`, not JSON with a `route`;
+calendar event types come from the real 18-member `EventType`, the feed uses
+`watchAll` + in-memory month filtering on `eventDate` (no `start_at` range
+query); DM push is not shipped. Constants corrected: community cache 5 min /
+`maxScroll - 200` px / no like cache, DM page 50 with `content`+`created_at`
+columns, admin health 5 min, `EggStatus` has 9 members. Fixed 6 wrong migration
+timestamps and the auth logout order (FCM deactivation runs before `signOut` for
+RLS). Recorded this session's code changes: genetics `calculationVersion` v9,
+Drift shared-index `_tableExists` guard, ads on `effectivePremiumProvider`
+(param renamed `premiumAccessProvider`), release builds ignore `ALLOW_PROXY`,
+new Sentry reports for exhausted decrypt keys / `getFactors` fail-open, and the
+signed-URL logging precedent. known-gaps +8.
+
 ## [2026-07-24] ci | check_remote_status.py distinguishes Xcode-Cloud-pending from real pending
 
 `check_remote_status.py` reported a bare `commit status is pending` for any
@@ -147,28 +170,5 @@ layered Escape/focus restoration, and 48px controls. Terms pages remove leaked
 annotations and mobile overflow; explicit EN/DE URLs remain authoritative and
 privacy links stay in-language. Shared locale scripts are cache-versioned. All
 64 public HTML files have asset/ID coverage plus guide/legal regression tests.
-
-## [2026-07-17] sync | Conflict retry now restores encrypted local snapshots
-
-Drift v29 stores encrypted local/server snapshots before server-wins overwrite.
-Retry validates and restores through typed DAOs, preserves one pending metadata
-row and the oldest unresolved snapshot, and fails closed for legacy/corrupt
-payloads. UI success additionally requires restored metadata to leave the queue.
-
-## [2026-07-17] fix | Scanned image upload size contract unified at 2 MiB raw
-
-Bird, community, marketplace, DM, avatar, egg, and chick upload boundaries now
-enforce 2 MiB raw from post-picker guards through storage, Edge scans, and seven
-bucket limits. The lower cap bounds base64/decode cost; exact-limit padding,
-multi-surface, Edge, and migration regressions are covered.
-
-## [2026-07-16] docs | Semantic sync/forms/image reconciliation
-
-Reconciled current wiki claims against production paths: `SyncOrchestrator`
-push→pull flow, per-record metadata, nine FK-validating repositories, six
-online-first exceptions, conflict surfaces, ring uniqueness, picker-specific
-image sizing, marketplace storage, and 11,611 tests. Removed the false ring
-gap; added real conflict-payload and 10MB-vs-2MB scan-limit gaps. Hardened the
-absence/allowlist review contract and pruned two obsolete drift allowlist items.
 
 Older entries are archived in [[log-archive-2026-07-l]], [[log-archive-2026-07-k]], [[log-archive-2026-07-j]], [[log-archive-2026-07-i]], [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].

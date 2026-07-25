@@ -57,6 +57,18 @@ try {
 - Crash / unhandled exception
 - Critical edge function failure
 - Migration hatası
+- **Bir güvenlik kontrolünü sessizce zayıflatan fail-open catch** (2026-07-25'te
+  eklenen iki somut örnek):
+  - `TwoFactorService.getFactors` hatada `[]` döner ve her çağıran bunu "bu
+    kullanıcının 2. faktörü yok" diye okur (post-login MFA kontrolü, AAL2
+    destructive-action guard, güvenlik skoru). Geçici bir `listFactors()`
+    hatası MFA'yı görünmez kılar → `feature: auth` + `auth_method: mfa` tag'li
+    `Sentry.captureException`
+  - `EncryptionService.decrypt` TÜM key sürümleri tükendiğinde: ya at-rest veri
+    bozulması ya da HMAC doğrulama hatası (tampering) demektir → `feature:
+    encryption` tag'i + yalnız **metadata** (`payloadLength`,
+    `previousKeyCount`); ciphertext ya da çözülmüş değer ASLA gönderilmez
+    (encryption.md § Sentry & Logging)
 
 ### Sentry'ye GİTMEYEN olaylar
 - Form validation hataları (`ValidationException`)
@@ -129,6 +141,13 @@ Edge function `console.log` JSON formatında:
 - Telefon, doğum tarihi, konum: redact
 - Bird/egg verisi: Sentry'ye giderken sadece `id` — kullanıcının özel kuş bilgileri korunur
 - Ödeme bilgisi (RevenueCat): asla yerel log/Sentry'ye düşmez
+- **Signed URL log'lama (2026-07-25 emsali):** private, user-scoped bucket'ların
+  signed URL'i bir **bearer token**'dır (bird-photos'ta 7 gün geçerli) ve
+  path'inde ham `user_id` taşır. `AppLogger.warning` release build'de Sentry
+  breadcrumb yazdığı için böyle bir URL, süresi dolana kadar Sentry'den
+  okunabilir kalır. `bird_detail_photos.dart` bu yüzden URL yerine **bird id +
+  çıplak obje dosya adı** log'lar. Kural: bir signed/pre-signed URL'i hiçbir
+  seviyede log'lama; teşhis için entity id + obje adı yeterlidir
 
 ## Edge Function Logging
 - Her edge function `console.log({ event, userId, ...meta })` JSON formatında

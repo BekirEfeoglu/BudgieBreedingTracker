@@ -26,12 +26,12 @@ Banner, interstitial ve rewarded reklamlar. `AdService` (`lib/domain/services/ad
 ## Banner Placement
 - Gerçek call site'lar: `home_screen`, `calendar_screen`, `bird_list_screen`, `breeding_list_screen`, `chick_list_screen`
 - (Marketplace feed banner'ı shipped DEĞİL — marketplace.md § Ad Placement tasarım hedefi)
-- `AdBannerWidget` premium durumunu **parametre olarak alır** (`isPremium`) — widget domain'den `effectivePremiumProvider`'ı okumaz; layer ihlalini caller injection çözer
+- `AdBannerWidget` premium provider'ı **parametre olarak alır**: `premiumAccessProvider` (2026-07-25'te `isPremiumProvider`'dan yeniden adlandırıldı — aynı adlı bir değişkenle autocomplete üzerinden yanlışlıkla doldurulmasın diye). Widget domain'den provider okumaz; layer ihlalini caller injection çözer. Beş banner call site'ının HEPSİ `premiumAccessProvider: effectivePremiumProvider` geçirir
 - `isPremium || !_isAdLoaded` → `SizedBox.shrink()` — premium'da ve load fail'de UI'da BOŞLUK KALMAZ
 - Load failure: ad dispose + `_isAdLoaded=false`, sessiz geç (retry spam yok)
 
 ## Interstitial
-- Call site'lar: calendar, bird_list, breeding_list, chick_list ekran akışları
+- Call site'lar: calendar, bird_list, breeding_list, chick_list ekran akışları — dördü de `ref.read(effectivePremiumProvider)` ile gate'lenir
 - Cooldown: **3 dakika** (`_cooldownDuration`) — gösterimler arası zorunlu bekleme, kaldırma (UX + policy)
 - Fail-safe: reklam yüklenmese/gösterilmese bile `onAdClosed` callback'i HER ZAMAN çağrılır — kullanıcı akışı reklama rehin edilmez
 
@@ -49,6 +49,7 @@ Banner, interstitial ve rewarded reklamlar. `AdService` (`lib/domain/services/ad
 
 ## Premium Etkileşimi
 - Premium kaynak: `effectivePremiumProvider` (grace period dahil) — reklam kararında `isPremiumProvider`'ı tek başına kullanma (premium-revenuecat.md grace kuralı)
+- **2026-07-25 itibarıyla dokuz reklam yüzeyinin tamamı** (5 banner mount + 4 interstitial gate: home, birds, breeding, chicks, calendar) `effectivePremiumProvider` kullanır. Öncesinde birkaç yüzey `isPremiumProvider`'daydı ve **grace period'daki ödeyen aboneler bazı sekmelerde reklam görüyordu** (Birds/Breeding/Calendar reklam gösteriyordu, Chicks/More göstermiyordu). `effectivePremiumProvider`'ın doc-comment'i eskiden bunun tersini söylüyordu; düzeltildi
 - Premium'a reklam göstermek anti-pattern (marketplace.md #4 ile tutarlı)
 
 ## Testing
@@ -62,7 +63,7 @@ Banner, interstitial ve rewarded reklamlar. `AdService` (`lib/domain/services/ad
 4. ATT isteğini SDK init'ten sonraya almak (iOS policy — sıra sabit)
 5. Interstitial cooldown'ı kısaltmak/kaldırmak (policy + UX)
 6. Rewarded erişimi güvenlik sınırı sanmak (client-side prefs — sadece UX gate)
-7. Widget'ın domain'den premium provider okuması (layer ihlali — `isPremium` injection pattern'i koru)
+7. Widget'ın domain'den premium provider okuması (layer ihlali — `premiumAccessProvider` injection pattern'ini koru); ya da bu parametreye `isPremiumProvider` geçirmek (grace period'daki aboneye reklam gösterir)
 8. `onAdClosed`'u sadece başarılı gösterimde çağırmak (akış reklama kilitlenir)
 9. Test ad unit ID'lerini release'e sızdırmak (kDebugMode ayrımı zorunlu)
 

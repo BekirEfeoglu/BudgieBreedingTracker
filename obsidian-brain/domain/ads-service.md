@@ -27,9 +27,12 @@ Rule source: `.claude/rules/ads.md`.
   `breeding_list_screen`, `chick_list_screen`. **Not** wired into marketplace
   (the marketplace-banner rows in `.claude/rules/marketplace.md` are a design
   goal, not shipped).
-- `AdBannerWidget` receives `isPremium` as a **parameter** (caller injects it) —
-  the widget does not read `effectivePremiumProvider` from the domain layer,
-  avoiding a layer violation.
+- `AdBannerWidget` receives the premium provider as a **parameter**,
+  `premiumAccessProvider` (renamed from `isPremiumProvider` on 2026-07-25 so a
+  same-named variable can't satisfy it via autocomplete). The widget does not
+  read `effectivePremiumProvider` from the domain layer, avoiding a layer
+  violation. All five banner call sites pass
+  `premiumAccessProvider: effectivePremiumProvider`.
 - `isPremium || !_isAdLoaded` → `SizedBox.shrink()` — no gap on premium or load
   failure. Load failure disposes the ad and skips silently (no retry spam).
 
@@ -63,6 +66,12 @@ Rule source: `.claude/rules/ads.md`.
 
 - Premium source is `effectivePremiumProvider` (grace period included) — do not
   use `isPremiumProvider` alone for the ad decision (see [[domain/premium-service]]).
+- As of 2026-07-25 **all nine ad surfaces** use it: 5 banner mounts + 4
+  interstitial gates across home, birds, breeding, chicks, calendar. Before that
+  some surfaces read `isPremiumProvider`, so grace-period subscribers (a renewal
+  still retrying — a paying customer) saw ads on Birds/Breeding/Calendar but not
+  on Chicks/More. `effectivePremiumProvider`'s own doc comment used to state the
+  opposite rule and has been corrected.
 
 ## Tests
 

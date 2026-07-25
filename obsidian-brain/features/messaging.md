@@ -51,21 +51,16 @@ and defaults to `sent` for server rows. `MessagingFormNotifier` adds a
 call, then id-upserts it to `sent` on success or `failed` on repository error.
 `MessageBubble` renders clock / failed / read-check indicators from that state.
 
-## Push Notifications
+## Push Notifications — NOT shipped for DMs
 
-Out-of-app delivery via `send-push` Edge Function. Payload schema:
-
-```json
-{
-  "type": "message",
-  "entity_id": "conversationId",
-  "route": "/messages/uuid"
-}
-```
-
-App handles foreground (in-app banner, no auto-nav), background
-(navigates on tap), terminated (`getInitialMessage()` post-splash).
-See [[domain/notification-service]].
+There is no new-message push. `send-push` has exactly two app-side callers, both
+in the admin panel (`admin_notification_manager.dart`, `admin_health_providers.dart`),
+and no DB trigger or cron invokes it for `messages`. Nothing sends a
+`type: 'message'` payload, and `NotificationChannelConfig.payloadToRoute` has no
+`message` branch — such a payload would resolve to `null` and navigate nowhere
+even if it arrived. Recipients only see new DMs when the app is open
+(realtime subscription). See [[known-gaps]] and [[domain/notification-service]]
+§ Deeplink Payload for the real `'<type>:<id>'` payload contract.
 
 ## Attachments
 
@@ -75,7 +70,7 @@ option, `MessageAttachmentService` picks a compressed gallery image, the raw
 revalidates the same limit and scans with
 `scan-image-safety`, and `MessagingFormNotifier.sendMessage` persists an
 `image` message with `image_url`. `message-photos` is a private user-scoped
-bucket created by migration `20260709120000_add_message_photos_storage_bucket.sql`.
+bucket created by migration `20260709103112_add_message_photos_storage_bucket.sql`.
 Fetched image message URLs are refreshed by `StorageUrlResolver`.
 
 The safety service and `message-photos` bucket limit are also 2 MiB raw; the

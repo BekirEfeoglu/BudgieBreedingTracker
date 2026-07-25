@@ -105,6 +105,28 @@ MigrationStrategy get migration => MigrationStrategy(
 - [ ] Test: fresh DB + upgrade from previous version
 - [ ] Regenerate `.g.dart` with `dart run build_runner build`
 
+### Shared index helpers must guard missing tables, not just missing columns
+
+`_createPerformanceIndexes` (`app_database_indexes.dart`) is called from several
+historical upgrade steps, so it runs against schemas far older than HEAD.
+`CREATE INDEX IF NOT EXISTS` guards only the **index name** — a missing target
+column or table still throws and aborts the entire `onUpgrade` transaction,
+which to the user means the database never opens at all.
+
+Two guards live in `app_database_migrations.dart`:
+`_tableHasColumn` (`PRAGMA table_info`) and `_tableExists`
+(`sqlite_master WHERE type='table'`, added 2026-07-25).
+
+Canonical incident (2026-07-25): the helper created
+`idx_conflict_history_user_table_record` unconditionally, but it is also invoked
+from the historical **v8→v9** step while `conflict_history` is only created in
+**v15→v16**. Every device upgrading from schema **≤8** aborted with
+`no such table: conflict_history`. Fix: `_tableExists` guard in the helper plus
+creating the index inside `_migrateV15ToV16` so v16+ upgraders still get it.
+Regression: `test/data/local/database/app_database_legacy_upgrade_test.dart`
+(upgrades from v8 and v21). See `.claude/rules/migrations.md`
+§ Ortak index helper'ları and Anti-Pattern 11.
+
 ## Performance
 
 - Indexed columns for frequently filtered fields (gender, species, breeding pair ID)

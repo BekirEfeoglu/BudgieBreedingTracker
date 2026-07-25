@@ -33,11 +33,12 @@ MigrationStrategy(
 - [ ] Test: fresh DB + upgrade-from-previous
 - [ ] `.g.dart` regenerated
 
-Shared index helpers that run from historical migrations must guard columns
-introduced by later schema versions with `PRAGMA table_info`. `IF NOT EXISTS`
-only guards duplicate index names; it does not make a missing column safe. The
-column-adding migration must call the helper again, and a regression must open
-the oldest affected schema version through the real sequential upgrade path.
+Shared index helpers running from historical migrations must guard **both**
+later-added columns (`_tableHasColumn`) and later-added tables (`_tableExists`).
+`IF NOT EXISTS` guards only duplicate index names — a missing column or table
+still throws and aborts the whole `onUpgrade`, so the DB never opens. The
+migration creating the object must create the index too, and a regression must
+replay the oldest affected version (`app_database_legacy_upgrade_test.dart`).
 
 ## Supabase SQL Migrations
 
@@ -138,12 +139,9 @@ Step 1 (nullable), Step 2 (backfill), Step 3 (NOT NULL) — separate migrations 
 
 ### Concurrent Index (large tables)
 
-```sql
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_birds_user
-  ON public.birds (user_id);
-```
-
-Note: `CONCURRENTLY` cannot run inside a transaction.
+`CREATE INDEX CONCURRENTLY` cannot run inside a transaction, and the Supabase
+migration runner wraps every migration in one — so large-table indexes must be
+applied out-of-band rather than from a migration file.
 
 ### Sync (Drift ↔ Supabase)
 
@@ -163,7 +161,7 @@ Never delete or rename migration files. If a mistake exists, create a new migrat
 - Structural drift (duplicate version prefixes, malformed filenames — the 2026-05-29 collision class) is auto-guarded every PR by `scripts/verify_migration_drift.py` in the `code-quality` job. The immutable `scripts/fixtures/supabase_applied_migration_baseline.txt` freezes the applied chain through canonical version `20260714200511` by filename + SHA-256; later migrations stay append-only deltas.
 - `--online` reads only the remote column from Supabase CLI JSON/table output and maps nine historical apply-time version aliases through that baseline fixture. The aliases reconcile ledger identity without renaming or rewriting applied SQL; any new mismatch remains a failure. Content drift (file vs applied `statements`) remains a manual MCP procedure.
 - `20260717120000_align_scanned_image_upload_limits.sql` was applied to production through an alias-mapped temporary CLI fixture, preserving its exact local version and statement in the remote ledger without editing applied migration files. All seven safety-scanned image buckets enforce 2 MiB; `backups` remains 50 MiB.
-- Historical shared index helpers guard later-added columns and are tested from the earliest affected local schema version; `IF NOT EXISTS` alone is not a missing-column guard.
+- Historical shared index helpers guard later-added columns **and later-added tables**, and are tested from the earliest affected local schema version. `CREATE INDEX IF NOT EXISTS` guards only the index name — a missing column (`_tableHasColumn`) or a missing table (`_tableExists`, added 2026-07-25) still throws and aborts the whole `onUpgrade`, so the database never opens. Incident: `_createPerformanceIndexes` created `idx_conflict_history_user_table_record` unguarded while also running from the v8→v9 step, but `conflict_history` only exists from v15→v16 — every upgrade from schema ≤8 was bricked. `_migrateV15ToV16` now creates that index itself; regression `test/data/local/database/app_database_legacy_upgrade_test.dart` covers upgrades from v8 and v21.
 - Committed migration files that drift from the ledger but are superseded by a later drift-free migration are left as-is (final schema reproduces prod); only a file that determines the *final* state and diverges gets a forward reconciliation migration.
 - Drift schema is guarded at HEAD by a self-contained consistency test (`test/data/local/database/migration_test.dart`): schemaVersion, all 20 registered tables materialized by onCreate, the `sync_metadata` `UNIQUE(table_name, record_id)` index, and beforeOpen FK enforcement. It uses `sqlite_master`/`PRAGMA`, not the `drift_dev schema` generated verifier (which cannot compile — the `table_name` column dartifies to a `tableName` field that collides with `Table.tableName`).
 
@@ -192,6 +190,7 @@ Never delete or rename migration files. If a mistake exists, create a new migrat
 7. Migration file deletion (history broken)
 8. Supabase migration without corresponding Drift change
 9. New admin/privileged RPC added as `public` `SECURITY DEFINER` (linter 0029 — use the `private` impl + `public` `SECURITY INVOKER` wrapper pattern)
+10. Adding an index to a shared Drift helper without a `_tableExists` / `_tableHasColumn` guard for the oldest upgrade step that calls it (bricks `onUpgrade` on old installs — see § Current Decisions)
 
 ## See Also
 

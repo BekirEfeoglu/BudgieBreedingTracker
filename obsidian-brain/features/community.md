@@ -63,7 +63,7 @@ preserved. See [[log]].
 ## Post Edit (5-minute window)
 
 Content-only edit within a **5-minute window**, enforced server-side. Migration
-`20260703120000_community_post_edit_hardening.sql` adds `community_posts.edited_at`
+`20260703093817_community_post_edit_hardening.sql` adds `community_posts.edited_at`
 and narrows the `authenticated` UPDATE grant to `(is_deleted, needs_review)` — post
 content can't be edited via a direct client `.update()`; edits go through
 `create-community-post` edge fn `mode: 'update'` (moderation re-runs, fail-closed).
@@ -76,7 +76,7 @@ pre-existing latent bug.)
 
 ## Mute (soft block)
 
-One-directional, visibility-only "soft block". Migration `20260703121000_community_mutes.sql`
+One-directional, visibility-only "soft block". Migration `20260703093916_community_mutes.sql`
 adds a **separate** `public.community_mutes` table (NOT a column on `community_blocks` —
 messaging block-RLS reads `community_blocks` for DM rejection, so mute must not affect DMs).
 RLS SELECT is **owner-only** (`auth.uid() = user_id`) so the muted user can't learn who

@@ -101,6 +101,11 @@ Rotation prosedürü:
 Emergency unpin:
 - Proxy/debug ihtiyacı yalnızca explicit `--dart-define=ALLOW_PROXY=true` ile
   yapılır; production build'lerde kullanılmaz.
+- **Release build'lerde flag YOK SAYILIR (2026-07-25):** `_allowProxy` artık
+  `!kReleaseMode && bool.fromEnvironment('ALLOW_PROXY')`. Yani `--release`
+  derlenmiş bir binary bu define ile üretilse bile pinning'i kapatmaz; TLS
+  doğrulaması sessizce devre dışı kalamaz. Debug/profile build'lerde davranış
+  değişmedi.
 - Sertifika rotasyonu beklenmedik şekilde kullanıcıları offline bırakırsa önce
   pin allowlist fix release'i çıkarılır, sonra eski pin kaldırılır.
 

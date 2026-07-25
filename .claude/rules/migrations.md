@@ -74,11 +74,34 @@ verifier'ı elle düzeltmek gerekebilir).
 - [ ] Test: `migration_test.dart` schema invariant'ları güncel (tablo sayısı, yeni index'ler)
 - [ ] Companion `.g.dart` regenerated
 
-Tarihsel birden fazla migration adımından çağrılan ortak index yardımcıları,
-daha yeni sürümde eklenen kolonlara koşulsuz referans veremez. `CREATE INDEX IF
-NOT EXISTS` eksik kolonu tolere etmez; kolon varlığını `PRAGMA table_info` ile
-guard et ve kolonu ekleyen migration'da helper'ı yeniden çağır. Her böyle
-değişiklikte helper'ın çağrıldığı en eski sürümden upgrade regresyonu ekle.
+### Ortak index helper'ları: eksik KOLON *ve* eksik TABLO guard'ı
+Tarihsel birden fazla migration adımından çağrılan ortak index yardımcıları
+(`_createPerformanceIndexes`, `app_database_indexes.dart`), daha yeni bir
+sürümde eklenen şema nesnelerine **koşulsuz** referans veremez. `CREATE INDEX IF
+NOT EXISTS` yalnız **index adını** guard eder — hedef kolon ya da tablo yoksa
+yine de fırlatır ve `onUpgrade` transaction'ının tamamını abort eder; kullanıcı
+tarafından bakıldığında bu "DB hiç açılmıyor" demektir.
+
+İki guard var, ikisi de `app_database_migrations.dart`'ta:
+- Eksik kolon → `_tableHasColumn(db, table, column)` (`PRAGMA table_info`)
+- Eksik tablo → `_tableExists(db, table)` (`sqlite_master WHERE type='table'`) —
+  2026-07-25'te eklendi
+
+**Kanonik olay (2026-07-25):** `_createPerformanceIndexes` `conflict_history`
+üzerinde `idx_conflict_history_user_table_record`'ı guard'sız yaratıyordu, ama
+aynı helper tarihsel **v8→v9** adımından da çağrılıyor ve `conflict_history`
+ancak **v15→v16**'da yaratılıyor. Sonuç: şema **≤8**'den yükselen HER cihazda
+`onUpgrade` `no such table: conflict_history` ile abort ediyor ve veritabanı
+hiç açılmıyordu. Düzeltme: helper'da `_tableExists` guard'ı + index'in
+`_migrateV15ToV16` içinde de yaratılması (v16+ yükseltmeler guard yüzünden
+index'i kaybetmesin). Regresyon testi:
+`test/data/local/database/app_database_legacy_upgrade_test.dart` (v8 ve v21'den
+yükseltme).
+
+Kural: paylaşılan helper'a yeni bir index eklerken helper'ın çağrıldığı **en
+eski** sürümü bul; o sürümde hedef tablo/kolon yoksa guard ekle, nesneyi
+yaratan migration'da index'i ayrıca yarat ve o en eski sürümden bir upgrade
+regresyonu yaz.
 
 ## Supabase SQL Migration (Remote)
 
@@ -202,7 +225,12 @@ Not: `CONCURRENTLY` transaction içinde çalışmaz, migration runner'ı buna g�
 8. Rollback migration yazmak (forward-only philosophy)
 9. Drift schema değişikliği için Supabase migration unutmak
 10. Sensitive default value (`'temp@test.com'` gibi) — production'a sızar
-11. Tarihsel migration'ın ortak index helper'ına gelecekte eklenen kolonu
-    guardsız eklemek (`IF NOT EXISTS` eksik kolon koruması değildir)
+11. Tarihsel migration'ın ortak index helper'ına gelecekte eklenen bir **kolonu
+    ya da tabloyu** guardsız eklemek. `CREATE INDEX IF NOT EXISTS` yalnız index
+    adını korur; eksik kolon/tablo yine fırlatır ve `onUpgrade`'i abort eder →
+    eski şemadan yükselen cihazlarda DB hiç açılmaz. Kolon için
+    `_tableHasColumn`, tablo için `_tableExists` guard'ı + nesneyi yaratan
+    migration'da index'i ayrıca yaratma + en eski çağıran sürümden upgrade
+    regresyonu (2026-07-25 `conflict_history` olayı, § Ortak index helper'ları)
 
 > **İlgili**: data-layer.md (Drift + Supabase), security.md (RLS), release-ops.md (deploy), edge-functions.md (deploy ayrı pipeline)

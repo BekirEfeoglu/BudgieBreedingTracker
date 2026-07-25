@@ -14,7 +14,8 @@ Bildirimler iki kanal üzerinden gelir: **FCM push** (sunucu kaynaklı) ve **loc
 Domain event (egg hatching, marketplace sale)
   -> Trigger calls send-push edge function with userIds + payload
   -> Edge fn validates JWT, reads user FCM tokens from DB
-  -> Sends to FCM REST API in batches (500 tokens/batch)
+  -> Token listesi dedupe + MAX_TOKENS=500'e clamp'lenir (toplam alıcı tavanı)
+  -> FCM REST API'ye BATCH_SIZE=50'lik gruplar hâlinde gönderilir (push_core.ts)
   -> FCM delivers to devices
   -> App handles foreground/background/terminated states
 ```
@@ -29,7 +30,7 @@ Domain event (egg hatching, marketplace sale)
 ## FCM Token Management
 - Token Supabase'de `fcm_tokens` tablosuna kaydedilir (multi-device)
 - Token refresh'te eski token'ı sil, yeniyi ekle
-- Logout'ta yalnız BU cihazın aktif token'ı deaktive edilir (`PushNotificationService.deactivateCurrentToken` → `FcmTokenRemoteSource.deactivateToken`) — per-device, `unregisterAll` DEĞİL. Diğer cihazların oturumu açıksa onların token'ı korunur; deaktive edilen cihaz artık eski hesabın push'unu almaz. `deactivateCurrentToken` ayrıca `_currentUserId`'yi null'lar, böylece geç gelen `onTokenRefresh` token'ı eski kullanıcıya yeniden yazmaz
+- Logout'ta yalnız BU cihazın aktif token'ı deaktive edilir (`PushNotificationService.deactivateCurrentToken` → `FcmTokenRemoteSource.deactivateToken`) — per-device, `unregisterAll` DEĞİL. Bu çağrı `auth.signOut()`'tan **ÖNCE** koşar (`AuthActions.signOut` ilk adım): `fcm_tokens` UPDATE'i RLS için geçerli bir `auth.uid()` ister; sonraya alınırsa sessizce başarısız olur (auth.md § Logout Zinciri). Diğer cihazların oturumu açıksa onların token'ı korunur; deaktive edilen cihaz artık eski hesabın push'unu almaz. `deactivateCurrentToken` ayrıca `_currentUserId`'yi null'lar, böylece geç gelen `onTokenRefresh` token'ı eski kullanıcıya yeniden yazmaz
 - iOS APNs token + FCM token eşleştirmesi otomatik
 - FCM kaydı splash'i BLOKLAMAZ: `appInitializationProvider` local kanal init + rate limiter'ı await eder, `pushNotificationService.init` (token fetch/register, ağ) `InitStep.ready` sonrası deferred microtask'te koşar — kalıcı `onTokenRefresh` dinleyicisi geç kaydı telafi eder. Bu init'i kritik yola geri TAŞIMA
 
@@ -52,18 +53,33 @@ await ref.read(pushNotificationServiceProvider).deactivateCurrentToken();
 | Terminated | `getInitialMessage()` on app start | Navigate after splash |
 
 ## Deeplink Payload
-Push payload `data` field'ı standart şema:
-```json
-{
-  "type": "egg_hatching",
-  "entity_id": "uuid",
-  "route": "/eggs/uuid",
-  "extra": "json string optional"
-}
-```
-- `route` GoRouter path'i (deep link uyumlu olmalı)
-- Handler: type'a göre validate et, sonra `context.push(route)`
-- Bilinmeyen type → `AppLogger.warning` + ana ekran fallback
+Push ve local bildirim **aynı payload tipini** paylaşır: tek bir
+`'<type>:<id>'` string'i. `route` diye bir alan taşınmaz — rota client'ta
+türetilir.
+
+`PushNotificationService._payloadFromMessage` FCM `data`'sından bunu üretir:
+- `data['payload']` doluysa aynen kullanılır
+- yoksa `type` (`type` | `reference_type`) + entity id (`entity_id` |
+  `related_entity_id` | `reference_id` | `id`) birleştirilip `'$type:$entityId'`
+  olur; ikisinden biri yoksa payload `null` (deeplink yok)
+
+Rota çözümü `NotificationChannelConfig.payloadToRoute`:
+
+| `type` | Rota |
+|--------|------|
+| `breeding`, `incubation` | `/breeding/<id>` |
+| `bird` | `/birds/<id>` |
+| `chick`, `chick_care`, `banding` | `/chicks/<id>` |
+| `egg`, `egg_turning` | `/breeding` (id KULLANILMAZ — payload egg id'si taşır, pair id'si değil; `/eggs/<id>` rotası yoktur) |
+| `health_check` | `/health-records/<id>` |
+| `event`, `event_reminder`, `calendar` | `/calendar` |
+| `notification` | `/notifications` |
+| diğer | `null` |
+
+- Id enjekte eden rotalarda `isValidRouteId(id)` doğrulaması zorunlu; geçersizse
+  payload reddedilir (`AppLogger.warning`) ki crafted payload NotFound ekranı
+  flash'lamasın
+- Bilinmeyen tip → `null` → navigation yok (ana ekranda kalınır)
 
 ## Local Notifications (Scheduling)
 - Kuluçka hatırlatması, etkinlik reminder vb.
@@ -88,16 +104,31 @@ await flutterLocalNotifications.zonedSchedule(
 ```
 
 ## Notification Categories (iOS) / Channels (Android)
-| ID | Amaç | Importance |
-|----|------|------------|
-| `incubation` | Kuluçka hatırlatma | High |
-| `breeding` | Çiftleştirme etkinlik | Default |
-| `marketplace` | İlan eşleşme/mesaj | High |
-| `community` | Mention, reply | Default |
-| `system` | Bakım, güncelleme | Low |
-| `streak` | Akıllı günlük streak hatırlatması | Default |
+Kanal ID'lerinin tek kaynağı `NotificationChannelConfig`
+(`lib/domain/services/notifications/notification_channel_config.dart`).
+Tanımlı **beş** sabit + `_ =>` dalının ürettiği literal `'default'`:
 
-Channel'lar `lib/domain/services/notifications/notification_service.dart` içinde initialize edilir.
+| ID | Sabit | Kullanan |
+|----|-------|----------|
+| `egg_turning` | `eggTurningChannelId` | `NotificationScheduler` yumurta çevirme |
+| `incubation` | `incubationChannelId` | `NotificationScheduler` kuluçka milestone'ları |
+| `chick_care` | `chickCareChannelId` | Yavru bakım/tartım + banding hatırlatmaları |
+| `health_check` | `healthCheckChannelId` | Sağlık kaydı takip hatırlatması |
+| `streak` | `streakChannelId` | `StreakReminderScheduler` |
+| `default` | (literal) | `NotificationProcessor` fallback — `_channelForType` eşleşmeyen tip |
+
+`breeding`, `marketplace`, `community`, `system` diye kanal YOKTUR; bunlar
+önceki bir tasarım hedefiydi. Yeni kanal eklemek `NotificationChannelConfig`'e
+sabit + `channelName`/`channelDescription` dallarını + üç dilde
+`notifications.channel_*_name/_desc` anahtarlarını gerektirir.
+
+**Per-channel importance YOK:** ayrı bir `AndroidNotificationChannel(...)`
+oluşturma çağrısı yoktur (repoda hiç geçmiyor). Kanal, gönderim anında
+`AndroidNotificationDetails` ile implicit oluşur ve
+`NotificationService._buildNotificationDetails` HER kanal için sabit
+`importance: Importance.high` + `priority: Priority.high` verir. Kanal başına
+farklı importance istiyorsan önce gerçek kanal oluşturma adımı eklenmeli
+(mevcut kurulumlarda Android importance'ı sonradan kodla değiştirilemez).
 
 ### Streak Reminder (`streak` kanalı)
 `StreakReminderScheduler` (`lib/domain/services/notifications/streak_reminder_scheduler.dart`)
@@ -116,7 +147,7 @@ quiet-hours penceresini honor edebiliyor. Saf mantık `push_core.ts`'te
 wraparound'unu birebir yansıtır; `localHourInZone` alıcının IANA timezone'unda
 yerel saati hesaplar; `isSuppressedByQuietHours` **fail-open**). `index.ts`
 alıcının `profiles.quiet_hours` (JSONB `{enabled,startHour,endHour,timeZone}`,
-migration `20260703044437`) penceresini okuyup, quiet penceresi içindeki
+migration `20260703044503`) penceresini okuyup, quiet penceresi içindeki
 alıcıları teslimattan düşürür.
 
 Emniyet by-construction: bastırma **opt-in** — sadece push isteği

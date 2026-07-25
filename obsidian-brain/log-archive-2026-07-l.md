@@ -5,6 +5,29 @@ production Sentry release-monitoring work.
 
 ---
 
+## [2026-07-17] sync | Conflict retry now restores encrypted local snapshots
+
+Drift v29 stores encrypted local/server snapshots before server-wins overwrite.
+Retry validates and restores through typed DAOs, preserves one pending metadata
+row and the oldest unresolved snapshot, and fails closed for legacy/corrupt
+payloads. UI success additionally requires restored metadata to leave the queue.
+
+## [2026-07-17] fix | Scanned image upload size contract unified at 2 MiB raw
+
+Bird, community, marketplace, DM, avatar, egg, and chick upload boundaries now
+enforce 2 MiB raw from post-picker guards through storage, Edge scans, and seven
+bucket limits. The lower cap bounds base64/decode cost; exact-limit padding,
+multi-surface, Edge, and migration regressions are covered.
+
+## [2026-07-16] docs | Semantic sync/forms/image reconciliation
+
+Reconciled current wiki claims against production paths: `SyncOrchestrator`
+push→pull flow, per-record metadata, nine FK-validating repositories, six
+online-first exceptions, conflict surfaces, ring uniqueness, picker-specific
+image sizing, marketplace storage, and 11,611 tests. Removed the false ring
+gap; added real conflict-payload and 10MB-vs-2MB scan-limit gaps. Hardened the
+absence/allowlist review contract and pruned two obsolete drift allowlist items.
+
 ## [2026-07-14] perf | Feed RPC emits is_following_author; messages_insert uses definer helpers
 
 Two follow-ups. **`20260714200510`**: `fetch_community_feed` now returns

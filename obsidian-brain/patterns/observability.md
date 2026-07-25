@@ -44,6 +44,18 @@ Selected via `SENTRY_ENVIRONMENT` dart-define.
 - Bird/egg data in Sentry: ID only — not user's private breeding data
 - Payment info: never in local log or Sentry
 - AI prompts: never in Sentry (privacy + storage cost)
+- **Signed URLs: never log at any level** (2026-07-25 precedent). A signed URL
+  for a private user-scoped bucket is a bearer token (7 days for `bird-photos`)
+  and embeds the raw user id in its path; `AppLogger.warning` writes a Sentry
+  breadcrumb in release builds, leaving the token readable until it expires.
+  `bird_detail_photos.dart` logs the bird id + bare object filename instead —
+  enough to diagnose, nothing to replay.
+
+Two fail-open catches that **do** report to Sentry, because failing open
+silently weakens a control: `TwoFactorService.getFactors` (returns `[]`, which
+every caller reads as "no second factor") and `EncryptionService.decrypt` when
+all key versions are exhausted (at-rest corruption or HMAC/tamper failure —
+metadata only: `payloadLength`, `previousKeyCount`; never ciphertext).
 
 ## Sentry User Context
 

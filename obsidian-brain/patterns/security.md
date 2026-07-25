@@ -102,7 +102,7 @@ The Android SHA-1 `4b:50:9f:a3:…` is registered against BOTH OAuth clients dur
 - SHA-256 fingerprint allowlist for `*.supabase.co`
 - Rotation procedure: produce all ECDSA and RSA leaf fingerprints ≥14 days
   before expiry, keep old + new variants in one release, drop old after adoption
-- Emergency proxy/debug: `--dart-define=ALLOW_PROXY=true` only — never in release builds
+- Emergency proxy/debug: `--dart-define=ALLOW_PROXY=true` only — and since 2026-07-25 the define is **ignored in release builds** (`_allowProxy = !kReleaseMode && bool.fromEnvironment('ALLOW_PROXY')`), so a release binary always pins
 - Verification: `scripts/verify_security.py` confirms pinning module is wired in bootstrap
 
 ## Anti-Patterns

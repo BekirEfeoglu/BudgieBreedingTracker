@@ -43,6 +43,11 @@ User purchases (RevenueCat) -> RevenueCat webhook -> sync-premium-status edge fn
 ## Grace Period
 - `premiumGracePeriodProvider` ödeme yenileme hatası sonrası kısa süreli erişim verir
 - Guard'lar `GracePeriodStatus.gracePeriod` durumunu **passing** kabul etmelidir, sadece `isPremium == true` değil
+- **Reklam kararı da dahildir (2026-07-25):** grace period'daki abone ödeyen
+  müşteridir ve reklam GÖRMEZ. `effectivePremiumProvider` bugün dokuz reklam
+  yüzeyinin tamamında kullanılır (ads.md § Premium Etkileşimi). Bu provider'ın
+  doc-comment'i eskiden "ad visibility için `isPremiumProvider` kullan" diyordu —
+  yanlıştı, düzeltildi
 - Grace dolduğunda UI banner ile kullanıcıyı bilgilendir (l10n: `premium.grace_period_ending`)
 
 ```dart
