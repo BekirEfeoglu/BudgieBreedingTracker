@@ -30,7 +30,9 @@ from _rules_collectors import (
     collect_quality_checker_counts,
     collect_route_surfaces,
     collect_storage_bucket_surfaces,
+    collect_supabase_table_surfaces,
     duplicate_route_values,
+    unprovisioned_tables,
     unresolved_route_targets,
     collect_data_layer,
     collect_repos_and_remotes,
@@ -2182,6 +2184,110 @@ class TestRouteTargetCheck(unittest.TestCase):
     def test_skips_when_route_names_absent(self):
         with tempfile.TemporaryDirectory() as d:
             result = self._run(Path(d), constants={}, omit=("names",))
+        self.assertEqual(result, 0)
+
+
+# ── Supabase tablo adlari ─────────────────────────────────────────────────────
+#
+# Sabitin ADINDAKI son eke gore ayiklanir, DEGERINE gore degil:
+# `adminExportAllTablesRpc` degeri 'admin_export_all_tables' olan bir RPC'dir,
+# tablo degil — degere bakan bir regex onu yanlis yere isaretlerdi.
+
+
+def _write_table_fixture(root: Path, *, constants, created, omit=()) -> None:
+    if "constants" not in omit:
+        d = root / "lib" / "core" / "constants"
+        d.mkdir(parents=True, exist_ok=True)
+        body = "\n".join(f"  static const String {n} = '{v}';" for n, v in constants.items())
+        (d / "supabase_constants.dart").write_text(
+            f"class SupabaseConstants {{\n{body}\n}}\n", encoding="utf-8")
+    if "migrations" not in omit:
+        d = root / "supabase" / "migrations"
+        d.mkdir(parents=True, exist_ok=True)
+        for i, name in enumerate(created):
+            sql = (f"create table if not exists public.{name} (id uuid);"
+                   if i % 2 == 0 else f"CREATE TABLE {name} (id uuid);")
+            (d / f"2026010100000{i}_t{i}.sql").write_text(sql, encoding="utf-8")
+
+
+class TestSupabaseTableSurfaces(unittest.TestCase):
+    def test_reads_constants_and_created_tables(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write_table_fixture(root, constants={"birdsTable": "birds"},
+                                 created=["birds"])
+            surfaces = collect_supabase_table_surfaces(root)
+        self.assertEqual(surfaces["constants"], {"birds"})
+        self.assertEqual(surfaces["created"], {"birds"})
+
+    def test_ignores_rpc_constants_whose_value_mentions_tables(self):
+        """`adminExportAllTablesRpc` bir RPC — ad ekine gore elenmeli."""
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write_table_fixture(
+                root,
+                constants={"birdsTable": "birds",
+                           "adminExportAllTablesRpc": "admin_export_all_tables"},
+                created=["birds"])
+            surfaces = collect_supabase_table_surfaces(root)
+        self.assertEqual(surfaces["constants"], {"birds"})
+        self.assertEqual(unprovisioned_tables(surfaces), [])
+
+    def test_missing_surfaces_yield_none(self):
+        with tempfile.TemporaryDirectory() as d:
+            surfaces = collect_supabase_table_surfaces(Path(d))
+        self.assertIsNone(surfaces["constants"])
+        self.assertIsNone(surfaces["created"])
+
+    def test_unprovisioned_returns_empty_without_migrations(self):
+        self.assertEqual(
+            unprovisioned_tables({"constants": {"x"}, "created": None}), [])
+
+    def test_migrations_may_create_tables_the_client_never_names(self):
+        """Tek yonlu: trigger'in yazdigi audit tablolari sabit istemez."""
+        surfaces = {"constants": {"birds"}, "created": {"birds", "audit_logs"}}
+        self.assertEqual(unprovisioned_tables(surfaces), [])
+
+
+class TestSupabaseTableCheck(unittest.TestCase):
+    def _run(self, root: Path, *, constants, created, omit=()):
+        import verify_rules as vr
+
+        assets = root / "assets" / "translations"
+        assets.mkdir(parents=True)
+        data = {f"k{i}": f"v{i}" for i in range(3)}
+        for lang in ("tr", "en", "de"):
+            (assets / f"{lang}.json").write_text(json.dumps(data), encoding="utf-8")
+        tmp_md = root / "CLAUDE.md"
+        tmp_md.write_text(_make_claude_md_content(tr_keys=3), encoding="utf-8")
+        _write_table_fixture(root, constants=constants, created=created, omit=omit)
+
+        actual = _make_sample_actual({"tr_keys": 3, "categories": 35})
+        with patch.object(vr, "CLAUDE_MD", tmp_md), \
+             patch.object(vr, "ASSETS", root / "assets"), \
+             patch.object(vr, "ROOT", root), \
+             patch.object(vr, "collect_actual_values", return_value=actual):
+            return vr.main()
+
+    def test_passes_when_every_constant_is_provisioned(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d), constants={"birdsTable": "birds"},
+                               created=["birds"])
+        self.assertEqual(result, 0)
+
+    def test_fails_on_a_constant_no_migration_creates(self):
+        """Sorgu aninda Postgres hatasi verir; build'de sessizdir."""
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d),
+                               constants={"birdsTable": "birds",
+                                          "ghostTable": "ghost_records"},
+                               created=["birds"])
+        self.assertEqual(result, 1)
+
+    def test_skips_when_surfaces_absent(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d), constants={}, created=[],
+                               omit=("constants", "migrations"))
         self.assertEqual(result, 0)
 
 

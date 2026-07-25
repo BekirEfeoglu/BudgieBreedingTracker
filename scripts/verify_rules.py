@@ -26,11 +26,13 @@ from _rules_collectors import (
     collect_l10n_category_surfaces,
     collect_route_surfaces,
     collect_storage_bucket_surfaces,
+    collect_supabase_table_surfaces,
     count_json_leaf_keys,
     duplicate_route_values,
     extract_first_number,
     extract_markdown_section,
     extract_release_artifact_paths,
+    unprovisioned_tables,
     unresolved_route_targets,
 )
 from _rules_fixers import _apply_inline_fixes, build_fix_updates, fix_claude_md
@@ -366,6 +368,19 @@ def main():
         for target in unresolved:
             print(f"  {Colors.YELLOW}WARN{Colors.RESET} {target}: navigasyon hedefi hicbir rotaya cozulmuyor")
         track_manual(check("String navigasyon hedefleri gercek rotaya cozuluyor", 0, len(unresolved)))
+
+    print(section("Supabase Tables"))
+    # One-way: migrations legitimately create tables the client never names
+    # (private.* helpers, trigger-written audit tables). A constant naming a
+    # table no migration creates fails at query time, not at build time.
+    tables = collect_supabase_table_surfaces(ROOT)
+    if tables["constants"] is None or tables["created"] is None:
+        print(f"  {Colors.YELLOW}SKIP{Colors.RESET} supabase_constants.dart veya migrations/ bulunamadi")
+    else:
+        missing = unprovisioned_tables(tables)
+        for name in missing:
+            print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: sabit var, hicbir migration bu tabloyu yaratmiyor")
+        track_manual(check("Tablo sabitleri migration'larda yaratiliyor", 0, len(missing)))
 
     # ── Summary ──
     pass_count = sum(results)

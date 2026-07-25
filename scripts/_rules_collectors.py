@@ -325,6 +325,56 @@ def unresolved_route_targets(surfaces: dict) -> list:
     return sorted(unresolved)
 
 
+# ── Supabase table names across surfaces ─────────────────────────────
+# Seventh family. A `*Table` constant naming a table no migration creates
+# fails at query time with a Postgres error, not at build time. Keyed on the
+# constant NAME suffix, not its value: `adminExportAllTablesRpc` holds
+# 'admin_export_all_tables', which is an RPC, not a table.
+
+
+def collect_supabase_table_surfaces(root: Path) -> dict:
+    """Collect `*Table` constant values and tables created by migrations."""
+    consts_file = root / "lib" / "core" / "constants" / "supabase_constants.dart"
+    in_constants = None
+    if consts_file.exists():
+        in_constants = {
+            value
+            for _, value in re.findall(
+                r"static const String (\w+Table) = '([^']+)'",
+                consts_file.read_text(encoding="utf-8"),
+            )
+        }
+
+    migrations_dir = root / "supabase" / "migrations"
+    created = None
+    if migrations_dir.exists():
+        created = set()
+        for sql_file in migrations_dir.glob("*.sql"):
+            created |= {
+                name.lower()
+                for name in re.findall(
+                    r"create table (?:if not exists )?(?:public\.)?([a-z_][a-z0-9_]*)",
+                    sql_file.read_text(encoding="utf-8", errors="ignore"),
+                    re.IGNORECASE,
+                )
+            }
+
+    return {"constants": in_constants, "created": created}
+
+
+def unprovisioned_tables(surfaces: dict) -> list:
+    """Table constants that no migration creates.
+
+    One-way only: migrations legitimately create tables the client never names
+    (`private.*` helpers, audit tables written by triggers).
+    """
+    constants = surfaces["constants"] or set()
+    created = surfaces["created"]
+    if created is None:
+        return []
+    return sorted(value for value in constants if value.lower() not in created)
+
+
 def duplicate_route_values(surfaces: dict) -> list:
     """Path values declared by more than one constant."""
     constants = surfaces["constants"] or {}
@@ -428,7 +478,7 @@ def _count_indexes(db_dir: Path) -> int:
         stripped = line.strip()
         # Skip Dart single-line comments and documentation
         if stripped.startswith("//") or stripped.startswith("///"):
-            continue
+            continue  # pragma: no cover - CPython emits no trace event here
         if re.search(r"CREATE INDEX", stripped, re.IGNORECASE):
             count += 1
     return count
