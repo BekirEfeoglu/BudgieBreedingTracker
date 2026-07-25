@@ -291,6 +291,105 @@ class TestParseAntiPatternsFromClaudeMd(unittest.TestCase):
         self.assertEqual(len(result), 2)
 
 
+# ── Kalan dallar (skip/erken-cikis yollari) ───────────────────────────────────
+#
+# Bu checker'larin "bulundu" yolu zaten test edilmisti; eksik olan SESSIZ
+# gecme dallariydi. Bir tarayicinin yanlis yere susmasi, yanlis yere alarm
+# vermesinden daha pahalidir — CI yesil kalir ve kimse bakmaz.
+
+
+class TestCheckerSkipBranches(unittest.TestCase):
+    REMOTE = Path("lib/data/remote/api/bird_remote_source.dart")
+    FEATURE = Path("lib/features/birds/screens/bird_list_screen.dart")
+    TEST_FILE = Path("test/features/birds/bird_test.dart")
+
+    def test_layer_import_ignores_line_without_an_import_uri(self):
+        from verify_code_quality import check_layer_imports
+
+        lines = ["import;", "class A {}"]
+        cat = _run_checker(check_layer_imports, lines, self.FEATURE)
+        self.assertEqual(cat.findings, [])
+
+    def test_layer_import_ignores_relative_path_outside_the_repo(self):
+        """`../../../..` ROOT_DIR disina cikar; relative_to ValueError verir."""
+        from verify_code_quality import check_layer_imports
+
+        lines = ["import '../../../../../../elsewhere/foo.dart';"]
+        cat = _run_checker(check_layer_imports, lines, self.FEATURE)
+        self.assertEqual(cat.findings, [])
+
+    def test_iconbutton_skips_when_window_already_has_constraints(self):
+        from verify_code_quality import check_iconbutton_constraints
+
+        lines = ["IconButton(\n", "  constraints: BoxConstraints(minWidth: 48),\n", ");\n"]
+        cat = _run_checker(check_iconbutton_constraints, lines, self.FEATURE)
+        self.assertEqual(cat.findings, [])
+
+    def test_iconbutton_skips_app_icon_button_in_window(self):
+        from verify_code_quality import check_iconbutton_constraints
+
+        # The window looks FORWARD from the match line, so the marker has to
+        # appear at or after it — an `AppIconButton(` wrapper on the line above
+        # is not seen.
+        lines = ["IconButton(\n", "  // migrating to AppIconButton\n", ");\n"]
+        cat = _run_checker(check_iconbutton_constraints, lines, self.FEATURE)
+        self.assertEqual(cat.findings, [])
+
+    def test_provider_container_uses_a_wide_window_without_a_closing_paren(self):
+        """Kapanis pareni bulunamazsa tarama penceresi genisler, susmaz."""
+        from verify_code_quality import check_provider_container_dispose
+
+        lines = ["  final container = ProviderContainer(overrides: [\n", "  // never closed\n"]
+        cat = _run_checker(check_provider_container_dispose, lines, self.TEST_FILE)
+        self.assertEqual(len(cat.findings), 1)
+
+    def test_remote_insert_ignores_comment_lines(self):
+        from verify_code_quality import check_remote_supabase_insert
+
+        lines = ["  // client.from(x).insert(y);\n"]
+        cat = _run_checker(check_remote_supabase_insert, lines, self.REMOTE)
+        self.assertEqual(cat.findings, [])
+
+    def test_remote_insert_ignores_inserts_unrelated_to_a_table(self):
+        """`list.insert(0, x)` bir Supabase yazimi degildir — `.from(` yoksa sus."""
+        from verify_code_quality import check_remote_supabase_insert
+
+        lines = ["  items.insert(0, bird);\n"]
+        cat = _run_checker(check_remote_supabase_insert, lines, self.REMOTE)
+        self.assertEqual(cat.findings, [])
+
+    def test_feature_supabase_access_ignores_comment_lines(self):
+        from verify_code_quality import check_feature_supabase_access
+
+        lines = ["  // client.from('birds').select();\n"]
+        cat = _run_checker(check_feature_supabase_access, lines, self.FEATURE)
+        self.assertEqual(cat.findings, [])
+
+    def test_checkers_ignore_ordinary_lines_without_their_pattern(self):
+        """Desen hic yoksa erken cikis — yorum atlamasindan AYRI bir daldir."""
+        from verify_code_quality import (
+            check_cached_network_image_cache_size,
+            check_feature_supabase_access,
+            check_remote_supabase_insert,
+        )
+
+        plain = ["  final count = birds.length;\n"]
+        for checker, path in (
+            (check_remote_supabase_insert, self.REMOTE),
+            (check_feature_supabase_access, self.FEATURE),
+            (check_cached_network_image_cache_size, self.FEATURE),
+        ):
+            with self.subTest(checker=checker.__name__):
+                self.assertEqual(_run_checker(checker, plain, path).findings, [])
+
+    def test_image_cache_ignores_comment_lines(self):
+        from verify_code_quality import check_cached_network_image_cache_size
+
+        lines = ["  // CachedNetworkImage(imageUrl: url);\n"]
+        cat = _run_checker(check_cached_network_image_cache_size, lines, self.FEATURE)
+        self.assertEqual(cat.findings, [])
+
+
 # ── Checker Functions ─────────────────────────────────────────────────────────
 
 

@@ -1075,7 +1075,7 @@ def check_remote_supabase_insert(lines: List[str], filepath: Path, cat: Category
             continue
         match = re.search(r'\.insert\s*\(', line)
         if not match or is_in_string_literal(line, match.start()):
-            continue
+            continue  # pragma: no cover - CPython emits no trace event here
 
         window = "".join(lines[max(0, i - 6):min(len(lines), i + 2)])
         if ".from(" not in window:
@@ -1135,7 +1135,7 @@ def check_feature_supabase_access(lines: List[str], filepath: Path, cat: Categor
             continue
         match = re.search(r'\b(?:client|_client|supabase)\.from\s*\(', line)
         if not match or is_in_string_literal(line, match.start()):
-            continue
+            continue  # pragma: no cover - CPython emits no trace event here
         cat.findings.append(Finding(
             file=relative_path(filepath),
             line_num=i,
@@ -1151,7 +1151,7 @@ def check_cached_network_image_cache_size(lines: List[str], filepath: Path, cat:
             continue
         match = re.search(r'\bCachedNetworkImage\s*\(', line)
         if not match or is_in_string_literal(line, match.start()):
-            continue
+            continue  # pragma: no cover - CPython emits no trace event here
         window = "".join(lines[i - 1:min(len(lines), i + 35)])
         if "memCacheWidth:" in window:
             continue
