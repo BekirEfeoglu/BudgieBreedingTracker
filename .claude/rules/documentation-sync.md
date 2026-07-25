@@ -40,13 +40,14 @@ From `obsidian-brain/CLAUDE.md`. After a significant code or rule change:
 3. Append a terse `## [date] action | summary` entry to `obsidian-brain/log.md`
 4. If a new page was created, add it to `obsidian-brain/index.md`
 
-Constraints: each page ≤ **200 lines**; when `log.md` nears the cap, move the OLDEST entries into the matching `log-archive-*.md` (newest-first) — do not delete history, do not exceed the limit.
+Constraints: each page ≤ **200 lines**; when `log.md` nears the cap, move the OLDEST entries into the matching `log-archive-*.md` (newest-first) — do not delete history, do not exceed the limit. `check_obsidian_brain.py --rotate` performs exactly that move, widening the archive's `(MM-DD to MM-DD)` range and its index row; it refuses rather than overflowing the target archive, because a NEW archive page also needs an index row and a description a script should not invent.
 
 ## Verification (run before commit; CI re-runs)
 ```bash
 python3 scripts/verify_rules.py --fix      # FIRST if any count or inline ref drifted
 python3 scripts/verify_rules.py --strict   # CLAUDE.md stats + rule cross-references + cross-surface guards (0 tolerance)
 python3 scripts/check_obsidian_brain.py    # wiki index, links, file refs, metrics, decisions, log pressure
+python3 scripts/check_obsidian_brain.py --rotate  # if log.md is over its cap: rotate oldest entries into the newest archive, then lint
 python3 scripts/check_rule_symbol_drift.py --target all --classes --strict  # every Provider/`.dart` path/`*Service|*Notifier|*Repository` class named in .claude/rules/ + obsidian-brain/ must exist in code
 ```
 Generated/managed values (CLAUDE.md stats, the `verify_code_quality` checker-count comment) are owned by `verify_rules.py` — regenerate, never hand-edit. A red `auto-fix-stats` on `main` means CLAUDE.md drifted, not that the script is wrong.
@@ -55,7 +56,7 @@ Generated/managed values (CLAUDE.md stats, the `verify_code_quality` checker-cou
 
 **Cross-surface guards** (`verify_rules.py`, blocking in `rules-sync`): counts
 cannot catch a *half-landed* update — one surface corrected, its twin left
-stale, every count still right. Two sections cover the cases where the same
+stale, every count still right. Four sections cover the cases where the same
 literal is repeated across files with nothing tying them together:
 - **Release Artifacts** — every `build/…` path in CLAUDE.md § Release Builds
   must appear in `release-ops.md` AND in a real producer
@@ -71,8 +72,11 @@ literal is repeated across files with nothing tying them together:
   (one-way — that rule deliberately names buckets that do NOT exist, so the
   reverse direction would flag its own warnings). A constant naming an
   unprovisioned bucket fails at upload time, not at build time.
+- **L10n Categories** — the top-level keys of `tr.json` must match the category
+  list in `localization.md` two-way. The category *count* was already checked;
+  the *names* were not, so a rename kept the count right while the list rotted.
 
-Neither is auto-fixable, and the summary says so instead of pointing at
+None of these are auto-fixable, and the summary says so instead of pointing at
 `--fix`. A red here means two surfaces disagree — go read the WARN lines and
 sync them by hand; do not relax the check.
 

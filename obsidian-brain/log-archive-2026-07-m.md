@@ -1,10 +1,32 @@
 # Change Log Archive — July 2026 M
 
-Archived July 2026 entries (07-17 to 07-24) rotated out of [[log]] during the
+Archived July 2026 entries (07-17 to 07-25) rotated out of [[log]] during the
 2026-07-25 Codemagic-removal documentation sync.
 
 ---
 
+## [2026-07-25] audit | Aspirational-contract sweep: rules/wiki reconciled to code
+
+Docs-only. Rewrote claims that asserted current behavior the code never had:
+gamification XP table (real 11-entry `xpValues` + 3 daily caps), no level cap,
+leaderboard is all-time top-100 only (no monthly/self-rank/TTL/materialized
+view), XP award is a network write; marketplace monetization tier (boost, renew,
+expiry, 7-day edit window, premium photo quota, phone opt-in) does not exist and
+soft-delete is `is_deleted`; notification channels are the five
+`NotificationChannelConfig` ids + `default` with no per-channel importance, and
+send-push is `BATCH_SIZE=50` within `MAX_TOKENS=500`; deeplink payload is a
+`'<type>:<id>'` string resolved by `payloadToRoute`, not JSON with a `route`;
+calendar event types come from the real 18-member `EventType`, the feed uses
+`watchAll` + in-memory month filtering on `eventDate` (no `start_at` range
+query); DM push is not shipped. Constants corrected: community cache 5 min /
+`maxScroll - 200` px / no like cache, DM page 50 with `content`+`created_at`
+columns, admin health 5 min, `EggStatus` has 9 members. Fixed 6 wrong migration
+timestamps and the auth logout order (FCM deactivation runs before `signOut` for
+RLS). Recorded this session's code changes: genetics `calculationVersion` v9,
+Drift shared-index `_tableExists` guard, ads on `effectivePremiumProvider`
+(param renamed `premiumAccessProvider`), release builds ignore `ALLOW_PROXY`,
+new Sentry reports for exhausted decrypt keys / `getFactors` fail-open, and the
+signed-URL logging precedent. known-gaps +8.
 ## [2026-07-24] ci | check_remote_status.py distinguishes Xcode-Cloud-pending from real pending
 
 `check_remote_status.py` reported a bare `commit status is pending` for any

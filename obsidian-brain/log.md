@@ -4,6 +4,33 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-25] infrastructure | Log rotation automated, l10n category names guarded
+
+Two more follow-ups plus one external verification.
+
+**`check_obsidian_brain.py --rotate`.** The 200-line / 30-entry caps were
+enforced but rotated by hand — three re-derived edits every time (move the
+oldest entries, widen the archive's date range, widen the index row), done
+twice in this session alone. `--rotate` does exactly those three and refuses
+rather than overflowing the target archive, because a NEW archive page needs an
+index row and a description a script should not invent. The target archive is
+chosen **by content**, not filename: `log-archive-2026-07-b.md` sorts before
+`log-archive-2026-07.md` lexicographically, so filename order would pick the
+wrong one. Coverage 89% → 97%.
+
+**L10n category names.** Fourth cross-surface family. The category *count* was
+already verified against `tr.json`; the *names* were not, so a renamed category
+kept the count right while `localization.md`'s list rotted. Now compared
+two-way. Verified non-vacuous by renaming one entry — count stays 41, check goes
+red.
+
+**Sentry upload confirmed** for the release build: `sentry api .../files/dsyms/`
+shows the three ABI symbol files and `obfuscation.map.json` at 14:43–14:44 UTC.
+Two observations worth keeping: the map is uploaded **three times** per run
+(~6.5 MB instead of 2.2 MB), and Sentry reports it 64 bytes larger than the
+local file while all three symbol files match byte-for-byte — cause unverified,
+not chased.
+
 ## [2026-07-25] infrastructure | Storage bucket ids guarded; migration-drift coverage 93% → 100%
 
 Third member of the repeated-literal family after release artifacts and Edge
@@ -165,25 +192,3 @@ non-vacuous by mutation. Retired the expired Supabase leaf pin after
 confirming both live leaves match. Genetics `depthLimited` now propagates
 through nested F_A. Migration count 217→218.
 
-## [2026-07-25] audit | Aspirational-contract sweep: rules/wiki reconciled to code
-
-Docs-only. Rewrote claims that asserted current behavior the code never had:
-gamification XP table (real 11-entry `xpValues` + 3 daily caps), no level cap,
-leaderboard is all-time top-100 only (no monthly/self-rank/TTL/materialized
-view), XP award is a network write; marketplace monetization tier (boost, renew,
-expiry, 7-day edit window, premium photo quota, phone opt-in) does not exist and
-soft-delete is `is_deleted`; notification channels are the five
-`NotificationChannelConfig` ids + `default` with no per-channel importance, and
-send-push is `BATCH_SIZE=50` within `MAX_TOKENS=500`; deeplink payload is a
-`'<type>:<id>'` string resolved by `payloadToRoute`, not JSON with a `route`;
-calendar event types come from the real 18-member `EventType`, the feed uses
-`watchAll` + in-memory month filtering on `eventDate` (no `start_at` range
-query); DM push is not shipped. Constants corrected: community cache 5 min /
-`maxScroll - 200` px / no like cache, DM page 50 with `content`+`created_at`
-columns, admin health 5 min, `EggStatus` has 9 members. Fixed 6 wrong migration
-timestamps and the auth logout order (FCM deactivation runs before `signOut` for
-RLS). Recorded this session's code changes: genetics `calculationVersion` v9,
-Drift shared-index `_tableExists` guard, ads on `effectivePremiumProvider`
-(param renamed `premiumAccessProvider`), release builds ignore `ALLOW_PROXY`,
-new Sentry reports for exhausted decrypt keys / `getFactors` fail-open, and the
-signed-URL logging precedent. known-gaps +8.
