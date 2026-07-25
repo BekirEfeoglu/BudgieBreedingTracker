@@ -15,11 +15,32 @@ import runpy
 import sys
 import tempfile
 import unittest
+from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 
 SCRIPTS_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPTS_DIR))
+
+
+# These suites drive scripts whose whole job is printing a report, so running
+# them floods the pre-commit gate log with thousands of lines that look like
+# failures (a fixture run legitimately prints "HATA: ... bulunamadi"). Silence
+# stdout for the module; unittest writes results to stderr, and the tests that
+# assert on output capture it into their own buffer.
+_stdout_patcher = None
+
+
+def setUpModule():
+    global _stdout_patcher
+    _stdout_patcher = patch("sys.stdout", new=StringIO())
+    _stdout_patcher.start()
+
+
+def tearDownModule():
+    if _stdout_patcher is not None:
+        _stdout_patcher.stop()
+
 
 
 # ── main() entegrasyon testleri ───────────────────────────────────────────────

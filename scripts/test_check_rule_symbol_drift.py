@@ -5,11 +5,30 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from io import StringIO
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 SCRIPTS_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPTS_DIR))
+
+
+# Fixture runs of a report-printing script leak into the pre-commit gate log
+# and read as failures (`xProvider`, `r.md`, "1 finding(s)" are all fixtures).
+# unittest reports to stderr, so silencing stdout costs nothing.
+_stdout_patcher = None
+
+
+def setUpModule():
+    global _stdout_patcher
+    _stdout_patcher = patch("sys.stdout", new=StringIO())
+    _stdout_patcher.start()
+
+
+def tearDownModule():
+    if _stdout_patcher is not None:
+        _stdout_patcher.stop()
+
 
 import check_rule_symbol_drift as crsd  # noqa: E402
 
