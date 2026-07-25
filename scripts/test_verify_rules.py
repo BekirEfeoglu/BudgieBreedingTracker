@@ -15,6 +15,7 @@ import sys
 import tempfile
 import unittest
 from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 
@@ -22,16 +23,38 @@ from unittest.mock import patch
 SCRIPTS_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPTS_DIR))
 
+
+# These suites drive scripts whose whole job is printing a report, so running
+# them floods the pre-commit gate log with thousands of lines that look like
+# failures (a fixture run legitimately prints "HATA: ... bulunamadi"). Silence
+# stdout for the module; unittest writes results to stderr, and the tests that
+# assert on output capture it into their own buffer.
+_stdout_patcher = None
+
+
+def setUpModule():
+    global _stdout_patcher
+    _stdout_patcher = patch("sys.stdout", new=StringIO())
+    _stdout_patcher.start()
+
+
+def tearDownModule():
+    if _stdout_patcher is not None:
+        _stdout_patcher.stop()
+
+
 from _rules_collectors import (
     _count_indexes,
     collect_edge_function_surfaces,
     collect_icon_surfaces,
     collect_l10n_category_surfaces,
     collect_quality_checker_counts,
+    collect_quality_gate_surfaces,
     collect_route_surfaces,
     collect_storage_bucket_surfaces,
     collect_supabase_table_surfaces,
     duplicate_route_values,
+    gate_parity_gaps,
     undeclared_columns,
     unprovisioned_tables,
     unresolved_route_targets,
@@ -2302,6 +2325,106 @@ class TestSupabaseTableCheck(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             result = self._run(Path(d), constants={}, created=[],
                                omit=("constants", "migrations"))
+        self.assertEqual(result, 0)
+
+
+# ── Yerel kapi / CI parite ────────────────────────────────────────────────────
+
+
+def _write_gate_fixture(root: Path, *, ci_scripts, gate_scripts, omit=()) -> None:
+    if "ci" not in omit:
+        d = root / ".github" / "workflows"
+        d.mkdir(parents=True, exist_ok=True)
+        steps = "\n".join(
+            f"      - name: step{i}\n        run: python {s}"
+            for i, s in enumerate(ci_scripts))
+        (d / "ci.yml").write_text(
+            f"jobs:\n  code-quality:\n    steps:\n{steps}\n\n  rules-sync:\n    steps: []\n",
+            encoding="utf-8")
+    if "gate" not in omit:
+        d = root / "scripts"
+        d.mkdir(parents=True, exist_ok=True)
+        body = "\n".join(f"python3 {s}" for s in gate_scripts)
+        (d / "run_local_quality_gate.sh").write_text(
+            f"#!/usr/bin/env bash\nset -euo pipefail\n{body}\n", encoding="utf-8")
+
+
+class TestQualityGateParity(unittest.TestCase):
+    """Kapinin CI'in gordugunu gormesi gerekir; tersi serbesttir."""
+
+    def test_reads_both_lists(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write_gate_fixture(root, ci_scripts=["scripts/a.py", "scripts/b.py"],
+                                gate_scripts=["scripts/a.py", "scripts/b.py"])
+            surfaces = collect_quality_gate_surfaces(root)
+        self.assertEqual(surfaces["ci"], {"scripts/a.py", "scripts/b.py"})
+        self.assertEqual(surfaces["gate"], {"scripts/a.py", "scripts/b.py"})
+
+    def test_reports_a_check_ci_runs_but_the_gate_does_not(self):
+        """2026-07-25 oncesi gercek durum: migration drift yalniz CI'daydi."""
+        surfaces = {"ci": {"scripts/a.py", "scripts/verify_migration_drift.py"},
+                    "gate": {"scripts/a.py"}}
+        self.assertEqual(gate_parity_gaps(surfaces),
+                         ["scripts/verify_migration_drift.py"])
+
+    def test_gate_may_run_more_than_ci(self):
+        surfaces = {"ci": {"scripts/a.py"},
+                    "gate": {"scripts/a.py", "scripts/verify_rules.py"}}
+        self.assertEqual(gate_parity_gaps(surfaces), [])
+
+    def test_missing_surfaces_yield_none_and_no_gaps(self):
+        with tempfile.TemporaryDirectory() as d:
+            surfaces = collect_quality_gate_surfaces(Path(d))
+        self.assertIsNone(surfaces["ci"])
+        self.assertIsNone(surfaces["gate"])
+        self.assertEqual(gate_parity_gaps(surfaces), [])
+
+    def test_ci_without_a_code_quality_job_yields_none(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            wf = root / ".github" / "workflows"
+            wf.mkdir(parents=True)
+            (wf / "ci.yml").write_text("jobs:\n  test:\n    steps: []\n", encoding="utf-8")
+            self.assertIsNone(collect_quality_gate_surfaces(root)["ci"])
+
+
+class TestQualityGateParityCheck(unittest.TestCase):
+    def _run(self, root: Path, *, ci_scripts, gate_scripts, omit=()):
+        import verify_rules as vr
+
+        assets = root / "assets" / "translations"
+        assets.mkdir(parents=True)
+        data = {f"k{i}": f"v{i}" for i in range(3)}
+        for lang in ("tr", "en", "de"):
+            (assets / f"{lang}.json").write_text(json.dumps(data), encoding="utf-8")
+        (root / "CLAUDE.md").write_text(_make_claude_md_content(tr_keys=3), encoding="utf-8")
+        _write_gate_fixture(root, ci_scripts=ci_scripts, gate_scripts=gate_scripts, omit=omit)
+
+        actual = _make_sample_actual({"tr_keys": 3, "categories": 35})
+        with patch.object(vr, "CLAUDE_MD", root / "CLAUDE.md"), \
+             patch.object(vr, "ASSETS", root / "assets"), \
+             patch.object(vr, "ROOT", root), \
+             patch.object(vr, "collect_actual_values", return_value=actual):
+            return vr.main()
+
+    def test_passes_when_the_gate_covers_ci(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d), ci_scripts=["scripts/a.py"],
+                               gate_scripts=["scripts/a.py", "scripts/extra.py"])
+        self.assertEqual(result, 0)
+
+    def test_fails_when_the_gate_is_missing_a_ci_check(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d),
+                               ci_scripts=["scripts/a.py", "scripts/b.py"],
+                               gate_scripts=["scripts/a.py"])
+        self.assertEqual(result, 1)
+
+    def test_skips_when_the_gate_script_is_absent(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d), ci_scripts=["scripts/a.py"],
+                               gate_scripts=[], omit=("gate",))
         self.assertEqual(result, 0)
 
 

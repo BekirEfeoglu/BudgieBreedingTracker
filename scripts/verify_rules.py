@@ -24,6 +24,7 @@ from _rules_collectors import (
     collect_edge_function_surfaces,
     collect_icon_surfaces,
     collect_l10n_category_surfaces,
+    collect_quality_gate_surfaces,
     collect_route_surfaces,
     collect_storage_bucket_surfaces,
     collect_supabase_column_surfaces,
@@ -33,6 +34,7 @@ from _rules_collectors import (
     extract_first_number,
     extract_markdown_section,
     extract_release_artifact_paths,
+    gate_parity_gaps,
     undeclared_columns,
     unprovisioned_tables,
     unresolved_route_targets,
@@ -395,6 +397,19 @@ def main():
         for name in undeclared:
             print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: kolon sabiti var, hicbir migration bu kolonu tanimlamiyor")
         track_manual(check("Kolon sabitleri migration'larda tanimli", 0, len(undeclared)))
+
+    print(section("Quality Gate Parity"))
+    # The pre-commit gate is only useful if it sees what CI sees. One-way: the
+    # gate legitimately runs more (verify_rules.py lives in the separate
+    # rules-sync job, plus conditional l10n/script-test steps).
+    gate = collect_quality_gate_surfaces(ROOT)
+    if gate["ci"] is None or gate["gate"] is None:
+        print(f"  {Colors.YELLOW}SKIP{Colors.RESET} ci.yml code-quality veya run_local_quality_gate.sh bulunamadi")
+    else:
+        gaps = gate_parity_gaps(gate)
+        for name in gaps:
+            print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: CI code-quality'de var, yerel kapida yok")
+        track_manual(check("Yerel kapi CI code-quality'yi kapsiyor", 0, len(gaps)))
 
     # ── Summary ──
     pass_count = sum(results)

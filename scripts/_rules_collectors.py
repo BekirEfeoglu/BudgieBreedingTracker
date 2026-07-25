@@ -362,6 +362,50 @@ def collect_supabase_table_surfaces(root: Path) -> dict:
     return {"constants": in_constants, "created": created}
 
 
+# ── Local gate vs CI code-quality ────────────────────────────────────
+# The pre-commit gate is only useful if it sees what CI sees. It ran four of
+# code-quality's five checks for months — verify_migration_drift.py was
+# CI-only, so a migration structure problem only surfaced after push. Nothing
+# tied the two lists together; this does.
+
+_GATE_SCRIPT_RE = re.compile(r"python3?\s+(scripts/[\w_]+\.py)")
+
+
+def collect_quality_gate_surfaces(root: Path) -> dict:
+    """Collect the scripts run by CI's code-quality job and the local gate."""
+    workflow = root / ".github" / "workflows" / "ci.yml"
+    in_ci = None
+    if workflow.exists():
+        text = workflow.read_text(encoding="utf-8")
+        match = re.search(
+            r"^  code-quality:\n(.*?)(?=\n  [a-z][\w-]*:\n)", text, re.MULTILINE | re.DOTALL
+        )
+        if match:
+            in_ci = set(_GATE_SCRIPT_RE.findall(match.group(1)))
+
+    gate = root / "scripts" / "run_local_quality_gate.sh"
+    in_gate = (
+        set(_GATE_SCRIPT_RE.findall(gate.read_text(encoding="utf-8")))
+        if gate.exists()
+        else None
+    )
+
+    return {"ci": in_ci, "gate": in_gate}
+
+
+def gate_parity_gaps(surfaces: dict) -> list:
+    """Checks CI runs in code-quality that the local gate does not.
+
+    One-way: the gate legitimately runs more (`verify_rules.py --strict` lives
+    in the separate `rules-sync` job, plus conditional l10n/script-test steps).
+    """
+    ci = surfaces["ci"]
+    gate = surfaces["gate"]
+    if ci is None or gate is None:
+        return []
+    return sorted(ci - gate)
+
+
 def collect_supabase_column_surfaces(root: Path) -> dict:
     """Collect `*Col<Name>` constant values and columns declared by migrations.
 
