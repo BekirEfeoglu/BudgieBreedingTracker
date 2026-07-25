@@ -1,9 +1,34 @@
 # Change Log Archive — July 2026 M
 
-Archived July 2026 entries (07-17 to 07-22) rotated out of [[log]] during the
+Archived July 2026 entries (07-17 to 07-24) rotated out of [[log]] during the
 2026-07-25 Codemagic-removal documentation sync.
 
 ---
+
+## [2026-07-24] ci | check_remote_status.py distinguishes Xcode-Cloud-pending from real pending
+
+`check_remote_status.py` reported a bare `commit status is pending` for any
+non-success aggregate state, conflating a genuinely running check with the
+common benign case where every ci.yml check-run is complete and green but the
+commit has zero legacy status contexts (Xcode Cloud posts `BudgieBreedingTracker
+| Default` up to ~1h late, push tip only). When state is pending, contexts are
+zero, and all check-runs are complete with none failed, it now emits an
+explanatory reason (still `is_clean=False` — verification waits for the context);
+a still-running check keeps the generic pending. Two tests added
+(`check_remote_status.py` 99%). Documented in ci-actions.md § Xcode Cloud status
+context. Also rotated the two oldest (2026-07-14) entries into
+[[log-archive-2026-07-l]] to stay under the 200-line cap.
+
+## [2026-07-23] audit | Full-scope sweep: saveAll metadata collision, Sentry filter, deflake, #8 constants
+7-lane read-only audit from a pristine baseline (all scripts + CI green). Four fixes landed:
+- **P2 correctness (offline):** `SyncMetadataDao.insertAll` built each row with a FRESH v7 PK but targeted an existing `(table_name, record_id)`; `insertAllOnConflictUpdate` conflicts on the PK only, so the fresh PK fell through to the `UNIQUE(table_name, record_id)` index and threw. Broke offline breeding cancel/complete (`closeActiveIncubations` → `incubationRepo.saveAll` on an incubation that still had a pending row) mid-cleanup → zombie reminders + false `errors.unknown`, and genealogy orphan repair. Fixed at the DAO (one place, all 14 `saveAll` callers) to be records-aware: reuse each existing PK, preserve `createdAt`, status-agnostic (pending saves + `pendingDelete` tombstones). Real-DB regression test added.
+- **Observability:** community post/comment mutators (Like/Bookmark/Delete/Edit/Pin/Follow/CommentForm/CommentDelete/CommentLike + 2 report widgets) and `FeedbackFormNotifier` called `Sentry.captureException` directly, flooding Sentry with expected `Validation`/`Network` exceptions. Routed through the existing `SentryErrorFilter` (`reportIfUnexpected` / `reportUnexpectedToSentry`). Sibling hunt found 2 extra sites in `community_create_providers` (guard-RPC + image-cleanup).
+- **Test deflake:** `premium_sync_rpc_test` `Future.delayed(3s)` raced a real 2s backoff on the PR gate. Added `premiumSyncBackoffProvider` seam (prod default `Future.delayed`), test overrides to instant — ~6s wall-clock removed.
+- **#8 SupabaseConstants (fully closed):** onConflict composites + auth-role/messaging-search literals, then in a follow-up the free-text `.or()` search literals (marketplace/community `title`/`description`/`content`) + admin `details::text` cast + `system_settings` `key`/`value` reads. Added `colTargetId/colTargetType/colBadgeId/colDisplayName/colTitle/colDescription/colContent/colDetails/colKey/colValue` (constants → 202). SupaCol scanner + a full-lib sweep now find zero remaining hardcoded column strings.
+- **localization_flow_test deflake:** `_waitForLocale/_waitForDateFormat` polled a `DateTime.now()` wall-clock deadline (near-now flake under CI load) → rewritten to bound by event-loop yields (`Duration.zero`), value-equality as the readiness condition.
+Migration prod-parity confirmed via Supabase MCP (3 post-baseline migrations applied; ledger clean). Security advisors: 2 known non-blocking (private-schema RLS INFO by-design, leaked-password dashboard toggle). Genetics clean; edge functions re-verified (all 12 pass JWT/validation/tests/deploy-registration/no-orphan — the lane's first run had not completed).
+Also documented Xcode Cloud's post-push status semantics after a wrong theory ("no `lib/` change → no build") was formed and then refuted by a 20-commit scan: it reports as a legacy status context, builds only the push tip (intermediates stay `pending` forever on zero contexts), can land ~1h after Actions are green, and has no path filter — see ci-actions.md § Xcode Cloud status context.
+Backlog follow-up: added create-community-comment malformed-body/invalid-uuid deno cases (suite 255→257); introduced the first Drift schema-consistency test (`migration_test.dart`: version + 20 tables + sync_metadata unique index + FK) — the `drift_dev schema` generated verifier can't compile (`table_name` → `tableName` field collides with `Table.tableName`), so it uses `sqlite_master`/`PRAGMA`. migrations.md's fictional `TestDatabase.atVersion`/`migrateTo` harness replaced with the real one; cross-version data-migration coverage recorded as a known gap.
 
 ## [2026-07-22] docs | Synchronize release and dependency snapshots
 
