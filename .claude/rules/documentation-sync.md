@@ -45,13 +45,31 @@ Constraints: each page ≤ **200 lines**; when `log.md` nears the cap, move the 
 ## Verification (run before commit; CI re-runs)
 ```bash
 python3 scripts/verify_rules.py --fix      # FIRST if any count or inline ref drifted
-python3 scripts/verify_rules.py --strict   # CLAUDE.md stats + rule cross-references (0 tolerance)
+python3 scripts/verify_rules.py --strict   # CLAUDE.md stats + rule cross-references + cross-surface guards (0 tolerance)
 python3 scripts/check_obsidian_brain.py    # wiki index, links, file refs, metrics, decisions, log pressure
 python3 scripts/check_rule_symbol_drift.py --target all --classes --strict  # every Provider/`.dart` path/`*Service|*Notifier|*Repository` class named in .claude/rules/ + obsidian-brain/ must exist in code
 ```
 Generated/managed values (CLAUDE.md stats, the `verify_code_quality` checker-count comment) are owned by `verify_rules.py` — regenerate, never hand-edit. A red `auto-fix-stats` on `main` means CLAUDE.md drifted, not that the script is wrong.
 
 **Aspirational-contract guard** (`check_rule_symbol_drift.py --target all --classes`, blocking in `code-quality`): catches the highest-value drift class — a doc naming a `fooProvider`, `.dart` path, or `*Service`/`*Notifier`/`*Repository`/`*Dao`/`*Mapper`/`*Guard` class that no longer exists (the 2026-07-13 sweep found whole never-built rule sections, e.g. `conflictNotifierProvider`/`gamificationServiceProvider`). It scans BOTH `.claude/rules/*.md` AND `obsidian-brain/**/*.md` (excluding `log.md`/`log-archive-*` — chronological history legitimately names removed symbols); class names are checked both in backticks AND bare in prose (outside fenced code — the ConnectivityService drift that a backtick-only scan missed). Only these near-zero-false-positive shapes are checked; other class/method names, l10n keys, and table/column names still need the manual semantic pass. A red means one of: (a) genuine drift — fix the doc to the real symbol; (b) a legitimately-removed symbol you're documenting in prose (incl. "X does not exist" annotations) — add it to the `PROVIDER_ALLOWLIST`/`DART_PATH_ALLOWLIST`/`CLASS_ALLOWLIST` in the script with a one-line reason. Do NOT weaken the check to go green. Run `--audit-allowlist` periodically to prune allowlist entries no longer cited by any doc.
+
+**Cross-surface guards** (`verify_rules.py`, blocking in `rules-sync`): counts
+cannot catch a *half-landed* update — one surface corrected, its twin left
+stale, every count still right. Two sections cover the cases where the same
+literal is repeated across files with nothing tying them together:
+- **Release Artifacts** — every `build/…` path in CLAUDE.md § Release Builds
+  must appear in `release-ops.md` AND in a real producer
+  (`build_release.sh` / `release-ready.yml`). Added after 067aa2f corrected the
+  iOS artifact path in the rule, the wiki and the skill but not in CLAUDE.md.
+- **Edge Functions** — the function directories under `supabase/functions/`
+  must match `config.toml`'s `[functions.*]` entries and the `ci.yml` deploy
+  list two-way; every name literal in `edge_function_client.dart` (including
+  `_rateLimitExempt`) must resolve to a real function. One-way on the client
+  side only: a webhook/trigger/cron function legitimately has no client caller.
+
+Neither is auto-fixable, and the summary says so instead of pointing at
+`--fix`. A red here means two surfaces disagree — go read the WARN lines and
+sync them by hand; do not relax the check.
 
 ### Semantic pass (mandatory; scripts are not enough)
 

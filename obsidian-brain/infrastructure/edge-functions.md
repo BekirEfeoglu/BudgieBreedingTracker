@@ -119,7 +119,12 @@ changes; documentation-only pushes skip production deployment. Function names
 are passed as raw string literals at call sites in
 `lib/data/remote/supabase/edge_function_client.dart` — there is no
 `EdgeFunctionName` constants class; names must still match exactly across
-workflow, function folder, and call sites.
+workflow, function folder, and call sites. `verify_rules.py` § Edge Functions
+enforces this in the `rules-sync` job: directories ↔ `config.toml`
+`[functions.*]` ↔ the `ci.yml` deploy list are compared two-way, and every
+client literal (including the `_rateLimitExempt` set, where a stale name fails
+silently by simply not exempting) must resolve to a real function. The client
+direction is one-way — a webhook/trigger/cron function needs no client caller.
 
 ## Anti-Patterns
 

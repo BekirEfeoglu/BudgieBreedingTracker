@@ -7,12 +7,14 @@ Calistirma:
   python -m pytest scripts/test_verify_rules.py -v
 """
 
+import io
 import json
 import re
 import runpy
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
@@ -22,6 +24,7 @@ sys.path.insert(0, str(SCRIPTS_DIR))
 
 from _rules_collectors import (
     _count_indexes,
+    collect_edge_function_surfaces,
     collect_quality_checker_counts,
     collect_data_layer,
     collect_repos_and_remotes,
@@ -1530,6 +1533,236 @@ class TestReleaseArtifactsCheck(unittest.TestCase):
                 producer="irrelevant",
             )
         self.assertEqual(result, 0)
+
+
+# ── Edge Function ad tutarliligi ──────────────────────────────────────────────
+#
+# edge-functions.md: EdgeFunctionName sabit sinifi YOK — ad dort yuzeyde
+# tekrarlanan bir literal. Drift runtime'da 404, deploy'da eksik fonksiyon veya
+# sessizce (bayat _rateLimitExempt girdisi) patlar.
+
+
+def _write_edge_fixture(root: Path, *, dirs, config, deploy, client_literals,
+                        exempt=(), omit=()) -> None:
+    """Dort Edge Function yuzeyini gecici bir kok altinda olustur."""
+    if "dirs" not in omit:
+        for name in dirs:
+            (root / "supabase" / "functions" / name).mkdir(parents=True)
+        (root / "supabase" / "functions" / "_shared").mkdir(parents=True, exist_ok=True)
+    if "config" not in omit:
+        (root / "supabase").mkdir(parents=True, exist_ok=True)
+        body = "\n".join(f"[functions.{n}]\nverify_jwt = true" for n in config)
+        (root / "supabase" / "config.toml").write_text(body, encoding="utf-8")
+    if "deploy" not in omit:
+        wf = root / ".github" / "workflows"
+        wf.mkdir(parents=True, exist_ok=True)
+        body = "\n".join(f"          supabase functions deploy {n} --project-ref X" for n in deploy)
+        (wf / "ci.yml").write_text(f"jobs:\n  deploy:\n    run: |\n{body}\n", encoding="utf-8")
+    if "client" not in omit:
+        client_dir = root / "lib" / "data" / "remote" / "supabase"
+        client_dir.mkdir(parents=True, exist_ok=True)
+        calls = "\n".join(f"    return invoke('{n}');" for n in client_literals)
+        exempt_body = "".join(f"    '{n}',\n" for n in exempt)
+        (client_dir / "edge_function_client.dart").write_text(
+            "class EdgeFunctionClient {\n"
+            f"  static const _rateLimitExempt = {{\n{exempt_body}  }};\n"
+            f"{calls}\n}}\n",
+            encoding="utf-8",
+        )
+
+
+class TestCollectEdgeFunctionSurfaces(unittest.TestCase):
+    """collect_edge_function_surfaces: dort yuzeyden ad toplama."""
+
+    def test_collects_all_four_surfaces(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write_edge_fixture(
+                root, dirs=["send-push", "mfa-lockout"],
+                config=["send-push", "mfa-lockout"],
+                deploy=["send-push", "mfa-lockout"],
+                client_literals=["send-push"],
+                exempt=["mfa-lockout"],
+            )
+            surfaces = collect_edge_function_surfaces(root)
+        self.assertEqual(surfaces["disk"], {"send-push", "mfa-lockout"})
+        self.assertEqual(surfaces["config"], {"send-push", "mfa-lockout"})
+        self.assertEqual(surfaces["deploy"], {"send-push", "mfa-lockout"})
+        # _rateLimitExempt girdileri de literal sayilir
+        self.assertEqual(surfaces["client"], {"send-push", "mfa-lockout"})
+
+    def test_excludes_underscore_dirs(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write_edge_fixture(root, dirs=["send-push"], config=[], deploy=[],
+                                client_literals=[])
+            self.assertEqual(collect_edge_function_surfaces(root)["disk"], {"send-push"})
+
+    def test_missing_surface_files_yield_none(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write_edge_fixture(root, dirs=["send-push"], config=[], deploy=[],
+                                client_literals=[],
+                                omit=("config", "deploy", "client"))
+            surfaces = collect_edge_function_surfaces(root)
+        self.assertIsNone(surfaces["config"])
+        self.assertIsNone(surfaces["deploy"])
+        self.assertIsNone(surfaces["client"])
+
+    def test_missing_functions_dir_yields_empty_disk(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.assertEqual(collect_edge_function_surfaces(Path(d))["disk"], set())
+
+
+class TestEdgeFunctionCheck(unittest.TestCase):
+    """main() icindeki Edge Functions bolumu ve ozet ipucu dallari."""
+
+    def _run(self, root: Path, *, dirs, config, deploy, client_literals,
+             exempt=(), omit=(), claude_extra="", capture=False):
+        import verify_rules as vr
+
+        assets = root / "assets" / "translations"
+        assets.mkdir(parents=True)
+        data = {f"k{i}": f"v{i}" for i in range(3)}
+        for lang in ("tr", "en", "de"):
+            (assets / f"{lang}.json").write_text(json.dumps(data), encoding="utf-8")
+
+        tmp_md = root / "CLAUDE.md"
+        tmp_md.write_text(_make_claude_md_content(tr_keys=3) + claude_extra, encoding="utf-8")
+        _write_edge_fixture(root, dirs=dirs, config=config, deploy=deploy,
+                            client_literals=client_literals, exempt=exempt,
+                            omit=omit)
+
+        actual = _make_sample_actual({"tr_keys": 3, "categories": 35})
+        buffer = io.StringIO()
+        with patch.object(vr, "CLAUDE_MD", tmp_md), \
+             patch.object(vr, "ASSETS", root / "assets"), \
+             patch.object(vr, "ROOT", root), \
+             patch.object(vr, "collect_actual_values", return_value=actual):
+            if capture:
+                with redirect_stdout(buffer):
+                    result = vr.main()
+                return result, buffer.getvalue()
+            return vr.main(), ""
+
+    def test_passes_when_all_surfaces_agree(self):
+        with tempfile.TemporaryDirectory() as d:
+            result, _ = self._run(
+                Path(d), dirs=["send-push"], config=["send-push"],
+                deploy=["send-push"], client_literals=["send-push"],
+            )
+        self.assertEqual(result, 0)
+
+    def test_fails_when_config_entry_is_missing(self):
+        with tempfile.TemporaryDirectory() as d:
+            result, _ = self._run(
+                Path(d), dirs=["send-push", "system-health"], config=["send-push"],
+                deploy=["send-push", "system-health"], client_literals=["send-push"],
+            )
+        self.assertEqual(result, 1)
+
+    def test_fails_when_config_names_a_deleted_function(self):
+        with tempfile.TemporaryDirectory() as d:
+            result, _ = self._run(
+                Path(d), dirs=["send-push"], config=["send-push", "gone"],
+                deploy=["send-push"], client_literals=["send-push"],
+            )
+        self.assertEqual(result, 1)
+
+    def test_fails_when_deploy_list_is_missing_a_function(self):
+        with tempfile.TemporaryDirectory() as d:
+            result, _ = self._run(
+                Path(d), dirs=["send-push", "system-health"],
+                config=["send-push", "system-health"], deploy=["send-push"],
+                client_literals=["send-push"],
+            )
+        self.assertEqual(result, 1)
+
+    def test_fails_when_client_invokes_unknown_function(self):
+        with tempfile.TemporaryDirectory() as d:
+            result, _ = self._run(
+                Path(d), dirs=["send-push"], config=["send-push"],
+                deploy=["send-push"], client_literals=["sytem-health"],
+            )
+        self.assertEqual(result, 1)
+
+    def test_fails_when_rate_limit_exempt_names_a_stale_function(self):
+        """En sinsi hali: bayat _rateLimitExempt girdisi sessizce muafiyeti kaybeder."""
+        with tempfile.TemporaryDirectory() as d:
+            result, _ = self._run(
+                Path(d), dirs=["send-push"], config=["send-push"],
+                deploy=["send-push"], client_literals=["send-push"],
+                exempt=["create-community-pos"],
+            )
+        self.assertEqual(result, 1)
+
+    def test_client_need_not_invoke_every_function(self):
+        """Webhook/trigger/cron ile cagrilan fonksiyon client'ta olmayabilir."""
+        with tempfile.TemporaryDirectory() as d:
+            result, _ = self._run(
+                Path(d), dirs=["send-push", "revenuecat-webhook"],
+                config=["send-push", "revenuecat-webhook"],
+                deploy=["send-push", "revenuecat-webhook"],
+                client_literals=["send-push"],
+            )
+        self.assertEqual(result, 0)
+
+    def test_skips_when_surface_files_absent(self):
+        with tempfile.TemporaryDirectory() as d:
+            result, _ = self._run(
+                Path(d), dirs=["send-push"], config=[], deploy=[],
+                client_literals=[], omit=("config", "deploy", "client"),
+            )
+        self.assertEqual(result, 0)
+
+    def test_skips_when_functions_dir_absent(self):
+        with tempfile.TemporaryDirectory() as d:
+            result, _ = self._run(
+                Path(d), dirs=[], config=[], deploy=[], client_literals=[],
+                omit=("dirs",),
+            )
+        self.assertEqual(result, 0)
+
+    def test_manual_failure_does_not_suggest_fix(self):
+        """Capraz-yuzey hatasinda '--fix ile duzelt' ipucu YANILTICI — gosterme."""
+        with tempfile.TemporaryDirectory() as d:
+            result, out = self._run(
+                Path(d), dirs=["send-push", "system-health"], config=["send-push"],
+                deploy=["send-push", "system-health"], client_literals=["send-push"],
+                capture=True,
+            )
+        self.assertEqual(result, 1)
+        self.assertNotIn("--fix' ile otomatik duzelt", out)
+        self.assertIn("capraz-yuzey hatasi", out)
+
+    def test_fixable_failure_still_suggests_fix(self):
+        """Sayim drift'i hala otomatik duzeltilebilir — ipucu korunmali."""
+        import verify_rules as vr
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            assets = root / "assets" / "translations"
+            assets.mkdir(parents=True)
+            data = {f"k{i}": f"v{i}" for i in range(3)}
+            for lang in ("tr", "en", "de"):
+                (assets / f"{lang}.json").write_text(json.dumps(data), encoding="utf-8")
+            tmp_md = root / "CLAUDE.md"
+            tmp_md.write_text(_make_claude_md_content(tr_keys=3), encoding="utf-8")
+            _write_edge_fixture(root, dirs=["send-push"], config=["send-push"],
+                                deploy=["send-push"], client_literals=["send-push"])
+            # routes sayisini kasten kaydir → fixable bir hata uret
+            actual = _make_sample_actual({"tr_keys": 3, "categories": 35, "routes": 999})
+            buffer = io.StringIO()
+            with patch.object(vr, "CLAUDE_MD", tmp_md), \
+                 patch.object(vr, "ASSETS", root / "assets"), \
+                 patch.object(vr, "ROOT", root), \
+                 patch.object(vr, "collect_actual_values", return_value=actual), \
+                 redirect_stdout(buffer):
+                result = vr.main()
+            out = buffer.getvalue()
+        self.assertEqual(result, 1)
+        self.assertIn("--fix' ile otomatik duzelt", out)
+        self.assertNotIn("capraz-yuzey hatasi", out)
 
 
 # ── Script entrypoint (satir 207) ─────────────────────────────────────────────

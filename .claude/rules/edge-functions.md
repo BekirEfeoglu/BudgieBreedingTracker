@@ -88,7 +88,7 @@ Bu karar hosted Supabase Edge'in güncel function başına **256 MB memory** ve
 - Dart-side test of HTTP wrapper ≠ edge function test — both required
 
 ## Deployment
-- Function names must match exactly across: workflow, function folder, and raw string literal call sites in `lib/data/remote/supabase/edge_function_client.dart` (no `EdgeFunctionName` constants class exists)
+- Function names must match exactly across: workflow, function folder, and raw string literal call sites in `lib/data/remote/supabase/edge_function_client.dart` (no `EdgeFunctionName` constants class exists). This is now CI-enforced by `verify_rules.py` § Edge Functions (`rules-sync` job): directories ↔ `config.toml` `[functions.*]` ↔ `ci.yml` deploy list are compared two-way, and every client literal — including the `_rateLimitExempt` set, where a stale name fails *silently* by just not exempting — must resolve to a real function. The client direction is one-way only: a webhook/trigger/cron function need not have a client caller
 - Keep the `edge-function-changes` guard in the deploy job dependency chain so
   unrelated main pushes cannot consume deploy credentials or runtime quota.
 - New function checklist:

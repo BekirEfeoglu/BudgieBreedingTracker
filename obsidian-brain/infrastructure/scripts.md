@@ -12,7 +12,7 @@ All scripts in `scripts/` directory.
 | `check_platform_targets.py` | Verify unsupported Flutter web target is absent |
 | `check_obsidian_brain.py` | Verify wiki index, wikilinks, inline file refs, overview metrics, decision sections, log pressure, and 200-line limit |
 | `verify_code_quality.py` | Anti-pattern scan (28 checker categories: 19/24 CLAUDE.md anti-patterns + 10 documented extras; some overlap) |
-| `verify_rules.py` | Validate CLAUDE.md stats against codebase |
+| `verify_rules.py` | CLAUDE.md stats vs codebase + cross-surface guards (release artifact paths, Edge Function names) |
 | `verify_rules.py --fix` | Auto-fix CLAUDE.md stats + inline rule references |
 | `check_remote_status.py` | Verify exact commit SHA GitHub status/check-run summary; an Edge deploy skip is accepted only with a successful path detector |
 | `verify_migration_drift.py` | Migration structure guard: duplicate/malformed filenames plus immutable applied-chain SHA-256 baseline (offline, in `code-quality`); `--online` parses only remote ledger versions and resolves the nine documented apply-time aliases from the fixture before checking parity |

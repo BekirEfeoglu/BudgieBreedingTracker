@@ -21,6 +21,7 @@ from pathlib import Path
 
 from _rules_collectors import (
     collect_actual_values,
+    collect_edge_function_surfaces,
     count_json_leaf_keys,
     extract_first_number,
     extract_markdown_section,
@@ -86,10 +87,17 @@ def main():
 
     # ── Verification Mode ──
     results = []
+    manual_results = []
     section, _section = section_factory()
 
     def track(result):
+        """Track a check that `--fix` can repair (CLAUDE.md stats, inline refs)."""
         results.append(result)
+
+    def track_manual(result):
+        """Track a check `--fix` does NOT repair — the summary hint must say so."""
+        results.append(result)
+        manual_results.append(result)
 
     def tol(default: int) -> int:
         return 0 if STRICT_MODE else default
@@ -220,7 +228,7 @@ def main():
             undocumented = sorted(p for p in claimed_paths if p not in ops_text)
             for path in undocumented:
                 print(f"  {Colors.YELLOW}WARN{Colors.RESET} {path}: CLAUDE.md'de var, release-ops.md'de yok")
-            track(check("Artefakt yollari release-ops.md ile ayni", 0, len(undocumented)))
+            track_manual(check("Artefakt yollari release-ops.md ile ayni", 0, len(undocumented)))
         else:
             print(f"  {Colors.YELLOW}SKIP{Colors.RESET} release-ops.md bulunamadi")
 
@@ -229,9 +237,43 @@ def main():
             unproduced = sorted(p for p in claimed_paths if p not in producer_text)
             for path in unproduced:
                 print(f"  {Colors.YELLOW}WARN{Colors.RESET} {path}: hicbir release script/workflow bu yolu uretmiyor")
-            track(check("Artefakt yollari gercek ureticiyle eslesiyor", 0, len(unproduced)))
+            track_manual(check("Artefakt yollari gercek ureticiyle eslesiyor", 0, len(unproduced)))
         else:
             print(f"  {Colors.YELLOW}SKIP{Colors.RESET} release script/workflow bulunamadi")
+
+    print(section("Edge Functions"))
+    # edge-functions.md: no EdgeFunctionName constants class exists, so the
+    # function name is a repeated literal on four surfaces. A drifted name
+    # fails at runtime (404), on deploy, or silently (stale _rateLimitExempt).
+    surfaces = collect_edge_function_surfaces(ROOT)
+    on_disk = surfaces["disk"]
+    if not on_disk:
+        print(f"  {Colors.YELLOW}SKIP{Colors.RESET} supabase/functions/ bulunamadi")
+    else:
+        def _compare(label: str, names, description: str):
+            """Two-way set comparison against the function directories."""
+            if names is None:
+                print(f"  {Colors.YELLOW}SKIP{Colors.RESET} {label} bulunamadi")
+                return
+            for name in sorted(on_disk - names):
+                print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: dizin var, {label} icinde yok")
+            for name in sorted(names - on_disk):
+                print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: {label} icinde var, dizin yok")
+            track_manual(check(description, 0, len(on_disk ^ names)))
+
+        _compare("supabase/config.toml", surfaces["config"], "config.toml adlari dizinlerle ayni")
+        _compare("ci.yml deploy listesi", surfaces["deploy"], "Deploy listesi dizinlerle ayni")
+
+        # One-way only: a function may legitimately be invoked by a webhook,
+        # DB trigger or cron instead of the client (edge-functions.md
+        # § Invocation Completeness), so absence from the client is not drift.
+        if surfaces["client"] is None:
+            print(f"  {Colors.YELLOW}SKIP{Colors.RESET} edge_function_client.dart bulunamadi")
+        else:
+            unknown = sorted(surfaces["client"] - on_disk)
+            for name in unknown:
+                print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: client literali, boyle bir fonksiyon yok")
+            track_manual(check("Client literalleri gercek fonksiyona isaret ediyor", 0, len(unknown)))
 
     # ── Summary ──
     pass_count = sum(results)
@@ -240,9 +282,18 @@ def main():
     print(f"\n{Colors.BOLD}{Colors.CYAN}=== OZET ==={Colors.RESET}")
     print(f"  Toplam kontrol: {len(results)}")
     print(f"  {Colors.GREEN}Basarili: {pass_count}{Colors.RESET}")
+    manual_fail = len(manual_results) - sum(manual_results)
+    fixable_fail = fail_count - manual_fail
+
     if fail_count > 0:
         print(f"  {Colors.RED}Basarisiz: {fail_count}{Colors.RESET}")
-        print(f"\n  {Colors.YELLOW}Ipucu: 'python scripts/verify_rules.py --fix' ile otomatik duzelt{Colors.RESET}")
+        # Cross-surface checks are not auto-fixable; pointing at --fix for
+        # those sends the reader to a command that changes nothing.
+        if fixable_fail > 0:
+            print(f"\n  {Colors.YELLOW}Ipucu: 'python scripts/verify_rules.py --fix' ile otomatik duzelt{Colors.RESET}")
+        if manual_fail > 0:
+            print(f"\n  {Colors.YELLOW}Ipucu: {manual_fail} capraz-yuzey hatasi --fix ile duzelmez; "
+                  f"yukaridaki WARN satirlarindaki yuzeyleri elle esitle{Colors.RESET}")
     else:
         print(f"  {Colors.GREEN}Tum kontroller basarili!{Colors.RESET}")
 

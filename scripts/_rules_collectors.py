@@ -98,6 +98,65 @@ def extract_release_artifact_paths(text: str) -> set:
     return {match.rstrip("`.,;:)") for match in _ARTIFACT_PATH_RE.findall(text)}
 
 
+# ── Edge Function names across surfaces ──────────────────────────────
+# edge-functions.md: "Function names must match exactly across: workflow,
+# function folder, and raw string literal call sites" — there is no
+# EdgeFunctionName constants class, so every surface repeats the literal and
+# nothing but this check ties them together. A name that drifts fails at
+# runtime (404), on deploy (missing function), or silently (a stale entry in
+# _rateLimitExempt just stops exempting).
+
+
+def collect_edge_function_surfaces(root: Path) -> dict:
+    """Collect Edge Function names from each surface.
+
+    A value of ``None`` means that surface's file is absent (skip, do not
+    report every name as missing).
+    """
+    functions_dir = root / "supabase" / "functions"
+    on_disk = set()
+    if functions_dir.exists():
+        on_disk = {
+            d.name
+            for d in functions_dir.iterdir()
+            if d.is_dir() and not d.name.startswith("_")
+        }
+
+    def _read(path: Path) -> Optional[str]:
+        return path.read_text(encoding="utf-8") if path.exists() else None
+
+    config_text = _read(root / "supabase" / "config.toml")
+    in_config = (
+        set(re.findall(r"^\[functions\.([A-Za-z0-9_-]+)\]", config_text, re.MULTILINE))
+        if config_text is not None
+        else None
+    )
+
+    workflow_text = _read(root / ".github" / "workflows" / "ci.yml")
+    in_deploy = (
+        set(re.findall(r"supabase functions deploy ([A-Za-z0-9_-]+)", workflow_text))
+        if workflow_text is not None
+        else None
+    )
+
+    client_text = _read(
+        root / "lib" / "data" / "remote" / "supabase" / "edge_function_client.dart"
+    )
+    in_client = None
+    if client_text is not None:
+        in_client = set(re.findall(r"invoke\(\s*'([a-z0-9-]+)'", client_text))
+        exempt = re.search(r"_rateLimitExempt\s*=\s*\{(.*?)\}", client_text, re.DOTALL)
+        if exempt:
+            in_client |= set(re.findall(r"'([a-z0-9-]+)'", exempt.group(1)))
+
+    return {
+        "disk": on_disk,
+        "config": in_config,
+        "deploy": in_deploy,
+        "client": in_client,
+    }
+
+
 def count_route_consts(filepath: Path) -> int:
     if not filepath.exists():
         return 0
