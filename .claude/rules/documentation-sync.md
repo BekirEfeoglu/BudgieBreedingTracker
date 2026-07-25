@@ -56,7 +56,7 @@ Generated/managed values (CLAUDE.md stats, the `verify_code_quality` checker-cou
 
 **Cross-surface guards** (`verify_rules.py`, blocking in `rules-sync`): counts
 cannot catch a *half-landed* update — one surface corrected, its twin left
-stale, every count still right. Six sections cover the cases where the same
+stale, every count still right. Seven sections cover the cases where the same
 literal is repeated across files with nothing tying them together:
 - **Release Artifacts** — every `build/…` path in CLAUDE.md § Release Builds
   must appear in `release-ops.md` AND in a real producer
@@ -88,6 +88,11 @@ literal is repeated across files with nothing tying them together:
   constants may share a path value (ambiguous routing), and every navigation
   target written as a string literal must resolve to a declared route
   (`context.push('/typo')` compiles and 404s only at runtime).
+- **Supabase Tables** — every `*Table` constant must name a table some migration
+  creates. One-way: migrations legitimately create tables the client never names
+  (`private.*` helpers, trigger-written audit tables). Keyed on the constant
+  NAME suffix, not its value — `adminExportAllTablesRpc` holds
+  `'admin_export_all_tables'`, which is an RPC.
 
 None of these are auto-fixable, and the summary says so instead of pointing at
 `--fix`. A red here means two surfaces disagree — go read the WARN lines and

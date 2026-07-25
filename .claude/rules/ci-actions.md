@@ -90,8 +90,12 @@
 - Push sonrasi sadece GitHub Branches UI rozetine bakma; exact commit SHA icin status ve check-run API'larini birlikte kontrol et
 - Zorunlu status ornegi:
   ```bash
-  python3 scripts/check_remote_status.py
+  python3 scripts/check_remote_status.py --sha "$(git rev-parse HEAD)"
   ```
+  Pass `--sha` explicitly when polling in a loop or across further commits: with
+  no argument the script re-reads the CURRENT local HEAD on every call, so a
+  poll started before another commit silently retargets and never confirms the
+  commit you meant to verify.
 - Basari saymak icin: commit **status `success`** VE tum **required `ci.yml` check-run'lari** `completed:success` olmali (bilinen/intentional skipped kabul). Branch UI rozeti (`17/19` gibi) required-olmayan bir check patlayinca da kirmizi olur — tek basina "basarisiz" sayma (bkz. § Non-Required / Transient Checks)
 - `Deploy Edge Functions` path guard nedeniyle `skipped` ise bu ancak ayni exact committe `Edge Function Changes` `completed:success` oldugunda intentional kabul edilir; `check_remote_status.py` bu bagimliligi zorunlu tutar. Dedektor fail/missing iken deploy skip'i temiz sayma.
 - Main-only deploy veya Xcode Cloud gibi gec gelen check-run'lar sonradan baslayabilir; ilk `success` durumundan sonra script hala unfinished check gosteriyorsa kapanis yapma, poll etmeye devam et (bkz. § Xcode Cloud status context)
