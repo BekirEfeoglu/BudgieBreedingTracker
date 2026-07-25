@@ -50,11 +50,13 @@ from _rules_collectors import (
     collect_l10n_category_surfaces,
     collect_quality_checker_counts,
     collect_quality_gate_surfaces,
+    collect_readme_metrics,
     collect_route_surfaces,
     collect_storage_bucket_surfaces,
     collect_supabase_table_surfaces,
     duplicate_route_values,
     gate_parity_gaps,
+    readme_metric_drift,
     undeclared_columns,
     unprovisioned_tables,
     unresolved_route_targets,
@@ -2325,6 +2327,94 @@ class TestSupabaseTableCheck(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             result = self._run(Path(d), constants={}, created=[],
                                omit=("constants", "migrations"))
+        self.assertEqual(result, 0)
+
+
+# ── README metrikleri ─────────────────────────────────────────────────────────
+#
+# README'nin kendi satir etiketleri var, bu yuzden CLAUDE.md etiketlerine gore
+# calisan inline fixer ona hic dokunmadi ve tablo %40'a varan oranda cürüdü
+# (826 vs 1030 kaynak dosya, sema 20 vs 29) — hem de herkese acik yuzeyde.
+
+
+def _readme(rows) -> str:
+    body = "\n".join(f"| {k} | {v} |" for k, v in rows)
+    return f"# App\n\n### Project at a Glance\n\n| Metric | Value |\n| --- | --- |\n{body}\n\n## Next\n"
+
+
+class TestReadmeMetrics(unittest.TestCase):
+    def test_parses_rows_and_multiple_numbers_per_cell(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "README.md").write_text(_readme([
+                ("Source files (lib/)", "1030 Dart files"),
+                ("Test suite", "949 test files, 11,700+ tests"),
+            ]), encoding="utf-8")
+            rows = collect_readme_metrics(root)
+        self.assertEqual(rows["Source files (lib/)"], [1030])
+        self.assertEqual(rows["Test suite"], [949, 11700])
+
+    def test_returns_none_without_readme_or_section(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self.assertIsNone(collect_readme_metrics(root))
+            (root / "README.md").write_text("# App\n\nno table\n", encoding="utf-8")
+            self.assertIsNone(collect_readme_metrics(root))
+
+    def test_reports_each_drifted_metric(self):
+        rows = {"Source files (lib/)": [826], "DB schema version": [20]}
+        actual = {"source_files": 1030, "schema": 29}
+        self.assertEqual(readme_metric_drift(rows, actual), [
+            "DB schema version: README 20, actual 29",
+            "Source files (lib/): README 826, actual 1030",
+        ])
+
+    def test_agreeing_metrics_report_nothing(self):
+        rows = {"Routes": [75]}
+        self.assertEqual(readme_metric_drift(rows, {"routes": 75}), [])
+
+    def test_unknown_rows_and_missing_keys_are_ignored(self):
+        """README fazladan satir tasiyabilir; eslesmeyeni hata sayma."""
+        rows = {"Some Other Row": [7], "Routes": [75]}
+        self.assertEqual(readme_metric_drift(rows, {"routes": 75}), [])
+        self.assertEqual(readme_metric_drift(None, {"routes": 75}), [])
+
+
+class TestReadmeMetricsCheck(unittest.TestCase):
+    def _run(self, root: Path, readme_rows, actual_overrides):
+        import verify_rules as vr
+
+        assets = root / "assets" / "translations"
+        assets.mkdir(parents=True)
+        data = {f"k{i}": f"v{i}" for i in range(3)}
+        for lang in ("tr", "en", "de"):
+            (assets / f"{lang}.json").write_text(json.dumps(data), encoding="utf-8")
+        (root / "CLAUDE.md").write_text(_make_claude_md_content(tr_keys=3), encoding="utf-8")
+        if readme_rows is not None:
+            (root / "README.md").write_text(_readme(readme_rows), encoding="utf-8")
+
+        actual = _make_sample_actual({"tr_keys": 3, "categories": 35, **actual_overrides})
+        with patch.object(vr, "CLAUDE_MD", root / "CLAUDE.md"), \
+             patch.object(vr, "ASSETS", root / "assets"), \
+             patch.object(vr, "ROOT", root), \
+             patch.object(vr, "collect_actual_values", return_value=actual):
+            return vr.main()
+
+    def test_passes_when_readme_agrees(self):
+        with tempfile.TemporaryDirectory() as d:
+            # 60 is what _make_claude_md_content declares; overriding it would
+            # trip the stats check instead of the one under test.
+            result = self._run(Path(d), [("Routes", "60")], {})
+        self.assertEqual(result, 0)
+
+    def test_fails_on_a_stale_readme_metric(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d), [("Routes", "71")], {})
+        self.assertEqual(result, 1)
+
+    def test_skips_when_readme_absent(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d), None, {})
         self.assertEqual(result, 0)
 
 

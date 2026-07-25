@@ -25,6 +25,7 @@ from _rules_collectors import (
     collect_icon_surfaces,
     collect_l10n_category_surfaces,
     collect_quality_gate_surfaces,
+    collect_readme_metrics,
     collect_route_surfaces,
     collect_storage_bucket_surfaces,
     collect_supabase_column_surfaces,
@@ -35,6 +36,7 @@ from _rules_collectors import (
     extract_markdown_section,
     extract_release_artifact_paths,
     gate_parity_gaps,
+    readme_metric_drift,
     undeclared_columns,
     unprovisioned_tables,
     unresolved_route_targets,
@@ -410,6 +412,20 @@ def main():
         for name in gaps:
             print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: CI code-quality'de var, yerel kapida yok")
         track_manual(check("Yerel kapi CI code-quality'yi kapsiyor", 0, len(gaps)))
+
+    print(section("README Metrics"))
+    # README's "Project at a Glance" uses its own row labels, so the inline
+    # fixer (keyed on CLAUDE.md's labels) never touched it. It had drifted by
+    # up to 40% while every count check stayed green — and it is the public
+    # surface, so it is the worst one to leave rotting.
+    readme_rows = collect_readme_metrics(ROOT)
+    if readme_rows is None:
+        print(f"  {Colors.YELLOW}SKIP{Colors.RESET} README.md veya 'Project at a Glance' bulunamadi")
+    else:
+        drift = readme_metric_drift(readme_rows, actual)
+        for entry in drift:
+            print(f"  {Colors.YELLOW}WARN{Colors.RESET} {entry}")
+        track_manual(check("README metrikleri kod tabaniyla ayni", 0, len(drift)))
 
     # ── Summary ──
     pass_count = sum(results)

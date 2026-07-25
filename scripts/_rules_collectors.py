@@ -362,6 +362,64 @@ def collect_supabase_table_surfaces(root: Path) -> dict:
     return {"constants": in_constants, "created": created}
 
 
+# ── README metrics vs the codebase ───────────────────────────────────
+# README has its own "Project at a Glance" table with its own row labels, so
+# the inline fixer — which keys on CLAUDE.md's labels and prose phrasings —
+# never touched it. It drifted by up to 40% (826 vs 1030 source files, ~2,243
+# vs ~3,167 l10n keys, schema 20 vs 29) while every count check stayed green.
+# This is the public-facing surface, so it is the worst one to let rot.
+
+# README row label -> (collector key, which integer in the cell)
+_README_METRICS = {
+    "Source files (lib/)": ("source_files", 0),
+    "Test suite": ("test_files", 0),
+    "Feature modules": ("features", 0),
+    "Drift tables": ("tables", 0),
+    "Routes": ("routes", 0),
+    "Custom SVG icons": ("icons", 0),
+    "Localization keys": ("tr_keys", 0),
+    "Domain services": ("services", 0),
+    "DB schema version": ("schema", 0),
+}
+
+
+def collect_readme_metrics(root: Path) -> Optional[dict]:
+    """Parse README's 'Project at a Glance' rows into {label: [ints]}."""
+    readme = root / "README.md"
+    if not readme.exists():
+        return None
+    section = extract_markdown_section(readme.read_text(encoding="utf-8"),
+                                       "### Project at a Glance")
+    if not section:
+        return None
+    rows: dict = {}
+    for line in section.splitlines():
+        match = re.match(r"\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|", line)
+        if not match or match.group(1) in {"Metric", "---"}:
+            continue
+        numbers = [
+            int(value.replace(",", ""))
+            for value in re.findall(r"\d[\d,]*", match.group(2))
+        ]
+        if numbers:
+            rows[match.group(1)] = numbers
+    return rows
+
+
+def readme_metric_drift(rows: Optional[dict], actual: dict) -> list:
+    """Rows whose reported number disagrees with the collected one."""
+    if not rows:
+        return []
+    drift = []
+    for label, (key, index) in _README_METRICS.items():
+        numbers = rows.get(label)
+        if not numbers or index >= len(numbers) or key not in actual:
+            continue
+        if numbers[index] != actual[key]:
+            drift.append(f"{label}: README {numbers[index]}, actual {actual[key]}")
+    return sorted(drift)
+
+
 # ── Local gate vs CI code-quality ────────────────────────────────────
 # The pre-commit gate is only useful if it sees what CI sees. It ran four of
 # code-quality's five checks for months — verify_migration_drift.py was
