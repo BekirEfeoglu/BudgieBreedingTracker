@@ -359,4 +359,53 @@ void main() {
       },
     );
   });
+
+  group('LastSyncTimeNotifier', () {
+    // build() fires the prefs load without awaiting it. Yield the event loop a
+    // bounded number of times instead of sleeping — no wall-clock dependency.
+    Future<void> settle() async {
+      for (var i = 0; i < 20; i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
+    }
+
+    test('seeds state from prefs when no sync has reported yet', () async {
+      final persisted = DateTime.utc(2026, 7, 20, 10, 30);
+      SharedPreferences.setMockInitialValues({
+        AppPreferences.keyLastSyncedAt: persisted.toIso8601String(),
+      });
+
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(lastSyncTimeProvider), isNull);
+      await settle();
+
+      expect(container.read(lastSyncTimeProvider), persisted);
+    });
+
+    test(
+      'does not roll a newer completed sync back to the persisted value',
+      () async {
+        // The first SharedPreferences.getInstance() does platform-channel I/O,
+        // so a sync completing inside that window must win.
+        // sync_scheduling_providers reads this timestamp to decide whether
+        // another sync is due, so moving it backwards triggers a redundant sync.
+        final persisted = DateTime.utc(2026, 7, 20, 10, 30);
+        SharedPreferences.setMockInitialValues({
+          AppPreferences.keyLastSyncedAt: persisted.toIso8601String(),
+        });
+
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+
+        final freshSync = DateTime.utc(2026, 7, 25, 8, 0);
+        container.read(lastSyncTimeProvider.notifier).state = freshSync;
+
+        await settle();
+
+        expect(container.read(lastSyncTimeProvider), freshSync);
+      },
+    );
+  });
 }

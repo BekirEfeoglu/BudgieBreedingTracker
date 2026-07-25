@@ -57,9 +57,16 @@ class LastSyncTimeNotifier extends Notifier<DateTime?> {
     final raw = prefs.getString(AppPreferences.keyLastSyncedAt);
     if (raw == null || _disposed) return;
     final parsed = DateTime.tryParse(raw);
-    if (parsed != null && !_disposed) {
-      state = parsed;
-    }
+    if (parsed == null || _disposed) return;
+    // Seed only; never overwrite. build() fires this without awaiting, and the
+    // first SharedPreferences.getInstance() does platform-channel I/O, so a
+    // sync completing inside that window would otherwise be clobbered by the
+    // older persisted value. That is not just a stale label:
+    // sync_scheduling_providers reads this timestamp to decide whether another
+    // sync is due, so rolling it backwards can trigger a redundant sync.
+    final current = state;
+    if (current != null && !current.isBefore(parsed)) return;
+    state = parsed;
   }
 }
 
