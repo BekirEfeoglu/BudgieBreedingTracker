@@ -53,7 +53,10 @@ After a significant feature or rule change:
 2. Update the relevant wiki page(s)
 3. Append an entry to `log.md`
 4. If new page created, add it to `index.md`
-5. If `log.md` approaches the cap, move oldest entries into an archive page
+5. If `log.md` approaches the cap, run `python3 scripts/check_obsidian_brain.py --rotate`
+   (moves the oldest entries into the newest archive and widens its range +
+   index row; it refuses rather than overflowing an archive, so a NEW archive
+   page is still created by hand)
 
 ### High-Risk Pages
 `features/community.md`, `features/admin.md`, `domain/notification-service.md`,

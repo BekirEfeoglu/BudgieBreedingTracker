@@ -4,6 +4,7 @@
 import json
 import re
 import subprocess
+import sys
 from pathlib import Path
 from typing import Optional
 
@@ -352,7 +353,162 @@ def check_wiki(wiki_dir: Path = WIKI_DIR) -> list[str]:
     return errors
 
 
-def main() -> int:
+# ── Log rotation ─────────────────────────────────────────────────────
+# The 200-line / 30-entry caps are enforced above but were rotated by hand,
+# which meant re-deriving the same three edits every time an entry pushed
+# log.md over: move the oldest entries, widen the archive's date range, widen
+# the index row. `--rotate` does exactly that and nothing more.
+
+LOG_ENTRY_RE = re.compile(r"^## \[(\d{4}-\d{2}-\d{2})\]", re.MULTILINE)
+# Matches the date pair only, NOT the enclosing parenthesis: real index rows
+# read "(07-17 to 07-24 release, CI, and security hardening)", so requiring
+# `)` right after the second date silently skipped them.
+ARCHIVE_RANGE_RE = re.compile(r"(\d{2}-\d{2})\s+to\s+(\d{2}-\d{2})")
+
+
+def _split_log(text: str) -> tuple[str, list[tuple[str, str]]]:
+    """Split a log page into (preamble, [(date, entry_text)]) newest-first."""
+    matches = list(LOG_ENTRY_RE.finditer(text))
+    if not matches:
+        return text, []
+    preamble = text[: matches[0].start()]
+    entries: list[tuple[str, str]] = []
+    for index, match in enumerate(matches):
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
+        entries.append((match.group(1), text[match.start() : end]))
+    return preamble, entries
+
+
+def _newest_archive(wiki_dir: Path) -> Optional[Path]:
+    """Archive holding the chronologically newest entry.
+
+    Filename ordering is unreliable here (`log-archive-2026-07-b.md` sorts
+    before `log-archive-2026-07.md`), so pick by content instead.
+    """
+    best: Optional[tuple[str, Path]] = None
+    for path in wiki_dir.glob("log-archive-*.md"):
+        _, entries = _split_log(path.read_text(encoding="utf-8"))
+        if not entries:
+            continue
+        newest = max(date for date, _ in entries)
+        if best is None or newest > best[0]:
+            best = (newest, path)
+    return best[1] if best else None
+
+
+def _retarget_range(text: str, oldest: str, newest: str) -> tuple[str, bool]:
+    """Widen a `(MM-DD to MM-DD)` range to cover oldest..newest."""
+    match = ARCHIVE_RANGE_RE.search(text)
+    if not match:
+        return text, False
+    low = min(match.group(1), oldest[5:])
+    high = max(match.group(2), newest[5:])
+    return text[: match.start()] + f"{low} to {high}" + text[match.end() :], True
+
+
+def rotate_log(wiki_dir: Path = WIKI_DIR) -> tuple[list[str], list[str]]:
+    """Move oldest log entries into the newest archive until the caps fit.
+
+    Returns (messages, errors). Rotation stops with an error rather than
+    overflowing the target archive, because a NEW archive page also needs an
+    index row and a description a script should not invent.
+    """
+    messages: list[str] = []
+    log_md = wiki_dir / "log.md"
+    if not log_md.exists():
+        return messages, ["log.md is missing"]
+
+    text = log_md.read_text(encoding="utf-8")
+    preamble, entries = _split_log(text)
+    if not entries:
+        return messages, ["log.md has no dated session entry"]
+
+    def _fits(current: str, count: int) -> bool:
+        return len(current.splitlines()) <= MAX_LINES and count <= MAX_ACTIVE_LOG_ENTRIES
+
+    if _fits(text, len(entries)):
+        messages.append(
+            f"log.md is within limits ({len(text.splitlines())} lines, "
+            f"{len(entries)} entries) — nothing to rotate"
+        )
+        return messages, []
+
+    archive = _newest_archive(wiki_dir)
+    if archive is None:
+        return messages, ["no log-archive-*.md page found to rotate into"]
+
+    archive_text = archive.read_text(encoding="utf-8")
+    archive_preamble, archive_entries = _split_log(archive_text)
+
+    moved: list[tuple[str, str]] = []
+    kept = list(entries)
+    while kept:
+        candidate_body = preamble + "".join(body for _, body in kept)
+        if _fits(candidate_body, len(kept)):
+            break
+        moved.append(kept.pop())
+
+    if not moved:
+        return messages, ["log.md exceeds its caps but no entry could be moved"]
+
+    # moved is oldest-last; the archive is newest-first, so reverse it back.
+    merged_entries = list(reversed(moved)) + archive_entries
+    new_archive = archive_preamble + "".join(body for _, body in merged_entries)
+    if len(new_archive.splitlines()) > MAX_LINES:
+        return messages, [
+            f"{archive.name} would exceed {MAX_LINES} lines; create a new "
+            "archive page (and its index row) by hand first"
+        ]
+
+    oldest = min(date for date, _ in merged_entries)
+    newest = max(date for date, _ in merged_entries)
+    new_archive, archive_ranged = _retarget_range(new_archive, oldest, newest)
+
+    archive.write_text(new_archive, encoding="utf-8")
+    log_md.write_text(preamble + "".join(body for _, body in kept), encoding="utf-8")
+
+    messages.append(
+        f"moved {len(moved)} entry(ies) ({', '.join(d for d, _ in reversed(moved))}) "
+        f"into {archive.name}"
+    )
+    if not archive_ranged:
+        messages.append(
+            f"WARN {archive.name} has no '(MM-DD to MM-DD)' range to widen — "
+            "update its description by hand"
+        )
+
+    index_md = wiki_dir / "index.md"
+    if index_md.exists():
+        index_lines = index_md.read_text(encoding="utf-8").splitlines(keepends=True)
+        stem = archive.stem
+        for position, line in enumerate(index_lines):
+            if f"[[{stem}]]" in line:
+                updated, ranged = _retarget_range(line, oldest, newest)
+                if ranged:
+                    index_lines[position] = updated
+                    index_md.write_text("".join(index_lines), encoding="utf-8")
+                    messages.append(f"widened the index row for {stem}")
+                else:
+                    messages.append(
+                        f"WARN the index row for {stem} has no range to widen"
+                    )
+                break
+
+    return messages, []
+
+
+def main(argv: Optional[list[str]] = None) -> int:
+    argv = sys.argv[1:] if argv is None else argv
+    if "--rotate" in argv:
+        messages, errors = rotate_log(WIKI_DIR)
+        for message in messages:
+            print(f"  {message}")
+        if errors:
+            print("Log rotation failed:")
+            for error in errors:
+                print(f"  - {error}")
+            return 1
+
     errors = check_wiki(WIKI_DIR)
     if errors:
         print("Obsidian brain check failed:")
