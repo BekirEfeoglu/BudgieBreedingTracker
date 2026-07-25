@@ -23,6 +23,8 @@ from _rules_collectors import (
     collect_actual_values,
     count_json_leaf_keys,
     extract_first_number,
+    extract_markdown_section,
+    extract_release_artifact_paths,
 )
 from _rules_fixers import _apply_inline_fixes, build_fix_updates, fix_claude_md
 from _rules_utils import Colors, check, section_factory
@@ -195,6 +197,41 @@ def main():
             print(f"  {Colors.YELLOW}WARN{Colors.RESET} {broken_refs} kirik referans bulundu")
     else:
         print(f"  {Colors.YELLOW}SKIP{Colors.RESET} .claude/rules/ dizini bulunamadi")
+
+    print(section("Release Artifacts"))
+    # documentation-sync.md: release/deploy changes must land the owning rule
+    # AND CLAUDE.md together. Counts cannot catch a half-landed update, so
+    # compare the artifact paths CLAUDE.md claims against release-ops.md and
+    # against the scripts/workflows that actually emit them.
+    release_ops = ROOT / ".claude" / "rules" / "release-ops.md"
+    producers = [
+        ROOT / "scripts" / "build_release.sh",
+        ROOT / ".github" / "workflows" / "release-ready.yml",
+    ]
+    claimed_paths = extract_release_artifact_paths(
+        extract_markdown_section(claude_content, "### Release Builds")
+    )
+    existing_producers = [p for p in producers if p.exists()]
+    if not claimed_paths:
+        print(f"  {Colors.YELLOW}SKIP{Colors.RESET} CLAUDE.md § Release Builds icinde build/ yolu yok")
+    else:
+        if release_ops.exists():
+            ops_text = release_ops.read_text(encoding="utf-8")
+            undocumented = sorted(p for p in claimed_paths if p not in ops_text)
+            for path in undocumented:
+                print(f"  {Colors.YELLOW}WARN{Colors.RESET} {path}: CLAUDE.md'de var, release-ops.md'de yok")
+            track(check("Artefakt yollari release-ops.md ile ayni", 0, len(undocumented)))
+        else:
+            print(f"  {Colors.YELLOW}SKIP{Colors.RESET} release-ops.md bulunamadi")
+
+        if existing_producers:
+            producer_text = "\n".join(p.read_text(encoding="utf-8") for p in existing_producers)
+            unproduced = sorted(p for p in claimed_paths if p not in producer_text)
+            for path in unproduced:
+                print(f"  {Colors.YELLOW}WARN{Colors.RESET} {path}: hicbir release script/workflow bu yolu uretmiyor")
+            track(check("Artefakt yollari gercek ureticiyle eslesiyor", 0, len(unproduced)))
+        else:
+            print(f"  {Colors.YELLOW}SKIP{Colors.RESET} release script/workflow bulunamadi")
 
     # ── Summary ──
     pass_count = sum(results)

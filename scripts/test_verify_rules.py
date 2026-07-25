@@ -35,6 +35,8 @@ from _rules_collectors import (
     count_route_consts,
     count_string_consts,
     extract_first_number,
+    extract_markdown_section,
+    extract_release_artifact_paths,
     get_schema_version,
 )
 from _rules_fixers import _apply_inline_fixes, _fix_file, build_fix_updates, fix_claude_md
@@ -1363,6 +1365,170 @@ class TestVerifyRulesMain(unittest.TestCase):
                  patch.object(vr, "ROOT", root), \
                  patch.object(vr, "collect_actual_values", return_value=actual):
                 result = vr.main()
+        self.assertEqual(result, 0)
+
+
+# ── Release artefakt capraz-yuzey kontrolu ────────────────────────────────────
+#
+# 2026-07-25 regresyonu: build_release.sh iOS'ta artik
+# build/ios/archive/Runner.xcarchive uretiyordu; release-ops.md, wiki ve skill
+# guncellendi ama CLAUDE.md eski build/ios/ipa/*.ipa yolunu iddia etmeye devam
+# etti. Sayim tabanli kontrollerin hepsi yesildi — hicbiri "bu yuzeyler ayni
+# artefakti sOylemeli" kuralini kodlamiyordu.
+
+
+class TestExtractMarkdownSection(unittest.TestCase):
+    """extract_markdown_section: baslik govdesi cikarma."""
+
+    TEXT = "\n".join([
+        "# Title",
+        "intro",
+        "### Release Builds (Codemagic removed)",
+        "body line",
+        "#### Sub",
+        "sub line",
+        "### Next Section",
+        "other",
+        "## Higher",
+        "higher",
+    ])
+
+    def test_returns_body_until_same_level_heading(self):
+        body = extract_markdown_section(self.TEXT, "### Release Builds")
+        self.assertIn("body line", body)
+        self.assertNotIn("other", body)
+
+    def test_keeps_deeper_subsections(self):
+        body = extract_markdown_section(self.TEXT, "### Release Builds")
+        self.assertIn("sub line", body)
+
+    def test_stops_at_higher_level_heading(self):
+        body = extract_markdown_section(self.TEXT, "### Next Section")
+        self.assertIn("other", body)
+        self.assertNotIn("higher", body)
+
+    def test_returns_empty_when_heading_absent(self):
+        self.assertEqual(extract_markdown_section(self.TEXT, "### Missing"), "")
+
+
+class TestExtractReleaseArtifactPaths(unittest.TestCase):
+    """extract_release_artifact_paths: build/ yollarini normalize ederek cikarir."""
+
+    def test_finds_paths_and_strips_trailers(self):
+        text = (
+            "| iOS | `build/ios/archive/Runner.xcarchive` — distribute |\n"
+            "produces build/app/outputs/bundle/release/app-release.aab.\n"
+            "symbols land in build/symbols/android/**,\n"
+        )
+        self.assertEqual(
+            extract_release_artifact_paths(text),
+            {
+                "build/ios/archive/Runner.xcarchive",
+                "build/app/outputs/bundle/release/app-release.aab",
+                "build/symbols/android/**",
+            },
+        )
+
+    def test_returns_empty_set_without_paths(self):
+        self.assertEqual(extract_release_artifact_paths("no artifacts here"), set())
+
+
+class TestReleaseArtifactsCheck(unittest.TestCase):
+    """main() icindeki Release Artifacts bolumu."""
+
+    ARCHIVE = "build/ios/archive/Runner.xcarchive"
+
+    def _run(self, root: Path, release_section: str, *, release_ops: str = None,
+             producer: str = None) -> int:
+        import verify_rules as vr
+
+        assets = root / "assets" / "translations"
+        assets.mkdir(parents=True)
+        data = {f"k{i}": f"v{i}" for i in range(3)}
+        for lang in ("tr", "en", "de"):
+            (assets / f"{lang}.json").write_text(json.dumps(data), encoding="utf-8")
+
+        tmp_md = root / "CLAUDE.md"
+        tmp_md.write_text(
+            _make_claude_md_content(tr_keys=3) + "\n" + release_section,
+            encoding="utf-8",
+        )
+        if release_ops is not None:
+            rules_dir = root / ".claude" / "rules"
+            rules_dir.mkdir(parents=True, exist_ok=True)
+            (rules_dir / "release-ops.md").write_text(release_ops, encoding="utf-8")
+        if producer is not None:
+            scripts_dir = root / "scripts"
+            scripts_dir.mkdir(parents=True, exist_ok=True)
+            (scripts_dir / "build_release.sh").write_text(producer, encoding="utf-8")
+
+        actual = _make_sample_actual({"tr_keys": 3, "categories": 35})
+        with patch.object(vr, "CLAUDE_MD", tmp_md), \
+             patch.object(vr, "ASSETS", root / "assets"), \
+             patch.object(vr, "ROOT", root), \
+             patch.object(vr, "collect_actual_values", return_value=actual):
+            return vr.main()
+
+    def _section(self, path: str) -> str:
+        return f"### Release Builds\n\n| iOS | `scripts/build_release.sh ios` | `{path}` |\n"
+
+    def test_passes_when_surfaces_agree(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(
+                Path(d),
+                self._section(self.ARCHIVE),
+                release_ops=f"Dagitim: `{self.ARCHIVE}` -> Xcode Organizer",
+                producer=f'echo "Archive: {self.ARCHIVE}"',
+            )
+        self.assertEqual(result, 0)
+
+    def test_fails_when_claude_md_path_missing_from_release_ops(self):
+        """067aa2f regresyonu: CLAUDE.md guncellenmeden birakilirsa kirmizi olmali."""
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(
+                Path(d),
+                self._section("build/ios/ipa/*.ipa"),
+                release_ops=f"Dagitim: `{self.ARCHIVE}` -> Xcode Organizer",
+                producer=f'echo "IPA: build/ios/ipa/*.ipa"; echo "{self.ARCHIVE}"',
+            )
+        self.assertEqual(result, 1)
+
+    def test_fails_when_no_producer_emits_the_path(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(
+                Path(d),
+                self._section("build/ios/imaginary/App.ipa"),
+                release_ops="Dagitim: `build/ios/imaginary/App.ipa` -> nowhere",
+                producer='echo "builds nothing of the sort"',
+            )
+        self.assertEqual(result, 1)
+
+    def test_skips_when_release_ops_missing(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(
+                Path(d),
+                self._section(self.ARCHIVE),
+                producer=f'echo "{self.ARCHIVE}"',
+            )
+        self.assertEqual(result, 0)
+
+    def test_skips_when_no_producer_files(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(
+                Path(d),
+                self._section(self.ARCHIVE),
+                release_ops=f"`{self.ARCHIVE}`",
+            )
+        self.assertEqual(result, 0)
+
+    def test_skips_when_section_has_no_build_path(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(
+                Path(d),
+                "### Release Builds\n\nNothing publishes automatically.\n",
+                release_ops="irrelevant",
+                producer="irrelevant",
+            )
         self.assertEqual(result, 0)
 
 

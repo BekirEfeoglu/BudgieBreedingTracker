@@ -60,6 +60,44 @@ def count_string_consts(filepath: Path) -> int:
     return len(re.findall(r"static const\s+", content))
 
 
+# ── Release artifact paths ───────────────────────────────────────────
+# 2026-07-25: `scripts/build_release.sh ios` was corrected to report
+# build/ios/archive/Runner.xcarchive, and release-ops.md + the wiki + the
+# store-release skill were updated — but CLAUDE.md kept claiming
+# build/ios/ipa/*.ipa. Every count-based check stayed green because none of
+# them encodes "these surfaces must name the same artifact". These two
+# helpers do.
+
+_ARTIFACT_PATH_RE = re.compile(r"build/[A-Za-z0-9_./*-]+")
+
+
+def extract_markdown_section(text: str, heading_prefix: str) -> str:
+    """Return the body under the first heading starting with `heading_prefix`.
+
+    Stops at the next heading of the same or a higher level, so a `####`
+    subsection stays inside a `###` section.
+    """
+    lines = text.splitlines()
+    level = len(heading_prefix) - len(heading_prefix.lstrip("#"))
+    body: list[str] = []
+    collecting = False
+    for line in lines:
+        if collecting:
+            stripped = line.lstrip("#")
+            depth = len(line) - len(stripped)
+            if line.startswith("#") and 0 < depth <= level:
+                break
+            body.append(line)
+        elif line.startswith(heading_prefix):
+            collecting = True
+    return "\n".join(body)
+
+
+def extract_release_artifact_paths(text: str) -> set:
+    """Extract `build/...` artifact paths, stripping markdown/prose trailers."""
+    return {match.rstrip("`.,;:)") for match in _ARTIFACT_PATH_RE.findall(text)}
+
+
 def count_route_consts(filepath: Path) -> int:
     if not filepath.exists():
         return 0
