@@ -4,6 +4,21 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-25] security | TLS pin rotation lead time is now a CI gate
+
+`security.md` required replacement fingerprints ≥14 days before expiry, but
+nothing enforced it — a lapsed pin set leaves the app unable to reach the
+backend at all, fixable only by a store release. `check_certificate_pin_freshness`
+reads the earliest `valid <start> through <end>` comment above the pins and
+fails `security-audit` inside that window (harsher message once expired);
+39 → 40 controls. Writing the tests exposed a bug in the check itself: those
+comments wrap, so the RSA leaf's date sits behind a `//` on the next line and
+the first regex skipped it — both pins share an expiry, so the output looked
+right while only one was read. Comment markers are now stripped before
+whitespace is collapsed. Also audited GitHub secrets after the Codemagic
+removal: all 12 are still referenced by workflows, nothing orphaned (the Play
+credential lived in Codemagic's own env group, never on GitHub).
+
 ## [2026-07-25] release-ops | Codemagic removed; docs moved to script + artifact-only releases
 
 Docs-only. `codemagic.yaml` was deleted (user decision), so all three workflows

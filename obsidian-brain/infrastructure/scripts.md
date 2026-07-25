@@ -35,6 +35,17 @@ scripts/run_local_quality_gate.sh
 
 `scripts/verify_security.py` (backs the `security-audit` CI job), `scripts/test_app_store_config.py`, `scripts/install_git_hooks.sh`, `scripts/run_breeding_egg_regression.sh` also exist on disk.
 
+`verify_security.py` covers **40 controls**. Two are time- or release-path
+dependent and worth knowing about:
+
+- `check_release_obfuscation` — since Codemagic was removed (2026-07-25) the
+  obfuscation / DSN-fail-fast / symbol-upload contract is asserted against
+  `scripts/build_release.sh` plus `release-ready.yml`, not a hosted config.
+- `check_certificate_pin_freshness` — fails the job in the 14 days before the
+  earliest pinned TLS leaf expires, so rotation cannot be forgotten. This one
+  can go red without any code change, purely because time passed; see
+  [[patterns/security]] § Certificate Pinning for the rotation steps.
+
 ## Test Scripts (CI: scripts-test job, ≥98% coverage)
 
 | Script | Tests |

@@ -104,6 +104,14 @@ The Android SHA-1 `4b:50:9f:a3:…` is registered against BOTH OAuth clients dur
   before expiry, keep old + new variants in one release, drop old after adoption
 - Emergency proxy/debug: `--dart-define=ALLOW_PROXY=true` only — and since 2026-07-25 the define is **ignored in release builds** (`_allowProxy = !kReleaseMode && bool.fromEnvironment('ALLOW_PROXY')`), so a release binary always pins
 - Verification: `scripts/verify_security.py` confirms pinning module is wired in bootstrap
+- **The 14-day lead time is CI-enforced, not a calendar note** (2026-07-25):
+  `check_certificate_pin_freshness` parses the earliest `valid <start> through
+  <end>` comment above the fingerprints and fails `security-audit` once inside
+  the window, with a blunter message if a pin has already expired. A lapsed pin
+  set makes the app unable to reach the backend at all, fixable only by a new
+  store release — so the build stops while rotation is still possible. Keep the
+  `through YYYY-MM-DD` comment format: it is machine-read (wrapped comments,
+  where the date sits behind a `//` on the next line, are tolerated)
 
 ## Anti-Patterns
 
