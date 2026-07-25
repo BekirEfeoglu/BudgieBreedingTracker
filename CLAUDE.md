@@ -162,7 +162,8 @@ There is no hosted release pipeline. Nothing publishes to a store automatically.
 
 `scripts/build_release.sh <ios|android>` is the canonical release build. It fails
 fast when `SENTRY_DSN` (`.env`) or `SENTRY_AUTH_TOKEN` (environment) is missing,
-builds with `--obfuscate --split-debug-info --save-obfuscation-map`, then uploads
+builds with `--obfuscate --split-debug-info` plus `--save-obfuscation-map` (not a
+`flutter build` flag — it is passed through `--extra-gen-snapshot-options`), then uploads
 symbols via `dart run sentry_dart_plugin` with a per-platform `SENTRY_RELEASE`
 matching runtime `PackageInfo` naming. iOS re-runs `scripts/generate_ios_env.sh` first.
 

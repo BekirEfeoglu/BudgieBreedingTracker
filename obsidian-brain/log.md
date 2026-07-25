@@ -4,6 +4,30 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-25] infrastructure | Release artifact paths are now a CI-enforced cross-surface check
+
+Follow-up to the entry below. Correcting the iOS artifact path updated
+release-ops.md, ci-cd.md and the store-release skill but missed CLAUDE.md
+§ Release Builds — the surface loaded into every session — and every existing
+gate stayed green, because all of them count things and none encodes "these
+surfaces must name the same artifact". `verify_rules.py` gained a **Release
+Artifacts** section (`extract_markdown_section` + `extract_release_artifact_paths`
+in `_rules_collectors.py`): every `build/…` path claimed in CLAUDE.md § Release
+Builds must appear in release-ops.md **and** in a real producer
+(`scripts/build_release.sh` / `release-ready.yml`). Both checks are tracked, so
+they fail `rules-sync`, not just warn. Verified non-vacuous by restoring the old
+`build/ios/ipa/*.ipa` line and confirming the run goes red.
+
+Also corrected in the same pass: four surfaces described the build as using
+`--obfuscate --split-debug-info --save-obfuscation-map`, but
+`--save-obfuscation-map` is **not** a `flutter build` flag — `flutter build
+appbundle --help` has no such option; it reaches the Dart native compiler only
+via `--extra-gen-snapshot-options`. The map lands at
+`build/app/obfuscation.map.json`, which is what `pubspec.yaml`'s
+`sentry: dart_symbol_map_path` points at. Re-verified as correct in the same
+sweep: the release-ready.yml artifact names, and the claim that
+`build_release.sh` regenerates `DartDefines.xcconfig` (true, via `flutter build`).
+
 ## [2026-07-25] release-ops | First real release build corrected the iOS artifact path
 
 Ran `scripts/build_release.sh ios` end to end with a real Sentry token. Symbol

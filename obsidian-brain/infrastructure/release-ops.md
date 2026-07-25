@@ -50,8 +50,9 @@ is a hard upload rejection.
 
 `scripts/build_release.sh <ios|android>` is the canonical release build. It
 refuses to run without `SENTRY_DSN` (in `.env`) and `SENTRY_AUTH_TOKEN`
-(environment), builds with `--obfuscate --split-debug-info
---save-obfuscation-map`, then uploads symbols via `dart run sentry_dart_plugin`
+(environment), builds with `--obfuscate --split-debug-info` plus
+`--save-obfuscation-map` (passed through `--extra-gen-snapshot-options`; it is
+not a `flutter build` flag), then uploads symbols via `dart run sentry_dart_plugin`
 using a per-platform `SENTRY_RELEASE` that matches runtime `PackageInfo`
 naming. iOS re-runs `scripts/generate_ios_env.sh` first.
 

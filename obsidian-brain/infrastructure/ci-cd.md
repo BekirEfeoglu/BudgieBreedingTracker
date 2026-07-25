@@ -66,8 +66,9 @@ Canonical release build. Fails fast when `SENTRY_DSN` (in `.env`) or the
 `org:ci`-scoped `SENTRY_AUTH_TOKEN` (environment) is missing — neither absence
 breaks the build, so both would otherwise ship silently broken: no DSN means a
 release with no crash reporting, no token means unreadable obfuscated stack
-traces. It then builds with `--obfuscate --split-debug-info
---save-obfuscation-map` and uploads symbols via `dart run sentry_dart_plugin`
+traces. It then builds with `--obfuscate --split-debug-info` plus
+`--save-obfuscation-map` (passed through `--extra-gen-snapshot-options`; it is
+not a `flutter build` flag) and uploads symbols via `dart run sentry_dart_plugin`
 with a per-platform `SENTRY_RELEASE` matching runtime `PackageInfo` naming. iOS
 re-runs `scripts/generate_ios_env.sh` first.
 

@@ -52,7 +52,13 @@ Sirasiyla: `.env` icinde `SENTRY_DSN` ve ortamda `SENTRY_AUTH_TOKEN` yoksa
 **fail-fast** -> `flutter pub get` + `build_runner` -> (iOS'ta ayrica
 `scripts/generate_ios_env.sh`) -> `flutter build ipa|appbundle --release
 --dart-define-from-file=.env --obfuscate --split-debug-info=...
---save-obfuscation-map=...` -> `dart run sentry_dart_plugin` ile symbol upload.
+--extra-gen-snapshot-options=--save-obfuscation-map=...` -> `dart run
+sentry_dart_plugin` ile symbol upload. `--save-obfuscation-map` bir `flutter
+build` bayragi DEGILDIR; yalniz `--extra-gen-snapshot-options` uzerinden Dart
+native compiler'a gecirilir (`flutter build appbundle --help` ile dogrulandi).
+Uretilen harita `build/app/obfuscation.map.json`; `pubspec.yaml` icindeki
+`sentry: dart_symbol_map_path` ayni yolu gostermeli, aksi halde Dart stack
+trace'leri obfuscated kalir.
 `SENTRY_RELEASE` platform basina runtime `PackageInfo` adlandirmasini birebir
 yansitir (`com.budgiebreeding.tracker` / `com.budgiebreeding.budgie_breeding_tracker`).
 
