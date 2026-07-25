@@ -108,12 +108,16 @@ void main() {
       );
     });
 
-    test('trusts the previous Supabase leaf certificate (rotation overlap)', () {
+    test('no longer trusts the retired 2026-04-30 leaf certificate', () {
+      // Dropped once the 2026-06-28 rotation was stable and this leaf was past
+      // its 2026-07-29 expiry. A retired fingerprint left in the allowlist is
+      // dead config that widens the trusted set for no benefit — the live
+      // endpoint stopped serving it.
       expect(
         CertificatePinning.isTrustedFingerprint(
           'B9:B8:F4:CE:6C:86:1D:3D:D1:67:87:08:FA:4A:40:62:10:7E:E7:05:0B:52:82:0F:99:10:50:F1:2E:B2:91:00',
         ),
-        isTrue,
+        isFalse,
       );
     });
 

@@ -69,9 +69,11 @@ class CertificatePinning {
     // 2026-09-26 (Google Trust Services CN=WR1). Older/compatibility TLS
     // clients can negotiate this certificate instead of the ECDSA leaf above.
     '49:95:95:15:BE:EF:E1:09:41:5C:D8:8D:74:A9:49:CD:69:6D:55:E8:E4:B5:2A:07:6A:F3:51:3D:78:00:67:89',
-    // Previous Supabase leaf certificate, valid 2026-04-30 through 2026-07-29.
-    // Kept for rotation overlap / rollback; remove once the new cert is stable.
-    'B9:B8:F4:CE:6C:86:1D:3D:D1:67:87:08:FA:4A:40:62:10:7E:E7:05:0B:52:82:0F:99:10:50:F1:2E:B2:91:00',
+    // NEXT ROTATION: both leaves above expire 2026-09-26. Per security.md the
+    // replacement fingerprints must be generated and shipped in an overlapping
+    // release by ~2026-09-12 (14 days ahead); a lapsed pin set takes every
+    // client offline. Regenerate with the two openssl commands documented above
+    // (ECDSA and RSA profiles both) and keep old + new pinned for one release.
     // Supabase intermediate CA (kept for emergency invalid-chain fallback)
     '1D:FC:16:05:FB:AD:35:8D:8B:C8:44:F7:6D:15:20:3F:AC:9C:A5:C1:A7:9F:D4:85:7F:FA:F2:86:4F:BE:BF:96',
   };
