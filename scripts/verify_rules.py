@@ -24,11 +24,14 @@ from _rules_collectors import (
     collect_edge_function_surfaces,
     collect_icon_surfaces,
     collect_l10n_category_surfaces,
+    collect_route_surfaces,
     collect_storage_bucket_surfaces,
     count_json_leaf_keys,
+    duplicate_route_values,
     extract_first_number,
     extract_markdown_section,
     extract_release_artifact_paths,
+    unresolved_route_targets,
 )
 from _rules_fixers import _apply_inline_fixes, build_fix_updates, fix_claude_md
 from _rules_utils import Colors, check, section_factory
@@ -345,6 +348,24 @@ def main():
             "AppIcons sabitleri diskteki SVG'lerle birebir", 0,
             len(icons["constants"] ^ icons["disk"]),
         ))
+
+    print(section("Route Targets"))
+    # Not a bijection: GoRouter composes nested paths from relative literals,
+    # so `/chicks/:id` is never written as a `path:` value and is reached by
+    # interpolation. Requiring every constant to be referenced would flag every
+    # detail route. These two are sound and catch runtime-only failures.
+    routes = collect_route_surfaces(ROOT)
+    if routes["constants"] is None:
+        print(f"  {Colors.YELLOW}SKIP{Colors.RESET} route_names.dart bulunamadi")
+    else:
+        for value in duplicate_route_values(routes):
+            print(f"  {Colors.YELLOW}WARN{Colors.RESET} {value}: birden fazla sabit ayni yolu tanimliyor")
+        track_manual(check("Rota sabitleri benzersiz yol tanimliyor", 0, len(duplicate_route_values(routes))))
+
+        unresolved = unresolved_route_targets(routes)
+        for target in unresolved:
+            print(f"  {Colors.YELLOW}WARN{Colors.RESET} {target}: navigasyon hedefi hicbir rotaya cozulmuyor")
+        track_manual(check("String navigasyon hedefleri gercek rotaya cozuluyor", 0, len(unresolved)))
 
     # ── Summary ──
     pass_count = sum(results)

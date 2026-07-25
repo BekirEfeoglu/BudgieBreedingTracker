@@ -28,7 +28,10 @@ from _rules_collectors import (
     collect_icon_surfaces,
     collect_l10n_category_surfaces,
     collect_quality_checker_counts,
+    collect_route_surfaces,
     collect_storage_bucket_surfaces,
+    duplicate_route_values,
+    unresolved_route_targets,
     collect_data_layer,
     collect_repos_and_remotes,
     collect_source_file_count,
@@ -2076,6 +2079,109 @@ class TestIconBijectionCheck(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             result = self._run(Path(d), constants=[], files=[],
                                omit=("constants", "files"))
+        self.assertEqual(result, 0)
+
+
+# ── Rota hedefleri ────────────────────────────────────────────────────────────
+#
+# Bu aile bir bijeksiyon DEGIL: GoRouter ic ice rotalari goreli literal'lerden
+# birlestirir (`path: ':id'`), yani `/chicks/:id` hicbir zaman bir `path:`
+# degeri olarak yazilmaz ve 12 sabit hakli olarak adiyla referanslanmaz —
+# onlara `context.push('/chicks/$id')` ile gidilir. "Her sabit referanslansin"
+# kurali bu detay rotalarinin hepsini yanlis yere isaretlerdi.
+
+
+def _write_route_fixture(root: Path, *, constants, nav_source="", omit=()) -> None:
+    if "names" not in omit:
+        d = root / "lib" / "router"
+        d.mkdir(parents=True, exist_ok=True)
+        body = "\n".join(f"  static const {n} = '{v}';" for n, v in constants.items())
+        (d / "route_names.dart").write_text(
+            f"abstract class AppRoutes {{\n{body}\n}}\n", encoding="utf-8")
+    if nav_source:
+        d = root / "lib" / "features"
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "screen.dart").write_text(nav_source, encoding="utf-8")
+
+
+class TestRouteSurfaces(unittest.TestCase):
+    def test_collects_constants_literals_and_prefixes(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write_route_fixture(
+                root, constants={"birds": "/birds", "birdDetail": "/birds/:id"},
+                nav_source="context.push('/birds'); context.push('/birds/${b.id}');")
+            surfaces = collect_route_surfaces(root)
+        self.assertEqual(surfaces["constants"]["birdDetail"], "/birds/:id")
+        self.assertIn("/birds", surfaces["literals"])
+        self.assertIn("/birds", surfaces["prefixes"])
+
+    def test_missing_names_file_yields_none(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.assertIsNone(collect_route_surfaces(Path(d))["constants"])
+
+    def test_interpolated_target_resolves_via_a_parameterized_constant(self):
+        """`/chicks/$id` hedefini `/chicks/:id` sabiti karsilar."""
+        surfaces = {"constants": {"chickDetail": "/chicks/:id"},
+                    "literals": set(), "prefixes": {"/chicks"}}
+        self.assertEqual(unresolved_route_targets(surfaces), [])
+
+    def test_unknown_literal_and_prefix_are_reported(self):
+        surfaces = {"constants": {"birds": "/birds"},
+                    "literals": {"/typo"}, "prefixes": {"/nope"}}
+        self.assertEqual(unresolved_route_targets(surfaces), ["/nope", "/typo"])
+
+    def test_duplicate_values_are_reported(self):
+        surfaces = {"constants": {"a": "/birds", "b": "/birds", "c": "/eggs"}}
+        self.assertEqual(duplicate_route_values(surfaces), ["/birds"])
+
+    def test_no_duplicates_when_values_are_unique(self):
+        self.assertEqual(duplicate_route_values({"constants": {"a": "/x"}}), [])
+
+
+class TestRouteTargetCheck(unittest.TestCase):
+    def _run(self, root: Path, *, constants, nav_source="", omit=()):
+        import verify_rules as vr
+
+        assets = root / "assets" / "translations"
+        assets.mkdir(parents=True)
+        data = {f"k{i}": f"v{i}" for i in range(3)}
+        for lang in ("tr", "en", "de"):
+            (assets / f"{lang}.json").write_text(json.dumps(data), encoding="utf-8")
+        tmp_md = root / "CLAUDE.md"
+        tmp_md.write_text(_make_claude_md_content(tr_keys=3), encoding="utf-8")
+        _write_route_fixture(root, constants=constants, nav_source=nav_source, omit=omit)
+
+        actual = _make_sample_actual({"tr_keys": 3, "categories": 35})
+        with patch.object(vr, "CLAUDE_MD", tmp_md), \
+             patch.object(vr, "ASSETS", root / "assets"), \
+             patch.object(vr, "ROOT", root), \
+             patch.object(vr, "collect_actual_values", return_value=actual):
+            return vr.main()
+
+    def test_passes_when_every_target_resolves(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(
+                Path(d), constants={"birds": "/birds", "birdDetail": "/birds/:id"},
+                nav_source="context.push('/birds'); context.go('/birds/${b.id}');")
+        self.assertEqual(result, 0)
+
+    def test_fails_on_a_navigation_target_that_matches_no_route(self):
+        """`context.push('/typo')` derlenir ve yalnizca calisma aninda 404 verir."""
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d), constants={"birds": "/birds"},
+                               nav_source="context.push('/brids');")
+        self.assertEqual(result, 1)
+
+    def test_fails_on_two_constants_sharing_a_path(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d),
+                               constants={"birds": "/birds", "alias": "/birds"})
+        self.assertEqual(result, 1)
+
+    def test_skips_when_route_names_absent(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d), constants={}, omit=("names",))
         self.assertEqual(result, 0)
 
 

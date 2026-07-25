@@ -268,6 +268,72 @@ def collect_icon_surfaces(root: Path) -> dict:
     return {"constants": in_constants, "disk": on_disk}
 
 
+# ── Route constants vs navigation targets ────────────────────────────
+# NOT a bijection like the other families: GoRouter composes nested paths
+# from relative literals (`path: ':id'`), so `/chicks/:id` is never written
+# as a `path:` value and 12 constants are legitimately never referenced by
+# name — they are reached by interpolation, `context.push('/chicks/$id')`.
+# Requiring every constant to be referenced would flag all of those.
+#
+# Two things ARE sound and catch runtime-only failures:
+#   1. two constants must not share a path value (ambiguous routing)
+#   2. every navigation target written as a string literal must resolve to a
+#      declared route — `context.push('/typo')` compiles and 404s.
+
+_NAV_LITERAL_RE = re.compile(r"context\.(?:push|go|replace)\(\s*'(/[^'$]*)'")
+_NAV_INTERPOLATED_RE = re.compile(r"context\.(?:push|go|replace)\(\s*'(/[a-z0-9\-/]*)/\$")
+
+
+def collect_route_surfaces(root: Path) -> dict:
+    """Collect route constants and the string navigation targets in lib/."""
+    names_file = root / "lib" / "router" / "route_names.dart"
+    constants = None
+    if names_file.exists():
+        constants = dict(
+            re.findall(
+                r"static const (\w+) = '([^']+)'",
+                names_file.read_text(encoding="utf-8"),
+            )
+        )
+
+    lib_dir = root / "lib"
+    literals: set = set()
+    prefixes: set = set()
+    if lib_dir.exists():
+        for dart_file in lib_dir.rglob("*.dart"):
+            text = dart_file.read_text(encoding="utf-8", errors="ignore")
+            literals |= set(_NAV_LITERAL_RE.findall(text))
+            prefixes |= set(_NAV_INTERPOLATED_RE.findall(text))
+
+    return {"constants": constants, "literals": literals, "prefixes": prefixes}
+
+
+def unresolved_route_targets(surfaces: dict) -> list:
+    """Navigation targets that match no declared route."""
+    constants = surfaces["constants"] or {}
+    values = set(constants.values())
+    # A `/foo/$id` target is served by a `/foo/:param` constant.
+    parameterized = {
+        value.rsplit("/", 1)[0] for value in values if "/:" in value
+    }
+    unresolved = [target for target in surfaces["literals"] if target not in values]
+    unresolved += [
+        prefix
+        for prefix in surfaces["prefixes"]
+        if prefix not in values and prefix not in parameterized
+    ]
+    return sorted(unresolved)
+
+
+def duplicate_route_values(surfaces: dict) -> list:
+    """Path values declared by more than one constant."""
+    constants = surfaces["constants"] or {}
+    seen: dict = {}
+    for name, value in constants.items():
+        seen.setdefault(value, []).append(name)
+    return sorted(value for value, names in seen.items() if len(names) > 1)
+
+
 def count_route_consts(filepath: Path) -> int:
     if not filepath.exists():
         return 0

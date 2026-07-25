@@ -36,6 +36,7 @@ asyncValue.when(
 - Edit mode: query param `?editId=xxx`
 - Guards: `AdminGuard`, `PremiumGuard` in `lib/router/guards/`
 - Deep linking: all routes must be accessible via URI
+- `verify_rules.py` § Route Targets (`rules-sync`) rejects two constants sharing a path value, and any `context.push`/`go`/`replace` string target that resolves to no declared route. It deliberately does NOT require every constant to be referenced — detail routes are reached by interpolation
 
 ### Route Definition Pattern
 ```dart
