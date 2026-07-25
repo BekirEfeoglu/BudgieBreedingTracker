@@ -398,14 +398,35 @@ def check_missing_tr(lines: List[str], filepath: Path, cat: Category):
                 ))
 
 
+# The scale this scanner flags is derived from AppSpacing itself, so adding a
+# step to the scale extends the scanner automatically. It had already drifted:
+# `AppSpacing.xxs = 2` existed while the hardcoded set stopped at 4.0, so a
+# hardcoded `2.0` was never reported. The baseline stays as a floor — a parse
+# failure must never shrink the set and quietly switch the scanner off.
+_SPACING_BASELINE = {"4.0", "8.0", "12.0", "16.0", "20.0", "24.0", "32.0"}
+
+
+def _appspacing_scale_values() -> set:
+    """Read the AppSpacing scale (xxs..xxxl) as `N.0` strings."""
+    source = ROOT_DIR / "lib" / "core" / "theme" / "app_spacing.dart"
+    if not source.exists():
+        return set()
+    # Stop at the first section comment: touch targets, radii and breakpoints
+    # are not EdgeInsets/SizedBox spacing.
+    head = re.split(r"\n\s*//", source.read_text(encoding="utf-8"), maxsplit=1)[0]
+    return {
+        f"{float(value):g}.0"
+        for value in re.findall(r"static const double \w+ = (\d+(?:\.\d+)?);", head)
+    }
+
+
 def check_hardcoded_spacing(lines: List[str], filepath: Path, cat: Category):
     """7. Hardcoded spacing (8.0, 16.0, 24.0) -> AppSpacing kullan"""
     fname = filepath.name
     if fname in ("app_spacing.dart", "app_breakpoints.dart", "app_constants.dart"):
         return
 
-    # Common hardcoded spacing values
-    spacing_values = {"4.0", "8.0", "12.0", "16.0", "20.0", "24.0", "32.0"}
+    spacing_values = _SPACING_BASELINE | _appspacing_scale_values()
 
     for i, line in enumerate(lines, 1):
         if is_comment_line(line):

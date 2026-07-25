@@ -298,6 +298,47 @@ class TestParseAntiPatternsFromClaudeMd(unittest.TestCase):
 # vermesinden daha pahalidir — CI yesil kalir ve kimse bakmaz.
 
 
+class TestSpacingScaleDerivation(unittest.TestCase):
+    """Tarayicinin taradigi olcek AppSpacing'den turetilir.
+
+    Sabit liste `AppSpacing.xxs = 2` eklendikten sonra 4.0'da kalmisti, yani
+    hardcoded bir `2.0` hic raporlanmiyordu. Turetme bu drift sinifini
+    tamamen kaldirir; baseline ise taban olarak kalir — parse hatasi
+    tarayiciyi sessizce kapatmamali.
+    """
+
+    def test_derived_set_includes_the_whole_scale(self):
+        from verify_code_quality import _appspacing_scale_values
+
+        self.assertEqual(
+            _appspacing_scale_values(),
+            {"2.0", "4.0", "8.0", "12.0", "16.0", "20.0", "24.0", "32.0"})
+
+    def test_derivation_stops_before_touch_targets_and_radii(self):
+        """44/48/52 dokunma hedefleri ve yaricaplar EdgeInsets olcegi degildir."""
+        from verify_code_quality import _appspacing_scale_values
+
+        derived = _appspacing_scale_values()
+        for outside in ("44.0", "48.0", "52.0", "999.0", "600.0"):
+            self.assertNotIn(outside, derived)
+
+    def test_missing_source_yields_empty_without_shrinking_the_baseline(self):
+        import verify_code_quality as vcq
+
+        with tempfile.TemporaryDirectory() as d:
+            with patch.object(vcq, "ROOT_DIR", Path(d)):
+                self.assertEqual(vcq._appspacing_scale_values(), set())
+        # The scanner unions with the baseline, so it can never go empty.
+        self.assertIn("16.0", vcq._SPACING_BASELINE)
+
+    def test_scanner_flags_a_value_only_the_scale_provides(self):
+        from verify_code_quality import check_hardcoded_spacing
+
+        lines = ["  const EdgeInsets.all(2.0),\n"]
+        cat = _run_checker(check_hardcoded_spacing, lines)
+        self.assertEqual(len(cat.findings), 1)
+
+
 class TestCheckerSkipBranches(unittest.TestCase):
     REMOTE = Path("lib/data/remote/api/bird_remote_source.dart")
     FEATURE = Path("lib/features/birds/screens/bird_list_screen.dart")
