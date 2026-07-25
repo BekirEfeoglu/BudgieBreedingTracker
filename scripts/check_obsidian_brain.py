@@ -448,8 +448,9 @@ def rotate_log(wiki_dir: Path = WIKI_DIR) -> tuple[list[str], list[str]]:
             break
         moved.append(kept.pop())
 
-    if not moved:
-        return messages, ["log.md exceeds its caps but no entry could be moved"]
+    # No `if not moved` guard: the caps were already checked against the same
+    # text above, so the first loop iteration always fails to fit and pops at
+    # least one entry. A guard here would be permanently unreachable.
 
     # moved is oldest-last; the archive is newest-first, so reverse it back.
     merged_entries = list(reversed(moved)) + archive_entries

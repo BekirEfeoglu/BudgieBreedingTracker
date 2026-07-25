@@ -2,6 +2,7 @@
 """Unit tests for check_obsidian_brain.py."""
 
 import re
+import runpy
 import subprocess
 import sys
 import tempfile
@@ -181,6 +182,17 @@ class TestRotateLog(unittest.TestCase):
         self.assertTrue(any("would exceed" in e for e in errors))
         self.assertEqual(log_before, log_after, "log.md must be left untouched")
 
+    def test_a_single_oversized_entry_cannot_be_split(self):
+        """Tek girdi tek basina cap'i asiyorsa bolunemez; arsiv tasar ve hata doner.
+
+        Rotasyon girdi granulerligindedir — bir girdiyi ikiye ayirmaz.
+        """
+        with tempfile.TemporaryDirectory() as d:
+            wiki = _write_rotatable_wiki(Path(d), entry_dates=["2026-07-14"],
+                                         archive_dates=["2026-07-02"], filler=250)
+            _, errors = self._rotate(wiki)
+        self.assertTrue(any("would exceed" in e for e in errors), errors)
+
     def test_errors_when_log_missing(self):
         with tempfile.TemporaryDirectory() as d:
             wiki = Path(d) / "obsidian-brain"
@@ -245,6 +257,14 @@ class TestRotateLog(unittest.TestCase):
         self.assertEqual(code, 1)
 
 
+class TestEntrypoint(unittest.TestCase):
+    def test_script_runs_as_main(self):
+        """`if __name__ == '__main__': raise SystemExit(main())` dalini kapsar."""
+        script = str(SCRIPTS_DIR / "check_obsidian_brain.py")
+        with self.assertRaises(SystemExit):
+            runpy.run_path(script, run_name="__main__")
+
+
 class TestHelperBranches(unittest.TestCase):
     """Dogrudan test edilmemis saf yardimcilar."""
 
@@ -307,6 +327,88 @@ class TestHelperBranches(unittest.TestCase):
                 args=[], returncode=0, stdout="lib/a.dart\nlib/b.dart\n\n", stderr="")
             with patch.object(cob.subprocess, "run", return_value=completed):
                 self.assertEqual(cob._git_tracked_count(root, ["lib/**"]), 2)
+
+    def test_candidate_file_refs_skips_placeholder_paths(self):
+        """`lib/**/foo.dart` gibi ornek/placeholder yollar dosya referansi degildir."""
+        import check_obsidian_brain as cob
+
+        text = "Real `lib/main.dart`, placeholder `lib/features/<name>/x.dart`."
+        self.assertEqual(cob._candidate_file_refs(text), ["lib/main.dart"])
+
+    def test_tracked_count_prefers_git_over_filesystem(self):
+        import check_obsidian_brain as cob
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / ".git").mkdir()
+            (root / "lib").mkdir()
+            (root / "lib" / "untracked.dart").write_text("x", encoding="utf-8")
+            completed = subprocess.CompletedProcess(
+                args=[], returncode=0, stdout="lib/a.dart\nlib/b.dart\n", stderr="")
+            with patch.object(cob.subprocess, "run", return_value=completed):
+                # git says 2 even though only 1 file is on disk
+                self.assertEqual(
+                    cob._tracked_or_filesystem_count(root, ["lib/**/*.dart"]), 2)
+
+    def test_l10n_key_count_requires_all_three_languages(self):
+        import check_obsidian_brain as cob
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            trans = root / "assets" / "translations"
+            trans.mkdir(parents=True)
+            (trans / "tr.json").write_text('{"a":{"b":1}}', encoding="utf-8")
+            self.assertIsNone(cob._l10n_key_count(root), "eksik dil -> None")
+            for lang in ("en", "de"):
+                (trans / f"{lang}.json").write_text('{"a":{"b":1}}', encoding="utf-8")
+            self.assertEqual(cob._l10n_key_count(root), 1)
+
+    def test_l10n_key_count_returns_none_when_languages_disagree(self):
+        """Diller ayrisiyorsa metrik anlamsiz — sayi uydurma, None don."""
+        import check_obsidian_brain as cob
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            trans = root / "assets" / "translations"
+            trans.mkdir(parents=True)
+            (trans / "tr.json").write_text('{"a":1,"b":2}', encoding="utf-8")
+            (trans / "en.json").write_text('{"a":1,"b":2}', encoding="utf-8")
+            (trans / "de.json").write_text('{"a":1}', encoding="utf-8")
+            self.assertIsNone(cob._l10n_key_count(root))
+
+    def test_schema_version_reads_and_reports_absence(self):
+        import check_obsidian_brain as cob
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self.assertIsNone(cob._schema_version(root))
+            db = root / "lib/data/local/database"
+            db.mkdir(parents=True)
+            (db / "app_database.dart").write_text(
+                "int get schemaVersion => 29;", encoding="utf-8")
+            self.assertEqual(cob._schema_version(root), 29)
+
+    def test_regex_count_reads_and_reports_absence(self):
+        import check_obsidian_brain as cob
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            target = root / "icons.dart"
+            self.assertIsNone(cob._regex_count(target, r"static const"))
+            target.write_text("static const a = 1;\nstatic const b = 2;\n", encoding="utf-8")
+            self.assertEqual(cob._regex_count(target, r"static const"), 2)
+
+    def test_edge_function_count_skips_underscore_dirs(self):
+        import check_obsidian_brain as cob
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self.assertIsNone(cob._edge_function_count(root))
+            functions = root / "supabase" / "functions"
+            (functions / "send-push").mkdir(parents=True)
+            (functions / "_shared").mkdir()
+            (functions / "README.md").write_text("x", encoding="utf-8")
+            self.assertEqual(cob._edge_function_count(root), 1)
 
     def test_check_wiki_reports_missing_directory(self):
         import check_obsidian_brain as cob
