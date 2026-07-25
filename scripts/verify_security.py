@@ -7,8 +7,9 @@ project's security posture. Each check maps to a specific control listed
 in .claude/rules/security.md.
 
 Checks:
-  1. Build obfuscation: Codemagic + GitHub Actions release-ready builds must
-     pass `--obfuscate --split-debug-info=...`.
+  1. Build obfuscation: scripts/build_release.sh + GitHub Actions
+     release-ready builds must pass `--obfuscate --split-debug-info=...`,
+     fail fast without SENTRY_DSN, and upload symbols.
   2. Edge Function CORS: shared cors.ts must emit baseline security
      headers (HSTS, X-Content-Type-Options, X-Frame-Options, CSP, etc.).
   3. Certificate pinning: lib/core/security/certificate_pinning.dart must
@@ -36,8 +37,9 @@ from __future__ import annotations
 import re
 import subprocess
 import sys
+from datetime import date
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 ROOT = Path(__file__).resolve().parent.parent
 VERBOSE = "--verbose" in sys.argv
@@ -326,6 +328,71 @@ def check_certificate_pinning() -> List[Tuple[str, bool, str]]:
     ]
 
 
+PIN_ROTATION_LEAD_DAYS = 14
+
+
+def check_certificate_pin_freshness(
+    today: Optional[date] = None,
+) -> List[Tuple[str, bool, str]]:
+    """Pinned leaf certificates must be rotated before they expire.
+
+    security.md requires replacement fingerprints to ship at least
+    PIN_ROTATION_LEAD_DAYS ahead of expiry, because a lapsed pin set takes
+    every client offline — the app cannot reach the backend at all, and the
+    only fix is a store release. A calendar reminder is not a control; this
+    fails the build while there is still time to rotate.
+    """
+    pinning = ROOT / "lib" / "core" / "security" / "certificate_pinning.dart"
+    if not pinning.exists():
+        return [fail("certificate_pinning.dart", "module missing")]
+
+    # Expiries are documented as "valid <start> through <end>" in the comment
+    # above each fingerprint. Those comments wrap, so a date can land on the
+    # next line behind its own "//" marker — strip comment markers BEFORE
+    # collapsing whitespace, or the wrapped pin is silently skipped.
+    raw = pinning.read_text(encoding="utf-8")
+    body = " ".join(
+        re.sub(r"^\s*//\s?", "", line) for line in raw.splitlines()
+    )
+    expiries = sorted(
+        date.fromisoformat(m) for m in re.findall(r"through (\d{4}-\d{2}-\d{2})", body)
+    )
+    if not expiries:
+        return [
+            fail(
+                "certificate pin freshness",
+                "no 'valid <start> through <end>' expiry documented for any pin",
+            )
+        ]
+
+    now = today or date.today()
+    earliest = expiries[0]
+    days_left = (earliest - now).days
+    if days_left < 0:
+        return [
+            fail(
+                "certificate pin freshness",
+                f"a pinned leaf EXPIRED {abs(days_left)} day(s) ago ({earliest}) — "
+                f"clients may already be unable to reach the backend",
+            )
+        ]
+    if days_left <= PIN_ROTATION_LEAD_DAYS:
+        return [
+            fail(
+                "certificate pin freshness",
+                f"earliest pinned leaf expires in {days_left} day(s) ({earliest}); "
+                f"regenerate fingerprints and ship them with the old pins still "
+                f"in place (security.md § Certificate Pinning)",
+            )
+        ]
+    return [
+        ok(
+            "certificate pin freshness",
+            f"earliest expiry {earliest} ({days_left} days left)",
+        )
+    ]
+
+
 def check_no_service_role_in_client() -> List[Tuple[str, bool, str]]:
     """SUPABASE_SERVICE_ROLE_KEY must never appear in lib/."""
     lib = ROOT / "lib"
@@ -541,6 +608,7 @@ CHECKS = [
     ("Edge Function security headers", check_edge_function_security_headers),
     ("Edge Function JWT verification", check_edge_function_jwt_verification),
     ("TLS certificate pinning", check_certificate_pinning),
+    ("TLS pin rotation lead time", check_certificate_pin_freshness),
     ("Service role key isolation", check_no_service_role_in_client),
     (".gitignore secret patterns", check_gitignore_secrets),
     ("No secrets committed to git", check_no_secrets_committed),

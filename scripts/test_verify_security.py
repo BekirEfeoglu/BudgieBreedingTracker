@@ -6,6 +6,7 @@ from contextlib import redirect_stdout
 from io import StringIO
 import subprocess
 import tempfile
+from datetime import date
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -702,3 +703,77 @@ class TestMain(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestCertificatePinFreshness(unittest.TestCase):
+    """A lapsed pin set takes every client offline, and the only fix is a store
+    release — so this is enforced in CI rather than left to a calendar note."""
+
+    PIN_SRC = "lib/core/security/certificate_pinning.dart"
+
+    def _write_pinning(self, root, expiry: str):
+        _write(
+            root / self.PIN_SRC,
+            "// Supabase leaf certificate, valid 2026-06-28 through "
+            + expiry
+            + "\n// (Google Trust Services CN=WE1).\n"
+            "static void install() {}\n",
+        )
+
+    def test_passes_while_rotation_lead_time_remains(self):
+        import verify_security as vs
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._write_pinning(root, "2026-09-26")
+            with patch.object(vs, "ROOT", root):
+                results = vs.check_certificate_pin_freshness(today=date(2026, 7, 25))
+            self.assertTrue(all(passed for _, passed, _ in results), results)
+
+    def test_fails_inside_the_rotation_window(self):
+        import verify_security as vs
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._write_pinning(root, "2026-09-26")
+            # 14 days out is the documented deadline, so it must already fail.
+            with patch.object(vs, "ROOT", root):
+                results = vs.check_certificate_pin_freshness(today=date(2026, 9, 12))
+            self.assertFalse(any(passed for _, passed, _ in results), results)
+            self.assertIn("expires in", results[0][2])
+
+    def test_fails_loudly_once_a_pin_has_expired(self):
+        import verify_security as vs
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._write_pinning(root, "2026-09-26")
+            with patch.object(vs, "ROOT", root):
+                results = vs.check_certificate_pin_freshness(today=date(2026, 10, 1))
+            self.assertFalse(any(passed for _, passed, _ in results), results)
+            self.assertIn("EXPIRED", results[0][2])
+
+    def test_fails_when_no_expiry_is_documented(self):
+        import verify_security as vs
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write(root / self.PIN_SRC, "static void install() {}\n")
+            with patch.object(vs, "ROOT", root):
+                results = vs.check_certificate_pin_freshness(today=date(2026, 7, 25))
+            self.assertFalse(any(passed for _, passed, _ in results), results)
+
+    def test_uses_the_earliest_expiry_when_pins_differ(self):
+        import verify_security as vs
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write(
+                root / self.PIN_SRC,
+                "// leaf A, valid 2026-06-28 through 2027-01-01\n"
+                "// leaf B, valid 2026-06-28 through\n// 2026-09-26\n"
+                "static void install() {}\n",
+            )
+            with patch.object(vs, "ROOT", root):
+                results = vs.check_certificate_pin_freshness(today=date(2026, 9, 20))
+            self.assertFalse(any(passed for _, passed, _ in results), results)

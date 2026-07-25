@@ -98,6 +98,20 @@ Rotation prosedürü:
 4. `scripts/verify_security.py` ile pinning modülünün bootstrap'a bağlı
    kaldığını doğrula.
 
+**14 günlük lead time CI'da zorunludur, takvim notu değildir.**
+`check_certificate_pin_freshness` her pin'in üstündeki
+`valid <başlangıç> through <bitiş>` yorumundan en erken expiry'yi okur ve
+son 14 güne girildiğinde `security-audit` job'unu KIRAR (expire olmuşsa ayrı,
+daha sert bir mesajla). Gerekçe: pin seti bir kez lapse ederse uygulama
+backend'e hiç ulaşamaz ve tek çözüm yeni bir store release'idir — yani
+fark edildiğinde düzeltmesi günler sürer. Bu yüzden hâlâ rotasyon vakti
+varken build'i durdurur.
+
+Sonuç olarak expiry yorumu **makine tarafından okunuyor**: yeni pin eklerken
+`through YYYY-MM-DD` formatını koru. Yorum satır sonuna kayarsa tarih bir
+sonraki satırda `//` işaretinin arkasında kalabilir; checker bunu tolere eder
+(regex'i yazarken bu durum önce gözden kaçmış, testi yakalamıştı).
+
 Emergency unpin:
 - Proxy/debug ihtiyacı yalnızca explicit `--dart-define=ALLOW_PROXY=true` ile
   yapılır; production build'lerde kullanılmaz.
