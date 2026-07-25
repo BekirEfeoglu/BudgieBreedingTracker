@@ -1560,6 +1560,7 @@
     "category_feather_structure": "Federstruktur",
     "category_combination": "Kombination",
     "category_clearbody": "Hellkörper",
+    "allele_state_toggle_hint": "Genotyp-Status ändern",
     "allele_visual_short": "V",
     "allele_carrier_short": "T",
     "allele_split_short": "S",

@@ -219,30 +219,46 @@ class _MutationChip extends StatelessWidget {
         children: [
           Text(record.localizationKey.tr(), style: theme.textTheme.labelMedium),
           const SizedBox(width: AppSpacing.xs),
-          GestureDetector(
-            onTap: onToggleState,
-            behavior: HitTestBehavior.opaque,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.xs,
-                vertical: AppSpacing.xs,
-              ),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                decoration: BoxDecoration(
-                  color: stateColor.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  border: Border.all(
-                    color: stateColor.withValues(alpha: 0.5),
-                    width: 1,
-                  ),
+          // The allele-state cycle is a real control, so it needs a button
+          // role for screen readers and a 48dp target (WCAG 2.5.5). The chip's
+          // own materialTapTargetSize pads the CHIP, not this nested tap area,
+          // which was ~23dp tall on its own. The badge keeps its compact look;
+          // only the hit area grows.
+          Semantics(
+            button: true,
+            label: '${record.localizationKey.tr()}: $stateLabel',
+            hint: 'genetics.allele_state_toggle_hint'.tr(),
+            child: GestureDetector(
+              onTap: onToggleState,
+              behavior: HitTestBehavior.opaque,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minWidth: kMinInteractiveDimension,
+                  minHeight: kMinInteractiveDimension,
                 ),
-                child: Text(
-                  stateLabel,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: stateColor,
+                child: Center(
+                  widthFactor: 1,
+                  heightFactor: 1,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 1,
+                    ),
+                    decoration: BoxDecoration(
+                      color: stateColor.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                      border: Border.all(
+                        color: stateColor.withValues(alpha: 0.5),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      stateLabel,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: stateColor,
+                      ),
+                    ),
                   ),
                 ),
               ),

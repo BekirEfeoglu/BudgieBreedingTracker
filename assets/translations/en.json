@@ -1560,6 +1560,7 @@
     "category_feather_structure": "Feather Structure",
     "category_combination": "Combination",
     "category_clearbody": "Clearbody",
+    "allele_state_toggle_hint": "Change genotype state",
     "allele_visual_short": "V",
     "allele_carrier_short": "C",
     "allele_split_short": "S",

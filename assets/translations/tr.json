@@ -1560,6 +1560,7 @@
     "category_feather_structure": "Tüy Yapısı",
     "category_combination": "Kombinasyon",
     "category_clearbody": "Açık Gövde",
+    "allele_state_toggle_hint": "Genotip durumunu değiştir",
     "allele_visual_short": "G",
     "allele_carrier_short": "T",
     "allele_split_short": "S",
