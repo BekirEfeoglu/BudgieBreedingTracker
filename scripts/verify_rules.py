@@ -22,6 +22,7 @@ from pathlib import Path
 from _rules_collectors import (
     collect_actual_values,
     collect_edge_function_surfaces,
+    collect_l10n_category_surfaces,
     collect_storage_bucket_surfaces,
     count_json_leaf_keys,
     extract_first_number,
@@ -306,6 +307,25 @@ def main():
             for name in undocumented:
                 print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: assets-images.md'de belgelenmemis")
             track_manual(check("Bucket sabitleri assets-images.md'de belgeli", 0, len(undocumented)))
+
+    print(section("L10n Categories"))
+    # The category COUNT is checked above against tr.json. The NAMES are not:
+    # localization.md lists every category, so a rename keeps the count right
+    # while the list silently rots.
+    categories = collect_l10n_category_surfaces(ROOT)
+    if categories["json"] is None:
+        print(f"  {Colors.YELLOW}SKIP{Colors.RESET} tr.json bulunamadi")
+    elif categories["doc"] is None:
+        print(f"  {Colors.YELLOW}SKIP{Colors.RESET} localization.md § Categories bulunamadi")
+    else:
+        for name in sorted(categories["json"] - categories["doc"]):
+            print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: tr.json'da var, localization.md listesinde yok")
+        for name in sorted(categories["doc"] - categories["json"]):
+            print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: localization.md listesinde var, tr.json'da yok")
+        track_manual(check(
+            "Kategori adlari tr.json ile ayni", 0,
+            len(categories["json"] ^ categories["doc"]),
+        ))
 
     # ── Summary ──
     pass_count = sum(results)

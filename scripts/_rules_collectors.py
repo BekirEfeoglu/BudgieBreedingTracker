@@ -205,6 +205,40 @@ def collect_storage_bucket_surfaces(root: Path) -> dict:
     }
 
 
+# ── L10n category names across surfaces ──────────────────────────────
+# The category COUNT is already verified against tr.json. The category
+# NAMES are not: localization.md lists all 41 by name, and a renamed or
+# added category keeps the count right while the list silently rots.
+
+_CATEGORY_SECTION_RE = re.compile(
+    r"^##\s+\d+\s+Categories\s*$\n(.+?)(?:\n\s*\n|\Z)", re.MULTILINE | re.DOTALL
+)
+
+
+def collect_l10n_category_surfaces(root: Path) -> dict:
+    """Collect l10n category names from tr.json and localization.md.
+
+    ``None`` means that surface (or its Categories section) is absent.
+    """
+    tr_file = root / "assets" / "translations" / "tr.json"
+    in_json = None
+    if tr_file.exists():
+        in_json = set(json.loads(tr_file.read_text(encoding="utf-8")).keys())
+
+    doc_file = root / ".claude" / "rules" / "localization.md"
+    in_doc = None
+    if doc_file.exists():
+        match = _CATEGORY_SECTION_RE.search(doc_file.read_text(encoding="utf-8"))
+        if match:
+            in_doc = {
+                name.strip()
+                for name in match.group(1).replace("\n", " ").split(",")
+                if name.strip()
+            }
+
+    return {"json": in_json, "doc": in_doc}
+
+
 def count_route_consts(filepath: Path) -> int:
     if not filepath.exists():
         return 0

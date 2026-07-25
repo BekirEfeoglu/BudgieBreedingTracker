@@ -25,6 +25,7 @@ sys.path.insert(0, str(SCRIPTS_DIR))
 from _rules_collectors import (
     _count_indexes,
     collect_edge_function_surfaces,
+    collect_l10n_category_surfaces,
     collect_quality_checker_counts,
     collect_storage_bucket_surfaces,
     collect_data_layer,
@@ -1881,6 +1882,110 @@ class TestStorageBucketCheck(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             result = self._run(Path(d), constants=["bird-photos"], migrations=[],
                                doc=[], omit=("migrations", "doc"))
+        self.assertEqual(result, 0)
+
+
+# ── L10n kategori ad tutarliligi ──────────────────────────────────────────────
+#
+# Kategori SAYISI zaten tr.json'a karsi dogrulaniyor; ADLAR degil. Yeniden
+# adlandirilan bir kategori sayiyi bozmadan listeyi sessizce curutur.
+
+
+def _write_l10n_fixture(root: Path, *, json_cats, doc_cats, omit=()) -> None:
+    if "json" not in omit:
+        d = root / "assets" / "translations"
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "tr.json").write_text(
+            json.dumps({c: {"k": "v"} for c in json_cats}), encoding="utf-8")
+    if "doc" not in omit:
+        d = root / ".claude" / "rules"
+        d.mkdir(parents=True, exist_ok=True)
+        section = "" if "section" in omit else (
+            f"## {len(doc_cats)} Categories\n{', '.join(doc_cats)}\n\n")
+        (d / "localization.md").write_text(
+            f"# Localization\n\n{section}## Rules\nsomething\n", encoding="utf-8")
+
+
+class TestCollectL10nCategorySurfaces(unittest.TestCase):
+    def test_reads_both_surfaces(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write_l10n_fixture(root, json_cats=["birds", "common"],
+                                doc_cats=["birds", "common"])
+            surfaces = collect_l10n_category_surfaces(root)
+        self.assertEqual(surfaces["json"], {"birds", "common"})
+        self.assertEqual(surfaces["doc"], {"birds", "common"})
+
+    def test_handles_a_wrapped_category_list(self):
+        """Liste satira sigmayip sarabilir; newline virgul kadar gecerli ayirac."""
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            rules = root / ".claude" / "rules"
+            rules.mkdir(parents=True)
+            (rules / "localization.md").write_text(
+                "# L\n\n## 3 Categories\nbirds, common,\neggs\n\n## Next\n",
+                encoding="utf-8")
+            surfaces = collect_l10n_category_surfaces(root)
+        self.assertEqual(surfaces["doc"], {"birds", "common", "eggs"})
+
+    def test_missing_surfaces_yield_none(self):
+        with tempfile.TemporaryDirectory() as d:
+            surfaces = collect_l10n_category_surfaces(Path(d))
+        self.assertIsNone(surfaces["json"])
+        self.assertIsNone(surfaces["doc"])
+
+    def test_missing_section_yields_none_doc(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write_l10n_fixture(root, json_cats=["birds"], doc_cats=[],
+                                omit=("section",))
+            self.assertIsNone(collect_l10n_category_surfaces(root)["doc"])
+
+
+class TestL10nCategoryCheck(unittest.TestCase):
+    def _run(self, root: Path, *, json_cats, doc_cats, omit=()):
+        import verify_rules as vr
+
+        assets = root / "assets" / "translations"
+        assets.mkdir(parents=True)
+        payload = json.dumps({c: {"k": "v"} for c in json_cats})
+        for lang in ("tr", "en", "de"):
+            (assets / f"{lang}.json").write_text(payload, encoding="utf-8")
+        tmp_md = root / "CLAUDE.md"
+        tmp_md.write_text(_make_claude_md_content(tr_keys=len(json_cats)), encoding="utf-8")
+        _write_l10n_fixture(root, json_cats=json_cats, doc_cats=doc_cats,
+                            omit=tuple(o for o in omit if o != "json"))
+
+        actual = _make_sample_actual({"tr_keys": len(json_cats), "categories": len(json_cats)})
+        with patch.object(vr, "CLAUDE_MD", tmp_md), \
+             patch.object(vr, "ASSETS", root / "assets"), \
+             patch.object(vr, "ROOT", root), \
+             patch.object(vr, "collect_actual_values", return_value=actual):
+            return vr.main()
+
+    def test_passes_when_names_agree(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d), json_cats=["birds", "common"],
+                               doc_cats=["birds", "common"])
+        self.assertEqual(result, 0)
+
+    def test_fails_on_a_renamed_category(self):
+        """Sayi ayni kalir (2 = 2) ama adlar ayrisir — sayim kontrolu bunu goremez."""
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d), json_cats=["birds", "common"],
+                               doc_cats=["birdz", "common"])
+        self.assertEqual(result, 1)
+
+    def test_fails_when_doc_list_is_missing_a_category(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d), json_cats=["birds", "common"],
+                               doc_cats=["birds"])
+        self.assertEqual(result, 1)
+
+    def test_skips_when_section_absent(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d), json_cats=["birds"], doc_cats=[],
+                               omit=("section",))
         self.assertEqual(result, 0)
 
 

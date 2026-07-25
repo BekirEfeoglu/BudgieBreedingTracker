@@ -28,6 +28,13 @@ category.key_name
 ## 41 Categories
 admin, ads, app_update, auth, backup, badges, birds, breeding, calendar, chicks, common, community, eggs, environment, error, errors, export, feedback, gamification, genealogy, genetics, health_records, home, import, incubation, leaderboard, legal, maintenance, marketplace, messaging, more, nav, notifications, premium, profile, settings, splash, statistics, sync, user_guide, validation
 
+Bu liste CI'da zorlanir: `verify_rules.py` § L10n Categories, `tr.json`'un
+ust-seviye anahtarlariyla yukaridaki listeyi CIFT YONLU karsilastirir. Sayi
+zaten dogrulaniyordu; ADLAR dogrulanmiyordu, yani yeniden adlandirilan bir
+kategori sayiyi bozmadan listeyi sessizce curutuyordu. Kategori ekler/
+adlandirirsan uc yuzeyi birlikte guncelle: `tr.json` + bu liste + baslikdaki
+sayi.
+
 ## Workflow
 1. Add key to `tr.json` (master) first
 2. Add same key to `en.json` and `de.json`
