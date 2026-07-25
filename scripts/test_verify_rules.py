@@ -25,6 +25,7 @@ sys.path.insert(0, str(SCRIPTS_DIR))
 from _rules_collectors import (
     _count_indexes,
     collect_edge_function_surfaces,
+    collect_icon_surfaces,
     collect_l10n_category_surfaces,
     collect_quality_checker_counts,
     collect_storage_bucket_surfaces,
@@ -1986,6 +1987,95 @@ class TestL10nCategoryCheck(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             result = self._run(Path(d), json_cats=["birds"], doc_cats=[],
                                omit=("section",))
+        self.assertEqual(result, 0)
+
+
+# ── SVG ikon bijeksiyonu ──────────────────────────────────────────────────────
+#
+# Sayilar zaten karsilastiriliyor (99 sabit == 99 dosya). Hangi sabitin hangi
+# dosyayi gosterdigi karsilastirilmiyordu: yeniden adlandirilan bir asset her
+# iki sayiyi da dogru birakir ve yalnizca runtime'da — flutter_svg hicbir sey
+# cizmeyerek — belli olur.
+
+
+def _write_icon_fixture(root: Path, *, constants, files, omit=()) -> None:
+    if "constants" not in omit:
+        d = root / "lib" / "core" / "constants"
+        d.mkdir(parents=True, exist_ok=True)
+        body = "\n".join(
+            f"  static const {p.split('/')[-1][:-4]} = '{p}';" for p in constants)
+        (d / "app_icons.dart").write_text(
+            f"abstract final class AppIcons {{\n{body}\n}}\n", encoding="utf-8")
+    if "files" not in omit:
+        for rel in files:
+            target = root / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text("<svg/>", encoding="utf-8")
+        (root / "assets" / "icons").mkdir(parents=True, exist_ok=True)
+
+
+class TestCollectIconSurfaces(unittest.TestCase):
+    def test_reads_constants_and_disk(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            paths = ["assets/icons/nav/home.svg", "assets/icons/birds/male.svg"]
+            _write_icon_fixture(root, constants=paths, files=paths)
+            surfaces = collect_icon_surfaces(root)
+        self.assertEqual(surfaces["constants"], set(paths))
+        self.assertEqual(surfaces["disk"], set(paths))
+
+    def test_missing_surfaces_yield_none(self):
+        with tempfile.TemporaryDirectory() as d:
+            surfaces = collect_icon_surfaces(Path(d))
+        self.assertIsNone(surfaces["constants"])
+        self.assertIsNone(surfaces["disk"])
+
+
+class TestIconBijectionCheck(unittest.TestCase):
+    def _run(self, root: Path, *, constants, files, omit=()):
+        import verify_rules as vr
+
+        assets = root / "assets" / "translations"
+        assets.mkdir(parents=True)
+        data = {f"k{i}": f"v{i}" for i in range(3)}
+        for lang in ("tr", "en", "de"):
+            (assets / f"{lang}.json").write_text(json.dumps(data), encoding="utf-8")
+        tmp_md = root / "CLAUDE.md"
+        tmp_md.write_text(_make_claude_md_content(tr_keys=3), encoding="utf-8")
+        _write_icon_fixture(root, constants=constants, files=files, omit=omit)
+
+        actual = _make_sample_actual({"tr_keys": 3, "categories": 35})
+        with patch.object(vr, "CLAUDE_MD", tmp_md), \
+             patch.object(vr, "ASSETS", root / "assets"), \
+             patch.object(vr, "ROOT", root), \
+             patch.object(vr, "collect_actual_values", return_value=actual):
+            return vr.main()
+
+    def test_passes_on_a_perfect_bijection(self):
+        paths = ["assets/icons/nav/home.svg"]
+        with tempfile.TemporaryDirectory() as d:
+            self.assertEqual(self._run(Path(d), constants=paths, files=paths), 0)
+
+    def test_fails_on_a_renamed_asset(self):
+        """Sayilar esit kalir (1 == 1) ama eslesme bozulur."""
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d),
+                               constants=["assets/icons/nav/hom.svg"],
+                               files=["assets/icons/nav/home.svg"])
+        self.assertEqual(result, 1)
+
+    def test_fails_on_an_svg_without_a_constant(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d),
+                               constants=["assets/icons/nav/home.svg"],
+                               files=["assets/icons/nav/home.svg",
+                                      "assets/icons/nav/orphan.svg"])
+        self.assertEqual(result, 1)
+
+    def test_skips_when_surfaces_absent(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d), constants=[], files=[],
+                               omit=("constants", "files"))
         self.assertEqual(result, 0)
 
 

@@ -239,6 +239,35 @@ def collect_l10n_category_surfaces(root: Path) -> dict:
     return {"json": in_json, "doc": in_doc}
 
 
+# ── SVG icon paths across surfaces ───────────────────────────────────
+# The COUNT of AppIcons constants and of files on disk is already compared
+# (99 == 99). Which constant points at which file is not: a renamed asset or
+# a typo'd path keeps both counts right and fails only at runtime, where
+# flutter_svg renders nothing rather than throwing.
+
+
+def collect_icon_surfaces(root: Path) -> dict:
+    """Collect SVG asset paths from AppIcons constants and from disk."""
+    icons_file = root / "lib" / "core" / "constants" / "app_icons.dart"
+    in_constants = None
+    if icons_file.exists():
+        in_constants = set(
+            re.findall(
+                r"static const \w+ = '([^']+\.svg)'",
+                icons_file.read_text(encoding="utf-8"),
+            )
+        )
+
+    icons_dir = root / "assets" / "icons"
+    on_disk = None
+    if icons_dir.exists():
+        on_disk = {
+            path.relative_to(root).as_posix() for path in icons_dir.rglob("*.svg")
+        }
+
+    return {"constants": in_constants, "disk": on_disk}
+
+
 def count_route_consts(filepath: Path) -> int:
     if not filepath.exists():
         return 0

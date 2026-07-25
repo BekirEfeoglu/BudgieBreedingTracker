@@ -22,6 +22,7 @@ from pathlib import Path
 from _rules_collectors import (
     collect_actual_values,
     collect_edge_function_surfaces,
+    collect_icon_surfaces,
     collect_l10n_category_surfaces,
     collect_storage_bucket_surfaces,
     count_json_leaf_keys,
@@ -325,6 +326,24 @@ def main():
         track_manual(check(
             "Kategori adlari tr.json ile ayni", 0,
             len(categories["json"] ^ categories["doc"]),
+        ))
+
+    print(section("SVG Icons Bijection"))
+    # The counts are compared above (99 constants == 99 files). Which constant
+    # points at which file is not: a renamed asset keeps both counts right and
+    # fails only at runtime, where flutter_svg renders nothing rather than
+    # throwing.
+    icons = collect_icon_surfaces(ROOT)
+    if icons["constants"] is None or icons["disk"] is None:
+        print(f"  {Colors.YELLOW}SKIP{Colors.RESET} app_icons.dart veya assets/icons/ bulunamadi")
+    else:
+        for path in sorted(icons["constants"] - icons["disk"]):
+            print(f"  {Colors.YELLOW}WARN{Colors.RESET} {path}: AppIcons sabiti var, dosya yok")
+        for path in sorted(icons["disk"] - icons["constants"]):
+            print(f"  {Colors.YELLOW}WARN{Colors.RESET} {path}: dosya var, AppIcons sabiti yok")
+        track_manual(check(
+            "AppIcons sabitleri diskteki SVG'lerle birebir", 0,
+            len(icons["constants"] ^ icons["disk"]),
         ))
 
     # ── Summary ──
