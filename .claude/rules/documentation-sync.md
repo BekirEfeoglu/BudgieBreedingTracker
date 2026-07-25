@@ -56,7 +56,7 @@ Generated/managed values (CLAUDE.md stats, the `verify_code_quality` checker-cou
 
 **Cross-surface guards** (`verify_rules.py`, blocking in `rules-sync`): counts
 cannot catch a *half-landed* update — one surface corrected, its twin left
-stale, every count still right. Four sections cover the cases where the same
+stale, every count still right. Five sections cover the cases where the same
 literal is repeated across files with nothing tying them together:
 - **Release Artifacts** — every `build/…` path in CLAUDE.md § Release Builds
   must appear in `release-ops.md` AND in a real producer
@@ -75,6 +75,11 @@ literal is repeated across files with nothing tying them together:
 - **L10n Categories** — the top-level keys of `tr.json` must match the category
   list in `localization.md` two-way. The category *count* was already checked;
   the *names* were not, so a rename kept the count right while the list rotted.
+- **SVG Icons Bijection** — every `AppIcons` constant must point at a real file
+  under `assets/icons/` and every such file must have a constant, two-way. The
+  two counts were already compared (99 == 99); *which* constant points at
+  *which* file was not, so a renamed asset kept both counts right and failed
+  only at runtime, where flutter_svg renders nothing rather than throwing.
 
 None of these are auto-fixable, and the summary says so instead of pointing at
 `--fix`. A red here means two surfaces disagree — go read the WARN lines and

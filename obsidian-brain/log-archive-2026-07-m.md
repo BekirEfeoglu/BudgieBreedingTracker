@@ -5,6 +5,39 @@ Archived July 2026 entries (07-17 to 07-25) rotated out of [[log]] during the
 
 ---
 
+## [2026-07-25] audit-followup2 | Founder demotion-to-NULL failed open
+
+Verifying the founder promotion fix end-to-end (rollback-wrapped simulation on
+prod) surfaced a second, worse bug in the same trigger: demoting a privileged
+user by setting `profiles.role = NULL` did NOT revoke their `admin_users` row.
+`NEW.role NOT IN ('admin','founder')` is NULL — not TRUE — when NEW.role is
+NULL, and NULL is the ordinary-member role here (162 of 164 profiles), so this
+is the normal demotion path, not an edge case. The pre-existing
+`NEW.role <> 'admin'` had the same hole, meaning revocation this way never
+worked. Unlike 20260725043351 (failed closed) this fails OPEN. Fixed with
+COALESCE in migration `20260725060242`; all four transitions re-verified by
+simulation; zero stranded rows needed backfill. Also updated the GitHub
+`GOOGLE_*_CLIENT_ID` secrets to the new OAuth project and closed issues
+#25/#28/#29 as already-fixed.
+
+## [2026-07-25] audit-followup | Closed the audit's deferred items
+
+Second batch after the aspirational-contract sweep. Founder role never synced
+into `admin_users` (promotion also DELETED an existing admin row) — both
+trigger functions now mirror the role; migration `20260725043351` applied to
+prod and repaired one live stranded account. Sync PUSH path gained
+`reportPushFailure` (it had no counterpart to `reportPullFailure`, so
+corruption-class failures looped silently); mfa-lockout, conflict
+snapshot/restore and the AAL2 inner catch now reach Sentry with payload-free
+synthetic exceptions. Weekly `E2E and Community Test` had been red since
+2026-07-13: the 800x600 test surface is shorter than the register form, so its
+submit button laid out off-viewport and `tap()` hit the scrollable — fixed with
+a portrait surface. Edge handler tests 257→267 (send-push authorization,
+Apple/502 revoke branches, scan-image-safety 413 remap), each verified
+non-vacuous by mutation. Retired the expired Supabase leaf pin after
+confirming both live leaves match. Genetics `depthLimited` now propagates
+through nested F_A. Migration count 217→218.
+
 ## [2026-07-25] audit | Aspirational-contract sweep: rules/wiki reconciled to code
 
 Docs-only. Rewrote claims that asserted current behavior the code never had:

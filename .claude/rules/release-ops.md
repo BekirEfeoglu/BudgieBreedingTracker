@@ -31,6 +31,11 @@ Store yuklemesi her iki platformda da manuel bir kullanici islemidir.
   upload'i kaybolursa offline bir kopya kalir. Iki path verildigi icin artifact
   koku `build/`'dir: girdiler `symbols/android/...` ve
   `app/obfuscation.map.json` olarak acilir
+- **Sentry'ye map ABI BASINA bir kez yuklenir (3 kez) — bu israf DEGILDIR.**
+  `sentry_dart_plugin` haritayi her ABI sembol dosyasiyla eslestirip o binary'nin
+  kendi debug id'si altinda kaydeder (`attempted=3, succeeded=3`). Crash hangi
+  mimariden geldiyse o debug id'yi tasir; tek yuklemeye indirmek diger iki
+  ABI'de de-obfuscation'i bozar. "Optimize" etme
 - `release-ready.yml` ve Xcode Cloud Flutter SDK'sini `3.41.4`'e pinli tutar;
   `stable` kanal drift'ini release aninda kabul etme. 2026-07-18'de bir release
   builder `stable` uzerinden 3.44.6'ya kaydi ve locked `lucide_icons 0.257.0`
