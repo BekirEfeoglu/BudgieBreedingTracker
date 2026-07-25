@@ -43,11 +43,12 @@ void main() {
     });
 
     testWidgets('displays age when birthDate is set', (tester) async {
-      final twoYearsAgo = DateTime(
-        DateTime.now().year - 2,
-        DateTime.now().month,
-        DateTime.now().day,
-      );
+      // Day 1 rather than today's day-of-month: DateTime(y-2, 2, 29) on a
+      // Feb 29 run normalizes to Mar 1 (y-2 is never a leap year when y is),
+      // and the age calculation then reports 1 year instead of 2. Sampling
+      // the clock once also avoids a midnight straddle across three reads.
+      final now = DateTime.now();
+      final twoYearsAgo = DateTime(now.year - 2, now.month, 1);
       final bird = createTestBird(name: 'Mavi', birthDate: twoYearsAgo);
 
       await pumpWidget(tester, Scaffold(body: BirdCard(bird: bird)));

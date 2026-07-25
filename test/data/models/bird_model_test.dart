@@ -200,11 +200,14 @@ void main() {
       });
 
       test('calculates years correctly', () {
-        final twoYearsAgo = DateTime(
-          DateTime.now().year - 2,
-          DateTime.now().month,
-          DateTime.now().day,
-        );
+        // Sample the clock once and step back by whole years on a day that
+        // exists in every month. Building the date from three separate
+        // DateTime.now() reads could straddle midnight, and using today's
+        // day-of-month breaks on Feb 29: the year two before a leap year is
+        // never itself a leap year, so DateTime(y-2, 2, 29) normalizes to
+        // Mar 1 and BirdX.age then reports 1 year instead of 2.
+        final now = DateTime.now();
+        final twoYearsAgo = DateTime(now.year - 2, now.month, 1);
         final bird = createTestBird(birthDate: twoYearsAgo);
         expect(bird.age!.years, 2);
       });
