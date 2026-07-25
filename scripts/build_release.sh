@@ -22,9 +22,11 @@
 #     package id + real build number) or the uploaded symbols never match an
 #     incoming event.
 #
-# After this script finishes for iOS, distribute build/ios/ipa/*.ipa via Xcode
-# Organizer or `xcrun altool`. For Android, prefer the Release Ready workflow
-# (it builds in a clean checkout); use this script only for local verification.
+# For iOS this produces build/ios/archive/Runner.xcarchive — `flutter build ipa`
+# stops at the archive because nothing generates an export-options plist locally
+# (Codemagic did it with `xcode-project use-profiles`). Distribute it from Xcode
+# Organizer. For Android, prefer the Release Ready workflow (it builds in a
+# clean checkout); use this script only for local verification.
 #
 # Related: .claude/rules/release-ops.md
 
@@ -94,8 +96,24 @@ if [[ "$PLATFORM" == "ios" ]]; then
   dart run sentry_dart_plugin
 
   echo
-  echo ">>> Done. IPA: build/ios/ipa/*.ipa"
-  echo "    Distribute via Xcode Organizer or xcrun altool."
+  # Without an export-options plist, `flutter build ipa` stops after the
+  # archive and asks you to export from Xcode — that is the normal outcome
+  # here, so report whichever artifact actually exists instead of naming a
+  # path that may not be there. (Codemagic used to supply the plist via
+  # `xcode-project use-profiles`; nothing generates one locally.)
+  ipa=$(ls build/ios/ipa/*.ipa 2>/dev/null | head -1 || true)
+  if [[ -n "$ipa" ]]; then
+    echo ">>> Done. IPA: $ipa"
+    echo "    Distribute via Xcode Organizer or xcrun altool."
+  elif [[ -d build/ios/archive/Runner.xcarchive ]]; then
+    echo ">>> Done. Archive: build/ios/archive/Runner.xcarchive"
+    echo "    No .ipa was exported (no export-options plist). Distribute with:"
+    echo "      open build/ios/archive/Runner.xcarchive"
+    echo "    then Distribute App in Xcode Organizer."
+  else
+    echo ">>> WARNING: build reported success but no archive or IPA was found." >&2
+    exit 1
+  fi
 else
   echo ">>> Building Android App Bundle"
   flutter build appbundle --release \

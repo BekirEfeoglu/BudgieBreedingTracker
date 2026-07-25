@@ -37,7 +37,7 @@ Dispatch `release-readiness-agent` for a read-only go/no-go:
 - release-ready.yml / `scripts/build_release.sh` preconditions hold (`SENTRY_DSN` in `.env`, `SENTRY_AUTH_TOKEN` exported)
 
 ## Step 5 — Build and upload (user-driven publish)
-- **iOS**: `scripts/build_release.sh ios` → `build/ios/ipa/*.ipa`, then distribute via Xcode Organizer or `xcrun altool`. **Never let the user Archive straight from Xcode instead** — `ios/Flutter/DartDefines.xcconfig` is gitignored and only a `flutter build` rewrites it; a stale copy was found with the legacy Google web client ID and no `SENTRY_DSN`, i.e. a release with zero crash reporting.
+- **iOS**: `scripts/build_release.sh ios` → `build/ios/archive/Runner.xcarchive` (the build stops at the archive; no export-options plist is generated locally), then Distribute App from Xcode Organizer. **Never let the user Archive straight from Xcode instead** — `ios/Flutter/DartDefines.xcconfig` is gitignored and only a `flutter build` rewrites it; a stale copy was found with the legacy Google web client ID and no `SENTRY_DSN`, i.e. a release with zero crash reporting.
 - **Android**: the `Release Ready` workflow is manual (`workflow_dispatch`) and produces a signed AAB + symbols as artifacts only — the user downloads it and uploads to Play. `scripts/build_release.sh android` is the local equivalent for verification.
 - All store uploads are the user's action — surface the checklist and preconditions; do NOT publish on their behalf.
 - Environment discipline: secrets live in `.env` (gitignored) / GitHub Secrets, never in code; the new Google OAuth `GOOGLE_*_CLIENT_ID` values must be set before a signed build (security.md OAuth migration).

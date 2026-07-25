@@ -58,7 +58,7 @@ to a store automatically; every upload is a manual user action.
 |----------|------|----------|
 | Android | `release-ready.yml` (manual) | Signed AAB + Sentry symbols as artifacts |
 | Android (local) | `scripts/build_release.sh android` | Same build, for verification |
-| iOS | `scripts/build_release.sh ios` | `build/ios/ipa/*.ipa` |
+| iOS | `scripts/build_release.sh ios` | `build/ios/archive/Runner.xcarchive` |
 
 ### `scripts/build_release.sh <ios|android>`
 

@@ -7,7 +7,7 @@
 | Xcode Cloud | iOS | Build-only status check — release yolu DEGIL |
 | GitHub Actions `release-ready.yml` | Android | Manual signed AAB + Sentry symbol artifact; store'a hicbir sey publish ETMEZ |
 | `scripts/build_release.sh android` | Android | Ayni build'in local karsiligi (dogrulama) |
-| `scripts/build_release.sh ios` | iOS | `build/ios/ipa/*.ipa`; dagitim Xcode Organizer / `xcrun altool` ile manuel |
+| `scripts/build_release.sh ios` | iOS | `build/ios/archive/Runner.xcarchive`; dagitim Xcode Organizer ile manuel |
 | GitHub Pages | Web | `docs/` deployment |
 
 **Codemagic 2026-07-25'te kaldirildi** (`codemagic.yaml` silindi). Artik hosted
@@ -68,7 +68,10 @@ client ID'sini tasiyordu ve `SENTRY_DSN` HIC yoktu — yani Archive o an
 tamamen crash-reporting'siz bir release uretirdi. Script'i once calistirmak bu
 dosyayi `.env`'den yeniden uretir; hazard'in tek yapisal savunmasi budur.
 
-Dagitim: iOS'ta `build/ios/ipa/*.ipa` -> Xcode Organizer veya `xcrun altool`.
+Dagitim: iOS'ta `build/ios/archive/Runner.xcarchive` -> Xcode Organizer
+(Distribute App). `flutter build ipa` yerelde arsivde durur; export-options
+plist ureten bir sey yok (Codemagic bunu `xcode-project use-profiles` ile
+sagliyordu). Script hangi artefakt olustuysa onu bildirir.
 Android'de tercih `release-ready.yml` (temiz checkout); script local dogrulama icin.
 
 ## Environment Discipline
