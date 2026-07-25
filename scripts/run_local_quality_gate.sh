@@ -9,6 +9,7 @@ python3 scripts/check_platform_targets.py
 python3 scripts/check_obsidian_brain.py
 python3 scripts/verify_rules.py --strict
 python3 scripts/verify_code_quality.py
+python3 scripts/verify_migration_drift.py
 python3 scripts/check_rule_symbol_drift.py --target all --classes --strict
 
 changed_files="$(git diff --name-only --cached; git diff --name-only)"

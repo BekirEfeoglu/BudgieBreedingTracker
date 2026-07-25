@@ -16,7 +16,7 @@
 | `test` | Unit + widget tests (random order via `--test-randomize-ordering-seed random`), optional Codecov when `CODECOV_TOKEN` exists | PR merge |
 | `golden-test` | Visual regression (Linux) | PR merge |
 | `edge-functions-test` | `deno test --allow-env --allow-net supabase/functions` | PR merge + Edge deploy |
-| `scripts-test` | Python script tests (>=98% cov) | PR merge |
+| `scripts-test` | Python script tests (>=99% cov; all 11 at 100% as of 2026-07-25) | PR merge |
 | `l10n-sync` | Translation key parity | PR merge |
 | `code-quality` | Anti-pattern scan + platform target policy + obsidian-brain lint + migration drift structure guard + rule symbol drift guard | PR merge |
 | `rules-sync` | CLAUDE.md stats verification | PR merge |

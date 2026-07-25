@@ -2,6 +2,7 @@
 """Unit tests for check_remote_status.py."""
 
 import json
+import runpy
 import subprocess
 import sys
 import unittest
@@ -380,3 +381,28 @@ class TestRemoteStatusCli(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestEntrypoint(unittest.TestCase):
+    def test_script_runs_as_main(self):
+        """`if __name__ == '__main__': raise SystemExit(main())` dalini kapsar."""
+        script = str(Path(__file__).resolve().parent / "check_remote_status.py")
+        payloads = {
+            "status": json.dumps({"state": "success", "statuses": [{"state": "success"}]}),
+            "check-runs": json.dumps({"check_runs": [
+                {"name": "Flutter Test", "status": "completed",
+                 "conclusion": "success", "html_url": "u"}]}),
+        }
+
+        def fake_run(cmd, *args, **kwargs):
+            endpoint = cmd[-1] if isinstance(cmd, list) else ""
+            key = "check-runs" if "check-runs" in endpoint else "status"
+            return subprocess.CompletedProcess(
+                args=cmd, returncode=0, stdout=payloads[key], stderr="")
+
+        with patch.object(sys, "argv", ["check_remote_status.py", "--sha", "deadbeef"]), \
+             patch("subprocess.run", side_effect=fake_run), \
+             patch("sys.stdout", new=StringIO()):
+            with self.assertRaises(SystemExit) as ctx:
+                runpy.run_path(script, run_name="__main__")
+        self.assertEqual(ctx.exception.code, 0)

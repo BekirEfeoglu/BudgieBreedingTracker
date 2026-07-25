@@ -2,11 +2,14 @@
 
 ## Quality Gates (canonical — other files reference here)
 ```bash
-scripts/run_local_quality_gate.sh         # Diff, rules, quality, conditional l10n/script tests
+scripts/run_local_quality_gate.sh         # Diff, rules, quality, migration drift, symbol drift, conditional l10n/script tests
 flutter analyze --no-fatal-infos          # Static analysis — 0 errors
 flutter test                               # All tests pass
 ```
-Run before every commit when the changed surface is broad. CI enforces analysis, tests, golden tests, script tests, l10n sync, code quality, rules sync, and platform build gates on `main` PRs/pushes.
+Run before every commit when the changed surface is broad. The script mirrors CI's
+`code-quality` job check-for-check; keep them in step — `verify_migration_drift.py`
+ran in CI but not locally until 2026-07-25, so migration structure problems only
+surfaced after push. CI enforces analysis, tests, golden tests, script tests, l10n sync, code quality, rules sync, and platform build gates on `main` PRs/pushes.
 
 Rule/docs/CI changes are not "just docs": run `scripts/run_local_quality_gate.sh` before commit/push, then use the smallest extra command that proves the changed contract. If a rule update changes codebase metrics or inline references, run `python3 scripts/verify_rules.py --fix` first, then `python3 scripts/verify_rules.py --strict`.
 

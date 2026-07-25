@@ -262,7 +262,7 @@ jobs:
           python -m coverage report \
             --include="scripts/*.py" \
             --omit="scripts/test_*.py,scripts/verify_security.py" \
-            --fail-under=98
+            --fail-under=99
           python -m coverage html \
             --include="scripts/*.py" \
             --omit="scripts/test_*.py,scripts/verify_security.py" \
