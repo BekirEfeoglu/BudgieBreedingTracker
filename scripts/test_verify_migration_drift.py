@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import sys
+import tempfile
 import unittest
 from io import StringIO
 from pathlib import Path
@@ -222,6 +223,106 @@ class TestAppliedBaseline(unittest.TestCase):
         problems = vmd.check(tmp, baseline_path=baseline)
 
         self.assertTrue(any("baseline invalid" in problem for problem in problems))
+
+
+class TestBaselineLoaderRejections(unittest.TestCase):
+    """load_applied_baseline'in her reddetme dali.
+
+    Baseline fixture'i uygulanmis zinciri dondurur; bozuk bir satiri sessizce
+    kabul etmek guard'i degersiz kilar, o yuzden her dal ayri test edilir.
+    """
+
+    def _load(self, body: str):
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "baseline.txt"
+            path.write_text(body, encoding="utf-8")
+            return vmd.load_applied_baseline(path)
+
+    VALID_DIGEST = "a" * 64
+
+    def test_skips_blank_and_comment_lines(self):
+        entries = self._load(
+            "\n"
+            "# yorum satiri\n"
+            f"{self.VALID_DIGEST}\t20260101000000_a.sql\t20260101000000\n"
+        )
+        self.assertEqual(len(entries), 1)
+
+    def test_rejects_line_without_three_fields(self):
+        with self.assertRaisesRegex(ValueError, "3 tab-separated fields"):
+            self._load(f"{self.VALID_DIGEST}\t20260101000000_a.sql\n")
+
+    def test_rejects_invalid_sha256(self):
+        with self.assertRaisesRegex(ValueError, "invalid sha256"):
+            self._load(f"nothex\t20260101000000_a.sql\t20260101000000\n")
+
+    def test_rejects_malformed_filename(self):
+        with self.assertRaisesRegex(ValueError, "malformed filename"):
+            self._load(f"{self.VALID_DIGEST}\tnot-a-migration.sql\t20260101000000\n")
+
+    def test_rejects_invalid_remote_version(self):
+        with self.assertRaisesRegex(ValueError, "invalid remote version"):
+            self._load(f"{self.VALID_DIGEST}\t20260101000000_a.sql\t99\n")
+
+    def test_rejects_duplicate_local_migration(self):
+        line = f"{self.VALID_DIGEST}\t20260101000000_a.sql\t20260101000000\n"
+        with self.assertRaisesRegex(ValueError, "duplicates local migration"):
+            self._load(line + f"{self.VALID_DIGEST}\t20260101000000_a.sql\t20260102000000\n")
+
+    def test_rejects_duplicate_remote_version(self):
+        with self.assertRaisesRegex(ValueError, "duplicates remote version"):
+            self._load(
+                f"{self.VALID_DIGEST}\t20260101000000_a.sql\t20260101000000\n"
+                f"{self.VALID_DIGEST}\t20260102000000_b.sql\t20260101000000\n"
+            )
+
+    def test_local_version_raises_on_malformed_entry(self):
+        """Yukleme sirasinda dogrulanan defansif dal; tipi acik tutar."""
+        entry = vmd.AppliedMigrationBaselineEntry(
+            filename="not-a-migration.sql",
+            sha256=self.VALID_DIGEST,
+            remote_version="20260101000000",
+        )
+        with self.assertRaisesRegex(ValueError, "malformed baseline filename"):
+            _ = entry.local_version
+
+
+class TestLedgerJsonFallback(unittest.TestCase):
+    def test_malformed_json_falls_through_to_table_parsing(self):
+        """'{' ile baslayip bozuk olan cikti tablo parser'ina dusmeli, patlamamali."""
+        self.assertEqual(vmd.parse_ledger_versions("{ not valid json"), set())
+
+
+class TestMainBaselineSelection(unittest.TestCase):
+    def test_explicit_baseline_flag_is_used(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            _write(tmp, "20260101000000_a.sql")
+            baseline = _write_baseline(tmp, "20260101000000_a.sql")
+            with patch("sys.stdout", new=StringIO()):
+                code = vmd.main(["--dir", str(tmp), "--baseline", str(baseline)])
+        self.assertEqual(code, 0)
+
+    def test_default_dir_without_flag_uses_the_default_baseline(self):
+        """Uretim yolu: --baseline verilmezse varsayilan fixture devreye girer."""
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            _write(tmp, "20260101000000_a.sql")
+            baseline = _write_baseline(tmp, "20260101000000_a.sql")
+            with patch.object(vmd, "DEFAULT_MIGRATIONS_DIR", tmp), \
+                 patch.object(vmd, "DEFAULT_BASELINE_PATH", baseline), \
+                 patch("sys.stdout", new=StringIO()):
+                code = vmd.main(["--dir", str(tmp)])
+        self.assertEqual(code, 0)
+
+    def test_non_default_dir_without_flag_skips_baseline(self):
+        """Varsayilan disi dizinde baseline yoktur; yapisal kontroller yine kosar."""
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            _write(tmp, "20260101000000_a.sql")
+            with patch("sys.stdout", new=StringIO()):
+                code = vmd.main(["--dir", str(tmp)])
+        self.assertEqual(code, 0)
 
 
 class TestSupabaseCli(unittest.TestCase):
