@@ -179,6 +179,18 @@ class InbreedingCalculator {
     // Propagate the truncation signal: an ancestor whose own pedigree exceeds
     // maxAncestorDepth under-estimates F_A in the (1 + F_A) term, so the
     // subject's coefficient is a lower bound and must be reported as such.
+    //
+    // DEFENSIVE, and currently unreachable — measured 2026-07-26, do not
+    // re-litigate. This traversal restarts depth at 0 but walks a SUBSET of the
+    // same chain the top-level pass already walked, starting deeper in absolute
+    // terms. So any pedigree long enough to trip the limit here has already
+    // tripped it there, and `depthLimited` is set either way. Sweeping chain
+    // lengths 0..16 with and without these two arguments produced byte-identical
+    // results, which is why no test can isolate this path: one would pass
+    // regardless, exactly the vacuous-assertion trap fixed in
+    // multi_locus_masking_test. Keep the propagation — it stops being redundant
+    // the moment the top-level bound and this one stop sharing a chain (e.g. a
+    // per-ancestor depth budget, or ancestors supplied by a second source).
     _collectPaths(
       bird.fatherId!,
       ancestors,

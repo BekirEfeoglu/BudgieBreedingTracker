@@ -373,5 +373,49 @@ void main() {
       expect(detail.depthLimited, isTrue);
       expect(detail.coefficient, inInclusiveRange(0.0, 0.5));
     });
+
+    test('depthLimited flips exactly at the traversal cutoff', () {
+      // The test above cannot fail: its shared ancestor is parentless, so the
+      // nested `_inbreedingOf` path never runs and only the top-level chain
+      // trips the guard — which was already wired before 5845415.
+      //
+      // This one pins the boundary instead, on a subject whose OWN lines are
+      // shallow (S -> F/M -> A) with the depth coming from a common ancestor's
+      // pedigree. It fails if truncation ever stops being reported, which is
+      // the property that matters: an unreported truncation lets the UI claim
+      // an exact coefficient on an incomplete pedigree (the 2026-07-04 class).
+      InbreedingDetail detailForChain(int chainLength) {
+        final ancestors = <String, Bird>{
+          'S': createTestBird(id: 'S', fatherId: 'F', motherId: 'M'),
+          'F': createTestBird(id: 'F', fatherId: 'A'),
+          'M': createTestBird(
+            id: 'M',
+            gender: BirdGender.female,
+            fatherId: 'A',
+          ),
+          // A has both parents, so the nested per-ancestor traversal runs.
+          'A': createTestBird(id: 'A', fatherId: 'p0', motherId: 'q0'),
+          'q0': createTestBird(id: 'q0', gender: BirdGender.female),
+        };
+        for (var i = 0; i < chainLength; i++) {
+          ancestors['p$i'] = createTestBird(id: 'p$i', fatherId: 'p${i + 1}');
+        }
+        if (chainLength > 0) {
+          ancestors['p$chainLength'] = createTestBird(id: 'p$chainLength');
+        }
+        return const InbreedingCalculator()
+            .calculateDetailed(birdId: 'S', ancestors: ancestors);
+      }
+
+      // Measured cutoff: 8 stays inside maxAncestorDepth (10), 9 exceeds it.
+      final inside = detailForChain(8);
+      final beyond = detailForChain(9);
+
+      expect(inside.depthLimited, isFalse, reason: 'chain 8 is within bounds');
+      expect(beyond.depthLimited, isTrue, reason: 'chain 9 must truncate');
+      // The coefficient itself is unaffected by truncation this shallow —
+      // guarding it here keeps the flag from being "fixed" by widening depth.
+      expect(inside.coefficient, closeTo(beyond.coefficient, 1e-9));
+    });
   });
 }
