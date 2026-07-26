@@ -178,17 +178,17 @@ final adminStatsProvider = FutureProvider<AdminStats>((ref) async {
       safeCount(SupabaseConstants.breedingPairsTable, excludeDeleted: true),
       safeSelectLength(
         SupabaseConstants.profilesTable,
-        column: 'is_premium',
+        column: SupabaseConstants.colIsPremium,
         value: true,
       ),
       safeSelectLength(
         SupabaseConstants.syncMetadataTable,
-        column: 'status',
+        column: SupabaseConstants.colStatus,
         value: 'pending',
       ),
       safeSelectLength(
         SupabaseConstants.syncMetadataTable,
-        column: 'status',
+        column: SupabaseConstants.colStatus,
         value: 'error',
       ),
     ).wait;

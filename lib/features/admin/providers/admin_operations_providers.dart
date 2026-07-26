@@ -230,7 +230,7 @@ final adminUserRiskProfileProvider =
         ),
         safeCount(
           SupabaseConstants.adminLogsTable,
-          column: 'target_user_id',
+          column: SupabaseConstants.colTargetUserId,
           value: userId,
           sinceColumn: SupabaseConstants.colCreatedAt,
         ),

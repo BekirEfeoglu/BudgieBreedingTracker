@@ -77,7 +77,7 @@ class EventRemoteSource extends BaseRemoteSource<Event> {
           table: SupabaseConstants.eventsTable,
           filter: PostgresChangeFilter(
             type: PostgresChangeFilterType.eq,
-            column: 'user_id',
+            column: SupabaseConstants.colUserId,
             value: userId,
           ),
           callback: (payload) {
@@ -94,7 +94,7 @@ class EventRemoteSource extends BaseRemoteSource<Event> {
           table: SupabaseConstants.eventsTable,
           filter: PostgresChangeFilter(
             type: PostgresChangeFilterType.eq,
-            column: 'user_id',
+            column: SupabaseConstants.colUserId,
             value: userId,
           ),
           callback: (payload) {
@@ -111,7 +111,7 @@ class EventRemoteSource extends BaseRemoteSource<Event> {
           table: SupabaseConstants.eventsTable,
           filter: PostgresChangeFilter(
             type: PostgresChangeFilterType.eq,
-            column: 'user_id',
+            column: SupabaseConstants.colUserId,
             value: userId,
           ),
           callback: (payload) {

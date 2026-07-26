@@ -110,6 +110,7 @@ abstract class SupabaseConstants {
   static const String colCodeHash = 'code_hash';
   static const String colUsedAt = 'used_at';
   static const String colStatus = 'status';
+  static const String colTargetUserId = 'target_user_id';
   static const String colRole = 'role';
   static const String colName = 'name';
   static const String colDate = 'date';
