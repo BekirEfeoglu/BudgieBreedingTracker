@@ -32,6 +32,14 @@ void main() {
         'idx_photos_entity_user',
         'idx_growth_measurements_chick_date',
         'idx_conflict_history_user_table_record',
+        // Regression: these three lived ONLY in their version step
+        // (_migrateV23ToV24 / _migrateV15ToV16) and were never mirrored into
+        // the shared helper that onCreate runs, so every FRESH install came up
+        // without them and silently full-scanned events/conflict_history.
+        // Upgraded installs had them, which is why nothing surfaced it.
+        'idx_events_egg_id',
+        'idx_events_incubation_id',
+        'idx_conflict_history_user_created',
       }),
     );
   });

@@ -217,18 +217,41 @@ Future<void> _createPerformanceIndexes(AppDatabase db) async {
     'ON sync_metadata (table_name, record_id)',
   );
 
-  // --- Composite (user_id, table_name, record_id) for conflict_history
-  // record-existence lookups (watchExistsForRecord/existsForRecord). The
-  // pre-existing idx_conflict_history_user_created index only covers
-  // (user_id, created_at) and doesn't help these filters.
+  // --- events FK indexes, mirrored from _migrateV23ToV24 ---
+  // onCreate runs createAll() + this helper only, so an index that lives ONLY
+  // in a version step is absent on every FRESH install — the inverse of the
+  // 2026-07-25 bricking incident, and invisible because it degrades silently
+  // into a full scan (EventsDao.removeByEggIds/removeByIncubationIds).
+  // Guarded on the column: this helper also runs in the historical v8->v9 step,
+  // where the v24 columns do not exist yet.
+  if (await _tableHasColumn(db, 'events', 'egg_id')) {
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_events_egg_id ON events (egg_id)',
+    );
+  }
+  if (await _tableHasColumn(db, 'events', 'incubation_id')) {
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_events_incubation_id '
+      'ON events (incubation_id)',
+    );
+  }
+
+  // --- conflict_history indexes, mirrored from _migrateV15ToV16 ---
+  // (user_id, created_at) backs the orderBy(createdAt) reads; the composite
+  // (user_id, table_name, record_id) backs the record-existence lookups
+  // (watchExistsForRecord/existsForRecord), which the former does not help.
   //
   // This shared helper also runs in the historical v8->v9 upgrade step, while
   // conflict_history is only created in v15->v16. IF NOT EXISTS guards the
   // index name, NOT a missing table, so an unguarded statement here aborts the
   // whole onUpgrade transaction for anyone upgrading from schema <= 8 and the
-  // database never opens. The v15->v16 migration creates this index itself, so
-  // v16+ upgraders are unaffected by the guard.
+  // database never opens. The v15->v16 migration creates these indexes itself,
+  // so v16+ upgraders are unaffected by the guard.
   if (await _tableExists(db, 'conflict_history')) {
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_conflict_history_user_created '
+      'ON conflict_history (user_id, created_at)',
+    );
     await db.customStatement(
       'CREATE INDEX IF NOT EXISTS idx_conflict_history_user_table_record '
       'ON conflict_history (user_id, table_name, record_id)',
