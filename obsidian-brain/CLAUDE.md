@@ -37,8 +37,14 @@ obsidian-brain/
 
 ## Page Conventions
 
-- **Max 200 lines** per page
-- **Active log cap**: keep `log.md` under 30 dated entries; rotate older entries to `log-archive-*.md`
+- **Max 200 lines** per page — except `log-archive-*.md`, which may run to **400**.
+  A working page has to stay scannable; an append-only archive nobody reads top
+  to bottom does not, and holding archives to 200 was what produced 13 archive
+  pages in 23 days (measured 2026-07-26, as entries grew from ~8 to 25-37 lines)
+- **Active log cap**: rotate older `log.md` entries to `log-archive-*.md`. The
+  200-line cap is what actually binds — at the current ~15-line average it is
+  reached around 13 entries, so the 30-entry limit is only a backstop for a
+  burst of very short entries
 - **Archive catalog**: archive rows live in `log-archive-index.md`, a named
   *index delegate* — a row there counts as being listed in `index.md`. `index.md`
   is injected into every session by the `SessionStart` hook, so it stays lean.
@@ -82,7 +88,7 @@ Before closing a wiki-update task:
 - All new pages are listed in `index.md` (or, for archives, in `log-archive-index.md`)
 - Each new page has an `[[index]]` back-link or is reachable from the index
 - `log.md` has an entry for this session
-- No page exceeds 200 lines
+- No page exceeds its cap (200 lines; 400 for `log-archive-*.md`)
 - Old versions/names/counts were searched across sibling current-state pages
 - `known-gaps.md` agrees with what is actually shipped
 - `python3 scripts/check_obsidian_brain.py` passes

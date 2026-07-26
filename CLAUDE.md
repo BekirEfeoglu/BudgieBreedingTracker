@@ -59,7 +59,7 @@ python3 scripts/check_platform_targets.py # Verify unsupported Flutter web targe
 python3 scripts/check_obsidian_brain.py  # Verify obsidian-brain links, refs, metrics, decisions, log pressure
 python3 scripts/check_obsidian_brain.py --rotate # Move oldest log.md entries into the newest archive (widens its date range + index row), then lint
 python3 scripts/verify_code_quality.py    # Anti-pattern scan (28 checkers, 19/24 CLAUDE.md patterns + 10 extra documented scanners)
-python3 scripts/verify_rules.py          # CLAUDE.md stats vs codebase + 10 cross-surface guard families (incl. README metrics, gate parity, agent/skill/rule registry) — see documentation-sync.md table
+python3 scripts/verify_rules.py          # CLAUDE.md stats vs codebase + 10 cross-surface guard families (incl. README metrics, gate parity, agent/skill/rule/script registry) — see documentation-sync.md table
 python3 scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats + rule inline references
 python3 scripts/verify_migration_drift.py # Migration structure guard (dup versions, malformed names); --online adds prod ledger parity
 python3 scripts/check_rule_symbol_drift.py --target all --classes --strict # Aspirational-contract guard: every `xProvider`/`.dart` path/`*Service|*Notifier|*Repository|*Dao|*Mapper|*Guard` class (backtick + bare prose) named in .claude/rules/ + obsidian-brain/ must exist in code
@@ -103,6 +103,8 @@ scripts/test_app_store_config.py        # App Store config consistency tests
 scripts/test_verify_migration_drift.py  # Tests for verify_migration_drift.py
 scripts/test_check_rule_symbol_drift.py # Tests for check_rule_symbol_drift.py
 scripts/test_marketing_site.py          # Public-site assets, semantics, responsive, and cross-page security-copy contracts
+scripts/test_ci_workflow_contract.py    # CI/release workflow contracts (fail-fast on missing DSN/auth token)
+scripts/test_git_hooks.py               # Local git hook installation + worktree-relative hooksPath
 ```
 
 ## Codebase Stats
@@ -135,7 +137,7 @@ scripts/test_marketing_site.py          # Public-site assets, semantics, respons
 | `golden-test` | Visual regression on Linux baseline |
 | `edge-functions-test` | `deno test --allow-env --allow-net supabase/functions` (deploy gate) |
 | `e2e-community-test` | E2E + community tagged tests |
-| `scripts-test` | Python script tests (>=99% coverage; all 11 scripts currently 100%) |
+| `scripts-test` | Python script tests (>=99% coverage over 12 measured files; 10 at 100%, `_rules_collectors.py` 99%, `verify_security.py` 92%) |
 | `l10n-sync` | Translation key parity (--strict-keys) |
 | `code-quality` | Anti-pattern scan + platform target policy + obsidian-brain lint + migration drift structure guard + rule symbol drift guard (depends on scripts-test) |
 | `rules-sync` | CLAUDE.md stats verification (--strict) |

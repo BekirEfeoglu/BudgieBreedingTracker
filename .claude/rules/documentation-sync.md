@@ -40,7 +40,7 @@ From `obsidian-brain/CLAUDE.md`. After a significant code or rule change:
 3. Append a terse `## [date] action | summary` entry to `obsidian-brain/log.md`
 4. If a new page was created, add it to `obsidian-brain/index.md`
 
-Constraints: each page ≤ **200 lines**; when `log.md` nears the cap, move the OLDEST entries into the matching `log-archive-*.md` (newest-first) — do not delete history, do not exceed the limit. `check_obsidian_brain.py --rotate` performs exactly that move, widening the archive's `(MM-DD to MM-DD)` range and its catalog row; it refuses rather than overflowing the target archive, because a NEW archive page also needs a catalog row and a description a script should not invent.
+Constraints: each page ≤ **200 lines**, except `log-archive-*.md` which may run to **400** — a working page must stay scannable, an append-only archive need not, and the shared 200 cap was what produced 13 archive pages in 23 days. When `log.md` nears its cap, move the OLDEST entries into the matching archive (newest-first) — do not delete history, do not exceed the limit. `check_obsidian_brain.py --rotate` performs exactly that move, widening the archive's `(MM-DD to MM-DD)` range and its catalog row; it refuses rather than overflowing the target archive, because a NEW archive page also needs a catalog row and a description a script should not invent. Note the 30-entry log cap is only a backstop: at the current ~15-line average entry the line cap is reached first, and always has been.
 
 Archive catalog rows live in `obsidian-brain/log-archive-index.md`, not in `index.md` — `index.md` is injected verbatim into every session by the `SessionStart` hook, so seventeen rows nobody navigates by description were a standing context cost. The linter treats that page as a named **index delegate** (`INDEX_DELEGATES` in `check_obsidian_brain.py`): a row there satisfies "every page is listed in index.md" one hop away. This is a named list, not general transitivity — if any page linked from any indexed page counted, the no-orphan-pages invariant would dissolve. Add a hand-made archive page's row to the delegate, not to `index.md`.
 
@@ -58,7 +58,7 @@ Generated/managed values (CLAUDE.md stats, the `verify_code_quality` checker-cou
 
 **Cross-surface guards** (`verify_rules.py`, blocking in `rules-sync`): counts
 cannot catch a *half-landed* update — one surface corrected, its twin left
-stale, every count still right. Nineteen checks over ten families, covering the
+stale, every count still right. Twenty-two checks over ten families, covering the
 places where the same literal is repeated with nothing tying the copies
 together. Direction matters: **two-way** means both sides must match exactly;
 **one-way** means the second surface may legitimately hold extras.
@@ -80,7 +80,10 @@ together. Direction matters: **two-way** means both sides must match exactly;
 | Agent Registry | `.claude/agents/*.md` ↔ `sources/agents-index.md` catalog | two-way | never — an unregistered or ghost profile |
 | Agent read-only mode | index Mode = read-only → the profile declares no `Write`/`Edit`/`NotebookEdit` | one-way | never — an auditor could edit the code it was sent to inspect |
 | Skill Registry | `.claude/skills/*/SKILL.md` ↔ `sources/skills-index.md` catalog | two-way | never — an unregistered or ghost skill |
+| Skill write posture | index `Writes?` = No → declared `allowed-tools` excludes `Write`/`Edit`/`NotebookEdit` | one-way | never — an advisory skill handing itself an edit tool |
 | Rule Registration | `.claude/rules/*.md` ↔ CLAUDE.md § Rules table | two-way | never — the missing leg of three-place registration |
+| Agent routing | `.claude/agents/*.md` → named in `ai-workflow.md` | one-way | never — a profile nothing routes to (2 of 15 on 2026-07-26) |
+| Script inventory | `scripts/*.{py,sh,sql}` → named anywhere in CLAUDE.md | one-way | never — § Script Tests listed 13 of 15 files |
 
 Two deliberate non-rules, both instances of missing-name != missing-feature:
 - Route constants are NOT required to be referenced. GoRouter composes nested

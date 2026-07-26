@@ -591,13 +591,23 @@ def readonly_tool_violations(surfaces: dict) -> list:
 
 
 def collect_skill_surfaces(root: Path) -> dict:
-    """Collect project-local skill names and the skills-index catalog."""
+    """Collect skill names + declared `allowed-tools`, and the index catalog.
+
+    A skill's value is ``None`` when it declares no `allowed-tools` at all,
+    which is materially different from declaring an empty list: an absent field
+    imposes no restriction, so the skill is simply unconstrained.
+    """
     skills_dir = root / ".claude" / "skills"
     skills = None
     if skills_dir.exists():
-        skills = {
-            skill.parent.name: skill for skill in sorted(skills_dir.glob("*/SKILL.md"))
-        }
+        skills = {}
+        for skill in sorted(skills_dir.glob("*/SKILL.md")):
+            declared = frontmatter_field(skill.read_text(encoding="utf-8"), "allowed-tools")
+            skills[skill.parent.name] = (
+                {tool.strip() for tool in declared.split(",") if tool.strip()}
+                if declared
+                else None
+            )
 
     index_file = root / "obsidian-brain" / "sources" / "skills-index.md"
     index = None
@@ -609,6 +619,100 @@ def collect_skill_surfaces(root: Path) -> dict:
         )
 
     return {"skills": skills, "index": index}
+
+
+def skill_posture_violations(surfaces: dict) -> list:
+    """Advisory skills that declare a write tool anyway.
+
+    One-way on purpose. A skill's `allowed-tools` RESTRICTS the session while
+    the skill is active; omitting the field imposes no restriction rather than
+    granting one, so "declares nothing" is not a violation the way an agent
+    profile's missing tool list would be — it is an unconstrained skill, tracked
+    in skills-index instead. What this catches is the contradiction: a skill the
+    catalog calls advisory that explicitly hands itself Write or Edit.
+    """
+    skills = surfaces["skills"]
+    index = surfaces["index"]
+    if skills is None or index is None:
+        return []
+
+    violations = []
+    for name, posture in sorted(index.items()):
+        if not posture.strip().lower().startswith("no"):
+            continue
+        declared = skills.get(name)
+        if declared is None:
+            continue
+        mutating = sorted(declared & _WRITE_TOOLS)
+        if mutating:
+            violations.append(
+                f"{name}: index'te salt-tavsiye ama {', '.join(mutating)} bildiriyor"
+            )
+    return violations
+
+
+def collect_script_inventory_surfaces(root: Path) -> dict:
+    """Collect `scripts/` filenames and the names CLAUDE.md documents.
+
+    Added 2026-07-26 after a sweep found three inventories had rotted silently:
+    CLAUDE.md § Script Tests listed 13 of 15 test files, the wiki's script page
+    11 of 15, and two agent profiles had no routing row. Counts stayed green
+    throughout because nothing tied a directory listing to a prose list.
+    """
+    scripts_dir = root / "scripts"
+    files = None
+    if scripts_dir.exists():
+        files = {
+            path.name
+            for path in scripts_dir.iterdir()
+            if path.suffix in {".py", ".sh", ".sql"}
+        }
+
+    claude_md = root / "CLAUDE.md"
+    documented = claude_md.read_text(encoding="utf-8") if claude_md.exists() else None
+    # A CLAUDE.md that names no script at all is not a stale inventory, it is
+    # an absent surface — same convention as every other collector here.
+    if documented is not None and "scripts/" not in documented:
+        documented = None
+    return {"files": files, "documented": documented}
+
+
+def undocumented_scripts(surfaces: dict) -> list:
+    """Scripts CLAUDE.md never names.
+
+    One-way: CLAUDE.md legitimately names paths outside `scripts/` (for example
+    `ios/ci_scripts/ci_post_clone.sh`), so the reverse direction is not checked.
+    """
+    files = surfaces["files"]
+    documented = surfaces["documented"]
+    if files is None or documented is None:
+        return []
+    return sorted(name for name in files if name not in documented)
+
+
+def collect_agent_routing_surfaces(root: Path) -> dict:
+    """Collect agent profile stems and the text of the routing rule.
+
+    agents-index.md's own maintenance contract says adding a profile updates
+    `.claude/rules/ai-workflow.md` in the same change; this is that leg.
+    """
+    agents_dir = root / ".claude" / "agents"
+    profiles = None
+    if agents_dir.exists():
+        profiles = {path.stem for path in agents_dir.glob("*.md")}
+
+    routing = root / ".claude" / "rules" / "ai-workflow.md"
+    text = routing.read_text(encoding="utf-8") if routing.exists() else None
+    return {"profiles": profiles, "routing_text": text}
+
+
+def unrouted_agents(surfaces: dict) -> list:
+    """Profiles with no mention in the routing rule."""
+    profiles = surfaces["profiles"]
+    text = surfaces["routing_text"]
+    if profiles is None or text is None:
+        return []
+    return sorted(name for name in profiles if f"`{name}`" not in text)
 
 
 def collect_rule_registration_surfaces(root: Path) -> dict:

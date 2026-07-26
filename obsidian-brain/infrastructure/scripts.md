@@ -10,10 +10,10 @@ All scripts in `scripts/` directory.
 |--------|---------|
 | `check_l10n_sync.py` | Verify tr/en/de translation keys are in sync |
 | `check_platform_targets.py` | Verify unsupported Flutter web target is absent |
-| `check_obsidian_brain.py` | Verify wiki index, wikilinks, inline file refs, overview metrics, decision sections, log pressure, and 200-line limit |
+| `check_obsidian_brain.py` | Verify wiki index (incl. the `log-archive-index` delegate), wikilinks, inline file refs, overview metrics, decision sections, log pressure, and the per-page line cap (200; 400 for `log-archive-*`) |
 | `check_obsidian_brain.py --rotate` | Move the oldest `log.md` entries into the newest archive (chosen by content, not filename), widen its `(MM-DD to MM-DD)` range and the index row, then lint |
 | `verify_code_quality.py` | Anti-pattern scan (28 checker categories: 19/24 CLAUDE.md anti-patterns + 10 documented extras; some overlap) |
-| `verify_rules.py` | CLAUDE.md stats vs codebase + cross-surface guards over 10 families (release artifacts, Edge fn names, buckets, l10n categories, icons, routes, tables/columns, gate parity, README metrics, agent/skill/rule registry); the direction of each is tabulated in `documentation-sync.md` |
+| `verify_rules.py` | CLAUDE.md stats vs codebase + cross-surface guards over 10 families (release artifacts, Edge fn names, buckets, l10n categories, icons, routes, tables/columns, gate parity, README metrics, agent/skill/rule/script registry); the direction of each is tabulated in `documentation-sync.md` |
 | `verify_rules.py --fix` | Auto-fix CLAUDE.md stats + inline rule references |
 | `check_remote_status.py` | Verify exact commit SHA GitHub status/check-run summary; an Edge deploy skip is accepted only with a successful path detector |
 | `verify_migration_drift.py` | Migration structure guard: duplicate/malformed filenames plus immutable applied-chain SHA-256 baseline (offline, in `code-quality`); `--online` parses only remote ledger versions and resolves the nine documented apply-time aliases from the fixture before checking parity |
@@ -64,6 +64,10 @@ dependent and worth knowing about:
 | `test_verify_migration_drift.py` | Tests for verify_migration_drift.py (35 tests, including JSON/table remote parsing, baseline hashes, and alias conflicts) |
 | `test_check_rule_symbol_drift.py` | Tests for check_rule_symbol_drift.py (31 tests, 100% cov) |
 | `test_marketing_site.py` | All-public-HTML asset/ID checks plus JSON-LD, heading, accessibility, responsive navigation, user-guide dialog/focus, legal-page locale, and cross-page security-copy contracts |
+| `test_check_remote_status.py` | Tests for check_remote_status.py (exact-SHA status, Pages transient, Xcode Cloud pending) |
+| `test_app_store_config.py` | App Store config consistency: Info.plist locales, privacy manifest, StoreKit products |
+| `test_ci_workflow_contract.py` | CI/release workflow contracts (fail-fast on a missing DSN/auth token) |
+| `test_git_hooks.py` | Local git hook installation and worktree-relative `core.hooksPath` |
 
 ## Internal Modules
 

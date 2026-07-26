@@ -46,6 +46,7 @@ def tearDownModule():
 from _rules_collectors import (
     _count_indexes,
     catalog_rows,
+    collect_agent_routing_surfaces,
     collect_agent_surfaces,
     collect_edge_function_surfaces,
     collect_icon_surfaces,
@@ -55,6 +56,7 @@ from _rules_collectors import (
     collect_readme_metrics,
     collect_route_surfaces,
     collect_rule_registration_surfaces,
+    collect_script_inventory_surfaces,
     collect_skill_surfaces,
     collect_storage_bucket_surfaces,
     collect_supabase_table_surfaces,
@@ -63,10 +65,13 @@ from _rules_collectors import (
     gate_parity_gaps,
     readme_metric_drift,
     readonly_tool_violations,
+    skill_posture_violations,
     two_way_gaps,
     undeclared_columns,
+    undocumented_scripts,
     unprovisioned_tables,
     unresolved_route_targets,
+    unrouted_agents,
     collect_data_layer,
     collect_repos_and_remotes,
     collect_source_file_count,
@@ -2533,6 +2538,8 @@ def _write_registry_fixture(
     *,
     agent_tools="Read, Grep, Glob, Bash",
     agent_mode="Read-only",
+    skill_tools=None,
+    skill_posture="Yes",
     extra_agent=False,
     extra_skill=False,
     extra_rule=False,
@@ -2552,7 +2559,9 @@ def _write_registry_fixture(
     if "skills" not in omit:
         skill = root / ".claude" / "skills" / "audit"
         skill.mkdir(parents=True, exist_ok=True)
-        (skill / "SKILL.md").write_text("---\nname: audit\n---\n", encoding="utf-8")
+        allowed = f"allowed-tools: {skill_tools}\n" if skill_tools else ""
+        (skill / "SKILL.md").write_text(
+            f"---\nname: audit\n{allowed}---\n", encoding="utf-8")
         if extra_skill:
             ghost = root / ".claude" / "skills" / "ghostskill"
             ghost.mkdir(parents=True, exist_ok=True)
@@ -2581,7 +2590,7 @@ def _write_registry_fixture(
         (sources / "skills-index.md").write_text(
             "# Skills\n\n## Catalog\n\n"
             "| Skill | Use when | Writes? |\n| --- | --- | --- |\n"
-            "| `audit` | sweep | Yes |\n",
+            f"| `audit` | sweep | {skill_posture} |\n",
             encoding="utf-8")
 
 
@@ -2721,6 +2730,48 @@ class TestSkillAndRuleRegistry(unittest.TestCase):
             surfaces = collect_skill_surfaces(Path(d))
         self.assertIsNone(surfaces["skills"])
         self.assertIsNone(surfaces["index"])
+        self.assertEqual(skill_posture_violations(surfaces), [])
+
+    def test_an_advisory_skill_declaring_write_is_a_violation(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write_registry_fixture(root, skill_tools="Read, Grep, Write",
+                                    skill_posture="No")
+            violations = skill_posture_violations(collect_skill_surfaces(root))
+        self.assertEqual(len(violations), 1)
+        self.assertIn("audit", violations[0])
+        self.assertIn("Write", violations[0])
+
+    def test_an_advisory_skill_with_clean_tools_passes(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write_registry_fixture(root, skill_tools="Read, Grep, Glob, Bash",
+                                    skill_posture="No")
+            self.assertEqual(
+                skill_posture_violations(collect_skill_surfaces(root)), [])
+
+    def test_a_writing_skill_may_declare_write(self):
+        for posture in ("Yes", "Yes (fixes)", "Yes (prep)"):
+            with self.subTest(posture=posture), tempfile.TemporaryDirectory() as d:
+                root = Path(d)
+                _write_registry_fixture(root, skill_tools="Read, Write, Edit",
+                                        skill_posture=posture)
+                self.assertEqual(
+                    skill_posture_violations(collect_skill_surfaces(root)), [])
+
+    def test_a_skill_declaring_no_allowed_tools_is_unconstrained_not_violating(self):
+        """Absent `allowed-tools` imposes no restriction; it grants nothing.
+
+        That is the opposite of an agent profile, whose `tools:` list IS its
+        complete tool set. Reporting it here would flag every vendored
+        reference skill as a violation for a field it never had.
+        """
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write_registry_fixture(root, skill_tools=None, skill_posture="No")
+            surfaces = collect_skill_surfaces(root)
+        self.assertIsNone(surfaces["skills"]["audit"])
+        self.assertEqual(skill_posture_violations(surfaces), [])
 
     def test_rules_table_ignores_other_claude_md_tables(self):
         with tempfile.TemporaryDirectory() as d:
@@ -2760,10 +2811,109 @@ class TestSkillAndRuleRegistry(unittest.TestCase):
         self.assertIsNone(surfaces["listed"])
 
 
+class TestInventoryDrift(unittest.TestCase):
+    """The three inventories a 2026-07-26 sweep found rotted, now guarded.
+
+    CLAUDE.md § Script Tests listed 13 of 15 files, the wiki's script page 11 of
+    15, and two agent profiles had no routing row — with every count check green
+    the whole time, because nothing tied a directory to a prose list.
+    """
+
+    def _tree(self, root: Path, *, documented, routed, omit=()) -> None:
+        if "scripts" not in omit:
+            scripts = root / "scripts"
+            scripts.mkdir(parents=True, exist_ok=True)
+            for name in ("verify_rules.py", "check_l10n_sync.py", "notes.txt"):
+                (scripts / name).write_text("x", encoding="utf-8")
+        if "claude" not in omit:
+            (root / "CLAUDE.md").write_text(
+                "# C\n" + "\n".join(f"scripts/{n}" for n in documented),
+                encoding="utf-8")
+        if "agents" not in omit:
+            agents = root / ".claude" / "agents"
+            agents.mkdir(parents=True, exist_ok=True)
+            for name in ("code-reviewer", "ui-ux-designer"):
+                (agents / f"{name}.md").write_text(
+                    "---\nname: x\n---\n", encoding="utf-8")
+        if "routing" not in omit:
+            rules = root / ".claude" / "rules"
+            rules.mkdir(parents=True, exist_ok=True)
+            (rules / "ai-workflow.md").write_text(
+                "# Workflow\n" + "\n".join(f"| use | `{n}` | Read-only |" for n in routed),
+                encoding="utf-8")
+
+    def test_every_script_documented_and_every_agent_routed(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._tree(root,
+                       documented=["verify_rules.py", "check_l10n_sync.py", "notes.txt"],
+                       routed=["code-reviewer", "ui-ux-designer"])
+            self.assertEqual(
+                undocumented_scripts(collect_script_inventory_surfaces(root)), [])
+            self.assertEqual(unrouted_agents(collect_agent_routing_surfaces(root)), [])
+
+    def test_reports_a_script_claude_md_never_names(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._tree(root, documented=["verify_rules.py", "notes.txt"],
+                       routed=["code-reviewer", "ui-ux-designer"])
+            self.assertEqual(
+                undocumented_scripts(collect_script_inventory_surfaces(root)),
+                ["check_l10n_sync.py"])
+
+    def test_ignores_files_with_other_suffixes(self):
+        """Only .py/.sh/.sql are scripts; a stray README is not an omission."""
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._tree(root, documented=["verify_rules.py", "check_l10n_sync.py"],
+                       routed=["code-reviewer", "ui-ux-designer"])
+            surfaces = collect_script_inventory_surfaces(root)
+        self.assertNotIn("notes.txt", surfaces["files"])
+        self.assertEqual(undocumented_scripts(surfaces), [])
+
+    def test_reports_an_agent_with_no_routing_row(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._tree(root,
+                       documented=["verify_rules.py", "check_l10n_sync.py", "notes.txt"],
+                       routed=["code-reviewer"])
+            self.assertEqual(unrouted_agents(collect_agent_routing_surfaces(root)),
+                             ["ui-ux-designer"])
+
+    def test_absent_surfaces_report_nothing(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self.assertEqual(
+                undocumented_scripts(collect_script_inventory_surfaces(root)), [])
+            self.assertEqual(unrouted_agents(collect_agent_routing_surfaces(root)), [])
+
+    def test_a_claude_md_naming_no_script_is_an_absent_surface(self):
+        """Not a stale inventory — the same convention as every collector here.
+
+        Without it, every fixture that creates a scripts/ file for an unrelated
+        check would be reported as undocumented.
+        """
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._tree(root, documented=[], routed=["code-reviewer", "ui-ux-designer"])
+            surfaces = collect_script_inventory_surfaces(root)
+        self.assertIsNone(surfaces["documented"])
+        self.assertEqual(undocumented_scripts(surfaces), [])
+
+    def test_a_missing_routing_rule_reports_nothing(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._tree(root, documented=["verify_rules.py"], routed=[],
+                       omit=("routing",))
+            surfaces = collect_agent_routing_surfaces(root)
+        self.assertIsNone(surfaces["routing_text"])
+        self.assertEqual(unrouted_agents(surfaces), [])
+
+
 class TestRegistryCheckReporting(unittest.TestCase):
     """Drives verify_rules.main() so the section's report branches are covered."""
 
-    def _run(self, root: Path, rules_table=(), **fixture):
+    def _run(self, root: Path, rules_table=(), extra_claude_md="", **fixture):
         import verify_rules as vr
 
         assets = root / "assets" / "translations"
@@ -2775,7 +2925,7 @@ class TestRegistryCheckReporting(unittest.TestCase):
         if rules_table:
             rows = "\n".join(f"| `{name}` | scope |" for name in rules_table)
             claude_md += f"\n## Rules\n\n| File | Scope |\n| --- | --- |\n{rows}\n"
-        (root / "CLAUDE.md").write_text(claude_md, encoding="utf-8")
+        (root / "CLAUDE.md").write_text(claude_md + extra_claude_md, encoding="utf-8")
         _write_registry_fixture(root, **fixture)
 
         actual = _make_sample_actual({"tr_keys": 3, "categories": 35})
@@ -2797,6 +2947,12 @@ class TestRegistryCheckReporting(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             self.assertEqual(self._run(Path(d), extra_skill=True), 1)
 
+    def test_fails_on_an_advisory_skill_declaring_write(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = self._run(Path(d), skill_tools="Read, Write",
+                               skill_posture="No")
+        self.assertEqual(result, 1)
+
     def test_fails_on_a_rule_file_missing_from_claude_md(self):
         with tempfile.TemporaryDirectory() as d:
             result = self._run(Path(d), rules_table=("architecture.md",),
@@ -2812,6 +2968,24 @@ class TestRegistryCheckReporting(unittest.TestCase):
         """No § Rules table at all is an absent surface, not 56 missing rows."""
         with tempfile.TemporaryDirectory() as d:
             self.assertEqual(self._run(Path(d), extra_rule=True), 0)
+
+    def test_fails_on_an_agent_missing_from_the_routing_rule(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            rules = root / ".claude" / "rules"
+            rules.mkdir(parents=True)
+            (rules / "ai-workflow.md").write_text(
+                "# Workflow\n\n| use | profile | Mode |\n", encoding="utf-8")
+            self.assertEqual(self._run(root), 1)
+
+    def test_fails_on_a_script_missing_from_claude_md(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            scripts = root / "scripts"
+            scripts.mkdir(parents=True)
+            (scripts / "undocumented_helper.py").write_text("x", encoding="utf-8")
+            result = self._run(root, extra_claude_md="see scripts/verify_rules.py\n")
+        self.assertEqual(result, 1)
 
     def test_skips_when_the_meta_surfaces_are_absent(self):
         with tempfile.TemporaryDirectory() as d:

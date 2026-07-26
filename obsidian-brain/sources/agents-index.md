@@ -47,7 +47,10 @@ deployment, or approval rules.
 ## Maintenance
 
 - Adding/removing/renaming a project-local profile updates this page and
-  `.claude/rules/ai-workflow.md` in the same change.
+  `.claude/rules/ai-workflow.md` in the same change. Both legs are CI-enforced;
+  the routing leg was added after a 2026-07-26 sweep found two profiles
+  (`antipattern-manual-sweeper`, `ui-ux-designer`) with no routing row, so
+  nothing would ever route to them.
 - Dynamic codebase counts belong in `CLAUDE.md`; agent prompts should reference
   the managed source instead of copying counts that immediately drift.
 - Review profiles must not declare `Write`/`Edit` tools.

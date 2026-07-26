@@ -35,10 +35,32 @@ beyond the user's request. Complement to [[sources/agents-index]] — skills
   and, when routing changes, [[sources/agents-index]] in the same change. The
   catalog above is **CI-enforced** two-way against `.claude/skills/*/SKILL.md`
   by `verify_rules.py` § Agent & Skill Registry (`rules-sync` job).
-- Skill `allowed-tools` must match the declared write posture above (advisory
-  skills stay read-only). Unlike the agent profiles' read-only mode, this one is
-  not machine-checked yet — skills declare a looser, prose write posture
-  ("Yes (fixes)", "Yes (prep)") that does not map cleanly onto a tool list.
+- Skill `allowed-tools` must match the declared write posture above: a skill
+  the **Writes?** column calls `No` must not hand itself `Write`/`Edit`/
+  `NotebookEdit`. Also CI-enforced by the same family.
+
+### Unconstrained skills (a real limit of that check)
+
+`allowed-tools` **restricts** the session while a skill is active; omitting it
+imposes no restriction rather than granting one. That is the opposite of an
+agent profile, whose `tools:` list IS the subagent's complete tool set — which
+is why the agent read-only check treats a missing list as "declares nothing"
+while this one skips it.
+
+Two vendored reference skills declare no `allowed-tools` at all, so nothing
+holds them to the `No` posture above:
+
+| Skill | Why it is unconstrained |
+|-------|-------------------------|
+| `supabase-postgres-best-practices` | Vendored (MIT, author `supabase`); pure reference text, no write instructions in its body |
+| `ui-ux-pro-max` | Vendored; body only reads and runs its own `scripts/*.py` via Bash, but its own `description` advertises "build, create, implement, refactor", which contradicts the `No` in the catalog |
+
+Adding `allowed-tools: Read, Glob, Grep, Bash` to both would make the posture
+real — `mobile-design`, the third advisory skill, already declares exactly that.
+It is deliberately **not** done here: restricting `ui-ux-pro-max` would block
+edits for the rest of its activation, and its own description claims
+implementation actions, so whether the catalog's `No` or the skill's
+`description` is the accurate surface is a product decision, not a lint fix.
 
 ## See Also
 

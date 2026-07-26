@@ -21,6 +21,7 @@ from pathlib import Path
 
 from _rules_collectors import (
     collect_actual_values,
+    collect_agent_routing_surfaces,
     collect_agent_surfaces,
     collect_edge_function_surfaces,
     collect_icon_surfaces,
@@ -29,6 +30,7 @@ from _rules_collectors import (
     collect_readme_metrics,
     collect_route_surfaces,
     collect_rule_registration_surfaces,
+    collect_script_inventory_surfaces,
     collect_skill_surfaces,
     collect_storage_bucket_surfaces,
     collect_supabase_column_surfaces,
@@ -41,10 +43,13 @@ from _rules_collectors import (
     gate_parity_gaps,
     readme_metric_drift,
     readonly_tool_violations,
+    skill_posture_violations,
     two_way_gaps,
     undeclared_columns,
+    undocumented_scripts,
     unprovisioned_tables,
     unresolved_route_targets,
+    unrouted_agents,
 )
 from _rules_fixers import _apply_inline_fixes, build_fix_updates, fix_claude_md
 from _rules_utils import Colors, check, section_factory
@@ -456,6 +461,17 @@ def main():
             print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}")
         track_manual(check("Read-only profiller yazma araci bildirmiyor", 0, len(violations)))
 
+    # agents-index.md's own contract: adding a profile updates ai-workflow.md
+    # too. Two profiles had no routing row when this was added.
+    routing = collect_agent_routing_surfaces(ROOT)
+    if routing["profiles"] is None or routing["routing_text"] is None:
+        print(f"  {Colors.YELLOW}SKIP{Colors.RESET} .claude/agents/ veya ai-workflow.md bulunamadi")
+    else:
+        unrouted = unrouted_agents(routing)
+        for name in unrouted:
+            print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: ai-workflow.md routing tablosunda anilmiyor")
+        track_manual(check("Agent profilleri ai-workflow.md'de yonlendirilmis", 0, len(unrouted)))
+
     skills = collect_skill_surfaces(ROOT)
     if skills["skills"] is None or skills["index"] is None:
         print(f"  {Colors.YELLOW}SKIP{Colors.RESET} .claude/skills/ veya skills-index.md bulunamadi")
@@ -470,6 +486,11 @@ def main():
             print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}")
         track_manual(check("Skill'ler skills-index ile ayni", 0, len(skill_gaps)))
 
+        posture = skill_posture_violations(skills)
+        for name in posture:
+            print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}")
+        track_manual(check("Salt-tavsiye skill'ler yazma araci bildirmiyor", 0, len(posture)))
+
     registration = collect_rule_registration_surfaces(ROOT)
     if registration["files"] is None or registration["listed"] is None:
         print(f"  {Colors.YELLOW}SKIP{Colors.RESET} .claude/rules/ veya CLAUDE.md Rules tablosu bulunamadi")
@@ -483,6 +504,17 @@ def main():
         for name in rule_gaps:
             print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}")
         track_manual(check("Kural dosyalari CLAUDE.md tablosuyla ayni", 0, len(rule_gaps)))
+
+    # CLAUDE.md's four script blocks are a hand-maintained inventory; § Script
+    # Tests had drifted to 13 of 15 files with every count check still green.
+    inventory = collect_script_inventory_surfaces(ROOT)
+    if inventory["files"] is None or inventory["documented"] is None:
+        print(f"  {Colors.YELLOW}SKIP{Colors.RESET} scripts/ veya CLAUDE.md bulunamadi")
+    else:
+        undocumented = undocumented_scripts(inventory)
+        for name in undocumented:
+            print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: scripts/ altinda var, CLAUDE.md'de anilmiyor")
+        track_manual(check("Script'ler CLAUDE.md'de belgeli", 0, len(undocumented)))
 
     # ── Summary ──
     pass_count = sum(results)

@@ -6,6 +6,30 @@ TLS pin freshness gate.
 
 ---
 
+## [2026-07-25] infrastructure | 64-byte map mystery closed; route targets guarded
+
+**The 64-byte difference is solved by downloading the file.** The map Sentry
+stores is not the local map: `sentry_dart_plugin` prepends two entries to the
+JSON array — `"SENTRY_DEBUG_ID_MARKER"` and the paired binary's debug id.
+Compact that is 25 + 39 = exactly 64 bytes, and entries 3..133,112 are identical
+to the local array. This independently confirms the triple upload is structural:
+each copy carries a *different* debug id, so they are three distinct files.
+
+**Route targets** — sixth guard, and the first that is deliberately NOT a
+bijection. GoRouter composes nested paths from relative literals, so
+`/chicks/:id` is never a `path:` value and 12 constants are never referenced by
+name; they are reached by `context.push('/chicks/$id')`. A "every constant must
+be referenced" rule would flag all 12 — the missing-name != missing-feature trap
+this wiki's contract warns about. Two sound checks instead: no two constants may
+share a path value, and every string navigation target must resolve to a
+declared route (a typo'd `context.push` compiles and 404s only at runtime).
+Both verified non-vacuous; the repo is currently clean on both.
+
+`check_obsidian_brain.py` reached 100% — and writing the tests found dead code:
+the `if not moved` guard in `rotate_log` is unreachable, because the caps were
+already checked against the same text. Removed rather than left untestable.
+Scripts total 99%.
+
 ## [2026-07-25] infrastructure | Icon bijection guarded; the triple map upload is correct, not waste
 
 **Chased the triple obfuscation-map upload and the suggestion was wrong.** The

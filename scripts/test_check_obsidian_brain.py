@@ -181,18 +181,22 @@ class TestRotateLog(unittest.TestCase):
         self.assertTrue(any("index.md row" in m and "no range" in m for m in messages))
 
     def test_refuses_to_overflow_the_target_archive(self):
-        """Yeni arsiv sayfasi index satiri + aciklama ister — script uydurmaz."""
+        """Yeni arsiv sayfasi katalog satiri + aciklama ister — script uydurmaz."""
+        import check_obsidian_brain as cob
+
         with tempfile.TemporaryDirectory() as d:
             wiki = _write_rotatable_wiki(
                 Path(d),
                 entry_dates=["2026-07-14", "2026-07-13", "2026-07-12", "2026-07-11"],
                 archive_dates=["2026-07-02"], filler=60,
             )
-            # Fill the archive to just under the cap so any move overflows it.
+            # Fill the archive to just under its own cap so any move overflows
+            # it. Derived from the constant, not hardcoded: archives run to
+            # MAX_ARCHIVE_LINES, which is deliberately higher than MAX_LINES.
             archive = wiki / "log-archive-2026-07.md"
             archive.write_text(
                 "# Archive\n\nArchived entries (07-01 to 07-02)\n\n---\n\n"
-                + _entry("2026-07-02", filler=190),
+                + _entry("2026-07-02", filler=cob.MAX_ARCHIVE_LINES - 10),
                 encoding="utf-8",
             )
             log_before = (wiki / "log.md").read_text(encoding="utf-8")
@@ -206,9 +210,12 @@ class TestRotateLog(unittest.TestCase):
 
         Rotasyon girdi granulerligindedir — bir girdiyi ikiye ayirmaz.
         """
+        import check_obsidian_brain as cob
+
         with tempfile.TemporaryDirectory() as d:
-            wiki = _write_rotatable_wiki(Path(d), entry_dates=["2026-07-14"],
-                                         archive_dates=["2026-07-02"], filler=250)
+            wiki = _write_rotatable_wiki(
+                Path(d), entry_dates=["2026-07-14"], archive_dates=["2026-07-02"],
+                filler=cob.MAX_ARCHIVE_LINES + 50)
             _, errors = self._rotate(wiki)
         self.assertTrue(any("would exceed" in e for e in errors), errors)
 
@@ -614,6 +621,63 @@ class TestCheckObsidianBrain(unittest.TestCase):
 
             with patch.object(cob, "ROOT", root), patch.object(cob, "WIKI_DIR", wiki):
                 self.assertEqual(cob.main(), 1)
+
+
+class TestArchiveLineCap(unittest.TestCase):
+    """Archives get a larger cap than working pages.
+
+    The 200-line rule keeps a page scannable while you work; an append-only
+    archive nobody reads top to bottom does not need it, and holding archives to
+    it produced 13 pages in 23 days.
+    """
+
+    def test_archives_get_the_larger_cap(self):
+        import check_obsidian_brain as cob
+
+        self.assertGreater(cob.MAX_ARCHIVE_LINES, cob.MAX_LINES)
+        self.assertEqual(
+            cob._line_cap(Path("log-archive-2026-07-n.md")), cob.MAX_ARCHIVE_LINES)
+
+    def test_ordinary_pages_and_the_catalog_keep_the_working_cap(self):
+        import check_obsidian_brain as cob
+
+        for name in ("features/birds.md", "log.md", "log-archive-index.md"):
+            with self.subTest(name=name):
+                self.assertEqual(cob._line_cap(Path(name)), cob.MAX_LINES)
+
+    def test_an_archive_between_the_two_caps_is_accepted(self):
+        import check_obsidian_brain as cob
+
+        with tempfile.TemporaryDirectory() as d:
+            wiki = _write_valid_wiki(Path(d))
+            index = wiki / "index.md"
+            index.write_text(
+                index.read_text(encoding="utf-8")
+                + "| [[log-archive-2026-07]] | Archived (07-01 to 07-02) |\n",
+                encoding="utf-8")
+            body = "".join(f"line {i}\n" for i in range(cob.MAX_LINES + 40))
+            (wiki / "log-archive-2026-07.md").write_text(
+                f"# Archive (07-01 to 07-02)\n\n## [2026-07-01] test | entry\n\n{body}",
+                encoding="utf-8")
+            errors = [e for e in cob.check_wiki(wiki) if "lines" in e]
+        self.assertEqual(errors, [])
+
+    def test_an_archive_over_its_own_cap_is_still_reported(self):
+        import check_obsidian_brain as cob
+
+        with tempfile.TemporaryDirectory() as d:
+            wiki = _write_valid_wiki(Path(d))
+            index = wiki / "index.md"
+            index.write_text(
+                index.read_text(encoding="utf-8")
+                + "| [[log-archive-2026-07]] | Archived (07-01 to 07-02) |\n",
+                encoding="utf-8")
+            body = "".join(f"line {i}\n" for i in range(cob.MAX_ARCHIVE_LINES + 10))
+            (wiki / "log-archive-2026-07.md").write_text(
+                f"# Archive (07-01 to 07-02)\n\n## [2026-07-01] test | entry\n\n{body}",
+                encoding="utf-8")
+            errors = [e for e in cob.check_wiki(wiki) if "lines" in e]
+        self.assertTrue(any("log-archive-2026-07.md" in e for e in errors))
 
 
 class TestIndexDelegates(unittest.TestCase):

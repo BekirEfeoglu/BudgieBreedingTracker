@@ -4,6 +4,40 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-26] infrastructure | Semantic sweep found three rotted inventories; archive cap raised
+
+**The sweep's yield was inventories, not contracts.** Spot-checking constants
+(`calculationVersion` 9, `maxAncestorDepth` 10, presence 2/5/10 min, comment
+limit 1000), prose counts (EventType 18, EggStatus 9, XP 11 + 3 daily limits, 5
+notification channels) and every `known-gaps.md` entry found **zero** drift —
+those surfaces are accurate. Three hand-maintained *lists* had rotted instead:
+CLAUDE.md § Script Tests named 13 of 15 test files, the wiki's script page 11 of
+15, and `ai-workflow.md` had no routing row for `antipattern-manual-sweeper` or
+`ui-ux-designer`, so nothing would ever route to them. All three fixed, then
+guarded — a directory versus a prose list is precisely the shape the
+cross-surface families exist for, and nothing had tied them together.
+
+Also corrected: "all 11 scripts currently 100%" in CLAUDE.md and ci-actions.md
+was wrong on both halves. There are 12 measured files and two are not at 100%
+(`verify_security.py` 92%, `_rules_collectors.py` 99%). It went stale when
+`verify_security.py` was brought into measurement earlier the same day and the
+sibling surfaces were not updated — the exact half-landed-update class again.
+
+**Skill write posture is now machine-read**, matching the agent read-only check.
+A limit worth stating: `allowed-tools` *restricts* a session, so omitting it
+grants nothing — unlike an agent profile, whose `tools:` list IS its complete
+tool set. Two vendored reference skills declare none, so nothing holds them to
+their `No` posture; that is recorded in skills-index rather than papered over,
+because `ui-ux-pro-max`'s own description advertises "build, create, implement"
+and which surface is accurate is a product decision, not a lint fix.
+
+**Archive cap 200 → 400 lines**, archives only. The 200-line rule keeps a
+working page scannable; an append-only archive nobody reads top to bottom does
+not need it, and the shared cap was the entire churn driver — measured, entries
+grew from ~8 lines to 25-37, so an archive filled after 5-8 of them and 13 pages
+appeared in 23 days. Also documented that the 30-entry log cap has never bound:
+the line cap is reached first, around 13 entries.
+
 ## [2026-07-26] infrastructure | Meta-layer guarded, archive catalog split out of index.md
 
 **Agent & Skill Registry — tenth cross-surface family.** Every other family
@@ -145,28 +179,4 @@ non-vacuous both ways: a ghost table turns it red, an RPC constant does not.
 `# pragma: no cover` — a `continue` that CPython emits no trace event for. The
 test exists and the behavior is verified directly; the gap was the measurement,
 not the coverage. Eight of eleven scripts are now at 100%, total 99%.
-
-## [2026-07-25] infrastructure | 64-byte map mystery closed; route targets guarded
-
-**The 64-byte difference is solved by downloading the file.** The map Sentry
-stores is not the local map: `sentry_dart_plugin` prepends two entries to the
-JSON array — `"SENTRY_DEBUG_ID_MARKER"` and the paired binary's debug id.
-Compact that is 25 + 39 = exactly 64 bytes, and entries 3..133,112 are identical
-to the local array. This independently confirms the triple upload is structural:
-each copy carries a *different* debug id, so they are three distinct files.
-
-**Route targets** — sixth guard, and the first that is deliberately NOT a
-bijection. GoRouter composes nested paths from relative literals, so
-`/chicks/:id` is never a `path:` value and 12 constants are never referenced by
-name; they are reached by `context.push('/chicks/$id')`. A "every constant must
-be referenced" rule would flag all 12 — the missing-name != missing-feature trap
-this wiki's contract warns about. Two sound checks instead: no two constants may
-share a path value, and every string navigation target must resolve to a
-declared route (a typo'd `context.push` compiles and 404s only at runtime).
-Both verified non-vacuous; the repo is currently clean on both.
-
-`check_obsidian_brain.py` reached 100% — and writing the tests found dead code:
-the `if not moved` guard in `rotate_log` is unreachable, because the caps were
-already checked against the same text. Removed rather than left untestable.
-Scripts total 99%.
 

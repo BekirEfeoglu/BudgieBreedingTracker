@@ -11,7 +11,28 @@ from typing import Optional
 ROOT = Path(__file__).resolve().parents[1]
 WIKI_DIR = ROOT / "obsidian-brain"
 MAX_LINES = 200
+# Archives get a larger cap than working pages. The 200-line rule exists so a
+# page stays scannable while you work; a log archive is append-only history that
+# nobody reads top to bottom, and holding it to the same limit was the whole
+# churn driver — 13 archive pages in 23 days. Measured 2026-07-26: entries grew
+# from ~8 lines to 25-37, so a 200-line archive filled after 5-8 of them. At 400
+# the page count roughly halves without changing what is retained.
+MAX_ARCHIVE_LINES = 400
+# Reached in practice only if entries are unusually short: at the current
+# ~15-line average the line cap above binds first, and it always has. Kept as a
+# backstop so a burst of one-line entries still rotates.
 MAX_ACTIVE_LOG_ENTRIES = 30
+ARCHIVE_PREFIX = "log-archive-"
+
+
+def _line_cap(path: Path) -> int:
+    """Archives may run to MAX_ARCHIVE_LINES; every other page stays at 200."""
+    name = path.name
+    return (
+        MAX_ARCHIVE_LINES
+        if name.startswith(ARCHIVE_PREFIX) and name != "log-archive-index.md"
+        else MAX_LINES
+    )
 WIKILINK_RE = re.compile(r"\[\[([^\]\|#]+)(?:#[^\]\|]+)?(?:\|[^\]]+)?\]\]")
 
 # Pages index.md may delegate cataloguing to. Rows on a delegate count as
@@ -315,10 +336,11 @@ def check_wiki(wiki_dir: Path = WIKI_DIR) -> list[str]:
 
     for path in files:
         line_count = len(path.read_text(encoding="utf-8").splitlines())
-        if line_count > MAX_LINES:
+        cap = _line_cap(path)
+        if line_count > cap:
             errors.append(
                 f"{_page_key(path, wiki_dir)} has {line_count} lines "
-                f"(max {MAX_LINES})"
+                f"(max {cap})"
             )
 
     index_md = wiki_dir / "index.md"
@@ -474,10 +496,12 @@ def rotate_log(wiki_dir: Path = WIKI_DIR) -> tuple[list[str], list[str]]:
     # moved is oldest-last; the archive is newest-first, so reverse it back.
     merged_entries = list(reversed(moved)) + archive_entries
     new_archive = archive_preamble + "".join(body for _, body in merged_entries)
-    if len(new_archive.splitlines()) > MAX_LINES:
+    archive_cap = _line_cap(archive)
+    if len(new_archive.splitlines()) > archive_cap:
         return messages, [
-            f"{archive.name} would exceed {MAX_LINES} lines; create a new "
-            "archive page (and its index row) by hand first"
+            f"{archive.name} would exceed {archive_cap} lines; create a new "
+            "archive page (and its catalog row in log-archive-index.md) by hand "
+            "first"
         ]
 
     oldest = min(date for date, _ in merged_entries)

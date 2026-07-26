@@ -39,12 +39,14 @@ auditor by default.
 | Change / need | Profile | Mode |
 |---------------|---------|------|
 | General Flutter/Dart diff review | `code-reviewer` | Read-only |
+| Anti-patterns the CI scanner does not cover (#8, #9, #13, #23, #24) | `antipattern-manual-sweeper` | Read-only |
 | Genetics engine/rate/viability change | `genetics-guardian` | Read-only |
 | Supabase migration or Edge Function audit | `migration-auditor` / `edge-function-auditor` | Read-only |
 | PII/logging or test-flake sweep | `pii-observability-auditor` / `test-stability-auditor` | Read-only |
 | Duplicate bug path hunt | `sibling-path-hunter` | Read-only |
 | Entity, dependency, or l10n implementation | `entity-scaffolder` / `dependency-bump-agent` / `l10n-agent` | Write-enabled |
 | Behavior/rule/CI change finished | `doc-sync-agent` | Write-enabled, docs only |
+| Visual/usability/accessibility critique | `ui-ux-designer` | Read-only |
 | Push/release closure | `post-push-verifier` / `release-readiness-agent` | Read-only |
 
 Read-only profiles report findings and must not edit. Write-enabled profiles
