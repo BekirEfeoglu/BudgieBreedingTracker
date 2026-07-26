@@ -5,6 +5,43 @@ Archived July 2026 entries (07-26 to 07-26) rotated out of [[log]] during the
 `allowed-tools` correction, and the registry-collector split.
 
 ---
+## [2026-07-26] infrastructure | Agent read-only measured: a real gate, but not a sandbox
+
+**Probed rather than assumed, and it corrects a claim from hours earlier.** A
+`code-reviewer` run reported its actual tools. `Write` was emitted and refused
+by the harness — *"No such tool available: Write. Write exists but is not
+enabled in this context."* — with no file created. So the agent-side exclusion
+is a genuine gate, unlike a skill's `allowed-tools`, which the same day's probe
+showed restricts nothing.
+
+Two findings that change how the guard should be read:
+
+- **`Bash` is available, so read-only is behavioural, not technical.** `sed -i`,
+  `echo >`, `git commit` and `rm` all stay reachable. The tool gate raises the
+  cost of mutating; it does not prevent it. A read-only profile is not a
+  containment measure.
+- **The declared list is not the realized list.** `code-reviewer` declares
+  `Read, Bash, Glob, Grep`; the running agent had only `Read` and `Bash`. The
+  frontmatter diverges in *both* directions — it over-declares `Glob`/`Grep`
+  while the harness independently withholds `Write`/`Edit`. My earlier phrasing,
+  "a subagent's `tools:` list IS its complete tool set", is therefore wrong;
+  read it as intent, not inventory. Single-context sample.
+
+The registry check still earns its place: it keeps the **declaration** honest
+and reviewable, which is what a human or agent reads before dispatching. It was
+never able to prove a profile cannot write, and the docs now say so.
+
+Also: the skills catalog column is renamed `Writes?` → **`Ritual writes?`**, so
+it names what it actually asserts — what the skill's own steps do — rather than
+implying a capability. The check parses the row's last cell, not the header, so
+the rename is behaviour-neutral; proven against three different headers.
+
+**Push batching recorded** in branch-workflow.md. Four successive pushes this
+session left two intermediate commits superseded, one showing commit status
+`failure` although every job was `cancelled`, not failed. Verification correctly
+targets the tip, but an intermediate commit that never completes a round leaves
+no evidence for `git bisect` or later review.
+
 ## [2026-07-26] infrastructure | Correction: skill `allowed-tools` does not restrict the session
 
 **Measured, and it disproves what two earlier entries today asserted.** With
