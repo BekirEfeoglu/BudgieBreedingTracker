@@ -21,6 +21,12 @@ class AppLogger {
 
   static final List<AppLogEntry> _recentLogs = <AppLogEntry>[];
 
+  /// Upper bound on [_recentLogs]. The list is append-only on every log call
+  /// and is read only by tests, so without a cap a long-running session grows
+  /// it unboundedly — and each entry retains the raw `error` object, whose
+  /// message can embed row values. Keep the newest entries and drop the rest.
+  static const _maxRecentLogs = 200;
+
   static final _logger = log_pkg.Logger(
     printer: log_pkg.PrettyPrinter(methodCount: 0),
     level: kReleaseMode ? log_pkg.Level.warning : log_pkg.Level.debug,
@@ -44,6 +50,9 @@ class AppLogger {
         stackTrace: stackTrace,
       ),
     );
+    if (_recentLogs.length > _maxRecentLogs) {
+      _recentLogs.removeRange(0, _recentLogs.length - _maxRecentLogs);
+    }
   }
 
   static void debug(String message) {

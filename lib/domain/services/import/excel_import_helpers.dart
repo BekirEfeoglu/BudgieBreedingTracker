@@ -70,7 +70,10 @@ BirdGender parseGender(String? value) {
   if (lower == 'disi' || lower == 'female' || lower == 'weiblich') {
     return BirdGender.female;
   }
-  AppLogger.warning('[Import] Unknown gender value: "$value"');
+  // Log shape, never the cell text: `warning` writes a Sentry breadcrumb in
+  // release, and a column-misaligned sheet routes arbitrary user content
+  // (notes, ring numbers, health treatment) through this parser.
+  AppLogger.warning('[Import] Unknown gender value (len=${value.length})');
   return BirdGender.unknown;
 }
 
@@ -206,7 +209,9 @@ ChickHealthStatus parseHealthStatus(String? value) {
   if (lower == 'vefat' || lower == 'deceased' || lower == 'verstorben') {
     return ChickHealthStatus.deceased;
   }
-  AppLogger.warning('[Import] Unknown health status value: "$value"');
+  AppLogger.warning(
+    '[Import] Unknown health status value (len=${value.length})',
+  );
   return ChickHealthStatus.unknown;
 }
 
@@ -234,6 +239,8 @@ HealthRecordType parseHealthRecordType(String? value) {
   if (lower == 'vefat' || lower == 'death' || lower == 'tod') {
     return HealthRecordType.death;
   }
-  AppLogger.warning('[Import] Unknown health record type: "$value"');
+  AppLogger.warning(
+    '[Import] Unknown health record type (len=${value.length})',
+  );
   return HealthRecordType.unknown;
 }
