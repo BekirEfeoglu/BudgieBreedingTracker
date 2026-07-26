@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 /// Result of an image safety scan.
 class ImageSafetyResult {
@@ -90,8 +91,19 @@ class ImageSafetyService {
 
       return const ImageSafetyResult.safe();
     } catch (e, st) {
-      // On error, reject upload (fail-closed).
+      // On error, reject upload (fail-closed). Report it: this branch blocks
+      // EVERY image upload app-wide while the scanner is down, and the user
+      // sees only "image rejected", so without Sentry an outage is invisible
+      // (observability.md — critical edge function failure). Exception and
+      // outcome only; never the scanned bytes (moderation.md § Telemetry).
       AppLogger.error('$_tag Image safety scan failed', e, st);
+      await Sentry.captureException(
+        e,
+        stackTrace: st,
+        withScope: (scope) => scope
+          ..setTag('feature', 'moderation')
+          ..setTag('moderation_kind', 'image'),
+      );
       return const ImageSafetyResult.unsafe('safety_scan_unavailable');
     }
   }

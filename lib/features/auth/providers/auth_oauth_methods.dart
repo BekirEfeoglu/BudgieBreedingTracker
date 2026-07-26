@@ -145,7 +145,17 @@ mixin _AuthOAuthMixin {
         }
         throw const AuthException('Canceled');
       }
+      // Cancellation is filtered out above, so reaching here is an
+      // unexpected auth failure — observability.md routes those to Sentry, and
+      // AppLogger.error only adds a breadcrumb.
       AppLogger.error('[AuthActions] Google sign-in failed: $e', e, st);
+      await Sentry.captureException(
+        e,
+        stackTrace: st,
+        withScope: (scope) => scope
+          ..setTag('feature', 'auth')
+          ..setTag('auth_method', 'google'),
+      );
       throw const AuthException(
         nativeGoogleSignInFailedMessage,
         statusCode: '400',
@@ -183,7 +193,15 @@ mixin _AuthOAuthMixin {
           e.code == AuthorizationErrorCode.canceled) {
         throw const AuthException('Canceled');
       }
+      // Cancellation is filtered out above; see the Google branch.
       AppLogger.error('[AuthActions] Apple sign-in failed: $e', e, st);
+      await Sentry.captureException(
+        e,
+        stackTrace: st,
+        withScope: (scope) => scope
+          ..setTag('feature', 'auth')
+          ..setTag('auth_method', 'apple'),
+      );
       throw const AuthException('Apple sign-in failed', statusCode: '400');
     }
   }

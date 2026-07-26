@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 /// Result of a content moderation check.
 class ModerationResult {
@@ -118,8 +119,18 @@ class ContentModerationService {
 
       return const ModerationResult.allowed();
     } catch (e, st) {
-      // On error, reject content with retry message (fail-closed).
+      // On error, reject content (fail-closed). Report it: this branch blocks
+      // every post, comment, listing and DM while moderation is down, and the
+      // user sees only a generic rejection. Exception and outcome only; never
+      // the checked text (moderation.md § Telemetry).
       AppLogger.error('$_tag Server-side check failed', e, st);
+      await Sentry.captureException(
+        e,
+        stackTrace: st,
+        withScope: (scope) => scope
+          ..setTag('feature', 'moderation')
+          ..setTag('moderation_kind', 'text'),
+      );
       return const ModerationResult.rejected('moderation_unavailable');
     }
   }
