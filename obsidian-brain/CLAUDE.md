@@ -39,6 +39,10 @@ obsidian-brain/
 
 - **Max 200 lines** per page
 - **Active log cap**: keep `log.md` under 30 dated entries; rotate older entries to `log-archive-*.md`
+- **Archive catalog**: archive rows live in `log-archive-index.md`, a named
+  *index delegate* — a row there counts as being listed in `index.md`. `index.md`
+  is injected into every session by the `SessionStart` hook, so it stays lean.
+  Delegation is one hop to a named page, not general transitivity
 - **Frontmatter**: none required (Obsidian reads title from `# H1`)
 - **Cross-links**: `[[page-name]]` for same-directory, `[[folder/page]]` for others
 - **Source refs**: inline file paths must exist unless they are explicit placeholders/examples
@@ -52,11 +56,12 @@ After a significant feature or rule change:
 1. Read changed source files
 2. Update the relevant wiki page(s)
 3. Append an entry to `log.md`
-4. If new page created, add it to `index.md`
+4. If new page created, add it to `index.md` (a new *archive* page goes in
+   `log-archive-index.md` instead)
 5. If `log.md` approaches the cap, run `python3 scripts/check_obsidian_brain.py --rotate`
    (moves the oldest entries into the newest archive and widens its range +
-   index row; it refuses rather than overflowing an archive, so a NEW archive
-   page is still created by hand)
+   catalog row, wherever that row lives; it refuses rather than overflowing an
+   archive, so a NEW archive page is still created by hand)
 
 ### High-Risk Pages
 `features/community.md`, `features/admin.md`, `domain/notification-service.md`,
@@ -74,7 +79,7 @@ When answering a code question:
 
 ### Lint
 Before closing a wiki-update task:
-- All new pages are listed in `index.md`
+- All new pages are listed in `index.md` (or, for archives, in `log-archive-index.md`)
 - Each new page has an `[[index]]` back-link or is reachable from the index
 - `log.md` has an entry for this session
 - No page exceeds 200 lines

@@ -165,7 +165,7 @@ class TestRotateLog(unittest.TestCase):
             index_text = (wiki / "index.md").read_text(encoding="utf-8")
         self.assertEqual(errors, [])
         self.assertIn("(07-01 to 07-11 release, CI, and security hardening)", index_text)
-        self.assertTrue(any("widened the index row" in m for m in messages))
+        self.assertTrue(any("widened the index.md row" in m for m in messages))
 
     def test_warns_when_no_range_to_widen(self):
         with tempfile.TemporaryDirectory() as d:
@@ -178,7 +178,7 @@ class TestRotateLog(unittest.TestCase):
             messages, errors = self._rotate(wiki)
         self.assertEqual(errors, [])
         self.assertTrue(any("no '(MM-DD to MM-DD)' range" in m for m in messages))
-        self.assertTrue(any("index row" in m and "no range" in m for m in messages))
+        self.assertTrue(any("index.md row" in m and "no range" in m for m in messages))
 
     def test_refuses_to_overflow_the_target_archive(self):
         """Yeni arsiv sayfasi index satiri + aciklama ister — script uydurmaz."""
@@ -614,6 +614,143 @@ class TestCheckObsidianBrain(unittest.TestCase):
 
             with patch.object(cob, "ROOT", root), patch.object(cob, "WIKI_DIR", wiki):
                 self.assertEqual(cob.main(), 1)
+
+
+class TestIndexDelegates(unittest.TestCase):
+    """index.md may delegate a catalog to a NAMED page, one hop, no further.
+
+    The 17 log-archive rows moved to log-archive-index.md because index.md is
+    injected verbatim into every session by the SessionStart hook. The
+    no-orphan-pages invariant has to survive that move intact.
+    """
+
+    def _wiki(self, root: Path, *, archive_in="delegate", orphan=False,
+              decoy=False) -> Path:
+        wiki = root / "obsidian-brain"
+        wiki.mkdir()
+        (wiki / "README.md").write_text("# README\n\n[[index]]\n", encoding="utf-8")
+        (wiki / "CLAUDE.md").write_text("# Contract\n", encoding="utf-8")
+        (wiki / "log.md").write_text(
+            "# Log\n\n## [2026-07-26] test | ok\n", encoding="utf-8")
+        (wiki / "log-archive-2026-05.md").write_text(
+            "# Archive (05-01 to 05-09)\n\n## [2026-05-01] test | entry\n",
+            encoding="utf-8")
+
+        rows = ("| [[README]] | Entry |\n| [[CLAUDE.md]] | Contract |\n"
+                "| [[index]] | Catalog |\n| [[log]] | Log |\n")
+        if archive_in == "index":
+            rows += "| [[log-archive-2026-05]] | May |\n"
+        elif archive_in == "delegate":
+            rows += "| [[log-archive-index]] | Archive catalog |\n"
+            (wiki / "log-archive-index.md").write_text(
+                "# Catalog\n\n| Page | Range |\n|---|---|\n"
+                "| [[log-archive-2026-05]] | May (05-01 to 05-09) |\n",
+                encoding="utf-8")
+        if decoy:
+            rows += "| [[decoy]] | An ordinary indexed page |\n"
+            (wiki / "decoy.md").write_text("# Decoy\n\nsee [[sneaky]]\n",
+                                           encoding="utf-8")
+            (wiki / "sneaky.md").write_text("# Sneaky\n", encoding="utf-8")
+        if orphan:
+            (wiki / "orphan.md").write_text("# Orphan\n", encoding="utf-8")
+
+        (wiki / "index.md").write_text(
+            f"# Wiki Index\n\n| Page | Description |\n|---|---|\n{rows}",
+            encoding="utf-8")
+        return wiki
+
+    def _unindexed(self, **kwargs) -> list:
+        import check_obsidian_brain as cob
+
+        with tempfile.TemporaryDirectory() as d:
+            wiki = self._wiki(Path(d), **kwargs)
+            return [e for e in cob.check_wiki(wiki) if "missing from" in e]
+
+    def test_a_page_listed_only_on_the_delegate_counts_as_indexed(self):
+        self.assertEqual(self._unindexed(), [])
+
+    def test_listing_directly_in_index_still_works(self):
+        self.assertEqual(self._unindexed(archive_in="index"), [])
+
+    def test_a_page_listed_in_neither_is_still_reported(self):
+        errors = self._unindexed(archive_in="none")
+        self.assertTrue(any("log-archive-2026-05.md" in e for e in errors))
+
+    def test_an_orphan_page_is_still_reported(self):
+        errors = self._unindexed(orphan=True)
+        self.assertTrue(any("orphan.md" in e for e in errors))
+
+    def test_delegation_is_not_general_transitivity(self):
+        """A page linked from an ordinary indexed page does NOT count.
+
+        If it did, every page reachable from anywhere would satisfy the check
+        and the invariant would be worthless.
+        """
+        errors = self._unindexed(decoy=True)
+        self.assertTrue(any("sneaky.md" in e for e in errors))
+
+    def test_a_missing_delegate_file_is_tolerated(self):
+        import check_obsidian_brain as cob
+
+        with tempfile.TemporaryDirectory() as d:
+            wiki = self._wiki(Path(d), archive_in="index")
+            self.assertFalse((wiki / "log-archive-index.md").exists())
+            self.assertEqual(
+                [e for e in cob.check_wiki(wiki) if "missing from" in e], [])
+
+    def test_rotate_skips_a_catalog_file_that_does_not_exist(self):
+        """Rotation still succeeds when index.md is absent entirely."""
+        import check_obsidian_brain as cob
+
+        with tempfile.TemporaryDirectory() as d:
+            wiki = _write_rotatable_wiki(
+                Path(d),
+                entry_dates=["2026-07-14", "2026-07-13", "2026-07-12", "2026-07-11"],
+                archive_dates=["2026-07-02"], filler=60,
+            )
+            (wiki / "index.md").unlink()
+            (wiki / "log-archive-index.md").write_text(
+                "# Catalog\n\n| Page | Range |\n|---|---|\n"
+                "| [[log-archive-2026-07]] | Archived entries (07-01 to 07-02) |\n",
+                encoding="utf-8")
+
+            messages, errors = cob.rotate_log(wiki)
+            delegate_text = (wiki / "log-archive-index.md").read_text(encoding="utf-8")
+
+        self.assertEqual(errors, [])
+        self.assertIn("(07-01 to 07-11)", delegate_text)
+
+    def test_rotate_widens_the_row_on_the_delegate_page(self):
+        """The catalog row moved, so rotation has to follow it there."""
+        import check_obsidian_brain as cob
+
+        with tempfile.TemporaryDirectory() as d:
+            wiki = _write_rotatable_wiki(
+                Path(d),
+                entry_dates=["2026-07-14", "2026-07-13", "2026-07-12", "2026-07-11"],
+                archive_dates=["2026-07-02"], filler=60,
+            )
+            # Move the archive row out of index.md and onto a delegate.
+            index_md = wiki / "index.md"
+            index_md.write_text(
+                "".join(line for line in index_md.read_text(encoding="utf-8").splitlines(keepends=True)
+                        if "[[log-archive-2026-07]]" not in line)
+                + "| [[log-archive-index]] | Archive catalog |\n",
+                encoding="utf-8")
+            (wiki / "log-archive-index.md").write_text(
+                "# Catalog\n\n| Page | Range |\n|---|---|\n"
+                "| [[log-archive-2026-07]] | Archived entries (07-01 to 07-02) |\n",
+                encoding="utf-8")
+
+            messages, errors = cob.rotate_log(wiki)
+            delegate_text = (wiki / "log-archive-index.md").read_text(encoding="utf-8")
+            index_text = index_md.read_text(encoding="utf-8")
+
+        self.assertEqual(errors, [])
+        self.assertIn("(07-01 to 07-11)", delegate_text)
+        self.assertTrue(
+            any("widened the log-archive-index.md row" in m for m in messages))
+        self.assertNotIn("07-11", index_text)
 
 
 if __name__ == "__main__":

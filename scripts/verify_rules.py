@@ -21,12 +21,15 @@ from pathlib import Path
 
 from _rules_collectors import (
     collect_actual_values,
+    collect_agent_surfaces,
     collect_edge_function_surfaces,
     collect_icon_surfaces,
     collect_l10n_category_surfaces,
     collect_quality_gate_surfaces,
     collect_readme_metrics,
     collect_route_surfaces,
+    collect_rule_registration_surfaces,
+    collect_skill_surfaces,
     collect_storage_bucket_surfaces,
     collect_supabase_column_surfaces,
     collect_supabase_table_surfaces,
@@ -37,6 +40,8 @@ from _rules_collectors import (
     extract_release_artifact_paths,
     gate_parity_gaps,
     readme_metric_drift,
+    readonly_tool_violations,
+    two_way_gaps,
     undeclared_columns,
     unprovisioned_tables,
     unresolved_route_targets,
@@ -426,6 +431,58 @@ def main():
         for entry in drift:
             print(f"  {Colors.YELLOW}WARN{Colors.RESET} {entry}")
         track_manual(check("README metrikleri kod tabaniyla ayni", 0, len(drift)))
+
+    print(section("Agent & Skill Registry"))
+    # The meta-layer had no guard of its own: documentation-sync.md mandates
+    # three-place registration for a new agent/skill, and agents-index.md says
+    # review profiles must not declare Write/Edit — nothing verified either.
+    # The read-only check makes that Mode column load-bearing instead of prose.
+    agents = collect_agent_surfaces(ROOT)
+    if agents["profiles"] is None or agents["index"] is None:
+        print(f"  {Colors.YELLOW}SKIP{Colors.RESET} .claude/agents/ veya agents-index.md bulunamadi")
+    else:
+        agent_gaps = two_way_gaps(
+            agents["profiles"],
+            agents["index"],
+            "{name}: .claude/agents/ altinda var, agents-index katalogunda yok",
+            "{name}: agents-index katalogunda var, .claude/agents/ altinda yok",
+        )
+        for name in agent_gaps:
+            print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}")
+        track_manual(check("Agent profilleri agents-index ile ayni", 0, len(agent_gaps)))
+
+        violations = readonly_tool_violations(agents)
+        for name in violations:
+            print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}")
+        track_manual(check("Read-only profiller yazma araci bildirmiyor", 0, len(violations)))
+
+    skills = collect_skill_surfaces(ROOT)
+    if skills["skills"] is None or skills["index"] is None:
+        print(f"  {Colors.YELLOW}SKIP{Colors.RESET} .claude/skills/ veya skills-index.md bulunamadi")
+    else:
+        skill_gaps = two_way_gaps(
+            skills["skills"],
+            skills["index"],
+            "{name}: .claude/skills/ altinda var, skills-index katalogunda yok",
+            "{name}: skills-index katalogunda var, .claude/skills/ altinda yok",
+        )
+        for name in skill_gaps:
+            print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}")
+        track_manual(check("Skill'ler skills-index ile ayni", 0, len(skill_gaps)))
+
+    registration = collect_rule_registration_surfaces(ROOT)
+    if registration["files"] is None or registration["listed"] is None:
+        print(f"  {Colors.YELLOW}SKIP{Colors.RESET} .claude/rules/ veya CLAUDE.md Rules tablosu bulunamadi")
+    else:
+        rule_gaps = two_way_gaps(
+            registration["files"],
+            registration["listed"],
+            "{name}: .claude/rules/ altinda var, CLAUDE.md Rules tablosunda yok",
+            "{name}: CLAUDE.md Rules tablosunda var, .claude/rules/ altinda yok",
+        )
+        for name in rule_gaps:
+            print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}")
+        track_manual(check("Kural dosyalari CLAUDE.md tablosuyla ayni", 0, len(rule_gaps)))
 
     # ── Summary ──
     pass_count = sum(results)

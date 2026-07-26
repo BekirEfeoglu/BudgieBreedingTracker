@@ -6,6 +6,66 @@ TLS pin freshness gate.
 
 ---
 
+## [2026-07-25] infrastructure | Icon bijection guarded; the triple map upload is correct, not waste
+
+**Chased the triple obfuscation-map upload and the suggestion was wrong.** The
+CI log settles it: `sentry_dart_plugin` pairs the map with each ABI symbol file
+and registers it under that binary's own debug id — three uploads, three debug
+ids, `attempted=3, succeeded=3`. A crash carries the debug id of the
+architecture it came from, so collapsing to one upload would break
+de-obfuscation on the other two ABIs. Recorded in release-ops.md as a
+do-not-optimize. **The 64-byte size difference is now explained too**, by
+downloading the uploaded file: `sentry_dart_plugin` prepends two entries to the
+JSON array — the literal `"SENTRY_DEBUG_ID_MARKER"` and the paired binary's
+debug id. Compact, that is 25 + 39 = exactly 64 bytes, and the remaining 133,110
+entries are byte-identical to the local map. This independently proves the
+triple upload is structural: each copy embeds a *different* debug id, so they
+are three distinct files, not three copies of one.
+
+**SVG icon bijection** — fifth cross-surface family. The two counts were already
+compared (99 constants == 99 files), but *which* constant points at *which* file
+was not, so a renamed asset keeps both counts right and fails only at runtime,
+where flutter_svg renders nothing rather than throwing. Now two-way. Verified
+non-vacuous by typo'ing one path: the count check stays green and the bijection
+goes red. Writing it also surfaced a stale `/// 93 icons` doc comment in
+`app_icons.dart` (real count 99) — unmanaged by the inline fixer, which only
+walks CLAUDE.md and `.claude/rules/`.
+
+`check_platform_targets.py` 93% → 100%: the empty-`web/`-directory branch (a
+bare `web/` is not a Flutter web target) and each of the three markers now have
+cases. Scripts total 99%.
+
+## [2026-07-25] infrastructure | Log rotation automated, l10n category names guarded
+
+Two more follow-ups plus one external verification.
+
+**`check_obsidian_brain.py --rotate`.** The 200-line / 30-entry caps were
+enforced but rotated by hand — three re-derived edits every time (move the
+oldest entries, widen the archive's date range, widen the index row), done
+twice in this session alone. `--rotate` does exactly those three and refuses
+rather than overflowing the target archive, because a NEW archive page needs an
+index row and a description a script should not invent. The target archive is
+chosen **by content**, not filename: `log-archive-2026-07-b.md` sorts before
+`log-archive-2026-07.md` lexicographically, so filename order would pick the
+wrong one. Coverage 89% → 97%.
+
+**L10n category names.** Fourth cross-surface family. The category *count* was
+already verified against `tr.json`; the *names* were not, so a renamed category
+kept the count right while `localization.md`'s list rotted. Now compared
+two-way. Verified non-vacuous by renaming one entry — count stays 41, check goes
+red.
+
+**Sentry upload confirmed** for the release build: `sentry api .../files/dsyms/`
+shows the three ABI symbol files and `obfuscation.map.json` at 14:43–14:44 UTC.
+The map is uploaded three times per run, which this entry first recorded as
+waste. **It is not** — the CI log settles it: `sentry_dart_plugin` pairs the map
+with each ABI symbol file and registers it under that binary's own debug id
+(`attempted=3, succeeded=3`). A crash carries the debug id of the architecture
+it came from, so collapsing this to one upload would break de-obfuscation on the
+other two ABIs. Do not "optimize" it. The 64-byte size difference was chased in
+the entry above and is explained: the plugin prepends a debug-id marker pair to
+the JSON array.
+
 ## [2026-07-25] infrastructure | Storage bucket ids guarded; migration-drift coverage 93% → 100%
 
 Third member of the repeated-literal family after release artifacts and Edge

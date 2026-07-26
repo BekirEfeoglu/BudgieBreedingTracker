@@ -26,12 +26,12 @@ change code merely to make a stale wiki sentence true.
 |--------------|---------------------------|
 | Feature/service/entity behavior | The matching `obsidian-brain/features/*` or `domain/*` wiki page + owning `.claude/rules/*.md` if the contract changed |
 | A count (files, tests, routes, l10n keys, tables, icons, migrations, constants) | `CLAUDE.md` stats via `verify_rules.py --fix` (NEVER hand-edit) — mirror into the relevant wiki page if it quotes the number, and check `README.md` § Project at a Glance, which uses its OWN row labels and is therefore invisible to the inline fixer (guarded separately) |
-| Added a new `.claude/rules/*.md` file | `CLAUDE.md` § Rules table row + `obsidian-brain/sources/rules-index.md` row + `obsidian-brain/log.md` entry |
+| Added a new `.claude/rules/*.md` file | `CLAUDE.md` § Rules table row + `obsidian-brain/sources/rules-index.md` row + `obsidian-brain/log.md` entry. The CLAUDE.md leg is **CI-enforced** (§ Cross-surface guards → Rule Registration) |
 | Added a new anti-pattern | `CLAUDE.md` § Critical Anti-Patterns numbered list + the owning rule file (keep both in sync) |
 | CI / release / deploy flow | Owning rule file + `CLAUDE.md` + workflow comments together (release-ops.md § Documentation Drift) |
 | A new wiki page | Register it in `obsidian-brain/index.md` (check_obsidian_brain enforces reachability) |
-| A first-party `.claude/agents/*.md` profile or hook | Owning workflow rule + `obsidian-brain/sources/agents-index.md`; update the wiki log when routing/capability changed |
-| A `.claude/skills/*/SKILL.md` skill added/removed/renamed | `obsidian-brain/sources/skills-index.md` (+ agents-index if routing changed); update the wiki log |
+| A first-party `.claude/agents/*.md` profile or hook | Owning workflow rule + `obsidian-brain/sources/agents-index.md`; update the wiki log when routing/capability changed. **CI-enforced** (§ Cross-surface guards → Agent Registry), including that a profile the index calls read-only declares no write tool |
+| A `.claude/skills/*/SKILL.md` skill added/removed/renamed | `obsidian-brain/sources/skills-index.md` (+ agents-index if routing changed); update the wiki log. **CI-enforced** (§ Cross-surface guards → Skill Registry) |
 
 ## obsidian-brain Ingest Contract
 From `obsidian-brain/CLAUDE.md`. After a significant code or rule change:
@@ -40,7 +40,9 @@ From `obsidian-brain/CLAUDE.md`. After a significant code or rule change:
 3. Append a terse `## [date] action | summary` entry to `obsidian-brain/log.md`
 4. If a new page was created, add it to `obsidian-brain/index.md`
 
-Constraints: each page ≤ **200 lines**; when `log.md` nears the cap, move the OLDEST entries into the matching `log-archive-*.md` (newest-first) — do not delete history, do not exceed the limit. `check_obsidian_brain.py --rotate` performs exactly that move, widening the archive's `(MM-DD to MM-DD)` range and its index row; it refuses rather than overflowing the target archive, because a NEW archive page also needs an index row and a description a script should not invent.
+Constraints: each page ≤ **200 lines**; when `log.md` nears the cap, move the OLDEST entries into the matching `log-archive-*.md` (newest-first) — do not delete history, do not exceed the limit. `check_obsidian_brain.py --rotate` performs exactly that move, widening the archive's `(MM-DD to MM-DD)` range and its catalog row; it refuses rather than overflowing the target archive, because a NEW archive page also needs a catalog row and a description a script should not invent.
+
+Archive catalog rows live in `obsidian-brain/log-archive-index.md`, not in `index.md` — `index.md` is injected verbatim into every session by the `SessionStart` hook, so seventeen rows nobody navigates by description were a standing context cost. The linter treats that page as a named **index delegate** (`INDEX_DELEGATES` in `check_obsidian_brain.py`): a row there satisfies "every page is listed in index.md" one hop away. This is a named list, not general transitivity — if any page linked from any indexed page counted, the no-orphan-pages invariant would dissolve. Add a hand-made archive page's row to the delegate, not to `index.md`.
 
 ## Verification (run before commit; CI re-runs)
 ```bash
@@ -56,7 +58,7 @@ Generated/managed values (CLAUDE.md stats, the `verify_code_quality` checker-cou
 
 **Cross-surface guards** (`verify_rules.py`, blocking in `rules-sync`): counts
 cannot catch a *half-landed* update — one surface corrected, its twin left
-stale, every count still right. Eight checks over seven families, covering the
+stale, every count still right. Nineteen checks over ten families, covering the
 places where the same literal is repeated with nothing tying the copies
 together. Direction matters: **two-way** means both sides must match exactly;
 **one-way** means the second surface may legitimately hold extras.
@@ -75,6 +77,10 @@ together. Direction matters: **two-way** means both sides must match exactly;
 | Supabase Columns | `*Col<Name>` constants → a column declared in migrations | one-way | query time (Postgres error) |
 | Quality Gate Parity | CI `code-quality` steps → `run_local_quality_gate.sh` | one-way | after push — the pre-commit gate is blind to it |
 | README Metrics | README § Project at a Glance → the collected codebase values | one-way | never — the public-facing table just rots |
+| Agent Registry | `.claude/agents/*.md` ↔ `sources/agents-index.md` catalog | two-way | never — an unregistered or ghost profile |
+| Agent read-only mode | index Mode = read-only → the profile declares no `Write`/`Edit`/`NotebookEdit` | one-way | never — an auditor could edit the code it was sent to inspect |
+| Skill Registry | `.claude/skills/*/SKILL.md` ↔ `sources/skills-index.md` catalog | two-way | never — an unregistered or ghost skill |
+| Rule Registration | `.claude/rules/*.md` ↔ CLAUDE.md § Rules table | two-way | never — the missing leg of three-place registration |
 
 Two deliberate non-rules, both instances of missing-name != missing-feature:
 - Route constants are NOT required to be referenced. GoRouter composes nested

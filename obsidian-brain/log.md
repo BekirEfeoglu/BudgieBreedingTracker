@@ -4,6 +4,41 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-26] infrastructure | Meta-layer guarded, archive catalog split out of index.md
+
+**Agent & Skill Registry — tenth cross-surface family.** Every other family
+exists because the same literal is repeated across two surfaces with nothing
+tying the copies together; the layer governing those guards had none of its own.
+`documentation-sync.md` mandates three-place registration for a new agent or
+skill and `agents-index.md` states "review profiles must not declare
+Write/Edit", but `verify_rules.py` had zero references to `.claude/agents/` or
+`.claude/skills/`. Four checks now: agents ↔ agents-index two-way, skills ↔
+skills-index two-way, rules ↔ CLAUDE.md § Rules table two-way, and — the sharp
+one — a profile whose index **Mode** says read-only must declare no
+`Write`/`Edit`/`NotebookEdit`. That makes the Mode column machine-read instead of
+decorative: an auditor silently gaining an edit tool could modify the code it was
+dispatched to inspect. Nothing was drifting at the time (56/56 rules, all 15
+profiles correct); this is enforcement, not repair. Each check was proven
+non-vacuous against a fixture that introduces exactly the drift it targets.
+
+**Archive rows moved out of `index.md`.** The `SessionStart` hook injects
+`index.md` verbatim into every session, and 17 of its 147 lines were
+`log-archive-*` rows — 12% of a permanent context cost for a lookup nobody makes
+by description, growing about one row every two days. They now live in
+`log-archive-index.md`, which the linter treats as a named **index delegate**:
+one hop, one named page, so "every page is listed in index.md" still holds.
+Deliberately not general transitivity — if any page linked from any indexed page
+counted, the no-orphan-pages invariant would dissolve; a test asserts a page
+linked from an ordinary indexed page is still reported. `index.md` 147 → 131
+lines.
+
+**Collector convention fix found on the way.** An absent catalog section
+returned `{}`, which read as "present but empty" and would have reported every
+name on the other side as drifted; it now returns `None` like every other
+collector in the module, which is what "absent surface → skip" has always meant
+here. That surfaced as 11 unrelated suites going red against partial fixtures —
+the fixtures were right and the collector was wrong.
+
 ## [2026-07-26] infrastructure | Gate parity guarded, test noise silenced, security script measured
 
 **Gate parity** — eighth family, and it reproduces a bug that was real
@@ -134,64 +169,4 @@ Both verified non-vacuous; the repo is currently clean on both.
 the `if not moved` guard in `rotate_log` is unreachable, because the caps were
 already checked against the same text. Removed rather than left untestable.
 Scripts total 99%.
-
-## [2026-07-25] infrastructure | Icon bijection guarded; the triple map upload is correct, not waste
-
-**Chased the triple obfuscation-map upload and the suggestion was wrong.** The
-CI log settles it: `sentry_dart_plugin` pairs the map with each ABI symbol file
-and registers it under that binary's own debug id — three uploads, three debug
-ids, `attempted=3, succeeded=3`. A crash carries the debug id of the
-architecture it came from, so collapsing to one upload would break
-de-obfuscation on the other two ABIs. Recorded in release-ops.md as a
-do-not-optimize. **The 64-byte size difference is now explained too**, by
-downloading the uploaded file: `sentry_dart_plugin` prepends two entries to the
-JSON array — the literal `"SENTRY_DEBUG_ID_MARKER"` and the paired binary's
-debug id. Compact, that is 25 + 39 = exactly 64 bytes, and the remaining 133,110
-entries are byte-identical to the local map. This independently proves the
-triple upload is structural: each copy embeds a *different* debug id, so they
-are three distinct files, not three copies of one.
-
-**SVG icon bijection** — fifth cross-surface family. The two counts were already
-compared (99 constants == 99 files), but *which* constant points at *which* file
-was not, so a renamed asset keeps both counts right and fails only at runtime,
-where flutter_svg renders nothing rather than throwing. Now two-way. Verified
-non-vacuous by typo'ing one path: the count check stays green and the bijection
-goes red. Writing it also surfaced a stale `/// 93 icons` doc comment in
-`app_icons.dart` (real count 99) — unmanaged by the inline fixer, which only
-walks CLAUDE.md and `.claude/rules/`.
-
-`check_platform_targets.py` 93% → 100%: the empty-`web/`-directory branch (a
-bare `web/` is not a Flutter web target) and each of the three markers now have
-cases. Scripts total 99%.
-
-## [2026-07-25] infrastructure | Log rotation automated, l10n category names guarded
-
-Two more follow-ups plus one external verification.
-
-**`check_obsidian_brain.py --rotate`.** The 200-line / 30-entry caps were
-enforced but rotated by hand — three re-derived edits every time (move the
-oldest entries, widen the archive's date range, widen the index row), done
-twice in this session alone. `--rotate` does exactly those three and refuses
-rather than overflowing the target archive, because a NEW archive page needs an
-index row and a description a script should not invent. The target archive is
-chosen **by content**, not filename: `log-archive-2026-07-b.md` sorts before
-`log-archive-2026-07.md` lexicographically, so filename order would pick the
-wrong one. Coverage 89% → 97%.
-
-**L10n category names.** Fourth cross-surface family. The category *count* was
-already verified against `tr.json`; the *names* were not, so a renamed category
-kept the count right while `localization.md`'s list rotted. Now compared
-two-way. Verified non-vacuous by renaming one entry — count stays 41, check goes
-red.
-
-**Sentry upload confirmed** for the release build: `sentry api .../files/dsyms/`
-shows the three ABI symbol files and `obfuscation.map.json` at 14:43–14:44 UTC.
-The map is uploaded three times per run, which this entry first recorded as
-waste. **It is not** — the CI log settles it: `sentry_dart_plugin` pairs the map
-with each ABI symbol file and registers it under that binary's own debug id
-(`attempted=3, succeeded=3`). A crash carries the debug id of the architecture
-it came from, so collapsing this to one upload would break de-obfuscation on the
-other two ABIs. Do not "optimize" it. The 64-byte size difference was chased in
-the entry above and is explained: the plugin prepends a debug-id marker pair to
-the JSON array.
 

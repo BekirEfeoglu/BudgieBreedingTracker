@@ -32,9 +32,13 @@ beyond the user's request. Complement to [[sources/agents-index]] — skills
 ## Maintenance
 
 - Adding/removing/renaming a skill under `.claude/skills/` updates this page
-  and, when routing changes, [[sources/agents-index]] in the same change.
+  and, when routing changes, [[sources/agents-index]] in the same change. The
+  catalog above is **CI-enforced** two-way against `.claude/skills/*/SKILL.md`
+  by `verify_rules.py` § Agent & Skill Registry (`rules-sync` job).
 - Skill `allowed-tools` must match the declared write posture above (advisory
-  skills stay read-only).
+  skills stay read-only). Unlike the agent profiles' read-only mode, this one is
+  not machine-checked yet — skills declare a looser, prose write posture
+  ("Yes (fixes)", "Yes (prep)") that does not map cleanly onto a tool list.
 
 ## See Also
 

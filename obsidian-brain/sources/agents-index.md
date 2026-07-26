@@ -52,6 +52,12 @@ deployment, or approval rules.
   the managed source instead of copying counts that immediately drift.
 - Review profiles must not declare `Write`/`Edit` tools.
 
+Both rules are **CI-enforced** by `verify_rules.py` § Agent & Skill Registry
+(`rules-sync` job): the catalog below must match `.claude/agents/*.md` two-way,
+and every profile whose **Mode** cell says read-only must declare no
+`Write`/`Edit`/`NotebookEdit` in its frontmatter. That makes the Mode column
+load-bearing — editing it changes what the guard permits, so it is not free text.
+
 ## See Also
 
 - [[sources/rules-index]]

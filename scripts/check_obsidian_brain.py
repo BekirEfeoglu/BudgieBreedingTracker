@@ -13,6 +13,17 @@ WIKI_DIR = ROOT / "obsidian-brain"
 MAX_LINES = 200
 MAX_ACTIVE_LOG_ENTRIES = 30
 WIKILINK_RE = re.compile(r"\[\[([^\]\|#]+)(?:#[^\]\|]+)?(?:\|[^\]]+)?\]\]")
+
+# Pages index.md may delegate cataloguing to. Rows on a delegate count as
+# indexed, so "every page is listed in index.md" is satisfied one hop away.
+#
+# This is a named list, NOT general transitivity: if any page linked from an
+# indexed page counted, the no-orphan-pages invariant would dissolve entirely.
+# The 17 log-archive rows were moved to a delegate because index.md is injected
+# verbatim into every session by the SessionStart hook, and rows nobody
+# navigates by description were a recurring context cost. A delegate must
+# itself be listed in index.md, which the normal check already enforces.
+INDEX_DELEGATES = ("log-archive-index.md",)
 FENCED_CODE_RE = re.compile(r"```.*?```", re.DOTALL)
 INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
 FILE_REF_PREFIXES = (
@@ -106,11 +117,19 @@ def _index_targets(index_md: Path, wiki_dir: Path) -> set[str]:
     if not index_md.exists():
         return set()
 
+    sources = [index_md]
+    sources += [
+        delegate
+        for delegate in (wiki_dir / name for name in INDEX_DELEGATES)
+        if delegate.exists()
+    ]
+
     targets: set[str] = set()
-    text = index_md.read_text(encoding="utf-8")
-    for match in WIKILINK_RE.finditer(text):
-        for candidate in _target_candidates(index_md, match.group(1), wiki_dir):
-            targets.add(candidate)
+    for source in sources:
+        text = source.read_text(encoding="utf-8")
+        for match in WIKILINK_RE.finditer(text):
+            for candidate in _target_candidates(source, match.group(1), wiki_dir):
+                targets.add(candidate)
     return targets
 
 
@@ -478,22 +497,31 @@ def rotate_log(wiki_dir: Path = WIKI_DIR) -> tuple[list[str], list[str]]:
             "update its description by hand"
         )
 
-    index_md = wiki_dir / "index.md"
-    if index_md.exists():
-        index_lines = index_md.read_text(encoding="utf-8").splitlines(keepends=True)
-        stem = archive.stem
-        for position, line in enumerate(index_lines):
-            if f"[[{stem}]]" in line:
-                updated, ranged = _retarget_range(line, oldest, newest)
-                if ranged:
-                    index_lines[position] = updated
-                    index_md.write_text("".join(index_lines), encoding="utf-8")
-                    messages.append(f"widened the index row for {stem}")
-                else:
-                    messages.append(
-                        f"WARN the index row for {stem} has no range to widen"
-                    )
-                break
+    # The archive's catalog row lives in index.md or in one of its delegates
+    # (log-archive-index.md holds them today), so widen it wherever it is.
+    stem = archive.stem
+    catalogs = [wiki_dir / "index.md"]
+    catalogs += [wiki_dir / name for name in INDEX_DELEGATES]
+    for catalog in catalogs:
+        if not catalog.exists():
+            continue
+        lines = catalog.read_text(encoding="utf-8").splitlines(keepends=True)
+        row = next(
+            (position for position, line in enumerate(lines) if f"[[{stem}]]" in line),
+            None,
+        )
+        if row is None:
+            continue
+        updated, ranged = _retarget_range(lines[row], oldest, newest)
+        if ranged:
+            lines[row] = updated
+            catalog.write_text("".join(lines), encoding="utf-8")
+            messages.append(f"widened the {catalog.name} row for {stem}")
+        else:
+            messages.append(
+                f"WARN the {catalog.name} row for {stem} has no range to widen"
+            )
+        break
 
     return messages, []
 

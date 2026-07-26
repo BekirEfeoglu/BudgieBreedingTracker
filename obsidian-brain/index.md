@@ -12,23 +12,7 @@ Full catalog of every page in the obsidian-brain wiki.
 | [[cheat-sheet]] | Task-oriented "how do I…" / "where is…" / "when does…" |
 | [[known-gaps]] | Latent surfaces, unshipped design goals, deliberate absences |
 | [[log]] | Chronological change log |
-| [[log-archive-2026-05]] | Archived May 2026 change log entries |
-| [[log-archive-2026-06]] | Archived June 2026 change log entries (06-21 to 06-29) |
-| [[log-archive-2026-06-early]] | Archived June 2026 change log entries (early, pre-06-21) |
-| [[log-archive-2026-07]] | Archived early July 2026 change log entries (incl. 06-30) |
-| [[log-archive-2026-07-b]] | Archived July 2026 change log entries (07-02, pre-all-tabs-audit) |
-| [[log-archive-2026-07-c]] | Archived July 2026 change log entries (07-02 all-tabs audit) |
-| [[log-archive-2026-07-d]] | Archived July 2026 change log entries (07-03 plan execution) |
-| [[log-archive-2026-07-e]] | Archived July 2026 change log entries (07-04 rulebook drift sweep) |
-| [[log-archive-2026-07-f]] | Archived July 2026 change log entries (07-04/07-05 app fixes) |
-| [[log-archive-2026-07-g]] | Archived July 2026 change log entries (07-08 wiki inventory sync) |
-| [[log-archive-2026-07-h]] | Archived July 2026 change log entries (07-09 rulebook lessons) |
-| [[log-archive-2026-07-i]] | Archived July 2026 change log entries (07-11 marketing-site) |
-| [[log-archive-2026-07-j]] | Archived July 2026 change log entries (07-11 birds/community/genealogy/statistics fixes) |
-| [[log-archive-2026-07-k]] | Archived July 2026 change log entries (07-12 Edge/constants/genetics/gamification/docs) |
-| [[log-archive-2026-07-l]] | Archived July 2026 change log entries (07-13/07-14 CI, docs, and dependency maintenance) |
-| [[log-archive-2026-07-m]] | Archived July 2026 change log entries (07-17 to 07-25 release, CI, and security hardening) |
-| [[log-archive-2026-07-n]] | Archived July 2026 change log entries (07-25 to 07-25 Codemagic removal, TLS pin gate, cross-surface guards) |
+| [[log-archive-index]] | Catalog of the 17 rotated log archives (2026-05 → 2026-07) |
 | [[overview]] | High-level synthesis — what the app does, architecture diagram, key decisions |
 
 ## Architecture
