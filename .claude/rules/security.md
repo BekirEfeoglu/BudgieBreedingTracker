@@ -139,9 +139,20 @@ Emergency unpin:
 ## Route Guards
 | Guard | Protects | Behavior |
 |-------|----------|----------|
-| `AdminGuard` | Admin-only screens | Redirects to home if not admin |
-| `PremiumGuard` | Premium features | Redirects to premium upsell |
+| `AdminGuard` | Admin-only screens (`/admin/*`) | Redirects to home if not admin |
+| `PremiumGuard` | Premium features (only `/genealogy`) | Redirects to premium upsell |
+| `FounderGuard` | `/community/*` (except `communityGuidelines`), `/marketplace/*`, `/ai-predictions` | Loading → splash, error/not-founder → home |
 | Auth redirect | Protected routes | Redirects to login if unauthenticated |
+
+`FounderGuard` (`lib/router/guards/founder_guard.dart`, wired in `app_router.dart`)
+is a **soft-launch gate**, not a permission tier: community and marketplace are
+fully built and server-ready but reachable only by `role = founder`. Every other
+account is redirected home, and the UI entry points (`more_screen.dart`, the
+genetics AI-predictions menu item) hide themselves behind `isFounderProvider` and
+show a "coming soon" badge instead. Because messaging is reachable ONLY from
+community/marketplace surfaces, it is transitively founder-only too even though
+no explicit gate covers `/messages`. Treat community.md / marketplace.md /
+messaging.md as describing behavior that non-founders cannot currently reach.
 
 - Guards defined in `lib/router/guards/`
 - Never skip guards on protected routes — even for "quick testing"

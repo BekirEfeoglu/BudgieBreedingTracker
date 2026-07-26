@@ -81,7 +81,7 @@ admin, app_update, auth, birds, breeding, calendar, chicks, community, eggs, fee
 ## Security
 - RLS policies managed server-side (Supabase)
 - Never modify RLS from client code
-- Auth guards on protected routes (`AdminGuard`, `PremiumGuard`)
+- Auth guards on protected routes (`AdminGuard`, `PremiumGuard`, `FounderGuard` — see security.md § Route Guards)
 - Supabase credentials via dart-define, never hardcoded
 - Sensitive data encrypted at rest (secure storage for tokens)
 - See security.md for detailed security patterns

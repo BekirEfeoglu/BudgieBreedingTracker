@@ -34,7 +34,7 @@ asyncValue.when(
 - Forward navigation: `context.push()` (NOT `context.go()` which replaces stack)
 - Back navigation: `context.pop()` — never `context.go()` for going back
 - Edit mode: query param `?editId=xxx`
-- Guards: `AdminGuard`, `PremiumGuard` in `lib/router/guards/`
+- Guards: `AdminGuard`, `PremiumGuard`, `FounderGuard` in `lib/router/guards/` (security.md § Route Guards). `FounderGuard` soft-launch-gates `/community/*`, `/marketplace/*` and `/ai-predictions`; a UI entry point to a founder-gated route MUST hide itself behind `isFounderProvider` rather than let the redirect dead-end the user
 - Deep linking: all routes must be accessible via URI
 - `verify_rules.py` § Route Targets (`rules-sync`) rejects two constants sharing a path value, and any `context.push`/`go`/`replace` string target that resolves to no declared route. It deliberately does NOT require every constant to be referenced — detail routes are reached by interpolation
 

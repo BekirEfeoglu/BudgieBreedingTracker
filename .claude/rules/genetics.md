@@ -128,8 +128,15 @@ if (analysis.hasWarnings) {
 ## Inbreeding Coefficient
 - `inbreeding_calculator.dart` Wright's coefficient F hesabı
 - Pedigree depth: genealogy ekranında kullanıcı ayarlanabilir 3-8 nesil (varsayılan 5, `pedigreeDepthProvider`, `SharedPreferences`'a persist edilir); breeding çiftleştirme kontrolü (`breeding_form_providers.dart`) tüm kuş listesini geçer, tek sınır `InbreedingCalculator`'ın kendi iç güvenlik sabiti `GeneticsConstants.maxAncestorDepth` (10 nesil)
-- `F > 0.0625` (first cousin equivalent) UI uyarı eşiği
-- `F > 0.25` (sibling) blocking warning + premium kullanıcı override
+- Risk tier'leri `InbreedingCalculator.assessRisk` ile, hepsi `>=` (`>` DEĞİL):
+  `minimal 0.0625` · `low 0.125` · `moderate 0.25` · `high 0.375` · `critical 0.5`
+  (`GeneticsConstants.inbreeding*`). `F >= 0.0625` (first cousin equivalent)
+  uyarının görünmeye başladığı eşiktir (`shouldShow` → `risk != none`)
+- `F >= 0.25` (sibling) **ek onay** ister: `BreedingCandidateInbreeding.shouldConfirm`
+  breeding formunda bir confirm diyaloğu tetikler. Bu bir **blocking** gate DEĞİL
+  ve **premium override YOKTUR** — inbreeding yolunda hiçbir premium provider
+  okunmaz (`breeding_form_providers.dart`'taki premium referansları free-tier
+  çift/kuluçka limitleridir, ayrı bir mekanizma)
 
 ## Reverse Calculator
 - `reverse_calculator.dart` istenen fenotipten ebeveyn kombinasyonu önerir
@@ -236,7 +243,9 @@ test('slate-ino linked pair produces correct ratios', () {
 2. `calculationVersion` bump'sız engine değişikliği (eski kayıt + yeni engine = sessiz veri kayması)
 3. Locus bilgisi olmayan mutasyonu allelic series'e dahil etmek
 4. Lethal kombinasyonu toplam yüzdeye dahil etmek (kullanıcı yanılır, kafeste lethal yavru yok)
-5. Inbreeding F threshold'unu hardcode değer değil, premium override aware olmamak
+5. Inbreeding eşiğini `GeneticsConstants.inbreeding*` yerine hardcode etmek, ya da
+   karşılaştırmayı `>` ile yazmak (`assessRisk`/`shouldConfirm` `>=` kullanır —
+   tam 0.25'lik bir sibling çiftleşmesi sessizce onaysız geçer)
 6. Sex-linked linkage'da `LinkagePhaseControl`'ü atlayıp phase'i sessizce `auto`'da varsaymak (kontrol varken kullanıcıya sunmamak)
 7. Reverse calculator sonuçlarını gerçek genetik teyit etmeden önermek (false positive)
 8. Test'te MUTAVI örnek tablolarını kullanmayıp custom fixture üretmek (rehberle drift)

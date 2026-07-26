@@ -6,6 +6,75 @@ TLS pin freshness gate.
 
 ---
 
+## [2026-07-26] infrastructure | Semantic sweep found three rotted inventories; archive cap raised
+
+**The sweep's yield was inventories, not contracts.** Spot-checking constants
+(`calculationVersion` 9, `maxAncestorDepth` 10, presence 2/5/10 min, comment
+limit 1000), prose counts (EventType 18, EggStatus 9, XP 11 + 3 daily limits, 5
+notification channels) and every `known-gaps.md` entry found **zero** drift —
+those surfaces are accurate. Three hand-maintained *lists* had rotted instead:
+CLAUDE.md § Script Tests named 13 of 15 test files, the wiki's script page 11 of
+15, and `ai-workflow.md` had no routing row for `antipattern-manual-sweeper` or
+`ui-ux-designer`, so nothing would ever route to them. All three fixed, then
+guarded — a directory versus a prose list is precisely the shape the
+cross-surface families exist for, and nothing had tied them together.
+
+Also corrected: "all 11 scripts currently 100%" in CLAUDE.md and ci-actions.md
+was wrong on both halves. There are 12 measured files and two are not at 100%
+(`verify_security.py` 92%, `_rules_collectors.py` 99%). It went stale when
+`verify_security.py` was brought into measurement earlier the same day and the
+sibling surfaces were not updated — the exact half-landed-update class again.
+
+**Skill write posture is now machine-read**, matching the agent read-only check.
+A limit worth stating: `allowed-tools` *restricts* a session, so omitting it
+grants nothing — unlike an agent profile, whose `tools:` list IS its complete
+tool set. Two vendored reference skills declare none, so nothing holds them to
+their `No` posture; that is recorded in skills-index rather than papered over,
+because `ui-ux-pro-max`'s own description advertises "build, create, implement"
+and which surface is accurate is a product decision, not a lint fix.
+
+**Archive cap 200 → 400 lines**, archives only. The 200-line rule keeps a
+working page scannable; an append-only archive nobody reads top to bottom does
+not need it, and the shared cap was the entire churn driver — measured, entries
+grew from ~8 lines to 25-37, so an archive filled after 5-8 of them and 13 pages
+appeared in 23 days. Also documented that the 30-entry log cap has never bound:
+the line cap is reached first, around 13 entries.
+
+## [2026-07-26] infrastructure | Meta-layer guarded, archive catalog split out of index.md
+
+**Agent & Skill Registry — tenth cross-surface family.** Every other family
+exists because the same literal is repeated across two surfaces with nothing
+tying the copies together; the layer governing those guards had none of its own.
+`documentation-sync.md` mandates three-place registration for a new agent or
+skill and `agents-index.md` states "review profiles must not declare
+Write/Edit", but `verify_rules.py` had zero references to `.claude/agents/` or
+`.claude/skills/`. Four checks now: agents ↔ agents-index two-way, skills ↔
+skills-index two-way, rules ↔ CLAUDE.md § Rules table two-way, and — the sharp
+one — a profile whose index **Mode** says read-only must declare no
+`Write`/`Edit`/`NotebookEdit`. That makes the Mode column machine-read instead of
+decorative: an auditor silently gaining an edit tool could modify the code it was
+dispatched to inspect. Nothing was drifting at the time (56/56 rules, all 15
+profiles correct); this is enforcement, not repair. Each check was proven
+non-vacuous against a fixture that introduces exactly the drift it targets.
+
+**Archive rows moved out of `index.md`.** The `SessionStart` hook injects
+`index.md` verbatim into every session, and 17 of its 147 lines were
+`log-archive-*` rows — 12% of a permanent context cost for a lookup nobody makes
+by description, growing about one row every two days. They now live in
+`log-archive-index.md`, which the linter treats as a named **index delegate**:
+one hop, one named page, so "every page is listed in index.md" still holds.
+Deliberately not general transitivity — if any page linked from any indexed page
+counted, the no-orphan-pages invariant would dissolve; a test asserts a page
+linked from an ordinary indexed page is still reported. `index.md` 147 → 131
+lines.
+
+**Collector convention fix found on the way.** An absent catalog section
+returned `{}`, which read as "present but empty" and would have reported every
+name on the other side as drifted; it now returns `None` like every other
+collector in the module, which is what "absent surface → skip" has always meant
+here. That surfaced as 11 unrelated suites going red against partial fixtures —
+the fixtures were right and the collector was wrong.
+
 ## [2026-07-26] infrastructure | Gate parity guarded, test noise silenced, security script measured
 
 **Gate parity** — eighth family, and it reproduces a bug that was real

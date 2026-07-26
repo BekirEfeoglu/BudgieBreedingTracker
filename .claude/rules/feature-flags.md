@@ -20,8 +20,24 @@ if (debugRoute.isNotEmpty) {
 
 ### Static Production Rollout Flags
 
-`FeatureFlags` içindeki statik flag'ler binary derlenirken sabitlenir ve root
-yüzeyden alt widget'a prop olarak geçirilir. `anonymousSignInEnabled=false`,
+`FeatureFlags` (`lib/core/constants/feature_flags.dart`) içindeki statik flag'ler
+binary derlenirken sabitlenir ve root yüzeyden alt widget'a prop olarak geçirilir.
+Tam envanter (**6** flag) — bir flag ekler/kaldırırsan bu tabloyu da güncelle:
+
+| Flag | Değer | Anlamı |
+|------|-------|--------|
+| `anonymousSignInEnabled` | `false` | Supabase `enable_anonymous_sign_ins=false` kontratını yansıtır |
+| `communityEnabled` | `true` | Topluluk rotalarını kaydeder. **Erişim ayrı**: `FounderGuard` bunları founder'a kısıtlar (security.md § Route Guards) |
+| `marketplaceEnabled` | `true` | İlan rotalarını kaydeder; erişim yine `FounderGuard` arkasında |
+| `messagingEnabled` | `true` | DM rotalarını kaydeder (2026-07-10). Rotalar açık ama giriş noktaları yalnız community/marketplace'te olduğu için pratikte transitif olarak founder-only |
+| `gamificationEnabled` | `true` | XP/rozet/leaderboard yüzeyleri |
+| `messageAttachmentsEnabled` | `true` | DM foto eki. Bird/listing kartları gerçek producer'ı olmadığı için hâlâ gizli |
+
+**Flag ≠ erişim kontrolü.** Bu flag'ler rota/tree *kaydını* açar; kimin
+girebildiğini router guard'ları belirler. İkisini karıştırmak "flag true, demek ki
+kullanıcılar görüyor" hatasını üretir — bugün community/marketplace için yanlış.
+
+`anonymousSignInEnabled=false`,
 Supabase `enable_anonymous_sign_ins=false` kontratını yansıtır; login kartı
 guest callback'i almadığında bozuk CTA'yı render etmez. Bu flag tek başına
 security boundary değildir ve server ayarı/RLS incelemesi olmadan açılamaz.

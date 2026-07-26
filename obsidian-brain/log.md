@@ -4,6 +4,59 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-26] audit | Six-lane sweep: a client cooldown was failing closed on every multi-photo post
+
+**Headline, and it was reachable by ordinary users.** `EdgeFunctionClient`
+applies a 10s per-function cooldown, and `scan-image-safety` / `moderate-content`
+were not in `_rateLimitExempt`. Both callers fail CLOSED, so a cooldown reply is
+indistinguishable from "moderation unavailable". Consequences, all verified in
+source: a community post or marketplace listing with **2+ photos could never
+succeed** (the scan runs in a `for` loop over images); a second bird/egg/chick/
+avatar photo added within 10s was rejected as unsafe; and because the DM send
+cooldown is 2s — shorter than 10s — the **second message of any normal
+conversation** was rejected as `moderation_unavailable`. Both providers are
+plain (non-autoDispose) `Provider`s, so the timestamp map lives for the session.
+Fixed by exempting both; abuse control was already server-side and per-user
+(scan 10/min, moderate 30/min, Supabase-backed). The rate-limit branch had zero
+test coverage — that is why it was invisible; added tests.
+
+**Fresh installs were missing three indexes.** `idx_events_egg_id`,
+`idx_events_incubation_id` and `idx_conflict_history_user_created` existed only
+inside their version steps (`_migrateV23ToV24` / `_migrateV15ToV16`), never in
+the shared helper that `onCreate` runs. Upgraded installs had them; new users
+silently full-scanned. This is the **inverse leg** of the 2026-07-25 bricking
+incident — same helper, opposite direction. Mirrored into the helper behind
+`_tableHasColumn` / `_tableExists` guards (the helper still runs from the v8→v9
+step), and the indexes test's expected set now pins all three.
+
+**A test that could never fail.** `multi_locus_masking_test` intersected
+`visualMutations` (IDs, `'grey'`) with `maskedMutations` (display names,
+`'Grey'`) — always empty, so its "never both" assertion passed regardless.
+De-vacuuming it revealed the claimed invariant is **false by design**: masking
+adds to `masked` without removing from `visual`, so `masked ⊆ visual` always.
+Replaced with the subset check, which is precisely the v9 leaked-list signature,
+plus a non-vacuity guard asserting something is actually masked.
+
+**Doc drift, all rules-side.** `FounderGuard` gates `/community/*`,
+`/marketplace/*` and `/ai-predictions` to founder-only, yet appeared in **none**
+of the three rule files that enumerate guards, while community.md/marketplace.md
+described those features as generally available — they are unreachable for every
+non-founder, and messaging is transitively founder-only because its only entry
+points live there. `FeatureFlags` carries six static flags; feature-flags.md
+documented one. genetics.md promised an inbreeding "blocking warning + premium
+override" — the gate is a confirm dialog at `>= 0.25` and **no premium override
+exists anywhere in that path**. All corrected.
+
+Also: capped `AppLogger._recentLogs` (unbounded, appended on every one of 900+
+call sites, retaining raw error objects); stopped three Excel-import parsers
+interpolating raw spreadsheet cells into release Sentry breadcrumbs; made the
+OAuth-revoke failure reportable (its inner catch swallowed, leaving the caller's
+`Sentry.captureException` dead code while the sibling FCM step reported); moved
+7 hardcoded Supabase columns onto constants; and 3 domain icons onto `AppIcon`.
+The `#8` checker was blind to the named `column:` form **and** skipped
+`lib/features/admin/` entirely — both closed, verified by reintroducing the
+violation and watching it fail.
+
 ## [2026-07-26] infrastructure | Agent read-only measured: a real gate, but not a sandbox
 
 **Probed rather than assumed, and it corrects a claim from hours earlier.** A
@@ -121,73 +174,4 @@ records rotating work "to [[log-archive-2026-07-f]]"), and fixing the link means
 rewriting a dated entry, which this contract forbids. With the catalog no longer
 riding in every session's context, the remaining benefit was tidiness. Two stale
 navigation footers were corrected — both already wrong, one listing itself.
-
-## [2026-07-26] infrastructure | Semantic sweep found three rotted inventories; archive cap raised
-
-**The sweep's yield was inventories, not contracts.** Spot-checking constants
-(`calculationVersion` 9, `maxAncestorDepth` 10, presence 2/5/10 min, comment
-limit 1000), prose counts (EventType 18, EggStatus 9, XP 11 + 3 daily limits, 5
-notification channels) and every `known-gaps.md` entry found **zero** drift —
-those surfaces are accurate. Three hand-maintained *lists* had rotted instead:
-CLAUDE.md § Script Tests named 13 of 15 test files, the wiki's script page 11 of
-15, and `ai-workflow.md` had no routing row for `antipattern-manual-sweeper` or
-`ui-ux-designer`, so nothing would ever route to them. All three fixed, then
-guarded — a directory versus a prose list is precisely the shape the
-cross-surface families exist for, and nothing had tied them together.
-
-Also corrected: "all 11 scripts currently 100%" in CLAUDE.md and ci-actions.md
-was wrong on both halves. There are 12 measured files and two are not at 100%
-(`verify_security.py` 92%, `_rules_collectors.py` 99%). It went stale when
-`verify_security.py` was brought into measurement earlier the same day and the
-sibling surfaces were not updated — the exact half-landed-update class again.
-
-**Skill write posture is now machine-read**, matching the agent read-only check.
-A limit worth stating: `allowed-tools` *restricts* a session, so omitting it
-grants nothing — unlike an agent profile, whose `tools:` list IS its complete
-tool set. Two vendored reference skills declare none, so nothing holds them to
-their `No` posture; that is recorded in skills-index rather than papered over,
-because `ui-ux-pro-max`'s own description advertises "build, create, implement"
-and which surface is accurate is a product decision, not a lint fix.
-
-**Archive cap 200 → 400 lines**, archives only. The 200-line rule keeps a
-working page scannable; an append-only archive nobody reads top to bottom does
-not need it, and the shared cap was the entire churn driver — measured, entries
-grew from ~8 lines to 25-37, so an archive filled after 5-8 of them and 13 pages
-appeared in 23 days. Also documented that the 30-entry log cap has never bound:
-the line cap is reached first, around 13 entries.
-
-## [2026-07-26] infrastructure | Meta-layer guarded, archive catalog split out of index.md
-
-**Agent & Skill Registry — tenth cross-surface family.** Every other family
-exists because the same literal is repeated across two surfaces with nothing
-tying the copies together; the layer governing those guards had none of its own.
-`documentation-sync.md` mandates three-place registration for a new agent or
-skill and `agents-index.md` states "review profiles must not declare
-Write/Edit", but `verify_rules.py` had zero references to `.claude/agents/` or
-`.claude/skills/`. Four checks now: agents ↔ agents-index two-way, skills ↔
-skills-index two-way, rules ↔ CLAUDE.md § Rules table two-way, and — the sharp
-one — a profile whose index **Mode** says read-only must declare no
-`Write`/`Edit`/`NotebookEdit`. That makes the Mode column machine-read instead of
-decorative: an auditor silently gaining an edit tool could modify the code it was
-dispatched to inspect. Nothing was drifting at the time (56/56 rules, all 15
-profiles correct); this is enforcement, not repair. Each check was proven
-non-vacuous against a fixture that introduces exactly the drift it targets.
-
-**Archive rows moved out of `index.md`.** The `SessionStart` hook injects
-`index.md` verbatim into every session, and 17 of its 147 lines were
-`log-archive-*` rows — 12% of a permanent context cost for a lookup nobody makes
-by description, growing about one row every two days. They now live in
-`log-archive-index.md`, which the linter treats as a named **index delegate**:
-one hop, one named page, so "every page is listed in index.md" still holds.
-Deliberately not general transitivity — if any page linked from any indexed page
-counted, the no-orphan-pages invariant would dissolve; a test asserts a page
-linked from an ordinary indexed page is still reported. `index.md` 147 → 131
-lines.
-
-**Collector convention fix found on the way.** An absent catalog section
-returned `{}`, which read as "present but empty" and would have reported every
-name on the other side as drifted; it now returns `None` like every other
-collector in the module, which is what "absent surface → skip" has always meant
-here. That surfaced as 11 unrelated suites going red against partial fixtures —
-the fixtures were right and the collector was wrong.
 

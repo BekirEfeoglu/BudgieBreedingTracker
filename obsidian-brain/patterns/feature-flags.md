@@ -21,6 +21,27 @@ if (debugRoute.isNotEmpty) return GoRouter(initialLocation: debugRoute);
 
 **Never put debug flags in production binary.**
 
+## Static Rollout Flags (`FeatureFlags`)
+
+`lib/core/constants/feature_flags.dart` — Dart `const`, fixed at compile time,
+tree-shaken when false. Six flags:
+
+| Flag | Value | Meaning |
+|------|-------|---------|
+| `anonymousSignInEnabled` | `false` | Mirrors Supabase `enable_anonymous_sign_ins=false` |
+| `communityEnabled` | `true` | Registers community routes |
+| `marketplaceEnabled` | `true` | Registers marketplace routes |
+| `messagingEnabled` | `true` | Registers DM routes (2026-07-10) |
+| `gamificationEnabled` | `true` | XP / badge / leaderboard surfaces |
+| `messageAttachmentsEnabled` | `true` | DM photo attachments |
+
+**A flag registers routes; it does not grant access.** `FounderGuard` restricts
+`/community/*`, `/marketplace/*` and `/ai-predictions` to founder accounts, so
+those two `true` flags are invisible to ordinary users today — and messaging is
+transitively founder-only, since its only entry points live on those surfaces.
+Reading "flag is true, therefore users see it" is wrong here. See
+[[architecture/router-navigation]] and `.claude/rules/security.md` § Route Guards.
+
 ## Runtime Flags (SharedPreferences / Remote Config)
 
 - `analytics_enabled` — user opt-in

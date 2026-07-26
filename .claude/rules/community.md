@@ -1,5 +1,12 @@
 # Community
 
+> **Erişim uyarısı:** `/community/*` (public `communityGuidelines` hariç) bugün
+> `FounderGuard` ile **founder-only**'dir (`app_router.dart`; security.md § Route
+> Guards). `FeatureFlags.communityEnabled = true` yalnızca rotaları kaydeder —
+> erişim vermez. Aşağıdaki her şey shipped ve server-ready, ama normal hesaplar
+> bu yüzeylere ULAŞAMAZ; `more_screen.dart` onlara "yakında" rozeti gösterir.
+> Bir davranışı "canlı" diye raporlamadan önce bunu hesaba kat.
+
 Public feed, post + comment + like + report akışı. **Online-first** (`*Repository` exemption — bkz. architecture.md § Online-First Exemption). Cross-user multi-party stream, local mirror UX faydası yok.
 
 ## Stack

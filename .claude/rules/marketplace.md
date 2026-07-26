@@ -1,5 +1,10 @@
 # Marketplace
 
+> **Erişim uyarısı:** `/marketplace/*` bugün `FounderGuard` ile **founder-only**'dir
+> (`app_router.dart`; security.md § Route Guards). `FeatureFlags.marketplaceEnabled
+> = true` yalnızca rotaları kaydeder — erişim vermez. Normal hesaplar bu yüzeylere
+> ULAŞAMAZ.
+
 Kullanıcılar kuş satılık ilanları yayınlar ve DM üzerinden iletişim kurar. `lib/features/marketplace/` + `MarketplaceListingRemoteSource` + free-tier limiti + moderation entegrasyonu.
 
 > **Kapsam uyarısı (2026-07-25 drift denetimi):** bu dosya uzun süre bir
