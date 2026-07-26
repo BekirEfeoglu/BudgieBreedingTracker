@@ -73,6 +73,13 @@ GITIGNORED_FILE_REFS = frozenset(
         "ios/Flutter/DartDefines.xcconfig",
         "ios/Flutter/Env.xcconfig",
         "ios/Flutter/Generated.xcconfig",
+        # The generated CocoaPods sandbox. Named in the log because a direct
+        # `xcodebuild -project` against it silently reverted a build setting
+        # there — and because it being gitignored is exactly why `git status`
+        # could not catch that. Absent from a fresh checkout, present locally,
+        # so it passes locally and fails CI unless allowed here.
+        "ios/Pods/",
+        "ios/Pods/Pods.xcodeproj",
     }
 )
 REQUIRED_DECISION_SECTIONS = {
