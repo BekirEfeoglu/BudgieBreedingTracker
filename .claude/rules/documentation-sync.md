@@ -56,9 +56,16 @@ Generated/managed values (CLAUDE.md stats, the `verify_code_quality` checker-cou
 
 **Aspirational-contract guard** (`check_rule_symbol_drift.py --target all --classes`, blocking in `code-quality`): catches the highest-value drift class — a doc naming a `fooProvider`, `.dart` path, or `*Service`/`*Notifier`/`*Repository`/`*Dao`/`*Mapper`/`*Guard` class that no longer exists (the 2026-07-13 sweep found whole never-built rule sections, e.g. `conflictNotifierProvider`/`gamificationServiceProvider`). It scans BOTH `.claude/rules/*.md` AND `obsidian-brain/**/*.md` (excluding `log.md`/`log-archive-*` — chronological history legitimately names removed symbols); class names are checked both in backticks AND bare in prose (outside fenced code — the ConnectivityService drift that a backtick-only scan missed). Only these near-zero-false-positive shapes are checked; other class/method names, l10n keys, and table/column names still need the manual semantic pass. A red means one of: (a) genuine drift — fix the doc to the real symbol; (b) a legitimately-removed symbol you're documenting in prose (incl. "X does not exist" annotations) — add it to the `PROVIDER_ALLOWLIST`/`DART_PATH_ALLOWLIST`/`CLASS_ALLOWLIST` in the script with a one-line reason. Do NOT weaken the check to go green. Run `--audit-allowlist` periodically to prune allowlist entries no longer cited by any doc.
 
+**The reverse leg.** That guard proves every symbol a doc NAMES still exists. It
+cannot prove the opposite — that a set the CODE defines is still fully named by
+the doc claiming to enumerate it. Two cross-surface families now cover the cases
+where that failed (§ Cross-surface guards → Router guards, Feature flags). Both
+are one-way: a rule may legitimately discuss a guard or flag that was removed;
+it may not omit one that exists.
+
 **Cross-surface guards** (`verify_rules.py`, blocking in `rules-sync`): counts
 cannot catch a *half-landed* update — one surface corrected, its twin left
-stale, every count still right. Twenty-three checks over ten families, covering the
+stale, every count still right. Twenty-five checks over twelve families, covering the
 places where the same literal is repeated with nothing tying the copies
 together. Direction matters: **two-way** means both sides must match exactly;
 **one-way** means the second surface may legitimately hold extras.
@@ -85,6 +92,8 @@ together. Direction matters: **two-way** means both sides must match exactly;
 | Agent routing | `.claude/agents/*.md` → named in `ai-workflow.md` | one-way | never — a profile nothing routes to (2 of 15 on 2026-07-26) |
 | Script inventory | `scripts/*.{py,sh,sql}` → named anywhere in CLAUDE.md | one-way | never — § Script Tests listed 13 of 15 files |
 | Wiki inventories | `lib/features/`, `lib/domain/services/`, Drift tables, `scripts/test_*` → their enumerating wiki page | one-way ×4 | never — `scripts.md` listed 11 of 15 test files |
+| Router guards | `lib/router/guards/*.dart` classes → named in `security.md` § Route Guards | one-way | never — `FounderGuard` gated three feature areas while all three guard listings named two |
+| Feature flags | `FeatureFlags` members → named in `feature-flags.md` | one-way | never — six flags shipped, one documented |
 
 Two deliberate non-rules, both instances of missing-name != missing-feature:
 - Route constants are NOT required to be referenced. GoRouter composes nested

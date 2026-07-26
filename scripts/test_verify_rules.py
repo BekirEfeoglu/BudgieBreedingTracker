@@ -79,6 +79,8 @@ from _rules_collectors import (
 from _rules_registry import (
     catalog_rows,
     collect_agent_routing_surfaces,
+    collect_feature_flag_surfaces,
+    collect_router_guard_surfaces,
     collect_agent_surfaces,
     collect_rule_registration_surfaces,
     collect_script_inventory_surfaces,
@@ -89,6 +91,8 @@ from _rules_registry import (
     skill_posture_violations,
     two_way_gaps,
     undocumented_scripts,
+    undocumented_feature_flags,
+    undocumented_router_guards,
     unrouted_agents,
     wiki_inventory_gaps,
 )
@@ -1265,6 +1269,58 @@ class TestVerifyRulesMain(unittest.TestCase):
             tmp_md.write_text(content, encoding="utf-8")
             result = self._patch_and_run_main(tmp_md, assets, root, actual)
         self.assertEqual(result, 0)
+
+    def test_reports_undocumented_guard_and_flag_through_main(self):
+        """Covers the WARN branches of the two reverse-leg registry checks.
+
+        The real repo has zero gaps, so these lines are only reachable from a
+        fixture that actually omits a guard/flag from its rule.
+        """
+        import verify_rules as vr
+
+        key_count = 3
+        actual = _make_sample_actual({"tr_keys": key_count, "categories": 35})
+        content = _make_claude_md_content(
+            tr_keys=key_count,
+            test_files=actual["test_files"],
+            individual_tests=actual["individual_tests"],
+            source_files=actual["source_files"],
+            widgets_total=actual["widgets_total"],
+            widgets_root=actual["widgets_root"],
+            schema=actual["schema"],
+        )
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            assets = self._make_assets(root, key_count=key_count)
+            tmp_md = root / "CLAUDE.md"
+            tmp_md.write_text(content, encoding="utf-8")
+
+            guards = root / "lib" / "router" / "guards"
+            guards.mkdir(parents=True)
+            (guards / "founder_guard.dart").write_text(
+                "class FounderGuard {}\n", encoding="utf-8")
+
+            consts = root / "lib" / "core" / "constants"
+            consts.mkdir(parents=True)
+            (consts / "feature_flags.dart").write_text(
+                "abstract final class FeatureFlags {\n"
+                "  static const bool messagingEnabled = true;\n}\n",
+                encoding="utf-8")
+
+            rules = root / ".claude" / "rules"
+            rules.mkdir(parents=True, exist_ok=True)
+            # Both rules exist but name neither symbol — the drift shape.
+            (rules / "security.md").write_text("## Route Guards\n", encoding="utf-8")
+            (rules / "feature-flags.md").write_text("# Flags\n", encoding="utf-8")
+
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                result = self._patch_and_run_main(tmp_md, assets, root, actual)
+            out = buf.getvalue()
+
+        self.assertIn("FounderGuard", out)
+        self.assertIn("messagingEnabled", out)
+        self.assertEqual(result, 1)
 
     def test_returns_1_when_stats_table_missing(self):
         import verify_rules as vr
@@ -3163,3 +3219,112 @@ class TestVerifyRulesEntrypoint(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+class TestRouterGuardsAndFeatureFlags(unittest.TestCase):
+    """Reverse leg of symbol drift: a set the CODE defines must stay named.
+
+    check_rule_symbol_drift proves every symbol a doc names exists. Nothing
+    proved the opposite, so FounderGuard gated three feature areas while all
+    three guard listings named two guards, and FeatureFlags reached six members
+    while the rule documented one (both 2026-07-26).
+    """
+
+    def _tree(self, root, guards=(), named_guards=(), flags=(), named_flags=(),
+              omit=()):
+        if "guards" not in omit:
+            gdir = root / "lib" / "router" / "guards"
+            gdir.mkdir(parents=True, exist_ok=True)
+            for name in guards:
+                (gdir / f"{name.lower()}.dart").write_text(
+                    f"class {name} {{\n  static String? redirect(bool ok) => null;\n}}\n",
+                    encoding="utf-8")
+        if "security" not in omit:
+            rules = root / ".claude" / "rules"
+            rules.mkdir(parents=True, exist_ok=True)
+            (rules / "security.md").write_text(
+                "## Route Guards\n" + "\n".join(f"| `{n}` | x |" for n in named_guards),
+                encoding="utf-8")
+        if "flags" not in omit:
+            src = root / "lib" / "core" / "constants"
+            src.mkdir(parents=True, exist_ok=True)
+            body = "\n".join(f"  static const bool {n} = true;" for n in flags)
+            (src / "feature_flags.dart").write_text(
+                f"abstract final class FeatureFlags {{\n{body}\n}}\n", encoding="utf-8")
+        if "flagrule" not in omit:
+            rules = root / ".claude" / "rules"
+            rules.mkdir(parents=True, exist_ok=True)
+            (rules / "feature-flags.md").write_text(
+                "# Flags\n" + "\n".join(f"| `{n}` | true |" for n in named_flags),
+                encoding="utf-8")
+
+    def test_fully_documented_guards_and_flags_report_nothing(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._tree(root,
+                       guards=["AdminGuard", "FounderGuard"],
+                       named_guards=["AdminGuard", "FounderGuard"],
+                       flags=["communityEnabled", "messagingEnabled"],
+                       named_flags=["communityEnabled", "messagingEnabled"])
+            self.assertEqual(
+                undocumented_router_guards(collect_router_guard_surfaces(root)), [])
+            self.assertEqual(
+                undocumented_feature_flags(collect_feature_flag_surfaces(root)), [])
+
+    def test_reports_a_guard_the_rule_never_names(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._tree(root,
+                       guards=["AdminGuard", "FounderGuard", "PremiumGuard"],
+                       named_guards=["AdminGuard", "PremiumGuard"],
+                       flags=["communityEnabled"], named_flags=["communityEnabled"])
+            self.assertEqual(
+                undocumented_router_guards(collect_router_guard_surfaces(root)),
+                ["FounderGuard"])
+
+    def test_reports_a_flag_the_rule_never_names(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._tree(root,
+                       guards=["AdminGuard"], named_guards=["AdminGuard"],
+                       flags=["communityEnabled", "messagingEnabled"],
+                       named_flags=["communityEnabled"])
+            self.assertEqual(
+                undocumented_feature_flags(collect_feature_flag_surfaces(root)),
+                ["messagingEnabled"])
+
+    def test_a_bare_mention_does_not_count_as_documented(self):
+        """Backticks are required, so prose that happens to contain the word
+        does not satisfy the check."""
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._tree(root, guards=["FounderGuard"], named_guards=[],
+                       flags=["communityEnabled"], named_flags=[])
+            (root / ".claude" / "rules" / "security.md").write_text(
+                "## Route Guards\nFounderGuard is mentioned without backticks.",
+                encoding="utf-8")
+            self.assertEqual(
+                undocumented_router_guards(collect_router_guard_surfaces(root)),
+                ["FounderGuard"])
+
+    def test_absent_surfaces_report_nothing(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            guards = collect_router_guard_surfaces(root)
+            flags = collect_feature_flag_surfaces(root)
+        self.assertIsNone(guards["guards"])
+        self.assertIsNone(flags["flags"])
+        self.assertEqual(undocumented_router_guards(guards), [])
+        self.assertEqual(undocumented_feature_flags(flags), [])
+
+    def test_missing_rule_files_report_nothing(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._tree(root, guards=["AdminGuard"], flags=["communityEnabled"],
+                       omit=("security", "flagrule"))
+            guards = collect_router_guard_surfaces(root)
+            flags = collect_feature_flag_surfaces(root)
+        self.assertIsNone(guards["rule_text"])
+        self.assertIsNone(flags["rule_text"])
+        self.assertEqual(undocumented_router_guards(guards), [])
+        self.assertEqual(undocumented_feature_flags(flags), [])

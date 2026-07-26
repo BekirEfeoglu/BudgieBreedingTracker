@@ -44,6 +44,8 @@ from _rules_collectors import (
 from _rules_registry import (
     collect_agent_routing_surfaces,
     collect_agent_surfaces,
+    collect_feature_flag_surfaces,
+    collect_router_guard_surfaces,
     collect_rule_registration_surfaces,
     collect_script_inventory_surfaces,
     collect_skill_surfaces,
@@ -51,6 +53,8 @@ from _rules_registry import (
     readonly_tool_violations,
     skill_posture_violations,
     two_way_gaps,
+    undocumented_feature_flags,
+    undocumented_router_guards,
     undocumented_scripts,
     unrouted_agents,
     wiki_inventory_gaps,
@@ -526,6 +530,30 @@ def main():
     for name in inventories:
         print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}")
     track_manual(check("Wiki envanter sayfalari dizinlerle ayni", 0, len(inventories)))
+
+    # Reverse leg of the symbol-drift guard: it proves every symbol a doc NAMES
+    # exists, never that a set the code defines is still fully named. FounderGuard
+    # gated /community, /marketplace and /ai-predictions to founder-only while all
+    # three guard listings named two guards (2026-07-26).
+    guards = collect_router_guard_surfaces(ROOT)
+    if guards["guards"] is None or guards["rule_text"] is None:
+        print(f"  {Colors.YELLOW}SKIP{Colors.RESET} lib/router/guards/ veya security.md bulunamadi")
+    else:
+        undocumented = undocumented_router_guards(guards)
+        for name in undocumented:
+            print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: guard var, security.md Route Guards'ta anilmiyor")
+        track_manual(check("Router guard'lari security.md'de belgeli", 0, len(undocumented)))
+
+    # Same shape: FeatureFlags grew to six members while feature-flags.md
+    # documented one, so "flag true, therefore users see it" read as safe.
+    flags = collect_feature_flag_surfaces(ROOT)
+    if flags["flags"] is None or flags["rule_text"] is None:
+        print(f"  {Colors.YELLOW}SKIP{Colors.RESET} feature_flags.dart veya feature-flags.md bulunamadi")
+    else:
+        undocumented = undocumented_feature_flags(flags)
+        for name in undocumented:
+            print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: FeatureFlags'te var, feature-flags.md'de anilmiyor")
+        track_manual(check("FeatureFlags uyeleri feature-flags.md'de belgeli", 0, len(undocumented)))
 
     # ── Summary ──
     pass_count = sum(results)

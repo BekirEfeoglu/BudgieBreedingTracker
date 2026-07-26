@@ -367,3 +367,63 @@ def collect_rule_registration_surfaces(root: Path) -> dict:
 
     return {"files": files, "listed": listed}
 
+
+
+# ── Router guards / feature flags vs the rules that enumerate them ────
+# The reverse leg of the symbol-drift guard. `check_rule_symbol_drift.py` proves
+# every symbol a doc NAMES still exists; nothing proved the opposite direction —
+# that a set the code defines is still fully named by the doc claiming to list
+# it. `FounderGuard` gated three whole feature areas to founder-only while all
+# three guard listings named two guards, and `FeatureFlags` grew to six flags
+# while feature-flags.md documented one (both found 2026-07-26).
+#
+# One-way by design: the rule may discuss guards/flags that no longer exist
+# (documenting a removal is legitimate); it may not omit one that does.
+
+_GUARD_CLASS_RE = re.compile(r"^class\s+(\w*Guard)\b", re.MULTILINE)
+_FLAG_RE = re.compile(r"^\s*static\s+const\s+bool\s+(\w+)\s*=", re.MULTILINE)
+
+
+def collect_router_guard_surfaces(root: Path) -> dict:
+    """Guard classes on disk + the text of the canonical Route Guards table."""
+    guards_dir = root / "lib" / "router" / "guards"
+    guards = None
+    if guards_dir.exists():
+        guards = set()
+        for path in guards_dir.glob("*.dart"):
+            guards.update(_GUARD_CLASS_RE.findall(path.read_text(encoding="utf-8")))
+        guards = guards or None
+
+    rule = root / ".claude" / "rules" / "security.md"
+    text = rule.read_text(encoding="utf-8") if rule.exists() else None
+    return {"guards": guards, "rule_text": text}
+
+
+def undocumented_router_guards(surfaces: dict) -> list:
+    """Guard classes security.md's Route Guards section never names."""
+    guards = surfaces["guards"]
+    text = surfaces["rule_text"]
+    if guards is None or text is None:
+        return []
+    return sorted(name for name in guards if f"`{name}`" not in text)
+
+
+def collect_feature_flag_surfaces(root: Path) -> dict:
+    """Static FeatureFlags members + the text of the rule documenting them."""
+    source = root / "lib" / "core" / "constants" / "feature_flags.dart"
+    flags = None
+    if source.exists():
+        flags = set(_FLAG_RE.findall(source.read_text(encoding="utf-8"))) or None
+
+    rule = root / ".claude" / "rules" / "feature-flags.md"
+    text = rule.read_text(encoding="utf-8") if rule.exists() else None
+    return {"flags": flags, "rule_text": text}
+
+
+def undocumented_feature_flags(surfaces: dict) -> list:
+    """FeatureFlags members feature-flags.md never names."""
+    flags = surfaces["flags"]
+    text = surfaces["rule_text"]
+    if flags is None or text is None:
+        return []
+    return sorted(name for name in flags if f"`{name}`" not in text)
