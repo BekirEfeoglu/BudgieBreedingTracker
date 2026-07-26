@@ -4,6 +4,45 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-26] follow-up | The reverse-leg guard, the last unguarded ALTER, and an unreachable fix
+
+**Two new cross-surface families (49 checks).** `check_rule_symbol_drift` proves
+every symbol a doc NAMES exists; nothing proved a set the CODE defines is still
+fully named. Both of the day's doc-drift findings were exactly that shape, so
+guard classes must now be named in security.md § Route Guards and `FeatureFlags`
+members in feature-flags.md. One-way — a rule may discuss a removed guard, not
+omit a live one. Verified by deleting a mention of each and watching CI fail.
+
+**The last unguarded column add.** `event_reminders` is created in v2→v3, and
+`Migrator.createTable` materializes TODAY's definition — already carrying
+`user_id`/`is_deleted`/`updated_at`. The v5→v6 step then ALTERed the same three,
+so a database entering `onUpgrade` at v1 or v2 died on `duplicate column name`
+and never opened. Window is exactly {1,2}; at v29 the live base is ~zero, so
+this is hygiene, not an incident. Reproduced first — and the first fixture
+failed on `birds.color_mutation` instead, because materializing the current
+schema means a v2 fixture must strip every column the UNGUARDED v5/v7/v13/v15/
+v17 steps add. Only then did the failure land on the statement under test.
+
+**An "untested fix" that turns out to be unreachable.** `5845415` threaded
+`onDepthLimit` into the nested `_inbreedingOf` traversal with no test, and the
+existing depth test cannot fail (its shared ancestor is parentless, so the
+nested path never runs). Measuring rather than assuming: that traversal restarts
+depth at 0 but walks a SUBSET of the chain the top-level pass already walked,
+starting deeper in absolute terms — so anything long enough to trip it there has
+already tripped it here. Sweeping chain lengths 0..16 with and without the
+propagation gave byte-identical results. No isolating test is possible; one
+would pass regardless, which is the same vacuous-assertion trap fixed earlier
+today. The propagation stays (it stops being redundant if the two bounds ever
+stop sharing a chain), the finding is recorded in the source, and the test that
+CAN fail — the `depthLimited` cutoff boundary — was added instead.
+
+**Image-scan budget raised 10 → 30/min.** The scan runs once per image and the
+largest legitimate burst is a premium post at 10 photos, so one attempt consumed
+the whole per-user budget; any retry in the same minute returned 429, which
+`ImageSafetyService` fails CLOSED into "image rejected". Same shape as the
+client cooldown fixed hours earlier, one layer out. The Deno test pins the
+relationship to the photo cap, not the number.
+
 ## [2026-07-26] audit | Six-lane sweep: a client cooldown was failing closed on every multi-photo post
 
 **Headline, and it was reachable by ordinary users.** `EdgeFunctionClient`
@@ -137,41 +176,4 @@ file that no longer exists — the linter would not have caught it either, since
 the reference is in backticks rather than a wikilink. 14 → 13 pages, 187 entries
 preserved. Rule recorded in the catalog: grep the dated entries for an archive's
 name before merging it.
-
-## [2026-07-26] infrastructure | Skill posture settled, wiki inventories guarded, stub archives folded in
-
-**`ui-ux-pro-max`'s posture was decided by its body, not its description.** The
-catalog said `No` while the skill advertised "build, create, implement,
-refactor" — a contradiction left open earlier. The body settles it: four steps
-of analyze → run `search.py` → read guidelines, both scripts opening files
-read-only, output documented as a terminal ASCII box or Markdown. Those verbs
-are the skill's **trigger** ("When user requests UI/UX work (design, build,
-create…), follow this workflow"), not its actions; it supplies a design system
-the surrounding session implements, exactly like `mobile-design`. Both it and
-`supabase-postgres-best-practices` gained `allowed-tools: Read, Glob, Grep,
-Bash`, so all six skills now declare one. The posture check was then tightened:
-an advisory row with no declaration is now itself a violation, because
-`allowed-tools` restricts rather than grants — a `No` means nothing without it,
-and these two are vendored, so a re-vendor would otherwise drop the line
-silently. Consequence recorded rather than hidden: a restricted skill cannot
-edit during its activation; deleting one line reverts it.
-
-**Four wiki inventories guarded, none of which was actually drifting.** The
-features index (24/24), services index (23/23) and tables catalog (20/20) were
-complete — my first three probes said otherwise and were all my own regex's
-fault, since those pages use `[[wikilinks]]` and full filenames rather than bare
-backticked names. They are guarded anyway because `scripts.md` was 11 of 15
-yesterday: same shape, same rot. Each page is matched by the exact token IT
-uses, never a bare directory name — "more" and "home" are real feature modules
-and a substring check would pass on any prose containing them.
-
-**17 archive pages → 14, and deliberately not to 9.** The three hand-made stubs
-(`06-early` 2 entries, `07-i` 1, `07-k` 5) folded into their chronological
-neighbours; all 186 entries preserved, verified by comparing the date multiset
-before and after. Merging the ~190-line pages would have gone further but was
-rejected on evidence: dated entries still name those files (one in `07-f`
-records rotating work "to [[log-archive-2026-07-f]]"), and fixing the link means
-rewriting a dated entry, which this contract forbids. With the catalog no longer
-riding in every session's context, the remaining benefit was tidiness. Two stale
-navigation footers were corrected — both already wrong, one listing itself.
 
