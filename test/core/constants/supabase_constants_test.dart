@@ -36,7 +36,6 @@ void main() {
           SupabaseConstants.eventRemindersTable,
           SupabaseConstants.notificationSchedulesTable,
           SupabaseConstants.syncMetadataTable,
-          SupabaseConstants.geneticsHistoryTable,
           SupabaseConstants.feedbackTable,
           SupabaseConstants.calendarTable,
         ];
@@ -61,7 +60,6 @@ void main() {
           SupabaseConstants.eventRemindersTable,
           SupabaseConstants.notificationSchedulesTable,
           SupabaseConstants.syncMetadataTable,
-          SupabaseConstants.geneticsHistoryTable,
         ];
 
         final snakeCasePattern = RegExp(r'^[a-z][a-z0-9]*(_[a-z0-9]+)*$');
@@ -105,7 +103,6 @@ void main() {
           SupabaseConstants.eventRemindersTable,
           SupabaseConstants.notificationSchedulesTable,
           SupabaseConstants.syncMetadataTable,
-          SupabaseConstants.geneticsHistoryTable,
           SupabaseConstants.feedbackTable,
           SupabaseConstants.calendarTable,
           SupabaseConstants.deletedEggsTable,

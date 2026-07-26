@@ -29,7 +29,6 @@ abstract class SupabaseConstants {
   static const String eventRemindersTable = 'event_reminders';
   static const String notificationSchedulesTable = 'notification_schedules';
   static const String syncMetadataTable = 'sync_metadata';
-  static const String geneticsHistoryTable = 'genetics_history';
   static const String feedbackTable = 'feedback';
   static const String communityPostsTable = 'community_posts';
   static const String communityCommentsTable = 'community_comments';
