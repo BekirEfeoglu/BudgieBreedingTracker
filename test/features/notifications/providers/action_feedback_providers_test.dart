@@ -84,6 +84,7 @@ void main() {
     test('resetForTesting isolates streams', () {
       final firstBatch = <ActionFeedback>[];
       final sub1 = ActionFeedbackService.stream.listen(firstBatch.add);
+      addTearDown(sub1.cancel);
 
       ActionFeedbackService.show('before reset');
       expect(firstBatch, hasLength(1));
@@ -92,8 +93,6 @@ void main() {
       // Old listener should not receive new events
       ActionFeedbackService.show('after reset');
       expect(firstBatch, hasLength(1));
-
-      sub1.cancel();
     });
 
     test('show does nothing after stream is closed', () {
