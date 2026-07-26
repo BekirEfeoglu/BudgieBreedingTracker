@@ -84,6 +84,7 @@ scripts/verify_push_setup.sql           # Verify FCM push notification DB setup
 ### Internal Modules (used by quality scripts)
 ```bash
 scripts/_rules_collectors.py             # Data collectors for verify_rules.py
+scripts/_rules_registry.py               # Meta-layer registry/inventory collectors (agents, skills, rules, scripts, wiki lists)
 scripts/_rules_fixers.py                 # Auto-fix logic for verify_rules.py --fix
 scripts/_rules_utils.py                  # Shared utilities for rules scripts
 ```

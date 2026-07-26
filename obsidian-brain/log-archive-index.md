@@ -30,7 +30,6 @@ way: a count added on 2026-07-26 was wrong within the same session.)
 | [[log-archive-2026-06]] | (06-13 to 06-29) |
 | [[log-archive-2026-07]] | (06-30 to 07-01) |
 | [[log-archive-2026-07-b]] | (07-02 to 07-02) |
-| [[log-archive-2026-07-c]] | (07-02 to 07-02) |
 | [[log-archive-2026-07-d]] | (07-03 to 07-04) |
 | [[log-archive-2026-07-e]] | (07-04 to 07-04) |
 | [[log-archive-2026-07-f]] | (07-05 to 07-08) |
@@ -45,14 +44,21 @@ way: a count added on 2026-07-26 was wrong within the same session.)
 
 Three hand-made stub pages were folded into their chronological neighbours:
 `06-early` (2 entries) into `06`, and `07-i` (1) and `07-k` (5) into `07-j`.
-All 186 entries were preserved — verified by comparing the date multiset before
-and after — so 17 pages became 14. The letters `i` and `k` are therefore absent;
-that is expected, not a missing page.
+Then the two same-day 07-02 pages merged, `-07-c` into `-07-b`. Every entry was
+preserved at each step — verified by comparing the date multiset before and
+after — so 17 pages became 13. The letters `c`, `i` and `k` are therefore
+absent; that is expected, not a missing page.
 
-Only the stubs were merged. The ~190-line pages were left alone on purpose:
-merging them would delete files that **dated entries still name** (an entry in
-`07-f` records rotating work "to [[log-archive-2026-07-f]]"), and rewriting a
-dated entry to fix the link is exactly what [[CLAUDE.md]] forbids. With the
+**Merge direction is not free.** `-07-c` was absorbed *into* `-07-b` rather than
+the reverse because a dated entry in `-07-n` uses `log-archive-2026-07-b.md` as
+its worked example of why `--rotate` picks a target by content instead of
+filename (`…-07-b` sorts before `…-07`). Deleting `-07-b` would have left that
+explanation pointing at nothing. Before merging any archive, grep the dated
+entries for its name.
+
+The remaining ~190-line pages are left alone for the same reason: an entry in
+`07-f` records rotating work "to [[log-archive-2026-07-f]]", and rewriting a
+dated entry to repair that link is exactly what [[CLAUDE.md]] forbids. With the
 catalog no longer riding in every session's context, further merging would buy
 tidiness at the cost of history.
 

@@ -6,6 +6,34 @@ TLS pin freshness gate.
 
 ---
 
+## [2026-07-25] infrastructure | Column guard, quality-scanner coverage, guards tabulated
+
+**Column names** — eighth check, seventh family. A `*Col<Name>` constant naming
+a column no migration declares fails at query time, same as the table guard one
+level down. Deliberately NOT table-scoped: the same `user_id` constant is reused
+across tables, so it answers "does this column exist anywhere". That is weaker
+than a per-table check but catches the typo class, which is the part that
+reaches production. 101 constants, all declared; a typo'd one turns it red.
+
+**`verify_code_quality.py` 99% → 100%.** The gap was entirely in *skip*
+branches — the paths where a scanner stays silent. A scanner that goes quiet in
+the wrong place is worse than one that over-reports: CI stays green and nobody
+looks. Covered the layer-import ValueError path (a relative import resolving
+outside the repo), the IconButton window heuristics, the ProviderContainer
+no-closing-paren window, and the no-match early exits.
+
+Three `continue` lines there — plus one in `_rules_collectors` — are marked
+`# pragma: no cover`. They are the same CPython artifact: a `continue` closing
+an `if` inside a `for` emits no trace event, so the line reads as uncovered
+while its `if` above is covered and the tests prove the branch is taken. Ten of
+eleven scripts are now at 100%.
+
+**The guards are now one table** in documentation-sync.md instead of seven
+prose bullets, with an explicit direction column — two-way vs one-way was the
+thing that could not be seen at a glance. It also records the two deliberate
+non-rules (route constants need not be referenced; columns are not
+table-scoped), both instances of missing-name != missing-feature.
+
 ## [2026-07-25] infrastructure | Table-name guard; --sha already existed
 
 **`check_remote_status.py --sha` has existed all along.** Three polls in this

@@ -4,6 +4,26 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-26] infrastructure | Registry collectors split out; archive merge direction matters
+
+**`_rules_collectors.py` 1,101 → 748 lines.** The nine meta-layer registry and
+inventory collectors moved to `_rules_registry.py` (369 lines) — they all answer
+one question, "does this hand-maintained list still match the directory it
+claims to enumerate", and they had grown to a third of a module about something
+else. Imports go one way only, from `_rules_registry` into `_rules_collectors`,
+never back. The split was caught being incomplete by the guard added hours
+earlier: the new module was not named in CLAUDE.md and § Script inventory went
+red immediately.
+
+**Archive merge direction is load-bearing.** `-07-c` folded into `-07-b`, not
+the reverse, because a dated entry in `-07-n` uses `log-archive-2026-07-b.md` as
+its worked example of why `--rotate` picks a target by content rather than
+filename. Merging the other way would have left that explanation pointing at a
+file that no longer exists — the linter would not have caught it either, since
+the reference is in backticks rather than a wikilink. 14 → 13 pages, 187 entries
+preserved. Rule recorded in the catalog: grep the dated entries for an archive's
+name before merging it.
+
 ## [2026-07-26] infrastructure | Skill posture settled, wiki inventories guarded, stub archives folded in
 
 **`ui-ux-pro-max`'s posture was decided by its body, not its description.** The
@@ -164,32 +184,4 @@ that half of the suspicion was wrong.
 **Script coverage is 100% across all eleven files** and the CI threshold moves
 98 → 99. Not 100: leaving one line of headroom means a single new branch does
 not turn the build red before its test lands.
-
-## [2026-07-25] infrastructure | Column guard, quality-scanner coverage, guards tabulated
-
-**Column names** — eighth check, seventh family. A `*Col<Name>` constant naming
-a column no migration declares fails at query time, same as the table guard one
-level down. Deliberately NOT table-scoped: the same `user_id` constant is reused
-across tables, so it answers "does this column exist anywhere". That is weaker
-than a per-table check but catches the typo class, which is the part that
-reaches production. 101 constants, all declared; a typo'd one turns it red.
-
-**`verify_code_quality.py` 99% → 100%.** The gap was entirely in *skip*
-branches — the paths where a scanner stays silent. A scanner that goes quiet in
-the wrong place is worse than one that over-reports: CI stays green and nobody
-looks. Covered the layer-import ValueError path (a relative import resolving
-outside the repo), the IconButton window heuristics, the ProviderContainer
-no-closing-paren window, and the no-match early exits.
-
-Three `continue` lines there — plus one in `_rules_collectors` — are marked
-`# pragma: no cover`. They are the same CPython artifact: a `continue` closing
-an `if` inside a `for` emits no trace event, so the line reads as uncovered
-while its `if` above is covered and the tests prove the branch is taken. Ten of
-eleven scripts are now at 100%.
-
-**The guards are now one table** in documentation-sync.md instead of seven
-prose bullets, with an explicit direction column — two-way vs one-way was the
-thing that could not be seen at a glance. It also records the two deliberate
-non-rules (route constants need not be referenced; columns are not
-table-scoped), both instances of missing-name != missing-feature.
 

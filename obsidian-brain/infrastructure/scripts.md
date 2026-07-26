@@ -74,6 +74,7 @@ dependent and worth knowing about:
 | Module | Purpose |
 |--------|---------|
 | `_rules_collectors.py` | Data collectors for verify_rules.py |
+| `_rules_registry.py` | Meta-layer registry/inventory collectors — agents, skills, rules, scripts and the wiki's enumerated pages. Split out 2026-07-26 when collectors passed 1,100 lines; imports one way only, from `_rules_collectors` |
 | `_rules_fixers.py` | Auto-fix logic for verify_rules.py --fix |
 | `_rules_utils.py` | Shared utilities |
 
