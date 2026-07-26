@@ -234,8 +234,20 @@ mixin _AuthOAuthMixin {
         providerRefreshToken: providerRefreshToken,
       );
       AppLogger.info('[AuthActions] OAuth token revoked for $provider');
-    } catch (e) {
+    } catch (e, st) {
+      // Report HERE, not at the caller. This catch does not rethrow, so the
+      // Sentry handler wrapping revokeOAuthToken() in signOut() can never
+      // fire — leaving a failed revocation (provider token still live after
+      // logout) completely invisible, while the sibling FCM-deactivation step
+      // in the same chain does report. Stay non-throwing: best-effort.
       AppLogger.warning('[AuthActions] OAuth token revocation failed: $e');
+      await Sentry.captureException(
+        e,
+        stackTrace: st,
+        withScope: (scope) => scope
+          ..setTag('feature', 'auth')
+          ..setTag('auth_method', provider),
+      );
     }
   }
 
