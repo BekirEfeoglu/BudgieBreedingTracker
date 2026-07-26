@@ -112,10 +112,14 @@ class LethalAnalysisResult {
 
 /// Database of known lethal and semi-lethal allele combinations in budgies.
 ///
-/// References:
-/// - MUTAVI research on crested sub-vital outcomes
-/// - WBO breeding guidelines on Ino x Ino viability
-/// - Standard aviculture literature on DF Spangle weakness
+/// References (one per surviving entry — see docs/muhabbet-kusu-genetik-rehberi.md):
+/// - MUTAVI K10 — df_crested, sub-vital ("A Subvital Character")
+/// - OMIA K15 — df_feather_duster, lethal
+///
+/// The former "WBO guidelines on Ino x Ino" and "DF Spangle weakness" citations
+/// were removed with their entries in v6: both matings are healthy and the
+/// warnings were unsourced false positives. Removed entries keep their
+/// rationale inline below rather than in this list.
 abstract class LethalCombinationDatabase {
   /// All known lethal/semi-lethal combinations.
   static const List<LethalCombination> allCombinations = [

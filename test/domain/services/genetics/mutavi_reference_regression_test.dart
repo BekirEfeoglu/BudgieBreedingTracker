@@ -281,7 +281,7 @@ class MutaviFixture {
   /// Section of `docs/muhabbet-kusu-genetik-rehberi.md` this fixture protects.
   final String guideSection;
 
-  /// Source citation IDs (K1..K14) from the guide's Kaynaklar list.
+  /// Source citation IDs (K1..K15) from the guide's Kaynaklar list.
   final List<String> sourceIds;
 
   final ParentGenotype father;

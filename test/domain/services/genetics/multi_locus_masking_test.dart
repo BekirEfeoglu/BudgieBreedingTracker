@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/mendelian_calculator.dart';
+import 'package:budgie_breeding_tracker/domain/services/genetics/mutation_database.dart';
 import 'package:budgie_breeding_tracker/domain/services/genetics/parent_genotype.dart';
 
 /// Guards the v9 fix: the multi-locus combiner must not collapse genotypically
@@ -101,19 +102,40 @@ void main() {
         mother: mother,
       );
 
+      // Non-vacuity guard: the subset check below is trivially satisfied if
+      // nothing is ever masked. This cross is chosen so masking DOES occur;
+      // if that stops being true the assertion has stopped testing anything.
+      expect(
+        results.any((r) => r.maskedMutations.isNotEmpty),
+        isTrue,
+        reason: 'no result masked anything — the subset check below is vacuous',
+      );
+
       for (final result in results) {
-        // A mutation can be reported as visible or as masked, never both:
-        // that overlap is the signature of an overwrite leaking one state's
-        // list into another's.
-        final overlap = result.visualMutations.toSet().intersection(
-          result.maskedMutations.toSet(),
-        );
+        // Masking ADDS to maskedMutations without removing from
+        // visualMutations (epistasis_engine_modifiers.dart reads
+        // `visualMutations.contains(x)` then `masked.add('X')`), so
+        // masked ⊆ visual holds by construction for every single state.
+        //
+        // A masked entry with NO corresponding visual allele is therefore the
+        // exact signature of the v9 overwrite bug: one state's list leaking
+        // onto another state whose genotype differs.
+        //
+        // Note the two lists use DIFFERENT namespaces — visualMutations holds
+        // IDs ('grey'), maskedMutations display names ('Grey') — so the ID
+        // mapping below is required. Comparing them raw is vacuous: the sets
+        // can never intersect, which is why the previous "never both"
+        // assertion passed regardless of the bug it claimed to catch.
+        final maskedIds = result.maskedMutations
+            .map((name) => MutationDatabase.getByName(name)?.id ?? name)
+            .toSet();
+        final orphaned = maskedIds.difference(result.visualMutations.toSet());
         expect(
-          overlap,
+          orphaned,
           isEmpty,
           reason:
-              'result "${result.phenotype}" reports ${overlap.toList()} as '
-              'both visible and masked',
+              'result "${result.phenotype}" masks ${orphaned.toList()} without '
+              'carrying the corresponding visual allele — a leaked list',
         );
       }
 
