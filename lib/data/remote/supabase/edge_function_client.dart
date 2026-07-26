@@ -60,11 +60,28 @@ class EdgeFunctionClient {
   static const _defaultCooldown = Duration(seconds: 10);
 
   /// Edge Functions exempt from rate limiting (need rapid sequential calls).
+  ///
+  /// A name belongs here when a single user action fans out into more than one
+  /// call, or into calls closer together than [_defaultCooldown]. For those,
+  /// the client cooldown does not throttle abuse — it breaks the happy path,
+  /// because every caller here fails CLOSED (a cooldown reply is indistinguish-
+  /// able from "moderation unavailable"). Abuse control for these lives
+  /// server-side: `scan-image-safety` 10/min and `moderate-content` 30/min,
+  /// both per-user and Supabase-backed.
   static const _rateLimitExempt = {
     'mfa-lockout',
     'create-community-post',
     'create-community-comment',
     'upload-community-photo',
+    // Scanned once per image inside a loop: community posts (3 free / 10
+    // premium) and marketplace listings (3). Also hit twice in a row whenever a
+    // user adds a second bird/egg/chick/avatar/DM photo within the cooldown.
+    'scan-image-safety',
+    // Called in front of every post/comment/listing/DM submit. The DM send
+    // cooldown alone is 2s — strictly shorter than [_defaultCooldown] — so a
+    // non-exempt moderate-content rejected the second message of any normal
+    // conversation as `moderation_unavailable`.
+    'moderate-content',
   };
 
   /// Per-function last invocation timestamps for rate limiting.

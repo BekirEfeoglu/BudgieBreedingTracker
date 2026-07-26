@@ -559,5 +559,63 @@ void main() {
         expect(result.success, isTrue);
       });
     });
+
+    group('rate limiting', () {
+      void stubOk(String name) {
+        when(
+          () => mockFunctions.invoke(name, body: null, headers: _authHeader),
+        ).thenAnswer(
+          (_) async => FunctionResponse(status: 200, data: {'ok': true}),
+        );
+      }
+
+      test('throttles a second call to a non-exempt function', () async {
+        stubOk('some-other-function');
+
+        final first = await client.invoke('some-other-function');
+        final second = await client.invoke('some-other-function');
+
+        expect(first.success, isTrue);
+        expect(second.success, isFalse);
+        expect(second.error, contains('Rate limited'));
+        verify(
+          () => mockFunctions.invoke(
+            'some-other-function',
+            body: null,
+            headers: _authHeader,
+          ),
+        ).called(1);
+      });
+
+      test('does not throttle across different function names', () async {
+        stubOk('function-a');
+        stubOk('function-b');
+
+        expect((await client.invoke('function-a')).success, isTrue);
+        expect((await client.invoke('function-b')).success, isTrue);
+      });
+
+      // Regression: these two are invoked once per image / once per submit, so
+      // a client cooldown rejected the 2nd call of a single user action. Both
+      // callers fail CLOSED, so the user saw "image rejected" / "moderation
+      // unavailable" instead of a throttle. Abuse control is server-side.
+      for (final name in const ['scan-image-safety', 'moderate-content']) {
+        test('$name is exempt and survives rapid sequential calls', () async {
+          stubOk(name);
+
+          for (var i = 0; i < 5; i++) {
+            expect(
+              (await client.invoke(name)).success,
+              isTrue,
+              reason: 'call ${i + 1} to $name must not be throttled',
+            );
+          }
+
+          verify(
+            () => mockFunctions.invoke(name, body: null, headers: _authHeader),
+          ).called(5);
+        });
+      }
+    });
   });
 }
