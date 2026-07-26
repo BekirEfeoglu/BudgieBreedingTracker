@@ -49,10 +49,13 @@ obfuscated stack traces nobody can read.
 | GitHub Actions | GitHub Secrets (incl. `release-ready.yml`) |
 | Edge Functions | Supabase Dashboard → Secrets |
 
-iOS note: `flutter build` is what rewrites the gitignored
-`ios/Flutter/DartDefines.xcconfig`. Archiving from Xcode without a preceding
-build reuses whatever stale values that file holds — a found copy still had the
-legacy Google web client ID and no `SENTRY_DSN`.
+iOS note: `flutter build` is what refreshes the gitignored generated
+xcconfigs. Current Flutter writes the defines into `Generated.xcconfig` as a
+base64 `DART_DEFINES` value, NOT into `ios/Flutter/DartDefines.xcconfig` (older
+versions did). `Release.xcconfig` includes the legacy file AFTER the generated
+one, so a leftover copy overrides the fresh defines — the one found on
+2026-07-26 still had the legacy Google project and no `SENTRY_DSN`, and was
+deleted.
 
 ## `.env` Rules
 

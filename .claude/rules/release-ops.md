@@ -87,12 +87,16 @@ yuzden script'te loud fail-fast'tirlar:
 - `SENTRY_DSN` yoksa: crash reporting'i hic olmayan bir release
 - `SENTRY_AUTH_TOKEN` yoksa: kimsenin okuyamadigi obfuscated stack trace'ler
 
-**Xcode'dan dogrudan Archive ALMA.** `ios/Flutter/DartDefines.xcconfig`
-gitignored'dir ve yalnizca bir `flutter build` tarafindan yeniden yazilir;
-Archive ne bulursa onu okur. Repo'da bulunan bayat bir kopya legacy Google web
-client ID'sini tasiyordu ve `SENTRY_DSN` HIC yoktu — yani Archive o an
-tamamen crash-reporting'siz bir release uretirdi. Script'i once calistirmak bu
-dosyayi `.env`'den yeniden uretir; hazard'in tek yapisal savunmasi budur.
+**Xcode'dan dogrudan Archive ALMA.** iOS dart-define'lari gitignored, uretilen
+xcconfig'lerde durur ve yalnizca bir `flutter build` onlari tazeler; Archive ne
+bulursa onu okur. Guncel Flutter bunlari `Generated.xcconfig` icine base64
+`DART_DEFINES` olarak yazar — eski surumlerin kullandigi
+`ios/Flutter/DartDefines.xcconfig`'e YAZMAZ. `Release.xcconfig` o eski dosyayi
+`Generated.xcconfig`'ten SONRA include ettigi icin arta kalan bir kopya taze
+define'lari sessizce EZER. 2026-07-26'da tam boyle bir kopya bulundu: dort ay
+bayat, legacy Google projesini tasiyor ve `SENTRY_DSN` HIC yok — yani script'in
+onlemek icin var oldugu release'in ta kendisi. Silindi. Yeniden olusursa
+guvenme, sil.
 
 Dagitim: iOS'ta `build/ios/archive/Runner.xcarchive` -> Xcode Organizer
 (Distribute App). `flutter build ipa` yerelde arsivde durur; export-options
@@ -167,7 +171,8 @@ Android'de tercih `release-ready.yml` (temiz checkout); script local dogrulama i
     kullanilmis version code'u yeniden secmek (artik otomatik cozum yok —
     package-wide maksimumu elle dogrula)
 11. `scripts/build_release.sh`'i atlayip Xcode'dan dogrudan Archive almak
-    (bayat `DartDefines.xcconfig` -> DSN'siz/yanlis client ID'li release,
+    (bayat, artik yazilmayan `DartDefines.xcconfig` taze define'lari ezer ->
+    DSN'siz/yanlis client ID'li release,
     § Release Build)
 12. Store'a publish eden bir job/pipeline geri eklemek — release-ready.yml
     ve script bilincli olarak yalniz artifact uretir; yukleme manuel

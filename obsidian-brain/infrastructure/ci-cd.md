@@ -72,11 +72,13 @@ not a `flutter build` flag) and uploads symbols via `dart run sentry_dart_plugin
 with a per-platform `SENTRY_RELEASE` matching runtime `PackageInfo` naming. iOS
 re-runs `scripts/generate_ios_env.sh` first.
 
-**Never Archive straight from Xcode.** `ios/Flutter/DartDefines.xcconfig` is
-gitignored and only a `flutter build` rewrites it; Archive reads whatever is
-there. A stale copy was found carrying the legacy Google web client ID and no
-`SENTRY_DSN` — an Archive at that moment would have shipped a release with zero
-crash reporting. Running the script regenerates that file from `.env`.
+**Never Archive straight from Xcode.** The iOS defines sit in gitignored
+generated xcconfigs that only a `flutter build` refreshes; Archive reads
+whatever is there. Current Flutter writes them into `Generated.xcconfig`
+(base64 `DART_DEFINES`), not into `ios/Flutter/DartDefines.xcconfig` — and
+because `Release.xcconfig` includes that legacy file afterwards, a leftover
+copy overrides the fresh values. One found on 2026-07-26 carried the legacy
+Google project and no `SENTRY_DSN`; it was deleted.
 
 **Play version codes are package-global.** The `pubspec.yaml` build number must
 exceed the highest code across ALL tracks and the artifact library. Codemagic

@@ -13,11 +13,20 @@
 #     the matching `sentry_dart_plugin` upload, every production crash report
 #     is an unreadable stack of obfuscated symbols — and you only discover that
 #     when you actually need the report.
-#   * SENTRY_DSN is a --dart-define. Xcode's Archive reads whatever stale
-#     values sit in the gitignored ios/Flutter/DartDefines.xcconfig, which is
-#     only rewritten by a `flutter build`. A raw Archive can therefore ship a
-#     release with no crash reporting at all, silently. Running this script
-#     first regenerates that file from .env.
+#   * SENTRY_DSN is a --dart-define. Xcode's Archive reads whatever values sit
+#     in the gitignored, generated iOS xcconfigs, which only a `flutter build`
+#     refreshes. A raw Archive can therefore ship a release with no crash
+#     reporting at all, silently. Running this script first regenerates them
+#     from .env.
+#     Current Flutter writes the defines into Generated.xcconfig as a base64
+#     DART_DEFINES value. It does NOT write ios/Flutter/DartDefines.xcconfig,
+#     which older versions used — measured 2026-07-26, when a full build left
+#     that file untouched at its March mtime. Release.xcconfig includes it
+#     AFTER Generated.xcconfig, so a leftover copy silently OVERRODE the fresh
+#     defines: the one found carried the legacy Google project and no
+#     SENTRY_DSN, i.e. exactly the release this script exists to prevent. It
+#     was deleted. If one reappears, treat it as stale and remove it rather
+#     than trusting it.
 #   * SENTRY_RELEASE must match the runtime PackageInfo naming (real bundle /
 #     package id + real build number) or the uploaded symbols never match an
 #     incoming event.
@@ -78,7 +87,8 @@ dart run build_runner build --delete-conflicting-outputs
 
 if [[ "$PLATFORM" == "ios" ]]; then
   # Keeps Env.xcconfig aligned with .env; the flutter build below is what
-  # rewrites DartDefines.xcconfig, which is the file Xcode actually reads.
+  # refreshes Generated.xcconfig, whose base64 DART_DEFINES is what Xcode
+  # actually reads (NOT DartDefines.xcconfig — see the header note).
   echo ">>> Regenerating iOS env config"
   bash scripts/generate_ios_env.sh
 

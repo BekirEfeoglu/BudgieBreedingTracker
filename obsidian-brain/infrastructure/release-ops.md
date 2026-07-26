@@ -62,10 +62,13 @@ not a `flutter build` flag), then uploads symbols via `dart run sentry_dart_plug
 using a per-platform `SENTRY_RELEASE` that matches runtime `PackageInfo`
 naming. iOS re-runs `scripts/generate_ios_env.sh` first.
 
-**Do not Archive from Xcode without running it.** `ios/Flutter/DartDefines.xcconfig`
-is gitignored and only rewritten by a `flutter build`; a stale copy was found
-holding the legacy Google web client ID and no `SENTRY_DSN`, so a raw Archive
-would have shipped a release with no crash reporting at all.
+**Do not Archive from Xcode without running it.** The iOS defines live in
+gitignored generated xcconfigs that only a `flutter build` refreshes. Current
+Flutter writes them into `Generated.xcconfig` as base64 `DART_DEFINES`, NOT
+into `ios/Flutter/DartDefines.xcconfig`; since `Release.xcconfig` includes that
+legacy file afterwards, a leftover copy silently overrides the fresh ones. The
+copy found on 2026-07-26 held the legacy Google project and no `SENTRY_DSN` —
+the exact DSN-less release this guard exists for — and was deleted.
 
 ## Android AAB
 
@@ -117,8 +120,9 @@ drift to 3.44.6 broke release compilation against locked `lucide_icons 0.257.0`)
 4. Deploying before CI is fully green on exact commit SHA
 5. Version bump without incrementing build number
 6. Xcode Cloud archive without registered physical device/profile
-7. Archiving from Xcode without `scripts/build_release.sh` first (stale
-   `DartDefines.xcconfig` → DSN-less release)
+7. Archiving from Xcode without `scripts/build_release.sh` first (a stale,
+   no-longer-written `DartDefines.xcconfig` overrides the fresh defines →
+   DSN-less release)
 8. Assuming the Android version code is resolved automatically (it no longer is)
 9. Re-adding a job/pipeline that publishes to a store — artifact-only is deliberate
 
