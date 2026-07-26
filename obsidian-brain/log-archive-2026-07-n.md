@@ -6,6 +6,26 @@ TLS pin freshness gate.
 
 ---
 
+## [2026-07-25] infrastructure | Spacing scale derived, local gate matched to CI, coverage 100%
+
+**The Spacing scanner now derives its scale from `AppSpacing`** instead of
+hardcoding it — and it had already drifted: `AppSpacing.xxs = 2` existed while
+the scanner's set stopped at `4.0`, so a hardcoded `2.0` was never reported.
+Deriving removes the drift class rather than guarding it, which is the better
+answer when two surfaces *can* be unified. The old set stays as a floor: a parse
+failure must never shrink the set and silently switch the scanner off. Adding
+`2.0` produced zero new violations, verified before the change.
+
+**The local gate was missing a CI check.** `run_local_quality_gate.sh` ran four
+of `code-quality`'s five checks; `verify_migration_drift.py` was CI-only, so a
+migration structure or baseline problem only surfaced after push. Added. The
+guards themselves were already covered locally via `verify_rules.py --strict` —
+that half of the suspicion was wrong.
+
+**Script coverage is 100% across all eleven files** and the CI threshold moves
+98 → 99. Not 100: leaving one line of headroom means a single new branch does
+not turn the build red before its test lands.
+
 ## [2026-07-25] infrastructure | Column guard, quality-scanner coverage, guards tabulated
 
 **Column names** — eighth check, seventh family. A `*Col<Name>` constant naming

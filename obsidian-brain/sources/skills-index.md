@@ -39,14 +39,24 @@ beyond the user's request. Complement to [[sources/agents-index]] — skills
   the **Writes?** column calls `No` must not hand itself `Write`/`Edit`/
   `NotebookEdit`. Also CI-enforced by the same family.
 
-### The unconstrained-skill limit
+### `allowed-tools` is declared intent, not an enforced boundary
 
-`allowed-tools` **restricts** the session while a skill is active; omitting it
-imposes no restriction rather than granting one. That is the opposite of an
-agent profile, whose `tools:` list IS the subagent's complete tool set — which
-is why the agent read-only check treats a missing list as "declares nothing"
-while this one skips it. A skill with no `allowed-tools` is therefore
-unconstrained no matter what the **Writes?** column claims.
+**Measured 2026-07-26**: with `ui-ux-pro-max` active — which declares
+`allowed-tools: Read, Glob, Grep, Bash` — a `Write` call still succeeded. In
+this harness and session configuration a skill's `allowed-tools` does **not**
+restrict the main session's tool set. (Caveat: observed under this project's
+permission mode; a different mode or a skill dispatched into a subagent may
+behave differently. What is certain is that it cannot be relied on as a
+boundary.)
+
+So the column and the field document **what the skill's own ritual does**, and
+the CI check keeps the two from contradicting each other. Neither prevents a
+write. Treat an advisory posture as a statement of intent that reviewers and
+agents can trust, never as a sandbox.
+
+That is the opposite of an agent profile, whose `tools:` list IS the subagent's
+complete tool set and therefore is a real boundary — which is why the agent
+read-only check and this one look similar but mean different things.
 
 All three advisory skills now declare `allowed-tools: Read, Glob, Grep, Bash`,
 so the column is real for every row. `ui-ux-pro-max` and
@@ -63,9 +73,10 @@ the surrounding session implements it, exactly like `mobile-design`.
 
 Two consequences worth knowing:
 
-- **Implementation during activation.** A restricted skill cannot itself edit
-  files. If a UI task needs both the guidance and the edit in one activation and
-  that turns out to bite, deleting the one `allowed-tools` line reverts it.
+- **Implementation during activation is NOT blocked.** An earlier draft of this
+  page warned that a restricted skill could not edit files during its
+  activation; the probe above disproved it. Invoking `ui-ux-pro-max` and then
+  editing works normally.
 - **These two skills are vendored.** Re-vendoring upstream would drop the added
   line; the registry check turns red rather than letting the posture rot back.
 

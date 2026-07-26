@@ -4,6 +4,30 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-26] infrastructure | Correction: skill `allowed-tools` does not restrict the session
+
+**Measured, and it disproves what two earlier entries today asserted.** With
+`ui-ux-pro-max` active — declaring `allowed-tools: Read, Glob, Grep, Bash` — a
+`Write` call succeeded. So in this harness a skill's `allowed-tools` does not
+restrict the main session's tool set; the earlier claims that it "restricts a
+session while the skill is active" and that "a restricted skill cannot edit
+during its activation" are wrong, and the warning built on them was unnecessary.
+Caveat on the caveat: this was observed under this project's permission mode, so
+the safe reading is not "it never restricts" but "it cannot be relied on as a
+boundary".
+
+What survives: the field and the catalog column document what a skill's own
+ritual does, and the CI check keeps them from contradicting each other. What
+does not: any notion that an advisory skill is sandboxed. The declarations added
+earlier today stay — they are honest intent, now correctly labelled — but
+`skills-index` no longer implies enforcement. The agent read-only check is
+different and remains a real boundary, because a subagent's `tools:` list IS its
+complete tool set.
+
+The lesson is the session's own theme aimed back at itself: I documented a
+mechanism's behaviour from plausible reasoning instead of running it, and the
+one-command probe took less time than the paragraph describing the risk.
+
 ## [2026-07-26] infrastructure | Registry collectors split out; archive merge direction matters
 
 **`_rules_collectors.py` 1,101 → 748 lines.** The nine meta-layer registry and
@@ -164,24 +188,4 @@ The CI-pipeline table in the same file was stale too (98→99 coverage, 8,930+ �
 11,700+ tests, 21 → 28 checkers); the 98→99 sweep had missed the file entirely
 because the search was scoped to CLAUDE.md, `.claude/rules` and the wiki —
 never the repo root.
-
-## [2026-07-25] infrastructure | Spacing scale derived, local gate matched to CI, coverage 100%
-
-**The Spacing scanner now derives its scale from `AppSpacing`** instead of
-hardcoding it — and it had already drifted: `AppSpacing.xxs = 2` existed while
-the scanner's set stopped at `4.0`, so a hardcoded `2.0` was never reported.
-Deriving removes the drift class rather than guarding it, which is the better
-answer when two surfaces *can* be unified. The old set stays as a floor: a parse
-failure must never shrink the set and silently switch the scanner off. Adding
-`2.0` produced zero new violations, verified before the change.
-
-**The local gate was missing a CI check.** `run_local_quality_gate.sh` ran four
-of `code-quality`'s five checks; `verify_migration_drift.py` was CI-only, so a
-migration structure or baseline problem only surfaced after push. Added. The
-guards themselves were already covered locally via `verify_rules.py --strict` —
-that half of the suspicion was wrong.
-
-**Script coverage is 100% across all eleven files** and the CI threshold moves
-98 → 99. Not 100: leaving one line of headroom means a single new branch does
-not turn the build red before its test lands.
 
