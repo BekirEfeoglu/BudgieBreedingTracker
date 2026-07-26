@@ -27,7 +27,11 @@ store upload is a manual user action on both platforms.
 - Build number: increment every release
 - iOS and Android build numbers must be consistent
 
-Current version: `1.1.7+56` (verify against `pubspec.yaml` — this drifts every release, treat as a snapshot not a live value)
+Current version: `1.1.8+60` (verify against `pubspec.yaml` — this drifts every release, treat as a snapshot not a live value)
+
+`AppConstants.appVersion` is a second, hand-kept copy of the version NAME (no
+build number), rendered in the About section. `app_constants_test` asserts it
+matches `pubspec.yaml`, so a bump has to touch both files or tests fail.
 
 ## Store Release Flow
 
