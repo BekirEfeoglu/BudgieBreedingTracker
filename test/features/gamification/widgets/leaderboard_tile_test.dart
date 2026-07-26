@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
+import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
+import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/user_level_model.dart';
 import 'package:budgie_breeding_tracker/features/gamification/widgets/leaderboard_tile.dart';
 
@@ -14,15 +15,21 @@ void main() {
     title: 'Expert Breeder',
   );
 
+  // Rank is a domain concept, so the marker is an AppIcon SVG rather than a
+  // LucideIcons glyph (#24). Match the asset, not just the widget type.
+  final rankIcon = find.byWidgetPredicate(
+    (w) => w is AppIcon && w.asset == AppIcons.rank,
+  );
+
   group('LeaderboardTile', () {
-    testWidgets('shows trophy icon for top 3 ranks', (tester) async {
+    testWidgets('shows rank icon for top 3 ranks', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(body: LeaderboardTile(rank: 1, userLevel: userLevel)),
         ),
       );
 
-      expect(find.byIcon(LucideIcons.trophy), findsOneWidget);
+      expect(rankIcon, findsOneWidget);
     });
 
     testWidgets('shows rank number for rank > 3', (tester) async {
@@ -33,7 +40,7 @@ void main() {
       );
 
       expect(find.text('5'), findsOneWidget);
-      expect(find.byIcon(LucideIcons.trophy), findsNothing);
+      expect(rankIcon, findsNothing);
     });
 
     testWidgets('displays total XP', (tester) async {
