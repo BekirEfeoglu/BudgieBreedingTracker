@@ -7,7 +7,7 @@ beyond the user's request. Complement to [[sources/agents-index]] — skills
 
 ## Catalog
 
-| Skill | Use when | Writes? |
+| Skill | Use when | Ritual writes? |
 |-------|----------|---------|
 | `audit` | Comprehensive multi-agent audit sweep (the 2026-07-02/07-04 ritual): parallel read-only lanes → sibling-path hunt → fix → gates → commit → push → exact-SHA verify | Yes (fixes) |
 | `screenshot-debug` | User sends a simulator/device screenshot of a bug (their standard bug-report channel); traces UI → Provider → Repository → DAO/Remote, hunts siblings before fixing | Yes (fix) |
@@ -36,7 +36,7 @@ beyond the user's request. Complement to [[sources/agents-index]] — skills
   catalog above is **CI-enforced** two-way against `.claude/skills/*/SKILL.md`
   by `verify_rules.py` § Agent & Skill Registry (`rules-sync` job).
 - Skill `allowed-tools` must match the declared write posture above: a skill
-  the **Writes?** column calls `No` must not hand itself `Write`/`Edit`/
+  the **Ritual writes?** column calls `No` must not hand itself `Write`/`Edit`/
   `NotebookEdit`. Also CI-enforced by the same family.
 
 ### `allowed-tools` is declared intent, not an enforced boundary
@@ -54,9 +54,11 @@ the CI check keeps the two from contradicting each other. Neither prevents a
 write. Treat an advisory posture as a statement of intent that reviewers and
 agents can trust, never as a sandbox.
 
-That is the opposite of an agent profile, whose `tools:` list IS the subagent's
-complete tool set and therefore is a real boundary — which is why the agent
-read-only check and this one look similar but mean different things.
+An agent profile differs: its `Write`/`Edit` exclusion **is** honoured by the
+harness (measured the same day — see [[sources/agents-index]] § What "read-only"
+actually buys). So the two checks look alike but mean different things: the agent
+one rides on a real gate, this one does not. Neither yields a sandbox, since a
+read-only agent still has `Bash`.
 
 All three advisory skills now declare `allowed-tools: Read, Glob, Grep, Bash`,
 so the column is real for every row. `ui-ux-pro-max` and

@@ -61,6 +61,30 @@ and every profile whose **Mode** cell says read-only must declare no
 `Write`/`Edit`/`NotebookEdit` in its frontmatter. That makes the Mode column
 load-bearing — editing it changes what the guard permits, so it is not free text.
 
+### What "read-only" actually buys (measured 2026-07-26)
+
+A `code-reviewer` run was probed rather than assumed. Three findings, and the
+middle one is the one that matters:
+
+- **`Write` and `Edit` are genuinely withheld.** The call was emitted and the
+  harness refused it: *"No such tool available: Write. Write exists but is not
+  enabled in this context."* No file was created. This is a real gate, unlike a
+  skill's `allowed-tools`, which was measured the same day to restrict nothing
+  (see [[sources/skills-index]]).
+- **`Bash` is available, so read-only is not a sandbox.** `sed -i`, `echo >`,
+  `git commit`, `rm` all remain reachable. What keeps a review profile read-only
+  during a review is the instruction in its prompt plus adherence to it — a
+  behavioural constraint that the tool gate raises the cost of violating but does
+  not prevent. Do not dispatch a read-only profile as a containment measure.
+- **The declared list is not the realized list.** That profile declares
+  `Read, Bash, Glob, Grep`; the running agent had only `Read` and `Bash` —
+  `Glob` and `Grep` were absent despite being declared. So the frontmatter
+  diverges in both directions and should be read as intent, not inventory.
+  Single-context sample; other invocation paths were not tested.
+
+The guard above therefore keeps the **declaration** honest and reviewable. It
+does not, and cannot, prove a profile is incapable of writing.
+
 ## See Also
 
 - [[sources/rules-index]]

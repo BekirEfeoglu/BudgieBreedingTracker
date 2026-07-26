@@ -80,7 +80,7 @@ together. Direction matters: **two-way** means both sides must match exactly;
 | Agent Registry | `.claude/agents/*.md` ↔ `sources/agents-index.md` catalog | two-way | never — an unregistered or ghost profile |
 | Agent read-only mode | index Mode = read-only → the profile declares no `Write`/`Edit`/`NotebookEdit` | one-way | never — an auditor could edit the code it was sent to inspect |
 | Skill Registry | `.claude/skills/*/SKILL.md` ↔ `sources/skills-index.md` catalog | two-way | never — an unregistered or ghost skill |
-| Skill write posture | index `Writes?` = No → the skill declares `allowed-tools` and excludes `Write`/`Edit`/`NotebookEdit` | one-way | never — an advisory skill handing itself an edit tool, or a re-vendor dropping the restriction |
+| Skill write posture | index `Ritual writes?` = No → the skill declares `allowed-tools` and excludes `Write`/`Edit`/`NotebookEdit` | one-way | never — an advisory skill handing itself an edit tool, or a re-vendor dropping the restriction. Keeps two *declarations* consistent; measured 2026-07-26, `allowed-tools` does not restrict the session, so this is not a sandbox |
 | Rule Registration | `.claude/rules/*.md` ↔ CLAUDE.md § Rules table | two-way | never — the missing leg of three-place registration |
 | Agent routing | `.claude/agents/*.md` → named in `ai-workflow.md` | one-way | never — a profile nothing routes to (2 of 15 on 2026-07-26) |
 | Script inventory | `scripts/*.{py,sh,sql}` → named anywhere in CLAUDE.md | one-way | never — § Script Tests listed 13 of 15 files |

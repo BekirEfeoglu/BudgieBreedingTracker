@@ -38,7 +38,7 @@ way: a count added on 2026-07-26 was wrong within the same session.)
 | [[log-archive-2026-07-j]] | (07-11 to 07-12) |
 | [[log-archive-2026-07-l]] | (07-13 to 07-17) |
 | [[log-archive-2026-07-m]] | (07-17 to 07-25) |
-| [[log-archive-2026-07-n]] | (07-25 to 07-25) |
+| [[log-archive-2026-07-n]] | (07-25 to 07-26) |
 
 ## Consolidation, 2026-07-26
 

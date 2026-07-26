@@ -4,6 +4,43 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-26] infrastructure | Agent read-only measured: a real gate, but not a sandbox
+
+**Probed rather than assumed, and it corrects a claim from hours earlier.** A
+`code-reviewer` run reported its actual tools. `Write` was emitted and refused
+by the harness — *"No such tool available: Write. Write exists but is not
+enabled in this context."* — with no file created. So the agent-side exclusion
+is a genuine gate, unlike a skill's `allowed-tools`, which the same day's probe
+showed restricts nothing.
+
+Two findings that change how the guard should be read:
+
+- **`Bash` is available, so read-only is behavioural, not technical.** `sed -i`,
+  `echo >`, `git commit` and `rm` all stay reachable. The tool gate raises the
+  cost of mutating; it does not prevent it. A read-only profile is not a
+  containment measure.
+- **The declared list is not the realized list.** `code-reviewer` declares
+  `Read, Bash, Glob, Grep`; the running agent had only `Read` and `Bash`. The
+  frontmatter diverges in *both* directions — it over-declares `Glob`/`Grep`
+  while the harness independently withholds `Write`/`Edit`. My earlier phrasing,
+  "a subagent's `tools:` list IS its complete tool set", is therefore wrong;
+  read it as intent, not inventory. Single-context sample.
+
+The registry check still earns its place: it keeps the **declaration** honest
+and reviewable, which is what a human or agent reads before dispatching. It was
+never able to prove a profile cannot write, and the docs now say so.
+
+Also: the skills catalog column is renamed `Writes?` → **`Ritual writes?`**, so
+it names what it actually asserts — what the skill's own steps do — rather than
+implying a capability. The check parses the row's last cell, not the header, so
+the rename is behaviour-neutral; proven against three different headers.
+
+**Push batching recorded** in branch-workflow.md. Four successive pushes this
+session left two intermediate commits superseded, one showing commit status
+`failure` although every job was `cancelled`, not failed. Verification correctly
+targets the tip, but an intermediate commit that never completes a round leaves
+no evidence for `git bisect` or later review.
+
 ## [2026-07-26] infrastructure | Correction: skill `allowed-tools` does not restrict the session
 
 **Measured, and it disproves what two earlier entries today asserted.** With
@@ -153,39 +190,4 @@ name on the other side as drifted; it now returns `None` like every other
 collector in the module, which is what "absent surface → skip" has always meant
 here. That surfaced as 11 unrelated suites going red against partial fixtures —
 the fixtures were right and the collector was wrong.
-
-## [2026-07-26] infrastructure | Gate parity guarded, test noise silenced, security script measured
-
-**Gate parity** — eighth family, and it reproduces a bug that was real
-yesterday: `verify_migration_drift.py` ran in CI's `code-quality` but not in
-`run_local_quality_gate.sh`, so a migration structure problem only surfaced
-after push. Nothing tied the two lists together. Now compared one-way (the gate
-may run more — `verify_rules.py` lives in `rules-sync`). Verified non-vacuous by
-deleting the line again and watching it go red.
-
-**Test stdout: 5,161 lines → 49.** Three suites drive scripts whose whole job is
-printing a report, so the pre-commit gate log ended with a fixture run's
-legitimate `HATA: ... bulunamadi` — a red-looking line under a green gate.
-Silenced per module; unittest writes results to stderr, and the tests that
-assert on output still capture into their own buffer.
-
-**`verify_security.py` is now measured** instead of excluded. Its exclusion
-comment claimed "not unit-testable business logic"; it has 31 unit tests. The
-new test asserts a real property rather than chasing lines: every check that
-asserts a file's CONTENT must fail when that file is missing — the expensive
-failure mode is a moved file leaving `security-audit` green. Deliberately split
-out the one check that asserts an *absence* (`no_service_role_in_client`), which
-correctly passes on an empty tree. 89% → 92%, and the total still clears 99%
-with it included.
-
-**README had rotted by up to 40%** and nothing could see it. Its "Project at a
-Glance" table uses its OWN row labels ("Test suite", "Localization keys"), so
-the inline fixer — which keys on CLAUDE.md's labels and prose phrasings — never
-touched it: 826 vs 1030 source files, ~2,243 vs ~3,167 l10n keys, schema 20 vs
-29, eight rows in all, on the one surface outsiders read. Corrected from the
-live collector, then guarded as a ninth family so it cannot silently rot again.
-The CI-pipeline table in the same file was stale too (98→99 coverage, 8,930+ →
-11,700+ tests, 21 → 28 checkers); the 98→99 sweep had missed the file entirely
-because the search was scoped to CLAUDE.md, `.claude/rules` and the wiki —
-never the repo root.
 

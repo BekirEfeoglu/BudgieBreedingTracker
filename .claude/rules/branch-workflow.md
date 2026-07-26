@@ -12,6 +12,20 @@
 - `main`e push sadece ilgili kalite kapilari gecince yapilir
 - Remote branch temizliginde korunacak tek kalici dal: `main`
 
+## Push Batching
+- Bir is birimini yerelde commit'le, **tek push** ile gonder. Ardisik push'lar
+  onceki commit'in kosan job'larini concurrency ile iptal eder; ara commit yarim
+  dogrulanmis kalir ve Xcode Cloud iptali `failure` olarak raporlayabilir.
+- Olculen ornek (2026-07-26): dort ardisik push'ta iki ara commit supersede
+  oldu; birinin commit status'u `failure` gorundu, oysa hicbir job gercekten
+  patlamamisti — hepsi `cancelled`'di.
+- Bu bir kural ihlali degil, gurultu maliyeti: dogrulama zaten tip commit
+  uzerinden yapilir (ci-actions.md § Deployment Safety). Ama ara commit'ler
+  hicbir zaman temiz bir tur tamamlamaz, yani `git bisect` veya geriye donuk
+  inceleme icin kanit birakmaz.
+- Istisna: hotfix veya bir sonraki adimi bloklayan bir duzeltme. O zaman ara
+  commit'in supersede oldugunu handoff'ta yaz.
+
 ## Merge / Push Policy
 - `main`e merge/push oncesi kalite kapilari gecmeli (bkz. ai-workflow.md § Quality Gates)
 - `main`e push oncesi `git diff --name-status` task-owned kirli dosya gostermemeli; final commit sonrasi `git diff --cached --name-status` bos olmali

@@ -1,10 +1,45 @@
 # Change Log Archive — July 2026 N
 
-Archived July 2026 entries (07-25 to 07-25) rotated out of [[log]] during the
+Archived July 2026 entries (07-25 to 07-26) rotated out of [[log]] during the
 2026-07-25 cross-surface-guard series. Covers the Codemagic removal and the
 TLS pin freshness gate.
 
 ---
+
+## [2026-07-26] infrastructure | Gate parity guarded, test noise silenced, security script measured
+
+**Gate parity** — eighth family, and it reproduces a bug that was real
+yesterday: `verify_migration_drift.py` ran in CI's `code-quality` but not in
+`run_local_quality_gate.sh`, so a migration structure problem only surfaced
+after push. Nothing tied the two lists together. Now compared one-way (the gate
+may run more — `verify_rules.py` lives in `rules-sync`). Verified non-vacuous by
+deleting the line again and watching it go red.
+
+**Test stdout: 5,161 lines → 49.** Three suites drive scripts whose whole job is
+printing a report, so the pre-commit gate log ended with a fixture run's
+legitimate `HATA: ... bulunamadi` — a red-looking line under a green gate.
+Silenced per module; unittest writes results to stderr, and the tests that
+assert on output still capture into their own buffer.
+
+**`verify_security.py` is now measured** instead of excluded. Its exclusion
+comment claimed "not unit-testable business logic"; it has 31 unit tests. The
+new test asserts a real property rather than chasing lines: every check that
+asserts a file's CONTENT must fail when that file is missing — the expensive
+failure mode is a moved file leaving `security-audit` green. Deliberately split
+out the one check that asserts an *absence* (`no_service_role_in_client`), which
+correctly passes on an empty tree. 89% → 92%, and the total still clears 99%
+with it included.
+
+**README had rotted by up to 40%** and nothing could see it. Its "Project at a
+Glance" table uses its OWN row labels ("Test suite", "Localization keys"), so
+the inline fixer — which keys on CLAUDE.md's labels and prose phrasings — never
+touched it: 826 vs 1030 source files, ~2,243 vs ~3,167 l10n keys, schema 20 vs
+29, eight rows in all, on the one surface outsiders read. Corrected from the
+live collector, then guarded as a ninth family so it cannot silently rot again.
+The CI-pipeline table in the same file was stale too (98→99 coverage, 8,930+ →
+11,700+ tests, 21 → 28 checkers); the 98→99 sweep had missed the file entirely
+because the search was scoped to CLAUDE.md, `.claude/rules` and the wiki —
+never the repo root.
 
 ## [2026-07-25] infrastructure | Spacing scale derived, local gate matched to CI, coverage 100%
 
