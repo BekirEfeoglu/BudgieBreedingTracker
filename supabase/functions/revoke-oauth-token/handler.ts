@@ -8,6 +8,7 @@ import {
 import { z } from "npm:zod@3.24.4";
 import { parseRequestBody } from "../_shared/validation.ts";
 import {
+
   APPLE_REVOKE_URL,
   appleRevokeParams,
   GOOGLE_REVOKE_URL,
@@ -15,6 +16,20 @@ import {
   isRefreshToken,
   pickToken,
 } from "./revoke_core.ts";
+
+// Provider error bodies are third-party text written into a 7-day-retained log.
+// Neither Google nor Apple is known to echo the token back, so this is
+// defense-in-depth rather than a confirmed leak — but this log line is where a
+// future provider change would surface one silently. Mirrors the 200-char
+// convention of local_ai_transport's _truncateForLog.
+const MAX_LOGGED_ERROR_BODY = 200;
+
+function truncateForLog(body: string): string {
+  return body.length <= MAX_LOGGED_ERROR_BODY
+    ? body
+    : `${body.slice(0, MAX_LOGGED_ERROR_BODY)}… (${body.length} chars)`;
+}
+
 
 const rateLimiter = createRateLimiter({
   windowMs: 60_000,
@@ -68,7 +83,7 @@ async function revokeGoogle(
 
   const errorBody = await res.text();
   console.warn(
-    `[revoke-oauth-token] Google revoke failed (${res.status}): ${errorBody}`,
+    `[revoke-oauth-token] Google revoke failed (${res.status}): ${truncateForLog(errorBody)}`,
   );
   return new Response(
     JSON.stringify({
@@ -124,7 +139,7 @@ async function revokeApple(
 
   const errorBody = await res.text();
   console.warn(
-    `[revoke-oauth-token] Apple revoke failed (${res.status}): ${errorBody}`,
+    `[revoke-oauth-token] Apple revoke failed (${res.status}): ${truncateForLog(errorBody)}`,
   );
   return new Response(
     JSON.stringify({
