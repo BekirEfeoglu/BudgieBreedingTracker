@@ -111,23 +111,32 @@ Production'da kritik hata her zaman gider (`errorSampleRate = 1.0`), sadece perf
 
 Enforcement: `bootstrap.dart` içindeki `sentryTracesSampleRateFor(_resolvedSentryEnv)` bu tabloyu uygular (bilinmeyen env → 0.1 fail-safe; test: `test/core/sentry_sample_rate_test.dart`). `tracesSampleRate`'i sabit değerle hardcode etme — oran değişikliği bu fonksiyon + bu tablo birlikte güncellenir.
 
-## Structured Log Schema
-Edge function `console.log` JSON formatında:
-```json
-{
-  "ts": "2026-05-14T10:00:00Z",
-  "level": "info",
-  "event": "sync_completed",
-  "user_id": "uuid",
-  "entity_type": "birds",
-  "duration_ms": 142,
-  "extra": { "items_synced": 5 }
-}
+## Edge Function Log Format (shipped: prefixed strings, NOT JSON)
+
+**Ölçüldü 2026-07-26: 12 fonksiyonun 36 `console.*` çağrısının tamamı düz string
+interpolasyonu kullanıyor**, `[fn-name] mesaj` önekiyle:
+
+```ts
+console.error("[send-push] Error:", error);
 ```
-- `event` snake_case, dictionary kontrollü (`sync_started`, `sync_completed`, `sync_failed`, `auth_login`, `mfa_lockout`)
-- `user_id` her zaman dahil (multi-tenant filter)
-- `extra` opsiyonel meta — request body DEĞİL
-- Top-level `error` field'ı failure case'lerde
+
+Bu dosya uzun süre yapılandırılmış bir JSON şeması (`{ts, level, event, user_id,
+extra}`, kontrollü `event` sözlüğü) tarif etti ve buna dayanarak Dashboard'da
+`user_id` ile multi-tenant filtreleme yapılabileceğini söyledi. **Hiçbir
+fonksiyon bunu hiç uygulamadı**, dolayısıyla o filtreleme mevcut değil. Şema bir
+tasarım hedefiydi; `obsidian-brain/known-gaps.md`'ye taşındı.
+
+Bugünkü sözleşme:
+- Önek `[fonksiyon-adı]` — Dashboard'da fonksiyon bazlı grep bunu kullanır
+- Hata dalları `console.error`, geri kalanı `console.log`
+- Ham request body ASLA loglanmaz (§ Anti-Patterns #8) — bu kural şema
+  değişikliğinden bağımsız geçerli
+- Üçüncü taraf hata gövdeleri truncate edilerek loglanır (token echo riski)
+
+Yapılandırılmış loglamaya geçilecekse: `supabase/functions/_shared/` altında tek
+bir `logEvent()` helper'ı + 12 fonksiyonun tamamının adaptasyonu + bu bölümün
+gerçek şemayla güncellenmesi gerekir. Kısmi adaptasyon iki formatı karıştırır ve
+grep'i de bozar.
 
 ## Log Retention
 - Supabase Edge Function logs: 7 gün (Supabase default)

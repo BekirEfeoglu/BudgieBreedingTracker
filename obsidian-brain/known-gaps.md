@@ -13,11 +13,31 @@ decision; the owning rule file says what closing them requires.
 
 ## Latent Code Surfaces (code exists, doesn't work end-to-end)
 
+- **`genetics_history` remote is dormant and its schema does not match Drift.**
+  Drift has `fatherGenotype`/`motherGenotype`/`resultsJson`/`calculationVersion`/
+  `fatherPhaseOverrides`; the Supabase table has `father_mutations`/
+  `mother_mutations`/`results`/`deleted_at` and no `calculation_version`. Nothing
+  syncs it — there is no remote source, repository or sync-registry entry, and
+  the `SupabaseConstants.geneticsHistoryTable` constant was deleted on
+  2026-07-26 because it was declared and never referenced, which made the table
+  look like a live surface. Wiring sync later means reconciling the columns
+  FIRST; otherwise it reproduces the 2026-07-08 `bird_id`/`mutation_tags` class,
+  where a select against columns prod did not have returned 400.
+
 | Surface | Reality | Owning rule |
 |---------|---------|-------------|
 | DM `MessageType.birdCard` / `listingCard` | Model getters exist (`message_model.dart`) and `MessageBubble._buildReferenceCard` renders both, but there is NO producer UI — the attachment sheet offers only photo. Deliberately hidden until real producers exist (`lib/core/constants/feature_flags.dart` comment) | `messaging.md` § Attachments |
 
 ## Designed But Never Built
+
+- **Structured JSON logging in Edge Functions.** observability.md specified
+  `{ts, level, event, user_id, extra}` with a controlled `event` dictionary, and
+  claimed Dashboard multi-tenant filtering on `user_id` followed from it.
+  Measured 2026-07-26: all 36 `console.*` calls across all 12 functions use
+  plain `[fn-name] message` strings, so that filtering never existed. The rule
+  now documents the shipped convention. Adopting the schema means one shared
+  `logEvent()` helper plus all 12 functions at once — a partial rollout mixes
+  two formats and breaks grep as well.
 
 | Design goal | Status | Owning rule |
 |-------------|--------|-------------|

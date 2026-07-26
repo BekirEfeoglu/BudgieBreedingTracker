@@ -87,6 +87,23 @@ yuzden script'te loud fail-fast'tirlar:
 - `SENTRY_DSN` yoksa: crash reporting'i hic olmayan bir release
 - `SENTRY_AUTH_TOKEN` yoksa: kimsenin okuyamadigi obfuscated stack trace'ler
 
+**iOS build'i TAKIPLI dosyalari degistirebilir — build sonrasi `git status` oku.**
+2026-07-26'da olculdu: `flutter build ios --config-only` yerel Xcode
+toolchain'iyle `ios/Runner/Runner.entitlements` ve
+`ios/Runner.xcodeproj/project.pbxproj` dosyalarini yeniden yazdi. Entitlements
+yeniden yazimi `com.apple.security.application-groups` degerini BOSALTTI
+(`group.com.budgiebreeding.tracker` -> `<array/>`). O app group, Flutter tarafi
+(`HomeWidgetService.appGroupId`) ile widget extension'in paylasilan
+konteyneridir; bos haliyle commit edilirse home widget veri alamaz
+(home-widget.md). pbxproj degisikligi zararsizdi ("Embed App Extensions" ->
+"Embed Foundation Extensions" yeniden adlandirma).
+
+`scripts/build_release.sh ios` de bir `flutter build` calistirdigi icin ayni
+sey gercek bir release turunda olabilir. Build sonrasi `git status --short`
+oku; bu iki dosyada istenmeyen yeniden yazim varsa `git checkout --` ile geri
+al (git-rules.md § Working Tree Organization). Tek gozlem — mekanizmasi
+dogrulanmadi, ama kontrolu ucuz ve kaybi buyuk.
+
 **Xcode'dan dogrudan Archive ALMA.** iOS dart-define'lari gitignored, uretilen
 xcconfig'lerde durur ve yalnizca bir `flutter build` onlari tazeler; Archive ne
 bulursa onu okur. Guncel Flutter bunlari `Generated.xcconfig` icine base64
