@@ -39,7 +39,7 @@ class PrivacySecuritySection extends ConsumerWidget {
           SettingsToggleTile(
             title: 'settings.show_in_leaderboard'.tr(),
             subtitle: 'settings.show_in_leaderboard_desc'.tr(),
-            icon: const Icon(LucideIcons.trophy),
+            icon: const AppIcon(AppIcons.leaderboard),
             value: profile.showInLeaderboard,
             onChanged: (value) =>
                 _setLeaderboardVisibility(ref, profile, value),

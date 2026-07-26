@@ -2,8 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_icon.dart';
 import '../../../data/models/user_level_model.dart';
 
 class LeaderboardTile extends StatelessWidget {
@@ -44,7 +46,7 @@ class LeaderboardTile extends StatelessWidget {
         ),
         child: Center(
           child: isTopThree
-              ? Icon(LucideIcons.trophy, size: 20, color: _rankColor(rank))
+              ? AppIcon(AppIcons.rank, size: 20, color: _rankColor(rank))
               : Text(
                   '$rank',
                   style: theme.textTheme.titleSmall?.copyWith(

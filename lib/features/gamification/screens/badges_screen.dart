@@ -2,11 +2,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart' as app;
@@ -34,7 +34,7 @@ class BadgesScreen extends ConsumerWidget {
         title: Text('badges.title'.tr()),
         actions: [
           AppIconButton(
-            icon: const Icon(LucideIcons.trophy),
+            icon: const AppIcon(AppIcons.leaderboard),
             tooltip: 'leaderboard.title'.tr(),
             semanticLabel: 'leaderboard.title'.tr(),
             onPressed: () => context.push(AppRoutes.leaderboard),
