@@ -1119,18 +1119,29 @@ def check_remote_hardcoded_columns(lines: List[str], filepath: Path, cat: Catego
     filters (.contains) and value arguments are intentionally out of scope.
     """
     rel = relative_path(filepath).replace("\\", "/")
-    if not rel.startswith("lib/data/remote/"):
+    # admin/ is exempt from the repository boundary but NOT from #8: admin.md
+    # § Repository Pattern Exception still requires SupabaseConstants. Scanning
+    # only lib/data/remote/ left every admin client.from() call unchecked.
+    if not (
+        rel.startswith("lib/data/remote/")
+        or rel.startswith("lib/features/admin/")
+    ):
         return
 
     # First argument is the column for these; catch a bare '<snake_case>' literal.
     filter_re = re.compile(r"\.(?:order|eq|neq|gte|lte|match)\(\s*'([a-z][a-z0-9_]*)'")
     # Inline map literal write whose first key is a bare string literal.
     write_re = re.compile(r"\.(?:update|upsert|insert)\(\s*\{\s*'([a-z][a-z0-9_]*)'")
+    # Named `column:` argument (PostgresChangeFilter and friends). The two
+    # regexes above only see a POSITIONAL first argument, so realtime filters
+    # and admin count queries passed a raw literal here undetected — a renamed
+    # column then degrades to a filter matching nothing, with no error.
+    named_re = re.compile(r"\bcolumn:\s*'([a-z][a-z0-9_]*)'")
 
     for i, line in enumerate(lines, 1):
         if is_comment_line(line):
             continue
-        m = filter_re.search(line) or write_re.search(line)
+        m = filter_re.search(line) or write_re.search(line) or named_re.search(line)
         if not m:
             continue
         cat.findings.append(Finding(

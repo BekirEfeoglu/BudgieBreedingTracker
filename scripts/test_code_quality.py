@@ -503,6 +503,32 @@ class TestCheckRemoteHardcodedColumns(unittest.TestCase):
         cat = _run_checker(check_remote_hardcoded_columns, lines, self._remote)
         self.assertEqual(len(cat.findings), 0)
 
+    # Regression: the named `column:` form (PostgresChangeFilter) was invisible
+    # to the positional-argument regexes, so realtime filters and admin count
+    # queries carried raw literals past a green CI.
+    def test_flags_named_column_argument(self):
+        lines = ["            column: 'user_id',"]
+        cat = _run_checker(check_remote_hardcoded_columns, lines, self._remote)
+        self.assertEqual(len(cat.findings), 1)
+        self.assertIn("user_id", cat.findings[0].suggestion)
+
+    def test_ignores_named_column_using_constant(self):
+        lines = ["            column: SupabaseConstants.colUserId,"]
+        cat = _run_checker(check_remote_hardcoded_columns, lines, self._remote)
+        self.assertEqual(len(cat.findings), 0)
+
+    # admin/ is exempt from the repository boundary but not from #8
+    # (admin.md § Repository Pattern Exception), yet was never scanned.
+    def test_scans_admin_feature_files(self):
+        lines = ["        column: 'is_premium',"]
+        cat = _run_checker(
+            check_remote_hardcoded_columns,
+            lines,
+            Path("lib/features/admin/providers/admin_data_providers.dart"),
+        )
+        self.assertEqual(len(cat.findings), 1)
+        self.assertIn("is_premium", cat.findings[0].suggestion)
+
     def test_ignores_contains_rpc_filter(self):
         lines = ["      .contains('p_sort_by', ['created_at'])"]
         cat = _run_checker(check_remote_hardcoded_columns, lines, self._remote)
