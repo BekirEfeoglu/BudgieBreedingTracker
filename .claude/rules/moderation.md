@@ -41,6 +41,21 @@ User submits content
 - Log: rejection categories Sentry'ye gider, content GİTMEZ (PII koruması)
 
 ## Image Safety Pipeline
+
+**Rate limit: dakikada 30 çağrı/user** (`MAX_SCANS_PER_MINUTE`,
+`scan-image-safety/handler.ts`). Tarama **görsel başına** koştuğu için bütçe tek
+bir kullanıcı aksiyonunun tamamını + retry payını kapsamak zorunda: en büyük
+meşru burst premium topluluk gönderisinde **10 fotoğraf**. Önceki 10/dk değeri
+tek denemede bütçeyi bitiriyordu; gönderi başka bir sebeple (ağ, metin
+moderasyonu, free-tier, Storage) düşerse aynı dakika içindeki retry'da her
+tarama 429 dönüyor ve `ImageSafetyService` **fail-closed** olduğu için kullanıcı
+throttle değil "görsel reddedildi" görüyordu. Foto üst sınırını yükseltirken bu
+bütçeyi de yükselt — `handler_test.ts` ilişkiyi (sayıyı değil) sabitler.
+
+**İstemci tarafı cooldown YOK:** `scan-image-safety` ve `moderate-content`
+`EdgeFunctionClient._rateLimitExempt` içindedir. Döngüde çağrıldıkları ve
+fail-closed oldukları için istemci cooldown'ı kötüye kullanımı değil happy
+path'i kırar; kontrol sunucuda.
 ```
 User picks image
   -> ImagePicker surface-specific resize/quality

@@ -1,5 +1,8 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { createScanImageSafetyHandler } from "./handler.ts";
+import {
+  createScanImageSafetyHandler,
+  MAX_SCANS_PER_MINUTE,
+} from "./handler.ts";
 import {
   MAX_IMAGE_BYTES,
   MAX_IMAGE_REQUEST_BODY_BYTES,
@@ -161,4 +164,25 @@ Deno.test("scan-image-safety remaps an oversized request body to 413 image_too_l
     reason: "image_too_large",
   });
   assertEquals(moderated, 0);
+});
+
+// The client scans once PER IMAGE inside a loop, so the per-minute budget has
+// to cover the largest single user action with room to retry. The largest is a
+// premium community post at 10 photos (_premiumMaxImages in
+// community_create_post_screen.dart). At 10/min one attempt consumed the whole
+// budget and any retry inside the same minute returned 429 — which
+// ImageSafetyService fails CLOSED into "image rejected", not a throttle.
+//
+// This pins the relationship, not the number: raising the photo cap without
+// raising the budget reintroduces the cliff.
+const PREMIUM_MAX_IMAGES_PER_POST = 10;
+const MIN_ATTEMPTS_PER_MINUTE = 3;
+
+Deno.test("rate limit covers a full-size post plus retries", () => {
+  assertEquals(
+    MAX_SCANS_PER_MINUTE >= PREMIUM_MAX_IMAGES_PER_POST * MIN_ATTEMPTS_PER_MINUTE,
+    true,
+    `MAX_SCANS_PER_MINUTE (${MAX_SCANS_PER_MINUTE}) must cover ` +
+      `${PREMIUM_MAX_IMAGES_PER_POST} images x ${MIN_ATTEMPTS_PER_MINUTE} attempts`,
+  );
 });

@@ -13,9 +13,21 @@ import {
   validateImageInput as defaultValidateImageInput,
 } from "./moderation.ts";
 
+// One user action fans out to one scan PER IMAGE, and the largest legitimate
+// burst is a premium community post at 10 photos (_premiumMaxImages). At the
+// previous 10/min that consumed the entire budget in a single attempt: if the
+// submission then failed for any other reason — network, text moderation, the
+// free-tier check, a Storage error — every scan in the retry returned 429, and
+// because ImageSafetyService fails CLOSED the user saw "image rejected" rather
+// than a throttle. 30 leaves room for three full attempts and matches the
+// sibling moderate-content limiter, so there is one number to reason about.
+// The ceiling stays bounded: per-user, authenticated, and every call is already
+// capped at 2 MiB.
+export const MAX_SCANS_PER_MINUTE = 30;
+
 const rateLimiter = createRateLimiter({
   windowMs: 60_000,
-  maxCalls: 10,
+  maxCalls: MAX_SCANS_PER_MINUTE,
   store: createSupabaseRateLimitStore("scan-image-safety"),
 });
 
