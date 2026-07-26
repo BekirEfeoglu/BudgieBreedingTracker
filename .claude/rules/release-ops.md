@@ -87,6 +87,20 @@ yuzden script'te loud fail-fast'tirlar:
 - `SENTRY_DSN` yoksa: crash reporting'i hic olmayan bir release
 - `SENTRY_AUTH_TOKEN` yoksa: kimsenin okuyamadigi obfuscated stack trace'ler
 
+**Pod ayarlarini DOGRULARKEN workspace kullan, `-project Pods.xcodeproj` DEGIL.**
+2026-07-26'da olculdu: `xcodebuild -project ios/Pods/Pods.xcodeproj -target <pod>`
+calistirmak uretilen projeyi geri yazdi ve 95 hedefin 74'unde
+`ENABLE_MODULE_VERIFIER` tekrar `YES` oldu — yani teshis komutunun kendisi
+fix'i etkisizlestirdi ve yedi dakika sonraki Archive yine dustu.
+`xcodebuild -workspace Runner.xcworkspace -scheme Runner` ile ayni dogrulama
+guvenli: once/sonra 285 `NO`, `BUILD SUCCEEDED`.
+
+Bunu ozellikle tehlikeli yapan sey: `ios/Pods/` **gitignored**, dolayisiyla
+boyle bir bozulma `git status`'ta HIC gorunmez. Tek onarim `pod install`. Pod
+build ayarlarini degistirdikten sonra dogrulamayi
+`grep -c 'ENABLE_MODULE_VERIFIER = NO' ios/Pods/Pods.xcodeproj/project.pbxproj`
+gibi dogrudan olcumle yap ve derleme sonrasi TEKRAR olc.
+
 **iOS Module Verifier — Podfile'da KAPALI, acma.** Xcode 26 uretilen Pods
 projesinde `ENABLE_MODULE_VERIFIER`'i varsayilan olarak acar (222 config `YES`
 geldi; ne Podfile ne de Flutter'in `podhelper.rb`'si set ediyor). Verifier her

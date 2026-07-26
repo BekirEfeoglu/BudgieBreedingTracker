@@ -4,6 +4,34 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-26] correction | The diagnostic that undid its own fix
+
+The module-verifier fix was correct, but the Archive failed again 7 minutes
+later — on `sqflite_darwin` this time, exactly the walk-down-the-list behaviour
+predicted for the setting still being ON.
+
+Cause was mine. Proving the fix used
+`xcodebuild -project ios/Pods/Pods.xcodeproj -target <pod>`, and that rewrote
+the generated project: 74 of 95 targets went back to `ENABLE_MODULE_VERIFIER =
+YES` at 22:50, between the `pod install` that set them all to `NO` (22:46) and
+the Archive (22:57). The experiment that established causation also destroyed
+the state it had just verified.
+
+Two things made it invisible. `ios/Pods/` is gitignored, so the corruption never
+appeared in `git status` — the habit of reading git status after builds, which
+caught the entitlements and scheme rewrites, cannot catch this one. And the
+verification measured the setting BEFORE the build, not after.
+
+Re-running `pod install` restored 285/285 `NO`. Verified the safe way this time,
+through the path an Archive actually uses:
+`xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Release`
+→ before 285 NO, `BUILD SUCCEEDED`, after 285 NO. The setting survives a
+workspace build; it does not survive a direct `-project` build of the Pods
+project.
+
+Recorded in release-ops.md: verify pod settings through the workspace, and
+measure the setting again AFTER the build, not only before.
+
 ## [2026-07-26] fix | Xcode 26's module verifier blocks every Flutter plugin
 
 An Archive died on `'Flutter/Flutter.h' file not found` →
