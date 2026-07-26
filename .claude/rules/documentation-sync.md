@@ -58,7 +58,7 @@ Generated/managed values (CLAUDE.md stats, the `verify_code_quality` checker-cou
 
 **Cross-surface guards** (`verify_rules.py`, blocking in `rules-sync`): counts
 cannot catch a *half-landed* update — one surface corrected, its twin left
-stale, every count still right. Twenty-two checks over ten families, covering the
+stale, every count still right. Twenty-three checks over ten families, covering the
 places where the same literal is repeated with nothing tying the copies
 together. Direction matters: **two-way** means both sides must match exactly;
 **one-way** means the second surface may legitimately hold extras.
@@ -80,10 +80,11 @@ together. Direction matters: **two-way** means both sides must match exactly;
 | Agent Registry | `.claude/agents/*.md` ↔ `sources/agents-index.md` catalog | two-way | never — an unregistered or ghost profile |
 | Agent read-only mode | index Mode = read-only → the profile declares no `Write`/`Edit`/`NotebookEdit` | one-way | never — an auditor could edit the code it was sent to inspect |
 | Skill Registry | `.claude/skills/*/SKILL.md` ↔ `sources/skills-index.md` catalog | two-way | never — an unregistered or ghost skill |
-| Skill write posture | index `Writes?` = No → declared `allowed-tools` excludes `Write`/`Edit`/`NotebookEdit` | one-way | never — an advisory skill handing itself an edit tool |
+| Skill write posture | index `Writes?` = No → the skill declares `allowed-tools` and excludes `Write`/`Edit`/`NotebookEdit` | one-way | never — an advisory skill handing itself an edit tool, or a re-vendor dropping the restriction |
 | Rule Registration | `.claude/rules/*.md` ↔ CLAUDE.md § Rules table | two-way | never — the missing leg of three-place registration |
 | Agent routing | `.claude/agents/*.md` → named in `ai-workflow.md` | one-way | never — a profile nothing routes to (2 of 15 on 2026-07-26) |
 | Script inventory | `scripts/*.{py,sh,sql}` → named anywhere in CLAUDE.md | one-way | never — § Script Tests listed 13 of 15 files |
+| Wiki inventories | `lib/features/`, `lib/domain/services/`, Drift tables, `scripts/test_*` → their enumerating wiki page | one-way ×4 | never — `scripts.md` listed 11 of 15 test files |
 
 Two deliberate non-rules, both instances of missing-name != missing-feature:
 - Route constants are NOT required to be referenced. GoRouter composes nested

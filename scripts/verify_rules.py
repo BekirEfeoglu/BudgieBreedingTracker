@@ -35,6 +35,7 @@ from _rules_collectors import (
     collect_storage_bucket_surfaces,
     collect_supabase_column_surfaces,
     collect_supabase_table_surfaces,
+    collect_wiki_inventory_surfaces,
     count_json_leaf_keys,
     duplicate_route_values,
     extract_first_number,
@@ -50,6 +51,7 @@ from _rules_collectors import (
     unprovisioned_tables,
     unresolved_route_targets,
     unrouted_agents,
+    wiki_inventory_gaps,
 )
 from _rules_fixers import _apply_inline_fixes, build_fix_updates, fix_claude_md
 from _rules_utils import Colors, check, section_factory
@@ -515,6 +517,13 @@ def main():
         for name in undocumented:
             print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}: scripts/ altinda var, CLAUDE.md'de anilmiyor")
         track_manual(check("Script'ler CLAUDE.md'de belgeli", 0, len(undocumented)))
+
+    # The wiki's enumerated inventories are the same shape one level over:
+    # a hand-kept list of a directory's contents with nothing tying them.
+    inventories = wiki_inventory_gaps(collect_wiki_inventory_surfaces(ROOT))
+    for name in inventories:
+        print(f"  {Colors.YELLOW}WARN{Colors.RESET} {name}")
+    track_manual(check("Wiki envanter sayfalari dizinlerle ayni", 0, len(inventories)))
 
     # ── Summary ──
     pass_count = sum(results)

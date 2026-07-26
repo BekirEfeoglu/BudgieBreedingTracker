@@ -622,14 +622,15 @@ def collect_skill_surfaces(root: Path) -> dict:
 
 
 def skill_posture_violations(surfaces: dict) -> list:
-    """Advisory skills that declare a write tool anyway.
+    """Advisory skills whose declared tools contradict the catalog.
 
-    One-way on purpose. A skill's `allowed-tools` RESTRICTS the session while
-    the skill is active; omitting the field imposes no restriction rather than
-    granting one, so "declares nothing" is not a violation the way an agent
-    profile's missing tool list would be — it is an unconstrained skill, tracked
-    in skills-index instead. What this catches is the contradiction: a skill the
-    catalog calls advisory that explicitly hands itself Write or Edit.
+    A skill's `allowed-tools` RESTRICTS the session while the skill is active;
+    omitting the field imposes no restriction rather than granting one. So a
+    catalog row saying `No` means nothing unless the skill actually declares a
+    list — which is why an absent field is reported here rather than skipped,
+    the opposite of how an agent profile's missing `tools:` is treated. Two of
+    these are vendored, and re-vendoring upstream would silently drop the line;
+    this is what turns that red instead of letting the posture rot back.
     """
     skills = surfaces["skills"]
     index = surfaces["index"]
@@ -640,8 +641,14 @@ def skill_posture_violations(surfaces: dict) -> list:
     for name, posture in sorted(index.items()):
         if not posture.strip().lower().startswith("no"):
             continue
-        declared = skills.get(name)
+        if name not in skills:
+            continue  # a ghost row; the two-way registry check owns that
+        declared = skills[name]
         if declared is None:
+            violations.append(
+                f"{name}: index'te salt-tavsiye ama allowed-tools bildirmiyor "
+                "(kisitsiz kalir)"
+            )
             continue
         mutating = sorted(declared & _WRITE_TOOLS)
         if mutating:
@@ -713,6 +720,81 @@ def unrouted_agents(surfaces: dict) -> list:
     if profiles is None or text is None:
         return []
     return sorted(name for name in profiles if f"`{name}`" not in text)
+
+
+# ── Wiki inventory pages vs the directories they enumerate ───────────
+# Same shape as the script inventory: a hand-maintained list of everything in a
+# directory, with nothing tying it to the directory. `scripts.md` had drifted to
+# 11 of 15 test files. These four were complete when the check was added
+# (2026-07-26) — this keeps them that way.
+#
+# Each page is matched by the exact token IT uses, never a bare directory name:
+# "more" and "home" are real feature modules and would match almost any prose,
+# making a substring check vacuous where it matters most.
+
+_FEATURE_LINK_RE = re.compile(r"\[\[features/([a-z_]+)\]\]")
+_SERVICE_LIST_RE = re.compile(r"service directories in `lib/domain/services/` \(([^)]+)\)")
+_TABLE_FILE_RE = re.compile(r"([a-z_]+_table\.dart)")
+_TEST_FILE_RE = re.compile(r"(test_[a-z0-9_]+\.py)")
+
+
+def _dir_names(path: Path) -> Optional[set]:
+    return {d.name for d in path.iterdir() if d.is_dir()} if path.exists() else None
+
+
+def _page_tokens(path: Path, pattern: re.Pattern) -> Optional[set]:
+    if not path.exists():
+        return None
+    found = set(pattern.findall(path.read_text(encoding="utf-8")))
+    return found or None
+
+
+def collect_wiki_inventory_surfaces(root: Path) -> dict:
+    """Collect (disk, page) name pairs for each enumerated wiki inventory."""
+    wiki = root / "obsidian-brain"
+    tables_dir = root / "lib" / "data" / "local" / "database" / "tables"
+    scripts_dir = root / "scripts"
+
+    services_page = wiki / "domain" / "services-index.md"
+    services_listed = None
+    if services_page.exists():
+        match = _SERVICE_LIST_RE.search(services_page.read_text(encoding="utf-8"))
+        if match:
+            services_listed = {name.strip() for name in match.group(1).split(",")}
+
+    return {
+        "features": (
+            _dir_names(root / "lib" / "features"),
+            _page_tokens(wiki / "features" / "_features-index.md", _FEATURE_LINK_RE),
+        ),
+        "domain services": (
+            _dir_names(root / "lib" / "domain" / "services"),
+            services_listed,
+        ),
+        "drift tables": (
+            {p.name for p in tables_dir.glob("*.dart")} if tables_dir.exists() else None,
+            _page_tokens(wiki / "data-layer" / "tables-catalog.md", _TABLE_FILE_RE),
+        ),
+        "script tests": (
+            {p.name for p in scripts_dir.glob("test_*.py")} if scripts_dir.exists() else None,
+            _page_tokens(wiki / "infrastructure" / "scripts.md", _TEST_FILE_RE),
+        ),
+    }
+
+
+def wiki_inventory_gaps(surfaces: dict) -> list:
+    """Names on disk that their wiki inventory page never lists.
+
+    One-way: a page may legitimately name something extra (a removed table it
+    warns about, a planned module), and the two-way direction would fight that.
+    """
+    gaps = []
+    for label, (disk, page) in sorted(surfaces.items()):
+        if disk is None or page is None:
+            continue
+        for name in sorted(disk - page):
+            gaps.append(f"{label}: {name} diskte var, wiki envanterinde yok")
+    return gaps
 
 
 def collect_rule_registration_surfaces(root: Path) -> dict:

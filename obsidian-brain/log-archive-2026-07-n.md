@@ -6,6 +6,30 @@ TLS pin freshness gate.
 
 ---
 
+## [2026-07-25] infrastructure | Table-name guard; --sha already existed
+
+**`check_remote_status.py --sha` has existed all along.** Three polls in this
+session retargeted themselves and timed out, and I proposed adding a SHA
+argument to fix it — the flag was already in `parse_args`. The failures were
+misuse, not a missing feature: with no argument the script re-reads the CURRENT
+local HEAD on every call, so a poll started before another commit follows the
+new one. ci-actions.md's example now passes `--sha "$(git rev-parse HEAD)"` and
+says why. No code was written for this.
+
+**Supabase table names** — seventh guard. A `*Table` constant naming a table no
+migration creates fails at query time with a Postgres error, never at build
+time. One-way by design: migrations legitimately create tables the client never
+names (`private.*` helpers, trigger-written audit tables). Keyed on the constant
+NAME suffix, not its value — `adminExportAllTablesRpc` holds
+`'admin_export_all_tables'` and a value-keyed regex flagged it as a missing
+table before the rule was tightened. 77 constants, all provisioned. Verified
+non-vacuous both ways: a ghost table turns it red, an RPC constant does not.
+
+`_rules_collectors.py` reached 100% by marking the one uncovered line
+`# pragma: no cover` — a `continue` that CPython emits no trace event for. The
+test exists and the behavior is verified directly; the gap was the measurement,
+not the coverage. Eight of eleven scripts are now at 100%, total 99%.
+
 ## [2026-07-25] infrastructure | 64-byte map mystery closed; route targets guarded
 
 **The 64-byte difference is solved by downloading the file.** The map Sentry

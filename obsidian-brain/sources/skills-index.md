@@ -39,28 +39,35 @@ beyond the user's request. Complement to [[sources/agents-index]] — skills
   the **Writes?** column calls `No` must not hand itself `Write`/`Edit`/
   `NotebookEdit`. Also CI-enforced by the same family.
 
-### Unconstrained skills (a real limit of that check)
+### The unconstrained-skill limit
 
 `allowed-tools` **restricts** the session while a skill is active; omitting it
 imposes no restriction rather than granting one. That is the opposite of an
 agent profile, whose `tools:` list IS the subagent's complete tool set — which
 is why the agent read-only check treats a missing list as "declares nothing"
-while this one skips it.
+while this one skips it. A skill with no `allowed-tools` is therefore
+unconstrained no matter what the **Writes?** column claims.
 
-Two vendored reference skills declare no `allowed-tools` at all, so nothing
-holds them to the `No` posture above:
+All three advisory skills now declare `allowed-tools: Read, Glob, Grep, Bash`,
+so the column is real for every row. `ui-ux-pro-max` and
+`supabase-postgres-best-practices` gained it on 2026-07-26, resolving a
+contradiction: `ui-ux-pro-max`'s `description` advertises "build, create,
+implement, refactor" while the catalog said `No`. The body settles it — its four
+steps are analyze → run `.claude/skills/ui-ux-pro-max/scripts/search.py` → read
+guidelines, both scripts open files read-only (`open(filepath, 'r')`), and the
+documented output formats are a
+terminal ASCII box or Markdown. Those verbs are the skill's **trigger
+conditions**, not its actions: "When user requests UI/UX work (design, build,
+create, implement…), follow this workflow." The skill supplies a design system;
+the surrounding session implements it, exactly like `mobile-design`.
 
-| Skill | Why it is unconstrained |
-|-------|-------------------------|
-| `supabase-postgres-best-practices` | Vendored (MIT, author `supabase`); pure reference text, no write instructions in its body |
-| `ui-ux-pro-max` | Vendored; body only reads and runs its own `scripts/*.py` via Bash, but its own `description` advertises "build, create, implement, refactor", which contradicts the `No` in the catalog |
+Two consequences worth knowing:
 
-Adding `allowed-tools: Read, Glob, Grep, Bash` to both would make the posture
-real — `mobile-design`, the third advisory skill, already declares exactly that.
-It is deliberately **not** done here: restricting `ui-ux-pro-max` would block
-edits for the rest of its activation, and its own description claims
-implementation actions, so whether the catalog's `No` or the skill's
-`description` is the accurate surface is a product decision, not a lint fix.
+- **Implementation during activation.** A restricted skill cannot itself edit
+  files. If a UI task needs both the guidance and the edit in one activation and
+  that turns out to bite, deleting the one `allowed-tools` line reverts it.
+- **These two skills are vendored.** Re-vendoring upstream would drop the added
+  line; the registry check turns red rather than letting the posture rot back.
 
 ## See Also
 

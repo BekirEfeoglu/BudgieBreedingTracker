@@ -60,6 +60,7 @@ from _rules_collectors import (
     collect_skill_surfaces,
     collect_storage_bucket_surfaces,
     collect_supabase_table_surfaces,
+    collect_wiki_inventory_surfaces,
     duplicate_route_values,
     frontmatter_field,
     gate_parity_gaps,
@@ -72,6 +73,7 @@ from _rules_collectors import (
     unprovisioned_tables,
     unresolved_route_targets,
     unrouted_agents,
+    wiki_inventory_gaps,
     collect_data_layer,
     collect_repos_and_remotes,
     collect_source_file_count,
@@ -2759,18 +2761,35 @@ class TestSkillAndRuleRegistry(unittest.TestCase):
                 self.assertEqual(
                     skill_posture_violations(collect_skill_surfaces(root)), [])
 
-    def test_a_skill_declaring_no_allowed_tools_is_unconstrained_not_violating(self):
-        """Absent `allowed-tools` imposes no restriction; it grants nothing.
+    def test_an_advisory_skill_declaring_no_allowed_tools_is_a_violation(self):
+        """A `No` row means nothing unless the skill actually restricts itself.
 
-        That is the opposite of an agent profile, whose `tools:` list IS its
-        complete tool set. Reporting it here would flag every vendored
-        reference skill as a violation for a field it never had.
+        `allowed-tools` restricts a session; omitting it grants nothing but
+        constrains nothing either, so an undeclared advisory skill is exactly as
+        write-capable as the session. Two of these are vendored, and
+        re-vendoring upstream would drop the line silently — this is what makes
+        that red. Note this is the OPPOSITE of the agent read-only check, where
+        a missing `tools:` list means the subagent gets nothing.
         """
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
             _write_registry_fixture(root, skill_tools=None, skill_posture="No")
             surfaces = collect_skill_surfaces(root)
         self.assertIsNone(surfaces["skills"]["audit"])
+        violations = skill_posture_violations(surfaces)
+        self.assertEqual(len(violations), 1)
+        self.assertIn("allowed-tools", violations[0])
+
+    def test_a_writing_skill_need_not_declare_allowed_tools(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _write_registry_fixture(root, skill_tools=None,
+                                    skill_posture="Yes (fixes)")
+            self.assertEqual(
+                skill_posture_violations(collect_skill_surfaces(root)), [])
+
+    def test_a_catalog_row_with_no_skill_is_left_to_the_registry_check(self):
+        surfaces = {"skills": {}, "index": {"ghost": "No"}}
         self.assertEqual(skill_posture_violations(surfaces), [])
 
     def test_rules_table_ignores_other_claude_md_tables(self):
@@ -2910,6 +2929,123 @@ class TestInventoryDrift(unittest.TestCase):
         self.assertEqual(unrouted_agents(surfaces), [])
 
 
+class TestWikiInventories(unittest.TestCase):
+    """Wiki pages that enumerate a directory, matched by each page's own token.
+
+    Never a bare directory name: "more" and "home" are real feature modules and
+    would match almost any prose, which would make the check vacuous exactly
+    where a missing module matters.
+    """
+
+    def _tree(self, root: Path, *, features=("birds", "more"),
+              listed_features=("birds", "more"), services=("sync",),
+              listed_services=("sync",), tables=("birds_table.dart",),
+              listed_tables=("birds_table.dart",), omit=()) -> None:
+        for name in features:
+            (root / "lib" / "features" / name).mkdir(parents=True, exist_ok=True)
+        for name in services:
+            (root / "lib" / "domain" / "services" / name).mkdir(parents=True, exist_ok=True)
+        tables_dir = root / "lib" / "data" / "local" / "database" / "tables"
+        tables_dir.mkdir(parents=True, exist_ok=True)
+        for name in tables:
+            (tables_dir / name).write_text("x", encoding="utf-8")
+
+        wiki = root / "obsidian-brain"
+        if "features_page" not in omit:
+            page = wiki / "features"
+            page.mkdir(parents=True, exist_ok=True)
+            (page / "_features-index.md").write_text(
+                "# Features\n\n" + "".join(
+                    f"| [[features/{n}]] | purpose |\n" for n in listed_features),
+                encoding="utf-8")
+        if "services_page" not in omit:
+            page = wiki / "domain"
+            page.mkdir(parents=True, exist_ok=True)
+            (page / "services-index.md").write_text(
+                "# Services\n\nN service directories in `lib/domain/services/` "
+                f"({', '.join(listed_services)}).\n",
+                encoding="utf-8")
+        if "tables_page" not in omit:
+            page = wiki / "data-layer"
+            page.mkdir(parents=True, exist_ok=True)
+            (page / "tables-catalog.md").write_text(
+                "# Tables\n\n" + "".join(f"| `{n}` | e | - |\n" for n in listed_tables),
+                encoding="utf-8")
+
+    def test_complete_inventories_report_nothing(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._tree(root)
+            self.assertEqual(
+                wiki_inventory_gaps(collect_wiki_inventory_surfaces(root)), [])
+
+    def test_reports_a_feature_missing_from_its_index(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._tree(root, features=("birds", "more"), listed_features=("birds",))
+            gaps = wiki_inventory_gaps(collect_wiki_inventory_surfaces(root))
+        self.assertEqual(len(gaps), 1)
+        self.assertIn("more", gaps[0])
+
+    def test_reports_a_service_missing_from_the_enumerated_list(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._tree(root, services=("sync", "ads"), listed_services=("sync",))
+            gaps = wiki_inventory_gaps(collect_wiki_inventory_surfaces(root))
+        self.assertTrue(any("ads" in g for g in gaps))
+
+    def test_reports_a_table_missing_from_the_catalog(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._tree(root, tables=("birds_table.dart", "eggs_table.dart"),
+                       listed_tables=("birds_table.dart",))
+            gaps = wiki_inventory_gaps(collect_wiki_inventory_surfaces(root))
+        self.assertTrue(any("eggs_table.dart" in g for g in gaps))
+
+    def test_a_page_may_name_extras(self):
+        """One-way: a page may warn about a removed table or a planned module."""
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._tree(root, tables=("birds_table.dart",),
+                       listed_tables=("birds_table.dart", "removed_table.dart"))
+            self.assertEqual(
+                wiki_inventory_gaps(collect_wiki_inventory_surfaces(root)), [])
+
+    def test_a_bare_module_name_does_not_satisfy_the_features_check(self):
+        """The wikilink form is required — prose mentioning "more" is not a row."""
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._tree(root, listed_features=("birds",))
+            (root / "obsidian-brain" / "features" / "_features-index.md").write_text(
+                "# Features\n\n| [[features/birds]] | x |\n\nSee more modules later.\n",
+                encoding="utf-8")
+            gaps = wiki_inventory_gaps(collect_wiki_inventory_surfaces(root))
+        self.assertTrue(any("more" in g for g in gaps))
+
+    def test_absent_pages_and_dirs_report_nothing(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self.assertEqual(
+                wiki_inventory_gaps(collect_wiki_inventory_surfaces(root)), [])
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._tree(root, omit=("features_page", "services_page", "tables_page"))
+            self.assertEqual(
+                wiki_inventory_gaps(collect_wiki_inventory_surfaces(root)), [])
+
+    def test_a_services_page_without_the_enumerated_list_is_absent(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._tree(root, services=("sync", "ads"), omit=("services_page",))
+            page = root / "obsidian-brain" / "domain"
+            page.mkdir(parents=True, exist_ok=True)
+            (page / "services-index.md").write_text("# Services\n\nno list\n",
+                                                    encoding="utf-8")
+            surfaces = collect_wiki_inventory_surfaces(root)
+        self.assertIsNone(surfaces["domain services"][1])
+        self.assertEqual(wiki_inventory_gaps(surfaces), [])
+
+
 class TestRegistryCheckReporting(unittest.TestCase):
     """Drives verify_rules.main() so the section's report branches are covered."""
 
@@ -2986,6 +3122,17 @@ class TestRegistryCheckReporting(unittest.TestCase):
             (scripts / "undocumented_helper.py").write_text("x", encoding="utf-8")
             result = self._run(root, extra_claude_md="see scripts/verify_rules.py\n")
         self.assertEqual(result, 1)
+
+    def test_fails_on_a_wiki_inventory_missing_a_module(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "lib" / "features" / "birds").mkdir(parents=True)
+            (root / "lib" / "features" / "eggs").mkdir(parents=True)
+            page = root / "obsidian-brain" / "features"
+            page.mkdir(parents=True)
+            (page / "_features-index.md").write_text(
+                "# Features\n\n| [[features/birds]] | x |\n", encoding="utf-8")
+            self.assertEqual(self._run(root), 1)
 
     def test_skips_when_the_meta_surfaces_are_absent(self):
         with tempfile.TemporaryDirectory() as d:

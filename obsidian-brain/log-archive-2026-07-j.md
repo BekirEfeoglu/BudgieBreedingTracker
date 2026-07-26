@@ -1,9 +1,6 @@
 # Change Log Archive — July 2026 J
 
-Archived July 2026 entries rotated out of [[log]] during the 2026-07-12
-gamification streak system documentation sync and the
-2026-07-13 wiki maintenance sweep, with the 2026-07-17 marketing-site sync
-performing the latest pressure rotation.
+Back to [[log]]. Archived July 2026 entries (07-11 to 07-12)
 
 ---
 
@@ -50,6 +47,35 @@ production ad-unit IDs in `ad_service.dart` match the console. Publisher ID ==
 `ca-app-pub-4121152941965334`. Wiki: [[infrastructure/marketing-site]]. Commit
 d95e9bf.
 
+## [2026-07-12] refactor | All Edge functions use request-level DI handlers
+
+All 12 Edge functions were extracted to the DI `handler.ts` pattern with
+request-level Deno tests for 401/400/403/503/200 responses. Added 39 tests
+(204→243). Behavior remained byte-identical and `config.toml`/`verify_jwt`
+stayed unchanged.
+
+## [2026-07-12] refactor | SupabaseConstants remote-source coverage expanded
+
+Added 26 column/RPC constants and replaced 44 literals across eight remote
+sources plus admin providers. No wire-value change.
+
+## [2026-07-12] feat | Genetics explicit linkage phase shipped
+
+Shipped `LinkagePhase` override, engine consultation, isolate/history
+persistence (Drift v28), father-column UI, and the single-pair MVP.
+
+## [2026-07-12] feat | Gamification streak system shipped
+
+Shipped `user_streaks`, the `record_daily_checkin` RPC, tiered XP, 7/30/100-day
+badges, home chip, celebration, and the 20:00 reminder.
+
+## [2026-07-12] docs | Post-task suggestions contract — exactly 3 items
+
+Clarified the agent communication contract at user request: after completing a
+real task, replies end with exactly three specific, task-relevant next-step
+suggestions. Updated `.claude/rules/chat.md` § Post-Coding Suggestions and
+mirrored the compact rule into `AGENTS.md` § Communication (a59251c, f2641be).
+[[sources/rules-index]]
 ## [2026-07-11] fix | About rate-app launch failure surfaces cannot_open_url
 
 Reconciled `0f4fb09`. The Settings→About "Uygulamayı Puanla" (rate-app) tile
@@ -190,3 +216,11 @@ saved-feedback bell entry on wean/promote (which emit their own). [[features/chi
 skips the discard prompt. [[features/health_records]]. Pure style/refactor commits
 (breeding/chicks/health spacing tokens, NotificationIds `@visibleForTesting` drop)
 carry no contract change.
+## [2026-07-11] fix+docs | Marketing site trust and mobile accessibility
+
+Landing pages now expose truthful Premium offers in JSON-LD without an
+unverifiable aggregate rating, localize the skip/blog/navigation labels, and
+add social-image alt metadata. The mobile menu now locks scroll, traps focus,
+supports Escape, and restores focus on close. Email signup reports localized
+loading/success/failure states through an `aria-live` region and no longer
+shows false success after a failed request. [[infrastructure/marketing-site]]

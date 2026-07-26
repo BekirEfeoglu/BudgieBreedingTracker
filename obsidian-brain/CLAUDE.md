@@ -54,6 +54,11 @@ obsidian-brain/
 - **Source refs**: inline file paths must exist unless they are explicit placeholders/examples
 - **Code snippets**: only when the exact text is load-bearing (e.g., a pattern or anti-pattern)
 - **Stats**: copy from `CLAUDE.md` § Codebase Stats; run `python3 scripts/verify_rules.py --fix` when they drift
+- **Enumerated inventories**: `features/_features-index`, `domain/services-index`,
+  `data-layer/tables-catalog` and `infrastructure/scripts` list a directory's
+  contents and are CI-checked against it. Adding a feature module, domain
+  service, Drift table or script test updates the matching page in the same
+  change
 
 ## Operations
 

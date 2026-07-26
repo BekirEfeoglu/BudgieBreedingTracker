@@ -4,6 +4,43 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-26] infrastructure | Skill posture settled, wiki inventories guarded, stub archives folded in
+
+**`ui-ux-pro-max`'s posture was decided by its body, not its description.** The
+catalog said `No` while the skill advertised "build, create, implement,
+refactor" — a contradiction left open earlier. The body settles it: four steps
+of analyze → run `search.py` → read guidelines, both scripts opening files
+read-only, output documented as a terminal ASCII box or Markdown. Those verbs
+are the skill's **trigger** ("When user requests UI/UX work (design, build,
+create…), follow this workflow"), not its actions; it supplies a design system
+the surrounding session implements, exactly like `mobile-design`. Both it and
+`supabase-postgres-best-practices` gained `allowed-tools: Read, Glob, Grep,
+Bash`, so all six skills now declare one. The posture check was then tightened:
+an advisory row with no declaration is now itself a violation, because
+`allowed-tools` restricts rather than grants — a `No` means nothing without it,
+and these two are vendored, so a re-vendor would otherwise drop the line
+silently. Consequence recorded rather than hidden: a restricted skill cannot
+edit during its activation; deleting one line reverts it.
+
+**Four wiki inventories guarded, none of which was actually drifting.** The
+features index (24/24), services index (23/23) and tables catalog (20/20) were
+complete — my first three probes said otherwise and were all my own regex's
+fault, since those pages use `[[wikilinks]]` and full filenames rather than bare
+backticked names. They are guarded anyway because `scripts.md` was 11 of 15
+yesterday: same shape, same rot. Each page is matched by the exact token IT
+uses, never a bare directory name — "more" and "home" are real feature modules
+and a substring check would pass on any prose containing them.
+
+**17 archive pages → 14, and deliberately not to 9.** The three hand-made stubs
+(`06-early` 2 entries, `07-i` 1, `07-k` 5) folded into their chronological
+neighbours; all 186 entries preserved, verified by comparing the date multiset
+before and after. Merging the ~190-line pages would have gone further but was
+rejected on evidence: dated entries still name those files (one in `07-f`
+records rotating work "to [[log-archive-2026-07-f]]"), and fixing the link means
+rewriting a dated entry, which this contract forbids. With the catalog no longer
+riding in every session's context, the remaining benefit was tidiness. Two stale
+navigation footers were corrected — both already wrong, one listing itself.
+
 ## [2026-07-26] infrastructure | Semantic sweep found three rotted inventories; archive cap raised
 
 **The sweep's yield was inventories, not contracts.** Spot-checking constants
@@ -155,28 +192,4 @@ prose bullets, with an explicit direction column — two-way vs one-way was the
 thing that could not be seen at a glance. It also records the two deliberate
 non-rules (route constants need not be referenced; columns are not
 table-scoped), both instances of missing-name != missing-feature.
-
-## [2026-07-25] infrastructure | Table-name guard; --sha already existed
-
-**`check_remote_status.py --sha` has existed all along.** Three polls in this
-session retargeted themselves and timed out, and I proposed adding a SHA
-argument to fix it — the flag was already in `parse_args`. The failures were
-misuse, not a missing feature: with no argument the script re-reads the CURRENT
-local HEAD on every call, so a poll started before another commit follows the
-new one. ci-actions.md's example now passes `--sha "$(git rev-parse HEAD)"` and
-says why. No code was written for this.
-
-**Supabase table names** — seventh guard. A `*Table` constant naming a table no
-migration creates fails at query time with a Postgres error, never at build
-time. One-way by design: migrations legitimately create tables the client never
-names (`private.*` helpers, trigger-written audit tables). Keyed on the constant
-NAME suffix, not its value — `adminExportAllTablesRpc` holds
-`'admin_export_all_tables'` and a value-keyed regex flagged it as a missing
-table before the rule was tightened. 77 constants, all provisioned. Verified
-non-vacuous both ways: a ghost table turns it red, an RPC constant does not.
-
-`_rules_collectors.py` reached 100% by marking the one uncovered line
-`# pragma: no cover` — a `continue` that CPython emits no trace event for. The
-test exists and the behavior is verified directly; the gap was the measurement,
-not the coverage. Eight of eleven scripts are now at 100%, total 99%.
 

@@ -20,7 +20,7 @@ annotations and mobile overflow; explicit EN/DE URLs remain authoritative and
 privacy links stay in-language. Shared locale scripts are cache-versioned. All
 64 public HTML files have asset/ID coverage plus guide/legal regression tests.
 
-Older entries are archived in [[log-archive-2026-07-l]], [[log-archive-2026-07-k]], [[log-archive-2026-07-j]], [[log-archive-2026-07-i]], [[log-archive-2026-07-h]], [[log-archive-2026-07-g]], [[log-archive-2026-07-f]], [[log-archive-2026-07-e]], [[log-archive-2026-07-d]], [[log-archive-2026-07-c]], [[log-archive-2026-07-b]], [[log-archive-2026-07]], [[log-archive-2026-06]] and [[log-archive-2026-05]].
+Older entries are catalogued in [[log-archive-index]].
 
 ## [2026-07-17] sync | Conflict retry now restores encrypted local snapshots
 
