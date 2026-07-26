@@ -87,6 +87,22 @@ yuzden script'te loud fail-fast'tirlar:
 - `SENTRY_DSN` yoksa: crash reporting'i hic olmayan bir release
 - `SENTRY_AUTH_TOKEN` yoksa: kimsenin okuyamadigi obfuscated stack trace'ler
 
+**iOS Module Verifier — Podfile'da KAPALI, acma.** Xcode 26 uretilen Pods
+projesinde `ENABLE_MODULE_VERIFIER`'i varsayilan olarak acar (222 config `YES`
+geldi; ne Podfile ne de Flutter'in `podhelper.rb`'si set ediyor). Verifier her
+pod'un umbrella header'ini TEK BASINA derler; o baglamda Flutter framework
+arama yollari gecerli olmadigi icin `<Flutter/Flutter.h>` bulunamaz ve
+`Flutter/Flutter.h file not found` -> `could not build module '<pod>'` ile
+Archive duser.
+
+Olculdu 2026-07-26, kontrollu deney: ayni pod hedefi
+`ENABLE_MODULE_VERIFIER=YES` ile **BUILD FAILED**, Podfile fix'iyle (`NO`)
+**BUILD SUCCEEDED**. Tek bir pod'a ozgu degil — `package_info_plus`,
+`share_plus` ve `sqflite_darwin` ucu de ayni hatayla dustu, yani Xcode hangisine
+once ulasirsa onu raporlar. Bu yuzden ayar pod hedeflerinin TAMAMINA uygulanir.
+Uygulama hedefi etkilenmez; verifier yalnizca bizim kontrol etmedigimiz ucuncu
+taraf header'larinin modul hijyenini dogrular, uretilen binary'yi degistirmez.
+
 **iOS build'i TAKIPLI dosyalari degistirebilir — build sonrasi `git status` oku.**
 2026-07-26'da olculdu: `flutter build ios --config-only` yerel Xcode
 toolchain'iyle `ios/Runner/Runner.entitlements` ve

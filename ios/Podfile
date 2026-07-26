@@ -53,6 +53,17 @@ post_install do |installer|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
       config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
       config.build_settings['SWIFT_SUPPRESS_WARNINGS'] = 'YES'
+      # Xcode 26 turns the module verifier on by default for the generated
+      # Pods project (222 configs came out ENABLE_MODULE_VERIFIER=YES; neither
+      # this Podfile nor Flutter's podhelper.rb sets it). The verifier compiles
+      # each pod's umbrella header STANDALONE, where the Flutter framework
+      # search paths do not apply — so every Flutter plugin importing
+      # <Flutter/Flutter.h> fails it, and an Archive dies with
+      # "could not build module 'package_info_plus'". It validates the module
+      # hygiene of third-party headers we do not control and has no effect on
+      # the produced binary, so turn it off for pods only. The app target is
+      # untouched.
+      config.build_settings['ENABLE_MODULE_VERIFIER'] = 'NO'
       # Silence harmless archive warnings from CocoaPods dummy/object files.
       existing_libtool_flags = config.build_settings['OTHER_LIBTOOLFLAGS']
       existing_libtool_flags =

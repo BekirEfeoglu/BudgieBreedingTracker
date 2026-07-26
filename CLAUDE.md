@@ -25,6 +25,12 @@ flutter pub get
 # with "sandbox is not in sync with the Podfile.lock" (architecture.md § iOS Pods Sync)
 cd ios && LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 pod install
 
+# The Podfile disables ENABLE_MODULE_VERIFIER for pod targets. Xcode 26 turns it
+# on by default in the generated Pods project, and it compiles each pod's
+# umbrella header standalone — where <Flutter/Flutter.h> does not resolve, so
+# EVERY Flutter plugin fails it and Archive dies with "could not build module".
+# Do not remove that setting (release-ops.md § iOS Module Verifier).
+
 # Code generation (Freezed, Drift, JSON Serializable, Riverpod)
 dart run build_runner build --delete-conflicting-outputs
 
