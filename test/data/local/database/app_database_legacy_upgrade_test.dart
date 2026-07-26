@@ -84,6 +84,46 @@ void main() {
     return rows.map((row) => row.read<String>('name')).toSet();
   }
 
+  test('upgrade from schema v2 does not re-add event_reminders columns', () async {
+    // event_reminders is CREATED in v2->v3, and Migrator.createTable
+    // materializes TODAY's definition — already carrying user_id, is_deleted
+    // and updated_at. The v5->v6 step then ALTERs the same three columns in
+    // unguarded raw SQL, so a database entering onUpgrade at v1 or v2 hits
+    // "duplicate column name: user_id" and never opens. At from >= 3 case 3
+    // never runs and the table keeps its historical shape, so the window is
+    // exactly {1, 2}. Regression for the _tableHasColumn guards on that step.
+    await withLegacyDatabase(
+      'v2-upgrade',
+      2,
+      const [
+        'DROP TABLE IF EXISTS event_reminders', // created in v2->v3
+        // Everything an UNGUARDED step adds after v2. A fixture that keeps
+        // these makes the upgrade fail on the wrong statement (birds
+        // .color_mutation fires before event_reminders is even reached).
+        'ALTER TABLE birds DROP COLUMN color_mutation', // v5
+        'ALTER TABLE birds DROP COLUMN mutations', // v7
+        'ALTER TABLE birds DROP COLUMN genotype_info', // v7
+        'ALTER TABLE notification_settings DROP COLUMN cleanup_days_old', // v13
+        'ALTER TABLE notification_settings DROP COLUMN banding_enabled', // v17
+        'ALTER TABLE chicks DROP COLUMN banding_day', // v15
+        'ALTER TABLE chicks DROP COLUMN banding_date', // v15
+        'ALTER TABLE events DROP COLUMN chick_id', // v15
+      ],
+      assertAbsentColumns: const {
+        'birds': ['color_mutation', 'mutations', 'genotype_info'],
+        'chicks': ['banding_day', 'banding_date'],
+      },
+      (db) async {
+        expect(db.schemaVersion, 29);
+
+        // Opening at all is the assertion: the unguarded ALTER aborts the whole
+        // onUpgrade transaction, so this query never runs.
+        final columns = await columnNames(db, 'event_reminders');
+        expect(columns, containsAll({'user_id', 'is_deleted', 'updated_at'}));
+      },
+    );
+  });
+
   test('upgrade from schema v8 completes without conflict_history', () async {
     // conflict_history is created in v15->v16, so a v8 database has no such
     // table when _createPerformanceIndexes runs in the v8->v9 step.

@@ -40,16 +40,31 @@ Future<void> _migrateV4ToV5(AppDatabase db, Migrator m) async {
 }
 
 /// Migration v5 -> v6: Add userId, isDeleted, updatedAt to event_reminders.
+///
+/// Guarded because `event_reminders` is CREATED one step earlier, in v2->v3,
+/// and `Migrator.createTable` materializes TODAY's definition — which already
+/// carries all three columns. A database entering `onUpgrade` at v1 or v2
+/// therefore ran case 3 (fresh, modern table) and then case 6 (ALTER the same
+/// columns), hitting `duplicate column name: user_id`. That aborts the whole
+/// upgrade transaction, so the database never opens and there is no in-app
+/// recovery. At `from >= 3` case 3 never runs and the table keeps its
+/// historical shape, so the affected window is exactly {1, 2}.
 Future<void> _migrateV5ToV6(AppDatabase db, Migrator m) async {
-  await db.customStatement(
-    "ALTER TABLE event_reminders ADD COLUMN user_id TEXT NOT NULL DEFAULT ''",
-  );
-  await db.customStatement(
-    'ALTER TABLE event_reminders ADD COLUMN is_deleted INTEGER NOT NULL DEFAULT 0',
-  );
-  await db.customStatement(
-    'ALTER TABLE event_reminders ADD COLUMN updated_at TEXT',
-  );
+  if (!await _tableHasColumn(db, 'event_reminders', 'user_id')) {
+    await db.customStatement(
+      "ALTER TABLE event_reminders ADD COLUMN user_id TEXT NOT NULL DEFAULT ''",
+    );
+  }
+  if (!await _tableHasColumn(db, 'event_reminders', 'is_deleted')) {
+    await db.customStatement(
+      'ALTER TABLE event_reminders ADD COLUMN is_deleted INTEGER NOT NULL DEFAULT 0',
+    );
+  }
+  if (!await _tableHasColumn(db, 'event_reminders', 'updated_at')) {
+    await db.customStatement(
+      'ALTER TABLE event_reminders ADD COLUMN updated_at TEXT',
+    );
+  }
 }
 
 /// Migration v6 -> v7: Add mutations and genotype_info to birds.
