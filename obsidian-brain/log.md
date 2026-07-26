@@ -4,6 +4,39 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-26] follow-up | A stale xcconfig was overriding the fresh iOS defines
+
+**The documented mitigation could not work.** Verifying that the version bump
+reached the iOS config turned up a live release hazard. Current Flutter writes
+the dart-defines into `Generated.xcconfig` as base64 `DART_DEFINES`; it does NOT
+write `ios/Flutter/DartDefines.xcconfig`, which older versions used — a full
+build refreshed the former and left the latter at its March mtime.
+`Release.xcconfig` includes the legacy file AFTER the generated one and both
+define `DART_DEFINES`, so the four-month-old copy silently **overrode** the
+fresh values. Decoded, it carried the legacy Google project (118599620356, not
+the current 720334450619) and **no `SENTRY_DSN`** — precisely the
+crash-reporting-less release `build_release.sh` documents itself as preventing,
+while the script never touches that file. Deleted; the claim was corrected in
+seven places that all pointed readers at the wrong file.
+
+**iOS builds mutate TRACKED files.** The same run rewrote
+`Runner.entitlements` and emptied `com.apple.security.application-groups` —
+the container the home widget shares with the app — and later runs bumped
+`LastUpgradeVersion`. All reverted. `build_release.sh ios` runs a flutter build
+too, so read `git status` after it.
+
+**Silent failure paths closed.** Google/Apple native sign-in terminal branches
+and both fail-closed moderation branches logged with `AppLogger.error`, which
+only adds a breadcrumb. A moderation outage blocks every upload and post
+app-wide while showing users a generic rejection, with zero production signal.
+
+**Two docs describing things that never existed.** observability.md specified a
+structured JSON edge-function log schema and the Dashboard filtering it would
+enable — measured: all 36 `console.*` calls across all 12 functions are plain
+prefixed strings. And `SupabaseConstants.geneticsHistoryTable` was declared but
+never referenced, making a dormant table with a never-matching schema look
+like a live surface. Both moved to known-gaps.
+
 ## [2026-07-26] release | Version bumped to 1.1.8+60
 
 Two surfaces, because the version name is duplicated: `pubspec.yaml` (the source
@@ -149,48 +182,4 @@ session left two intermediate commits superseded, one showing commit status
 `failure` although every job was `cancelled`, not failed. Verification correctly
 targets the tip, but an intermediate commit that never completes a round leaves
 no evidence for `git bisect` or later review.
-
-## [2026-07-26] infrastructure | Correction: skill `allowed-tools` does not restrict the session
-
-**Measured, and it disproves what two earlier entries today asserted.** With
-`ui-ux-pro-max` active — declaring `allowed-tools: Read, Glob, Grep, Bash` — a
-`Write` call succeeded. So in this harness a skill's `allowed-tools` does not
-restrict the main session's tool set; the earlier claims that it "restricts a
-session while the skill is active" and that "a restricted skill cannot edit
-during its activation" are wrong, and the warning built on them was unnecessary.
-Caveat on the caveat: this was observed under this project's permission mode, so
-the safe reading is not "it never restricts" but "it cannot be relied on as a
-boundary".
-
-What survives: the field and the catalog column document what a skill's own
-ritual does, and the CI check keeps them from contradicting each other. What
-does not: any notion that an advisory skill is sandboxed. The declarations added
-earlier today stay — they are honest intent, now correctly labelled — but
-`skills-index` no longer implies enforcement. The agent read-only check is
-different and remains a real boundary, because a subagent's `tools:` list IS its
-complete tool set.
-
-The lesson is the session's own theme aimed back at itself: I documented a
-mechanism's behaviour from plausible reasoning instead of running it, and the
-one-command probe took less time than the paragraph describing the risk.
-
-## [2026-07-26] infrastructure | Registry collectors split out; archive merge direction matters
-
-**`_rules_collectors.py` 1,101 → 748 lines.** The nine meta-layer registry and
-inventory collectors moved to `_rules_registry.py` (369 lines) — they all answer
-one question, "does this hand-maintained list still match the directory it
-claims to enumerate", and they had grown to a third of a module about something
-else. Imports go one way only, from `_rules_registry` into `_rules_collectors`,
-never back. The split was caught being incomplete by the guard added hours
-earlier: the new module was not named in CLAUDE.md and § Script inventory went
-red immediately.
-
-**Archive merge direction is load-bearing.** `-07-c` folded into `-07-b`, not
-the reverse, because a dated entry in `-07-n` uses `log-archive-2026-07-b.md` as
-its worked example of why `--rotate` picks a target by content rather than
-filename. Merging the other way would have left that explanation pointing at a
-file that no longer exists — the linter would not have caught it either, since
-the reference is in backticks rather than a wikilink. 14 → 13 pages, 187 entries
-preserved. Rule recorded in the catalog: grep the dated entries for an archive's
-name before merging it.
 

@@ -5,6 +5,50 @@ Archived July 2026 entries (07-26 to 07-26) rotated out of [[log]] during the
 `allowed-tools` correction, and the registry-collector split.
 
 ---
+## [2026-07-26] infrastructure | Correction: skill `allowed-tools` does not restrict the session
+
+**Measured, and it disproves what two earlier entries today asserted.** With
+`ui-ux-pro-max` active — declaring `allowed-tools: Read, Glob, Grep, Bash` — a
+`Write` call succeeded. So in this harness a skill's `allowed-tools` does not
+restrict the main session's tool set; the earlier claims that it "restricts a
+session while the skill is active" and that "a restricted skill cannot edit
+during its activation" are wrong, and the warning built on them was unnecessary.
+Caveat on the caveat: this was observed under this project's permission mode, so
+the safe reading is not "it never restricts" but "it cannot be relied on as a
+boundary".
+
+What survives: the field and the catalog column document what a skill's own
+ritual does, and the CI check keeps them from contradicting each other. What
+does not: any notion that an advisory skill is sandboxed. The declarations added
+earlier today stay — they are honest intent, now correctly labelled — but
+`skills-index` no longer implies enforcement. The agent read-only check is
+different and remains a real boundary, because a subagent's `tools:` list IS its
+complete tool set.
+
+The lesson is the session's own theme aimed back at itself: I documented a
+mechanism's behaviour from plausible reasoning instead of running it, and the
+one-command probe took less time than the paragraph describing the risk.
+
+## [2026-07-26] infrastructure | Registry collectors split out; archive merge direction matters
+
+**`_rules_collectors.py` 1,101 → 748 lines.** The nine meta-layer registry and
+inventory collectors moved to `_rules_registry.py` (369 lines) — they all answer
+one question, "does this hand-maintained list still match the directory it
+claims to enumerate", and they had grown to a third of a module about something
+else. Imports go one way only, from `_rules_registry` into `_rules_collectors`,
+never back. The split was caught being incomplete by the guard added hours
+earlier: the new module was not named in CLAUDE.md and § Script inventory went
+red immediately.
+
+**Archive merge direction is load-bearing.** `-07-c` folded into `-07-b`, not
+the reverse, because a dated entry in `-07-n` uses `log-archive-2026-07-b.md` as
+its worked example of why `--rotate` picks a target by content rather than
+filename. Merging the other way would have left that explanation pointing at a
+file that no longer exists — the linter would not have caught it either, since
+the reference is in backticks rather than a wikilink. 14 → 13 pages, 187 entries
+preserved. Rule recorded in the catalog: grep the dated entries for an archive's
+name before merging it.
+
 ## [2026-07-26] infrastructure | Skill posture settled, wiki inventories guarded, stub archives folded in
 
 **`ui-ux-pro-max`'s posture was decided by its body, not its description.** The
