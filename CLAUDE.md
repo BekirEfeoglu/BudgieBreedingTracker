@@ -157,6 +157,11 @@ scripts/test_git_hooks.py               # Local git hook installation + worktree
 
 Other workflow files: `release-ready.yml` (manual signed Android AAB), `release.yml`, `pages.yml` (GitHub Pages from `docs/`), `dependabot-auto-merge.yml`, `stale*.yml`, `auto-label.yml`.
 
+Dependabot version updates run monthly for both `pub` and `github-actions`
+ecosystems via `.github/dependabot.yml` (first day of the month; open PR caps
+10 and 5 respectively). Dependency-specific compatibility holds remain in the
+same file and must be removed only when their documented preconditions clear.
+
 Workflow changes must be validated locally before push: parse the edited YAML, quote or block-scalar `run:` commands containing `:`, and ensure each triggering event has at least one non-skipped job.
 
 Xcode Cloud is separate from GitHub Actions. Its Flutter iOS setup lives in `ios/ci_scripts/ci_post_clone.sh`; the script must remain executable, retry network-dependent setup, preserve real command exit codes, and fail fast if `Generated.xcconfig` or `Pods-Runner-*.xcfilelist` files are not generated. It installs Flutter via curl+unzip of the pinned SDK archive — never `git clone flutter/flutter`, which is known-flaky on Xcode Cloud (flutter/flutter#163198) — and prints `>>> STEP N:` markers so a failure log names the failing step.

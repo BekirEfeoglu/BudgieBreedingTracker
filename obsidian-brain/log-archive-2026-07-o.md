@@ -5,6 +5,58 @@ Archived July 2026 entries (07-26 to 07-26) rotated out of [[log]] during the
 `allowed-tools` correction, and the registry-collector split.
 
 ---
+## [2026-07-26] audit | Six-lane sweep: a client cooldown was failing closed on every multi-photo post
+
+**Headline, and it was reachable by ordinary users.** `EdgeFunctionClient`
+applies a 10s per-function cooldown, and `scan-image-safety` / `moderate-content`
+were not in `_rateLimitExempt`. Both callers fail CLOSED, so a cooldown reply is
+indistinguishable from "moderation unavailable". Consequences, all verified in
+source: a community post or marketplace listing with **2+ photos could never
+succeed** (the scan runs in a `for` loop over images); a second bird/egg/chick/
+avatar photo added within 10s was rejected as unsafe; and because the DM send
+cooldown is 2s — shorter than 10s — the **second message of any normal
+conversation** was rejected as `moderation_unavailable`. Both providers are
+plain (non-autoDispose) `Provider`s, so the timestamp map lives for the session.
+Fixed by exempting both; abuse control was already server-side and per-user
+(scan 10/min, moderate 30/min, Supabase-backed). The rate-limit branch had zero
+test coverage — that is why it was invisible; added tests.
+
+**Fresh installs were missing three indexes.** `idx_events_egg_id`,
+`idx_events_incubation_id` and `idx_conflict_history_user_created` existed only
+inside their version steps (`_migrateV23ToV24` / `_migrateV15ToV16`), never in
+the shared helper that `onCreate` runs. Upgraded installs had them; new users
+silently full-scanned. This is the **inverse leg** of the 2026-07-25 bricking
+incident — same helper, opposite direction. Mirrored into the helper behind
+`_tableHasColumn` / `_tableExists` guards (the helper still runs from the v8→v9
+step), and the indexes test's expected set now pins all three.
+
+**A test that could never fail.** `multi_locus_masking_test` intersected
+`visualMutations` (IDs, `'grey'`) with `maskedMutations` (display names,
+`'Grey'`) — always empty, so its "never both" assertion passed regardless.
+De-vacuuming it revealed the claimed invariant is **false by design**: masking
+adds to `masked` without removing from `visual`, so `masked ⊆ visual` always.
+Replaced with the subset check, which is precisely the v9 leaked-list signature,
+plus a non-vacuity guard asserting something is actually masked.
+
+**Doc drift, all rules-side.** `FounderGuard` gates `/community/*`,
+`/marketplace/*` and `/ai-predictions` to founder-only, yet appeared in **none**
+of the three rule files that enumerate guards, while community.md/marketplace.md
+described those features as generally available — they are unreachable for every
+non-founder, and messaging is transitively founder-only because its only entry
+points live there. `FeatureFlags` carries six static flags; feature-flags.md
+documented one. genetics.md promised an inbreeding "blocking warning + premium
+override" — the gate is a confirm dialog at `>= 0.25` and **no premium override
+exists anywhere in that path**. All corrected.
+
+Also: capped `AppLogger._recentLogs` (unbounded, appended on every one of 900+
+call sites, retaining raw error objects); stopped three Excel-import parsers
+interpolating raw spreadsheet cells into release Sentry breadcrumbs; made the
+OAuth-revoke failure reportable (its inner catch swallowed, leaving the caller's
+`Sentry.captureException` dead code while the sibling FCM step reported); moved
+7 hardcoded Supabase columns onto constants; and 3 domain icons onto `AppIcon`.
+The `#8` checker was blind to the named `column:` form **and** skipped
+`lib/features/admin/` entirely — both closed, verified by reintroducing the
+violation and watching it fail.
 ## [2026-07-26] infrastructure | Agent read-only measured: a real gate, but not a sandbox
 
 **Probed rather than assumed, and it corrects a claim from hours earlier.** A

@@ -49,6 +49,13 @@ keeps `web/` absent so the static `docs/` site remains the only web surface.
   worktree-relative. The pre-commit hook clears repository-local Git variables
   for Flutter subprocesses, allowing the SDK to resolve its own version.
 
+## Dependabot
+
+`.github/dependabot.yml` checks both Flutter/Dart (`pub`) and GitHub Actions
+dependencies monthly, on the first day of the month. Open PR caps remain 10
+for `pub` and 5 for Actions. Compatibility holds live beside the schedule and
+are removed only after their documented SDK/package preconditions clear.
+
 ## Release Builds (no hosted pipeline)
 
 Codemagic was removed 2026-07-25 (`codemagic.yaml` deleted). Nothing publishes
