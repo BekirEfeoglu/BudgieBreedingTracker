@@ -4,6 +4,12 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-27] ci | Dependabot open PR caps tightened
+
+Reduced monthly Dependabot concurrency from 10 to 5 for `pub` and from 5 to 3
+for GitHub Actions. Synchronized the CI rule, PR checklist, root guide, and
+CI/CD wiki; compatibility holds remain unchanged.
+
 ## [2026-07-27] ci | Dependabot cadence reduced to monthly
 
 Changed both `pub` and `github-actions` version-update schedules from weekly
@@ -151,4 +157,3 @@ the whole per-user budget; any retry in the same minute returned 429, which
 `ImageSafetyService` fails CLOSED into "image rejected". Same shape as the
 client cooldown fixed hours earlier, one layer out. The Deno test pins the
 relationship to the photo cap, not the number.
-

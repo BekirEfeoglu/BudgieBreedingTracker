@@ -159,7 +159,7 @@ Other workflow files: `release-ready.yml` (manual signed Android AAB), `release.
 
 Dependabot version updates run monthly for both `pub` and `github-actions`
 ecosystems via `.github/dependabot.yml` (first day of the month; open PR caps
-10 and 5 respectively). Dependency-specific compatibility holds remain in the
+5 and 3 respectively). Dependency-specific compatibility holds remain in the
 same file and must be removed only when their documented preconditions clear.
 
 Workflow changes must be validated locally before push: parse the edited YAML, quote or block-scalar `run:` commands containing `:`, and ensure each triggering event has at least one non-skipped job.

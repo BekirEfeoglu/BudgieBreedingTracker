@@ -55,7 +55,7 @@
 ## Dependabot Rules
 - `.github/dependabot.yml` hem `pub` hem `github-actions` guncellemelerini
   `monthly` calistirir; aylik interval ayin ilk gununde kosar ve haftaliga ozel
-  `day` alani tasimaz. Acik PR limitleri sirasiyla 10 ve 5'tir.
+  `day` alani tasimaz. Acik PR limitleri sirasiyla 5 ve 3'tur.
 - Auto-merge veya label yazma islemlerine guvenme
 - `GITHUB_TOKEN` read-only gelebilir; merge/edit/label kolayca fail olur
 - Workflow'lari triage/summary odakli tut; destructive action kullanma

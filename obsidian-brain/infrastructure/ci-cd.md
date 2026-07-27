@@ -52,8 +52,8 @@ keeps `web/` absent so the static `docs/` site remains the only web surface.
 ## Dependabot
 
 `.github/dependabot.yml` checks both Flutter/Dart (`pub`) and GitHub Actions
-dependencies monthly, on the first day of the month. Open PR caps remain 10
-for `pub` and 5 for Actions. Compatibility holds live beside the schedule and
+dependencies monthly, on the first day of the month. Open PR caps are 5
+for `pub` and 3 for Actions. Compatibility holds live beside the schedule and
 are removed only after their documented SDK/package preconditions clear.
 
 ## Release Builds (no hosted pipeline)
