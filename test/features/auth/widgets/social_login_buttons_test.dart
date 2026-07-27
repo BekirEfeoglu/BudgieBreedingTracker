@@ -16,11 +16,15 @@ void main() {
       appleCalled = false;
     });
 
-    Widget buildSubject({bool isLoading = false}) {
+    Widget buildSubject({
+      bool isLoading = false,
+      bool? showAppleButton = true,
+    }) {
       return SocialLoginButtons(
         onGoogleTap: () => googleCalled = true,
         onAppleTap: () => appleCalled = true,
         isLoading: isLoading,
+        showAppleButton: showAppleButton,
       );
     }
 
@@ -53,6 +57,17 @@ void main() {
         find.byType(SignInWithAppleButton),
       );
       expect(appleButton.text, l10n('auth.sign_in_with_apple'));
+    });
+
+    testWidgets('hides Apple sign-in button by default on Android', (
+      tester,
+    ) async {
+      await pumpWidgetSimple(tester, buildSubject(showAppleButton: null));
+
+      expect(find.byType(OutlinedButton), findsOneWidget);
+      expect(find.byType(SignInWithAppleButton), findsNothing);
+      expect(find.text(l10n('auth.sign_in_with_apple')), findsNothing);
+      expect(appleCalled, isFalse);
     });
 
     testWidgets('calls onGoogleTap when Google button is tapped', (

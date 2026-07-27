@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
@@ -164,19 +165,14 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     });
 
-    testWidgets('shows social login buttons', (tester) async {
+    testWidgets('shows Android social login buttons', (tester) async {
       await tester.pumpWidget(buildSubject());
       await tester.pump(const Duration(milliseconds: 500));
 
-      // Google uses OutlinedButton, Apple uses official SignInWithAppleButton
       expect(find.byType(OutlinedButton), findsOneWidget);
-      expect(find.byType(SignInWithAppleButton), findsOneWidget);
-      // Verify Google label (key returned in test context)
+      expect(find.byType(SignInWithAppleButton), findsNothing);
       expect(find.text(l10n('auth.sign_in_with_google')), findsOneWidget);
-      final appleButton = tester.widget<SignInWithAppleButton>(
-        find.byType(SignInWithAppleButton),
-      );
-      expect(appleButton.text, l10n('auth.sign_in_with_apple'));
+      expect(find.text(l10n('auth.sign_in_with_apple')), findsNothing);
     });
 
     testWidgets('calls signInWithGoogle on Google button tap', (tester) async {
@@ -204,26 +200,31 @@ void main() {
     });
 
     testWidgets('calls signInWithApple on Apple button tap', (tester) async {
-      when(
-        () => mockAuth.signInWithApple(),
-      ).thenAnswer((_) async => AuthResponse());
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      try {
+        when(
+          () => mockAuth.signInWithApple(),
+        ).thenAnswer((_) async => AuthResponse());
 
-      await tester.pumpWidget(buildSubject());
-      await tester.pump(const Duration(milliseconds: 500));
+        await tester.pumpWidget(buildSubject());
+        await tester.pump(const Duration(milliseconds: 500));
 
-      final appleBtn = find.byType(SignInWithAppleButton);
-      await tester.ensureVisible(appleBtn);
-      await tester.pump(const Duration(milliseconds: 100));
-      await tester.tap(appleBtn);
-      await tester.pump(const Duration(milliseconds: 500));
+        final appleBtn = find.byType(SignInWithAppleButton);
+        await tester.ensureVisible(appleBtn);
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.tap(appleBtn);
+        await tester.pump(const Duration(milliseconds: 500));
 
-      verify(() => mockAuth.signInWithApple()).called(1);
+        verify(() => mockAuth.signInWithApple()).called(1);
 
-      await tester.pump(const Duration(seconds: 2));
-      await tester.pump();
-      await tester.pump();
-      await tester.pump(const Duration(seconds: 3));
-      await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump(const Duration(seconds: 2));
+        await tester.pump();
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 3));
+        await tester.pump(const Duration(milliseconds: 500));
+      } finally {
+        debugDefaultTargetPlatformOverride = null;
+      }
     });
 
     testWidgets('hides guest action while anonymous auth is disabled', (

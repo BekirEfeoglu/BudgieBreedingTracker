@@ -337,10 +337,10 @@ void main() {
         expect(find.text(l10n('auth.sign_in_with_google')), findsOneWidget);
       });
 
-      testWidgets('shows Apple login button', (tester) async {
+      testWidgets('hides Apple login button on Android', (tester) async {
         await pumpWidgetSimple(tester, buildSubject());
 
-        expect(find.byType(SignInWithAppleButton), findsOneWidget);
+        expect(find.byType(SignInWithAppleButton), findsNothing);
       });
     });
   });

@@ -13,11 +13,19 @@ class SocialLoginButtons extends StatefulWidget {
     required this.onGoogleTap,
     required this.onAppleTap,
     this.isLoading = false,
+    this.showAppleButton,
   });
 
   final VoidCallback onGoogleTap;
   final VoidCallback onAppleTap;
   final bool isLoading;
+
+  /// Overrides platform visibility in tests and controlled embedding surfaces.
+  ///
+  /// Android needs a separately configured Apple web authentication flow.
+  /// Until that flow is provisioned, the production default keeps the
+  /// non-functional action hidden while preserving native Apple sign-in on iOS.
+  final bool? showAppleButton;
 
   @override
   State<SocialLoginButtons> createState() => _SocialLoginButtonsState();
@@ -29,6 +37,8 @@ class _SocialLoginButtonsState extends State<SocialLoginButtons> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final shouldShowAppleButton =
+        widget.showAppleButton ?? theme.platform != TargetPlatform.android;
 
     return Column(
       children: [
@@ -76,19 +86,21 @@ class _SocialLoginButtonsState extends State<SocialLoginButtons> {
             ),
           ),
         ),
-        const SizedBox(height: AppSpacing.md),
-        // Apple button
-        SizedBox(
-          width: double.infinity,
-          child: SignInWithAppleButton(
-            onPressed: widget.isLoading ? null : widget.onAppleTap,
-            text: 'auth.sign_in_with_apple'.tr(),
-            height: AppSpacing.touchTargetMd,
-            style: theme.brightness == Brightness.dark
-                ? SignInWithAppleButtonStyle.white
-                : SignInWithAppleButtonStyle.black,
+        if (shouldShowAppleButton) ...[
+          const SizedBox(height: AppSpacing.md),
+          // Apple button
+          SizedBox(
+            width: double.infinity,
+            child: SignInWithAppleButton(
+              onPressed: widget.isLoading ? null : widget.onAppleTap,
+              text: 'auth.sign_in_with_apple'.tr(),
+              height: AppSpacing.touchTargetMd,
+              style: theme.brightness == Brightness.dark
+                  ? SignInWithAppleButtonStyle.white
+                  : SignInWithAppleButtonStyle.black,
+            ),
           ),
-        ),
+        ],
       ],
     );
   }

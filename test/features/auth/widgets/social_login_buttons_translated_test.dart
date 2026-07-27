@@ -28,6 +28,7 @@ void main() {
                 onGoogleTap: () {},
                 onAppleTap: () {},
                 isLoading: false,
+                showAppleButton: true,
               ),
             ),
           ),

@@ -7,7 +7,9 @@ Source: `.claude/rules/auth.md`, `.claude/rules/security.md`
 ## Responsibilities
 
 - Email/password login + registration
-- Google OAuth + Apple Sign-In
+- Google OAuth + native iOS Apple Sign-In
+- Android Apple CTA remains hidden until the Apple web authentication
+  Service ID, redirect endpoint, and callback activity are provisioned together
 - MFA enrollment and challenge
 - Session token storage and refresh
 - Logout (token revocation + session clear)

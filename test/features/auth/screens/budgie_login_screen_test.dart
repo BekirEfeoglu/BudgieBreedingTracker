@@ -145,11 +145,11 @@ void main() {
       await disposeCleanly(tester);
     });
 
-    testWidgets('renders social login buttons section', (tester) async {
+    testWidgets('renders Android social login buttons section', (tester) async {
       await pumpLogin(tester);
       expect(find.byType(SocialLoginButtons), findsOneWidget);
       expect(find.byType(OutlinedButton), findsOneWidget); // Google
-      expect(find.byType(SignInWithAppleButton), findsOneWidget); // Apple
+      expect(find.byType(SignInWithAppleButton), findsNothing); // Apple
       await disposeCleanly(tester);
     });
 

@@ -60,7 +60,7 @@ void main() {
         ),
       ),
       locale: Locale(locale),
-      theme: theme,
+      theme: theme.copyWith(platform: TargetPlatform.iOS),
     );
   }
 

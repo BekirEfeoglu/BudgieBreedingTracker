@@ -22,7 +22,7 @@
 |--------|---------|
 | Email/password | Supabase Auth |
 | Google OAuth | google_sign_in ^7.2.0 |
-| Apple Sign-In | sign_in_with_apple ^8.0.0 |
+| Apple Sign-In | sign_in_with_apple ^8.0.0; native CTA on iOS only until Android web auth is fully provisioned |
 | MFA (TOTP) | Supabase Auth + `mfa-lockout` Edge Function |
 | Guest / anonymous | Disabled in Supabase and `FeatureFlags`; login CTA hidden |
 

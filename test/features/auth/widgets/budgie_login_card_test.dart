@@ -304,11 +304,13 @@ void main() {
       expect(disabledCount, greaterThanOrEqualTo(1));
     });
 
-    testWidgets('has Google and Apple social login buttons', (tester) async {
+    testWidgets('shows Google and hides Apple login on Android', (
+      tester,
+    ) async {
       await pumpWidgetSimple(tester, buildSubject());
 
       expect(find.byType(OutlinedButton), findsOneWidget); // Google
-      expect(find.byType(SignInWithAppleButton), findsOneWidget); // Apple
+      expect(find.byType(SignInWithAppleButton), findsNothing); // Apple
     });
 
     testWidgets('uses AnimatedSwitcher for title transitions', (tester) async {

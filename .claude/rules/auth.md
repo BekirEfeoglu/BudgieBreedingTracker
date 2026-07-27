@@ -7,7 +7,7 @@ Login, kayıt, OAuth, MFA (TOTP), session yaşam döngüsü ve logout zinciri. `
 |---------|-----|
 | Sağlayıcı | Supabase Auth (email/password, Google, Apple) |
 | Google | `google_sign_in ^7.2.0` (`auth_oauth_methods.dart`, `native_google_auth_errors.dart`) |
-| Apple | `sign_in_with_apple ^8.0.0` |
+| Apple | `sign_in_with_apple ^8.0.0`; native CTA iOS-only until Android web auth is provisioned |
 | Providers | `lib/features/auth/providers/` — `auth_providers.dart` (state), `auth_actions.dart`, `auth_account_methods.dart`, `auth_error_mapper.dart`, `post_login_mfa_checker.dart`, `two_factor_providers.dart` |
 | Domain servisler | `lib/domain/services/auth/` — `two_factor_service.dart`, `mfa_lockout_service.dart`, `password_policy.dart` |
 | Edge fn | `mfa-lockout`, `revoke-oauth-token` (edge-functions.md) |
@@ -89,6 +89,15 @@ AAL2 kontrolü HER destructive adımdan ÖNCE koşar — hesap silmede storage t
 - Guest rollout ancak RLS/account-scoped veri etkisi incelenip Supabase ayarı,
   client flag'i ve iki yüzeyin kontrat testleri aynı değişiklikte açılırsa
   yapılabilir. Client flag authorization yerine geçmez.
+
+## Apple Sign-In Platform Policy
+- iOS native Apple Sign-In desteklenir.
+- Android, Apple Service ID + `WebAuthenticationOptions` + callback activity
+  birlikte provision edilmeden Apple CTA'sını göstermez. Yalnız callback
+  activity eklemek yeterli değildir; redirect endpoint'inin Apple cevabını
+  doğrulayıp uygulamaya güvenli biçimde döndürmesi gerekir.
+- `SocialLoginButtons` platform varsayılanını merkezi uygular; login ve kayıt
+  ekranlarında ayrı görünürlük koşulları kopyalama.
 
 ## Logout Zinciri (sıra önemli)
 `AuthActions.signOut()` (`auth_actions.dart`) — sıra bilinçlidir:
