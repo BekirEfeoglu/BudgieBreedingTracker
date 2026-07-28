@@ -12,7 +12,7 @@ class _SelectableBirdGridCard extends StatelessWidget {
   final bool isSelected;
   final bool isSelectionMode;
   final VoidCallback onTap;
-  final VoidCallback onLongPress;
+  final VoidCallback onSelect;
 
   const _SelectableBirdGridCard({
     super.key,
@@ -20,52 +20,51 @@ class _SelectableBirdGridCard extends StatelessWidget {
     required this.isSelected,
     required this.isSelectionMode,
     required this.onTap,
-    required this.onLongPress,
+    required this.onSelect,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return GestureDetector(
-      onLongPress: onLongPress,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: Container(
-              decoration: isSelected
-                  ? BoxDecoration(
-                      border: Border.all(
-                        color: theme.colorScheme.primary,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                    )
-                  : null,
-              child: BirdGridCard(bird: bird, onTap: onTap),
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: Container(
+            decoration: isSelected
+                ? BoxDecoration(
+                    border: Border.all(
+                      color: theme.colorScheme.primary,
+                      width: 2,
+                    ),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                  )
+                : null,
+            child: BirdGridCard(
+              bird: bird,
+              onTap: onTap,
+              onSelect: isSelectionMode ? null : onSelect,
+              contextMenuEnabled: !isSelectionMode,
             ),
           ),
-          if (isSelectionMode)
-            Positioned(
-              left: AppSpacing.xs,
-              top: AppSpacing.xs,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface.withValues(alpha: 0.9),
-                  shape: BoxShape.circle,
-                ),
-                child: Semantics(
-                  selected: isSelected,
-                  label: bird.name,
-                  child: Checkbox(
-                    value: isSelected,
-                    onChanged: (_) => onTap(),
-                  ),
-                ),
+        ),
+        if (isSelectionMode)
+          PositionedDirectional(
+            start: AppSpacing.xs,
+            top: AppSpacing.xs,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface.withValues(alpha: 0.9),
+                shape: BoxShape.circle,
+              ),
+              child: Semantics(
+                selected: isSelected,
+                label: bird.name,
+                child: Checkbox(value: isSelected, onChanged: (_) => onTap()),
               ),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 }
@@ -76,7 +75,7 @@ class _SelectableBirdCard extends StatelessWidget {
   final bool isSelected;
   final bool isSelectionMode;
   final VoidCallback onTap;
-  final VoidCallback onLongPress;
+  final VoidCallback onSelect;
 
   const _SelectableBirdCard({
     super.key,
@@ -84,45 +83,44 @@ class _SelectableBirdCard extends StatelessWidget {
     required this.isSelected,
     required this.isSelectionMode,
     required this.onTap,
-    required this.onLongPress,
+    required this.onSelect,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return GestureDetector(
-      onLongPress: onLongPress,
-      child: Container(
-        decoration: isSelected
-            ? BoxDecoration(
-                border: Border.all(color: theme.colorScheme.primary, width: 2),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              )
-            : null,
-        margin: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.xs,
-          vertical: AppSpacing.xxs,
-        ),
-        child: Row(
-          children: [
-            if (isSelectionMode)
-              Padding(
-                padding: const EdgeInsetsDirectional.only(start: AppSpacing.sm),
-                child: Semantics(
-                  selected: isSelected,
-                  label: bird.name,
-                  child: Checkbox(
-                    value: isSelected,
-                    onChanged: (_) => onTap(),
-                  ),
-                ),
+    return Container(
+      decoration: isSelected
+          ? BoxDecoration(
+              border: Border.all(color: theme.colorScheme.primary, width: 2),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            )
+          : null,
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xs,
+        vertical: AppSpacing.xxs,
+      ),
+      child: Row(
+        children: [
+          if (isSelectionMode)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(start: AppSpacing.sm),
+              child: Semantics(
+                selected: isSelected,
+                label: bird.name,
+                child: Checkbox(value: isSelected, onChanged: (_) => onTap()),
               ),
-            Expanded(
-              child: BirdCard(bird: bird, onTap: onTap),
             ),
-          ],
-        ),
+          Expanded(
+            child: BirdCard(
+              bird: bird,
+              onTap: onTap,
+              onSelect: isSelectionMode ? null : onSelect,
+              contextMenuEnabled: !isSelectionMode,
+            ),
+          ),
+        ],
       ),
     );
   }

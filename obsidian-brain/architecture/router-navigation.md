@@ -38,6 +38,16 @@ Evaluated top-to-bottom in `app_router.dart` `redirect:`; first non-null wins.
 All guards are **stateless** — they derive from current provider state via `ref.read`.
 Grace period counts as premium: gates read `effectivePremiumProvider`, never raw `isPremiumProvider`.
 
+## Main Tab Shell
+
+The five primary destinations use `StatefulShellRoute.indexedStack`; each
+branch owns a Navigator. Switching tabs therefore preserves the branch route
+stack plus local widget and scroll state. Tapping the already-selected
+destination calls `goBranch(..., initialLocation: true)` and returns that branch
+to its root. Chicks belongs to the More branch, so `/chicks` keeps More selected.
+Detail/form routes still target `rootNavigatorKey` and intentionally cover the
+bottom navigation.
+
 ## RouterNotifier
 
 Single GoRouter instance for the app lifetime. `RouterNotifier` listens to
@@ -50,6 +60,9 @@ Single GoRouter instance for the app lifetime. `RouterNotifier` listens to
 
 - **Specific before parameterized**: `/birds/form` BEFORE `/birds/:id` (anti-pattern #18)
 - **Forward nav**: `context.push()` — never `context.go()` (replaces stack, anti-pattern #17); back = `context.pop()`
+- **Primary tab switching**: only `MainShell` uses
+  `StatefulNavigationShell.goBranch`; do not replace this with path-based
+  `context.go()` or branch state will be discarded
 - **Edit mode**: query param `?editId=<uuid>` — read via `validEditIdOrNull`; invalid/stale id silently opens create mode (no NotFound flicker)
 - **Deep-link safety**: path `:id` params validated with `isValidRouteId` (UUID regex) before reaching detail screens — crafted deep links can't inject arbitrary strings
 - All routes must be URI-addressable (deep linking, notification payload `route` field — see [[domain/notification-service]])

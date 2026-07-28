@@ -10,6 +10,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
@@ -71,7 +72,10 @@ void main() {
     );
   });
 
-  Widget createSubject({required Stream<List<BreedingPair>> pairsStream}) {
+  Widget createSubject({
+    required Stream<List<BreedingPair>> pairsStream,
+    AdService? adService,
+  }) {
     return ProviderScope(
       overrides: [
         currentUserIdProvider.overrideWithValue('test-user'),
@@ -94,7 +98,8 @@ void main() {
         birdsByUserIdMapProvider(
           'test-user',
         ).overrideWithValue(const <String, Bird>{}),
-        adServiceProvider.overrideWithValue(_MockAdService()),
+        adServiceProvider.overrideWithValue(adService ?? _MockAdService()),
+        effectivePremiumProvider.overrideWithValue(false),
       ],
       child: MaterialApp.router(routerConfig: router),
     );
@@ -195,7 +200,41 @@ void main() {
 
       // Should show "no results" empty state
       expect(find.byType(EmptyState), findsOneWidget);
+      await tester.tap(find.text(l10n('common.clear_filters')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BreedingCard), findsOneWidget);
     });
+
+    testWidgets(
+      'rapid double-tap on a breeding card requests one interstitial ad',
+      (tester) async {
+        final adService = _MockAdService();
+        when(
+          () => adService.showInterstitialAd(
+            onAdClosed: any(named: 'onAdClosed'),
+          ),
+        ).thenAnswer((_) async {});
+
+        await tester.pumpWidget(
+          createSubject(
+            pairsStream: Stream.value([makePair()]),
+            adService: adService,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byType(BreedingCard));
+        await tester.tap(find.byType(BreedingCard));
+        await tester.pump();
+
+        verify(
+          () => adService.showInterstitialAd(
+            onAdClosed: any(named: 'onAdClosed'),
+          ),
+        ).called(1);
+      },
+    );
 
     testWidgets('clear button appears when search query is not empty', (
       tester,

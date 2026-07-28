@@ -43,6 +43,8 @@ class CalendarScreen extends ConsumerStatefulWidget {
 }
 
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
+  bool _isOpeningEventWithAd = false;
+
   @override
   Widget build(BuildContext context) {
     final userId = ref.watch(currentUserIdProvider);
@@ -188,6 +190,25 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               adBannerLoader: () => defaultAdBannerLoader(ref),
             ),
           ),
+          if (viewMode != CalendarViewMode.month)
+            _CalendarPeriodNavigation(
+              viewMode: viewMode,
+              selectedDate: selectedDate,
+              onPrevious: () {
+                if (viewMode == CalendarViewMode.week) {
+                  _changeWeek(-1);
+                } else {
+                  _changeDay(-1);
+                }
+              },
+              onNext: () {
+                if (viewMode == CalendarViewMode.week) {
+                  _changeWeek(1);
+                } else {
+                  _changeDay(1);
+                }
+              },
+            ),
           Expanded(
             child: GestureDetector(
               onHorizontalDragEnd: (details) => _onSwipe(details, viewMode),
@@ -313,10 +334,13 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   }
 
   void _showEventDetail(Event event) {
+    if (_isOpeningEventWithAd) return;
+    _isOpeningEventWithAd = true;
     // effectivePremiumProvider, not isPremiumProvider: grace-period
     // subscribers are still paying customers and must not see the ad.
     final isPremium = ref.read(effectivePremiumProvider);
     if (isPremium) {
+      _isOpeningEventWithAd = false;
       _openEventDetail(event);
       return;
     }
@@ -324,6 +348,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         .read(adServiceProvider)
         .showInterstitialAd(
           onAdClosed: () {
+            _isOpeningEventWithAd = false;
             if (mounted) _openEventDetail(event);
           },
         );
@@ -362,5 +387,84 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     if (confirmed == true) {
       ref.read(eventFormStateProvider.notifier).deleteEvent(event.id);
     }
+  }
+}
+
+class _CalendarPeriodNavigation extends StatelessWidget {
+  final CalendarViewMode viewMode;
+  final DateTime selectedDate;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
+
+  const _CalendarPeriodNavigation({
+    required this.viewMode,
+    required this.selectedDate,
+    required this.onPrevious,
+    required this.onNext,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final isWeek = viewMode == CalendarViewMode.week;
+    final label = isWeek
+        ? _formatWeek(locale)
+        : DateFormat.yMMMd(locale).format(selectedDate);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.sm,
+        AppSpacing.xs,
+        AppSpacing.sm,
+        0,
+      ),
+      child: Row(
+        children: [
+          AppIconButton(
+            icon: const Icon(LucideIcons.chevronLeft),
+            tooltip: isWeek
+                ? 'calendar.previous_week'.tr()
+                : 'calendar.previous_day'.tr(),
+            semanticLabel: isWeek
+                ? 'calendar.previous_week'.tr()
+                : 'calendar.previous_day'.tr(),
+            onPressed: onPrevious,
+          ),
+          Expanded(
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+          ),
+          AppIconButton(
+            icon: const Icon(LucideIcons.chevronRight),
+            tooltip: isWeek
+                ? 'calendar.next_week'.tr()
+                : 'calendar.next_day'.tr(),
+            semanticLabel: isWeek
+                ? 'calendar.next_week'.tr()
+                : 'calendar.next_day'.tr(),
+            onPressed: onNext,
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatWeek(String locale) {
+    final normalized = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+    );
+    final start = DateTime(
+      normalized.year,
+      normalized.month,
+      normalized.day - (normalized.weekday - DateTime.monday),
+    );
+    final end = DateTime(start.year, start.month, start.day + 6);
+    return '${DateFormat.MMMd(locale).format(start)}'
+        ' – ${DateFormat.yMMMd(locale).format(end)}';
   }
 }

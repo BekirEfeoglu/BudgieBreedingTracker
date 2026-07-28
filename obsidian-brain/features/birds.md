@@ -82,9 +82,19 @@ it were plaintext.
 
 Horizontal scrollable row (replaced Wrap layout in 2026-04 refactor). Filters include
 gender and status; status supports `alive`, `dead`, `sold`, and `gifted`.
+If filters/search produce no rows, the empty state exposes a localized clear
+action that resets both sources.
 
 Ring numbers are searchable and sortable with natural ordering; empty ring numbers stay
 last in both ascending and descending ring sorts.
+
+## Bulk Selection
+
+Selection mode has a visible app-bar entry and therefore does not depend on a
+hidden long-press gesture. Long-press context menus still offer Select as a
+shortcut. While selection mode is active, card context menus are disabled so
+tap consistently toggles selection; bulk actions remain disabled until at
+least one bird is selected. List and grid checkboxes keep a minimum 48dp target.
 
 ## Ring Number Uniqueness
 

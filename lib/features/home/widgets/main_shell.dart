@@ -17,23 +17,15 @@ const double _kTabletBreakpoint = 600;
 const double _kDesktopBreakpoint = 900;
 
 class MainShell extends ConsumerWidget {
-  final Widget child;
-  const MainShell({super.key, required this.child});
+  final StatefulNavigationShell navigationShell;
+  const MainShell({super.key, required this.navigationShell});
 
   static const _navItems = [
-    _NavItem(iconAsset: AppIcons.home, label: 'nav.home', path: '/'),
-    _NavItem(iconAsset: AppIcons.bird, label: 'nav.birds', path: '/birds'),
-    _NavItem(
-      iconAsset: AppIcons.breeding,
-      label: 'nav.breeding',
-      path: '/breeding',
-    ),
-    _NavItem(
-      iconAsset: AppIcons.calendar,
-      label: 'nav.calendar',
-      path: '/calendar',
-    ),
-    _NavItem(iconAsset: AppIcons.more, label: 'nav.more', path: '/more'),
+    _NavItem(iconAsset: AppIcons.home, label: 'nav.home'),
+    _NavItem(iconAsset: AppIcons.bird, label: 'nav.birds'),
+    _NavItem(iconAsset: AppIcons.breeding, label: 'nav.breeding'),
+    _NavItem(iconAsset: AppIcons.calendar, label: 'nav.calendar'),
+    _NavItem(iconAsset: AppIcons.more, label: 'nav.more'),
   ];
 
   @override
@@ -49,9 +41,7 @@ class MainShell extends ConsumerWidget {
     ref.watch(periodicSyncProvider);
     ref.watch(networkAwareSyncProvider);
 
-    final selectedIndex = _calculateIndex(
-      GoRouterState.of(context).matchedLocation,
-    );
+    final selectedIndex = navigationShell.currentIndex;
     final width = MediaQuery.sizeOf(context).width;
     final isWide = width >= _kTabletBreakpoint;
     final isDesktop = width >= _kDesktopBreakpoint;
@@ -65,22 +55,16 @@ class MainShell extends ConsumerWidget {
               labelType: isDesktop
                   ? NavigationRailLabelType.all
                   : NavigationRailLabelType.selected,
-              onDestinationSelected: (index) {
-                AppHaptics.lightImpact();
-                // Intentional context.go: bottom-nav / rail destinations are
-                // root-level tabs in a non-Stateful ShellRoute, so each tab
-                // switch must replace the route stack rather than push onto
-                // it. Rule #17's context.push prohibition is for forward
-                // navigation within a tab, not for tab switching itself.
-                context.go(_navItems[index].path);
-              },
+              onDestinationSelected: _goToBranch,
               destinations: _navItems.map((item) {
                 return NavigationRailDestination(
                   icon: AppIcon(item.iconAsset),
                   selectedIcon: ShimmerShineAnimation(
                     isActive: true,
                     duration: const Duration(milliseconds: 2000),
-                    shineColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.5),
+                    shineColor: Theme.of(
+                      context,
+                    ).colorScheme.onPrimary.withValues(alpha: 0.5),
                     child: AppIcon(
                       item.iconAsset,
                       color: Theme.of(context).colorScheme.primary,
@@ -91,27 +75,26 @@ class MainShell extends ConsumerWidget {
               }).toList(),
             ),
             const VerticalDivider(width: 1),
-            Expanded(child: child),
+            Expanded(child: navigationShell),
           ],
         ),
       );
     }
 
     return Scaffold(
-      body: child,
+      body: navigationShell,
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedIndex,
-        onDestinationSelected: (index) {
-          AppHaptics.lightImpact();
-          context.go(_navItems[index].path);
-        },
+        onDestinationSelected: _goToBranch,
         destinations: _navItems.map((item) {
           return NavigationDestination(
             icon: AppIcon(item.iconAsset),
             selectedIcon: ShimmerShineAnimation(
               isActive: true,
               duration: const Duration(milliseconds: 2000),
-              shineColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.5),
+              shineColor: Theme.of(
+                context,
+              ).colorScheme.onPrimary.withValues(alpha: 0.5),
               child: AppIcon(
                 item.iconAsset,
                 color: Theme.of(context).colorScheme.primary,
@@ -124,23 +107,20 @@ class MainShell extends ConsumerWidget {
     );
   }
 
-  int _calculateIndex(String location) {
-    if (location == '/') return 0;
-    if (location.startsWith('/birds')) return 1;
-    if (location.startsWith('/breeding')) return 2;
-    if (location.startsWith('/calendar')) return 3;
-    // Chicks are accessed via More → highlight More tab
-    return 4;
+  void _goToBranch(int index) {
+    AppHaptics.lightImpact();
+    navigationShell.goBranch(
+      index,
+      // A second tap on the active destination follows the native tab-bar
+      // convention and returns that branch to its root. Switching to another
+      // branch preserves its Navigator and local widget/scroll state.
+      initialLocation: index == navigationShell.currentIndex,
+    );
   }
 }
 
 class _NavItem {
   final String iconAsset;
   final String label;
-  final String path;
-  const _NavItem({
-    required this.iconAsset,
-    required this.label,
-    required this.path,
-  });
+  const _NavItem({required this.iconAsset, required this.label});
 }

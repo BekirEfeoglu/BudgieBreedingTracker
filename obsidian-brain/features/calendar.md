@@ -16,6 +16,9 @@ milestones) coexist with manual reminders the user adds.
 
 `CalendarViewMode` enum (`month`, `week`, `day`) drives layout. State held
 by `calendarViewProvider`. View change preserves `selectedDateProvider`.
+Week and day layouts expose 48dp previous/next buttons with localized semantic
+labels; horizontal swipe remains an optional shortcut, never the only way to
+change periods.
 
 ## Filters
 
@@ -62,6 +65,9 @@ that every event got a fixed 30-minute reminder.
 **Editing (2026-07-09):** the dropdown now shows in edit mode too. On open,
 `_loadExistingReminder` reads the event's current offset via
 `eventReminderRepository.getByEvent` (pre-fills, or "no reminder" when none).
+The field and Save action stay disabled until that async read completes. A read
+failure shows a generic localized error and retry action; the form never saves
+the default offset over an existing reminder whose value failed to load.
 Saving calls `updateEvent(event, reminderMinutesBefore:, reconcileReminder:
 true)`, which cancels + removes the old reminder(s) (and their OS
 notifications) then re-creates the chosen offset — the cancel+reschedule

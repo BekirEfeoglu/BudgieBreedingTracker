@@ -33,6 +33,9 @@ asyncValue.when(
 - Specific routes BEFORE parameterized: `/birds/form` before `/birds/:id`
 - Forward navigation: `context.push()` (NOT `context.go()` which replaces stack)
 - Back navigation: `context.pop()` — never `context.go()` for going back
+- Primary bottom-nav/rail tabs use `StatefulShellRoute.indexedStack` and
+  `StatefulNavigationShell.goBranch`; keep one Navigator per branch so local
+  widget/scroll state and nested stacks survive tab switches
 - Edit mode: query param `?editId=xxx`
 - Guards: `AdminGuard`, `PremiumGuard`, `FounderGuard` in `lib/router/guards/` (security.md § Route Guards). `FounderGuard` soft-launch-gates `/community/*`, `/marketplace/*` and `/ai-predictions`; a UI entry point to a founder-gated route MUST hide itself behind `isFounderProvider` rather than let the redirect dead-end the user
 - Deep linking: all routes must be accessible via URI

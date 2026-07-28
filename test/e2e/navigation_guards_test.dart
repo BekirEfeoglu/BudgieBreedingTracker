@@ -22,10 +22,6 @@ void main() {
   ensureE2EBinding();
 
   group('Navigation and Guard E2E', () {
-    setUp(() {
-      _ScrollableBirdTabState.resetPersistedState();
-    });
-
     testWidgets(
       'GIVEN free-tier user WHEN premium route is accessed THEN redirect target is /premium',
       (tester) async {
@@ -64,43 +60,64 @@ void main() {
         final router = GoRouter(
           initialLocation: AppRoutes.birds,
           routes: [
-            ShellRoute(
-              builder: (context, state, child) => MainShell(child: child),
-              routes: [
-                GoRoute(
-                  path: AppRoutes.home,
-                  pageBuilder: (_, state) => NoTransitionPage(
-                    key: state.pageKey,
-                    child: const _TabScreen(label: 'home_tab'),
-                  ),
+            StatefulShellRoute.indexedStack(
+              builder: (context, state, navigationShell) =>
+                  MainShell(navigationShell: navigationShell),
+              branches: [
+                StatefulShellBranch(
+                  routes: [
+                    GoRoute(
+                      path: AppRoutes.home,
+                      pageBuilder: (_, state) => NoTransitionPage(
+                        key: state.pageKey,
+                        child: const _TabScreen(label: 'home_tab'),
+                      ),
+                    ),
+                  ],
                 ),
-                GoRoute(
-                  path: AppRoutes.birds,
-                  pageBuilder: (_, state) => NoTransitionPage(
-                    key: state.pageKey,
-                    child: const _ScrollableBirdTab(),
-                  ),
+                StatefulShellBranch(
+                  routes: [
+                    GoRoute(
+                      path: AppRoutes.birds,
+                      pageBuilder: (_, state) => NoTransitionPage(
+                        key: state.pageKey,
+                        child: const _ScrollableBirdTab(),
+                      ),
+                    ),
+                  ],
                 ),
-                GoRoute(
-                  path: AppRoutes.breeding,
-                  pageBuilder: (_, state) => NoTransitionPage(
-                    key: state.pageKey,
-                    child: const _TabScreen(label: 'breeding_tab'),
-                  ),
+                StatefulShellBranch(
+                  routes: [
+                    GoRoute(
+                      path: AppRoutes.breeding,
+                      pageBuilder: (_, state) => NoTransitionPage(
+                        key: state.pageKey,
+                        child: const _TabScreen(label: 'breeding_tab'),
+                      ),
+                    ),
+                  ],
                 ),
-                GoRoute(
-                  path: AppRoutes.calendar,
-                  pageBuilder: (_, state) => NoTransitionPage(
-                    key: state.pageKey,
-                    child: const _TabScreen(label: 'calendar_tab'),
-                  ),
+                StatefulShellBranch(
+                  routes: [
+                    GoRoute(
+                      path: AppRoutes.calendar,
+                      pageBuilder: (_, state) => NoTransitionPage(
+                        key: state.pageKey,
+                        child: const _TabScreen(label: 'calendar_tab'),
+                      ),
+                    ),
+                  ],
                 ),
-                GoRoute(
-                  path: AppRoutes.more,
-                  pageBuilder: (_, state) => NoTransitionPage(
-                    key: state.pageKey,
-                    child: const _TabScreen(label: 'more_tab'),
-                  ),
+                StatefulShellBranch(
+                  routes: [
+                    GoRoute(
+                      path: AppRoutes.more,
+                      pageBuilder: (_, state) => NoTransitionPage(
+                        key: state.pageKey,
+                        child: const _TabScreen(label: 'more_tab'),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -205,40 +222,20 @@ class _ScrollableBirdTab extends StatefulWidget {
   State<_ScrollableBirdTab> createState() => _ScrollableBirdTabState();
 }
 
-class _ScrollableBirdTabState extends State<_ScrollableBirdTab>
-    with AutomaticKeepAliveClientMixin<_ScrollableBirdTab> {
-  static String _persistedQuery = '';
-  static double _persistedOffset = 0;
-
-  static void resetPersistedState() {
-    _persistedQuery = '';
-    _persistedOffset = 0;
-  }
-
+class _ScrollableBirdTabState extends State<_ScrollableBirdTab> {
   late final TextEditingController _searchController;
   late final ScrollController _scrollController;
-  late String _query;
-
-  @override
-  bool get wantKeepAlive => true;
+  String _query = '';
 
   @override
   void initState() {
     super.initState();
-    _query = _persistedQuery;
-    _searchController = TextEditingController(text: _persistedQuery);
-    _scrollController = ScrollController(initialScrollOffset: _persistedOffset);
-    _scrollController.addListener(() {
-      _persistedOffset = _scrollController.offset;
-    });
+    _searchController = TextEditingController();
+    _scrollController = ScrollController();
   }
 
   @override
   void dispose() {
-    _persistedQuery = _query;
-    _persistedOffset = _scrollController.hasClients
-        ? _scrollController.offset
-        : _persistedOffset;
     _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -246,7 +243,6 @@ class _ScrollableBirdTabState extends State<_ScrollableBirdTab>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     return Scaffold(
       body: Column(
         children: [
@@ -255,7 +251,6 @@ class _ScrollableBirdTabState extends State<_ScrollableBirdTab>
             controller: _searchController,
             onChanged: (value) => setState(() {
               _query = value;
-              _persistedQuery = value;
             }),
           ),
           Text('typed:$_query'),

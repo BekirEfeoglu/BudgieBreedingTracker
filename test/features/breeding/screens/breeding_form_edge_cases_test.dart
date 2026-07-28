@@ -5,7 +5,10 @@ import 'package:go_router/go_router.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/widgets/empty_state.dart';
+import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
+import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
+import 'package:budgie_breeding_tracker/data/providers/breeding_detail_stream_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_providers.dart';
@@ -50,6 +53,7 @@ void main() {
     List<Bird> males = const [],
     List<Bird> females = const [],
     BreedingFormNotifier Function()? notifierFactory,
+    List<dynamic> extraOverrides = const [],
   }) {
     return ProviderScope(
       overrides: [
@@ -60,6 +64,7 @@ void main() {
         breedingFormStateProvider.overrideWith(
           notifierFactory ?? () => BreedingFormNotifier(),
         ),
+        ...extraOverrides,
       ],
       child: MaterialApp.router(routerConfig: router),
     );
@@ -109,6 +114,40 @@ void main() {
   });
 
   group('Error recovery', () {
+    testWidgets(
+      'edit load failure shows retryable data error instead of not found',
+      (t) async {
+        final male = _bird('male-1', 'Male', BirdGender.male);
+        final female = _bird('female-1', 'Female', BirdGender.female);
+        router.go('/breeding/form?editId=pair-1');
+
+        await t.pumpWidget(
+          subject(
+            birds: Stream.value([male, female]),
+            males: [male],
+            females: [female],
+            extraOverrides: [
+              breedingPairByIdProvider('pair-1').overrideWith((_) {
+                return Stream<BreedingPair?>.error(
+                  StateError('database detail'),
+                );
+              }),
+            ],
+          ),
+        );
+        await t.pumpAndSettle();
+
+        expect(find.byType(ErrorState), findsOneWidget);
+        expect(find.text('common.data_load_error'), findsOneWidget);
+        expect(find.text('breeding.not_found'), findsNothing);
+        expect(find.textContaining('database detail'), findsNothing);
+        expect(
+          t.widget<ElevatedButton>(find.byType(ElevatedButton)).onPressed,
+          isNotNull,
+        );
+      },
+    );
+
     testWidgets('save failure shows error SnackBar', (t) async {
       final notifier = _TransitionNotifier();
       final males = [_bird('m1', 'Male', BirdGender.male)];

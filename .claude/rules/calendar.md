@@ -63,6 +63,9 @@ seçtirir; varsayılan `kDefaultReminderMinutesBefore` (30 dk, eski davranış).
 oluşturulmaz. **Edit — shipped (2026-07-09):** dropdown artık düzenlemede de
 gösterilir; form açılışında `_loadExistingReminder` mevcut reminder offset'ini
 `eventReminderRepository.getByEvent` ile yükler (yoksa "hatırlatma yok").
+Bu async okuma tamamlanana kadar dropdown ve Kaydet kapalıdır. Okuma hatasında
+raw exception gösterilmez; localized `ErrorState`/retry sunulur ve mevcut
+reminder bilinmeden varsayılan offset ile üzerine yazılmaz.
 Kaydetme `updateEvent(..., reminderMinutesBefore:, reconcileReminder: true)`
 ile reconcile eder: eski reminder(ler) iptal + silinir (`_cleanupRemindersForEvent`
 OS bildirimini de iptal eder), sonra yeni offset seçildiyse yeniden oluşturulur
@@ -107,6 +110,8 @@ Validation zorunlu (notifications.md): id-enjekte eden rotalarda
 
 ## Calendar View
 - Month view: `CalendarGrid` (custom `lib/features/calendar/widgets/calendar_grid.dart`, 7-column grid — NOT the `table_calendar` package, not a dependency)
+- Week/day view: önceki/sonraki dönem için localized semantic label'lı 48dp
+  görünür düğmeler zorunlu; yatay swipe yalnızca ek kısayoldur
 - Day detail: o gün eventlerinin listesi (chronological)
 - Filter: event type checkbox (multi-select)
 - Filtre TEK geçiş: month/week/day provider'ları `filteredCalendarEventsProvider`'dan türetilir (`calendar_providers.dart`) — `filterCalendarEvents` (stream, filtre) değişimi başına BİR kez koşar; view provider'larına yeniden inline filtreleme EKLEME

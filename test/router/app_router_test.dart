@@ -639,7 +639,8 @@ void main() {
       final topLevelRoutes = router.configuration.routes;
       final paths = _collectPaths(topLevelRoutes);
 
-      expect(topLevelRoutes.whereType<ShellRoute>().length, 2);
+      expect(topLevelRoutes.whereType<ShellRoute>().length, 1);
+      expect(topLevelRoutes.whereType<StatefulShellRoute>().length, 1);
       expect(
         paths,
         containsAll([

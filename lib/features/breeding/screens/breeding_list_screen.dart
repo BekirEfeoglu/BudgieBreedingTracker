@@ -30,30 +30,46 @@ import 'package:budgie_breeding_tracker/shared/widgets/app_shell.dart';
 import 'package:budgie_breeding_tracker/core/widgets/loading_state.dart';
 
 /// Main screen listing all breeding pairs with filter and search support.
-class BreedingListScreen extends ConsumerWidget {
+class BreedingListScreen extends ConsumerStatefulWidget {
   const BreedingListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BreedingListScreen> createState() => _BreedingListScreenState();
+}
+
+class _BreedingListScreenState extends ConsumerState<BreedingListScreen> {
+  bool _isNavigatingWithAd = false;
+
+  void _navigateWithAd(String route) {
+    if (_isNavigatingWithAd) return;
+    _isNavigatingWithAd = true;
+    // effectivePremiumProvider, not isPremiumProvider: grace-period
+    // subscribers are still paying customers and must not see the ad.
+    final isPremium = ref.read(effectivePremiumProvider);
+    if (isPremium) {
+      _isNavigatingWithAd = false;
+      context.push(route);
+      return;
+    }
+    ref
+        .read(adServiceProvider)
+        .showInterstitialAd(
+          onAdClosed: () {
+            _isNavigatingWithAd = false;
+            if (mounted) context.push(route);
+          },
+        );
+  }
+
+  void _clearFilters() {
+    ref.read(breedingFilterProvider.notifier).state = BreedingFilter.all;
+    ref.read(breedingSearchQueryProvider.notifier).state = '';
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final userId = ref.watch(currentUserIdProvider);
     final pairsAsync = ref.watch(breedingPairsStreamProvider(userId));
-
-    void navigateWithAd(String route) {
-      // effectivePremiumProvider, not isPremiumProvider: grace-period
-      // subscribers are still paying customers and must not see the ad.
-      final isPremium = ref.read(effectivePremiumProvider);
-      if (isPremium) {
-        context.push(route);
-        return;
-      }
-      ref
-          .read(adServiceProvider)
-          .showInterstitialAd(
-            onAdClosed: () {
-              if (context.mounted) context.push(route);
-            },
-          );
-    }
 
     return Scaffold(
       body: RefreshIndicator(
@@ -149,6 +165,8 @@ class BreedingListScreen extends ConsumerWidget {
                       icon: const Icon(LucideIcons.searchX),
                       title: 'breeding.no_results'.tr(),
                       subtitle: 'breeding.no_results_hint'.tr(),
+                      actionLabel: 'common.clear_filters'.tr(),
+                      onAction: _clearFilters,
                     ),
                   );
                 }
@@ -172,37 +190,34 @@ class BreedingListScreen extends ConsumerWidget {
                     bottom: AppSpacing.lg,
                   ),
                   sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        if (index == 0) {
-                          return _RiskSummaryHeaderCard(userId: userId);
-                        }
-                        final pair = pairs[index - 1];
-                        final incubation = incubationMap[pair.id];
-                        final eggs = incubation != null
-                            ? eggMap[incubation.id] ?? const <Egg>[]
-                            : const <Egg>[];
-                        return Center(
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 800),
-                            child: BreedingCard(
-                              key: ValueKey(pair.id),
-                              pair: pair,
-                              incubation: incubation,
-                              eggs: eggs,
-                              birdsMap: birdMap,
-                              onTap: () => navigateWithAd(
-                                AppRoutes.breedingDetail.replaceFirst(
-                                  ':id',
-                                  pair.id,
-                                ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      if (index == 0) {
+                        return _RiskSummaryHeaderCard(userId: userId);
+                      }
+                      final pair = pairs[index - 1];
+                      final incubation = incubationMap[pair.id];
+                      final eggs = incubation != null
+                          ? eggMap[incubation.id] ?? const <Egg>[]
+                          : const <Egg>[];
+                      return Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 800),
+                          child: BreedingCard(
+                            key: ValueKey(pair.id),
+                            pair: pair,
+                            incubation: incubation,
+                            eggs: eggs,
+                            birdsMap: birdMap,
+                            onTap: () => _navigateWithAd(
+                              AppRoutes.breedingDetail.replaceFirst(
+                                ':id',
+                                pair.id,
                               ),
                             ),
                           ),
-                        );
-                      },
-                      childCount: pairs.length + 1,
-                    ),
+                        ),
+                      );
+                    }, childCount: pairs.length + 1),
                   ),
                 );
               },

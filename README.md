@@ -61,7 +61,7 @@ The repository includes the main mobile app, localized content in Turkish, Engli
 | Drift tables | 20 |
 | Routes | 75 |
 | Custom SVG icons | 99 |
-| Localization keys | ~3,167 per language (TR, EN, DE) |
+| Localization keys | ~3,173 per language (TR, EN, DE) |
 | Domain services | 23 |
 | DB schema version | 29 |
 

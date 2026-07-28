@@ -66,6 +66,9 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
   /// is carried as this sentinel and converted back to `null` at submit time.
   static const int _noReminderSentinel = -1;
   int _reminderChoice = kDefaultReminderMinutesBefore;
+  bool _isReminderLoading = false;
+  bool _hasReminderLoadError = false;
+  int _reminderFieldVersion = 0;
 
   bool get _isEditing => widget.existingEvent != null;
 
@@ -101,6 +104,7 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
       _eventType = existing.type;
       // Load the event's current reminder so the dropdown reflects it in edit
       // mode (and the user can change/remove it).
+      _isReminderLoading = true;
       unawaited(_loadExistingReminder(existing.id));
     } else {
       _eventDate = widget.initialDate ?? DateTime.now();
@@ -112,15 +116,40 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
   /// Reads the event's existing reminder offset into [_reminderChoice] so the
   /// edit form opens showing the current setting (or "no reminder").
   Future<void> _loadExistingReminder(String eventId) async {
-    final reminders = await ref
-        .read(eventReminderRepositoryProvider)
-        .getByEvent(eventId);
-    if (!mounted) return;
-    setState(() {
-      _reminderChoice = reminders.isEmpty
-          ? _noReminderSentinel
-          : reminders.first.minutesBefore;
-    });
+    if (!_isReminderLoading || _hasReminderLoadError) {
+      setState(() {
+        _isReminderLoading = true;
+        _hasReminderLoadError = false;
+      });
+    }
+    try {
+      final reminders = await ref
+          .read(eventReminderRepositoryProvider)
+          .getByEvent(eventId);
+      if (!mounted) return;
+      setState(() {
+        _reminderChoice = reminders.isEmpty
+            ? _noReminderSentinel
+            : reminders.first.minutesBefore;
+        _isReminderLoading = false;
+        _hasReminderLoadError = false;
+        // FormField.initialValue is consumed only when its State is created.
+        // Re-key once after async hydration so the displayed selection and the
+        // value submitted by this State cannot diverge.
+        _reminderFieldVersion++;
+      });
+    } catch (e, st) {
+      AppLogger.error(
+        '[EventForm] Failed to load reminder for $eventId',
+        e,
+        st,
+      );
+      if (!mounted) return;
+      setState(() {
+        _isReminderLoading = false;
+        _hasReminderLoadError = true;
+      });
+    }
   }
 
   @override
@@ -134,6 +163,8 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final formState = ref.watch(eventFormStateProvider);
+    final isBusy = formState.isLoading || _isReminderLoading;
+    final canSubmit = !isBusy && !_hasReminderLoadError;
 
     ref.listen<EventFormState>(eventFormStateProvider, (_, state) {
       if (state.isSuccess) {
@@ -271,6 +302,7 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
               // mode the dropdown is pre-filled from the event's current
               // reminder and any change is reconciled on save.
               DropdownButtonFormField<int>(
+                key: ValueKey(_reminderFieldVersion),
                 initialValue: _reminderChoice,
                 // Fill the field width and ellipsize long localized labels
                 // instead of overflowing the row (e.g. German "Zum
@@ -278,6 +310,10 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
                 isExpanded: true,
                 decoration: InputDecoration(
                   labelText: 'calendar.reminder_label'.tr(),
+                  helperText: _isReminderLoading ? 'common.loading'.tr() : null,
+                  errorText: _hasReminderLoadError
+                      ? 'common.data_load_error'.tr()
+                      : null,
                   border: const OutlineInputBorder(),
                   prefixIcon: const Icon(LucideIcons.bell),
                 ),
@@ -288,11 +324,23 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
                       child: Text(_reminderOptionLabel(minutes)),
                     ),
                 ],
-                onChanged: (value) => setState(
-                  () =>
-                      _reminderChoice = value ?? kDefaultReminderMinutesBefore,
-                ),
+                onChanged: isBusy || _hasReminderLoadError
+                    ? null
+                    : (value) => setState(
+                        () => _reminderChoice =
+                            value ?? kDefaultReminderMinutesBefore,
+                      ),
               ),
+              if (_hasReminderLoadError)
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: TextButton.icon(
+                    onPressed: () =>
+                        _loadExistingReminder(widget.existingEvent!.id),
+                    icon: const Icon(LucideIcons.refreshCw),
+                    label: Text('common.retry'.tr()),
+                  ),
+                ),
               const SizedBox(height: AppSpacing.lg),
 
               // Notes field
@@ -312,8 +360,8 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
 
               // Save button
               FilledButton.icon(
-                onPressed: formState.isLoading ? null : _submit,
-                icon: formState.isLoading
+                onPressed: canSubmit ? _submit : null,
+                icon: isBusy
                     ? SizedBox(
                         width: 18,
                         height: 18,
@@ -351,6 +399,7 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
   }
 
   void _submit() {
+    if (_isReminderLoading || _hasReminderLoadError) return;
     if (!_formKey.currentState!.validate()) return;
 
     final userId = ref.read(currentUserIdProvider);
@@ -386,8 +435,9 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
               ? null
               : _notesController.text.trim(),
         ),
-        reminderMinutesBefore:
-            _reminderChoice == _noReminderSentinel ? null : _reminderChoice,
+        reminderMinutesBefore: _reminderChoice == _noReminderSentinel
+            ? null
+            : _reminderChoice,
         reconcileReminder: true,
       );
     } else {
@@ -399,8 +449,9 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
         notes: _notesController.text.trim().isEmpty
             ? null
             : _notesController.text.trim(),
-        reminderMinutesBefore:
-            _reminderChoice == _noReminderSentinel ? null : _reminderChoice,
+        reminderMinutesBefore: _reminderChoice == _noReminderSentinel
+            ? null
+            : _reminderChoice,
       );
     }
   }

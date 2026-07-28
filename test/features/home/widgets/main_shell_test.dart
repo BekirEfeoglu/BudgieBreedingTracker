@@ -12,9 +12,48 @@ Widget _createSubject({required Size size}) {
   final router = GoRouter(
     initialLocation: '/',
     routes: [
-      ShellRoute(
-        builder: (_, __, child) => MainShell(child: child),
-        routes: [GoRoute(path: '/', builder: (_, __) => const Placeholder())],
+      StatefulShellRoute.indexedStack(
+        builder: (_, __, navigationShell) =>
+            MainShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(path: '/', builder: (_, __) => const _StatefulTabProbe()),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/birds',
+                builder: (_, __) => const Text('birds-tab'),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/breeding',
+                builder: (_, __) => const Text('breeding-tab'),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/calendar',
+                builder: (_, __) => const Text('calendar-tab'),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/more',
+                builder: (_, __) => const Text('more-tab'),
+              ),
+            ],
+          ),
+        ],
       ),
     ],
   );
@@ -116,5 +155,49 @@ void main() {
       expect(find.byType(NavigationBar), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets('preserves local widget state across tab switches', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_createSubject(size: const Size(375, 812)));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('increment-home-state')));
+      await tester.pump();
+      expect(find.text('home-state:1'), findsOneWidget);
+
+      tester
+          .widget<NavigationBar>(find.byType(NavigationBar))
+          .onDestinationSelected!(1);
+      await tester.pumpAndSettle();
+      expect(find.text('birds-tab'), findsOneWidget);
+
+      tester
+          .widget<NavigationBar>(find.byType(NavigationBar))
+          .onDestinationSelected!(0);
+      await tester.pumpAndSettle();
+
+      expect(find.text('home-state:1'), findsOneWidget);
+    });
   });
+}
+
+class _StatefulTabProbe extends StatefulWidget {
+  const _StatefulTabProbe();
+
+  @override
+  State<_StatefulTabProbe> createState() => _StatefulTabProbeState();
+}
+
+class _StatefulTabProbeState extends State<_StatefulTabProbe> {
+  int _count = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      key: const Key('increment-home-state'),
+      onPressed: () => setState(() => _count++),
+      child: Text('home-state:$_count'),
+    );
+  }
 }

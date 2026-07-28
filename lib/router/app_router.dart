@@ -194,110 +194,140 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Public routes (Auth)
       ...buildAuthRoutes(),
 
-      // Main App Shell (Bottom Nav)
-      ShellRoute(
-        navigatorKey: mainShellNavigatorKey,
-        builder: (context, state, child) => MainShell(child: child),
-        routes: [
-          GoRoute(
-            path: AppRoutes.home,
-            pageBuilder: (context, state) =>
-                NoTransitionPage(key: state.pageKey, child: const HomeScreen()),
-          ),
-          GoRoute(
-            path: AppRoutes.birds,
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: const BirdListScreen(),
-            ),
+      // Main App Shell (Bottom Nav). Each branch owns a Navigator so scroll,
+      // local widget state, and the branch stack survive tab switches.
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            MainShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            navigatorKey: mainShellNavigatorKey,
             routes: [
               GoRoute(
-                path: 'form',
-                parentNavigatorKey: rootNavigatorKey,
-                builder: (context, state) =>
-                    BirdFormScreen(editBirdId: validEditIdOrNull(state)),
-              ),
-              GoRoute(
-                path: ':id',
-                parentNavigatorKey: rootNavigatorKey,
-                builder: (context, state) {
-                  final id = state.pathParameters['id']!;
-                  if (!isValidRouteId(id)) return const NotFoundScreen();
-                  return BirdDetailScreen(birdId: id);
-                },
+                path: AppRoutes.home,
+                pageBuilder: (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: const HomeScreen(),
+                ),
               ),
             ],
           ),
-          GoRoute(
-            path: AppRoutes.breeding,
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: const BreedingListScreen(),
-            ),
+          StatefulShellBranch(
             routes: [
               GoRoute(
-                path: 'form',
-                parentNavigatorKey: rootNavigatorKey,
-                builder: (context, state) =>
-                    BreedingFormScreen(editPairId: validEditIdOrNull(state)),
-              ),
-              GoRoute(
-                path: ':id',
-                parentNavigatorKey: rootNavigatorKey,
-                builder: (context, state) {
-                  final id = state.pathParameters['id']!;
-                  if (!isValidRouteId(id)) return const NotFoundScreen();
-                  return BreedingDetailScreen(pairId: id);
-                },
+                path: AppRoutes.birds,
+                pageBuilder: (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: const BirdListScreen(),
+                ),
                 routes: [
                   GoRoute(
-                    path: 'eggs',
+                    path: 'form',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) =>
+                        BirdFormScreen(editBirdId: validEditIdOrNull(state)),
+                  ),
+                  GoRoute(
+                    path: ':id',
                     parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) {
                       final id = state.pathParameters['id']!;
                       if (!isValidRouteId(id)) return const NotFoundScreen();
-                      return EggManagementScreen(pairId: id);
+                      return BirdDetailScreen(birdId: id);
                     },
                   ),
                 ],
               ),
             ],
           ),
-          GoRoute(
-            path: AppRoutes.chicks,
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: const ChickListScreen(),
-            ),
+          StatefulShellBranch(
             routes: [
               GoRoute(
-                path: 'form',
-                parentNavigatorKey: rootNavigatorKey,
-                builder: (context, state) =>
-                    ChickFormScreen(editChickId: validEditIdOrNull(state)),
-              ),
-              GoRoute(
-                path: ':id',
-                parentNavigatorKey: rootNavigatorKey,
-                builder: (context, state) {
-                  final id = state.pathParameters['id']!;
-                  if (!isValidRouteId(id)) return const NotFoundScreen();
-                  return ChickDetailScreen(chickId: id);
-                },
+                path: AppRoutes.breeding,
+                pageBuilder: (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: const BreedingListScreen(),
+                ),
+                routes: [
+                  GoRoute(
+                    path: 'form',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => BreedingFormScreen(
+                      editPairId: validEditIdOrNull(state),
+                    ),
+                  ),
+                  GoRoute(
+                    path: ':id',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) {
+                      final id = state.pathParameters['id']!;
+                      if (!isValidRouteId(id)) return const NotFoundScreen();
+                      return BreedingDetailScreen(pairId: id);
+                    },
+                    routes: [
+                      GoRoute(
+                        path: 'eggs',
+                        parentNavigatorKey: rootNavigatorKey,
+                        builder: (context, state) {
+                          final id = state.pathParameters['id']!;
+                          if (!isValidRouteId(id)) {
+                            return const NotFoundScreen();
+                          }
+                          return EggManagementScreen(pairId: id);
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
-          GoRoute(
-            path: AppRoutes.calendar,
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: const CalendarScreen(),
-            ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.calendar,
+                pageBuilder: (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: const CalendarScreen(),
+                ),
+              ),
+            ],
           ),
-          GoRoute(
-            path: AppRoutes.more,
-            pageBuilder: (context, state) =>
-                NoTransitionPage(key: state.pageKey, child: const MoreScreen()),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.more,
+                pageBuilder: (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: const MoreScreen(),
+                ),
+              ),
+              // Chicks is reached from More and therefore shares that branch.
+              GoRoute(
+                path: AppRoutes.chicks,
+                pageBuilder: (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: const ChickListScreen(),
+                ),
+                routes: [
+                  GoRoute(
+                    path: 'form',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) =>
+                        ChickFormScreen(editChickId: validEditIdOrNull(state)),
+                  ),
+                  GoRoute(
+                    path: ':id',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) {
+                      final id = state.pathParameters['id']!;
+                      if (!isValidRouteId(id)) return const NotFoundScreen();
+                      return ChickDetailScreen(chickId: id);
+                    },
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),

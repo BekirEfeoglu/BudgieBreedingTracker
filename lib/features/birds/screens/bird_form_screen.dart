@@ -59,7 +59,6 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
   bool _isEdit = false;
   bool _isEditLoading = false;
   bool _isEditNotFound = false;
-  Object? _editLoadError;
   ProviderSubscription<AsyncValue<Bird?>>? _editBirdSubscription;
   Bird? _existingBird;
   bool _savedSuccessfully = false;
@@ -198,7 +197,7 @@ class _BirdFormScreenState extends ConsumerState<BirdFormScreen> {
     if (_isEdit && _existingBird == null) {
       final errorMessage = _isEditNotFound
           ? 'birds.not_found'.tr()
-          : _editLoadError?.toString() ?? 'common.data_load_error'.tr();
+          : 'common.data_load_error'.tr();
       return Scaffold(
         appBar: AppBar(title: Text('birds.edit_bird'.tr())),
         body: ErrorState(

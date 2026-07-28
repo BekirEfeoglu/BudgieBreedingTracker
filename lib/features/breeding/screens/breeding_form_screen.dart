@@ -53,6 +53,7 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
   final _notesController = TextEditingController();
   bool _isEdit = false;
   bool _isLoadingExistingPair = false;
+  bool _hasExistingPairLoadError = false;
   BreedingPair? _existingPair;
   bool _savedSuccessfully = false;
   // Covers the gap between tapping Save and the notifier call actually
@@ -102,8 +103,12 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
     final editPairId = widget.editPairId;
     if (editPairId == null) return;
 
-    setState(() => _isLoadingExistingPair = true);
+    setState(() {
+      _isLoadingExistingPair = true;
+      _hasExistingPairLoadError = false;
+    });
     try {
+      ref.invalidate(breedingPairByIdProvider(editPairId));
       final pair = await ref.read(breedingPairByIdProvider(editPairId).future);
       if (!mounted) return;
 
@@ -116,13 +121,16 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
           _cageController.text = pair.cageNumber ?? '';
           _notesController.text = pair.notes ?? '';
         });
+      } else {
+        setState(() => _existingPair = null);
       }
     } catch (e, st) {
       AppLogger.error('[BreedingFormScreen] Failed to load pair', e, st);
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('common.data_load_error'.tr())));
+      setState(() {
+        _existingPair = null;
+        _hasExistingPairLoadError = true;
+      });
     } finally {
       if (mounted) {
         setState(() => _isLoadingExistingPair = false);
@@ -231,10 +239,16 @@ class _BreedingFormScreenState extends ConsumerState<BreedingFormScreen> {
             if (_isEdit && _isLoadingExistingPair) {
               return const LoadingState();
             }
+            if (_isEdit && _hasExistingPairLoadError) {
+              return ErrorState(
+                message: 'common.data_load_error'.tr(),
+                onRetry: _loadExistingPair,
+              );
+            }
             if (_isEdit && _existingPair == null) {
               return ErrorState(
                 message: 'breeding.not_found'.tr(),
-                onRetry: () => context.pop(),
+                onRetry: _loadExistingPair,
               );
             }
 

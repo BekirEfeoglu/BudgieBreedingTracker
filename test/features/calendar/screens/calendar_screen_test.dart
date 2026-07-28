@@ -10,11 +10,14 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/error_state.dart';
+import 'package:budgie_breeding_tracker/core/enums/event_enums.dart';
 import 'package:budgie_breeding_tracker/domain/services/ads/ad_service.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/event_model.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/calendar/providers/calendar_providers.dart';
 import 'package:budgie_breeding_tracker/features/calendar/screens/calendar_screen.dart';
+import 'package:budgie_breeding_tracker/features/calendar/widgets/event_card.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_list_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 
@@ -44,7 +47,10 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  Widget createSubject({required Stream<List<Event>> eventsStream}) {
+  Widget createSubject({
+    required Stream<List<Event>> eventsStream,
+    AdService? adService,
+  }) {
     return EasyLocalization(
       supportedLocales: const [Locale('tr'), Locale('en'), Locale('de')],
       path: 'assets/translations',
@@ -60,7 +66,8 @@ void main() {
           ).overrideWith((_) => Stream.value([])),
           userProfileProvider.overrideWith((_) => Stream.value(null)),
           currentUserProvider.overrideWith((_) => null),
-          adServiceProvider.overrideWithValue(_MockAdService()),
+          adServiceProvider.overrideWithValue(adService ?? _MockAdService()),
+          effectivePremiumProvider.overrideWithValue(false),
           // Override realtime provider to avoid Supabase client in tests
           eventRealtimeSyncProvider('test-user').overrideWith((_) {}),
         ],
@@ -80,7 +87,6 @@ void main() {
       await tester.pump();
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
-
     });
 
     testWidgets('shows error state on stream error', (tester) async {
@@ -101,7 +107,6 @@ void main() {
       await tester.pump();
 
       expect(find.text(l10n('calendar.title')), findsOneWidget);
-
     });
 
     testWidgets('shows view mode segmented button in AppBar', (tester) async {
@@ -112,7 +117,6 @@ void main() {
       await tester.pump();
 
       expect(find.byType(SegmentedButton<CalendarViewMode>), findsOneWidget);
-
     });
 
     testWidgets('shows event filter segmented button in AppBar', (
@@ -125,7 +129,6 @@ void main() {
       await tester.pump();
 
       expect(find.byType(SegmentedButton<CalendarEventFilter>), findsOneWidget);
-
     });
 
     testWidgets('shows FAB when events load', (tester) async {
@@ -156,7 +159,6 @@ void main() {
 
       // Today button (calendarCheck icon) is an IconButton in AppBar
       expect(find.byType(IconButton), findsAtLeastNWidgets(1));
-
     });
 
     testWidgets('has RefreshIndicator wrapping content', (tester) async {
@@ -165,6 +167,76 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(RefreshIndicator), findsOneWidget);
+    });
+
+    testWidgets('week and day views expose visible period navigation', (
+      tester,
+    ) async {
+      await tester.pumpWidget(createSubject(eventsStream: Stream.value([])));
+      await tester.pumpAndSettle();
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(CalendarScreen)),
+      );
+      container
+          .read(calendarViewProvider.notifier)
+          .setViewMode(CalendarViewMode.week);
+      await tester.pumpAndSettle();
+
+      expect(find.byTooltip(l10n('calendar.previous_week')), findsOneWidget);
+      expect(find.byTooltip(l10n('calendar.next_week')), findsOneWidget);
+      final weekDate = container.read(selectedDateProvider);
+      await tester.tap(find.byTooltip(l10n('calendar.next_week')));
+      await tester.pumpAndSettle();
+      expect(
+        container.read(selectedDateProvider),
+        DateTime(weekDate.year, weekDate.month, weekDate.day + 7),
+      );
+
+      container
+          .read(calendarViewProvider.notifier)
+          .setViewMode(CalendarViewMode.day);
+      await tester.pumpAndSettle();
+
+      expect(find.byTooltip(l10n('calendar.previous_day')), findsOneWidget);
+      expect(find.byTooltip(l10n('calendar.next_day')), findsOneWidget);
+    });
+
+    testWidgets('rapid double-tap on an event requests one interstitial ad', (
+      tester,
+    ) async {
+      final now = DateTime.now();
+      final event = Event(
+        id: 'event-1',
+        title: 'Kontrol',
+        eventDate: DateTime(now.year, now.month, now.day, 10),
+        type: EventType.health,
+        userId: 'test-user',
+      );
+      final adService = _MockAdService();
+      when(
+        () =>
+            adService.showInterstitialAd(onAdClosed: any(named: 'onAdClosed')),
+      ).thenAnswer((_) async {});
+
+      await tester.pumpWidget(
+        createSubject(
+          eventsStream: Stream.value([event]),
+          adService: adService,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.byType(EventCard));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(EventCard));
+      await tester.tap(find.byType(EventCard));
+      await tester.pump();
+
+      verify(
+        () =>
+            adService.showInterstitialAd(onAdClosed: any(named: 'onAdClosed')),
+      ).called(1);
     });
 
     testWidgets('AppBar title is calendar.title', (tester) async {

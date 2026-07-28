@@ -13,6 +13,7 @@ import 'package:budgie_breeding_tracker/features/birds/screens/bird_form_screen.
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
+import 'package:budgie_breeding_tracker/data/providers/breeding_detail_stream_providers.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 
 import '../../../helpers/mocks.dart';
@@ -164,6 +165,25 @@ void main() {
   });
 
   group('Edit mode edge cases', () {
+    testWidgets('edit load error never exposes the raw exception', (t) async {
+      await t.pumpWidget(
+        subject(
+          editBirdId: 'broken',
+          extra: [
+            birdByIdProvider('broken').overrideWith(
+              (_) =>
+                  Stream<Bird?>.error(StateError('sensitive database detail')),
+            ),
+          ],
+        ),
+      );
+      await t.pumpAndSettle();
+
+      expect(find.byType(ErrorState), findsOneWidget);
+      expect(find.text('common.data_load_error'), findsOneWidget);
+      expect(find.textContaining('sensitive database detail'), findsNothing);
+    });
+
     testWidgets('non-existent editBirdId shows error state', (t) async {
       await t.pumpWidget(subject(editBirdId: 'missing'));
       await t.pumpAndSettle();

@@ -48,6 +48,11 @@ Sözleşme (breeding-eggs.md ile aynı): side effect'ler **best-effort, asla ret
 
 ## Liste & Detay
 - Filtre: cinsiyet + durum (`alive/dead/sold/gifted`); ring number aranabilir, doğal sıralı (natural sort), boş ring'ler her iki yönde de sonda
+- Filtre/arama sonucu boşsa `EmptyState` hem filtreyi hem aramayı sıfırlayan
+  localized clear CTA göstermeli
+- Bulk seçim yalnız long-press'e bağlı OLAMAZ: app bar görünür seçim girişi
+  sunar; long-press context menu yalnız kısayoldur. Seçim modunda kart context
+  menu'sü kapanır ve bulk aksiyonlar en az bir seçim yapılana kadar disabled'dır
 - Ring number benzersizliği shipped'dir: `BirdFormIdentitySection` yazarken
   400ms debounce + monotonik request ID + `mounted` guard ile
   `BirdRepository.hasRingNumber(userId, value, excludeId:)` çağırır. Bu erken

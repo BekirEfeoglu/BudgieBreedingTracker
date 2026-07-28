@@ -18,8 +18,16 @@ import 'package:budgie_breeding_tracker/shared/widgets/sync_conflict_badge.dart'
 class BirdGridCard extends StatelessWidget {
   final Bird bird;
   final VoidCallback? onTap;
+  final VoidCallback? onSelect;
+  final bool contextMenuEnabled;
 
-  const BirdGridCard({super.key, required this.bird, this.onTap});
+  const BirdGridCard({
+    super.key,
+    required this.bird,
+    this.onTap,
+    this.onSelect,
+    this.contextMenuEnabled = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -110,8 +118,19 @@ class BirdGridCard extends StatelessWidget {
       ),
     );
 
+    if (!contextMenuEnabled) return cardWidget;
+
     return CupertinoContextMenu(
       actions: [
+        if (onSelect != null)
+          CupertinoContextMenuAction(
+            onPressed: () {
+              Navigator.pop(context);
+              onSelect!();
+            },
+            trailingIcon: CupertinoIcons.checkmark_circle,
+            child: Text('common.select'.tr()),
+          ),
         CupertinoContextMenuAction(
           onPressed: () {
             Navigator.pop(context);
@@ -154,9 +173,8 @@ class _GridPhoto extends StatelessWidget {
         memCacheWidth: 360,
         memCacheHeight: 360,
         fit: BoxFit.cover,
-        placeholder: (_, __) => Container(
-          color: theme.colorScheme.surfaceContainerHighest,
-        ),
+        placeholder: (_, __) =>
+            Container(color: theme.colorScheme.surfaceContainerHighest),
         errorWidget: (_, __, ___) => _GridFallback(bird: bird),
       );
     }

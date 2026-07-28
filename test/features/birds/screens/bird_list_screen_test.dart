@@ -16,7 +16,6 @@ import 'package:budgie_breeding_tracker/domain/services/premium/premium_provider
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/screens/bird_list_screen.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_card.dart';
-import 'package:budgie_breeding_tracker/features/birds/widgets/bird_grid_card.dart';
 import 'package:budgie_breeding_tracker/features/notifications/providers/notification_list_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 
@@ -147,7 +146,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.longPress(find.byType(BirdCard).first);
+        await tester.tap(find.byTooltip(l10n('common.select')));
         await tester.pumpAndSettle();
 
         expect(find.byType(Checkbox), findsOneWidget);
@@ -180,7 +179,7 @@ void main() {
         await tester.tap(find.byTooltip(l10n('birds.grid_view')));
         await tester.pumpAndSettle();
 
-        await tester.longPress(find.byType(BirdGridCard).first);
+        await tester.tap(find.byTooltip(l10n('common.select')));
         await tester.pumpAndSettle();
 
         expect(find.byType(Checkbox), findsOneWidget);
@@ -190,24 +189,44 @@ void main() {
       },
     );
 
-    testWidgets(
-      'bulk-selection overflow menu has a localized tooltip',
-      (tester) async {
-        final birds = [
-          createTestBird(id: 'b1', name: 'Mavi', gender: BirdGender.male),
-        ];
+    testWidgets('bulk-selection overflow menu has a localized tooltip', (
+      tester,
+    ) async {
+      final birds = [
+        createTestBird(id: 'b1', name: 'Mavi', gender: BirdGender.male),
+      ];
 
-        await tester.pumpWidget(
-          createSubject(birdsStream: Stream.value(birds)),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(createSubject(birdsStream: Stream.value(birds)));
+      await tester.pumpAndSettle();
 
-        await tester.longPress(find.byType(BirdCard).first);
-        await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip(l10n('common.select')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(BirdCard).first);
+      await tester.pumpAndSettle();
 
-        expect(find.byTooltip(l10n('common.more')), findsOneWidget);
-      },
-    );
+      expect(find.byTooltip(l10n('common.more')), findsOneWidget);
+    });
+
+    testWidgets('clears search filters from the no-results state', (
+      tester,
+    ) async {
+      final birds = [
+        createTestBird(id: 'b1', name: 'Mavi', gender: BirdGender.male),
+      ];
+
+      await tester.pumpWidget(createSubject(birdsStream: Stream.value(birds)));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'zzznomatch');
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(EmptyState), findsOneWidget);
+      await tester.tap(find.text(l10n('common.clear_filters')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BirdCard), findsOneWidget);
+    });
 
     testWidgets(
       'rapid double-tap on a bird card only requests one interstitial ad',
@@ -223,10 +242,7 @@ void main() {
         ).thenAnswer((_) async {});
 
         await tester.pumpWidget(
-          createSubject(
-            birdsStream: Stream.value(birds),
-            adService: adService,
-          ),
+          createSubject(birdsStream: Stream.value(birds), adService: adService),
         );
         await tester.pumpAndSettle();
 

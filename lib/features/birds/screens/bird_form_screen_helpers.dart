@@ -34,7 +34,6 @@ extension _BirdFormScreenHelpers on _BirdFormScreenState {
     setState(() {
       _isEditLoading = true;
       _isEditNotFound = false;
-      _editLoadError = null;
     });
     _editBirdSubscription = ref.listenManual<AsyncValue<Bird?>>(
       birdByIdProvider(editBirdId),
@@ -46,23 +45,27 @@ extension _BirdFormScreenHelpers on _BirdFormScreenState {
               setState(() {
                 _isEditLoading = true;
                 _isEditNotFound = false;
-                _editLoadError = null;
               });
             }
           },
-          error: (error, _) => setState(() {
-            _existingBird = null;
-            _isEditLoading = false;
-            _isEditNotFound = false;
-            _editLoadError = error;
-          }),
+          error: (error, stackTrace) {
+            AppLogger.error(
+              '[BirdFormScreen] Failed to load bird $editBirdId',
+              error,
+              stackTrace,
+            );
+            setState(() {
+              _existingBird = null;
+              _isEditLoading = false;
+              _isEditNotFound = false;
+            });
+          },
           data: (bird) {
             if (bird == null) {
               setState(() {
                 _existingBird = null;
                 _isEditLoading = false;
                 _isEditNotFound = true;
-                _editLoadError = null;
               });
               return;
             }
@@ -105,7 +108,6 @@ extension _BirdFormScreenHelpers on _BirdFormScreenState {
             : (bird.notes ?? '');
         _isEditLoading = false;
         _isEditNotFound = false;
-        _editLoadError = null;
       });
     } finally {
       _isProgrammaticControllerUpdate = false;

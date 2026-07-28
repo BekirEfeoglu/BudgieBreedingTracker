@@ -23,7 +23,6 @@ import 'package:budgie_breeding_tracker/features/birds/widgets/bird_filter_bar.d
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_grid_card.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_search_bar.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/cage_ledger_sheet.dart';
-import 'package:budgie_breeding_tracker/core/utils/app_haptics.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/dialogs/confirm_dialog.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_form_providers.dart';
@@ -47,6 +46,7 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
   static const double _listBottomInset = AppSpacing.xxxl * 4;
 
   final Set<String> _selectedIds = {};
+  bool _selectionModeEnabled = false;
 
   /// Guards [_runBulkAction] re-entry. Without this, a second confirm-tap
   /// while the first bulk pass is still iterating launches a parallel pass
@@ -54,10 +54,11 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
   /// the partial-failure summary.
   bool _isBulkRunning = false;
 
-  bool get _isSelectionMode => _selectedIds.isNotEmpty;
+  bool get _isSelectionMode => _selectionModeEnabled;
 
   void _toggleSelection(String id) {
     setState(() {
+      _selectionModeEnabled = true;
       if (_selectedIds.contains(id)) {
         _selectedIds.remove(id);
       } else {
@@ -67,7 +68,19 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
   }
 
   void _clearSelection() {
-    setState(() => _selectedIds.clear());
+    setState(() {
+      _selectionModeEnabled = false;
+      _selectedIds.clear();
+    });
+  }
+
+  void _startSelection() {
+    setState(() => _selectionModeEnabled = true);
+  }
+
+  void _clearFilters() {
+    ref.read(birdFilterProvider.notifier).state = BirdFilter.all;
+    ref.read(birdSearchQueryProvider.notifier).state = '';
   }
 
   bool _isNavigatingWithAd = false;
@@ -307,9 +320,10 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
                         icon: const AppIcon(AppIcons.delete),
                         tooltip: 'common.delete'.tr(),
                         semanticLabel: 'common.delete'.tr(),
-                        onPressed: _bulkDelete,
+                        onPressed: _selectedIds.isEmpty ? null : _bulkDelete,
                       ),
                       PopupMenuButton<String>(
+                        enabled: _selectedIds.isNotEmpty,
                         tooltip: 'common.more'.tr(),
                         onSelected: (action) {
                           if (action == 'dead') _bulkMarkAsDead();
@@ -320,6 +334,12 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
                       ),
                     ]
                   : [
+                      AppIconButton(
+                        icon: const Icon(LucideIcons.listChecks),
+                        tooltip: 'common.select'.tr(),
+                        semanticLabel: 'common.select'.tr(),
+                        onPressed: _startSelection,
+                      ),
                       AppIconButton(
                         icon: const AppIcon(AppIcons.nest),
                         tooltip: 'birds.cage_ledger'.tr(),
@@ -428,6 +448,8 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
                       icon: const AppIcon(AppIcons.search),
                       title: 'common.no_results'.tr(),
                       subtitle: 'common.no_results_hint'.tr(),
+                      actionLabel: 'common.clear_filters'.tr(),
+                      onAction: _clearFilters,
                     ),
                   );
                 }
@@ -466,10 +488,7 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
                                   : () => _navigateWithAd(
                                       '${AppRoutes.birds}/${bird.id}',
                                     ),
-                              onLongPress: () {
-                                AppHaptics.mediumImpact();
-                                _toggleSelection(bird.id);
-                              },
+                              onSelect: () => _toggleSelection(bird.id),
                             );
                           }, childCount: birds.length),
                         )
@@ -490,10 +509,7 @@ class _BirdListScreenState extends ConsumerState<BirdListScreen> {
                                   : () => _navigateWithAd(
                                       '${AppRoutes.birds}/${bird.id}',
                                     ),
-                              onLongPress: () {
-                                AppHaptics.mediumImpact();
-                                _toggleSelection(bird.id);
-                              },
+                              onSelect: () => _toggleSelection(bird.id),
                             );
                           }, childCount: birds.length),
                         ),
