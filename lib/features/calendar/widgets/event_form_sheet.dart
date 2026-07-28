@@ -18,6 +18,7 @@ import 'package:budgie_breeding_tracker/data/providers/date_format_providers.dar
 import 'package:budgie_breeding_tracker/features/calendar/widgets/event_card.dart';
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/core/widgets/bottom_sheet/app_bottom_sheet.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 
 part 'event_form_fields.dart';
 
@@ -31,6 +32,7 @@ Future<void> showEventFormSheet(
     context: context,
     isScrollControlled: true,
     constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),
+    useRootNavigator: true,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
         top: Radius.circular(AppSpacing.radiusXl),
@@ -203,29 +205,27 @@ class _EventFormContentState extends ConsumerState<_EventFormContent> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Drag handle
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.onSurfaceVariant.withValues(
-                      alpha: 0.4,
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _isEditing
+                          ? 'calendar.edit_event'.tr()
+                          : 'calendar.add_event'.tr(),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    borderRadius: BorderRadius.circular(2),
                   ),
-                ),
+                  AppIconButton(
+                    key: const Key('event_form_close_button'),
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(LucideIcons.x),
+                    semanticLabel: 'common.close'.tr(),
+                  ),
+                ],
               ),
-              const SizedBox(height: AppSpacing.lg),
-              Text(
-                _isEditing
-                    ? 'calendar.edit_event'.tr()
-                    : 'calendar.add_event'.tr(),
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.md),
 
               // Title field
               // IMPROVED: add maxLength to prevent overflow on small screens

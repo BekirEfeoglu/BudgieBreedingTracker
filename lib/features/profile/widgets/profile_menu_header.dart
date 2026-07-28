@@ -25,6 +25,7 @@ class ProfileMenuHeader extends StatelessWidget {
     required this.hasBadges,
     required this.isPremium,
     required this.isFounder,
+    this.trailing,
   });
 
   final Profile? profile;
@@ -33,6 +34,7 @@ class ProfileMenuHeader extends StatelessWidget {
   final bool hasBadges;
   final bool isPremium;
   final bool isFounder;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -117,6 +119,10 @@ class ProfileMenuHeader extends StatelessWidget {
               ],
             ),
           ),
+          if (trailing != null) ...[
+            const SizedBox(width: AppSpacing.sm),
+            trailing!,
+          ],
         ],
       ),
     );

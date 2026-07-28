@@ -93,6 +93,19 @@ void main() {
     }
 
     group('with configured AI', () {
+      testWidgets('shows an explicit back control in the app bar', (
+        tester,
+      ) async {
+        await tester.pumpWidget(buildSubject());
+        await tester.pumpAndSettle();
+
+        expect(
+          find.byKey(const Key('ai_predictions_back_button')),
+          findsOneWidget,
+        );
+        expect(find.byTooltip(l10n('common.back')), findsOneWidget);
+      });
+
       testWidgets('renders tab bar with 2 tabs', (tester) async {
         await tester.pumpWidget(buildSubject());
         await tester.pumpAndSettle();

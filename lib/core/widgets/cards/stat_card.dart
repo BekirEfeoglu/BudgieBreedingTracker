@@ -5,7 +5,6 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../animations/count_up_animation.dart';
 
-
 class StatCard extends StatefulWidget {
   final String label;
   final String value;
@@ -44,7 +43,9 @@ class _StatCardState extends State<StatCard> {
         final direction = widget.trendUp!
             ? 'statistics.trend_up'.tr()
             : 'statistics.trend_down'.tr();
-        buffer.write(', $direction ${widget.trendPercent!.abs().toStringAsFixed(0)}%');
+        buffer.write(
+          ', $direction ${widget.trendPercent!.abs().toStringAsFixed(0)}%',
+        );
       }
     }
     return buffer.toString();
@@ -80,10 +81,7 @@ class _StatCardState extends State<StatCard> {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-        side: BorderSide(
-          color: cardColor.withValues(alpha: 0.3),
-          width: 1.0,
-        ),
+        side: BorderSide(color: cardColor.withValues(alpha: 0.3), width: 1.0),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -129,24 +127,30 @@ class _StatCardState extends State<StatCard> {
                           child: widget.icon!,
                         ),
                       ),
-                    if (widget.icon != null) const SizedBox(width: AppSpacing.md),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _AnimatedStatValue(value: widget.value, color: cardColor),
-                        const SizedBox(height: 2),
-                        Text(
-                          widget.label,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                            fontWeight: FontWeight.w500,
+                    if (widget.icon != null)
+                      const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _AnimatedStatValue(
+                            value: widget.value,
+                            color: cardColor,
                           ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      ],
+                          const SizedBox(height: 2),
+                          Text(
+                            widget.label,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 )
@@ -176,9 +180,13 @@ class _StatCardState extends State<StatCard> {
                       ),
                     const Spacer(),
                     _AnimatedStatValue(value: widget.value, color: cardColor),
-                    if (widget.trendPercent != null && widget.trendUp != null) ...[
+                    if (widget.trendPercent != null &&
+                        widget.trendUp != null) ...[
                       const SizedBox(height: 2),
-                      _TrendIndicator(percent: widget.trendPercent!, isUp: widget.trendUp!),
+                      _TrendIndicator(
+                        percent: widget.trendPercent!,
+                        isUp: widget.trendUp!,
+                      ),
                     ],
                     const SizedBox(height: 2),
                     Text(
@@ -226,12 +234,7 @@ class _AnimatedStatValue extends StatelessWidget {
         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
           color: color,
           fontWeight: FontWeight.bold,
-          shadows: [
-            Shadow(
-              color: color.withValues(alpha: 0.3),
-              blurRadius: 8,
-            ),
-          ],
+          shadows: [Shadow(color: color.withValues(alpha: 0.3), blurRadius: 8)],
         ),
       );
     }
@@ -244,12 +247,7 @@ class _AnimatedStatValue extends StatelessWidget {
       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
         color: color,
         fontWeight: FontWeight.bold,
-        shadows: [
-          Shadow(
-            color: color.withValues(alpha: 0.3),
-            blurRadius: 8,
-          ),
-        ],
+        shadows: [Shadow(color: color.withValues(alpha: 0.3), blurRadius: 8)],
       ),
     );
   }

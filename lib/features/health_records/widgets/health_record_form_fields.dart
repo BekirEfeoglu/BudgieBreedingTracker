@@ -14,6 +14,8 @@ import 'package:budgie_breeding_tracker/shared/widgets/health_records.dart';
 /// Form fields for the health record form (title, type, date, animal,
 /// description, treatment, vet, weight/cost, follow-up, notes).
 class HealthRecordFormFields extends StatelessWidget {
+  final Key? titleFieldKey;
+  final FocusNode? titleFocusNode;
   final TextEditingController titleController;
   final TextEditingController descriptionController;
   final TextEditingController treatmentController;
@@ -38,6 +40,8 @@ class HealthRecordFormFields extends StatelessWidget {
 
   const HealthRecordFormFields({
     super.key,
+    this.titleFieldKey,
+    this.titleFocusNode,
     required this.titleController,
     required this.descriptionController,
     required this.treatmentController,
@@ -68,6 +72,8 @@ class HealthRecordFormFields extends StatelessWidget {
       children: [
         // Title
         TextFormField(
+          key: titleFieldKey,
+          focusNode: titleFocusNode,
           controller: titleController,
           maxLength: 200,
           decoration: InputDecoration(

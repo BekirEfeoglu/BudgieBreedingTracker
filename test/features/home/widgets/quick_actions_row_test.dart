@@ -98,6 +98,31 @@ void main() {
       expect(find.text('BreedingForm'), findsOneWidget);
     });
 
+    testWidgets('exposes each quick action as one clean button semantic', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await tester.pumpWidget(_createSubject());
+        await tester.pump();
+
+        final label = l10n('birds.add_bird');
+        final semanticFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is Semantics &&
+              widget.properties.label == label &&
+              widget.properties.button == true,
+        );
+        expect(semanticFinder, findsOneWidget);
+
+        final node = tester.getSemantics(semanticFinder);
+        expect(node.flagsCollection.isButton, isTrue);
+        expect(node.label, label);
+      } finally {
+        semantics.dispose();
+      }
+    });
+
     testWidgets('renders Stack layout', (tester) async {
       await tester.pumpWidget(_createSubject());
       await tester.pump();

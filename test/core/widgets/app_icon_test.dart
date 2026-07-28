@@ -113,6 +113,19 @@ void main() {
       expect(svg.semanticsLabel, 'Home icon');
     });
 
+    testWidgets('does not derive a semantic label from the asset filename', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(body: AppIcon('assets/icons/navigation/home.svg')),
+        ),
+      );
+
+      final svg = tester.widget<SvgPicture>(find.byType(SvgPicture));
+      expect(svg.semanticsLabel, isNull);
+    });
+
     test('explicit size overrides IconTheme size', () {
       // This is a logic test — AppIcon prioritizes explicit size over IconTheme
       const icon = AppIcon('test.svg', size: 16);

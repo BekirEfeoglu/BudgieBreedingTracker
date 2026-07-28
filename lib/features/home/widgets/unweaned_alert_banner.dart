@@ -31,26 +31,62 @@ class UnweanedAlertBanner extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
             border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
           ),
-          child: Row(
-            children: [
-              const AppIcon(AppIcons.info, color: AppColors.warning, size: 24),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Text(
-                  'home.unweaned_alert'.tr(args: [count.toString()]),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final textScale = MediaQuery.textScalerOf(
+                context,
+              ).scale(1).toDouble();
+              final useStackedLayout =
+                  textScale > 1.4 || constraints.maxWidth < 300;
+              final message = Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const AppIcon(
+                    AppIcons.info,
+                    color: AppColors.warning,
+                    size: 24,
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Text(
+                      'home.unweaned_alert'.tr(args: [count.toString()]),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.warning,
                         fontWeight: FontWeight.w500,
                       ),
-                ),
-              ),
-              TextButton(
+                    ),
+                  ),
+                ],
+              );
+              final action = TextButton(
                 onPressed: () => context.push(AppRoutes.chicks),
                 // Specific label (not generic "View") so screen readers and
                 // sighted users know exactly what this action opens.
                 child: Text('home.view_unweaned'.tr()),
-              ),
-            ],
+              );
+
+              if (useStackedLayout) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    message,
+                    const SizedBox(height: AppSpacing.sm),
+                    Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: action,
+                    ),
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  Expanded(child: message),
+                  const SizedBox(width: AppSpacing.sm),
+                  action,
+                ],
+              );
+            },
           ),
         ),
       ),

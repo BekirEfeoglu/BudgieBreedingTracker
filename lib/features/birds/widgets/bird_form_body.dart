@@ -77,7 +77,7 @@ class BirdFormBody extends ConsumerWidget {
 
     return Form(
       key: formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
+      autovalidateMode: AutovalidateMode.disabled,
       child: Column(
         children: [
           Expanded(

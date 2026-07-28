@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/unweaned_alert_banner.dart';
 
 void main() {
-  Widget createSubject(int count) {
+  Widget createSubject(int count, {double textScale = 1}) {
     final router = GoRouter(
       initialLocation: '/',
       routes: [
@@ -23,7 +23,15 @@ void main() {
         ),
       ],
     );
-    return MaterialApp.router(routerConfig: router);
+    return MaterialApp.router(
+      routerConfig: router,
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(
+          context,
+        ).copyWith(textScaler: TextScaler.linear(textScale)),
+        child: child!,
+      ),
+    );
   }
 
   group('UnweanedAlertBanner', () {
@@ -81,6 +89,14 @@ void main() {
       await tester.pump();
 
       expect(find.text(l10n('home.unweaned_alert')), findsOneWidget);
+    });
+
+    testWidgets('does not overflow at accessibility text size', (tester) async {
+      await tester.pumpWidget(createSubject(1, textScale: 3.5));
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text(l10n('home.view_unweaned')), findsOneWidget);
     });
   });
 }
