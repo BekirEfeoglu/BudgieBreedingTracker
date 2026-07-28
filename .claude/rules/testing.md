@@ -24,7 +24,7 @@ PR `test` job'u `--exclude-tags "golden || e2e || community"` ile koşar; taglı
 | Tag | Koşan job | Ne için |
 |-----|-----------|---------|
 | (tagsız) | `test` (her PR/push) | Default — TÜM mock-based unit testler |
-| `golden` | `golden-test` (her PR, Linux) | Visual regression |
+| `golden` | `golden-test` (her PR, Linux; doğrudan `test/golden` dizini) | Visual regression |
 | `e2e`, `scenario` | `e2e-community-test` (haftalık cron + manuel) | Ağır uçtan uca akışlar |
 | `community` | `e2e-community-test` (haftalık) | SADECE ağır community/marketplace/messaging screen+widget suite'leri |
 
@@ -100,7 +100,8 @@ test('handles loading and error states', () async {
 - Tagged: `@Tags(['golden'])`
 - Linux baseline only
 - Excluded from CI with `--exclude-tags golden`
-- Update baselines: `flutter test --update-goldens test/golden/`
+- Dedicated CI job and local focused run: `flutter test --no-pub test/golden`
+- Update baselines: `flutter test --no-pub test/golden --update-goldens`
 
 ## Skipped Test Policy
 - Skips are temporary exceptions, not a way to keep CI green. Prefer fixing the test or the product bug in the same change.

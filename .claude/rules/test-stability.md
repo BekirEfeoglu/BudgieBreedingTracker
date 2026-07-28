@@ -118,7 +118,7 @@ Visual regression test'leri `test/golden/` altında, Linux baseline'a karşı ka
 
 ### CI vs Local
 - CI: golden test'ler `--exclude-tags golden` ile atlanır (Linux farkı dışında platform gürültüsü engeli)
-- Dedicated `golden-test` job Linux ortamda çalıştırır
+- Dedicated `golden-test` job Linux ortamda `flutter test --no-pub test/golden` ile doğrudan golden dizinini çalıştırır; global `--tags golden` keşfi kullanılmaz
 - Local: macOS development'ta golden snapshot **farklı** olur — sadece CI baseline kabul
 
 ### Update Baselines
@@ -127,7 +127,7 @@ Visual regression test'leri `test/golden/` altında, Linux baseline'a karşı ka
 flutter test --update-goldens test/golden/bird_card_test.dart
 
 # Tüm golden'lar (PR'da intentional değişiklik varsa)
-flutter test --tags golden --update-goldens
+flutter test --no-pub test/golden --update-goldens
 ```
 Update sonrası generated `.png` dosyalarını commit et. PR review'da reviewer pixel-diff'i kontrol edebilmeli.
 

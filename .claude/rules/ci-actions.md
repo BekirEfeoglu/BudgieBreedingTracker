@@ -14,7 +14,7 @@
 |-----|------|---------|
 | `analyze` | `flutter analyze --no-fatal-infos` | PR merge |
 | `test` | Unit + widget tests (random order via `--test-randomize-ordering-seed random`), optional Codecov when `CODECOV_TOKEN` exists | PR merge |
-| `golden-test` | Visual regression (Linux) | PR merge |
+| `golden-test` | Visual regression (Linux), scoped directly to `test/golden` with `--no-pub` and no global tag discovery | PR merge |
 | `edge-functions-test` | `deno test --allow-env --allow-net supabase/functions` | PR merge + Edge deploy |
 | `scripts-test` | Python script tests (>=99% cov over 12 measured files; 10 at 100%, `_rules_collectors.py` 99%, `verify_security.py` 92% as of 2026-07-26) | PR merge |
 | `l10n-sync` | Translation key parity | PR merge |
@@ -77,6 +77,7 @@
 
 ## Workflow Hygiene
 - Workflow YAML'i push oncesi local parse et: `ruby -e 'require "yaml"; YAML.load_file(ARGV.fetch(0))' .github/workflows/<file>.yml`
+- `golden-test` job'unda baseline üretme ve doğrulama komutlarını `flutter test --no-pub test/golden` ile doğrudan dizine scope et; `--tags golden` tüm test koleksiyonunu gereksiz yere yüklediği için ekleme
 - `run:` satirinda `:` iceren komutlari quote et veya block scalar kullan; aksi halde Actions run'i jobs/log olmadan 0 saniyede fail olabilir
 - Event/actor/job-level `if:` filtreleri tum job'lari skip edebiliyorsa no-op guard job ekle; GitHub'da kirmizi workflow olusmasin
 - Gecici degisiklikler bitince schedule job'larini yeniden enable et

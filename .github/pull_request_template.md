@@ -43,7 +43,7 @@
 - [ ] Dependency bump varsa `pubspec.lock`; iOS plugin/pod etkisi varsa `ios/Podfile.lock` senkron ve `pod install` geçti
 - [ ] Lokalizasyon değiştiyse `python3 scripts/check_l10n_sync.py` geçti
 - [ ] Kural/metrik değiştiyse `python3 scripts/verify_rules.py --strict` geçti
-- [ ] CI/workflow veya `.github/dependabot.yml` değiştiyse schedule/PR limitleri doğrulandı; `CLAUDE.md`, `.claude/rules/ci-actions.md`, `obsidian-brain/infrastructure/ci-cd.md` ve bu şablon birlikte güncellendi
+- [ ] CI/workflow veya `.github/dependabot.yml` değiştiyse schedule/PR limitleri doğrulandı; golden job doğrudan `flutter test --no-pub test/golden` çalıştırıyor; `CLAUDE.md`, `.claude/rules/ci-actions.md`, `obsidian-brain/infrastructure/ci-cd.md` ve bu şablon birlikte güncellendi
 - [ ] Edge deploy akışı değiştiyse source/config/workflow path guard'ı korunuyor; `docs/**`-only push deploy etmiyor
 - [ ] CI coverage upload değiştiyse token olmayan ortamda job bilinçli skip/no-op davranıyor
 - [ ] CI/workflow değiştiyse workflow YAML parse edildi ve push sonrası `python3 scripts/check_remote_status.py` ile exact commit doğrulandı

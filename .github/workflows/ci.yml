@@ -152,17 +152,15 @@ jobs:
 
       - name: Regenerate golden masters for Linux
         run: |
-          flutter test test/golden \
+          flutter test --no-pub test/golden \
             --update-goldens \
-            --tags golden \
             --concurrency=2 \
             --dart-define=SUPABASE_URL=https://placeholder.supabase.co \
             --dart-define=SUPABASE_ANON_KEY=placeholder_key
 
       - name: Verify golden tests pass
         run: |
-          flutter test test/golden \
-            --tags golden \
+          flutter test --no-pub test/golden \
             --concurrency=2 \
             --dart-define=SUPABASE_URL=https://placeholder.supabase.co \
             --dart-define=SUPABASE_ANON_KEY=placeholder_key

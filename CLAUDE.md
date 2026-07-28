@@ -141,7 +141,7 @@ scripts/test_git_hooks.py               # Local git hook installation + worktree
 | --- | --- |
 | `analyze` | `flutter analyze --no-fatal-infos` |
 | `test` | Unit + widget tests, Codecov upload (excludes golden, e2e, community), timeout 30m (job-level 40m) |
-| `golden-test` | Visual regression on Linux baseline |
+| `golden-test` | Visual regression on Linux baseline; runs `flutter test --no-pub test/golden` directly without global tag discovery |
 | `edge-functions-test` | `deno test --allow-env --allow-net supabase/functions` (deploy gate) |
 | `e2e-community-test` | E2E + community tagged tests |
 | `scripts-test` | Python script tests (>=99% coverage over 12 measured files; 10 at 100%, `_rules_collectors.py` 99%, `verify_security.py` 92%) |

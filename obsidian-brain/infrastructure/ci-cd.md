@@ -10,7 +10,7 @@ Runs on PRs and main pushes.
 |-----|---------|---------|
 | `analyze` | `flutter analyze --no-fatal-infos` | PR merge |
 | `test` | Unit + widget tests, shuffled via `--test-randomize-ordering-seed random`; a shuffled-order red = new order-dependency, NOT flakiness — reproduce with the logged seed, never disable ordering (ci-actions.md § Random Test Ordering). Step timeout 30m, job-level 40m | PR merge |
-| `golden-test` | Visual regression (Linux baseline) | PR merge |
+| `golden-test` | Visual regression (Linux baseline), scoped directly to `flutter test --no-pub test/golden` without global tag discovery | PR merge |
 | `edge-functions-test` | `deno test` on `supabase/functions` | PR merge + Edge deploy gate |
 | `e2e-community-test` | E2E + community tagged tests | `workflow_dispatch`/`schedule` |
 | `scripts-test` | Python script tests (≥99% coverage) | PR merge |
@@ -45,6 +45,7 @@ keeps `web/` absent so the static `docs/` site remains the only web surface.
 - Edge deploy runs only for `supabase/functions/**`, `supabase/config.toml`, or
   `.github/workflows/ci.yml`; documentation-only pushes skip production deploy.
 - Workflow YAML must be locally parsed before push: `ruby -e 'require "yaml"; YAML.load_file(ARGV[0])' .github/workflows/ci.yml`
+- The `golden-test` baseline and verification steps run `flutter test --no-pub test/golden` directly; do not re-add `--tags golden`, which loads the global test collection before filtering.
 - Install hooks through `scripts/install_git_hooks.sh` so `core.hooksPath` stays
   worktree-relative. The pre-commit hook clears repository-local Git variables
   for Flutter subprocesses, allowing the SDK to resolve its own version.

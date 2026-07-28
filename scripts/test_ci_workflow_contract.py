@@ -46,6 +46,13 @@ class TestCiWorkflowContract(unittest.TestCase):
         )
         self.assertIn("edge-functions-test", deploy)
 
+    def test_golden_job_targets_directory_without_global_tag_discovery(self):
+        golden = _job_block(self.workflow, "golden-test")
+
+        self.assertEqual(2, golden.count("flutter test --no-pub test/golden"))
+        self.assertNotIn("--tags golden", golden)
+        self.assertEqual(1, golden.count("--update-goldens"))
+
     def test_release_ready_requires_and_injects_sentry_dsn(self):
         release = _job_block(self.release_ready, "android-release")
 
