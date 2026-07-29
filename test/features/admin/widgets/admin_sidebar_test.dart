@@ -135,6 +135,30 @@ void main() {
       expect(find.text(l10n('admin.feedback_admin')), findsOneWidget);
     });
 
+    testWidgets('menu entries are actionable semantic buttons', (tester) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await _pumpSidebar(tester);
+
+        for (final label in ['admin.dashboard', 'admin.users', 'admin.audit']) {
+          final semanticFinder = find.byWidgetPredicate(
+            (widget) =>
+                widget is Semantics &&
+                widget.properties.label == label &&
+                widget.properties.button == true &&
+                widget.properties.onTap != null,
+          );
+          expect(semanticFinder, findsOneWidget);
+          expect(
+            tester.getSemantics(semanticFinder).flagsCollection.isButton,
+            isTrue,
+          );
+        }
+      } finally {
+        semantics.dispose();
+      }
+    });
+
     testWidgets('dashboard item is selected on dashboard route', (
       tester,
     ) async {

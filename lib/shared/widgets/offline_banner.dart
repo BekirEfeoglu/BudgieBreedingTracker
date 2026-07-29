@@ -64,24 +64,28 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner> {
       conflictCount,
     );
 
-    return Stack(
-      fit: StackFit.expand,
+    if (banner == null) return widget.child;
+
+    return Column(
       children: [
-        widget.child,
-        if (banner != null)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: SafeArea(
-              bottom: false,
-              child: _SyncBanner(
-                model: banner,
-                isRetrying: _isRetrying,
-                onRetry: banner.canRetry ? _retrySync : null,
-              ),
+        ColoredBox(
+          color: Theme.of(context).colorScheme.surface,
+          child: SafeArea(
+            bottom: false,
+            child: _SyncBanner(
+              model: banner,
+              isRetrying: _isRetrying,
+              onRetry: banner.canRetry ? _retrySync : null,
             ),
           ),
+        ),
+        Expanded(
+          child: MediaQuery.removePadding(
+            context: context,
+            removeTop: true,
+            child: widget.child,
+          ),
+        ),
       ],
     );
   }

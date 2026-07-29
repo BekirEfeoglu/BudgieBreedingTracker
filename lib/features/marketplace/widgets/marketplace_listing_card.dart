@@ -61,101 +61,111 @@ class MarketplaceListingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    if (compact) return _buildCompact(context, theme);
+    void handleTap() => context.push('${AppRoutes.marketplace}/${listing.id}');
+    if (compact) {
+      return _withCardSemantics(
+        child: _buildCompact(theme, handleTap),
+        onTap: handleTap,
+      );
+    }
 
-    return Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.xs,
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => context.push('${AppRoutes.marketplace}/${listing.id}'),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildImageArea(theme),
-            Padding(
-              padding: AppSpacing.cardPadding,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          listing.title,
-                          style: theme.textTheme.titleMedium,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (listing.isVerifiedBreeder)
-                        Padding(
-                          padding: const EdgeInsetsDirectional.only(
-                            start: AppSpacing.xs,
-                          ),
-                          child: Icon(
-                            LucideIcons.badgeCheck,
-                            size: 18,
-                            color: theme.colorScheme.primary,
+    return _withCardSemantics(
+      onTap: handleTap,
+      child: Card(
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.xs,
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: handleTap,
+          excludeFromSemantics: true,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildImageArea(theme),
+              Padding(
+                padding: AppSpacing.cardPadding,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            listing.title,
+                            style: theme.textTheme.titleMedium,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Row(
-                    children: [
-                      StatusBadge(
-                        label: _listingTypeLabel(listing.listingType),
-                        color: _listingTypeColor(listing.listingType),
-                        icon: _listingTypeIcon(listing.listingType, size: 14),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Row(
-                    children: [
-                      Icon(
-                        LucideIcons.mapPin,
-                        size: 14,
-                        color: theme.colorScheme.outline,
-                      ),
-                      const SizedBox(width: AppSpacing.xs),
-                      Text(
-                        listing.city,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.outline,
+                        if (listing.isVerifiedBreeder)
+                          Padding(
+                            padding: const EdgeInsetsDirectional.only(
+                              start: AppSpacing.xs,
+                            ),
+                            child: Icon(
+                              LucideIcons.badgeCheck,
+                              size: 18,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Row(
+                      children: [
+                        StatusBadge(
+                          label: _listingTypeLabel(listing.listingType),
+                          color: _listingTypeColor(listing.listingType),
+                          icon: _listingTypeIcon(listing.listingType, size: 14),
                         ),
-                      ),
-                      if (listing.viewCount > 0) ...[
-                        const SizedBox(width: AppSpacing.sm),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Row(
+                      children: [
                         Icon(
-                          LucideIcons.eye,
+                          LucideIcons.mapPin,
                           size: 14,
                           color: theme.colorScheme.outline,
                         ),
                         const SizedBox(width: AppSpacing.xs),
                         Text(
-                          '${listing.viewCount}',
+                          listing.city,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.outline,
+                          ),
+                        ),
+                        if (listing.viewCount > 0) ...[
+                          const SizedBox(width: AppSpacing.sm),
+                          Icon(
+                            LucideIcons.eye,
+                            size: 14,
+                            color: theme.colorScheme.outline,
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          Text(
+                            '${listing.viewCount}',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.outline,
+                            ),
+                          ),
+                        ],
+                        const Spacer(),
+                        Text(
+                          _relativeTime(listing.createdAt),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.outline,
                           ),
                         ),
                       ],
-                      const Spacer(),
-                      Text(
-                        _relativeTime(listing.createdAt),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.outline,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -164,12 +174,13 @@ class MarketplaceListingCard extends StatelessWidget {
   /// Compact 2-column grid layout: fixed-height image with an on-photo type
   /// badge (top-left) + favorite heart (top-right), then price, title and a
   /// location line. Same tap-to-detail and favorite wiring as the list card.
-  Widget _buildCompact(BuildContext context, ThemeData theme) {
+  Widget _buildCompact(ThemeData theme, VoidCallback handleTap) {
     return Card(
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => context.push('${AppRoutes.marketplace}/${listing.id}'),
+        onTap: handleTap,
+        excludeFromSemantics: true,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -221,6 +232,30 @@ class MarketplaceListingCard extends StatelessWidget {
     );
   }
 
+  Widget _withCardSemantics({
+    required Widget child,
+    required VoidCallback onTap,
+  }) {
+    final label = [
+      listing.title,
+      _listingTypeLabel(listing.listingType),
+      listing.city,
+      if (listing.price != null) listing.priceDisplay,
+      if (listing.listingType == MarketplaceListingType.adoption &&
+          listing.price == null)
+        'marketplace.free_label'.tr(),
+    ].where((part) => part.isNotEmpty).join(', ');
+
+    return Semantics(
+      label: label,
+      button: true,
+      onTap: onTap,
+      // Preserve the independently actionable favorite target when present.
+      excludeSemantics: onFavoriteToggle == null,
+      child: child,
+    );
+  }
+
   /// On-photo filled type badge used by the compact grid card (top-left).
   Widget _buildCompactTypeBadge() {
     final color = _listingTypeColor(listing.listingType);
@@ -261,123 +296,126 @@ class MarketplaceListingCard extends StatelessWidget {
     final imageStack = Stack(
       fit: StackFit.expand,
       children: [
-          Hero(
-            tag: 'marketplace_image_${listing.id}',
-            child: listing.primaryImageUrl != null
-                ? CachedNetworkImage(
-                    imageUrl: listing.primaryImageUrl!,
-                    fit: BoxFit.cover,
-                    memCacheWidth: 640,
-                    placeholder: (_, __) =>
-                        ColoredBox(color: theme.colorScheme.surfaceContainerHighest),
-                    errorWidget: (_, _, _) => Container(
-                      color: theme.colorScheme.surfaceContainerHighest,
-                      child: Icon(
-                        LucideIcons.image,
-                        size: 48,
-                        color: theme.colorScheme.outline,
-                      ),
-                    ),
-                  )
-                : Container(
+        Hero(
+          tag: 'marketplace_image_${listing.id}',
+          child: listing.primaryImageUrl != null
+              ? CachedNetworkImage(
+                  imageUrl: listing.primaryImageUrl!,
+                  fit: BoxFit.cover,
+                  memCacheWidth: 640,
+                  placeholder: (_, __) => ColoredBox(
                     color: theme.colorScheme.surfaceContainerHighest,
-                    child: AppIcon(
-                      AppIcons.bird,
+                  ),
+                  errorWidget: (_, _, _) => Container(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    child: Icon(
+                      LucideIcons.image,
                       size: 48,
                       color: theme.colorScheme.outline,
                     ),
                   ),
-          ),
-          // Top-left overlay. Compact grid cards pin the listing type badge
-          // here (to match the marketplace design); the list card keeps the
-          // multi-photo count indicator.
-          if (compact)
-            Positioned(
-              top: AppSpacing.xs,
-              left: AppSpacing.xs,
-              child: _buildCompactTypeBadge(),
-            )
-          else if (listing.imageUrls.length > 1)
-            Positioned(
-              top: AppSpacing.xs,
-              left: AppSpacing.xs,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xs,
-                  vertical: 2,
+                )
+              : Container(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  child: AppIcon(
+                    AppIcons.bird,
+                    size: 48,
+                    color: theme.colorScheme.outline,
+                  ),
                 ),
-                decoration: BoxDecoration(
-                  color: _ImageOverlayColors.overlayBackground,
-                  borderRadius: BorderRadius.circular(AppSpacing.xs),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      LucideIcons.camera,
-                      size: 12,
+        ),
+        // Top-left overlay. Compact grid cards pin the listing type badge
+        // here (to match the marketplace design); the list card keeps the
+        // multi-photo count indicator.
+        if (compact)
+          Positioned(
+            top: AppSpacing.xs,
+            left: AppSpacing.xs,
+            child: _buildCompactTypeBadge(),
+          )
+        else if (listing.imageUrls.length > 1)
+          Positioned(
+            top: AppSpacing.xs,
+            left: AppSpacing.xs,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.xs,
+                vertical: 2,
+              ),
+              decoration: BoxDecoration(
+                color: _ImageOverlayColors.overlayBackground,
+                borderRadius: BorderRadius.circular(AppSpacing.xs),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    LucideIcons.camera,
+                    size: 12,
+                    color: _ImageOverlayColors.overlayIcon,
+                  ),
+                  const SizedBox(width: 2),
+                  Text(
+                    '${listing.imageUrls.length}',
+                    style: const TextStyle(
                       color: _ImageOverlayColors.overlayIcon,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(width: 2),
-                    Text(
-                      '${listing.imageUrls.length}',
-                      style: const TextStyle(
-                        color: _ImageOverlayColors.overlayIcon,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          // Favorite heart icon (top-right). Hidden when no callback is
-          // wired — previously the heart was always rendered but no
-          // caller wired the callback, leaving it as a dead UI
-          // affordance. Screens that don't want the heart (e.g. the
-          // user's own listings) now simply omit onFavoriteToggle.
-          if (onFavoriteToggle != null)
-            Positioned(
-              top: AppSpacing.xs,
-              right: AppSpacing.xs,
-              child: Semantics(
-                button: true,
-                label: listing.isFavoritedByMe
-                    ? 'marketplace.unfavorite'.tr()
-                    : 'marketplace.favorite'.tr(),
-                child: GestureDetector(
-                  onTap: onFavoriteToggle,
-                  // 48dp tap target — the previous 28dp footprint was
-                  // below the WCAG minimum so the gesture was hard to
-                  // hit reliably.
+          ),
+        // Favorite heart icon (top-right). Hidden when no callback is
+        // wired — previously the heart was always rendered but no
+        // caller wired the callback, leaving it as a dead UI
+        // affordance. Screens that don't want the heart (e.g. the
+        // user's own listings) now simply omit onFavoriteToggle.
+        if (onFavoriteToggle != null)
+          Positioned(
+            top: AppSpacing.xs,
+            right: AppSpacing.xs,
+            child: Semantics(
+              button: true,
+              label: listing.isFavoritedByMe
+                  ? 'marketplace.unfavorite'.tr()
+                  : 'marketplace.favorite'.tr(),
+              onTap: onFavoriteToggle,
+              child: GestureDetector(
+                onTap: onFavoriteToggle,
+                excludeFromSemantics: true,
+                // 48dp tap target — the previous 28dp footprint was
+                // below the WCAG minimum so the gesture was hard to
+                // hit reliably.
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  alignment: Alignment.center,
                   child: Container(
-                    width: 48,
-                    height: 48,
-                    alignment: Alignment.center,
-                    child: Container(
-                      padding: const EdgeInsets.all(AppSpacing.xs),
-                      decoration: const BoxDecoration(
-                        color: _ImageOverlayColors.overlayBackground,
-                        shape: BoxShape.circle,
-                      ),
-                      child: AppIcon(
-                        AppIcons.heart,
-                        size: 20,
-                        color: listing.isFavoritedByMe
-                            ? _ImageOverlayColors.favoriteActive
-                            : _ImageOverlayColors.overlayIcon,
-                      ),
+                    padding: const EdgeInsets.all(AppSpacing.xs),
+                    decoration: const BoxDecoration(
+                      color: _ImageOverlayColors.overlayBackground,
+                      shape: BoxShape.circle,
+                    ),
+                    child: AppIcon(
+                      AppIcons.heart,
+                      size: 20,
+                      color: listing.isFavoritedByMe
+                          ? _ImageOverlayColors.favoriteActive
+                          : _ImageOverlayColors.overlayIcon,
                     ),
                   ),
                 ),
               ),
             ),
-          // Bottom-right overlay: Glassmorphic Price Badge
-          Positioned(
-            bottom: AppSpacing.xs,
-            right: AppSpacing.xs,
-            child: _buildPriceBadge(theme),
           ),
+        // Bottom-right overlay: Glassmorphic Price Badge
+        Positioned(
+          bottom: AppSpacing.xs,
+          right: AppSpacing.xs,
+          child: _buildPriceBadge(theme),
+        ),
       ],
     );
 
@@ -388,8 +426,12 @@ class MarketplaceListingCard extends StatelessWidget {
   }
 
   Widget _buildPriceBadge(ThemeData theme) {
-    final isFree = listing.listingType == MarketplaceListingType.adoption && listing.price == null;
-    final text = isFree ? 'marketplace.free_label'.tr() : (listing.price != null ? listing.priceDisplay : '');
+    final isFree =
+        listing.listingType == MarketplaceListingType.adoption &&
+        listing.price == null;
+    final text = isFree
+        ? 'marketplace.free_label'.tr()
+        : (listing.price != null ? listing.priceDisplay : '');
     if (text.isEmpty) return const SizedBox.shrink();
 
     return Container(
@@ -415,8 +457,6 @@ class MarketplaceListingCard extends StatelessWidget {
       ),
     );
   }
-
-
 
   String _listingTypeLabel(MarketplaceListingType type) => switch (type) {
     MarketplaceListingType.sale => 'marketplace.type_sale'.tr(),

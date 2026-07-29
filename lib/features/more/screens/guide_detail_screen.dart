@@ -86,7 +86,10 @@ class _DetailHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                topic.category.label.toUpperCase(),
+                guideUppercase(
+                  topic.category.label,
+                  languageCode: Localizations.localeOf(context).languageCode,
+                ),
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: theme.colorScheme.primary,
                   fontWeight: FontWeight.w700,
@@ -133,7 +136,10 @@ class _RelatedTopicsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'user_guide.related_topics'.tr().toUpperCase(),
+          guideUppercase(
+            'user_guide.related_topics'.tr(),
+            languageCode: Localizations.localeOf(context).languageCode,
+          ),
           style: theme.textTheme.labelSmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
             fontWeight: FontWeight.w700,

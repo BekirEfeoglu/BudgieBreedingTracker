@@ -4,6 +4,17 @@ import 'package:budgie_breeding_tracker/core/constants/app_icons.dart';
 
 part 'guide_topics_data.dart';
 
+/// Applies locale-aware uppercasing for guide section labels.
+///
+/// Dart's default [String.toUpperCase] does not apply Turkish dotted/dotless
+/// I rules, which produced headings such as `YÖNETIMI` and `SÜRECI`.
+String guideUppercase(String value, {required String languageCode}) {
+  if (languageCode.toLowerCase() == 'tr') {
+    return value.replaceAll('i', 'İ').replaceAll('ı', 'I').toUpperCase();
+  }
+  return value.toUpperCase();
+}
+
 // ---------------------------------------------------------------------------
 // Guide content block types
 // ---------------------------------------------------------------------------

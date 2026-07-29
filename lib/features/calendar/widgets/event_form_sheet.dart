@@ -31,6 +31,7 @@ Future<void> showEventFormSheet(
   return showAppBottomSheet(
     context: context,
     isScrollControlled: true,
+    showCloseButton: false,
     constraints: const BoxConstraints(maxWidth: AppSpacing.maxSheetWidth),
     useRootNavigator: true,
     shape: const RoundedRectangleBorder(

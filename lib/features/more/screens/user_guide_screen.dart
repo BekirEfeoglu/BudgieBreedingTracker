@@ -204,7 +204,10 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
             AppSpacing.sm,
           ),
           child: Text(
-            category.label.toUpperCase(),
+            guideUppercase(
+              category.label,
+              languageCode: Localizations.localeOf(context).languageCode,
+            ),
             style: theme.textTheme.labelSmall?.copyWith(
               color: theme.colorScheme.primary,
               fontWeight: FontWeight.w700,

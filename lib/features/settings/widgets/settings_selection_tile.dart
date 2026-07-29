@@ -41,13 +41,22 @@ class SettingsSelectionTile<T> extends StatelessWidget {
       (o) => o.value == currentValue,
       orElse: () => options.first,
     );
+    void handleTap() => _showSelectionDialog(context);
 
-    return ListTile(
-      leading: icon,
-      title: Text(title),
-      subtitle: Text(currentOption.label),
-      trailing: const Icon(LucideIcons.chevronRight, size: 18),
-      onTap: () => _showSelectionDialog(context),
+    return Semantics(
+      container: true,
+      label: title,
+      value: currentOption.label,
+      button: true,
+      onTap: handleTap,
+      excludeSemantics: true,
+      child: ListTile(
+        leading: icon,
+        title: Text(title),
+        subtitle: Text(currentOption.label),
+        trailing: const Icon(LucideIcons.chevronRight, size: 18),
+        onTap: handleTap,
+      ),
     );
   }
 

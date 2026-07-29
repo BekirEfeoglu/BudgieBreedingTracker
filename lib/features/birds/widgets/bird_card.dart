@@ -33,130 +33,144 @@ class BirdCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final age = bird.age;
+    final handleTap = onTap ?? () => context.push('/birds/${bird.id}');
+    final semanticLabel = [
+      bird.name,
+      if (bird.ringNumber case final ring? when ring.isNotEmpty) ring,
+      speciesLabel(bird.species),
+      if (age != null) formatBirdAgeShort(age),
+    ].join(', ');
 
-    final cardWidget = Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.xs,
-      ),
-      elevation: 0,
-      color: theme.colorScheme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        side: BorderSide(
-          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
-          width: 1,
+    final cardWidget = Semantics(
+      label: semanticLabel,
+      button: true,
+      onTap: handleTap,
+      excludeSemantics: true,
+      child: Card(
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.xs,
         ),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap ?? () => context.push('/birds/${bird.id}'),
-        child: Padding(
-          padding: AppSpacing.cardPadding,
-          child: Row(
-            children: [
-              Hero(
-                tag: 'bird_${bird.id}',
-                child: CircleAvatar(
-                  radius: 24,
-                  backgroundColor: birdGenderColor(
-                    bird.gender,
-                  ).withValues(alpha: 0.1),
-                  child: bird.photoUrl != null
-                      ? ClipOval(
-                          child: CachedNetworkImage(
-                            imageUrl: bird.photoUrl!,
-                            width: 48,
-                            height: 48,
-                            memCacheWidth: 96,
-                            memCacheHeight: 96,
-                            fit: BoxFit.cover,
-                            errorWidget: (_, __, ___) =>
-                                BirdGenderIcon(gender: bird.gender, size: 28),
-                          ),
-                        )
-                      : BirdGenderIcon(gender: bird.gender, size: 28),
+        elevation: 0,
+        color: theme.colorScheme.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          side: BorderSide(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: handleTap,
+          excludeFromSemantics: true,
+          child: Padding(
+            padding: AppSpacing.cardPadding,
+            child: Row(
+              children: [
+                Hero(
+                  tag: 'bird_${bird.id}',
+                  child: CircleAvatar(
+                    radius: 24,
+                    backgroundColor: birdGenderColor(
+                      bird.gender,
+                    ).withValues(alpha: 0.1),
+                    child: bird.photoUrl != null
+                        ? ClipOval(
+                            child: CachedNetworkImage(
+                              imageUrl: bird.photoUrl!,
+                              width: 48,
+                              height: 48,
+                              memCacheWidth: 96,
+                              memCacheHeight: 96,
+                              fit: BoxFit.cover,
+                              errorWidget: (_, __, ___) =>
+                                  BirdGenderIcon(gender: bird.gender, size: 28),
+                            ),
+                          )
+                        : BirdGenderIcon(gender: bird.gender, size: 28),
+                  ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      bird.name,
-                      style: theme.textTheme.titleMedium,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        if (bird.ringNumber != null) ...[
-                          AppIcon(
-                            AppIcons.ring,
-                            size: 16,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: 2),
-                          Flexible(
-                            child: Text(
-                              bird.ringNumber!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                        ],
-                        if (age != null)
-                          Flexible(
-                            child: Text(
-                              formatBirdAgeShort(age),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    if (bird.species != Species.budgie) ...[
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        bird.name,
+                        style: theme.textTheme.titleMedium,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       const SizedBox(height: 2),
                       Row(
                         children: [
-                          speciesIconWidget(
-                            bird.species,
-                            size: 14,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: AppSpacing.xs),
-                          Text(
-                            speciesLabel(bird.species),
-                            style: theme.textTheme.bodySmall?.copyWith(
+                          if (bird.ringNumber != null) ...[
+                            AppIcon(
+                              AppIcons.ring,
+                              size: 16,
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
-                          ),
+                            const SizedBox(width: 2),
+                            Flexible(
+                              child: Text(
+                                bird.ringNumber!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                          ],
+                          if (age != null)
+                            Flexible(
+                              child: Text(
+                                formatBirdAgeShort(age),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
                         ],
                       ),
+                      if (bird.species != Species.budgie) ...[
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            speciesIconWidget(
+                              bird.species,
+                              size: 14,
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            Text(
+                              speciesLabel(bird.species),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
+                  ),
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    RecordSyncConflictBadge(
+                      tableName: SupabaseConstants.birdsTable,
+                      recordId: bird.id,
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
+                    BirdStatusBadge(status: bird.status),
                   ],
                 ),
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  RecordSyncConflictBadge(
-                    tableName: SupabaseConstants.birdsTable,
-                    recordId: bird.id,
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  BirdStatusBadge(status: bird.status),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

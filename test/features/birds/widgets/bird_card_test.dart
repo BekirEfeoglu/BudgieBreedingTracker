@@ -119,6 +119,39 @@ void main() {
       expect(tapped, isTrue);
     });
 
+    testWidgets('exposes card as one actionable semantic button', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        final bird = createTestBird(
+          name: 'Mavi',
+          ringNumber: 'TR-2026-42',
+          species: Species.canary,
+        );
+
+        await pumpWidget(
+          tester,
+          Scaffold(
+            body: BirdCard(bird: bird, onTap: () {}),
+          ),
+        );
+
+        final semanticFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is Semantics &&
+              widget.properties.button == true &&
+              widget.properties.onTap != null,
+        );
+        final node = tester.getSemantics(semanticFinder.first);
+        expect(node.flagsCollection.isButton, isTrue);
+        expect(node.label, contains('Mavi'));
+        expect(node.label, contains('TR-2026-42'));
+      } finally {
+        semantics.dispose();
+      }
+    });
+
     testWidgets('contains Hero widget with correct tag', (tester) async {
       final bird = createTestBird(id: 'bird-42', name: 'Hero Test');
 

@@ -53,5 +53,34 @@ void main() {
             '— see assets-images.md § Network Image',
       );
     });
+
+    testWidgets('exposes grid card as an actionable semantic button', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        final bird = createTestBird(name: 'Mavi', ringNumber: 'TR-7');
+
+        await pumpWidget(
+          tester,
+          Scaffold(
+            body: BirdGridCard(bird: bird, onTap: () {}),
+          ),
+        );
+
+        final semanticFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is Semantics &&
+              widget.properties.button == true &&
+              widget.properties.onTap != null,
+        );
+        final node = tester.getSemantics(semanticFinder.first);
+        expect(node.flagsCollection.isButton, isTrue);
+        expect(node.label, contains('Mavi'));
+        expect(node.label, contains('TR-7'));
+      } finally {
+        semantics.dispose();
+      }
+    });
   });
 }

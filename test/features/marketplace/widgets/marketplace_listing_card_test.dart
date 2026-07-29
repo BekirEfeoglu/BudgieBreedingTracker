@@ -187,6 +187,32 @@ void main() {
       expect(find.byType(InkWell), findsOneWidget);
     });
 
+    testWidgets('exposes listing card as an actionable semantic button', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await pumpLocalizedWidget(
+          tester,
+          const MarketplaceListingCard(listing: _saleListing),
+        );
+
+        final semanticFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is Semantics &&
+              widget.properties.button == true &&
+              widget.properties.onTap != null &&
+              (widget.properties.label?.contains('Beautiful Blue Budgie') ??
+                  false),
+        );
+        final node = tester.getSemantics(semanticFinder);
+        expect(node.flagsCollection.isButton, isTrue);
+        expect(node.label, contains('Istanbul'));
+      } finally {
+        semantics.dispose();
+      }
+    });
+
     testWidgets('always renders AspectRatio image area', (tester) async {
       await pumpLocalizedWidget(
         tester,
@@ -250,6 +276,35 @@ void main() {
       );
 
       expect(_findHeartAppIcon(), findsWidgets);
+    });
+
+    testWidgets('keeps favorite as a separate actionable semantic button', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await pumpLocalizedWidget(
+          tester,
+          MarketplaceListingCard(
+            listing: _saleListing,
+            onFavoriteToggle: () {},
+          ),
+        );
+
+        final favoriteFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is Semantics &&
+              widget.properties.label == 'marketplace.favorite' &&
+              widget.properties.onTap != null,
+        );
+        expect(favoriteFinder, findsOneWidget);
+        expect(
+          tester.getSemantics(favoriteFinder).flagsCollection.isButton,
+          isTrue,
+        );
+      } finally {
+        semantics.dispose();
+      }
     });
 
     testWidgets('calls onFavoriteToggle when heart is tapped', (tester) async {

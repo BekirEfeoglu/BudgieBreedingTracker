@@ -26,118 +26,135 @@ class HealthRecordCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final handleTap =
+        onTap ?? () => context.push('/health-records/${record.id}');
+    final dateText = ref
+        .watch(dateFormatProvider)
+        .formatter()
+        .format(record.date);
+    final semanticLabel = [
+      record.title,
+      healthRecordTypeLabel(record.type),
+      dateText,
+      if (animalName case final name? when name.isNotEmpty) name,
+      if (record.followUpDate != null) 'health_records.follow_up'.tr(),
+    ].join(', ');
 
-    return Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.xs,
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap ?? () => context.push('/health-records/${record.id}'),
-        child: Padding(
-          padding: AppSpacing.cardPadding,
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 22,
-                backgroundColor: healthRecordTypeColor(
-                  record.type,
-                ).withValues(alpha: 0.15),
-                child: healthRecordTypeIcon(
-                  record.type,
-                  size: 22,
-                  color: healthRecordTypeColor(record.type),
+    return Semantics(
+      label: semanticLabel,
+      button: true,
+      onTap: handleTap,
+      excludeSemantics: true,
+      child: Card(
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.xs,
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: handleTap,
+          excludeFromSemantics: true,
+          child: Padding(
+            padding: AppSpacing.cardPadding,
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 22,
+                  backgroundColor: healthRecordTypeColor(
+                    record.type,
+                  ).withValues(alpha: 0.15),
+                  child: healthRecordTypeIcon(
+                    record.type,
+                    size: 22,
+                    color: healthRecordTypeColor(record.type),
+                  ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      record.title,
-                      style: theme.textTheme.titleSmall,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: AppSpacing.xxs),
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            healthRecordTypeLabel(record.type),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: healthRecordTypeColor(record.type),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Flexible(
-                          child: Text(
-                            ref
-                                .watch(dateFormatProvider)
-                                .formatter()
-                                .format(record.date),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (animalName != null) ...[
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        record.title,
+                        style: theme.textTheme.titleSmall,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       const SizedBox(height: AppSpacing.xxs),
                       Row(
                         children: [
-                          AppIcon(
-                            AppIcons.bird,
-                            size: 13,
-                            color: theme.colorScheme.primary,
-                          ),
-                          const SizedBox(width: AppSpacing.xs),
-                          Expanded(
+                          Flexible(
                             child: Text(
-                              animalName!,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.primary,
-                              ),
+                              healthRecordTypeLabel(record.type),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: healthRecordTypeColor(record.type),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Flexible(
+                            child: Text(
+                              dateText,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ],
-                    if (record.description != null &&
-                        record.description!.isNotEmpty) ...[
-                      const SizedBox(height: AppSpacing.xxs),
-                      Text(
-                        record.description!,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
+                      if (animalName != null) ...[
+                        const SizedBox(height: AppSpacing.xxs),
+                        Row(
+                          children: [
+                            AppIcon(
+                              AppIcons.bird,
+                              size: 13,
+                              color: theme.colorScheme.primary,
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            Expanded(
+                              child: Text(
+                                animalName!,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.primary,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      ],
+                      if (record.description != null &&
+                          record.description!.isNotEmpty) ...[
+                        const SizedBox(height: AppSpacing.xxs),
+                        Text(
+                          record.description!,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ],
-                  ],
-                ),
-              ),
-              if (record.followUpDate != null)
-                Tooltip(
-                  message: 'health_records.follow_up'.tr(),
-                  child: Icon(
-                    LucideIcons.calendarDays,
-                    size: 18,
-                    color: theme.colorScheme.primary,
                   ),
                 ),
-            ],
+                if (record.followUpDate != null)
+                  Tooltip(
+                    message: 'health_records.follow_up'.tr(),
+                    child: Icon(
+                      LucideIcons.calendarDays,
+                      size: 18,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
