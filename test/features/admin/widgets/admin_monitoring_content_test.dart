@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_capacity_providers.dart';
+import 'package:budgie_breeding_tracker/features/admin/providers/admin_build_distribution_provider.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_monitoring_snapshot_providers.dart';
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_monitoring_content.dart';
@@ -52,6 +53,9 @@ Widget _wrapWithProvider(Widget child) => ProviderScope(
   overrides: [
     monitoringSnapshotsProvider.overrideWith(
       (_) async => const MonitoringTrend(),
+    ),
+    adminBuildDistributionProvider.overrideWith(
+      (_) async => const BuildDistribution(windowDays: 30),
     ),
     dbSizeLimitProvider.overrideWith((_) async => _testDbLimit),
   ],

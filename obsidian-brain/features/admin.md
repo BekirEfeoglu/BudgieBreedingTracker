@@ -129,6 +129,12 @@ undercounts them. The screen shows these global counts when the list is
 unfiltered and falls back to the loaded set while filtered/searched. Counts
 are invalidated on refresh, retry, and user mutations (bulk + detail).
 
+`adminBuildDistributionProvider` reads the admin-gated
+`admin_get_build_distribution` RPC. Monitoring shows 30-day iOS/Android
+coverage and build share from each user-platform's latest session; legacy null
+versions stay in the denominator so incomplete telemetry is visible. It
+refreshes only on pull-to-refresh/retry, not the capacity timer.
+
 ## Current Decisions
 
 - `admin/` is the only feature allowed to call Supabase `client.from()` directly.
@@ -143,6 +149,7 @@ are invalidated on refresh, retry, and user mutations (bulk + detail).
 - Moderation post/comment removal is confirm-gated; no destructive admin path is single-tap.
 - Destructive admin op failures (user ops, bulk, moderation) report to Sentry, not just a breadcrumb.
 - User list summary counts come from database-wide providers, not the loaded page.
+- Build rollout decisions use both adoption share and version telemetry coverage.
 - Manual premium grants/revocations are authoritative until another admin
   changes them; RevenueCat sync does not replace `provider=manual` records.
 

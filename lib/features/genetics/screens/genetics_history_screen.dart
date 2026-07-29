@@ -115,6 +115,7 @@ class _GeneticsHistoryScreenState extends ConsumerState<GeneticsHistoryScreen> {
       ),
       floatingActionButton: _selectedIds.length >= 2
           ? FloatingActionButton.extended(
+              heroTag: null,
               onPressed: () {
                 final ids = _selectedIds.toList();
                 context.push(

@@ -55,13 +55,13 @@ The repository includes the main mobile app, localized content in Turkish, Engli
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 1030 Dart files |
-| Test suite | 950 test files, 11,748+ tests (unit, widget, golden, e2e) |
+| Source files (lib/) | 1032 Dart files |
+| Test suite | 952 test files, 11,773+ tests (unit, widget, golden, e2e) |
 | Feature modules | 24 |
 | Drift tables | 20 |
 | Routes | 75 |
 | Custom SVG icons | 99 |
-| Localization keys | ~3,180 per language (TR, EN, DE) |
+| Localization keys | ~3,188 per language (TR, EN, DE) |
 | Domain services | 23 |
 | DB schema version | 29 |
 
@@ -290,7 +290,7 @@ BudgieBreedingTracker/
 │   ├── features/           # 23 feature modules (admin, auth, birds, ...)
 │   └── router/             # 70 routes, auth/admin/premium guards
 ├── scripts/                # L10n sync, code quality, and rule validation
-├── test/                   # 950 test files (unit, widget, golden, e2e)
+├── test/                   # 952 test files (unit, widget, golden, e2e)
 └── remotion-promo/         # Remotion-based promo video project
 ```
 

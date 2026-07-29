@@ -4,6 +4,7 @@
 export '../../../core/enums/admin_enums.dart';
 export '../constants/admin_constants.dart';
 export 'admin_content_models.dart';
+export 'admin_build_distribution_provider.dart';
 export 'admin_models.dart';
 export 'admin_maintenance_models.dart';
 export 'admin_data_providers.dart';

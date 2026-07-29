@@ -11,6 +11,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../providers/admin_monitoring_snapshot_providers.dart';
 import '../providers/admin_providers.dart';
+import 'admin_build_distribution_section.dart';
 import 'admin_monitoring_snapshot_section.dart';
 import 'admin_monitoring_table_widgets.dart';
 
@@ -54,6 +55,8 @@ class MonitoringContent extends ConsumerWidget {
           MonitoringIndexUsageCard(indexHitRatio: capacity.indexHitRatio),
           const SizedBox(height: AppSpacing.xxl),
           const MonitoringSnapshotSection(),
+          const SizedBox(height: AppSpacing.xxl),
+          const AdminBuildDistributionSection(),
           const SizedBox(height: AppSpacing.xxl),
           MonitoringTableDetailsSection(tables: capacity.tables),
           const SizedBox(height: AppSpacing.xxxl),

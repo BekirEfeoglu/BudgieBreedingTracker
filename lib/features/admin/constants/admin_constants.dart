@@ -80,6 +80,7 @@ abstract final class AdminConstants {
 
   // Analytics
   static const int chartPeriodDays = 30;
+  static const int buildAdoptionWindowDays = 30;
   static const int topUsersLimit = 5;
 
   // Maintenance

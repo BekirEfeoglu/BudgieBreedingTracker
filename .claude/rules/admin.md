@@ -49,6 +49,7 @@ EXECUTE FUNCTION audit_admin_action('ban_user');
 |-------|--------------|---------|
 | User stats | `admin_get_stats` RPC (`adminStatsProvider`) | Yalnız manuel — düz `FutureProvider`, timer YOK |
 | System health | `system-health` edge fn (`systemHealthProvider`) | `ref.keepAlive()` + tek `Timer(Duration(minutes: 5))` → `invalidateSelf` |
+| Build adoption | `admin_get_build_distribution` RPC (`adminBuildDistributionProvider`) | Pull-to-refresh/retry; otomatik polling YOK |
 | Moderation queue | `community_reports` table | Manuel + aksiyon sonrası `invalidate` (realtime YOK) |
 | Edge function logs | Supabase Dashboard link | External |
 
@@ -60,6 +61,9 @@ EXECUTE FUNCTION audit_admin_action('ban_user');
 - Monitoring genel durum banner'ı kapasiteye ek olarak indeks kullanımını ve
   yavaş sorgu snapshot'larını da hesaba katar; kırmızı/sarı alt metrik varken
   genel durum "Sağlıklı" gösterilemez.
+- Build dağılımı son 30 günde her kullanıcı/platform için en güncel session'ı
+  bir kez sayar. Nullable `app_version` eski client telemetrisini temsil eder;
+  coverage görünmeden build yüzdesi rollout kararı için tek başına kullanılamaz.
 
 ## Moderation Queue
 - Bekleyen `community_reports` listesi (status: pending)
