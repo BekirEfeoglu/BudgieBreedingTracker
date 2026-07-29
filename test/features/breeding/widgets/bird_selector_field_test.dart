@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/bird_selector_field.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import '../../../helpers/test_helpers.dart';
 import '../../../helpers/test_localization.dart';
@@ -78,7 +79,7 @@ void main() {
         createTestBird(id: 'b-2', name: 'Kus2', cageNumber: 'K2'),
       ];
 
-      await _pump(
+      await pumpTranslatedWidget(
         tester,
         BirdSelectorField(
           label: 'Seç',
@@ -89,7 +90,10 @@ void main() {
         ),
       );
 
-      expect(find.text('breeding.same_cage_recommended'), findsOneWidget);
+      expect(
+        find.text(resolvedL10n('breeding.same_cage_recommended')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('sets initial value correctly', (tester) async {
