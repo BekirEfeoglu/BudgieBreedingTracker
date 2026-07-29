@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
+import 'package:budgie_breeding_tracker/core/enums/sync_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
 import 'package:budgie_breeding_tracker/data/local/database/database_provider.dart';
@@ -73,6 +74,7 @@ class SyncConflictRecoveryService {
 
   final Ref _ref;
   Future<SyncConflictRetryResult>? _activeRetry;
+  Future<int>? _activeKeepRemote;
 
   Future<SyncConflictRetryResult> retryLocal(String userId) {
     final active = _activeRetry;
@@ -80,6 +82,55 @@ class SyncConflictRecoveryService {
     final future = _retryLocal(userId).whenComplete(() => _activeRetry = null);
     _activeRetry = future;
     return future;
+  }
+
+  /// Accepts the already-applied server-wins copies for every unresolved
+  /// conflict and removes their stale local pending markers atomically.
+  ///
+  /// The conflict history remains available for audit, but is marked resolved.
+  /// Without deleting the matching `sync_metadata` rows, the next pull detects
+  /// the same records as conflicts again even though the user explicitly kept
+  /// the remote version.
+  Future<int> keepRemote(String userId) {
+    final active = _activeKeepRemote;
+    if (active != null) return active;
+    final future = _keepRemote(
+      userId,
+    ).whenComplete(() => _activeKeepRemote = null);
+    _activeKeepRemote = future;
+    return future;
+  }
+
+  Future<int> _keepRemote(String userId) async {
+    final database = _ref.read(appDatabaseProvider);
+    return database.transaction(() async {
+      final conflicts = await database.conflictHistoryDao.getUnresolved(userId);
+      if (conflicts.isEmpty) return 0;
+
+      final recordIdsByTable = <String, Set<String>>{};
+      for (final conflict in conflicts) {
+        recordIdsByTable
+            .putIfAbsent(conflict.tableName, () => <String>{})
+            .add(conflict.recordId);
+      }
+      for (final entry in recordIdsByTable.entries) {
+        await database.syncMetadataDao.deleteByRecords(
+          entry.key,
+          entry.value.toList(),
+        );
+      }
+
+      final resolvedAt = DateTime.now();
+      var resolved = 0;
+      for (final conflict in conflicts) {
+        resolved += await database.conflictHistoryDao.markResolvedIfUnresolved(
+          conflict.id,
+          resolvedAt,
+          conflictType: ConflictType.serverWins,
+        );
+      }
+      return resolved;
+    });
   }
 
   /// Returns true only when every restored record's metadata marker has been
@@ -176,11 +227,7 @@ class SyncConflictRecoveryService {
         '[ConflictRecovery] Snapshot rejected (${e.code}) for '
         '${conflict.tableName}/${AppLogger.obfuscate(conflict.recordId)}',
       );
-      _reportRestoreFailure(
-        code: e.code,
-        conflict: conflict,
-        stackTrace: st,
-      );
+      _reportRestoreFailure(code: e.code, conflict: conflict, stackTrace: st);
       return _RestoreOutcome.failed;
     }
 
@@ -207,6 +254,7 @@ class SyncConflictRecoveryService {
         final updated = await dao.markResolvedIfUnresolved(
           conflict.id,
           DateTime.now(),
+          conflictType: ConflictType.localOverwritten,
         );
         if (updated != 1) return _RestoreOutcome.alreadyResolved;
         return _RestoreOutcome.restored;

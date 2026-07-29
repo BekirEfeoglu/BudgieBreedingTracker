@@ -56,7 +56,7 @@ The repository includes the main mobile app, localized content in Turkish, Engli
 | Metric | Value |
 | --- | --- |
 | Source files (lib/) | 1030 Dart files |
-| Test suite | 949 test files, 11,700+ tests (unit, widget, golden, e2e) |
+| Test suite | 950 test files, 11,748+ tests (unit, widget, golden, e2e) |
 | Feature modules | 24 |
 | Drift tables | 20 |
 | Routes | 75 |
@@ -290,7 +290,7 @@ BudgieBreedingTracker/
 │   ├── features/           # 23 feature modules (admin, auth, birds, ...)
 │   └── router/             # 70 routes, auth/admin/premium guards
 ├── scripts/                # L10n sync, code quality, and rule validation
-├── test/                   # 747 test files (unit, widget, golden, e2e)
+├── test/                   # 950 test files (unit, widget, golden, e2e)
 └── remotion-promo/         # Remotion-based promo video project
 ```
 
@@ -301,7 +301,7 @@ GitHub Actions CI pipeline runs on every PR:
 | Check | Description |
 | --- | --- |
 | Flutter Analyze | Static analysis with `--no-fatal-infos` |
-| Flutter Test | 11,700+ tests with coverage upload to Codecov |
+| Flutter Test | 11,748+ tests with coverage upload to Codecov |
 | Golden Tests | Pixel-level widget regression checks |
 | Scripts Test | Python script tests (>=99% coverage) |
 | L10n Sync | Verifies TR/EN/DE translation key parity |

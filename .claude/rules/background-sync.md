@@ -119,6 +119,12 @@ class EggRepository extends BaseRepository<Egg>
   collapse/reset eder ve conflict `resolved_at` işaretini aynı Drift
   transaction'ında tamamlar. Duplicate/racing retry çağrıları tek active
   future'da birleşir.
+- `SyncConflictRecoveryService.keepRemote()` yalnız unresolved conflict
+  anahtarlarının `sync_metadata` satırlarını siler ve history kayıtlarını aynı
+  Drift transaction'ında resolved işaretler. Çözülmüş history audit için
+  korunur; ilgisiz pending kayıtlar ve entity verisi değiştirilmez. Remote
+  kabulü `serverWins`, local retry sonucu `localOverwritten` conflict type ile
+  saklanır; sağlık sayacı yalnız unresolved history'yi sayar.
 - Retry UI, `fullSync()` sonucu success olsa bile restore edilen anahtarları
   tablo bazında `SyncMetadataDao.getByRecords` ile batch doğrular. Tüm metadata
   işaretleri silinmeden "senkronize edildi" göstermez veya sheet'i kapatmaz;

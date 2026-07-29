@@ -119,7 +119,7 @@ scripts/test_git_hooks.py               # Local git hook installation + worktree
 | Metric | Value |
 | --- | --- |
 | Source files (lib/) | 1030 Dart files |
-| Test files (test/) | 949 test files, 11,727+ individual tests |
+| Test files (test/) | 950 test files, 11,748+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |

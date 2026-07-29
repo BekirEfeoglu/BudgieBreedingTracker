@@ -126,6 +126,13 @@ await db.batch((batch) {
   one pending metadata row must remain. Payload-less v28 history and
   corrupt/unsupported payloads remain unresolved and must surface a localized
   fallback without mutating entity data.
+- "Keep remote" MUST delete only the unresolved conflict keys from
+  `sync_metadata` and mark those history rows resolved in one Drift
+  transaction. It must retain the resolved history for audit and must not
+  delete unrelated pending records. The resolved history remains
+  `ConflictType.serverWins`; "Retry local" changes the resolved row to
+  `ConflictType.localOverwritten` so UI status labels do not conflate the two
+  choices.
 - A retry is UI-successful only when `fullSync` succeeds and batched
   `getByRecords` checks find no metadata for every restored `(table, record)`
   key. Remaining metadata is a partial/unverified result; reload conflict state

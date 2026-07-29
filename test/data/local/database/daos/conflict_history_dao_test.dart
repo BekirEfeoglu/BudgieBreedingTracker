@@ -81,6 +81,7 @@ void main() {
       final updated = await db.conflictHistoryDao.markResolvedIfUnresolved(
         'recoverable',
         DateTime.utc(2026, 7, 17),
+        conflictType: ConflictType.localOverwritten,
       );
       final duplicate = await db.conflictHistoryDao.markResolvedIfUnresolved(
         'recoverable',
@@ -90,6 +91,10 @@ void main() {
       expect(updated, 1);
       expect(duplicate, 0);
       expect(await db.conflictHistoryDao.getUnresolved('u1'), isEmpty);
+      expect(
+        (await db.conflictHistoryDao.getById('recoverable'))?.conflictType,
+        ConflictType.localOverwritten,
+      );
       expect(
         await db.conflictHistoryDao
             .watchRecentCount('u1', const Duration(days: 1))

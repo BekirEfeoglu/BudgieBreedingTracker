@@ -1,3 +1,5 @@
+import '../enums/sync_enums.dart';
+
 /// Represents a detected sync conflict where server data overwrote local data.
 class SyncConflict {
   final String table;
@@ -7,6 +9,7 @@ class SyncConflict {
   final String? historyId;
   final bool hasLocalSnapshot;
   final DateTime? resolvedAt;
+  final ConflictType conflictType;
 
   const SyncConflict({
     required this.table,
@@ -16,7 +19,10 @@ class SyncConflict {
     this.historyId,
     this.hasLocalSnapshot = false,
     this.resolvedAt,
+    this.conflictType = ConflictType.serverWins,
   });
 
   bool get canRetryLocal => hasLocalSnapshot && resolvedAt == null;
+  bool get wasRestoredLocally =>
+      resolvedAt != null && conflictType == ConflictType.localOverwritten;
 }
