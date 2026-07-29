@@ -91,6 +91,11 @@ class AdminSidebar extends ConsumerWidget {
       matchPrefix: AppRoutes.adminUsers,
     ),
     const _AdminMenuItem(
+      icon: AppIcon(AppIcons.community),
+      labelKey: 'admin.content_review',
+      route: AppRoutes.adminModeration,
+    ),
+    const _AdminMenuItem(
       icon: AppIcon(AppIcons.monitoring),
       labelKey: 'admin.monitoring',
       route: AppRoutes.adminMonitoring,

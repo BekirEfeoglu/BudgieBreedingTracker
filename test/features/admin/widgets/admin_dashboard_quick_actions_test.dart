@@ -26,6 +26,10 @@ Widget _wrapWithRouter(Widget child) {
         builder: (_, __) => const Scaffold(body: Text('Monitoring')),
       ),
       GoRoute(
+        path: '/admin/moderation',
+        builder: (_, __) => const Scaffold(body: Text('Moderation')),
+      ),
+      GoRoute(
         path: '/admin/database',
         builder: (_, __) => const Scaffold(body: Text('Database')),
       ),
@@ -68,12 +72,12 @@ void main() {
       expect(find.text(l10n('admin.quick_actions')), findsOneWidget);
     });
 
-    testWidgets('displays 7 action chips', (tester) async {
+    testWidgets('displays 8 action chips', (tester) async {
       await pumpLocalizedApp(
         tester,
         _wrap(const DashboardQuickActionsSection()),
       );
-      expect(find.byType(Card), findsNWidgets(7));
+      expect(find.byType(Card), findsNWidgets(8));
     });
 
     testWidgets('shows all action labels', (tester) async {
@@ -82,6 +86,7 @@ void main() {
         _wrap(const DashboardQuickActionsSection()),
       );
       expect(find.text(l10n('admin.users')), findsAtLeast(1));
+      expect(find.text(l10n('admin.content_review')), findsAtLeast(1));
       expect(find.text(l10n('admin.monitoring')), findsAtLeast(1));
       expect(find.text(l10n('admin.database')), findsAtLeast(1));
       expect(find.text(l10n('admin.audit')), findsAtLeast(1));

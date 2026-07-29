@@ -133,6 +133,12 @@ are invalidated on refresh, retry, and user mutations (bulk + detail).
 
 - `admin/` is the only feature allowed to call Supabase `client.from()` directly.
 - Every route is guarded by `AdminGuard`; admin/founder role is required.
+- Moderation is always reachable from the sidebar, quick actions, and content
+  review card, including when the pending count is zero.
+- Admin interactive cards, quick actions, switches, database actions, and audit
+  date filters expose one labeled semantic control per action.
+- The monitoring rollup cannot report healthy while index usage or slow-query
+  signals are in a warning/critical state.
 - Destructive actions use two-step confirmation and write audit entries.
 - Moderation post/comment removal is confirm-gated; no destructive admin path is single-tap.
 - Destructive admin op failures (user ops, bulk, moderation) report to Sentry, not just a breadcrumb.

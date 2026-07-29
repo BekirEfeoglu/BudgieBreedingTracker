@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsAction, Tristate;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
@@ -217,6 +219,29 @@ void main() {
       );
       await tester.pump();
       expect(find.byType(InkWell), findsAtLeastNWidgets(1));
+    });
+
+    testWidgets('exposes selected state and tap action to semantics', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: AuditDateChip(
+              label: 'Start date',
+              isActive: true,
+              onTap: () {},
+            ),
+          ),
+        ),
+      );
+
+      final node = tester.getSemantics(find.bySemanticsLabel('Start date'));
+      expect(node.flagsCollection.isButton, isTrue);
+      expect(node.flagsCollection.isSelected, Tristate.isTrue);
+      expect(node.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+      semantics.dispose();
     });
   });
 }

@@ -48,6 +48,9 @@ Sürüm kontrolü ve güncelleme istemi. iOS'ta App Store lookup + Supabase conf
 - L10n kategorisi `app_update.*`: `available_title`, `required_title`, `message`, `message_with_notes`, `update_now`, `later`, `download_complete`, `restart`
 - Store URL: DB/lookup'tan gelen `info.storeUrl` tercih, yoksa `AppConstants` sabiti. Açılış `StoreUpdateLauncher` üzerinden yapılır: iOS önce in-app App Store product sheet, Android önce Play Store app intent, ikisi de başarısız olursa external URL fallback.
 - Admin paneli `system_settings.app_version` JSON'unu iOS/Android ayrı alanlar halinde düzenleyebilir; public kalmalı çünkü startup kontrolü anon/auth client tarafından okunur.
+- Admin özetinde `min_supported_build = 0` açıkça "zorunlu güncelleme kapalı"
+  olarak gösterilir. Minimum build son build'i aşamaz; minimum değer
+  yükseltilirken kullanıcı kilitleme riski için ayrıca onay istenir.
 
 ## Testing
 - `app_update_info_test.dart` (version compare, minSupportedBuild, kaynak önceliği), `app_store_lookup_service_test.dart` (API parse + hata), `in_app_update_service_test.dart` (priority kararı, check fail), `app_update_prompt_test.dart` (optional/required render, dismiss key, notes l10n)

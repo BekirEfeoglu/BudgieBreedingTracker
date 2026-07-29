@@ -92,6 +92,10 @@ both platforms (`latest_version`, `latest_build`, `min_supported_build`,
 `store_url`, localized release notes). It writes through the audited
 `admin_update_system_setting` RPC with `is_public=true`; keep it public because
 the startup update check reads that row before any admin-only context exists.
+The summary renders `min_supported_build = 0` as "required updates disabled"
+instead of an ambiguous minimum. The editor rejects a minimum above the latest
+build and asks for explicit confirmation whenever an admin raises either
+platform's minimum because that change locks older clients out.
 
 ## Dismissal & Frequency (iOS prompt)
 

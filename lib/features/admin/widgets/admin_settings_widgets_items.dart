@@ -70,13 +70,19 @@ class EnhancedToggleSetting extends StatelessWidget {
                 ),
               ),
               if (isUpdating)
-                const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                Semantics(
+                  label: '$title, ${'common.loading'.tr()}',
+                  child: const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 )
               else
-                Switch(value: value, onChanged: onChanged),
+                Semantics(
+                  label: title,
+                  child: Switch(value: value, onChanged: onChanged),
+                ),
             ],
           ),
         ),

@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsAction;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_dashboard_content.dart';
@@ -124,6 +126,26 @@ void main() {
       await tester.pump();
       await tester.tap(find.text('Settings'));
       expect(tapped, isTrue);
+    });
+
+    testWidgets('exposes one labeled semantic button', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: DashboardQuickActionButton(
+              icon: const Icon(Icons.settings),
+              label: 'Settings',
+              onTap: () {},
+            ),
+          ),
+        ),
+      );
+
+      final node = tester.getSemantics(find.bySemanticsLabel('Settings'));
+      expect(node.flagsCollection.isButton, isTrue);
+      expect(node.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+      semantics.dispose();
     });
   });
 }

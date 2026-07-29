@@ -59,82 +59,76 @@ class _UsersToolbar extends StatelessWidget {
             onChanged: onSearchChanged,
           ),
           const SizedBox(height: AppSpacing.sm),
-          Row(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      AppIconButton(
-                        icon: const Icon(LucideIcons.filter),
-                        semanticLabel: 'admin.advanced_filters'.tr(),
-                        tooltip: 'admin.advanced_filters'.tr(),
-                        onPressed: onOpenFilter,
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      _StatusChip(
-                        label: 'common.all'.tr(),
-                        selected: statusFilter == _UserStatusFilter.all,
-                        onTap: () =>
-                            onStatusFilterChanged(_UserStatusFilter.all),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      _StatusChip(
-                        label: 'admin.online'.tr(),
-                        selected: statusFilter == _UserStatusFilter.online,
-                        onTap: () =>
-                            onStatusFilterChanged(_UserStatusFilter.online),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      _StatusChip(
-                        label: 'admin.active_today'.tr(),
-                        selected: statusFilter == _UserStatusFilter.activeToday,
-                        onTap: () => onStatusFilterChanged(
-                          _UserStatusFilter.activeToday,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      _StatusChip(
-                        label: 'admin.new_today'.tr(),
-                        selected: statusFilter == _UserStatusFilter.newToday,
-                        onTap: () =>
-                            onStatusFilterChanged(_UserStatusFilter.newToday),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      _StatusChip(
-                        label: 'common.active'.tr(),
-                        selected: statusFilter == _UserStatusFilter.active,
-                        onTap: () =>
-                            onStatusFilterChanged(_UserStatusFilter.active),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      _StatusChip(
-                        label: 'admin.inactive'.tr(),
-                        selected: statusFilter == _UserStatusFilter.inactive,
-                        onTap: () =>
-                            onStatusFilterChanged(_UserStatusFilter.inactive),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      _StatusChip(
-                        label: 'admin.premium_users'.tr(),
-                        selected: statusFilter == _UserStatusFilter.premium,
-                        onTap: () =>
-                            onStatusFilterChanged(_UserStatusFilter.premium),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      _StatusChip(
-                        label: 'admin.free_users'.tr(),
-                        selected: statusFilter == _UserStatusFilter.free,
-                        onTap: () =>
-                            onStatusFilterChanged(_UserStatusFilter.free),
-                      ),
-                    ],
-                  ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final filterButton = AppIconButton(
+                icon: const Icon(LucideIcons.filter),
+                semanticLabel: 'admin.advanced_filters'.tr(),
+                tooltip: 'admin.advanced_filters'.tr(),
+                onPressed: onOpenFilter,
+              );
+              final statusScroller = SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _StatusChip(
+                      label: 'common.all'.tr(),
+                      selected: statusFilter == _UserStatusFilter.all,
+                      onTap: () => onStatusFilterChanged(_UserStatusFilter.all),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    _StatusChip(
+                      label: 'admin.online'.tr(),
+                      selected: statusFilter == _UserStatusFilter.online,
+                      onTap: () =>
+                          onStatusFilterChanged(_UserStatusFilter.online),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    _StatusChip(
+                      label: 'admin.active_today'.tr(),
+                      selected: statusFilter == _UserStatusFilter.activeToday,
+                      onTap: () =>
+                          onStatusFilterChanged(_UserStatusFilter.activeToday),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    _StatusChip(
+                      label: 'admin.new_today'.tr(),
+                      selected: statusFilter == _UserStatusFilter.newToday,
+                      onTap: () =>
+                          onStatusFilterChanged(_UserStatusFilter.newToday),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    _StatusChip(
+                      label: 'common.active'.tr(),
+                      selected: statusFilter == _UserStatusFilter.active,
+                      onTap: () =>
+                          onStatusFilterChanged(_UserStatusFilter.active),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    _StatusChip(
+                      label: 'admin.inactive'.tr(),
+                      selected: statusFilter == _UserStatusFilter.inactive,
+                      onTap: () =>
+                          onStatusFilterChanged(_UserStatusFilter.inactive),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    _StatusChip(
+                      label: 'admin.premium_users'.tr(),
+                      selected: statusFilter == _UserStatusFilter.premium,
+                      onTap: () =>
+                          onStatusFilterChanged(_UserStatusFilter.premium),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    _StatusChip(
+                      label: 'admin.free_users'.tr(),
+                      selected: statusFilter == _UserStatusFilter.free,
+                      onTap: () =>
+                          onStatusFilterChanged(_UserStatusFilter.free),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              PopupMenuButton<_UserSortOption>(
+              );
+              final sortMenu = PopupMenuButton<_UserSortOption>(
                 tooltip: 'common.sort'.tr(),
                 initialValue: sortOption,
                 onSelected: onSortChanged,
@@ -187,8 +181,29 @@ class _UsersToolbar extends StatelessWidget {
                     ],
                   ),
                 ),
-              ),
-            ],
+              );
+
+              if (constraints.maxWidth < AdminConstants.gridColumnBreakpoint) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(children: [filterButton, const Spacer(), sortMenu]),
+                    const SizedBox(height: AppSpacing.xs),
+                    statusScroller,
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  filterButton,
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(child: statusScroller),
+                  const SizedBox(width: AppSpacing.sm),
+                  sortMenu,
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -223,7 +238,6 @@ class _StatusChip extends StatelessWidget {
       label: Text(label),
       selected: selected,
       onSelected: (_) => onTap(),
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
   }
 }

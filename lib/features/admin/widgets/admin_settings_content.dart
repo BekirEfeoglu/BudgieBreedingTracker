@@ -8,6 +8,7 @@ import '../../../core/utils/logger.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
+import '../../../core/widgets/dialogs/confirm_dialog.dart';
 import '../providers/admin_monitoring_snapshot_providers.dart';
 import '../providers/admin_providers.dart';
 import 'admin_settings_actions.dart';
@@ -219,6 +220,19 @@ class _AdminSettingsContentState extends ConsumerState<AdminSettingsContent> {
     );
     if (updated == null || !mounted) return;
 
+    final raisesMinimumBuild =
+        updated.ios.minSupportedBuild > current.ios.minSupportedBuild ||
+        updated.android.minSupportedBuild > current.android.minSupportedBuild;
+    if (raisesMinimumBuild) {
+      final confirmed = await showConfirmDialog(
+        context,
+        title: 'admin.confirm_min_supported_build'.tr(),
+        message: 'admin.confirm_min_supported_build_desc'.tr(),
+        isDestructive: true,
+      );
+      if (confirmed != true || !mounted) return;
+    }
+
     setState(() => _updatingKey = 'app_version');
     final messenger = ScaffoldMessenger.of(context);
     final success = await ref
@@ -421,9 +435,11 @@ class _AppVersionPlatformSummary extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'admin.minimum_build_summary'.tr(
-                    args: [config.minSupportedBuild.toString()],
-                  ),
+                  config.minSupportedBuild == 0
+                      ? 'admin.force_update_disabled'.tr()
+                      : 'admin.minimum_build_summary'.tr(
+                          args: [config.minSupportedBuild.toString()],
+                        ),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -530,9 +546,11 @@ class _AppVersionEditDialogState extends State<_AppVersionEditDialog> {
                 controller: controllers.minSupportedBuild,
                 decoration: InputDecoration(
                   labelText: 'admin.min_supported_build'.tr(),
+                  helperText: 'admin.min_supported_build_hint'.tr(),
                 ),
                 keyboardType: TextInputType.number,
-                validator: _nonNegativeInt,
+                validator: (value) =>
+                    _minSupportedBuild(value, controllers.latestBuild.text),
               ),
             ),
           ],
@@ -580,6 +598,18 @@ class _AppVersionEditDialogState extends State<_AppVersionEditDialog> {
     return parsed == null || parsed < 0
         ? 'admin.invalid_build_number'.tr()
         : null;
+  }
+
+  String? _minSupportedBuild(String? value, String latestBuildValue) {
+    final numericError = _nonNegativeInt(value);
+    if (numericError != null) return numericError;
+
+    final minimumBuild = int.parse(value!.trim());
+    final latestBuild = int.tryParse(latestBuildValue.trim());
+    if (latestBuild != null && minimumBuild > latestBuild) {
+      return 'admin.min_build_exceeds_latest'.tr();
+    }
+    return null;
   }
 
   String? _storeUrl(String? value) {

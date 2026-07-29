@@ -40,6 +40,8 @@ abstract final class AdminConstants {
   static const int dbSizeLimitBytes = dbSizeLimitFreeBytes;
   static const double healthyThreshold = 0.7;
   static const double warningThreshold = 0.9;
+  static const double indexCriticalThreshold = 0.8;
+  static const double indexHealthyThreshold = 0.95;
 
   // DB size limits by Supabase plan (bytes)
   static const Map<String, int> dbSizeLimitByPlan = {

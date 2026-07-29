@@ -61,7 +61,7 @@ The repository includes the main mobile app, localized content in Turkish, Engli
 | Drift tables | 20 |
 | Routes | 75 |
 | Custom SVG icons | 99 |
-| Localization keys | ~3,173 per language (TR, EN, DE) |
+| Localization keys | ~3,180 per language (TR, EN, DE) |
 | Domain services | 23 |
 | DB schema version | 29 |
 
@@ -277,7 +277,7 @@ BudgieBreedingTracker/
 ├── assets/
 │   ├── icons/              # 84 custom SVG icons (10 categories)
 │   ├── images/             # App icons and static images
-│   └── translations/       # tr.json, en.json, de.json (~2,243 keys each)
+│   └── translations/       # tr.json, en.json, de.json (~3,180 keys each)
 ├── docs/                   # Website, legal pages, screenshots
 ├── lib/
 │   ├── core/               # Constants, enums, theme, utilities, shared widgets

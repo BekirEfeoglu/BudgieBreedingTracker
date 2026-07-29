@@ -119,7 +119,7 @@ scripts/test_git_hooks.py               # Local git hook installation + worktree
 | Metric | Value |
 | --- | --- |
 | Source files (lib/) | 1030 Dart files |
-| Test files (test/) | 950 test files, 11,748+ individual tests |
+| Test files (test/) | 950 test files, 11,762+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -131,7 +131,7 @@ scripts/test_git_hooks.py               # Local git hook installation + worktree
 | Shared widgets | 35 (15 root + 4 buttons + 2 cards + 2 dialog + 1 bottom_sheet + 5 eggs) |
 | Enum files | 15 |
 | Supabase constants | 202 (tables + buckets + columns) |
-| L10n keys | ~3,173 per language, 41 categories |
+| L10n keys | ~3,180 per language, 41 categories |
 | DB schema version | 29 |
 
 ## CI/CD Pipeline

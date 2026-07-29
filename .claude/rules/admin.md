@@ -57,6 +57,9 @@ EXECUTE FUNCTION audit_admin_action('ban_user');
   ekran odakta olmasa da koşar — "sadece focused screen" varsayma
 - Bekleyen rapor/feedback rozeti için TTL'li bir cache YOK; sayaç ilgili provider
   invalidate edilince tazelenir
+- Monitoring genel durum banner'ı kapasiteye ek olarak indeks kullanımını ve
+  yavaş sorgu snapshot'larını da hesaba katar; kırmızı/sarı alt metrik varken
+  genel durum "Sağlıklı" gösterilemez.
 
 ## Moderation Queue
 - Bekleyen `community_reports` listesi (status: pending)
@@ -109,6 +112,11 @@ EXECUTE FUNCTION audit_admin_action('ban_user');
 - 48dp touch target (audit'te eksikti, fix'lendi)
 - ConfirmDialog screen reader label'ları
 - Keyboard navigation: tab order + Enter to confirm
+- Kart/quick-action/tarih filtresi gibi `InkWell` kontrolleri tek, etiketli
+  `Semantics(button: true)` düğümü sunar; iç ikon semantiği ayrı hedef üretmez.
+- Kullanıcı kartının detay aksiyonu ile üç nokta menüsü ayrı erişilebilirlik
+  hedefleridir. Ayar ve premium anahtarları görünür başlıklarını semantic label
+  olarak taşır.
 
 ## Testing
 - Unit: guard logic (admin/non-admin redirect)
