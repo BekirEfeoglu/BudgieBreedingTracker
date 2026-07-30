@@ -87,14 +87,16 @@ Shipped: `Message.deliveryStatus` local-only (`@JsonKey(includeFromJson: false, 
 - Genel dosya/audio attachment ve `chat-attachments` bucket tasarımı shipped değil; `chat-attachments` diye bucket yok.
 - **Retry/orphan sözleşmesi (2026-07-09):** Foto yükleme `sendMessage`'den ÖNCE olduğu için gönderim reddedilirse (özellikle **cooldown**, sonraki başarılı gönderimin ardından 2 sn) Storage objesi orphan kalır. İki savunma: (1) `MessageInputBar._sendPhotoAttachment` yüklemeden ÖNCE `MessagingFormNotifier.isWithinSendCooldown` kontrol eder — cooldown'da hiç yüklemez; (2) SnackBar "tekrar dene" artık son gönderimi (`_pendingSend`) **replay eder** — fotoğraf ise **aynı yüklü URL'i reuse eder (yeniden yüklemez)** ve aynı client message id ile başarısız optimistic baloncuğu değiştirir. Ürün kararı: **reuse** (re-upload değil). Kalan sınırlı boşluk: kullanıcı başarısız fotoyu hiç retry etmeyip vazgeçerse yüklenmiş obje orphan kalır (küçük, private bucket; kabul edilir — GC scheduled job scope dışı).
 
-## Pagination — tek sayfa (scroll-up SHIPPED DEĞİL)
+## Pagination — cursor tabanlı scroll-up
 - Initial load: **son 50 mesaj** (`MessagingRepository.getMessages(limit: 50)` /
   `MessageRemoteSource.fetchMessages(limit: 50)`)
-- **Scroll-up ile eski mesaj yükleme YOK.** `getMessages`'ın `before` cursor
-  parametresi mevcut ama hiçbir çağıran onu geçmiyor
-  (`messaging_providers.dart:70` → `repo.getMessages(conversationId)`), ve
-  `MessageDetailScreen._scrollController`'a `addListener` bağlanmıyor. 50'den
-  eski mesajlar konuşmada erişilemez (`obsidian-brain/known-gaps.md`)
+- `messageThreadProvider` ilk sayfanın en eski `createdAt` değerini cursor
+  olarak saklar. Reverse listenin üst sınırına 160 px kala `loadMore()` bu
+  cursor'ı `before` olarak geçirip 50'lik eski sayfayı id ile dedupe ederek ekler
+- Aynı anda ikinci `loadMore` çalışmaz; kısa sayfa `hasMore=false` yapar. Sonraki
+  sayfa hatası görünür ilk sayfayı silmez
+- Block filtresi pagination provider'ı resetlemez; fetched + realtime satırlar
+  `MessageDetailScreen`'de aynı reaktif `blockedUsersProvider` filtresinden geçer
 - Newest at bottom (WhatsApp UX)
 - Long conversation: virtualized list (ListView.builder)
 
@@ -108,19 +110,20 @@ Shipped: `Message.deliveryStatus` local-only (`@JsonKey(includeFromJson: false, 
 - Block sonrası geçmiş mesaj görünür (delete edilmez)
 - Report: tek mesaj → `community_reports` (contextType: 'message')
 
-## Notification Integration — DM push SHIPPED DEĞİL
-- Yeni mesaj için FCM push **gönderilmiyor**. `send-push`'ın uygulama içindeki
-  tek çağıranı admin paneli (`admin_notification_manager.dart`,
-  `admin_health_providers.dart`); `messages` tablosunda push tetikleyen bir
-  trigger/cron da yok
-- `type: 'message'` payload'ı üreten kod yok; `payloadToRoute`'ta `message`
-  dalı da yok — böyle bir payload gelse `null` döner, hiçbir yere gitmez
-  (notifications.md § Deeplink Payload)
-- Sonuç: alıcı yalnız uygulama açıkken (realtime subscription) yeni mesajı görür
-- Eklenirse: `send-push` çağıran taraf + `payloadToRoute`'a `message` dalı +
-  `/messages/:id` rotası doğrulaması + quiet-hours `respectQuietHours: true`
-  (non-kritik) + mute kontrolü birlikte gerekir; bu bölüm o zaman güncellenir
-  (`obsidian-brain/known-gaps.md`)
+## Notification Integration — DM push
+- Mesaj repository'de başarıyla persist edildikten sonra
+  `MessagingFormNotifier` best-effort `send-push` çağrısını yalnız `messageId`
+  ile yapar. Push side-effect hatası başarılı mesaj yazımını geri almaz
+- Edge Function service-role ile mesajı yeniden okur ve `sender_id == caller`
+  doğrular; client `userIds`/token/title/body/payload seçemez. Aktif olmayan,
+  mute edilmiş ve gönderen katılımcılar server-side alıcı listesinden çıkarılır
+- Bildirim lock-screen-safe'tir: mesaj içeriği ve gönderen adı gönderilmez;
+  title marka adı, body yalnız `💬` olur
+- Non-kritik DM push `respectQuietHours: true` kullanır. Payload
+  `message:<conversationId>` ve data `type=message`,
+  `entity_id=<conversationId>` biçimindedir
+- `NotificationChannelConfig.payloadToRoute` UUID'yi doğrulayıp
+  `/messages/<conversationId>` üretir; malformed id navigation oluşturmaz
 
 ## Empty / Error State
 - Empty conversation list: "Henüz mesajınız yok" + community → DM CTA
@@ -131,9 +134,9 @@ Shipped: `Message.deliveryStatus` local-only (`@JsonKey(includeFromJson: false, 
 - Initial conversation load p95 < 1s
 - Send latency (optimistic UI) < 50ms
 - Realtime message receive < 200ms (region-dependent)
-- Memory: **açık bir 200-mesaj in-memory cap'i YOK** — pratik sınır tek-sayfa
-  fetch'in kendisidir (50 mesaj, § Pagination). Cap eklenirse burayı ve
-  known-gaps'ı birlikte güncelle
+- Memory: **açık bir 200-mesaj in-memory cap'i YOK** — kullanıcı scroll-up
+  yaptıkça 50'lik sayfalar açık thread state'ine eklenir. Cap eklenirse burayı
+  ve known-gaps'ı birlikte güncelle
 - Idle conversation list: TTL'li otomatik refresh YOK; liste provider invalidate
   / pull-to-refresh ile tazelenir
 
@@ -157,5 +160,7 @@ Shipped: `Message.deliveryStatus` local-only (`@JsonKey(includeFromJson: false, 
 11. RLS block-check migration'ını deploy etmeden "blocking server-side enforce ediliyor" varsaymak (bkz. § Block & Report deploy notu)
 12. Katılımcı insert'ini kapsamsız `user_id = auth.uid()` ile açmak (conversation UUID'sini bilen herkes kendini ekleyip tüm thread'i okur — self-join dalı `private.is_conversation_creator` ile creator'a kapsanmalı, § Block & Report)
 13. `conversation_participants` policy'sine bu tabloyu okuyan çıplak alt-sorgu koymak (42P17 recursion — TÜM insert'ler patlar, DM ölür; `private.*` SECURITY DEFINER helper zorunlu). Yeni bir messaging RLS policy'si yazdıktan sonra gerçek bir authenticated insert simülasyonuyla (rollback'li) doğrula — policy "mantıken doğru" görünse de recursion'a girebilir
+14. DM push hedeflerini client body'den kabul etmek (alıcı/mute/üyelik ve mesaj sahipliği service-role resolver tarafından türetilmeli)
+15. Lock-screen push'una mesaj metni veya gönderen PII'si koymak
 
 > **İlgili**: architecture.md § Online-First Exemption, presence.md (typing + online), community.md (block sync, profile lookup), notifications.md (push), moderation.md (DM threshold), assets-images.md (attachment)

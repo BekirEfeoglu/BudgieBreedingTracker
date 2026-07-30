@@ -6,7 +6,7 @@ Source: `pubspec.yaml`, `.claude/rules/architecture.md`
 
 | Layer | Technology | Version |
 |-------|-----------|---------|
-| Framework | Flutter | 3.41+ |
+| Framework | Flutter | 3.41.4 (`.fvmrc`; local/CI/Xcode Cloud single manifest) |
 | Language | Dart | >=3.8.0 <4.0.0 |
 | State management | flutter_riverpod | ^3.3.1 |
 | Navigation | go_router | ^17.0.0 |

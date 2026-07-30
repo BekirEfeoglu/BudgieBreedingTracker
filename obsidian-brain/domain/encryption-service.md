@@ -8,7 +8,7 @@ Source: `.claude/rules/encryption.md` (primary — AES-256-CBC + HMAC, key rotat
 
 AES-256-CBC encryption with HMAC-SHA256 authentication, used for sensitive
 fields (`ring_number`, `genotypeInfo`, `notes` — only `birds_dao.dart` wires
-this today) and optional backup encryption. Master key lives in
+this today) and device-bound backup encryption. Master key lives in
 `FlutterSecureStorage` (iOS Keychain /
 Android Keystore) — never in app memory longer than necessary, never on
 disk in plaintext, never in SharedPreferences.
@@ -56,7 +56,9 @@ re-encrypting rows after rotation or format upgrade.
 
 ## Hooks Into Other Services
 
-- [[domain/data-io]] — optional backup encryption (`.enc.json`)
+- [[domain/data-io]] — device-bound `.enc.json` uses this service; cross-device
+  `.portable.enc.json` deliberately uses a separate password-derived
+  `PortableBackupCodec` (PBKDF2-HMAC-SHA256 100K + random salt/IV + HMAC)
 - Birds, breeding, genetics features encrypt sensitive fields before
   writing to Drift / Supabase (defense in depth — RLS is primary)
 

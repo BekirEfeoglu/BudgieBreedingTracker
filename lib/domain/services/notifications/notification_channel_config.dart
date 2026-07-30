@@ -82,6 +82,7 @@ abstract final class NotificationChannelConfig {
       'health_check' => requireId('/health-records'),
       'event' || 'event_reminder' || 'calendar' => '/calendar',
       'notification' => '/notifications',
+      'message' => requireId('/messages'),
       _ => null,
     };
   }

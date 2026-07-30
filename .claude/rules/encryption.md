@@ -73,7 +73,7 @@ Kural: PII + ticari değer + RLS yetmiyor = şifrele. UX yardımcı veri = düz.
 - Drift DB: encrypted field text olarak (base64)
 - Supabase: encrypted field text — server düz veriyi GÖRMEZ (zero-knowledge)
 - UI: decrypted in-memory, asla disk'e plain dump etme
-- Backup (`data-io.md`): backup'a yazılırken yeniden encrypt (backup key ≠ runtime key)
+- Backup (`data-io.md`): otomatik `.enc.json` runtime cihaz anahtarını kullanır; taşınabilir `.portable.enc.json` kullanıcı parolasından PBKDF2-HMAC-SHA256 ile bağımsız anahtar türetir
 
 ## Performance
 - Encrypt/decrypt < 5ms/field (cached sub-key)

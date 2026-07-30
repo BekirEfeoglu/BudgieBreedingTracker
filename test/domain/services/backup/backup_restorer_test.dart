@@ -33,6 +33,7 @@ import 'package:budgie_breeding_tracker/data/repositories/photo_repository.dart'
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_data_collector.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_repositories.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_restorer.dart';
+import 'package:budgie_breeding_tracker/domain/services/backup/portable_backup_codec.dart';
 import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_service.dart';
 
 import '../../../helpers/test_helpers.dart';
@@ -66,6 +67,8 @@ class _MockNestRepository extends Mock implements NestRepository {}
 class _MockPhotoRepository extends Mock implements PhotoRepository {}
 
 class _MockEncryptionService extends Mock implements EncryptionService {}
+
+class _MockPortableBackupCodec extends Mock implements PortableBackupCodec {}
 
 void main() {
   late _MockBirdRepository birdRepo;
@@ -182,6 +185,66 @@ void main() {
   }
 
   group('BackupRestorer', () {
+    group('previewBackup', () {
+      test(
+        'requires a password for a portable backup without writes',
+        () async {
+          final file = await writeRawFile(
+            'portable.enc.json',
+            '{"format":"${PortableBackupCodec.format}"}',
+          );
+
+          final preview = await restorer.previewBackup('user-1', file.path);
+
+          expect(preview.success, isFalse);
+          expect(preview.requiresPassword, isTrue);
+          expect(preview.isPortable, isTrue);
+          verifyNever(() => birdRepo.saveAll(any<List<Bird>>()));
+        },
+      );
+
+      test('summarizes records without mutating repositories', () async {
+        final codec = _MockPortableBackupCodec();
+        final file = await writeRawFile(
+          'portable.enc.json',
+          '{"format":"${PortableBackupCodec.format}"}',
+        );
+        when(() => codec.decrypt(any(), 'portable-password')).thenAnswer(
+          (_) async => jsonEncode({
+            'version': 2,
+            'created_at': '2026-07-30T12:00:00.000Z',
+            'user_id': 'user-1',
+            'data': {
+              'birds': [
+                {'id': 'bird-1'},
+                {'id': 'bird-2'},
+              ],
+              'eggs': [
+                {'id': 'egg-1'},
+              ],
+            },
+          }),
+        );
+        final portableRestorer = BackupRestorer(
+          repos: repos,
+          portableCodec: codec,
+        );
+
+        final preview = await portableRestorer.previewBackup(
+          'user-1',
+          file.path,
+          password: 'portable-password',
+        );
+
+        expect(preview.success, isTrue);
+        expect(preview.recordCount, 3);
+        expect(preview.entityCounts, {'birds': 2, 'eggs': 1});
+        expect(preview.createdAt, DateTime.utc(2026, 7, 30, 12));
+        verifyNever(() => birdRepo.saveAll(any<List<Bird>>()));
+        verifyNever(() => eggRepo.saveAll(any<List<Egg>>()));
+      });
+    });
+
     group('restoreBackup', () {
       test('returns failure when backup file does not exist', () async {
         final result = await restorer.restoreBackup(
@@ -190,7 +253,7 @@ void main() {
         );
 
         expect(result.success, isFalse);
-        expect(result.error, contains('Backup file not found'));
+        expect(result.error, contains('backup.error_file_not_found'));
       });
 
       test('returns failure for unsupported backup version', () async {
@@ -215,7 +278,7 @@ void main() {
         final result = await restorer.restoreBackup('user-1', file.path);
 
         expect(result.success, isFalse);
-        expect(result.error, contains('Backup belongs to another user'));
+        expect(result.error, contains('backup.error_wrong_user'));
       });
 
       test('returns failure when version is null', () async {
@@ -461,10 +524,7 @@ void main() {
         final result = await restorer.restoreBackup('user-1', file.path);
 
         expect(result.success, isFalse);
-        expect(
-          result.error,
-          contains('Encryption service required to restore encrypted backup'),
-        );
+        expect(result.error, contains('backup.error_device_key_required'));
       });
 
       test(
@@ -478,10 +538,7 @@ void main() {
           final result = await restorer.restoreBackup('user-1', file.path);
 
           expect(result.success, isFalse);
-          expect(
-            result.error,
-            contains('Encryption service required to restore encrypted backup'),
-          );
+          expect(result.error, contains('backup.error_device_key_required'));
         },
       );
 

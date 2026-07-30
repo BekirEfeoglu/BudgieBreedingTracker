@@ -42,8 +42,12 @@
   Play latest-build sorgusu yapmaz ve dis store state'ini degistirmez. Bu yuzden
   **package-wide** benzersiz version code'u saglamak release oncesi elle yapilir
   (release-ops.md § Release Channels)
-- `release-ready.yml` Flutter SDK'sini GitHub Actions ve Xcode Cloud ile ayni
-  `3.41.4` surumune pinli tutar. `stable` kullanma: 2026-07-18'de bir release
+- `.fvmrc` Flutter `3.41.4` icin tek toolchain manifestidir. `ci.yml` ve
+  `release-ready.yml` `subosito/flutter-action`'a
+  `flutter-version-file: .fvmrc` verir; Xcode Cloud post-clone script'i ayni
+  manifesti parse edip versioned SDK zip'ini indirir. Local'de FVM/Mise veya
+  exact SDK kullan; workflow'lara ayrica literal surum yazma
+- `stable` kullanma: 2026-07-18'de bir release
   builder `stable` uzerinden 3.44.6'ya kayarak locked `lucide_icons 0.257.0`
   ile release compile'ini bozdu (`IconData` final oldu). SDK upgrade'i
   dependency uyumlulugu ve tum builder'lar birlikte dogrulanarak yapilir.
@@ -132,7 +136,7 @@ Kanit (2026-07-23, 20 commit'lik ampirik tarama): context alan commit'ler tam ol
 - Xcode Cloud GitHub Actions degildir; kirmizi Xcode Cloud check'lerinde App Store Connect/GitHub check-run detaylarini oku
 - Xcode Cloud main workflow build-only kalmali (`Build - iOS`, scheme `Runner`, `Any iOS Simulator`); archive/TestFlight/App Store export ancak Apple signing hesabi ve kayitli fiziksel cihaz/profil gereksinimleri hazir oldugunda acilmali
 - Flutter iOS build icin `ios/ci_scripts/ci_post_clone.sh` executable kalmali; clean clone'da `flutter pub get`, `dart run build_runner build` ve `pod install` generated Dart dosyalarini, `Generated.xcconfig`i ve Pods filelist'lerini uretir
-- Post-clone Flutter SDK kurulumu **pinned zip'in curl+unzip'i** ile yapilir (arch-aware `flutter_macos[_arm64]_<ver>-stable.zip`); `git clone flutter/flutter` Xcode Cloud'da bilinen intermittent failure'dir (flutter/flutter#163198, 2026-07-09'da tekrarlayan ~40s `Build - iOS` action_required'in gercek koku) — git clone'a GERI DONDURME
+- Post-clone Flutter SDK kurulumu `.fvmrc` strict semver degerinden **pinned zip'in curl+unzip'i** ile yapilir (arch-aware `flutter_macos[_arm64]_<ver>-stable.zip`, version-scoped install dir); `git clone flutter/flutter` Xcode Cloud'da bilinen intermittent failure'dir (flutter/flutter#163198, 2026-07-09'da tekrarlayan ~40s `Build - iOS` action_required'in gercek koku) — git clone'a GERI DONDURME
 - drift_dev'in `Circular error when deserializing drift modules` mesaji **non-fatal WARNING**'dir (maintainer onayi: simolus3/drift#3227); build_runner exit 1 vermez. Post-clone/codegen fail'inin kok nedeni olarak KOVALAMA — gercek fail step'ini bul
 - Post-clone `>>> STEP N:` marker'lari korunmali; Xcode Cloud yalniz generic `Running ci_post_clone.sh script failed (exited with code 1)` gosterir, log'daki SON marker fail eden step'i soyler
 - Ardisik hizli main push'lari Xcode Cloud'un ARA build'lerini supersede/iptal ettirebilir (`action_required`); ara commit'lerin kirmizisini kod hatasi sayma, EN SON commit'in build sonucuna bak. Iptal `completed:cancelled` check-run'lari ve commit status `failure` olarak da gorunebilir — 2026-07-26'da bir ara commit tam bunu yasadi, hicbir job patlamadan. Bu gurultuyu ureten sey push sikligi: bkz. branch-workflow.md § Push Batching

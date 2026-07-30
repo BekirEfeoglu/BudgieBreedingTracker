@@ -5,9 +5,11 @@ import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 export 'backup_result.dart';
+export 'backup_preview.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_data_collector.dart';
+import 'package:budgie_breeding_tracker/domain/services/backup/backup_preview.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_repositories.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_restorer.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_result.dart';
@@ -15,9 +17,8 @@ import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_se
 
 /// Creates and restores JSON backups of user data.
 ///
-/// Supports optional AES-256-CBC encryption via [EncryptionService].
-/// Encrypted backups use `.enc.json` extension and are auto-detected
-/// during restore.
+/// Supports device-bound encryption via [EncryptionService] and portable,
+/// password-derived authenticated encryption for cross-device backups.
 ///
 /// Delegates data collection to [BackupDataCollector] and restore logic
 /// to [BackupRestorer]. Handles cloud upload/listing via Supabase Storage.
@@ -46,13 +47,34 @@ class BackupService {
        _encryptionService = encryptionService;
 
   /// Create a full backup of user data as JSON file.
-  Future<BackupResult> createBackup(String userId, {bool? encrypt}) {
-    return _collector.createBackup(userId, encrypt: encrypt);
+  Future<BackupResult> createBackup(
+    String userId, {
+    bool? encrypt,
+    String? password,
+  }) {
+    return _collector.createBackup(
+      userId,
+      encrypt: encrypt,
+      password: password,
+    );
+  }
+
+  /// Validates and summarizes a backup without writing local data.
+  Future<BackupPreview> previewBackup(
+    String userId,
+    String filePath, {
+    String? password,
+  }) {
+    return _restorer.previewBackup(userId, filePath, password: password);
   }
 
   /// Restore data from a backup JSON file.
-  Future<BackupResult> restoreBackup(String userId, String filePath) {
-    return _restorer.restoreBackup(userId, filePath);
+  Future<BackupResult> restoreBackup(
+    String userId,
+    String filePath, {
+    String? password,
+  }) {
+    return _restorer.restoreBackup(userId, filePath, password: password);
   }
 
   /// Upload a backup file to Supabase Storage.

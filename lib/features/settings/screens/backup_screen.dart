@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_icons.dart';
@@ -14,6 +17,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/app_screen_title.dart';
+import '../../../core/widgets/buttons/app_icon_button.dart';
 import '../../../core/widgets/loading_state.dart';
 import '../../../domain/services/import/import_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
@@ -22,12 +26,15 @@ import '../../../core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/free_tier_limit_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import '../../../domain/services/backup/backup_scheduler.dart';
+import '../../../domain/services/backup/backup_service.dart';
+import '../../../domain/services/backup/portable_backup_codec.dart';
 import '../../../router/route_names.dart';
 import '../providers/backup_schedule_providers.dart';
 import '../providers/settings_providers.dart';
 import '../providers/export_providers.dart';
 
 part 'backup_screen_widgets.dart';
+part 'backup_screen_portable_actions.dart';
 
 /// Screen for exporting data as PDF or Excel.
 class BackupScreen extends ConsumerWidget {
@@ -100,6 +107,29 @@ class BackupScreen extends ConsumerWidget {
             subtitle: 'backup.import_excel_desc'.tr(),
             isLoading: isLoading,
             onTap: () => _handleImport(context, ref),
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+          _SectionHeader(
+            title: 'backup.portable_section'.tr(),
+            icon: const AppIcon(AppIcons.password),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          _ExportTile(
+            icon: const AppIcon(AppIcons.password),
+            color: AppColors.info,
+            title: 'backup.portable_create'.tr(),
+            subtitle: 'backup.portable_create_desc'.tr(),
+            isLoading: isLoading,
+            onTap: () => _handlePortableBackup(context, ref),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          _ExportTile(
+            icon: const AppIcon(AppIcons.backup),
+            color: AppColors.budgieGreen,
+            title: 'backup.portable_restore'.tr(),
+            subtitle: 'backup.portable_restore_desc'.tr(),
+            isLoading: isLoading,
+            onTap: () => _handlePortableRestore(context, ref),
           ),
           const SizedBox(height: AppSpacing.xxl),
           const _AutoBackupSection(),

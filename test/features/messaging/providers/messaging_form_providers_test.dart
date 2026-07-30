@@ -5,6 +5,8 @@ import 'package:budgie_breeding_tracker/core/enums/messaging_enums.dart';
 import 'package:budgie_breeding_tracker/data/repositories/messaging_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/data/models/message_model.dart';
+import 'package:budgie_breeding_tracker/data/providers/edge_function_provider.dart';
+import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
 import 'package:budgie_breeding_tracker/domain/services/moderation/content_moderation_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/moderation/moderation_providers.dart';
 import 'package:budgie_breeding_tracker/features/messaging/providers/messaging_form_providers.dart';
@@ -12,21 +14,31 @@ import 'package:budgie_breeding_tracker/features/messaging/providers/messaging_r
 
 class MockMessagingRepository extends Mock implements MessagingRepository {}
 
+class MockEdgeFunctionClient extends Mock implements EdgeFunctionClient {}
+
 class MockContentModerationService extends Mock
     implements ContentModerationService {}
 
 void main() {
   late MockMessagingRepository mockRepo;
   late MockContentModerationService mockModeration;
+  late MockEdgeFunctionClient mockEdgeClient;
   late ProviderContainer container;
 
   setUp(() {
     mockRepo = MockMessagingRepository();
     mockModeration = MockContentModerationService();
+    mockEdgeClient = MockEdgeFunctionClient();
+    when(
+      () => mockEdgeClient.sendMessagePush(messageId: any(named: 'messageId')),
+    ).thenAnswer(
+      (_) async => const EdgeFunctionResult(success: true, data: {}),
+    );
     container = ProviderContainer(
       overrides: [
         messagingRepositoryProvider.overrideWithValue(mockRepo),
         contentModerationServiceProvider.overrideWithValue(mockModeration),
+        edgeFunctionClientProvider.overrideWithValue(mockEdgeClient),
       ],
     );
   });
@@ -72,6 +84,23 @@ void main() {
 
       verify(() => mockModeration.checkText('Hello world')).called(1);
       verify(() => mockRepo.sendMessage(any())).called(1);
+    });
+
+    test('requests a server-authorized push after persistence', () async {
+      await container
+          .read(messagingFormStateProvider.notifier)
+          .sendMessage(
+            conversationId: 'conv-1',
+            senderId: 'user-1',
+            senderName: 'Test',
+            content: 'Hello world',
+            clientMessageId: 'client-msg-push',
+          );
+      await Future<void>.delayed(Duration.zero);
+
+      verify(
+        () => mockEdgeClient.sendMessagePush(messageId: 'client-msg-push'),
+      ).called(1);
     });
 
     test(
@@ -126,6 +155,11 @@ void main() {
         expect(realtime, hasLength(1));
         expect(realtime.single.id, 'client-msg-2');
         expect(realtime.single.deliveryStatus, MessageDeliveryStatus.failed);
+        verifyNever(
+          () => mockEdgeClient.sendMessagePush(
+            messageId: any(named: 'messageId'),
+          ),
+        );
       },
     );
 

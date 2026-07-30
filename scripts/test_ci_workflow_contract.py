@@ -1,3 +1,4 @@
+import json
 import re
 import unittest
 from pathlib import Path
@@ -8,6 +9,8 @@ CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 RELEASE_READY_WORKFLOW = ROOT / ".github" / "workflows" / "release-ready.yml"
 RELEASE_SCRIPT = ROOT / "scripts" / "build_release.sh"
 PUBSPEC = ROOT / "pubspec.yaml"
+FVMRC = ROOT / ".fvmrc"
+XCODE_POST_CLONE = ROOT / "ios" / "ci_scripts" / "ci_post_clone.sh"
 
 
 def _job_block(workflow: str, job_name: str) -> str:
@@ -26,6 +29,26 @@ class TestCiWorkflowContract(unittest.TestCase):
         cls.release_ready = RELEASE_READY_WORKFLOW.read_text(encoding="utf-8")
         cls.release_script = RELEASE_SCRIPT.read_text(encoding="utf-8")
         cls.pubspec = PUBSPEC.read_text(encoding="utf-8")
+        cls.fvmrc = json.loads(FVMRC.read_text(encoding="utf-8"))
+        cls.xcode_post_clone = XCODE_POST_CLONE.read_text(encoding="utf-8")
+
+    def test_flutter_toolchain_uses_one_version_manifest(self):
+        self.assertEqual("3.41.4", self.fvmrc["flutter"])
+        self.assertEqual(
+            6,
+            self.workflow.count("flutter-version-file: .fvmrc"),
+        )
+        self.assertNotIn("flutter-version:", self.workflow)
+        self.assertEqual(
+            1,
+            self.release_ready.count("flutter-version-file: .fvmrc"),
+        )
+        self.assertNotIn("flutter-version:", self.release_ready)
+        self.assertIn('open(".fvmrc", encoding="utf-8")', self.xcode_post_clone)
+        self.assertIn(
+            'flutter-$PINNED_FLUTTER_VERSION',
+            self.xcode_post_clone,
+        )
 
     def test_edge_change_detector_ignores_documentation_only_pushes(self):
         detector = _job_block(self.workflow, "edge-function-changes")

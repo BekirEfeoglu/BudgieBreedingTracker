@@ -37,6 +37,15 @@ void main() {
     AsyncValue<List<Message>>? messagesAsync,
     List<Message> realtimeMessages = const [],
   }) {
+    when(
+      () => mockRepo.getMessages('conv-1', limit: messageThreadPageSize),
+    ).thenAnswer(
+      (_) => switch (messagesAsync) {
+        AsyncData(:final value) => Future.value(value),
+        AsyncError(:final error) => Future.error(error),
+        _ => Future<List<Message>>.value([]),
+      },
+    );
     return ProviderScope(
       overrides: [
         currentUserIdProvider.overrideWithValue('test-user'),
@@ -46,13 +55,6 @@ void main() {
             AsyncData(:final value) => Future.value(value),
             AsyncError(:final error) => Future.error(error),
             _ => Future<Conversation?>.value(null),
-          },
-        ),
-        messagesProvider('conv-1').overrideWith(
-          (_) => switch (messagesAsync) {
-            AsyncData(:final value) => Future.value(value),
-            AsyncError(:final error) => Future.error(error),
-            _ => Future<List<Message>>.value([]),
           },
         ),
         messagingRealtimeProvider.overrideWith(
@@ -72,6 +74,9 @@ void main() {
       tester,
     ) async {
       final completer = Completer<List<Message>>();
+      when(
+        () => mockRepo.getMessages('conv-1', limit: messageThreadPageSize),
+      ).thenAnswer((_) => completer.future);
 
       await pumpLocalizedApp(
         tester,
@@ -82,7 +87,6 @@ void main() {
             conversationByIdProvider(
               'conv-1',
             ).overrideWith((_) => Future.value(null)),
-            messagesProvider('conv-1').overrideWith((_) => completer.future),
             messagingRealtimeProvider.overrideWith(
               () => _FakeRealtimeNotifier([]),
             ),

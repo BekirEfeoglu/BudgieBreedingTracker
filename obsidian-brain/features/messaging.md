@@ -51,16 +51,16 @@ and defaults to `sent` for server rows. `MessagingFormNotifier` adds a
 call, then id-upserts it to `sent` on success or `failed` on repository error.
 `MessageBubble` renders clock / failed / read-check indicators from that state.
 
-## Push Notifications — NOT shipped for DMs
+## Push Notifications
 
-There is no new-message push. `send-push` has exactly two app-side callers, both
-in the admin panel (`admin_notification_manager.dart`, `admin_health_providers.dart`),
-and no DB trigger or cron invokes it for `messages`. Nothing sends a
-`type: 'message'` payload, and `NotificationChannelConfig.payloadToRoute` has no
-`message` branch — such a payload would resolve to `null` and navigate nowhere
-even if it arrived. Recipients only see new DMs when the app is open
-(realtime subscription). See [[known-gaps]] and [[domain/notification-service]]
-§ Deeplink Payload for the real `'<type>:<id>'` payload contract.
+After a message persists, `MessagingFormNotifier` calls `send-push`
+best-effort with only its `messageId`; notification failure never rolls back
+the sent message. The function re-reads the row, verifies caller ownership,
+derives active/unmuted recipients server-side, excludes the sender, and honors
+quiet hours. The lock-screen notification contains no sender/message PII
+(brand + `💬`). Its authenticated `message:<conversationId>` payload maps to
+`/messages/:id` only after UUID validation. See
+[[domain/notification-service]].
 
 ## Attachments
 
@@ -80,6 +80,15 @@ picker dimensions/quality are best-effort compression, not the size authority.
 UI yet; do not show those bottom-sheet options until a real selector flow ships.
 There is no generic `chat-attachments` bucket.
 
+## Pagination
+
+`messageThreadProvider` loads the newest 50 rows, stores the oldest
+`createdAt` cursor, and fetches older 50-row pages when the reversed list is
+within 160 px of its top. Pages dedupe by message id; a later-page error keeps
+the visible history. Block filtering stays reactive in `MessageDetailScreen`
+for both fetched and realtime rows without resetting pagination. There is no
+200-message memory cap; loaded pages remain while the thread is open.
+
 ## Read Receipts
 
 Tracked via `messages.read_by` (JSONB array of user IDs) +
@@ -95,7 +104,7 @@ status) — reciprocal by design.
 ## Block Enforcement
 
 Client-side (`blockedUsersProvider`) hides blocked users and blocks
-*starting* a new DM; both the fetched page (`messagesProvider`) and
+*starting* a new DM; both paginated fetched history and
 realtime-delivered messages honor it (the realtime merge in
 `message_detail_screen.dart` gained the filter 2026-07-02 — it previously
 bypassed it, so a mid-session block could still flash an in-flight realtime

@@ -11,15 +11,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 Comprehensive Flutter breeding tracker app for budgie breeders.
-Flutter 3.41+ / Dart >=3.8.0 <4.0.0 / Riverpod 3 / GoRouter 17+ / Supabase / Drift 2.31+ / Freezed 3
+Flutter 3.41.4 (`.fvmrc`, CI/Xcode Cloud/local tek kaynak) / Dart >=3.8.0 <4.0.0 / Riverpod 3 / GoRouter 17+ / Supabase / Drift 2.31+ / Freezed 3
 
 Key deps: `supabase_flutter >=2.5.0 <2.13.0` (iOS CI cap — do NOT lift, see pubspec comment) · `sentry_flutter ^9.0.0` · `fl_chart ^1.2.0` · `purchases_flutter ^10.4.2`
 
 ## Build & Development Commands
 
 ```bash
+# Exact toolchain (recommended; `.fvmrc` = CI manifest)
+fvm install
+
 # Install dependencies
-flutter pub get
+fvm flutter pub get
 
 # iOS pods sync — REQUIRED after ANY pubspec dependency change, or Xcode fails
 # with "sandbox is not in sync with the Podfile.lock" (architecture.md § iOS Pods Sync)
@@ -118,8 +121,8 @@ scripts/test_git_hooks.py               # Local git hook installation + worktree
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 1032 Dart files |
-| Test files (test/) | 952 test files, 11,773+ individual tests |
+| Source files (lib/) | 1035 Dart files |
+| Test files (test/) | 953 test files, 11,789+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -131,7 +134,7 @@ scripts/test_git_hooks.py               # Local git hook installation + worktree
 | Shared widgets | 35 (15 root + 4 buttons + 2 cards + 2 dialog + 1 bottom_sheet + 5 eggs) |
 | Enum files | 15 |
 | Supabase constants | 204 (tables + buckets + columns) |
-| L10n keys | ~3,188 per language, 41 categories |
+| L10n keys | ~3,229 per language, 41 categories |
 | DB schema version | 29 |
 
 ## CI/CD Pipeline
@@ -164,7 +167,7 @@ same file and must be removed only when their documented preconditions clear.
 
 Workflow changes must be validated locally before push: parse the edited YAML, quote or block-scalar `run:` commands containing `:`, and ensure each triggering event has at least one non-skipped job.
 
-Xcode Cloud is separate from GitHub Actions. Its Flutter iOS setup lives in `ios/ci_scripts/ci_post_clone.sh`; the script must remain executable, retry network-dependent setup, preserve real command exit codes, and fail fast if `Generated.xcconfig` or `Pods-Runner-*.xcfilelist` files are not generated. It installs Flutter via curl+unzip of the pinned SDK archive — never `git clone flutter/flutter`, which is known-flaky on Xcode Cloud (flutter/flutter#163198) — and prints `>>> STEP N:` markers so a failure log names the failing step.
+Xcode Cloud is separate from GitHub Actions. Its Flutter iOS setup lives in `ios/ci_scripts/ci_post_clone.sh`; the script must remain executable, retry network-dependent setup, preserve real command exit codes, and fail fast if `Generated.xcconfig` or `Pods-Runner-*.xcfilelist` files are not generated. It parses `.fvmrc` and installs that exact Flutter SDK via a version-scoped curl+unzip archive — never `git clone flutter/flutter`, which is known-flaky on Xcode Cloud (flutter/flutter#163198) — and prints `>>> STEP N:` markers so a failure log names the failing step.
 
 ### Release Builds (Codemagic removed 2026-07-25)
 There is no hosted release pipeline. Nothing publishes to a store automatically.

@@ -157,7 +157,7 @@ void main() {
       );
 
       expect(result.success, isFalse);
-      expect(result.error, contains('Backup file not found'));
+      expect(result.error, contains('backup.error_file_not_found'));
     });
 
     test('requires encryption service for .enc.json files', () async {
@@ -170,10 +170,7 @@ void main() {
       final result = await service.restoreBackup('user-1', file.path);
 
       expect(result.success, isFalse);
-      expect(
-        result.error,
-        contains('Encryption service required to restore encrypted backup'),
-      );
+      expect(result.error, contains('backup.error_device_key_required'));
     });
 
     test('requires encryption service when content looks encrypted', () async {
@@ -182,10 +179,7 @@ void main() {
       final result = await service.restoreBackup('user-1', file.path);
 
       expect(result.success, isFalse);
-      expect(
-        result.error,
-        contains('Encryption service required to restore encrypted backup'),
-      );
+      expect(result.error, contains('backup.error_device_key_required'));
     });
 
     test('returns failure when backup version is unsupported', () async {

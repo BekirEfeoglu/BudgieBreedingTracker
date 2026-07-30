@@ -136,6 +136,13 @@ void main() {
       );
     });
 
+    test('maps message payload to conversation detail route', () {
+      expect(
+        NotificationChannelConfig.payloadToRoute('message:$_validId'),
+        '/messages/$_validId',
+      );
+    });
+
     test('preserves entity ID in routed path', () {
       expect(
         NotificationChannelConfig.payloadToRoute('bird:$_validId'),
@@ -160,6 +167,13 @@ void main() {
 
       test('rejects chick payload with malformed id', () {
         expect(NotificationChannelConfig.payloadToRoute('chick:foo'), isNull);
+      });
+
+      test('rejects message payload with malformed id', () {
+        expect(
+          NotificationChannelConfig.payloadToRoute('message:not-a-uuid'),
+          isNull,
+        );
       });
 
       test('rejects health_check payload with path-traversal in id', () {

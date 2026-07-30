@@ -1,6 +1,6 @@
 # Data I/O: Backup, Import, Export
 
-Source: `.claude/rules/data-io.md` (primary — backup format, runtime-key encryption, Excel i18n headers, PDF pedigree builders, free vs premium gating)
+Source: `.claude/rules/data-io.md` (primary — backup formats, device/portable encryption, restore preview, Excel i18n headers, PDF pedigree builders, free vs premium gating)
 
 **Locations**:
 - `lib/domain/services/backup/`
@@ -17,19 +17,24 @@ artifact, and Supabase Storage is the optional cloud copy.
 ## Backup (JSON)
 
 `BackupService` orchestrates `BackupDataCollector` (serialize) and
-`BackupRestorer` (deserialize). Optional AES-256-CBC encryption via
-`EncryptionService` (see [[domain/encryption-service]]); encrypted files
-get `.enc.json` extension and auto-detect on restore.
+`BackupRestorer` (deserialize). Automatic backups can use device-bound
+`EncryptionService` (`.enc.json`). Manual portable backups use
+`PortableBackupCodec` (`.portable.enc.json`): PBKDF2-HMAC-SHA256 100K,
+per-file random salt/IV, AES-256-CBC and encrypt-then-HMAC-SHA256. KDF work runs
+off the UI isolate; the password is never stored or logged.
 
 | Method | Purpose |
 |--------|---------|
-| `createBackup(userId, {encrypt})` | Full snapshot → local JSON file |
-| `restoreBackup(userId, filePath)` | Inverse — merge-upserts backup rows by id (no wipe/preview); rejects other users' backups and newer backup versions |
+| `createBackup(userId, {encrypt, password})` | Full snapshot; password produces a cross-device portable encrypted file |
+| `previewBackup(userId, filePath, {password})` | Read/decrypt/validate only; returns date and per-entity counts with zero repository writes |
+| `restoreBackup(userId, filePath, {password})` | Merge-upserts rows by id; rejects other users, newer versions, wrong password and tamper |
 | `uploadBackup(userId, file)` | Push to `backups` Supabase Storage bucket |
 | `listBackups(userId)` | Remote backup index, user-scoped |
 
 `BackupScheduler` runs periodic local snapshots when the user opted in.
 Remote bucket: `SupabaseConstants.backupsBucket`, RLS-scoped to owner.
+Restore has no wipe/rename/skip strategy: preview explicitly warns that matching
+IDs are updated, unrelated existing rows remain, and there is no automatic undo.
 
 ## Import (Excel)
 
@@ -92,24 +97,24 @@ importer, so export → edit externally → import round-trips cleanly.
 
 ## Encryption Hook
 
-`EncryptionService` is optional but injected for both backup directions.
-When present, encrypted backups gate restore behind the user's secret;
-the codec is `EncryptionPayloadCodec` (envelope, version, IV).
+`EncryptionService` remains the runtime device-key path for `.enc.json`.
+`PortableBackupCodec` is separate and derives independent encryption/MAC keys
+from the user password. Its versioned JSON envelope is authenticated before
+decrypt; wrong password and tamper share the localized graceful error.
 See [[domain/encryption-service]].
 
 ## Premium Gating
 
-Backup, full export, and PDF share are entitlement-gated through
-`adServiceProvider` reward states (`isExportRewardActiveProvider`) and
-premium check. Free-tier users get ad-rewarded one-shot exports; premium
-users skip the ad gate. See [[domain/premium-service]].
+Manual portable backup and restore are free (data ownership). Excel/PDF export
+and Excel import are entitlement/reward gated. Auto-scheduled device-key backup
+is premium. See [[domain/premium-service]].
 
 ## Anti-Patterns
 
 1. Importing without FK validation (orphan rows, sync-blocking)
-2. Skipping encryption detection — `.enc.json` extension is the signal
+2. Detecting only by extension — portable envelope is content-detected and versioned
 3. Hardcoded sheet column names (Turkish labels) — use positional indexes
-4. Restoring on top of existing data without clearing (duplicates + UUID collisions)
+4. Restoring without the non-mutating preview/merge warning
 5. Storing the encryption key in SharedPreferences (must be secure storage)
 
 ## See Also
