@@ -41,12 +41,24 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_loadOlderMessagesNearTop);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final notifier = ref.read(messagingRealtimeProvider.notifier);
       _realtimeNotifier = notifier;
       notifier.subscribe(widget.conversationId);
     });
+  }
+
+  void _loadOlderMessagesNearTop() {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    if (position.pixels < position.maxScrollExtent - 160) return;
+    unawaited(
+      ref
+          .read(messageThreadProvider(widget.conversationId).notifier)
+          .loadMore(),
+    );
   }
 
   /// Throttles the visible-mark-as-read sweep so a stream of rebuilds
@@ -108,13 +120,12 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
     final conversationAsync = ref.watch(
       conversationByIdProvider(widget.conversationId),
     );
-    final messagesAsync = ref.watch(messagesProvider(widget.conversationId));
+    final threadAsync = ref.watch(messageThreadProvider(widget.conversationId));
     final realtimeMessages = ref.watch(messagingRealtimeProvider);
     final typingUsers = ref.watch(typingIndicatorProvider);
-    // messagesProvider already strips blocked senders from the fetched page,
-    // but realtime-delivered messages are merged in raw below — apply the
-    // same filter so a block taking effect mid-session hides in-flight
-    // realtime messages too.
+    // Apply the same reactive filter to fetched and realtime messages so a
+    // block taking effect mid-session hides both history and in-flight rows
+    // without resetting pagination state.
     final blockedSenders = ref.watch(blockedUsersProvider).toSet();
     final showReadReceipts = ref.watch(readReceiptsEnabledProvider);
     final theme = Theme.of(context);
@@ -166,20 +177,22 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
       body: Column(
         children: [
           Expanded(
-            child: messagesAsync.when(
+            child: threadAsync.when(
               loading: () => const LoadingState(),
               error: (error, _) => app.ErrorState(
                 message: '${'messaging.load_error'.tr()}: $error',
-                onRetry: () =>
-                    ref.invalidate(messagesProvider(widget.conversationId)),
+                onRetry: () => ref.invalidate(
+                  messageThreadProvider(widget.conversationId),
+                ),
               ),
-              data: (fetchedMessages) {
+              data: (thread) {
                 final allMessages = <String, Message>{};
                 for (final msg in realtimeMessages) {
                   if (blockedSenders.contains(msg.senderId)) continue;
                   allMessages[msg.id] = msg;
                 }
-                for (final msg in fetchedMessages) {
+                for (final msg in thread.messages) {
+                  if (blockedSenders.contains(msg.senderId)) continue;
                   allMessages.putIfAbsent(msg.id, () => msg);
                 }
                 // Sort newest-first. Optimistic (just-sent) messages may
@@ -220,8 +233,11 @@ class _MessageDetailScreenState extends ConsumerState<MessageDetailScreen> {
                     horizontal: AppSpacing.lg,
                     vertical: AppSpacing.sm,
                   ),
-                  itemCount: messages.length,
+                  itemCount: messages.length + (thread.isLoadingMore ? 1 : 0),
                   itemBuilder: (context, index) {
+                    if (index >= messages.length) {
+                      return const SizedBox(height: 56, child: LoadingState());
+                    }
                     final message = messages[index];
                     return MessageBubble(
                       message: message,

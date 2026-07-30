@@ -22,6 +22,7 @@ import {
   isPermanentFcmTokenError,
   isSuppressedByQuietHours,
   MAX_TOKENS,
+  type MessagePushResolution,
   normalizeData,
   parseFcmErrorStatus,
   type PushRequest,
@@ -37,7 +38,7 @@ const rateLimiter = createRateLimiter({
   store: createSupabaseRateLimitStore("send-push"),
 });
 
-const pushSchema = z.object({
+const manualPushSchema = z.object({
   userId: z.string().optional(),
   userIds: z.array(z.string()).optional(),
   tokens: z.array(z.string()).optional(),
@@ -47,7 +48,13 @@ const pushSchema = z.object({
   data: z.record(z.union([z.string(), z.number(), z.boolean()])).optional(),
   dryRun: z.boolean().optional(),
   respectQuietHours: z.boolean().optional(),
-});
+}).strict();
+
+const messagePushSchema = z.object({
+  messageId: z.string().uuid(),
+}).strict();
+
+const pushSchema = z.union([manualPushSchema, messagePushSchema]);
 
 type SupabaseAdminClient = any;
 
@@ -56,9 +63,17 @@ export type SendPushDeps = {
   requireAdminRole(userId: string): Promise<boolean>;
   checkRateLimit(callerId: string): boolean | Promise<boolean>;
   createAdminClient(): SupabaseAdminClient;
+  resolveMessagePush(
+    messageId: string,
+    callerId: string,
+    admin: SupabaseAdminClient,
+  ): Promise<MessagePushResolution>;
   getProjectId(): string | undefined;
   createAccessToken(): Promise<string>;
-  resolveTokens(request: PushRequest, admin: SupabaseAdminClient): Promise<string[]>;
+  resolveTokens(
+    request: PushRequest,
+    admin: SupabaseAdminClient,
+  ): Promise<string[]>;
   sendToFcm(
     accessToken: string,
     projectId: string,
@@ -137,6 +152,69 @@ async function defaultResolveTokens(
   return clampTokens((data ?? []).map((row: { token: string }) => row.token));
 }
 
+export async function resolvePersistedMessagePush(
+  messageId: string,
+  callerId: string,
+  admin: SupabaseAdminClient,
+): Promise<MessagePushResolution> {
+  const { data: message, error: messageError } = await admin
+    .from("messages")
+    .select("id, conversation_id, sender_id")
+    .eq("id", messageId)
+    .maybeSingle();
+
+  if (messageError) {
+    throw new Error(`Failed to resolve message push: ${messageError.message}`);
+  }
+  if (!message || message.sender_id !== callerId) {
+    return { error: "Forbidden", status: 403 };
+  }
+
+  const { data: participants, error: participantError } = await admin
+    .from("conversation_participants")
+    .select("user_id")
+    .eq("conversation_id", message.conversation_id)
+    .eq("is_left", false)
+    .eq("is_muted", false)
+    .neq("user_id", callerId);
+
+  if (participantError) {
+    throw new Error(
+      `Failed to resolve message recipients: ${participantError.message}`,
+    );
+  }
+
+  const participantRows = (participants ?? []) as Array<{
+    user_id?: unknown;
+  }>;
+  const userIds: string[] = [
+    ...new Set<string>(
+      participantRows
+        .map((row: { user_id?: unknown }) => row.user_id)
+        .filter((id: unknown): id is string =>
+          typeof id === "string" && id.length > 0
+        ),
+    ),
+  ];
+  validateUserIdsCount(userIds);
+
+  return {
+    request: {
+      userIds,
+      // Lock-screen-safe copy: message text and sender identity are not put in
+      // the remote notification. The authenticated deep link opens the thread.
+      title: "BudgieBreedingTracker",
+      body: "💬",
+      payload: `message:${message.conversation_id}`,
+      data: {
+        type: "message",
+        entity_id: message.conversation_id,
+      },
+      respectQuietHours: true,
+    },
+  };
+}
+
 async function defaultSendToFcm(
   accessToken: string,
   projectId: string,
@@ -211,6 +289,7 @@ const defaultDeps: SendPushDeps = {
   requireAdminRole,
   checkRateLimit: (callerId) => rateLimiter.check(callerId),
   createAdminClient: createSupabaseAdmin,
+  resolveMessagePush: resolvePersistedMessagePush,
   getProjectId: () => Deno.env.get("FIREBASE_PROJECT_ID"),
   createAccessToken: defaultCreateAccessToken,
   resolveTokens: defaultResolveTokens,
@@ -243,7 +322,26 @@ export function createSendPushHandler(deps: SendPushDeps = defaultDeps) {
       const parsed = await parseRequestBody(req, pushSchema, headers);
       if (!parsed.success) return parsed.response;
 
-      const request: PushRequest = parsed.data;
+      const admin = deps.createAdminClient();
+      const parsedRequest = parsed.data;
+      const isMessagePush = "messageId" in parsedRequest;
+      let request: PushRequest;
+      if (isMessagePush) {
+        const resolved = await deps.resolveMessagePush(
+          parsedRequest.messageId,
+          callerId,
+          admin,
+        );
+        if (!resolved.request) {
+          return new Response(
+            JSON.stringify({ error: resolved.error ?? "Forbidden" }),
+            { status: resolved.status ?? 403, headers },
+          );
+        }
+        request = resolved.request;
+      } else {
+        request = parsedRequest;
+      }
       request.title = clampText(request.title, TITLE_MAX);
       request.body = clampText(request.body, BODY_MAX);
 
@@ -258,7 +356,9 @@ export function createSendPushHandler(deps: SendPushDeps = defaultDeps) {
 
       // Authorization: non-admin callers may only push to themselves.
       // Raw `tokens` arrays bypass DB ownership checks and are admin-only.
-      const authError = authorizePushTargets(request, callerId, isAdmin);
+      const authError = isMessagePush
+        ? null
+        : authorizePushTargets(request, callerId, isAdmin);
       if (authError) {
         return new Response(
           JSON.stringify({ error: authError }),
@@ -272,6 +372,7 @@ export function createSendPushHandler(deps: SendPushDeps = defaultDeps) {
         (request.userId ? [request.userId] : []);
       const crossUser = targetIds.filter((id) => id !== callerId);
       if (
+        !isMessagePush &&
         isAdmin &&
         (crossUser.length > 0 || (request.tokens?.length ?? 0) > 0)
       ) {
@@ -281,8 +382,6 @@ export function createSendPushHandler(deps: SendPushDeps = defaultDeps) {
             `raw_tokens=${request.tokens?.length ?? 0}`,
         );
       }
-
-      const admin = deps.createAdminClient();
 
       // Quiet hours (§5.2): for opt-in notifications, drop recipients currently
       // inside their configured quiet-hours window. Fail-open — any missing/

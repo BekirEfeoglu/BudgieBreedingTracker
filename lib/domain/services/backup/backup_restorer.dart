@@ -18,91 +18,100 @@ import 'package:budgie_breeding_tracker/data/models/clutch_model.dart';
 import 'package:budgie_breeding_tracker/data/models/nest_model.dart';
 import 'package:budgie_breeding_tracker/data/models/photo_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_data_collector.dart';
+import 'package:budgie_breeding_tracker/domain/services/backup/backup_preview.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_repositories.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_result.dart';
+import 'package:budgie_breeding_tracker/domain/services/backup/portable_backup_codec.dart';
 import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_service.dart';
 
 part 'backup_restorer_helpers.dart';
 
 /// Restores user data from a JSON backup file.
 ///
-/// Automatically detects encrypted backups by checking the file extension
-/// (`.enc.json`) and content format (non-JSON content). If encryption is
-/// detected, the [EncryptionService] is used to decrypt before parsing.
+/// Supports both device-bound [EncryptionService] payloads and password-based
+/// portable envelopes. [previewBackup] validates and summarizes without writes.
 class BackupRestorer {
   final EncryptionService? _encryptionService;
+  final PortableBackupCodec _portableCodec;
   final List<_RestoreStep> _restoreSteps;
 
   static const _tag = '[BackupRestorer]';
+  static const _backupEntityKeys = [
+    'birds',
+    'breeding_pairs',
+    'eggs',
+    'chicks',
+    'health_records',
+    'events',
+    'incubations',
+    'growth_measurements',
+    'notifications',
+    'clutches',
+    'nests',
+    'photos',
+  ];
 
   BackupRestorer({
     required BackupRepositories repos,
     EncryptionService? encryptionService,
+    PortableBackupCodec portableCodec = const PortableBackupCodec(),
   }) : _encryptionService = encryptionService,
+       _portableCodec = portableCodec,
        _restoreSteps = _buildRestoreSteps(repos);
 
+  /// Reads, decrypts, and validates a backup without mutating repositories.
+  Future<BackupPreview> previewBackup(
+    String userId,
+    String filePath, {
+    String? password,
+  }) async {
+    try {
+      final decoded = await _readValidatedBackup(
+        userId,
+        filePath,
+        password: password,
+      );
+      return BackupPreview.ready(
+        isEncrypted: decoded.isEncrypted,
+        isPortable: decoded.isPortable,
+        version: decoded.version,
+        createdAt: decoded.createdAt,
+        entityCounts: {
+          for (final key in _backupEntityKeys)
+            if (decoded.data[key] is List)
+              key: (decoded.data[key] as List).length,
+        },
+      );
+    } on _BackupReadException catch (e) {
+      if (e.requiresPassword) {
+        return BackupPreview.passwordRequired();
+      }
+      return BackupPreview.failure(
+        e.message,
+        isEncrypted: e.isEncrypted,
+        isPortable: e.isPortable,
+      );
+    } catch (e, st) {
+      AppLogger.error('$_tag Backup preview failed', e, st);
+      return BackupPreview.failure('backup.error_invalid_format'.tr());
+    }
+  }
+
   /// Restore data from a backup JSON file.
-  Future<BackupResult> restoreBackup(String userId, String filePath) async {
+  Future<BackupResult> restoreBackup(
+    String userId,
+    String filePath, {
+    String? password,
+  }) async {
     try {
       AppLogger.info('$_tag Restoring backup from: $filePath');
 
-      final file = File(filePath);
-      if (!await file.exists()) {
-        return BackupResult.failure('Backup file not found');
-      }
-
-      var content = await file.readAsString();
-
-      // Auto-detect encrypted backup
-      if (filePath.endsWith('.enc.json') || _looksEncrypted(content)) {
-        if (_encryptionService == null) {
-          return BackupResult.failure(
-            'Encryption service required to restore encrypted backup',
-          );
-        }
-        try {
-          content = await _encryptionService.decrypt(content);
-        } on FormatException catch (e) {
-          // Wrong password or tampered payload — an expected user-facing
-          // condition, NOT a Sentry-worthy corruption/DB failure.
-          AppLogger.warning('$_tag Backup decrypt failed (wrong password?): $e');
-          return BackupResult.failure('backup.error_decrypt_failed'.tr());
-        }
-        AppLogger.info('$_tag Backup content decrypted');
-      }
-
-      final backupData = json.decode(content) as Map<String, dynamic>;
-
-      final version = backupData['version'] as int?;
-      if (version == null) {
-        return BackupResult.failure('backup.error_invalid_format'.tr());
-      }
-      if (version > BackupDataCollector.backupVersion) {
-        return BackupResult.failure(
-          'backup.error_unsupported_version'.tr(
-            args: [
-              version.toString(),
-              BackupDataCollector.backupVersion.toString(),
-            ],
-          ),
-        );
-      }
-
-      final backupUserId = (backupData['user_id'] as String?)?.trim();
-      if (backupUserId != null &&
-          backupUserId.isNotEmpty &&
-          backupUserId != userId) {
-        return BackupResult.failure(
-          'Backup belongs to another user: $backupUserId',
-        );
-      }
-
-      final rawData = backupData['data'];
-      if (rawData is! Map<String, dynamic>) {
-        return BackupResult.failure('backup.error_invalid_format'.tr());
-      }
-      final data = rawData;
-      final result = await _restoreAllEntities(data, userId);
+      final decoded = await _readValidatedBackup(
+        userId,
+        filePath,
+        password: password,
+      );
+      final result = await _restoreAllEntities(decoded.data, userId);
 
       AppLogger.info(
         '$_tag Backup restored: ${result.total} records '
@@ -124,6 +133,9 @@ class BackupRestorer {
         filePath: filePath,
         recordCount: result.total,
       );
+    } on _BackupReadException catch (e) {
+      AppLogger.warning('$_tag Backup validation failed: ${e.message}');
+      return BackupResult.failure(e.message);
     } catch (e, st) {
       // Reaching here means a genuine corruption / DB / partial-restore
       // failure (the expected wrong-password decrypt case returned above),
@@ -132,6 +144,140 @@ class BackupRestorer {
       await Sentry.captureException(e, stackTrace: st);
       return BackupResult.failure(e.toString());
     }
+  }
+
+  Future<_DecodedBackup> _readValidatedBackup(
+    String userId,
+    String filePath, {
+    String? password,
+  }) async {
+    final file = File(filePath);
+    if (!await file.exists()) {
+      throw _BackupReadException('backup.error_file_not_found'.tr());
+    }
+
+    var content = await file.readAsString();
+    final isPortable = PortableBackupCodec.looksPortable(content);
+    var isEncrypted = isPortable;
+
+    if (isPortable) {
+      if (password == null || password.isEmpty) {
+        throw _BackupReadException(
+          'backup.password_required'.tr(),
+          requiresPassword: true,
+          isEncrypted: true,
+          isPortable: true,
+        );
+      }
+      try {
+        content = await _portableCodec.decrypt(content, password);
+      } on FormatException catch (e) {
+        AppLogger.warning('$_tag Portable backup decrypt failed: $e');
+        throw _BackupReadException(
+          'backup.error_decrypt_failed'.tr(),
+          isEncrypted: true,
+          isPortable: true,
+        );
+      }
+    } else if (filePath.endsWith('.enc.json') || _looksEncrypted(content)) {
+      isEncrypted = true;
+      if (_encryptionService == null) {
+        throw _BackupReadException(
+          'backup.error_device_key_required'.tr(),
+          isEncrypted: true,
+        );
+      }
+      try {
+        content = await _encryptionService.decrypt(content);
+      } on FormatException catch (e) {
+        AppLogger.warning('$_tag Device backup decrypt failed: $e');
+        throw _BackupReadException(
+          'backup.error_decrypt_failed'.tr(),
+          isEncrypted: true,
+        );
+      }
+    }
+
+    final Map<String, dynamic> backupData;
+    try {
+      final decoded = json.decode(content);
+      if (decoded is! Map<String, dynamic>) {
+        throw const FormatException('Backup root is not an object');
+      }
+      backupData = decoded;
+    } catch (_) {
+      throw _BackupReadException(
+        'backup.error_invalid_format'.tr(),
+        isEncrypted: isEncrypted,
+        isPortable: isPortable,
+      );
+    }
+
+    final version = backupData['version'];
+    if (version is! int) {
+      throw _BackupReadException(
+        'backup.error_invalid_format'.tr(),
+        isEncrypted: isEncrypted,
+        isPortable: isPortable,
+      );
+    }
+    if (version > BackupDataCollector.backupVersion) {
+      throw _BackupReadException(
+        'backup.error_unsupported_version'.tr(
+          args: [
+            version.toString(),
+            BackupDataCollector.backupVersion.toString(),
+          ],
+        ),
+        isEncrypted: isEncrypted,
+        isPortable: isPortable,
+      );
+    }
+
+    final rawBackupUserId = backupData['user_id'];
+    if (rawBackupUserId != null && rawBackupUserId is! String) {
+      throw _BackupReadException(
+        'backup.error_invalid_format'.tr(),
+        isEncrypted: isEncrypted,
+        isPortable: isPortable,
+      );
+    }
+    final backupUserId = (rawBackupUserId as String?)?.trim();
+    if (backupUserId != null &&
+        backupUserId.isNotEmpty &&
+        backupUserId != userId) {
+      throw _BackupReadException(
+        'backup.error_wrong_user'.tr(),
+        isEncrypted: isEncrypted,
+        isPortable: isPortable,
+      );
+    }
+
+    final rawData = backupData['data'];
+    if (rawData is! Map<String, dynamic>) {
+      throw _BackupReadException(
+        'backup.error_invalid_format'.tr(),
+        isEncrypted: isEncrypted,
+        isPortable: isPortable,
+      );
+    }
+
+    final rawCreatedAt = backupData['created_at'];
+    if (rawCreatedAt != null && rawCreatedAt is! String) {
+      throw _BackupReadException(
+        'backup.error_invalid_format'.tr(),
+        isEncrypted: isEncrypted,
+        isPortable: isPortable,
+      );
+    }
+
+    return _DecodedBackup(
+      version: version,
+      createdAt: DateTime.tryParse((rawCreatedAt as String?) ?? ''),
+      data: rawData,
+      isEncrypted: isEncrypted,
+      isPortable: isPortable,
+    );
   }
 
   /// Entity registry: FK-safe restore order (parents before children).
@@ -167,4 +313,34 @@ class BackupRestorer {
 
     return (total: totalRecords, errors: errorCount);
   }
+}
+
+class _DecodedBackup {
+  const _DecodedBackup({
+    required this.version,
+    required this.createdAt,
+    required this.data,
+    required this.isEncrypted,
+    required this.isPortable,
+  });
+
+  final int version;
+  final DateTime? createdAt;
+  final Map<String, dynamic> data;
+  final bool isEncrypted;
+  final bool isPortable;
+}
+
+class _BackupReadException implements Exception {
+  const _BackupReadException(
+    this.message, {
+    this.requiresPassword = false,
+    this.isEncrypted = false,
+    this.isPortable = false,
+  });
+
+  final String message;
+  final bool requiresPassword;
+  final bool isEncrypted;
+  final bool isPortable;
 }

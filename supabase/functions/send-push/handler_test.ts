@@ -1,5 +1,10 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { createSendPushHandler, type SendPushDeps } from "./handler.ts";
+import {
+  createSendPushHandler,
+  resolvePersistedMessagePush,
+  type SendPushDeps,
+} from "./handler.ts";
+import type { PushRequest } from "./push_core.ts";
 
 function jsonRequest(body: unknown): Request {
   return new Request("https://example.com/send-push", {
@@ -30,7 +35,17 @@ function baseDeps(overrides: Partial<SendPushDeps> = {}): SendPushDeps {
     getAuthenticatedUserId: () => Promise.resolve("user-1"),
     requireAdminRole: () => Promise.resolve(false),
     checkRateLimit: () => Promise.resolve(true),
-    createAdminClient: () => ({}),
+    createAdminClient: () => quietHoursAdmin([]),
+    resolveMessagePush: () =>
+      Promise.resolve({
+        request: {
+          userIds: ["user-2"],
+          title: "Sender",
+          body: "Hello",
+          payload: "message:0194e2d0-cf4d-7000-8000-000000000001",
+          respectQuietHours: true,
+        },
+      }),
     getProjectId: () => "test-project",
     createAccessToken: () => Promise.resolve("access-token"),
     resolveTokens: () => Promise.resolve(["device-token-1"]),
@@ -78,6 +93,159 @@ Deno.test("send-push delivers to self on happy path", async () => {
 
   assertEquals(response.status, 200);
   assertEquals(await response.json(), { success: 1, failure: 0 });
+});
+
+Deno.test("send-push derives message recipients server-side", async () => {
+  let resolvedMessageId: string | null = null;
+  const deliveredRequests: PushRequest[] = [];
+  const messageId = "0194e2d0-cf4d-7000-8000-000000000002";
+  const response = await createSendPushHandler(
+    baseDeps({
+      resolveMessagePush: (id) => {
+        resolvedMessageId = id;
+        return Promise.resolve({
+          request: {
+            userIds: ["user-2"],
+            title: "Sender",
+            body: "Hello",
+            payload: "message:0194e2d0-cf4d-7000-8000-000000000001",
+            respectQuietHours: true,
+          },
+        });
+      },
+      sendToFcm: (_accessToken, _projectId, token, request) => {
+        deliveredRequests.push(request);
+        return Promise.resolve({
+          ok: true,
+          token,
+          permanentTokenFailure: false,
+        });
+      },
+    }),
+  )(jsonRequest({ messageId }));
+
+  assertEquals(response.status, 200);
+  assertEquals(resolvedMessageId, messageId);
+  assertEquals(deliveredRequests[0].userIds, ["user-2"]);
+  assertEquals(
+    deliveredRequests[0].payload,
+    "message:0194e2d0-cf4d-7000-8000-000000000001",
+  );
+  assertEquals(deliveredRequests[0].respectQuietHours, true);
+});
+
+Deno.test("send-push rejects a message not owned by the caller", async () => {
+  let sendCalls = 0;
+  const response = await createSendPushHandler(
+    baseDeps({
+      resolveMessagePush: () =>
+        Promise.resolve({ error: "Forbidden", status: 403 }),
+      sendToFcm: (_accessToken, _projectId, token) => {
+        sendCalls++;
+        return Promise.resolve({
+          ok: true,
+          token,
+          permanentTokenFailure: false,
+        });
+      },
+    }),
+  )(
+    jsonRequest({
+      messageId: "0194e2d0-cf4d-7000-8000-000000000002",
+    }),
+  );
+
+  assertEquals(response.status, 403);
+  assertEquals(await response.json(), { error: "Forbidden" });
+  assertEquals(sendCalls, 0);
+});
+
+Deno.test("send-push rejects mixed message and caller-supplied targets", async () => {
+  const response = await createSendPushHandler(baseDeps())(
+    jsonRequest({
+      messageId: "0194e2d0-cf4d-7000-8000-000000000002",
+      userIds: ["victim"],
+      title: "Forged",
+      body: "Forged",
+    }),
+  );
+
+  assertEquals(response.status, 400);
+});
+
+Deno.test("message push resolution filters inactive and muted participants", async () => {
+  const filters: Array<[string, string, unknown]> = [];
+  const admin = {
+    from: (table: string) => {
+      if (table === "messages") {
+        return {
+          select: (_columns: string) => ({
+            eq: (_column: string, _value: unknown) => ({
+              maybeSingle: () =>
+                Promise.resolve({
+                  data: {
+                    id: "message-1",
+                    conversation_id: "0194e2d0-cf4d-7000-8000-000000000001",
+                    sender_id: "user-1",
+                    sender_name: "Sender",
+                    content: "Hello",
+                    message_type: "text",
+                  },
+                  error: null,
+                }),
+            }),
+          }),
+        };
+      }
+      return {
+        select: (_columns: string) => ({
+          eq(column1: string, value1: unknown) {
+            filters.push(["eq", column1, value1]);
+            return {
+              eq(column2: string, value2: unknown) {
+                filters.push(["eq", column2, value2]);
+                return {
+                  eq(column3: string, value3: unknown) {
+                    filters.push(["eq", column3, value3]);
+                    return {
+                      neq(column4: string, value4: unknown) {
+                        filters.push(["neq", column4, value4]);
+                        return Promise.resolve({
+                          data: [{ user_id: "user-2" }, { user_id: "user-3" }],
+                          error: null,
+                        });
+                      },
+                    };
+                  },
+                };
+              },
+            };
+          },
+        }),
+      };
+    },
+  };
+
+  const resolved = await resolvePersistedMessagePush(
+    "0194e2d0-cf4d-7000-8000-000000000002",
+    "user-1",
+    admin,
+  );
+
+  assertEquals(resolved.request?.userIds, ["user-2", "user-3"]);
+  assertEquals(resolved.request?.title, "BudgieBreedingTracker");
+  assertEquals(resolved.request?.body, "💬");
+  assertEquals(resolved.request?.respectQuietHours, true);
+  assertEquals(filters, [
+    [
+      "eq",
+      "conversation_id",
+      "0194e2d0-cf4d-7000-8000-000000000001",
+    ],
+    ["eq", "is_left", false],
+    ["eq", "is_muted", false],
+    ["neq", "user_id", "user-1"],
+  ]);
 });
 
 // --- Authorization wiring -------------------------------------------------

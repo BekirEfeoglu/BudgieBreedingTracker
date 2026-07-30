@@ -23,6 +23,12 @@ export interface PushRequest {
   respectQuietHours?: boolean;
 }
 
+export interface MessagePushResolution {
+  request?: PushRequest;
+  error?: string;
+  status?: number;
+}
+
 export function normalizeData(
   request: Pick<PushRequest, "payload" | "data">,
 ): Record<string, string> {

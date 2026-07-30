@@ -55,13 +55,13 @@ The repository includes the main mobile app, localized content in Turkish, Engli
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 1030 Dart files |
-| Test suite | 949 test files, 11,700+ tests (unit, widget, golden, e2e) |
+| Source files (lib/) | 1033 Dart files |
+| Test suite | 950 test files, 11,731+ tests (unit, widget, golden, e2e) |
 | Feature modules | 24 |
 | Drift tables | 20 |
 | Routes | 75 |
 | Custom SVG icons | 99 |
-| Localization keys | ~3,173 per language (TR, EN, DE) |
+| Localization keys | ~3,214 per language (TR, EN, DE) |
 | Domain services | 23 |
 | DB schema version | 29 |
 
@@ -142,7 +142,7 @@ The repository includes the main mobile app, localized content in Turkish, Engli
 
 | Area | Tools |
 | --- | --- |
-| App framework | Flutter 3.16+, Dart 3.8+ |
+| App framework | Flutter 3.41.4 (pinned in `.fvmrc`), Dart 3.11 |
 | State management | Riverpod 3 (code generation) |
 | Navigation | GoRouter 17+ |
 | Data models | Freezed 3, json_serializable |
@@ -156,6 +156,20 @@ The repository includes the main mobile app, localized content in Turkish, Engli
 | Encryption | encrypt (AES-256-CBC) |
 | Payments | purchases_flutter (RevenueCat) |
 | Monitoring | sentry_flutter |
+
+Local toolchain setup:
+
+```bash
+# FVM reads the repository manifest and installs/uses the exact CI SDK.
+fvm install
+fvm flutter pub get
+
+# Without FVM, install Flutter 3.41.4 and verify before running commands.
+flutter --version
+```
+
+GitHub Actions and Xcode Cloud read the same `.fvmrc`; update that manifest
+only together with locked dependency compatibility and all builders.
 
 ## Architecture
 
@@ -205,7 +219,7 @@ Import rules are enforced: `core/` never imports from `data/` or `features/`, `d
 
 | Requirement | Notes |
 | --- | --- |
-| Flutter SDK | Stable channel (3.16+) |
+| Flutter SDK | Exact 3.41.4 (`.fvmrc`; FVM recommended) |
 | Dart SDK | `>=3.8.0 <4.0.0` |
 | Android Studio / Xcode / VS Code | Any standard Flutter setup |
 | Supabase project | Required for auth, sync, and storage features |
@@ -301,7 +315,7 @@ GitHub Actions CI pipeline runs on every PR:
 | Check | Description |
 | --- | --- |
 | Flutter Analyze | Static analysis with `--no-fatal-infos` |
-| Flutter Test | 11,700+ tests with coverage upload to Codecov |
+| Flutter Test | 11,731+ tests with coverage upload to Codecov |
 | Golden Tests | Pixel-level widget regression checks |
 | Scripts Test | Python script tests (>=99% coverage) |
 | L10n Sync | Verifies TR/EN/DE translation key parity |

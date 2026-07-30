@@ -89,6 +89,38 @@ void main() {
       expect(find.text(l10n('backup.import_data')), findsOneWidget);
     });
 
+    testWidgets('shows portable backup and restore actions', (tester) async {
+      await tester.pumpWidget(createSubject());
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.text(l10n('backup.portable_section')),
+        300,
+      );
+
+      expect(find.text(l10n('backup.portable_create')), findsOneWidget);
+      expect(find.text(l10n('backup.portable_restore')), findsOneWidget);
+    });
+
+    testWidgets('validates the portable backup password length', (
+      tester,
+    ) async {
+      await tester.pumpWidget(createSubject());
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text(l10n('backup.portable_create')),
+        300,
+      );
+
+      await tester.tap(find.text(l10n('backup.portable_create')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField).first, 'short');
+      await tester.tap(find.text(l10n('common.confirm')));
+      await tester.pump();
+
+      expect(find.text(l10n('backup.password_min_length')), findsOneWidget);
+    });
+
     testWidgets('shows export date when available', (tester) async {
       final testDate = DateTime(2026, 5, 1, 12, 0);
       await tester.pumpWidget(

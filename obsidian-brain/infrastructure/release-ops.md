@@ -76,8 +76,9 @@ Signed AAB only from `release-ready.yml` (or `scripts/build_release.sh android`
 locally). CI main push produces a debug APK only (smoke gate) — never send a
 debug APK to the store. `release-ready.yml` reads the committed `pubspec.yaml`
 version/build, uploads artifacts and Sentry symbols, and deliberately has no
-store publishing block. It pins Flutter `3.41.4` to match GitHub Actions and
-Xcode Cloud; a moving `stable` release toolchain is not accepted (2026-07-18: a
+store publishing block. `.fvmrc` pins Flutter `3.41.4`; GitHub Actions reads it
+through `flutter-version-file` and Xcode Cloud parses the same manifest before
+downloading its versioned SDK. A moving `stable` release toolchain is not accepted (2026-07-18: a
 drift to 3.44.6 broke release compilation against locked `lucide_icons 0.257.0`).
 
 ## iOS

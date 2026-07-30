@@ -1,7 +1,7 @@
 # Architecture
 
 ## Tech Stack
-Flutter 3.41+ · Dart >=3.8.0 <4.0.0 · Riverpod 3 · GoRouter 17+ · Supabase · Drift 2.31+ · Freezed 3 · easy_localization · Sentry · RevenueCat
+Flutter 3.41.4 (`.fvmrc`) · Dart >=3.8.0 <4.0.0 · Riverpod 3 · GoRouter 17+ · Supabase · Drift 2.31+ · Freezed 3 · easy_localization · Sentry · RevenueCat
 
 ## Layers
 

@@ -16,7 +16,7 @@ Source: `.claude/rules/edge-functions.md`
 | `moderate-content` | Community reports / threshold auto-flag | JWT |
 | `revenuecat-webhook` | RevenueCat subscription events (server-to-server push) | Shared secret (`REVENUECAT_WEBHOOK_AUTH_TOKEN`) |
 | `revoke-oauth-token` | Logout (Google/Apple) | JWT |
-| `send-push` | Notification scheduler | JWT |
+| `send-push` | Notification scheduler, admin, persisted DM send | JWT |
 | `system-health` | Admin dashboard | JWT + admin role |
 | `validate-free-tier-limit` | Entity insert path | JWT |
 | `scan-image-safety` | Photo upload pipeline | JWT |
@@ -51,6 +51,7 @@ Current webhook receivers: `revenuecat-webhook` (shared secret via `REVENUECAT_W
 | `create-community-post` | Server-side moderation + post guard before insert; also `mode:'update'` edit-window path. `image_urls` Zod cap is **10** (the premium max) — through 2026-07-09 it was `6`, which deterministically 400'd premium 7–10-photo posts after upload. |
 | `create-community-comment` | Server-side moderation + reciprocal block check before insert |
 | `upload-community-photo` | Server-side image moderation before Storage write |
+| `send-push` | Ordinary cross-user/raw-token sends remain admin-only. Strict DM mode accepts only `messageId`, verifies ownership, derives active/unmuted recipients and lock-screen-safe copy service-side, and honors quiet hours. |
 
 Both premium sync paths persist verified RevenueCat state through the
 service-role-only `apply_verified_premium_status` RPC rather than direct table

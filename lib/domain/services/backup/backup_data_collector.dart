@@ -19,14 +19,16 @@ import 'package:budgie_breeding_tracker/data/models/nest_model.dart';
 import 'package:budgie_breeding_tracker/data/models/photo_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_repositories.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_result.dart';
+import 'package:budgie_breeding_tracker/domain/services/backup/portable_backup_codec.dart';
 import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_service.dart';
 
 /// Collects all user data from repositories and assembles a JSON backup file.
 ///
-/// Supports optional AES-256-CBC encryption via [EncryptionService].
-/// Encrypted backups use `.enc.json` extension.
+/// Device-bound backups use [EncryptionService]. Passing a password creates a
+/// portable authenticated backup that can be restored on another device.
 class BackupDataCollector {
   final EncryptionService? _encryptionService;
+  final PortableBackupCodec _portableCodec;
   final List<_ExportEntry> _exportEntries;
 
   static const _tag = '[BackupDataCollector]';
@@ -35,21 +37,33 @@ class BackupDataCollector {
   BackupDataCollector({
     required BackupRepositories repos,
     EncryptionService? encryptionService,
+    PortableBackupCodec portableCodec = const PortableBackupCodec(),
   }) : _encryptionService = encryptionService,
+       _portableCodec = portableCodec,
        _exportEntries = _buildExportEntries(repos);
 
   /// The current backup format version.
   static int get backupVersion => _backupVersion;
 
   /// Create a full backup of user data as JSON file.
-  Future<BackupResult> createBackup(String userId, {bool? encrypt}) async {
+  Future<BackupResult> createBackup(
+    String userId, {
+    bool? encrypt,
+    String? password,
+  }) async {
     try {
-      final shouldEncrypt = encrypt ?? _encryptionService != null;
+      final portable = password != null;
+      final shouldEncrypt = portable || (encrypt ?? _encryptionService != null);
       AppLogger.info(
-        '$_tag Creating backup${shouldEncrypt ? ' (encrypted)' : ''}',
+        '$_tag Creating backup'
+        '${portable
+            ? ' (portable encrypted)'
+            : shouldEncrypt
+            ? ' (encrypted)'
+            : ''}',
       );
 
-      if (shouldEncrypt && _encryptionService == null) {
+      if (!portable && shouldEncrypt && _encryptionService == null) {
         return BackupResult.failure(
           'Encryption service not available for encrypted backup',
         );
@@ -80,7 +94,10 @@ class BackupDataCollector {
       final jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
 
       String contentToWrite;
-      if (shouldEncrypt && _encryptionService != null) {
+      if (portable) {
+        contentToWrite = await _portableCodec.encrypt(jsonString, password);
+        AppLogger.info('$_tag Backup content encrypted for portable restore');
+      } else if (shouldEncrypt && _encryptionService != null) {
         contentToWrite = await _encryptionService.encrypt(jsonString);
         AppLogger.info('$_tag Backup content encrypted');
       } else {
@@ -89,7 +106,11 @@ class BackupDataCollector {
 
       final dir = await getTemporaryDirectory();
       final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
-      final extension = shouldEncrypt ? '.enc.json' : '.json';
+      final extension = portable
+          ? '.portable.enc.json'
+          : shouldEncrypt
+          ? '.enc.json'
+          : '.json';
       final fileName = 'budgie_backup_$timestamp$extension';
       final file = File(p.join(dir.path, fileName));
 

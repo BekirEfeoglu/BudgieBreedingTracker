@@ -58,32 +58,39 @@ cd "$REPO_ROOT"
 # of the Xcode Cloud log to pinpoint the failing step.
 
 echo ">>> STEP 1: flutter toolchain"
-if ! command -v flutter >/dev/null 2>&1; then
-  FLUTTER_HOME="$HOME/flutter"
-  if [ ! -x "$FLUTTER_HOME/bin/flutter" ]; then
-    # Install Flutter 3.41.4 by downloading the prebuilt SDK archive instead of
-    # `git clone https://github.com/flutter/flutter.git`. That git clone is a
-    # known-flaky Xcode Cloud failure point (flutter/flutter#163198 — many users
-    # hit intermittent post-clone crashes / "Not a valid object name") and was the
-    # real cause of the intermittent Build - iOS failure here; curl + unzip of the
-    # pinned release is far more reliable. Pinned to 3.41.4 to keep parity with
-    # GitHub Actions and local dev (newer Flutter ships Dart 3.12, which makes
-    # IconData a final class and breaks lucide_icons 0.257.0).
-    flutter_arch="$(uname -m)"
-    if [ "$flutter_arch" = "arm64" ]; then
-      flutter_zip="flutter_macos_arm64_3.41.4-stable.zip"
-    else
-      flutter_zip="flutter_macos_3.41.4-stable.zip"
-    fi
-    flutter_url="https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/${flutter_zip}"
-    echo ">>> STEP 1a: download Flutter 3.41.4 SDK ($flutter_arch) from $flutter_url"
-    run_with_retries 3 10 curl -fSL --retry 3 -o "$HOME/flutter_sdk.zip" "$flutter_url"
-    echo ">>> STEP 1b: unzip Flutter SDK to \$HOME"
-    unzip -q "$HOME/flutter_sdk.zip" -d "$HOME"
-    rm -f "$HOME/flutter_sdk.zip"
+PINNED_FLUTTER_VERSION="$(
+  python3 -c 'import json, re; value=json.load(open(".fvmrc", encoding="utf-8"))["flutter"]; assert re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", value), "invalid Flutter version"; print(value)'
+)"
+FLUTTER_HOME="$HOME/flutter-$PINNED_FLUTTER_VERSION"
+if [ ! -x "$FLUTTER_HOME/bin/flutter" ]; then
+  # Install the .fvmrc-pinned Flutter release from the prebuilt SDK archive.
+  # This avoids the known-flaky flutter/flutter git clone on Xcode Cloud while
+  # keeping GitHub Actions, local development, and Xcode Cloud on one manifest.
+  flutter_arch="$(uname -m)"
+  if [ "$flutter_arch" = "arm64" ]; then
+    flutter_zip="flutter_macos_arm64_${PINNED_FLUTTER_VERSION}-stable.zip"
+  else
+    flutter_zip="flutter_macos_${PINNED_FLUTTER_VERSION}-stable.zip"
   fi
-  export PATH="$FLUTTER_HOME/bin:$PATH"
+  flutter_url="https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/${flutter_zip}"
+  flutter_archive="$HOME/flutter_sdk_${PINNED_FLUTTER_VERSION}.zip"
+  flutter_unpack_dir="$HOME/flutter_unpack_${PINNED_FLUTTER_VERSION}"
+
+  # Both paths are version-scoped and validated above. Clear only stale,
+  # incomplete downloads from a previous interrupted Xcode Cloud attempt.
+  rm -rf "$flutter_unpack_dir"
+  rm -rf "$FLUTTER_HOME"
+
+  echo ">>> STEP 1a: download Flutter $PINNED_FLUTTER_VERSION SDK ($flutter_arch) from $flutter_url"
+  run_with_retries 3 10 curl -fSL --retry 3 -o "$flutter_archive" "$flutter_url"
+  echo ">>> STEP 1b: unzip Flutter SDK to versioned toolchain directory"
+  mkdir -p "$flutter_unpack_dir"
+  unzip -q "$flutter_archive" -d "$flutter_unpack_dir"
+  mv "$flutter_unpack_dir/flutter" "$FLUTTER_HOME"
+  rm -f "$flutter_archive"
+  rmdir "$flutter_unpack_dir"
 fi
+export PATH="$FLUTTER_HOME/bin:$PATH"
 
 echo ">>> STEP 2: flutter --version"
 flutter --version

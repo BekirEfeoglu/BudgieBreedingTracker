@@ -24,14 +24,18 @@ Conversation _makeConversation(
   );
 }
 
-Message _makeMessage(String id, {String conversationId = 'conv-1'}) {
+Message _makeMessage(
+  String id, {
+  String conversationId = 'conv-1',
+  DateTime? createdAt,
+}) {
   return Message(
     id: id,
     conversationId: conversationId,
     senderId: 'user-1',
     senderName: 'Test User',
     content: 'Message $id',
-    createdAt: DateTime(2024),
+    createdAt: createdAt ?? DateTime(2024),
   );
 }
 
@@ -184,8 +188,8 @@ void main() {
     });
   });
 
-  group('messagesProvider', () {
-    test('returns messages for conversation', () async {
+  group('messageThreadProvider', () {
+    test('returns the first message page for a conversation', () async {
       final messages = [
         _makeMessage('m1'),
         _makeMessage('m2'),
@@ -193,7 +197,7 @@ void main() {
       ];
 
       when(
-        () => mockRepo.getMessages('conv-1'),
+        () => mockRepo.getMessages('conv-1', limit: messageThreadPageSize),
       ).thenAnswer((_) async => messages);
 
       final container = ProviderContainer(
@@ -201,29 +205,40 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final result = await container.read(messagesProvider('conv-1').future);
+      final result = await container.read(
+        messageThreadProvider('conv-1').future,
+      );
 
-      expect(result.length, 3);
-      expect(result.first.id, 'm1');
-      verify(() => mockRepo.getMessages('conv-1')).called(1);
+      expect(result.messages, hasLength(3));
+      expect(result.messages.first.id, 'm1');
+      expect(result.hasMore, isFalse);
+      verify(
+        () => mockRepo.getMessages('conv-1', limit: messageThreadPageSize),
+      ).called(1);
     });
 
-    test('returns empty list when no messages', () async {
-      when(() => mockRepo.getMessages('conv-1')).thenAnswer((_) async => []);
+    test('returns empty state when no messages exist', () async {
+      when(
+        () => mockRepo.getMessages('conv-1', limit: messageThreadPageSize),
+      ).thenAnswer((_) async => []);
 
       final container = ProviderContainer(
         overrides: [messagingRepositoryProvider.overrideWithValue(mockRepo)],
       );
       addTearDown(container.dispose);
 
-      final result = await container.read(messagesProvider('conv-1').future);
+      final result = await container.read(
+        messageThreadProvider('conv-1').future,
+      );
 
-      expect(result, isEmpty);
+      expect(result.messages, isEmpty);
+      expect(result.hasMore, isFalse);
+      expect(result.oldestCursor, isNull);
     });
 
     test('exposes error when repository fails', () async {
       when(
-        () => mockRepo.getMessages('conv-1'),
+        () => mockRepo.getMessages('conv-1', limit: messageThreadPageSize),
       ).thenAnswer((_) async => throw Exception('fetch failed'));
 
       final container = ProviderContainer(
@@ -232,18 +247,121 @@ void main() {
       addTearDown(container.dispose);
 
       final sub = container.listen(
-        messagesProvider('conv-1'),
+        messageThreadProvider('conv-1'),
         (_, __) {},
         fireImmediately: true,
       );
 
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
-      final value = container.read(messagesProvider('conv-1'));
+      final value = container.read(messageThreadProvider('conv-1'));
       expect(value.hasError, isTrue);
       expect(value.error, isA<Exception>());
       sub.close();
     });
+
+    test('loads older messages with the oldest timestamp cursor', () async {
+      final firstPage = [
+        for (var i = 0; i < messageThreadPageSize; i++)
+          _makeMessage(
+            'm$i',
+            createdAt: DateTime.utc(2026, 7, 30).subtract(Duration(minutes: i)),
+          ),
+      ];
+      final olderPage = [
+        _makeMessage('older-1', createdAt: DateTime.utc(2026, 7, 29)),
+        _makeMessage('older-2', createdAt: DateTime.utc(2026, 7, 28)),
+      ];
+      when(
+        () => mockRepo.getMessages(
+          'conv-1',
+          limit: messageThreadPageSize,
+          before: any(named: 'before'),
+        ),
+      ).thenAnswer((invocation) async {
+        final cursor = invocation.namedArguments[#before] as DateTime?;
+        return cursor == null ? firstPage : olderPage;
+      });
+
+      final container = ProviderContainer(
+        overrides: [messagingRepositoryProvider.overrideWithValue(mockRepo)],
+      );
+      addTearDown(container.dispose);
+      final sub = container.listen(
+        messageThreadProvider('conv-1'),
+        (_, __) {},
+        fireImmediately: true,
+      );
+      addTearDown(sub.close);
+
+      await container.read(messageThreadProvider('conv-1').future);
+      await container.read(messageThreadProvider('conv-1').notifier).loadMore();
+
+      final result = container
+          .read(messageThreadProvider('conv-1'))
+          .requireValue;
+      verify(
+        () => mockRepo.getMessages(
+          'conv-1',
+          limit: messageThreadPageSize,
+          before: firstPage.last.createdAt,
+        ),
+      ).called(1);
+      expect(result.messages, hasLength(messageThreadPageSize + 2));
+      expect(result.messages.last.id, 'older-2');
+      expect(result.hasMore, isFalse);
+      expect(result.isLoadingMore, isFalse);
+    });
+
+    test(
+      'keeps the first page visible when loading older messages fails',
+      () async {
+        final firstPage = [
+          for (var i = 0; i < messageThreadPageSize; i++)
+            _makeMessage(
+              'm$i',
+              createdAt: DateTime.utc(
+                2026,
+                7,
+                30,
+              ).subtract(Duration(minutes: i)),
+            ),
+        ];
+        when(
+          () => mockRepo.getMessages('conv-1', limit: messageThreadPageSize),
+        ).thenAnswer((_) async => firstPage);
+        when(
+          () => mockRepo.getMessages(
+            'conv-1',
+            limit: messageThreadPageSize,
+            before: any(named: 'before', that: isNotNull),
+          ),
+        ).thenThrow(Exception('page failed'));
+
+        final container = ProviderContainer(
+          overrides: [messagingRepositoryProvider.overrideWithValue(mockRepo)],
+        );
+        addTearDown(container.dispose);
+        final sub = container.listen(
+          messageThreadProvider('conv-1'),
+          (_, __) {},
+          fireImmediately: true,
+        );
+        addTearDown(sub.close);
+
+        await container.read(messageThreadProvider('conv-1').future);
+        await container
+            .read(messageThreadProvider('conv-1').notifier)
+            .loadMore();
+
+        final result = container
+            .read(messageThreadProvider('conv-1'))
+            .requireValue;
+        expect(result.messages, hasLength(messageThreadPageSize));
+        expect(result.hasMore, isTrue);
+        expect(result.isLoadingMore, isFalse);
+      },
+    );
   });
 
   group('ConversationSearchQueryNotifier', () {

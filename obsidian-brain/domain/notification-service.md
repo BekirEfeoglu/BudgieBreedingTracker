@@ -70,11 +70,18 @@ Mapping: `breeding|incubation → /breeding/<id>` · `bird → /birds/<id>` ·
 (id intentionally dropped — these carry an egg id, not a pair id, and no
 `/eggs/<id>` route exists) · `health_check → /health-records/<id>` ·
 `event|event_reminder|calendar → /calendar` · `notification → /notifications` ·
-anything else → `null`.
+`message → /messages/<conversation-id>` · anything else → `null`.
 
 Ids destined for a path segment are validated with `isValidRouteId`; an invalid
 id rejects the payload (`AppLogger.warning`) so a crafted payload cannot flash a
 NotFound screen. Unknown type → `null`, no navigation.
+
+DM send persists first, then calls `send-push` best-effort with only the
+`messageId`. The Edge Function re-reads that message with service-role,
+verifies sender ownership, derives active/unmuted recipients, excludes the
+caller, respects quiet hours, and emits `message:<conversationId>`. Client
+targets or notification copy are never trusted. Lock-screen copy contains the
+brand and `💬`, not message text or sender PII.
 
 ## Local Scheduling (NotificationScheduler)
 

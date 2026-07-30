@@ -5,7 +5,7 @@ Tam veri yedekleme (JSON+AES), Excel import/export, PDF (pedigree) export. `lib/
 ## Stack
 | İşlev | Servis | Format |
 |-------|--------|--------|
-| Backup | `BackupService` | `.budgie.zip` (JSON + AES + manifest) |
+| Backup | `BackupService` | `.json`, `.enc.json`, `.portable.enc.json` |
 | Excel export | `ExcelExportService` | `.xlsx` (`excel` package) |
 | Excel import | `DataImportService` | `.xlsx` |
 | PDF export | `PdfExportService`, `PedigreePdfBuilder` | `.pdf` (`pdf` package) |
@@ -14,34 +14,38 @@ Tam veri yedekleme (JSON+AES), Excel import/export, PDF (pedigree) export. `lib/
 ## Backup Format (gerçek — tek JSON dosyası, zip/manifest YOK)
 ```
 budgie_backup_<iso-timestamp>.json       (düz)
-budgie_backup_<iso-timestamp>.enc.json   (şifreli — uzantıdan auto-detect)
+budgie_backup_<iso-timestamp>.enc.json   (cihaz anahtarıyla şifreli)
+budgie_backup_<iso-timestamp>.portable.enc.json (kullanıcı parolasıyla taşınabilir)
 ```
 
 - İçerik: `{version, user_id, created_at, data: {...}}` — version alanı JSON'a gömülü (ayrı manifest yok)
-- Şifreleme OPSİYONEL ve **runtime `EncryptionService`** ile yapılır (AES-256-CBC + HMAC, encryption.md spec'i — BBTENC1! magic, IV, MAC); kullanıcı şifresi / PBKDF2 YOK (cihaz-yerel anahtar)
-- Sonuç: şifreli backup **taşınabilir değildir** — başka cihazda runtime anahtar olmadığından decrypt edilemez. Kullanıcı-şifreli taşınabilir backup (PBKDF2) bir tasarım hedefidir, shipped değildir (known-gaps.md)
+- Cihaz yedeği opsiyonel **runtime `EncryptionService`** kullanır (AES-256-CBC + HMAC, `BBTENC1!`); başka cihazda runtime anahtar olmadığı için taşınabilir değildir
+- Manuel taşınabilir yedek `PortableBackupCodec` kullanır: PBKDF2-HMAC-SHA256 100.000 tur + 16-byte random salt, AES-256-CBC + her dosyada random 16-byte IV ve encrypt-then-HMAC-SHA256. Ayrı ENC/MAC anahtarları domain-separated HMAC etiketleriyle türetilir; MAC constant-time doğrulanmadan decrypt yapılmaz
+- Parola (minimum 10 karakter) saklanmaz veya loglanmaz. Salt/IV/KDF metadata'sı versioned JSON zarfında plaintext, ciphertext ve MAC Base64 taşınır. KDF işi `Isolate.run` üzerinde çalışır
 - Attachment/foto backup'a GÖMÜLMEZ
 - Cloud upload/list: `BackupService.uploadBackup` → Supabase Storage `backups` bucket'ı
 
 ## Backup Triggers
-- Manuel: Settings → Backup → Export now
+- Manuel: Settings → Backup → Şifreli Yedek Oluştur (ücretsiz, share sheet)
 - Periodic (premium): `BackupScheduler` günlük/haftalık/aylık (kullanıcı seçer) — **shipped 2026-07-09**: UI backup_screen'de (`_AutoBackupSection`), tetikleme `app.dart _onAppResumed`'da `runIfScheduled` ile (6h throttle + interval gate); runtime `EncryptionService` ile şifreli (kullanıcı şifresi istemez, cihaz-yerel). Provider'lar `backup_schedule_providers.dart` (settings.md § Backup Screen)
 - Pre-migration: app update öncesi otomatik (safety net)
 - Path: `getTemporaryDirectory()` (temp dir) + share sheet — kalıcı Documents klasörü YOK, paylaşım sonrası temp cleanup
 
-## Restore Flow (gerçek — merge-upsert, wipe/preview YOK)
+## Restore Flow (gerçek — doğrulamalı önizleme + merge-upsert)
 ```
-User picks .json / .enc.json
-  -> Uzantıdan encrypted auto-detect
-  -> EncryptionService.decrypt (runtime anahtar; FormatException = yanlış anahtar/tamper
-     -> backup.error_decrypt_failed, Sentry'ye GİTMEZ — beklenen kullanıcı koşulu)
+User picks .json / .enc.json / .portable.enc.json
+  -> Portable zarf içerikten auto-detect; parola istenir
+  -> MAC verify + decrypt (yanlış parola/tamper -> backup.error_decrypt_failed)
+  -> Legacy .enc.json ise EncryptionService ile cihaz anahtarından decrypt
   -> Gömülü version kontrolü (backup version > app backupVersion -> reject
      'backup.error_unsupported_version')
   -> user_id sahiplik kontrolü (başka kullanıcının backup'ı reddedilir)
+  -> Yazmasız preview: created_at + entity bazlı kayıt sayıları
+  -> Kullanıcı merge etkisini açıkça onaylar
   -> Merge: entity başına saveAll upsert (id bazlı — mevcut kayıtlar güncellenir)
 ```
 
-- Wipe & restore / restore preview / skip-overwrite-rename seçimi YOK — tek strateji merge-upsert (tasarım hedefi olarak preview known-gaps.md'de)
+- Wipe & restore / skip-overwrite-rename seçimi YOK — tek strateji merge-upsert. Önizleme aynı ID'lerin güncelleneceğini, diğer mevcut kayıtların silinmeyeceğini ve otomatik undo olmadığını gösterir
 - Restore atomic değil — failure halinde partial state mümkün → progress log
 
 ## Excel Export
@@ -92,14 +96,16 @@ birdSheet.appendRow([
 
 İşlemler heavy isolate'te (`compute()`), progress callback ile UI update.
 
-## Encryption (Backup-Specific — gerçek: runtime EncryptionService)
-- Şifreleme runtime `EncryptionService` cihaz anahtarıyla yapılır (encryption.md payload spec'i); decrypt hatası `FormatException` → `backup.error_decrypt_failed` (Sentry'ye gitmez)
-- **Trade-off (bilinçli):** cihaz-yerel anahtar → şifreli backup başka cihaza taşınamaz; key rotation eski şifreli backup'ları arşiv anahtarıyla açar (encryption.md § Key Rotation)
-- **Kullanıcı-şifreli taşınabilir backup (PBKDF2-SHA256 100K iter + random salt/IV) shipped DEĞİLDİR** — tasarım hedefi, known-gaps.md'de kayıtlı. Eklenirse: PBKDF2 anahtar türetimi + salt'ın dosyada plaintext taşınması + bu bölümün gerçek mekanikle güncellenmesi gerekir
+## Encryption (Backup-Specific)
+- Otomatik yedekler runtime `EncryptionService` cihaz anahtarıyla `.enc.json` üretir; decrypt hatası `FormatException` → `backup.error_decrypt_failed`
+- Manuel taşınabilir yedekler kullanıcı parolasından PBKDF2-HMAC-SHA256 ile anahtar türetip authenticated `.portable.enc.json` üretir; cihaz secure-storage anahtarına bağlı değildir
+- Parola ve plaintext log/Sentry'ye girmez. Yanlış parola/tamper beklenen kullanıcı hatasıdır; restore katmanı ayrıca Sentry olayı üretmez
 
 ## Backup Validation
 - Version compatibility check: gömülü `version` int (`BackupDataCollector.backupVersion`); backup version > app version → reject `backup.error_unsupported_version`
 - `user_id` sahiplik kontrolü — başka kullanıcının backup'ı reddedilir
+- Portable envelope `format`, `format_version`, `kdf`, sabit iteration, salt/IV/ciphertext/MAC alanlarını strict doğrular
+- `previewBackup` yalnız okur/decrypt/validate eder; hiçbir repository `saveAll` çağrısı yapmaz
 - Bozuk dosya/JSON: graceful error (`backup.error_invalid_format`), no partial restore
 
 ## Share Sheet Integration
@@ -131,7 +137,7 @@ Veri sahipliği prensibi: backup her zaman bedava — kullanıcı app'ten ayrıl
 - Unit: Excel header i18n (Türkçe header → İngilizce app)
 - Integration: full backup + restore round-trip (data parity, merge-upsert)
 - E2E: real device share sheet (manual QA)
-- Edge: 10MB file, malformed JSON, yanlış cihaz anahtarı (`FormatException` → `backup.error_decrypt_failed`)
+- Edge: 10MB file, malformed JSON, yanlış cihaz anahtarı/parola, MAC/ciphertext tamper ve random salt/IV
 
 ```dart
 test('backup-restore round trip preserves all entities', () async {
@@ -146,9 +152,9 @@ test('backup-restore round trip preserves all entities', () async {
 ```
 
 ## Anti-Patterns
-1. Şifreli backup'ı taşınabilir sanmak (runtime cihaz anahtarı — başka cihazda açılmaz; taşınabilirlik istiyorsan düz `.json` + kullanıcı bilgilendirmesi)
-2. PBKDF2/kullanıcı-şifresi akışını shipped varsaymak (known-gaps.md — tasarım hedefi)
-3. Restore'un merge-upsert olduğunu unutup "wipe eder" varsaymak (wipe/preview yok)
+1. `.enc.json` cihaz yedeğini taşınabilir sanmak (`.portable.enc.json` kullan)
+2. Parolayı, türetilmiş anahtarı veya plaintext backup'ı log/Sentry'ye koymak
+3. Restore'un merge-upsert olduğunu unutup "wipe eder" varsaymak (wipe yok; preview etkileri açıklar)
 4. Restore öncesi mevcut veriden yedek almamak (merge yine de veri değiştirir)
 5. Excel'e foto embed (file size 50MB+ olur)
 6. UI thread'inde 1000+ row import (jank + ANR)
@@ -158,4 +164,4 @@ test('backup-restore round trip preserves all entities', () async {
 10. Düz `.json` backup'ı hassas veri içerdiğini söylemeden share etmek (şifreleme opsiyonel — kullanıcı bilgilendirmesi zorunlu)
 11. Share sheet sonrası temp file cleanup atlamak (cihaz alanı dolar)
 
-> **İlgili**: encryption.md (AES-256-CBC + HMAC, runtime anahtar), data-layer.md (Drift export schema), assets-images.md (separate image size contract), premium-revenuecat.md (premium gating), localization.md (Excel header i18n), migrations.md (backup schema compatibility), obsidian-brain/known-gaps.md (PBKDF2 taşınabilir backup — unshipped)
+> **İlgili**: encryption.md (runtime ve portable AES-256-CBC + HMAC sınırları), data-layer.md (Drift export schema), assets-images.md (separate image size contract), premium-revenuecat.md (premium gating), localization.md (Excel header i18n), migrations.md (backup schema compatibility)

@@ -74,6 +74,7 @@ Rota çözümü `NotificationChannelConfig.payloadToRoute`:
 | `health_check` | `/health-records/<id>` |
 | `event`, `event_reminder`, `calendar` | `/calendar` |
 | `notification` | `/notifications` |
+| `message` | `/messages/<conversation-id>` |
 | diğer | `null` |
 
 - Id enjekte eden rotalarda `isValidRouteId(id)` doğrulaması zorunlu; geçersizse
@@ -161,6 +162,10 @@ panelinden gönderilen manuel kullanıcı/bulk bildirimleri non-kritik kabul edi
 ve `respectQuietHours: true` ile gönderilir. Yeni non-kritik `send-push`
 caller'ları bu flag'i bilinçli olarak set etmeli; sistem sağlığı, inkübasyon,
 güvenlik ve hesap kritik bildirimleri flag'i set etmemeli.
+- DM caller'ı `messageId` dışında hedef/copy kabul etmeyen `send-push` message
+  modunu kullanır. Function mesaj sahipliğini, aktif+mute olmayan katılımcıları
+  service-role ile türetir; mesaj metni/gönderen PII'si yerine lock-screen-safe
+  marka başlığı + `💬` gönderir ve `respectQuietHours: true` uygular
 - Kullanıcı kategori bazlı bildirim açma/kapama (`profile.notification_preferences`) — client-side UI var
 
 ## Testing

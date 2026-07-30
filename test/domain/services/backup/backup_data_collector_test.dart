@@ -22,6 +22,7 @@ import 'package:budgie_breeding_tracker/data/repositories/notification_repositor
 import 'package:budgie_breeding_tracker/data/repositories/photo_repository.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_data_collector.dart';
 import 'package:budgie_breeding_tracker/domain/services/backup/backup_repositories.dart';
+import 'package:budgie_breeding_tracker/domain/services/backup/portable_backup_codec.dart';
 import 'package:budgie_breeding_tracker/domain/services/encryption/encryption_service.dart';
 
 import '../../../helpers/test_helpers.dart';
@@ -55,6 +56,8 @@ class _MockNestRepository extends Mock implements NestRepository {}
 class _MockPhotoRepository extends Mock implements PhotoRepository {}
 
 class _MockEncryptionService extends Mock implements EncryptionService {}
+
+class _MockPortableBackupCodec extends Mock implements PortableBackupCodec {}
 
 const _pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
 
@@ -401,6 +404,35 @@ void main() {
           expect(result.success, isTrue);
           expect(result.filePath, endsWith('.enc.json'));
           verify(() => encryptionService.encrypt(any())).called(1);
+        },
+      );
+
+      test(
+        'creates a password-based portable backup without a device key',
+        () async {
+          final portableCodec = _MockPortableBackupCodec();
+          when(
+            () => portableCodec.encrypt(any(), 'portable-password'),
+          ).thenAnswer(
+            (_) async =>
+                '{"format":"${PortableBackupCodec.format}","ciphertext":"x"}',
+          );
+          final portableCollector = BackupDataCollector(
+            repos: repos,
+            portableCodec: portableCodec,
+          );
+          stubAllRepositoriesEmpty();
+
+          final result = await portableCollector.createBackup(
+            'user-1',
+            password: 'portable-password',
+          );
+
+          expect(result.success, isTrue);
+          expect(result.filePath, endsWith('.portable.enc.json'));
+          verify(
+            () => portableCodec.encrypt(any(), 'portable-password'),
+          ).called(1);
         },
       );
 

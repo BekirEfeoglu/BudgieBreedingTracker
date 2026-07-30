@@ -9,7 +9,7 @@
 | `moderate-content` | Community reports / threshold auto-flag | JWT |
 | `revenuecat-webhook` | RevenueCat subscription events (push) | Shared secret (`REVENUECAT_WEBHOOK_AUTH_TOKEN`) |
 | `revoke-oauth-token` | Logout (Google/Apple) | JWT |
-| `send-push` | Notification scheduler | JWT |
+| `send-push` | Notification scheduler, admin, persisted DM send | JWT |
 | `system-health` | Admin dashboard | JWT + admin role |
 | `validate-free-tier-limit` | Entity insert path | JWT |
 | `scan-image-safety` | Photo upload pipeline | JWT |
@@ -35,6 +35,9 @@ Current webhook receivers: `revenuecat-webhook` (shared secret via `REVENUECAT_W
 - Reject on schema mismatch with `400` before touching DB
 - Never trust `user_id` from body — read from `req.headers.authorization` JWT claims
 - Rate limit sensitive endpoints (`mfa-lockout`, `send-push`) via Supabase config
+- `send-push` DM modu yalnız strict `{messageId}` kabul eder; mesaj sahipliği,
+  aktif/mute olmayan alıcılar, safe copy ve deep link service-role DB okumasından
+  türetilir. Client-supplied target/copy ile message modunu karıştıran body 400
 
 ## Response Contract
 - Return typed JSON — document shape in function folder `README.md` or header comment

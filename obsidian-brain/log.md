@@ -4,6 +4,25 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-30] feature | Toolchain parity, complete DM history/push, portable restore
+
+Pinned local, GitHub Actions, release-ready, and Xcode Cloud Flutter resolution
+to the single `.fvmrc` 3.41.4 manifest; reconciled `pubspec.lock` under that SDK.
+Xcode Cloud now validates and installs the manifest version into a
+version-scoped SDK directory.
+
+DM threads now load older 50-row cursor pages on scroll-up. Persisted sends
+request best-effort push through a strict `messageId` mode: service-role logic
+verifies ownership, filters left/muted/sender participants, honors quiet hours,
+uses lock-screen-safe copy, and deep-links validated
+`message:<conversationId>` payloads.
+
+Manual backup/restore gained a free, cross-device `.portable.enc.json` path:
+PBKDF2-HMAC-SHA256 100K, random salt/IV, separated AES/HMAC keys and
+encrypt-then-MAC. Restore first performs a non-mutating date/entity-count
+preview and explicitly confirms merge-upsert consequences. Removed the three
+closed gaps; wipe/conflict choices and the DM memory cap remain open.
+
 ## [2026-07-27] ci | Dependabot open PR caps tightened
 
 Reduced monthly Dependabot concurrency from 10 to 5 for `pub` and from 5 to 3

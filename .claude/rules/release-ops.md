@@ -40,7 +40,9 @@ Store yuklemesi her iki platformda da manuel bir kullanici islemidir.
   ekler — `"SENTRY_DEBUG_ID_MARKER"` ve eslesen binary'nin debug id'si (compact
   25 + 39 = tam 64 bayt; Sentry'nin bildirdigi boyut farkinin kaynagi budur).
   Kalan girdiler yerel dosyayla bayt bayt aynidir
-- `release-ready.yml` ve Xcode Cloud Flutter SDK'sini `3.41.4`'e pinli tutar;
+- `.fvmrc` Flutter `3.41.4` icin tek manifesttir; `release-ready.yml` bunu
+  `flutter-version-file` ile, Xcode Cloud post-clone script'i parse ederek
+  kullanir. Local FVM/Mise de ayni manifesti okumali;
   `stable` kanal drift'ini release aninda kabul etme. 2026-07-18'de bir release
   builder `stable` uzerinden 3.44.6'ya kaydi ve locked `lucide_icons 0.257.0`
   (`IconData` final oldu) release compile'ini bozdu. SDK ve locked dependency
@@ -51,7 +53,7 @@ Store yuklemesi her iki platformda da manuel bir kullanici islemidir.
   oncesi **manuel** sorumluluktur — hedef track'e bakip kullanilmis bir kodu
   yeniden secme.
 - `docs/` deployment mobil app release'lerinden ayri deger
-- Xcode Cloud Flutter build temiz clone'da `ios/ci_scripts/ci_post_clone.sh` ile hazirlanir; script Flutter SDK'yi pinned zip'in curl+unzip'i ile kurar (`git clone flutter/flutter` DEGIL — Xcode Cloud'da bilinen flaky, ci-actions.md § Deployment Safety) ve her adimdan once `>>> STEP N:` marker basar
+- Xcode Cloud Flutter build temiz clone'da `ios/ci_scripts/ci_post_clone.sh` ile hazirlanir; script `.fvmrc`'yi strict semver olarak okuyup version-scoped pinned zip'i curl+unzip ile kurar (`git clone flutter/flutter` DEGIL — Xcode Cloud'da bilinen flaky, ci-actions.md § Deployment Safety) ve her adimdan once `>>> STEP N:` marker basar
 - Xcode Cloud main workflow build-only olmalidir; archive/TestFlight/App Store export ancak Apple signing hesabi, Development/Ad Hoc profil ihtiyaci ve kayitli fiziksel cihazlar hazirsa acilir
 
 ## Version Bump

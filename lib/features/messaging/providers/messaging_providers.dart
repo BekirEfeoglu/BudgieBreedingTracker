@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/feature_flags.dart';
+import '../../../core/utils/logger.dart';
 import '../../../data/models/conversation_model.dart';
 import '../../../data/models/message_model.dart';
 import '../../../data/repositories/repository_providers.dart';
@@ -55,22 +56,103 @@ final conversationByIdProvider = FutureProvider.family<Conversation?, String>((
   return repo.getConversationById(conversationId);
 });
 
-/// Messages for a conversation, with blocked-sender filtering.
+const messageThreadPageSize = 50;
+
+/// Immutable paginated snapshot for one conversation.
+class MessageThreadState {
+  final List<Message> messages;
+  final bool hasMore;
+  final bool isLoadingMore;
+  final DateTime? oldestCursor;
+
+  const MessageThreadState({
+    required this.messages,
+    required this.hasMore,
+    required this.oldestCursor,
+    this.isLoadingMore = false,
+  });
+
+  MessageThreadState copyWith({
+    List<Message>? messages,
+    bool? hasMore,
+    bool? isLoadingMore,
+    DateTime? oldestCursor,
+  }) => MessageThreadState(
+    messages: messages ?? this.messages,
+    hasMore: hasMore ?? this.hasMore,
+    isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+    oldestCursor: oldestCursor ?? this.oldestCursor,
+  );
+}
+
+/// Cursor-paginated message history for a conversation.
 ///
-/// Messages from blocked senders are silently removed from the visible
-/// thread. Server-side block also prevents new ones from arriving, but
-/// this client filter handles historical messages and any in-flight
-/// realtime emissions before the server enforces the block.
-final messagesProvider = FutureProvider.family<List<Message>, String>((
-  ref,
-  conversationId,
-) async {
-  final repo = ref.watch(messagingRepositoryProvider);
-  final blocked = ref.watch(blockedUsersProvider).toSet();
-  final messages = await repo.getMessages(conversationId);
-  if (blocked.isEmpty) return messages;
-  return messages.where((m) => !blocked.contains(m.senderId)).toList();
-});
+/// The first page contains the newest [messageThreadPageSize] rows. [loadMore]
+/// appends older pages using the oldest server timestamp as the cursor while
+/// preserving already-visible messages if a later page fails.
+class MessageThreadNotifier extends AsyncNotifier<MessageThreadState> {
+  MessageThreadNotifier(this.conversationId);
+
+  final String conversationId;
+
+  @override
+  Future<MessageThreadState> build() async {
+    final repo = ref.watch(messagingRepositoryProvider);
+    final page = await repo.getMessages(
+      conversationId,
+      limit: messageThreadPageSize,
+    );
+    return MessageThreadState(
+      messages: page,
+      hasMore: page.length == messageThreadPageSize,
+      oldestCursor: page.lastOrNull?.createdAt,
+    );
+  }
+
+  Future<void> loadMore() async {
+    final current = state.asData?.value;
+    if (current == null ||
+        current.isLoadingMore ||
+        !current.hasMore ||
+        current.oldestCursor == null) {
+      return;
+    }
+
+    state = AsyncData(current.copyWith(isLoadingMore: true));
+    try {
+      final repo = ref.read(messagingRepositoryProvider);
+      final page = await repo.getMessages(
+        conversationId,
+        limit: messageThreadPageSize,
+        before: current.oldestCursor,
+      );
+      final byId = <String, Message>{
+        for (final message in current.messages) message.id: message,
+        for (final message in page) message.id: message,
+      };
+      state = AsyncData(
+        MessageThreadState(
+          messages: byId.values.toList(growable: false),
+          hasMore: page.length == messageThreadPageSize,
+          isLoadingMore: false,
+          oldestCursor: page.isEmpty
+              ? current.oldestCursor
+              : page.last.createdAt,
+        ),
+      );
+    } catch (e, st) {
+      AppLogger.error('messaging.loadMore', e, st);
+      state = AsyncData(current.copyWith(isLoadingMore: false));
+    }
+  }
+}
+
+final messageThreadProvider =
+    AsyncNotifierProvider.family<
+      MessageThreadNotifier,
+      MessageThreadState,
+      String
+    >(MessageThreadNotifier.new);
 
 /// Search state
 class ConversationSearchQueryNotifier extends Notifier<String> {

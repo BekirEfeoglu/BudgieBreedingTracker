@@ -99,8 +99,10 @@ main push (to avoid slowing CI). It requires the GitHub Actions `SENTRY_DSN`
 secret and injects the `production` environment into the release build; its
 `SENTRY_AUTH_TOKEN` is used only for symbol upload and never passed into the
 app binary. It carries no `publishing` block or Google Play credential — you
-download the artifact and upload it yourself. It pins Flutter `3.41.4` to match
-GitHub Actions and Xcode Cloud: on 2026-07-18 a release builder on the moving
+download the artifact and upload it yourself. `.fvmrc` is the single Flutter
+`3.41.4` toolchain manifest: GitHub Actions and release-ready use
+`flutter-version-file`, while Xcode Cloud parses it before downloading the
+versioned SDK. On 2026-07-18 a release builder on the moving
 `stable` channel resolved to 3.44.6 and broke release compilation against
 locked `lucide_icons 0.257.0` (`IconData` became final). Upgrade the SDK only
 together with dependency compatibility and all release builders.
@@ -110,7 +112,7 @@ together with dependency compatibility and all release builders.
 - Build-only (`Build - iOS`, scheme `Runner`, Any iOS Simulator)
 - Archive/TestFlight only when Apple signing + provisioning profile + registered device ready
 - `ios/ci_scripts/ci_post_clone.sh`: installs Flutter, runs `flutter pub get`, `dart run build_runner build`, `pod install`; must stay executable, retry/backoff on network steps
-- **Flutter install = curl+unzip of the pinned arch-aware SDK zip** (`flutter_macos[_arm64]_3.41.4-stable.zip`) — NEVER `git clone flutter/flutter`: that clone is known-flaky on Xcode Cloud (flutter/flutter#163198) and was the true root cause of the recurring ~40s `Build - iOS` action_required (2026-07-09). First curl-based build passed with a full ~9-min build.
+- **Flutter install = parse `.fvmrc` + curl/unzip the pinned arch-aware SDK zip** (`flutter_macos[_arm64]_3.41.4-stable.zip`) into a version-scoped directory — NEVER `git clone flutter/flutter`: that clone is known-flaky on Xcode Cloud (flutter/flutter#163198) and was the true root cause of the recurring ~40s `Build - iOS` action_required (2026-07-09). First curl-based build passed with a full ~9-min build.
 - drift_dev's "Circular error when deserializing drift modules" is a **non-fatal WARNING** (simolus3/drift#3227) — it never fails `build_runner`; do not chase it as a post-clone failure cause. The clean-and-retry loop (cap 8) remains as belt-and-braces.
 - The script prints `>>> STEP N:` markers before every step; Xcode Cloud only surfaces a generic "script failed (exited with code 1)", so the LAST marker in the log names the failing step. Keep the markers.
 - Rapid successive main pushes can make Xcode Cloud supersede intermediate builds (`action_required` on middle commits) — judge only the newest commit's build.

@@ -82,6 +82,11 @@ class EdgeFunctionClient {
     // non-exempt moderate-content rejected the second message of any normal
     // conversation as `moderation_unavailable`.
     'moderate-content',
+    // DM sends have their own 2-second client cooldown and the Edge Function
+    // derives/authorizes recipients from the persisted message. Keep this
+    // client-side cooldown out of the delivery path; server rate limiting
+    // remains authoritative.
+    'send-push',
   };
 
   /// Per-function last invocation timestamps for rate limiting.
@@ -348,6 +353,15 @@ class EdgeFunctionClient {
         if (respectQuietHours) 'respectQuietHours': true,
       },
     );
+  }
+
+  /// Delivers a push for a persisted direct/group message.
+  ///
+  /// The Edge Function loads the message by [messageId], verifies the caller is
+  /// its sender, and derives active, unmuted recipients server-side. The client
+  /// never supplies cross-user target IDs for this path.
+  Future<EdgeFunctionResult> sendMessagePush({required String messageId}) {
+    return invoke('send-push', body: {'messageId': messageId});
   }
 
   /// Check if the current user is locked out of MFA verification.

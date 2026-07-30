@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -5,6 +7,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/enums/messaging_enums.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/models/message_model.dart';
+import '../../../data/providers/edge_function_provider.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/services/moderation/moderation_providers.dart';
 import '../../../domain/services/moderation/content_moderation_service.dart';
@@ -140,6 +143,18 @@ class MessagingFormNotifier extends Notifier<MessagingFormState> {
       );
       ref.read(messagingRealtimeProvider.notifier).addLocalMessage(delivered);
       _lastSentAt = DateTime.now();
+      final pushFuture = ref
+          .read(edgeFunctionClientProvider)
+          .sendMessagePush(messageId: messageId);
+      unawaited(
+        pushFuture.then((result) {
+          if (!result.success) {
+            AppLogger.warning(
+              'messaging: new-message push delivery was not accepted',
+            );
+          }
+        }),
+      );
       // Signal success so the input bar clears the field. Without this the
       // `isSuccess` flag stayed at its `false` default on the send path
       // (only conversation-creation methods set it), so the sent text was

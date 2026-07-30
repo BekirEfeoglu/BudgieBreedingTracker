@@ -90,6 +90,13 @@ void main() {
       );
     });
 
+    test('maps message payload to conversation detail', () {
+      expect(
+        NotificationService.payloadToRoute('message:$_id'),
+        '/messages/$_id',
+      );
+    });
+
     test('returns null for unknown type', () {
       expect(NotificationService.payloadToRoute('unknown:$_id'), isNull);
     });
@@ -108,6 +115,13 @@ void main() {
 
       test('rejects health_check payload with empty id', () {
         expect(NotificationService.payloadToRoute('health_check:'), isNull);
+      });
+
+      test('rejects message payload with path traversal', () {
+        expect(
+          NotificationService.payloadToRoute('message:../../etc/passwd'),
+          isNull,
+        );
       });
     });
   });
