@@ -71,6 +71,32 @@ void main() {
       );
       expect((track.decoration as BoxDecoration).color, backgroundColor);
     });
+
+    testWidgets('header does not overflow at accessibility text size', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: const TextScaler.linear(3.5)),
+            child: child!,
+          ),
+          home: const Scaffold(
+            body: AppProgressBar(
+              value: 0.42,
+              label: 'A long localized progress label',
+              showPercentage: true,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('42%'), findsOneWidget);
+    });
   });
 }
 

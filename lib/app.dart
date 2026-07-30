@@ -380,10 +380,13 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
         locale: context.locale,
         routerConfig: router,
         builder: (context, child) {
-          final scale = fontScale.scaleFactor;
+          final textScaler = resolveAppTextScaler(
+            MediaQuery.textScalerOf(context),
+            fontScale,
+          );
           return MediaQuery(
             data: MediaQuery.of(context).copyWith(
-              textScaler: TextScaler.linear(scale),
+              textScaler: textScaler,
               disableAnimations: reduceAnimations,
             ),
             child: AndroidInAppUpdater(

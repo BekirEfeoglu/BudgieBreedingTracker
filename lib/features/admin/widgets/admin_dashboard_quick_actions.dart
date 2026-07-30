@@ -52,6 +52,14 @@ class DashboardQuickActionsSection extends StatelessWidget {
                 ),
                 DashboardQuickActionButton(
                   icon: AppIcon(
+                    AppIcons.community,
+                    semanticsLabel: 'admin.content_review'.tr(),
+                  ),
+                  label: 'admin.content_review'.tr(),
+                  onTap: () => context.push(AppRoutes.adminModeration),
+                ),
+                DashboardQuickActionButton(
+                  icon: AppIcon(
                     AppIcons.monitoring,
                     semanticsLabel: 'admin.go_to_monitoring'.tr(),
                   ),
@@ -122,32 +130,42 @@ class DashboardQuickActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconTheme(
-                data: IconThemeData(color: theme.colorScheme.primary, size: 18),
-                child: icon,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Flexible(
-                child: Text(
-                  label,
-                  style: theme.textTheme.labelMedium,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
+    return Semantics(
+      label: label,
+      button: true,
+      onTap: onTap,
+      excludeSemantics: true,
+      child: Card(
+        child: InkWell(
+          onTap: onTap,
+          excludeFromSemantics: true,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconTheme(
+                  data: IconThemeData(
+                    color: theme.colorScheme.primary,
+                    size: 18,
+                  ),
+                  child: icon,
                 ),
-              ),
-            ],
+                const SizedBox(width: AppSpacing.sm),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: theme.textTheme.labelMedium,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

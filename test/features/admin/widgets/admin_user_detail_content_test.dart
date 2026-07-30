@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsAction, Tristate;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -307,6 +309,27 @@ void main() {
         find.byKey(const Key('admin_premium_access_switch')),
       );
       expect(toggle.value, isFalse);
+    });
+
+    testWidgets('labels the premium access switch for screen readers', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        _wrap(
+          UserDetailSubscriptionSection(
+            detail: _premiumUserDetail,
+            onRevokePremium: () {},
+          ),
+        ),
+      );
+
+      final node = tester.getSemantics(
+        find.bySemanticsLabel(l10n('admin.premium_access')),
+      );
+      expect(node.flagsCollection.isToggled, Tristate.isTrue);
+      expect(node.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+      semantics.dispose();
     });
 
     testWidgets('triggers onGrantPremium when switch is enabled', (

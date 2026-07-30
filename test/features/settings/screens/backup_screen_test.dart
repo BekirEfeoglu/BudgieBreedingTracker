@@ -74,6 +74,37 @@ void main() {
       expect(find.text(l10n('backup.import_excel')), findsOneWidget);
     });
 
+    testWidgets('export and import tiles are actionable semantic buttons', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await tester.pumpWidget(createSubject());
+        await tester.pumpAndSettle();
+
+        for (final label in [
+          'backup.export_pdf',
+          'backup.export_excel',
+          'backup.import_excel',
+        ]) {
+          final semanticFinder = find.byWidgetPredicate(
+            (widget) =>
+                widget is Semantics &&
+                widget.properties.button == true &&
+                widget.properties.onTap != null &&
+                (widget.properties.label?.contains(label) ?? false),
+          );
+          expect(semanticFinder, findsOneWidget);
+          expect(
+            tester.getSemantics(semanticFinder).flagsCollection.isButton,
+            isTrue,
+          );
+        }
+      } finally {
+        semantics.dispose();
+      }
+    });
+
     testWidgets('shows never text when no export date', (tester) async {
       await tester.pumpWidget(createSubject());
       await tester.pumpAndSettle();

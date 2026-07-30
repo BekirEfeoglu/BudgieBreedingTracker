@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
@@ -73,6 +74,12 @@ class _AiPredictionsScreenState extends ConsumerState<AiPredictionsScreen>
 
     return Scaffold(
       appBar: AppBar(
+        leading: AppIconButton(
+          key: const Key('ai_predictions_back_button'),
+          onPressed: context.canPop() ? () => context.pop() : null,
+          icon: const Icon(LucideIcons.chevronLeft),
+          semanticLabel: 'common.back'.tr(),
+        ),
         title: Text('more.ai_predictions'.tr()),
         actions: [
           AppIconButton(

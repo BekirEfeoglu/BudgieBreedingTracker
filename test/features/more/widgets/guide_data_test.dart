@@ -3,6 +3,27 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/features/more/widgets/guide_data.dart';
 
 void main() {
+  group('guideUppercase', () {
+    test('applies Turkish dotted and dotless I rules', () {
+      expect(
+        guideUppercase('Kuş Yönetimi', languageCode: 'tr'),
+        'KUŞ YÖNETİMİ',
+      );
+      expect(
+        guideUppercase('Üreme Süreci', languageCode: 'tr'),
+        'ÜREME SÜRECİ',
+      );
+      expect(
+        guideUppercase('İlgili Konular', languageCode: 'tr'),
+        'İLGİLİ KONULAR',
+      );
+    });
+
+    test('uses default uppercasing for other locales', () {
+      expect(guideUppercase('User guide', languageCode: 'en'), 'USER GUIDE');
+    });
+  });
+
   group('GuideCategory', () {
     test('has exactly 6 values (all removed)', () {
       expect(GuideCategory.values.length, 6);

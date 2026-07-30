@@ -36,6 +36,12 @@ GoRouter _buildRouter({String initialLocation = '/admin/dashboard'}) {
         ),
       ),
       GoRoute(
+        path: '/admin/moderation',
+        pageBuilder: (_, __) => const NoTransitionPage(
+          child: Scaffold(body: Text('Moderation Screen')),
+        ),
+      ),
+      GoRoute(
         path: '/admin/database',
         pageBuilder: (_, __) => const NoTransitionPage(
           child: Scaffold(body: Text('Database Screen')),
@@ -98,6 +104,7 @@ Future<void> _pumpSidebar(
 
 const _adminMenuNavigationCases = [
   ('admin.users', 'Users Screen'),
+  ('admin.content_review', 'Moderation Screen'),
   ('admin.monitoring', 'Monitoring Screen'),
   ('admin.database', 'Database Screen'),
   ('admin.audit', 'Audit Screen'),
@@ -123,16 +130,41 @@ void main() {
       expect(find.text(l10n('admin.back_to_app')), findsOneWidget);
     });
 
-    testWidgets('shows all 8 menu item labels', (tester) async {
+    testWidgets('shows all 9 menu item labels', (tester) async {
       await _pumpSidebar(tester);
       expect(find.text(l10n('admin.dashboard')), findsOneWidget);
       expect(find.text(l10n('admin.users')), findsOneWidget);
+      expect(find.text(l10n('admin.content_review')), findsOneWidget);
       expect(find.text(l10n('admin.monitoring')), findsOneWidget);
       expect(find.text(l10n('admin.database')), findsOneWidget);
       expect(find.text(l10n('admin.audit')), findsOneWidget);
       expect(find.text(l10n('admin.security')), findsOneWidget);
       expect(find.text(l10n('admin.settings')), findsOneWidget);
       expect(find.text(l10n('admin.feedback_admin')), findsOneWidget);
+    });
+
+    testWidgets('menu entries are actionable semantic buttons', (tester) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await _pumpSidebar(tester);
+
+        for (final label in ['admin.dashboard', 'admin.users', 'admin.audit']) {
+          final semanticFinder = find.byWidgetPredicate(
+            (widget) =>
+                widget is Semantics &&
+                widget.properties.label == label &&
+                widget.properties.button == true &&
+                widget.properties.onTap != null,
+          );
+          expect(semanticFinder, findsOneWidget);
+          expect(
+            tester.getSemantics(semanticFinder).flagsCollection.isButton,
+            isTrue,
+          );
+        }
+      } finally {
+        semantics.dispose();
+      }
     });
 
     testWidgets('dashboard item is selected on dashboard route', (

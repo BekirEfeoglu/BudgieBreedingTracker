@@ -144,11 +144,12 @@ void main() {
       expect(find.text(l10n('common.update')), findsOneWidget);
     });
 
-    testWidgets('renders Form widget with autovalidate mode', (tester) async {
+    testWidgets('does not show validation before submit', (tester) async {
       await pumpBody(tester);
 
       final form = tester.widget<Form>(find.byType(Form));
-      expect(form.autovalidateMode, AutovalidateMode.onUserInteraction);
+      expect(form.autovalidateMode, AutovalidateMode.disabled);
+      expect(find.text(l10n('birds.species_required')), findsNothing);
     });
 
     testWidgets('submit button invokes onSubmit callback', (tester) async {

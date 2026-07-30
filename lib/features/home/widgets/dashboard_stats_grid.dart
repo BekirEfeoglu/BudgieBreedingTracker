@@ -44,88 +44,106 @@ class DashboardStatsGrid extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: Column(
-        children: [
-          // Row 1: Toplam Kuş + Aktif Üreme
-          SlideFadeAnimation(
-            delay: const Duration(milliseconds: 100),
-            child: _StatsRow(
-              left: StatCard(
-                label: 'home.total_birds'.tr(),
-                value: birdValue,
-                icon: const AppIcon(AppIcons.bird),
-                color: isPremium
-                    ? Theme.of(context).colorScheme.primary
-                    : _ratioColor(birdRatio),
-                onTap: () => context.push(AppRoutes.birds),
-              ),
-              right: StatCard(
-                label: 'home.active_breedings'.tr(),
-                value: breedingValue,
-                icon: const AppIcon(AppIcons.breedingActive),
-                color: isPremium
-                    ? AppColors.stageOngoing
-                    : _ratioColor(breedingRatio),
-                onTap: () => context.push(AppRoutes.breeding),
-              ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final textScale = MediaQuery.textScalerOf(
+            context,
+          ).scale(1).toDouble();
+          final useSingleColumn = textScale > 1.4 || constraints.maxWidth < 300;
+          final cards = [
+            StatCard(
+              label: 'home.total_birds'.tr(),
+              value: birdValue,
+              icon: const AppIcon(AppIcons.bird),
+              color: isPremium
+                  ? Theme.of(context).colorScheme.primary
+                  : _ratioColor(birdRatio),
+              onTap: () => context.push(AppRoutes.birds),
+              isHorizontal: useSingleColumn,
             ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          // Row 2: Toplam Yavru + Toplam Yumurta
-          SlideFadeAnimation(
-            delay: const Duration(milliseconds: 200),
-            child: _StatsRow(
-              left: StatCard(
-                label: 'home.total_chicks'.tr(),
-                value: '${stats.totalChicks}',
-                icon: const AppIcon(AppIcons.chick),
-                color: AppColors.budgieGreen,
-                onTap: () => context.push(AppRoutes.chicks),
-              ),
-              right: StatCard(
-                label: 'home.total_eggs'.tr(),
-                value: '${stats.totalEggs}',
-                icon: const AppIcon(AppIcons.egg),
-                color: AppColors.stageNearHatch,
-                onTap: () => context.push(AppRoutes.breeding),
-              ),
+            StatCard(
+              label: 'home.active_breedings'.tr(),
+              value: breedingValue,
+              icon: const AppIcon(AppIcons.breedingActive),
+              color: isPremium
+                  ? AppColors.stageOngoing
+                  : _ratioColor(breedingRatio),
+              onTap: () => context.push(AppRoutes.breeding),
+              isHorizontal: useSingleColumn,
             ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          // Row 3: Kuluçkadaki Yumurta — tam genişlik, yatay layout
-          SlideFadeAnimation(
-            delay: const Duration(milliseconds: 300),
-            child: SizedBox(
-              height: 86,
-              child: StatCard(
-                label: 'home.incubating_eggs'.tr(),
-                value: '${stats.incubatingEggs}',
-                icon: const AppIcon(AppIcons.incubating),
-                color: AppColors.stageOngoing,
-                onTap: () => context.push(AppRoutes.breeding),
-                isHorizontal: true,
-              ),
+            StatCard(
+              label: 'home.total_chicks'.tr(),
+              value: '${stats.totalChicks}',
+              icon: const AppIcon(AppIcons.chick),
+              color: AppColors.budgieGreen,
+              onTap: () => context.push(AppRoutes.chicks),
+              isHorizontal: useSingleColumn,
             ),
-          ),
-          // Free tier usage progress bar
-          if (!isPremium) ...[
-            const SizedBox(height: AppSpacing.md),
-            SlideFadeAnimation(
-              delay: const Duration(milliseconds: 400),
-              child: AppProgressBar(
-                value: birdRatio.clamp(0.0, 1.0),
-                color: _ratioColor(birdRatio),
-                label: 'premium.usage_birds'.tr(
-                  args: [
-                    '${stats.totalBirds}',
-                    '${AppConstants.freeTierMaxBirds}',
-                  ],
+            StatCard(
+              label: 'home.total_eggs'.tr(),
+              value: '${stats.totalEggs}',
+              icon: const AppIcon(AppIcons.egg),
+              color: AppColors.stageNearHatch,
+              onTap: () => context.push(AppRoutes.breeding),
+              isHorizontal: useSingleColumn,
+            ),
+            StatCard(
+              label: 'home.incubating_eggs'.tr(),
+              value: '${stats.incubatingEggs}',
+              icon: const AppIcon(AppIcons.incubating),
+              color: AppColors.stageOngoing,
+              onTap: () => context.push(AppRoutes.breeding),
+              isHorizontal: true,
+            ),
+          ];
+
+          return Column(
+            children: [
+              if (useSingleColumn)
+                for (var index = 0; index < cards.length; index++) ...[
+                  SlideFadeAnimation(
+                    delay: Duration(milliseconds: (index + 1) * 100),
+                    child: cards[index],
+                  ),
+                  if (index < cards.length - 1)
+                    const SizedBox(height: AppSpacing.md),
+                ]
+              else ...[
+                SlideFadeAnimation(
+                  delay: const Duration(milliseconds: 100),
+                  child: _StatsRow(left: cards[0], right: cards[1]),
                 ),
-                showPercentage: true,
-              ),
-            ),
-          ],
-        ],
+                const SizedBox(height: AppSpacing.md),
+                SlideFadeAnimation(
+                  delay: const Duration(milliseconds: 200),
+                  child: _StatsRow(left: cards[2], right: cards[3]),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                SlideFadeAnimation(
+                  delay: const Duration(milliseconds: 300),
+                  child: SizedBox(height: 86, child: cards[4]),
+                ),
+              ],
+              if (!isPremium) ...[
+                const SizedBox(height: AppSpacing.md),
+                SlideFadeAnimation(
+                  delay: const Duration(milliseconds: 600),
+                  child: AppProgressBar(
+                    value: birdRatio.clamp(0.0, 1.0),
+                    color: _ratioColor(birdRatio),
+                    label: 'premium.usage_birds'.tr(
+                      args: [
+                        '${stats.totalBirds}',
+                        '${AppConstants.freeTierMaxBirds}',
+                      ],
+                    ),
+                    showPercentage: true,
+                  ),
+                ),
+              ],
+            ],
+          );
+        },
       ),
     );
   }

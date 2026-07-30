@@ -4,6 +4,14 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-29] admin | Build adoption telemetry added
+
+Presence session starts now record the installed semantic version and build,
+while metadata failures remain fail-open. Added an admin-gated 30-day
+user-platform rollup and localized Monitoring cards that expose both adoption
+share and legacy-client coverage. Documented the coverage gate for rollout
+decisions; production deployment remains a separate release operation.
+
 ## [2026-07-27] ci | Dependabot open PR caps tightened
 
 Reduced monthly Dependabot concurrency from 10 to 5 for `pub` and from 5 to 3

@@ -140,6 +140,7 @@ class HomeScreen extends ConsumerWidget {
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             const SliverAppBar(
+              pinned: true,
               floating: true,
               snap: true,
               title: AppBrandTitle(size: AppBrandSize.small),

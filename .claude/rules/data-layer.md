@@ -29,9 +29,9 @@ import 'package:budgie/data/local/database/tables/birds_table.dart';
 ## Supabase (Remote)
 - **Remote sources**: `lib/data/remote/api/` (27 entity + base + 2 caches + providers)
 - **Storage**: `lib/data/remote/storage/storage_service.dart`
-- **Constants**: `SupabaseConstants` class (202 table/column constants)
+- **Constants**: `SupabaseConstants` class (204 table/column constants)
 - **Edge Functions**: 12 in `supabase/functions/`
-- **Migrations**: 219 SQL files in `supabase/migrations/`
+- **Migrations**: 220 SQL files in `supabase/migrations/`
 - Always use `SupabaseConstants` for table/column names — never hardcode
 - `verify_rules.py` § Supabase Tables (`rules-sync`) rejects a `*Table` constant that no migration creates, and a `*Col<Name>` constant no migration declares — both otherwise surface as a Postgres error at query time, not at build time. Column names are not table-scoped (the same `user_id` constant is reused everywhere), so the column check answers "does this exist anywhere" — enough for the typo class
 - Use `.toSupabase()` extension — never send `created_at`/`updated_at` manually
@@ -126,6 +126,13 @@ await db.batch((batch) {
   one pending metadata row must remain. Payload-less v28 history and
   corrupt/unsupported payloads remain unresolved and must surface a localized
   fallback without mutating entity data.
+- "Keep remote" MUST delete only the unresolved conflict keys from
+  `sync_metadata` and mark those history rows resolved in one Drift
+  transaction. It must retain the resolved history for audit and must not
+  delete unrelated pending records. The resolved history remains
+  `ConflictType.serverWins`; "Retry local" changes the resolved row to
+  `ConflictType.localOverwritten` so UI status labels do not conflate the two
+  choices.
 - A retry is UI-successful only when `fullSync` succeeds and batched
   `getByRecords` checks find no metadata for every restored `(table, record)`
   key. Remaining metadata is a partial/unverified result; reload conflict state

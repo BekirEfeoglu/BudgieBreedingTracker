@@ -1,4 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 
 /// Shows a modal bottom sheet with consistent safe-area + keyboard handling.
 ///
@@ -15,6 +19,7 @@ Future<T?> showAppBottomSheet<T>({
   required WidgetBuilder builder,
   bool isScrollControlled = true,
   bool isDismissible = true,
+  bool showCloseButton = true,
   bool enableDrag = true,
   Color? backgroundColor,
   ShapeBorder? shape,
@@ -24,6 +29,7 @@ Future<T?> showAppBottomSheet<T>({
   Clip? clipBehavior,
   double? elevation,
   Color? barrierColor,
+  String? barrierLabel,
 }) {
   return showModalBottomSheet<T>(
     context: context,
@@ -31,15 +37,20 @@ Future<T?> showAppBottomSheet<T>({
     isDismissible: isDismissible,
     enableDrag: enableDrag,
     backgroundColor: backgroundColor ?? Theme.of(context).colorScheme.surface,
-    shape: shape ?? const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)), // AppSpacing.radiusXl
-    ),
+    shape:
+        shape ??
+        const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(24.0),
+          ), // AppSpacing.radiusXl
+        ),
     constraints: constraints,
     useRootNavigator: useRootNavigator,
     routeSettings: routeSettings,
     clipBehavior: clipBehavior,
     elevation: elevation,
     barrierColor: barrierColor,
+    barrierLabel: barrierLabel ?? 'common.close'.tr(),
     builder: (ctx) => Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
       child: SafeArea(
@@ -47,13 +58,33 @@ Future<T?> showAppBottomSheet<T>({
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Theme.of(ctx).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(2),
+            SizedBox(
+              height: 48,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  ExcludeSemantics(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Theme.of(
+                          ctx,
+                        ).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  if (isDismissible && showCloseButton)
+                    PositionedDirectional(
+                      end: 4,
+                      child: AppIconButton(
+                        icon: const Icon(LucideIcons.x),
+                        semanticLabel: 'common.close'.tr(),
+                        onPressed: () => Navigator.of(ctx).pop(),
+                      ),
+                    ),
+                ],
               ),
             ),
             Flexible(child: builder(ctx)),

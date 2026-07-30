@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
@@ -38,40 +39,58 @@ class BreedingCard extends StatelessWidget {
     final stageColor = isComplete
         ? IncubationCalculator.getCompletedStageColor()
         : IncubationCalculator.getStageColor(daysElapsed, totalDays: totalDays);
+    final handleTap =
+        onTap ??
+        () =>
+            context.push(AppRoutes.breedingDetail.replaceFirst(':id', pair.id));
+    final maleName = pair.maleId == null ? null : birdsMap?[pair.maleId]?.name;
+    final femaleName = pair.femaleId == null
+        ? null
+        : birdsMap?[pair.femaleId]?.name;
+    final semanticLabel = [
+      if (maleName != null) maleName,
+      if (femaleName != null) femaleName,
+      if (maleName == null && femaleName == null) 'nav.breeding'.tr(),
+      if (pair.cageNumber case final cage? when cage.isNotEmpty)
+        '${'breeding.cage_label'.tr()}: $cage',
+    ].join(', ');
 
-    return Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.sm,
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap:
-            onTap ??
-            () => context.push(
-              AppRoutes.breedingDetail.replaceFirst(':id', pair.id),
+    return Semantics(
+      label: semanticLabel,
+      button: true,
+      onTap: handleTap,
+      excludeSemantics: true,
+      child: Card(
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.sm,
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: handleTap,
+          excludeFromSemantics: true,
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(left: BorderSide(color: stageColor, width: 4)),
             ),
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border(left: BorderSide(color: stageColor, width: 4)),
-          ),
-          child: Padding(
-            padding: AppSpacing.cardPadding,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                BreedingCardHeader(pair: pair, birdsMap: birdsMap),
-                if (incubation != null) ...[
+            child: Padding(
+              padding: AppSpacing.cardPadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  BreedingCardHeader(pair: pair, birdsMap: birdsMap),
+                  if (incubation != null) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    BreedingCardProgress(incubation: incubation!),
+                  ],
+                  if (eggs.isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    EggSummaryRow(eggs: eggs),
+                  ],
                   const SizedBox(height: AppSpacing.md),
-                  BreedingCardProgress(incubation: incubation!),
+                  BreedingCardFooter(pair: pair, incubation: incubation),
                 ],
-                if (eggs.isNotEmpty) ...[
-                  const SizedBox(height: AppSpacing.md),
-                  EggSummaryRow(eggs: eggs),
-                ],
-                const SizedBox(height: AppSpacing.md),
-                BreedingCardFooter(pair: pair, incubation: incubation),
-              ],
+              ),
             ),
           ),
         ),

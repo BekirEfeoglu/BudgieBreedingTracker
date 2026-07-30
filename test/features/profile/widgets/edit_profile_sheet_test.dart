@@ -89,15 +89,25 @@ void main() {
       expect(find.byType(ProfileForm), findsOneWidget);
     });
 
-    testWidgets('shows drag handle container at top', (tester) async {
+    testWidgets('does not render a duplicate internal drag handle', (
+      tester,
+    ) async {
       await pumpLocalizedApp(
         tester,
         _buildSubject(profile: _fakeProfile(), mockRepo: mockRepo),
       );
       _consumeOverflowExceptions(tester);
 
-      // Just verify sheet renders with multiple widgets
-      expect(find.byType(Column), findsWidgets);
+      final internalDragHandle = find.byWidgetPredicate((widget) {
+        if (widget is! Container) return false;
+        final constraints = widget.constraints;
+        return constraints?.minWidth == 40 &&
+            constraints?.maxWidth == 40 &&
+            constraints?.minHeight == 4 &&
+            constraints?.maxHeight == 4;
+      });
+
+      expect(internalDragHandle, findsNothing);
     });
 
     testWidgets('populates initialFullName in the text field', (tester) async {

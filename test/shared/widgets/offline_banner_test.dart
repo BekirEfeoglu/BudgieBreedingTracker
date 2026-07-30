@@ -137,6 +137,22 @@ void main() {
       expect(find.text(l10n('sync.conflict_banner_title')), findsOneWidget);
     });
 
+    testWidgets('reserves space so the banner cannot cover app content', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        subject(status: SyncDisplayStatus.synced, conflictCount: 3),
+      );
+      await tester.pump();
+
+      final bannerRect = tester.getRect(
+        find.text(l10n('sync.conflict_banner_title')),
+      );
+      final contentRect = tester.getRect(find.text('content'));
+
+      expect(contentRect.top, greaterThanOrEqualTo(bannerRect.bottom));
+    });
+
     testWidgets('hides conflict banner when conflictCount is zero', (
       tester,
     ) async {

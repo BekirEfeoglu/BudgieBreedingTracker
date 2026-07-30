@@ -31,6 +31,7 @@ extension _BreedingFormBody on _BreedingFormScreenState {
                 BirdSelectorField(
                   label:
                       '${'breeding.male_bird'.tr()} (${availableMaleBirds.length})',
+                  validationLabel: 'breeding.male_bird'.tr(),
                   birds: availableMaleBirds,
                   selectedId: _maleId,
                   onChanged: (id) => setState(() {
@@ -55,6 +56,7 @@ extension _BreedingFormBody on _BreedingFormScreenState {
                 BirdSelectorField(
                   label:
                       '${'breeding.female_bird'.tr()} (${availableFemaleBirds.length})',
+                  validationLabel: 'breeding.female_bird'.tr(),
                   birds: availableFemaleBirds,
                   selectedId: _femaleId,
                   onChanged: (id) => setState(() {

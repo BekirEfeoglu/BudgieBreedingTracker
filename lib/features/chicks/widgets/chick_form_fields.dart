@@ -68,7 +68,7 @@ class ChickFormFields extends StatelessWidget {
 
         // Hatch Date
         DatePickerField(
-          label: 'chicks.hatch_date_required'.tr(),
+          label: 'chicks.hatch_date'.tr(),
           value: hatchDate,
           onChanged: onHatchDateChanged,
           firstDate: DateTime(2020),

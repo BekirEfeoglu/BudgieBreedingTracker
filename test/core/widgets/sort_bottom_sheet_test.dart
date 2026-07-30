@@ -127,6 +127,39 @@ void main() {
       expect(find.text('common.sort'), findsOneWidget);
     });
 
+    testWidgets('shared sheet exposes a 48dp close button that dismisses it', (
+      tester,
+    ) async {
+      await pumpLocalizedWidget(
+        tester,
+        Builder(
+          builder: (context) => ElevatedButton(
+            onPressed: () => showSortBottomSheet<_TestSort>(
+              context: context,
+              values: _TestSort.values,
+              current: _TestSort.newest,
+              labelOf: (value) => value.label,
+              onSelected: (_) {},
+            ),
+            child: const Text('Open'),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      final closeButton = find.byTooltip('common.close');
+      expect(closeButton, findsOneWidget);
+      final size = tester.getSize(closeButton);
+      expect(size.width, greaterThanOrEqualTo(48));
+      expect(size.height, greaterThanOrEqualTo(48));
+
+      await tester.tap(closeButton);
+      await tester.pumpAndSettle();
+      expect(find.text('Newest'), findsNothing);
+    });
+
     testWidgets('scrolls instead of overflowing on small screens', (
       tester,
     ) async {

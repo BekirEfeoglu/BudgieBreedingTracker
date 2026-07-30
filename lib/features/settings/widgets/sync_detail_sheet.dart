@@ -206,8 +206,13 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
   });
 
   Future<void> _keepRemote() => _run(() async {
-    await clearConflictHistory(ref, widget.userId);
-    SyncTelemetry.event('conflict_resolved', data: {'strategy': 'remote'});
+    final recovery = ref.read(syncConflictRecoveryServiceProvider);
+    final resolved = await recovery.keepRemote(widget.userId);
+    await ref.read(conflictHistoryProvider.notifier).reload();
+    SyncTelemetry.event(
+      'conflict_resolved',
+      data: {'strategy': 'remote', 'resolved': resolved},
+    );
     if (mounted) Navigator.of(context).pop();
   });
 
@@ -280,17 +285,17 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
           ),
         ),
         if (widget.hasConflicts) ...[
-          const SizedBox(height: AppSpacing.sm),
-          OutlinedButton.icon(
-            onPressed: _busy ? null : _keepRemote,
-            icon: const Icon(LucideIcons.cloud, size: 18),
-            label: Text('sync.keep_remote_action'.tr()),
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size.fromHeight(AppSpacing.touchTargetMd),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
           if (widget.hasUnresolvedConflicts) ...[
+            const SizedBox(height: AppSpacing.sm),
+            OutlinedButton.icon(
+              onPressed: _busy ? null : _keepRemote,
+              icon: const Icon(LucideIcons.cloud, size: 18),
+              label: Text('sync.keep_remote_action'.tr()),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(AppSpacing.touchTargetMd),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
             OutlinedButton.icon(
               onPressed: _busy ? null : _retryLocal,
               icon: const Icon(LucideIcons.uploadCloud, size: 18),

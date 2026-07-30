@@ -36,25 +36,56 @@ class AppProgressBar extends StatelessWidget {
         if (label != null || showPercentage)
           Padding(
             padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                if (label != null)
-                  Text(
-                    label!,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                if (showPercentage)
-                  Text(
-                    '${(clampedValue * 100).round()}%',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: effectiveColor,
-                    ),
-                  ),
-              ],
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final textScale = MediaQuery.textScalerOf(
+                  context,
+                ).scale(1).toDouble();
+                final useStackedHeader =
+                    textScale > 1.4 || constraints.maxWidth < 240;
+                final labelText = label == null
+                    ? null
+                    : Text(
+                        label!,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      );
+                final percentageText = !showPercentage
+                    ? null
+                    : Text(
+                        '${(clampedValue * 100).round()}%',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: effectiveColor,
+                        ),
+                      );
+
+                if (useStackedHeader) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (labelText != null) labelText,
+                      if (labelText != null && percentageText != null)
+                        const SizedBox(height: AppSpacing.xs),
+                      if (percentageText != null)
+                        Align(
+                          alignment: AlignmentDirectional.centerEnd,
+                          child: percentageText,
+                        ),
+                    ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    if (labelText != null) Expanded(child: labelText),
+                    if (labelText != null && percentageText != null)
+                      const SizedBox(width: AppSpacing.sm),
+                    if (percentageText != null) percentageText,
+                  ],
+                );
+              },
             ),
           ),
         LayoutBuilder(

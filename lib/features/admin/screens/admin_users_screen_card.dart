@@ -28,199 +28,238 @@ class _UserCard extends StatelessWidget {
     final showEmail = displayName.toLowerCase() != user.email.toLowerCase();
     final isProtected = _isProtectedRole(user.role);
     final lastActiveAt = user.lastActiveAt;
+    final semanticLabel = [
+      displayName,
+      if (showEmail) user.email,
+      if (user.isOnline) 'admin.online'.tr(),
+      if (!user.isActive) 'admin.inactive'.tr(),
+      if (user.isPremium && !isProtected) 'admin.role_premium'.tr(),
+      if (user.role?.toLowerCase().trim() == 'admin') 'admin.role_admin'.tr(),
+      if (user.role?.toLowerCase().trim() == 'founder')
+        'admin.role_founder'.tr(),
+    ].join(', ');
+
+    void handleTap() {
+      if (isSelectionMode) {
+        onSelectionToggle?.call();
+        return;
+      }
+      context.push(AppRoutes.adminUserDetail.replaceFirst(':userId', user.id));
+    }
 
     return Card(
       color: isSelected
           ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
           : null,
-      child: InkWell(
-        onTap: isSelectionMode
-            ? onSelectionToggle
-            : () => context.push(
-                AppRoutes.adminUserDetail.replaceFirst(':userId', user.id),
-              ),
-        onLongPress: onSelectionToggle,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        child: Padding(
-          padding: AppSpacing.cardPadding,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (isSelectionMode) ...[
-                Checkbox(
-                  value: isSelected,
-                  onChanged: (_) => onSelectionToggle?.call(),
-                  visualDensity: VisualDensity.compact,
-                ),
-                const SizedBox(width: AppSpacing.xs),
-              ],
-              CircleAvatar(
-                radius: 22,
-                backgroundColor: theme.colorScheme.primaryContainer,
-                backgroundImage: hasAvatar
-                    ? CachedNetworkImageProvider(
-                        avatarUrl,
-                        maxWidth: 88,
-                        maxHeight: 88,
-                      )
-                    : null,
-                child: !hasAvatar
-                    ? AppIcon(
-                        AppIcons.users,
-                        size: 20,
-                        color: theme.colorScheme.onPrimaryContainer,
-                      )
-                    : null,
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            displayName,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Semantics(
+              label: semanticLabel,
+              button: true,
+              selected: isSelectionMode ? isSelected : null,
+              onTap: handleTap,
+              onLongPress: onSelectionToggle,
+              excludeSemantics: true,
+              child: InkWell(
+                onTap: handleTap,
+                onLongPress: onSelectionToggle,
+                excludeFromSemantics: true,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                child: Padding(
+                  padding: AppSpacing.cardPadding,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (isSelectionMode) ...[
+                        Checkbox(
+                          value: isSelected,
+                          onChanged: (_) => onSelectionToggle?.call(),
+                          visualDensity: VisualDensity.compact,
                         ),
-                        if (user.isOnline) ...[
-                          const SizedBox(width: AppSpacing.xs),
-                          const _OnlineBadge(),
-                        ],
-                        if (user.isPremium || isProtected) ...[
-                          const SizedBox(width: AppSpacing.xs),
-                          _PremiumBadge(
-                            role: user.role,
-                            isPremium: user.isPremium,
-                          ),
-                        ],
-                        if (!user.isActive) ...[
-                          const SizedBox(width: AppSpacing.xs),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.sm,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.error.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(
-                                AppSpacing.radiusFull,
-                              ),
-                            ),
-                            child: Text(
-                              'admin.inactive'.tr(),
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: AppColors.error,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
+                        const SizedBox(width: AppSpacing.xs),
                       ],
-                    ),
-                    if (showEmail) ...[
-                      const SizedBox(height: AppSpacing.xs / 2),
-                      Text(
-                        user.email,
-                        style: theme.textTheme.bodySmall,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      CircleAvatar(
+                        radius: 22,
+                        backgroundColor: theme.colorScheme.primaryContainer,
+                        backgroundImage: hasAvatar
+                            ? CachedNetworkImageProvider(
+                                avatarUrl,
+                                maxWidth: 88,
+                                maxHeight: 88,
+                              )
+                            : null,
+                        child: !hasAvatar
+                            ? AppIcon(
+                                AppIcons.users,
+                                size: 20,
+                                color: theme.colorScheme.onPrimaryContainer,
+                              )
+                            : null,
                       ),
-                    ],
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      '${'admin.joined'.tr()}: ${_formatDate(context, user.createdAt)}',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (lastActiveAt != null) ...[
-                      const SizedBox(height: AppSpacing.xs / 2),
-                      Text(
-                        '${'admin.last_active'.tr()}: ${_formatRelativeTime(lastActiveAt)}',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: user.isOnline
-                              ? AppColors.success
-                              : theme.colorScheme.onSurfaceVariant,
-                          fontWeight: user.isOnline
-                              ? FontWeight.w700
-                              : FontWeight.w400,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              if (!isSelectionMode)
-                PopupMenuButton<String>(
-                  padding: EdgeInsets.zero,
-                  iconSize: 20,
-                  icon: Icon(
-                    LucideIcons.moreVertical,
-                    size: 18,
-                    color: theme.colorScheme.outline,
-                  ),
-                  onSelected: (action) => onQuickAction?.call(action, user.id),
-                  itemBuilder: (_) => [
-                    PopupMenuItem(
-                      value: user.isActive ? 'deactivate' : 'activate',
-                      child: Row(
-                        children: [
-                          Icon(
-                            user.isActive
-                                ? LucideIcons.userMinus
-                                : LucideIcons.userCheck,
-                            size: 16,
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Text(
-                            user.isActive
-                                ? 'admin.deactivate_user'.tr()
-                                : 'admin.activate_user'.tr(),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (!isProtected) ...[
-                      PopupMenuItem(
-                        value: user.isPremium
-                            ? 'revoke_premium'
-                            : 'grant_premium',
-                        child: Row(
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            AppIcon(
-                              AppIcons.premium,
-                              size: 16,
-                              color: user.isPremium
-                                  ? AppColors.error
-                                  : AppColors.accent,
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    displayName,
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (user.isOnline) ...[
+                                  const SizedBox(width: AppSpacing.xs),
+                                  const _OnlineBadge(),
+                                ],
+                                if (user.isPremium || isProtected) ...[
+                                  const SizedBox(width: AppSpacing.xs),
+                                  _PremiumBadge(
+                                    role: user.role,
+                                    isPremium: user.isPremium,
+                                  ),
+                                ],
+                                if (!user.isActive) ...[
+                                  const SizedBox(width: AppSpacing.xs),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: AppSpacing.sm,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.error.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(
+                                        AppSpacing.radiusFull,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'admin.inactive'.tr(),
+                                      style: theme.textTheme.labelSmall
+                                          ?.copyWith(
+                                            color: AppColors.error,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
-                            const SizedBox(width: AppSpacing.sm),
+                            if (showEmail) ...[
+                              const SizedBox(height: AppSpacing.xs / 2),
+                              Text(
+                                user.email,
+                                style: theme.textTheme.bodySmall,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                            const SizedBox(height: AppSpacing.xs),
                             Text(
-                              user.isPremium
-                                  ? 'admin.revoke_premium'.tr()
-                                  : 'admin.grant_premium'.tr(),
+                              '${'admin.joined'.tr()}: ${_formatDate(context, user.createdAt)}',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
+                            if (lastActiveAt != null) ...[
+                              const SizedBox(height: AppSpacing.xs / 2),
+                              Text(
+                                '${'admin.last_active'.tr()}: ${_formatRelativeTime(lastActiveAt)}',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: user.isOnline
+                                      ? AppColors.success
+                                      : theme.colorScheme.onSurfaceVariant,
+                                  fontWeight: user.isOnline
+                                      ? FontWeight.w700
+                                      : FontWeight.w400,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ],
                         ),
                       ),
                     ],
-                  ],
+                  ),
                 ),
-            ],
+              ),
+            ),
           ),
-        ),
+          if (!isSelectionMode)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(
+                top: AppSpacing.sm,
+                end: AppSpacing.xs,
+              ),
+              child: PopupMenuButton<String>(
+                tooltip: 'common.more'.tr(),
+                padding: EdgeInsets.zero,
+                iconSize: 20,
+                icon: Icon(
+                  LucideIcons.moreVertical,
+                  size: 18,
+                  color: theme.colorScheme.outline,
+                ),
+                onSelected: (action) => onQuickAction?.call(action, user.id),
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    value: user.isActive ? 'deactivate' : 'activate',
+                    child: Row(
+                      children: [
+                        Icon(
+                          user.isActive
+                              ? LucideIcons.userMinus
+                              : LucideIcons.userCheck,
+                          size: 16,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Text(
+                          user.isActive
+                              ? 'admin.deactivate_user'.tr()
+                              : 'admin.activate_user'.tr(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (!isProtected) ...[
+                    PopupMenuItem(
+                      value: user.isPremium
+                          ? 'revoke_premium'
+                          : 'grant_premium',
+                      child: Row(
+                        children: [
+                          AppIcon(
+                            AppIcons.premium,
+                            size: 16,
+                            color: user.isPremium
+                                ? AppColors.error
+                                : AppColors.accent,
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Text(
+                            user.isPremium
+                                ? 'admin.revoke_premium'.tr()
+                                : 'admin.grant_premium'.tr(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }

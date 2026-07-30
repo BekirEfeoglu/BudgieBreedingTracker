@@ -78,6 +78,21 @@ void main() {
       expect(find.byType(TextFormField), findsAtLeastNWidgets(1));
     });
 
+    testWidgets('explicit close button dismisses the modal', (tester) async {
+      await tester.pumpWidget(buildWithModal());
+      await tester.tap(find.text('Open Form'));
+      await tester.pumpAndSettle();
+
+      final closeButton = find.byKey(const Key('event_form_close_button'));
+      expect(closeButton, findsOneWidget);
+      expect(find.byTooltip('common.close'), findsOneWidget);
+
+      await tester.tap(closeButton);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BottomSheet), findsNothing);
+    });
+
     testWidgets('shows event type dropdown in form', (tester) async {
       await tester.pumpWidget(buildWithModal());
       await tester.tap(find.text('Open Form'));

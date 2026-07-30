@@ -42,152 +42,175 @@ class ChickCard extends ConsumerWidget {
         : !resolveParents
         ? const AsyncData<ChickParentsInfo?>(null)
         : ref.watch(chickParentsProvider(chick.eggId));
+    final handleTap =
+        onTap ?? () => context.push('${AppRoutes.chicks}/${chick.id}');
+    final parentInfo = parentsAsync.asData?.value;
+    final semanticLabel = [
+      chickDisplayName(chick),
+      if (chick.ringNumber case final ring? when ring.isNotEmpty) ring,
+      if (age != null) formatChickAge(age, short: true),
+      chickHealthStatusLabel(chick.healthStatus),
+      developmentStageLabel(stage),
+      if (parentInfo?.cageNumber case final cage? when cage.isNotEmpty)
+        '${'breeding.cage_label'.tr()}: $cage',
+      if (parentInfo?.maleName case final male? when male.isNotEmpty) male,
+      if (parentInfo?.femaleName case final female? when female.isNotEmpty)
+        female,
+    ].join(', ');
 
-    return Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.xs,
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap ?? () => context.push('${AppRoutes.chicks}/${chick.id}'),
-        child: Padding(
-          padding: AppSpacing.cardPadding,
-          child: Row(
-            children: [
-              Hero(
-                tag: 'chick_${chick.id}',
-                child: CircleAvatar(
-                  radius: 24,
-                  backgroundColor: stageColor.withValues(alpha: 0.1),
-                  child: developmentStageIconWidget(
-                    stage,
-                    size: 28,
-                    color: stageColor,
+    return Semantics(
+      label: semanticLabel,
+      button: true,
+      onTap: handleTap,
+      excludeSemantics: true,
+      child: Card(
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.xs,
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: handleTap,
+          excludeFromSemantics: true,
+          child: Padding(
+            padding: AppSpacing.cardPadding,
+            child: Row(
+              children: [
+                Hero(
+                  tag: 'chick_${chick.id}',
+                  child: CircleAvatar(
+                    radius: 24,
+                    backgroundColor: stageColor.withValues(alpha: 0.1),
+                    child: developmentStageIconWidget(
+                      stage,
+                      size: 28,
+                      color: stageColor,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      chickDisplayName(chick),
-                      style: theme.textTheme.titleMedium,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: AppSpacing.xxs),
-                    Row(
-                      children: [
-                        if (chick.ringNumber != null) ...[
-                          AppIcon(
-                            AppIcons.ring,
-                            size: 16,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: AppSpacing.xxs),
-                          Flexible(
-                            child: Text(
-                              chick.ringNumber!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        chickDisplayName(chick),
+                        style: theme.textTheme.titleMedium,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: AppSpacing.xxs),
+                      Row(
+                        children: [
+                          if (chick.ringNumber != null) ...[
+                            AppIcon(
+                              AppIcons.ring,
+                              size: 16,
+                              color: theme.colorScheme.onSurfaceVariant,
                             ),
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                        ],
-                        if (age != null)
-                          Flexible(
-                            child: Text(
-                              formatChickAge(age, short: true),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    // Parent info
-                    parentsAsync.when(
-                      loading: () => const SizedBox.shrink(),
-                      error: (_, __) => const SizedBox.shrink(),
-                      data: (parents) {
-                        if (parents == null) return const SizedBox.shrink();
-                        final maleName =
-                            parents.maleName ?? 'chicks.unknown_gender'.tr();
-                        final femaleName =
-                            parents.femaleName ?? 'chicks.unknown_gender'.tr();
-                        final cageNumber = parents.cageNumber;
-                        return Padding(
-                          padding: const EdgeInsets.only(top: AppSpacing.xxs),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (cageNumber != null &&
-                                  cageNumber.isNotEmpty) ...[
-                                Text(
-                                  '${'breeding.cage_label'.tr()}: $cageNumber',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
+                            const SizedBox(width: AppSpacing.xxs),
+                            Flexible(
+                              child: Text(
+                                chick.ringNumber!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
                                 ),
-                                const SizedBox(height: AppSpacing.xxs),
-                              ],
-                              LayoutBuilder(
-                                builder: (context, constraints) {
-                                  return Wrap(
-                                    spacing: AppSpacing.sm,
-                                    runSpacing: AppSpacing.xxs,
-                                    children: [
-                                      _ParentNameLabel(
-                                        icon: const AppIcon(
-                                          AppIcons.male,
-                                          size: 14,
-                                          color: AppColors.genderMale,
-                                        ),
-                                        label: maleName,
-                                        color: AppColors.genderMale,
-                                        maxWidth: constraints.maxWidth,
-                                      ),
-                                      _ParentNameLabel(
-                                        icon: const AppIcon(
-                                          AppIcons.female,
-                                          size: 14,
-                                          color: AppColors.genderFemale,
-                                        ),
-                                        label: femaleName,
-                                        color: AppColors.genderFemale,
-                                        maxWidth: constraints.maxWidth,
-                                      ),
-                                    ],
-                                  );
-                                },
                               ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.xs,
-                      children: [
-                        ChickHealthBadge(status: chick.healthStatus),
-                        DevelopmentStageBadge(stage: stage),
-                      ],
-                    ),
-                  ],
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                          ],
+                          if (age != null)
+                            Flexible(
+                              child: Text(
+                                formatChickAge(age, short: true),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      // Parent info
+                      parentsAsync.when(
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, __) => const SizedBox.shrink(),
+                        data: (parents) {
+                          if (parents == null) return const SizedBox.shrink();
+                          final maleName =
+                              parents.maleName ?? 'chicks.unknown_gender'.tr();
+                          final femaleName =
+                              parents.femaleName ??
+                              'chicks.unknown_gender'.tr();
+                          final cageNumber = parents.cageNumber;
+                          return Padding(
+                            padding: const EdgeInsets.only(top: AppSpacing.xxs),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (cageNumber != null &&
+                                    cageNumber.isNotEmpty) ...[
+                                  Text(
+                                    '${'breeding.cage_label'.tr()}: $cageNumber',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                  const SizedBox(height: AppSpacing.xxs),
+                                ],
+                                LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    return Wrap(
+                                      spacing: AppSpacing.sm,
+                                      runSpacing: AppSpacing.xxs,
+                                      children: [
+                                        _ParentNameLabel(
+                                          icon: const AppIcon(
+                                            AppIcons.male,
+                                            size: 14,
+                                            color: AppColors.genderMale,
+                                          ),
+                                          label: maleName,
+                                          color: AppColors.genderMale,
+                                          maxWidth: constraints.maxWidth,
+                                        ),
+                                        _ParentNameLabel(
+                                          icon: const AppIcon(
+                                            AppIcons.female,
+                                            size: 14,
+                                            color: AppColors.genderFemale,
+                                          ),
+                                          label: femaleName,
+                                          color: AppColors.genderFemale,
+                                          maxWidth: constraints.maxWidth,
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Wrap(
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.xs,
+                        children: [
+                          ChickHealthBadge(status: chick.healthStatus),
+                          DevelopmentStageBadge(stage: stage),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/sync_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart'
     show SyncErrorDetail;
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
@@ -152,6 +153,7 @@ void main() {
               description: 'Resolved local bird',
               hasLocalSnapshot: true,
               resolvedAt: DateTime.now(),
+              conflictType: ConflictType.localOverwritten,
             ),
           ],
         ),
@@ -161,8 +163,72 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text(l10n('sync.retry_local_action')), findsNothing);
+      expect(find.text(l10n('sync.keep_remote_action')), findsNothing);
       expect(find.text(l10n('sync.conflict_local_restored')), findsOneWidget);
     });
+
+    testWidgets('labels a remotely resolved conflict as server preserved', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
+        buildSubject(
+          conflicts: [
+            SyncConflict(
+              table: 'birds',
+              recordId: 'r-1',
+              detectedAt: DateTime.now(),
+              description: 'Resolved remote bird',
+              hasLocalSnapshot: true,
+              resolvedAt: DateTime.now(),
+              conflictType: ConflictType.serverWins,
+            ),
+          ],
+        ),
+      );
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('sync.keep_remote_action')), findsNothing);
+      expect(find.text(l10n('sync.retry_local_action')), findsNothing);
+      expect(find.text(l10n('sync.conflict_server_wins')), findsOneWidget);
+    });
+
+    testWidgets(
+      'keep remote resolves pending markers and reloads conflict history',
+      (tester) async {
+        final recovery = _MockConflictRecoveryService();
+        final notifier = _FakeConflictNotifier([
+          SyncConflict(
+            table: 'birds',
+            recordId: 'r-1',
+            detectedAt: DateTime.utc(2026, 7, 17),
+            description: 'Server overwrote local bird',
+            hasLocalSnapshot: true,
+          ),
+        ]);
+        when(() => recovery.keepRemote('user-1')).thenAnswer((_) async => 1);
+
+        await pumpLocalizedApp(
+          tester,
+          buildSubject(
+            conflicts: notifier.initial,
+            recoveryService: recovery,
+            conflictNotifier: notifier,
+          ),
+        );
+        await tester.tap(find.text('Open'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text(l10n('sync.keep_remote_action')));
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n('sync.error_details_title')), findsNothing);
+        expect(notifier.reloadCount, 1);
+        verify(() => recovery.keepRemote('user-1')).called(1);
+      },
+    );
 
     testWidgets(
       'keeps sheet open when sync reports success but restored metadata remains',

@@ -96,63 +96,72 @@ class _ExportTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Card(
-      child: InkWell(
-        onTap: isLoading ? null : onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        child: Padding(
-          padding: AppSpacing.cardPadding,
-          child: Row(
-            children: [
-              Container(
-                width: AppSpacing.touchTargetMd,
-                height: AppSpacing.touchTargetMd,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                ),
-                child: IconTheme(
-                  data: IconThemeData(color: color),
-                  child: icon,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.lg),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xxs),
-                    Text(
-                      subtitle,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (isLoading)
-                Semantics(
-                  label: 'common.loading'.tr(),
-                  child: const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+    final handleTap = isLoading ? null : onTap;
+    return Semantics(
+      label: '$title, $subtitle',
+      button: true,
+      enabled: !isLoading,
+      onTap: handleTap,
+      excludeSemantics: true,
+      child: Card(
+        child: InkWell(
+          onTap: handleTap,
+          excludeFromSemantics: true,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          child: Padding(
+            padding: AppSpacing.cardPadding,
+            child: Row(
+              children: [
+                Container(
+                  width: AppSpacing.touchTargetMd,
+                  height: AppSpacing.touchTargetMd,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                   ),
-                )
-              else
-                AppIcon(
-                  AppIcons.export,
-                  size: 20,
-                  color: theme.colorScheme.outline,
+                  child: IconTheme(
+                    data: IconThemeData(color: color),
+                    child: icon,
+                  ),
                 ),
-            ],
+                const SizedBox(width: AppSpacing.lg),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xxs),
+                      Text(
+                        subtitle,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (isLoading)
+                  Semantics(
+                    label: 'common.loading'.tr(),
+                    child: const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                else
+                  AppIcon(
+                    AppIcons.export,
+                    size: 20,
+                    color: theme.colorScheme.outline,
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -251,9 +260,9 @@ class _AutoBackupControls extends ConsumerWidget {
             child: Text(
               'settings.auto_backup_last'.tr(
                 args: [
-                  dateFormat.formatter(withTime: true).format(
-                    schedule.lastBackup!,
-                  ),
+                  dateFormat
+                      .formatter(withTime: true)
+                      .format(schedule.lastBackup!),
                 ],
               ),
               style: theme.textTheme.bodySmall?.copyWith(

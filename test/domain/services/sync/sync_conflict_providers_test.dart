@@ -203,9 +203,11 @@ void main() {
         expect(state[0].detectedAt, DateTime(2025, 1, 2));
         expect(state[0].hasLocalSnapshot, isTrue);
         expect(state[0].canRetryLocal, isTrue);
+        expect(state[0].conflictType, ConflictType.serverWins);
         expect(state[1].table, 'eggs');
         expect(state[1].recordId, 'e1');
         expect(state[1].hasLocalSnapshot, isFalse);
+        expect(state[1].conflictType, ConflictType.localOverwritten);
         verify(() => mockDao.watchAll('user-1')).called(1);
       },
     );

@@ -18,7 +18,10 @@ void main() {
 
     setUp(() {
       remoteSource = MockUserPresenceRemoteSource();
-      service = UserPresenceService(remoteSource);
+      service = UserPresenceService(
+        remoteSource,
+        appVersionLoader: () async => '1.1.9+61',
+      );
       when(() => remoteSource.currentAuthUserId).thenReturn('user-1');
       when(() => remoteSource.upsertSession(any())).thenAnswer((_) async {});
       when(
@@ -44,6 +47,7 @@ void main() {
         expect(payload[SupabaseConstants.colId], sessionId);
         expect(payload[SupabaseConstants.colUserId], 'user-1');
         expect(payload[SupabaseConstants.colPlatform], isNotEmpty);
+        expect(payload[SupabaseConstants.colAppVersion], '1.1.9+61');
         expect(payload[SupabaseConstants.colIsActive], true);
         expect(payload[SupabaseConstants.colLastActiveAt], isA<String>());
         expect(payload[SupabaseConstants.colExpiresAt], isA<String>());
@@ -56,6 +60,27 @@ void main() {
       expect(sessionId, isNull);
       verifyNever(() => remoteSource.upsertSession(any()));
     });
+
+    test(
+      'startSession still writes when package metadata is unavailable',
+      () async {
+        service = UserPresenceService(
+          remoteSource,
+          appVersionLoader: () async => throw StateError('channel unavailable'),
+        );
+
+        final sessionId = await service.startSession('user-1');
+
+        expect(sessionId, isNotNull);
+        final payload =
+            verify(
+                  () => remoteSource.upsertSession(captureAny()),
+                ).captured.single
+                as Map<String, dynamic>;
+        expect(payload.containsKey(SupabaseConstants.colAppVersion), isFalse);
+        expect(payload[SupabaseConstants.colIsActive], true);
+      },
+    );
 
     test('heartbeat updates only the owned session row', () async {
       await service.heartbeat(userId: 'user-1', sessionId: 'session-1');

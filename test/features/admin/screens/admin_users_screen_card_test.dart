@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsAction;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -138,6 +140,33 @@ void main() {
       await tester.pumpWidget(_createSubject(users: [noNameUser]));
       await tester.pumpAndSettle();
       expect(find.text('noname@test.com'), findsOneWidget);
+    });
+
+    testWidgets('exposes user details as a labeled semantic button', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(_createSubject(users: [_activeUser]));
+      await tester.pumpAndSettle();
+
+      final semanticFinder = find.bySemanticsLabel(
+        RegExp(r'Alice Test.*alice@test\.com'),
+      );
+      final node = tester.getSemantics(semanticFinder);
+      expect(node.flagsCollection.isButton, isTrue);
+      expect(node.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+      expect(find.byTooltip(l10n('common.more')), findsOneWidget);
+      semantics.dispose();
+    });
+
+    testWidgets('opens user detail when the card is tapped', (tester) async {
+      await tester.pumpWidget(_createSubject(users: [_activeUser]));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Alice Test'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('UserDetail'), findsOneWidget);
     });
   });
 }

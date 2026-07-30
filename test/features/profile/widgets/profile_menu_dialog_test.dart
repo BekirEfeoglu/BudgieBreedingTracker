@@ -82,6 +82,10 @@ void main() {
       _consumeOverflowExceptions(tester);
 
       expect(find.byType(ProfileMenuDialog), findsOneWidget);
+      expect(
+        find.byKey(const Key('profile_menu_close_button')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows ProfileMenuHeader', (tester) async {

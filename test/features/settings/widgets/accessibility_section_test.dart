@@ -176,5 +176,63 @@ void main() {
 
       expect(container.read(fontScaleProvider), AppFontScale.large);
     });
+
+    testWidgets('font size and reduce motion expose separate AX targets', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await pumpLocalizedApp(tester, buildSubject());
+        await tester.pump(const Duration(milliseconds: 500));
+
+        final fontSizeFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is Semantics &&
+              widget.properties.label == 'settings.font_size' &&
+              widget.properties.button == true &&
+              widget.properties.onTap != null,
+        );
+        final reduceMotionFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is Semantics &&
+              widget.properties.label == 'settings.reduce_animations' &&
+              widget.properties.onTap != null,
+        );
+
+        final fontSizeRect = tester.getRect(fontSizeFinder);
+        final reduceMotionRect = tester.getRect(reduceMotionFinder);
+        expect(fontSizeRect.bottom, lessThanOrEqualTo(reduceMotionRect.top));
+      } finally {
+        semantics.dispose();
+      }
+    });
+
+    testWidgets('font size AX action opens selector without toggling motion', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await pumpLocalizedApp(tester, buildSubject(reduceAnimations: false));
+        await tester.pump(const Duration(milliseconds: 500));
+
+        final container = ProviderScope.containerOf(
+          tester.element(find.byType(AccessibilitySection)),
+        );
+        final fontSizeFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is Semantics &&
+              widget.properties.label == 'settings.font_size' &&
+              widget.properties.onTap != null,
+        );
+
+        tester.widget<Semantics>(fontSizeFinder).properties.onTap!.call();
+        await tester.pumpAndSettle();
+
+        expect(find.byType(AlertDialog), findsOneWidget);
+        expect(container.read(reduceAnimationsProvider), isFalse);
+      } finally {
+        semantics.dispose();
+      }
+    });
   });
 }

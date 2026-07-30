@@ -48,20 +48,26 @@ class _AdminMonitoringScreenState extends ConsumerState<AdminMonitoringScreen> {
 
     return Scaffold(
       body: RefreshIndicator(
-        onRefresh: () async => ref.invalidate(serverCapacityProvider),
+        onRefresh: _refresh,
         // skipLoadingOnRefresh keeps the previous frame visible during the
-        // 30-second auto-refresh and pull-to-refresh; without it the page
+        // periodic auto-refresh and pull-to-refresh; without it the page
         // collapses to a full skeleton on every tick.
         child: capacityAsync.when(
           skipLoadingOnRefresh: true,
           loading: () => const LoadingState(),
           error: (error, _) => ErrorState(
             message: 'common.data_load_error'.tr(),
-            onRetry: () => ref.invalidate(serverCapacityProvider),
+            onRetry: _refresh,
           ),
           data: (capacity) => MonitoringContent(capacity: capacity),
         ),
       ),
     );
+  }
+
+  Future<void> _refresh() async {
+    ref.invalidate(serverCapacityProvider);
+    ref.invalidate(adminBuildDistributionProvider);
+    await ref.read(serverCapacityProvider.future);
   }
 }

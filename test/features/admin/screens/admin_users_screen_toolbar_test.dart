@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
+import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -141,5 +142,31 @@ void main() {
       );
       expect(chip.selected, isTrue);
     });
+
+    testWidgets(
+      'gives status filters the full toolbar width on narrow screens',
+      (tester) async {
+        tester.view.physicalSize = const Size(368, 844);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+
+        await tester.pumpWidget(
+          _createSubject(usersAsync: AsyncData(_testUsers)),
+        );
+        await tester.pumpAndSettle();
+
+        final statusScroller = find.byWidgetPredicate(
+          (widget) =>
+              widget is SingleChildScrollView &&
+              widget.scrollDirection == Axis.horizontal,
+        );
+        expect(statusScroller, findsOneWidget);
+        expect(
+          tester.getSize(statusScroller).width,
+          equals(368 - (AppSpacing.lg * 2)),
+        );
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 }
