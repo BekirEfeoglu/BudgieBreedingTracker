@@ -90,6 +90,20 @@ void main() {
 
       // Validation error key should appear
       expect(find.text('health_records.title_required'), findsOneWidget);
+
+      final titleEditable = tester.widget<EditableText>(
+        find
+            .descendant(
+              of: find.byType(TextFormField).first,
+              matching: find.byType(EditableText),
+            )
+            .first,
+      );
+      expect(titleEditable.focusNode.hasFocus, isTrue);
+      expect(
+        tester.getTopLeft(find.byType(TextFormField).first).dy,
+        greaterThanOrEqualTo(kToolbarHeight),
+      );
     });
   });
 }

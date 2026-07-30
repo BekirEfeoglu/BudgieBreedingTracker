@@ -55,13 +55,13 @@ The repository includes the main mobile app, localized content in Turkish, Engli
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 1033 Dart files |
-| Test suite | 950 test files, 11,731+ tests (unit, widget, golden, e2e) |
+| Source files (lib/) | 1035 Dart files |
+| Test suite | 953 test files, 11,789+ tests (unit, widget, golden, e2e) |
 | Feature modules | 24 |
 | Drift tables | 20 |
 | Routes | 75 |
 | Custom SVG icons | 99 |
-| Localization keys | ~3,214 per language (TR, EN, DE) |
+| Localization keys | ~3,229 per language (TR, EN, DE) |
 | Domain services | 23 |
 | DB schema version | 29 |
 
@@ -291,7 +291,7 @@ BudgieBreedingTracker/
 ├── assets/
 │   ├── icons/              # 84 custom SVG icons (10 categories)
 │   ├── images/             # App icons and static images
-│   └── translations/       # tr.json, en.json, de.json (~2,243 keys each)
+│   └── translations/       # tr.json, en.json, de.json (~3,180 keys each)
 ├── docs/                   # Website, legal pages, screenshots
 ├── lib/
 │   ├── core/               # Constants, enums, theme, utilities, shared widgets
@@ -304,7 +304,7 @@ BudgieBreedingTracker/
 │   ├── features/           # 23 feature modules (admin, auth, birds, ...)
 │   └── router/             # 70 routes, auth/admin/premium guards
 ├── scripts/                # L10n sync, code quality, and rule validation
-├── test/                   # 747 test files (unit, widget, golden, e2e)
+├── test/                   # 952 test files (unit, widget, golden, e2e)
 └── remotion-promo/         # Remotion-based promo video project
 ```
 
@@ -315,7 +315,7 @@ GitHub Actions CI pipeline runs on every PR:
 | Check | Description |
 | --- | --- |
 | Flutter Analyze | Static analysis with `--no-fatal-infos` |
-| Flutter Test | 11,731+ tests with coverage upload to Codecov |
+| Flutter Test | 11,789+ tests with coverage upload to Codecov |
 | Golden Tests | Pixel-level widget regression checks |
 | Scripts Test | Python script tests (>=99% coverage) |
 | L10n Sync | Verifies TR/EN/DE translation key parity |

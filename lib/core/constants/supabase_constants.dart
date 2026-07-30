@@ -119,6 +119,7 @@ abstract class SupabaseConstants {
   static const String colIsPremium = 'is_premium';
   static const String colIsAcknowledged = 'is_acknowledged';
   static const String colPlatform = 'platform';
+  static const String colAppVersion = 'app_version';
   static const String colToken = 'token';
   static const String colEmail = 'email';
   static const String colFullName = 'full_name';
@@ -220,17 +221,21 @@ abstract class SupabaseConstants {
   // Admin RPCs (admin feature uses client.rpc directly, but names via constants)
   static const String adminExportAllTablesRpc = 'admin_export_all_tables';
   static const String adminResetAllUserDataRpc = 'admin_reset_all_user_data';
-  static const String verifyMonitoringCronJobsRpc = 'verify_monitoring_cron_jobs';
+  static const String verifyMonitoringCronJobsRpc =
+      'verify_monitoring_cron_jobs';
   static const String adminGetTableCountsRpc = 'admin_get_table_counts';
   static const String getServerCapacityRpc = 'get_server_capacity';
   static const String adminCountOrphanEggsRpc = 'admin_count_orphan_eggs';
   static const String adminCountOrphanChicksRpc = 'admin_count_orphan_chicks';
-  static const String adminCountOrphanRemindersRpc = 'admin_count_orphan_reminders';
+  static const String adminCountOrphanRemindersRpc =
+      'admin_count_orphan_reminders';
   static const String adminCountOrphanHealthRecordsRpc =
       'admin_count_orphan_health_records';
   static const String adminResetStuckSyncRecordsRpc =
       'admin_reset_stuck_sync_records';
   static const String adminGetStatsRpc = 'admin_get_stats';
+  static const String adminGetBuildDistributionRpc =
+      'admin_get_build_distribution';
 
   // Storage Buckets
   static const String birdPhotosBucket = 'bird-photos';

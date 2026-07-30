@@ -47,6 +47,9 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
     final cacheSizeAsync = ref.watch(cacheSizeProvider);
     final lastSyncTime = ref.watch(lastSyncTimeProvider);
     final conflicts = ref.watch(conflictHistoryProvider);
+    final unresolvedConflictCount = conflicts
+        .where((conflict) => conflict.resolvedAt == null)
+        .length;
     final userId = ref.watch(currentUserIdProvider);
     final pendingCount = ref.watch(pendingSyncCountProvider).value ?? 0;
     final staleWarningCount =
@@ -138,7 +141,7 @@ class _DataStorageSectionState extends ConsumerState<DataStorageSection> {
             pendingCount: pendingCount,
             errorCount: errorCount,
             staleWarningCount: staleWarningCount,
-            conflictCount: conflicts.length,
+            conflictCount: unresolvedConflictCount,
             backgroundSync: backgroundSync,
             realtimeSync: realtimeSync,
           ),

@@ -88,6 +88,47 @@ void main() {
   }
 
   test(
+    'keep remote resolves history and removes only matching pending metadata',
+    () async {
+      await seedServerWinsState();
+      await db.conflictHistoryDao.insert(conflict());
+      await db.syncMetadataDao.insertItem(
+        const SyncMetadata(
+          id: 'metadata-2',
+          table: 'birds',
+          userId: userId,
+          status: SyncStatus.pending,
+          recordId: 'bird-2',
+        ),
+      );
+
+      final resolved = await container
+          .read(syncConflictRecoveryServiceProvider)
+          .keepRemote(userId);
+
+      expect(resolved, 1);
+      expect((await db.birdsDao.getById('bird-1'))?.name, 'Server wins');
+      expect(
+        await db.syncMetadataDao.getByRecords('birds', ['bird-1']),
+        isEmpty,
+      );
+      expect(
+        await db.syncMetadataDao.getByRecords('birds', ['bird-2']),
+        hasLength(1),
+      );
+      expect(
+        (await db.conflictHistoryDao.getById('conflict-1'))?.resolvedAt,
+        isNotNull,
+      );
+      expect(
+        (await db.conflictHistoryDao.getById('conflict-1'))?.conflictType,
+        ConflictType.serverWins,
+      );
+      expect(await db.conflictHistoryDao.watchAll(userId).first, hasLength(1));
+    },
+  );
+
+  test(
     'restores local fields and marks the record pending atomically',
     () async {
       await seedServerWinsState();
@@ -144,6 +185,10 @@ void main() {
       expect(
         (await db.conflictHistoryDao.getById('conflict-1'))?.resolvedAt,
         isNotNull,
+      );
+      expect(
+        (await db.conflictHistoryDao.getById('conflict-1'))?.conflictType,
+        ConflictType.localOverwritten,
       );
     },
   );

@@ -57,6 +57,7 @@ class ConflictHistoryNotifier extends Notifier<List<SyncConflict>> {
               hasLocalSnapshot:
                   c.localPayload != null && c.payloadVersion != null,
               resolvedAt: c.resolvedAt,
+              conflictType: c.conflictType,
             ),
           )
           .take(_maxEntries)

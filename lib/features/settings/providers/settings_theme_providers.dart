@@ -178,6 +178,18 @@ enum AppFontScale {
   };
 }
 
+/// Resolves the effective text scaler without suppressing the platform's
+/// accessibility setting.
+///
+/// The system scaler is the floor. The in-app preference can request a larger
+/// scale, but it can never shrink text below the user's iOS/Android setting.
+TextScaler resolveAppTextScaler(
+  TextScaler systemTextScaler,
+  AppFontScale appFontScale,
+) {
+  return systemTextScaler.clamp(minScaleFactor: appFontScale.scaleFactor);
+}
+
 final fontScaleProvider = NotifierProvider<FontScaleNotifier, AppFontScale>(
   FontScaleNotifier.new,
 );

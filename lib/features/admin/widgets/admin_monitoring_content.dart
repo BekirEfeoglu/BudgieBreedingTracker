@@ -9,7 +9,9 @@ import '../../../core/constants/app_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_icon.dart';
+import '../providers/admin_monitoring_snapshot_providers.dart';
 import '../providers/admin_providers.dart';
+import 'admin_build_distribution_section.dart';
 import 'admin_monitoring_snapshot_section.dart';
 import 'admin_monitoring_table_widgets.dart';
 
@@ -26,6 +28,11 @@ class MonitoringContent extends ConsumerWidget {
     final dbSizeLimit =
         ref.watch(dbSizeLimitProvider).value ??
         AdminConstants.dbSizeLimitDefault;
+    final hasSlowQueries =
+        ref
+            .watch(monitoringSnapshotsProvider)
+            .whenOrNull(data: (trend) => trend.slowQueries.isNotEmpty) ??
+        false;
     // `MonitoringSnapshotSection` (Connection Pool + Slow Queries) and
     // `MonitoringTrendCharts` (Connection Usage gauge + per-state list)
     // used to coexist here, rendering the same `monitoringSnapshotsProvider`
@@ -37,13 +44,19 @@ class MonitoringContent extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          MonitoringStatusBanner(capacity: capacity, dbSizeLimit: dbSizeLimit),
+          MonitoringStatusBanner(
+            capacity: capacity,
+            dbSizeLimit: dbSizeLimit,
+            hasSlowQueries: hasSlowQueries,
+          ),
           const SizedBox(height: AppSpacing.lg),
           MonitoringCapacityGrid(capacity: capacity, dbSizeLimit: dbSizeLimit),
           const SizedBox(height: AppSpacing.xxl),
           MonitoringIndexUsageCard(indexHitRatio: capacity.indexHitRatio),
           const SizedBox(height: AppSpacing.xxl),
           const MonitoringSnapshotSection(),
+          const SizedBox(height: AppSpacing.xxl),
+          const AdminBuildDistributionSection(),
           const SizedBox(height: AppSpacing.xxl),
           MonitoringTableDetailsSection(tables: capacity.tables),
           const SizedBox(height: AppSpacing.xxxl),
@@ -57,11 +70,13 @@ class MonitoringContent extends ConsumerWidget {
 class MonitoringStatusBanner extends StatelessWidget {
   final ServerCapacity capacity;
   final int dbSizeLimit;
+  final bool hasSlowQueries;
 
   const MonitoringStatusBanner({
     super.key,
     required this.capacity,
     required this.dbSizeLimit,
+    this.hasSlowQueries = false,
   });
 
   @override
@@ -70,9 +85,13 @@ class MonitoringStatusBanner extends StatelessWidget {
     final dbRatio = capacity.databaseSizeBytes / dbSizeLimit;
     final connRatio = capacity.connectionUsageRatio;
     final worstRatio = math.max(dbRatio, connRatio);
+    final indexRatio = capacity.indexHitRatio.isFinite
+        ? (capacity.indexHitRatio / 100).clamp(0.0, 1.0)
+        : 0.0;
 
     final String statusKey;
     final Color color;
+    final IconData icon;
     // `isDegraded` short-circuits the threshold ladder: when the RPC
     // fell back to client-side counts every metric is zero, which
     // would otherwise be colored as "healthy" green. Surface the
@@ -80,15 +99,28 @@ class MonitoringStatusBanner extends StatelessWidget {
     if (capacity.isDegraded) {
       statusKey = 'admin.db_status_degraded';
       color = AppColors.warning;
-    } else if (worstRatio < AdminConstants.healthyThreshold) {
-      statusKey = 'admin.db_status_healthy';
-      color = AppColors.success;
-    } else if (worstRatio < AdminConstants.warningThreshold) {
-      statusKey = 'admin.db_status_warning';
-      color = AppColors.warning;
-    } else {
+      icon = LucideIcons.cloudOff;
+    } else if (worstRatio >= AdminConstants.warningThreshold) {
       statusKey = 'admin.db_status_critical';
       color = AppColors.error;
+      icon = LucideIcons.alertOctagon;
+    } else if (indexRatio < AdminConstants.indexCriticalThreshold) {
+      statusKey = 'admin.db_status_index_critical';
+      color = AppColors.error;
+      icon = LucideIcons.alertOctagon;
+    } else if (worstRatio >= AdminConstants.healthyThreshold) {
+      statusKey = 'admin.db_status_warning';
+      color = AppColors.warning;
+      icon = LucideIcons.alertTriangle;
+    } else if (indexRatio < AdminConstants.indexHealthyThreshold ||
+        hasSlowQueries) {
+      statusKey = 'admin.db_status_performance_warning';
+      color = AppColors.warning;
+      icon = LucideIcons.alertTriangle;
+    } else {
+      statusKey = 'admin.db_status_healthy';
+      color = AppColors.success;
+      icon = LucideIcons.checkCircle;
     }
 
     return Container(
@@ -105,16 +137,7 @@ class MonitoringStatusBanner extends StatelessWidget {
             // Use the localized status string so screen readers don't
             // announce the raw key "admin.db_status_healthy".
             label: statusKey.tr(),
-            child: Icon(
-              capacity.isDegraded
-                  ? LucideIcons.cloudOff
-                  : worstRatio < AdminConstants.healthyThreshold
-                  ? LucideIcons.checkCircle
-                  : worstRatio < AdminConstants.warningThreshold
-                  ? LucideIcons.alertTriangle
-                  : LucideIcons.alertOctagon,
-              color: color,
-            ),
+            child: Icon(icon, color: color),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(

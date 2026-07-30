@@ -137,7 +137,7 @@ class _ConflictSection extends StatelessWidget {
                 const SizedBox(width: AppSpacing.sm),
                 _ConflictTypeBadge(
                   theme: theme,
-                  resolvedLocally: conflict.resolvedAt != null,
+                  restoredLocally: conflict.wasRestoredLocally,
                 ),
               ],
             ),
@@ -151,11 +151,11 @@ class _ConflictSection extends StatelessWidget {
 class _ConflictTypeBadge extends StatelessWidget {
   const _ConflictTypeBadge({
     required this.theme,
-    required this.resolvedLocally,
+    required this.restoredLocally,
   });
 
   final ThemeData theme;
-  final bool resolvedLocally;
+  final bool restoredLocally;
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +169,7 @@ class _ConflictTypeBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       ),
       child: Text(
-        (resolvedLocally
+        (restoredLocally
                 ? 'sync.conflict_local_restored'
                 : 'sync.conflict_server_wins')
             .tr(),

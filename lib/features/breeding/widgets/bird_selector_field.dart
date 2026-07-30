@@ -10,6 +10,7 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 /// A dropdown field for selecting a bird from a list.
 class BirdSelectorField extends StatelessWidget {
   final String label;
+  final String? validationLabel;
   final List<Bird> birds;
   final String? selectedId;
   final ValueChanged<String?> onChanged;
@@ -19,6 +20,7 @@ class BirdSelectorField extends StatelessWidget {
   const BirdSelectorField({
     super.key,
     required this.label,
+    this.validationLabel,
     required this.birds,
     this.selectedId,
     required this.onChanged,
@@ -85,7 +87,9 @@ class BirdSelectorField extends StatelessWidget {
       onChanged: onChanged,
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'validation.field_required'.tr(args: [label]);
+          return 'validation.field_required'.tr(
+            args: [validationLabel ?? label],
+          );
         }
         return null;
       },

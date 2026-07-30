@@ -91,6 +91,11 @@ class AdminSidebar extends ConsumerWidget {
       matchPrefix: AppRoutes.adminUsers,
     ),
     const _AdminMenuItem(
+      icon: AppIcon(AppIcons.community),
+      labelKey: 'admin.content_review',
+      route: AppRoutes.adminModeration,
+    ),
+    const _AdminMenuItem(
       icon: AppIcon(AppIcons.monitoring),
       labelKey: 'admin.monitoring',
       route: AppRoutes.adminMonitoring,
@@ -194,95 +199,107 @@ class AdminSidebar extends ConsumerWidget {
     final color = isSelected
         ? theme.colorScheme.primary
         : theme.colorScheme.onSurface.withValues(alpha: 0.7);
+    void handleTap() {
+      final scaffold = Scaffold.maybeOf(context);
+      if (scaffold != null && scaffold.isDrawerOpen) {
+        scaffold.closeDrawer();
+      }
+      if (isSelected) return;
+      // Intentional context.go: admin sidebar items are top-level
+      // sections of the admin ShellRoute (Users / Monitoring /
+      // Database). Switching sections must replace the stack so
+      // back-button on a section root exits admin rather than
+      // cycling through previously-visited sections.
+      context.go(item.route);
+    }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Material(
-        // Transparent when not selected to let the surface show through
-        color: isSelected
-            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
-            : theme.colorScheme.surface.withValues(alpha: 0),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        child: InkWell(
-          onTap: () {
-            final scaffold = Scaffold.maybeOf(context);
-            if (scaffold != null && scaffold.isDrawerOpen) {
-              scaffold.closeDrawer();
-            }
-            if (isSelected) return;
-            // Intentional context.go: admin sidebar items are top-level
-            // sections of the admin ShellRoute (Users / Monitoring /
-            // Database). Switching sections must replace the stack so
-            // back-button on a section root exits admin rather than
-            // cycling through previously-visited sections.
-            context.go(item.route);
-          },
+    return Semantics(
+      label: item.labelKey.tr(),
+      button: true,
+      selected: isSelected,
+      onTap: handleTap,
+      excludeSemantics: true,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Material(
+          // Transparent when not selected to let the surface show through
+          color: isSelected
+              ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
+              : theme.colorScheme.surface.withValues(alpha: 0),
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.md,
-            ),
-            child: Row(
-              children: [
-                IconTheme(
-                  data: IconThemeData(size: 20, color: color),
-                  child: item.icon,
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Text(
-                    item.labelKey.tr(),
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: color,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.normal,
-                    ),
+          child: InkWell(
+            onTap: handleTap,
+            excludeFromSemantics: true,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.md,
+              ),
+              child: Row(
+                children: [
+                  IconTheme(
+                    data: IconThemeData(size: 20, color: color),
+                    child: item.icon,
                   ),
-                ),
-                if (item.badgeProviderKey != null) ...[
-                  Builder(
-                    builder: (_) {
-                      final count = _getBadgeCount(ref, item.badgeProviderKey!);
-                      if (count <= 0) return const SizedBox.shrink();
-                      return Container(
-                        margin: const EdgeInsetsDirectional.only(
-                          start: AppSpacing.xs,
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.error,
-                          borderRadius: BorderRadius.circular(
-                            AppSpacing.radiusFull,
-                          ),
-                        ),
-                        child: Text(
-                          count > 99 ? '99+' : '$count',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onError,
-                            fontSize: 10,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-                if (isSelected)
-                  Container(
-                    width: 4,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary,
-                      borderRadius: BorderRadius.circular(
-                        AppSpacing.radiusFull,
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Text(
+                      item.labelKey.tr(),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: color,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.normal,
                       ),
                     ),
                   ),
-              ],
+                  if (item.badgeProviderKey != null) ...[
+                    Builder(
+                      builder: (_) {
+                        final count = _getBadgeCount(
+                          ref,
+                          item.badgeProviderKey!,
+                        );
+                        if (count <= 0) return const SizedBox.shrink();
+                        return Container(
+                          margin: const EdgeInsetsDirectional.only(
+                            start: AppSpacing.xs,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.error,
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.radiusFull,
+                            ),
+                          ),
+                          child: Text(
+                            count > 99 ? '99+' : '$count',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.onError,
+                              fontSize: 10,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                  if (isSelected)
+                    Container(
+                      width: 4,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary,
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusFull,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -307,51 +324,58 @@ class AdminSidebar extends ConsumerWidget {
 
   Widget _buildBackToApp(BuildContext context) {
     final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-      child: Material(
-        // Transparent to let the surface show through
-        color: theme.colorScheme.surface.withValues(alpha: 0),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        child: Tooltip(
-          message: 'admin.back_to_app'.tr(),
-          child: InkWell(
-            onTap: () {
-              final scaffold = Scaffold.maybeOf(context);
-              if (scaffold != null && scaffold.isDrawerOpen) {
-                scaffold.closeDrawer();
-              }
-              context.go(AppRoutes.home);
-            },
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.md,
-              ),
-              child: Row(
-                children: [
-                  Semantics(
-                    label: 'admin.back_to_app'.tr(),
-                    child: Icon(
+    final label = 'admin.back_to_app'.tr();
+    void handleTap() {
+      final scaffold = Scaffold.maybeOf(context);
+      if (scaffold != null && scaffold.isDrawerOpen) {
+        scaffold.closeDrawer();
+      }
+      context.go(AppRoutes.home);
+    }
+
+    return Semantics(
+      label: label,
+      button: true,
+      onTap: handleTap,
+      excludeSemantics: true,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+        child: Material(
+          // Transparent to let the surface show through
+          color: theme.colorScheme.surface.withValues(alpha: 0),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          child: Tooltip(
+            message: label,
+            child: InkWell(
+              onTap: handleTap,
+              excludeFromSemantics: true,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.md,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
                       LucideIcons.arrowLeft,
                       size: 20,
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Text(
-                      'admin.back_to_app'.tr(),
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.7,
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Text(
+                        'admin.back_to_app'.tr(),
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.7,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

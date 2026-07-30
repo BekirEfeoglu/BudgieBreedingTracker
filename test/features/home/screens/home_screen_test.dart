@@ -189,6 +189,19 @@ void main() {
       expect(find.byType(RefreshIndicator), findsOneWidget);
     });
 
+    testWidgets(
+      'pins the app bar to protect the top safe area while scrolling',
+      (tester) async {
+        await tester.pumpWidget(
+          createSubject(statsAsync: const AsyncData(DashboardStats())),
+        );
+        await tester.pumpAndSettle();
+
+        final appBar = tester.widget<SliverAppBar>(find.byType(SliverAppBar));
+        expect(appBar.pinned, isTrue);
+      },
+    );
+
     testWidgets('shows streak celebration once then clears without re-firing', (
       tester,
     ) async {

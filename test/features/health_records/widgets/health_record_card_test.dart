@@ -57,6 +57,35 @@ void main() {
       expect(tapped, isTrue);
     });
 
+    testWidgets('exposes record card as an actionable semantic button', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await _pump(
+          tester,
+          HealthRecordCard(
+            record: testRecord,
+            animalName: 'Mavi',
+            onTap: () {},
+          ),
+        );
+
+        final semanticFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is Semantics &&
+              widget.properties.button == true &&
+              widget.properties.onTap != null,
+        );
+        final node = tester.getSemantics(semanticFinder.first);
+        expect(node.flagsCollection.isButton, isTrue);
+        expect(node.label, contains('Annual Checkup'));
+        expect(node.label, contains('Mavi'));
+      } finally {
+        semantics.dispose();
+      }
+    });
+
     testWidgets('shows description when present', (tester) async {
       final record = HealthRecord(
         id: 'record-2',

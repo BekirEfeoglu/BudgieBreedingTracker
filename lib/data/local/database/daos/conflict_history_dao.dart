@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:budgie_breeding_tracker/core/enums/sync_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
 import 'package:budgie_breeding_tracker/data/local/database/tables/conflict_history_table.dart';
 import 'package:budgie_breeding_tracker/data/local/database/mappers/conflict_history_mapper.dart';
@@ -139,11 +140,20 @@ class ConflictHistoryDao extends DatabaseAccessor<AppDatabase>
     return rows.map((row) => row.toModel()).toList();
   }
 
-  Future<int> markResolvedIfUnresolved(String id, DateTime resolvedAt) {
+  Future<int> markResolvedIfUnresolved(
+    String id,
+    DateTime resolvedAt, {
+    ConflictType? conflictType,
+  }) {
     return (update(
       conflictHistoryTable,
     )..where((t) => t.id.equals(id) & t.resolvedAt.isNull())).write(
-      ConflictHistoryTableCompanion(resolvedAt: Value(resolvedAt.toUtc())),
+      ConflictHistoryTableCompanion(
+        resolvedAt: Value(resolvedAt.toUtc()),
+        conflictType: conflictType == null
+            ? const Value.absent()
+            : Value(conflictType),
+      ),
     );
   }
 

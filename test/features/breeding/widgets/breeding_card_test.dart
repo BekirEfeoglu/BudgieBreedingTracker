@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
+import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/incubation/incubation_calculator.dart';
@@ -193,6 +195,47 @@ void main() {
       await tester.pump();
 
       expect(tapped, isTrue);
+    });
+
+    testWidgets('exposes parent names as an actionable semantic button', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        final pair = _buildPair(maleId: 'male-1', femaleId: 'female-1');
+        final birdsMap = <String, Bird>{
+          'male-1': const Bird(
+            id: 'male-1',
+            userId: 'user-1',
+            name: 'Mavi',
+            gender: BirdGender.male,
+          ),
+          'female-1': const Bird(
+            id: 'female-1',
+            userId: 'user-1',
+            name: 'Limon',
+            gender: BirdGender.female,
+          ),
+        };
+
+        await _pump(
+          tester,
+          BreedingCard(pair: pair, birdsMap: birdsMap, onTap: () {}),
+        );
+
+        final semanticFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is Semantics &&
+              widget.properties.button == true &&
+              widget.properties.onTap != null,
+        );
+        final node = tester.getSemantics(semanticFinder.first);
+        expect(node.flagsCollection.isButton, isTrue);
+        expect(node.label, contains('Mavi'));
+        expect(node.label, contains('Limon'));
+      } finally {
+        semantics.dispose();
+      }
     });
 
     testWidgets('has left border decoration for stage color', (tester) async {

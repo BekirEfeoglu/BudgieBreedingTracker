@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/sync_enums.dart';
 import 'package:budgie_breeding_tracker/core/models/sync_conflict.dart';
 
 void main() {
@@ -18,6 +19,7 @@ void main() {
       expect(conflict.detectedAt, now);
       expect(conflict.description, 'Server overwrote local data');
       expect(conflict.canRetryLocal, isFalse);
+      expect(conflict.wasRestoredLocally, isFalse);
     });
 
     test('can retry only an unresolved conflict with a local snapshot', () {
@@ -35,10 +37,12 @@ void main() {
         description: 'resolved',
         hasLocalSnapshot: true,
         resolvedAt: DateTime(2026, 7, 18),
+        conflictType: ConflictType.localOverwritten,
       );
 
       expect(recoverable.canRetryLocal, isTrue);
       expect(resolved.canRetryLocal, isFalse);
+      expect(resolved.wasRestoredLocally, isTrue);
     });
 
     test('can create multiple instances with different tables', () {

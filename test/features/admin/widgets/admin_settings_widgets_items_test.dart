@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsAction, Tristate;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_settings_widgets.dart';
@@ -240,6 +242,32 @@ void main() {
 
       await tester.tap(find.byType(Switch));
       expect(changedValue, isTrue);
+    });
+
+    testWidgets('uses the visible title as the switch semantic label', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        _wrap(
+          EnhancedToggleSetting(
+            title: 'Registration open',
+            subtitle: 'Allow new accounts',
+            value: true,
+            onChanged: (_) {},
+          ),
+        ),
+      );
+
+      final semanticFinder = find.byWidgetPredicate(
+        (widget) =>
+            widget is Semantics &&
+            widget.properties.label == 'Registration open',
+      );
+      final node = tester.getSemantics(semanticFinder);
+      expect(node.flagsCollection.isToggled, Tristate.isTrue);
+      expect(node.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+      semantics.dispose();
     });
   });
 

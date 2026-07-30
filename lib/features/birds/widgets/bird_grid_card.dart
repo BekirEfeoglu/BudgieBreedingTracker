@@ -33,87 +33,101 @@ class BirdGridCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final age = bird.age;
+    final handleTap = onTap ?? () => context.push('/birds/${bird.id}');
+    final semanticLabel = [
+      bird.name,
+      if (bird.ringNumber case final ring? when ring.isNotEmpty) ring,
+      speciesLabel(bird.species),
+      if (age != null) formatBirdAgeShort(age),
+    ].join(', ');
 
-    final cardWidget = Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap ?? () => context.push('/birds/${bird.id}'),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Hero(
-                    tag: 'bird_${bird.id}',
-                    child: _GridPhoto(bird: bird),
-                  ),
-                  Positioned(
-                    top: AppSpacing.xs,
-                    right: AppSpacing.xs,
-                    child: BirdStatusBadge(status: bird.status),
-                  ),
-                  Positioned(
-                    top: AppSpacing.xs,
-                    left: AppSpacing.xs,
-                    child: RecordSyncConflictBadge(
-                      tableName: SupabaseConstants.birdsTable,
-                      recordId: bird.id,
+    final cardWidget = Semantics(
+      label: semanticLabel,
+      button: true,
+      onTap: handleTap,
+      excludeSemantics: true,
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: handleTap,
+          excludeFromSemantics: true,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Hero(
+                      tag: 'bird_${bird.id}',
+                      child: _GridPhoto(bird: bird),
                     ),
-                  ),
-                ],
+                    Positioned(
+                      top: AppSpacing.xs,
+                      right: AppSpacing.xs,
+                      child: BirdStatusBadge(status: bird.status),
+                    ),
+                    Positioned(
+                      top: AppSpacing.xs,
+                      left: AppSpacing.xs,
+                      child: RecordSyncConflictBadge(
+                        tableName: SupabaseConstants.birdsTable,
+                        recordId: bird.id,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.sm),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    bird.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleSmall,
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      if (bird.ringNumber != null) ...[
-                        AppIcon(
-                          AppIcons.ring,
-                          size: 14,
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                        const SizedBox(width: 2),
-                        Flexible(
-                          child: Text(
-                            bird.ringNumber!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      bird.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        if (bird.ringNumber != null) ...[
+                          AppIcon(
+                            AppIcons.ring,
+                            size: 14,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 2),
+                          Flexible(
+                            child: Text(
+                              bird.ringNumber!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
-                        ),
-                      ] else if (age != null)
-                        Flexible(
-                          child: Text(
-                            formatBirdAgeShort(age),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
+                        ] else if (age != null)
+                          Flexible(
+                            child: Text(
+                              formatBirdAgeShort(age),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
-                        ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

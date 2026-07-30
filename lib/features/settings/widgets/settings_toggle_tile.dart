@@ -22,18 +22,27 @@ class SettingsToggleTile extends StatelessWidget {
     final iconColor = value
         ? theme.colorScheme.primary
         : theme.colorScheme.onSurfaceVariant;
+    void handleTap() => onChanged(!value);
 
-    return SwitchListTile.adaptive(
-      title: Text(title),
-      subtitle: subtitle != null ? Text(subtitle!) : null,
-      secondary: icon != null
-          ? IconTheme(
-              data: IconThemeData(size: 24, color: iconColor),
-              child: icon!,
-            )
-          : null,
-      value: value,
-      onChanged: onChanged,
+    return Semantics(
+      container: true,
+      label: title,
+      hint: subtitle,
+      toggled: value,
+      onTap: handleTap,
+      excludeSemantics: true,
+      child: SwitchListTile.adaptive(
+        title: Text(title),
+        subtitle: subtitle != null ? Text(subtitle!) : null,
+        secondary: icon != null
+            ? IconTheme(
+                data: IconThemeData(size: 24, color: iconColor),
+                child: icon!,
+              )
+            : null,
+        value: value,
+        onChanged: onChanged,
+      ),
     );
   }
 }

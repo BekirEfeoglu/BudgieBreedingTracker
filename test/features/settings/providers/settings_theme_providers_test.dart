@@ -261,5 +261,32 @@ void main() {
       expect(AppFontScale.large.scaleFactor, 1.15);
       expect(AppFontScale.extraLarge.scaleFactor, 1.3);
     });
+
+    test('system accessibility scale remains the minimum', () {
+      final scaler = resolveAppTextScaler(
+        const TextScaler.linear(2),
+        AppFontScale.normal,
+      );
+
+      expect(scaler.scale(10), 20);
+    });
+
+    test('in-app setting can increase a smaller system scale', () {
+      final scaler = resolveAppTextScaler(
+        const TextScaler.linear(1),
+        AppFontScale.extraLarge,
+      );
+
+      expect(scaler.scale(10), 13);
+    });
+
+    test('in-app small setting cannot reduce the system scale', () {
+      final scaler = resolveAppTextScaler(
+        const TextScaler.linear(1),
+        AppFontScale.small,
+      );
+
+      expect(scaler.scale(10), 10);
+    });
   });
 }

@@ -1,6 +1,6 @@
 # Presence (Online / Last-Seen)
 
-`UserPresenceService` (`lib/domain/services/presence/`) kullanıcı oturumlarının aktiflik durumunu `user_sessions` tablosu üzerinden yönetir. **Bugünkü tek tüketici admin panelidir** (online kullanıcı görünürlüğü — `admin_users_providers.dart`); kullanıcı-yüzü online rozeti / last-seen UI'ı SHIPPED DEĞİLDİR (bkz. § Unshipped Tasarım Hedefleri). Typing indicator presence'ın değil messaging'in parçasıdır (`typingIndicatorProvider`, messaging.md).
+`UserPresenceService` (`lib/domain/services/presence/`) kullanıcı oturumlarının aktiflik durumunu ve kurulu uygulama sürümünü `user_sessions` tablosu üzerinden yönetir. **Bugünkü tek tüketici admin panelidir** (online kullanıcı görünürlüğü ve build benimsenmesi); kullanıcı-yüzü online rozeti / last-seen UI'ı SHIPPED DEĞİLDİR (bkz. § Unshipped Tasarım Hedefleri). Typing indicator presence'ın değil messaging'in parçasıdır (`typingIndicatorProvider`, messaging.md).
 
 ## Stack (gerçek)
 | Katman | Bileşen |
@@ -8,8 +8,8 @@
 | Service | `UserPresenceService` — `startSession` / `heartbeat` / `endSession` |
 | Controller | `UserPresenceController` (`user_presence_providers.dart`) — `markActive(userId)` / `markInactive()` |
 | Constants | `user_presence_constants.dart` (heartbeat/threshold/TTL) |
-| Storage | `user_sessions` tablosu — düz PostgREST upsert (realtime channel/`track` YOK) |
-| Tüketici | SADECE admin panel (`admin_users_providers.dart`, `admin_models.dart` threshold kontrolü) |
+| Storage | `user_sessions` tablosu — düz PostgREST upsert; `app_version` nullable ve `version+build` biçiminde (realtime channel/`track` YOK) |
+| Tüketici | SADECE admin panel (online eşik hesabı + 30 günlük platform/build dağılımı) |
 
 ## Presence Model (gerçek)
 State boolean'dır: **active / inactive** (`UserPresenceState`). `away`, `invisible` gibi ara durumlar YOKTUR. "Online" türetilmiş bir değerdir: son heartbeat `onlineThreshold` içindeyse online sayılır (query-time hesap, `admin_models.dart`).
@@ -18,6 +18,9 @@ State boolean'dır: **active / inactive** (`UserPresenceState`). `away`, `invisi
 - Session-tabanlı: `startSession(userId)` → periyodik `heartbeat(...)` (Timer, `UserPresenceController`) → `endSession(...)`
 - Gerçek sabitler `user_presence_constants.dart`: `heartbeatInterval = 2 dk` · `onlineThreshold = 5 dk` · `sessionTtl = 10 dk` — dokümanda süre yazarken BU sabitlere bak, ezbere değer yazma
 - Mekanizma: `user_sessions` upsert (PostgREST) — Supabase realtime `track` payload'ı KULLANILMAZ
+- `startSession`, `package_info_plus` ile kurulu sürümü `app_version` alanına
+  `semantic-version+build-number` biçiminde yazar. Metadata okunamazsa presence
+  fail-open devam eder; eski istemcilerin null satırları telemetri coverage'a dahildir.
 - App background → `markInactive()` (session biter); foreground → `markActive(userId)` + immediate update
 - Logout: `markInactive()` → `endSession()` zinciri (auth.md logout zinciri adım 4 — sticky online engeli)
 

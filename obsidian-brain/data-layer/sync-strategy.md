@@ -143,6 +143,18 @@ a successful push DELETES the row (`lib/data/models/sync_metadata_model.dart`):
 
 See [[data-layer/repositories]] — prevents orphan push when FK parent was deleted.
 
+## Conflict Choice Finalization
+
+- **Keep remote** removes only unresolved conflict keys from `sync_metadata`
+  and marks their history rows resolved in one Drift transaction. The
+  server-wins entity copy and resolved audit history remain intact with
+  `ConflictType.serverWins`.
+- **Retry local** restores the encrypted local snapshot, resets one pending
+  marker per record, and resolves the matching history row atomically as
+  `ConflictType.localOverwritten`.
+- Sync health counts unresolved conflicts only; the separate history view can
+  still show resolved audit entries.
+
 ## Anti-Patterns
 
 1. `.insert()` instead of `.upsert()` (breaks idempotency)

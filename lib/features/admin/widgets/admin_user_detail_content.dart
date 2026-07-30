@@ -398,20 +398,23 @@ class UserDetailSubscriptionSection extends StatelessWidget {
                           child: CircularProgressIndicator(strokeWidth: 2.5),
                         ),
                       )
-                    : Switch.adaptive(
-                        key: const Key('admin_premium_access_switch'),
-                        value: isPremium,
-                        onChanged:
-                            (isPremium ? onRevokePremium : onGrantPremium) ==
-                                null
-                            ? null
-                            : (enabled) {
-                                if (enabled) {
-                                  onGrantPremium?.call();
-                                } else {
-                                  onRevokePremium?.call();
-                                }
-                              },
+                    : Semantics(
+                        label: 'admin.premium_access'.tr(),
+                        child: Switch.adaptive(
+                          key: const Key('admin_premium_access_switch'),
+                          value: isPremium,
+                          onChanged:
+                              (isPremium ? onRevokePremium : onGrantPremium) ==
+                                  null
+                              ? null
+                              : (enabled) {
+                                  if (enabled) {
+                                    onGrantPremium?.call();
+                                  } else {
+                                    onRevokePremium?.call();
+                                  }
+                                },
+                        ),
                       ),
               ),
               const SizedBox(height: AppSpacing.xs),

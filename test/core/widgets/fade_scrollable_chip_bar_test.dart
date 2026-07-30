@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:budgie_breeding_tracker/core/widgets/fade_scrollable_chip_bar.dart';
 import '../../helpers/pump_helpers.dart';
@@ -60,16 +61,39 @@ void main() {
       expect(sizedBox.height, 60);
     });
 
-    testWidgets('has IgnorePointer on gradient to prevent tap interference', (
+    testWidgets('shows a non-interactive overflow cue only when needed', (
       tester,
     ) async {
       await pumpWidgetSimple(
         tester,
-        const FadeScrollableChipBar(children: [Chip(label: Text('A'))]),
+        const SizedBox(
+          width: 180,
+          child: FadeScrollableChipBar(
+            children: [
+              SizedBox(width: 120, child: Chip(label: Text('First'))),
+              SizedBox(width: 120, child: Chip(label: Text('Second'))),
+              SizedBox(width: 120, child: Chip(label: Text('Third'))),
+            ],
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final cueIcon = find.byIcon(LucideIcons.chevronRight);
+      expect(cueIcon, findsOneWidget);
+      expect(
+        tester
+            .widgetList<IgnorePointer>(
+              find.ancestor(of: cueIcon, matching: find.byType(IgnorePointer)),
+            )
+            .any((widget) => widget.ignoring),
+        isTrue,
       );
 
-      // At least one IgnorePointer for gradient overlay
-      expect(find.byType(IgnorePointer), findsAtLeast(1));
+      await tester.drag(find.byType(ListView), const Offset(-500, 0));
+      await tester.pumpAndSettle();
+
+      expect(cueIcon, findsNothing);
     });
   });
 }

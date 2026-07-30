@@ -8,7 +8,11 @@ import 'package:budgie_breeding_tracker/data/models/statistics_models.dart';
 import 'package:budgie_breeding_tracker/features/home/widgets/dashboard_stats_grid.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 
-Widget _createSubject({DashboardStats? stats, bool isPremium = false}) {
+Widget _createSubject({
+  DashboardStats? stats,
+  bool isPremium = false,
+  double textScale = 1,
+}) {
   final router = GoRouter(
     initialLocation: '/',
     routes: [
@@ -48,7 +52,15 @@ Widget _createSubject({DashboardStats? stats, bool isPremium = false}) {
       isPremiumProvider.overrideWithValue(isPremium),
       effectivePremiumProvider.overrideWithValue(isPremium),
     ],
-    child: MaterialApp.router(routerConfig: router),
+    child: MaterialApp.router(
+      routerConfig: router,
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(
+          context,
+        ).copyWith(textScaler: TextScaler.linear(textScale)),
+        child: child!,
+      ),
+    ),
   );
 }
 
@@ -136,5 +148,16 @@ void main() {
 
       expect(find.byType(Column), findsAtLeastNWidgets(1));
     });
+
+    testWidgets(
+      'uses single-column cards without overflow at accessibility size',
+      (tester) async {
+        await tester.pumpWidget(_createSubject(textScale: 3.5));
+        await tester.pump();
+
+        expect(tester.takeException(), isNull);
+        expect(find.byType(DashboardStatsGrid), findsOneWidget);
+      },
+    );
   });
 }

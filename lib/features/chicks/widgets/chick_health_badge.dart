@@ -15,15 +15,12 @@ class ChickHealthBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StatusBadge(label: _label, color: _color, icon: _icon);
+    return StatusBadge(
+      label: chickHealthStatusLabel(status),
+      color: _color,
+      icon: _icon,
+    );
   }
-
-  String get _label => switch (status) {
-    ChickHealthStatus.healthy => 'chicks.status_healthy'.tr(),
-    ChickHealthStatus.sick => 'chicks.status_sick'.tr(),
-    ChickHealthStatus.deceased => 'chicks.status_deceased'.tr(),
-    ChickHealthStatus.unknown => 'chicks.status_unknown'.tr(),
-  };
 
   Color get _color => switch (status) {
     ChickHealthStatus.healthy => AppColors.success,
@@ -39,3 +36,11 @@ class ChickHealthBadge extends StatelessWidget {
     ChickHealthStatus.unknown => const Icon(LucideIcons.helpCircle),
   };
 }
+
+/// Localized health label shared by badges and card semantics.
+String chickHealthStatusLabel(ChickHealthStatus status) => switch (status) {
+  ChickHealthStatus.healthy => 'chicks.status_healthy'.tr(),
+  ChickHealthStatus.sick => 'chicks.status_sick'.tr(),
+  ChickHealthStatus.deceased => 'chicks.status_deceased'.tr(),
+  ChickHealthStatus.unknown => 'chicks.status_unknown'.tr(),
+};

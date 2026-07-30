@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_capacity_providers.dart';
+import 'package:budgie_breeding_tracker/features/admin/providers/admin_build_distribution_provider.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_models.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_monitoring_snapshot_providers.dart';
 import 'package:budgie_breeding_tracker/features/admin/widgets/admin_monitoring_content.dart';
@@ -20,7 +21,7 @@ const _healthyCapacity = ServerCapacity(
   totalConnections: 5,
   maxConnections: 100,
   cacheHitRatio: 95.0,
-  indexHitRatio: 90.0,
+  indexHitRatio: 98.0,
   totalRows: 1000,
 );
 
@@ -31,7 +32,7 @@ const _warningCapacity = ServerCapacity(
   totalConnections: 75,
   maxConnections: 100,
   cacheHitRatio: 70.0,
-  indexHitRatio: 65.0,
+  indexHitRatio: 96.0,
 );
 
 /// Critical server: near capacity (>90%).
@@ -52,6 +53,9 @@ Widget _wrapWithProvider(Widget child) => ProviderScope(
   overrides: [
     monitoringSnapshotsProvider.overrideWith(
       (_) async => const MonitoringTrend(),
+    ),
+    adminBuildDistributionProvider.overrideWith(
+      (_) async => const BuildDistribution(windowDays: 30),
     ),
     dbSizeLimitProvider.overrideWith((_) async => _testDbLimit),
   ],
@@ -125,6 +129,51 @@ void main() {
         ),
       );
       expect(find.text(l10n('admin.db_status_critical')), findsOneWidget);
+    });
+
+    testWidgets('shows critical status when index usage is below 80 percent', (
+      tester,
+    ) async {
+      const lowIndexCapacity = ServerCapacity(
+        databaseSizeBytes: 50000000,
+        totalConnections: 5,
+        maxConnections: 100,
+        cacheHitRatio: 98,
+        indexHitRatio: 77.3,
+      );
+      await pumpLocalizedApp(
+        tester,
+        _wrap(
+          const MonitoringStatusBanner(
+            capacity: lowIndexCapacity,
+            dbSizeLimit: _testDbLimit,
+          ),
+        ),
+      );
+
+      expect(find.text(l10n('admin.db_status_index_critical')), findsOneWidget);
+      expect(find.text(l10n('admin.db_status_healthy')), findsNothing);
+    });
+
+    testWidgets('shows warning status when slow queries are present', (
+      tester,
+    ) async {
+      await pumpLocalizedApp(
+        tester,
+        _wrap(
+          const MonitoringStatusBanner(
+            capacity: _healthyCapacity,
+            dbSizeLimit: _testDbLimit,
+            hasSlowQueries: true,
+          ),
+        ),
+      );
+
+      expect(
+        find.text(l10n('admin.db_status_performance_warning')),
+        findsOneWidget,
+      );
+      expect(find.text(l10n('admin.db_status_healthy')), findsNothing);
     });
   });
 

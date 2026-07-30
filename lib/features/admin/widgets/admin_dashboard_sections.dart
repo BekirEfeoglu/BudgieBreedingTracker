@@ -245,52 +245,43 @@ class DashboardContentReviewSection extends ConsumerWidget {
           loading: () => const LoadingState(),
           error: (_, __) => Text('admin.action_error'.tr()),
           data: (count) {
-            if (count == 0) {
-              return Card(
-                child: Padding(
-                  padding: AppSpacing.cardPadding,
-                  child: Row(
-                    children: [
-                      const Icon(
-                        LucideIcons.checkCircle,
-                        color: AppColors.success,
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      Text(
-                        'admin.no_pending_review'.tr(),
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-            return Card(
-              child: InkWell(
-                onTap: () => context.push(AppRoutes.adminModeration),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                child: Padding(
-                  padding: AppSpacing.cardPadding,
-                  child: Row(
-                    children: [
-                      const Icon(
-                        LucideIcons.alertTriangle,
-                        color: AppColors.warning,
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: Text(
-                          'admin.pending_review_count'.tr(
-                            args: [count.toString()],
-                          ),
-                          style: theme.textTheme.bodyMedium,
+            final label = count == 0
+                ? 'admin.no_pending_review'.tr()
+                : 'admin.pending_review_count'.tr(args: [count.toString()]);
+            void openModeration() => context.push(AppRoutes.adminModeration);
+
+            return Semantics(
+              label: label,
+              button: true,
+              onTap: openModeration,
+              excludeSemantics: true,
+              child: Card(
+                child: InkWell(
+                  onTap: openModeration,
+                  excludeFromSemantics: true,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                  child: Padding(
+                    padding: AppSpacing.cardPadding,
+                    child: Row(
+                      children: [
+                        Icon(
+                          count == 0
+                              ? LucideIcons.checkCircle
+                              : LucideIcons.alertTriangle,
+                          color: count == 0
+                              ? AppColors.success
+                              : AppColors.warning,
                         ),
-                      ),
-                      const Icon(
-                        LucideIcons.chevronRight,
-                        color: AppColors.neutral400,
-                      ),
-                    ],
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Text(label, style: theme.textTheme.bodyMedium),
+                        ),
+                        const Icon(
+                          LucideIcons.chevronRight,
+                          color: AppColors.neutral400,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

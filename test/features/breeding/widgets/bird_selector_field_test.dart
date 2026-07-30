@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/features/breeding/widgets/bird_selector_field.dart';
+import 'package:budgie_breeding_tracker/test_support/l10n_lookup.dart';
 
 import '../../../helpers/test_helpers.dart';
+import '../../../helpers/test_localization.dart';
 
 Future<void> _pump(WidgetTester tester, Widget child) async {
   await tester.pumpWidget(
@@ -77,7 +79,7 @@ void main() {
         createTestBird(id: 'b-2', name: 'Kus2', cageNumber: 'K2'),
       ];
 
-      await _pump(
+      await pumpTranslatedWidget(
         tester,
         BirdSelectorField(
           label: 'Seç',
@@ -88,7 +90,10 @@ void main() {
         ),
       );
 
-      expect(find.text('breeding.same_cage_recommended'), findsOneWidget);
+      expect(
+        find.text(resolvedL10n('breeding.same_cage_recommended')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('sets initial value correctly', (tester) async {
@@ -134,6 +139,30 @@ void main() {
 
       // Validation error text should appear
       expect(find.textContaining('Erkek Kus'), findsAtLeastNWidgets(1));
+    });
+
+    testWidgets('uses validation label without availability count', (
+      tester,
+    ) async {
+      final formKey = GlobalKey<FormState>();
+      await pumpTranslatedWidget(
+        tester,
+        Form(
+          key: formKey,
+          child: BirdSelectorField(
+            label: 'Erkek Kuş (1)',
+            validationLabel: 'Erkek Kuş',
+            birds: const [],
+            onChanged: (_) {},
+          ),
+        ),
+      );
+
+      formKey.currentState?.validate();
+      await tester.pump();
+
+      expect(find.text('Erkek Kuş zorunludur'), findsOneWidget);
+      expect(find.text('Erkek Kuş (1) zorunludur'), findsNothing);
     });
 
     testWidgets('onChanged callback is invoked when selection changes', (

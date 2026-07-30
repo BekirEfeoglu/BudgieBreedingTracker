@@ -257,6 +257,50 @@ void main() {
       expect(find.text(l10n('birds.species_required')), findsOneWidget);
     });
 
+    testWidgets('clears species error immediately after a valid selection', (
+      tester,
+    ) async {
+      final nameCtrl = TextEditingController(text: 'Mavi');
+      addTearDown(nameCtrl.dispose);
+      final colorCtrl = TextEditingController();
+      addTearDown(colorCtrl.dispose);
+      final formKey = GlobalKey<FormState>();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Form(
+              key: formKey,
+              child: SingleChildScrollView(
+                child: BirdFormBasicInfoSection(
+                  nameController: nameCtrl,
+                  gender: BirdGender.male,
+                  species: Species.unknown,
+                  colorMutation: null,
+                  colorNoteController: colorCtrl,
+                  onGenderChanged: (_) {},
+                  onSpeciesChanged: (_) {},
+                  onColorChanged: (_) {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      formKey.currentState?.validate();
+      await tester.pump();
+      expect(find.text(l10n('birds.species_required')), findsOneWidget);
+
+      await tester.tap(find.byType(DropdownButtonFormField<Species>).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n('birds.budgie')).last);
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('birds.species_required')), findsNothing);
+    });
+
     testWidgets('does not show error when name is provided', (tester) async {
       final nameCtrl = TextEditingController(text: 'Mavi');
       addTearDown(nameCtrl.dispose);

@@ -83,7 +83,8 @@ void main() {
     testWidgets('renders hatch date picker', (tester) async {
       await pumpFields(tester);
       expect(find.byType(DatePickerField), findsOneWidget);
-      expect(find.text(l10n('chicks.hatch_date_required')), findsOneWidget);
+      expect(find.text(l10n('chicks.hatch_date')), findsOneWidget);
+      expect(find.text(l10n('chicks.hatch_date_required')), findsNothing);
     });
 
     testWidgets('renders hatch weight field', (tester) async {

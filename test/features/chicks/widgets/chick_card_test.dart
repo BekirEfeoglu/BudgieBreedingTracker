@@ -94,6 +94,27 @@ void main() {
       expect(tapped, isTrue);
     });
 
+    testWidgets('exposes the card as an actionable semantic button', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await _pumpChickCard(tester, ChickCard(chick: testChick, onTap: () {}));
+
+        final semanticFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is Semantics &&
+              widget.properties.button == true &&
+              widget.properties.onTap != null,
+        );
+        final node = tester.getSemantics(semanticFinder.first);
+        expect(node.flagsCollection.isButton, isTrue);
+        expect(node.label, contains('Sarı Bebek'));
+      } finally {
+        semantics.dispose();
+      }
+    });
+
     testWidgets('chick without name renders fallback', (tester) async {
       final namelessChick = Chick(
         id: 'chick-3',

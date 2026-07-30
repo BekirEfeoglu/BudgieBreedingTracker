@@ -15,21 +15,26 @@ class DevelopmentStageBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StatusBadge(label: _label, color: _color, icon: _icon);
+    return StatusBadge(
+      label: developmentStageLabel(stage),
+      color: _color,
+      icon: _icon,
+    );
   }
-
-  String get _label => switch (stage) {
-    DevelopmentStage.newborn => 'chicks.stage_newborn'.tr(),
-    DevelopmentStage.nestling => 'chicks.stage_nestling'.tr(),
-    DevelopmentStage.fledgling => 'chicks.stage_fledgling'.tr(),
-    DevelopmentStage.juvenile => 'chicks.stage_juvenile'.tr(),
-    DevelopmentStage.unknown => 'birds.unknown'.tr(),
-  };
 
   Color get _color => developmentStageColor(stage);
 
   Widget get _icon => developmentStageIconWidget(stage);
 }
+
+/// Localized development-stage label shared by badges and card semantics.
+String developmentStageLabel(DevelopmentStage stage) => switch (stage) {
+  DevelopmentStage.newborn => 'chicks.stage_newborn'.tr(),
+  DevelopmentStage.nestling => 'chicks.stage_nestling'.tr(),
+  DevelopmentStage.fledgling => 'chicks.stage_fledgling'.tr(),
+  DevelopmentStage.juvenile => 'chicks.stage_juvenile'.tr(),
+  DevelopmentStage.unknown => 'birds.unknown'.tr(),
+};
 
 /// Returns the stage color for use in avatars etc.
 Color developmentStageColor(DevelopmentStage stage) => switch (stage) {

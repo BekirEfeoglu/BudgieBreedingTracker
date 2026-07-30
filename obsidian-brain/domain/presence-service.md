@@ -6,9 +6,9 @@ Source: `.claude/rules/presence.md` (primary — TTL, heartbeat schedule, batter
 
 ## Responsibility
 
-Tracks per-device session activity in the `user_sessions` Supabase table.
-**The only shipped consumer is the admin panel** (online-user visibility,
-`admin_users_providers.dart`) — community/messaging "online now" badges are
+Tracks per-device session activity and installed app builds in the
+`user_sessions` Supabase table. **The only shipped consumer is the admin
+panel** (online-user visibility and build adoption) — community/messaging "online now" badges are
 unshipped design targets ([[known-gaps]]). Lifecycle is driven by app
 foreground / background events and a heartbeat timer.
 
@@ -32,7 +32,8 @@ key-value writes with no Freezed model, offline mirror, or sync lifecycle.
 App foreground / login
   ├── startSession(userId)
   │   ├── auth user match guard (RLS preflight)
-  │   ├── UPSERT user_sessions row (UUID v7, platform, is_active=true, expires_at=now+TTL)
+  │   ├── read package metadata (fail-open)
+  │   ├── UPSERT user_sessions row (UUID v7, platform, app_version=version+build, is_active=true, expires_at=now+TTL)
   │   └── returns sessionId — null on auth mismatch or write failure
 
 Periodic (heartbeat interval)
@@ -48,6 +49,9 @@ App background / logout
 `v7()` UUID per call, so `id` never collides across calls today, but upsert
 matches data-layer.md's blanket Write Safety rule and protects a future
 caller-level retry that reuses the same `sessionId`.
+
+`app_version` is nullable for legacy clients. Package metadata failures do not
+block presence; the admin rollup reports versioned/total coverage separately.
 
 UTC `toIso8601String()` everywhere — naive local timestamps would break
 TTL math across timezones (see [[patterns/datetime-format]]).

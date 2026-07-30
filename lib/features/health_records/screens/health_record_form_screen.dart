@@ -36,6 +36,8 @@ class HealthRecordFormScreen extends ConsumerStatefulWidget {
 class _HealthRecordFormScreenState
     extends ConsumerState<HealthRecordFormScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _titleFieldKey = GlobalKey();
+  final _titleFocusNode = FocusNode();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _treatmentController = TextEditingController();
@@ -128,6 +130,7 @@ class _HealthRecordFormScreenState
 
   @override
   void dispose() {
+    _titleFocusNode.dispose();
     _titleController.dispose();
     _descriptionController.dispose();
     _treatmentController.dispose();
@@ -235,6 +238,8 @@ class _HealthRecordFormScreenState
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     HealthRecordFormFields(
+                      titleFieldKey: _titleFieldKey,
+                      titleFocusNode: _titleFocusNode,
                       titleController: _titleController,
                       descriptionController: _descriptionController,
                       treatmentController: _treatmentController,
@@ -279,9 +284,25 @@ class _HealthRecordFormScreenState
     );
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     FocusScope.of(context).unfocus();
-    if (!_formKey.currentState!.validate()) return;
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      if (_titleController.text.trim().isEmpty) {
+        _titleFocusNode.requestFocus();
+        await WidgetsBinding.instance.endOfFrame;
+        if (!mounted) return;
+        final titleContext = _titleFieldKey.currentContext;
+        if (titleContext != null && titleContext.mounted) {
+          await Scrollable.ensureVisible(
+            titleContext,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
+            alignment: 0.15,
+          );
+        }
+      }
+      return;
+    }
     AppHaptics.lightImpact();
 
     final userId = ref.read(currentUserIdProvider);

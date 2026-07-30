@@ -149,6 +149,7 @@ class BirdFormBasicInfoSection extends StatelessWidget {
         const SizedBox(height: AppSpacing.md),
         DropdownButtonFormField<Species>(
           initialValue: selectedSpecies,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           decoration: InputDecoration(
             labelText: 'birds.species'.tr(),
             border: const OutlineInputBorder(),

@@ -79,6 +79,88 @@ void main() {
       expect(find.text(l10n('admin.app_update_settings')), findsOneWidget);
     });
 
+    testWidgets('shows required updates disabled when minimum build is zero', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(AdminSettingsContent(settings: _settingsMap)),
+      );
+      await tester.pump();
+
+      expect(find.text(l10n('admin.force_update_disabled')), findsNWidgets(2));
+    });
+
+    testWidgets('rejects a minimum build above the latest build', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(AdminSettingsContent(settings: _settingsMap)),
+      );
+      await tester.pump();
+
+      await tester.tap(find.text(l10n('admin.edit_app_update_settings')));
+      await tester.pumpAndSettle();
+      final latestBuildFields = find.widgetWithText(
+        TextFormField,
+        l10n('admin.latest_build'),
+      );
+      final minimumBuildFields = find.widgetWithText(
+        TextFormField,
+        l10n('admin.min_supported_build'),
+      );
+      await tester.enterText(latestBuildFields.first, '60');
+      await tester.enterText(minimumBuildFields.first, '61');
+      await tester.tap(find.text(l10n('common.save')));
+      await tester.pump();
+
+      expect(find.text(l10n('admin.min_build_exceeds_latest')), findsOneWidget);
+    });
+
+    testWidgets('asks for confirmation before raising a minimum build', (
+      tester,
+    ) async {
+      final settings = <String, Map<String, dynamic>>{
+        ..._settingsMap,
+        'app_version': {
+          'value': {
+            'ios': {
+              'latest_version': '1.1.8',
+              'latest_build': 60,
+              'min_supported_build': 0,
+              'store_url': 'https://apps.apple.com/app/id123',
+            },
+            'android': {
+              'latest_version': '1.1.8',
+              'latest_build': 60,
+              'min_supported_build': 32,
+              'store_url': 'https://play.google.com/store/apps/details?id=test',
+            },
+          },
+        },
+      };
+      await tester.pumpWidget(_wrap(AdminSettingsContent(settings: settings)));
+      await tester.pump();
+
+      await tester.tap(find.text(l10n('admin.edit_app_update_settings')));
+      await tester.pumpAndSettle();
+      final minimumBuildFields = find.widgetWithText(
+        TextFormField,
+        l10n('admin.min_supported_build'),
+      );
+      await tester.enterText(minimumBuildFields.first, '1');
+      await tester.tap(find.text(l10n('common.save')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(l10n('admin.confirm_min_supported_build')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(l10n('admin.confirm_min_supported_build_desc')),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('should_show_multiple_accent_settings_sections', (
       tester,
     ) async {

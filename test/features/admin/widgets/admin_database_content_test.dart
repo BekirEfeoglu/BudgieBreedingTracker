@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsAction;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -284,6 +286,51 @@ void main() {
       );
       await tester.pump();
       expect(find.byType(Card), findsOneWidget);
+    });
+
+    testWidgets('exposes a labeled semantic button when enabled', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: DatabaseActionButton(
+              icon: const Icon(Icons.backup),
+              label: 'Backup',
+              color: Colors.blue,
+              isLoading: false,
+              onTap: () {},
+            ),
+          ),
+        ),
+      );
+
+      final node = tester.getSemantics(find.bySemanticsLabel('Backup'));
+      expect(node.flagsCollection.isButton, isTrue);
+      expect(node.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+      semantics.dispose();
+    });
+
+    testWidgets('removes semantic tap action while loading', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: DatabaseActionButton(
+              icon: const Icon(Icons.backup),
+              label: 'Backup',
+              color: Colors.blue,
+              isLoading: true,
+              onTap: () {},
+            ),
+          ),
+        ),
+      );
+
+      final node = tester.getSemantics(find.bySemanticsLabel('Backup'));
+      expect(node.getSemanticsData().hasAction(SemanticsAction.tap), isFalse);
+      semantics.dispose();
     });
   });
 

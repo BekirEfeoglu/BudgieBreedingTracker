@@ -20,6 +20,7 @@ import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_he
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_item.dart';
 import 'package:budgie_breeding_tracker/router/route_names.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
+import 'package:budgie_breeding_tracker/core/widgets/buttons/app_icon_button.dart';
 
 class ProfileMenuDialog extends ConsumerWidget {
   const ProfileMenuDialog({
@@ -71,6 +72,12 @@ class ProfileMenuDialog extends ConsumerWidget {
                   hasBadges: hasBadges,
                   isPremium: isPremium,
                   isFounder: isFounder,
+                  trailing: AppIconButton(
+                    key: const Key('profile_menu_close_button'),
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(LucideIcons.x),
+                    semanticLabel: 'common.close'.tr(),
+                  ),
                 ),
                 const Divider(height: 1),
 

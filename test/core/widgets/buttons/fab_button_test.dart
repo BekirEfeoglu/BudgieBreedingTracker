@@ -59,6 +59,61 @@ void main() {
       expect(fab.tooltip, 'Add item');
     });
 
+    testWidgets('disables the implicit Hero tag by default', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: Column(
+                children: [
+                  FabButton(icon: const Icon(Icons.add), onPressed: () {}),
+                  FabButton(icon: const Icon(Icons.edit), onPressed: () {}),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const Scaffold(body: Text('Next')),
+                      ),
+                    ),
+                    child: const Text('Navigate'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final fabs = tester.widgetList<FloatingActionButton>(
+        find.byType(FloatingActionButton),
+      );
+      expect(fabs.map((fab) => fab.heroTag), everyElement(isNull));
+
+      await tester.tap(find.text('Navigate'));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('Next'), findsOneWidget);
+    });
+
+    testWidgets('forwards an explicit unique Hero tag', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            floatingActionButton: FabButton(
+              heroTag: 'bird-add',
+              icon: const Icon(Icons.add),
+              onPressed: () {},
+            ),
+          ),
+        ),
+      );
+
+      final fab = tester.widget<FloatingActionButton>(
+        find.byType(FloatingActionButton),
+      );
+      expect(fab.heroTag, 'bird-add');
+    });
+
     testWidgets('accepts Widget icon (not just IconData)', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
