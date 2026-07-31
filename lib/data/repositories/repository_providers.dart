@@ -1,11 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budgie_breeding_tracker/data/local/database/dao_providers.dart';
+import 'package:budgie_breeding_tracker/data/local/database/database_provider.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/remote_source_providers.dart';
 import 'package:budgie_breeding_tracker/data/repositories/bird_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/egg_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/chick_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/incubation_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/breeding_pair_repository.dart';
+import 'package:budgie_breeding_tracker/data/repositories/breeding_creation_persistence.dart';
 import 'package:budgie_breeding_tracker/data/repositories/health_record_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/growth_measurement_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/event_repository.dart';
@@ -101,6 +103,15 @@ final breedingPairRepositoryProvider = Provider<BreedingPairRepository>((ref) {
     conflictSink: ref.watch(syncConflictStoreProvider),
   );
 });
+
+final breedingCreationPersistenceProvider =
+    Provider<BreedingCreationPersistence>((ref) {
+      return DriftBreedingCreationPersistence(
+        database: ref.watch(appDatabaseProvider),
+        pairRepository: ref.watch(breedingPairRepositoryProvider),
+        incubationRepository: ref.watch(incubationRepositoryProvider),
+      );
+    });
 
 final healthRecordRepositoryProvider = Provider<HealthRecordRepository>((ref) {
   return HealthRecordRepository(

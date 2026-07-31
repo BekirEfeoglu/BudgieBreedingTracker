@@ -53,11 +53,10 @@ decision; the owning rule file says what closing them requires.
 | Presence visibility modes + user-facing online UI | No `presence_visibility` setting, no `invisible`/`away` states, no conversation-list dot / profile last-seen. Presence is a boolean active/inactive session tracker whose ONLY consumer is the admin panel | `presence.md` § Unshipped Tasarım Hedefleri |
 | Wipe-and-restore / conflict choices | Portable password backup and non-mutating record-count preview are shipped, but restore still has one explicit merge-upsert strategy; no wipe, skip/overwrite/rename choice, or automatic undo | `data-io.md` § Restore Flow |
 | `ValidationException.fieldErrors` field map | Exception carries only `(message, code?, originalError?)`; field-level errors come from sync validators, not the server | `forms-validation.md` § ValidationException Mapping |
-| Cross-version Drift data-migration tests | Only a HEAD schema-consistency harness exists (`test/data/local/database/migration_test.dart`: version, 20 tables, sync_metadata unique index, FK). No per-version data-preservation test — historical snapshots were never captured, and `drift_dev schema`'s generated verifier fails to compile (`table_name` column → `tableName` field collides with `Table.tableName`) | `migrations.md` § Test Migration |
+| Generalized cross-version Drift data-migration suite | Targeted file-DB regressions exist for historically reconstructed paths, including v25 health links, v28 conflict snapshots, legacy upgrades, and v29→v30 chick/index reconciliation. There is still no generated every-version preservation suite: historical snapshots were never captured, and `drift_dev schema`'s verifier fails to compile (`table_name` → `tableName` collision) | `migrations.md` § Test Migration |
 | DM 200-message in-memory cap | No such cap exists; scroll-up loads 50-row pages and retains every loaded page while the thread is open | `messaging.md` § Performance |
 | Marketplace monetization tier (boost/"öne çıkar", renew, listing expiry, edit window, premium photo quota, phone opt-in) | None exist: no `is_featured`/`expires_at`/`archived_at`/phone column on `marketplace_listings`, zero occurrences of `renew`, `marketplace_listings_update` has no time predicate, and `MarketplaceImagePicker.maxImages = 3` for everyone. The only premium difference is the 3-active-listing free cap (premium exempt) | `marketplace.md` § Premium Integration, § Listing Lifecycle |
 | Monthly leaderboard + self-rank + leaderboard cache | `get_leaderboard` returns only the all-time top 100 (`total_xp DESC`, clamped `LIMIT ≤ 100`); `leaderboardProvider` is a bare `FutureProvider` with no TTL/`keepAlive`. No monthly board, no out-of-top-100 self position, no 5-minute cache — and no `MATERIALIZED VIEW` anywhere in the repo | `gamification.md` § Leaderboard |
-| Calendar month-scoped query + TTL cache + 30-day lazy load | `eventsStreamProvider` streams **all** of the user's events via `watchAll` and filters by month in memory. `watchByDateRange` exists on the repo/DAO but has no calendar caller (DAO tests only). No per-month TTL cache, no age-based lazy loading | `calendar.md` § Performance |
 | Community like-count cache | No like-count cache (TTL or otherwise). `likeCount` arrives on the post row and is adjusted optimistically ±1 with rollback; the row itself is subject to `CommunityPostCache`'s 5-minute TTL | `community.md` § Like / Reaction |
 
 ## Genetics Roadmap — Still Open
@@ -82,6 +81,9 @@ implemented; the items below are not.
 - **Genealogy rewarded-ad bypass** — product decision; statistics/genetics have it, genealogy doesn't (`genealogy.md`)
 - **XP purchase / premium XP accelerator / loot boxes** — anti-gambling, store policy (`gamification.md`)
 - **iCalendar RRULE recurrence engine** — over-engineering (`calendar.md`)
+- **Calendar TTL month cache** — local Drift already watches only the visible
+  half-open month/week/day range; an additional TTL layer would duplicate
+  cache invalidation without reducing remote reads (`calendar.md`)
 - **Manual timezone profile field** — device timezone only (`datetime-format.md`)
 - **IP geolocation in marketplace** — privacy; user enters city manually (`marketplace.md`)
 - **GDPR export behind premium** — data ownership: always free (`settings.md`)

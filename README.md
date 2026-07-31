@@ -55,15 +55,15 @@ The repository includes the main mobile app, localized content in Turkish, Engli
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 1035 Dart files |
-| Test suite | 953 test files, 11,789+ tests (unit, widget, golden, e2e) |
+| Source files (lib/) | 1036 Dart files |
+| Test suite | 956 test files, 11,796+ tests (unit, widget, golden, e2e) |
 | Feature modules | 24 |
 | Drift tables | 20 |
 | Routes | 75 |
 | Custom SVG icons | 99 |
 | Localization keys | ~3,229 per language (TR, EN, DE) |
 | Domain services | 23 |
-| DB schema version | 29 |
+| DB schema version | 30 |
 
 ## Feature Set
 

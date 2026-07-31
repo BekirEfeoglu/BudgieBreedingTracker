@@ -128,13 +128,14 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 29;
+  int get schemaVersion => 30;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async {
       await m.createAll();
       await _createPerformanceIndexes(this);
+      await _createSchemaV30Indexes(this);
     },
     onUpgrade: (m, from, to) async {
       // Run migrations sequentially from the old version to the new one.
@@ -196,6 +197,8 @@ class AppDatabase extends _$AppDatabase {
             await _migrateV27ToV28(this, m);
           case 29:
             await _migrateV28ToV29(this, m);
+          case 30:
+            await _migrateV29ToV30(this, m);
         }
       }
     },

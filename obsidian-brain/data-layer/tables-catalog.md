@@ -85,8 +85,10 @@ Schema v23 adds composite indexes for the high-traffic FK and dashboard paths. K
 |---------------|----------------|
 | incubating eggs by incubation/status/delete state | `idx_eggs_incubation_status_deleted` |
 | chick lookup by egg while excluding deleted rows | `idx_chicks_egg_deleted` |
+| one active chick per non-null egg | `idx_chicks_active_egg_unique` (partial unique, v30) |
 | health timeline by bird while excluding deleted rows | `idx_health_records_bird_deleted` |
 | calendar/event lookup by bird while excluding deleted rows | `idx_events_bird_deleted` |
+| visible calendar range by user/delete/date | `idx_events_user_deleted_date` (v30) |
 | clutch lookup by breeding pair while excluding deleted rows | `idx_clutches_breeding_deleted` |
 | incubation lookup by breeding pair and status | `idx_incubations_breeding_pair_status` |
 | notification unread/read list by user | `idx_notifications_user_read` |

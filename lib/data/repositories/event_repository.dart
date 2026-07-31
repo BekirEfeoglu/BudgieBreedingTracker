@@ -435,12 +435,12 @@ class EventRepository extends BaseRepository<Event>
   Future<void> unsubscribeFromEvents(RealtimeChannel channel) =>
       _remoteSource.unsubscribe(channel);
 
-  /// Events in a date range (live stream).
+  /// Events in the half-open range [startInclusive, endExclusive).
   Stream<List<Event>> watchByDateRange(
     String userId,
-    DateTime start,
-    DateTime end,
-  ) => _localDao.watchByDateRange(userId, start, end);
+    DateTime startInclusive,
+    DateTime endExclusive,
+  ) => _localDao.watchByDateRange(userId, startInclusive, endExclusive);
 
   /// Upcoming events.
   Future<List<Event>> getUpcoming(String userId, {int limit = 10}) =>

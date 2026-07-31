@@ -75,7 +75,12 @@ Terminal: `hatched`, `damaged`, `discarded`, `infertile`, `empty`. Non-terminal:
 
 Setting an egg's status to `hatched` triggers `_createChickFromHatchedEgg(egg)`. Behavior:
 
-- **Idempotent**: only inserts when no chick already exists for the egg
+- **Idempotent**: only inserts when no chick already exists for the egg.
+  Automatic chick ID equals the egg UUID, so concurrent offline device writes
+  converge on one remote upsert
+- **Schema-enforced**: Drift v30 and Supabase use the partial unique index
+  `idx_chicks_active_egg_unique` over active, non-null `egg_id`; historical
+  duplicate chicks are preserved but later rows are detached from the egg
 - **Fail-closed on read failure**: if the duplicate-check read itself throws,
   auto-create is skipped (never risk a duplicate chick) and a `warning` surfaces
   so the user adds the chick manually (May 2026 5-tab audit)

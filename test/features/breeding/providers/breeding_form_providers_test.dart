@@ -8,6 +8,7 @@ import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_for
 import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
+import 'package:budgie_breeding_tracker/data/repositories/breeding_creation_persistence.dart';
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
@@ -29,6 +30,22 @@ class _TestNotificationToggleSettingsNotifier
     extends NotificationToggleSettingsNotifier {
   @override
   NotificationToggleSettings build() => const NotificationToggleSettings();
+}
+
+class _TestBreedingCreationPersistence implements BreedingCreationPersistence {
+  const _TestBreedingCreationPersistence(
+    this.pairRepository,
+    this.incubationRepository,
+  );
+
+  final MockBreedingPairRepository pairRepository;
+  final MockIncubationRepository incubationRepository;
+
+  @override
+  Future<void> save(BreedingPair pair, Incubation incubation) async {
+    await pairRepository.save(pair);
+    await incubationRepository.save(incubation);
+  }
 }
 
 BreedingPair _pair({
@@ -165,6 +182,9 @@ void main() {
       overrides: [
         breedingPairRepositoryProvider.overrideWithValue(mockPairRepo),
         incubationRepositoryProvider.overrideWithValue(mockIncubationRepo),
+        breedingCreationPersistenceProvider.overrideWithValue(
+          _TestBreedingCreationPersistence(mockPairRepo, mockIncubationRepo),
+        ),
         eggRepositoryProvider.overrideWithValue(mockEggRepo),
         birdRepositoryProvider.overrideWithValue(mockBirdRepo),
         clutchRepositoryProvider.overrideWithValue(mockClutchRepo),
@@ -422,36 +442,39 @@ void main() {
       expect(savedIncubation.status, IncubationStatus.active);
     });
 
-    test('rolls back saved pair when incubation save fails', () async {
-      stubUnderLimits();
-      when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
-      when(
-        () => mockIncubationRepo.save(any()),
-      ).thenThrow(Exception('incubation save failed'));
-      when(() => mockPairRepo.remove(any())).thenAnswer((_) async {});
+    test(
+      'reports atomic persistence failure without compensating delete',
+      () async {
+        stubUnderLimits();
+        when(() => mockPairRepo.save(any())).thenAnswer((_) async {});
+        when(
+          () => mockIncubationRepo.save(any()),
+        ).thenThrow(Exception('incubation save failed'));
 
-      final container = createContainer();
-      addTearDown(container.dispose);
+        final container = createContainer();
+        addTearDown(container.dispose);
 
-      await container
-          .read(breedingFormStateProvider.notifier)
-          .createBreeding(
-            userId: 'user-1',
-            maleId: 'male-1',
-            femaleId: 'female-1',
-            pairingDate: DateTime(2025, 1, 1),
-          );
+        await container
+            .read(breedingFormStateProvider.notifier)
+            .createBreeding(
+              userId: 'user-1',
+              maleId: 'male-1',
+              femaleId: 'female-1',
+              pairingDate: DateTime(2025, 1, 1),
+            );
 
-      final savedPair =
-          verify(() => mockPairRepo.save(captureAny())).captured.single
-              as BreedingPair;
-      verify(() => mockPairRepo.remove(savedPair.id)).called(1);
+        final savedPair =
+            verify(() => mockPairRepo.save(captureAny())).captured.single
+                as BreedingPair;
+        expect(savedPair.id, isNotEmpty);
+        verifyNever(() => mockPairRepo.remove(any()));
 
-      final state = container.read(breedingFormStateProvider);
-      expect(state.isSuccess, isFalse);
-      expect(state.isLoading, isFalse);
-      expect(state.error, isNotNull);
-    });
+        final state = container.read(breedingFormStateProvider);
+        expect(state.isSuccess, isFalse);
+        expect(state.isLoading, isFalse);
+        expect(state.error, isNotNull);
+      },
+    );
 
     test('ignores duplicate create while first create is loading', () async {
       stubUnderLimits();

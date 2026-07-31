@@ -87,9 +87,16 @@ class IncubationRepository extends BaseRepository<Incubation>
 
   @override
   Future<void> save(Incubation item) async {
+    await saveLocalPending(item);
+    await tryImmediatePush(item);
+  }
+
+  /// Persists the incubation and its pending-sync metadata without network I/O.
+  ///
+  /// Exposed for multi-entity local transactions such as breeding creation.
+  Future<void> saveLocalPending(Incubation item) async {
     await _localDao.insertItem(item);
     await markPending(item.id, item.userId);
-    await tryImmediatePush(item);
   }
 
   @override

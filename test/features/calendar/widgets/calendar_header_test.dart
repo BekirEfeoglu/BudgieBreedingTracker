@@ -122,6 +122,7 @@ void main() {
       await tester.tap(find.byType(IconButton).last);
       await tester.pump();
       expect(container.read(displayedMonthProvider).month, 4);
+      expect(container.read(selectedDateProvider), DateTime(2024, 4, 15));
     });
 
     testWidgets('tapping previous-month button changes displayed month back', (
@@ -135,6 +136,7 @@ void main() {
       await tester.tap(find.byType(IconButton).first);
       await tester.pump();
       expect(container.read(displayedMonthProvider).month, 2);
+      expect(container.read(selectedDateProvider), DateTime(2024, 2, 15));
     });
 
     testWidgets('tapping title area resets displayed month to today', (

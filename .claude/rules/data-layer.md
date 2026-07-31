@@ -5,7 +5,7 @@
 - **DAOs**: `lib/data/local/database/daos/` (20 DAOs)
 - **Mappers**: `lib/data/local/database/mappers/` (20 mappers)
 - **Converters**: `lib/data/local/database/converters/enum_converters.dart`
-- **Schema version**: 29
+- **Schema version**: 30
 - Import tables DIRECTLY from table file, not via `app_database.dart`
 - Use `.equalsValue()` for enum columns, not `.equals()`
 - NEVER close a `.references()` cycle between two tables (A↔B çift yönlü typed FK): tablo dosyaları birbirini import eder ve drift_dev "Circular error when deserializing drift modules" WARNING'leri üretir (non-fatal — simolus3/drift#3227). Child→parent ana FK `.references()` kalır; GERİ-referansı raw `.customConstraint('NULL REFERENCES <table> (id)')` ile bildir ve import'u kaldır — üretilen SQL FK birebir aynıdır, schema değişmez. Kanonik örnek: `incubations.clutchId` ↔ `clutches.incubationId` (2026-07-09). Detay: obsidian-brain/data-layer/drift.md § Circular FK References
@@ -31,7 +31,7 @@ import 'package:budgie/data/local/database/tables/birds_table.dart';
 - **Storage**: `lib/data/remote/storage/storage_service.dart`
 - **Constants**: `SupabaseConstants` class (204 table/column constants)
 - **Edge Functions**: 12 in `supabase/functions/`
-- **Migrations**: 220 SQL files in `supabase/migrations/`
+- **Migrations**: 221 SQL files in `supabase/migrations/`
 - Always use `SupabaseConstants` for table/column names — never hardcode
 - `verify_rules.py` § Supabase Tables (`rules-sync`) rejects a `*Table` constant that no migration creates, and a `*Col<Name>` constant no migration declares — both otherwise surface as a Postgres error at query time, not at build time. Column names are not table-scoped (the same `user_id` constant is reused everywhere), so the column check answers "does this exist anywhere" — enough for the typo class
 - Use `.toSupabase()` extension — never send `created_at`/`updated_at` manually
@@ -88,7 +88,7 @@ import those sources directly.
 ### Write Safety
 - Syncable entity replay paths ALWAYS use `.upsert()` for idempotency — raw
   `.insert()` causes duplicates on retry/sync replay
-- Use stable client-generated UUIDs as primary keys, not server-assigned IDs. **Prefer `const Uuid().v7()`** — time-orderable, better B-tree index locality, easier debugging. `Uuid().v4()` remains acceptable for non-entity identifiers (transient request tokens, etc.) but new entity creation paths should use v7 for consistency with the rest of the codebase.
+- Use stable client-generated UUIDs as primary keys, not server-assigned IDs. **Prefer `const Uuid().v7()`** — time-orderable, better B-tree index locality, easier debugging. `Uuid().v4()` remains acceptable for non-entity identifiers (transient request tokens, etc.) but new entity creation paths should use v7 for consistency with the rest of the codebase. Canonical derived-ID exception: an automatically created chick reuses its egg UUID so multi-device offline hatch writes converge.
 - Batch writes in Drift transactions; batch remote writes where API supports
 
 ```dart

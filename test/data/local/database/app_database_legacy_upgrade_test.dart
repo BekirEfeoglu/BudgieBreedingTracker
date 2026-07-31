@@ -114,7 +114,7 @@ void main() {
         'chicks': ['banding_day', 'banding_date'],
       },
       (db) async {
-        expect(db.schemaVersion, 29);
+        expect(db.schemaVersion, 30);
 
         // Opening at all is the assertion: the unguarded ALTER aborts the whole
         // onUpgrade transaction, so this query never runs.
@@ -145,7 +145,7 @@ void main() {
         'events': ['chick_id'],
       },
       (db) async {
-        expect(db.schemaVersion, 29);
+        expect(db.schemaVersion, 30);
 
         // Opening at all is the assertion: an unguarded CREATE INDEX against the
         // missing table aborts onUpgrade and this query never runs.
@@ -204,7 +204,7 @@ void main() {
           ],
         },
         (db) async {
-          expect(db.schemaVersion, 29);
+          expect(db.schemaVersion, 30);
 
           // Every post-v21 column must be back after the upgrade chain.
           expect(await columnNames(db, 'health_records'), contains('chick_id'));

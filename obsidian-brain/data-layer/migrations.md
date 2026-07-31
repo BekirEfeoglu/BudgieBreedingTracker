@@ -8,7 +8,7 @@ Two parallel migration systems: **Drift** (local SQLite) and **Supabase SQL** (r
 
 ### Schema Version
 
-`schemaVersion = 29` in `app_database.dart`. Must be incremented sequentially — no skipping. (v25 added `profiles.show_in_leaderboard` via `_migrateV24ToV25`; v26 added the `idx_conflict_history_user_table_record` composite index via `_migrateV25ToV26`; v27 added nullable `health_records.chick_id` via `_migrateV26ToV27`, paired with Supabase `20260709103045`; v28 added `genetics_history.father_phase_overrides`; v29 adds nullable encrypted snapshot columns `conflict_history.local_payload`, `server_payload`, and `payload_version` via `_migrateV28ToV29`. Existing rows remain NULL because discarded values cannot be reconstructed. v28/v29 are local-only, so neither has a paired Supabase migration.)
+`schemaVersion = 30` in `app_database.dart`; increment sequentially, never skip. v30 reconciles duplicate active `chicks.egg_id` links without deleting rows, then adds `idx_chicks_active_egg_unique` and `idx_events_user_deleted_date`. Supabase mirrors the unique index in `20260731120000_enforce_one_active_chick_per_egg.sql`.
 
 ### Pattern
 
@@ -33,12 +33,7 @@ MigrationStrategy(
 - [ ] Test: fresh DB + upgrade-from-previous
 - [ ] `.g.dart` regenerated
 
-Shared index helpers running from historical migrations must guard **both**
-later-added columns (`_tableHasColumn`) and later-added tables (`_tableExists`).
-`IF NOT EXISTS` guards only duplicate index names — a missing column or table
-still throws and aborts the whole `onUpgrade`, so the DB never opens. The
-migration creating the object must create the index too, and a regression must
-replay the oldest affected version (`app_database_legacy_upgrade_test.dart`).
+Shared index helpers running from historical migrations must guard **both** later-added columns (`_tableHasColumn`) and tables (`_tableExists`). `IF NOT EXISTS` guards only duplicate index names; a missing target still aborts `onUpgrade`. Create the index in the object-owning migration too and replay the oldest affected version (`app_database_legacy_upgrade_test.dart`).
 
 ## Supabase SQL Migrations
 
@@ -46,8 +41,7 @@ replay the oldest affected version (`app_database_legacy_upgrade_test.dart`).
 
 Format: `YYYYMMDDHHmmss_short_description.sql`
 
-217 tracked migration files are applied lexicographically. The 2026-07-19 linked-ledger check freezes 214 canonical files through `20260714200511` with nine apply-time aliases.
-The three post-baseline deltas (`20260717120000`, `20260718203416`, and `20260719012443`) are applied remotely; the online drift check reports full prod parity.
+221 tracked migration files are ordered lexicographically. The immutable baseline freezes the canonical chain through `20260714200511` with nine apply-time aliases; later files are append-only deltas whose remote parity must be verified after deployment.
 **Historical 2026-07-10 audit:**
 206 local files ↔ 206 ledger rows, version parity exact (0 duplicates), all
 recent effects confirmed in the live schema; `20260710120000` (marketplace
@@ -154,7 +148,7 @@ Never delete or rename migration files. If a mistake exists, create a new migrat
 
 ## Current Decisions
 
-- Drift schema is v29 and must advance one version at a time.
+- Drift schema is v30 and must advance one version at a time.
 - Supabase SQL migrations are forward-only and tracked in chronological filenames.
 - Privileged RPCs use `private` `SECURITY DEFINER` implementations plus public invoker wrappers.
 - Production drift verification (version + content) is required after deploying newer local migrations; the ledger's `statements` column is the source for content-drift md5 checks.
@@ -163,13 +157,13 @@ Never delete or rename migration files. If a mistake exists, create a new migrat
 - `20260717120000_align_scanned_image_upload_limits.sql` was applied to production through an alias-mapped temporary CLI fixture, preserving its exact local version and statement in the remote ledger without editing applied migration files. All seven safety-scanned image buckets enforce 2 MiB; `backups` remains 50 MiB.
 - Historical shared index helpers guard later-added columns **and later-added tables**, and are tested from the earliest affected local schema version. `CREATE INDEX IF NOT EXISTS` guards only the index name — a missing column (`_tableHasColumn`) or a missing table (`_tableExists`, added 2026-07-25) still throws and aborts the whole `onUpgrade`, so the database never opens. Incident: `_createPerformanceIndexes` created `idx_conflict_history_user_table_record` unguarded while also running from the v8→v9 step, but `conflict_history` only exists from v15→v16 — every upgrade from schema ≤8 was bricked. `_migrateV15ToV16` now creates that index itself; regression `test/data/local/database/app_database_legacy_upgrade_test.dart` covers upgrades from v8 and v21.
 - Committed migration files that drift from the ledger but are superseded by a later drift-free migration are left as-is (final schema reproduces prod); only a file that determines the *final* state and diverges gets a forward reconciliation migration.
-- Drift schema is guarded at HEAD by a self-contained consistency test (`test/data/local/database/migration_test.dart`): schemaVersion, all 20 registered tables materialized by onCreate, the `sync_metadata` `UNIQUE(table_name, record_id)` index, and beforeOpen FK enforcement. It uses `sqlite_master`/`PRAGMA`, not the `drift_dev schema` generated verifier (which cannot compile — the `table_name` column dartifies to a `tableName` field that collides with `Table.tableName`).
+- Drift HEAD is guarded by `migration_test.dart` (version, 20 tables, sync/chick/calendar indexes, FK); `app_database_v30_migration_test.dart` separately replays v29→v30 reconciliation.
 
 ## Known Deferred Work
 
 - `20260403140000`, `20260413100000`, `20260430130000` committed files still differ from their ledger `statements` (intermediate versions superseded later); benign for final schema, not reconciled to avoid rewriting applied history.
 - Large-table index work should be split into dedicated concurrent-index migrations.
-- No cross-version Drift data-migration test (v_n → v_n+1 data preservation): historical per-version schema snapshots were never captured and cannot be reconstructed. Only the HEAD schema-consistency test exists; see `known-gaps.md`.
+- No generalized every-version Drift preservation suite: historical snapshots are unavailable. Targeted file-DB regressions cover reconstructable high-risk steps, including v29→v30; see `known-gaps.md`.
 
 ## Do Not Reintroduce
 

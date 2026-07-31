@@ -124,9 +124,16 @@ class BreedingPairRepository extends BaseRepository<BreedingPair>
 
   @override
   Future<void> save(BreedingPair item) async {
+    await saveLocalPending(item);
+    await tryImmediatePush(item);
+  }
+
+  /// Persists the pair and its pending-sync metadata without network I/O.
+  ///
+  /// Exposed for multi-entity local transactions such as breeding creation.
+  Future<void> saveLocalPending(BreedingPair item) async {
     await _localDao.insertItem(item);
     await markPending(item.id, item.userId);
-    await tryImmediatePush(item);
   }
 
   @override

@@ -27,8 +27,21 @@ Event _event({
   );
 }
 
+void _stubVisibleEventStream(
+  MockEventRepository repository,
+  Stream<List<Event>> stream,
+) {
+  when(
+    () => repository.watchByDateRange('user-1', any(), any()),
+  ).thenAnswer((_) => stream);
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUpAll(() {
+    registerFallbackValue(DateTime.utc(2025));
+  });
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -48,10 +61,7 @@ void main() {
       final after = DateTime.now();
 
       DateTime dayOf(DateTime d) => DateTime(d.year, d.month, d.day);
-      expect(
-        dayOf(date),
-        anyOf(equals(dayOf(before)), equals(dayOf(after))),
-      );
+      expect(dayOf(date), anyOf(equals(dayOf(before)), equals(dayOf(after))));
     });
 
     test('can change selected date', () {
@@ -137,6 +147,37 @@ void main() {
     });
   });
 
+  group('visibleCalendarRangeProvider', () {
+    test('uses half-open month, week, and day bounds in UTC', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(displayedMonthProvider.notifier).state = DateTime(2025, 3);
+      container.read(selectedDateProvider.notifier).set(DateTime(2025, 3, 12));
+
+      container.read(calendarViewProvider.notifier).state =
+          CalendarViewMode.month;
+      expect(container.read(visibleCalendarRangeProvider), (
+        startInclusive: DateTime(2025, 3).toUtc(),
+        endExclusive: DateTime(2025, 4).toUtc(),
+      ));
+
+      container.read(calendarViewProvider.notifier).state =
+          CalendarViewMode.week;
+      expect(container.read(visibleCalendarRangeProvider), (
+        startInclusive: DateTime(2025, 3, 10).toUtc(),
+        endExclusive: DateTime(2025, 3, 17).toUtc(),
+      ));
+
+      container.read(calendarViewProvider.notifier).state =
+          CalendarViewMode.day;
+      expect(container.read(visibleCalendarRangeProvider), (
+        startInclusive: DateTime(2025, 3, 12).toUtc(),
+        endExclusive: DateTime(2025, 3, 13).toUtc(),
+      ));
+    });
+  });
+
   group('eventsStreamProvider', () {
     late MockEventRepository mockEventRepo;
 
@@ -144,29 +185,34 @@ void main() {
       mockEventRepo = MockEventRepository();
     });
 
-    test('delegates to repo.watchAll and returns events', () async {
+    test('delegates the visible range to the repository', () async {
       final event = _event(id: 'evt-1', eventDate: DateTime(2025, 3, 10));
-      when(
-        () => mockEventRepo.watchAll('user-1'),
-      ).thenAnswer((_) => Stream.value([event]));
+      _stubVisibleEventStream(mockEventRepo, Stream.value([event]));
 
       final container = ProviderContainer(
         overrides: [eventRepositoryProvider.overrideWithValue(mockEventRepo)],
       );
       addTearDown(container.dispose);
 
+      container.read(displayedMonthProvider.notifier).state = DateTime(2025, 3);
       container.listen(eventsStreamProvider('user-1'), (_, __) {});
       final result = await container.read(
         eventsStreamProvider('user-1').future,
       );
       expect(result, hasLength(1));
       expect(result.first.id, 'evt-1');
+
+      verify(
+        () => mockEventRepo.watchByDateRange(
+          'user-1',
+          DateTime(2025, 3).toUtc(),
+          DateTime(2025, 4).toUtc(),
+        ),
+      ).called(1);
     });
 
     test('returns empty list when no events', () async {
-      when(
-        () => mockEventRepo.watchAll('user-1'),
-      ).thenAnswer((_) => Stream.value([]));
+      _stubVisibleEventStream(mockEventRepo, Stream.value([]));
 
       final container = ProviderContainer(
         overrides: [eventRepositoryProvider.overrideWithValue(mockEventRepo)],
@@ -186,9 +232,7 @@ void main() {
         _event(id: 'e2', eventDate: DateTime(2025, 3, 11)),
         _event(id: 'e3', eventDate: DateTime(2025, 3, 12)),
       ];
-      when(
-        () => mockEventRepo.watchAll('user-1'),
-      ).thenAnswer((_) => Stream.value(events));
+      _stubVisibleEventStream(mockEventRepo, Stream.value(events));
 
       final container = ProviderContainer(
         overrides: [eventRepositoryProvider.overrideWithValue(mockEventRepo)],
@@ -218,9 +262,10 @@ void main() {
       );
       final nonMatching = _event(id: 'evt-2', eventDate: DateTime(2025, 6, 16));
 
-      when(
-        () => mockEventRepo.watchAll('user-1'),
-      ).thenAnswer((_) => Stream.value([matching, nonMatching]));
+      _stubVisibleEventStream(
+        mockEventRepo,
+        Stream.value([matching, nonMatching]),
+      );
 
       final container = ProviderContainer(
         overrides: [
@@ -242,9 +287,7 @@ void main() {
     });
 
     test('returns empty list when no events match the selected date', () async {
-      when(
-        () => mockEventRepo.watchAll('user-1'),
-      ).thenAnswer((_) => Stream.value([]));
+      _stubVisibleEventStream(mockEventRepo, Stream.value([]));
 
       final container = ProviderContainer(
         overrides: [
@@ -266,9 +309,7 @@ void main() {
     });
 
     test('returns empty list before stream emits', () {
-      when(
-        () => mockEventRepo.watchAll('user-1'),
-      ).thenAnswer((_) => const Stream.empty());
+      _stubVisibleEventStream(mockEventRepo, const Stream.empty());
 
       final container = ProviderContainer(
         overrides: [
@@ -302,9 +343,10 @@ void main() {
         type: EventType.custom,
       );
 
-      when(
-        () => mockEventRepo.watchAll('user-1'),
-      ).thenAnswer((_) => Stream.value([breeding, egg, health, custom]));
+      _stubVisibleEventStream(
+        mockEventRepo,
+        Stream.value([breeding, egg, health, custom]),
+      );
 
       final container = ProviderContainer(
         overrides: [
@@ -345,9 +387,7 @@ void main() {
         type: EventType.custom,
       );
 
-      when(
-        () => mockEventRepo.watchAll('user-1'),
-      ).thenAnswer((_) => Stream.value([breeding, custom]));
+      _stubVisibleEventStream(mockEventRepo, Stream.value([breeding, custom]));
 
       final container = ProviderContainer(
         overrides: [
@@ -379,9 +419,10 @@ void main() {
           type: EventType.custom,
         );
 
-        when(
-          () => mockEventRepo.watchAll('user-1'),
-        ).thenAnswer((_) => Stream.value([breeding, custom]));
+        _stubVisibleEventStream(
+          mockEventRepo,
+          Stream.value([breeding, custom]),
+        );
 
         final container = ProviderContainer(
           overrides: [
@@ -419,9 +460,10 @@ void main() {
           type: EventType.custom,
         );
 
-        when(
-          () => mockEventRepo.watchAll('user-1'),
-        ).thenAnswer((_) => Stream.value([breeding, custom]));
+        _stubVisibleEventStream(
+          mockEventRepo,
+          Stream.value([breeding, custom]),
+        );
 
         final container = ProviderContainer(
           overrides: [
@@ -472,9 +514,10 @@ void main() {
           type: EventType.custom,
         );
 
-        when(
-          () => mockEventRepo.watchAll('user-1'),
-        ).thenAnswer((_) => Stream.value([breeding, custom]));
+        _stubVisibleEventStream(
+          mockEventRepo,
+          Stream.value([breeding, custom]),
+        );
 
         final container = ProviderContainer(
           overrides: [

@@ -5,7 +5,7 @@
 ## Drift Migration (Local)
 
 ### Schema Version
-- `app_database.dart` içinde `schemaVersion = 29`
+- `app_database.dart` içinde `schemaVersion = 30`
 - Yeni table/column/index → version bump zorunlu
 - Version atlama YOK (22 → 23, asla 22 → 25)
 
@@ -54,10 +54,15 @@ test('sync_metadata carries the UNIQUE(table_name, record_id) index', () async {
   );
 });
 ```
-Guard ettikleri: `schemaVersion == 29`, kayıtlı 20 tablonun onCreate ile
-materyalize olması, `sync_metadata` benzersizlik index'i (saveAll metadata
-collision fix'inin değişmezi — `SyncMetadataDao.insertAll`), beforeOpen FK
-enforcement.
+Guard ettikleri: `schemaVersion == 30`, kayıtlı 20 tablonun onCreate ile
+materyalize olması, `sync_metadata` ve aktif-yumurta/yavru benzersizlik
+index'leri, görünür takvim aralığı bileşik index'i ve beforeOpen FK enforcement.
+
+v29→v30 veri geçişi ayrıca
+`test/data/local/database/app_database_v30_migration_test.dart` ile gerçek bir
+dosya DB üzerinde doğrulanır: mükerrer aktif yavru kayıtları silinmez, yalnız
+sonraki kayıtların `egg_id` bağı ayrılır; soft-deleted tarihçe korunur ve iki
+v30 index'i yaratılır.
 
 **Bilinen sınır:** Tarihsel per-version snapshot'lar hiç alınmadı ve geriye
 dönük yeniden üretilemez — bu yüzden cross-version veri-migration testi (v_n →

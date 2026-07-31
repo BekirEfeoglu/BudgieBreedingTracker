@@ -509,6 +509,32 @@ Future<void> _migrateV28ToV29(AppDatabase db, Migrator m) async {
   }
 }
 
+/// Migration v29 -> v30: Enforces one active chick per egg and adds the
+/// compound index used by visible-period calendar queries.
+///
+/// Historical duplicate rows are preserved. The same deterministic
+/// created-at/id ordering used by the Supabase migration chooses the keeper,
+/// so local and remote reconciliation cannot select different chick rows.
+/// Later duplicates become unlinked chicks instead of being deleted, which
+/// avoids losing breeder-entered chick data.
+Future<void> _migrateV29ToV30(AppDatabase db, Migrator m) async {
+  if (await _tableExists(db, 'chicks')) {
+    await db.customStatement(
+      'WITH ranked_active_chicks AS ('
+      'SELECT id, ROW_NUMBER() OVER ('
+      'PARTITION BY egg_id '
+      'ORDER BY (created_at IS NULL) ASC, created_at ASC, id ASC'
+      ') AS egg_rank '
+      'FROM chicks '
+      'WHERE is_deleted = 0 AND egg_id IS NOT NULL'
+      ') '
+      'UPDATE chicks SET egg_id = NULL '
+      'WHERE id IN (SELECT id FROM ranked_active_chicks WHERE egg_rank > 1)',
+    );
+  }
+  await _createSchemaV30Indexes(db);
+}
+
 /// Checks whether [tableName] has a column named [columnName] via PRAGMA.
 ///
 /// Internal migration helper only — [tableName] and [columnName] must be

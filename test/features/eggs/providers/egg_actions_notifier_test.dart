@@ -680,6 +680,7 @@ void main() {
             verify(() => chickRepo.save(captureAny())).captured.single as Chick;
 
         expect(savedChick.userId, 'test-user');
+        expect(savedChick.id, 'egg-1');
         expect(savedChick.eggId, 'egg-1');
         expect(savedChick.clutchId, 'clutch-1');
         expect(savedChick.hatchDate, savedEgg.hatchDate);

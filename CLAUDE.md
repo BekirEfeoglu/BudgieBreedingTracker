@@ -121,8 +121,8 @@ scripts/test_git_hooks.py               # Local git hook installation + worktree
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 1035 Dart files |
-| Test files (test/) | 953 test files, 11,789+ individual tests |
+| Source files (lib/) | 1036 Dart files |
+| Test files (test/) | 956 test files, 11,796+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -135,7 +135,7 @@ scripts/test_git_hooks.py               # Local git hook installation + worktree
 | Enum files | 15 |
 | Supabase constants | 204 (tables + buckets + columns) |
 | L10n keys | ~3,229 per language, 41 categories |
-| DB schema version | 29 |
+| DB schema version | 30 |
 
 ## CI/CD Pipeline
 
@@ -252,7 +252,7 @@ Config methods: `.env` + `--dart-define-from-file` (local and release builds via
 | `validate-free-tier-limit` | Free tier entity limit enforcement |
 
 ### Migrations
-220 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
+221 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
 
 ## Rules
 
@@ -428,7 +428,7 @@ Security:      lib/core/security/
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
-Migrations:    supabase/migrations/ (220 files)
+Migrations:    supabase/migrations/ (221 files)
 Scripts:       scripts/
 CI:            .github/workflows/
 Release build:  scripts/build_release.sh

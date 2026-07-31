@@ -33,18 +33,32 @@ Filter stored in `calendarEventFilterProvider`.
 
 | Provider | Type | Purpose |
 |----------|------|---------|
-| `eventsStreamProvider(userId)` | `StreamProvider.family` | Drift stream over events table |
+| `visibleCalendarRangeProvider` | `Provider<CalendarQueryRange>` | Half-open UTC bounds for the visible month/week/day |
+| `eventsStreamProvider(userId)` | `StreamProvider.family` | Drift stream limited to the visible range |
 | `filteredCalendarEventsProvider` | `Provider` | Single source of truth for the filter pass — runs `filterCalendarEvents` once per (stream, filter) change |
 | `eventsForSelectedDateProvider` | `Provider` | Day view — derives from `filteredCalendarEventsProvider` + `selectedDateProvider` |
 | `eventsForMonthProvider(month)` | `Provider.family` | Month grid — derives from `filteredCalendarEventsProvider`, grouped by date |
 | `eventsForWeekProvider` | `Provider` | Week view — derives from `filteredCalendarEventsProvider` |
+| `selectedDateProvider` | `NotifierProvider<…, DateTime>` | Selected day |
+| `displayedMonthProvider` | `NotifierProvider<…, DateTime>` | Visible month (pager); navigation clamps selected day into the target month |
+| `eventRealtimeSyncProvider(userId)` | `Provider.family<void, …>` | Subscribes to Supabase realtime |
 
 The three view providers no longer each re-run `filterCalendarEvents`; they
 share `filteredCalendarEventsProvider` so the O(n) filter pass runs once per
 filter/stream change instead of three times.
-| `selectedDateProvider` | `NotifierProvider<…, DateTime>` | Selected day |
-| `displayedMonthProvider` | `NotifierProvider<…, DateTime>` | Visible month (pager) |
-| `eventRealtimeSyncProvider(userId)` | `Provider.family<void, …>` | Subscribes to Supabase realtime |
+
+## Visible-Period Query
+
+The calendar never loads a user's full event history. `eventsStreamProvider`
+derives half-open local bounds for the active view (month, Monday-first week, or
+day), converts them to UTC, then calls
+`EventRepository.watchByDateRange(userId, startInclusive, endExclusive)`.
+`EventsDao` orders by `event_date ASC`; Drift v30 adds
+`idx_events_user_deleted_date (user_id, is_deleted, event_date)`.
+
+No separate TTL month cache is used: the source is local SQLite and exactly one
+reactive visible-range stream stays active. Navigating to an older period is
+the lazy-load boundary.
 
 ## Event Sources
 
@@ -85,9 +99,10 @@ pattern. `reconcileReminder` defaults to `false` so other `updateEvent` callers
 ## Realtime
 
 `eventRealtimeSyncProvider(userId)` subscribes to Supabase realtime
-changes on the events table and triggers `ref.invalidate(eventsStream…)`
-on change. Sits in the calendar feature because that's the primary
-consumer; not duplicated elsewhere.
+changes on the events table and writes them through the repository into Drift.
+The active range stream re-emits automatically when the changed row intersects
+its query. Sits in the calendar feature because that's the primary consumer;
+not duplicated elsewhere.
 
 ## Timezone
 

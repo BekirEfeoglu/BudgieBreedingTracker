@@ -4,6 +4,19 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-07-31] data | Breeding integrity and visible-range calendar
+
+Drift v30 now preserves at most one active chick link per egg and backs
+visible calendar queries with a user/delete/date index. Supabase receives the
+matching partial unique chick index; automatic chicks reuse the egg UUID so
+multi-device offline hatches converge.
+
+Pair + incubation creation now commits both entities and pending-sync rows in
+one Drift transaction before ordered remote push. The calendar watches only
+the active month/week/day half-open UTC range, and month navigation keeps the
+selected day inside that range. Added fresh-schema, v29→v30, transaction,
+provider, DAO, and widget regressions.
+
 ## [2026-07-30] feature | Toolchain parity, complete DM history/push, portable restore
 
 Pinned local, GitHub Actions, release-ready, and Xcode Cloud Flutter resolution

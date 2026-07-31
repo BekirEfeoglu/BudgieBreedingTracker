@@ -99,19 +99,21 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
     return (delete(eventsTable)..where((t) => t.id.equals(id))).go();
   }
 
-  /// Watches events within a date range for a user.
+  /// Watches events in the half-open range [startInclusive, endExclusive).
   Stream<List<Event>> watchByDateRange(
     String userId,
-    DateTime start,
-    DateTime end,
+    DateTime startInclusive,
+    DateTime endExclusive,
   ) {
-    return (select(eventsTable)..where(
-          (t) =>
-              t.userId.equals(userId) &
-              t.isDeleted.equals(false) &
-              t.eventDate.isBiggerOrEqualValue(start) &
-              t.eventDate.isSmallerOrEqualValue(end),
-        ))
+    return (select(eventsTable)
+          ..where(
+            (t) =>
+                t.userId.equals(userId) &
+                t.isDeleted.equals(false) &
+                t.eventDate.isBiggerOrEqualValue(startInclusive) &
+                t.eventDate.isSmallerThanValue(endExclusive),
+          )
+          ..orderBy([(t) => OrderingTerm.asc(t.eventDate)]))
         .watch()
         .map((rows) => rows.map((r) => r.toModel()).toList());
   }

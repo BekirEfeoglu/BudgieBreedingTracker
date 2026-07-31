@@ -71,19 +71,11 @@ class CalendarHeader extends ConsumerWidget {
   }
 
   void _changeMonth(WidgetRef ref, int delta) {
-    final current = ref.read(displayedMonthProvider);
-    ref.read(displayedMonthProvider.notifier).state = DateTime(
-      current.year,
-      current.month + delta,
-    );
+    ref.read(displayedMonthProvider.notifier).changeBy(delta);
   }
 
   void _goToToday(WidgetRef ref) {
     final now = DateTime.now();
-    ref.read(displayedMonthProvider.notifier).state = DateTime(
-      now.year,
-      now.month,
-    );
-    ref.read(selectedDateProvider.notifier).set(now);
+    ref.read(displayedMonthProvider.notifier).show(now, selectedDate: now);
   }
 }

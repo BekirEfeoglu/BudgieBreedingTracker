@@ -87,7 +87,7 @@ void main() {
             .map((row) => row.read<String>('name'))
             .toSet();
 
-        expect(db.schemaVersion, 29);
+        expect(db.schemaVersion, 30);
         expect(record, isNotNull);
         expect(record?.chickId, isNull);
         expect(columnNames, contains('chick_id'));

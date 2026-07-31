@@ -15,14 +15,18 @@
 Bird → BreedingPair → Incubation → Clutch → Egg → Chick
 ```
 
-Breeding creates the pair + incubation as one atomic operation. Pair/incubation rollback if incubation save fails.
+Breeding creates the pair + incubation as one atomic operation.
+`BreedingCreationPersistence` writes both entities and both pending-sync rows
+inside one Drift transaction. Remote push starts only after commit, pair first;
+an incubation write failure rolls the local transaction back without a
+compensating pair soft-delete.
 
 ## Key Providers
 
 - `filteredBreedingPairsProvider` — pair list (filter/search/sort derived)
 - `allIncubationsStreamProvider` — live incubation streams
 - `breedingSeasonSummaryProvider` — egg/chick outcome summary per incubation
-- Breeding notifier (handles create, cancel, complete, rollback)
+- Breeding notifier (handles create, cancel, complete, transaction failures)
 
 ## Lifecycle Rules (from breeding-eggs.md)
 

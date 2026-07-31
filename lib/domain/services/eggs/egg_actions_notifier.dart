@@ -366,8 +366,7 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
   _createChickFromHatchedEgg(Egg egg) async {
     final chickRepo = ref.read(chickRepositoryProvider);
 
-    // Duplicate check is FAIL-CLOSED: `save` inserts a fresh v7-keyed chick
-    // (it is NOT an upsert on eggId), so if this read throws we cannot tell
+    // Duplicate check is FAIL-CLOSED: if this read throws we cannot tell
     // whether a chick already exists. Proceeding would risk inserting a
     // SECOND chick for the same egg on a transient read error. Instead we
     // bail with chickSaveFailed so the caller surfaces a warning and the user
@@ -392,7 +391,10 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
     final hatchDate = egg.hatchDate ?? DateTime.now();
 
     final chick = Chick(
-      id: const Uuid().v7(),
+      // Egg ids are UUIDs. Reusing the egg id as the automatic chick id makes
+      // concurrent offline hatches on different devices converge on the same
+      // remote upsert instead of producing two chick records.
+      id: egg.id,
       userId: egg.userId,
       eggId: egg.id,
       clutchId: egg.clutchId,

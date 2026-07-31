@@ -123,19 +123,24 @@ Validation zorunlu (notifications.md): id-enjekte eden rotalarda
 - Network error (Supabase offline): cached events göster + offline banner (sync)
 
 ## Performance
-- **Gerçek okuma yolu: range query DEĞİL.** `eventsStreamProvider` kullanıcının
-  TÜM event'lerini `EventRepository.watchAll(userId)` Drift stream'iyle çeker;
-  ay/gün süzmesi `filteredCalendarEventsProvider` → `eventsForMonthProvider` /
-  `eventsForSelectedDateProvider` içinde bellekte yapılır
+- `eventsStreamProvider` yalnız aktif görünümün tarih aralığını
+  `EventRepository.watchByDateRange` ile izler: ay `[ayın ilk günü, sonraki ay)`,
+  hafta `[Pazartesi, sonraki Pazartesi)`, gün `[gün, ertesi gün)`
+- Yerel takvim sınırları DAO'ya gitmeden UTC'ye çevrilir; sorgu yarı açıktır ve
+  `event_date ASC` sıralıdır. Bitişi inclusive yapma (gün sonu hassasiyet ve
+  komşu dönem çakışması üretir)
+- Sorgu `idx_events_user_deleted_date (user_id, is_deleted, event_date)`
+  bileşik indeksiyle desteklenir
+- Ay gezinmesi `displayedMonthProvider` ile `selectedDateProvider`'ı birlikte
+  taşır; seçili gün hedef ayın son gününe clamp edilir. Aksi halde day-derived
+  provider yüklü aralığın dışında kalır
 - Tarih kolonu **`eventDate`** (Supabase `event_date`) — `start_at` diye bir
   kolon yoktur
-- `EventRepository.watchByDateRange` / `EventsDao.watchByDateRange` mevcuttur
-  ama calendar feature'ında **çağıranı yoktur** (yalnız DAO testleri kullanır).
-  Ay bazlı sorguya geçilecekse bu metoda bağlan ve burayı güncelle
 - Filtre tek geçiş: `filteredCalendarEventsProvider` (bkz. § Calendar View) —
   view provider'larına inline filtre EKLEME
-- TTL'li ay cache'i ve "30 günden eski event lazy load" **shipped DEĞİL**
-  (`obsidian-brain/known-gaps.md`); tüm event'ler stream'de tutulur
+- Ayrı TTL ay cache'i bilinçli olarak yoktur: kaynak yerel Drift'tir ve yalnız
+  görünür dönem için tek reaktif stream tutulur; gezinme eski/yeni dönemi
+  ihtiyaç anında sorgular
 - Notification schedule: batch (10+ event tek loop)
 
 ## Sync Integration

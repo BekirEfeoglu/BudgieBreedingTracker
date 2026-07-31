@@ -16,6 +16,7 @@ import 'package:budgie_breeding_tracker/data/models/chick_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/health_record_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
+import 'package:budgie_breeding_tracker/data/repositories/breeding_creation_persistence.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/calendar/calendar_event_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
@@ -26,6 +27,21 @@ import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.da
 import 'package:budgie_breeding_tracker/features/settings/providers/export_providers.dart';
 
 import '../helpers/e2e_test_harness.dart';
+
+class _TestBreedingCreationPersistence implements BreedingCreationPersistence {
+  const _TestBreedingCreationPersistence(this.pairs, this.incubations);
+
+  final List<BreedingPair> pairs;
+  final List<Incubation> incubations;
+
+  @override
+  Future<void> save(BreedingPair pair, Incubation incubation) async {
+    pairs.removeWhere((item) => item.id == pair.id);
+    pairs.add(pair);
+    incubations.removeWhere((item) => item.id == incubation.id);
+    incubations.add(incubation);
+  }
+}
 
 void main() {
   ensureE2EBinding();
@@ -267,6 +283,9 @@ void main() {
             ),
             incubationRepositoryProvider.overrideWithValue(
               mockIncubationRepository,
+            ),
+            breedingCreationPersistenceProvider.overrideWithValue(
+              _TestBreedingCreationPersistence(pairs, incubations),
             ),
             eggRepositoryProvider.overrideWithValue(mockEggRepository),
             chickRepositoryProvider.overrideWithValue(mockChickRepository),

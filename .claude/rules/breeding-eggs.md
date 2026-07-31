@@ -13,8 +13,11 @@ incubations, clutches, eggs, and chicks.
 - When pair species changes, linked incubations must be updated consistently, including expected hatch dates when a start date exists
 
 ## Write Atomicity
-- Breeding creation saves the pair and its incubation as one logical operation
-- If incubation save fails after pair save, rollback the pair to avoid orphan breeding records
+- Breeding creation saves the pair, incubation, and both pending-sync rows in
+  one real Drift transaction through `BreedingCreationPersistence`
+- Remote pushes run only after that transaction commits and preserve parent
+  order (pair before incubation); do not reintroduce compensating soft-delete
+  rollback for this create path
 - Parent deletion must not proceed if related cleanup discovery, child cleanup, or notification cleanup fails
 - Use stable client-generated IDs for the whole chain so local-first writes remain sync-safe
 - Ignore duplicate create/update/delete actions while notifier state is loading
@@ -28,7 +31,11 @@ incubations, clutches, eggs, and chicks.
 - Marking an egg `hatched` must set `hatchDate`
 - Marking an egg `fertile` must set `fertileCheckDate`
 - Marking an egg `discarded` must set `discardDate`
-- A hatched egg should auto-create one chick only when no chick already exists for that egg
+- A hatched egg should auto-create one chick only when no chick already exists
+  for that egg. Drift and Supabase enforce this with the partial unique index
+  `idx_chicks_active_egg_unique`
+- Automatic chicks reuse the egg UUID as their chick ID so concurrent offline
+  hatches on different devices converge on the same remote upsert
 - Auto-created chicks inherit `userId`, `eggId`, `clutchId`, and `hatchDate` from the egg context
 
 ## Side Effects

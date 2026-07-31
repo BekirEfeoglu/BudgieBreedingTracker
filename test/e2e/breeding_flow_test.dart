@@ -15,6 +15,7 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
+import 'package:budgie_breeding_tracker/data/repositories/breeding_creation_persistence.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/calendar/calendar_event_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/notifications/notification_providers.dart';
@@ -23,6 +24,9 @@ import 'package:budgie_breeding_tracker/features/breeding/providers/breeding_for
 import 'package:budgie_breeding_tracker/features/eggs/providers/egg_providers.dart';
 
 import '../helpers/e2e_test_harness.dart';
+
+class _MockBreedingCreationPersistence extends Mock
+    implements BreedingCreationPersistence {}
 
 Future<T> _awaitProviderValue<T>(
   ProviderContainer container,
@@ -58,11 +62,12 @@ void main() {
     });
 
     test(
-      'GIVEN male and female birds WHEN a breeding pair is created THEN pair is active and repository.save is called',
+      'GIVEN male and female birds WHEN a breeding pair is created THEN pair is active and atomic persistence is called',
       () async {
         final mockBirdRepository = MockBirdRepository();
         final mockPairRepository = MockBreedingPairRepository();
         final mockIncubationRepository = MockIncubationRepository();
+        final mockCreationPersistence = _MockBreedingCreationPersistence();
         final mockNotificationScheduler = MockNotificationScheduler();
         final mockCalendarGenerator = MockCalendarEventGenerator();
         final maleBird = Bird(
@@ -90,7 +95,6 @@ void main() {
         when(
           () => mockBirdRepository.getById('female-1'),
         ).thenAnswer((_) async => femaleBird);
-        when(() => mockPairRepository.save(any())).thenAnswer((_) async {});
         when(
           () => mockPairRepository.getAll(any()),
         ).thenAnswer((_) async => []);
@@ -98,14 +102,14 @@ void main() {
           () => mockPairRepository.getActiveCount(any()),
         ).thenAnswer((_) async => 0);
         when(
-          () => mockIncubationRepository.save(any()),
-        ).thenAnswer((_) async {});
-        when(
           () => mockIncubationRepository.getAll(any()),
         ).thenAnswer((_) async => []);
         when(
           () => mockIncubationRepository.getActiveCount(any()),
         ).thenAnswer((_) async => 0);
+        when(
+          () => mockCreationPersistence.save(any(), any()),
+        ).thenAnswer((_) async {});
         when(
           () => mockNotificationScheduler.scheduleIncubationMilestones(
             incubationId: any(named: 'incubationId'),
@@ -144,6 +148,9 @@ void main() {
             incubationRepositoryProvider.overrideWithValue(
               mockIncubationRepository,
             ),
+            breedingCreationPersistenceProvider.overrideWithValue(
+              mockCreationPersistence,
+            ),
             notificationSchedulerProvider.overrideWithValue(
               mockNotificationScheduler,
             ),
@@ -166,13 +173,15 @@ void main() {
               cageNumber: 'B2',
             );
 
-        final savedPair =
-            verify(() => mockPairRepository.save(captureAny())).captured.single
-                as BreedingPair;
+        final captured = verify(
+          () => mockCreationPersistence.save(captureAny(), captureAny()),
+        ).captured;
+        final savedPair = captured.first as BreedingPair;
+        final savedIncubation = captured.last as Incubation;
         expect(savedPair.status, BreedingStatus.active);
         expect(savedPair.cageNumber, 'B2');
-
-        verify(() => mockIncubationRepository.save(any())).called(1);
+        expect(savedIncubation.breedingPairId, savedPair.id);
+        expect(savedIncubation.status, IncubationStatus.active);
         expect(container.read(breedingFormStateProvider).isSuccess, isTrue);
       },
       timeout: e2eTimeout,

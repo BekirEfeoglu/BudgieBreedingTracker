@@ -46,7 +46,7 @@ void main() {
             .get();
         final names = columns.map((row) => row.read<String>('name')).toSet();
 
-        expect(db.schemaVersion, 29);
+        expect(db.schemaVersion, 30);
         expect(
           names,
           containsAll(['local_payload', 'server_payload', 'payload_version']),

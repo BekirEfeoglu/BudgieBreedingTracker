@@ -2,9 +2,12 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/bird_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/chick_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/egg_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/database/app_database.dart';
 
-/// Drift schema-consistency harness (schemaVersion 29).
+/// Drift schema-consistency harness (schemaVersion 30).
 ///
 /// The generated `drift_dev schema` verifier cannot be used for this schema:
 /// its snapshot generator dartifies the `table_name` column (in `sync_metadata`
@@ -40,15 +43,16 @@ void main() {
     return rows.map((row) => row.read<String>('name')).toSet();
   }
 
-  group('Drift schema at HEAD (v29)', () {
-    test('schemaVersion is 29', () {
-      expect(db.schemaVersion, 29);
+  group('Drift schema at HEAD (v30)', () {
+    test('schemaVersion is 30', () {
+      expect(db.schemaVersion, 30);
     });
 
     test('onCreate materializes every registered table', () async {
       final physical = await objectNames('table');
-      final registered =
-          db.allTables.map((table) => table.actualTableName).toSet();
+      final registered = db.allTables
+          .map((table) => table.actualTableName)
+          .toSet();
 
       expect(registered, hasLength(20));
       for (final table in registered) {
@@ -75,6 +79,46 @@ void main() {
         expect(indexes, contains('idx_sync_metadata_table_record_unique'));
       },
     );
+
+    test('calendar range query has its compound index', () async {
+      final indexes = await objectNames('index');
+      expect(indexes, contains('idx_events_user_deleted_date'));
+    });
+
+    test('allows at most one active chick for an egg', () async {
+      await db
+          .into(db.eggsTable)
+          .insert(
+            EggsTableCompanion.insert(
+              id: 'egg-1',
+              layDate: DateTime.utc(2026, 7, 1),
+              userId: 'user-1',
+              status: EggStatus.hatched,
+            ),
+          );
+
+      ChicksTableCompanion chick(String id, {bool isDeleted = false}) =>
+          ChicksTableCompanion.insert(
+            id: id,
+            userId: 'user-1',
+            gender: BirdGender.unknown,
+            healthStatus: ChickHealthStatus.healthy,
+            eggId: const Value('egg-1'),
+            isDeleted: Value(isDeleted),
+          );
+
+      await db.into(db.chicksTable).insert(chick('chick-1'));
+
+      await expectLater(
+        db.into(db.chicksTable).insert(chick('chick-2')),
+        throwsA(anything),
+      );
+
+      // Soft-deleted history is excluded from the partial unique index.
+      await db
+          .into(db.chicksTable)
+          .insert(chick('chick-deleted', isDeleted: true));
+    });
 
     test('beforeOpen enables foreign-key enforcement', () async {
       final row = await db.customSelect('PRAGMA foreign_keys').getSingle();

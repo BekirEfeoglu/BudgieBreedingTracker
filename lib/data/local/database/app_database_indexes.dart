@@ -258,3 +258,24 @@ Future<void> _createPerformanceIndexes(AppDatabase db) async {
     );
   }
 }
+
+/// Creates indexes introduced with schema v30.
+///
+/// Kept separate from [_createPerformanceIndexes] because that helper also
+/// runs during historical upgrades before v30 has reconciled duplicate
+/// chick-to-egg links.
+Future<void> _createSchemaV30Indexes(AppDatabase db) async {
+  if (await _tableExists(db, 'chicks')) {
+    await db.customStatement(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_chicks_active_egg_unique '
+      'ON chicks (egg_id) '
+      'WHERE egg_id IS NOT NULL AND is_deleted = 0',
+    );
+  }
+  if (await _tableExists(db, 'events')) {
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_events_user_deleted_date '
+      'ON events (user_id, is_deleted, event_date)',
+    );
+  }
+}

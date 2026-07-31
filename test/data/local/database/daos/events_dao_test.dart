@@ -308,25 +308,24 @@ void main() {
       );
 
       final results = await dao
-          .watchByDateRange(userId, DateTime(2024, 3, 1), DateTime(2024, 3, 31))
+          .watchByDateRange(userId, DateTime(2024, 3, 1), DateTime(2024, 4, 1))
           .first;
       expect(results.length, equals(2));
-      final ids = results.map((e) => e.id).toSet();
-      expect(ids, containsAll(['evt-1', 'evt-2']));
+      expect(results.map((event) => event.id), ['evt-1', 'evt-2']);
     });
 
-    test('includes events on range boundaries', () async {
+    test('includes start and excludes end boundary', () async {
       await dao.insertItem(
         makeEntry(id: 'evt-1', eventDate: DateTime(2024, 3, 1)),
       );
       await dao.insertItem(
-        makeEntry(id: 'evt-2', eventDate: DateTime(2024, 3, 31)),
+        makeEntry(id: 'evt-2', eventDate: DateTime(2024, 4, 1)),
       );
 
       final results = await dao
-          .watchByDateRange(userId, DateTime(2024, 3, 1), DateTime(2024, 3, 31))
+          .watchByDateRange(userId, DateTime(2024, 3, 1), DateTime(2024, 4, 1))
           .first;
-      expect(results.length, equals(2));
+      expect(results.map((event) => event.id), ['evt-1']);
     });
 
     test('excludes soft-deleted events', () async {
@@ -342,7 +341,7 @@ void main() {
       );
 
       final results = await dao
-          .watchByDateRange(userId, DateTime(2024, 3, 1), DateTime(2024, 3, 31))
+          .watchByDateRange(userId, DateTime(2024, 3, 1), DateTime(2024, 4, 1))
           .first;
       expect(results.length, equals(1));
       expect(results.first.id, equals('evt-1'));
@@ -357,7 +356,7 @@ void main() {
       );
 
       final results = await dao
-          .watchByDateRange(userId, DateTime(2024, 3, 1), DateTime(2024, 3, 31))
+          .watchByDateRange(userId, DateTime(2024, 3, 1), DateTime(2024, 4, 1))
           .first;
       expect(results.length, equals(1));
     });
@@ -368,7 +367,7 @@ void main() {
       );
 
       final results = await dao
-          .watchByDateRange(userId, DateTime(2024, 3, 1), DateTime(2024, 3, 31))
+          .watchByDateRange(userId, DateTime(2024, 3, 1), DateTime(2024, 4, 1))
           .first;
       expect(results, isEmpty);
     });

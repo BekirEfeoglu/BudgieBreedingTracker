@@ -391,9 +391,6 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
       isSuccess: false,
     );
     try {
-      final pairRepo = ref.read(breedingPairRepositoryProvider);
-      final incubationRepo = ref.read(incubationRepositoryProvider);
-
       // Free tier limit checks
       final isPremium = ref.read(effectivePremiumProvider);
       if (!isPremium) {
@@ -473,22 +470,9 @@ class BreedingFormNotifier extends Notifier<BreedingFormState>
         updatedAt: DateTime.now(),
       );
 
-      await pairRepo.save(pair);
-      try {
-        await incubationRepo.save(incubation);
-      } catch (e) {
-        // Rollback: remove the orphaned pair
-        try {
-          await pairRepo.remove(pairId);
-        } catch (rollbackError, rollbackSt) {
-          AppLogger.error(
-            '[BreedingFormNotifier] Rollback failed',
-            rollbackError,
-            rollbackSt,
-          );
-        }
-        rethrow;
-      }
+      await ref
+          .read(breedingCreationPersistenceProvider)
+          .save(pair, incubation);
 
       recordGamificationAction(
         ref,

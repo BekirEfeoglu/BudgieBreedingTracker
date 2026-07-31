@@ -96,6 +96,14 @@ Cascade deletes batch the same way. `EventRepository.removeBy*` does one
 `pendingDelete` metadata insert + one best-effort `BaseRemoteSource.deleteByIds`;
 on remote failure the tombstones survive for the next sync.
 
+## Multi-Entity Transaction Boundary
+
+`BreedingCreationPersistence` is the canonical pair+incubation create boundary.
+It calls the repositories' network-free `saveLocalPending` methods inside one
+`AppDatabase.transaction`, covering both entity rows and both sync-metadata
+rows. Only after commit does it attempt pair then incubation remote pushes.
+Feature code must not recreate the old save-then-compensating-delete sequence.
+
 ## Offline-First Contract
 
 A class named `*Repository` MUST:

@@ -91,13 +91,47 @@ final calendarViewProvider =
       CalendarViewNotifier.new,
     );
 
-/// Events for the current user (all events).
+typedef CalendarQueryRange = ({DateTime startInclusive, DateTime endExclusive});
+
+/// Visible local-calendar period converted to half-open UTC query bounds.
+///
+/// A half-open range avoids end-of-day precision bugs and makes adjacent
+/// periods meet without overlapping.
+final visibleCalendarRangeProvider = Provider<CalendarQueryRange>((ref) {
+  final viewMode = ref.watch(calendarViewProvider);
+  late final DateTime localStart;
+  late final DateTime localEnd;
+
+  switch (viewMode) {
+    case CalendarViewMode.month:
+      final month = ref.watch(displayedMonthProvider);
+      localStart = DateTime(month.year, month.month);
+      localEnd = DateTime(month.year, month.month + 1);
+    case CalendarViewMode.week:
+      final monday = ref.watch(_weekStartProvider);
+      localStart = monday;
+      localEnd = DateTime(monday.year, monday.month, monday.day + 7);
+    case CalendarViewMode.day:
+      final selected = ref.watch(selectedDateProvider);
+      localStart = DateTime(selected.year, selected.month, selected.day);
+      localEnd = DateTime(selected.year, selected.month, selected.day + 1);
+  }
+
+  return (startInclusive: localStart.toUtc(), endExclusive: localEnd.toUtc());
+});
+
+/// Events for the current user's visible calendar period.
 final eventsStreamProvider = StreamProvider.family<List<Event>, String>((
   ref,
   userId,
 ) {
   final repo = ref.watch(eventRepositoryProvider);
-  return repo.watchAll(userId);
+  final range = ref.watch(visibleCalendarRangeProvider);
+  return repo.watchByDateRange(
+    userId,
+    range.startInclusive,
+    range.endExclusive,
+  );
 });
 
 /// Normalizes a (possibly UTC) [DateTime] to the local-calendar day.
@@ -154,6 +188,33 @@ class DisplayedMonthNotifier extends Notifier<DateTime> {
   DateTime build() {
     final now = DateTime.now();
     return DateTime(now.year, now.month);
+  }
+
+  /// Displays [month] and keeps the selected day inside that month.
+  ///
+  /// When no explicit [selectedDate] is supplied, the previous day-of-month
+  /// is retained and clamped (for example, January 31 -> February 28/29).
+  void show(DateTime month, {DateTime? selectedDate}) {
+    final normalizedMonth = DateTime(month.year, month.month);
+    final DateTime currentSelection =
+        selectedDate ?? ref.read(selectedDateProvider);
+    final lastDay = DateTime(
+      normalizedMonth.year,
+      normalizedMonth.month + 1,
+      0,
+    ).day;
+    final targetDay = currentSelection.day <= lastDay
+        ? currentSelection.day
+        : lastDay;
+
+    state = normalizedMonth;
+    ref
+        .read(selectedDateProvider.notifier)
+        .set(DateTime(normalizedMonth.year, normalizedMonth.month, targetDay));
+  }
+
+  void changeBy(int monthDelta) {
+    show(DateTime(state.year, state.month + monthDelta));
   }
 }
 
@@ -232,7 +293,7 @@ List<Event> filterCalendarEvents(
 
 // Realtime subscription for cross-device event updates.
 // Routes changes through the local Drift DB via the repository so the
-// offline-first contract is maintained — the DAO stream ([watchAll])
+// offline-first contract is maintained — the visible-range DAO stream
 // auto-emits updated data, no manual invalidation needed.
 final eventRealtimeSyncProvider = Provider.family<void, String>((ref, userId) {
   if (userId == 'anonymous') return;

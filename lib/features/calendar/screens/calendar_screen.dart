@@ -275,16 +275,16 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   void _selectDate(DateTime date) {
     // Use the normalized setter so the provider state never carries the
     // time-of-day component — keeps equality with grid-computed dates.
-    ref.read(selectedDateProvider.notifier).set(date);
+    if (ref.read(calendarViewProvider) == CalendarViewMode.month) {
+      ref.read(displayedMonthProvider.notifier).show(date, selectedDate: date);
+    } else {
+      ref.read(selectedDateProvider.notifier).set(date);
+    }
   }
 
   void _goToToday() {
     final now = DateTime.now();
-    ref.read(displayedMonthProvider.notifier).state = DateTime(
-      now.year,
-      now.month,
-    );
-    ref.read(selectedDateProvider.notifier).set(now);
+    ref.read(displayedMonthProvider.notifier).show(now, selectedDate: now);
   }
 
   /// Swipe to navigate months (month view) or weeks (week view).
@@ -305,11 +305,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   }
 
   void _changeMonth(int delta) {
-    final current = ref.read(displayedMonthProvider);
-    ref.read(displayedMonthProvider.notifier).state = DateTime(
-      current.year,
-      current.month + delta,
-    );
+    ref.read(displayedMonthProvider.notifier).changeBy(delta);
   }
 
   void _changeWeek(int delta) {
