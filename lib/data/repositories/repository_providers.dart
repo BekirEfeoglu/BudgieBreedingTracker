@@ -113,6 +113,23 @@ final breedingCreationPersistenceProvider =
       );
     });
 
+final breedingLifecyclePersistenceProvider =
+    Provider<BreedingLifecyclePersistence>((ref) {
+      return DriftBreedingLifecyclePersistence(
+        database: ref.watch(appDatabaseProvider),
+        pairRepository: ref.watch(breedingPairRepositoryProvider),
+        incubationRepository: ref.watch(incubationRepositoryProvider),
+      );
+    });
+
+final eggCreationPersistenceProvider = Provider<EggCreationPersistence>((ref) {
+  return DriftEggCreationPersistence(
+    database: ref.watch(appDatabaseProvider),
+    eggRepository: ref.watch(eggRepositoryProvider),
+    incubationRepository: ref.watch(incubationRepositoryProvider),
+  );
+});
+
 final healthRecordRepositoryProvider = Provider<HealthRecordRepository>((ref) {
   return HealthRecordRepository(
     localDao: ref.watch(healthRecordsDaoProvider),

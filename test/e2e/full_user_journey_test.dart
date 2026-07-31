@@ -288,6 +288,12 @@ void main() {
               _TestBreedingCreationPersistence(pairs, incubations),
             ),
             eggRepositoryProvider.overrideWithValue(mockEggRepository),
+            eggCreationPersistenceProvider.overrideWithValue(
+              TestEggCreationPersistence(
+                mockEggRepository,
+                mockIncubationRepository,
+              ),
+            ),
             chickRepositoryProvider.overrideWithValue(mockChickRepository),
             healthRecordRepositoryProvider.overrideWithValue(
               mockHealthRepository,

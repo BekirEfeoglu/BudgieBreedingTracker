@@ -93,14 +93,17 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
         updatedAt: DateTime.now(),
       );
 
-      await repo.save(egg);
       final species = await resolveEggSpecies(ref, egg);
-      final startedIncubation = await _startIncubationFromFirstEgg(
-        incubationId: incubationId,
-        layDate: layDate,
-        species: species,
-        isFirstEgg: existingEggs.isEmpty,
-      );
+      final startedIncubation = existingEggs.isEmpty
+          ? _startedIncubationFromFirstEgg(
+              incubation: incubation,
+              layDate: layDate,
+              species: species,
+            )
+          : null;
+      await ref
+          .read(eggCreationPersistenceProvider)
+          .save(egg, startedIncubation: startedIncubation);
 
       if (startedIncubation != null) {
         // First egg defines the incubation start date, so schedule milestones immediately.
@@ -207,30 +210,21 @@ class EggActionsNotifier extends Notifier<EggActionsState> {
     }
   }
 
-  Future<Incubation?> _startIncubationFromFirstEgg({
-    required String incubationId,
+  Incubation _startedIncubationFromFirstEgg({
+    required Incubation incubation,
     required DateTime layDate,
     required Species species,
-    required bool isFirstEgg,
-  }) async {
-    if (!isFirstEgg) return null;
-
-    final incubationRepo = ref.read(incubationRepositoryProvider);
-    final incubation = await incubationRepo.getById(incubationId);
-    if (incubation == null) return null;
-
+  }) {
     // Normalize lay date to UTC midnight so the incubation start aligns
     // with createBreeding's normalizedStart and dayDiff math stays DST-safe.
     final normalizedStart = date_utils.DateUtils.utcMidnight(layDate);
-    final updated = incubation.copyWith(
+    return incubation.copyWith(
       startDate: normalizedStart,
       expectedHatchDate: normalizedStart.add(
         Duration(days: incubation.totalIncubationDays(species: species)),
       ),
       updatedAt: DateTime.now(),
     );
-    await incubationRepo.save(updated);
-    return updated;
   }
 
   String _shortId(String id) => id.length <= 6 ? id : id.substring(0, 6);

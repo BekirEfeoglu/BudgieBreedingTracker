@@ -133,9 +133,16 @@ class EggRepository extends BaseRepository<Egg>
 
   @override
   Future<void> save(Egg item) async {
+    await saveLocalPending(item);
+    await tryImmediatePush(item);
+  }
+
+  /// Persists the egg and its pending-sync metadata without network I/O.
+  ///
+  /// Exposed for multi-entity local transactions such as first-egg creation.
+  Future<void> saveLocalPending(Egg item) async {
     await _localDao.insertItem(item);
     await markPending(item.id, item.userId);
-    await tryImmediatePush(item);
   }
 
   @override

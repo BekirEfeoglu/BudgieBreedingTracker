@@ -211,6 +211,9 @@ void main() {
         eggRepositoryProvider.overrideWithValue(eggRepo),
         chickRepositoryProvider.overrideWithValue(chickRepo),
         incubationRepositoryProvider.overrideWithValue(incubationRepo),
+        eggCreationPersistenceProvider.overrideWithValue(
+          TestEggCreationPersistence(eggRepo, incubationRepo),
+        ),
         breedingPairRepositoryProvider.overrideWithValue(breedingPairRepo),
         birdRepositoryProvider.overrideWithValue(birdRepo),
         currentUserIdProvider.overrideWithValue('test-user'),

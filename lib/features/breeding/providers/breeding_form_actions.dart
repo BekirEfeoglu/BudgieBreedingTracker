@@ -10,25 +10,27 @@ extension BreedingFormActions on BreedingFormNotifier {
       final now = DateTime.now();
       bool sideEffectsOk;
       if (pair != null) {
-        await repo.save(
-          pair.copyWith(
-            status: BreedingStatus.cancelled,
-            separationDate: now,
-            updatedAt: now,
-          ),
-        );
-
-        final incubations = await _helper.closeActiveIncubations(
+        final closure = await _helper.prepareClosedIncubations(
           breedingPairId: id,
           status: IncubationStatus.cancelled,
           closedAt: now,
         );
+        await ref
+            .read(breedingLifecyclePersistenceProvider)
+            .closePair(
+              pair.copyWith(
+                status: BreedingStatus.cancelled,
+                separationDate: now,
+                updatedAt: now,
+              ),
+              closure.updated,
+            );
         final notificationsOk = await _helper.cancelBreedingNotifications(
           id,
-          incubations: incubations,
+          incubations: closure.all,
         );
         final calendarOk = await _helper.cleanupIncubationCalendarEvents(
-          incubations,
+          closure.all,
         );
         sideEffectsOk = notificationsOk && calendarOk;
       } else {
@@ -59,25 +61,27 @@ extension BreedingFormActions on BreedingFormNotifier {
       final now = DateTime.now();
       bool sideEffectsOk;
       if (pair != null) {
-        await repo.save(
-          pair.copyWith(
-            status: BreedingStatus.completed,
-            separationDate: now,
-            updatedAt: now,
-          ),
-        );
-
-        final incubations = await _helper.closeActiveIncubations(
+        final closure = await _helper.prepareClosedIncubations(
           breedingPairId: id,
           status: IncubationStatus.completed,
           closedAt: now,
         );
+        await ref
+            .read(breedingLifecyclePersistenceProvider)
+            .closePair(
+              pair.copyWith(
+                status: BreedingStatus.completed,
+                separationDate: now,
+                updatedAt: now,
+              ),
+              closure.updated,
+            );
         final notificationsOk = await _helper.cancelBreedingNotifications(
           id,
-          incubations: incubations,
+          incubations: closure.all,
         );
         final calendarOk = await _helper.cleanupIncubationCalendarEvents(
-          incubations,
+          closure.all,
         );
         sideEffectsOk = notificationsOk && calendarOk;
       } else {
@@ -118,10 +122,9 @@ extension BreedingFormActions on BreedingFormNotifier {
 
       // Cascade order is intentional: data deletes in dependency order
       // (children → parent) first, then side-effects (notifications,
-      // calendar). Each step swallows per-item failures with
-      // eagerError: false so a single bad row never strands the rest of the
-      // cascade. Surviving children remain soft-deletable on retry —
-      // soft-delete is idempotent.
+      // calendar). Each child group attempts every item with eagerError: false,
+      // but any surviving child blocks deletion of its parent. Successful
+      // soft-deletes remain idempotent when the user retries.
       //
       // Reminders are cancelled only AFTER the cascade is confirmed to
       // proceed (children removed). The cascade can return early below when a
@@ -202,13 +205,15 @@ extension BreedingFormActions on BreedingFormNotifier {
                 .toList();
       if (incubationsToRemove.length != incubations.length) partial = true;
 
-      partial =
-          await _removeAllResilient(
-            entities: eggsToRemove,
-            label: 'egg',
-            remove: (egg) => eggRepo.remove(egg.id),
-          ) ||
-          partial;
+      final eggRemovalFailed = await _removeAllResilient(
+        entities: eggsToRemove,
+        label: 'egg',
+        remove: (egg) => eggRepo.remove(egg.id),
+      );
+      if (eggRemovalFailed) {
+        _setDeleteCascadeFailure();
+        return;
+      }
 
       // Incubations are HARD-deleted below (unlike eggs/pairs/chicks, which
       // soft-delete). events.incubation_id is a real local FK with
@@ -236,18 +241,21 @@ extension BreedingFormActions on BreedingFormNotifier {
             e,
             st,
           );
-          partial = true;
+          _setDeleteCascadeFailure();
+          return;
         }
       }
-      partial =
-          await _removeAllResilient(
-            entities: incubationsToRemove,
-            label: 'incubation',
-            remove: (inc) => incubationRepo.remove(inc.id),
-          ) ||
-          partial;
+      final incubationRemovalFailed = await _removeAllResilient(
+        entities: incubationsToRemove,
+        label: 'incubation',
+        remove: (inc) => incubationRepo.remove(inc.id),
+      );
+      if (incubationRemovalFailed) {
+        _setDeleteCascadeFailure();
+        return;
+      }
 
-      // If any child is still live, block the pair remove too — otherwise
+      // If chick detachment left any child blocked, block the pair remove too — otherwise
       // the surviving incubation.breedingPairId dangles. Surface a clear
       // warning so the user knows to retry once children clear. Reminders are
       // intentionally NOT cancelled here: the pair is still alive, so its
@@ -270,13 +278,15 @@ extension BreedingFormActions on BreedingFormNotifier {
       // as eggs/incubations above.
       final clutchRepo = ref.read(clutchRepositoryProvider);
       final clutches = await clutchRepo.getByBreeding(id);
-      partial =
-          await _removeAllResilient(
-            entities: clutches,
-            label: 'clutch',
-            remove: (clutch) => clutchRepo.remove(clutch.id),
-          ) ||
-          partial;
+      final clutchRemovalFailed = await _removeAllResilient(
+        entities: clutches,
+        label: 'clutch',
+        remove: (clutch) => clutchRepo.remove(clutch.id),
+      );
+      if (clutchRemovalFailed) {
+        _setDeleteCascadeFailure();
+        return;
+      }
 
       // Children are confirmed removed and the cascade is proceeding, so it
       // is now safe to cancel notifications & calendar reminders. Best-effort:
@@ -332,9 +342,9 @@ extension BreedingFormActions on BreedingFormNotifier {
     }
   }
 
-  /// Best-effort bulk remove. Returns true if any item failed; the rest are
-  /// still attempted (`eagerError: false`). Each failure is logged but does
-  /// not abort the cascade — retry is safe because soft-delete is idempotent.
+  /// Attempts every removal and reports whether any item failed. The caller
+  /// blocks parent deletion on failure; retry is safe because soft-delete is
+  /// idempotent.
   Future<bool> _removeAllResilient<T>({
     required Iterable<T> entities,
     required String label,
@@ -354,5 +364,14 @@ extension BreedingFormActions on BreedingFormNotifier {
       eagerError: false,
     );
     return results.any((r) => r != null);
+  }
+
+  void _setDeleteCascadeFailure() {
+    state = state.copyWith(
+      isLoading: false,
+      isSuccess: false,
+      warning: 'errors.background_tasks_partial'.tr(),
+      error: 'errors.delete_failed'.tr(),
+    );
   }
 }

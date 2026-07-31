@@ -106,6 +106,9 @@ void main() {
         currentUserIdProvider.overrideWithValue('user-1'),
         eggRepositoryProvider.overrideWithValue(mockEggRepo),
         incubationRepositoryProvider.overrideWithValue(mockIncubationRepo),
+        eggCreationPersistenceProvider.overrideWithValue(
+          TestEggCreationPersistence(mockEggRepo, mockIncubationRepo),
+        ),
         notificationSchedulerProvider.overrideWithValue(mockScheduler),
         notificationToggleSettingsReadyProvider.overrideWith(
           (_) async => const NotificationToggleSettings(),

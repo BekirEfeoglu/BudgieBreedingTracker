@@ -15,12 +15,16 @@ import 'package:budgie_breeding_tracker/data/local/database/daos/health_records_
 import 'package:budgie_breeding_tracker/data/local/database/daos/incubations_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/nests_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
+import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
+import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
+import 'package:budgie_breeding_tracker/data/models/incubation_model.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/community_profile_cache.dart';
 import 'package:budgie_breeding_tracker/data/remote/api/community_social_remote_source.dart';
 import 'package:budgie_breeding_tracker/data/remote/storage/storage_service.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
 import 'package:budgie_breeding_tracker/data/repositories/bird_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/breeding_pair_repository.dart';
+import 'package:budgie_breeding_tracker/data/repositories/breeding_creation_persistence.dart';
 import 'package:budgie_breeding_tracker/data/repositories/chick_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/clutch_repository.dart';
 import 'package:budgie_breeding_tracker/data/repositories/egg_repository.dart';
@@ -105,6 +109,48 @@ class MockCommunityProfileCache extends Mock implements CommunityProfileCache {}
 
 class MockSyncMetadataRepository extends Mock
     implements SyncMetadataRepository {}
+
+/// Repository-delegating persistence used by notifier tests. Transaction
+/// rollback is covered separately with the real Drift implementations.
+class TestBreedingLifecyclePersistence implements BreedingLifecyclePersistence {
+  const TestBreedingLifecyclePersistence(
+    this.pairRepository,
+    this.incubationRepository,
+  );
+
+  final BreedingPairRepository pairRepository;
+  final IncubationRepository incubationRepository;
+
+  @override
+  Future<void> closePair(
+    BreedingPair pair,
+    List<Incubation> updatedIncubations,
+  ) async {
+    await pairRepository.save(pair);
+    if (updatedIncubations.isNotEmpty) {
+      await incubationRepository.saveAll(updatedIncubations);
+    }
+  }
+}
+
+/// Repository-delegating egg persistence used by notifier tests.
+class TestEggCreationPersistence implements EggCreationPersistence {
+  const TestEggCreationPersistence(
+    this.eggRepository,
+    this.incubationRepository,
+  );
+
+  final EggRepository eggRepository;
+  final IncubationRepository incubationRepository;
+
+  @override
+  Future<void> save(Egg egg, {Incubation? startedIncubation}) async {
+    await eggRepository.save(egg);
+    if (startedIncubation != null) {
+      await incubationRepository.save(startedIncubation);
+    }
+  }
+}
 
 // ── DAOs ──
 

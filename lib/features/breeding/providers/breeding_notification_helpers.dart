@@ -130,8 +130,9 @@ class BreedingNotificationHelper {
     return eggRepo.getByIncubationIds(incubationIds);
   }
 
-  /// Closes active incubations for a breeding pair with the given status.
-  Future<List<Incubation>> closeActiveIncubations({
+  /// Builds the active-incubation updates that must commit with pair closure.
+  Future<({List<Incubation> all, List<Incubation> updated})>
+  prepareClosedIncubations({
     required String breedingPairId,
     required IncubationStatus status,
     required DateTime closedAt,
@@ -151,11 +152,7 @@ class BreedingNotificationHelper {
           ),
         )
         .toList();
-    if (updatedIncubations.isNotEmpty) {
-      await incubationRepo.saveAll(updatedIncubations);
-    }
-
-    return incubations;
+    return (all: incubations, updated: updatedIncubations);
   }
 
   /// Checks whether an error is caused by Supabase not being initialized.

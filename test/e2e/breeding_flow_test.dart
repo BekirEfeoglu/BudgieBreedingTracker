@@ -290,6 +290,12 @@ void main() {
             incubationRepositoryProvider.overrideWithValue(
               mockIncubationRepository,
             ),
+            eggCreationPersistenceProvider.overrideWithValue(
+              TestEggCreationPersistence(
+                mockEggRepository,
+                mockIncubationRepository,
+              ),
+            ),
             calendarEventGeneratorProvider.overrideWithValue(
               mockCalendarGenerator,
             ),
@@ -431,6 +437,12 @@ void main() {
             ),
             incubationRepositoryProvider.overrideWithValue(
               mockIncubationRepository,
+            ),
+            breedingLifecyclePersistenceProvider.overrideWithValue(
+              TestBreedingLifecyclePersistence(
+                mockPairRepository,
+                mockIncubationRepository,
+              ),
             ),
             notificationSchedulerProvider.overrideWithValue(
               mockNotificationScheduler,
