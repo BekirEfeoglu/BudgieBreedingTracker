@@ -637,20 +637,20 @@ void main() {
         when(
           () => mockFileApi.list(path: any(named: 'path')),
         ).thenAnswer((_) async => files);
-        when(() => mockFileApi.createSignedUrls(any(), any())).thenAnswer((
-          invocation,
-        ) async {
-          final paths = invocation.positionalArguments.first as List<String>;
-          return [
-            for (final path in paths)
-              SignedUrl(
-                signedUrl:
-                    'https://cdn.example.com/storage/v1/object/sign/'
-                    '${SupabaseConstants.birdPhotosBucket}/$path?token=abc',
-                path: path,
-              ),
-          ];
-        });
+        when(() => mockFileApi.createSignedUrlsResult(any(), any())).thenAnswer(
+          (invocation) async {
+            final paths = invocation.positionalArguments.first as List<String>;
+            return [
+              for (final path in paths)
+                SignedUrlSuccess(
+                  signedUrl:
+                      'https://cdn.example.com/storage/v1/object/sign/'
+                      '${SupabaseConstants.birdPhotosBucket}/$path?token=abc',
+                  path: path,
+                ),
+            ];
+          },
+        );
 
         final urls = await service.listBirdPhotos(userId: 'u1', birdId: 'b1');
 
@@ -661,6 +661,29 @@ void main() {
               '${SupabaseConstants.birdPhotosBucket}/u1/b1/a.jpg?token=abc',
         ]);
         verifyNever(() => mockFileApi.getPublicUrl(any()));
+      });
+
+      test('skips paths that could not be signed', () async {
+        final files = [
+          FileObject.fromJson({'name': 'missing.jpg', 'id': '1'}),
+          FileObject.fromJson({'name': 'available.jpg', 'id': '2'}),
+        ];
+        when(
+          () => mockFileApi.list(path: any(named: 'path')),
+        ).thenAnswer((_) async => files);
+        when(() => mockFileApi.createSignedUrlsResult(any(), any())).thenAnswer(
+          (_) async => const [
+            SignedUrlFailure(path: 'u1/b1/missing.jpg', error: 'not found'),
+            SignedUrlSuccess(
+              path: 'u1/b1/available.jpg',
+              signedUrl: 'https://cdn.example.com/available.jpg',
+            ),
+          ],
+        );
+
+        final urls = await service.listBirdPhotos(userId: 'u1', birdId: 'b1');
+
+        expect(urls, ['https://cdn.example.com/available.jpg']);
       });
 
       test('returns empty list on StorageException', () async {
@@ -681,7 +704,7 @@ void main() {
         final urls = await service.listBirdPhotos(userId: 'u1', birdId: 'b1');
 
         expect(urls, isEmpty);
-        verifyNever(() => mockFileApi.createSignedUrls(any(), any()));
+        verifyNever(() => mockFileApi.createSignedUrlsResult(any(), any()));
       });
     });
 

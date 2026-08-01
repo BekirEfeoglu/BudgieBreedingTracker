@@ -278,10 +278,13 @@ class StorageService {
 
       validFiles.sort((a, b) => b.name.compareTo(a.name));
       final paths = validFiles.map((f) => '$userId/$birdId/${f.name}').toList();
-      final signedUrls = await _client.storage
+      final signedUrlResults = await _client.storage
           .from(_birdPhotosBucket)
-          .createSignedUrls(paths, _signedUrlExpiry);
-      return signedUrls.map((s) => s.signedUrl).toList();
+          .createSignedUrlsResult(paths, _signedUrlExpiry);
+      return signedUrlResults
+          .whereType<SignedUrlSuccess>()
+          .map((result) => result.signedUrl)
+          .toList();
     } on StorageException catch (e) {
       AppLogger.warning('Failed to list bird photos: ${e.message}');
       return [];

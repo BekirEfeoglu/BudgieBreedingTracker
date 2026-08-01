@@ -242,7 +242,7 @@ If your local Flutter version does not support `--dart-define-from-file`, pass t
 ```bash
 flutter run \
   --dart-define=SUPABASE_URL=https://your-project.supabase.co \
-  --dart-define=SUPABASE_ANON_KEY=your-anon-key \
+  --dart-define=SUPABASE_PUBLISHABLE_KEY=sb_publishable_your-key \
   --dart-define=SENTRY_DSN=your-sentry-dsn \
   --dart-define=SENTRY_ENVIRONMENT=development \
   --dart-define=REVENUECAT_API_KEY_IOS=your-ios-key \
@@ -255,7 +255,8 @@ flutter run \
 | Variable | Required | Description |
 | --- | --- | --- |
 | `SUPABASE_URL` | Yes for cloud features | Supabase project URL |
-| `SUPABASE_ANON_KEY` | Yes for cloud features | Supabase anon key |
+| `SUPABASE_PUBLISHABLE_KEY` | Yes for cloud features | Supabase publishable client key |
+| `SUPABASE_ANON_KEY` | Transitional fallback only | Legacy anon key; remove after environment migration |
 | `SENTRY_DSN` | Optional locally; required for production releases | Sentry DSN |
 | `SENTRY_ENVIRONMENT` | No | Sentry environment label |
 | `REVENUECAT_API_KEY_IOS` | No | RevenueCat iOS API key |

@@ -155,6 +155,8 @@ Android'de tercih `release-ready.yml` (temiz checkout); script local dogrulama i
 
 ## Environment Discipline
 - `--dart-define` ile gelen runtime config'i kodda fallback secret gibi kullanma
+- Client Supabase config'inde `SUPABASE_PUBLISHABLE_KEY` kullan; legacy
+  `SUPABASE_ANON_KEY` yalniz mevcut release ortamlarinin gecis fallback'idir
 - `.env` dosyasini source of truth kabul etme; release'de secrets manager kullan
 - Eksik env varsa fail-fast davran; sessiz fallback ile production degistirme
 - Production Android/iOS release'leri `SENTRY_DSN` olmadan uretilmemeli;

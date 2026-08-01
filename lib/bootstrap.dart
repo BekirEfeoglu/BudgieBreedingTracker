@@ -26,7 +26,10 @@ double sentryTracesSampleRateFor(String environment) => switch (environment) {
 
 /// Compile-time environment values (from --dart-define or --dart-define-from-file).
 const _compileTimeSupabaseUrl = String.fromEnvironment('SUPABASE_URL');
-const _compileTimeAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+const _compileTimePublishableKey = String.fromEnvironment(
+  'SUPABASE_PUBLISHABLE_KEY',
+);
+const _compileTimeLegacyAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
 const _compileTimeSentryDsn = String.fromEnvironment('SENTRY_DSN');
 const _compileTimeSentryEnv = String.fromEnvironment(
   'SENTRY_ENVIRONMENT',
@@ -50,7 +53,9 @@ const _nativeConfigChannel = MethodChannel(
 );
 
 String _resolvedSupabaseUrl = _compileTimeSupabaseUrl;
-String _resolvedAnonKey = _compileTimeAnonKey;
+String _resolvedPublishableKey = _compileTimePublishableKey.isNotEmpty
+    ? _compileTimePublishableKey
+    : _compileTimeLegacyAnonKey;
 String _resolvedSentryDsn = _compileTimeSentryDsn;
 String _resolvedSentryEnv = _compileTimeSentryEnv;
 String _resolvedRevenueCatIos = _compileTimeRevenueCatIos;
@@ -79,7 +84,7 @@ bool _isSupabaseInitialized() {
 
 /// Returns true if required Supabase compile-time credentials are present.
 bool get hasSupabaseCredentials =>
-    _resolvedSupabaseUrl.isNotEmpty && _resolvedAnonKey.isNotEmpty;
+    _resolvedSupabaseUrl.isNotEmpty && _resolvedPublishableKey.isNotEmpty;
 
 /// Ensures Supabase is initialized, retrying on demand when bootstrap timed out.
 Future<bool> ensureSupabaseInitialized({
@@ -220,24 +225,24 @@ Future<void> _initSupabase() async {
   AppLogger.info(
     'Supabase credentials — '
     'URL: ${_resolvedSupabaseUrl.isNotEmpty ? 'present' : 'MISSING'}, '
-    'Key: ${_resolvedAnonKey.isNotEmpty ? 'present' : 'MISSING'}',
+    'Key: ${_resolvedPublishableKey.isNotEmpty ? 'present' : 'MISSING'}',
   );
 
   if (hasSupabaseCredentials) {
     // Reject placeholder/test keys in release mode to prevent accidental
     // production deploys with invalid credentials.
     if (!_isValidSupabaseUrl(_resolvedSupabaseUrl) ||
-        !_isValidSupabaseApiKey(_resolvedAnonKey)) {
+        !_isValidSupabaseApiKey(_resolvedPublishableKey)) {
       AppLogger.warning(
         'Supabase credentials appear invalid or are placeholders. '
-        'Check SUPABASE_URL and SUPABASE_ANON_KEY values.',
+        'Check SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY values.',
       );
       return;
     }
     try {
       await Supabase.initialize(
         url: _resolvedSupabaseUrl,
-        anonKey: _resolvedAnonKey,
+        publishableKey: _resolvedPublishableKey,
         authOptions: const FlutterAuthClientOptions(
           authFlowType: AuthFlowType.pkce,
         ),
@@ -253,7 +258,8 @@ Future<void> _initSupabase() async {
   } else {
     AppLogger.warning(
       'Supabase credentials not provided. '
-      'Use --dart-define=SUPABASE_URL=<url> --dart-define=SUPABASE_ANON_KEY=<key>',
+      'Use --dart-define=SUPABASE_URL=<url> '
+      '--dart-define=SUPABASE_PUBLISHABLE_KEY=<key>',
     );
   }
 }
@@ -302,9 +308,13 @@ Future<void> _resolveNativeBuildConfigFallbacks() async {
       _resolvedSupabaseUrl,
       config['SUPABASE_URL'],
     );
-    _resolvedAnonKey = _preferNonEmpty(
-      _resolvedAnonKey,
+    final nativePublishableKey = resolveSupabasePublishableKey(
+      config['SUPABASE_PUBLISHABLE_KEY'],
       config['SUPABASE_ANON_KEY'],
+    );
+    _resolvedPublishableKey = _preferNonEmpty(
+      _resolvedPublishableKey,
+      nativePublishableKey,
     );
     _resolvedSentryDsn = _preferNonEmpty(
       _resolvedSentryDsn,

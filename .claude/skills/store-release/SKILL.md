@@ -22,7 +22,8 @@ Or dispatch `post-push-verifier`. Required `ci.yml` check-runs must be `complete
 - Edit `pubspec.yaml` `version: X.Y.Z+build` — semver: major=breaking, minor=feature, patch=fix; **always** increment the build number.
 - Verify iOS and Android build numbers stay consistent with pubspec (release-ops.md § Version Bump). Grep native config if they can drift.
 - **Android:** Play version codes are package-global and are no longer resolved automatically (Codemagic did this). The build number must exceed the highest code across ALL tracks and the artifact library, not just the track you publish to — check Play Console before bumping.
-- Confirm no documented dependency cap was lifted (supabase_flutter <2.13.0 etc.) as part of the release prep.
+- Confirm no documented dependency cap was lifted (`supabase_flutter <2.16.0`
+  while Dart >=3.8 is supported, etc.) as part of the release prep.
 
 ## Step 3 — Release notes in 3 languages
 The update prompt reads `system_settings.app_version` (see app-update.md): `release_notes_tr` / `release_notes_en` / `release_notes_de`.

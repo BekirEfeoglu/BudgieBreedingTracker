@@ -166,7 +166,8 @@ messaging.md as describing behavior that non-founders cannot currently reach.
 - Each user can only access their own data (enforced by `auth.uid()` in policies)
 
 ## Credentials & Secrets
-- Supabase URL/anon key via `--dart-define` or `.env` file
+- Supabase URL/publishable key via `--dart-define` or `.env` file; the legacy
+  `SUPABASE_ANON_KEY` name is fallback-only during environment migration
 - NEVER hardcode credentials in source code
 - NEVER commit `.env`, `credentials.json`, or key files
 - CI secrets stored in GitHub Secrets; local release builds read `.env` via `scripts/build_release.sh` (`SENTRY_AUTH_TOKEN` is exported in-shell, never written to `.env`)

@@ -67,6 +67,7 @@ class MainActivity : FlutterActivity() {
                         result.success(
                             mapOf(
                                 "SUPABASE_URL" to BuildConfig.SUPABASE_URL,
+                                "SUPABASE_PUBLISHABLE_KEY" to BuildConfig.SUPABASE_PUBLISHABLE_KEY,
                                 "SUPABASE_ANON_KEY" to BuildConfig.SUPABASE_ANON_KEY,
                                 "SENTRY_DSN" to BuildConfig.SENTRY_DSN,
                                 "SENTRY_ENVIRONMENT" to BuildConfig.SENTRY_ENVIRONMENT,

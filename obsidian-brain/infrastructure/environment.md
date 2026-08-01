@@ -7,7 +7,8 @@ Source: `CLAUDE.md` § Environment Variables
 | Variable | Required | Default | Purpose |
 |----------|---------|---------|---------|
 | `SUPABASE_URL` | Yes | — | Supabase project URL |
-| `SUPABASE_ANON_KEY` | Yes | — | Supabase anonymous key |
+| `SUPABASE_PUBLISHABLE_KEY` | Yes | — | Supabase publishable client key |
+| `SUPABASE_ANON_KEY` | Transitional fallback | — | Legacy client key during environment migration |
 | `SENTRY_DSN` | Yes for production releases | — | Sentry error tracking DSN |
 | `SENTRY_ENVIRONMENT` | No | `production` | Sentry environment tag |
 | `REVENUECAT_API_KEY_IOS` | No | — | RevenueCat iOS |
@@ -27,6 +28,12 @@ Source: `CLAUDE.md` § Environment Variables
 | `SUPABASE_PROJECT_REF` | Edge Function deployment (CI) |
 
 **Never put Edge Function secrets in client code.**
+
+Hosted Supabase also injects `SUPABASE_PUBLISHABLE_KEYS` and
+`SUPABASE_SECRET_KEYS` as JSON objects keyed by dashboard key name. Shared Edge
+Function auth selects `default` from these maps and falls back to the legacy
+`SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` variables only during the
+migration window. Opaque secret keys are sent only through the `apikey` header.
 
 ## Release-Only Secrets
 
@@ -65,7 +72,8 @@ deleted.
 
 ## Fail-Fast
 
-If `SUPABASE_URL` or `SUPABASE_ANON_KEY` is missing, cloud initialization
+If `SUPABASE_URL` or both `SUPABASE_PUBLISHABLE_KEY` and the transitional
+`SUPABASE_ANON_KEY` fallback are missing, cloud initialization
 fails. Production release workflows also fail fast when `SENTRY_DSN` is
 missing so store binaries cannot silently ship without crash reporting.
 

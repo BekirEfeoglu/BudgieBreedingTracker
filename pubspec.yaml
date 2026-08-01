@@ -20,11 +20,11 @@ dependencies:
   go_router: ^17.0.0
 
   # Backend
-  # Capped below 2.13.0: 2.13+ pulls the passkeys plugin chain (passkeys_doctor
-  # -> device_info_plus 12.4.0) whose iOS code uses the visionOS-only
-  # `isiOSAppOnVision` selector, which fails to compile on the CI macos-latest
-  # Xcode SDK. Revisit when CI Xcode is bumped or passkeys is actually needed.
-  supabase_flutter: '>=2.5.0 <2.13.0'
+  # 2.15.4 adds first-class publishable-key support without forcing the native
+  # passkeys plugin chain into apps that do not use passkeys. Keep the upper
+  # bound below 2.16 because 2.16 raises the package minimum to Dart 3.9 while
+  # this app still declares Dart >=3.8 compatibility.
+  supabase_flutter: '>=2.15.4 <2.16.0'
   firebase_core: ^4.12.1
   firebase_messaging: ^16.2.2
 

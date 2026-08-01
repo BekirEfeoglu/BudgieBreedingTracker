@@ -164,18 +164,64 @@ void main() {
       expect(find.textContaining('\$50.00', findRichText: true), findsNothing);
     });
 
-    testWidgets('shows best value badge on yearly plan', (tester) async {
+    testWidgets('shows best value badge when yearly plan is cheaper', (
+      tester,
+    ) async {
+      final offerings = [
+        Package.fromJson(
+          _packageJson(
+            identifier: r'$rc_six_month',
+            packageType: 'SIX_MONTH',
+            productIdentifier: 'budgie_premium_semi_annual',
+            priceString: '\$15.00',
+            price: 15.0,
+          ),
+        ),
+        Package.fromJson(
+          _packageJson(
+            identifier: r'$rc_annual',
+            packageType: 'ANNUAL',
+            productIdentifier: 'budgie_premium_yearly',
+            priceString: '\$25.00',
+            price: 25.0,
+          ),
+        ),
+      ];
+
       await tester.pumpWidget(
-        _wrapWithProviders(const PremiumPricingSection()),
+        _wrapWithProviders(const PremiumPricingSection(), offerings: offerings),
       );
       await tester.pumpAndSettle();
 
       expect(find.text(l10n('premium.best_value')), findsOneWidget);
     });
 
-    testWidgets('shows savings text on yearly plan', (tester) async {
+    testWidgets('shows savings text when yearly plan is cheaper', (
+      tester,
+    ) async {
+      final offerings = [
+        Package.fromJson(
+          _packageJson(
+            identifier: r'$rc_six_month',
+            packageType: 'SIX_MONTH',
+            productIdentifier: 'budgie_premium_semi_annual',
+            priceString: '\$15.00',
+            price: 15.0,
+          ),
+        ),
+        Package.fromJson(
+          _packageJson(
+            identifier: r'$rc_annual',
+            packageType: 'ANNUAL',
+            productIdentifier: 'budgie_premium_yearly',
+            priceString: '\$25.00',
+            price: 25.0,
+          ),
+        ),
+      ];
+
       await tester.pumpWidget(
-        _wrapWithProviders(const PremiumPricingSection()),
+        _wrapWithProviders(const PremiumPricingSection(), offerings: offerings),
       );
       await tester.pumpAndSettle();
 
@@ -332,7 +378,7 @@ void main() {
       expect(find.text(l10n('premium.save_percent')), findsOneWidget);
     });
 
-    testWidgets('renders savings text with fallback when no packages', (
+    testWidgets('hides value claims when no store packages are available', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -340,8 +386,41 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // No packages → falls back to 17%
-      expect(find.text(l10n('premium.save_percent')), findsOneWidget);
+      expect(find.text(l10n('premium.best_value')), findsNothing);
+      expect(find.text(l10n('premium.save_percent')), findsNothing);
+    });
+
+    testWidgets('hides value claims when yearly plan is not cheaper', (
+      tester,
+    ) async {
+      final offerings = [
+        Package.fromJson(
+          _packageJson(
+            identifier: r'$rc_six_month',
+            packageType: 'SIX_MONTH',
+            productIdentifier: 'budgie_premium_semi_annual',
+            priceString: '\$14.99',
+            price: 14.99,
+          ),
+        ),
+        Package.fromJson(
+          _packageJson(
+            identifier: r'$rc_annual',
+            packageType: 'ANNUAL',
+            productIdentifier: 'budgie_premium_yearly',
+            priceString: '\$34.99',
+            price: 34.99,
+          ),
+        ),
+      ];
+
+      await tester.pumpWidget(
+        _wrapWithProviders(const PremiumPricingSection(), offerings: offerings),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('premium.best_value')), findsNothing);
+      expect(find.text(l10n('premium.save_percent')), findsNothing);
     });
 
     testWidgets('shows period labels in RichText for active plans', (
@@ -389,29 +468,32 @@ void main() {
       );
     });
 
-    test('returns fallback when semi-annual price is null', () {
+    test('returns null when semi-annual price is unavailable', () {
       expect(
         calculateSavingsPercent(semiAnnualPrice: null, yearlyPrice: 25.0),
-        '17',
+        isNull,
       );
     });
 
-    test('returns fallback when yearly price is null', () {
+    test('returns null when yearly price is unavailable', () {
       expect(
         calculateSavingsPercent(semiAnnualPrice: 15.0, yearlyPrice: null),
-        '17',
+        isNull,
       );
     });
 
-    test('returns fallback when prices are zero', () {
-      expect(calculateSavingsPercent(semiAnnualPrice: 0, yearlyPrice: 0), '17');
+    test('returns null when prices are zero', () {
+      expect(
+        calculateSavingsPercent(semiAnnualPrice: 0, yearlyPrice: 0),
+        isNull,
+      );
     });
 
-    test('returns fallback when yearly >= annualized semi-annual', () {
+    test('returns null when yearly >= annualized semi-annual', () {
       // No savings: yearly costs more than 2× semi-annual
       expect(
         calculateSavingsPercent(semiAnnualPrice: 10.0, yearlyPrice: 20.0),
-        '17',
+        isNull,
       );
     });
 

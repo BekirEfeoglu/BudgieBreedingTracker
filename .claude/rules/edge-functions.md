@@ -101,7 +101,13 @@ Bu karar hosted Supabase Edge'in güncel function başına **256 MB memory** ve
   4. Add name to the `deploy-edge-functions` workflow deploy list
   5. Add Dart constant + service wrapper if client-invoked
   6. Add DB trigger / cron if server-invoked
-- Secrets: Supabase Dashboard → Edge Functions → Secrets. Never commit to repo.
+- Hosted Supabase injects modern keys as JSON maps in
+  `SUPABASE_PUBLISHABLE_KEYS` and `SUPABASE_SECRET_KEYS`; shared auth resolves
+  the named `default` key first and uses legacy vars only during migration.
+- Opaque `sb_secret_...` values go in the `apikey` header, never
+  `Authorization: Bearer`; bearer is reserved for user JWTs.
+- Custom secrets: Supabase Dashboard → Edge Functions → Secrets. Never commit
+  them to the repo.
 
 ## Anti-Patterns
 1. Deploying with `--no-verify-jwt` (release-blocker)

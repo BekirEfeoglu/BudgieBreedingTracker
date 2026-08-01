@@ -6,6 +6,14 @@ String _preferNonEmpty(String primary, Object? fallback) {
   return fallback?.toString().trim() ?? '';
 }
 
+/// Selects the modern publishable key and falls back to the legacy anon key
+/// only while existing build environments are being migrated.
+String resolveSupabasePublishableKey(Object? publishableKey, Object? anonKey) {
+  final modern = publishableKey?.toString().trim() ?? '';
+  if (modern.isNotEmpty) return modern;
+  return anonKey?.toString().trim() ?? '';
+}
+
 /// Validates that the Supabase URL looks like a real project URL.
 bool _isValidSupabaseUrl(String url) {
   if (url.isEmpty) return false;

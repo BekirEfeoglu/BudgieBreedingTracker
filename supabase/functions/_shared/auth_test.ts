@@ -14,6 +14,7 @@ import {
   assert,
   assertEquals,
 } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { resolveSupabaseNamedKey } from "./auth.ts";
 
 // Set dummy env vars so createClient doesn't throw "supabaseUrl is required"
 function ensureEnv() {
@@ -59,6 +60,21 @@ function requestWithClaims(claims: Record<string, unknown>): Request {
     headers: { Authorization: `Bearer ${token}` },
   });
 }
+
+Deno.test("resolveSupabaseNamedKey: prefers named modern key", () => {
+  assertEquals(
+    resolveSupabaseNamedKey(
+      JSON.stringify({ default: "sb_publishable_modern" }),
+      "legacy-key",
+    ),
+    "sb_publishable_modern",
+  );
+});
+
+Deno.test("resolveSupabaseNamedKey: falls back during partial rollout", () => {
+  assertEquals(resolveSupabaseNamedKey(undefined, "legacy-key"), "legacy-key");
+  assertEquals(resolveSupabaseNamedKey("not-json", "legacy-key"), "legacy-key");
+});
 
 // ---------------------------------------------------------------------------
 // getAuthenticatedUserId — header validation (no client created)
@@ -195,9 +211,18 @@ Deno.test("isActiveAdminProfile: accepts active admin and founder profiles only"
   const { isActiveAdminProfile } = await import("./auth.ts");
 
   assertEquals(isActiveAdminProfile({ role: "admin", is_active: true }), true);
-  assertEquals(isActiveAdminProfile({ role: "founder", is_active: true }), true);
-  assertEquals(isActiveAdminProfile({ role: "admin", is_active: false }), false);
-  assertEquals(isActiveAdminProfile({ role: "founder", is_active: false }), false);
+  assertEquals(
+    isActiveAdminProfile({ role: "founder", is_active: true }),
+    true,
+  );
+  assertEquals(
+    isActiveAdminProfile({ role: "admin", is_active: false }),
+    false,
+  );
+  assertEquals(
+    isActiveAdminProfile({ role: "founder", is_active: false }),
+    false,
+  );
   assertEquals(isActiveAdminProfile({ role: "user", is_active: true }), false);
   assertEquals(isActiveAdminProfile(null), false);
 });

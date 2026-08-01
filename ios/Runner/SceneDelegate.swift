@@ -117,6 +117,7 @@ class SceneDelegate: FlutterSceneDelegate, SKStoreProductViewControllerDelegate 
       let info = Bundle.main.infoDictionary ?? [:]
       result([
         "SUPABASE_URL": info["SUPABASE_URL"] as? String ?? "",
+        "SUPABASE_PUBLISHABLE_KEY": info["SUPABASE_PUBLISHABLE_KEY"] as? String ?? "",
         "SUPABASE_ANON_KEY": info["SUPABASE_ANON_KEY"] as? String ?? "",
         "SENTRY_DSN": info["SENTRY_DSN"] as? String ?? "",
         "SENTRY_ENVIRONMENT": info["SENTRY_ENVIRONMENT"] as? String ?? "",

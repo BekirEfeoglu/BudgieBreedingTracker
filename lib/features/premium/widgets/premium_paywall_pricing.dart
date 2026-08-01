@@ -33,6 +33,7 @@ class PremiumPricingSection extends ConsumerWidget {
       semiAnnualPrice: semiAnnualPackage?.storeProduct.price,
       yearlyPrice: yearlyPackage?.storeProduct.price,
     );
+    final hasYearlySavings = savingsPercent != null;
 
     bool canSelectPlan(Object? package) {
       if (isGuest) return !actionState.isLoading;
@@ -85,9 +86,11 @@ class PremiumPricingSection extends ConsumerWidget {
             planName: 'premium.plan_yearly'.tr(),
             price: yearlyPrice,
             period: 'premium.period_yearly'.tr(),
-            isHighlighted: true,
-            badge: 'premium.best_value'.tr(),
-            savingsText: 'premium.save_percent'.tr(args: [savingsPercent]),
+            isHighlighted: hasYearlySavings,
+            badge: hasYearlySavings ? 'premium.best_value'.tr() : null,
+            savingsText: hasYearlySavings
+                ? 'premium.save_percent'.tr(args: [savingsPercent])
+                : null,
             isEnabled: canSelectPlan(yearlyPackage),
             isLoading:
                 actionState.isLoading &&
@@ -216,22 +219,26 @@ String _purchaseIssueBodyKey(PremiumPurchaseIssue issue) {
 
 /// Calculates the savings percentage of yearly vs semi-annual plan.
 ///
-/// Returns a string like '20' (percent). Falls back to '17' when prices
-/// are unavailable (based on $15×2=$30 vs $25 default pricing).
+/// Returns a string like '20' (percent) only when both store prices are valid
+/// and the yearly plan is cheaper than two semi-annual purchases. Otherwise
+/// returns `null` so the paywall does not advertise an unverified saving.
 @visibleForTesting
-String calculateSavingsPercent({double? semiAnnualPrice, double? yearlyPrice}) {
+String? calculateSavingsPercent({
+  double? semiAnnualPrice,
+  double? yearlyPrice,
+}) {
   if (semiAnnualPrice == null ||
       yearlyPrice == null ||
       semiAnnualPrice <= 0 ||
       yearlyPrice <= 0) {
-    return '17';
+    return null;
   }
   final annualized = semiAnnualPrice * 2;
   final savings = ((annualized - yearlyPrice) / annualized * 100).round();
   if (savings > 0 && savings < 100) {
     return savings.toString();
   }
-  return '17';
+  return null;
 }
 
 Future<void> _openLegalUrl(

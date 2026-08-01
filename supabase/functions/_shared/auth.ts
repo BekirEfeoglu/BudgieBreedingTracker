@@ -15,6 +15,44 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 /**
+ * Resolve a named modern Supabase key, falling back to its legacy equivalent
+ * while environments are migrated. Modern Edge Function key variables are
+ * JSON objects keyed by dashboard key name (normally `default`).
+ */
+export function resolveSupabaseNamedKey(
+  namedKeysJson: string | undefined,
+  legacyKey: string | undefined,
+  keyName = "default",
+): string {
+  if (namedKeysJson) {
+    try {
+      const parsed = JSON.parse(namedKeysJson);
+      const modernKey = parsed?.[keyName];
+      if (typeof modernKey === "string" && modernKey.trim() !== "") {
+        return modernKey.trim();
+      }
+    } catch {
+      // Fall through to the legacy value during a partial rollout.
+    }
+  }
+  return legacyKey?.trim() ?? "";
+}
+
+export function getSupabasePublishableKey(): string {
+  return resolveSupabaseNamedKey(
+    Deno.env.get("SUPABASE_PUBLISHABLE_KEYS"),
+    Deno.env.get("SUPABASE_ANON_KEY"),
+  );
+}
+
+export function getSupabaseSecretKey(): string {
+  return resolveSupabaseNamedKey(
+    Deno.env.get("SUPABASE_SECRET_KEYS"),
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
+  );
+}
+
+/**
  * Validate the caller's JWT and return their user ID.
  * Returns null if the token is missing, malformed, or invalid.
  *
@@ -30,7 +68,7 @@ export async function getAuthenticatedUserId(
   try {
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      getSupabasePublishableKey(),
       { global: { headers: { Authorization: authHeader } } },
     );
 
@@ -115,7 +153,7 @@ export async function requireAdminRole(userId: string): Promise<boolean> {
 export function createSupabaseAdmin() {
   return createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    getSupabaseSecretKey(),
   );
 }
 
@@ -126,7 +164,7 @@ export function createSupabaseAdmin() {
 export function createSupabaseAuth(req: Request) {
   return createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+    getSupabasePublishableKey(),
     {
       global: {
         headers: {

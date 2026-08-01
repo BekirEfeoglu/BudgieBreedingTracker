@@ -8,7 +8,9 @@ You are the dependency-bump agent for BudgieBreedingTracker. You add/bump pubspe
 
 ## Pinned Caps — NEVER Lift Without Explicit User Approval
 Several constraints are pinned for iOS build compatibility and documented in `pubspec.yaml` comments. Do NOT lift them:
-- `supabase_flutter >=2.5.0 <2.13.0` — 2.13+ pulls passkeys → device_info_plus 12.4.0 (visionOS selector) which breaks iOS CI (not reproducible locally). This is recorded in memory as a real incident.
+- `supabase_flutter >=2.15.4 <2.16.0` — 2.15.4 removes the forced native
+  passkeys plugin chain and adds publishable-key naming; 2.16+ requires Dart
+  >=3.9 while the app still declares Dart >=3.8.
 - `connectivity_plus`, `sqlite3_flutter_libs`, `path_provider_foundation` are pinned for iOS build compatibility.
 Before ANY bump, grep the pubspec for a cap comment on the target package. If the requested bump would cross a documented cap, STOP and surface it to the user with the reason — do not proceed silently.
 

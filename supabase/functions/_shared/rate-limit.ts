@@ -6,6 +6,8 @@
  * limits are enforced across Edge Function instances.
  */
 
+import { getSupabaseSecretKey } from "./auth.ts";
+
 export interface RateLimitStore {
   check(
     key: string,
@@ -87,11 +89,7 @@ class SupabaseRateLimitStore implements RateLimitStore {
         `${this.supabaseUrl}/rest/v1/rpc/check_edge_rate_limit`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "apikey": this.serviceRoleKey,
-            "Authorization": `Bearer ${this.serviceRoleKey}`,
-          },
+          headers: buildSupabaseAdminHeaders(this.serviceRoleKey),
           body: JSON.stringify({
             p_key: `${this.namespace}:${key}`,
             p_window_ms: windowMs,
@@ -115,17 +113,34 @@ class SupabaseRateLimitStore implements RateLimitStore {
   }
 }
 
+/**
+ * New opaque secret keys belong only in `apikey`; sending them as a bearer
+ * token makes the gateway attempt JWT parsing. Legacy service-role JWTs still
+ * need the historical Authorization header during the transition.
+ */
+export function buildSupabaseAdminHeaders(
+  secretKey: string,
+): Record<string, string> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "apikey": secretKey,
+  };
+  if (!secretKey.startsWith("sb_secret_")) {
+    headers.Authorization = `Bearer ${secretKey}`;
+  }
+  return headers;
+}
+
 export function createSupabaseRateLimitStore(
   namespace: string,
 ): RateLimitStore {
   const url = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const serviceRoleKey = getSupabaseSecretKey();
   if (
-    url == null || url === "" || serviceRoleKey == null ||
-    serviceRoleKey === ""
+    url == null || url === "" || serviceRoleKey === ""
   ) {
     console.warn(
-      "SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY missing; " +
+      "Supabase URL or backend API key missing; " +
         "using in-memory Edge Function rate limits",
     );
     return new InMemoryRateLimitStore();

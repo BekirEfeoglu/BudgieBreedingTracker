@@ -87,6 +87,7 @@ fun resolveRuntimeConfigValue(key: String, defaultValue: String = ""): String {
 }
 
 val supabaseUrlFromConfig = resolveRuntimeConfigValue("SUPABASE_URL")
+val supabasePublishableKeyFromConfig = resolveRuntimeConfigValue("SUPABASE_PUBLISHABLE_KEY")
 val supabaseAnonKeyFromConfig = resolveRuntimeConfigValue("SUPABASE_ANON_KEY")
 val sentryDsnFromConfig = resolveRuntimeConfigValue("SENTRY_DSN")
 val sentryEnvironmentFromConfig = resolveRuntimeConfigValue("SENTRY_ENVIRONMENT", "production")
@@ -126,6 +127,11 @@ android {
             "String",
             "SUPABASE_URL",
             "\"${escapeForBuildConfig(supabaseUrlFromConfig)}\""
+        )
+        buildConfigField(
+            "String",
+            "SUPABASE_PUBLISHABLE_KEY",
+            "\"${escapeForBuildConfig(supabasePublishableKeyFromConfig)}\""
         )
         buildConfigField(
             "String",

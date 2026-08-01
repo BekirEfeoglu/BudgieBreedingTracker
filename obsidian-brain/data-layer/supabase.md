@@ -4,7 +4,9 @@ Source: `.claude/rules/data-layer.md`, `.claude/rules/security.md`
 
 ## Overview
 
-- **Package**: `supabase_flutter >=2.5.0 <2.13.0` — iOS CI cap, do NOT lift (2.13+ pulls a `device_info_plus` with a visionOS selector that breaks the iOS CI build; see pubspec comment)
+- **Package**: `supabase_flutter >=2.15.4 <2.16.0` — 2.15.4 supports
+  `publishableKey` without a native passkeys plugin dependency; keep the upper
+  cap while the app declares Dart >=3.8 because 2.16 requires Dart >=3.9
 - **Remote sources**: 28 `*_remote_source.dart` files (entity + base/caches/providers)
 - **Migrations**: 215 tracked SQL files in `supabase/migrations/`
 - **Edge Functions**: 12 (see [[infrastructure/edge-functions]])

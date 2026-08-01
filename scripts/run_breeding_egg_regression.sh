@@ -6,7 +6,7 @@ cd "$ROOT_DIR"
 
 COMMON_ARGS=(
   --dart-define=SUPABASE_URL=https://placeholder.supabase.co
-  --dart-define=SUPABASE_ANON_KEY=placeholder_key
+  --dart-define=SUPABASE_PUBLISHABLE_KEY=sb_publishable_placeholder
 )
 
 flutter test test/features/breeding/providers/breeding_form_providers_test.dart "${COMMON_ARGS[@]}"

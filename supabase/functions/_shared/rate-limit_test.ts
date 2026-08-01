@@ -9,7 +9,23 @@ import {
   assertEquals,
   assertNotEquals,
 } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { createRateLimiter, rateLimitedResponse } from "./rate-limit.ts";
+import {
+  buildSupabaseAdminHeaders,
+  createRateLimiter,
+  rateLimitedResponse,
+} from "./rate-limit.ts";
+
+Deno.test("modern secret key is not sent as a bearer JWT", () => {
+  const headers = buildSupabaseAdminHeaders("sb_secret_modern");
+  assertEquals(headers.apikey, "sb_secret_modern");
+  assertEquals(headers.Authorization, undefined);
+});
+
+Deno.test("legacy service-role JWT keeps transition Authorization header", () => {
+  const headers = buildSupabaseAdminHeaders("legacy.jwt.key");
+  assertEquals(headers.apikey, "legacy.jwt.key");
+  assertEquals(headers.Authorization, "Bearer legacy.jwt.key");
+});
 
 // ---------------------------------------------------------------------------
 // createRateLimiter — default config

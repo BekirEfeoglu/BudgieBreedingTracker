@@ -13,7 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Comprehensive Flutter breeding tracker app for budgie breeders.
 Flutter 3.41.4 (`.fvmrc`, CI/Xcode Cloud/local tek kaynak) / Dart >=3.8.0 <4.0.0 / Riverpod 3 / GoRouter 17+ / Supabase / Drift 2.31+ / Freezed 3
 
-Key deps: `supabase_flutter >=2.5.0 <2.13.0` (iOS CI cap — do NOT lift, see pubspec comment) · `sentry_flutter ^9.0.0` · `fl_chart ^1.2.0` · `purchases_flutter ^10.4.2`
+Key deps: `supabase_flutter >=2.15.4 <2.16.0` (Dart 3.8 compatibility cap — do NOT lift, see pubspec comment) · `sentry_flutter ^9.0.0` · `fl_chart ^1.2.0` · `purchases_flutter ^10.4.2`
 
 ## Build & Development Commands
 
@@ -42,7 +42,7 @@ dart run build_runner clean
 
 # Run app (requires Supabase credentials)
 flutter run --dart-define-from-file=.env          # local default (.env not committed)
-flutter run --dart-define=SUPABASE_URL=<url> --dart-define=SUPABASE_ANON_KEY=<key>
+flutter run --dart-define=SUPABASE_URL=<url> --dart-define=SUPABASE_PUBLISHABLE_KEY=<key>
 
 # Static analysis
 flutter analyze --no-fatal-infos
@@ -122,7 +122,7 @@ scripts/test_git_hooks.py               # Local git hook installation + worktree
 | Metric | Value |
 | --- | --- |
 | Source files (lib/) | 1036 Dart files |
-| Test files (test/) | 956 test files, 11,814+ individual tests |
+| Test files (test/) | 956 test files, 11,818+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -209,7 +209,8 @@ Xcode Cloud stays **build-only** and is NOT a release path.
 | Variable | Required | Default | Purpose |
 | --- | --- | --- | --- |
 | `SUPABASE_URL` | Yes | — | Supabase project URL |
-| `SUPABASE_ANON_KEY` | Yes | — | Supabase anonymous key |
+| `SUPABASE_PUBLISHABLE_KEY` | Yes | — | Supabase publishable client key |
+| `SUPABASE_ANON_KEY` | Transitional fallback | — | Legacy client key while existing release environments migrate |
 | `SENTRY_DSN` | Yes for production releases | — | Sentry error tracking DSN |
 | `SENTRY_ENVIRONMENT` | No | `production` | Sentry environment tag |
 | `REVENUECAT_API_KEY_IOS` | No | — | RevenueCat iOS |

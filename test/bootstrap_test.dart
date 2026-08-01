@@ -38,6 +38,23 @@ void main() {
       );
     });
 
+    test('prefers modern publishable key over legacy anon key', () {
+      expect(
+        resolveSupabasePublishableKey(
+          'sb_publishable_modern',
+          'legacy-anon-key',
+        ),
+        'sb_publishable_modern',
+      );
+    });
+
+    test('falls back to legacy anon key during config migration', () {
+      expect(
+        resolveSupabasePublishableKey('', 'legacy-anon-key'),
+        'legacy-anon-key',
+      );
+    });
+
     test('rejects placeholder and malformed API keys', () {
       expect(debugIsValidSupabaseApiKey(''), isFalse);
       expect(debugIsValidSupabaseApiKey('your-anon-key-here'), isFalse);
