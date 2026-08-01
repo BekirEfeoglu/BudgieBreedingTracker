@@ -132,3 +132,4 @@ drift to 3.44.6 broke release compilation against locked `lucide_icons 0.257.0`)
 - [[infrastructure/ci-cd]] — CI jobs
 - [[infrastructure/branch-workflow]] — merge policy
 - [[infrastructure/environment]] — secrets
+- [[infrastructure/supabase-staging-backup-restore]] — staging and restore drill

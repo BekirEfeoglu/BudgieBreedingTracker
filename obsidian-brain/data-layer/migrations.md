@@ -41,7 +41,7 @@ Shared index helpers running from historical migrations must guard **both** late
 
 Format: `YYYYMMDDHHmmss_short_description.sql`
 
-221 tracked migration files are ordered lexicographically. The immutable baseline freezes the canonical chain through `20260714200511` with nine apply-time aliases; later files are append-only deltas whose remote parity must be verified after deployment.
+224 tracked migration files are ordered lexicographically. The immutable baseline freezes the canonical chain through `20260714200511` with nine apply-time aliases; later files are append-only deltas whose remote parity must be verified after deployment. Production is at 221 while the production-authoritative reconciliation migrations `20260731160000` and `20260731161000` complete their staging observation gate; staging has exact parity through those 223 migrations. `20260731170000_harden_premium_grace_and_free_tier_quotas.sql` is the subsequent local premium/quota hardening delta and must pass its own deployment gate. The reconciliation migrations' production application is conditionally pre-approved for a PASS result only; FAIL leaves production unchanged.
 **Historical 2026-07-10 audit:**
 206 local files ↔ 206 ledger rows, version parity exact (0 duplicates), all
 recent effects confirmed in the live schema; `20260710120000` (marketplace

@@ -1,9 +1,13 @@
 # Migration History Map
 
-182 files, all applied to production (`lmqkwgitzvpacycujzgc`), zero drift as of
-2026-07-02 — verified 1:1 against `list_migrations` (Supabase MCP). There is
-no unused/orphaned/duplicate migration to clean up; the count is organic
-history from ~4.5 months of active, security-audit-heavy development.
+224 local files as of 2026-07-31. Production (`lmqkwgitzvpacycujzgc`) is at
+221; the two forward reconciliation migrations dated `20260731160000` and
+`20260731161000` are intentionally staged for the 24-hour observation gate.
+Their production application is pre-approved only if that gate passes. Staging
+(`opizbbrrbacpjebinxnn`) has exact parity through the 223 reconciliation
+migrations; `20260731170000_harden_premium_grace_and_free_tier_quotas.sql` is
+the next local-only delta pending its separate gate. The history is organic and
+must remain append-only.
 
 **Forward-only, never delete or rename** (`.claude/rules/migrations.md` §
 Anti-Patterns #7, `obsidian-brain/data-layer/migrations.md`). Supabase's CLI
@@ -37,7 +41,10 @@ the commands in § Finding Things below.
 | 2026-05-27 – 05-30 | 8 | **Leaderboard launch + cleanup** — `admin_get_stats` fix, `show_in_leaderboard` + `get_leaderboard` RPC, anon revoke hardening, app version bump, orphaned-table drop, public-execute revoke, storage object policy consolidation |
 | 2026-06-04 – 06-07 | 8 | Community-blocks repair + grant tightening, DB lint warning fixes, admin reset/audit hardening, avatar upload constraints, app version/update-metadata alignment, community edge-write hardening |
 | 2026-06-27 – 06-29 | 5 | **Admin RPC wave** — user-aggregate-detail RPC, `SECURITY DEFINER` exposure fix (×2), `admin_force_logout` + its own exposure hardening follow-up |
-| 2026-07-02 | 3 | Block messages from blocked users (RLS gap), gamification server-side write helpers + full self-grant lockdown (`xp_transactions`/`user_levels`/`user_badges`/`profiles`) |
+| 2026-07-02 | 4 | Block messages from blocked users (RLS gap), gamification server-side write helpers + full self-grant lockdown (`xp_transactions`/`user_levels`/`user_badges`/`profiles`), daily XP cap enforcement |
+| 2026-07-03 – 07-14 | 31 | Community edit/mute/reply/tag work, gamification streaks, MFA recovery, messaging recursion/self-join hardening, feed follow-state and message insert helpers |
+| 2026-07-17 – 07-29 | 6 | Upload-limit alignment, premium/admin role persistence, streak privilege repair, founder role synchronization, NULL demotion revocation, session-build adoption telemetry |
+| 2026-07-31 | 4 | One-active-chick-per-egg invariant, production-authoritative schema-object/privilege reconciliation, and atomic premium-grace/free-tier-quota hardening; reconciliation remains behind its observation gate and the premium delta has its own deployment gate |
 
 Recurring pattern worth naming: several "hardening wave" clusters above are
 genuinely **audit → fix → re-audit → fix-the-fix** sequences (e.g. the three

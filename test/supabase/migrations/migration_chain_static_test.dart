@@ -279,45 +279,76 @@ void main() {
       expect(sql, isNot(contains("'backups'")));
     });
 
+    test('admin premium overrides serialize with service-role sync writes', () {
+      final sql = File(
+        'supabase/migrations/'
+        '20260718203416_persist_admin_premium_overrides.sql',
+      ).readAsStringSync();
+
+      expect(
+        sql,
+        contains('CREATE OR REPLACE FUNCTION private.admin_grant_premium'),
+      );
+      expect(
+        sql,
+        contains('CREATE OR REPLACE FUNCTION private.admin_revoke_premium'),
+      );
+      expect(sql, contains("'manual'"));
+      expect(sql, contains('pg_catalog.pg_advisory_xact_lock'));
+      expect(
+        sql,
+        contains(
+          'CREATE OR REPLACE FUNCTION public.apply_verified_premium_status',
+        ),
+      );
+      expect(sql, contains('SECURITY INVOKER'));
+      expect(
+        sql,
+        contains("(SELECT auth.role()) IS DISTINCT FROM 'service_role'"),
+      );
+      expect(sql, contains("IF v_provider = 'manual' THEN"));
+      expect(sql, contains('FROM PUBLIC, anon, authenticated'));
+      expect(sql, contains(') TO service_role;'));
+    });
+
     test(
-      'admin premium overrides serialize with service-role sync writes',
+      'free-tier quotas cover activation updates, marketplace, and races',
       () {
         final sql = File(
           'supabase/migrations/'
-          '20260718203416_persist_admin_premium_overrides.sql',
+          '20260731170000_harden_premium_grace_and_free_tier_quotas.sql',
         ).readAsStringSync();
 
         expect(
           sql,
-          contains(
-            'CREATE OR REPLACE FUNCTION private.admin_grant_premium',
-          ),
+          contains('CREATE TABLE IF NOT EXISTS private.free_tier_usage'),
         );
         expect(
           sql,
-          contains(
-            'CREATE OR REPLACE FUNCTION private.admin_revoke_premium',
-          ),
+          contains('CREATE OR REPLACE FUNCTION private.adjust_free_tier_usage'),
         );
-        expect(sql, contains("'manual'"));
-        expect(sql, contains('pg_catalog.pg_advisory_xact_lock'));
         expect(
           sql,
-          contains(
-            'CREATE OR REPLACE FUNCTION public.apply_verified_premium_status',
-          ),
+          contains('ON CONFLICT (user_id, resource) DO UPDATE'),
+          reason: 'quota reservation must serialize on one counter row',
         );
-        expect(sql, contains('SECURITY INVOKER'));
+        expect(sql, contains('free_tier_limit_reached'));
         expect(
-          sql,
-          contains("(SELECT auth.role()) IS DISTINCT FROM 'service_role'"),
+          RegExp(
+            'BEFORE INSERT OR UPDATE OR DELETE ON public\\.',
+          ).allMatches(sql).length,
+          4,
         );
-        expect(sql, contains("IF v_provider = 'manual' THEN"));
-        expect(
-          sql,
-          contains('FROM PUBLIC, anon, authenticated'),
-        );
-        expect(sql, contains(') TO service_role;'));
+        for (final table in [
+          'birds',
+          'breeding_pairs',
+          'incubations',
+          'marketplace_listings',
+        ]) {
+          expect(sql, contains('ON public.$table'));
+        }
+        expect(sql, contains('p.grace_period_until > now()'));
+        expect(sql, contains('Ignores stale JWT premium claims'));
       },
     );
 

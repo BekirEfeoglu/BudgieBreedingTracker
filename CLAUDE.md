@@ -252,7 +252,7 @@ Config methods: `.env` + `--dart-define-from-file` (local and release builds via
 | `validate-free-tier-limit` | Free tier entity limit enforcement |
 
 ### Migrations
-221 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
+224 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
 
 ## Rules
 
@@ -428,7 +428,7 @@ Security:      lib/core/security/
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
-Migrations:    supabase/migrations/ (221 files)
+Migrations:    supabase/migrations/ (224 files)
 Scripts:       scripts/
 CI:            .github/workflows/
 Release build:  scripts/build_release.sh

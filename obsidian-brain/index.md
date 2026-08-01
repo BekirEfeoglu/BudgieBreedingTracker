@@ -66,6 +66,7 @@ Full catalog of every page in the obsidian-brain wiki.
 | [[data-layer/repositories]] | BaseRepository, SyncableRepository, ValidatedSyncMixin |
 | [[data-layer/sync-strategy]] | Push/pull, idempotency, conflict resolution, retry |
 | [[data-layer/migrations]] | Drift onUpgrade + Supabase SQL migrations |
+| [[data-layer/staging-schema-drift-2026-07-31]] | Staging replay drift, forward reconciliation, and 24-hour gate evidence |
 | [[data-layer/tables-catalog]] | All 20 Drift tables with FK parents |
 
 ## Domain Services
@@ -100,6 +101,7 @@ Full catalog of every page in the obsidian-brain wiki.
 | [[infrastructure/scripts]] | Quality scripts, anti-pattern checkers |
 | [[infrastructure/branch-workflow]] | main-only strategy, commit format, quality gates |
 | [[infrastructure/release-ops]] | Store releases, version bump, Supabase ops |
+| [[infrastructure/supabase-staging-backup-restore]] | Staging migration rehearsal and isolated restore drill runbook |
 | [[infrastructure/marketing-site]] | GitHub Pages product site, anchor navigation, SEO, web QA |
 
 ## Patterns
