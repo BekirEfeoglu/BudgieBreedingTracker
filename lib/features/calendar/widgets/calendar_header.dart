@@ -39,20 +39,26 @@ class CalendarHeader extends ConsumerWidget {
             tooltip: 'calendar.previous_month'.tr(),
             semanticLabel: 'calendar.previous_month'.tr(),
           ),
-          InkWell(
-            onTap: () => _goToToday(ref),
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-            child: ConstrainedBox(
-              // WCAG 2.5.5: explicit 48dp floor (AppSpacing.touchTargetMin is
-              // 44dp, below the accessibility minimum).
-              constraints: const BoxConstraints(minHeight: 48),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                child: Center(
-                  child: Text(
-                    monthLabel,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+          Expanded(
+            child: InkWell(
+              onTap: () => _goToToday(ref),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              child: ConstrainedBox(
+                // WCAG 2.5.5: explicit 48dp floor (AppSpacing.touchTargetMin
+                // is 44dp, below the accessibility minimum).
+                constraints: const BoxConstraints(minHeight: 48),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                  ),
+                  child: Center(
+                    child: Text(
+                      monthLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),

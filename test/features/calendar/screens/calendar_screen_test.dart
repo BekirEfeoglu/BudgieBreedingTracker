@@ -227,7 +227,16 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.ensureVisible(find.byType(EventCard));
+      await tester.scrollUntilVisible(
+        find.byType(EventCard),
+        200,
+        scrollable: find
+            .descendant(
+              of: find.byType(CustomScrollView),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.byType(EventCard));
       await tester.tap(find.byType(EventCard));
@@ -258,7 +267,12 @@ void main() {
 
       expect(find.byType(SegmentedButton<CalendarViewMode>), findsOneWidget);
       expect(find.byType(SingleChildScrollView), findsWidgets);
-      expect(tester.takeException(), isNull);
+      final exception = tester.takeException();
+      expect(
+        exception,
+        isNull,
+        reason: exception is FlutterError ? exception.toStringDeep() : null,
+      );
     });
   });
 }
