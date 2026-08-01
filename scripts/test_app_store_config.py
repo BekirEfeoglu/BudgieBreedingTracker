@@ -63,6 +63,66 @@ class TestStoreKitProducts(unittest.TestCase):
             {"budgie_premium_semi_annual", "budgie_premium_yearly"},
         )
 
+    def test_storekit_file_uses_current_xcode_schema(self):
+        storekit = json.loads((IOS_RUNNER / "Products.storekit").read_text())
+
+        self.assertGreaterEqual(storekit["version"]["major"], 5)
+        self.assertEqual(
+            {error["name"] for error in storekit["settings"]["_storeKitErrors"]},
+            {
+                "App Store Sync",
+                "App Transaction",
+                "Load Products",
+                "Manage Subscriptions Sheet",
+                "Offer Code Redeem Sheet",
+                "Purchase",
+                "Refund Request Sheet",
+                "Subscription Status",
+                "Verification",
+            },
+        )
+
+        subscriptions = [
+            subscription
+            for group in storekit["subscriptionGroups"]
+            for subscription in group["subscriptions"]
+        ]
+        for subscription in subscriptions:
+            with self.subTest(product_id=subscription["productID"]):
+                self.assertIn("introductoryOffer", subscription)
+                self.assertIn("introductoryOffers", subscription)
+                self.assertIn("winbackOffers", subscription)
+                self.assertEqual(len(subscription["introductoryOffers"]), 1)
+                introductory_offer = subscription["introductoryOffers"][0]
+                # Xcode 26 emits both keys in its normalized v5 file.
+                self.assertEqual(
+                    subscription["introductoryOffer"], introductory_offer
+                )
+                self.assertEqual(
+                    {
+                        key: introductory_offer[key]
+                        for key in (
+                            "billingPlanType",
+                            "numberOfPeriods",
+                            "paymentMode",
+                            "subscriptionPeriod",
+                        )
+                    },
+                    {
+                        "billingPlanType": "BILLED_UPFRONT",
+                        "numberOfPeriods": 1,
+                        "paymentMode": "free",
+                        "subscriptionPeriod": "P1W",
+                    },
+                )
+                self.assertRegex(
+                    introductory_offer["internalID"], r"^[0-9A-F]{8}$"
+                )
+                self.assertEqual(
+                    {item["locale"] for item in subscription["localizations"]},
+                    {"de", "en_US", "tr"},
+                )
+
 
 class TestPrivacyManifest(unittest.TestCase):
     def test_privacy_manifest_declares_user_and_device_identifiers(self):

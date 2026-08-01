@@ -1,147 +1,252 @@
 {
-  "appPolicies": {
-    "eula": "",
-    "policies": [
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
       {
-        "locale": "en_US",
-        "policyText": "",
-        "policyURL": "https://budgiebreedingtracker.online/privacy-policy.html"
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : "https://budgiebreedingtracker.online/privacy-policy.html"
       },
       {
-        "locale": "tr",
-        "policyText": "",
-        "policyURL": "https://budgiebreedingtracker.online/privacy-policy.html"
+        "locale" : "tr",
+        "policyText" : "",
+        "policyURL" : "https://budgiebreedingtracker.online/privacy-policy.html"
       },
       {
-        "locale": "de",
-        "policyText": "",
-        "policyURL": "https://budgiebreedingtracker.online/privacy-policy.html"
+        "locale" : "de",
+        "policyText" : "",
+        "policyURL" : "https://budgiebreedingtracker.online/privacy-policy.html"
       }
     ]
   },
-  "identifier": "D4F5E6A7-B8C9-4D0E-AF12-345678901234",
-  "nonRenewingSubscriptions": [],
-  "products": [],
-  "settings": {
-    "_failTransactionsEnabled": false,
-    "_storeKitErrors": [
+  "identifier" : "D4F5E6A7-B8C9-4D0E-AF12-345678901234",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_billingIssuesEnabled" : false,
+    "_compatibilityTimeRate" : {
+      "3" : 6
+    },
+    "_disableDialogs" : false,
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_renewalBillingIssuesEnabled" : false,
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
       {
-        "current": null,
-        "setting": "automatic-renewal-status"
+        "current" : {
+          "index" : 2,
+          "type" : "generic"
+        },
+        "enabled" : false,
+        "name" : "Load Products"
       },
       {
-        "current": null,
-        "setting": "billing-retry-period"
+        "current" : {
+          "index" : 1,
+          "type" : "purchase"
+        },
+        "enabled" : false,
+        "name" : "Purchase"
       },
       {
-        "current": null,
-        "setting": "offer-signature"
+        "current" : {
+          "index" : 0,
+          "type" : "verification"
+        },
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : {
+          "index" : 2,
+          "type" : "generic"
+        },
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : {
+          "index" : 2,
+          "type" : "generic"
+        },
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : {
+          "index" : 3,
+          "type" : "generic"
+        },
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : {
+          "index" : 3,
+          "type" : "generic"
+        },
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : {
+          "index" : 0,
+          "type" : "refund request"
+        },
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : {
+          "index" : 4,
+          "type" : "generic"
+        },
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
       }
     ],
-    "_timeRate": 6
+    "_timeRate" : 1003
   },
-  "subscriptionGroups": [
+  "subscriptionGroups" : [
     {
-      "id": "F1E2D3C4-B5A6-9870-FEDC-BA0987654321",
-      "localizations": [
+      "id" : "F1E2D3C4-B5A6-9870-FEDC-BA0987654321",
+      "localizations" : [
         {
-          "description": "Premium subscription plans for Budgie Breeding Tracker",
-          "displayName": "Premium",
-          "locale": "en_US",
-          "name": "Premium"
+          "description" : "Premium subscription plans for Budgie Breeding Tracker",
+          "displayName" : "Premium",
+          "locale" : "en_US"
         },
         {
-          "description": "Budgie Breeding Tracker için premium abonelik planları",
-          "displayName": "Premium",
-          "locale": "tr",
-          "name": "Premium"
+          "description" : "Budgie Breeding Tracker için premium abonelik planları",
+          "displayName" : "Premium",
+          "locale" : "tr"
         },
         {
-          "description": "Premium-Abonnementpläne für Budgie Breeding Tracker",
-          "displayName": "Premium",
-          "locale": "de",
-          "name": "Premium"
+          "description" : "Premium-Abonnementpläne für Budgie Breeding Tracker",
+          "displayName" : "Premium",
+          "locale" : "de"
         }
       ],
-      "name": "Premium",
-      "subscriptions": [
+      "name" : "Premium",
+      "subscriptions" : [
         {
-          "adHocOffers": [],
-          "codeOffers": [],
-          "displayPrice": "15.00",
-          "familyShareable": false,
-          "groupNumber": 1,
-          "internalID": "CCCCCCCC-DDDD-EEEE-FFFF-000000000000",
-          "introductoryOffer": {
-            "displayPrice": "0",
-            "internalID": "EEEEEEEE-FFFF-0000-1111-000000000003",
-            "paymentMode": "free",
-            "subscriptionPeriod": "P1W"
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "15.00",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "CCCCCCCC-DDDD-EEEE-FFFF-000000000000",
+          "introductoryOffer" : {
+            "billingPlanType" : "BILLED_UPFRONT",
+            "internalID" : "2E2885BD",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
           },
-          "localizations": [
+          "introductoryOffers" : [
             {
-              "description": "Premium access for 6 months with 7-day free trial",
-              "displayName": "Premium 6 Months",
-              "locale": "en_US"
-            },
-            {
-              "description": "7 gün ücretsiz deneme ile 6 aylık Premium erişim",
-              "displayName": "Premium 6 Ay",
-              "locale": "tr"
-            },
-            {
-              "description": "Premium-Zugang für 6 Monate mit 7-tägiger kostenloser Testversion",
-              "displayName": "Premium 6 Monate",
-              "locale": "de"
+              "billingPlanType" : "BILLED_UPFRONT",
+              "internalID" : "2E2885BD",
+              "numberOfPeriods" : 1,
+              "paymentMode" : "free",
+              "subscriptionPeriod" : "P1W"
             }
           ],
-          "productID": "budgie_premium_semi_annual",
-          "recurringSubscriptionPeriod": "P6M",
-          "referenceName": "Premium 6 Months",
-          "subscriptionGroupID": "F1E2D3C4-B5A6-9870-FEDC-BA0987654321",
-          "type": "RecurringSubscription"
+          "localizations" : [
+            {
+              "description" : "Premium access for 6 months with 7-day free trial",
+              "displayName" : "Premium 6 Months",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "7 gün ücretsiz deneme ile 6 aylık Premium erişim",
+              "displayName" : "Premium 6 Ay",
+              "locale" : "tr"
+            },
+            {
+              "description" : "Premium-Zugang für 6 Monate mit 7-tägiger kostenloser Testversion",
+              "displayName" : "Premium 6 Monate",
+              "locale" : "de"
+            }
+          ],
+          "productID" : "budgie_premium_semi_annual",
+          "recurringSubscriptionPeriod" : "P6M",
+          "referenceName" : "Premium 6 Months",
+          "subscriptionGroupID" : "F1E2D3C4-B5A6-9870-FEDC-BA0987654321",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         },
         {
-          "adHocOffers": [],
-          "codeOffers": [],
-          "displayPrice": "25.00",
-          "familyShareable": false,
-          "groupNumber": 2,
-          "internalID": "77777777-8888-9999-AAAA-BBBBBBBBBBBB",
-          "introductoryOffer": {
-            "displayPrice": "0",
-            "internalID": "DDDDDDDD-EEEE-FFFF-0000-000000000002",
-            "paymentMode": "free",
-            "subscriptionPeriod": "P1W"
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "25.00",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "77777777-8888-9999-AAAA-BBBBBBBBBBBB",
+          "introductoryOffer" : {
+            "billingPlanType" : "BILLED_UPFRONT",
+            "internalID" : "59D73580",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
           },
-          "localizations": [
+          "introductoryOffers" : [
             {
-              "description": "Yearly Premium access with 7-day free trial",
-              "displayName": "Budgie Premium Yearly",
-              "locale": "en_US"
-            },
-            {
-              "description": "7 gün ücretsiz deneme ile yıllık Premium erişim",
-              "displayName": "Budgie Premium Yıllık",
-              "locale": "tr"
-            },
-            {
-              "description": "Jährlicher Premium-Zugang mit 7-tägiger kostenloser Testversion",
-              "displayName": "Budgie Premium Jährlich",
-              "locale": "de"
+              "billingPlanType" : "BILLED_UPFRONT",
+              "internalID" : "59D73580",
+              "numberOfPeriods" : 1,
+              "paymentMode" : "free",
+              "subscriptionPeriod" : "P1W"
             }
           ],
-          "productID": "budgie_premium_yearly",
-          "recurringSubscriptionPeriod": "P1Y",
-          "referenceName": "Budgie Premium Yearly",
-          "subscriptionGroupID": "F1E2D3C4-B5A6-9870-FEDC-BA0987654321",
-          "type": "RecurringSubscription"
+          "localizations" : [
+            {
+              "description" : "Yearly Premium access with 7-day free trial",
+              "displayName" : "Budgie Premium Yearly",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "7 gün ücretsiz deneme ile yıllık Premium erişim",
+              "displayName" : "Budgie Premium Yıllık",
+              "locale" : "tr"
+            },
+            {
+              "description" : "Jährlicher Premium-Zugang mit 7-tägiger kostenloser Testversion",
+              "displayName" : "Budgie Premium Jährlich",
+              "locale" : "de"
+            }
+          ],
+          "productID" : "budgie_premium_yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Budgie Premium Yearly",
+          "subscriptionGroupID" : "F1E2D3C4-B5A6-9870-FEDC-BA0987654321",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         }
       ]
     }
   ],
-  "version": {
-    "major": 3,
-    "minor": 0
+  "version" : {
+    "major" : 5,
+    "minor" : 0
   }
 }
