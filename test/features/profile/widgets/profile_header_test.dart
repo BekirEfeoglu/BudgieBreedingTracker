@@ -72,6 +72,7 @@ Widget _buildSubject({
   VoidCallback? onEditProfile,
   VoidCallback? onEditAvatar,
   bool isAvatarUploading = false,
+  bool? hasPremiumAccess,
   ProfileStats? stats,
   gamification.UserLevel? userLevel,
   List<gamification.EnrichedBadge> unlockedBadges = const [],
@@ -86,6 +87,7 @@ Widget _buildSubject({
           onEditProfile: onEditProfile ?? () {},
           onEditAvatar: onEditAvatar ?? () {},
           isAvatarUploading: isAvatarUploading,
+          hasPremiumAccess: hasPremiumAccess,
           stats: stats,
           userLevel: userLevel,
           unlockedBadges: unlockedBadges,
@@ -103,6 +105,7 @@ Future<void> _pumpHeader(
   VoidCallback? onEditProfile,
   VoidCallback? onEditAvatar,
   bool isAvatarUploading = false,
+  bool? hasPremiumAccess,
   ProfileStats? stats,
   gamification.UserLevel? userLevel,
   List<gamification.EnrichedBadge> unlockedBadges = const [],
@@ -117,6 +120,7 @@ Future<void> _pumpHeader(
       onEditProfile: onEditProfile,
       onEditAvatar: onEditAvatar,
       isAvatarUploading: isAvatarUploading,
+      hasPremiumAccess: hasPremiumAccess,
       stats: stats,
       userLevel: userLevel,
       unlockedBadges: unlockedBadges,
@@ -249,6 +253,22 @@ void main() {
       final profile = _fakeProfile(isPremium: true);
       await _pumpHeader(tester, profile: profile);
       expect(find.text(l10n('profile.premium_badge')), findsOneWidget);
+    });
+
+    testWidgets('uses effective premium access for the badge', (tester) async {
+      await _pumpHeader(
+        tester,
+        profile: _fakeProfile(),
+        hasPremiumAccess: true,
+      );
+      expect(find.text(l10n('profile.premium_badge')), findsOneWidget);
+
+      await _pumpHeader(
+        tester,
+        profile: _fakeProfile(isPremium: true),
+        hasPremiumAccess: false,
+      );
+      expect(find.text(l10n('profile.premium_badge')), findsNothing);
     });
 
     testWidgets('shows founder badge for founder profile', (tester) async {

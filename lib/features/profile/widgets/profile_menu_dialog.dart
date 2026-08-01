@@ -10,7 +10,7 @@ import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/core/widgets/app_icon.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart'
-    show isPremiumProvider;
+    show isPremiumProvider, premiumClockProvider;
 import 'package:budgie_breeding_tracker/data/providers/user_role_providers.dart'
     show isFounderProvider;
 import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
@@ -42,8 +42,14 @@ class ProfileMenuDialog extends ConsumerWidget {
     final isFounderFromProfile = profile?.isFounder == true;
     final isFounderFromDb = ref.watch(isFounderProvider).value ?? false;
     final isFounder = isFounderFromProfile || isFounderFromDb;
+    final graceUntil = profile?.gracePeriodUntil;
+    final hasGraceAccess =
+        graceUntil != null &&
+        ref.watch(premiumClockProvider)().isBefore(graceUntil);
     final isPremium =
-        (profile?.hasPremium == true) || ref.watch(isPremiumProvider);
+        (profile?.hasPremium == true) ||
+        hasGraceAccess ||
+        ref.watch(isPremiumProvider);
     final hasBadges = isPremium || isFounder || (profile?.isAdmin == true);
 
     return Align(

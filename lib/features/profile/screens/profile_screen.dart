@@ -29,6 +29,7 @@ import '../widgets/profile_skeleton.dart';
 import '../widgets/security_section.dart';
 import '../widgets/subscription_card.dart';
 import 'package:budgie_breeding_tracker/core/providers/action_feedback_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 
 /// Comprehensive user profile screen with collapsing header.
 class ProfileScreen extends ConsumerWidget {
@@ -140,6 +141,7 @@ class ProfileScreen extends ConsumerWidget {
                       stats: statsAsync.value,
                       userLevel: userLevelAsync.value,
                       unlockedBadges: unlockedBadges,
+                      hasPremiumAccess: ref.watch(effectivePremiumProvider),
                       onEditProfile: () => openEditProfileSheet(
                         context,
                         ref: ref,

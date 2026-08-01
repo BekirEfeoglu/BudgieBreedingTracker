@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../data/models/profile_model.dart';
 import '../../../data/providers/entity_count_providers.dart';
 import 'package:budgie_breeding_tracker/shared/providers/auth.dart';
 import 'profile_providers.dart';
+import '../../../domain/services/premium/premium_providers.dart';
 
 // ---------------------------------------------------------------------------
 // 2FA Status (async check)
@@ -76,6 +76,7 @@ final securityScoreProvider = Provider.family<SecurityScore, String>((
   final hasProfile = profile?.fullName != null && profile!.fullName!.isNotEmpty;
   final hasAvatar = profile?.avatarUrl != null;
 
+  final hasPremiumAccess = ref.watch(effectivePremiumProvider);
   final factors = [
     const SecurityFactor(
       labelKey: 'profile.security_factor_password',
@@ -99,7 +100,7 @@ final securityScoreProvider = Provider.family<SecurityScore, String>((
     ),
     SecurityFactor(
       labelKey: 'profile.security_factor_premium',
-      isCompleted: profile?.hasPremium == true,
+      isCompleted: hasPremiumAccess,
       points: 10,
     ),
   ];

@@ -29,6 +29,7 @@ class ProfileHeader extends StatelessWidget {
     this.stats,
     this.userLevel,
     this.unlockedBadges = const [],
+    this.hasPremiumAccess,
   });
 
   final Profile? profile;
@@ -40,6 +41,7 @@ class ProfileHeader extends StatelessWidget {
   final ProfileStats? stats;
   final gamification.UserLevel? userLevel;
   final List<gamification.EnrichedBadge> unlockedBadges;
+  final bool? hasPremiumAccess;
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +50,7 @@ class ProfileHeader extends StatelessWidget {
     final hiddenBadgeCount =
         unlockedBadges.length - visibleUnlockedBadges.length;
     final level = userLevel;
+    final showPremium = hasPremiumAccess ?? profile?.hasPremium == true;
     final levelTitleKey = level == null
         ? null
         : level.title.isNotEmpty
@@ -76,7 +79,7 @@ class ProfileHeader extends StatelessWidget {
                   imageUrl: profile?.avatarUrl,
                   radius: 48,
                   isUploading: isAvatarUploading,
-                  isPremium: profile?.hasPremium == true,
+                  isPremium: showPremium,
                 ),
                 Positioned(
                   bottom: 0,
@@ -139,7 +142,7 @@ class ProfileHeader extends StatelessWidget {
                     color: AppColors.accent,
                     foregroundColor: AppColors.neutral900,
                   ),
-                if (profile?.hasPremium == true)
+                if (showPremium)
                   _Badge(
                     icon: AppIcon(
                       AppIcons.premium,

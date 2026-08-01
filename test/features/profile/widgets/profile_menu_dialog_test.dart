@@ -11,7 +11,7 @@ import 'package:budgie_breeding_tracker/features/admin/providers/admin_providers
     show isFounderProvider;
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart'
-    show isPremiumProvider;
+    show isPremiumProvider, premiumClockProvider;
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_dialog.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_header.dart';
 import 'package:budgie_breeding_tracker/features/profile/widgets/profile_menu_item.dart';
@@ -25,12 +25,14 @@ Profile _fakeProfile({
   String? fullName,
   String? role,
   bool isPremium = false,
+  DateTime? gracePeriodUntil,
 }) => Profile(
   id: id,
   email: email,
   fullName: fullName,
   role: role,
   isPremium: isPremium,
+  gracePeriodUntil: gracePeriodUntil,
 );
 
 void _consumeOverflowExceptions(WidgetTester tester) {}
@@ -119,6 +121,37 @@ void main() {
       _consumeOverflowExceptions(tester);
 
       expect(find.byType(ProfileMenuHeader), findsOneWidget);
+    });
+
+    testWidgets('shows premium badge during server grace', (tester) async {
+      final now = DateTime.utc(2026, 8, 1);
+      await pumpLocalizedApp(
+        tester,
+        ProviderScope(
+          overrides: [
+            currentUserIdProvider.overrideWithValue('user-1'),
+            currentUserProvider.overrideWith((_) => null),
+            isFounderProvider.overrideWithValue(const AsyncData(false)),
+            isPremiumProvider.overrideWithValue(false),
+            premiumClockProvider.overrideWithValue(() => now),
+            appInfoProvider.overrideWith((_) async {
+              throw UnimplementedError();
+            }),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: ProfileMenuDialog(
+                profile: _fakeProfile(
+                  gracePeriodUntil: now.add(const Duration(days: 2)),
+                ),
+                email: 'test@example.com',
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text(l10n('profile.premium_badge')), findsOneWidget);
     });
 
     testWidgets('shows multiple ProfileMenuItems', (tester) async {
