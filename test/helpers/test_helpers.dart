@@ -1,9 +1,10 @@
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:budgie_breeding_tracker/core/enums/subscription_enums.dart';
 import 'package:budgie_breeding_tracker/data/providers/edge_function_provider.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
-import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 
 import 'mocks.dart';
 
@@ -11,16 +12,38 @@ import 'mocks.dart';
 // test_fixtures.dart. This file re-exports them for backward compatibility.
 export 'test_fixtures.dart' show createTestBird, createInbredPedigree;
 
-/// Provides a server-verified premium response for provider tests.
+/// Provides a server-verified premium response without weakening the
+/// production purchase flow in provider tests.
 List<dynamic> verifiedPremiumServerOverrides(bool Function() isPremium) {
   final edgeClient = MockEdgeFunctionClient();
+  final profileRepository = MockProfileRepository();
+
   when(() => edgeClient.invoke('sync-premium-status')).thenAnswer((_) async {
-    return EdgeFunctionResult(success: true, data: {'is_premium': isPremium()});
+    final premium = isPremium();
+    return EdgeFunctionResult(
+      success: true,
+      data: {
+        'is_premium': premium,
+        'subscription_status': premium ? 'premium' : 'free',
+      },
+    );
   });
+
+  for (final status in [SubscriptionStatus.premium, SubscriptionStatus.free]) {
+    when(
+      () => profileRepository.applyVerifiedPremiumStatus(
+        userId: any(named: 'userId'),
+        isPremium: any(named: 'isPremium'),
+        subscriptionStatus: status,
+        premiumExpiresAt: null,
+        gracePeriodUntil: null,
+      ),
+    ).thenAnswer((_) async {});
+  }
 
   return [
     edgeFunctionClientProvider.overrideWithValue(edgeClient),
-    premiumActivationSyncDelayProvider.overrideWithValue((_) async {}),
+    profileRepositoryProvider.overrideWithValue(profileRepository),
   ];
 }
 

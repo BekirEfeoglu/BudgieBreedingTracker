@@ -18,15 +18,16 @@
 
 ```
 User purchases (RevenueCat SDK)
-  → RevenueCat webhook → sync-premium-status Edge Function
+  → sync-premium-status Edge Function
   → Server validates with REVENUECAT_SECRET_API_KEY
-  → Updates profiles.is_premium in Supabase
-  → Client refreshes premium providers on app resume
+  → Atomically updates profile + subscription metadata
+  → Verified response updates Drift and premium providers
 ```
 
 If RevenueCat already reports an active entitlement while the first server pull
-is still stale, reconciliation is retried after 500 ms and 1500 ms. Duplicate
-purchase/restore submissions are ignored while an action is loading.
+is still stale, reconciliation is retried after 500 ms and 1500 ms; store state
+alone never unlocks premium. Duplicate purchase/restore submissions are ignored
+while an action is loading.
 
 ## Grace Period
 

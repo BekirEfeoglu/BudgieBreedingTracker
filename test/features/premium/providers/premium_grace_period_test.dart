@@ -1,17 +1,21 @@
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:budgie_breeding_tracker/features/profile/providers/profile_providers.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 
-Future<ProviderContainer> createContainer({Profile? profile}) async {
+Future<ProviderContainer> createContainer({
+  Profile? profile,
+  DateTime Function()? clock,
+}) async {
   final container = ProviderContainer(
     overrides: [
       userProfileProvider.overrideWith((ref) => Stream.value(profile)),
       currentUserIdProvider.overrideWith((ref) => profile?.id ?? 'anon'),
       isAuthenticatedProvider.overrideWith((ref) => true),
+      if (clock != null) premiumClockProvider.overrideWithValue(clock),
     ],
   );
   addTearDown(container.dispose);
@@ -65,20 +69,19 @@ void main() {
       );
     });
 
-    test('uses the configured 30-day grace period window', () {
-      expect(AppConstants.gracePeriodDays, 30);
-    });
-
     test(
-      'returns gracePeriod when expired within the grace-period window',
+      'returns gracePeriod only for a server-provided future grace date',
       () async {
+        final now = DateTime.utc(2026, 8, 1);
         final container = await createContainer(
           profile: Profile(
             id: 'u1',
             email: 'a@b.com',
             isPremium: false,
-            premiumExpiresAt: DateTime.now().subtract(const Duration(days: 3)),
+            premiumExpiresAt: now.subtract(const Duration(days: 3)),
+            gracePeriodUntil: now.add(const Duration(days: 4)),
           ),
+          clock: () => now,
         );
         addTearDown(container.dispose);
         expect(
@@ -88,7 +91,7 @@ void main() {
       },
     );
 
-    test('returns gracePeriod when expired 29 days ago', () async {
+    test('does not fabricate grace from premiumExpiresAt', () async {
       final container = await createContainer(
         profile: Profile(
           id: 'u1',
@@ -100,18 +103,20 @@ void main() {
       addTearDown(container.dispose);
       expect(
         container.read(premiumGracePeriodProvider),
-        GracePeriodStatus.gracePeriod,
+        GracePeriodStatus.free,
       );
     });
 
-    test('returns expired when expired more than 30 days ago', () async {
+    test('returns expired when server grace date has passed', () async {
+      final now = DateTime.utc(2026, 8, 1);
       final container = await createContainer(
         profile: Profile(
           id: 'u1',
           email: 'a@b.com',
           isPremium: false,
-          premiumExpiresAt: DateTime.now().subtract(const Duration(days: 35)),
+          gracePeriodUntil: now.subtract(const Duration(seconds: 1)),
         ),
+        clock: () => now,
       );
       addTearDown(container.dispose);
       expect(
@@ -120,20 +125,39 @@ void main() {
       );
     });
 
-    test('returns expired when expired 31 days ago', () async {
-      final container = await createContainer(
-        profile: Profile(
+    test('invalidates itself exactly when grace expires', () {
+      fakeAsync((async) {
+        final now = DateTime.utc(2026, 8, 1);
+        final profile = Profile(
           id: 'u1',
           email: 'a@b.com',
-          isPremium: false,
-          premiumExpiresAt: DateTime.now().subtract(const Duration(days: 31)),
-        ),
-      );
-      addTearDown(container.dispose);
-      expect(
-        container.read(premiumGracePeriodProvider),
-        GracePeriodStatus.expired,
-      );
+          gracePeriodUntil: now.add(const Duration(minutes: 1)),
+        );
+        final container = ProviderContainer(
+          overrides: [
+            userProfileProvider.overrideWith((_) => Stream.value(profile)),
+            currentUserIdProvider.overrideWithValue('u1'),
+            premiumClockProvider.overrideWithValue(
+              () => now.add(async.elapsed),
+            ),
+          ],
+        );
+        container.listen(userProfileProvider, (_, __) {});
+        async.flushMicrotasks();
+
+        expect(
+          container.read(premiumGracePeriodProvider),
+          GracePeriodStatus.gracePeriod,
+        );
+
+        async.elapse(const Duration(minutes: 1));
+        async.flushMicrotasks();
+        expect(
+          container.read(premiumGracePeriodProvider),
+          GracePeriodStatus.expired,
+        );
+        container.dispose();
+      });
     });
 
     test('returns free when no premiumExpiresAt', () async {
@@ -183,13 +207,16 @@ void main() {
     });
 
     test('returns true for an actual profile in grace period', () async {
+      final now = DateTime.utc(2026, 8, 1);
       final container = await createContainer(
         profile: Profile(
           id: 'u1',
           email: 'test@test.com',
           isPremium: false,
-          premiumExpiresAt: DateTime.now().subtract(const Duration(days: 20)),
+          premiumExpiresAt: now.subtract(const Duration(days: 20)),
+          gracePeriodUntil: now.add(const Duration(days: 10)),
         ),
+        clock: () => now,
       );
       addTearDown(container.dispose);
       expect(container.read(effectivePremiumProvider), isTrue);
@@ -208,13 +235,15 @@ void main() {
     });
 
     test('returns false for an actual profile after grace period', () async {
+      final now = DateTime.utc(2026, 8, 1);
       final container = await createContainer(
         profile: Profile(
           id: 'u1',
           email: 'test@test.com',
           isPremium: false,
-          premiumExpiresAt: DateTime.now().subtract(const Duration(days: 45)),
+          gracePeriodUntil: now.subtract(const Duration(days: 1)),
         ),
+        clock: () => now,
       );
       addTearDown(container.dispose);
       expect(container.read(effectivePremiumProvider), isFalse);

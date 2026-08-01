@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:purchases_flutter/purchases_flutter.dart' hide SubscriptionInfo;
 import 'package:sentry_flutter/sentry_flutter.dart';
 
@@ -10,7 +12,7 @@ import 'package:budgie_breeding_tracker/domain/services/payment/purchase_error_m
 /// within the 300-line file limit. Mixed into [PurchaseService].
 mixin PurchaseInitializer on PurchaseErrorMapper {
   bool _initialized = false;
-  Future<bool>? _initializationFuture;
+  Future<void> _operationTail = Future<void>.value();
   String? _configuredApiKey;
   String? _configuredUserId;
 
@@ -21,7 +23,21 @@ mixin PurchaseInitializer on PurchaseErrorMapper {
   ///
   /// Call once at app startup (after auth).
   /// [apiKey] should come from environment config, not hardcoded.
-  Future<bool> initialize({
+  Future<bool> initialize({required String apiKey, required String userId}) {
+    final completer = Completer<bool>();
+    _operationTail = _operationTail.then((_) async {
+      try {
+        completer.complete(
+          await _initializeNow(apiKey: apiKey, userId: userId),
+        );
+      } catch (error, stackTrace) {
+        completer.completeError(error, stackTrace);
+      }
+    });
+    return completer.future;
+  }
+
+  Future<bool> _initializeNow({
     required String apiKey,
     required String userId,
   }) async {
@@ -30,16 +46,10 @@ mixin PurchaseInitializer on PurchaseErrorMapper {
         _configuredUserId == userId) {
       return true;
     }
-    if (_initializationFuture != null) {
-      return _initializationFuture!;
-    }
 
-    final initialization = _initialized && _configuredApiKey == apiKey
+    return _initialized && _configuredApiKey == apiKey
         ? _switchUser(userId)
         : _configure(apiKey: apiKey, userId: userId);
-    _initializationFuture = initialization;
-    final success = await initialization;
-    return success;
   }
 
   Future<bool> _configure({
@@ -61,8 +71,6 @@ mixin PurchaseInitializer on PurchaseErrorMapper {
       AppLogger.error('RevenueCat init failed', e, st);
       Sentry.captureException(e, stackTrace: st);
       return false;
-    } finally {
-      _initializationFuture = null;
     }
   }
 
@@ -92,22 +100,28 @@ mixin PurchaseInitializer on PurchaseErrorMapper {
       AppLogger.error('RevenueCat user switch failed: $e', e, st);
       Sentry.captureException(e, stackTrace: st);
       return false;
-    } finally {
-      _initializationFuture = null;
     }
   }
 
   /// Logs out the current user from RevenueCat.
-  Future<void> logout() async {
-    if (!_initialized) return;
+  Future<void> logout() {
+    final completer = Completer<void>();
+    _operationTail = _operationTail.then((_) async {
+      if (!_initialized) {
+        completer.complete();
+        return;
+      }
 
-    try {
-      await Purchases.logOut();
-    } catch (e) {
-      AppLogger.warning('RevenueCat logout failed: $e');
-    } finally {
-      clearIdentity();
-    }
+      try {
+        await Purchases.logOut();
+      } catch (e) {
+        AppLogger.warning('RevenueCat logout failed: $e');
+      } finally {
+        clearIdentity();
+        completer.complete();
+      }
+    });
+    return completer.future;
   }
 
   /// Resets all in-memory identity state.

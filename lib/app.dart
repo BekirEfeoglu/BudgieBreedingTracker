@@ -151,7 +151,8 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
     // remaining time). Restarting it here would reset a fresh full timeout and
     // defeat the background lock, so it is intentionally not touched.
     if (_resumeThrottle.shouldRun('premium_refresh', _premiumRefreshInterval)) {
-      ref.read(localPremiumProvider.notifier).refresh();
+      ref.invalidate(premiumGracePeriodProvider);
+      unawaited(ref.read(localPremiumProvider.notifier).refresh());
     }
     // Auto-backup safety net (premium): the scheduler no-ops unless the chosen
     // interval has elapsed, so the 6h throttle just bounds how often we check.

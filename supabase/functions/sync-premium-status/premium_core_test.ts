@@ -43,9 +43,7 @@ Deno.test("resolvePremiumStatus: lifetime entitlement", () => {
   assertEquals(result.productIdentifier, "lifetime");
 });
 
-Deno.test("resolvePremiumStatus: recently expired entitlement fabricates 30d grace", () => {
-  // Expiry 3 days before `now` falls inside the 7-day fabrication window
-  // (see premium_core.ts grace-period guard).
+Deno.test("resolvePremiumStatus: recently expired entitlement has no fabricated grace", () => {
   const result = resolvePremiumStatus({
     subscriber: {
       entitlements: {
@@ -60,7 +58,7 @@ Deno.test("resolvePremiumStatus: recently expired entitlement fabricates 30d gra
   assertEquals(result.isPremium, false);
   assertEquals(result.subscriptionStatus, "free");
   assertEquals(result.subscriptionRecordStatus, "expired");
-  assertEquals(result.gracePeriodUntil, "2026-05-28T12:00:00.000Z");
+  assertEquals(result.gracePeriodUntil, null);
 });
 
 Deno.test("resolvePremiumStatus: long-expired entitlement does NOT refabricate grace", () => {

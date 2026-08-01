@@ -13,12 +13,19 @@ export const ALLOWED_TABLES = new Set(Object.keys(LIMITS));
 export interface ProfileSnapshot {
   is_premium?: boolean | null;
   role?: string | null;
+  grace_period_until?: string | null;
 }
 
-export function isExemptProfile(profile: ProfileSnapshot | null | undefined): boolean {
+export function isExemptProfile(
+  profile: ProfileSnapshot | null | undefined,
+  now: Date = new Date(),
+): boolean {
   if (!profile) return false;
   if (profile.is_premium) return true;
-  return profile.role === "admin" || profile.role === "founder";
+  if (profile.role === "admin" || profile.role === "founder") return true;
+  if (!profile.grace_period_until) return false;
+  const graceUntil = new Date(profile.grace_period_until);
+  return !Number.isNaN(graceUntil.getTime()) && graceUntil > now;
 }
 
 export function isAllowedTable(table: string): boolean {

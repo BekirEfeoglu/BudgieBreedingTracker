@@ -1309,7 +1309,7 @@
     "limit_approaching_birds": "{} bird slots remaining",
     "try_free_trial": "Try 7 Days Free",
     "grace_period_title": "Your Premium Has Expired",
-    "grace_period_message": "Your premium subscription expired {} days ago. Renew now!",
+    "grace_period_message": "Your Premium access ends in {} days. Update your payment method.",
     "grace_period_renew": "Renew Now",
     "upgrade_title": "Upgrade to Premium",
     "upgrade_button": "Upgrade"

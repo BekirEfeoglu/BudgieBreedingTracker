@@ -95,7 +95,7 @@ export function createValidateFreeTierLimitHandler(
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("is_premium, role")
+        .select("is_premium, role, grace_period_until")
         .eq("id", userId)
         .single();
 

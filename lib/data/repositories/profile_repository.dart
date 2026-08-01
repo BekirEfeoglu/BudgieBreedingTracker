@@ -1,4 +1,5 @@
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
+import 'package:budgie_breeding_tracker/core/enums/subscription_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/profiles_dao.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/sync_metadata_dao.dart';
@@ -45,6 +46,33 @@ class ProfileRepository {
 
   /// Gets the current user's profile.
   Future<Profile?> getById(String userId) => _localDao.getById(userId);
+
+  /// Applies premium metadata that has already been verified server-side.
+  ///
+  /// Unlike [save], this does not mark the profile pending: premium fields are
+  /// owned by the server and must never be pushed back as a client mutation.
+  Future<void> applyVerifiedPremiumStatus({
+    required String userId,
+    required bool isPremium,
+    required SubscriptionStatus subscriptionStatus,
+    DateTime? premiumExpiresAt,
+    DateTime? gracePeriodUntil,
+  }) async {
+    final profile = await _localDao.getById(userId);
+    if (profile == null) {
+      throw StateError('Local profile missing for verified premium update');
+    }
+
+    await _localDao.upsert(
+      profile.copyWith(
+        isPremium: isPremium,
+        subscriptionStatus: subscriptionStatus,
+        premiumExpiresAt: premiumExpiresAt,
+        gracePeriodUntil: gracePeriodUntil,
+      ),
+    );
+    _communityProfileCache?.invalidate(userId);
+  }
 
   /// Saves a profile locally and marks it for sync.
   /// Push is handled by SyncOrchestrator to avoid duplicate pushes.

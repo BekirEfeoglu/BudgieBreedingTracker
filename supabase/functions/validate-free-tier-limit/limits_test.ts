@@ -55,6 +55,23 @@ Deno.test("isExemptProfile: ordinary user is not exempt", () => {
   assertEquals(isExemptProfile({ is_premium: null, role: null }), false);
 });
 
+Deno.test("isExemptProfile: active server grace bypasses limit", () => {
+  const now = new Date("2026-08-01T00:00:00Z");
+  assertEquals(isExemptProfile({
+    is_premium: false,
+    role: "user",
+    grace_period_until: "2026-08-02T00:00:00Z",
+  }, now), true);
+});
+
+Deno.test("isExemptProfile: expired or invalid grace does not bypass limit", () => {
+  const now = new Date("2026-08-01T00:00:00Z");
+  assertEquals(isExemptProfile({
+    grace_period_until: "2026-07-31T23:59:59Z",
+  }, now), false);
+  assertEquals(isExemptProfile({ grace_period_until: "not-a-date" }, now), false);
+});
+
 // ---------------------------------------------------------------------------
 // Query filter helpers
 // ---------------------------------------------------------------------------

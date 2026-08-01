@@ -13,18 +13,30 @@ Premium abonelik akışı RevenueCat üzerinden yönetilir, ama yetkilendirme **
 
 ## Entitlement Flow
 ```
-User purchases (RevenueCat) -> RevenueCat webhook -> sync-premium-status edge fn
+User purchases (RevenueCat SDK) -> sync-premium-status edge fn
   -> Server validates with REVENUECAT_SECRET_API_KEY
-  -> Updates user.is_premium + entitlement metadata in Supabase
-  -> Client refreshes premium providers on app resume (ResumeThrottle: max 1/5dk) / push
+  -> Atomically updates profile + subscription metadata in Supabase
+  -> Verified response is applied to Drift without creating pending client writes
+
+RevenueCat webhook -> refetches the full subscriber state
+  -> uses the same atomic status RPC -> client receives the change on pull/stream
 ```
 
 İstemci RevenueCat SDK'sını **sadece purchase UX'i için** kullanır. Premium gate kararı her zaman sunucu kaynaklı (`profiles.is_premium`) okumadan verilir.
 
-- Satın alma/restore sırasında RevenueCat aktif entitlement döndürür fakat ilk
-  sunucu mutabakatı receipt'i henüz görmezse istemci premium iddiası göndermez;
-  500 ms ve 1500 ms bekleyerek `sync-premium-status` çağrısını yineler.
-  Yalnızca doğrulanmış sunucu yanıtı erişimi açar.
+- Satın alma/restore, `sync-premium-status` başarılı olmadan UI'da başarı sayılmaz.
+- RevenueCat satın alma/restore sonucu aktif entitlement döndürür fakat sunucu
+  mutabakatı henüz aynı receipt'i görmezse istemci premium iddiası göndermez;
+  500 ms ve 1500 ms bekleyerek en fazla iki kez daha
+  `sync-premium-status` çağırır. Yalnızca doğrulanmış sunucu yanıtı erişimi açar.
+- `Profile.toSupabase()`; `is_premium`, `subscription_status`, `role`,
+  `premium_expires_at` ve `grace_period_until` alanlarını hiçbir client upsert'ine
+  dahil etmez.
+- RevenueCat init/login/logout işlemleri tek bir seri kuyrukta çalışır; kullanıcı
+  değişimi sırasında eski kullanıcının tamamlanan init sonucu yeni kimliğe sızmaz.
+- Webhook geçici DB/profil yarışlarında `503 + Retry-After` döndürür. Tekrar
+  teslim güvenlidir; handler tam subscriber durumunu yeniden okuyup kullanıcı
+  bazlı atomik RPC uygular.
 
 ### Admin Manual Override
 - `user_subscriptions.provider = 'manual'`, admin tarafından verilmiş açık bir
@@ -46,14 +58,20 @@ User purchases (RevenueCat) -> RevenueCat webhook -> sync-premium-status edge fn
   bunu bildirir; gerçek mağaza iptali kullanıcı/store yönetim akışındadır.
 
 ## Grace Period
-- `premiumGracePeriodProvider` ödeme yenileme hatası sonrası kısa süreli erişim verir
+- `premiumGracePeriodProvider` yalnızca sunucunun doğruladığı
+  `profiles.grace_period_until` gelecekteyse kısa süreli erişim verir.
+- `premium_expires_at + sabit gün` fallback'i yasaktır: normal iptal ile ödeme
+  yenileme hatasını istemci ayırt edemez.
+- Provider grace bitişinde kendini timer ile invalidate eder; app resume ayrıca
+  grace ve premium senkronizasyonunu yeniler.
 - Guard'lar `GracePeriodStatus.gracePeriod` durumunu **passing** kabul etmelidir, sadece `isPremium == true` değil
 - **Reklam kararı da dahildir (2026-07-25):** grace period'daki abone ödeyen
   müşteridir ve reklam GÖRMEZ. `effectivePremiumProvider` bugün dokuz reklam
   yüzeyinin tamamında kullanılır (ads.md § Premium Etkileşimi). Bu provider'ın
   doc-comment'i eskiden "ad visibility için `isPremiumProvider` kullan" diyordu —
   yanlıştı, düzeltildi
-- Grace dolduğunda UI banner ile kullanıcıyı bilgilendir (l10n: `premium.grace_period_ending`)
+- Grace sürerken UI banner kalan erişim süresini ve ödeme yöntemini güncelleme
+  aksiyonunu gösterir.
 
 ```dart
 // CORRECT - grace period saygısı
@@ -68,7 +86,13 @@ if (!isPremium) return PremiumUpsellScreen();
 ```
 
 ## Free Tier Limits
-- Limitler **sunucu tarafında** `validate-free-tier-limit` edge function ile uygulanır
+- `validate-free-tier-limit` Edge Function hızlı UX ön kontrolüdür; nihai karar
+  değildir.
+- Nihai limitler PostgreSQL'deki `private.free_tier_usage` sayacı ve dört tabloya
+  bağlı `BEFORE INSERT OR UPDATE OR DELETE` trigger'ı ile atomik uygulanır.
+- Trigger doğrudan API yazısını, inactive→active güncellemeyi ve eşzamanlı
+  insert yarışını kapsar; premium/admin/founder ve aktif sunucu grace kullanıcıları
+  muaftır.
 - İstemci limit'i bilebilir (UX için "3/5 kuş eklediniz") ama bypass edemez
 - Entity insert path'i edge function'ı çağırır; başarısız olursa `FreeTierLimitException` fırlat
 - Hardcoded limit istemci kodda yok — edge function tek kaynak
@@ -78,7 +102,7 @@ if (!isPremium) return PremiumUpsellScreen();
 final usage = ref.watch(freeTierUsageProvider);
 Text('${usage.current}/${usage.limit} ${'birds.birds'.tr()}')
 
-// Karar her zaman insert'te edge function'dan döner
+// Edge Function hızlı UX ön kontrolü sağlar; DB trigger son sözü söyler.
 try {
   await birdRepository.insert(bird);
 } on FreeTierLimitException {
@@ -102,9 +126,10 @@ class PremiumGuard {
 ## Subscription Plan Restrictions
 - Sadece **iki** premium plan aktif (314c274 commit, 2026-05-14)
 - Yeni plan eklemek: hem RevenueCat dashboard hem `lib/domain/services/premium/premium_plan_utilities.dart` güncellenmeli
-- RevenueCat `current` offering'i doluysa tek kaynaktır. Boşsa
-  `Offerings.all` içindeki paketleri paket+ürün kimliğine göre birleştirip
-  tekilleştir; dashboard map sırasına güvenme.
+- RevenueCat `current` offering'i doluysa tek kaynak odur. Boşsa eski/yanlış
+  dashboard sırasına bağlanmadan `Offerings.all` içindeki paketleri
+  paket+ürün kimliğine göre birleştir ve tekilleştir; plan filtresi yine yalnızca
+  desteklenen iki ürünü UI'a çıkarır.
 - Trial period: sadece App Store free trial — Android tarafında "intro pricing" kullan
 - Eski plan'a sahip kullanıcılar entitlement süresi dolana kadar korunur, kod path silinmez
 
@@ -125,7 +150,7 @@ class PremiumGuard {
 - Integration: edge function test'i `sync-premium-status/test.ts` içinde
 - Manual QA: TestFlight sandbox + Play internal testing track
 - Debug iOS simülatöründe RevenueCat init atlanmaz. Boş paket sonucu, Xcode'da
-  `Runner` scheme'ini doğrudan çalıştırma yönlendirmesi ve retry aksiyonu gösterir;
+  `Runner` scheme'i doğrudan çalıştırma yönlendirmesi ve retry aksiyonu gösterir;
   seçili `Products.storekit` dosyası `flutter run`/CLI `xcodebuild` ile uygulanmaz.
 - Paywall ekranı golden test edilebilir
 
@@ -138,5 +163,7 @@ class PremiumGuard {
 6. Eski plan'lara sahip kullanıcı için kod path'i hemen silmek (entitlement bitimine kadar bekle)
 7. RevenueCat webhook'unu test edip edge function'ı atlatmak (race condition)
 8. `provider = manual` admin kararını RevenueCat pull/webhook sonucuyla ezmek
+9. `premium_expires_at` üstüne istemcide sabit grace eklemek
+10. Kota güvenliğini yalnızca Edge Function count-then-insert kontrolüne bırakmak
 
 > **İlgili**: security.md (env vars), edge-functions.md (sync-premium-status, validate-free-tier-limit), error-handling.md (FreeTierLimitException), release-ops.md (store policies)

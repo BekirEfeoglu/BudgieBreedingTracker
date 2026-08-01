@@ -1,9 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/core/enums/breeding_enums.dart';
+import 'package:budgie_breeding_tracker/core/enums/subscription_enums.dart';
 import 'package:budgie_breeding_tracker/data/models/breeding_pair_model.dart';
 import 'package:budgie_breeding_tracker/data/models/egg_model.dart';
 import 'package:budgie_breeding_tracker/data/models/nest_model.dart';
+import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/data/models/supabase_extensions.dart';
 
 import '../../helpers/test_helpers.dart';
@@ -97,6 +99,30 @@ void main() {
         expect(json.containsKey('created_at'), isFalse);
         expect(json.containsKey('updated_at'), isFalse);
         expect(json['id'], 'nest-1');
+      });
+    });
+
+    group('ProfileSupabase.toSupabase()', () {
+      test('strips all server-owned premium and role fields', () {
+        final profile = Profile(
+          id: 'user-1',
+          email: 'owner@example.com',
+          isPremium: true,
+          subscriptionStatus: SubscriptionStatus.premium,
+          role: 'admin',
+          premiumExpiresAt: DateTime.utc(2027),
+          gracePeriodUntil: DateTime.utc(2027, 1, 8),
+          fullName: 'Owner',
+        );
+
+        final json = profile.toSupabase();
+
+        expect(json['full_name'], 'Owner');
+        expect(json.containsKey('is_premium'), isFalse);
+        expect(json.containsKey('subscription_status'), isFalse);
+        expect(json.containsKey('role'), isFalse);
+        expect(json.containsKey('premium_expires_at'), isFalse);
+        expect(json.containsKey('grace_period_until'), isFalse);
       });
     });
 

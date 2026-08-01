@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_colors.dart';
 import 'package:budgie_breeding_tracker/core/theme/app_spacing.dart';
 import 'package:budgie_breeding_tracker/core/utils/date_utils.dart'
@@ -27,16 +26,14 @@ class GracePeriodBanner extends ConsumerWidget {
     final gracePeriodEnd = ref.watch(
       userProfileProvider.select((async) {
         final p = async.value;
-        return p?.gracePeriodUntil ??
-            p?.premiumExpiresAt?.add(
-              const Duration(days: AppConstants.gracePeriodDays),
-            );
+        return p?.gracePeriodUntil;
       }),
     );
     // DST-safe day math: raw `difference(...).inDays` can drop to 0 across
     // a 23-hour DST boundary; dayDiff normalizes both ends to UTC midnight.
+    final now = ref.watch(premiumClockProvider)();
     final daysRemaining = gracePeriodEnd != null
-        ? date_utils.DateUtils.dayDiff(DateTime.now(), gracePeriodEnd)
+        ? date_utils.DateUtils.dayDiff(now, gracePeriodEnd).clamp(0, 9999)
         : 0;
     final theme = Theme.of(context);
     const bannerColor = AppColors.warning;

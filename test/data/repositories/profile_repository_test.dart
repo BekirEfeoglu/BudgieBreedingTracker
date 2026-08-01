@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
+import 'package:budgie_breeding_tracker/core/enums/subscription_enums.dart';
 import 'package:budgie_breeding_tracker/data/local/database/daos/profiles_dao.dart';
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/data/models/sync_metadata_model.dart';
@@ -89,6 +90,46 @@ void main() {
 
       verifyNever(() => localDao.upsert(any()));
       verifyNever(() => syncDao.insertItem(any()));
+    });
+
+    test(
+      'applyVerifiedPremiumStatus updates only the local server-owned fields',
+      () async {
+        final existing = _sampleProfile(id: userId, email: 'owner@example.com');
+        final expiresAt = DateTime.utc(2027, 1, 1);
+        final graceUntil = DateTime.utc(2027, 1, 8);
+        when(() => localDao.getById(userId)).thenAnswer((_) async => existing);
+
+        await repository.applyVerifiedPremiumStatus(
+          userId: userId,
+          isPremium: true,
+          subscriptionStatus: SubscriptionStatus.premium,
+          premiumExpiresAt: expiresAt,
+          gracePeriodUntil: graceUntil,
+        );
+
+        final saved =
+            verify(() => localDao.upsert(captureAny())).captured.single
+                as Profile;
+        expect(saved.email, existing.email);
+        expect(saved.isPremium, isTrue);
+        expect(saved.subscriptionStatus, SubscriptionStatus.premium);
+        expect(saved.premiumExpiresAt, expiresAt);
+        expect(saved.gracePeriodUntil, graceUntil);
+        verifyNever(() => syncDao.insertItem(any()));
+        verifyNever(() => syncDao.updateItem(any()));
+      },
+    );
+
+    test('applyVerifiedPremiumStatus rejects a missing local profile', () {
+      expect(
+        () => repository.applyVerifiedPremiumStatus(
+          userId: userId,
+          isPremium: true,
+          subscriptionStatus: SubscriptionStatus.premium,
+        ),
+        throwsStateError,
+      );
     });
 
     test('pushPending pushes pending profile records', () async {

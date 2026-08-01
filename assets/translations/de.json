@@ -1309,7 +1309,7 @@
     "limit_approaching_birds": "{} Vogelplätze verbleibend",
     "try_free_trial": "7 Tage kostenlos testen",
     "grace_period_title": "Ihr Premium ist abgelaufen",
-    "grace_period_message": "Ihr Premium-Abonnement ist vor {} Tagen abgelaufen. Jetzt erneuern!",
+    "grace_period_message": "Ihr Premium-Zugang endet in {} Tagen. Aktualisieren Sie Ihre Zahlungsmethode.",
     "grace_period_renew": "Jetzt erneuern",
     "upgrade_title": "Auf Premium upgraden",
     "upgrade_button": "Upgraden"

@@ -115,9 +115,11 @@ class PremiumNotifier extends Notifier<bool> {
           '[PremiumNotifier] Status changed on resume: $isPremium',
         );
         await setPremium(isPremium);
-        // Sync new status to Supabase — covers both expiration and renewal.
-        await syncPremiumToSupabase(isPremium: isPremium);
       }
+      // Always ask the server to reconcile. RevenueCat's active boolean alone
+      // cannot refresh grace metadata, manual overrides, or a stale server
+      // profile when the local cache happens to contain the same boolean.
+      await syncPremiumToSupabase(isPremium: isPremium);
     } catch (e, st) {
       AppLogger.error('[PremiumNotifier] Refresh failed', e, st);
     }
@@ -147,12 +149,7 @@ class PremiumNotifier extends Notifier<bool> {
     final service = ref.read(purchaseServiceProvider);
     final success = await service.restorePurchases();
     if (!ref.mounted) return success;
-    if (!success) {
-      await setPremium(false);
-      return false;
-    }
-
-    final result = await _reconcileStoreEntitlement(isPremium: true);
+    final result = await _reconcileStoreEntitlement(isPremium: success);
     if (!result.synced) {
       throw const PurchaseException(PurchaseErrorCodes.restoreFailed);
     }

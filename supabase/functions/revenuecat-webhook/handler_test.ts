@@ -164,7 +164,7 @@ Deno.test("revenuecat-webhook acks TEST event with 200", async () => {
   assertEquals(await response.json(), { success: true, test: true });
 });
 
-Deno.test("revenuecat-webhook returns 200 success:false on internal error (no retry storm)", async () => {
+Deno.test("revenuecat-webhook returns retryable 503 on internal error", async () => {
   const response = await createRevenueCatWebhookHandler(
     baseDeps({
       createAdminClient: () =>
@@ -180,7 +180,8 @@ Deno.test("revenuecat-webhook returns 200 success:false on internal error (no re
     }),
   );
 
-  assertEquals(response.status, 200);
+  assertEquals(response.status, 503);
+  assertEquals(response.headers.get("Retry-After"), "60");
   assertEquals(await response.json(), {
     success: false,
     error: "internal_error",
@@ -296,11 +297,33 @@ Deno.test("revenuecat-webhook fails closed when manual override lookup fails", a
     }),
   );
 
-  assertEquals(response.status, 200);
+  assertEquals(response.status, 503);
   assertEquals(await response.json(), {
     success: false,
     error: "internal_error",
   });
+});
+
+Deno.test("revenuecat-webhook retries when profile creation races the event", async () => {
+  const response = await createRevenueCatWebhookHandler(
+    baseDeps({
+      createAdminClient: () => makeAdmin({ profile: null }),
+    }),
+  )(
+    webhookRequest({
+      body: {
+        event: {
+          type: "INITIAL_PURCHASE",
+          app_user_id: APP_USER_ID,
+          id: "evt-race",
+        },
+      },
+    }),
+  );
+
+  assertEquals(response.status, 503);
+  assertEquals(response.headers.get("Retry-After"), "60");
+  assertEquals(await response.json(), { success: false, unknown_user: true });
 });
 
 Deno.test("revenuecat-webhook preserves an override created during RevenueCat fetch", async () => {

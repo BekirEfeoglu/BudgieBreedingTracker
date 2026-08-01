@@ -12,6 +12,7 @@ import 'package:budgie_breeding_tracker/bootstrap.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 
 import '../helpers/e2e_test_harness.dart';
+import '../helpers/test_helpers.dart';
 
 Package _annualPackage() {
   const offeringContext = PresentedOfferingContext('default', null, null);
@@ -131,6 +132,7 @@ void main() {
           isPremium: false,
           overrides: [
             purchaseServiceProvider.overrideWithValue(mockPurchaseService),
+            ...verifiedPremiumServerOverrides(() => true),
           ],
         );
         addTearDown(container.dispose);
@@ -173,6 +175,7 @@ void main() {
           isPremium: false,
           overrides: [
             purchaseServiceProvider.overrideWithValue(mockPurchaseService),
+            ...verifiedPremiumServerOverrides(() => true),
           ],
         );
         addTearDown(container.dispose);

@@ -50,12 +50,45 @@ extension _PremiumSyncHelpers on PremiumNotifier {
         throw StateError(result.error ?? 'sync-premium-status failed');
       }
 
-      final serverPremium = result.data?['is_premium'] as bool?;
+      final data = result.data;
+      final serverPremium = data?['is_premium'] as bool?;
       if (serverPremium == null) {
         throw const FormatException(
           'sync-premium-status response missing is_premium',
         );
       }
+
+      final rawStatus = data?['subscription_status'] as String?;
+      final subscriptionStatus = rawStatus == null
+          ? serverPremium
+                ? SubscriptionStatus.premium
+                : SubscriptionStatus.free
+          : SubscriptionStatus.fromJson(rawStatus);
+      if (subscriptionStatus == SubscriptionStatus.unknown) {
+        throw FormatException(
+          'Invalid subscription_status from sync-premium-status: $rawStatus',
+        );
+      }
+
+      DateTime? parseServerDate(String key) {
+        final raw = data?[key] as String?;
+        if (raw == null) return null;
+        return DateTime.tryParse(raw)?.toLocal();
+      }
+
+      await ref
+          .read(profileRepositoryProvider)
+          .applyVerifiedPremiumStatus(
+            userId: userId,
+            isPremium: serverPremium,
+            subscriptionStatus: subscriptionStatus,
+            premiumExpiresAt: parseServerDate('premium_expires_at'),
+            gracePeriodUntil: parseServerDate('grace_period_until'),
+          );
+
+      // Publish premium access only after the complete server response has
+      // been validated and persisted locally. Otherwise a repository or
+      // response-parsing failure could briefly unlock premium features.
       if (serverPremium != state) {
         await setPremium(serverPremium);
       }
@@ -84,7 +117,7 @@ extension _PremiumSyncHelpers on PremiumNotifier {
         final nextRetry = currentRetryCount >= 0 ? currentRetryCount + 1 : 0;
         await savePendingSync(userId, isPremium, retryCount: nextRetry);
       }
-      return (synced: false, isPremium: ref.mounted ? state : isPremium);
+      return (synced: false, isPremium: state);
     }
   }
 

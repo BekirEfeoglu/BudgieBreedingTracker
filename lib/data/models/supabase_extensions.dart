@@ -90,6 +90,12 @@ extension AppNotificationSupabase on AppNotification {
 extension ProfileSupabase on Profile {
   Map<String, dynamic> toSupabase() {
     final json = _stripServerFields(toJson());
+    json
+      ..remove('is_premium')
+      ..remove('subscription_status')
+      ..remove('role')
+      ..remove('premium_expires_at')
+      ..remove('grace_period_until');
     json['avatar_url'] = StorageUrlNormalizer.normalizePublicObjectUrl(
       json['avatar_url'] as String?,
     );

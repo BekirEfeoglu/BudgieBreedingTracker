@@ -1309,7 +1309,7 @@
     "limit_approaching_birds": "{} kuş hakkınız kaldı",
     "try_free_trial": "7 Gün Ücretsiz Dene",
     "grace_period_title": "Premium Süreniz Doldu",
-    "grace_period_message": "Premium aboneliğiniz {} gün önce sona erdi. Yenileyin!",
+    "grace_period_message": "Premium erişiminizin sona ermesine {} gün kaldı. Ödeme yönteminizi güncelleyin.",
     "grace_period_renew": "Şimdi Yenile",
     "upgrade_title": "Premium'a Yükseltin",
     "upgrade_button": "Yükselt"

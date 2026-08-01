@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -7,7 +8,6 @@ import 'package:purchases_flutter/purchases_flutter.dart' hide SubscriptionInfo;
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:budgie_breeding_tracker/bootstrap.dart';
-import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/enums/subscription_enums.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/providers/edge_function_provider.dart';
@@ -15,6 +15,7 @@ import 'package:budgie_breeding_tracker/domain/services/payment/purchase_service
 import 'package:budgie_breeding_tracker/data/models/profile_model.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/profile_stream_providers.dart';
+import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 
 export 'package:budgie_breeding_tracker/core/enums/subscription_enums.dart'
     show GracePeriodStatus;
@@ -94,13 +95,19 @@ final premiumSyncBackoffProvider = Provider<Future<void> Function(Duration)>(
 
 /// Test seam for the short post-purchase server reconciliation waits.
 ///
-/// RevenueCat can return an active entitlement before the backend pull used
-/// by `sync-premium-status` observes the same receipt.
+/// RevenueCat's SDK can return an active entitlement before the backend pull
+/// used by `sync-premium-status` observes the same receipt. Production waits
+/// briefly and retries; tests override this to avoid wall-clock delays.
 final premiumActivationSyncDelayProvider =
     Provider<Future<void> Function(Duration)>(
       (ref) =>
           (duration) => Future<void>.delayed(duration),
     );
+
+/// Injectable clock used by premium expiry calculations.
+final premiumClockProvider = Provider<DateTime Function()>(
+  (ref) => DateTime.now,
+);
 
 /// Local premium cache backed by SharedPreferences + RevenueCat.
 /// Used by premium screen for purchase/restore actions.
@@ -164,7 +171,8 @@ final subscriptionInfoProvider = FutureProvider<SubscriptionInfo>((ref) async {
 
 /// Determines the user's premium grace period status.
 ///
-/// Uses profile data (premiumExpiresAt) to detect grace period.
+/// Uses only the server-verified `gracePeriodUntil` profile field to detect
+/// grace. A plain expiration date never grants additional access.
 /// Admin/founder roles always return [GracePeriodStatus.active].
 ///
 /// Usage: Use this provider when you need to distinguish between
@@ -183,17 +191,19 @@ final premiumGracePeriodProvider = Provider<GracePeriodStatus>((ref) {
   // Currently premium (active subscription)
   if (profile.hasPremium) return GracePeriodStatus.active;
 
-  // Check grace period via server-computed gracePeriodUntil.
-  // Falls back to client-side calculation from premiumExpiresAt for
-  // profiles that haven't been synced since the migration.
-  final gracePeriodEnd =
-      profile.gracePeriodUntil ??
-      profile.premiumExpiresAt?.add(
-        const Duration(days: AppConstants.gracePeriodDays),
-      );
+  // Grace is a server-owned billing decision. Never fabricate it from a plain
+  // expiration timestamp on the client: cancellation and payment failure are
+  // different states and only RevenueCat/server metadata can distinguish them.
+  final gracePeriodEnd = profile.gracePeriodUntil;
   if (gracePeriodEnd == null) return GracePeriodStatus.free;
 
-  if (DateTime.now().isBefore(gracePeriodEnd)) {
+  final now = ref.watch(premiumClockProvider)();
+  if (now.isBefore(gracePeriodEnd)) {
+    final expiryTimer = Timer(
+      gracePeriodEnd.difference(now),
+      ref.invalidateSelf,
+    );
+    ref.onDispose(expiryTimer.cancel);
     return GracePeriodStatus.gracePeriod;
   }
 

@@ -293,6 +293,79 @@ void main() {
         expect(second, isTrue);
         expect(calls, 2);
       });
+
+      test(
+        'serializes concurrent initialization for different users',
+        () async {
+          final firstConfigure = Completer<void>();
+          final configuredUsers = <String?>[];
+
+          await _installHandler((call) async {
+            if (call.method == 'setupPurchases') {
+              configuredUsers.add(
+                ((call.arguments as Map<Object?, Object?>?)?['appUserId'] ??
+                        (call.arguments
+                            as Map<Object?, Object?>?)?['appUserID'])
+                    as String?,
+              );
+              if (configuredUsers.length == 1) await firstConfigure.future;
+            }
+            if (call.method == 'logIn') {
+              configuredUsers.add(
+                (call.arguments as Map<Object?, Object?>?)?['appUserID']
+                    as String?,
+              );
+              return {
+                'customerInfo': _customerInfo(premiumActive: false),
+                'created': false,
+              };
+            }
+            return null;
+          });
+
+          final first = initializer.initialize(
+            apiKey: 'test_key',
+            userId: 'user-1',
+          );
+          final second = initializer.initialize(
+            apiKey: 'test_key',
+            userId: 'user-2',
+          );
+          await Future<void>.delayed(Duration.zero);
+          firstConfigure.complete();
+
+          expect(await first, isTrue);
+          expect(await second, isTrue);
+          expect(configuredUsers, ['user-1', 'user-2']);
+        },
+      );
+
+      test('logout waits for an in-flight initialization', () async {
+        final configure = Completer<void>();
+        final calls = <String>[];
+
+        await _installHandler((call) async {
+          calls.add(call.method);
+          if (call.method == 'setupPurchases') await configure.future;
+          return null;
+        });
+
+        final initialization = initializer.initialize(
+          apiKey: 'test_key',
+          userId: 'user-1',
+        );
+        final logout = initializer.logout();
+        await Future<void>.delayed(Duration.zero);
+        expect(calls, contains('setupPurchases'));
+        expect(calls, isNot(contains('logOut')));
+
+        configure.complete();
+        expect(await initialization, isTrue);
+        await logout;
+
+        expect(calls.last, 'logOut');
+        expect(initializer.isInitialized, isFalse);
+      });
     });
 
     group('initialize - user switch path', () {

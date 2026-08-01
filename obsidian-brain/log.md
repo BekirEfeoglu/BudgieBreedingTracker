@@ -4,14 +4,14 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
-## [2026-08-01] fix | Premium packages and activation reconciliation
+## [2026-08-01] premium | Package loading and activation races hardened
 
-RevenueCat now initializes in debug iOS Simulator runs, empty current
-offerings fall back to all unique packages, and the paywall exposes a retryable
-StoreKit guidance state. Purchase and restore ignore duplicate submissions and
-retry server reconciliation when the store entitlement reaches the backend
-slightly late. Xcode iOS 26.4 QA loaded both active local packages, while the
-RevenueCat dashboard confirmed the default offering and premium entitlement.
+Debug iOS Simulator no longer skips RevenueCat initialization. Empty current
+offerings now fall back to an aggregate, deduplicated view of all offerings, so
+legacy dashboard order cannot hide the two supported plans. Purchase and restore
+actions ignore duplicate submits; an active store entitlement receives two
+short server-reconciliation retries before failure, without trusting client
+premium state. Paywall guidance now explains the direct-Xcode StoreKit path.
 
 ## [2026-07-31] data | Breeding integrity and visible-range calendar
 

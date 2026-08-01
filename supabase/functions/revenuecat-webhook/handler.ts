@@ -52,9 +52,9 @@ const defaultDeps: RevenueCatWebhookDeps = {
  *   6. resolvePremiumStatus + write to profiles + user_subscriptions
  *      (mirrors sync-premium-status so client pull and server push converge)
  *
- * Errors are logged but the response is always 200 unless auth fails,
- * so RC doesn't retry indefinitely on a transient DB blip. Real failures
- * surface in the next client pull on app open.
+ * Transient processing failures return 503 so RevenueCat can retry. The write
+ * is idempotent because every delivery refetches the complete subscriber state
+ * and applies it through the atomic per-user RPC.
  */
 export function createRevenueCatWebhookHandler(
   deps: RevenueCatWebhookDeps = defaultDeps,
@@ -136,13 +136,8 @@ export function createRevenueCatWebhookHandler(
         .maybeSingle();
 
       if (profileLookupError) {
-        console.error(
-          "[revenuecat-webhook] Profile lookup failed:",
-          profileLookupError.message,
-        );
-        return new Response(
-          JSON.stringify({ success: false, error: "profile_lookup_failed" }),
-          { status: 200, headers },
+        throw new Error(
+          `Profile lookup failed: ${profileLookupError.message}`,
         );
       }
 
@@ -152,7 +147,10 @@ export function createRevenueCatWebhookHandler(
         );
         return new Response(
           JSON.stringify({ success: false, unknown_user: true }),
-          { status: 200, headers },
+          {
+            status: 503,
+            headers: { ...headers, "Retry-After": "60" },
+          },
         );
       }
 
@@ -245,10 +243,12 @@ export function createRevenueCatWebhookHandler(
       );
     } catch (error) {
       console.error("[revenuecat-webhook] Error:", error);
-      // Return 200 so RC doesn't enter retry storm; client pull will repair.
       return new Response(
         JSON.stringify({ success: false, error: "internal_error" }),
-        { status: 200, headers },
+        {
+          status: 503,
+          headers: { ...headers, "Retry-After": "60" },
+        },
       );
     }
   };

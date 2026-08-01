@@ -18,11 +18,15 @@ Source: `.claude/rules/premium-revenuecat.md`
 
 ```
 User purchases (RevenueCat SDK)
-  → RevenueCat webhook
   → sync-premium-status Edge Function
   → Server validates with REVENUECAT_SECRET_API_KEY
-  → Updates profiles.is_premium in Supabase
-  → Client refreshes premium providers
+  → Atomically updates profile + subscription rows
+  → Verified response updates Drift without pending client sync metadata
+
+RevenueCat webhook
+  → Refetches complete subscriber state
+  → Applies the same atomic per-user RPC
+  → Returns retryable 503 on transient processing/profile races
 ```
 
 Before fetching RevenueCat, both sync paths check `user_subscriptions.provider`.
@@ -38,15 +42,20 @@ admin grant/revoke RPCs and rechecks `provider = manual` while holding that lock
 so an admin override arriving during a RevenueCat request cannot be overwritten
 by the stale result.
 
-When the SDK already reports an active entitlement but the first server pull
-has not observed the receipt yet, the client retries reconciliation after
+Purchase and restore are reported as successful only after this server
+reconciliation succeeds. `Profile.toSupabase()` strips all server-owned premium,
+role, expiry, and grace fields from ordinary client profile writes. RevenueCat
+initialize/login/logout operations are serialized across auth user changes.
+When the SDK already reports an active store entitlement but the first server
+pull has not observed the receipt yet, the client retries reconciliation after
 500 ms and 1500 ms. It never sends a client premium assertion, and access opens
 only from the verified server response.
 
 The current RevenueCat offering remains authoritative when it has packages. If
 it is empty, packages from every offering are aggregated and deduplicated before
-the supported two-product filter runs. Debug iOS Simulator runs still initialize
-RevenueCat; empty packages show a retryable Xcode/StoreKit explanation.
+the supported two-product filter runs, so stale legacy offering order cannot
+hide the active plans. Debug iOS Simulator runs still initialize RevenueCat;
+empty packages show a retryable Xcode/StoreKit configuration explanation.
 
 ## Key Providers
 
@@ -58,7 +67,7 @@ RevenueCat; empty packages show a retryable Xcode/StoreKit explanation.
 
 ## Grace Period
 
-Guards must accept `GracePeriodStatus.gracePeriod` as passing (payment renewal failures). Never gate on `isPremium` alone.
+Guards must accept `GracePeriodStatus.gracePeriod` as passing (payment renewal failures). Never gate on `isPremium` alone. Grace is granted only by a future, server-verified `profiles.grace_period_until`; the client and Edge Functions never fabricate it from `premium_expires_at`. The provider invalidates itself at the exact grace deadline.
 
 This includes ad visibility: a grace-period subscriber is a paying customer and
 must not see ads. Since 2026-07-25 all nine ad surfaces read
@@ -67,7 +76,12 @@ the provider's doc comment previously said the opposite and has been corrected.
 
 ## Free Tier Limits
 
-- Server-authoritative via `validate-free-tier-limit` Edge Function
+- `validate-free-tier-limit` is a fast UX preflight
+- PostgreSQL `private.free_tier_usage` plus transactional table triggers are the
+  authoritative enforcement layer for insert, activation update, delete, direct
+  API writes, and concurrent writes
+- Premium/admin/founder and active server-grace profiles are exempt; usage is
+  still tracked so expiry cannot reset their count
 - Client shows count display (UX) but cannot bypass
 - `FreeTierLimitException` → upsell dialog
 
