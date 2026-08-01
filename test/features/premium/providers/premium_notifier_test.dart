@@ -5,10 +5,13 @@ import 'package:purchases_flutter/purchases_flutter.dart' hide SubscriptionInfo;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:budgie_breeding_tracker/bootstrap.dart';
+import 'package:budgie_breeding_tracker/data/providers/edge_function_provider.dart';
+import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
 import 'package:budgie_breeding_tracker/features/auth/providers/auth_providers.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 
 import '../../../helpers/fake_purchase_service.dart';
+import '../../../helpers/mocks.dart';
 import '../../../helpers/test_helpers.dart';
 
 class MockPackage extends Mock implements Package {}
@@ -22,10 +25,20 @@ ProviderContainer _containerWithService(
   FakePurchaseService service, {
   String userId = 'user-1',
 }) {
+  final edgeClient = MockEdgeFunctionClient();
+  when(() => edgeClient.invoke('sync-premium-status')).thenAnswer((_) async {
+    final isPremium =
+        service.purchaseResult ||
+        service.restoreResult ||
+        service.isPremiumResult;
+    return EdgeFunctionResult(success: true, data: {'is_premium': isPremium});
+  });
   return ProviderContainer(
     overrides: [
       currentUserIdProvider.overrideWithValue(userId),
       purchaseServiceProvider.overrideWithValue(service),
+      edgeFunctionClientProvider.overrideWithValue(edgeClient),
+      premiumActivationSyncDelayProvider.overrideWithValue((_) async {}),
     ],
     retry: (_, __) => null,
   );

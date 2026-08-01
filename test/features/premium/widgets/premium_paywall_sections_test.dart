@@ -262,8 +262,7 @@ void main() {
         find.text(l10n('premium.ios_debug_purchase_body')),
         findsOneWidget,
       );
-      // iosDebugStoreKitRequired has no retry button
-      expect(find.text(l10n('common.retry')), findsNothing);
+      expect(find.text(l10n('common.retry')), findsOneWidget);
     });
 
     testWidgets('disables subscribe buttons when purchase issue exists', (

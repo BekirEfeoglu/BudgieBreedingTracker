@@ -4,6 +4,15 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-08-01] fix | Premium packages and activation reconciliation
+
+RevenueCat now initializes in debug iOS Simulator runs, empty current
+offerings fall back to all unique packages, and the paywall exposes a retryable
+StoreKit guidance state. Purchase and restore ignore duplicate submissions and
+retry server reconciliation when the store entitlement reaches the backend
+slightly late. Xcode iOS 26.4 QA loaded both active local packages, while the
+RevenueCat dashboard confirmed the default offering and premium entitlement.
+
 ## [2026-07-31] data | Breeding integrity and visible-range calendar
 
 Drift v30 now preserves at most one active chick link per egg and backs
@@ -158,42 +167,3 @@ it is gitignored and only a `flutter build` rewrites it — `flutter pub get` do
 not. Archiving from Xcode without running `scripts/build_release.sh ios` first
 would package the previous version, the same staleness trap that shipped a
 DSN-less release once.
-
-## [2026-07-26] follow-up | The reverse-leg guard, the last unguarded ALTER, and an unreachable fix
-
-**Two new cross-surface families (49 checks).** `check_rule_symbol_drift` proves
-every symbol a doc NAMES exists; nothing proved a set the CODE defines is still
-fully named. Both of the day's doc-drift findings were exactly that shape, so
-guard classes must now be named in security.md § Route Guards and `FeatureFlags`
-members in feature-flags.md. One-way — a rule may discuss a removed guard, not
-omit a live one. Verified by deleting a mention of each and watching CI fail.
-
-**The last unguarded column add.** `event_reminders` is created in v2→v3, and
-`Migrator.createTable` materializes TODAY's definition — already carrying
-`user_id`/`is_deleted`/`updated_at`. The v5→v6 step then ALTERed the same three,
-so a database entering `onUpgrade` at v1 or v2 died on `duplicate column name`
-and never opened. Window is exactly {1,2}; at v29 the live base is ~zero, so
-this is hygiene, not an incident. Reproduced first — and the first fixture
-failed on `birds.color_mutation` instead, because materializing the current
-schema means a v2 fixture must strip every column the UNGUARDED v5/v7/v13/v15/
-v17 steps add. Only then did the failure land on the statement under test.
-
-**An "untested fix" that turns out to be unreachable.** `5845415` threaded
-`onDepthLimit` into the nested `_inbreedingOf` traversal with no test, and the
-existing depth test cannot fail (its shared ancestor is parentless, so the
-nested path never runs). Measuring rather than assuming: that traversal restarts
-depth at 0 but walks a SUBSET of the chain the top-level pass already walked,
-starting deeper in absolute terms — so anything long enough to trip it there has
-already tripped it here. Sweeping chain lengths 0..16 with and without the
-propagation gave byte-identical results. No isolating test is possible; one
-would pass regardless, which is the same vacuous-assertion trap fixed earlier
-today. The propagation stays (it stops being redundant if the two bounds ever
-stop sharing a chain), the finding is recorded in the source, and the test that
-CAN fail — the `depthLimited` cutoff boundary — was added instead.
-
-**Image-scan budget raised 10 → 30/min.** The scan runs once per image and the
-largest legitimate burst is a premium post at 10 photos, so one attempt consumed
-the whole per-user budget; any retry in the same minute returned 429, which
-`ImageSafetyService` fails CLOSED into "image rejected". Same shape as the
-client cooldown fixed hours earlier, one layer out. The Deno test pins the
-relationship to the photo cap, not the number.

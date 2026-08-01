@@ -21,6 +21,11 @@ User purchases (RevenueCat) -> RevenueCat webhook -> sync-premium-status edge fn
 
 İstemci RevenueCat SDK'sını **sadece purchase UX'i için** kullanır. Premium gate kararı her zaman sunucu kaynaklı (`profiles.is_premium`) okumadan verilir.
 
+- Satın alma/restore sırasında RevenueCat aktif entitlement döndürür fakat ilk
+  sunucu mutabakatı receipt'i henüz görmezse istemci premium iddiası göndermez;
+  500 ms ve 1500 ms bekleyerek `sync-premium-status` çağrısını yineler.
+  Yalnızca doğrulanmış sunucu yanıtı erişimi açar.
+
 ### Admin Manual Override
 - `user_subscriptions.provider = 'manual'`, admin tarafından verilmiş açık bir
   premium kararıdır. `status = active|trial` premium açık; diğer durumlar kapalıdır.
@@ -97,6 +102,9 @@ class PremiumGuard {
 ## Subscription Plan Restrictions
 - Sadece **iki** premium plan aktif (314c274 commit, 2026-05-14)
 - Yeni plan eklemek: hem RevenueCat dashboard hem `lib/domain/services/premium/premium_plan_utilities.dart` güncellenmeli
+- RevenueCat `current` offering'i doluysa tek kaynaktır. Boşsa
+  `Offerings.all` içindeki paketleri paket+ürün kimliğine göre birleştirip
+  tekilleştir; dashboard map sırasına güvenme.
 - Trial period: sadece App Store free trial — Android tarafında "intro pricing" kullan
 - Eski plan'a sahip kullanıcılar entitlement süresi dolana kadar korunur, kod path silinmez
 
@@ -116,6 +124,9 @@ class PremiumGuard {
 - Unit: RevenueCat `Purchases` çağrıları mock'lanır, gerçek çağrı YOK
 - Integration: edge function test'i `sync-premium-status/test.ts` içinde
 - Manual QA: TestFlight sandbox + Play internal testing track
+- Debug iOS simülatöründe RevenueCat init atlanmaz. Boş paket sonucu, Xcode'da
+  `Runner` scheme'ini doğrudan çalıştırma yönlendirmesi ve retry aksiyonu gösterir;
+  seçili `Products.storekit` dosyası `flutter run`/CLI `xcodebuild` ile uygulanmaz.
 - Paywall ekranı golden test edilebilir
 
 ## Anti-Patterns

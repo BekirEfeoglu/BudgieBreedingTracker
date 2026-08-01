@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -37,6 +39,12 @@ ProviderContainer _containerWithService(
     overrides: [
       currentUserIdProvider.overrideWithValue('user-1'),
       purchaseServiceProvider.overrideWithValue(service),
+      ...verifiedPremiumServerOverrides(
+        () =>
+            service.purchaseResult ||
+            service.restoreResult ||
+            service.isPremiumResult,
+      ),
       ...extraOverrides,
     ],
     retry: (_, __) => null,
@@ -218,6 +226,33 @@ void main() {
       final state = container.read(purchaseActionProvider);
       expect(state.isSuccess, isTrue);
       expect(state.error, isNull);
+    });
+
+    test('ignores a second submit while purchase is in progress', () async {
+      final package = MockPackage();
+      _stubPackage(
+        package,
+        packageType: PackageType.sixMonth,
+        identifier: 'six_month',
+        productIdentifier: 'budgie_premium_semi_annual',
+      );
+      final purchaseCompleter = Completer<bool>();
+      service.offeringsResult = [package];
+      service.purchaseResult = true;
+      service.purchaseResultFuture = purchaseCompleter.future;
+
+      final container = _containerWithService(service);
+      addTearDown(container.dispose);
+      final notifier = container.read(purchaseActionProvider.notifier);
+
+      final firstPurchase = notifier.purchasePlan(PremiumPlan.semiAnnual);
+      await waitUntil(() => service.purchaseCallCount == 1);
+      await notifier.purchasePlan(PremiumPlan.semiAnnual);
+
+      expect(service.purchaseCallCount, 1);
+      purchaseCompleter.complete(true);
+      await firstPurchase;
+      expect(container.read(purchaseActionProvider).isSuccess, isTrue);
     });
 
     test('shows cancelled error when purchase returns false', () async {

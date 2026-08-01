@@ -16,6 +16,7 @@ class FakePurchaseService extends PurchaseService {
   List<Package> offeringsResult = const [];
   Object? offeringsError;
   bool purchaseResult = false;
+  Future<bool>? purchaseResultFuture;
   Object? purchaseError;
   bool restoreResult = false;
   Object? restoreError;
@@ -27,6 +28,8 @@ class FakePurchaseService extends PurchaseService {
   String? lastInitializedApiKey;
   String? lastInitializedUserId;
   int isPremiumCallCount = 0;
+  int purchaseCallCount = 0;
+  int restoreCallCount = 0;
   int logoutCallCount = 0;
   Package? lastPurchasedPackage;
 
@@ -61,13 +64,16 @@ class FakePurchaseService extends PurchaseService {
 
   @override
   Future<bool> purchasePackage(Package package) async {
+    purchaseCallCount++;
     lastPurchasedPackage = package;
     if (purchaseError != null) throw purchaseError!;
+    if (purchaseResultFuture != null) return purchaseResultFuture!;
     return purchaseResult;
   }
 
   @override
   Future<bool> restorePurchases() async {
+    restoreCallCount++;
     if (restoreError != null) throw restoreError!;
     return restoreResult;
   }

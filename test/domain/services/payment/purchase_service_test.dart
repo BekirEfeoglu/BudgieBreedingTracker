@@ -86,6 +86,17 @@ Map<String, dynamic> _monthlyPackageJson() {
   };
 }
 
+Map<String, dynamic> _packageJson({
+  required String identifier,
+  required String productIdentifier,
+}) {
+  final package = _monthlyPackageJson();
+  package['identifier'] = identifier;
+  (package['product'] as Map<String, dynamic>)['identifier'] =
+      productIdentifier;
+  return package;
+}
+
 Map<String, dynamic> _transactionJson({
   String identifier = 'txn-123',
   String productId = 'premium_monthly',
@@ -131,6 +142,45 @@ Map<String, dynamic> _offeringsNoCurrent() {
         'metadata': <String, Object>{},
         'availablePackages': [monthly],
         'monthly': monthly,
+      },
+    },
+    'current': null,
+  };
+}
+
+/// Offerings without a current selection where a legacy offering precedes
+/// the active premium offering and the latter is repeated elsewhere.
+Map<String, dynamic> _offeringsNoCurrentWithMultiplePackages() {
+  final legacy = _packageJson(
+    identifier: r'$rc_monthly',
+    productIdentifier: 'budgie_pro_monthly',
+  );
+  final active = _packageJson(
+    identifier: r'$rc_monthly',
+    productIdentifier: 'budgie_premium_monthly',
+  );
+  return {
+    'all': {
+      'legacy': {
+        'identifier': 'legacy',
+        'serverDescription': 'Legacy offering',
+        'metadata': <String, Object>{},
+        'availablePackages': [legacy],
+        'monthly': legacy,
+      },
+      'premium_plans': {
+        'identifier': 'premium_plans',
+        'serverDescription': 'Premium plans offering',
+        'metadata': <String, Object>{},
+        'availablePackages': [active],
+        'monthly': active,
+      },
+      'duplicate_premium': {
+        'identifier': 'duplicate_premium',
+        'serverDescription': 'Duplicate product offering',
+        'metadata': <String, Object>{},
+        'availablePackages': [active],
+        'monthly': active,
       },
     },
     'current': null,
@@ -372,6 +422,28 @@ void main() {
         final offerings = await service.getOfferings();
         expect(offerings, hasLength(1));
         expect(offerings.first.storeProduct.identifier, 'premium_monthly');
+      },
+    );
+
+    test(
+      'getOfferings aggregates unique packages when current is null',
+      () async {
+        await _installHandler((call) async {
+          if (call.method == 'setupPurchases') return null;
+          if (call.method == 'getOfferings') {
+            return _offeringsNoCurrentWithMultiplePackages();
+          }
+          return null;
+        });
+
+        final service = PurchaseService();
+        await service.initialize(apiKey: 'test_key', userId: 'user-1');
+
+        final offerings = await service.getOfferings();
+        expect(offerings.map((package) => package.storeProduct.identifier), [
+          'budgie_pro_monthly',
+          'budgie_premium_monthly',
+        ]);
       },
     );
 

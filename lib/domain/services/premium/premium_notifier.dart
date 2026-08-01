@@ -14,6 +14,10 @@ class PremiumNotifier extends Notifier<bool> {
 
   static String _cacheKey(String userId) => 'is_premium_$userId';
   static const int _maxSyncRetries = 3;
+  static const _activationSyncDelays = [
+    Duration(milliseconds: 500),
+    Duration(milliseconds: 1500),
+  ];
   static String _pendingSyncKey(String userId) =>
       'pending_premium_sync_$userId';
 
@@ -130,8 +134,10 @@ class PremiumNotifier extends Notifier<bool> {
     final success = await service.purchasePackage(package);
     if (!ref.mounted) return success;
     if (success) {
-      await setPremium(true);
-      await syncPremiumToSupabase(isPremium: true);
+      final result = await _reconcileStoreEntitlement(isPremium: true);
+      if (!result.synced || !result.isPremium) {
+        throw const PurchaseException(PurchaseErrorCodes.notActivated);
+      }
     }
     return success;
   }
@@ -141,11 +147,37 @@ class PremiumNotifier extends Notifier<bool> {
     final service = ref.read(purchaseServiceProvider);
     final success = await service.restorePurchases();
     if (!ref.mounted) return success;
-    await setPremium(success);
-    if (success) {
-      await syncPremiumToSupabase(isPremium: true);
+    if (!success) {
+      await setPremium(false);
+      return false;
     }
-    return success;
+
+    final result = await _reconcileStoreEntitlement(isPremium: true);
+    if (!result.synced) {
+      throw const PurchaseException(PurchaseErrorCodes.restoreFailed);
+    }
+    return result.isPremium;
+  }
+
+  Future<({bool synced, bool isPremium})> _reconcileStoreEntitlement({
+    required bool isPremium,
+  }) async {
+    var result = await syncPremiumToSupabase(isPremium: isPremium);
+    if (!isPremium || (result.synced && result.isPremium)) return result;
+
+    for (final delay in _activationSyncDelays) {
+      AppLogger.info(
+        '[PremiumNotifier] Waiting ${delay.inMilliseconds}ms for verified '
+        'premium activation',
+      );
+      await ref.read(premiumActivationSyncDelayProvider)(delay);
+      if (!ref.mounted) return result;
+
+      result = await syncPremiumToSupabase(isPremium: true);
+      if (result.synced && result.isPremium) return result;
+    }
+
+    return result;
   }
 
   // Supabase sync operations are in premium_sync_helpers.dart (part file).

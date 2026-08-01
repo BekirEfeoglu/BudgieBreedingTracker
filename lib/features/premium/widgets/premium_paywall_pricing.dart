@@ -50,7 +50,9 @@ class PremiumPricingSection extends ConsumerWidget {
             _PremiumPurchaseIssueCard(
               issue: purchaseIssue,
               onRetry:
-                  purchaseIssue == PremiumPurchaseIssue.offeringsUnavailable
+                  purchaseIssue == PremiumPurchaseIssue.offeringsUnavailable ||
+                      purchaseIssue ==
+                          PremiumPurchaseIssue.iosDebugStoreKitRequired
                   ? () {
                       ref
                           .read(purchaseServiceProvider)

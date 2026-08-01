@@ -77,6 +77,12 @@ ProviderContainer _containerWithService(
     overrides: [
       currentUserIdProvider.overrideWithValue('user-1'),
       purchaseServiceProvider.overrideWithValue(service),
+      ...verifiedPremiumServerOverrides(
+        () =>
+            service.purchaseResult ||
+            service.restoreResult ||
+            service.isPremiumResult,
+      ),
       ...extraOverrides,
     ],
     // Riverpod 3 retries FutureProviders on error by default.

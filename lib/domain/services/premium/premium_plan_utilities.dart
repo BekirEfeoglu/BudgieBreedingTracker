@@ -47,10 +47,6 @@ enum PremiumPurchaseIssue {
 }
 
 final premiumPurchaseIssueProvider = Provider<PremiumPurchaseIssue?>((ref) {
-  if (shouldDeferRevenueCatOnDebugIosSimulator) {
-    return PremiumPurchaseIssue.iosDebugStoreKitRequired;
-  }
-
   final apiKey = Platform.isIOS ? revenueCatApiKeyIos : revenueCatApiKeyAndroid;
   if (apiKey.isEmpty) {
     return PremiumPurchaseIssue.missingApiKey;
@@ -69,9 +65,12 @@ final premiumPurchaseIssueProvider = Provider<PremiumPurchaseIssue?>((ref) {
   // Offerings not yet resolved or loaded with packages → no issue
   if (packages == null || packages.isNotEmpty) return null;
 
-  // Offerings resolved but empty → diagnose the issue
-
-  return PremiumPurchaseIssue.offeringsUnavailable;
+  // Offerings resolved but empty → diagnose the issue. RevenueCat must still
+  // initialize on a debug simulator: Xcode StoreKit configuration and iOS 26+
+  // sandbox runs are valid purchase test paths.
+  return isDebugIosSimulatorRuntime
+      ? PremiumPurchaseIssue.iosDebugStoreKitRequired
+      : PremiumPurchaseIssue.offeringsUnavailable;
 });
 
 Package? matchPackageForPlan(List<Package> offerings, PremiumPlan plan) {

@@ -312,7 +312,6 @@ class _BudgieBreedingAppState extends ConsumerState<BudgieBreedingApp> {
           ? revenueCatApiKeyIos
           : revenueCatApiKeyAndroid;
       if (apiKey.isEmpty) return;
-      if (shouldDeferRevenueCatOnDebugIosSimulator) return;
 
       unawaited(ref.read(pushNotificationServiceProvider).syncToken(next));
 

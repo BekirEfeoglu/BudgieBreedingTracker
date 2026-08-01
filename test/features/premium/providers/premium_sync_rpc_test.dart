@@ -43,11 +43,17 @@ void main() {
   });
 
   /// Creates a fresh mock Edge Function client with sync stubbed.
-  MockEdgeFunctionClient createMockEdgeClient({bool syncSuccess = true}) {
+  MockEdgeFunctionClient createMockEdgeClient({
+    bool syncSuccess = true,
+    bool serverPremium = true,
+  }) {
     final edgeClient = MockEdgeFunctionClient();
     when(() => edgeClient.invoke(any())).thenAnswer(
       (_) async => syncSuccess
-          ? const EdgeFunctionResult(success: true, data: {'is_premium': true})
+          ? EdgeFunctionResult(
+              success: true,
+              data: {'is_premium': serverPremium},
+            )
           : EdgeFunctionResult.failure('sync-premium-status failed'),
     );
     return edgeClient;
@@ -66,6 +72,7 @@ void main() {
         // Skip the real exponential backoff wait so retry/increment behavior is
         // asserted deterministically instead of racing a real 2s timer.
         premiumSyncBackoffProvider.overrideWithValue((_) async {}),
+        premiumActivationSyncDelayProvider.overrideWithValue((_) async {}),
         if (profile != null)
           userProfileProvider.overrideWith((_) => Stream.value(profile)),
       ],
@@ -93,6 +100,38 @@ void main() {
         await _flushAsync();
 
         verify(() => edgeClient.invoke('sync-premium-status')).called(1);
+      },
+    );
+
+    test(
+      'retries server reconciliation when purchase activation is briefly stale',
+      () async {
+        service.purchaseResult = true;
+        service.isPremiumError = Exception('skip');
+        var syncCalls = 0;
+        final edgeClient = MockEdgeFunctionClient();
+        when(() => edgeClient.invoke('sync-premium-status')).thenAnswer((
+          _,
+        ) async {
+          syncCalls++;
+          return EdgeFunctionResult(
+            success: true,
+            data: {'is_premium': syncCalls > 1},
+          );
+        });
+
+        final container = createContainer(edgeClient);
+        addTearDown(container.dispose);
+        container.read(localPremiumProvider);
+        await waitUntil(() => service.isPremiumCallCount > 0);
+
+        final purchased = await container
+            .read(localPremiumProvider.notifier)
+            .purchase(MockPackage());
+
+        expect(purchased, isTrue);
+        expect(syncCalls, 2);
+        expect(container.read(localPremiumProvider), isTrue);
       },
     );
 
@@ -134,7 +173,16 @@ void main() {
         await _flushAsync();
 
         final package = MockPackage();
-        await container.read(localPremiumProvider.notifier).purchase(package);
+        await expectLater(
+          container.read(localPremiumProvider.notifier).purchase(package),
+          throwsA(
+            isA<PurchaseException>().having(
+              (error) => error.code,
+              'code',
+              PurchaseErrorCodes.notActivated,
+            ),
+          ),
+        );
         await _flushAsync();
 
         final prefs = await SharedPreferences.getInstance();

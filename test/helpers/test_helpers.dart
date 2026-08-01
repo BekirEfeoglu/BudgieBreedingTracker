@@ -1,8 +1,28 @@
+import 'package:mocktail/mocktail.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'package:budgie_breeding_tracker/data/providers/edge_function_provider.dart';
+import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
+import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
+
+import 'mocks.dart';
 
 // Consolidated: createTestBird and createInbredPedigree are now in
 // test_fixtures.dart. This file re-exports them for backward compatibility.
 export 'test_fixtures.dart' show createTestBird, createInbredPedigree;
+
+/// Provides a server-verified premium response for provider tests.
+List<dynamic> verifiedPremiumServerOverrides(bool Function() isPremium) {
+  final edgeClient = MockEdgeFunctionClient();
+  when(() => edgeClient.invoke('sync-premium-status')).thenAnswer((_) async {
+    return EdgeFunctionResult(success: true, data: {'is_premium': isPremium()});
+  });
+
+  return [
+    edgeFunctionClientProvider.overrideWithValue(edgeClient),
+    premiumActivationSyncDelayProvider.overrideWithValue((_) async {}),
+  ];
+}
 
 /// Polls [predicate] every [interval] for up to [maxAttempts] iterations.
 /// Returns as soon as [predicate] returns true.

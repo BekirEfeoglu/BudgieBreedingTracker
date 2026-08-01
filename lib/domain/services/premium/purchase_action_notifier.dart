@@ -34,7 +34,7 @@ class PurchaseActionNotifier extends Notifier<PurchaseActionState> {
 
   /// Purchases a plan via RevenueCat offerings.
   Future<void> purchasePlan(PremiumPlan plan) async {
-    if (!ref.mounted) return;
+    if (!ref.mounted || state.isLoading) return;
     state = PurchaseActionState(isLoading: true, purchasingPlan: plan);
 
     try {
@@ -98,7 +98,7 @@ class PurchaseActionNotifier extends Notifier<PurchaseActionState> {
 
   /// Restores previous purchases via RevenueCat.
   Future<void> restorePurchases() async {
-    if (!ref.mounted) return;
+    if (!ref.mounted || state.isLoading) return;
     state = const PurchaseActionState(isLoading: true);
 
     try {

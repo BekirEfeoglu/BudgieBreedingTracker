@@ -14,7 +14,6 @@ export 'package:budgie_breeding_tracker/domain/services/premium/premium_provider
         purchaseServiceProvider,
         purchaseServiceReadyProvider,
         shouldDeferAdsOnDebugIosSimulator,
-        shouldDeferRevenueCatOnDebugIosSimulator,
         subscriptionInfoProvider;
 
 export 'package:budgie_breeding_tracker/core/enums/subscription_enums.dart'

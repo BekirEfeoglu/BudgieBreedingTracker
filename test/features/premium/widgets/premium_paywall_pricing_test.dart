@@ -286,6 +286,7 @@ void main() {
         find.text(l10n('premium.ios_debug_purchase_body')),
         findsOneWidget,
       );
+      expect(find.text(l10n('common.retry')), findsOneWidget);
     });
 
     testWidgets('shows legal links section', (tester) async {

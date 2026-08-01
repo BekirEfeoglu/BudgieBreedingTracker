@@ -24,6 +24,10 @@ User purchases (RevenueCat SDK)
   → Client refreshes premium providers on app resume
 ```
 
+If RevenueCat already reports an active entitlement while the first server pull
+is still stale, reconciliation is retried after 500 ms and 1500 ms. Duplicate
+purchase/restore submissions are ignored while an action is loading.
+
 ## Grace Period
 
 Guards must accept `GracePeriodStatus.gracePeriod` as passing — not just `isPremium == true`. Grace period exists for payment renewal failures.
@@ -31,6 +35,10 @@ Guards must accept `GracePeriodStatus.gracePeriod` as passing — not just `isPr
 ## Two Plans Only
 
 Only two active premium plans (as of 2026-05-14). Adding a plan requires both RevenueCat dashboard and `lib/domain/services/premium/premium_plan_utilities.dart` updates.
+The current offering is preferred; only when it is empty are all offerings
+aggregated and deduplicated before the two supported products are selected.
+Debug iOS Simulator initializes RevenueCat and exposes a retryable Xcode/StoreKit
+setup message instead of silently disabling purchases.
 
 ## Route Guard
 

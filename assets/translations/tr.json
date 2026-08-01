@@ -1273,7 +1273,7 @@
     "purchase_setup_missing_title": "Satın alma yapılandırması eksik",
     "purchase_setup_missing_body": "RevenueCat API anahtarı bulunamadı. Uygulamayı çalıştırırken --dart-define=REVENUECAT_API_KEY_IOS=<key> parametresini ekleyin veya .env dosyasına tanımlayın.",
     "ios_debug_purchase_title": "StoreKit yapılandırması gerekli",
-    "ios_debug_purchase_body": "Simülatörde satın alma testi için Xcode'da Scheme → Run → Options → StoreKit Configuration ayarından Products.storekit dosyasını seçin.",
+    "ios_debug_purchase_body": "Simülatörde paketleri yüklemek için uygulamayı Xcode'daki Runner şemasıyla çalıştırın; flutter run ve komut satırı xcodebuild, seçili Products.storekit dosyasını uygulamaz. Alternatif olarak iOS 26+ simülatör veya fiziksel cihaz kullanın.",
     "offerings_unavailable_title": "Planlar geçici olarak kullanılamıyor",
     "offerings_unavailable_body": "Premium planlar şu anda mağazadan yüklenemedi. Lütfen biraz sonra tekrar deneyin.",
     "restore_no_purchases": "Geri yüklenecek satın alma bulunamadı",

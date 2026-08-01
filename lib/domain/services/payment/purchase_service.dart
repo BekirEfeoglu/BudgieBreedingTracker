@@ -38,7 +38,7 @@ class PurchaseService with PurchaseErrorMapper, PurchaseInitializer {
   /// Fetches all available subscription offerings.
   ///
   /// Tries the "current" (default) offering first. If that is empty, falls
-  /// back to the first offering in [Offerings.all] that has packages.
+  /// back to the unique packages across [Offerings.all].
   Future<List<Package>> getOfferings() async {
     if (!isInitialized || isStoreUnavailableNow()) return [];
 
@@ -50,15 +50,26 @@ class PurchaseService with PurchaseErrorMapper, PurchaseInitializer {
       final current = offerings.current?.availablePackages ?? [];
       if (current.isNotEmpty) return current;
 
-      // Fallback: first offering with packages from all offerings
+      // Fallback: collect every available package instead of trusting map
+      // order. A stale/legacy offering may be returned before the active
+      // premium offering when RevenueCat has no current offering configured.
+      final fallbackPackages = <Package>[];
+      final seenPackages = <String>{};
       for (final offering in offerings.all.values) {
-        if (offering.availablePackages.isNotEmpty) {
-          AppLogger.info(
-            'No current offering; using "${offering.identifier}" '
-            '(${offering.availablePackages.length} packages)',
-          );
-          return offering.availablePackages;
+        for (final package in offering.availablePackages) {
+          final packageKey =
+              '${package.identifier}\u0000${package.storeProduct.identifier}';
+          if (seenPackages.add(packageKey)) {
+            fallbackPackages.add(package);
+          }
         }
+      }
+      if (fallbackPackages.isNotEmpty) {
+        AppLogger.info(
+          'No current offering; using ${fallbackPackages.length} unique '
+          'package(s) from ${offerings.all.length} offering(s)',
+        );
+        return fallbackPackages;
       }
 
       AppLogger.warning(

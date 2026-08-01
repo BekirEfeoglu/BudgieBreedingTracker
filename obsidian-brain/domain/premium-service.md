@@ -38,6 +38,16 @@ admin grant/revoke RPCs and rechecks `provider = manual` while holding that lock
 so an admin override arriving during a RevenueCat request cannot be overwritten
 by the stale result.
 
+When the SDK already reports an active entitlement but the first server pull
+has not observed the receipt yet, the client retries reconciliation after
+500 ms and 1500 ms. It never sends a client premium assertion, and access opens
+only from the verified server response.
+
+The current RevenueCat offering remains authoritative when it has packages. If
+it is empty, packages from every offering are aggregated and deduplicated before
+the supported two-product filter runs. Debug iOS Simulator runs still initialize
+RevenueCat; empty packages show a retryable Xcode/StoreKit explanation.
+
 ## Key Providers
 
 - `isPremiumProvider`, `premiumGracePeriodProvider`, `effectivePremiumProvider` (`premiumStatusProvider` does not exist)

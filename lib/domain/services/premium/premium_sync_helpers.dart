@@ -14,21 +14,23 @@ extension _PremiumSyncHelpers on PremiumNotifier {
   ///
   /// [currentRetryCount] is used internally by [retryPendingSync] to preserve
   /// the retry counter when saving a failed sync for later retry.
-  Future<void> syncPremiumToSupabase({
+  Future<({bool synced, bool isPremium})> syncPremiumToSupabase({
     required bool isPremium,
     int currentRetryCount = -1,
   }) async {
-    if (!ref.mounted) return;
+    if (!ref.mounted) return (synced: false, isPremium: state);
     try {
       final userId = ref.read(currentUserIdProvider);
-      if (userId == 'anonymous') return;
+      if (userId == 'anonymous') {
+        return (synced: false, isPremium: false);
+      }
 
       // Admin/founder users have server-side premium enforced by DB trigger.
       // Attempting to sync would hit protected_role_premium_mutation (P0001).
       final profile = ref.read(userProfileProvider).value;
       if (profile != null && (profile.isAdmin || profile.isFounder)) {
         await clearPendingSync(userId);
-        return;
+        return (synced: true, isPremium: true);
       }
       if (profile == null) {
         AppLogger.debug(
@@ -49,12 +51,18 @@ extension _PremiumSyncHelpers on PremiumNotifier {
       }
 
       final serverPremium = result.data?['is_premium'] as bool?;
-      if (serverPremium != null && serverPremium != state) {
+      if (serverPremium == null) {
+        throw const FormatException(
+          'sync-premium-status response missing is_premium',
+        );
+      }
+      if (serverPremium != state) {
         await setPremium(serverPremium);
       }
 
       // Sync succeeded — clear any pending retry
       await clearPendingSync(userId);
+      return (synced: true, isPremium: serverPremium);
     } catch (e, st) {
       if (isSupabaseUnavailableError(e)) {
         AppLogger.info(
@@ -67,13 +75,16 @@ extension _PremiumSyncHelpers on PremiumNotifier {
           st,
         );
         // Save for retry on next app resume
-        if (!ref.mounted) return;
+        if (!ref.mounted) {
+          return (synced: false, isPremium: isPremium);
+        }
         final userId = ref.read(currentUserIdProvider);
         // When called from retryPendingSync, increment the retry count.
         // When called fresh (not a retry), start at 0.
         final nextRetry = currentRetryCount >= 0 ? currentRetryCount + 1 : 0;
         await savePendingSync(userId, isPremium, retryCount: nextRetry);
       }
+      return (synced: false, isPremium: ref.mounted ? state : isPremium);
     }
   }
 

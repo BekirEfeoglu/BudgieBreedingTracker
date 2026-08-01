@@ -29,7 +29,7 @@ final purchaseServiceProvider = Provider<PurchaseService>((ref) {
   return PurchaseService();
 });
 
-bool get shouldDeferRevenueCatOnDebugIosSimulator =>
+bool get isDebugIosSimulatorRuntime =>
     !kReleaseMode && Platform.isIOS && isIosSimulatorRuntime;
 
 bool get shouldDeferAdsOnDebugIosSimulator =>
@@ -88,8 +88,19 @@ final premiumSyncProvider = Provider<void>((ref) {
 /// the `syncClockProvider` pattern). The production default is a plain
 /// `Future.delayed`, so behavior is unchanged.
 final premiumSyncBackoffProvider = Provider<Future<void> Function(Duration)>(
-  (ref) => (duration) => Future<void>.delayed(duration),
+  (ref) =>
+      (duration) => Future<void>.delayed(duration),
 );
+
+/// Test seam for the short post-purchase server reconciliation waits.
+///
+/// RevenueCat can return an active entitlement before the backend pull used
+/// by `sync-premium-status` observes the same receipt.
+final premiumActivationSyncDelayProvider =
+    Provider<Future<void> Function(Duration)>(
+      (ref) =>
+          (duration) => Future<void>.delayed(duration),
+    );
 
 /// Local premium cache backed by SharedPreferences + RevenueCat.
 /// Used by premium screen for purchase/restore actions.
@@ -99,13 +110,6 @@ final localPremiumProvider = NotifierProvider<PremiumNotifier, bool>(
 
 /// Ensures RevenueCat is initialized for the current authenticated user.
 final purchaseServiceReadyProvider = FutureProvider<bool>((ref) async {
-  if (shouldDeferRevenueCatOnDebugIosSimulator) {
-    AppLogger.info(
-      '[Premium] Skipping automatic RevenueCat init on iOS simulator debug build',
-    );
-    return false;
-  }
-
   final apiKey = Platform.isIOS ? revenueCatApiKeyIos : revenueCatApiKeyAndroid;
   if (apiKey.isEmpty) {
     AppLogger.warning('[Premium] RevenueCat API key missing');
