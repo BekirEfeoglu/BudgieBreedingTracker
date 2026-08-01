@@ -109,7 +109,8 @@ jobs:
           SENTRY_DIST="${APP_VERSION##*+}"
           export SENTRY_RELEASE="com.budgiebreeding.budgie_breeding_tracker@${APP_VERSION}"
           export SENTRY_DIST
-          dart run sentry_dart_plugin
+          dart run sentry_dart_plugin \
+            --sentry-define=symbols_path=build/symbols/android
 
       - name: Upload AAB artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

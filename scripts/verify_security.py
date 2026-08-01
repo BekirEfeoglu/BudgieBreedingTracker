@@ -131,13 +131,30 @@ def check_release_obfuscation() -> List[Tuple[str, bool, str]]:
             results.append(
                 fail("build_release.sh sentry", "missing DSN/auth-token fail-fast")
             )
-        if build_script.count("dart run sentry_dart_plugin") >= 2:
+        scoped_symbol_upload = all(
+            marker in build_script
+            for marker in (
+                "upload_sentry_symbols ios",
+                "upload_sentry_symbols android",
+                '"--sentry-define=symbols_path=$symbols_path"',
+                "build/release-artifacts",
+                "build/app/outputs",
+                "build/ios",
+            )
+        )
+        if "dart run sentry_dart_plugin" in build_script and scoped_symbol_upload:
             results.append(
-                ok("build_release.sh symbols", "uploads symbols on both platforms")
+                ok(
+                    "build_release.sh symbols",
+                    "uploads platform-scoped symbols and isolates stale artifacts",
+                )
             )
         else:
             results.append(
-                fail("build_release.sh symbols", "missing sentry_dart_plugin upload")
+                fail(
+                    "build_release.sh symbols",
+                    "missing platform-scoped sentry_dart_plugin upload",
+                )
             )
 
     release_ready = read(ROOT / ".github" / "workflows" / "release-ready.yml")
@@ -168,6 +185,20 @@ def check_release_obfuscation() -> List[Tuple[str, bool, str]]:
                         f"(obfuscate={obf}, split={split})",
                     )
                 )
+        if "--sentry-define=symbols_path=build/symbols/android" in release_ready:
+            results.append(
+                ok(
+                    "release-ready.yml symbols",
+                    "Android symbol upload is platform-scoped",
+                )
+            )
+        else:
+            results.append(
+                fail(
+                    "release-ready.yml symbols",
+                    "missing Android-scoped Sentry symbols_path",
+                )
+            )
     return results
 
 

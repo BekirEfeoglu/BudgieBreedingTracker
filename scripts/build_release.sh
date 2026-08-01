@@ -79,6 +79,90 @@ if [[ -z "$APP_VERSION" || -z "$BUILD_NUMBER" ]]; then
 fi
 echo ">>> Version $APP_VERSION build $BUILD_NUMBER"
 
+# sentry_dart_plugin 3.4.x discovers Dart-map debug IDs from both the
+# configured symbols_path and several conventional build roots. A broad
+# symbols_path (for example `build`) can therefore pair the freshly generated
+# map with stale symbols from another platform. Keep the current platform
+# explicit and temporarily move known stale roots outside both discovery
+# trees. The EXIT trap restores every moved artifact even if the upload fails.
+upload_sentry_symbols() (
+  set -euo pipefail
+
+  local platform="$1"
+  local symbols_path="build/symbols/$platform"
+  if [[ ! -d "$symbols_path" ]]; then
+    echo "ERROR: Sentry symbols directory not found: $symbols_path" >&2
+    exit 1
+  fi
+
+  mkdir -p "$ROOT/.dart_tool"
+  local quarantine_root
+  quarantine_root="$(mktemp -d "$ROOT/.dart_tool/sentry-upload-${platform}.XXXXXX")"
+  local -a moved_paths=()
+  local -a moved_slots=()
+
+  restore_sentry_artifacts() {
+    local restore_status=0
+    local index original slot
+    for (( index=${#moved_paths[@]} - 1; index >= 0; index-- )); do
+      original="${moved_paths[$index]}"
+      slot="${moved_slots[$index]}"
+      if [[ -e "$original" || -L "$original" ]]; then
+        echo "ERROR: cannot restore quarantined Sentry artifact; target exists: $original" >&2
+        restore_status=1
+        continue
+      fi
+      mkdir -p "$(dirname "$original")"
+      mv "$slot" "$original" || restore_status=1
+    done
+    rmdir "$quarantine_root" 2>/dev/null || restore_status=1
+    return "$restore_status"
+  }
+  trap restore_sentry_artifacts EXIT
+
+  local -a stale_paths=(
+    build/release-artifacts
+    build/macos
+    build/windows
+    build/linux
+    ios/build
+  )
+  if [[ "$platform" == "ios" ]]; then
+    stale_paths+=(
+      build/app/outputs
+      build/app/intermediates
+      build/symbols/android
+    )
+  else
+    stale_paths+=(
+      build/ios
+      build/symbols/ios
+    )
+  fi
+
+  local path slot
+  local slot_index=0
+  for path in "${stale_paths[@]}"; do
+    if [[ -e "$path" || -L "$path" ]]; then
+      slot="$quarantine_root/$slot_index"
+      mv "$path" "$slot"
+      moved_paths+=("$path")
+      moved_slots+=("$slot")
+      ((slot_index += 1))
+    fi
+  done
+
+  local upload_status=0
+  dart run sentry_dart_plugin \
+    "--sentry-define=symbols_path=$symbols_path" || upload_status=$?
+
+  trap - EXIT
+  if ! restore_sentry_artifacts; then
+    exit 1
+  fi
+  exit "$upload_status"
+)
+
 echo ">>> Installing dependencies"
 flutter pub get
 
@@ -103,7 +187,7 @@ if [[ "$PLATFORM" == "ios" ]]; then
   SENTRY_RELEASE="com.budgiebreeding.tracker@${APP_VERSION}+${BUILD_NUMBER}"
   SENTRY_DIST="$BUILD_NUMBER"
   export SENTRY_RELEASE SENTRY_DIST
-  dart run sentry_dart_plugin
+  upload_sentry_symbols ios
 
   echo
   # Without an export-options plist, `flutter build ipa` stops after the
@@ -136,7 +220,7 @@ else
   SENTRY_RELEASE="com.budgiebreeding.budgie_breeding_tracker@${APP_VERSION}+${BUILD_NUMBER}"
   SENTRY_DIST="$BUILD_NUMBER"
   export SENTRY_RELEASE SENTRY_DIST
-  dart run sentry_dart_plugin
+  upload_sentry_symbols android
 
   echo
   echo ">>> Done. AAB: build/app/outputs/bundle/release/app-release.aab"

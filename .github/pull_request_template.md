@@ -49,7 +49,7 @@
 - [ ] CI/workflow değiştiyse workflow YAML parse edildi ve push sonrası `python3 scripts/check_remote_status.py` ile exact commit doğrulandı
 - [ ] Release artifact davranışı değiştiyse `release-ready.yml`, `CLAUDE.md`, `.claude/rules/release-ops.md` birlikte güncellendi
 - [ ] Release secret sözleşmesi değiştiyse GitHub Actions secret'ları ve `.env` senkron, eksik-secret fail-fast kontrolü test edildi
-- [ ] `scripts/build_release.sh` değiştiyse DSN/token fail-fast, `--obfuscate`/`--split-debug-info` ve `sentry_dart_plugin` symbol upload sözleşmesi `scripts/test_ci_workflow_contract.py` + `scripts/verify_security.py` ile doğrulandı
+- [ ] `scripts/build_release.sh` değiştiyse DSN/token fail-fast, `--obfuscate`/`--split-debug-info`, platform-scoped `symbols_path`, stale-artifact karantinası ve `sentry_dart_plugin` upload sözleşmesi `scripts/test_ci_workflow_contract.py` + `scripts/verify_security.py` ile doğrulandı
 - [ ] `release-ready.yml` değiştiyse `publishing`/Google Play credential içermediği ve `pubspec.yaml` build numarasını kullandığı korunuyor (store'a publish eden job EKLENMEDİ)
 - [ ] Android sürümlemesi değiştiyse `pubspec.yaml` build numarasının package-wide Play maksimumunu aştığı elle doğrulandı (otomatik çözüm yok)
 - [ ] Flutter SDK ayarı değiştiyse `.fvmrc` tek manifest; `ci.yml`/`release-ready.yml` `flutter-version-file` kullanıyor, Xcode Cloud aynı manifesti parse ediyor ve `stable` kanal drift'i yok

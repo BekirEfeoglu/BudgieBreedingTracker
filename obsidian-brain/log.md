@@ -4,6 +4,19 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-08-02] release | Sentry symbol discovery isolated per platform
+
+The iOS 1.1.9 release exposed a dirty-workspace failure: the broad
+`symbols_path: build` setting paired the fresh Dart obfuscation map with six
+stale Android debug IDs under `build/release-artifacts`. The incorrect Sentry
+maps were removed while native Android and current iOS symbols were preserved.
+
+The canonical local release now passes `build/symbols/<platform>` explicitly
+and quarantines known stale, cross-platform build roots only for the duration
+of symbol upload, restoring them through an EXIT trap. The hosted Android path
+uses the same narrow override, and security/CI contract tests reject a return
+to broad discovery.
+
 ## [2026-08-01] premium | Package loading and activation races hardened
 
 Debug iOS Simulator no longer skips RevenueCat initialization. Empty current

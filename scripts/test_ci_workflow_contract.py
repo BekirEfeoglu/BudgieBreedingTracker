@@ -91,6 +91,10 @@ class TestCiWorkflowContract(unittest.TestCase):
         self.assertIn("--save-obfuscation-map=build/app/obfuscation.map.json", release)
         self.assertIn("dart run sentry_dart_plugin", release)
         self.assertIn(
+            "--sentry-define=symbols_path=build/symbols/android",
+            release,
+        )
+        self.assertIn(
             "com.budgiebreeding.budgie_breeding_tracker@${APP_VERSION}",
             release,
         )
@@ -123,7 +127,16 @@ class TestCiWorkflowContract(unittest.TestCase):
             2,
             script.count("--save-obfuscation-map=build/app/obfuscation.map.json"),
         )
-        self.assertEqual(2, script.count("dart run sentry_dart_plugin"))
+        self.assertEqual(1, script.count("dart run sentry_dart_plugin"))
+        self.assertIn(
+            '"--sentry-define=symbols_path=$symbols_path"',
+            script,
+        )
+        self.assertIn("upload_sentry_symbols ios", script)
+        self.assertIn("upload_sentry_symbols android", script)
+        self.assertIn("build/release-artifacts", script)
+        self.assertIn("build/app/outputs", script)
+        self.assertIn("build/ios", script)
         # SENTRY_RELEASE must match runtime PackageInfo naming, per platform.
         self.assertIn(
             'SENTRY_RELEASE="com.budgiebreeding.tracker@${APP_VERSION}',
@@ -163,6 +176,7 @@ class TestCiWorkflowContract(unittest.TestCase):
             "dart_symbol_map_path: build/app/obfuscation.map.json",
             self.pubspec,
         )
+        self.assertIn("symbols_path: build/symbols/android", self.pubspec)
         self.assertIn("commits: false", self.pubspec)
 
 

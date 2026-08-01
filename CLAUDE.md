@@ -183,7 +183,11 @@ fast when `SENTRY_DSN` (`.env`) or `SENTRY_AUTH_TOKEN` (environment) is missing,
 builds with `--obfuscate --split-debug-info` plus `--save-obfuscation-map` (not a
 `flutter build` flag — it is passed through `--extra-gen-snapshot-options`), then uploads
 symbols via `dart run sentry_dart_plugin` with a per-platform `SENTRY_RELEASE`
-matching runtime `PackageInfo` naming. iOS re-runs `scripts/generate_ios_env.sh` first.
+matching runtime `PackageInfo` naming. Symbol discovery is also platform-scoped:
+the script passes `build/symbols/<platform>` and temporarily quarantines stale
+other-platform build roots before upload, then restores them even on failure.
+This prevents a fresh Dart map from being registered under old debug IDs. iOS
+re-runs `scripts/generate_ios_env.sh` first.
 
 **Do NOT Archive from Xcode without running the script first.**
 The iOS dart-defines live in gitignored generated xcconfigs that only a

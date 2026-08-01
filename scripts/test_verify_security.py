@@ -39,14 +39,22 @@ flutter build ipa --release \\
   --obfuscate \\
   --split-debug-info=build/symbols/ios
 
-dart run sentry_dart_plugin
+upload_sentry_symbols() {
+  local platform="$1"
+  local symbols_path="build/symbols/$platform"
+  local stale_paths=(build/release-artifacts build/app/outputs build/ios)
+  dart run sentry_dart_plugin \\
+    "--sentry-define=symbols_path=$symbols_path"
+}
+
+upload_sentry_symbols ios
 
 flutter build appbundle --release \\
   --dart-define-from-file="$ENV_FILE" \\
   --obfuscate \\
   --split-debug-info=build/symbols/android
 
-dart run sentry_dart_plugin
+upload_sentry_symbols android
 """
 
 
@@ -61,6 +69,10 @@ jobs:
           flutter build appbundle --release \\
             --obfuscate \\
             --split-debug-info=build/symbols/android
+      - name: Upload Android debug symbols to Sentry
+        run: |
+          dart run sentry_dart_plugin \\
+            --sentry-define=symbols_path=build/symbols/android
 """
 
 
@@ -86,6 +98,41 @@ class TestReleaseObfuscation(unittest.TestCase):
         self.assertTrue(all(passed for _, passed, _ in results), results)
         self.assertIn(
             ("release-ready.yml android-release", True, "obfuscation enabled"),
+            results,
+        )
+        self.assertIn(
+            (
+                "release-ready.yml symbols",
+                True,
+                "Android symbol upload is platform-scoped",
+            ),
+            results,
+        )
+
+    def test_rejects_cross_platform_symbol_discovery(self):
+        import verify_security as vs
+
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            broad_script = _good_release_script().replace(
+                '"--sentry-define=symbols_path=$symbols_path"',
+                "--sentry-define=symbols_path=build",
+            )
+            _write(root / "scripts" / "build_release.sh", broad_script)
+            _write(
+                root / ".github" / "workflows" / "release-ready.yml",
+                _good_release_ready_yaml(),
+            )
+
+            with patch.object(vs, "ROOT", root):
+                results = vs.check_release_obfuscation()
+
+        self.assertIn(
+            (
+                "build_release.sh symbols",
+                False,
+                "missing platform-scoped sentry_dart_plugin upload",
+            ),
             results,
         )
 

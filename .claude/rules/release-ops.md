@@ -84,6 +84,17 @@ trace'leri obfuscated kalir.
 `SENTRY_RELEASE` platform basina runtime `PackageInfo` adlandirmasini birebir
 yansitir (`com.budgiebreeding.tracker` / `com.budgiebreeding.budgie_breeding_tracker`).
 
+**Sentry symbol discovery platforma dar tutulmalidir.**
+`sentry_dart_plugin 3.4.x`, `symbols_path` altindaki Flutter sembollerinin
+yaninda standart `build/ios` ve Android build koklerini de arar. 2026-08-02'de
+`symbols_path: build`, taze iOS `obfuscation.map.json` dosyasini
+`build/release-artifacts` altindaki alti eski Android debug ID'siyle yanlis
+eslestirdi. Kanonik script her upload'a
+`--sentry-define=symbols_path=build/symbols/<platform>` verir; diger platformun
+bilinen build koklerini ve `build/release-artifacts` klasorunu ayni filesystem
+icindeki gecici karantinaya tasir, upload basarisiz olsa da EXIT trap ile geri
+yukler. Bu daraltmayi kaldirma veya tekrar `symbols_path: build` kullanma.
+
 Iki degerin eksikligi build'i KIRMAZ, sessizce bozuk bir release uretir — bu
 yuzden script'te loud fail-fast'tirlar:
 - `SENTRY_DSN` yoksa: crash reporting'i hic olmayan bir release
