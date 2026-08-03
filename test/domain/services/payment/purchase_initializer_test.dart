@@ -116,7 +116,9 @@ void main() {
 
       test('calls Purchases.configure with correct API key', () async {
         Map<dynamic, dynamic>? configArgs;
+        final methodOrder = <String>[];
         await _installHandler((call) async {
+          methodOrder.add(call.method);
           if (call.method == 'setupPurchases') {
             configArgs = call.arguments as Map<dynamic, dynamic>;
             return null;
@@ -131,6 +133,7 @@ void main() {
 
         expect(configArgs, isNotNull);
         expect(configArgs!['apiKey'], 'rc_test_key_123');
+        expect(methodOrder.sublist(0, 2), ['setLogLevel', 'setupPurchases']);
       });
 
       test('returns false when Purchases.configure throws', () async {

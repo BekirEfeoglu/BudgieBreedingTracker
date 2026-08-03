@@ -59,7 +59,13 @@ abstract class BaseRemoteSource<T> {
     }
   }
 
-  /// Fetches all non-deleted records for a user.
+  /// Fetches every record for a user, including soft-delete tombstones.
+  ///
+  /// Full reconciliation must rebuild the same FK graph as Supabase. Filtering
+  /// tombstones here can remove a still-referenced parent (for example, a
+  /// completed incubation whose breeding pair was later soft-deleted) and make
+  /// Drift reject the child with a foreign-key violation. UI visibility remains
+  /// the DAO's responsibility; its normal reads still exclude deleted rows.
   Future<List<T>> fetchAll(String userId) async {
     try {
       final response = await _timed(
@@ -67,7 +73,6 @@ abstract class BaseRemoteSource<T> {
         () => table
             .select()
             .eq(SupabaseConstants.colUserId, userId)
-            .eq(SupabaseConstants.colIsDeleted, false)
             .order(SupabaseConstants.colCreatedAt),
       );
       return response.map((json) => fromJson(json)).toList();
@@ -106,13 +111,9 @@ abstract class BaseRemoteSource<T> {
   /// `updated_at` and `id` to fetch all changes since the last sync, up to
   /// [_maxPullIterations] batches (100k records total) as a safety guard.
   ///
-  /// Note: `is_deleted` filter is intentionally omitted so that cross-device
-  /// soft-deletes propagate during incremental sync. The [since] timestamp
-  /// limits results to records changed after the last successful pull, so
-  /// deleted records are only fetched once — when their `is_deleted` flag
-  /// changes and `updated_at` advances. Full reconciliation (null [since])
-  /// uses [fetchAll] which filters `is_deleted = false`, keeping that path
-  /// fast even for users with many historical deletions.
+  /// Note: `is_deleted` filtering is intentionally omitted so cross-device
+  /// soft-deletes propagate and full reconciliation can reconstruct referenced
+  /// tombstone parents. UI-facing DAO reads filter deleted rows.
   Future<List<T>> fetchUpdatedSince(String userId, DateTime since) async {
     final allResults = <T>[];
     var cursorUpdatedAt = since.toIso8601String();
@@ -195,7 +196,7 @@ abstract class BaseRemoteSource<T> {
     }
   }
 
-  /// Fetches all non-deleted records for a user using cursor-based pagination.
+  /// Fetches all records, including tombstones, using cursor pagination.
   ///
   /// Useful for large datasets (500+ records) to avoid response size limits.
   /// Uses `created_at` cursor instead of OFFSET for stable performance at scale.
@@ -205,10 +206,7 @@ abstract class BaseRemoteSource<T> {
       String? cursor;
       var page = 0;
       while (true) {
-        var query = table
-            .select()
-            .eq(SupabaseConstants.colUserId, userId)
-            .eq(SupabaseConstants.colIsDeleted, false);
+        var query = table.select().eq(SupabaseConstants.colUserId, userId);
         if (cursor != null) {
           query = query.gt(SupabaseConstants.colCreatedAt, cursor);
         }

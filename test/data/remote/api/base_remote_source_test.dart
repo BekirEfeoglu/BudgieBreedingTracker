@@ -65,10 +65,11 @@ void main() {
 
         expect(result, hasLength(2));
         expect(result.first['id'], '1');
-        expect(
-          selectBuilder.eqCalls.map((e) => '${e.key}:${e.value}'),
-          containsAll(['user_id:user-1', 'is_deleted:false']),
-        );
+        final filters = selectBuilder.eqCalls
+            .map((e) => '${e.key}:${e.value}')
+            .toList();
+        expect(filters, contains('user_id:user-1'));
+        expect(filters, isNot(contains('is_deleted:false')));
         expect(selectBuilder.orderCalls, contains('created_at'));
       });
 
@@ -212,6 +213,10 @@ void main() {
 
         expect(result, hasLength(3));
         expect(result.last['id'], '3');
+        expect(
+          selectBuilder.eqCalls.map((e) => e.key),
+          isNot(contains('is_deleted')),
+        );
         expect(selectBuilder.gtCalls, hasLength(1));
         expect(selectBuilder.gtCalls.map((e) => e.key), contains('created_at'));
       });

@@ -34,6 +34,9 @@ RevenueCat webhook -> refetches the full subscriber state
   dahil etmez.
 - RevenueCat init/login/logout işlemleri tek bir seri kuyrukta çalışır; kullanıcı
   değişimi sırasında eski kullanıcının tamamlanan init sonucu yeni kimliğe sızmaz.
+- SDK log seviyesi `configure` öncesinde debug build'de en fazla `warn`, release
+  build'de `error` olarak ayarlanır. StoreKit transaction/JWS/receipt payload'ları
+  debug konsoluna veya Sentry'ye düşmez.
 - Webhook geçici DB/profil yarışlarında `503 + Retry-After` döndürür. Tekrar
   teslim güvenlidir; handler tam subscriber durumunu yeniden okuyup kullanıcı
   bazlı atomik RPC uygular.

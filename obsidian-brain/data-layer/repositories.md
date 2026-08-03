@@ -27,18 +27,22 @@ Mixin for repos that sync to Supabase. Adds:
 
 ### Pull failure reporting
 
-Every repo's `pull()` catches `on AppException { rethrow; }` then swallows the
-rest so one corrupt payload can't kill the whole sync (offline-first
-resilience). The swallowed class (serialization, `TypeError`, Drift corruption,
-malformed remote payload) is exactly the sync/corruption class observability.md
-routes to Sentry — but because the repo swallows it, the central
-`SyncPullHandler` never sees it, so it can't be reported centrally.
+Every repo's `pull()` catches `on AppException { rethrow; }`; unexpected
+serialization, `TypeError`, malformed-payload, and Drift failures go through
+`reportPullFailure` and are rethrown with their original stack. The central
+`SyncPullHandler` isolates failures per layer/repository, continues independent
+pulls, returns `false`, and prevents the successful-sync checkpoint from moving
+past a partial or corrupt write.
 
 `reportPullFailure(logTag, error, st)` — top-level in `base_repository.dart`
 (like `detectPullConflicts`, so the non-mixin `PhotoRepository` /
 `ProfileRepository` share it) — logs, then `Sentry.captureException` with a
-`sync_phase: pull` tag, filtering out `AppException` (keeps ProfileRepository's
-swallowed offline failures out of Sentry). All 15 `pull()` sites call it.
+`sync_phase: pull` tag, filtering out expected `AppException` noise, then
+rethrows. All 15 `pull()` sites call it.
+
+Full reconciliation fetches soft-delete tombstones too. DAO/UI reads still hide
+them, but the rows remain available as FK parents for historical children such
+as completed incubations linked to a later-deleted breeding pair.
 
 ## ValidatedSyncMixin
 

@@ -43,7 +43,8 @@ void main() {
       final eqKeys = selectBuilder.eqCalls
           .map((entry) => '${entry.key}:${entry.value}')
           .toList();
-      expect(eqKeys, containsAll(['user_id:user-1', 'is_deleted:false']));
+      expect(eqKeys, contains('user_id:user-1'));
+      expect(eqKeys, isNot(contains('is_deleted:false')));
       expect(selectBuilder.orderCalls, contains('created_at'));
     });
 

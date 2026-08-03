@@ -108,9 +108,7 @@ void main() {
     when(() => syncDao.insertItem(any())).thenAnswer((_) async {});
     when(() => syncDao.insertAll(any())).thenAnswer((_) async {});
     when(() => syncDao.deleteByRecord(any(), any())).thenAnswer((_) async {});
-    when(
-      () => syncDao.deleteByRecords(any(), any()),
-    ).thenAnswer((_) async {});
+    when(() => syncDao.deleteByRecords(any(), any())).thenAnswer((_) async {});
     when(() => syncDao.updateItem(any())).thenAnswer((_) async {});
     when(() => syncDao.getByRecord(any(), any())).thenAnswer((_) async => null);
     when(
@@ -300,12 +298,12 @@ void main() {
       expect(() => repository.pull(userId), throwsA(isA<DatabaseException>()));
     });
 
-    test('pull logs unknown errors and does not throw', () async {
+    test('pull reports and rethrows unknown errors', () async {
       when(
         () => remoteSource.fetchAll(userId),
       ).thenThrow(Exception('unexpected'));
 
-      await repository.pull(userId);
+      await expectLater(repository.pull(userId), throwsA(isA<Exception>()));
 
       verify(() => remoteSource.fetchAll(userId)).called(1);
     });
@@ -381,8 +379,9 @@ void main() {
 
         await repository.pushAll(userId);
 
-        final captured =
-            verify(() => remoteSource.upsertAll(captureAny())).captured;
+        final captured = verify(
+          () => remoteSource.upsertAll(captureAny()),
+        ).captured;
         expect((captured.single as List), [gm1]);
       },
     );

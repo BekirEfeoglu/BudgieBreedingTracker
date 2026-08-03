@@ -127,25 +127,28 @@ Future<void> persistPullConflicts({
   );
 }
 
-/// Logs a repository `pull()` failure and reports UNEXPECTED errors to Sentry.
+/// Logs a repository `pull()` failure, reports unexpected errors to Sentry,
+/// and preserves the original exception/stack for the pull orchestrator.
 ///
 /// Typed [AppException]s (offline `NetworkException`, validation, etc.) are
 /// expected sync noise and are only logged. Everything else — serialization,
 /// `TypeError`, Drift corruption, a malformed remote payload — is the
 /// sync/corruption class that observability.md routes to Sentry as an issue,
-/// not just a breadcrumb. Callers that already `rethrow` AppException pass
-/// through safely (the filter is then a no-op); the one caller that swallows
-/// AppException (profile) is correctly kept out of Sentry. Top-level like
+/// not just a breadcrumb. Re-throwing is required: the sync pull handler isolates
+/// repository failures and must see them so it does not advance the successful
+/// pull checkpoint after a partial/corrupt write. Top-level like
 /// [detectPullConflicts] so the custom PhotoRepository / ProfileRepository
 /// (which do not mix in [SyncableRepository]) share the one implementation.
-void reportPullFailure(String logTag, Object error, StackTrace stackTrace) {
+Never reportPullFailure(String logTag, Object error, StackTrace stackTrace) {
   AppLogger.error('[$logTag] Pull failed', error, stackTrace);
-  if (error is AppException) return;
-  Sentry.captureException(
-    error,
-    stackTrace: stackTrace,
-    withScope: (scope) => scope.setTag('sync_phase', 'pull'),
-  );
+  if (error is! AppException) {
+    Sentry.captureException(
+      error,
+      stackTrace: stackTrace,
+      withScope: (scope) => scope.setTag('sync_phase', 'pull'),
+    );
+  }
+  Error.throwWithStackTrace(error, stackTrace);
 }
 
 /// Push-phase counterpart to [reportPullFailure]: logs the failure and reports

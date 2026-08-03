@@ -5,6 +5,22 @@ Archived July 2026 entries (07-26 to 07-26) rotated out of [[log]] during the
 `allowed-tools` correction, and the registry-collector split.
 
 ---
+## [2026-07-26] release | Version bumped to 1.1.8+60
+
+Two surfaces, because the version name is duplicated: `pubspec.yaml` (the source
+iOS and Android both derive from) and `AppConstants.appVersion` (a hand-kept
+copy rendered in the About section). `app_constants_test` asserts they match, so
+they cannot drift silently — but a bump has to touch both.
+
+Build number jumps 56 → 60 at the user's request. Play version codes are
+package-global and Codemagic no longer resolves this, so exceeding the highest
+code across ALL tracks is a manual pre-upload check.
+
+Note `ios/Flutter/Generated.xcconfig` still reads the OLD version after a bump:
+it is gitignored and only a `flutter build` rewrites it — `flutter pub get` does
+not. Archiving from Xcode without running `scripts/build_release.sh ios` first
+would package the previous version, the same staleness trap that shipped a
+DSN-less release once.
 ## [2026-07-26] follow-up | The reverse-leg guard, the last unguarded ALTER, and an unreachable fix
 
 **Two new cross-surface families (49 checks).** `check_rule_symbol_drift` proves

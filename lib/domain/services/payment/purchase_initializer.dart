@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:purchases_flutter/purchases_flutter.dart' hide SubscriptionInfo;
 import 'package:sentry_flutter/sentry_flutter.dart';
 
@@ -58,6 +59,10 @@ mixin PurchaseInitializer on PurchaseErrorMapper {
   }) async {
     try {
       AppLogger.info('Configuring RevenueCat SDK');
+      // RevenueCat debug output includes full StoreKit transaction/JWS
+      // payloads. Keep those payment artifacts out of local logs while still
+      // retaining actionable SDK warnings during development.
+      await Purchases.setLogLevel(kDebugMode ? LogLevel.warn : LogLevel.error);
       final config = PurchasesConfiguration(apiKey)..appUserID = userId;
       await Purchases.configure(config);
       _initialized = true;

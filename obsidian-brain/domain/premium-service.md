@@ -56,6 +56,9 @@ it is empty, packages from every offering are aggregated and deduplicated before
 the supported two-product filter runs, so stale legacy offering order cannot
 hide the active plans. Debug iOS Simulator runs still initialize RevenueCat;
 empty packages show a retryable Xcode/StoreKit configuration explanation.
+Before SDK configuration, logging is capped at `warn` in debug and `error` in
+release so StoreKit transaction/JWS/receipt payloads never enter local logs or
+Sentry.
 
 ## Key Providers
 

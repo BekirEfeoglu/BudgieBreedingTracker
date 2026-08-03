@@ -76,6 +76,13 @@ import those sources directly.
 ### Sync Strategy
 - Offline-first: local Drift DB is source of truth for UI
 - Background sync: repositories push local changes to Supabase when online
+- Full reconciliation pulls soft-delete tombstones as well as active rows. A
+  referenced tombstone is still an FK parent; UI/DAO reads hide it, but filtering
+  it at the remote boundary can make a valid historical child fail Drift insert.
+- Unexpected repository pull failures are logged/reported and rethrown to the
+  layer-isolating pull handler. The handler continues other repositories but
+  must return an incomplete result so the successful-sync checkpoint does not
+  advance past a partial or corrupt local write.
 - `SyncMetadata` tracks one row per pending record (`table_name`, `record_id`,
   status/error/retry timestamps); successful push deletes the row
 - Drift streams refresh UI reactively; invalidate only derived/FutureProvider

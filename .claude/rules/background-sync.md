@@ -180,6 +180,12 @@ child: AppUpdatePrompt(
 - Cascade delete'ler de batch: `EventRepository.removeBy*` → tek `softDeleteByIds` + tek `markPendingByRecords` + tek best-effort `pushAll`; `GrowthMeasurementRepository.removeByChickIds` → tek `hardDeleteByIds` + batch `pendingDelete` tombstone + tek `deleteByIds` (remote hata → tombstone'lar sonraki sync'e kalır)
 - `PushStats.pushed` yalnız GERÇEK başarıyı sayar; telemetri amaçlıdır (log satırları) — kontrol akışında KULLANMA
 - Drift `batch()` ile toplu local write — tek transaction
+- Full reconciliation remote `is_deleted` tombstone'larını da çeker: silinmiş
+  parent UI'da görünmez ama tarihsel child FK'si için Drift'te bulunmalıdır.
+- Repository pull'daki beklenmeyen serialization/Drift hatası Sentry'ye
+  raporlandıktan sonra pull handler'a yeniden fırlatılır. Handler diğer katmanları
+  izole biçimde çalıştırır, fakat sonuç `false` olur ve başarılı sync checkpoint'i
+  ilerlemez.
 
 ## Sync UI Indicators
 | Durum | Gösterim |

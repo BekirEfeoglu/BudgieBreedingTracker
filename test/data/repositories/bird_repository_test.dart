@@ -260,12 +260,12 @@ void main() {
       expect(() => repository.pull(userId), throwsA(isA<DatabaseException>()));
     });
 
-    test('pull logs unknown errors and does not throw', () async {
+    test('pull reports and rethrows unknown errors', () async {
       when(
         () => remoteSource.fetchAll(userId),
       ).thenThrow(Exception('unexpected'));
 
-      await repository.pull(userId);
+      await expectLater(repository.pull(userId), throwsA(isA<Exception>()));
 
       verify(() => remoteSource.fetchAll(userId)).called(1);
     });

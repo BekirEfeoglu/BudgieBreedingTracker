@@ -29,6 +29,8 @@ void main() {
   late _MockBreedingPairRemoteSource pairRemote;
   late _MockIncubationRemoteSource incubationRemote;
   late _MockEggRemoteSource eggRemote;
+  late BreedingPairRepository pairRepository;
+  late IncubationRepository incubationRepository;
   late DriftBreedingCreationPersistence persistence;
   late DriftBreedingLifecyclePersistence lifecyclePersistence;
   late DriftEggCreationPersistence eggPersistence;
@@ -67,13 +69,13 @@ void main() {
     incubationRemote = _MockIncubationRemoteSource();
     eggRemote = _MockEggRemoteSource();
 
-    final pairRepository = BreedingPairRepository(
+    pairRepository = BreedingPairRepository(
       localDao: database.breedingPairsDao,
       remoteSource: pairRemote,
       syncDao: database.syncMetadataDao,
       birdsDao: BirdsDao(database),
     );
-    final incubationRepository = IncubationRepository(
+    incubationRepository = IncubationRepository(
       localDao: database.incubationsDao,
       remoteSource: incubationRemote,
       syncDao: database.syncMetadataDao,
@@ -148,6 +150,41 @@ void main() {
     verifyNever(() => pairRemote.upsert(any()));
     verifyNever(() => incubationRemote.upsert(any()));
   });
+
+  test(
+    'full pull keeps a deleted pair tombstone for its historical incubation FK',
+    () async {
+      final deletedPair = pair().copyWith(
+        status: BreedingStatus.completed,
+        isDeleted: true,
+      );
+      final historicalIncubation = incubation().copyWith(
+        status: IncubationStatus.completed,
+      );
+      when(
+        () => pairRemote.fetchAll('user-1'),
+      ).thenAnswer((_) async => [deletedPair]);
+      when(
+        () => incubationRemote.fetchAll('user-1'),
+      ).thenAnswer((_) async => [historicalIncubation]);
+
+      await pairRepository.pull('user-1');
+      await incubationRepository.pull('user-1');
+
+      expect(await database.breedingPairsDao.getById('pair-1'), isNull);
+      final storedPair = await database.breedingPairsDao
+          .getByIdIncludingDeleted('pair-1');
+      expect(storedPair?.id, deletedPair.id);
+      expect(storedPair?.status, BreedingStatus.completed);
+      expect(storedPair?.isDeleted, isTrue);
+      final storedIncubation = await database.incubationsDao.getById(
+        'incubation-1',
+      );
+      expect(storedIncubation?.id, historicalIncubation.id);
+      expect(storedIncubation?.breedingPairId, deletedPair.id);
+      expect(storedIncubation?.status, IncubationStatus.completed);
+    },
+  );
 
   test('commits pair closure and active incubation updates together', () async {
     await persistence.save(pair(), incubation());

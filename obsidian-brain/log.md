@@ -4,6 +4,16 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-08-03] fix | Full-sync FK tombstones and payment-log redaction
+
+Full reconciliation now keeps soft-delete tombstones in Drift so historical
+children can resolve their FK parents; this fixes completed incubations failing
+to pull after their breeding pair was soft-deleted. Unexpected repository pull
+failures now reach the layer-isolating handler, preventing a false "pull
+complete" result and checkpoint advance. RevenueCat logging is capped before
+configuration so simulator StoreKit transaction/JWS dumps do not expose payment
+artifacts.
+
 ## [2026-08-03] test | Breeding gate proves production boundaries
 
 The breeding/egg focused gate now covers the real Drift transaction plus direct
@@ -181,20 +191,3 @@ enable — measured: all 36 `console.*` calls across all 12 functions are plain
 prefixed strings. And `SupabaseConstants.geneticsHistoryTable` was declared but
 never referenced, making a dormant table with a never-matching schema look
 like a live surface. Both moved to known-gaps.
-
-## [2026-07-26] release | Version bumped to 1.1.8+60
-
-Two surfaces, because the version name is duplicated: `pubspec.yaml` (the source
-iOS and Android both derive from) and `AppConstants.appVersion` (a hand-kept
-copy rendered in the About section). `app_constants_test` asserts they match, so
-they cannot drift silently — but a bump has to touch both.
-
-Build number jumps 56 → 60 at the user's request. Play version codes are
-package-global and Codemagic no longer resolves this, so exceeding the highest
-code across ALL tracks is a manual pre-upload check.
-
-Note `ios/Flutter/Generated.xcconfig` still reads the OLD version after a bump:
-it is gitignored and only a `flutter build` rewrites it — `flutter pub get` does
-not. Archiving from Xcode without running `scripts/build_release.sh ios` first
-would package the previous version, the same staleness trap that shipped a
-DSN-less release once.
