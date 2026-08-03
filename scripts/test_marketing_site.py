@@ -45,6 +45,11 @@ I18N = (DOCS / "js" / "i18n.js").read_text(encoding="utf-8")
 PRIVACY_I18N = (DOCS / "js" / "privacy-extra-i18n.js").read_text(
     encoding="utf-8"
 )
+PUBSPEC_VERSION = re.search(
+    r"^version:\s*([^+\s]+)",
+    (ROOT / "pubspec.yaml").read_text(encoding="utf-8"),
+    flags=re.MULTILINE,
+).group(1)
 
 
 class MarketingSiteContractTest(unittest.TestCase):
@@ -158,6 +163,60 @@ class MarketingSiteContractTest(unittest.TestCase):
             CSS, r"(?s)@media \(min-width: 1200px\).*?site-mobile-menu-toggle"
         )
         self.assertIn("#gd-mother:focus-visible", CSS)
+        self.assertIn("button.setAttribute('aria-controls', answer.id);", I18N)
+        self.assertIn("answer.id = `faq-answer-${index + 1}`;", I18N)
+
+    def test_localized_pages_keep_navigation_in_the_selected_locale(self) -> None:
+        for lang in ("en", "de"):
+            localized_pages = tuple(sorted((DOCS / lang).rglob("*.html")))
+            for path in localized_pages:
+                html = path.read_text(encoding="utf-8")
+                page_label = str(path.relative_to(DOCS))
+                with self.subTest(page=page_label):
+                    self.assertNotIn('href="/"', html)
+                    self.assertNotIn('href="/blog/"', html)
+                    self.assertNotIn('href="../../index.html', html)
+                    for legal_page in (
+                        "privacy-policy.html",
+                        "terms-of-use.html",
+                        "accessibility.html",
+                        "community-guidelines.html",
+                    ):
+                        self.assertNotIn(f'href="../../{legal_page}"', html)
+
+            homepage = PAGES[lang]
+            self.assertIn(f'href="/{lang}/"', homepage)
+            self.assertIn(f'href="/{lang}/blog/"', homepage)
+            self.assertIn('href="privacy-policy.html"', homepage)
+            self.assertIn('href="release-notes/"', homepage)
+
+        expected_blog_canonicals = {
+            DOCS / "blog" / "index.html": "https://budgiebreedingtracker.online/blog/",
+            DOCS / "en" / "blog" / "index.html": "https://budgiebreedingtracker.online/en/blog/",
+            DOCS / "de" / "blog" / "index.html": "https://budgiebreedingtracker.online/de/blog/",
+        }
+        for path, canonical in expected_blog_canonicals.items():
+            html = path.read_text(encoding="utf-8")
+            with self.subTest(canonical=path.relative_to(DOCS)):
+                self.assertIn(f'<link href="{canonical}" rel="canonical"/>', html)
+                self.assertNotIn("/blog/index.html", html)
+
+    def test_version_badges_match_pubspec_release(self) -> None:
+        badge_count = 0
+        for path in ALL_HTML_PATHS:
+            html = path.read_text(encoding="utf-8")
+            badges = re.findall(
+                r'<span\s+class="version-badge"[^>]*>\s*'
+                r'v([^\s]+)\s*·\s*<time\s+datetime="([^"]+)">',
+                html,
+            )
+            badge_count += len(badges)
+            for version, release_date in badges:
+                with self.subTest(page=path.relative_to(DOCS)):
+                    self.assertEqual(PUBSPEC_VERSION, version)
+                    self.assertRegex(release_date, r"^\d{4}-\d{2}-\d{2}$")
+        self.assertGreater(badge_count, 0)
+        self.assertTrue((ROOT / "store" / "release_notes" / PUBSPEC_VERSION).is_dir())
 
     def test_security_copy_matches_implemented_encryption_scope(self) -> None:
         for key in ("trust_1", "stat_4", "faq_a2", "offline_point3_title"):
@@ -253,10 +312,16 @@ class MarketingSiteContractTest(unittest.TestCase):
         )
         for key in note_keys:
             self.assertEqual(3, len(re.findall(rf"\b{key}:", I18N)))
+        for key in ("genetics_parent_mother", "genetics_parent_father"):
+            self.assertEqual(3, len(re.findall(rf"\b{key}:", I18N)))
 
         for lang, html in PAGES.items():
             self.assertIn("${getMutationLabel(r.key)}", html, lang)
             self.assertIn("getMutationNote(mother)", html, lang)
+            self.assertIn('data-i18n="genetics_parent_mother"', html, lang)
+            self.assertIn('data-i18n="genetics_parent_father"', html, lang)
+            self.assertIn("${formatGeneticsChance(r.chance)}", html, lang)
+            self.assertNotIn("%${r.chance}", html, lang)
             self.assertNotIn(">${m.label}</div>", html, lang)
             self.assertNotIn("const browserLang = (navigator.language", html, lang)
             self.assertIn("duration: 0.4, stagger: 0.06", html, lang)

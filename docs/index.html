@@ -879,7 +879,7 @@
             <div class="flex justify-around items-center p-4 rounded-2xl relative overflow-hidden" style="background: rgba(15, 27, 77, 0.4); border: 1px solid var(--glass-border); min-height: 140px;">
               <!-- Anne Kuş -->
               <div class="flex flex-col items-center z-10 w-24">
-                <span class="text-[10px] uppercase tracking-wider font-semibold mb-1" style="color: var(--sage);">Anne</span>
+                <span class="text-[10px] uppercase tracking-wider font-semibold mb-1" style="color: var(--sage);" data-i18n="genetics_parent_mother">Anne</span>
                 <div id="gd-mother-visual" class="w-16 h-20 flex items-center justify-center transition-all duration-300">
                   <!-- SVG Javascript ile dinamik doldurulacak -->
                 </div>
@@ -892,7 +892,7 @@
 
               <!-- Baba Kuş -->
               <div class="flex flex-col items-center z-10 w-24">
-                <span class="text-[10px] uppercase tracking-wider font-semibold mb-1" style="color: var(--sage);">Baba</span>
+                <span class="text-[10px] uppercase tracking-wider font-semibold mb-1" style="color: var(--sage);" data-i18n="genetics_parent_father">Baba</span>
                 <div id="gd-father-visual" class="w-16 h-20 flex items-center justify-center transition-all duration-300">
                   <!-- SVG Javascript ile dinamik doldurulacak -->
                 </div>
@@ -1614,7 +1614,7 @@
         <p class="text-xs" style="color: var(--sage); opacity: 0.5; white-space: nowrap;">
           <span data-i18n="footer_copyright">© 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</span>
           <span class="version-badge" aria-label="Uygulama sürümü" data-i18n-aria-label="app_version_aria">
-            v1.1.2 · <time datetime="2026-06-06">2026-06-06</time>
+            v1.1.9 · <time datetime="2026-08-03">2026-08-03</time>
           </span>
         </p>
       </div>
@@ -2091,6 +2091,13 @@
       return t[getMutationI18nKey(mutKey, 'genetics_note')] || mutation.note;
     }
 
+    function formatGeneticsChance(chance) {
+      return new Intl.NumberFormat(currentLang, {
+        style: 'percent',
+        maximumFractionDigits: 0,
+      }).format(chance / 100);
+    }
+
     function getBudgieSvg(mutKey, scale = 1) {
       const mut = MUTATIONS[mutKey] || MUTATIONS.normal;
       const c = mut.colors;
@@ -2181,7 +2188,7 @@
             ${getBudgieSvg(r.key, 0.75)}
           </div>
           <div class="font-semibold text-xs mb-0.5" style="color:var(--sage-light);">${getMutationLabel(r.key)}</div>
-          <div style="color:var(--sage);font-size:11px;">%${r.chance}</div>
+          <div style="color:var(--sage);font-size:11px;">${formatGeneticsChance(r.chance)}</div>
         `;
         grid.appendChild(cell);
         // Stagger animation

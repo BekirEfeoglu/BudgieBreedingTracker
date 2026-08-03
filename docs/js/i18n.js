@@ -189,6 +189,8 @@
         genetics_demo_subtitle: 'Anne ve baba mutasyonunu seç, olası yavru kombinasyonlarını anında gör.',
         genetics_demo_mother: '🐦 Anne Mutasyonu',
         genetics_demo_father: '🐦 Baba Mutasyonu',
+        genetics_parent_mother: 'Anne',
+        genetics_parent_father: 'Baba',
         genetics_demo_note: 'Tam uygulamada 40+ mutasyon, cinsiyet bağlantılı ve çoklu lokus hesaplama, MUTAVI tabanlı olasılıklar.',
         genetics_demo_result: 'Olası Yavru Kombinasyonları',
         genetics_demo_cta_text: 'Tam genetik hesaplayıcı için uygulamayı indirin.',
@@ -404,6 +406,8 @@
         genetics_demo_subtitle: 'Select parent mutations and instantly see possible offspring combinations.',
         genetics_demo_mother: '🐦 Mother Mutation',
         genetics_demo_father: '🐦 Father Mutation',
+        genetics_parent_mother: 'Mother',
+        genetics_parent_father: 'Father',
         genetics_demo_note: 'Full app includes 40+ mutations, sex-linked & multi-locus calculation, MUTAVI-based probabilities.',
         genetics_demo_result: 'Possible Offspring Combinations',
         genetics_demo_cta_text: 'Download the app for the full genetics calculator.',
@@ -619,6 +623,8 @@
         genetics_demo_subtitle: 'Wähle Elternmutationen aus und sieh sofort mögliche Nachkommenkombinationen.',
         genetics_demo_mother: '🐦 Mutter-Mutation',
         genetics_demo_father: '🐦 Vater-Mutation',
+        genetics_parent_mother: 'Mutter',
+        genetics_parent_father: 'Vater',
         genetics_demo_note: 'Die vollständige App umfasst 40+ Mutationen, geschlechtsgebundene & Multi-Lokus-Berechnung, MUTAVI-basierte Wahrscheinlichkeiten.',
         genetics_demo_result: 'Mögliche Nachkommen-Kombinationen',
         genetics_demo_cta_text: 'Laden Sie die App für den vollständigen Genetik-Rechner herunter.',
@@ -782,6 +788,14 @@
 
 // ─── Init Language ───
 document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.faq-item').forEach((item, index) => {
+    const button = item.querySelector('button');
+    const answer = item.querySelector('.faq-answer');
+    if (!button || !answer) return;
+    if (!answer.id) answer.id = `faq-answer-${index + 1}`;
+    button.setAttribute('aria-controls', answer.id);
+  });
+
   const saved = localStorage.getItem('bbt-lang');
   if (saved && translations[saved]) {
     setLanguage(saved);

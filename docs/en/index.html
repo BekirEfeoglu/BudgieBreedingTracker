@@ -244,7 +244,7 @@
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
         <!-- Logo -->
-        <a href="/" class="nav-home flex items-center gap-2.5 group" aria-label="BudgieBreedingTracker — ana sayfa" data-i18n-aria-label="nav_home_aria">
+        <a href="/en/" class="nav-home flex items-center gap-2.5 group" aria-label="BudgieBreedingTracker — ana sayfa" data-i18n-aria-label="nav_home_aria">
           <img src="../logo.png" alt="BudgieBreedingTracker" class="w-9 h-9 rounded-lg transition-transform duration-300 group-hover:scale-110" style="border: 1px solid rgba(245,200,66,0.3);">
           <span class="font-extrabold text-lg hidden sm:inline tracking-tight" style="color: var(--gold-light);">BudgieBreedingTracker</span>
           <span class="font-extrabold text-lg sm:hidden tracking-tight" style="color: var(--gold-light);">BBT</span>
@@ -252,7 +252,7 @@
 
         <!-- Nav Links (desktop) -->
         <div class="site-desktop-nav hidden md:flex items-center gap-6">
-          <a href="/blog/" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" data-i18n="nav_blog">Blog</a>
+          <a href="/en/blog/" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" data-i18n="nav_blog">Blog</a>
           <a href="#features" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_features">Özellikler</a>
           <a href="#genetics-demo" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_genetics">🧬 Genetik</a>
           <a href="#screenshots" class="nav-link text-sm font-medium transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_screenshots">Ekran Görüntüleri</a>
@@ -287,7 +287,7 @@
     <button id="mobile-menu-backdrop" type="button" class="absolute inset-0 bg-black/50 backdrop-blur-sm mobile-menu-backdrop" onclick="closeMobileMenu()" aria-label="Close menu" data-i18n-aria-label="menu_close_aria"></button>
     <div id="mobile-panel" class="absolute top-16 left-0 right-0 shadow-xl" style="background: rgba(15,27,77,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); transform: translateY(-110%);" role="dialog" aria-modal="true" aria-label="Mobile menu" data-i18n-aria-label="mobile_menu_aria" tabindex="-1">
       <div class="px-4 py-4 space-y-1">
-        <a href="/blog/" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_blog">Blog</a>
+        <a href="/en/blog/" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_blog">Blog</a>
         <a href="#features" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_features">Özellikler</a>
         <a href="#genetics-demo" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_genetics">🧬 Genetik</a>
         <a href="#screenshots" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-colors" style="color: var(--sage-light);" data-i18n="nav_screenshots">Ekran Görüntüleri</a>
@@ -697,7 +697,7 @@
             <div class="flex justify-around items-center p-4 rounded-2xl relative overflow-hidden" style="background: rgba(15, 27, 77, 0.4); border: 1px solid var(--glass-border); min-height: 140px;">
               <!-- Anne Kuş -->
               <div class="flex flex-col items-center z-10 w-24">
-                <span class="text-[10px] uppercase tracking-wider font-semibold mb-1" style="color: var(--sage);">Anne</span>
+                <span class="text-[10px] uppercase tracking-wider font-semibold mb-1" style="color: var(--sage);" data-i18n="genetics_parent_mother">Anne</span>
                 <div id="gd-mother-visual" class="w-16 h-20 flex items-center justify-center transition-all duration-300">
                   <!-- SVG Javascript ile dinamik doldurulacak -->
                 </div>
@@ -710,7 +710,7 @@
               
               <!-- Baba Kuş -->
               <div class="flex flex-col items-center z-10 w-24">
-                <span class="text-[10px] uppercase tracking-wider font-semibold mb-1" style="color: var(--sage);">Baba</span>
+                <span class="text-[10px] uppercase tracking-wider font-semibold mb-1" style="color: var(--sage);" data-i18n="genetics_parent_father">Baba</span>
                 <div id="gd-father-visual" class="w-16 h-20 flex items-center justify-center transition-all duration-300">
                   <!-- SVG Javascript ile dinamik doldurulacak -->
                 </div>
@@ -1388,13 +1388,13 @@
           <a href="#features" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_features">Özellikler</a>
           <a href="#cta" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="nav_download">İndir</a>
           <a href="https://github.com/BekirEfeoglu/BudgieBreedingTracker" target="_blank" rel="noopener noreferrer" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'">GitHub</a>
-          <a href="../privacy-policy.html" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_privacy">Gizlilik Politikası</a>
-          <a href="../terms-of-use.html" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_terms">Kullanım Koşulları</a>
-          <a href="../accessibility.html" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_accessibility">Erişilebilirlik</a>
-          <a href="../community-guidelines.html" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_community">Topluluk Kuralları</a>
+          <a href="privacy-policy.html" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_privacy">Gizlilik Politikası</a>
+          <a href="terms-of-use.html" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_terms">Kullanım Koşulları</a>
+          <a href="accessibility.html" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_accessibility">Erişilebilirlik</a>
+          <a href="community-guidelines.html" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_community">Topluluk Kuralları</a>
           <a href="../support/" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_support">Destek</a>
           <a href="../user-guide/" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_guide">Kullanım Kılavuzu</a>
-          <a href="../release-notes/" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_release_notes">Release Notes</a>
+          <a href="release-notes/" class="transition-colors duration-200" style="color: var(--sage);" onmouseover="this.style.color='var(--gold-light)'" onmouseout="this.style.color='var(--sage)'" data-i18n="footer_release_notes">Release Notes</a>
         </div>
 
         <!-- Contact -->
@@ -1427,7 +1427,7 @@
         <p class="text-xs" style="color: var(--sage); opacity: 0.5; white-space: nowrap;">
           <span data-i18n="footer_copyright">© 2025-2026 BudgieBreedingTracker. Tüm hakları saklıdır.</span>
           <span class="version-badge" aria-label="Uygulama sürümü" data-i18n-aria-label="app_version_aria">
-            v1.1.2 · <time datetime="2026-06-06">2026-06-06</time>
+            v1.1.9 · <time datetime="2026-08-03">2026-08-03</time>
           </span>
         </p>
       </div>
@@ -1900,6 +1900,13 @@
       return t[getMutationI18nKey(mutKey, 'genetics_note')] || mutation.note;
     }
 
+    function formatGeneticsChance(chance) {
+      return new Intl.NumberFormat(currentLang, {
+        style: 'percent',
+        maximumFractionDigits: 0,
+      }).format(chance / 100);
+    }
+
     function getBudgieSvg(mutKey, scale = 1) {
       const mut = MUTATIONS[mutKey] || MUTATIONS.normal;
       const c = mut.colors;
@@ -1990,7 +1997,7 @@
             ${getBudgieSvg(r.key, 0.75)}
           </div>
           <div class="font-semibold text-xs mb-0.5" style="color:var(--sage-light);">${getMutationLabel(r.key)}</div>
-          <div style="color:var(--sage);font-size:11px;">%${r.chance}</div>
+          <div style="color:var(--sage);font-size:11px;">${formatGeneticsChance(r.chance)}</div>
         `;
         grid.appendChild(cell);
         // Stagger animation

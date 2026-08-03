@@ -190,6 +190,7 @@ def render_release_cards(language: str, releases: list[Release]) -> str:
 def render_page(language: str, releases: list[Release]) -> str:
     """Render one complete, localized, static release-notes page."""
     copy = COPY[language]
+    home_path = "/" if language == "tr" else f"/{language}/"
     canonical = f"https://budgiebreedingtracker.online{PUBLIC_PATHS[language]}"
     alternate_links = "\n".join(
         "  <link rel=\"alternate\" hreflang=\"{lang}\" href=\"https://budgiebreedingtracker.online{path}\">".format(
@@ -271,7 +272,7 @@ def render_page(language: str, releases: list[Release]) -> str:
   <a class=\"skip-link\" href=\"#main-content\">{escape(copy.history_title)}</a>
   <div class=\"page\">
     <header>
-      <a class=\"brand\" href=\"/\"><img src=\"/logo.png\" alt=\"BudgieBreedingTracker\">BudgieBreedingTracker</a>
+      <a class=\"brand\" href=\"{home_path}\"><img src=\"/logo.png\" alt=\"BudgieBreedingTracker\">BudgieBreedingTracker</a>
       <nav class=\"language-nav\" aria-label=\"Language\">
 {language_links}
       </nav>
@@ -291,7 +292,7 @@ def render_page(language: str, releases: list[Release]) -> str:
     </main>
     <footer>
       <span>© 2025-2026 BudgieBreedingTracker</span>
-      <a href=\"/\">{escape(copy.home_label)}</a>
+      <a href=\"{home_path}\">{escape(copy.home_label)}</a>
       <a href=\"{PUBLIC_PATHS[language]}\">{escape(copy.footer_label)}</a>
     </footer>
   </div>
