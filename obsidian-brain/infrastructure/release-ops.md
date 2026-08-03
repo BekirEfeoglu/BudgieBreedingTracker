@@ -27,7 +27,7 @@ store upload is a manual user action on both platforms.
 - Build number: increment every release
 - iOS and Android build numbers must be consistent
 
-Current version: `1.1.8+60` (verify against `pubspec.yaml` — this drifts every release, treat as a snapshot not a live value)
+Current version: `1.1.9+61` (verify against `pubspec.yaml` — this drifts every release, treat as a snapshot not a live value)
 
 `AppConstants.appVersion` is a second, hand-kept copy of the version NAME (no
 build number), rendered in the About section. `app_constants_test` asserts it
@@ -38,13 +38,16 @@ matches `pubspec.yaml`, so a bump has to touch both files or tests fail.
 1. `python3 scripts/check_remote_status.py` — main must be green
 2. Bump `pubspec.yaml`; for Android confirm the build number beats the
    package-wide Play maximum (see below)
-3. Android: manual trigger `release-ready.yml` → signed AAB, debug symbols and
+3. Add complete TR/EN/DE sources under `store/release_notes/<X.Y.Z>/` and run
+   `python3 scripts/generate_release_notes_site.py --write`; CI rejects stale
+   public release-history pages or a missing source for the current version
+4. Android: manual trigger `release-ready.yml` → signed AAB, debug symbols and
    the Dart obfuscation map as artifacts. iOS: `scripts/build_release.sh ios` →
    `build/ios/archive/Runner.xcarchive` (the build stops at the archive; no
    export-options plist is generated locally)
-4. Upload manually — Play Console for the AAB, Xcode Organizer's Distribute App
+5. Upload manually — Play Console for the AAB, Xcode Organizer's Distribute App
    for the archive
-5. Promote in store console after QA
+6. Promote in store console after QA
 
 **Play version codes are package-global**, reserved across tracks and the
 artifact library. Codemagic used to resolve the next code automatically from the

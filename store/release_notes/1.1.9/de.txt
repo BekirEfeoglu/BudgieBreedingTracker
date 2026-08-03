@@ -1,0 +1,10 @@
+Wellensittich Zucht-Tracker v1.1.9
+
+Neuerungen und Verbesserungen:
+• Exportieren Sie portable, verschlüsselte Sicherungen und prüfen Sie sie vor der Wiederherstellung auf einem anderen Gerät.
+• Laden Sie ältere Nachrichten in Ihren Unterhaltungen; Benachrichtigungen und Deep Links für neue Nachrichten sind jetzt zuverlässiger.
+• Verbesserte Datenintegrität für Paar-, Brut-, Ei- und Jungvogel-Datensätze sowie ein flüssigerer, reaktionsschnellerer Kalender.
+• Premium-Pläne, Käufe, Wiederherstellungen und die Aktivierung von Abonnements wurden stabilisiert.
+• Verbesserte Barrierefreiheit, Leistung und allgemeine App-Stabilität.
+
+Vielen Dank für Ihr Feedback!

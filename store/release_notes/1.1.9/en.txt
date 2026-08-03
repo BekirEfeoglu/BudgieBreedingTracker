@@ -1,0 +1,10 @@
+Budgie Breeding Tracker v1.1.9
+
+What's new and improved:
+• Export portable, encrypted backups and preview them before restoring on another device.
+• Load older messages in your conversations; message notifications and deep links are now more reliable.
+• Improved data integrity across pair, incubation, egg, and chick records, plus a smoother, more responsive calendar.
+• Stabilized Premium plans, purchases, restores, and subscription activation.
+• Improved accessibility, performance, and overall app stability.
+
+Thanks for your feedback!

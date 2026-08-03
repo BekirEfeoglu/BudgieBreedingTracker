@@ -306,6 +306,9 @@ jobs:
       - name: Platform target policy
         run: python scripts/check_platform_targets.py
 
+      - name: Release-notes site freshness
+        run: python scripts/generate_release_notes_site.py --check
+
       - name: Obsidian brain lint
         run: python scripts/check_obsidian_brain.py
 

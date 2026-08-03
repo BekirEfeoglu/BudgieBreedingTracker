@@ -15,6 +15,8 @@ GitHub Pages serves the public product site from `docs/` at
 | `docs/sitemap.xml` / `docs/robots.txt` | SEO discovery |
 | `docs/app-ads.txt` | AdMob authorized-sellers (IAB `app-ads.txt`) verification for the AdMob publisher |
 | `docs/support/`, `docs/user-guide/` | Support and guide landing pages |
+| `store/release_notes/` | Canonical TR/EN/DE store-note sources; generated into the public release history |
+| `scripts/generate_release_notes_site.py` | Renders `docs/release-notes/`, `docs/en/release-notes/`, and `docs/de/release-notes/`; `--check` rejects stale output |
 
 ## Landing Page Behavior
 
@@ -136,6 +138,9 @@ active `tr`/`en`/`de` translation table; do not read the Turkish fallback
 - Run `python3 scripts/test_marketing_site.py` for local asset, JSON-LD,
   heading, carousel, breakpoint, touch-target, FAQ ARIA, user-guide dialog,
   localized legal-page, and security-copy contracts across all public HTML files.
+- Run `python3 scripts/generate_release_notes_site.py --check`; every
+  `pubspec.yaml` semantic version must have complete TR/EN/DE source notes and
+  matching generated pages. Update pages only through `--write`.
 - Open `https://budgiebreedingtracker.online/` at `375`, `768`, `1024`, and
   `1200`, and `1440px`; confirm there is no horizontal overflow and the
   hamburger is used below `1200px`.

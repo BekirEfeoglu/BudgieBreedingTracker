@@ -28,6 +28,10 @@ Or dispatch `post-push-verifier`. Required `ci.yml` check-runs must be `complete
 ## Step 3 — Release notes in 3 languages
 The update prompt reads `system_settings.app_version` (see app-update.md): `release_notes_tr` / `release_notes_en` / `release_notes_de`.
 - Draft concise notes in Turkish (master) first, then English + German — real translations, not machine-literal (mirror the l10n workflow / l10n-agent quality bar).
+- Store the full notes in `store/release_notes/<X.Y.Z>/tr.txt`, `en.txt`, and
+  `de.txt`, then run `python3 scripts/generate_release_notes_site.py --write`.
+  The static public release-notes pages are generated output; `--check` is a
+  CI/release gate and fails if the current `pubspec.yaml` version lacks notes.
 - If `minSupportedBuild` is being raised, treat it as a deliberate release decision (it hard-locks older users) — call it out explicitly, don't bump it silently.
 
 ## Step 4 — Go / no-go readiness gate

@@ -2,6 +2,33 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://budgiebreedingtracker.online/release-notes/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://budgiebreedingtracker.online/release-notes/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://budgiebreedingtracker.online/de/release-notes/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://budgiebreedingtracker.online/en/release-notes/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://budgiebreedingtracker.online/release-notes/"/>
+  </url>
+  <url>
+    <loc>https://budgiebreedingtracker.online/de/release-notes/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://budgiebreedingtracker.online/release-notes/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://budgiebreedingtracker.online/de/release-notes/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://budgiebreedingtracker.online/en/release-notes/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://budgiebreedingtracker.online/release-notes/"/>
+  </url>
+  <url>
+    <loc>https://budgiebreedingtracker.online/en/release-notes/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://budgiebreedingtracker.online/release-notes/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://budgiebreedingtracker.online/de/release-notes/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://budgiebreedingtracker.online/en/release-notes/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://budgiebreedingtracker.online/release-notes/"/>
+  </url>
+  <url>
     <loc>https://budgiebreedingtracker.online/accessibility.html</loc>
     <lastmod>2026-06-20</lastmod>
     <changefreq>weekly</changefreq>

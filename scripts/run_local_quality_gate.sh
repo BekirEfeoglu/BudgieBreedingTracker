@@ -6,6 +6,7 @@ cd "$ROOT_DIR"
 
 git diff --check
 python3 scripts/check_platform_targets.py
+python3 scripts/generate_release_notes_site.py --check
 python3 scripts/check_obsidian_brain.py
 python3 scripts/verify_rules.py --strict
 python3 scripts/verify_code_quality.py

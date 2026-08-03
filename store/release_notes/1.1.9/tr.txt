@@ -1,0 +1,10 @@
+Muhabbet Kuşu Üreme Takibi v1.1.9
+
+Yenilikler ve iyileştirmeler:
+• Taşınabilir, şifrelenmiş yedekleri dışa aktarın ve başka bir cihazda geri yüklemeden önce önizleyin.
+• Mesaj geçmişinde daha eski mesajları yükleyin; yeni mesaj bildirimleri ve yönlendirmeler artık daha güvenilir.
+• Eş, kuluçka, yumurta ve yavru kayıtlarının bütünlüğü geliştirildi; takvim görünümü daha akıcı ve duyarlı.
+• Premium planlar, satın alma, geri yükleme ve abonelik etkinleştirme akışları kararlı hâle getirildi.
+• Erişilebilirlik, performans ve genel uygulama kararlılığı iyileştirildi.
+
+Geri bildiriminiz için teşekkürler!

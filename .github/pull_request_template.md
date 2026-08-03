@@ -42,6 +42,7 @@
 - [ ] Freezed/Drift/JSON/Riverpod değiştiyse `dart run build_runner build --delete-conflicting-outputs` çalıştırıldı
 - [ ] Dependency bump varsa `pubspec.lock`; iOS plugin/pod etkisi varsa `ios/Podfile.lock` senkron ve `pod install` geçti
 - [ ] Lokalizasyon değiştiyse `python3 scripts/check_l10n_sync.py` geçti
+- [ ] Sürüm notları değiştiyse `store/release_notes/<X.Y.Z>/` içindeki TR/EN/DE kaynaklar tamam; `python3 scripts/generate_release_notes_site.py --check` geçti ve `docs/*/release-notes/` elle düzenlenmedi
 - [ ] Kural/metrik değiştiyse `python3 scripts/verify_rules.py --strict` geçti
 - [ ] CI/workflow veya `.github/dependabot.yml` değiştiyse schedule/PR limitleri doğrulandı; golden job doğrudan `flutter test --no-pub test/golden` çalıştırıyor; `CLAUDE.md`, `.claude/rules/ci-actions.md`, `obsidian-brain/infrastructure/ci-cd.md` ve bu şablon birlikte güncellendi
 - [ ] Edge deploy akışı değiştiyse source/config/workflow path guard'ı korunuyor; `docs/**`-only push deploy etmiyor

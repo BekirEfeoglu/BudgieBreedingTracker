@@ -53,6 +53,11 @@ Store yuklemesi her iki platformda da manuel bir kullanici islemidir.
   oncesi **manuel** sorumluluktur — hedef track'e bakip kullanilmis bir kodu
   yeniden secme.
 - `docs/` deployment mobil app release'lerinden ayri deger
+- Her sürümde `store/release_notes/<X.Y.Z>/tr.txt`, `en.txt` ve `de.txt` ekle;
+  `python3 scripts/generate_release_notes_site.py --write` bu mağaza notlarını
+  `docs/release-notes/` altındaki halka açık sürüm geçmişine dönüştürür. CI ve
+  yerel kalite kapısı `--check` ile kaynak/sayfa ayrışmasını engeller; üretilen
+  HTML'i elle düzenleme.
 - Xcode Cloud Flutter build temiz clone'da `ios/ci_scripts/ci_post_clone.sh` ile hazirlanir; script `.fvmrc`'yi strict semver olarak okuyup version-scoped pinned zip'i curl+unzip ile kurar (`git clone flutter/flutter` DEGIL — Xcode Cloud'da bilinen flaky, ci-actions.md § Deployment Safety) ve her adimdan once `>>> STEP N:` marker basar
 - Xcode Cloud main workflow build-only olmalidir; archive/TestFlight/App Store export ancak Apple signing hesabi, Development/Ad Hoc profil ihtiyaci ve kayitli fiziksel cihazlar hazirsa acilir
 

@@ -65,6 +65,7 @@ dart fix --apply
 ```bash
 python3 scripts/check_l10n_sync.py       # Verify tr/en/de translation keys are in sync
 python3 scripts/check_platform_targets.py # Verify unsupported Flutter web target is absent
+python3 scripts/generate_release_notes_site.py --check # Verify public release-notes pages match store/release_notes/
 python3 scripts/check_obsidian_brain.py  # Verify obsidian-brain links, refs, metrics, decisions, log pressure
 python3 scripts/check_obsidian_brain.py --rotate # Move oldest log.md entries into the newest archive (widens its date range + index row), then lint
 python3 scripts/verify_code_quality.py    # Anti-pattern scan (28 checkers, 19/24 CLAUDE.md patterns + 10 extra documented scanners)
@@ -113,6 +114,7 @@ scripts/test_app_store_config.py        # App Store config consistency tests
 scripts/test_verify_migration_drift.py  # Tests for verify_migration_drift.py
 scripts/test_check_rule_symbol_drift.py # Tests for check_rule_symbol_drift.py
 scripts/test_marketing_site.py          # Public-site assets, semantics, responsive, and cross-page security-copy contracts
+scripts/test_generate_release_notes_site.py # Tests for public release-notes page generation and freshness checks
 scripts/test_ci_workflow_contract.py    # CI/release workflow contracts (fail-fast on missing DSN/auth token)
 scripts/test_git_hooks.py               # Local git hook installation + worktree-relative hooksPath
 ```
@@ -147,9 +149,9 @@ scripts/test_git_hooks.py               # Local git hook installation + worktree
 | `golden-test` | Visual regression on Linux baseline; runs `flutter test --no-pub test/golden` directly without global tag discovery |
 | `edge-functions-test` | `deno test --allow-env --allow-net supabase/functions` (deploy gate) |
 | `e2e-community-test` | E2E + community tagged tests |
-| `scripts-test` | Python script tests (>=99% coverage over 12 measured files; 10 at 100%, `_rules_collectors.py` 99%, `verify_security.py` 92%) |
+| `scripts-test` | Python script tests (>=99% coverage over 13 measured files; 10 at 100%, `_rules_collectors.py` 99%, `verify_security.py` 92%) |
 | `l10n-sync` | Translation key parity (--strict-keys) |
-| `code-quality` | Anti-pattern scan + platform target policy + obsidian-brain lint + migration drift structure guard + rule symbol drift guard (depends on scripts-test) |
+| `code-quality` | Anti-pattern scan + platform target policy + release-notes site freshness + obsidian-brain lint + migration drift structure guard + rule symbol drift guard (depends on scripts-test) |
 | `rules-sync` | CLAUDE.md stats verification (--strict) |
 | `security-audit` | Security posture verification (cert pinning, secrets) |
 | `auto-fix-stats` | Auto-PR for CLAUDE.md drift (main only) |
@@ -257,7 +259,7 @@ Config methods: `.env` + `--dart-define-from-file` (local and release builds via
 | `validate-free-tier-limit` | Free tier entity limit enforcement |
 
 ### Migrations
-224 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
+225 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
 
 ## Rules
 
@@ -433,7 +435,7 @@ Security:      lib/core/security/
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
-Migrations:    supabase/migrations/ (224 files)
+Migrations:    supabase/migrations/ (225 files)
 Scripts:       scripts/
 CI:            .github/workflows/
 Release build:  scripts/build_release.sh

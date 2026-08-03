@@ -10,6 +10,7 @@ All scripts in `scripts/` directory.
 |--------|---------|
 | `check_l10n_sync.py` | Verify tr/en/de translation keys are in sync |
 | `check_platform_targets.py` | Verify unsupported Flutter web target is absent |
+| `generate_release_notes_site.py --check` | Verify public release-notes pages are generated from complete TR/EN/DE store-note sources |
 | `check_obsidian_brain.py` | Verify wiki index (incl. the `log-archive-index` delegate), wikilinks, inline file refs, overview metrics, decision sections, log pressure, and the per-page line cap (200; 400 for `log-archive-*`) |
 | `check_obsidian_brain.py --rotate` | Move the oldest `log.md` entries into the newest archive (chosen by content, not filename), widen its `(MM-DD to MM-DD)` range and the index row, then lint |
 | `verify_code_quality.py` | Anti-pattern scan (28 checker categories: 19/24 CLAUDE.md anti-patterns + 10 documented extras; some overlap) |
@@ -64,6 +65,7 @@ dependent and worth knowing about:
 | `test_verify_migration_drift.py` | Tests for verify_migration_drift.py (35 tests, including JSON/table remote parsing, baseline hashes, and alias conflicts) |
 | `test_check_rule_symbol_drift.py` | Tests for check_rule_symbol_drift.py (31 tests, 100% cov) |
 | `test_marketing_site.py` | All-public-HTML asset/ID checks plus JSON-LD, heading, accessibility, responsive navigation, user-guide dialog/focus, legal-page locale, and cross-page security-copy contracts |
+| `test_generate_release_notes_site.py` | Tests release-note source parsing, static-page generation, and stale-output checks |
 | `test_check_remote_status.py` | Tests for check_remote_status.py (exact-SHA status, Pages transient, Xcode Cloud pending) |
 | `test_app_store_config.py` | App Store config consistency: Info.plist locales, privacy manifest, StoreKit products |
 | `test_ci_workflow_contract.py` | CI/release workflow contracts (fail-fast on a missing DSN/auth token) |
