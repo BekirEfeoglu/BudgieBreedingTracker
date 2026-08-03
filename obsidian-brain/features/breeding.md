@@ -78,9 +78,24 @@ compensating pair soft-delete.
 Breeding changes use the rule's entry, create/update, destructive-flow, and
 scenario-matrix checklists. The local quality gate detects staged, unstaged,
 and untracked lifecycle paths and automatically runs the focused
-`scripts/run_breeding_egg_regression.sh` suite. Review must still trace the full
+`scripts/run_breeding_egg_regression.sh` suite. That manifest now exercises the
+real Drift transaction, breeding/egg notifiers, notification IDs and scheduling,
+rescheduling/toggles, and calendar generation/provider wiring; it rejects
+skipped or slow-tag-excluded manifest tests. Review must still trace the full
 Bird → pair → incubation → clutch → egg → chick chain and manually confirm any
-scenario not represented by those fixtures.
+new branch not represented by a behavior assertion.
+
+### Applied Checklist Evidence (2026-08-03)
+
+The create/close production path was traced from
+`breeding_form_body.dart` → `BreedingFormNotifier` →
+`BreedingCreationPersistence` / `BreedingLifecyclePersistence` → local-first
+repositories/DAOs and pending sync, followed by notification/calendar side
+effects. The focused gate proves atomic rollback, duplicate-submit guards,
+warning-not-rollback behavior, destructive cleanup, stable notification IDs,
+and DST-safe reminder/calendar alignment. Server RLS state, biological claim
+authority, translation meaning/layout, and a real-device platform scheduling
+pass remain manual because local mocks cannot prove them.
 
 ## See Also
 

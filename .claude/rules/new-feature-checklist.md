@@ -119,8 +119,10 @@ Any change touching breeding pairs, incubations, clutches, eggs, chicks,
 species incubation math, hatch flows, or their notification/calendar cleanup
 must use `.claude/rules/breeding-eggs.md` as an additional checklist. The local
 quality gate automatically runs `scripts/run_breeding_egg_regression.sh` when
-those paths, their scheduler/calendar integration, or that rule change; this
-does not replace the rule's manual lifecycle review.
+those paths, their scheduler/calendar integration, or that rule change. The
+focused manifest covers the Drift transaction, notifiers, notification IDs,
+scheduler/rescheduler/toggles, and calendar generator/provider, and rejects
+skipped/excluded tests; this does not replace the rule's manual lifecycle review.
 
 ## 7. Verification By Changed Surface
 
@@ -132,7 +134,7 @@ Run the smallest proof while iterating, then the canonical gate before handoff.
 | Freezed/Drift/JSON/Riverpod generator input | `dart run build_runner build --delete-conflicting-outputs` |
 | L10n | `python3 scripts/check_l10n_sync.py --strict-keys` |
 | Rule/docs/scripts/CI | `scripts/run_local_quality_gate.sh` |
-| Breeding/egg lifecycle | `scripts/run_breeding_egg_regression.sh` (also path-triggered by local gate) |
+| Breeding/egg lifecycle | `scripts/run_breeding_egg_regression.sh` (transaction + notifier + notification/calendar boundaries; also path-triggered by local gate) |
 | Migration | Migration tests + `python3 scripts/verify_migration_drift.py` |
 | Edge Function | Focused `deno test` + auth/error-path review |
 | Broad Dart change | `flutter analyze --no-fatal-infos` + relevant `flutter test` scope |

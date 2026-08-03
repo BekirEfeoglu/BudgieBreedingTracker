@@ -133,12 +133,14 @@ rule changes.
 
 | Control | Automated evidence | Manual residual |
 |---|---|---|
-| Focused provider orchestration | `scripts/run_breeding_egg_regression.sh` | Confirm the changed production path is represented by those fixtures |
+| Persistence + provider orchestration | `scripts/run_breeding_egg_regression.sh` covers the real Drift transaction plus breeding/egg notifiers | Confirm any newly introduced branch is represented by a behavior assertion, not only a mock call |
 | Rule/wiki/symbol consistency | `scripts/run_local_quality_gate.sh` | Read biological and lifecycle claims against their authority; green links are not proof |
 | Enum/model/generated changes | build runner + analyzer + focused tests | Review `unknown` semantics and transition intent |
 | Drift/Supabase schema | migration tests + `verify_migration_drift.py` | Verify production migration/RLS state when deployment is in scope |
 | L10n warning/error copy | `check_l10n_sync.py --strict-keys` | Review meaning, placeholders, overflow, and actionability in all three languages |
-| Notification/calendar cleanup | focused unit/provider tests | Exercise one real-device flow when platform scheduling behavior changed |
+| Notification/calendar cleanup | direct IDs, scheduler, rescheduler, toggle, generator, and provider tests in the focused suite | Exercise one real-device flow when platform scheduling behavior changed |
+| Conditional gate routing | executable scope-contract tests feed scheduler/calendar paths through the real gate router | Review new integration filenames when adding another scheduling/calendar surface |
+| Focused-suite exclusions | the regression runner rejects `skip:`, `@Skip`, `e2e`, and `community` exclusions in its manifest | Review replacement coverage before intentionally moving a scenario out of the focused suite |
 
 The automatic regression suite is a floor, not proof of complete lifecycle
 coverage. Add a focused regression before changing behavior when the matrix row
@@ -150,6 +152,8 @@ has no existing test.
 - [ ] Transaction, retry, warning, and destructive cleanup boundaries are explicit.
 - [ ] No duplicate submit or duplicate active chick path remains.
 - [ ] Notification/calendar cleanup is covered for every affected identifier.
+- [ ] The gate scope router selects the focused suite for every newly introduced
+  lifecycle scheduler/calendar path; the suite contains no skip/exclusion marker.
 - [ ] Focused regression and the canonical local quality gate pass.
 - [ ] Changed rule/wiki/current-behavior claims are synchronized; historical log
   entries remain historical and are not rewritten.

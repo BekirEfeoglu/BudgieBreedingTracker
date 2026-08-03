@@ -16,9 +16,11 @@ Rule/docs/CI changes are not "just docs": run `scripts/run_local_quality_gate.sh
 The gate derives conditional checks from staged, unstaged, and untracked files.
 Breeding/egg/chick lifecycle and their scheduler/calendar integration paths
 additionally trigger
-`scripts/run_breeding_egg_regression.sh`. A green conditional gate proves only
-the scenarios in that suite; the owning rule's manual residual checklist still
-applies.
+`scripts/run_breeding_egg_regression.sh`. Executable scope-contract tests pass
+representative scheduler/calendar paths through the real router. The focused
+manifest covers the transaction, notifier, notification, and calendar
+boundaries and refuses skipped/excluded tests. A green conditional gate proves
+only those scenarios; the owning rule's manual residual checklist still applies.
 
 Install the tracked hooks with `scripts/install_git_hooks.sh`; `core.hooksPath` must remain worktree-relative (`.githooks`). The pre-commit hook removes repository-local `GIT_*` variables only around Flutter subprocesses so the SDK can resolve its own Git version instead of reporting `0.0.0-unknown`.
 

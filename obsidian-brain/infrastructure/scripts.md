@@ -33,8 +33,11 @@ and the script unit tests when the relevant paths changed. Its path set includes
 staged, unstaged, and untracked files, so a newly added source/test cannot evade
 conditional checks. Breeding/egg/chick lifecycle and their scheduler/calendar
 integration paths additionally run
-`scripts/run_breeding_egg_regression.sh`; that focused suite is a floor and the
-manual lifecycle matrix in `breeding-eggs.md` still applies. `verify_migration_drift.py`
+`scripts/run_breeding_egg_regression.sh`. Executable contract tests feed
+representative notification/calendar filenames through the real scope router.
+The focused runner covers transaction/notifier/notification/calendar boundaries
+and rejects skip or slow-tag exclusions in its test manifest; it remains a floor
+and the manual lifecycle matrix in `breeding-eggs.md` still applies. `verify_migration_drift.py`
 was missing here until 2026-07-25 while CI ran it — a migration structure or
 baseline problem only surfaced after push.
 
@@ -73,7 +76,7 @@ dependent and worth knowing about:
 | `test_generate_release_notes_site.py` | Tests release-note source parsing, static-page generation, and stale-output checks |
 | `test_check_remote_status.py` | Tests for check_remote_status.py (exact-SHA status, Pages transient, Xcode Cloud pending) |
 | `test_app_store_config.py` | App Store config consistency: Info.plist locales, privacy manifest, StoreKit products |
-| `test_ci_workflow_contract.py` | CI/release workflow contracts (fail-fast on a missing DSN/auth token) |
+| `test_ci_workflow_contract.py` | CI/release workflow contracts, executable local-gate scope routing, and breeding regression manifest coverage |
 | `test_git_hooks.py` | Local git hook installation and worktree-relative `core.hooksPath` |
 
 ## Internal Modules

@@ -4,6 +4,15 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-08-03] test | Breeding gate proves production boundaries
+
+The breeding/egg focused gate now covers the real Drift transaction plus direct
+notification/calendar tests instead of provider mocks alone. Executable scope
+tests prove representative paths select the suite, whose manifest now rejects
+skipped or slow-tag-excluded tests. Real-device scheduling, RLS deployment
+state, biological authority, and translation layout remain explicit manual
+residuals.
+
 ## [2026-08-03] rules | Risk-based checklists and breeding gate routing
 
 Feature work now begins with authority, offline/sync, authorization, rollback,

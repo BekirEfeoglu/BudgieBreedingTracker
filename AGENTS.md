@@ -129,7 +129,7 @@ Stack: Flutter/Dart, Riverpod 3, GoRouter 17, Drift, Supabase, Freezed, easy_loc
 - Audit and explain any `skip:`, `@Skip`, or tag-based test exclusion introduced or left behind by the task.
 - For breeding/egg changes, cover lifecycle transitions, rollback/error paths, duplicate submit guards, side-effect warnings, and notification cleanup.
 - Use `scripts/run_breeding_egg_regression.sh` for targeted breeding/egg regression before broad `flutter test` runs.
-- `scripts/run_local_quality_gate.sh` automatically invokes that focused suite when staged, unstaged, or untracked breeding/egg/chick lifecycle paths change; still add focused coverage for scenarios the suite does not contain.
+- `scripts/run_local_quality_gate.sh` automatically invokes that focused suite when staged, unstaged, or untracked breeding/egg/chick lifecycle paths or their scheduler/calendar integrations change. The suite covers the real transaction, notifiers, notification/calendar boundaries, and rejects skipped/excluded manifest tests; still add focused coverage for scenarios it does not contain.
 - Use existing helpers from `test/helpers/` before adding new test infrastructure.
 - Prefer behavior assertions over brittle implementation details.
 - Golden tests belong under `test/golden/` and should be tagged `golden`.

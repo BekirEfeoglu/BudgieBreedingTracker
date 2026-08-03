@@ -84,9 +84,11 @@ NOT raw `.hashCode`) so updates cleanly cancel + reschedule. UTC +
 
 The lifecycle rule includes a required transition/destructive scenario matrix.
 The canonical local quality gate routes staged, unstaged, and untracked egg,
-breeding, and chick paths to `scripts/run_breeding_egg_regression.sh`; add a
-focused regression first when the changed transition or side effect is absent
-from that suite.
+breeding, chick, and lifecycle notification/calendar paths to
+`scripts/run_breeding_egg_regression.sh`. The manifest includes the atomic
+first-egg persistence boundary, egg notifier, notification IDs/scheduling, and
+calendar generation, and blocks skipped/excluded manifest tests. Add a focused
+regression first when the changed transition or side effect is absent.
 
 ## See Also
 

@@ -1,5 +1,7 @@
 import json
+import os
 import re
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -12,6 +14,7 @@ PUBSPEC = ROOT / "pubspec.yaml"
 FVMRC = ROOT / ".fvmrc"
 XCODE_POST_CLONE = ROOT / "ios" / "ci_scripts" / "ci_post_clone.sh"
 LOCAL_QUALITY_GATE = ROOT / "scripts" / "run_local_quality_gate.sh"
+BREEDING_EGG_REGRESSION = ROOT / "scripts" / "run_breeding_egg_regression.sh"
 
 
 def _job_block(workflow: str, job_name: str) -> str:
@@ -21,6 +24,28 @@ def _job_block(workflow: str, job_name: str) -> str:
     next_job = re.search(r"(?m)^  [a-z0-9-]+:\n", remainder)
     end = len(workflow) if next_job is None else start + len(marker) + next_job.start()
     return workflow[start:end]
+
+
+def _local_gate_scope(*paths: str) -> dict[str, int]:
+    env = os.environ.copy()
+    env["LOCAL_QUALITY_GATE_SCOPE_ONLY"] = "1"
+    env["LOCAL_QUALITY_GATE_CHANGED_FILES"] = "\n".join(paths)
+    result = subprocess.run(
+        [str(LOCAL_QUALITY_GATE)],
+        cwd=ROOT,
+        env=env,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return {
+        key: int(value)
+        for key, value in (
+            line.split("=", maxsplit=1)
+            for line in result.stdout.splitlines()
+            if "=" in line
+        )
+    }
 
 
 class TestCiWorkflowContract(unittest.TestCase):
@@ -33,6 +58,9 @@ class TestCiWorkflowContract(unittest.TestCase):
         cls.fvmrc = json.loads(FVMRC.read_text(encoding="utf-8"))
         cls.xcode_post_clone = XCODE_POST_CLONE.read_text(encoding="utf-8")
         cls.local_quality_gate = LOCAL_QUALITY_GATE.read_text(encoding="utf-8")
+        cls.breeding_egg_regression = BREEDING_EGG_REGRESSION.read_text(
+            encoding="utf-8"
+        )
 
     def test_flutter_toolchain_uses_one_version_manifest(self):
         self.assertEqual("3.41.4", self.fvmrc["flutter"])
@@ -87,6 +115,43 @@ class TestCiWorkflowContract(unittest.TestCase):
         ):
             self.assertIn(lifecycle_path, gate)
         self.assertIn("scripts/run_breeding_egg_regression.sh", gate)
+
+    def test_local_gate_executes_real_scheduler_and_calendar_scope_router(self):
+        for path in (
+            "lib/domain/services/notifications/notification_scheduler.dart",
+            "lib/domain/services/notifications/notification_rescheduler.dart",
+            "lib/domain/services/notifications/notification_settings_providers.dart",
+            "lib/domain/services/calendar/calendar_event_generator.dart",
+            "test/domain/services/calendar/calendar_event_providers_test.dart",
+        ):
+            with self.subTest(path=path):
+                scope = _local_gate_scope(path)
+                self.assertEqual(1, scope["breeding-regression"])
+
+        self.assertEqual(
+            0,
+            _local_gate_scope("docs/index.html")["breeding-regression"],
+        )
+
+    def test_breeding_regression_covers_persistence_scheduler_and_calendar(self):
+        regression = self.breeding_egg_regression
+        required_tests = (
+            "test/data/repositories/breeding_creation_persistence_test.dart",
+            "test/features/breeding/providers/breeding_form_providers_test.dart",
+            "test/features/breeding/providers/breeding_form_actions_test.dart",
+            "test/features/eggs/providers/egg_actions_notifier_test.dart",
+            "test/domain/services/notifications/notification_ids_test.dart",
+            "test/domain/services/notifications/notification_scheduler_test.dart",
+            "test/domain/services/notifications/notification_scheduler_cancel_test.dart",
+            "test/domain/services/notifications/notification_scheduler_reminders_test.dart",
+            "test/domain/services/notifications/notification_rescheduler_test.dart",
+            "test/domain/services/notifications/notification_toggle_settings_test.dart",
+            "test/domain/services/calendar/calendar_event_generator_test.dart",
+            "test/domain/services/calendar/calendar_event_providers_test.dart",
+        )
+        for test_file in required_tests:
+            self.assertEqual(1, regression.count(test_file), test_file)
+        self.assertIn("skipped or excluded test detected", regression)
 
     def test_golden_job_targets_directory_without_global_tag_discovery(self):
         golden = _job_block(self.workflow, "golden-test")

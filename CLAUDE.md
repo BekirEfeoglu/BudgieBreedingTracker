@@ -78,12 +78,12 @@ python3 scripts/check_rule_symbol_drift.py --audit-allowlist # Periodic (not gat
 
 ### Other Scripts
 ```bash
-scripts/run_local_quality_gate.sh        # Canonical pre-commit gate (staged/unstaged/untracked diff, rules/quality, conditional l10n/script/breeding tests)
+scripts/run_local_quality_gate.sh        # Canonical pre-commit gate (staged/unstaged/untracked diff, rules/quality, executable conditional l10n/script/breeding routing)
 scripts/build_release.sh <ios|android>   # Canonical release build: DSN/token fail-fast, obfuscate + Sentry symbol upload
 scripts/check_remote_status.py           # Post-push: exact-SHA status/check-runs; path-gated Edge deploy skip requires successful detector
 scripts/verify_security.py               # Security posture (cert pinning wired, secrets, webhook JWT exemptions)
 scripts/install_git_hooks.sh             # Install worktree-relative local git hooks
-scripts/run_breeding_egg_regression.sh   # Focused breeding/egg lifecycle regression suite
+scripts/run_breeding_egg_regression.sh   # Focused transaction/notifier/notification/calendar lifecycle suite; rejects skipped manifest tests
 scripts/generate_ios_env.sh              # Generate iOS environment config from dart-defines
 scripts/setup_push_env.sh               # Setup FCM push notification environment
 scripts/monitor_pg_performance.sql       # PostgreSQL performance monitoring queries
