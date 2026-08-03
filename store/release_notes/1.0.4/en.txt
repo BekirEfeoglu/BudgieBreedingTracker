@@ -1,0 +1,9 @@
+Budgie Breeding Tracker v1.0.4
+
+What's new and improved:
+• Pair, incubation, egg, and chick record flows are now more consistent.
+• Validation for photo and media uploads was strengthened.
+• Community posts and interactions are more reliable.
+• Various data-integrity and interface issues were fixed.
+
+Thanks for your feedback!

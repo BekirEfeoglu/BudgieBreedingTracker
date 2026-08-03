@@ -1,0 +1,9 @@
+Wellensittich Zucht-Tracker v1.0.8
+
+Neuerungen und Verbesserungen:
+• Premium-Status, Synchronisierung und Kaufabläufe sind stabiler.
+• Die Fehlerbehandlung bei Verwaltungs- und Kontoaktionen wurde verbessert.
+• iOS-Start, Benachrichtigungen und Store-Konfiguration wurden optimiert.
+• Leistung und allgemeine App-Stabilität wurden erhöht.
+
+Vielen Dank für Ihr Feedback!

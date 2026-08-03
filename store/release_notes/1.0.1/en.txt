@@ -1,0 +1,9 @@
+Budgie Breeding Tracker v1.0.1
+
+What's new and improved:
+• Reminders are now restored more reliably after a device restart.
+• Push notification support and egg reminders were improved.
+• Genetics calculations and Premium synchronization flows were refined.
+• Security, performance, and overall app stability were strengthened.
+
+Thanks for your feedback!

@@ -1,0 +1,9 @@
+Budgie Breeding Tracker v1.0.10
+
+What's new and improved:
+• A more reliable browser-based fallback was added for Google sign-in on Android.
+• Push-notification device registrations are now managed more securely.
+• Cage and parent-source information was improved for chick records.
+• Interface performance and overall app stability were refined.
+
+Thanks for your feedback!

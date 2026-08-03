@@ -1,0 +1,9 @@
+Budgie Breeding Tracker v1.0.7
+
+What's new and improved:
+• In-app update information was added for new releases.
+• Scheduled notifications and reminders are now more reliable.
+• Maintenance mode enables safer handling of temporary service work.
+• Account, messaging, Premium, and data security were strengthened.
+
+Thanks for your feedback!

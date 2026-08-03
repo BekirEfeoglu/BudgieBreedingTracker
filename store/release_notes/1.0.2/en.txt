@@ -1,0 +1,9 @@
+Budgie Breeding Tracker v1.0.2
+
+What's new and improved:
+• Server-side checks for community content and free-plan limits were strengthened.
+• Error messages are now safer and easier to understand.
+• Genetics comparison screens and overall interface stability were improved.
+• Accessibility, performance, and store-release readiness were refined.
+
+Thanks for your feedback!

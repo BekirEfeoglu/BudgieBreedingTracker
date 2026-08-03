@@ -1,0 +1,9 @@
+Muhabbet Kuşu Üreme Takibi v1.1.0
+
+Yenilikler ve iyileştirmeler:
+• Kuş zaman çizelgesi, ızgara görünümü, istatistik özetleri ve kafes kayıtları eklendi.
+• Ana ekran bileşeniyle önemli üretim bilgilerini uygulamayı açmadan takip edin.
+• Kuluçka risk yardımcısı ve sağlık filtreleri üretim takibini kolaylaştırıyor.
+• Çevrimdışı eşitleme, liste filtreleri ve Android ekran deneyimi geliştirildi.
+
+Geri bildiriminiz için teşekkürler!

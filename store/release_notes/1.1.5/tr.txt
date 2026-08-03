@@ -1,0 +1,9 @@
+Muhabbet Kuşu Üreme Takibi v1.1.5
+
+Yenilikler ve iyileştirmeler:
+• Topluluk gönderilerini kısa süre içinde düzenleyin ve istemediğiniz kullanıcıları sessize alın.
+• Mesaj gönderme hataları için yeniden deneme ve bildirimlerde sessiz saat desteği eklendi.
+• Excel dışa aktarma ve geri içe aktarma daha eksiksiz ve güvenilir hâle getirildi.
+• Eşitleme, takvim, genetik ve üretim kayıtlarında önemli performans ve doğruluk iyileştirmeleri yapıldı.
+
+Geri bildiriminiz için teşekkürler!

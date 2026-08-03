@@ -1,0 +1,9 @@
+Wellensittich Zucht-Tracker v1.0.10
+
+Neuerungen und Verbesserungen:
+• Für die Google-Anmeldung auf Android gibt es einen zuverlässigeren Browser-Ersatzweg.
+• Geräteanmeldungen für Push-Benachrichtigungen werden sicherer verwaltet.
+• Käfig- und Elternherkunftsangaben bei Jungvögeln wurden verbessert.
+• Oberfläche, Leistung und allgemeine App-Stabilität wurden optimiert.
+
+Vielen Dank für Ihr Feedback!

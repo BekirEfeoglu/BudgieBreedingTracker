@@ -1,0 +1,10 @@
+Budgie Breeding Tracker v1.1.6
+
+What's new and improved:
+• The community feed was redesigned with tags, mutation discovery, guides, and better comments.
+• Photo messages and a reciprocal read-receipt privacy setting were added.
+• Daily streaks, an expanded rank system, and more reliable badge progress are now available.
+• Automatic backups, MFA recovery codes, health records, and genetics calculations were improved.
+• Marketplace search and pagination deliver better overall performance.
+
+Thanks for your feedback!

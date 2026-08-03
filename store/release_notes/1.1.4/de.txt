@@ -1,0 +1,9 @@
+Wellensittich Zucht-Tracker v1.1.4
+
+Neuerungen und Verbesserungen:
+• Neue Animationskomponenten sorgen für flüssigere Bildschirm- und Zustandswechsel.
+• Vogellebenszyklus sowie Verwaltungs- und Moderationsabläufe wurden verbessert.
+• Die Barrierefreiheit bei reduzierten Bewegungen wurde erweitert.
+• Synchronisierungs-Timeouts und zusätzliche Sicherheitsmaßnahmen wurden ergänzt.
+
+Vielen Dank für Ihr Feedback!

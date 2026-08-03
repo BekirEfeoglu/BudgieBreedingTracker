@@ -1,0 +1,9 @@
+Muhabbet Kuşu Üreme Takibi v1.0.5
+
+Yenilikler ve iyileştirmeler:
+• Giriş ve hesap doğrulama bağlantıları daha güvenilir hâle getirildi.
+• Mesajlaşma gizliliği ve eski mesajları yükleme akışı iyileştirildi.
+• Kontrol paneli ve ortak veri akışları daha kararlı çalışıyor.
+• Uygulama ve web güvenliği güçlendirildi.
+
+Geri bildiriminiz için teşekkürler!

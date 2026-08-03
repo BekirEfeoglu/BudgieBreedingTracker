@@ -1,0 +1,10 @@
+Muhabbet Kuşu Üreme Takibi v1.1.7
+
+Yenilikler ve iyileştirmeler:
+• Günlük seri sistemi ve hatırlatmaları daha güvenilir hâle getirildi.
+• Genetik hesaplayıcıya bağlı genler için faz seçimi ve daha doğru sonuçlar eklendi.
+• Yedek geri yüklemede bozuk dosya ve yanlış parola durumları daha anlaşılır biçimde gösteriliyor.
+• Mesajlaşma, takip durumu, hesap kurtarma ve Premium erişim sorunları giderildi.
+• Bildirim erişilebilirliği, yerelleştirme ve genel uygulama güvenliği iyileştirildi.
+
+Geri bildiriminiz için teşekkürler!

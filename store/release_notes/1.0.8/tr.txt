@@ -1,0 +1,9 @@
+Muhabbet Kuşu Üreme Takibi v1.0.8
+
+Yenilikler ve iyileştirmeler:
+• Premium durumunun eşitlenmesi ve satın alma akışları daha kararlı hâle getirildi.
+• Yönetim ve hesap işlemlerindeki hata durumları iyileştirildi.
+• iOS başlangıcı, bildirimler ve mağaza yapılandırması güçlendirildi.
+• Genel performans ve uygulama kararlılığı artırıldı.
+
+Geri bildiriminiz için teşekkürler!

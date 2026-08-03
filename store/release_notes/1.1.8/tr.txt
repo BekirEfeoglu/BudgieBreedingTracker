@@ -1,0 +1,9 @@
+Muhabbet Kuşu Üreme Takibi v1.1.8
+
+Yenilikler ve iyileştirmeler:
+• Eski sürümlerden yükseltme sırasında veritabanı ve eşitleme kararlılığı geliştirildi.
+• Topluluk gönderileri ve tam boyutlu fotoğraf denetimi daha güvenilir hâle getirildi.
+• Premium erişimi, genetik hesaplamaları ve bildirim planlama performansı iyileştirildi.
+• Yönetici rolleri, hata raporlama, güvenlik ve erişilebilirlik sorunları giderildi.
+
+Geri bildiriminiz için teşekkürler!

@@ -1,0 +1,10 @@
+Muhabbet Kuşu Üreme Takibi v1.1.6
+
+Yenilikler ve iyileştirmeler:
+• Topluluk akışı yenilendi; etiketler, mutasyon keşfi, rehberler ve daha iyi yorum deneyimi eklendi.
+• Mesajlarda fotoğraf gönderme ve karşılıklı okundu bilgisi gizlilik ayarı eklendi.
+• Günlük seri, genişletilmiş seviye sistemi ve daha güvenilir rozet ilerlemesi kullanıma sunuldu.
+• Otomatik yedekleme, MFA kurtarma kodları, sağlık kayıtları ve genetik hesaplamaları geliştirildi.
+• Pazar yeri arama ve sayfalama ile genel performans iyileştirildi.
+
+Geri bildiriminiz için teşekkürler!

@@ -1,0 +1,9 @@
+Budgie Breeding Tracker v1.1.3
+
+What's new and improved:
+• Community posts, comments, and blocked-user flows are more reliable.
+• Premium administration and user activity controls were strengthened.
+• Silent failures are now surfaced, with better sync and offline feedback.
+• Turkish, English, and German help content and accessibility were improved.
+
+Thanks for your feedback!

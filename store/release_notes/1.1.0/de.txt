@@ -1,0 +1,9 @@
+Wellensittich Zucht-Tracker v1.1.0
+
+Neuerungen und Verbesserungen:
+• Vogel-Zeitleisten, Rasteransicht, Statistik-Highlights und Käfigeinträge wurden ergänzt.
+• Das Startbildschirm-Widget zeigt wichtige Zuchtinformationen ohne Öffnen der App.
+• Brutrisiko-Assistent und Gesundheitsfilter erleichtern die Zuchtbegleitung.
+• Offline-Synchronisierung, Listenfilter und Android-Darstellung wurden verbessert.
+
+Vielen Dank für Ihr Feedback!

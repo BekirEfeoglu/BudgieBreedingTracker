@@ -1,0 +1,9 @@
+Budgie Breeding Tracker v1.1.2
+
+What's new and improved:
+• Version and minimum-support checks are now more reliable on Android.
+• Navigation, state handling, and error flows across the five main tabs were improved.
+• Database and server-access security were strengthened.
+• Genetics visuals, the website experience, and overall performance were refined.
+
+Thanks for your feedback!

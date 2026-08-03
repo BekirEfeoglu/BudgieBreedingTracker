@@ -1,0 +1,9 @@
+Wellensittich Zucht-Tracker v1.0.1
+
+Neuerungen und Verbesserungen:
+• Erinnerungen werden nach einem Geräteneustart zuverlässiger wiederhergestellt.
+• Push-Benachrichtigungen und Erinnerungen für Eier wurden verbessert.
+• Genetikberechnungen und die Premium-Synchronisierung wurden optimiert.
+• Sicherheit, Leistung und allgemeine App-Stabilität wurden erhöht.
+
+Vielen Dank für Ihr Feedback!

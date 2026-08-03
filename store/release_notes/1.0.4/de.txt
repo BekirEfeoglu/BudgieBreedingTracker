@@ -1,0 +1,9 @@
+Wellensittich Zucht-Tracker v1.0.4
+
+Neuerungen und Verbesserungen:
+• Abläufe für Paare, Bruten, Eier und Jungvögel sind jetzt konsistenter.
+• Die Prüfung von Foto- und Medien-Uploads wurde verstärkt.
+• Community-Beiträge und Interaktionen funktionieren zuverlässiger.
+• Verschiedene Probleme bei Datenintegrität und Oberfläche wurden behoben.
+
+Vielen Dank für Ihr Feedback!

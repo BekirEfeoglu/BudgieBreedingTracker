@@ -1,0 +1,9 @@
+Wellensittich Zucht-Tracker v1.0.0
+
+Erste Version:
+• Verwalten Sie Vögel, Zuchtpaare, Bruten, Eier und Jungvögel an einem Ort.
+• Prüfen Sie Paarungsergebnisse und mögliche Mutationen mit dem Genetik-Rechner.
+• Erstellen Sie Erinnerungen für Brut, Eierwenden, Schlupf und Jungvogelentwicklung.
+• Arbeiten Sie offline und synchronisieren oder sichern Sie Ihre Daten geschützt.
+
+Willkommen bei BudgieBreedingTracker!

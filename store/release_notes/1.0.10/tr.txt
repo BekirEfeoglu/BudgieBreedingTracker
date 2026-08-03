@@ -1,0 +1,9 @@
+Muhabbet Kuşu Üreme Takibi v1.0.10
+
+Yenilikler ve iyileştirmeler:
+• Android'de Google ile giriş için daha güvenilir tarayıcı tabanlı yedek akış eklendi.
+• Anlık bildirim cihaz kayıtları daha güvenli biçimde yönetiliyor.
+• Yavru kayıtlarında kafes ve ebeveyn kaynağı bilgileri geliştirildi.
+• Arayüz, performans ve genel uygulama kararlılığı iyileştirildi.
+
+Geri bildiriminiz için teşekkürler!

@@ -1,0 +1,9 @@
+Budgie Breeding Tracker v1.0.8
+
+What's new and improved:
+• Premium status synchronization and purchase flows are more stable.
+• Error handling for administration and account actions was improved.
+• iOS startup, notifications, and store configuration were strengthened.
+• Overall performance and app stability were improved.
+
+Thanks for your feedback!

@@ -1,0 +1,9 @@
+Budgie Breeding Tracker v1.0.5
+
+What's new and improved:
+• Sign-in and account verification links are now more reliable.
+• Messaging privacy and older-message loading were improved.
+• Dashboard and shared data flows are more stable.
+• App and website security were strengthened.
+
+Thanks for your feedback!

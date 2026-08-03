@@ -1,0 +1,9 @@
+Wellensittich Zucht-Tracker v1.1.8
+
+Neuerungen und Verbesserungen:
+• Datenbank und Synchronisierung sind bei Updates von älteren Versionen stabiler.
+• Community-Beiträge und die Prüfung von Bildern in voller Größe funktionieren zuverlässiger.
+• Premium-Zugriff, Genetikberechnungen und Benachrichtigungsplanung wurden verbessert.
+• Probleme bei Admin-Rollen, Fehlerberichten, Sicherheit und Barrierefreiheit wurden behoben.
+
+Vielen Dank für Ihr Feedback!

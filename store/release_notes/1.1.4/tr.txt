@@ -1,0 +1,9 @@
+Muhabbet Kuşu Üreme Takibi v1.1.4
+
+Yenilikler ve iyileştirmeler:
+• Yeni animasyon bileşenleriyle ekran geçişleri ve durum değişimleri daha akıcı.
+• Kuş yaşam döngüsü ve yönetim/moderasyon akışları iyileştirildi.
+• Hareket azaltma tercihi için erişilebilirlik desteği genişletildi.
+• Ağ eşitlemesine zaman aşımı koruması ve ek güvenlik önlemleri eklendi.
+
+Geri bildiriminiz için teşekkürler!

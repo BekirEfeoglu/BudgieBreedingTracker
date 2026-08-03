@@ -1,0 +1,9 @@
+Budgie Breeding Tracker v1.0.9
+
+What's new and improved:
+• New in-app guidance was added for optional and required updates.
+• Account deletion and two-step verification flows are more secure.
+• Data integrity for pair, egg, and chick management was improved.
+• Premium plans were simplified, with better accessibility and stability.
+
+Thanks for your feedback!

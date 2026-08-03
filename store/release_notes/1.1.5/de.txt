@@ -1,0 +1,9 @@
+Wellensittich Zucht-Tracker v1.1.5
+
+Neuerungen und Verbesserungen:
+• Bearbeiten Sie neue Community-Beiträge und schalten Sie unerwünschte Nutzer stumm.
+• Fehlgeschlagene Nachrichten können erneut gesendet werden; Benachrichtigungen unterstützen Ruhezeiten.
+• Excel-Export und erneuter Import sind vollständiger und zuverlässiger.
+• Synchronisierung, Kalender, Genetik und Zuchtdaten wurden deutlich schneller und genauer.
+
+Vielen Dank für Ihr Feedback!

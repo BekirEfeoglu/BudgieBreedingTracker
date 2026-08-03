@@ -1,0 +1,9 @@
+Budgie Breeding Tracker v1.1.5
+
+What's new and improved:
+• Edit recent community posts and mute users whose content you do not want to see.
+• Added retry for failed messages and quiet hours for notifications.
+• Excel export and re-import are now more complete and reliable.
+• Major performance and accuracy improvements were made to sync, calendar, genetics, and breeding records.
+
+Thanks for your feedback!

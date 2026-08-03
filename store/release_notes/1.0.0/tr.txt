@@ -1,0 +1,9 @@
+Muhabbet Kuşu Üreme Takibi v1.0.0
+
+İlk sürüm:
+• Kuşlarınızı, eşleri, kuluçkaları, yumurtaları ve yavruları tek yerde yönetin.
+• Genetik hesaplayıcıyla eşleşme sonuçlarını ve olası mutasyonları inceleyin.
+• Kuluçka, yumurta çevirme, çıkım ve yavru gelişimi için hatırlatmalar oluşturun.
+• Çevrimdışı çalışın; verilerinizi güvenli biçimde eşitleyin ve yedekleyin.
+
+BudgieBreedingTracker'a hoş geldiniz!

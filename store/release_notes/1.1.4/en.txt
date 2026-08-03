@@ -1,0 +1,9 @@
+Budgie Breeding Tracker v1.1.4
+
+What's new and improved:
+• New animation components make screen and state transitions smoother.
+• Bird lifecycle and administration/moderation flows were improved.
+• Accessibility support for reduced-motion preferences was expanded.
+• Sync timeouts and additional security safeguards were added.
+
+Thanks for your feedback!

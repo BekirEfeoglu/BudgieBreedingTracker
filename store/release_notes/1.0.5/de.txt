@@ -1,0 +1,9 @@
+Wellensittich Zucht-Tracker v1.0.5
+
+Neuerungen und Verbesserungen:
+• Anmelde- und Kontobestätigungslinks funktionieren zuverlässiger.
+• Datenschutz beim Messaging und das Laden älterer Nachrichten wurden verbessert.
+• Dashboard und gemeinsame Datenabläufe laufen stabiler.
+• Die Sicherheit von App und Website wurde verstärkt.
+
+Vielen Dank für Ihr Feedback!

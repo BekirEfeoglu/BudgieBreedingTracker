@@ -1,0 +1,9 @@
+Wellensittich Zucht-Tracker v1.1.2
+
+Neuerungen und Verbesserungen:
+• Versions- und Mindestunterstützungsprüfungen funktionieren auf Android zuverlässiger.
+• Navigation, Zustandsverwaltung und Fehlerabläufe der fünf Haupttabs wurden verbessert.
+• Datenbank- und Serverzugriffe wurden stärker abgesichert.
+• Genetikdarstellung, Website-Erlebnis und Leistung wurden optimiert.
+
+Vielen Dank für Ihr Feedback!

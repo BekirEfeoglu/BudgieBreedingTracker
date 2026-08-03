@@ -1,0 +1,9 @@
+Budgie Breeding Tracker v1.0.0
+
+Initial release:
+• Manage birds, breeding pairs, incubations, eggs, and chicks in one place.
+• Explore pairing outcomes and possible mutations with the genetics calculator.
+• Create reminders for incubation, egg turning, hatching, and chick development.
+• Work offline while keeping your data securely synchronized and backed up.
+
+Welcome to BudgieBreedingTracker!

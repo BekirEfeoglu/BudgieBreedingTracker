@@ -1,0 +1,9 @@
+Budgie Breeding Tracker v1.1.8
+
+What's new and improved:
+• Database and sync stability were improved when upgrading from older versions.
+• Community posting and full-size image moderation are now more reliable.
+• Premium access, genetics calculations, and notification scheduling performance were improved.
+• Admin roles, error reporting, security, and accessibility issues were fixed.
+
+Thanks for your feedback!

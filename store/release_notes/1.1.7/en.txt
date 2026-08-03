@@ -1,0 +1,10 @@
+Budgie Breeding Tracker v1.1.7
+
+What's new and improved:
+• Daily streaks and their reminders are now more reliable.
+• Linkage phase controls and more accurate outcomes were added to the genetics calculator.
+• Corrupted backups and incorrect passwords now produce clearer restore messages.
+• Messaging, follow state, account recovery, and Premium access issues were fixed.
+• Notification accessibility, localization, and overall app security were improved.
+
+Thanks for your feedback!

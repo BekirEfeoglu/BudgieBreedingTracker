@@ -1,0 +1,10 @@
+Wellensittich Zucht-Tracker v1.1.7
+
+Neuerungen und Verbesserungen:
+• Tägliche Serien und zugehörige Erinnerungen funktionieren zuverlässiger.
+• Phasenauswahl für gekoppelte Gene und genauere Ergebnisse wurden ergänzt.
+• Beschädigte Sicherungen und falsche Passwörter werden beim Wiederherstellen klarer erklärt.
+• Probleme bei Messaging, Folgen-Status, Kontowiederherstellung und Premium-Zugriff wurden behoben.
+• Barrierefreiheit, Lokalisierung und allgemeine App-Sicherheit wurden verbessert.
+
+Vielen Dank für Ihr Feedback!

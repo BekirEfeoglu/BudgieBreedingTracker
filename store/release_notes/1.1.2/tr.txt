@@ -1,0 +1,9 @@
+Muhabbet Kuşu Üreme Takibi v1.1.2
+
+Yenilikler ve iyileştirmeler:
+• Android için sürüm ve minimum destek kontrolü daha güvenilir hâle getirildi.
+• Beş ana sekmedeki gezinme, durum yönetimi ve hata akışları iyileştirildi.
+• Veritabanı ve sunucu erişim güvenliği güçlendirildi.
+• Genetik araçlarının görünümü, web deneyimi ve genel performans geliştirildi.
+
+Geri bildiriminiz için teşekkürler!

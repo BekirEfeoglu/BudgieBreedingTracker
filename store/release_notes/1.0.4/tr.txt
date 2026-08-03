@@ -1,0 +1,9 @@
+Muhabbet Kuşu Üreme Takibi v1.0.4
+
+Yenilikler ve iyileştirmeler:
+• Eş, kuluçka, yumurta ve yavru kayıt akışları daha tutarlı hâle getirildi.
+• Fotoğraf ve medya yüklemelerinde doğrulama güçlendirildi.
+• Topluluk gönderileri ve etkileşimlerinde güvenilirlik artırıldı.
+• Çeşitli veri bütünlüğü ve arayüz sorunları giderildi.
+
+Geri bildiriminiz için teşekkürler!

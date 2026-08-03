@@ -1,0 +1,9 @@
+Budgie Breeding Tracker v1.1.0
+
+What's new and improved:
+• Added bird timelines, grid view, statistics highlights, and cage records.
+• Follow important breeding information without opening the app using the home widget.
+• The incubation risk assistant and health filters make breeding follow-up easier.
+• Offline sync, list filters, and the Android display experience were improved.
+
+Thanks for your feedback!

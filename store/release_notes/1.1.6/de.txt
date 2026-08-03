@@ -1,0 +1,10 @@
+Wellensittich Zucht-Tracker v1.1.6
+
+Neuerungen und Verbesserungen:
+• Der Community-Feed bietet ein neues Design, Tags, Mutationssuche, Ratgeber und bessere Kommentare.
+• Fotonachrichten und eine gegenseitige Datenschutzoption für Lesebestätigungen wurden ergänzt.
+• Tägliche Serien, ein erweitertes Rangsystem und zuverlässigere Abzeichen sind verfügbar.
+• Automatische Sicherungen, MFA-Wiederherstellungscodes, Gesundheitsdaten und Genetik wurden verbessert.
+• Marktplatzsuche und Seitennavigation sorgen für bessere Leistung.
+
+Vielen Dank für Ihr Feedback!
