@@ -11,6 +11,7 @@ RELEASE_SCRIPT = ROOT / "scripts" / "build_release.sh"
 PUBSPEC = ROOT / "pubspec.yaml"
 FVMRC = ROOT / ".fvmrc"
 XCODE_POST_CLONE = ROOT / "ios" / "ci_scripts" / "ci_post_clone.sh"
+LOCAL_QUALITY_GATE = ROOT / "scripts" / "run_local_quality_gate.sh"
 
 
 def _job_block(workflow: str, job_name: str) -> str:
@@ -31,6 +32,7 @@ class TestCiWorkflowContract(unittest.TestCase):
         cls.pubspec = PUBSPEC.read_text(encoding="utf-8")
         cls.fvmrc = json.loads(FVMRC.read_text(encoding="utf-8"))
         cls.xcode_post_clone = XCODE_POST_CLONE.read_text(encoding="utf-8")
+        cls.local_quality_gate = LOCAL_QUALITY_GATE.read_text(encoding="utf-8")
 
     def test_flutter_toolchain_uses_one_version_manifest(self):
         self.assertEqual("3.41.4", self.fvmrc["flutter"])
@@ -68,6 +70,23 @@ class TestCiWorkflowContract(unittest.TestCase):
             deploy,
         )
         self.assertIn("edge-functions-test", deploy)
+
+    def test_local_gate_sees_untracked_files_and_routes_breeding_regressions(self):
+        gate = self.local_quality_gate
+
+        self.assertIn("git ls-files --others --exclude-standard", gate)
+        self.assertIn("breeding_egg_paths=", gate)
+        for lifecycle_path in (
+            "lib/features/(breeding|eggs|chicks)/",
+            "lib/domain/services/(breeding|eggs|incubation)/",
+            "lib/domain/services/notifications/",
+            "lib/domain/services/calendar/calendar_event_",
+            "lib/data/.*(breeding_pair|incubation|clutch|egg|chick)",
+            "test/features/(breeding|eggs|chicks)/",
+            ".claude/rules/breeding-eggs\\.md",
+        ):
+            self.assertIn(lifecycle_path, gate)
+        self.assertIn("scripts/run_breeding_egg_regression.sh", gate)
 
     def test_golden_job_targets_directory_without_global_tag_discovery(self):
         golden = _job_block(self.workflow, "golden-test")

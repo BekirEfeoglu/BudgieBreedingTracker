@@ -45,7 +45,7 @@ Maps every `.claude/rules/*.md` file to the wiki page(s) that synthesize it.
 | `messaging.md` | [[features/messaging]] | [[architecture/online-first-exemption]], [[domain/presence-service]] |
 | `migrations.md` | [[data-layer/migrations]] | [[data-layer/drift]], [[data-layer/supabase]] |
 | `moderation.md` | [[domain/moderation-service]] | [[infrastructure/edge-functions]], [[features/community]] |
-| `new-feature-checklist.md` | (checklist — not directly a wiki page) | [[data-layer/repositories]], [[architecture/layers]] |
+| `new-feature-checklist.md` | (cross-cutting implementation checklist — not directly a wiki page) | [[data-layer/repositories]], [[architecture/layers]], [[infrastructure/scripts]] |
 | `notifications.md` | [[domain/notification-service]] | [[features/notifications]] |
 | `observability.md` | [[patterns/observability]] | [[patterns/error-handling]] |
 | `performance.md` | [[patterns/performance]] | [[data-layer/drift]] |
@@ -65,7 +65,7 @@ Maps every `.claude/rules/*.md` file to the wiki page(s) that synthesize it.
 
 - `chat.md` — response style instructions for LLM (Turkish replies, brevity). No wiki page needed.
 - `code-review.md` — PR checklist. Referenced by [[patterns/anti-patterns]] and [[infrastructure/branch-workflow]].
-- `new-feature-checklist.md` — step-by-step checklist. Distilled into [[data-layer/repositories]], [[architecture/layers]], and feature pages.
+- `new-feature-checklist.md` — risk/authority classification, change-surface map, implementation steps, verification matrix, and definition of done. Distilled into [[data-layer/repositories]], [[architecture/layers]], [[infrastructure/scripts]], and feature pages.
 
 ## See Also
 

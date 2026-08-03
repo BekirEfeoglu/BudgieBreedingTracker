@@ -78,7 +78,7 @@ python3 scripts/check_rule_symbol_drift.py --audit-allowlist # Periodic (not gat
 
 ### Other Scripts
 ```bash
-scripts/run_local_quality_gate.sh        # Canonical pre-commit gate (diff, rules, quality, conditional l10n/script tests)
+scripts/run_local_quality_gate.sh        # Canonical pre-commit gate (staged/unstaged/untracked diff, rules/quality, conditional l10n/script/breeding tests)
 scripts/build_release.sh <ios|android>   # Canonical release build: DSN/token fail-fast, obfuscate + Sentry symbol upload
 scripts/check_remote_status.py           # Post-push: exact-SHA status/check-runs; path-gated Edge deploy skip requires successful detector
 scripts/verify_security.py               # Security posture (cert pinning wired, secrets, webhook JWT exemptions)
@@ -276,7 +276,7 @@ Comprehensive rules in `.claude/rules/` (auto-loaded):
 | `testing.md` | Test patterns, mocking, golden tests, coverage, naming conventions |
 | `test-stability.md` | Pump strategy, 18 anti-patterns, async patterns, resource cleanup |
 | `error-handling.md` | Error hierarchy, Sentry, retry/backoff, user-facing messages, logging |
-| `new-feature-checklist.md` | Full-stack entity addition, non-entity features, shared widgets |
+| `new-feature-checklist.md` | Risk/authority classification, change-surface map, full-stack/non-entity/shared-widget implementation, verification and definition of done |
 | `git-rules.md` | Conventional commits, branch naming, PR workflow (main-first) |
 | `branch-workflow.md` | main-only branch strategy, merge policy, hotfix exception |
 | `ai-workflow.md` | Quality gates (canonical), task approach, prohibited actions, investigation |
@@ -302,7 +302,7 @@ Comprehensive rules in `.claude/rules/` (auto-loaded):
 | `empty-loading-error-states.md` | EmptyState/LoadingState/ErrorState/SkeletonLoader catalog, AsyncValue mapping |
 | `migrations.md` | Drift schemaVersion bump, onUpgrade, Supabase SQL migration, RLS, idempotent SQL, rollback |
 | `birds.md` | Root bird entity: status lifecycle side effects, encrypted fields, photo partial-failure contract, cage ledger, free tier |
-| `breeding-eggs.md` | Bird→BreedingPair→Incubation→Egg→Chick lifecycle, write atomicity, side effects, free tier guards |
+| `breeding-eggs.md` | Bird→BreedingPair→Incubation→Egg→Chick lifecycle, atomicity, transition/destructive checklists, regression-gate mapping |
 | `genetics.md` | Punnett, MUTAVI rates, calculationVersion, allelic series, sex-linked linkage, lethal combos, inbreeding |
 | `encryption.md` | AES-256-CBC + HMAC, secure storage key mgmt, key rotation, payload codec, what-to-encrypt |
 | `moderation.md` | Two-layer text pipeline, image safety, fail-closed, context-aware threshold, report flow |
@@ -366,9 +366,11 @@ Comprehensive rules in `.claude/rules/` (auto-loaded):
 
 ### Adding a new entity (full stack)
 ```
-Model → Enum → Table → Converter → Mapper → DAO → DB registration → RemoteSource → Repository → Provider → Screen → Routes → L10n
+Contract → Model/Enum → Drift Table/DAO/Migration → Supabase Migration/RLS → RemoteSource → Repository/Sync → Provider/Service → UI/Routes/Guards → L10n/Tests/Docs
 ```
-See `new-feature-checklist.md` for detailed steps.
+Before scaffolding, classify authority, offline/sync behavior, authorization,
+rollback/side-effect boundaries, and required proof. See
+`new-feature-checklist.md` for the complete change-surface checklist.
 
 ### Adding a localization key
 1. Add to `assets/translations/tr.json` (master)
@@ -407,8 +409,11 @@ dart run build_runner build --delete-conflicting-outputs  # Regenerate if .g.dar
 
 ### Pre-commit quality check
 ```bash
-flutter analyze --no-fatal-infos && python3 scripts/verify_code_quality.py && python3 scripts/check_l10n_sync.py
+scripts/run_local_quality_gate.sh
 ```
+The gate includes staged, unstaged, and untracked paths. It conditionally adds
+strict l10n, script-unit, and breeding/egg lifecycle regressions; broad Dart
+changes still require the relevant analyzer and Flutter test scope.
 
 ## Key File Locations
 

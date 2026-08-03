@@ -7,11 +7,9 @@ PR review checklist'i. Her PR yazarı kendi PR'ını bu listeyle gözden geçirm
 ### Kalite Kapıları
 Tümü local'de geçmeli (CI tekrar koşar):
 ```bash
-flutter analyze --no-fatal-infos
-python3 scripts/verify_code_quality.py
-python3 scripts/check_l10n_sync.py
-python3 scripts/verify_rules.py --strict
-flutter test
+scripts/run_local_quality_gate.sh
+flutter analyze --no-fatal-infos   # Dart yüzeyi değiştiyse
+flutter test <ilgili kapsam>       # değişen davranışı kanıtlayan en küçük kapsam
 ```
 Stats veya inline rule referans drift'i varsa önce `python3 scripts/verify_rules.py --fix`, sonra `--strict` çalıştır.
 Detaylı liste: ai-workflow.md § Quality Gates (canonical).
@@ -27,13 +25,17 @@ Detaylı liste: ai-workflow.md § Quality Gates (canonical).
 ## Reviewer Checklist
 
 ### 1. Mimari & Katman
+- [ ] Değişiklik `new-feature-checklist.md` ile sınıflandırılmış; source of truth,
+      offline/online kararı, yetki, rollback/side-effect ve kanıt sınırı açık mı?
 - [ ] Feature → Feature import yok (cross-feature drift)
 - [ ] UI'dan `client.from()` çağrısı yok (admin/ hariç)
 - [ ] Repository → DAO + RemoteSource yapısı korunmuş
 - [ ] Yeni `*Repository` offline-first mi? Drift table + DAO + SyncMetadata var mı?
 - [ ] Online-only ise `*RemoteService` / `*OnlineSource` adı kullanılıyor mu? (data-layer.md)
 - [ ] Yeni shared widget gerekiyor mu, yoksa mevcut biri mi? (`lib/core/widgets/`)
-- [ ] Üreme/Yumurta değişikliği varsa lifecycle, rollback, bildirim/takvim yan etkileri `breeding-eggs.md` ile uyumlu mu?
+- [ ] Üreme/Yumurta değişikliği varsa `breeding-eggs.md` giriş, transition,
+      destructive-flow ve scenario matrix kontrolleri uygulanmış mı; otomatik
+      regresyonun kapsamadığı manuel residual açık mı?
 
 ### 2. Anti-Pattern Taraması
 24 kuralın spot-check'i:

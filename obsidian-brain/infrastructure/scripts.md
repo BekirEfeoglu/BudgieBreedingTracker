@@ -29,13 +29,18 @@ scripts/run_local_quality_gate.sh
 The canonical gate. It runs the same five checks as CI's `code-quality`
 (anti-pattern scan, platform targets, wiki lint, **migration drift**, symbol
 drift) plus `verify_rules.py --strict`, and conditionally the l10n parity check
-and the script unit tests when the relevant paths changed. `verify_migration_drift.py`
+and the script unit tests when the relevant paths changed. Its path set includes
+staged, unstaged, and untracked files, so a newly added source/test cannot evade
+conditional checks. Breeding/egg/chick lifecycle and their scheduler/calendar
+integration paths additionally run
+`scripts/run_breeding_egg_regression.sh`; that focused suite is a floor and the
+manual lifecycle matrix in `breeding-eggs.md` still applies. `verify_migration_drift.py`
 was missing here until 2026-07-25 while CI ran it — a migration structure or
 baseline problem only surfaced after push.
 
 ## Other Scripts (not in the quality-gate list above)
 
-`scripts/verify_security.py` (backs the `security-audit` CI job), `scripts/test_app_store_config.py`, `scripts/install_git_hooks.sh`, `scripts/run_breeding_egg_regression.sh` also exist on disk.
+`scripts/verify_security.py` (backs the `security-audit` CI job), `scripts/test_app_store_config.py`, `scripts/install_git_hooks.sh`, and `scripts/run_breeding_egg_regression.sh` also exist on disk. The last command remains directly runnable for iteration even though the canonical gate now routes matching lifecycle diffs to it automatically.
 
 `verify_security.py` covers **40 controls** and is measured by the coverage
 gate like every other script (it was excluded as "not unit-testable" until

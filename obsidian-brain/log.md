@@ -4,6 +4,15 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-08-03] rules | Risk-based checklists and breeding gate routing
+
+Feature work now begins with authority, offline/sync, authorization, rollback,
+side-effect, and proof decisions instead of a model-only scaffold list. The
+breeding/egg rule gained entry, transition, destructive-flow, scenario, and
+definition-of-done checklists with automated/manual evidence mapping. The local
+quality gate now includes untracked files and automatically runs the focused
+breeding regression suite for matching lifecycle paths.
+
 ## [2026-08-02] release | Sentry symbol discovery isolated per platform
 
 The iOS 1.1.9 release exposed a dirty-workspace failure: the broad

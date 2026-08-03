@@ -57,7 +57,7 @@ Stack: Flutter/Dart, Riverpod 3, GoRouter 17, Drift, Supabase, Freezed, easy_loc
 - Preserve the canonical lifecycle: `Bird -> BreedingPair -> Incubation -> Clutch -> Egg -> Chick`.
 - Validate breeding pair birds before writes: both birds must exist, be alive, have the expected genders, and share the same species.
 - Incubation species and hatch expectations must come from validated bird species and incubation helpers, never hardcoded default day counts.
-- Breeding creation is a logical atomic operation: if incubation save fails after pair save, rollback the pair.
+- Breeding creation is a real local atomic operation: pair, incubation, and both pending-sync rows commit in one Drift transaction. A failed incubation insert rolls back the transaction; do not add a compensating soft-delete path.
 - Destructive parent flows must clean up or close related incubations/eggs and cancel related notification/calendar work before reporting success.
 - Notification and calendar generation are side effects after local persistence; optional side-effect failures should surface a localized warning without undoing the primary mutation.
 - Hatched eggs should auto-create at most one chick, preserving egg context (`userId`, `eggId`, `clutchId`, `hatchDate`).
@@ -129,6 +129,7 @@ Stack: Flutter/Dart, Riverpod 3, GoRouter 17, Drift, Supabase, Freezed, easy_loc
 - Audit and explain any `skip:`, `@Skip`, or tag-based test exclusion introduced or left behind by the task.
 - For breeding/egg changes, cover lifecycle transitions, rollback/error paths, duplicate submit guards, side-effect warnings, and notification cleanup.
 - Use `scripts/run_breeding_egg_regression.sh` for targeted breeding/egg regression before broad `flutter test` runs.
+- `scripts/run_local_quality_gate.sh` automatically invokes that focused suite when staged, unstaged, or untracked breeding/egg/chick lifecycle paths change; still add focused coverage for scenarios the suite does not contain.
 - Use existing helpers from `test/helpers/` before adding new test infrastructure.
 - Prefer behavior assertions over brittle implementation details.
 - Golden tests belong under `test/golden/` and should be tagged `golden`.
@@ -143,6 +144,8 @@ python3 scripts/verify_code_quality.py
 python3 scripts/check_l10n_sync.py
 flutter test
 ```
+
+For rule, script, CI, l10n, shared-gate, or breeding/egg lifecycle changes, run `scripts/run_local_quality_gate.sh`; its conditional routing includes untracked files.
 
 Run code generation after touching Freezed models, Drift tables, JSON models, or Riverpod generators:
 
@@ -165,6 +168,7 @@ python3 scripts/verify_rules.py --fix
 - Keep Xcode Cloud Flutter build setup in `ios/ci_scripts/ci_post_clone.sh`; it must remain executable, keep network-dependent setup retry-aware, and generate Dart build_runner outputs, `ios/Flutter/Generated.xcconfig`, and CocoaPods file lists in a clean clone instead of committing generated dependencies.
 - Keep the default Xcode Cloud workflow build-only unless Apple signing prerequisites for archive/export are intentionally prepared.
 - Prefer extending the existing verification scripts over adding manual-only rules that will drift.
+- Write rules as testable contracts: define scope, authority, invariant/failure boundary, automated evidence, manual residual, and definition of done. Clearly label current behavior versus unshipped design.
 
 ## Common Anti-Patterns To Avoid
 

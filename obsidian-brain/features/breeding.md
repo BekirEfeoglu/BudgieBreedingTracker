@@ -73,6 +73,15 @@ compensating pair soft-delete.
 - `.claude/rules/breeding-eggs.md` — canonical breeding rules
 - `.claude/rules/data-layer.md` — ValidatedSyncMixin on breeding_pair_repository
 
+## Change Safety
+
+Breeding changes use the rule's entry, create/update, destructive-flow, and
+scenario-matrix checklists. The local quality gate detects staged, unstaged,
+and untracked lifecycle paths and automatically runs the focused
+`scripts/run_breeding_egg_regression.sh` suite. Review must still trace the full
+Bird → pair → incubation → clutch → egg → chick chain and manually confirm any
+scenario not represented by those fixtures.
+
 ## See Also
 
 - [[features/eggs]]

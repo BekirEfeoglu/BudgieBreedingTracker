@@ -82,6 +82,12 @@ NOT raw `.hashCode`) so updates cleanly cancel + reschedule. UTC +
 - `.claude/rules/data-layer.md` — `ValidatedSyncMixin` requirement
 - `.claude/rules/datetime-format.md` — DST-safe day math
 
+The lifecycle rule includes a required transition/destructive scenario matrix.
+The canonical local quality gate routes staged, unstaged, and untracked egg,
+breeding, and chick paths to `scripts/run_breeding_egg_regression.sh`; add a
+focused regression first when the changed transition or side effect is absent
+from that suite.
+
 ## See Also
 
 - [[features/breeding]] — parent incubation

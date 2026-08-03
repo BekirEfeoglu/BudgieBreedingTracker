@@ -18,7 +18,7 @@ Source: `.claude/rules/branch-workflow.md`, `.claude/rules/git-rules.md`
 
 Canonical source: `.claude/rules/ai-workflow.md` § Quality Gates — don't duplicate the list here, it drifts. Summary:
 ```bash
-scripts/run_local_quality_gate.sh   # diff check, rules-sync, code-quality, conditional l10n/script tests
+scripts/run_local_quality_gate.sh   # staged/unstaged/untracked diff, rules/quality, conditional l10n/script/breeding tests
 flutter analyze --no-fatal-infos
 flutter test
 ```

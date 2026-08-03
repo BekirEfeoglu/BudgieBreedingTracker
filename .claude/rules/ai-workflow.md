@@ -2,7 +2,7 @@
 
 ## Quality Gates (canonical — other files reference here)
 ```bash
-scripts/run_local_quality_gate.sh         # Diff, rules, quality, migration drift, symbol drift, conditional l10n/script tests
+scripts/run_local_quality_gate.sh         # Staged/unstaged/untracked diff, rules/quality, conditional l10n/script/breeding tests
 flutter analyze --no-fatal-infos          # Static analysis — 0 errors
 flutter test                               # All tests pass
 ```
@@ -12,6 +12,13 @@ ran in CI but not locally until 2026-07-25, so migration structure problems only
 surfaced after push. CI enforces analysis, tests, golden tests, script tests, l10n sync, code quality, rules sync, and platform build gates on `main` PRs/pushes.
 
 Rule/docs/CI changes are not "just docs": run `scripts/run_local_quality_gate.sh` before commit/push, then use the smallest extra command that proves the changed contract. If a rule update changes codebase metrics or inline references, run `python3 scripts/verify_rules.py --fix` first, then `python3 scripts/verify_rules.py --strict`.
+
+The gate derives conditional checks from staged, unstaged, and untracked files.
+Breeding/egg/chick lifecycle and their scheduler/calendar integration paths
+additionally trigger
+`scripts/run_breeding_egg_regression.sh`. A green conditional gate proves only
+the scenarios in that suite; the owning rule's manual residual checklist still
+applies.
 
 Install the tracked hooks with `scripts/install_git_hooks.sh`; `core.hooksPath` must remain worktree-relative (`.githooks`). The pre-commit hook removes repository-local `GIT_*` variables only around Flutter subprocesses so the SDK can resolve its own Git version instead of reporting `0.0.0-unknown`.
 
@@ -29,6 +36,32 @@ If generation gets stuck: `dart run build_runner clean` first.
 4. **Test what you build** — add/update tests for changed behavior
 5. **Run quality gates** — after every significant change, before declaring done
 6. **Update stats** — if codebase metrics change, run `verify_rules.py --fix`
+
+## Rule Authoring Contract
+
+Rules are executable engineering contracts, not collections of preferences.
+When adding or changing one:
+
+1. **Own the scope** — name the paths/entities/workflows the rule governs and
+   link the matching wiki source. Avoid a rule that silently applies everywhere.
+2. **Classify the claim** — distinguish current shipped behavior, mandatory
+   policy/invariant, biological evidence, and explicitly unshipped work. Never
+   phrase a future design as current behavior.
+3. **State the boundary** — for writes, identify source of truth, transaction or
+   rollback boundary, server authorization, retry/idempotency, and optional side
+   effects. For UI, identify loading/error/empty/accessibility states.
+4. **Use testable language** — prefer “must” plus the failure mode and evidence
+   over “should” without an owner. Name concrete commands only when they exist.
+5. **Map evidence** — separate automated checks from manual residual review.
+   Automation is preferred; a manual rule must identify what a reviewer observes.
+6. **Prevent drift** — update owning rule, `CLAUDE.md`, wiki synthesis, log, tests,
+   and checker documentation together when their claims or coverage change.
+7. **Keep it operational** — include an entry checklist and definition of done
+   for high-risk domains; do not duplicate low-level facts owned by another rule.
+
+Before accepting a rule-only change, test that it does not contradict the
+production path, another owning rule, or an automated checker. Green Markdown
+links and symbol resolution do not validate semantics.
 
 ## First-Party Agent Routing
 
