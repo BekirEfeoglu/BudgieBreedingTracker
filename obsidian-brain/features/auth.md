@@ -50,6 +50,8 @@ one coordinated server + client rollout with matching contract tests.
 - Login validates only that the existing password is non-empty. Password
   length and complexity belong to registration/recovery/update flows so
   legacy accounts are not rejected before Supabase authenticates them.
+- Submitting login re-masks a revealed password and disables the visibility
+  toggle while authentication is in progress.
 
 ## Startup Init (`appInitializationProvider`)
 

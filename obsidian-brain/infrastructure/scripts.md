@@ -78,6 +78,7 @@ dependent and worth knowing about:
 | `test_app_store_config.py` | App Store config consistency: Info.plist locales, privacy manifest, StoreKit products |
 | `test_ci_workflow_contract.py` | CI/release workflow contracts, executable local-gate scope routing, and breeding regression manifest coverage |
 | `test_git_hooks.py` | Local git hook installation and worktree-relative `core.hooksPath` |
+| `test_generate_ios_env.py` | Tests xcconfig-safe URL encoding, legacy Supabase key promotion, and missing `.env` handling |
 
 ## Internal Modules
 
@@ -93,7 +94,7 @@ dependent and worth knowing about:
 | Script | Purpose |
 |--------|---------|
 | `build_release.sh <ios\|android>` | Canonical release build — fails fast without `SENTRY_DSN`/`SENTRY_AUTH_TOKEN`, obfuscates, uploads Sentry symbols ([[infrastructure/release-ops]]) |
-| `generate_ios_env.sh` | Generate iOS environment config from dart-defines |
+| `generate_ios_env.sh` | Generate xcconfig-safe iOS environment config from `.env`; escape `//` and promote legacy Supabase anon keys |
 | `setup_push_env.sh` | Setup FCM push notification environment |
 | `monitor_pg_performance.sql` | PostgreSQL performance monitoring queries |
 | `verify_rls_staging.sql` | Verify RLS policies on staging |

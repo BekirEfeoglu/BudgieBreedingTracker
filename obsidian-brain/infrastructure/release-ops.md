@@ -70,6 +70,11 @@ registered under stale debug IDs; a broad `symbols_path: build` caused exactly
 that cross-platform mismatch on 2026-08-02. iOS re-runs
 `scripts/generate_ios_env.sh` first.
 
+The generator encodes every `//` as `/$(BBT_EMPTY)/` before writing xcconfig;
+otherwise `https://` is parsed as a comment and the installed app receives only
+`https:`. If `.env` contains only the legacy `SUPABASE_ANON_KEY`, it is also
+emitted as the canonical `SUPABASE_PUBLISHABLE_KEY`.
+
 **Do not Archive from Xcode without running it.** The iOS defines live in
 gitignored generated xcconfigs that only a `flutter build` refreshes. Current
 Flutter writes them into `Generated.xcconfig` as base64 `DART_DEFINES`, NOT

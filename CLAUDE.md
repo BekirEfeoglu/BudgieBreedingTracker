@@ -74,6 +74,7 @@ python3 scripts/verify_rules.py --fix    # Auto-fix CLAUDE.md stats + rule inlin
 python3 scripts/verify_migration_drift.py # Migration structure guard (dup versions, malformed names); --online adds prod ledger parity
 python3 scripts/check_rule_symbol_drift.py --target all --classes --strict # Aspirational-contract guard: every `xProvider`/`.dart` path/`*Service|*Notifier|*Repository|*Dao|*Mapper|*Guard` class (backtick + bare prose) named in .claude/rules/ + obsidian-brain/ must exist in code
 python3 scripts/check_rule_symbol_drift.py --audit-allowlist # Periodic (not gated): report allowlist entries no longer cited by any doc
+python3 scripts/test_generate_ios_env.py # Verify xcconfig URL escaping, legacy key promotion, and missing-.env handling
 ```
 
 ### Other Scripts
@@ -84,7 +85,7 @@ scripts/check_remote_status.py           # Post-push: exact-SHA status/check-run
 scripts/verify_security.py               # Security posture (cert pinning wired, secrets, webhook JWT exemptions)
 scripts/install_git_hooks.sh             # Install worktree-relative local git hooks
 scripts/run_breeding_egg_regression.sh   # Focused transaction/notifier/notification/calendar lifecycle suite; rejects skipped manifest tests
-scripts/generate_ios_env.sh              # Generate iOS environment config from dart-defines
+scripts/generate_ios_env.sh              # Generate xcconfig-safe iOS environment config from .env
 scripts/setup_push_env.sh               # Setup FCM push notification environment
 scripts/monitor_pg_performance.sql       # PostgreSQL performance monitoring queries
 scripts/verify_rls_staging.sql           # Verify Row-Level Security policies on staging
@@ -124,7 +125,7 @@ scripts/test_git_hooks.py               # Local git hook installation + worktree
 | Metric | Value |
 | --- | --- |
 | Source files (lib/) | 1036 Dart files |
-| Test files (test/) | 956 test files, 11,819+ individual tests |
+| Test files (test/) | 956 test files, 11,820+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -190,6 +191,11 @@ the script passes `build/symbols/<platform>` and temporarily quarantines stale
 other-platform build roots before upload, then restores them even on failure.
 This prevents a fresh Dart map from being registered under old debug IDs. iOS
 re-runs `scripts/generate_ios_env.sh` first.
+
+The generator must encode every `//` as `/$(BBT_EMPTY)/` before writing an
+xcconfig value; an unescaped `https://` is parsed as an xcconfig comment and
+reaches the app as `https:`. When only the legacy `SUPABASE_ANON_KEY` exists,
+the generator also emits it as the canonical `SUPABASE_PUBLISHABLE_KEY`.
 
 **Do NOT Archive from Xcode without running the script first.**
 The iOS dart-defines live in gitignored generated xcconfigs that only a

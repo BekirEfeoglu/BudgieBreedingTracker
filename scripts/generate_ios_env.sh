@@ -27,10 +27,44 @@ KEYS=(
 
 echo "// Auto-generated from .env — do NOT commit this file" > "$OUTPUT_FILE"
 
+# xcconfig treats // as the start of a comment, even inside an unquoted URL.
+# Route the second slash through an explicitly empty build setting so values
+# such as https://project.supabase.co survive Info.plist expansion intact.
+echo "BBT_EMPTY=" >> "$OUTPUT_FILE"
+
+escape_xcconfig_value() {
+  local value="$1"
+  local double_slash_marker='/$(BBT_EMPTY)/'
+  printf '%s' "${value//\/\//$double_slash_marker}"
+}
+
+read_env_value() {
+  local key="$1"
+  grep "^${key}=" "$ENV_FILE" 2>/dev/null \
+    | head -1 \
+    | cut -d'=' -f2- \
+    | sed 's/^["'"'"']//;s/["'"'"']$//' \
+    || true
+}
+
+PUBLISHABLE_KEY=$(read_env_value SUPABASE_PUBLISHABLE_KEY)
+LEGACY_ANON_KEY=$(read_env_value SUPABASE_ANON_KEY)
+
+# Keep legacy local environments working while emitting the canonical native
+# key expected by new builds. Both values are client-safe Supabase keys.
+if [ -z "$PUBLISHABLE_KEY" ] && [ -n "$LEGACY_ANON_KEY" ]; then
+  PUBLISHABLE_KEY="$LEGACY_ANON_KEY"
+fi
+
 for KEY in "${KEYS[@]}"; do
-  VALUE=$(grep "^${KEY}=" "$ENV_FILE" 2>/dev/null | head -1 | cut -d'=' -f2- | sed 's/^["'"'"']//;s/["'"'"']$//' || true)
+  if [ "$KEY" = "SUPABASE_PUBLISHABLE_KEY" ]; then
+    VALUE="$PUBLISHABLE_KEY"
+  else
+    VALUE=$(read_env_value "$KEY")
+  fi
   if [ -n "$VALUE" ]; then
-    echo "${KEY}=${VALUE}" >> "$OUTPUT_FILE"
+    printf '%s=%s\n' "$KEY" "$(escape_xcconfig_value "$VALUE")" \
+      >> "$OUTPUT_FILE"
   fi
 done
 

@@ -48,6 +48,14 @@ class AuthFormField extends StatefulWidget {
 class _AuthFormFieldState extends State<AuthFormField> {
   bool _obscure = true;
 
+  @override
+  void didUpdateWidget(covariant AuthFormField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isPassword && oldWidget.enabled && !widget.enabled) {
+      _obscure = true;
+    }
+  }
+
   // iOS keyboard fix: ensure Flutter's UIWindow is the key window before
   // UIKit tries to show the software keyboard. Without this, a third-party
   // SDK that creates its own UIWindow (e.g. google_mobile_ads UMP) can steal
@@ -97,7 +105,9 @@ class _AuthFormFieldState extends State<AuthFormField> {
                 semanticLabel: _obscure
                     ? 'auth.show_password'.tr()
                     : 'auth.hide_password'.tr(),
-                onPressed: () => setState(() => _obscure = !_obscure),
+                onPressed: widget.enabled
+                    ? () => setState(() => _obscure = !_obscure)
+                    : null,
               )
             : null,
       ),

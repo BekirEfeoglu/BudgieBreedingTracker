@@ -136,6 +136,43 @@ void main() {
       expect(find.byIcon(LucideIcons.eyeOff), findsOneWidget);
     });
 
+    testWidgets('re-obscures a visible password when submission disables it', (
+      tester,
+    ) async {
+      var enabled = true;
+      late StateSetter setHostState;
+
+      await pumpWidgetSimple(
+        tester,
+        StatefulBuilder(
+          builder: (context, setState) {
+            setHostState = setState;
+            return AuthFormField(
+              controller: controller,
+              label: 'Password',
+              isPassword: true,
+              enabled: enabled,
+            );
+          },
+        ),
+      );
+
+      await tester.tap(find.byType(IconButton));
+      await tester.pump();
+      expect(find.byIcon(LucideIcons.eye), findsOneWidget);
+
+      setHostState(() => enabled = false);
+      await tester.pump();
+
+      final editable = tester.widget<EditableText>(find.byType(EditableText));
+      expect(editable.obscureText, isTrue);
+      expect(find.byIcon(LucideIcons.eyeOff), findsOneWidget);
+      expect(
+        tester.widget<IconButton>(find.byType(IconButton)).onPressed,
+        isNull,
+      );
+    });
+
     testWidgets('shows error text on validation failure', (tester) async {
       final formKey = GlobalKey<FormState>();
       const errorMessage = 'Invalid email format';

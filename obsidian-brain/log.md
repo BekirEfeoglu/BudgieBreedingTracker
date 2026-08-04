@@ -4,6 +4,14 @@ Chronological record of wiki updates. Format: `## [date] action | summary`
 
 ---
 
+## [2026-08-04] fix | iOS auth config and password masking hardened
+
+The iOS environment generator now escapes xcconfig comment markers so Supabase
+URLs survive compilation instead of collapsing to `https:`. Legacy anon keys
+are promoted to the canonical publishable-key field, with a focused generator
+contract test. Login submission also re-masks a revealed password and locks the
+visibility action while authentication is pending.
+
 ## [2026-08-03] fix | Full-sync FK tombstones and payment-log redaction
 
 Full reconciliation now keeps soft-delete tombstones in Drift so historical
@@ -158,36 +166,3 @@ produced binary; the app target is untouched.
 
 `Podfile.lock` moved only its checksum — no pod version changed. CI's
 `ios-build` was unaffected throughout because its Xcode predates the default.
-
-## [2026-07-26] follow-up | A stale xcconfig was overriding the fresh iOS defines
-
-**The documented mitigation could not work.** Verifying that the version bump
-reached the iOS config turned up a live release hazard. Current Flutter writes
-the dart-defines into `Generated.xcconfig` as base64 `DART_DEFINES`; it does NOT
-write `ios/Flutter/DartDefines.xcconfig`, which older versions used — a full
-build refreshed the former and left the latter at its March mtime.
-`Release.xcconfig` includes the legacy file AFTER the generated one and both
-define `DART_DEFINES`, so the four-month-old copy silently **overrode** the
-fresh values. Decoded, it carried the legacy Google project (118599620356, not
-the current 720334450619) and **no `SENTRY_DSN`** — precisely the
-crash-reporting-less release `build_release.sh` documents itself as preventing,
-while the script never touches that file. Deleted; the claim was corrected in
-seven places that all pointed readers at the wrong file.
-
-**iOS builds mutate TRACKED files.** The same run rewrote
-`Runner.entitlements` and emptied `com.apple.security.application-groups` —
-the container the home widget shares with the app — and later runs bumped
-`LastUpgradeVersion`. All reverted. `build_release.sh ios` runs a flutter build
-too, so read `git status` after it.
-
-**Silent failure paths closed.** Google/Apple native sign-in terminal branches
-and both fail-closed moderation branches logged with `AppLogger.error`, which
-only adds a breadcrumb. A moderation outage blocks every upload and post
-app-wide while showing users a generic rejection, with zero production signal.
-
-**Two docs describing things that never existed.** observability.md specified a
-structured JSON edge-function log schema and the Dashboard filtering it would
-enable — measured: all 36 `console.*` calls across all 12 functions are plain
-prefixed strings. And `SupabaseConstants.geneticsHistoryTable` was declared but
-never referenced, making a dormant table with a never-matching schema look
-like a live surface. Both moved to known-gaps.

@@ -59,6 +59,8 @@ AAL2 kontrolü HER destructive adımdan ÖNCE koşar — hesap silmede storage t
 - Login formu mevcut şifreyi yalnız boş olmama açısından doğrular. Minimum
   uzunluk/karmaşıklık politikası yalnız şifre oluşturma ve güncelleme
   akışlarına aittir; aksi halde geçerli legacy hesaplar istemcide kilitlenir.
+- Login gönderimi/loading başladığında görünür şifre tekrar maskelenir ve
+  görünürlük düğmesi işlem tamamlanana kadar devre dışı kalır.
 
 ## Password Recovery Deep Link
 - Supabase'in `AuthChangeEvent.passwordRecovery` olayı

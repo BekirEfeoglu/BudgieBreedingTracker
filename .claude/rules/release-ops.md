@@ -89,6 +89,12 @@ trace'leri obfuscated kalir.
 `SENTRY_RELEASE` platform basina runtime `PackageInfo` adlandirmasini birebir
 yansitir (`com.budgiebreeding.tracker` / `com.budgiebreeding.budgie_breeding_tracker`).
 
+`generate_ios_env.sh`, xcconfig degerlerindeki her `//` dizisini
+`/$(BBT_EMPTY)/` olarak kodlamalidir; ham `https://` xcconfig tarafindan yorum
+baslangici sayilir ve uygulamaya yalniz `https:` ulasir. Yalniz legacy
+`SUPABASE_ANON_KEY` mevcutsa kanonik `SUPABASE_PUBLISHABLE_KEY` de ayni degerle
+uretilir. Bu sozlesme `scripts/test_generate_ios_env.py` ile dogrulanir.
+
 **Sentry symbol discovery platforma dar tutulmalidir.**
 `sentry_dart_plugin 3.4.x`, `symbols_path` altindaki Flutter sembollerinin
 yaninda standart `build/ios` ve Android build koklerini de arar. 2026-08-02'de
