@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
+import 'package:budgie_breeding_tracker/core/errors/image_safety_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/sentry_error_filter.dart';
 
 /// Test host that uses the real SentryErrorFilter.reportIfUnexpected()
@@ -41,6 +42,17 @@ void main() {
     test('skips NetworkException (offline is an expected condition)', () {
       const error = NetworkException('connection failed');
       host.reportIfUnexpected(error, StackTrace.current);
+      expect(host.reportedErrors, isEmpty);
+    });
+
+    test('skips retryable image safety provider rate limits', () {
+      const error = ImageSafetyException(
+        'Image rejected: safety_scan_rate_limited',
+        code: 'safety_scan_rate_limited',
+      );
+
+      host.reportIfUnexpected(error, StackTrace.current);
+
       expect(host.reportedErrors, isEmpty);
     });
 

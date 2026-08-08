@@ -1,5 +1,6 @@
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
+import 'package:budgie_breeding_tracker/core/errors/image_safety_exception.dart';
 
 /// Whether [error] is an expected user/runtime condition that must NOT reach
 /// Sentry (offline, validation, free-tier limits). Single source of truth for
@@ -9,7 +10,12 @@ import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 bool isExpectedSentryExclusion(Object error) =>
     error is FreeTierLimitException ||
     error is ValidationException ||
-    error is NetworkException;
+    error is NetworkException ||
+    // A provider capacity response is already a user-facing, retryable state.
+    // Reporting each attempted photo as an error would turn a temporary quota
+    // incident into high-volume Sentry noise; the edge-function response and
+    // its operational logs remain the authoritative signal.
+    (error is ImageSafetyException && error.code == 'safety_scan_rate_limited');
 
 /// Filtered Sentry reporter for non-Notifier call sites (widgets, services)
 /// that can't mix in [SentryErrorFilter]. Same exclusion set — skips expected

@@ -423,6 +423,31 @@ void main() {
       },
     );
 
+    test('preserves retryable image-safety rate-limit response', () async {
+      when(
+        () => mockFunctions.invoke(
+          'scan-image-safety',
+          body: any(named: 'body'),
+          headers: _authHeader,
+        ),
+      ).thenThrow(
+        const FunctionException(
+          status: 503,
+          details: {'safe': false, 'reason': 'safety_scan_rate_limited'},
+          reasonPhrase: 'Service Unavailable',
+        ),
+      );
+
+      final result = await client.scanImageSafety(
+        imageBase64: 'abc123',
+        mimeType: 'image/jpeg',
+      );
+
+      expect(result.success, isFalse);
+      expect(result.data?['reason'], 'safety_scan_rate_limited');
+      expect(result.error, contains('503'));
+    });
+
     group('401 retry with session refresh', () {
       const refreshedToken = 'refreshed-access-token';
 

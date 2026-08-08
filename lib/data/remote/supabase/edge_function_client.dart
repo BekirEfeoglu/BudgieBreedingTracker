@@ -263,9 +263,20 @@ class EdgeFunctionClient {
         return EdgeFunctionResult.failure('Edge function error: ${e.status}');
       }
 
+      final result = EdgeFunctionResult.fromFunctionException(e);
+      // Provider capacity is a recoverable, user-facing state for image
+      // scanning. Keep the typed reason for the caller but avoid a high-priority
+      // Sentry issue for every retry; server-side function logs remain the
+      // operational source for this provider condition.
+      if (functionName == 'scan-image-safety' &&
+          result.data?['reason'] == 'safety_scan_rate_limited') {
+        AppLogger.warning('$_tag $functionName temporarily rate limited');
+        return result;
+      }
+
       AppLogger.error('$_tag Error invoking $functionName', e, st);
       Sentry.captureException(e, stackTrace: st);
-      return EdgeFunctionResult.fromFunctionException(e);
+      return result;
     } catch (e, st) {
       AppLogger.error('$_tag Error invoking $functionName', e, st);
       Sentry.captureException(e, stackTrace: st);
