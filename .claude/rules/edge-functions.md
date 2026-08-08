@@ -76,6 +76,11 @@ isteği yeniden serialize edilir; daha büyük sınır Edge resource/abuse riski
 Bu karar hosted Supabase Edge'in güncel function başına **256 MB memory** ve
 **2 s CPU time** sınırlarını da hesaba katar ([official limits, 2026-07-17](https://supabase.com/docs/guides/functions/limits)).
 
+`scan-image-safety`, OpenAI sağlayıcısının 429 yanıtını fail-closed 503 ile
+`{ safe: false, reason: "safety_scan_rate_limited" }` olarak döndürür. Ham
+sağlayıcı hata gövdesi istemciye veya uygulama günlüklerine geçmez; istemci bu
+kararlı kodu yerelleştirilmiş "biraz sonra yeniden dene" mesajına eşler.
+
 ## Testing Requirements
 - Every edge function MUST have integration tests covering:
   1. Happy path (valid JWT + valid payload)

@@ -10,6 +10,7 @@ import {
   ImageModerationResult,
   MAX_IMAGE_REQUEST_BODY_BYTES,
   moderateImageWithOpenAI as defaultModerateImage,
+  OpenAiModerationError,
   validateImageInput as defaultValidateImageInput,
 } from "./moderation.ts";
 
@@ -133,9 +134,21 @@ export function createScanImageSafetyHandler(
         { headers },
       );
     } catch (error) {
-      console.error("[scan-image-safety] Error:", error);
+      // An exhausted provider quota is recoverable from the user's point of
+      // view, but uploads must still fail closed until a scan succeeds. Expose
+      // only a stable reason code — never OpenAI's raw response body.
+      const reason =
+        error instanceof OpenAiModerationError && error.status === 429
+          ? "safety_scan_rate_limited"
+          : "safety_scan_unavailable";
+      const errorSummary = error instanceof OpenAiModerationError
+        ? `OpenAI moderation request failed with status ${error.status}`
+        : error instanceof Error
+        ? error.name
+        : "unknown error";
+      console.error("[scan-image-safety] Error:", errorSummary);
       return new Response(
-        JSON.stringify({ safe: false, reason: "safety_scan_unavailable" }),
+        JSON.stringify({ safe: false, reason }),
         { status: 503, headers },
       );
     }

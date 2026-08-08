@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/errors/app_exception.dart' as app_exc;
+import '../../../core/errors/image_safety_exception.dart';
 import '../../../core/utils/logger.dart';
 import '../../../domain/services/moderation/image_safety_service.dart';
 import '../storage/storage_utils.dart';
@@ -332,8 +333,9 @@ class MarketplaceListingRemoteSource {
             'Marketplace image rejected by safety scan: '
             '${scan.rejectionReason}',
           );
-          throw StorageException(
+          throw ImageSafetyException(
             'Image rejected: ${scan.rejectionReason ?? 'safety_scan_failed'}',
+            code: scan.rejectionReason,
           );
         }
 

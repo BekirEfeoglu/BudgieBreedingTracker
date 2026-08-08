@@ -108,6 +108,38 @@ void main() {
     });
   });
 
+  group('EdgeFunctionResult.fromFunctionException', () {
+    test('preserves a structured server error payload', () {
+      const exception = FunctionException(
+        status: 503,
+        details: {'safe': false, 'reason': 'safety_scan_rate_limited'},
+        reasonPhrase: 'Service Unavailable',
+      );
+
+      final result = EdgeFunctionResult.fromFunctionException(exception);
+
+      expect(result.success, isFalse);
+      expect(result.data, {
+        'safe': false,
+        'reason': 'safety_scan_rate_limited',
+      });
+      expect(result.error, contains('503'));
+    });
+
+    test('does not expose an unstructured exception body', () {
+      const exception = FunctionException(
+        status: 503,
+        details: 'provider diagnostic',
+        reasonPhrase: 'Service Unavailable',
+      );
+
+      final result = EdgeFunctionResult.fromFunctionException(exception);
+
+      expect(result.data, isNull);
+      expect(result.error, isNot(contains('provider diagnostic')));
+    });
+  });
+
   group('EdgeFunctionClient', () {
     test('invoke forwards body+headers and returns parsed result', () async {
       final body = <String, dynamic>{'x': 1};

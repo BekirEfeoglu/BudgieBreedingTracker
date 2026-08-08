@@ -11,6 +11,7 @@ import 'package:budgie_breeding_tracker/data/repositories/repository_providers.d
 import 'package:budgie_breeding_tracker/domain/services/premium/free_tier_limit_providers.dart';
 import 'package:budgie_breeding_tracker/core/errors/app_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/sentry_error_filter.dart';
+import 'package:budgie_breeding_tracker/domain/services/moderation/image_safety_service.dart';
 import 'package:budgie_breeding_tracker/domain/services/gamification/gamification_action_recorder.dart';
 import 'package:budgie_breeding_tracker/domain/services/premium/premium_providers.dart';
 import 'package:image_picker/image_picker.dart';

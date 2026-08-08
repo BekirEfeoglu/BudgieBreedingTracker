@@ -2568,6 +2568,7 @@
     "not_found": "Bulunamadı",
     "unknown_error": "Bilinmeyen bir hata oluştu",
     "image_too_large": "Seçilen görsel, işlendikten sonra {} MB sınırını aşıyor. Daha küçük bir fotoğraf seçin.",
+    "photo_safety_rate_limited": "Fotoğraf güvenlik kontrolü şu anda yoğun. Lütfen biraz sonra tekrar deneyin.",
     "chick_auto_create_failed": "Yumurta açıldı ama yavru kaydı oluşturulamadı. Yavruyu manuel olarak ekleyin."
   },
   "validation": {

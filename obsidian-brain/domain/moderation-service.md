@@ -45,7 +45,10 @@ ImageSafetyService.scanImage({bytes, mimeType})
 ```
 
 `ImageSafetyResult.safe` / `.unsafe(reason)` are both consumed by photo
-upload flows. Reasons feed localized rejection UI.
+upload flows. Reasons feed localized rejection UI. Provider kotası/rate limiti
+429 döndürürse Edge, ham sağlayıcı içeriğini sızdırmadan
+`safety_scan_rate_limited` koduna eşler; istemci fail-closed kalır ve kullanıcı
+"biraz sonra tekrar deneyin" yönlendirmesi görür.
 
 Community deliberately bypasses the generic client bridge: `StorageService`
 calls `upload-community-photo`, whose handler performs the same size/MIME/magic

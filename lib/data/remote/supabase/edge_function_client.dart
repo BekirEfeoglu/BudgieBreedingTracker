@@ -41,6 +41,33 @@ class EdgeFunctionResult {
 
   factory EdgeFunctionResult.failure(String error) =>
       EdgeFunctionResult(success: false, error: error);
+
+  /// Preserves a function's typed, non-sensitive response payload when the
+  /// Supabase SDK throws for a non-2xx status. Callers can then distinguish a
+  /// stable server reason code without parsing exception text or exposing raw
+  /// provider diagnostics.
+  factory EdgeFunctionResult.fromFunctionException(
+    FunctionException exception,
+  ) {
+    Map<String, dynamic>? data;
+    final details = exception.details;
+    if (details is Map<String, dynamic>) {
+      data = details;
+    } else if (details is String) {
+      try {
+        final parsed = json.decode(details);
+        if (parsed is Map<String, dynamic>) data = parsed;
+      } catch (_) {
+        // A non-JSON error body intentionally remains unavailable to callers.
+      }
+    }
+
+    return EdgeFunctionResult(
+      success: false,
+      data: data,
+      error: 'Edge function error: ${exception.status}',
+    );
+  }
 }
 
 /// Client for invoking Supabase Edge Functions.
@@ -238,7 +265,7 @@ class EdgeFunctionClient {
 
       AppLogger.error('$_tag Error invoking $functionName', e, st);
       Sentry.captureException(e, stackTrace: st);
-      return EdgeFunctionResult.failure('Edge function error: ${e.status}');
+      return EdgeFunctionResult.fromFunctionException(e);
     } catch (e, st) {
       AppLogger.error('$_tag Error invoking $functionName', e, st);
       Sentry.captureException(e, stackTrace: st);

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
+import 'package:budgie_breeding_tracker/core/errors/image_safety_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
 import 'package:budgie_breeding_tracker/data/remote/storage/storage_utils.dart';
@@ -412,8 +413,9 @@ class StorageService {
         AppLogger.warning(
           'Image upload rejected by safety scan: ${scan.rejectionReason}',
         );
-        throw StorageException(
+        throw ImageSafetyException(
           'Image rejected: ${scan.rejectionReason ?? 'safety_scan_failed'}',
+          code: scan.rejectionReason,
         );
       }
     }

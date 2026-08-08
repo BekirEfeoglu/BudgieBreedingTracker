@@ -166,7 +166,7 @@ mixin _BirdFormActions on Notifier<BirdFormState>, SentryErrorFilter {
           reportIfUnexpected(e, st);
           state = state.copyWith(
             isLoading: false,
-            error: 'birds.photo_upload_error'.tr(),
+            error: ImageSafetyService.uploadErrorKey(e).tr(),
           );
           return;
         }

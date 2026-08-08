@@ -96,7 +96,7 @@ Enforced by `scripts/verify_code_quality.py` (28 checker categories — 19/24 CL
 | Shared widgets | 35 |
 | Enum files | 15 |
 | Supabase constants | 204 string constants |
-| L10n keys | 3,229 per language, 41 categories |
+| L10n keys | 3,230 per language, 41 categories |
 | DB schema version | 30 |
 | Supabase migrations | 226 tracked SQL files |
 | Edge Functions | 12 |

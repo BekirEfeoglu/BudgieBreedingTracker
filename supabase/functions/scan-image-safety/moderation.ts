@@ -19,6 +19,18 @@ export interface ImageModerationResult {
   raw?: unknown;
 }
 
+/// A provider failure that can be classified without exposing OpenAI's
+/// response body to the client or to application logs.
+export class OpenAiModerationError extends Error {
+  readonly status: number;
+
+  constructor(status: number) {
+    super(`OpenAI moderation request failed with status ${status}`);
+    this.name = "OpenAiModerationError";
+    this.status = status;
+  }
+}
+
 interface OpenAIModerationCategoryMap {
   [key: string]: boolean | undefined;
 }
@@ -128,8 +140,11 @@ export async function moderateImageWithOpenAI(args: {
   });
 
   if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`OpenAI moderation failed (${res.status}): ${errorText}`);
+    // The response body can contain provider-specific diagnostic data. Keep
+    // that out of client-visible errors and logs; the status is sufficient for
+    // our stable, fail-closed response contract.
+    await res.body?.cancel();
+    throw new OpenAiModerationError(res.status);
   }
 
   const data = await res.json() as OpenAIModerationResponse;

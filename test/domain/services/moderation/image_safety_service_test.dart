@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:budgie_breeding_tracker/core/errors/image_safety_exception.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
 import 'package:budgie_breeding_tracker/domain/services/moderation/image_safety_service.dart';
 
@@ -165,6 +166,41 @@ void main() {
 
       expect(result.isSafe, isFalse);
       expect(result.rejectionReason, 'safety_scan_unavailable');
+    });
+  });
+
+  group('ImageSafetyService - provider rate limit', () {
+    test(
+      'preserves rate-limit reason from a failed function response',
+      () async {
+        final fakeClient = _FakeEdgeFunctionClient(
+          fixedResult: const EdgeFunctionResult(
+            success: false,
+            data: {'safe': false, 'reason': 'safety_scan_rate_limited'},
+          ),
+        );
+        final service = ImageSafetyService(edgeFunctionClient: fakeClient);
+
+        final result = await service.scanImage(
+          bytes: testBytes,
+          mimeType: testMimeType,
+        );
+
+        expect(result.isSafe, isFalse);
+        expect(result.rejectionReason, 'safety_scan_rate_limited');
+      },
+    );
+
+    test('returns rate-limit l10n key for a typed storage error', () {
+      const error = ImageSafetyException(
+        'Image rejected: safety_scan_rate_limited',
+        code: 'safety_scan_rate_limited',
+      );
+
+      expect(
+        ImageSafetyService.uploadErrorKey(error),
+        'errors.photo_safety_rate_limited',
+      );
     });
   });
 

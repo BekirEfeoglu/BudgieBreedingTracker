@@ -19,6 +19,7 @@ import 'package:budgie_breeding_tracker/data/models/bird_model.dart';
 import 'package:budgie_breeding_tracker/data/models/photo_model.dart';
 import 'package:budgie_breeding_tracker/data/repositories/repository_providers.dart';
 import 'package:budgie_breeding_tracker/data/providers/auth_state_providers.dart';
+import 'package:budgie_breeding_tracker/domain/services/moderation/image_safety_service.dart';
 import 'package:budgie_breeding_tracker/features/birds/providers/bird_providers.dart';
 import 'package:budgie_breeding_tracker/features/birds/widgets/bird_photo_gallery.dart';
 
@@ -266,7 +267,7 @@ class _BirdDetailPhotosState extends ConsumerState<BirdDetailPhotos> {
       reportUnexpectedToSentry(e, st);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('birds.photo_upload_error'.tr())),
+          SnackBar(content: Text(ImageSafetyService.uploadErrorKey(e).tr())),
         );
       }
     } finally {

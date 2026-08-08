@@ -4,6 +4,7 @@ import {
   interpretOpenAIModerationResponse,
   MAX_IMAGE_BYTES,
   moderateImageWithOpenAI,
+  OpenAiModerationError,
   validateImageInput,
 } from "./moderation.ts";
 
@@ -122,6 +123,35 @@ Deno.test("moderateImageWithOpenAI sends image_url as an object with a url key",
     // Must be an object { url }, NOT a bare string (OpenAI rejects the string).
     assertEquals(typeof imageUrl, "object");
     assertEquals(imageUrl.url, "data:image/jpeg;base64,QUJDRA==");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+Deno.test("moderateImageWithOpenAI exposes only provider status on failure", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (() =>
+    Promise.resolve(
+      new Response(JSON.stringify({ error: { message: "provider detail" } }), {
+        status: 429,
+      }),
+    )) as typeof fetch;
+
+  try {
+    let error: unknown;
+    try {
+      await moderateImageWithOpenAI({
+        apiKey: "test-key",
+        imageBase64: "QUJDRA==",
+        mimeType: "image/jpeg",
+      });
+    } catch (caught) {
+      error = caught;
+    }
+
+    assertEquals(error instanceof OpenAiModerationError, true);
+    assertEquals((error as OpenAiModerationError).status, 429);
+    assertEquals((error as Error).message.includes("provider detail"), false);
   } finally {
     globalThis.fetch = originalFetch;
   }

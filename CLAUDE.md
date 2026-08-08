@@ -124,8 +124,8 @@ scripts/test_git_hooks.py               # Local git hook installation + worktree
 
 | Metric | Value |
 | --- | --- |
-| Source files (lib/) | 1036 Dart files |
-| Test files (test/) | 957 test files, 11,823+ individual tests |
+| Source files (lib/) | 1037 Dart files |
+| Test files (test/) | 958 test files, 11,829+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -137,7 +137,7 @@ scripts/test_git_hooks.py               # Local git hook installation + worktree
 | Shared widgets | 35 (15 root + 4 buttons + 2 cards + 2 dialog + 1 bottom_sheet + 5 eggs) |
 | Enum files | 15 |
 | Supabase constants | 204 (tables + buckets + columns) |
-| L10n keys | ~3,229 per language, 41 categories |
+| L10n keys | ~3,230 per language, 41 categories |
 | DB schema version | 30 |
 
 ## CI/CD Pipeline
@@ -257,7 +257,7 @@ Config methods: `.env` + `--dart-define-from-file` (local and release builds via
 | `moderate-content` | Community content moderation |
 | `revenuecat-webhook` | RevenueCat subscription events → server-side premium sync (shared-secret auth, `verify_jwt=false`) |
 | `revoke-oauth-token` | Google/Apple OAuth token revocation |
-| `scan-image-safety` | Photo upload safety scan |
+| `scan-image-safety` | Photo upload safety scan; provider 429 responses fail closed and map to a localized retry reason |
 | `send-push` | FCM push notification delivery |
 | `system-health` | Admin dashboard system health check |
 | `sync-premium-status` | Server-side RevenueCat premium status verification (client-initiated pull) |

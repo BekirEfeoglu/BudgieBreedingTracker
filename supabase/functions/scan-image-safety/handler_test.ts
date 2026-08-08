@@ -6,6 +6,7 @@ import {
 import {
   MAX_IMAGE_BYTES,
   MAX_IMAGE_REQUEST_BODY_BYTES,
+  OpenAiModerationError,
   validateImageInput,
 } from "./moderation.ts";
 
@@ -69,6 +70,20 @@ Deno.test("scan-image-safety fails closed when OPENAI_API_KEY missing", async ()
   assertEquals(await response.json(), {
     safe: false,
     reason: "safety_scan_unavailable",
+  });
+});
+
+Deno.test("scan-image-safety reports provider rate limits without exposing details", async () => {
+  const response = await createScanImageSafetyHandler(
+    baseDeps({
+      moderateImage: () => Promise.reject(new OpenAiModerationError(429)),
+    }),
+  )(jsonRequest({ image_base64: "QUJDRA==", mime_type: "image/jpeg" }));
+
+  assertEquals(response.status, 503);
+  assertEquals(await response.json(), {
+    safe: false,
+    reason: "safety_scan_rate_limited",
   });
 });
 
@@ -180,7 +195,8 @@ const MIN_ATTEMPTS_PER_MINUTE = 3;
 
 Deno.test("rate limit covers a full-size post plus retries", () => {
   assertEquals(
-    MAX_SCANS_PER_MINUTE >= PREMIUM_MAX_IMAGES_PER_POST * MIN_ATTEMPTS_PER_MINUTE,
+    MAX_SCANS_PER_MINUTE >=
+      PREMIUM_MAX_IMAGES_PER_POST * MIN_ATTEMPTS_PER_MINUTE,
     true,
     `MAX_SCANS_PER_MINUTE (${MAX_SCANS_PER_MINUTE}) must cover ` +
       `${PREMIUM_MAX_IMAGES_PER_POST} images x ${MIN_ATTEMPTS_PER_MINUTE} attempts`,

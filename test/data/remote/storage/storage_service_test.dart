@@ -6,6 +6,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:budgie_breeding_tracker/core/constants/supabase_constants.dart';
+import 'package:budgie_breeding_tracker/core/errors/image_safety_exception.dart';
 import 'package:budgie_breeding_tracker/data/remote/storage/storage_service.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
 import 'package:budgie_breeding_tracker/domain/services/moderation/image_safety_service.dart';
@@ -984,6 +985,31 @@ void main() {
             any(),
             any(),
             fileOptions: any(named: 'fileOptions'),
+          ),
+        );
+      });
+
+      test('preserves a rate-limit reason for the upload UI', () async {
+        when(
+          () => mockImageSafety.scanImage(
+            bytes: any(named: 'bytes'),
+            mimeType: any(named: 'mimeType'),
+          ),
+        ).thenAnswer(
+          (_) async =>
+              const ImageSafetyResult.unsafe('safety_scan_rate_limited'),
+        );
+
+        final file = makeXFile();
+
+        await expectLater(
+          () => service.uploadBirdPhoto(userId: 'u1', birdId: 'b1', file: file),
+          throwsA(
+            isA<ImageSafetyException>().having(
+              (error) => error.code,
+              'code',
+              'safety_scan_rate_limited',
+            ),
           ),
         );
       });

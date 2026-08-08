@@ -2568,6 +2568,7 @@
     "not_found": "Nicht gefunden",
     "unknown_error": "Ein unbekannter Fehler ist aufgetreten",
     "image_too_large": "Das ausgewählte Bild überschreitet nach der Verarbeitung das Limit von {} MB. Bitte wählen Sie ein kleineres Foto.",
+    "photo_safety_rate_limited": "Die Sicherheitsprüfung für Fotos ist derzeit ausgelastet. Bitte versuchen Sie es in Kürze erneut.",
     "chick_auto_create_failed": "Ei ist geschlüpft, aber der Kükeneintrag konnte nicht erstellt werden. Bitte fügen Sie das Küken manuell hinzu."
   },
   "validation": {

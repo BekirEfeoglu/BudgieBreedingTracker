@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:budgie_breeding_tracker/core/constants/app_constants.dart';
+import 'package:budgie_breeding_tracker/core/errors/image_safety_exception.dart';
 import 'package:budgie_breeding_tracker/core/utils/logger.dart';
 import 'package:budgie_breeding_tracker/data/remote/supabase/edge_function_client.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -35,6 +36,19 @@ class ImageSafetyService {
 
   const ImageSafetyService({EdgeFunctionClient? edgeFunctionClient})
     : _edgeFunctionClient = edgeFunctionClient;
+
+  /// Maps non-sensitive image-upload failure codes to a localized UI key.
+  ///
+  /// Safety scans remain fail-closed. This only improves recovery guidance for
+  /// an expected temporary provider throttle; unknown failures retain each
+  /// screen's existing generic upload error.
+  static String uploadErrorKey(Object error) {
+    final code = error is ImageSafetyException ? error.code : null;
+    return switch (code) {
+      'safety_scan_rate_limited' => 'errors.photo_safety_rate_limited',
+      _ => 'birds.photo_upload_error',
+    };
+  }
 
   /// Scans image bytes for objectionable content.
   ///
@@ -77,6 +91,10 @@ class ImageSafetyService {
         AppLogger.warning(
           '$_tag Edge function unavailable, rejecting image upload',
         );
+        final reason = result.data?['reason'] as String?;
+        if (reason == 'safety_scan_rate_limited') {
+          return const ImageSafetyResult.unsafe('safety_scan_rate_limited');
+        }
         return const ImageSafetyResult.unsafe('safety_scan_unavailable');
       }
 
