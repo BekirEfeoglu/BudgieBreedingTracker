@@ -125,7 +125,7 @@ scripts/test_git_hooks.py               # Local git hook installation + worktree
 | Metric | Value |
 | --- | --- |
 | Source files (lib/) | 1036 Dart files |
-| Test files (test/) | 956 test files, 11,822+ individual tests |
+| Test files (test/) | 957 test files, 11,823+ individual tests |
 | Feature modules | 24 |
 | Drift tables / DAOs / Mappers | 20 each |
 | Repositories | 23 entity + base + sync_metadata |
@@ -265,7 +265,7 @@ Config methods: `.env` + `--dart-define-from-file` (local and release builds via
 | `validate-free-tier-limit` | Free tier entity limit enforcement |
 
 ### Migrations
-225 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
+226 SQL migration files in `supabase/migrations/`. Schema managed server-side; never modify RLS policies from client code.
 
 ## Rules
 
@@ -446,7 +446,7 @@ Security:      lib/core/security/
 Preferences:   lib/data/local/preferences/
 EdgeFunctions: lib/data/remote/supabase/
 Edge Fn (SB):  supabase/functions/
-Migrations:    supabase/migrations/ (225 files)
+Migrations:    supabase/migrations/ (226 files)
 Scripts:       scripts/
 CI:            .github/workflows/
 Release build:  scripts/build_release.sh
