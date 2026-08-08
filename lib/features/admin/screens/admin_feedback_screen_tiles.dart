@@ -71,42 +71,45 @@ class _StatusFilterBar extends StatelessWidget {
           bottom: BorderSide(color: theme.colorScheme.outlineVariant, width: 1),
         ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: options.map((opt) {
-                  final isSelected = selected == opt.$1;
-                  return Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      end: AppSpacing.xs,
-                    ),
-                    child: FilterChip(
-                      label: Text(opt.$2),
-                      selected: isSelected,
-                      onSelected: (_) => onChanged(opt.$1),
-                      visualDensity: VisualDensity.compact,
-                    ),
-                  );
-                }).toList(),
-              ),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: options.map((opt) {
+                final isSelected = selected == opt.$1;
+                return Padding(
+                  padding: const EdgeInsetsDirectional.only(end: AppSpacing.xs),
+                  child: FilterChip(
+                    label: Text(opt.$2),
+                    selected: isSelected,
+                    onSelected: (_) => onChanged(opt.$1),
+                  ),
+                );
+              }).toList(),
             ),
           ),
-          Text(
-            'admin.feedback_count'.tr(args: [total.toString()]),
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+          Padding(
+            padding: const EdgeInsets.only(top: AppSpacing.xs),
+            child: Row(
+              children: [
+                Text(
+                  'admin.feedback_count'.tr(args: [total.toString()]),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                if (hasFilter) ...[
+                  const Spacer(),
+                  TextButton(
+                    onPressed: onClear,
+                    child: Text('admin.clear_filter'.tr()),
+                  ),
+                ],
+              ],
             ),
           ),
-          if (hasFilter) ...[
-            const SizedBox(width: AppSpacing.sm),
-            TextButton(
-              onPressed: onClear,
-              child: Text('admin.clear_filter'.tr()),
-            ),
-          ],
         ],
       ),
     );
@@ -247,20 +250,23 @@ class _FeedbackTile extends StatelessWidget {
       ),
       title: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.sm,
-              vertical: AppSpacing.xs / 2,
-            ),
-            decoration: BoxDecoration(
-              color: typeColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-            ),
-            child: Text(
-              typeLabel,
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: typeColor,
-                fontWeight: FontWeight.w600,
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xs / 2,
+              ),
+              decoration: BoxDecoration(
+                color: typeColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              ),
+              child: Text(
+                typeLabel,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: typeColor,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),

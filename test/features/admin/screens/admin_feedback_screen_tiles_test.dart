@@ -7,6 +7,8 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:budgie_breeding_tracker/features/admin/providers/admin_feedback_providers.dart';
 import 'package:budgie_breeding_tracker/features/admin/screens/admin_feedback_screen.dart';
 
+import '../../../helpers/test_localization.dart';
+
 Widget _createSubject({
   AsyncValue<List<Map<String, dynamic>>> feedbackData = const AsyncLoading(),
 }) {
@@ -87,6 +89,31 @@ void main() {
       expect(find.text(l10n('admin.feedback_status_all')), findsOneWidget);
       expect(find.text(l10n('admin.feedback_status_open')), findsOneWidget);
       expect(find.text(l10n('admin.feedback_status_resolved')), findsOneWidget);
+    });
+
+    testWidgets('keeps filter count separate on narrow screens', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(320, 700));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await pumpTranslatedApp(
+        tester,
+        _createSubject(feedbackData: AsyncData(_sampleFeedback)),
+      );
+
+      expect(tester.takeException(), isNull);
+
+      final filterScrollView = find.byWidgetPredicate(
+        (widget) =>
+            widget is SingleChildScrollView &&
+            widget.scrollDirection == Axis.horizontal,
+      );
+      await tester.drag(filterScrollView, const Offset(-500, 0));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n('admin.feedback_status_resolved')), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
   });
 }

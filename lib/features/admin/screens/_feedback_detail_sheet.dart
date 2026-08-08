@@ -131,34 +131,20 @@ class _FeedbackDetailSheetState extends State<FeedbackDetailSheet> {
     final theme = Theme.of(context);
 
     return DraggableScrollableSheet(
-      initialChildSize: 0.75,
+      initialChildSize: 0.85,
       maxChildSize: 0.95,
       minChildSize: 0.5,
       expand: false,
       builder: (_, scrollController) => Padding(
         padding: EdgeInsets.fromLTRB(
           AppSpacing.lg,
-          AppSpacing.md,
+          AppSpacing.sm,
           AppSpacing.lg,
           MediaQuery.of(context).viewInsets.bottom + AppSpacing.xl,
         ),
         child: ListView(
           controller: scrollController,
           children: [
-            // Drag handle
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.onSurfaceVariant.withValues(
-                    alpha: 0.3,
-                  ),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
             Text(
               'admin.feedback_detail'.tr(),
               style: theme.textTheme.titleMedium?.copyWith(
