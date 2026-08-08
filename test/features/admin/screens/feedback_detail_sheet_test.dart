@@ -28,13 +28,18 @@ final _minimalItem = <String, dynamic>{
 Widget _createSubject({
   Map<String, dynamic>? item,
   FeedbackSaveCallback? onSave,
+  FeedbackExtendedSaveCallback? onSaveExtended,
 }) {
   final feedbackItem = item ?? _testItem;
   final callback =
       onSave ?? ({required status, adminResponse, required priority}) async {};
 
   return MaterialApp(
-    home: _SheetLauncher(item: feedbackItem, onSave: callback),
+    home: _SheetLauncher(
+      item: feedbackItem,
+      onSave: callback,
+      onSaveExtended: onSaveExtended,
+    ),
   );
 }
 
@@ -54,7 +59,13 @@ Future<void> _scrollSheetUntilVisible(
 class _SheetLauncher extends StatefulWidget {
   final Map<String, dynamic> item;
   final FeedbackSaveCallback onSave;
-  const _SheetLauncher({required this.item, required this.onSave});
+  final FeedbackExtendedSaveCallback? onSaveExtended;
+
+  const _SheetLauncher({
+    required this.item,
+    required this.onSave,
+    this.onSaveExtended,
+  });
 
   @override
   State<_SheetLauncher> createState() => _SheetLauncherState();
@@ -70,7 +81,11 @@ class _SheetLauncherState extends State<_SheetLauncher> {
         isScrollControlled: true,
         builder: (_) => SizedBox(
           height: 700,
-          child: FeedbackDetailSheet(item: widget.item, onSave: widget.onSave),
+          child: FeedbackDetailSheet(
+            item: widget.item,
+            onSave: widget.onSave,
+            onSaveExtended: widget.onSaveExtended,
+          ),
         ),
       );
     });
@@ -196,6 +211,38 @@ void main() {
 
       expect(savedStatus, 'open');
       expect(savedPriority, 'normal');
+    });
+
+    testWidgets('sends blank optional metadata as null', (tester) async {
+      String? savedAssignedAdminId = 'not-called';
+      String? savedInternalNote = 'not-called';
+
+      await pumpLocalizedApp(
+        tester,
+        _createSubject(
+          onSaveExtended:
+              ({
+                required status,
+                adminResponse,
+                required priority,
+                category,
+                assignedAdminId,
+                internalNote,
+              }) async {
+                savedAssignedAdminId = assignedAdminId;
+                savedInternalNote = internalNote;
+              },
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final saveButton = find.text(l10n('admin.feedback_save'));
+      await _scrollSheetUntilVisible(tester, saveButton);
+      await tester.tap(saveButton);
+      await tester.pumpAndSettle();
+
+      expect(savedAssignedAdminId, isNull);
+      expect(savedInternalNote, isNull);
     });
   });
 }

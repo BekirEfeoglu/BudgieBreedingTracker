@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/enums/admin_enums.dart';
@@ -148,6 +149,11 @@ class AdminFeedbackActionNotifier extends Notifier<AdminFeedbackActionState> {
       return true;
     } catch (e, st) {
       AppLogger.error('AdminFeedbackAction.updateFeedback', e, st);
+      await Sentry.captureException(
+        e,
+        stackTrace: st,
+        withScope: (scope) => scope.setTag('admin_action', 'feedback_update'),
+      );
       // Localized key — raw exception text must not reach the admin UI
       // (Postgrest errors include table/column names).
       state = state.copyWith(

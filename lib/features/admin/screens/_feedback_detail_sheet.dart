@@ -106,6 +106,8 @@ class _FeedbackDetailSheetState extends State<FeedbackDetailSheet> {
 
   Future<void> _save() async {
     setState(() => _isLoading = true);
+    final assignedAdminId = _assigneeController.text.trim();
+    final internalNote = _internalNoteController.text.trim();
     final extended = widget.onSaveExtended;
     if (extended != null) {
       await extended(
@@ -113,8 +115,8 @@ class _FeedbackDetailSheetState extends State<FeedbackDetailSheet> {
         adminResponse: _responseController.text.trim(),
         priority: _priority,
         category: _category,
-        assignedAdminId: _assigneeController.text.trim(),
-        internalNote: _internalNoteController.text.trim(),
+        assignedAdminId: assignedAdminId.isEmpty ? null : assignedAdminId,
+        internalNote: internalNote.isEmpty ? null : internalNote,
       );
     } else {
       await widget.onSave(
