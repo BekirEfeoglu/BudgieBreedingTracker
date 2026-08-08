@@ -142,7 +142,7 @@ export function createScanImageSafetyHandler(
           ? "safety_scan_rate_limited"
           : "safety_scan_unavailable";
       const errorSummary = error instanceof OpenAiModerationError
-        ? `OpenAI moderation request failed with status ${error.status}`
+        ? `OpenAI moderation request failed with status ${error.status}, kind=${error.kind}`
         : error instanceof Error
         ? error.name
         : "unknown error";

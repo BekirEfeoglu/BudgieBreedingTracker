@@ -128,13 +128,16 @@ Deno.test("moderateImageWithOpenAI sends image_url as an object with a url key",
   }
 });
 
-Deno.test("moderateImageWithOpenAI exposes only provider status on failure", async () => {
+Deno.test("moderateImageWithOpenAI safely classifies provider quota failures", async () => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = (() =>
     Promise.resolve(
-      new Response(JSON.stringify({ error: { message: "provider detail" } }), {
-        status: 429,
-      }),
+      new Response(
+        JSON.stringify({
+          error: { code: "insufficient_quota", message: "provider detail" },
+        }),
+        { status: 429 },
+      ),
     )) as typeof fetch;
 
   try {
@@ -151,6 +154,7 @@ Deno.test("moderateImageWithOpenAI exposes only provider status on failure", asy
 
     assertEquals(error instanceof OpenAiModerationError, true);
     assertEquals((error as OpenAiModerationError).status, 429);
+    assertEquals((error as OpenAiModerationError).kind, "quota_exhausted");
     assertEquals((error as Error).message.includes("provider detail"), false);
   } finally {
     globalThis.fetch = originalFetch;

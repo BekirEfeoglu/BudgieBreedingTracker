@@ -23,12 +23,51 @@ export interface ImageModerationResult {
 /// response body to the client or to application logs.
 export class OpenAiModerationError extends Error {
   readonly status: number;
+  /// Safe, allowlisted provider classification. Raw provider payloads never
+  /// leave this module or reach function logs.
+  readonly kind: "quota_exhausted" | "rate_limited" | "unavailable";
 
-  constructor(status: number) {
+  constructor(
+    status: number,
+    kind: "quota_exhausted" | "rate_limited" | "unavailable" = status === 429
+      ? "rate_limited"
+      : "unavailable",
+  ) {
     super(`OpenAI moderation request failed with status ${status}`);
     this.name = "OpenAiModerationError";
     this.status = status;
+    this.kind = kind;
   }
+}
+
+interface OpenAiErrorResponse {
+  error?: {
+    code?: unknown;
+    type?: unknown;
+  };
+}
+
+function classifyOpenAiFailure(
+  status: number,
+  body: string,
+): OpenAiModerationError["kind"] {
+  if (status !== 429) return "unavailable";
+
+  // The provider's body can contain request diagnostics. Read only the two
+  // documented machine fields and keep a small allowlist; never log or return
+  // the body itself.
+  try {
+    const parsed = JSON.parse(body) as OpenAiErrorResponse;
+    const code = typeof parsed.error?.code === "string"
+      ? parsed.error.code
+      : typeof parsed.error?.type === "string"
+      ? parsed.error.type
+      : "";
+    if (code === "insufficient_quota") return "quota_exhausted";
+  } catch {
+    // A malformed provider failure stays safely classified as rate-limited.
+  }
+  return "rate_limited";
 }
 
 interface OpenAIModerationCategoryMap {
@@ -140,11 +179,14 @@ export async function moderateImageWithOpenAI(args: {
   });
 
   if (!res.ok) {
-    // The response body can contain provider-specific diagnostic data. Keep
-    // that out of client-visible errors and logs; the status is sufficient for
-    // our stable, fail-closed response contract.
-    await res.body?.cancel();
-    throw new OpenAiModerationError(res.status);
+    // The response body can contain provider-specific diagnostic data. Keep it
+    // out of client-visible errors and logs; use only an allowlisted category
+    // for production diagnosis while retaining the stable fail-closed contract.
+    const body = await res.text();
+    throw new OpenAiModerationError(
+      res.status,
+      classifyOpenAiFailure(res.status, body),
+    );
   }
 
   const data = await res.json() as OpenAIModerationResponse;
